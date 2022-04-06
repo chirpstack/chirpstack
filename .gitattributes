@@ -1,0 +1,2 @@
+api/** linguist-vendored
+api/proto/** -linguist-vendored
