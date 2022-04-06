@@ -1,2 +1,2 @@
 api/** linguist-vendored
-api/proto/** -linguist-vendored
+api/proto/** linguist-detectable
