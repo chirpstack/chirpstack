@@ -1995,7 +1995,6 @@ version = "1.0.0"
 dependencies = [
  "aes 0.7.5",
  "anyhow",
- "chirpstack_api",
  "cmac",
  "diesel",
  "hex",
