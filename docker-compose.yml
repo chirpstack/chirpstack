@@ -1,0 +1,43 @@
+version: "3"
+services:
+  chirpstack:
+    build:
+      context: .
+      dockerfile: Dockerfile-devel
+    volumes:
+      - ./:/chirpstack
+      - ./.cargo/registry:/usr/local/cargo/registry
+      - ./.cargo/git:/usr/local/cargo/git
+    depends_on:
+      - postgres
+      - redis
+      - mosquitto
+    environment:
+      - DATABASE_URL=postgres://chirpstack_test:chirpstack_test@postgres/chirpstack_test?sslmode=disable
+    ports:
+      - "8080:8080"
+
+  chirpstack-ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile-devel
+    volumes:
+      - ./api/grpc-web:/chirpstack/api/grpc-web
+      - ./ui:/chirpstack/ui
+    ports:
+      - "3000:3000"
+
+  postgres:
+    image: postgres:11-alpine
+    volumes:
+      - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+
+  redis:
+    image: redis:6-alpine
+
+  mosquitto:
+    image: eclipse-mosquitto:1.6
+    ports:
+      - "1883:1883"

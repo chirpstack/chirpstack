@@ -1,0 +1,502 @@
+use std::collections::HashMap;
+
+use anyhow::{Context, Result};
+use async_trait::async_trait;
+use handlebars::Handlebars;
+use paho_mqtt as mqtt;
+use prost::Message;
+use serde::Serialize;
+use tracing::info;
+
+use super::Integration as IntegrationTrait;
+use crate::config::MqttIntegration as Config;
+use chirpstack_api::integration;
+
+pub struct Integration<'a> {
+    client: mqtt::AsyncClient,
+    templates: Handlebars<'a>,
+    json: bool,
+    qos: usize,
+}
+
+#[derive(Serialize)]
+struct EventTopicContext {
+    pub application_id: String,
+    pub dev_eui: String,
+    pub event: String,
+}
+
+#[derive(Serialize)]
+struct StateTopicContext {
+    pub application_id: String,
+    pub dev_eui: String,
+    pub state: String,
+}
+
+impl<'a> Integration<'a> {
+    pub async fn new(conf: &Config) -> Result<Integration<'a>> {
+        info!("Initializing MQTT integration");
+
+        // topic templates
+        let mut templates = Handlebars::new();
+        templates.register_template_string("event_topic", &conf.event_topic)?;
+        templates.register_template_string("state_topic", &conf.state_topic)?;
+
+        // create client
+        let create_opts = mqtt::CreateOptionsBuilder::new()
+            .server_uri(&conf.server)
+            .client_id(&conf.client_id)
+            .finalize();
+        let mut client = mqtt::AsyncClient::new(create_opts).context("Create MQTT client")?;
+        client.set_connected_callback(connected_callback);
+        client.set_connection_lost_callback(connection_lost_callback);
+
+        // connection options
+        let mut conn_opts_b = mqtt::ConnectOptionsBuilder::new();
+        conn_opts_b.clean_session(conf.clean_session);
+        conn_opts_b.user_name(&conf.username);
+        conn_opts_b.password(&conf.password);
+        if !conf.ca_cert.is_empty() || !conf.tls_cert.is_empty() || !conf.tls_key.is_empty() {
+            info!(
+                ca_cert = %conf.ca_cert,
+                tls_cert = %conf.tls_cert,
+                tls_key = %conf.tls_key,
+                "Configuring connection with TLS certificate"
+            );
+
+            let mut ssl_opts_b = mqtt::SslOptionsBuilder::new();
+
+            if !conf.ca_cert.is_empty() {
+                ssl_opts_b
+                    .ca_path(&conf.ca_cert)
+                    .context("Failed to set gateway ca_cert")?;
+            }
+
+            if !conf.tls_cert.is_empty() {
+                ssl_opts_b
+                    .key_store(&conf.tls_cert)
+                    .context("Failed to set gateway tls_cert")?;
+            }
+
+            if !conf.tls_key.is_empty() {
+                ssl_opts_b
+                    .private_key(&conf.tls_key)
+                    .context("Failed to set gateway tls_key")?;
+            }
+
+            conn_opts_b.ssl_options(ssl_opts_b.finalize());
+        }
+        let conn_opts = conn_opts_b.finalize();
+
+        let i = Integration {
+            client,
+            templates,
+            qos: conf.qos,
+            json: conf.json,
+        };
+
+        // connect
+        info!(server_uri = %conf.server, "Connecting to MQTT broker");
+        i.client
+            .connect(conn_opts)
+            .await
+            .context("Connect to MQTT broker")?;
+
+        // Return integration.
+        Ok(i)
+    }
+
+    fn get_event_topic(&self, application_id: &str, dev_eui: &str, event: &str) -> Result<String> {
+        Ok(self.templates.render(
+            "event_topic",
+            &EventTopicContext {
+                application_id: application_id.to_string(),
+                dev_eui: dev_eui.to_string(),
+                event: event.to_string(),
+            },
+        )?)
+    }
+
+    fn get_state_topic(&self, application_id: &str, dev_eui: &str, state: &str) -> Result<String> {
+        Ok(self.templates.render(
+            "state_topic",
+            &StateTopicContext {
+                application_id: application_id.to_string(),
+                dev_eui: dev_eui.to_string(),
+                state: state.to_string(),
+            },
+        )?)
+    }
+
+    async fn publish_event(&self, topic: &str, b: &[u8]) -> Result<()> {
+        info!(topic = %topic, "Publishing event");
+        let msg = mqtt::Message::new(topic, b, self.qos as i32);
+        self.client.publish(msg).await?;
+        Ok(())
+    }
+
+    async fn publish_state(&self, topic: &str, b: &[u8]) -> Result<()> {
+        info!(topic = %topic, "Publishing state");
+        let msg = mqtt::Message::new_retained(topic, b, self.qos as i32);
+        self.client.publish(msg).await?;
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl IntegrationTrait for Integration<'_> {
+    async fn uplink_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::UplinkEvent,
+    ) -> Result<()> {
+        let dev_info = pl
+            .device_info
+            .as_ref()
+            .ok_or(anyhow!("device_info is None"))?;
+
+        let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "up")?;
+        let b = match self.json {
+            true => serde_json::to_vec(&pl)?,
+            false => pl.encode_to_vec(),
+        };
+
+        self.publish_event(&topic, &b).await
+    }
+
+    async fn join_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::JoinEvent,
+    ) -> Result<()> {
+        let dev_info = pl
+            .device_info
+            .as_ref()
+            .ok_or(anyhow!("device_info is None"))?;
+
+        let topic = self.get_state_topic(&dev_info.application_id, &dev_info.dev_eui, "join")?;
+        let b = match self.json {
+            true => serde_json::to_vec(&pl)?,
+            false => pl.encode_to_vec(),
+        };
+
+        self.publish_state(&topic, &b).await
+    }
+
+    async fn ack_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::AckEvent,
+    ) -> Result<()> {
+        let dev_info = pl
+            .device_info
+            .as_ref()
+            .ok_or(anyhow!("device_info is None"))?;
+
+        let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "ack")?;
+        let b = match self.json {
+            true => serde_json::to_vec(&pl)?,
+            false => pl.encode_to_vec(),
+        };
+
+        self.publish_event(&topic, &b).await
+    }
+
+    async fn txack_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::TxAckEvent,
+    ) -> Result<()> {
+        let dev_info = pl
+            .device_info
+            .as_ref()
+            .ok_or(anyhow!("device_info is None"))?;
+
+        let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "txack")?;
+        let b = match self.json {
+            true => serde_json::to_vec(&pl)?,
+            false => pl.encode_to_vec(),
+        };
+
+        self.publish_event(&topic, &b).await
+    }
+
+    async fn log_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::LogEvent,
+    ) -> Result<()> {
+        let dev_info = pl
+            .device_info
+            .as_ref()
+            .ok_or(anyhow!("device_info is None"))?;
+
+        let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "log")?;
+        let b = match self.json {
+            true => serde_json::to_vec(&pl)?,
+            false => pl.encode_to_vec(),
+        };
+
+        self.publish_event(&topic, &b).await
+    }
+
+    async fn status_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::StatusEvent,
+    ) -> Result<()> {
+        let dev_info = pl
+            .device_info
+            .as_ref()
+            .ok_or(anyhow!("device_info is None"))?;
+
+        let topic = self.get_state_topic(&dev_info.application_id, &dev_info.dev_eui, "status")?;
+        let b = match self.json {
+            true => serde_json::to_vec(&pl)?,
+            false => pl.encode_to_vec(),
+        };
+
+        self.publish_state(&topic, &b).await
+    }
+
+    async fn location_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::LocationEvent,
+    ) -> Result<()> {
+        let dev_info = pl
+            .device_info
+            .as_ref()
+            .ok_or(anyhow!("device_info is None"))?;
+
+        let topic =
+            self.get_state_topic(&dev_info.application_id, &dev_info.dev_eui, "location")?;
+        let b = match self.json {
+            true => serde_json::to_vec(&pl)?,
+            false => pl.encode_to_vec(),
+        };
+
+        self.publish_state(&topic, &b).await
+    }
+
+    async fn integration_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::IntegrationEvent,
+    ) -> Result<()> {
+        let dev_info = pl
+            .device_info
+            .as_ref()
+            .ok_or(anyhow!("device_info is None"))?;
+
+        let topic =
+            self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "integration")?;
+        let b = match self.json {
+            true => serde_json::to_vec(&pl)?,
+            false => pl.encode_to_vec(),
+        };
+
+        self.publish_event(&topic, &b).await
+    }
+}
+
+fn connected_callback(_: &mqtt::AsyncClient) {
+    info!("Connected to MQTT broker");
+}
+
+fn connection_lost_callback(_: &mqtt::AsyncClient) {
+    info!("Connection to MQTT broker lost");
+}
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+    use crate::config::MqttIntegration;
+    use crate::test;
+    use futures::stream::StreamExt;
+    use paho_mqtt as mqtt;
+    use uuid::Uuid;
+
+    #[tokio::test]
+    async fn test_mqtt() {
+        // to avoid race-conditions with other tests using MQTT
+        let _guard = test::prepare().await;
+
+        // setup of integration and MQTT client
+        let conf = MqttIntegration {
+            event_topic: "application/{{application_id}}/device/{{dev_eui}}/event/{{event}}".into(),
+            state_topic: "application/{{application_id}}/device/{{dev_eui}}/state/{{state}}".into(),
+            json: true,
+            server: "tcp://mosquitto:1883/".into(),
+            clean_session: true,
+            ..Default::default()
+        };
+        let i = Integration::new(&conf).await.unwrap();
+
+        let create_opts = mqtt::CreateOptionsBuilder::new()
+            .server_uri(&conf.server)
+            .finalize();
+        let mut client = mqtt::AsyncClient::new(create_opts).unwrap();
+        let conn_opts = mqtt::ConnectOptionsBuilder::new()
+            .clean_session(true)
+            .finalize();
+        let mut stream = client.get_stream(10);
+        client.connect(conn_opts).await.unwrap();
+
+        // remove retained messages by sending empty payloads
+        client.publish(mqtt::Message::new_retained("application/00000000-0000-0000-0000-000000000000/device/0102030405060708/state/join", vec![], mqtt::QOS_0)).await.unwrap();
+        client.publish(mqtt::Message::new_retained("application/00000000-0000-0000-0000-000000000000/device/0102030405060708/state/status", vec![], mqtt::QOS_0)).await.unwrap();
+        client.publish(mqtt::Message::new_retained("application/00000000-0000-0000-0000-000000000000/device/0102030405060708/state/location", vec![], mqtt::QOS_0)).await.unwrap();
+
+        client
+            .subscribe(
+                "application/00000000-0000-0000-0000-000000000000/device/+/event/+",
+                mqtt::QOS_0,
+            )
+            .await
+            .unwrap();
+        client
+            .subscribe(
+                "application/00000000-0000-0000-0000-000000000000/device/+/state/+",
+                mqtt::QOS_0,
+            )
+            .await
+            .unwrap();
+
+        // uplink event
+        let pl = integration::UplinkEvent {
+            device_info: Some(integration::DeviceInfo {
+                application_id: Uuid::nil().to_string(),
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        i.uplink_event(&HashMap::new(), &pl).await.unwrap();
+        let msg = stream.next().await.unwrap().unwrap();
+        assert_eq!(
+            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/event/up",
+            msg.topic()
+        );
+        assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+
+        // join event
+        let pl = integration::JoinEvent {
+            device_info: Some(integration::DeviceInfo {
+                application_id: Uuid::nil().to_string(),
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        i.join_event(&HashMap::new(), &pl).await.unwrap();
+        let msg = stream.next().await.unwrap().unwrap();
+        assert_eq!(
+            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/state/join",
+            msg.topic()
+        );
+        assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+
+        // ack event
+        let pl = integration::AckEvent {
+            device_info: Some(integration::DeviceInfo {
+                application_id: Uuid::nil().to_string(),
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        i.ack_event(&HashMap::new(), &pl).await.unwrap();
+        let msg = stream.next().await.unwrap().unwrap();
+        assert_eq!(
+            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/event/ack",
+            msg.topic()
+        );
+        assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+
+        // txack event
+        let pl = integration::TxAckEvent {
+            device_info: Some(integration::DeviceInfo {
+                application_id: Uuid::nil().to_string(),
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        i.txack_event(&HashMap::new(), &pl).await.unwrap();
+        let msg = stream.next().await.unwrap().unwrap();
+        assert_eq!(
+            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/event/txack",
+            msg.topic()
+        );
+        assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+
+        // log event
+        let pl = integration::LogEvent {
+            device_info: Some(integration::DeviceInfo {
+                application_id: Uuid::nil().to_string(),
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        i.log_event(&HashMap::new(), &pl).await.unwrap();
+        let msg = stream.next().await.unwrap().unwrap();
+        assert_eq!(
+            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/event/log",
+            msg.topic()
+        );
+        assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+
+        // status event
+        let pl = integration::StatusEvent {
+            device_info: Some(integration::DeviceInfo {
+                application_id: Uuid::nil().to_string(),
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        i.status_event(&HashMap::new(), &pl).await.unwrap();
+        let msg = stream.next().await.unwrap().unwrap();
+        assert_eq!(
+            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/state/status",
+            msg.topic()
+        );
+        assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+
+        // location event
+        let pl = integration::LocationEvent {
+            device_info: Some(integration::DeviceInfo {
+                application_id: Uuid::nil().to_string(),
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        i.location_event(&HashMap::new(), &pl).await.unwrap();
+        let msg = stream.next().await.unwrap().unwrap();
+        assert_eq!(
+            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/state/location",
+            msg.topic()
+        );
+        assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+
+        // integration event
+        let pl = integration::IntegrationEvent {
+            device_info: Some(integration::DeviceInfo {
+                application_id: Uuid::nil().to_string(),
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        i.integration_event(&HashMap::new(), &pl).await.unwrap();
+        let msg = stream.next().await.unwrap().unwrap();
+        assert_eq!(
+            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/event/integration",
+            msg.topic()
+        );
+        assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+    }
+}

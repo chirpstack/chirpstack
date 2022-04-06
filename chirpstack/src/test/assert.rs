@@ -1,0 +1,397 @@
+use std::future::Future;
+use std::io::Cursor;
+use std::pin::Pin;
+
+use prost::Message;
+use redis::streams::StreamReadReply;
+use tokio::sync::RwLock;
+use uuid::Uuid;
+
+use crate::gateway::backend::mock as gateway_mock;
+use crate::integration::mock;
+use crate::storage::{
+    device, device_queue, device_session, downlink_frame, get_redis_conn, redis_key,
+};
+use chirpstack_api::{gw, integration as integration_pb, internal, meta};
+use lrwn::EUI64;
+
+lazy_static! {
+    static ref LAST_DOWNLINK_ID: RwLock<Uuid> = RwLock::new(Uuid::nil());
+}
+
+pub type Validator = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;
+
+pub fn f_cnt_up(dev_eui: EUI64, f_cnt: u32) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(f_cnt, ds.f_cnt_up);
+        })
+    })
+}
+
+pub fn n_f_cnt_down(dev_eui: EUI64, f_cnt: u32) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(f_cnt, ds.n_f_cnt_down);
+        })
+    })
+}
+
+pub fn a_f_cnt_down(dev_eui: EUI64, f_cnt: u32) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(f_cnt, ds.a_f_cnt_down);
+        })
+    })
+}
+
+pub fn tx_power_index(dev_eui: EUI64, tx_power: u32) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(tx_power, ds.tx_power_index);
+        })
+    })
+}
+
+pub fn nb_trans(dev_eui: EUI64, nb_trans: u32) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(nb_trans, ds.nb_trans);
+        })
+    })
+}
+
+pub fn enabled_uplink_channel_indices(dev_eui: EUI64, channels: Vec<u32>) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        let channels = channels.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(channels, ds.enabled_uplink_channel_indices);
+        })
+    })
+}
+
+pub fn dr(dev_eui: EUI64, dr: u32) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(dr, ds.dr);
+        })
+    })
+}
+
+pub fn mac_command_error_count(dev_eui: EUI64, cid: lrwn::CID, count: u32) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(
+                count,
+                ds.mac_command_error_count
+                    .get(&(cid.byte() as u32))
+                    .cloned()
+                    .unwrap_or(0)
+            )
+        })
+    })
+}
+
+pub fn uplink_adr_history(dev_eui: EUI64, uh: Vec<internal::UplinkAdrHistory>) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        let uh = uh.clone();
+        Box::pin(async move {
+            let ds = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(uh, ds.uplink_adr_history);
+        })
+    })
+}
+
+pub fn integration_log(logs: Vec<String>) -> Validator {
+    Box::new(move || {
+        let logs = logs.clone();
+        Box::pin(async move {
+            let mock_logs = mock::get_log_events().await;
+            assert_eq!(logs.len(), mock_logs.len());
+
+            let mock_logs: Vec<String> = mock_logs.iter().map(|l| l.description.clone()).collect();
+            for (i, _) in mock_logs.iter().enumerate() {
+                assert_eq!(logs[i], mock_logs[i]);
+            }
+        })
+    })
+}
+
+pub fn no_uplink_event() -> Validator {
+    Box::new(move || {
+        Box::pin(async move {
+            let mock_events = mock::get_uplink_events().await;
+            assert_eq!(0, mock_events.len());
+        })
+    })
+}
+
+pub fn uplink_event(up: integration_pb::UplinkEvent) -> Validator {
+    Box::new(move || {
+        let up = up.clone();
+        Box::pin(async move {
+            let mut mock_events = mock::get_uplink_events().await;
+            assert_eq!(1, mock_events.len());
+
+            assert_ne!("", mock_events[0].deduplication_id);
+            assert_ne!(None, mock_events[0].time);
+
+            mock_events[0].deduplication_id = "".into();
+            mock_events[0].time = None;
+            assert_eq!(up, mock_events[0]);
+        })
+    })
+}
+
+pub fn ack_event(ack: integration_pb::AckEvent) -> Validator {
+    Box::new(move || {
+        let ack = ack.clone();
+        Box::pin(async move {
+            let mut mock_events = mock::get_ack_events().await;
+            assert_eq!(1, mock_events.len());
+
+            assert_ne!("", mock_events[0].deduplication_id);
+            assert_ne!(None, mock_events[0].time);
+
+            mock_events[0].deduplication_id = "".into();
+            mock_events[0].time = None;
+            assert_eq!(ack, mock_events[0]);
+        })
+    })
+}
+
+pub fn status_event(st: integration_pb::StatusEvent) -> Validator {
+    Box::new(move || {
+        let st = st.clone();
+        Box::pin(async move {
+            let mut mock_events = mock::get_status_events().await;
+            assert_eq!(1, mock_events.len());
+
+            assert_ne!("", mock_events[0].deduplication_id);
+            assert_ne!(None, mock_events[0].time);
+
+            mock_events[0].deduplication_id = "".into();
+            mock_events[0].time = None;
+            assert_eq!(st, mock_events[0]);
+        })
+    })
+}
+
+pub fn device_session(dev_eui: EUI64, ds: internal::DeviceSession) -> Validator {
+    Box::new(move || {
+        let ds = ds.clone();
+        Box::pin(async move {
+            let ds_get = device_session::get(&dev_eui).await.unwrap();
+            assert_eq!(ds, ds_get);
+        })
+    })
+}
+
+pub fn no_device_session(dev_eui: EUI64) -> Validator {
+    Box::new(move || {
+        Box::pin(async move {
+            let res = device_session::get(&dev_eui).await;
+            assert_eq!(true, res.is_err());
+        })
+    })
+}
+
+pub fn no_downlink_frame() -> Validator {
+    Box::new(|| {
+        Box::pin(async move {
+            let items = gateway_mock::get_downlink_frames().await;
+            assert_eq!(0, items.len());
+        })
+    })
+}
+
+pub fn downlink_frame(df: gw::DownlinkFrame) -> Validator {
+    Box::new(move || {
+        let df = df.clone();
+        Box::pin(async move {
+            let mut items = gateway_mock::get_downlink_frames().await;
+
+            assert_eq!(1, items.len());
+            assert_eq!(16, items[0].downlink_id.len());
+
+            let mut last_downlink_id = LAST_DOWNLINK_ID.write().await;
+            *last_downlink_id = Uuid::from_slice(&items[0].downlink_id).unwrap();
+
+            items[0].downlink_id = Vec::new();
+            assert_eq!(df, items[0]);
+        })
+    })
+}
+
+pub fn downlink_phy_payloads(phys: Vec<lrwn::PhyPayload>) -> Validator {
+    Box::new(move || {
+        let phys = phys.clone();
+        Box::pin(async move {
+            let items = gateway_mock::get_downlink_frames().await;
+
+            assert_eq!(1, items.len());
+            assert_eq!(16, items[0].downlink_id.len());
+
+            let mut last_downlink_id = LAST_DOWNLINK_ID.write().await;
+            *last_downlink_id = Uuid::from_slice(&items[0].downlink_id).unwrap();
+
+            assert_eq!(phys.len(), items[0].items.len());
+
+            for (i, phy) in phys.iter().enumerate() {
+                let phy_received =
+                    lrwn::PhyPayload::from_slice(&items[0].items[i].phy_payload).unwrap();
+                assert_eq!(phy, &phy_received);
+            }
+        })
+    })
+}
+
+pub fn downlink_phy_payloads_decoded_f_opts(phys: Vec<lrwn::PhyPayload>) -> Validator {
+    Box::new(move || {
+        let phys = phys.clone();
+        Box::pin(async move {
+            let items = gateway_mock::get_downlink_frames().await;
+
+            assert_eq!(1, items.len());
+            assert_eq!(16, items[0].downlink_id.len());
+
+            let mut last_downlink_id = LAST_DOWNLINK_ID.write().await;
+            *last_downlink_id = Uuid::from_slice(&items[0].downlink_id).unwrap();
+
+            assert_eq!(phys.len(), items[0].items.len());
+
+            for (i, phy) in phys.iter().enumerate() {
+                let mut phy_received =
+                    lrwn::PhyPayload::from_slice(&items[0].items[i].phy_payload).unwrap();
+                phy_received.decode_f_opts_to_mac_commands().unwrap();
+                assert_eq!(phy, &phy_received);
+            }
+        })
+    })
+}
+
+// You must use downlink_frame first, in order to set the LAST_DOWNLINK_ID.
+pub fn downlink_frame_saved(df: internal::DownlinkFrame) -> Validator {
+    Box::new(move || {
+        let df = df.clone();
+        Box::pin(async move {
+            let mut df_get = downlink_frame::get(&LAST_DOWNLINK_ID.read().await.clone())
+                .await
+                .unwrap();
+
+            df_get.downlink_id = Vec::new();
+            if let Some(df) = &mut df_get.downlink_frame {
+                df.downlink_id = Vec::new();
+            }
+
+            assert_eq!(df, df_get);
+        })
+    })
+}
+
+pub fn device_queue_items(dev_eui: EUI64, items: Vec<device_queue::DeviceQueueItem>) -> Validator {
+    Box::new(move || {
+        let items = items.clone();
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let items_get = device_queue::get_for_dev_eui(&dev_eui).await.unwrap();
+
+            let items: Vec<device_queue::DeviceQueueItem> = items
+                .iter()
+                .map(|item| device_queue::DeviceQueueItem {
+                    f_port: item.f_port,
+                    confirmed: item.confirmed,
+                    data: item.data.clone(),
+                    is_pending: item.is_pending,
+                    ..Default::default()
+                })
+                .collect();
+
+            let items_get: Vec<device_queue::DeviceQueueItem> = items_get
+                .iter()
+                .map(|item| device_queue::DeviceQueueItem {
+                    f_port: item.f_port,
+                    confirmed: item.confirmed,
+                    data: item.data.clone(),
+                    is_pending: item.is_pending,
+                    ..Default::default()
+                })
+                .collect();
+
+            assert_eq!(items, items_get);
+        })
+    })
+}
+
+pub fn enabled_class(dev_eui: EUI64, c: String) -> Validator {
+    Box::new(move || {
+        let c = c.clone();
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let dev = device::get(&dev_eui).await.unwrap();
+            assert_eq!(c, dev.enabled_class);
+        })
+    })
+}
+
+pub fn uplink_meta_log(um: meta::UplinkMeta) -> Validator {
+    Box::new(move || {
+        let um = um.clone();
+        Box::pin(async move {
+            let mut c = get_redis_conn().unwrap();
+            let key = redis_key("stream:meta".to_string());
+            let srr: StreamReadReply = redis::cmd("XREAD")
+                .arg("COUNT")
+                .arg(1 as usize)
+                .arg("STREAMS")
+                .arg(&key)
+                .arg("0")
+                .query(&mut *c)
+                .unwrap();
+
+            for stream_key in &srr.keys {
+                for stream_id in &stream_key.ids {
+                    for (k, v) in &stream_id.map {
+                        assert_eq!("up", k);
+                        if let redis::Value::Data(b) = v {
+                            let pl = meta::UplinkMeta::decode(&mut Cursor::new(b)).unwrap();
+                            assert_eq!(um, pl);
+                        }
+
+                        return;
+                    }
+                }
+            }
+
+            panic!("No UplinkMeta");
+        })
+    })
+}
+
+pub fn downlink_device_lock(dev_eui: EUI64) -> Validator {
+    Box::new(move || {
+        let dev_eui = dev_eui.clone();
+        Box::pin(async move {
+            let mut c = get_redis_conn().unwrap();
+            let key = redis_key(format!("device:{{{}}}:lock", dev_eui));
+            let _: String = redis::cmd("GET").arg(key).query(&mut *c).unwrap();
+        })
+    })
+}

@@ -1,0 +1,414 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4";
+option java_package = "io.chirpstack.api";
+option java_multiple_files = true;
+option java_outer_classname = "DeviceProto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
+
+// DeviceService is the service providing API methods for managing devices.
+service DeviceService {
+    // Create the given device.
+    rpc Create(CreateDeviceRequest) returns (google.protobuf.Empty) {}
+
+    // Get returns the device for the given DevEUI.
+    rpc Get(GetDeviceRequest) returns (GetDeviceResponse) {}
+
+    // Update the given device.
+    rpc Update(UpdateDeviceRequest) returns (google.protobuf.Empty) {}
+
+    // Delete the device with the given DevEUI.
+    rpc Delete(DeleteDeviceRequest) returns (google.protobuf.Empty) {}
+
+    // Get the list of devices.
+    rpc List(ListDevicesRequest) returns (ListDevicesResponse) {}
+
+    // Create the given device-keys.
+    rpc CreateKeys(CreateDeviceKeysRequest) returns (google.protobuf.Empty) {}
+
+    // Get the device-keys for the given DevEUI.
+    rpc GetKeys(GetDeviceKeysRequest) returns (GetDeviceKeysResponse) {}
+
+    // Update the given device-keys.
+    rpc UpdateKeys(UpdateDeviceKeysRequest) returns (google.protobuf.Empty) {}
+
+    // Delete the device-keys for the given DevEUI.
+    rpc DeleteKeys(DeleteDeviceKeysRequest) returns (google.protobuf.Empty) {}
+
+    // FlushDevNonces flushes the OTAA device nonces.
+    rpc FlushDevNonces(FlushDevNoncesRequest) returns (google.protobuf.Empty) {}
+
+    // Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+    rpc Activate(ActivateDeviceRequest) returns (google.protobuf.Empty) {}
+
+    // Deactivate de-activates the device.
+    rpc Deactivate(DeactivateDeviceRequest) returns (google.protobuf.Empty) {}
+
+    // GetActivation returns the current activation details of the device (OTAA or ABP).
+    rpc GetActivation(GetDeviceActivationRequest) returns (GetDeviceActivationResponse) {}
+
+    // GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+    rpc GetRandomDevAddr(GetRandomDevAddrRequest) returns (GetRandomDevAddrResponse) {}
+
+    // GetStats returns the device stats.
+    rpc GetStats(GetDeviceStatsRequest) returns (GetDeviceStatsResponse) {}
+
+    // Enqueue adds the given item to the downlink queue.
+    rpc Enqueue(EnqueueDeviceQueueItemRequest) returns (EnqueueDeviceQueueItemResponse) {}
+
+    // FlushQueue flushes the downlink device-queue.
+    rpc FlushQueue(FlushDeviceQueueRequest) returns (google.protobuf.Empty) {}
+
+    // GetQueue returns the downlink device-queue.
+    rpc GetQueue(GetDeviceQueueItemsRequest) returns (GetDeviceQueueItemsResponse) {}
+}
+
+message Device {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+
+    // Name.
+    string name = 2;
+
+    // Description.
+    string description = 3;
+
+    // Application ID (UUID).
+    string application_id = 4;
+    
+    // Device-profile ID (UUID).
+    string device_profile_id = 5;
+
+    // Skip frame-counter checks (this is insecure, but could be helpful for debugging).
+    bool skip_fcnt_check = 6;
+
+    // Device is disabled.
+    bool is_disabled = 7;
+
+    // Variables (user defined).
+    // These variables can be used together with integrations to store tokens /
+    // secrets that must be configured per device. These variables are not
+    // exposed in the event payloads.
+    map<string, string> variables = 8;
+
+    // Tags (user defined).
+    // These tags are exposed in the event payloads or to integration. Tags are
+    // intended for aggregation and filtering.
+    map<string, string> tags = 9;
+}
+
+message DeviceStatus {
+    // The device margin status
+    // -32..32: The demodulation SNR ration in dB
+    int32 margin = 1;
+
+    // Device is connected to an external power source.
+    bool external_power_source = 2;
+
+    // Device battery level as a percentage.
+    // -1 when the battery level is not available.
+    float battery_level = 3;
+}
+
+message DeviceListItem {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+
+	// Created at timestamp.
+	google.protobuf.Timestamp created_at = 2;
+
+	// Last update timestamp.
+	google.protobuf.Timestamp updated_at = 3;
+
+    // Last seen at timestamp.
+    google.protobuf.Timestamp last_seen_at = 4;
+
+    // Name.
+    string name = 5;
+
+    // Description.
+    string description = 6;
+
+    // Device-profile ID (UUID).
+    string device_profile_id = 7;
+
+    // Device-profile name.
+    string device_profile_name = 8;
+
+    // Device status.
+    DeviceStatus device_status = 9;
+}
+
+message DeviceKeys {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+
+    // Network root key (128 bit).
+    // Note: For LoRaWAN 1.0.x, use this field for the LoRaWAN 1.0.x 'AppKey`!
+    string nwk_key = 2;
+
+    // Application root key (128 bit).
+    // Note: This field only needs to be set for LoRaWAN 1.1.x devices!
+    string app_key = 3;
+}
+
+message CreateDeviceRequest {
+    // Device object.
+    Device device = 1;
+}
+
+message GetDeviceRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+}
+
+message GetDeviceResponse {
+    // Device object.
+    Device device = 1;
+
+	// Created at timestamp.
+	google.protobuf.Timestamp created_at = 2;
+
+	// Last update timestamp.
+	google.protobuf.Timestamp updated_at = 3;
+
+    // Last seen at timestamp.
+    google.protobuf.Timestamp last_seen_at = 4;
+
+    // Device status.
+    DeviceStatus device_status = 5;
+}
+
+message UpdateDeviceRequest {
+    // Device object.
+    Device device = 1;
+}
+
+message DeleteDeviceRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+}
+
+message ListDevicesRequest {
+    // Max number of devices to return in the result-set.
+    uint32 limit = 1;
+
+    // Offset in the result-set (for pagination).
+    uint32 offset = 2;
+
+    // If set, the given string will be used to search on name (optional).
+    string search = 3;
+
+    // Application ID (UUID) to filter devices on.
+    string application_id = 4;
+
+    // Multicst-group ID (UUID) to filter devices on.
+    string multicast_group_id = 5;
+}
+
+message ListDevicesResponse {
+    // Total number of devices.
+    uint32 total_count = 1;
+
+    // Result-set.
+    repeated DeviceListItem result = 2;
+}
+
+message CreateDeviceKeysRequest {
+    // Device-keys object.
+    DeviceKeys device_keys = 1;
+}
+
+message GetDeviceKeysRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+}
+
+message GetDeviceKeysResponse {
+    // Device-keys object.
+    DeviceKeys device_keys = 1;
+
+	// Created at timestamp.
+	google.protobuf.Timestamp created_at = 2;
+
+	// Last update timestamp.
+	google.protobuf.Timestamp updated_at = 3;
+}
+
+message UpdateDeviceKeysRequest {
+    // Device-keys object.
+    DeviceKeys device_keys = 1;
+}
+
+message DeleteDeviceKeysRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+}
+
+message DeviceActivation {
+    // Device EUI (EUI64).
+    string dev_eui = 1;
+
+    // Device address (HEX encoded).
+    string dev_addr = 2;
+
+    // Application session key (HEX encoded).
+    string app_s_key = 3;
+
+    // Network session encryption key (HEX encoded).
+    string nwk_s_enc_key = 4;
+
+    // Serving network session integrity key (HEX encoded).
+    string s_nwk_s_int_key = 8;
+
+    // Forwarding network session integrity key (HEX encoded).
+    string f_nwk_s_int_key = 9;
+
+    // Uplink frame-counter.
+    uint32 f_cnt_up = 5;
+
+    // Downlink network frame-counter.
+    uint32 n_f_cnt_down = 6;
+
+    // Downlink application frame-counter.
+    uint32 a_f_cnt_down = 10;
+}
+
+message ActivateDeviceRequest {
+    // Device activation object.
+    DeviceActivation device_activation = 1;
+}
+
+message DeactivateDeviceRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+}
+
+message GetDeviceActivationRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+}
+
+message GetDeviceActivationResponse {
+    // Device activation object.
+    DeviceActivation device_activation = 1;
+}
+
+message GetRandomDevAddrRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+}
+
+message GetRandomDevAddrResponse {
+    // DevAddr.
+    string dev_addr = 1;
+}
+
+message GetDeviceStatsRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+
+    // Interval start timestamp.
+    google.protobuf.Timestamp start = 2;
+
+    // Interval end timestamp.
+    google.protobuf.Timestamp end = 3;
+}
+
+message GetDeviceStatsResponse {
+    repeated DeviceStats result = 1;
+}
+
+message DeviceStats {
+	// Timestamp of the (aggregated) measurement.
+	google.protobuf.Timestamp time = 1;
+
+    // Packets received from the device.
+    uint32 rx_packets = 2;
+
+    // Average RSSI (as reported by the gateway(s)).
+    float gw_rssi = 3;
+
+    // Average SNR (as reported by the gateway(s)).
+    float gw_snr = 4;
+
+    // Packets received by frequency.
+    map<uint32, uint32> rx_packets_per_frequency = 5;
+
+    // Packets received by DR.
+    map<uint32, uint32> rx_packets_per_dr = 6;
+
+    // Error count.
+    map<string, uint32> errors = 7;
+}
+
+message DeviceQueueItem {
+    // ID (UUID).
+    // This is automatically generated on enqueue.
+    string id = 1;
+
+    // Device EUI (EUI64).
+    string dev_eui = 2;
+
+    // Confirmed.
+    bool confirmed = 3;
+
+    // FPort (must be > 0).
+    uint32 f_port = 4;
+
+    // Data.
+    // Or use the json_object field when a codec has been configured.
+    bytes data = 5;
+
+    // Only use this when a codec has been configured that can encode this
+    // object to bytes.
+    google.protobuf.Struct object = 6;
+
+    // Is pending.
+    // This is set to true when the downlink is pending.
+    bool is_pending = 7;
+
+    // Downlink frame-counter.
+    // This is set when the payload has been sent as downlink.
+    uint32 f_cnt_down = 8;
+}
+
+message EnqueueDeviceQueueItemRequest {
+    DeviceQueueItem item = 1;
+}
+
+message EnqueueDeviceQueueItemResponse {
+    // ID (UUID).
+    string id = 1;
+}
+
+message FlushDeviceQueueRequest {
+    // Device EUI (EUI64).
+    string dev_eui = 1;
+}
+
+message GetDeviceQueueItemsRequest {
+    // Device EUI (EUI64).
+    string dev_eui = 1;
+
+    // Return only the count, not the result-set.
+    bool count_only = 2;
+}
+
+message GetDeviceQueueItemsResponse {
+    // Total number of queue items.
+    uint32 total_count = 1;
+
+    // Result-set.
+    repeated DeviceQueueItem result = 2;
+}
+
+message FlushDevNoncesRequest {
+    // Device EUI (EUI64).
+    string dev_eui = 1;
+}

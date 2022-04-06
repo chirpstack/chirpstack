@@ -1,0 +1,29 @@
+[package]
+name = "chirpstack_api"
+description = "ChirpStack Protobuf / gRPC API definitions."
+version = "4.0.0"
+authors = ["Orne Brocaar <info@brocaar.com>"]
+license = "MIT"
+homepage = "https://www.chirpstack.io"
+repository = "https://github.com/chirpstack/chirpstack"
+edition = "2021"
+
+[features]
+default = ["api", "rustfmt"]
+api = ["tonic/transport", "tonic-build/transport", "tokio"]
+internal = []
+rustfmt = ["tonic-build/rustfmt"]
+
+[dependencies]
+prost = "0.9"
+prost-types = "0.9"
+pbjson = "0.2.1"
+pbjson-types = "0.2.1"
+
+tonic = { version = "0.6", features = ["codegen", "prost"], default-features = false }
+tokio = { version = "1.6", features = ["macros"], optional = true }
+serde = { version = "1.0" }
+
+[build-dependencies]
+tonic-build = { version = "0.6", features = ["prost"], default-features = false }
+pbjson-build = "0.2"

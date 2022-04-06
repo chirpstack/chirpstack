@@ -1,0 +1,205 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4";
+option java_package = "io.chirpstack.api";
+option java_multiple_files = true;
+option java_outer_classname = "GatewayProto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "chirpstack-api/common/common.proto";
+
+// GatewayService is the service providing API methods for managing gateways.
+service GatewayService {
+   // Create creates the given gateway.
+   rpc Create(CreateGatewayRequest) returns (google.protobuf.Empty) {}
+
+   // Get returns the gateway for the given Gateway ID.
+   rpc Get(GetGatewayRequest) returns (GetGatewayResponse) {}
+
+   // Update updates the given gateway.
+   rpc Update(UpdateGatewayRequest) returns (google.protobuf.Empty) {}
+
+   // Delete deletes the gateway matching the given Gateway ID.
+   rpc Delete(DeleteGatewayRequest) returns (google.protobuf.Empty) {}
+
+   // Get the list of gateways.
+   rpc List(ListGatewaysRequest) returns (ListGatewaysResponse) {}
+
+   // Generate client-certificate for the gateway.
+   rpc GenerateClientCertificate(GenerateGatewayClientCertificateRequest) returns (GenerateGatewayClientCertificateResponse) {}
+
+   // GetStats returns the gateway stats.
+   rpc GetStats(GetGatewayStatsRequest) returns (GetGatewayStatsResponse) {}
+}
+
+message Gateway {
+    // Gateway ID (EUI64).
+    string gateway_id = 1;
+
+    // Name.
+    string name = 2;
+
+    // Description.
+    string description = 3;
+
+    // Gateway location.
+    common.Location location = 4;
+
+    // Tenant ID (UUID).
+    string tenant_id = 5;
+
+    // Tags.
+    map<string, string> tags = 6;
+
+    // Properties (provided by the gateway).
+    map<string, string> properties = 7;
+}
+
+message GatewayListItem {
+    // Tenant ID.
+    string tenant_id = 1;
+
+    // Gateway ID (EUI64).
+    string gateway_id = 2;
+
+    // Name.
+    string name = 3;
+
+    // Description.
+    string description = 4;
+
+    // Location.
+    common.Location location = 5;
+
+    // Gateway properties.
+    map<string, string> properties = 6;
+
+	// Created at timestamp.
+	google.protobuf.Timestamp created_at = 7;
+
+	// Last update timestamp.
+	google.protobuf.Timestamp updated_at = 8;
+
+    // Last seen at timestamp.
+    google.protobuf.Timestamp last_seen_at = 9;
+}
+
+message CreateGatewayRequest {
+    // Gateway object.
+    Gateway gateway = 1;
+}
+
+message GetGatewayRequest {
+    // Gateway ID (EUI64).
+    string gateway_id = 1;
+}
+
+message GetGatewayResponse {
+    // Gateway object.
+    Gateway gateway = 1;
+
+	// Created at timestamp.
+	google.protobuf.Timestamp created_at = 2;
+
+	// Last update timestamp.
+	google.protobuf.Timestamp updated_at = 3;
+
+    // Last seen at timestamp.
+    google.protobuf.Timestamp last_seen_at = 4;
+}
+
+message UpdateGatewayRequest {
+    // Gateway object.
+    Gateway gateway = 1;
+}
+
+message DeleteGatewayRequest {
+    // Gateway ID (EUI64).
+    string gateway_id = 1;
+}
+
+message ListGatewaysRequest {
+    // Max number of gateways to return in the result-set.
+    uint32 limit = 1;
+
+    // Offset in the result-set (for pagination).
+    uint32 offset = 2;
+
+    // If set, the given string will be used to search on name (optional).
+    string search = 3;
+
+    // Tenant ID (UUID) to filter gateways on.
+    // To list all gateways as a global admin user, this field can be left blank.
+    string tenant_id = 4;
+}
+
+message ListGatewaysResponse {
+    // Total number of gateways.
+    uint32 total_count = 1;
+
+    // Result-set.
+    repeated GatewayListItem result = 2;
+}
+
+message GenerateGatewayClientCertificateRequest {
+    // Gateway ID (EUI64).
+    string gateway_id = 1;
+}
+
+message GenerateGatewayClientCertificateResponse {
+    // TLS certificate.
+    string tls_cert = 1;
+
+    // TLS key.
+    string tls_key = 2;
+
+    // CA certificate.
+    string ca_cert = 3;
+
+    // Expires at defines the expiration date of the certificate.
+    google.protobuf.Timestamp expires_at = 4;
+}
+
+message GetGatewayStatsRequest {
+    // Gateway ID (EUI64).
+    string gateway_id = 1;
+
+    // Interval start timestamp.
+    google.protobuf.Timestamp start = 2;
+
+    // Interval end timestamp.
+    google.protobuf.Timestamp end = 3;
+}
+
+message GetGatewayStatsResponse {
+    repeated GatewayStats result = 1;
+}
+
+message GatewayStats {
+	// Timestamp of the (aggregated) measurement.
+	google.protobuf.Timestamp time = 1;
+
+    // Packets received.
+    uint32 rx_packets = 2;
+
+    // Packets emitted.
+    uint32 tx_packets = 3;
+
+    // Tx packets per frequency.
+    map<uint32, uint32> tx_packets_per_frequency = 4;
+
+    // Rx packets per frequency.
+    map<uint32, uint32> rx_packets_per_frequency = 5;
+
+    // Tx packets per DR.
+    map<uint32, uint32> tx_packets_per_dr = 6;
+
+    // Rx packets per DR.
+    map<uint32, uint32> rx_packets_per_dr = 7;
+
+    // Tx packets per status.
+    map<string, uint32> tx_packets_per_status = 8;
+}

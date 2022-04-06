@@ -1,0 +1,235 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4";
+option java_package = "io.chirpstack.api";
+option java_multiple_files = true;
+option java_outer_classname = "DeviceProfileProto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "chirpstack-api/common/common.proto";
+
+enum CodecRuntime {
+    // None.
+    NONE = 0;
+
+    // Cayenne LPP.
+    CAYENNE_LPP = 1;
+
+    // JavaScript.
+    JS = 2;
+}
+
+// DeviceProfileService is the service providing API methods for managing device-profiles.
+service DeviceProfileService {
+    // Create the given device-profile.
+    rpc Create(CreateDeviceProfileRequest) returns (CreateDeviceProfileResponse) {}
+
+    // Get the device-profile for the given ID.
+    rpc Get(GetDeviceProfileRequest) returns (GetDeviceProfileResponse) {}
+
+    // Update the given device-profile.
+    rpc Update(UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {}
+
+    // Delete the device-profile with the given ID.
+    rpc Delete(DeleteDeviceProfileRequest) returns (google.protobuf.Empty) {}
+    
+    // List the available device-profiles.
+    rpc List(ListDeviceProfilesRequest) returns (ListDeviceProfilesResponse) {}
+
+    // List available ADR algorithms.
+    rpc ListAdrAlgorithms(google.protobuf.Empty) returns (ListDeviceProfileAdrAlgorithmsResponse) {}
+}
+
+message DeviceProfile {
+    // Device-profile ID (UUID).
+    // Note: on create this will be automatically generated.
+    string id = 1;
+
+    // Tenant ID (UUID).
+    string tenant_id = 2;
+
+    // Name.
+    string name = 3;
+
+    // Region.
+    common.Region region = 4; 
+
+    // LoRaWAN mac-version.
+    common.MacVersion mac_version = 5;
+
+    // Regional parameters revision.
+    common.RegParamsRevision reg_params_revision = 6;
+
+    // ADR algorithm ID.
+    string adr_algorithm_id = 7;
+
+    // Payload codec runtime.
+    CodecRuntime payload_codec_runtime = 8;
+
+    // Payload codec encoder config.
+    string payload_encoder_config = 9;
+
+    // Payload codec decoder config.
+    string payload_decoder_config = 10;
+
+    // Uplink interval (seconds).
+    // This defines the expected uplink interval which the device uses for
+    // communication. When the uplink interval has expired and no uplink has
+    // been received, the device is considered inactive.
+    uint32 uplink_interval = 11;
+
+    // Device-status request interval (times / day).
+    // This defines the times per day that ChirpStack will request the device-status
+    // from the device.
+    uint32 device_status_req_interval = 12;
+
+    // Supports OTAA.
+    bool supports_otaa = 13;
+
+    // Supports Class B.
+    bool supports_class_b = 14;
+
+    // Supports Class-C.
+    bool supports_class_c = 15;
+
+    // Class-B timeout (seconds).
+    // This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested).
+    uint32 class_b_timeout = 16;
+
+    // Class-B ping-slot periodicity.
+    uint32 class_b_ping_slot_period = 17;
+
+    // Class-B ping-slot DR.
+    uint32 class_b_ping_slot_dr = 18;
+
+    // Class-B ping-slot freq (Hz).
+    uint32 class_b_ping_slot_freq = 19;
+
+    // Class-C timeout (seconds).
+    // This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested).
+    uint32 class_c_timeout = 20;
+
+    // RX1 delay (for ABP).
+    uint32 abp_rx1_delay = 21;
+
+    // RX1 DR offset (for ABP).
+    uint32 abp_rx1_dr_offset = 22;
+
+    // RX2 DR (for ABP).
+    uint32 abp_rx2_dr = 23;
+
+    // RX2 frequency (for ABP, Hz).
+    uint32 abp_rx2_freq = 24;
+
+    // User defined tags.
+    map<string, string> tags = 25;
+}
+
+message DeviceProfileListItem {
+    // Device-profile ID (UUID).
+    string id = 1;
+
+	// Created at timestamp.
+	google.protobuf.Timestamp created_at = 2;
+
+	// Last update timestamp.
+	google.protobuf.Timestamp updated_at = 3;
+
+    // Name.
+    string name = 4;
+
+    // Region.
+    common.Region region = 5;
+
+    // LoRaWAN mac-version.
+    common.MacVersion mac_version = 6;
+
+    // Regional parameters revision.
+    common.RegParamsRevision reg_params_revision = 7;
+
+    // Supports OTAA.
+    bool supports_otaa = 8;
+
+    // Supports Class-B.
+    bool supports_class_b = 9;
+
+    // Supports Class-C.
+    bool supports_class_c = 10;
+}
+
+message CreateDeviceProfileRequest {
+    // Object to create.
+    DeviceProfile device_profile = 1;
+}
+
+message CreateDeviceProfileResponse {
+    // ID (UUID).
+    string id = 1;
+}
+
+message GetDeviceProfileRequest {
+    // ID (UUID).
+    string id = 1;
+}
+
+message GetDeviceProfileResponse {
+    // Device-profile object.
+    DeviceProfile device_profile = 1;
+
+	// Created at timestamp.
+	google.protobuf.Timestamp created_at = 2;
+
+	// Last update timestamp.
+	google.protobuf.Timestamp updated_at = 3;
+}
+
+message UpdateDeviceProfileRequest {
+    // Device-profile object.
+    DeviceProfile device_profile = 1;
+}
+
+message DeleteDeviceProfileRequest {
+    // ID (UUID).
+    string id = 1;
+}
+
+message ListDeviceProfilesRequest {
+    // Max number of device-profiles to return in the result-set.
+    uint32 limit = 1;
+
+    // Offset in the result-set (for pagination).
+    uint32 offset = 2;
+
+    // If set, the given string will be used to search on name.
+    string search = 3;
+
+    // Tenant ID to list the device-profiles for.
+    string tenant_id = 4;
+}
+
+message ListDeviceProfilesResponse {
+    // Total number of device-profiles.
+    uint32 total_count = 1;
+
+    // Result-set.
+    repeated DeviceProfileListItem result = 2;
+}
+
+message ListDeviceProfileAdrAlgorithmsResponse {
+    // Total number of algorithms.
+    uint32 total_count = 1;
+
+    // Result-set.
+    repeated AdrAlgorithmListItem result = 2;
+}
+
+message AdrAlgorithmListItem {
+    // Algorithm ID.
+    string id = 1;
+
+    // Algorithm name.
+    string name = 2;
+}

@@ -1,0 +1,67 @@
+{
+  "name": "chirpstack-ui",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@ant-design/colors": "^6.0.0",
+    "@chirpstack/chirpstack-api-grpc-web": "file:../api/grpc-web",
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/react-fontawesome": "^0.1.16",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/jest": "^26.0.15",
+    "@types/leaflet": "^1.7.5",
+    "@types/leaflet.awesome-markers": "^2.0.25",
+    "@types/node": "^12.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/react-text-mask": "^5.4.9",
+    "@types/uuid": "^8.3.1",
+    "antd": "^4.15.3",
+    "antd-mask-input": "^0.1.15",
+    "chart.js": "^3.6.0",
+    "chartjs-adapter-moment": "^1.0.0",
+    "chartjs-chart-matrix": "^1.1.1",
+    "codemirror": "^5.65.2",
+    "google-protobuf": "^3.15.8",
+    "grpc-web": "^1.2.1",
+    "leaflet": "^1.7.1",
+    "leaflet.awesome-markers": "^2.0.5",
+    "react": "^17.0.2",
+    "react-chartjs-2": "^4.0.0",
+    "react-codemirror2": "^7.2.1",
+    "react-dom": "^17.0.2",
+    "react-json-tree": "^0.15.1",
+    "react-leaflet": "^3.2.1",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.1.2",
+    "uuid": "^8.3.2",
+    "web-vitals": "^1.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "ignorePatterns": [
+      "**/*_pb.js"
+    ]
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ],
+  "proxy": "http://127.0.0.1:8080/"
+}

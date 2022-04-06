@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Create the ChirpStack user
+id chirpstack &>/dev/null
+if [[ $? -ne 0 ]]; then
+	useradd --system -U -M chirpstack -s /bin/false -d /etc/chirpstack
+fi
+
+#DEBHELPER#

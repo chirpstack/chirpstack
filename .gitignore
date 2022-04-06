@@ -1,0 +1,19 @@
+# hidden files
+.*
+
+# Log files
+*.log
+
+# Rust target directory
+**/target
+
+# Certificates
+/chirpstack/configuration/certs
+/chirpstack/configuration/private_*.toml
+
+# UI
+/ui/node_modules
+/ui/build
+
+# API
+/api/js/node_modules

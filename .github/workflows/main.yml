@@ -1,0 +1,35 @@
+name: CI
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'v*'
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+
+      -
+        name: Cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            .cargo/registry/index/
+            .cargo/registry/cache/
+            .cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      -
+        name: Build UI
+        run: make build-ui
+
+      -
+        name: Run tests
+        run: make test

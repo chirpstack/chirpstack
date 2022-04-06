@@ -1,0 +1,278 @@
+syntax = "proto3";
+
+package integration;
+
+option go_package = "github.com/brocaar/chirpstack/api/go/v4/integration";
+option java_package = "io.chirpstack.api.as.integration";
+option java_multiple_files = true;
+option java_outer_classname = "IntegrationProto";
+
+import "chirpstack-api/common/common.proto";
+import "chirpstack-api/gw/gw.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+enum LogLevel {
+    // Info.
+    INFO = 0;
+
+    // Warning.
+    WARNING = 1;
+
+    // Error.
+    ERROR = 2;
+}
+
+enum LogCode {
+    // Unknown type.
+    UNKNOWN = 0;
+
+    // Error related to the downlink payload size.
+    // Usually seen when the payload exceeded the maximum allowed payload size.
+    DOWNLINK_PAYLOAD_SIZE = 1;
+
+    // Uplink codec error.
+    UPLINK_CODEC = 2;
+
+    // Downlink codec error.
+    DOWNLINK_CODEC = 3;
+
+    // OTAA error.
+    OTAA = 4;
+
+    // Uplink frame-counter was reset.
+    UPLINK_F_CNT_RESET = 5;
+
+    // Uplink MIC error.
+    UPLINK_MIC = 6;
+
+    // Uplink frame-counter retransmission.
+    UPLINK_F_CNT_RETRANSMISSION = 7;
+
+    // Downlink gateway error.
+    DOWNLINK_GATEWAY = 8;
+}
+
+// Device information.
+message DeviceInfo {
+    // Tenant ID (UUID).
+    string tenant_id = 1;
+
+    // Tenant name.
+    string tenant_name = 2;
+
+    // Application ID (UUID).
+    string application_id = 3;
+
+    // Application name.
+    string application_name = 4;
+
+    // Device-profile ID (UUID).
+    string device_profile_id = 5;
+
+    // Device-profile name.
+    string device_profile_name = 6;
+
+    // Device name.
+    string device_name = 7;
+
+    // Device EUI.
+    string dev_eui = 8;
+
+    // Device-profile and device tags.
+    map<string, string> tags = 9;
+}
+
+// UplinkEvent is the message sent when an uplink payload has been received.
+message UplinkEvent {
+    // Deduplication ID (UUID).
+    string deduplication_id = 1;
+
+    // Timestamp.
+    google.protobuf.Timestamp time = 2;
+
+    // Device information.
+    DeviceInfo device_info = 3;
+
+    // Device address.
+    string dev_addr = 4;
+
+    // Device has ADR bit set.
+    bool adr = 5;
+
+    // Data-rate.
+    uint32 dr = 6;
+
+    // Frame counter.
+    uint32 f_cnt_up = 7;
+
+    // Frame port.
+    uint32 f_port = 8;
+
+    // Uplink was of type confirmed.
+    bool confirmed = 9;
+
+    // FRMPayload data.
+    bytes data = 10;
+
+    // Note that this is only set when a codec is configured in the Device Profile.
+    google.protobuf.Struct object = 11;
+
+    // Receiving gateway RX info.
+    repeated gw.UplinkRXInfo rx_info = 12;
+
+    // TX info.
+    gw.UplinkTXInfo tx_info = 13;
+}
+
+// JoinEvent is the message sent when a device joined the network.
+// Note: this event is sent at the first uplink after OTAA.
+message JoinEvent {
+    // Deduplication ID (UUID).
+    string deduplication_id = 1;
+
+    // Timestamp.
+    google.protobuf.Timestamp time = 2;
+
+    // Device info.
+    DeviceInfo device_info = 3;
+
+    // Device address.
+    string dev_addr = 4;
+}
+
+// AckEvent is the message sent when a confirmation on a confirmed downlink
+// has been received -or- when the downlink timed out.
+message AckEvent {
+    // Deduplication ID (UUID).
+    string deduplication_id = 1;
+
+    // Timestamp.
+    google.protobuf.Timestamp time = 2;
+
+    // Device info.
+    DeviceInfo device_info = 3;
+
+    // Downlink queue item ID (UUID).
+    string queue_item_id = 4;
+
+    // Frame was acknowledged.
+    bool acknowledged = 5;
+
+    // Downlink frame counter to which the acknowledgement relates.
+    uint32 f_cnt_down = 6;
+}
+
+// TxAckEvent is the message sent when a downlink was acknowledged by the gateway
+// for transmission. As a downlink can be scheduled in the future, this event
+// does not confirm that the message has already been transmitted.
+message TxAckEvent {
+    // Downlink ID (UUID).
+    string downlink_id = 1;
+
+    // Timestamp.
+    google.protobuf.Timestamp time = 2;
+
+    // Device info.
+    DeviceInfo device_info = 3;
+
+    // Downlink queue item ID (UUID).
+    string queue_item_id = 4;
+
+    // Downlink frame-counter.
+    uint32 f_cnt_down = 5;
+
+    // Gateway ID.
+    string gateway_id = 6;
+
+    // TX info.
+    gw.DownlinkTXInfo tx_info = 7;
+}
+
+// LogEvent is the message sent when a device-related log was sent.
+message LogEvent {
+    // Deduplication ID (UUID).
+    string deduplication_id = 1;
+
+    // Timestamp.
+    google.protobuf.Timestamp time = 2;
+
+    // Device info.
+    DeviceInfo device_info = 3;
+
+    // Log level.
+    LogLevel level = 4;
+
+    // Log code.
+    LogCode code = 5;
+
+    // Description message.
+    string description = 6;
+
+    // Context map.
+    map<string, string> context = 7;
+}
+
+// StatusEvent is the message sent when a device-status mac-command was sent
+// by the device.
+message StatusEvent {
+    // Deduplication ID (UUID).
+    string deduplication_id = 1;
+
+    // Timestamp.
+    google.protobuf.Timestamp time = 2;
+
+    // Device info.
+    DeviceInfo device_info = 3;
+
+    // The demodulation signal-to-noise ratio in dB for the last successfully
+    // received device-status request by the Network Server.
+    int32 margin = 5;
+
+    // Device is connected to an external power source.
+    bool external_power_source = 6;
+
+    // Battery level is not available.
+    bool battery_level_unavailable = 7;
+
+    // Battery level.
+    float battery_level = 8;
+}
+
+// LocationEvent is the message sent when a geolocation resolve was returned.
+message LocationEvent {
+    // Deduplication ID (UUID).
+    string deduplication_id = 1;
+
+    // Timestamp.
+    google.protobuf.Timestamp time = 2;
+
+    // Device info.
+    DeviceInfo device_info = 3;
+
+    // Location.
+    common.Location location = 4;
+}
+
+// IntegrationEvent is the message that can be sent by an integration.
+// It allows for sending events which are provided by an external integration
+// which are "not native" to ChirpStack.
+message IntegrationEvent {
+    // Deduplication ID (UUID).
+    string deduplication_id = 1;
+
+    // Timestamp.
+    google.protobuf.Timestamp time = 2;
+
+    // Device info.
+    DeviceInfo device_info = 3;
+
+    // Integration name.
+    string integration_name = 4;
+
+    // Event type.
+    string event_type = 5;
+
+    // Struct containing the event object.
+    google.protobuf.Struct object = 6;
+}

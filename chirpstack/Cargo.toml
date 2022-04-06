@@ -1,0 +1,115 @@
+[package]
+name = "chirpstack"
+description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
+version = "4.0.0-test.1"
+authors = ["Orne Brocaar <info@brocaar.com>"]
+edition = "2021"
+publish = false
+license = "MIT"
+
+[dependencies]
+# CLI interface
+clap = "2.33"
+
+# Configuration
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0"
+humantime-serde = "1.0"
+toml = "0.5"
+handlebars = "4.1"
+
+# Database
+validator = "0.13"
+diesel = { version = "1.4", features = [ "chrono", "postgres", "r2d2", "uuidv07", "serde_json", "numeric" ] }
+diesel_migrations = { version = "1.4" }
+r2d2 = "0.8"
+bigdecimal = "0.1.2"
+redis = { version = "0.21", features = ["r2d2", "cluster"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.2", features = ["fmt", "ansi"], default-features = true }
+
+# ChirpStack API definitions
+chirpstack_api = { path = "../api/rust", features = ["default", "internal"] }
+lrwn = { path = "../lrwn" }
+backend = { path = "../backend" }
+
+# HTTP
+reqwest = { version = "0.11", features = ["json"] }
+
+# Integrations
+aws-types = "0.3.0"
+aws-config = "0.3.0"
+aws-sdk-sns = "0.3.0"
+hmac = "0.12"
+sha2 = "0.10"
+urlencoding = "2.1"
+geohash = "0.12"
+gcp_auth = "0.7.2"
+
+# gRPC and Protobuf
+tonic = "0.6"
+tonic-web = "0.2"
+tonic-reflection = "0.3"
+tokio = { version = "1.6", features = ["macros", "rt-multi-thread"] }
+tokio-stream = "0.1.7"
+prost-types = "0.9"
+prost = "0.9"
+pbjson-types = "0.2"
+
+# gRPC and HTTP multiplexing
+warp = "0.3"
+hyper = "0.14"
+tower = "0.4"
+futures = "0.3"
+http = "0.2"
+http-body = "0.4"
+rust-embed = "5.9"
+mime_guess = "2.0"
+tower-http = { version = "0.1", features = ["trace", "auth"] }
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Authentication
+pbkdf2 = "0.8"
+rand_core = { version = "0.6", features = ["std"] }
+# jsonwebtoken = "8.0"
+jsonwebtoken = { git = "https://github.com/brocaar/jsonwebtoken.git", branch = "fix-issue-190" }
+openssl = { version = "0.10", features = ["vendored"] }
+openidconnect = { version = "2.2.0", features = ["accept-rfc3339-timestamps"] }
+
+# MQTT
+paho-mqtt = { version = "0.9", features = ["vendored-ssl"] }
+hex = "0.4"
+
+# Codecs
+rquickjs = { version = "0.1.5", features = ["bindgen"] }
+
+# Misc
+lazy_static = "1.4"
+uuid = { version =  "0.8", features = [ "v4", "serde" ] }
+chrono = "0.4"
+async-trait = "0.1"
+aes = "0.7"
+rand = "0.8"
+base64 = "0.13"
+async-recursion = "1.0"
+regex = "1"
+petgraph = "0.6"
+
+# Development and testing
+[dev-dependencies]
+httpmock = "0.6"
+
+# Debian packaging.
+[package.metadata.deb]
+assets = [
+	["target/release/chirpstack", "usr/bin/", "755"],
+	["configuration/*.toml", "etc/chirpstack/", "640"],
+]
+
+maintainer-scripts = "debian/"
+systemd-units = { enable = true }

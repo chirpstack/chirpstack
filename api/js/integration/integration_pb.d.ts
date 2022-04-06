@@ -1,0 +1,471 @@
+// package: integration
+// file: integration/integration.proto
+
+import * as jspb from "google-protobuf";
+import * as common_common_pb from "../common/common_pb";
+import * as gw_gw_pb from "../gw/gw_pb";
+import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
+
+export class DeviceInfo extends jspb.Message {
+  getTenantId(): string;
+  setTenantId(value: string): void;
+
+  getTenantName(): string;
+  setTenantName(value: string): void;
+
+  getApplicationId(): string;
+  setApplicationId(value: string): void;
+
+  getApplicationName(): string;
+  setApplicationName(value: string): void;
+
+  getDeviceProfileId(): string;
+  setDeviceProfileId(value: string): void;
+
+  getDeviceProfileName(): string;
+  setDeviceProfileName(value: string): void;
+
+  getDeviceName(): string;
+  setDeviceName(value: string): void;
+
+  getDevEui(): string;
+  setDevEui(value: string): void;
+
+  getTagsMap(): jspb.Map<string, string>;
+  clearTagsMap(): void;
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeviceInfo.AsObject;
+  static toObject(includeInstance: boolean, msg: DeviceInfo): DeviceInfo.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: DeviceInfo, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeviceInfo;
+  static deserializeBinaryFromReader(message: DeviceInfo, reader: jspb.BinaryReader): DeviceInfo;
+}
+
+export namespace DeviceInfo {
+  export type AsObject = {
+    tenantId: string,
+    tenantName: string,
+    applicationId: string,
+    applicationName: string,
+    deviceProfileId: string,
+    deviceProfileName: string,
+    deviceName: string,
+    devEui: string,
+    tagsMap: Array<[string, string]>,
+  }
+}
+
+export class UplinkEvent extends jspb.Message {
+  getDeduplicationId(): string;
+  setDeduplicationId(value: string): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasDeviceInfo(): boolean;
+  clearDeviceInfo(): void;
+  getDeviceInfo(): DeviceInfo | undefined;
+  setDeviceInfo(value?: DeviceInfo): void;
+
+  getDevAddr(): string;
+  setDevAddr(value: string): void;
+
+  getAdr(): boolean;
+  setAdr(value: boolean): void;
+
+  getDr(): number;
+  setDr(value: number): void;
+
+  getFCntUp(): number;
+  setFCntUp(value: number): void;
+
+  getFPort(): number;
+  setFPort(value: number): void;
+
+  getConfirmed(): boolean;
+  setConfirmed(value: boolean): void;
+
+  getData(): Uint8Array | string;
+  getData_asU8(): Uint8Array;
+  getData_asB64(): string;
+  setData(value: Uint8Array | string): void;
+
+  hasObject(): boolean;
+  clearObject(): void;
+  getObject(): google_protobuf_struct_pb.Struct | undefined;
+  setObject(value?: google_protobuf_struct_pb.Struct): void;
+
+  clearRxInfoList(): void;
+  getRxInfoList(): Array<gw_gw_pb.UplinkRXInfo>;
+  setRxInfoList(value: Array<gw_gw_pb.UplinkRXInfo>): void;
+  addRxInfo(value?: gw_gw_pb.UplinkRXInfo, index?: number): gw_gw_pb.UplinkRXInfo;
+
+  hasTxInfo(): boolean;
+  clearTxInfo(): void;
+  getTxInfo(): gw_gw_pb.UplinkTXInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.UplinkTXInfo): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UplinkEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: UplinkEvent): UplinkEvent.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: UplinkEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UplinkEvent;
+  static deserializeBinaryFromReader(message: UplinkEvent, reader: jspb.BinaryReader): UplinkEvent;
+}
+
+export namespace UplinkEvent {
+  export type AsObject = {
+    deduplicationId: string,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    deviceInfo?: DeviceInfo.AsObject,
+    devAddr: string,
+    adr: boolean,
+    dr: number,
+    fCntUp: number,
+    fPort: number,
+    confirmed: boolean,
+    data: Uint8Array | string,
+    object?: google_protobuf_struct_pb.Struct.AsObject,
+    rxInfoList: Array<gw_gw_pb.UplinkRXInfo.AsObject>,
+    txInfo?: gw_gw_pb.UplinkTXInfo.AsObject,
+  }
+}
+
+export class JoinEvent extends jspb.Message {
+  getDeduplicationId(): string;
+  setDeduplicationId(value: string): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasDeviceInfo(): boolean;
+  clearDeviceInfo(): void;
+  getDeviceInfo(): DeviceInfo | undefined;
+  setDeviceInfo(value?: DeviceInfo): void;
+
+  getDevAddr(): string;
+  setDevAddr(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): JoinEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: JoinEvent): JoinEvent.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: JoinEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): JoinEvent;
+  static deserializeBinaryFromReader(message: JoinEvent, reader: jspb.BinaryReader): JoinEvent;
+}
+
+export namespace JoinEvent {
+  export type AsObject = {
+    deduplicationId: string,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    deviceInfo?: DeviceInfo.AsObject,
+    devAddr: string,
+  }
+}
+
+export class AckEvent extends jspb.Message {
+  getDeduplicationId(): string;
+  setDeduplicationId(value: string): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasDeviceInfo(): boolean;
+  clearDeviceInfo(): void;
+  getDeviceInfo(): DeviceInfo | undefined;
+  setDeviceInfo(value?: DeviceInfo): void;
+
+  getQueueItemId(): string;
+  setQueueItemId(value: string): void;
+
+  getAcknowledged(): boolean;
+  setAcknowledged(value: boolean): void;
+
+  getFCntDown(): number;
+  setFCntDown(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AckEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: AckEvent): AckEvent.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: AckEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AckEvent;
+  static deserializeBinaryFromReader(message: AckEvent, reader: jspb.BinaryReader): AckEvent;
+}
+
+export namespace AckEvent {
+  export type AsObject = {
+    deduplicationId: string,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    deviceInfo?: DeviceInfo.AsObject,
+    queueItemId: string,
+    acknowledged: boolean,
+    fCntDown: number,
+  }
+}
+
+export class TxAckEvent extends jspb.Message {
+  getDownlinkId(): string;
+  setDownlinkId(value: string): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasDeviceInfo(): boolean;
+  clearDeviceInfo(): void;
+  getDeviceInfo(): DeviceInfo | undefined;
+  setDeviceInfo(value?: DeviceInfo): void;
+
+  getQueueItemId(): string;
+  setQueueItemId(value: string): void;
+
+  getFCntDown(): number;
+  setFCntDown(value: number): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
+
+  hasTxInfo(): boolean;
+  clearTxInfo(): void;
+  getTxInfo(): gw_gw_pb.DownlinkTXInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.DownlinkTXInfo): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TxAckEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: TxAckEvent): TxAckEvent.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: TxAckEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TxAckEvent;
+  static deserializeBinaryFromReader(message: TxAckEvent, reader: jspb.BinaryReader): TxAckEvent;
+}
+
+export namespace TxAckEvent {
+  export type AsObject = {
+    downlinkId: string,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    deviceInfo?: DeviceInfo.AsObject,
+    queueItemId: string,
+    fCntDown: number,
+    gatewayId: string,
+    txInfo?: gw_gw_pb.DownlinkTXInfo.AsObject,
+  }
+}
+
+export class LogEvent extends jspb.Message {
+  getDeduplicationId(): string;
+  setDeduplicationId(value: string): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasDeviceInfo(): boolean;
+  clearDeviceInfo(): void;
+  getDeviceInfo(): DeviceInfo | undefined;
+  setDeviceInfo(value?: DeviceInfo): void;
+
+  getLevel(): LogLevelMap[keyof LogLevelMap];
+  setLevel(value: LogLevelMap[keyof LogLevelMap]): void;
+
+  getCode(): LogCodeMap[keyof LogCodeMap];
+  setCode(value: LogCodeMap[keyof LogCodeMap]): void;
+
+  getDescription(): string;
+  setDescription(value: string): void;
+
+  getContextMap(): jspb.Map<string, string>;
+  clearContextMap(): void;
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): LogEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: LogEvent): LogEvent.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: LogEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LogEvent;
+  static deserializeBinaryFromReader(message: LogEvent, reader: jspb.BinaryReader): LogEvent;
+}
+
+export namespace LogEvent {
+  export type AsObject = {
+    deduplicationId: string,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    deviceInfo?: DeviceInfo.AsObject,
+    level: LogLevelMap[keyof LogLevelMap],
+    code: LogCodeMap[keyof LogCodeMap],
+    description: string,
+    contextMap: Array<[string, string]>,
+  }
+}
+
+export class StatusEvent extends jspb.Message {
+  getDeduplicationId(): string;
+  setDeduplicationId(value: string): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasDeviceInfo(): boolean;
+  clearDeviceInfo(): void;
+  getDeviceInfo(): DeviceInfo | undefined;
+  setDeviceInfo(value?: DeviceInfo): void;
+
+  getMargin(): number;
+  setMargin(value: number): void;
+
+  getExternalPowerSource(): boolean;
+  setExternalPowerSource(value: boolean): void;
+
+  getBatteryLevelUnavailable(): boolean;
+  setBatteryLevelUnavailable(value: boolean): void;
+
+  getBatteryLevel(): number;
+  setBatteryLevel(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): StatusEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: StatusEvent): StatusEvent.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: StatusEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): StatusEvent;
+  static deserializeBinaryFromReader(message: StatusEvent, reader: jspb.BinaryReader): StatusEvent;
+}
+
+export namespace StatusEvent {
+  export type AsObject = {
+    deduplicationId: string,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    deviceInfo?: DeviceInfo.AsObject,
+    margin: number,
+    externalPowerSource: boolean,
+    batteryLevelUnavailable: boolean,
+    batteryLevel: number,
+  }
+}
+
+export class LocationEvent extends jspb.Message {
+  getDeduplicationId(): string;
+  setDeduplicationId(value: string): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasDeviceInfo(): boolean;
+  clearDeviceInfo(): void;
+  getDeviceInfo(): DeviceInfo | undefined;
+  setDeviceInfo(value?: DeviceInfo): void;
+
+  hasLocation(): boolean;
+  clearLocation(): void;
+  getLocation(): common_common_pb.Location | undefined;
+  setLocation(value?: common_common_pb.Location): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): LocationEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: LocationEvent): LocationEvent.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: LocationEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LocationEvent;
+  static deserializeBinaryFromReader(message: LocationEvent, reader: jspb.BinaryReader): LocationEvent;
+}
+
+export namespace LocationEvent {
+  export type AsObject = {
+    deduplicationId: string,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    deviceInfo?: DeviceInfo.AsObject,
+    location?: common_common_pb.Location.AsObject,
+  }
+}
+
+export class IntegrationEvent extends jspb.Message {
+  getDeduplicationId(): string;
+  setDeduplicationId(value: string): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasDeviceInfo(): boolean;
+  clearDeviceInfo(): void;
+  getDeviceInfo(): DeviceInfo | undefined;
+  setDeviceInfo(value?: DeviceInfo): void;
+
+  getIntegrationName(): string;
+  setIntegrationName(value: string): void;
+
+  getEventType(): string;
+  setEventType(value: string): void;
+
+  hasObject(): boolean;
+  clearObject(): void;
+  getObject(): google_protobuf_struct_pb.Struct | undefined;
+  setObject(value?: google_protobuf_struct_pb.Struct): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): IntegrationEvent.AsObject;
+  static toObject(includeInstance: boolean, msg: IntegrationEvent): IntegrationEvent.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: IntegrationEvent, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): IntegrationEvent;
+  static deserializeBinaryFromReader(message: IntegrationEvent, reader: jspb.BinaryReader): IntegrationEvent;
+}
+
+export namespace IntegrationEvent {
+  export type AsObject = {
+    deduplicationId: string,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    deviceInfo?: DeviceInfo.AsObject,
+    integrationName: string,
+    eventType: string,
+    object?: google_protobuf_struct_pb.Struct.AsObject,
+  }
+}
+
+export interface LogLevelMap {
+  INFO: 0;
+  WARNING: 1;
+  ERROR: 2;
+}
+
+export const LogLevel: LogLevelMap;
+
+export interface LogCodeMap {
+  UNKNOWN: 0;
+  DOWNLINK_PAYLOAD_SIZE: 1;
+  UPLINK_CODEC: 2;
+  DOWNLINK_CODEC: 3;
+  OTAA: 4;
+  UPLINK_F_CNT_RESET: 5;
+  UPLINK_MIC: 6;
+  UPLINK_F_CNT_RETRANSMISSION: 7;
+  DOWNLINK_GATEWAY: 8;
+}
+
+export const LogCode: LogCodeMap;
+

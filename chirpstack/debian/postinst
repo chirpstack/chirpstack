@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# Set config-file permissions
+chown -R chirpstack:chirpstack /etc/chirpstack
+chmod 750 /etc/chirpstack
+chmod 640 /etc/chirpstack/*.toml
+
+#DEBHELPER#

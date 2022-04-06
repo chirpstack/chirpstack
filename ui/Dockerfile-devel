@@ -1,0 +1,8 @@
+FROM alpine:3.15.0
+
+ENV PROJECT_PATH=/chirpstack/ui
+
+RUN apk add --no-cache make git bash build-base nodejs npm yarn
+
+RUN mkdir -p $PROJECT_PATH
+WORKDIR $PROJECT_PATH

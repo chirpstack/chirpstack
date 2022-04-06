@@ -1,0 +1,15 @@
+[workspace]
+members = [
+	"chirpstack",
+	"lrwn",
+	"backend",
+	"api/rust",
+]
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+
+#[patch.crates-io]
+#quick-js = { path = "../quickjs-rs" }

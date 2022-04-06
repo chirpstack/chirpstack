@@ -1,0 +1,9 @@
+FROM node:12
+
+ENV PROJECT_PATH=/chirpstack/api
+RUN apt update && apt install -y protobuf-compiler libprotobuf-dev git bash
+
+RUN git clone https://github.com/googleapis/googleapis.git /googleapis
+
+RUN mkdir -p $PROJECT_PATH
+WORKDIR $PROJECT_PATH
