@@ -80,6 +80,72 @@
         tls_key=""
 
 
+    # Gateway channel configuration.
+    #
+    # Note: this configuration is only used in case the gateway is using the
+    # ChirpStack Concentratord daemon. In any other case, this configuration 
+    # is ignored.
+    [[regions.gateway.channels]]
+      frequency=868100000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=868300000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=868500000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=867100000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=867300000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=867500000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=867700000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=867900000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+  
+    [[regions.gateway.channels]]
+      frequency=868300000
+      bandwidth=250000
+      modulation="LORA"
+      spreading_factors=[7]
+    
+    [[regions.gateway.channels]]
+      frequency=868800000
+      bandwidth=125000
+      modulation="FSK"
+      datarate=50000
+
+
   # Region specific network configuration.
   [regions.network]
     
