@@ -71,6 +71,7 @@ class ListDevices extends Component<IProps, IState> {
             ts.setUTCSeconds(record.lastSeenAt.seconds);
             return moment(ts).format("YYYY-MM-DD HH:mm:ss");
           }
+		  return "Never";
         },
       },
       {
