@@ -61,15 +61,17 @@ async fn main() -> Result<()> {
         )
         .subcommand(App::new("configfile").about("Print the configuration template"))
         .subcommand(
-            App::new("print-ds").about("Print the device-session").arg(
-                Arg::with_name("dev-eui")
-                    .required(true)
-                    .long("dev-eui")
-                    .value_name("DEV_EUI")
-                    .multiple(false)
-                    .help("Device EUI")
-                    .takes_value(true),
-            ),
+            App::new("print-ds")
+                .about("Print the device-session for debugging")
+                .arg(
+                    Arg::with_name("dev-eui")
+                        .required(true)
+                        .long("dev-eui")
+                        .value_name("DEV_EUI")
+                        .multiple(false)
+                        .help("Device EUI")
+                        .takes_value(true),
+                ),
         )
         .get_matches();
 

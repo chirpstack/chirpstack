@@ -164,7 +164,19 @@ impl GatewayBackend for MqttBackend<'_> {
         Ok(())
     }
 
-    async fn send_configuration(&self) -> Result<()> {
+    async fn send_configuration(
+        &self,
+        gw_conf: &chirpstack_api::gw::GatewayConfiguration,
+    ) -> Result<()> {
+        let gateway_id = EUI64::from_slice(&gw_conf.gateway_id)?;
+        let topic = self.get_command_topic(&gateway_id.to_string(), "config")?;
+        let b = gw_conf.encode_to_vec();
+
+        info!(gateway_id = %gateway_id, topic = %topic, "Sending gateway configuration");
+        let msg = mqtt::Message::new(topic, b, self.qos as i32);
+        self.client.publish(msg).await?;
+        trace!("Message sent");
+
         Ok(())
     }
 }

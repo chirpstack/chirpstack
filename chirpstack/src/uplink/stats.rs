@@ -1,13 +1,16 @@
+use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local};
-use tracing::{error, span, trace, Instrument, Level};
+use tracing::{error, info, span, trace, Instrument, Level};
 use uuid::Uuid;
 
-use crate::region;
+use crate::gateway::backend as gateway_backend;
 use crate::storage::{gateway, metrics};
-use chirpstack_api::gw;
+use crate::{config, region};
+use chirpstack_api::{common, gw};
 use lrwn::EUI64;
 
 pub struct Stats {
@@ -41,7 +44,7 @@ impl Stats {
 
         ctx.update_gateway_state().await?;
         ctx.save_stats().await?;
-        // ctx.update_gateway_configuration().await?;
+        ctx.update_gateway_configuration().await?;
 
         Ok(())
     }
@@ -129,6 +132,94 @@ impl Stats {
         .context("Save metrics")?;
 
         Ok(())
+    }
+
+    async fn update_gateway_configuration(&self) -> Result<()> {
+        trace!("Updating gateway configuration");
+
+        if !self.stats.meta_data.contains_key("concentratord_version") {
+            trace!("Gateway configuration only works with Concentratord, skipping");
+            return Ok(());
+        }
+
+        let gw = self.gateway.as_ref().unwrap();
+        let region_name = self
+            .stats
+            .meta_data
+            .get("region_name")
+            .cloned()
+            .unwrap_or_default();
+
+        let gateway_conf = config::get_region_gateway(&region_name)?;
+        if gateway_conf.channels.is_empty() {
+            trace!("Skipping gateway configuration, channels is empty");
+            return Ok(());
+        }
+
+        // get gw config version
+        let gw_config_version = self
+            .stats
+            .meta_data
+            .get("config_version")
+            .cloned()
+            .unwrap_or_default();
+
+        // We use the Hash trait to generate the config version.
+        let mut hasher = DefaultHasher::new();
+        gw.stats_interval_secs.hash(&mut hasher);
+        gateway_conf.channels.hash(&mut hasher);
+        let hash = format!("{:x}", hasher.finish());
+
+        if gw_config_version == hash {
+            trace!(config_version = %hash, "Config version is equal, no need for config update");
+            return Ok(());
+        }
+
+        info!(current_config_version = %gw_config_version, desired_config_version = %hash, "Updating gateway configuration");
+
+        let gw_conf = gw::GatewayConfiguration {
+            gateway_id: self.stats.gateway_id.clone(),
+            version: hash,
+            channels: gateway_conf
+                .channels
+                .iter()
+                .map(|c| gw::ChannelConfiguration {
+                    frequency: c.frequency,
+                    modulation: match c.modulation {
+                        config::GatewayChannelModulation::LORA => common::Modulation::Lora,
+                        config::GatewayChannelModulation::FSK => common::Modulation::Fsk,
+                    }
+                    .into(),
+                    modulation_config: Some(match c.modulation {
+                        config::GatewayChannelModulation::LORA => {
+                            gw::channel_configuration::ModulationConfig::LoraModulationConfig(
+                                gw::LoRaModulationConfig {
+                                    bandwidth: c.bandwidth / 1000,
+                                    spreading_factors: c.spreading_factors.clone(),
+                                },
+                            )
+                        }
+                        config::GatewayChannelModulation::FSK => {
+                            gw::channel_configuration::ModulationConfig::FskModulationConfig(
+                                gw::FskModulationConfig {
+                                    bandwidth: c.bandwidth / 1000,
+                                    bitrate: c.datarate,
+                                },
+                            )
+                        }
+                    }),
+                    ..Default::default()
+                })
+                .collect(),
+            stats_interval: Some(pbjson_types::Duration {
+                nanos: 0,
+                seconds: gw.stats_interval_secs.into(),
+            }),
+        };
+
+        gateway_backend::send_configuration(&region_name, &gw_conf)
+            .await
+            .context("Send gateway configuration")
     }
 }
 

@@ -26,7 +26,11 @@ impl GatewayBackend for Backend {
         Ok(())
     }
 
-    async fn send_configuration(&self) -> Result<()> {
+    async fn send_configuration(
+        &self,
+        gw_conf: &chirpstack_api::gw::GatewayConfiguration,
+    ) -> Result<()> {
+        GATEWAY_CONFIGURATIONS.write().await.push(gw_conf.clone());
         Ok(())
     }
 }

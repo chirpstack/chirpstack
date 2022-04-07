@@ -372,6 +372,7 @@ impl Default for Region {
             },
             gateway: RegionGateway {
                 force_gws_private: false,
+                channels: vec![],
                 backend: GatewayBackend {
                     enabled: "mqtt".into(),
                     mqtt: GatewayBackendMqtt {
@@ -443,6 +444,7 @@ pub struct ExtraChannel {
 pub struct RegionGateway {
     pub force_gws_private: bool,
     pub backend: GatewayBackend,
+    pub channels: Vec<GatewayChannel>,
 }
 
 #[derive(Default, Serialize, Deserialize, Clone)]
@@ -466,6 +468,36 @@ pub struct GatewayBackendMqtt {
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Hash)]
+#[allow(non_camel_case_types)]
+#[allow(clippy::upper_case_acronyms)]
+pub enum GatewayChannelModulation {
+    LORA,
+    FSK,
+}
+
+#[derive(Serialize, Deserialize, Clone, Hash)]
+#[serde(default)]
+pub struct GatewayChannel {
+    pub frequency: u32,
+    pub bandwidth: u32,
+    pub modulation: GatewayChannelModulation,
+    pub spreading_factors: Vec<u32>,
+    pub datarate: u32,
+}
+
+impl Default for GatewayChannel {
+    fn default() -> Self {
+        GatewayChannel {
+            frequency: 0,
+            bandwidth: 0,
+            modulation: GatewayChannelModulation::LORA,
+            spreading_factors: vec![],
+            datarate: 0,
+        }
+    }
 }
 
 pub fn load(config_dir: &Path) -> Result<()> {
@@ -517,6 +549,17 @@ pub fn get_region_network(region_name: &str) -> Result<RegionNetwork> {
     for region in &conf.regions {
         if region.name == region_name {
             return Ok(region.network.clone());
+        }
+    }
+
+    Err(anyhow!("region_name not found"))
+}
+
+pub fn get_region_gateway(region_name: &str) -> Result<RegionGateway> {
+    let conf = get();
+    for region in &conf.regions {
+        if region.name == region_name {
+            return Ok(region.gateway.clone());
         }
     }
 

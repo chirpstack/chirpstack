@@ -34,6 +34,12 @@ pub fn setup() -> Result<()> {
         );
 
         for ec in &r.network.extra_channels {
+            trace!(
+                frequency = ec.frequency,
+                min_dr = ec.min_dr,
+                max_dr = ec.max_dr,
+                "Adding extra channel"
+            );
             region_conf
                 .add_channel(ec.frequency, ec.min_dr, ec.max_dr)
                 .context("Add channel")?;

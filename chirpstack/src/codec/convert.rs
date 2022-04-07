@@ -15,7 +15,7 @@ fn _rquickjs_to_struct_val(val: &rquickjs::Value) -> Option<pbjson_types::value:
             val.as_int().unwrap().into(),
         )),
         rquickjs::Type::Float => Some(pbjson_types::value::Kind::NumberValue(
-            val.as_float().unwrap().into(),
+            val.as_float().unwrap(),
         )),
         rquickjs::Type::String => Some(pbjson_types::value::Kind::StringValue(
             val.as_string().unwrap().to_string().unwrap(),
