@@ -150,11 +150,13 @@ async fn test_gateway_filtering() {
     let tests = vec![
         Test {
             name: "private gateway of same tenant".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    })
+                }
             })),
             after_func: None,
             rx_info: rx_info_a.clone(),
@@ -194,11 +196,13 @@ async fn test_gateway_filtering() {
         },
         Test {
             name: "private gateway other tenant".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    })
+                }
             })),
             after_func: None,
             rx_info: rx_info_b.clone(),
@@ -383,11 +387,13 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    })
+                }
             })),
             after_func: None,
             rx_info: rx_info.clone(),
@@ -567,23 +573,27 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted + skip fcnt check".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
 
-                    let mut dev = device::get(&dev_eui).await.unwrap();
-                    dev.skip_fcnt_check = true;
-                    let _ = device::update(dev).await.unwrap();
-                })
+                        let mut dev = device::get(&dev_eui).await.unwrap();
+                        dev.skip_fcnt_check = true;
+                        let _ = device::update(dev).await.unwrap();
+                    })
+                }
             })),
-            after_func: Some(Box::new(move || {
+            after_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    let mut dev = device::get(&dev_eui).await.unwrap();
-                    dev.skip_fcnt_check = false;
-                    let _ = device::update(dev).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        let mut dev = device::get(&dev_eui).await.unwrap();
+                        dev.skip_fcnt_check = false;
+                        let _ = device::update(dev).await.unwrap();
+                    })
+                }
             })),
             rx_info: rx_info.clone(),
             tx_info: tx_info.clone(),
@@ -623,11 +633,13 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted + cflist".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    })
+                }
             })),
             after_func: None,
             rx_info: rx_info.clone(),
@@ -775,24 +787,28 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted + class-b supported".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
 
-                    let mut dp = device_profile::get(&dp_id).await.unwrap();
-                    dp.supports_class_b = true;
-                    let _ = device_profile::update(dp).await.unwrap();
-                })
+                        let mut dp = device_profile::get(&dp_id).await.unwrap();
+                        dp.supports_class_b = true;
+                        let _ = device_profile::update(dp).await.unwrap();
+                    })
+                }
             })),
-            after_func: Some(Box::new(move || {
+            after_func: Some(Box::new({
                 let dp_id = dp.id.clone();
-                Box::pin(async move {
-                    let mut dp = device_profile::get(&dp_id).await.unwrap();
-                    dp.supports_class_b = false;
-                    let _ = device_profile::update(dp).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        let mut dp = device_profile::get(&dp_id).await.unwrap();
+                        dp.supports_class_b = false;
+                        let _ = device_profile::update(dp).await.unwrap();
+                    })
+                }
             })),
             rx_info: rx_info.clone(),
             tx_info: tx_info.clone(),
@@ -802,24 +818,28 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted + class-c supported".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
 
-                    let mut dp = device_profile::get(&dp_id).await.unwrap();
-                    dp.supports_class_c = true;
-                    let _ = device_profile::update(dp).await.unwrap();
-                })
+                        let mut dp = device_profile::get(&dp_id).await.unwrap();
+                        dp.supports_class_c = true;
+                        let _ = device_profile::update(dp).await.unwrap();
+                    })
+                }
             })),
-            after_func: Some(Box::new(move || {
+            after_func: Some(Box::new({
                 let dp_id = dp.id.clone();
-                Box::pin(async move {
-                    let mut dp = device_profile::get(&dp_id).await.unwrap();
-                    dp.supports_class_c = false;
-                    let _ = device_profile::update(dp).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        let mut dp = device_profile::get(&dp_id).await.unwrap();
+                        dp.supports_class_c = false;
+                        let _ = device_profile::update(dp).await.unwrap();
+                    })
+                }
             })),
             rx_info: rx_info.clone(),
             tx_info: tx_info.clone(),
@@ -829,23 +849,27 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "device disabled".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
 
-                    let mut dev = device::get(&dev_eui).await.unwrap();
-                    dev.is_disabled = true;
-                    let _ = device::update(dev).await.unwrap();
-                })
+                        let mut dev = device::get(&dev_eui).await.unwrap();
+                        dev.is_disabled = true;
+                        let _ = device::update(dev).await.unwrap();
+                    })
+                }
             })),
-            after_func: Some(Box::new(move || {
+            after_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    let mut dev = device::get(&dev_eui).await.unwrap();
-                    dev.is_disabled = false;
-                    let _ = device::update(dev).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        let mut dev = device::get(&dev_eui).await.unwrap();
+                        dev.is_disabled = false;
+                        let _ = device::update(dev).await.unwrap();
+                    })
+                }
             })),
             rx_info: rx_info.clone(),
             tx_info: tx_info.clone(),
@@ -998,11 +1022,13 @@ async fn test_lorawan_11() {
         },
         Test {
             name: "join-request accepted".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    })
+                }
             })),
             after_func: None,
             rx_info: rx_info.clone(),
@@ -1177,24 +1203,28 @@ async fn test_lorawan_11() {
         },
         Test {
             name: "join-request accepted + class-c supported".into(),
-            before_func: Some(Box::new(move || {
+            before_func: Some(Box::new({
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
-                Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                move || {
+                    Box::pin(async move {
+                        device_keys::reset_nonces(&dev_eui).await.unwrap();
 
-                    let mut dp = device_profile::get(&dp_id).await.unwrap();
-                    dp.supports_class_c = true;
-                    let _ = device_profile::update(dp).await.unwrap();
-                })
+                        let mut dp = device_profile::get(&dp_id).await.unwrap();
+                        dp.supports_class_c = true;
+                        let _ = device_profile::update(dp).await.unwrap();
+                    })
+                }
             })),
-            after_func: Some(Box::new(move || {
+            after_func: Some(Box::new({
                 let dp_id = dp.id.clone();
-                Box::pin(async move {
-                    let mut dp = device_profile::get(&dp_id).await.unwrap();
-                    dp.supports_class_c = false;
-                    let _ = device_profile::update(dp).await.unwrap();
-                })
+                move || {
+                    Box::pin(async move {
+                        let mut dp = device_profile::get(&dp_id).await.unwrap();
+                        dp.supports_class_c = false;
+                        let _ = device_profile::update(dp).await.unwrap();
+                    })
+                }
             })),
             rx_info: rx_info.clone(),
             tx_info: tx_info.clone(),
