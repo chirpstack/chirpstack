@@ -6,7 +6,7 @@ authors = ["Orne Brocaar <info@brocaar.com>"]
 license = "MIT"
 homepage = "https://www.chirpstack.io"
 repository = "https://github.com/chirpstack/chirpstack"
-edition = "2018"
+edition = "2021"
 
 [features]
 default = ["api", "rustfmt"]
