@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::convert::TryInto;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};

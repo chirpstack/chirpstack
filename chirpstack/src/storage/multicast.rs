@@ -341,7 +341,6 @@ pub async fn enqueue(
     qi: MulticastGroupQueueItem,
     gateway_ids: &[EUI64],
 ) -> Result<(Vec<Uuid>, u32), Error> {
-    let mg_id = qi.multicast_group_id;
     let (ids, f_cnt) = task::spawn_blocking({
         let gateway_ids = gateway_ids.to_vec();
         move || -> Result<(Vec<Uuid>, u32), Error> {
@@ -504,7 +503,7 @@ pub async fn enqueue(
         }
     })
     .await??;
-    info!(multicast_group_id = %mg_id, f_cnt = f_cnt, "Multicast-group queue item created");
+    info!(multicast_group_id = %qi.multicast_group_id, f_cnt = f_cnt, "Multicast-group queue item created");
     Ok((ids, f_cnt))
 }
 

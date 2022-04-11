@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use std::time::{Duration, SystemTime};
 
 use anyhow::Result;

@@ -1,10 +1,9 @@
 [package]
 name = "chirpstack"
 description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
-repository="https://github.com/chirpstack/chirpstack/"
 version = "4.0.0-test.1"
 authors = ["Orne Brocaar <info@brocaar.com>"]
-edition = "2018"
+edition = "2021"
 publish = false
 license = "MIT"
 
