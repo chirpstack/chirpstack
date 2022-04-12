@@ -9,10 +9,9 @@ repository = "https://github.com/chirpstack/chirpstack"
 edition = "2021"
 
 [features]
-default = ["api", "rustfmt"]
+default = ["api"]
 api = ["tonic/transport", "tonic-build/transport", "tokio"]
 internal = []
-rustfmt = ["tonic-build/rustfmt"]
 
 [dependencies]
 prost = "0.9"
