@@ -17,3 +17,6 @@
 
 # API
 /api/js/node_modules
+
+# Bitbake recipes
+*.bb
