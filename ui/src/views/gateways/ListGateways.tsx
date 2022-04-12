@@ -32,6 +32,7 @@ class ListGateways extends Component<IProps> {
             ts.setUTCSeconds(record.lastSeenAt.seconds);
             return moment(ts).format("YYYY-MM-DD HH:mm:ss");
           }
+		  return "Never";
         }
       },
       {

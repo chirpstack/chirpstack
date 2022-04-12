@@ -147,7 +147,7 @@ class DeviceLayout extends Component<IProps, IState> {
               confirm={device.getName()}
               onConfirm={this.deleteDevice}
             >
-              <Button danger type="primary">Delete devicee</Button>
+              <Button danger type="primary">Delete device</Button>
             </DeleteConfirm>
           ]}
         />

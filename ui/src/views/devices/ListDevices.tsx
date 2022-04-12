@@ -71,6 +71,7 @@ class ListDevices extends Component<IProps, IState> {
             ts.setUTCSeconds(record.lastSeenAt.seconds);
             return moment(ts).format("YYYY-MM-DD HH:mm:ss");
           }
+		  return "Never";
         },
       },
       {
@@ -183,7 +184,7 @@ class ListDevices extends Component<IProps, IState> {
       <Space direction="vertical" size="large" style={{width: "100%"}}>
         <Modal title="Add selected devices to multicast-group" visible={this.state.mgModalVisible} onOk={this.handleMgModalOk} onCancel={this.hideMgModal} okButtonProps={{disabled: this.state.mgSelected === ""}}>
           <Space direction="vertical" size="large" style={{width: "100%"}}>
-            <Select style={{width: "100%"}} onChange={this.onMgSelected}>
+            <Select style={{width: "100%"}} onChange={this.onMgSelected} placeholder="Select Multicast-group">
               {mgOptions}
             </Select>
           </Space>
