@@ -51,14 +51,14 @@ geohash = "0.12"
 gcp_auth = "0.7.2"
 
 # gRPC and Protobuf
-tonic = "0.6"
-tonic-web = "0.2"
-tonic-reflection = "0.3"
-tokio = { version = "1.6", features = ["macros", "rt-multi-thread"] }
-tokio-stream = "0.1.7"
-prost-types = "0.9"
-prost = "0.9"
-pbjson-types = "0.2"
+tonic = "0.7"
+tonic-web = "0.3"
+tonic-reflection = "0.4"
+tokio = { version = "1.17", features = ["macros", "rt-multi-thread"] }
+tokio-stream = "0.1.8"
+prost-types = "0.10"
+prost = "0.10"
+pbjson-types = "0.3"
 
 # gRPC and HTTP multiplexing
 warp = "0.3"
