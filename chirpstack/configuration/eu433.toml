@@ -80,6 +80,30 @@
         tls_key=""
 
 
+    # Gateway channel configuration.
+    #
+    # Note: this configuration is only used in case the gateway is using the
+    # ChirpStack Concentratord daemon. In any other case, this configuration 
+    # is ignored.
+    [[regions.gateway.channels]]
+      frequency=433175000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=433375000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+    [[regions.gateway.channels]]
+      frequency=433575000
+      bandwidth=125000
+      modulation="LORA"
+      spreading_factors=[7, 8, 9, 10, 11, 12]
+
+
   # Region specific network configuration.
   [regions.network]
     
