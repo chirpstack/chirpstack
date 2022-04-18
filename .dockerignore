@@ -1,4 +1,5 @@
 .git
+.cargo
 **/target
 **/node_modules
 Dockerfile

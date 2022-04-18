@@ -6,17 +6,8 @@ debug:
 release:
 	cargo build --release
 
-release-deb-x86-64:
-	cargo deb --target x86_64-unknown-linux-gnu
-
-release-deb-arm:
-	cargo deb --target arm-unknown-linux-gnueabi
-
-release-deb-armv7:
-	cargo deb --garget armv7-unknown-linux-gnueabihf
-
-release-deb-arm64:
-	cargo deb --target aarch64-unknown-linux-gnu
+release-deb:
+	cargo deb
 
 test:
 	cargo fmt --check

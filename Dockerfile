@@ -1,26 +1,24 @@
-FROM rust:1.59.0-alpine as development
+FROM chirpstack/chirpstack-dev-cache:latest AS development
 
-ENV PROJECT_PATH=/chirpstack
-
-# See: https://github.com/diesel-rs/diesel/issues/700
-ENV RUSTFLAGS="-C target-feature=-crt-static"
-
-RUN apk --no-cache add \
-	make cmake build-base clang perl protobuf libpq-dev \
-	nodejs npm yarn
-
-RUN rustup component add rustfmt
-
-RUN mkdir -p $PROJECT_PATH
 COPY . $PROJECT_PATH
 
-RUN cd $PROJECT_PATH/ui && yarn install && yarn build
+# --network-timeout as yarn throws a ESOCKETTIMEDOUT timeout with GitHub Actions
+RUN cd $PROJECT_PATH/ui && \
+		yarn install --network-timeout 600000 && \
+		yarn build && \
+		rm -rf node_modules
+
 RUN cd $PROJECT_PATH/chirpstack && cargo build --release
 
-FROM alpine:3.15.0 as production
+FROM debian:buster-slim as production
 
-run apk --no-cache add ca-certificates tzdata libpq
-COPY --from=development /chirpstack/target/release/chirpstack /usr/bin/chirpstack
+RUN apt-get update && \
+		apt-get install -y \
+		ca-certificates \
+		libpq5 \
+		&& rm -rf /var/lib/apt/lists/*
+
+COPY --from=development /target/release/chirpstack /usr/bin/chirpstack
 COPY --from=development /chirpstack/chirpstack/configuration/* /etc/chirpstack/
 USER nobody:nogroup
 ENTRYPOINT ["/usr/bin/chirpstack"]

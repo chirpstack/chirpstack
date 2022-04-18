@@ -20,3 +20,7 @@
 
 # Bitbake recipes
 *.bb
+
+# Exclude from gitignore
+!/chirpstack/.rpm
+!/.github

@@ -1,13 +1,8 @@
-version: "3"
 services:
   chirpstack:
-    build:
-      context: .
-      dockerfile: Dockerfile-devel
+    image: chirpstack/chirpstack-dev-cache:latest
     volumes:
       - ./:/chirpstack
-      - ./.cargo/registry:/usr/local/cargo/registry
-      - ./.cargo/git:/usr/local/cargo/git
     depends_on:
       - postgres
       - redis

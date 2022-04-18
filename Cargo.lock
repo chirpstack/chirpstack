@@ -838,6 +838,7 @@ dependencies = [
  "pbjson-types",
  "pbkdf2",
  "petgraph 0.6.0",
+ "pq-sys",
  "prost",
  "prost-types",
  "r2d2",
@@ -1902,8 +1903,9 @@ dependencies = [
 
 [[package]]
 name = "jsonwebtoken"
-version = "8.0.1"
-source = "git+https://github.com/brocaar/jsonwebtoken.git?branch=fix-issue-190#9679d23195c5c5f93e3cba595c4a582b6ee98d44"
+version = "8.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc9051c17f81bae79440afa041b3a278e1de71bfb96d32454b477fd4703ccb6f"
 dependencies = [
  "base64",
  "pem",
@@ -2668,6 +2670,7 @@ version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ac25eee5a0582f45a67e837e350d784e7003bd29a5f460796772061ca49ffda"
 dependencies = [
+ "pkg-config",
  "vcpkg",
 ]
 

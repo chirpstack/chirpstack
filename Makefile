@@ -1,10 +1,9 @@
-.PHONY: build-development build-release build-ui devshell devshell-ui test test-server update-images
-
 # Builds a debug / development binary.
-build-debug: build-ui
+build-debug:
 	docker-compose run --rm chirpstack make debug
 
-build-release: build-ui
+# Builds a release binary.
+build-release:
 	docker-compose run --rm chirpstack make release
 
 # Builds the UI.
@@ -30,5 +29,5 @@ test-server: build-ui
 
 # Update the Docker development images
 update-images:
-	docker-compose build chirpstack
+	docker-compose pull chirpstack
 	docker-compose build chirpstack-ui
