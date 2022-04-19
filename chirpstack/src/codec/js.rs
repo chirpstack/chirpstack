@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::time::SystemTime;
 
 use anyhow::Result;
 use rquickjs::IntoJs;
 
 use super::convert;
+use crate::config;
 
 pub async fn decode(
     f_port: u8,
@@ -11,7 +13,12 @@ pub async fn decode(
     decode_config: &str,
     b: &[u8],
 ) -> Result<pbjson_types::Struct> {
+    let conf = config::get();
+    let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
+
     let rt = rquickjs::Runtime::new().unwrap();
+    rt.set_interrupt_handler(Some(Box::new(move || SystemTime::now() > max_run_ts)));
+
     let ctx = rquickjs::Context::full(&rt).unwrap();
 
     let script = decode_config.to_string();
@@ -28,7 +35,7 @@ pub async fn decode(
             .unwrap();
         input.set("data", b.into_js(ctx).unwrap()).unwrap();
 
-        let res: rquickjs::Object = func.call((input,)).unwrap();
+        let res: rquickjs::Object = func.call((input,))?;
         Ok(convert::rquickjs_to_struct(&res))
     })
 }
@@ -39,7 +46,12 @@ pub async fn encode(
     encode_config: &str,
     s: &prost_types::Struct,
 ) -> Result<Vec<u8>> {
+    let conf = config::get();
+    let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
+
     let rt = rquickjs::Runtime::new().unwrap();
+    rt.set_interrupt_handler(Some(Box::new(move || SystemTime::now() > max_run_ts)));
+
     let ctx = rquickjs::Context::full(&rt).unwrap();
 
     let script = encode_config.to_string();
@@ -57,7 +69,7 @@ pub async fn encode(
             .set("object", convert::struct_to_rquickjs(ctx, s))
             .unwrap();
 
-        let res: Vec<u8> = func.call((input,)).unwrap();
+        let res: Vec<u8> = func.call((input,))?;
         Ok(res)
     })
 }
@@ -65,6 +77,22 @@ pub async fn encode(
 #[cfg(test)]
 pub mod test {
     use super::*;
+
+    #[tokio::test]
+    pub async fn test_decode_timeout() {
+        let decoder = r#"
+            export function Decode(input) {
+                while (true) {
+
+                }
+            }
+        "#
+        .to_string();
+
+        let vars: HashMap<String, String> = HashMap::new();
+        let out = decode(10, &vars, &decoder, &[0x01, 0x02, 0x03]).await;
+        assert!(out.is_err());
+    }
 
     #[tokio::test]
     pub async fn test_decode() {
@@ -141,6 +169,27 @@ pub mod test {
         };
 
         assert_eq!(expected, out);
+    }
+
+    #[tokio::test]
+    pub async fn test_encode_timeout() {
+        let encoder = r#"
+            export function Encode(input) {
+                while (true) {
+
+                }
+            }
+        "#
+        .to_string();
+
+        let vars: HashMap<String, String> = HashMap::new();
+
+        let input = prost_types::Struct {
+            ..Default::default()
+        };
+
+        let out = encode(10, &vars, &encoder, &input).await;
+        assert!(out.is_err());
     }
 
     #[tokio::test]

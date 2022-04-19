@@ -24,6 +24,7 @@ pub struct Configuration {
     pub network: Network,
     pub monitoring: Monitoring,
     pub integration: Integration,
+    pub codec: Codec,
     pub user_authentication: UserAuthentication,
     pub join_server: JoinServer,
     pub keks: Vec<Kek>,
@@ -41,6 +42,7 @@ impl Default for Configuration {
             network: Default::default(),
             monitoring: Default::default(),
             integration: Default::default(),
+            codec: Default::default(),
             user_authentication: Default::default(),
             join_server: Default::default(),
             keks: Vec::new(),
@@ -289,6 +291,27 @@ impl Default for MqttIntegrationClient {
             client_cert_lifetime: Duration::from_secs(60 * 60 * 24 * 365),
             ca_cert: "".into(),
             ca_key: "".into(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Default)]
+#[serde(default)]
+pub struct Codec {
+    pub js: CodecJs,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct CodecJs {
+    #[serde(with = "humantime_serde")]
+    pub max_execution_time: Duration,
+}
+
+impl Default for CodecJs {
+    fn default() -> Self {
+        CodecJs {
+            max_execution_time: Duration::from_millis(100),
         }
     }
 }
