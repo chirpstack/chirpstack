@@ -3,7 +3,7 @@ use crate::storage::{
     application, device, device_gateway, device_profile, fields, gateway, multicast, tenant,
 };
 use crate::{downlink, gateway::backend as gateway_backend, integration, test};
-use chirpstack_api::{common, gw, internal};
+use chirpstack_api::{gw, internal};
 use lrwn::{AES128Key, DevAddr, EUI64};
 
 struct MulticastTest {
@@ -118,29 +118,31 @@ async fn test_multicast() {
                 ..Default::default()
             }],
             assert: vec![assert::downlink_frame(gw::DownlinkFrame {
-                gateway_id: gw.gateway_id.to_vec(),
+                gateway_id: gw.gateway_id.to_string(),
                 items: vec![gw::DownlinkFrameItem {
                     phy_payload: vec![
                         96, 4, 3, 2, 1, 0, 10, 0, 5, 161, 250, 255, 42, 110, 141, 200,
                     ],
+                    tx_info_legacy: None,
                     tx_info: Some(gw::DownlinkTxInfo {
                         frequency: 868300000,
                         power: 14,
-                        modulation: common::Modulation::Lora.into(),
-                        modulation_info: Some(
-                            gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                gw::LoRaModulationInfo {
-                                    bandwidth: 125,
+                        modulation: Some(gw::Modulation {
+                            parameters: Some(gw::modulation::Parameters::Lora(
+                                gw::LoraModulationInfo {
+                                    bandwidth: 125000,
                                     spreading_factor: 9,
-                                    code_rate: "4/5".into(),
+                                    code_rate: gw::CodeRate::Cr45.into(),
                                     polarization_inversion: true,
+                                    ..Default::default()
                                 },
-                            ),
-                        ),
-                        timing: gw::DownlinkTiming::Immediately.into(),
-                        timing_info: Some(gw::downlink_tx_info::TimingInfo::ImmediatelyTimingInfo(
-                            gw::ImmediatelyTimingInfo {},
-                        )),
+                            )),
+                        }),
+                        timing: Some(gw::Timing {
+                            parameters: Some(gw::timing::Parameters::Immediately(
+                                gw::ImmediatelyTimingInfo {},
+                            )),
+                        }),
                         ..Default::default()
                     }),
                 }],
@@ -165,29 +167,31 @@ async fn test_multicast() {
                 },
             ],
             assert: vec![assert::downlink_frame(gw::DownlinkFrame {
-                gateway_id: gw.gateway_id.to_vec(),
+                gateway_id: gw.gateway_id.to_string(),
                 items: vec![gw::DownlinkFrameItem {
                     phy_payload: vec![
                         96, 4, 3, 2, 1, 0, 10, 0, 5, 161, 250, 255, 42, 110, 141, 200,
                     ],
+                    tx_info_legacy: None,
                     tx_info: Some(gw::DownlinkTxInfo {
                         frequency: 868300000,
                         power: 14,
-                        modulation: common::Modulation::Lora.into(),
-                        modulation_info: Some(
-                            gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                gw::LoRaModulationInfo {
-                                    bandwidth: 125,
+                        modulation: Some(gw::Modulation {
+                            parameters: Some(gw::modulation::Parameters::Lora(
+                                gw::LoraModulationInfo {
+                                    bandwidth: 125000,
                                     spreading_factor: 9,
-                                    code_rate: "4/5".into(),
+                                    code_rate: gw::CodeRate::Cr45.into(),
                                     polarization_inversion: true,
+                                    ..Default::default()
                                 },
-                            ),
-                        ),
-                        timing: gw::DownlinkTiming::Immediately.into(),
-                        timing_info: Some(gw::downlink_tx_info::TimingInfo::ImmediatelyTimingInfo(
-                            gw::ImmediatelyTimingInfo {},
-                        )),
+                            )),
+                        }),
+                        timing: Some(gw::Timing {
+                            parameters: Some(gw::timing::Parameters::Immediately(
+                                gw::ImmediatelyTimingInfo {},
+                            )),
+                        }),
                         ..Default::default()
                     }),
                 }],

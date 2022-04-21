@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
+use rand::Rng;
 use tracing::{span, trace, Instrument, Level};
-use uuid::Uuid;
 
 use lrwn::PhyPayload;
 
@@ -11,7 +11,7 @@ use crate::gateway::backend::send_downlink;
 use crate::storage::{device, downlink_frame};
 use crate::uplink::UplinkFrameSet;
 use crate::{config, region};
-use chirpstack_api::internal;
+use chirpstack_api::{gw, internal};
 
 pub struct JoinAccept<'a> {
     uplink_frame_set: &'a UplinkFrameSet,
@@ -54,7 +54,7 @@ impl JoinAccept<'_> {
             region_conf: region::get(&ufs.region_name)?,
 
             downlink_frame: chirpstack_api::gw::DownlinkFrame {
-                downlink_id: Uuid::new_v4().as_bytes().to_vec(),
+                downlink_id: rand::thread_rng().gen(),
                 ..Default::default()
             },
             device_gateway_rx_info: None,
@@ -84,9 +84,9 @@ impl JoinAccept<'_> {
             d_gw_rx_info
                 .items
                 .push(chirpstack_api::internal::DeviceGatewayRxInfoItem {
-                    gateway_id: rx_info.gateway_id.clone(),
+                    gateway_id: hex::decode(&rx_info.gateway_id)?,
                     rssi: rx_info.rssi,
-                    lora_snr: rx_info.lora_snr as f32,
+                    lora_snr: rx_info.snr,
                     antenna: rx_info.antenna,
                     board: rx_info.board,
                     context: rx_info.context.clone(),
@@ -107,7 +107,7 @@ impl JoinAccept<'_> {
             self.device_gateway_rx_info.as_mut().unwrap(),
         )?;
 
-        self.downlink_frame.gateway_id = gw_down.gateway_id.clone();
+        self.downlink_frame.gateway_id = hex::encode(&gw_down.gateway_id);
         self.downlink_gateway = Some(gw_down);
 
         Ok(())
@@ -160,16 +160,13 @@ impl JoinAccept<'_> {
         }
 
         // set timestamp
-        tx_info.set_timing(chirpstack_api::gw::DownlinkTiming::Delay);
-        tx_info.timing_info = Some(
-            chirpstack_api::gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
-                chirpstack_api::gw::DelayTimingInfo {
-                    delay: Some(pbjson_types::Duration::from(
-                        self.region_conf.get_defaults().join_accept_delay1,
-                    )),
-                },
-            ),
-        );
+        tx_info.timing = Some(gw::Timing {
+            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                delay: Some(pbjson_types::Duration::from(
+                    self.region_conf.get_defaults().join_accept_delay1,
+                )),
+            })),
+        });
 
         // set downlink item
         self.downlink_frame
@@ -209,16 +206,13 @@ impl JoinAccept<'_> {
         }
 
         // set timestamp
-        tx_info.set_timing(chirpstack_api::gw::DownlinkTiming::Delay);
-        tx_info.timing_info = Some(
-            chirpstack_api::gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
-                chirpstack_api::gw::DelayTimingInfo {
-                    delay: Some(pbjson_types::Duration::from(
-                        self.region_conf.get_defaults().join_accept_delay2,
-                    )),
-                },
-            ),
-        );
+        tx_info.timing = Some(gw::Timing {
+            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                delay: Some(pbjson_types::Duration::from(
+                    self.region_conf.get_defaults().join_accept_delay2,
+                )),
+            })),
+        });
 
         // set downlink item
         self.downlink_frame
@@ -250,7 +244,7 @@ impl JoinAccept<'_> {
     async fn save_downlink_frame(&self) -> Result<()> {
         let df = chirpstack_api::internal::DownlinkFrame {
             dev_eui: self.device.dev_eui.to_be_bytes().to_vec(),
-            downlink_id: self.downlink_frame.downlink_id.clone(),
+            downlink_id: self.downlink_frame.downlink_id,
             downlink_frame: Some(self.downlink_frame.clone()),
             nwk_s_enc_key: self.device_session.nwk_s_enc_key.clone(),
             ..Default::default()

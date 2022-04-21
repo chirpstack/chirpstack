@@ -5,7 +5,6 @@ use std::pin::Pin;
 use prost::Message;
 use redis::streams::StreamReadReply;
 use tokio::sync::RwLock;
-use uuid::Uuid;
 
 use crate::gateway::backend::mock as gateway_mock;
 use crate::integration::mock;
@@ -16,7 +15,7 @@ use chirpstack_api::{gw, integration as integration_pb, internal, meta};
 use lrwn::EUI64;
 
 lazy_static! {
-    static ref LAST_DOWNLINK_ID: RwLock<Uuid> = RwLock::new(Uuid::nil());
+    static ref LAST_DOWNLINK_ID: RwLock<u32> = RwLock::new(0);
 }
 
 pub type Validator = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;
@@ -229,12 +228,12 @@ pub fn downlink_frame(df: gw::DownlinkFrame) -> Validator {
             let mut items = gateway_mock::get_downlink_frames().await;
 
             assert_eq!(1, items.len());
-            assert_eq!(16, items[0].downlink_id.len());
+            assert!(items[0].downlink_id != 0);
 
             let mut last_downlink_id = LAST_DOWNLINK_ID.write().await;
-            *last_downlink_id = Uuid::from_slice(&items[0].downlink_id).unwrap();
+            *last_downlink_id = items[0].downlink_id;
 
-            items[0].downlink_id = Vec::new();
+            items[0].downlink_id = 0;
             assert_eq!(df, items[0]);
         })
     })
@@ -247,10 +246,10 @@ pub fn downlink_phy_payloads(phys: Vec<lrwn::PhyPayload>) -> Validator {
             let items = gateway_mock::get_downlink_frames().await;
 
             assert_eq!(1, items.len());
-            assert_eq!(16, items[0].downlink_id.len());
+            assert!(items[0].downlink_id != 0);
 
             let mut last_downlink_id = LAST_DOWNLINK_ID.write().await;
-            *last_downlink_id = Uuid::from_slice(&items[0].downlink_id).unwrap();
+            *last_downlink_id = items[0].downlink_id;
 
             assert_eq!(phys.len(), items[0].items.len());
 
@@ -270,10 +269,10 @@ pub fn downlink_phy_payloads_decoded_f_opts(phys: Vec<lrwn::PhyPayload>) -> Vali
             let items = gateway_mock::get_downlink_frames().await;
 
             assert_eq!(1, items.len());
-            assert_eq!(16, items[0].downlink_id.len());
+            assert!(items[0].downlink_id != 0);
 
             let mut last_downlink_id = LAST_DOWNLINK_ID.write().await;
-            *last_downlink_id = Uuid::from_slice(&items[0].downlink_id).unwrap();
+            *last_downlink_id = items[0].downlink_id;
 
             assert_eq!(phys.len(), items[0].items.len());
 
@@ -292,13 +291,13 @@ pub fn downlink_frame_saved(df: internal::DownlinkFrame) -> Validator {
     Box::new(move || {
         let df = df.clone();
         Box::pin(async move {
-            let mut df_get = downlink_frame::get(&LAST_DOWNLINK_ID.read().await.clone())
+            let mut df_get = downlink_frame::get(*LAST_DOWNLINK_ID.read().await)
                 .await
                 .unwrap();
 
-            df_get.downlink_id = Vec::new();
+            df_get.downlink_id = 0;
             if let Some(df) = &mut df_get.downlink_frame {
-                df.downlink_id = Vec::new();
+                df.downlink_id = 0;
             }
 
             assert_eq!(df, df_get);

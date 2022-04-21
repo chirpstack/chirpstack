@@ -43,9 +43,9 @@ impl UplinkPayload {
                 .rx_info
                 .iter()
                 .map(|i| RxInfo {
-                    gateway_id: hex::encode(&i.gateway_id),
+                    gateway_id: i.gateway_id.clone(),
                     rssi: i.rssi,
-                    lora_snr: i.lora_snr,
+                    lora_snr: i.snr,
                     location: match &i.location {
                         Some(v) => Location {
                             latitude: v.latitude,
@@ -71,7 +71,7 @@ struct RxInfo {
     pub gateway_id: String,
     pub rssi: i32,
     #[serde(rename = "loRaSNR")]
-    pub lora_snr: f64,
+    pub lora_snr: f32,
     pub location: Location,
 }
 
@@ -233,9 +233,9 @@ pub mod test {
                     ..Default::default()
                 }),
                 rx_info: vec![gw::UplinkRxInfo {
-                    gateway_id: vec![8, 7, 6, 5, 4, 3, 2, 1],
+                    gateway_id: "0807060504030201".to_string(),
                     rssi: 20,
-                    lora_snr: 5.0,
+                    snr: 5.0,
                     location: Some(common::Location {
                         latitude: 1.123,
                         longitude: 2.123,

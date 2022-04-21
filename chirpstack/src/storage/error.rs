@@ -44,6 +44,9 @@ pub enum Error {
 
     #[error(transparent)]
     Redis(#[from] redis::RedisError),
+
+    #[error(transparent)]
+    ProstDecode(#[from] prost::DecodeError),
 }
 
 impl Error {

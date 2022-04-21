@@ -104,28 +104,19 @@ async fn test_gateway_filtering() {
     .await
     .unwrap();
 
-    let rx_info_a = gw::UplinkRxInfo {
-        gateway_id: gw_a.gateway_id.to_be_bytes().to_vec(),
-        metadata: [
-            ("region_name".to_string(), "eu868".to_string()),
-            ("region_common_name".to_string(), "EU868".to_string()),
-        ]
-        .iter()
-        .cloned()
-        .collect(),
+    let mut rx_info_a = gw::UplinkRxInfo {
+        gateway_id: gw_a.gateway_id.to_string(),
         ..Default::default()
     };
-    let rx_info_b = gw::UplinkRxInfo {
-        gateway_id: gw_b.gateway_id.to_be_bytes().to_vec(),
-        metadata: [
-            ("region_name".to_string(), "eu868".to_string()),
-            ("region_common_name".to_string(), "EU868".to_string()),
-        ]
-        .iter()
-        .cloned()
-        .collect(),
+    rx_info_a.set_metadata_string("region_name", "eu868");
+    rx_info_a.set_metadata_string("region_common_name", "EU868");
+
+    let mut rx_info_b = gw::UplinkRxInfo {
+        gateway_id: gw_b.gateway_id.to_string(),
         ..Default::default()
     };
+    rx_info_b.set_metadata_string("region_name", "eu868");
+    rx_info_b.set_metadata_string("region_common_name", "EU868");
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -274,17 +265,12 @@ async fn test_lorawan_10() {
     .await
     .unwrap();
 
-    let rx_info = gw::UplinkRxInfo {
-        gateway_id: gw.gateway_id.to_be_bytes().to_vec(),
-        metadata: [
-            ("region_name".to_string(), "eu868".to_string()),
-            ("region_common_name".to_string(), "EU868".to_string()),
-        ]
-        .iter()
-        .cloned()
-        .collect(),
+    let mut rx_info = gw::UplinkRxInfo {
+        gateway_id: gw.gateway_id.to_string(),
         ..Default::default()
     };
+    rx_info.set_metadata_string("region_name", "eu868");
+    rx_info.set_metadata_string("region_common_name", "EU868");
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -430,60 +416,60 @@ async fn test_lorawan_10() {
                     items: vec![
                         gw::DownlinkFrameItem {
                             phy_payload: ja_pl.to_vec().unwrap(),
+                            tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 868100000,
                                 power: 14,
-                                modulation: common::Modulation::Lora.into(),
-                                modulation_info: Some(
-                                    gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                        gw::LoRaModulationInfo {
-                                            bandwidth: 125,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
                                             spreading_factor: 12,
-                                            code_rate: "4/5".into(),
+                                            code_rate: gw::CodeRate::Cr45.into(),
                                             polarization_inversion: true,
+                                            ..Default::default()
                                         },
-                                    ),
-                                ),
-                                timing: gw::DownlinkTiming::Delay.into(),
-                                timing_info: Some(
-                                    gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
                                         gw::DelayTimingInfo {
                                             delay: Some(Duration::from_secs(5).into()),
                                         },
-                                    ),
-                                ),
+                                    )),
+                                }),
                                 ..Default::default()
                             }),
                         },
                         gw::DownlinkFrameItem {
                             phy_payload: ja_pl.to_vec().unwrap(),
+                            tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 869525000,
                                 power: 27,
-                                modulation: common::Modulation::Lora.into(),
-                                modulation_info: Some(
-                                    gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                        gw::LoRaModulationInfo {
-                                            bandwidth: 125,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
                                             spreading_factor: 12,
-                                            code_rate: "4/5".into(),
+                                            code_rate: gw::CodeRate::Cr45.into(),
                                             polarization_inversion: true,
+                                            ..Default::default()
                                         },
-                                    ),
-                                ),
-                                timing: gw::DownlinkTiming::Delay.into(),
-                                timing_info: Some(
-                                    gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
                                         gw::DelayTimingInfo {
                                             delay: Some(Duration::from_secs(6).into()),
                                         },
-                                    ),
-                                ),
+                                    )),
+                                }),
                                 ..Default::default()
                             }),
                         },
                     ],
-                    gateway_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                    gateway_id: "0102030405060708".to_string(),
                     ..Default::default()
                 }),
                 assert::downlink_frame_saved(internal::DownlinkFrame {
@@ -495,60 +481,60 @@ async fn test_lorawan_10() {
                         items: vec![
                             gw::DownlinkFrameItem {
                                 phy_payload: ja_pl.to_vec().unwrap(),
+                                tx_info_legacy: None,
                                 tx_info: Some(gw::DownlinkTxInfo {
                                     frequency: 868100000,
                                     power: 14,
-                                    modulation: common::Modulation::Lora.into(),
-                                    modulation_info: Some(
-                                        gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                            gw::LoRaModulationInfo {
-                                                bandwidth: 125,
+                                    modulation: Some(gw::Modulation {
+                                        parameters: Some(gw::modulation::Parameters::Lora(
+                                            gw::LoraModulationInfo {
+                                                bandwidth: 125000,
                                                 spreading_factor: 12,
-                                                code_rate: "4/5".into(),
+                                                code_rate: gw::CodeRate::Cr45.into(),
                                                 polarization_inversion: true,
+                                                ..Default::default()
                                             },
-                                        ),
-                                    ),
-                                    timing: gw::DownlinkTiming::Delay.into(),
-                                    timing_info: Some(
-                                        gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                        )),
+                                    }),
+                                    timing: Some(gw::Timing {
+                                        parameters: Some(gw::timing::Parameters::Delay(
                                             gw::DelayTimingInfo {
                                                 delay: Some(Duration::from_secs(5).into()),
                                             },
-                                        ),
-                                    ),
+                                        )),
+                                    }),
                                     ..Default::default()
                                 }),
                             },
                             gw::DownlinkFrameItem {
                                 phy_payload: ja_pl.to_vec().unwrap(),
+                                tx_info_legacy: None,
                                 tx_info: Some(gw::DownlinkTxInfo {
                                     frequency: 869525000,
                                     power: 27,
-                                    modulation: common::Modulation::Lora.into(),
-                                    modulation_info: Some(
-                                        gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                            gw::LoRaModulationInfo {
-                                                bandwidth: 125,
+                                    modulation: Some(gw::Modulation {
+                                        parameters: Some(gw::modulation::Parameters::Lora(
+                                            gw::LoraModulationInfo {
+                                                bandwidth: 125000,
                                                 spreading_factor: 12,
-                                                code_rate: "4/5".into(),
+                                                code_rate: gw::CodeRate::Cr45.into(),
                                                 polarization_inversion: true,
+                                                ..Default::default()
                                             },
-                                        ),
-                                    ),
-                                    timing: gw::DownlinkTiming::Delay.into(),
-                                    timing_info: Some(
-                                        gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                        )),
+                                    }),
+                                    timing: Some(gw::Timing {
+                                        parameters: Some(gw::timing::Parameters::Delay(
                                             gw::DelayTimingInfo {
                                                 delay: Some(Duration::from_secs(6).into()),
                                             },
-                                        ),
-                                    ),
+                                        )),
+                                    }),
                                     ..Default::default()
                                 }),
                             },
                         ],
-                        gateway_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                        gateway_id: "0102030405060708".into(),
                         ..Default::default()
                     }),
                     ..Default::default()
@@ -715,60 +701,60 @@ async fn test_lorawan_10() {
                     items: vec![
                         gw::DownlinkFrameItem {
                             phy_payload: ja_cflist_pl.to_vec().unwrap(),
+                            tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 868100000,
                                 power: 14,
-                                modulation: common::Modulation::Lora.into(),
-                                modulation_info: Some(
-                                    gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                        gw::LoRaModulationInfo {
-                                            bandwidth: 125,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
                                             spreading_factor: 12,
-                                            code_rate: "4/5".into(),
+                                            code_rate: gw::CodeRate::Cr45.into(),
                                             polarization_inversion: true,
+                                            ..Default::default()
                                         },
-                                    ),
-                                ),
-                                timing: gw::DownlinkTiming::Delay.into(),
-                                timing_info: Some(
-                                    gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
                                         gw::DelayTimingInfo {
                                             delay: Some(Duration::from_secs(5).into()),
                                         },
-                                    ),
-                                ),
+                                    )),
+                                }),
                                 ..Default::default()
                             }),
                         },
                         gw::DownlinkFrameItem {
                             phy_payload: ja_cflist_pl.to_vec().unwrap(),
+                            tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 869525000,
                                 power: 27,
-                                modulation: common::Modulation::Lora.into(),
-                                modulation_info: Some(
-                                    gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                        gw::LoRaModulationInfo {
-                                            bandwidth: 125,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
                                             spreading_factor: 12,
-                                            code_rate: "4/5".into(),
+                                            code_rate: gw::CodeRate::Cr45.into(),
                                             polarization_inversion: true,
+                                            ..Default::default()
                                         },
-                                    ),
-                                ),
-                                timing: gw::DownlinkTiming::Delay.into(),
-                                timing_info: Some(
-                                    gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
                                         gw::DelayTimingInfo {
                                             delay: Some(Duration::from_secs(6).into()),
                                         },
-                                    ),
-                                ),
+                                    )),
+                                }),
                                 ..Default::default()
                             }),
                         },
                     ],
-                    gateway_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                    gateway_id: "0102030405060708".into(),
                     ..Default::default()
                 }),
             ],
@@ -922,17 +908,12 @@ async fn test_lorawan_11() {
     .await
     .unwrap();
 
-    let rx_info = gw::UplinkRxInfo {
-        gateway_id: gw.gateway_id.to_be_bytes().to_vec(),
-        metadata: [
-            ("region_name".to_string(), "eu868".to_string()),
-            ("region_common_name".to_string(), "EU868".to_string()),
-        ]
-        .iter()
-        .cloned()
-        .collect(),
+    let mut rx_info = gw::UplinkRxInfo {
+        gateway_id: gw.gateway_id.to_string(),
         ..Default::default()
     };
+    rx_info.set_metadata_string("region_name", "eu868");
+    rx_info.set_metadata_string("region_common_name", "EU868");
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -1047,60 +1028,60 @@ async fn test_lorawan_11() {
                     items: vec![
                         gw::DownlinkFrameItem {
                             phy_payload: ja_pl.to_vec().unwrap(),
+                            tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 868100000,
                                 power: 14,
-                                modulation: common::Modulation::Lora.into(),
-                                modulation_info: Some(
-                                    gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                        gw::LoRaModulationInfo {
-                                            bandwidth: 125,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
                                             spreading_factor: 12,
-                                            code_rate: "4/5".into(),
+                                            code_rate: gw::CodeRate::Cr45.into(),
                                             polarization_inversion: true,
+                                            ..Default::default()
                                         },
-                                    ),
-                                ),
-                                timing: gw::DownlinkTiming::Delay.into(),
-                                timing_info: Some(
-                                    gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
                                         gw::DelayTimingInfo {
                                             delay: Some(Duration::from_secs(5).into()),
                                         },
-                                    ),
-                                ),
+                                    )),
+                                }),
                                 ..Default::default()
                             }),
                         },
                         gw::DownlinkFrameItem {
                             phy_payload: ja_pl.to_vec().unwrap(),
+                            tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 869525000,
                                 power: 27,
-                                modulation: common::Modulation::Lora.into(),
-                                modulation_info: Some(
-                                    gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                        gw::LoRaModulationInfo {
-                                            bandwidth: 125,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
                                             spreading_factor: 12,
-                                            code_rate: "4/5".into(),
+                                            code_rate: gw::CodeRate::Cr45.into(),
                                             polarization_inversion: true,
+                                            ..Default::default()
                                         },
-                                    ),
-                                ),
-                                timing: gw::DownlinkTiming::Delay.into(),
-                                timing_info: Some(
-                                    gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
                                         gw::DelayTimingInfo {
                                             delay: Some(Duration::from_secs(6).into()),
                                         },
-                                    ),
-                                ),
+                                    )),
+                                }),
                                 ..Default::default()
                             }),
                         },
                     ],
-                    gateway_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                    gateway_id: "0102030405060708".to_string(),
                     ..Default::default()
                 }),
                 assert::downlink_frame_saved(internal::DownlinkFrame {
@@ -1113,60 +1094,60 @@ async fn test_lorawan_11() {
                         items: vec![
                             gw::DownlinkFrameItem {
                                 phy_payload: ja_pl.to_vec().unwrap(),
+                                tx_info_legacy: None,
                                 tx_info: Some(gw::DownlinkTxInfo {
                                     frequency: 868100000,
                                     power: 14,
-                                    modulation: common::Modulation::Lora.into(),
-                                    modulation_info: Some(
-                                        gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                            gw::LoRaModulationInfo {
-                                                bandwidth: 125,
+                                    modulation: Some(gw::Modulation {
+                                        parameters: Some(gw::modulation::Parameters::Lora(
+                                            gw::LoraModulationInfo {
+                                                bandwidth: 125000,
                                                 spreading_factor: 12,
-                                                code_rate: "4/5".into(),
+                                                code_rate: gw::CodeRate::Cr45.into(),
                                                 polarization_inversion: true,
+                                                ..Default::default()
                                             },
-                                        ),
-                                    ),
-                                    timing: gw::DownlinkTiming::Delay.into(),
-                                    timing_info: Some(
-                                        gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                        )),
+                                    }),
+                                    timing: Some(gw::Timing {
+                                        parameters: Some(gw::timing::Parameters::Delay(
                                             gw::DelayTimingInfo {
                                                 delay: Some(Duration::from_secs(5).into()),
                                             },
-                                        ),
-                                    ),
+                                        )),
+                                    }),
                                     ..Default::default()
                                 }),
                             },
                             gw::DownlinkFrameItem {
                                 phy_payload: ja_pl.to_vec().unwrap(),
+                                tx_info_legacy: None,
                                 tx_info: Some(gw::DownlinkTxInfo {
                                     frequency: 869525000,
                                     power: 27,
-                                    modulation: common::Modulation::Lora.into(),
-                                    modulation_info: Some(
-                                        gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                            gw::LoRaModulationInfo {
-                                                bandwidth: 125,
+                                    modulation: Some(gw::Modulation {
+                                        parameters: Some(gw::modulation::Parameters::Lora(
+                                            gw::LoraModulationInfo {
+                                                bandwidth: 125000,
                                                 spreading_factor: 12,
-                                                code_rate: "4/5".into(),
+                                                code_rate: gw::CodeRate::Cr45.into(),
                                                 polarization_inversion: true,
+                                                ..Default::default()
                                             },
-                                        ),
-                                    ),
-                                    timing: gw::DownlinkTiming::Delay.into(),
-                                    timing_info: Some(
-                                        gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
+                                        )),
+                                    }),
+                                    timing: Some(gw::Timing {
+                                        parameters: Some(gw::timing::Parameters::Delay(
                                             gw::DelayTimingInfo {
                                                 delay: Some(Duration::from_secs(6).into()),
                                             },
-                                        ),
-                                    ),
+                                        )),
+                                    }),
                                     ..Default::default()
                                 }),
                             },
                         ],
-                        gateway_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                        gateway_id: "0102030405060708".into(),
                         ..Default::default()
                     }),
                     ..Default::default()

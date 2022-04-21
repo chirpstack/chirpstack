@@ -5,22 +5,23 @@ import * as jspb from "google-protobuf";
 import * as common_common_pb from "../common/common_pb";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 import * as google_protobuf_duration_pb from "google-protobuf/google/protobuf/duration_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 export class Modulation extends jspb.Message {
   hasLora(): boolean;
   clearLora(): void;
-  getLora(): LoRaModulationInfo | undefined;
-  setLora(value?: LoRaModulationInfo): void;
+  getLora(): LoraModulationInfo | undefined;
+  setLora(value?: LoraModulationInfo): void;
 
   hasFsk(): boolean;
   clearFsk(): void;
-  getFsk(): FSKModulationInfo | undefined;
-  setFsk(value?: FSKModulationInfo): void;
+  getFsk(): FskModulationInfo | undefined;
+  setFsk(value?: FskModulationInfo): void;
 
   hasLrFhss(): boolean;
   clearLrFhss(): void;
-  getLrFhss(): LRFHSSModulationInfo | undefined;
-  setLrFhss(value?: LRFHSSModulationInfo): void;
+  getLrFhss(): LrFhssModulationInfo | undefined;
+  setLrFhss(value?: LrFhssModulationInfo): void;
 
   getParametersCase(): Modulation.ParametersCase;
   serializeBinary(): Uint8Array;
@@ -35,9 +36,9 @@ export class Modulation extends jspb.Message {
 
 export namespace Modulation {
   export type AsObject = {
-    lora?: LoRaModulationInfo.AsObject,
-    fsk?: FSKModulationInfo.AsObject,
-    lrFhss?: LRFHSSModulationInfo.AsObject,
+    lora?: LoraModulationInfo.AsObject,
+    fsk?: FskModulationInfo.AsObject,
+    lrFhss?: LrFhssModulationInfo.AsObject,
   }
 
   export enum ParametersCase {
@@ -48,7 +49,7 @@ export namespace Modulation {
   }
 }
 
-export class UplinkTXInfo extends jspb.Message {
+export class UplinkTxInfoLegacy extends jspb.Message {
   getFrequency(): number;
   setFrequency(value: number): void;
 
@@ -57,37 +58,37 @@ export class UplinkTXInfo extends jspb.Message {
 
   hasLoraModulationInfo(): boolean;
   clearLoraModulationInfo(): void;
-  getLoraModulationInfo(): LoRaModulationInfo | undefined;
-  setLoraModulationInfo(value?: LoRaModulationInfo): void;
+  getLoraModulationInfo(): LoraModulationInfo | undefined;
+  setLoraModulationInfo(value?: LoraModulationInfo): void;
 
   hasFskModulationInfo(): boolean;
   clearFskModulationInfo(): void;
-  getFskModulationInfo(): FSKModulationInfo | undefined;
-  setFskModulationInfo(value?: FSKModulationInfo): void;
+  getFskModulationInfo(): FskModulationInfo | undefined;
+  setFskModulationInfo(value?: FskModulationInfo): void;
 
   hasLrFhssModulationInfo(): boolean;
   clearLrFhssModulationInfo(): void;
-  getLrFhssModulationInfo(): LRFHSSModulationInfo | undefined;
-  setLrFhssModulationInfo(value?: LRFHSSModulationInfo): void;
+  getLrFhssModulationInfo(): LrFhssModulationInfo | undefined;
+  setLrFhssModulationInfo(value?: LrFhssModulationInfo): void;
 
-  getModulationInfoCase(): UplinkTXInfo.ModulationInfoCase;
+  getModulationInfoCase(): UplinkTxInfoLegacy.ModulationInfoCase;
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): UplinkTXInfo.AsObject;
-  static toObject(includeInstance: boolean, msg: UplinkTXInfo): UplinkTXInfo.AsObject;
+  toObject(includeInstance?: boolean): UplinkTxInfoLegacy.AsObject;
+  static toObject(includeInstance: boolean, msg: UplinkTxInfoLegacy): UplinkTxInfoLegacy.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: UplinkTXInfo, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): UplinkTXInfo;
-  static deserializeBinaryFromReader(message: UplinkTXInfo, reader: jspb.BinaryReader): UplinkTXInfo;
+  static serializeBinaryToWriter(message: UplinkTxInfoLegacy, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UplinkTxInfoLegacy;
+  static deserializeBinaryFromReader(message: UplinkTxInfoLegacy, reader: jspb.BinaryReader): UplinkTxInfoLegacy;
 }
 
-export namespace UplinkTXInfo {
+export namespace UplinkTxInfoLegacy {
   export type AsObject = {
     frequency: number,
     modulation: common_common_pb.ModulationMap[keyof common_common_pb.ModulationMap],
-    loraModulationInfo?: LoRaModulationInfo.AsObject,
-    fskModulationInfo?: FSKModulationInfo.AsObject,
-    lrFhssModulationInfo?: LRFHSSModulationInfo.AsObject,
+    loraModulationInfo?: LoraModulationInfo.AsObject,
+    fskModulationInfo?: FskModulationInfo.AsObject,
+    lrFhssModulationInfo?: LrFhssModulationInfo.AsObject,
   }
 
   export enum ModulationInfoCase {
@@ -98,39 +99,69 @@ export namespace UplinkTXInfo {
   }
 }
 
-export class LoRaModulationInfo extends jspb.Message {
+export class UplinkTxInfo extends jspb.Message {
+  getFrequency(): number;
+  setFrequency(value: number): void;
+
+  hasModulation(): boolean;
+  clearModulation(): void;
+  getModulation(): Modulation | undefined;
+  setModulation(value?: Modulation): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UplinkTxInfo.AsObject;
+  static toObject(includeInstance: boolean, msg: UplinkTxInfo): UplinkTxInfo.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: UplinkTxInfo, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UplinkTxInfo;
+  static deserializeBinaryFromReader(message: UplinkTxInfo, reader: jspb.BinaryReader): UplinkTxInfo;
+}
+
+export namespace UplinkTxInfo {
+  export type AsObject = {
+    frequency: number,
+    modulation?: Modulation.AsObject,
+  }
+}
+
+export class LoraModulationInfo extends jspb.Message {
   getBandwidth(): number;
   setBandwidth(value: number): void;
 
   getSpreadingFactor(): number;
   setSpreadingFactor(value: number): void;
 
-  getCodeRate(): string;
-  setCodeRate(value: string): void;
+  getCodeRateLegacy(): string;
+  setCodeRateLegacy(value: string): void;
+
+  getCodeRate(): CodeRateMap[keyof CodeRateMap];
+  setCodeRate(value: CodeRateMap[keyof CodeRateMap]): void;
 
   getPolarizationInversion(): boolean;
   setPolarizationInversion(value: boolean): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): LoRaModulationInfo.AsObject;
-  static toObject(includeInstance: boolean, msg: LoRaModulationInfo): LoRaModulationInfo.AsObject;
+  toObject(includeInstance?: boolean): LoraModulationInfo.AsObject;
+  static toObject(includeInstance: boolean, msg: LoraModulationInfo): LoraModulationInfo.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: LoRaModulationInfo, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): LoRaModulationInfo;
-  static deserializeBinaryFromReader(message: LoRaModulationInfo, reader: jspb.BinaryReader): LoRaModulationInfo;
+  static serializeBinaryToWriter(message: LoraModulationInfo, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LoraModulationInfo;
+  static deserializeBinaryFromReader(message: LoraModulationInfo, reader: jspb.BinaryReader): LoraModulationInfo;
 }
 
-export namespace LoRaModulationInfo {
+export namespace LoraModulationInfo {
   export type AsObject = {
     bandwidth: number,
     spreadingFactor: number,
-    codeRate: string,
+    codeRateLegacy: string,
+    codeRate: CodeRateMap[keyof CodeRateMap],
     polarizationInversion: boolean,
   }
 }
 
-export class FSKModulationInfo extends jspb.Message {
+export class FskModulationInfo extends jspb.Message {
   getFrequencyDeviation(): number;
   setFrequencyDeviation(value: number): void;
 
@@ -138,23 +169,23 @@ export class FSKModulationInfo extends jspb.Message {
   setDatarate(value: number): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): FSKModulationInfo.AsObject;
-  static toObject(includeInstance: boolean, msg: FSKModulationInfo): FSKModulationInfo.AsObject;
+  toObject(includeInstance?: boolean): FskModulationInfo.AsObject;
+  static toObject(includeInstance: boolean, msg: FskModulationInfo): FskModulationInfo.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: FSKModulationInfo, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): FSKModulationInfo;
-  static deserializeBinaryFromReader(message: FSKModulationInfo, reader: jspb.BinaryReader): FSKModulationInfo;
+  static serializeBinaryToWriter(message: FskModulationInfo, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): FskModulationInfo;
+  static deserializeBinaryFromReader(message: FskModulationInfo, reader: jspb.BinaryReader): FskModulationInfo;
 }
 
-export namespace FSKModulationInfo {
+export namespace FskModulationInfo {
   export type AsObject = {
     frequencyDeviation: number,
     datarate: number,
   }
 }
 
-export class LRFHSSModulationInfo extends jspb.Message {
+export class LrFhssModulationInfo extends jspb.Message {
   getOperatingChannelWidth(): number;
   setOperatingChannelWidth(value: number): void;
 
@@ -165,16 +196,16 @@ export class LRFHSSModulationInfo extends jspb.Message {
   setGridSteps(value: number): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): LRFHSSModulationInfo.AsObject;
-  static toObject(includeInstance: boolean, msg: LRFHSSModulationInfo): LRFHSSModulationInfo.AsObject;
+  toObject(includeInstance?: boolean): LrFhssModulationInfo.AsObject;
+  static toObject(includeInstance: boolean, msg: LrFhssModulationInfo): LrFhssModulationInfo.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: LRFHSSModulationInfo, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): LRFHSSModulationInfo;
-  static deserializeBinaryFromReader(message: LRFHSSModulationInfo, reader: jspb.BinaryReader): LRFHSSModulationInfo;
+  static serializeBinaryToWriter(message: LrFhssModulationInfo, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LrFhssModulationInfo;
+  static deserializeBinaryFromReader(message: LrFhssModulationInfo, reader: jspb.BinaryReader): LrFhssModulationInfo;
 }
 
-export namespace LRFHSSModulationInfo {
+export namespace LrFhssModulationInfo {
   export type AsObject = {
     operatingChannelWidth: number,
     codeRate: string,
@@ -350,7 +381,7 @@ export namespace PerModulationCount {
   }
 }
 
-export class UplinkRXInfo extends jspb.Message {
+export class UplinkRxInfoLegacy extends jspb.Message {
   getGatewayId(): Uint8Array | string;
   getGatewayId_asU8(): Uint8Array;
   getGatewayId_asB64(): string;
@@ -417,18 +448,18 @@ export class UplinkRXInfo extends jspb.Message {
 
   getMetadataMap(): jspb.Map<string, string>;
   clearMetadataMap(): void;
-  getFineTimestampCase(): UplinkRXInfo.FineTimestampCase;
+  getFineTimestampCase(): UplinkRxInfoLegacy.FineTimestampCase;
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): UplinkRXInfo.AsObject;
-  static toObject(includeInstance: boolean, msg: UplinkRXInfo): UplinkRXInfo.AsObject;
+  toObject(includeInstance?: boolean): UplinkRxInfoLegacy.AsObject;
+  static toObject(includeInstance: boolean, msg: UplinkRxInfoLegacy): UplinkRxInfoLegacy.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: UplinkRXInfo, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): UplinkRXInfo;
-  static deserializeBinaryFromReader(message: UplinkRXInfo, reader: jspb.BinaryReader): UplinkRXInfo;
+  static serializeBinaryToWriter(message: UplinkRxInfoLegacy, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UplinkRxInfoLegacy;
+  static deserializeBinaryFromReader(message: UplinkRxInfoLegacy, reader: jspb.BinaryReader): UplinkRxInfoLegacy;
 }
 
-export namespace UplinkRXInfo {
+export namespace UplinkRxInfoLegacy {
   export type AsObject = {
     gatewayId: Uint8Array | string,
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
@@ -456,7 +487,83 @@ export namespace UplinkRXInfo {
   }
 }
 
-export class DownlinkTXInfo extends jspb.Message {
+export class UplinkRxInfo extends jspb.Message {
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
+
+  getUplinkId(): number;
+  setUplinkId(value: number): void;
+
+  hasTime(): boolean;
+  clearTime(): void;
+  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasTimeSinceGpsEpoch(): boolean;
+  clearTimeSinceGpsEpoch(): void;
+  getTimeSinceGpsEpoch(): google_protobuf_duration_pb.Duration | undefined;
+  setTimeSinceGpsEpoch(value?: google_protobuf_duration_pb.Duration): void;
+
+  hasFineTimeSinceGpsEpoch(): boolean;
+  clearFineTimeSinceGpsEpoch(): void;
+  getFineTimeSinceGpsEpoch(): google_protobuf_duration_pb.Duration | undefined;
+  setFineTimeSinceGpsEpoch(value?: google_protobuf_duration_pb.Duration): void;
+
+  getRssi(): number;
+  setRssi(value: number): void;
+
+  getSnr(): number;
+  setSnr(value: number): void;
+
+  getBoard(): number;
+  setBoard(value: number): void;
+
+  getAntenna(): number;
+  setAntenna(value: number): void;
+
+  hasLocation(): boolean;
+  clearLocation(): void;
+  getLocation(): common_common_pb.Location | undefined;
+  setLocation(value?: common_common_pb.Location): void;
+
+  getContext(): Uint8Array | string;
+  getContext_asU8(): Uint8Array;
+  getContext_asB64(): string;
+  setContext(value: Uint8Array | string): void;
+
+  hasMetadata(): boolean;
+  clearMetadata(): void;
+  getMetadata(): google_protobuf_struct_pb.Struct | undefined;
+  setMetadata(value?: google_protobuf_struct_pb.Struct): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UplinkRxInfo.AsObject;
+  static toObject(includeInstance: boolean, msg: UplinkRxInfo): UplinkRxInfo.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: UplinkRxInfo, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UplinkRxInfo;
+  static deserializeBinaryFromReader(message: UplinkRxInfo, reader: jspb.BinaryReader): UplinkRxInfo;
+}
+
+export namespace UplinkRxInfo {
+  export type AsObject = {
+    gatewayId: string,
+    uplinkId: number,
+    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    timeSinceGpsEpoch?: google_protobuf_duration_pb.Duration.AsObject,
+    fineTimeSinceGpsEpoch?: google_protobuf_duration_pb.Duration.AsObject,
+    rssi: number,
+    snr: number,
+    board: number,
+    antenna: number,
+    location?: common_common_pb.Location.AsObject,
+    context: Uint8Array | string,
+    metadata?: google_protobuf_struct_pb.Struct.AsObject,
+  }
+}
+
+export class DownlinkTxInfoLegacy extends jspb.Message {
   getGatewayId(): Uint8Array | string;
   getGatewayId_asU8(): Uint8Array;
   getGatewayId_asB64(): string;
@@ -473,13 +580,13 @@ export class DownlinkTXInfo extends jspb.Message {
 
   hasLoraModulationInfo(): boolean;
   clearLoraModulationInfo(): void;
-  getLoraModulationInfo(): LoRaModulationInfo | undefined;
-  setLoraModulationInfo(value?: LoRaModulationInfo): void;
+  getLoraModulationInfo(): LoraModulationInfo | undefined;
+  setLoraModulationInfo(value?: LoraModulationInfo): void;
 
   hasFskModulationInfo(): boolean;
   clearFskModulationInfo(): void;
-  getFskModulationInfo(): FSKModulationInfo | undefined;
-  setFskModulationInfo(value?: FSKModulationInfo): void;
+  getFskModulationInfo(): FskModulationInfo | undefined;
+  setFskModulationInfo(value?: FskModulationInfo): void;
 
   getBoard(): number;
   setBoard(value: number): void;
@@ -510,26 +617,26 @@ export class DownlinkTXInfo extends jspb.Message {
   getContext_asB64(): string;
   setContext(value: Uint8Array | string): void;
 
-  getModulationInfoCase(): DownlinkTXInfo.ModulationInfoCase;
-  getTimingInfoCase(): DownlinkTXInfo.TimingInfoCase;
+  getModulationInfoCase(): DownlinkTxInfoLegacy.ModulationInfoCase;
+  getTimingInfoCase(): DownlinkTxInfoLegacy.TimingInfoCase;
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DownlinkTXInfo.AsObject;
-  static toObject(includeInstance: boolean, msg: DownlinkTXInfo): DownlinkTXInfo.AsObject;
+  toObject(includeInstance?: boolean): DownlinkTxInfoLegacy.AsObject;
+  static toObject(includeInstance: boolean, msg: DownlinkTxInfoLegacy): DownlinkTxInfoLegacy.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: DownlinkTXInfo, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DownlinkTXInfo;
-  static deserializeBinaryFromReader(message: DownlinkTXInfo, reader: jspb.BinaryReader): DownlinkTXInfo;
+  static serializeBinaryToWriter(message: DownlinkTxInfoLegacy, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownlinkTxInfoLegacy;
+  static deserializeBinaryFromReader(message: DownlinkTxInfoLegacy, reader: jspb.BinaryReader): DownlinkTxInfoLegacy;
 }
 
-export namespace DownlinkTXInfo {
+export namespace DownlinkTxInfoLegacy {
   export type AsObject = {
     gatewayId: Uint8Array | string,
     frequency: number,
     power: number,
     modulation: common_common_pb.ModulationMap[keyof common_common_pb.ModulationMap],
-    loraModulationInfo?: LoRaModulationInfo.AsObject,
-    fskModulationInfo?: FSKModulationInfo.AsObject,
+    loraModulationInfo?: LoraModulationInfo.AsObject,
+    fskModulationInfo?: FskModulationInfo.AsObject,
     board: number,
     antenna: number,
     timing: DownlinkTimingMap[keyof DownlinkTimingMap],
@@ -550,6 +657,98 @@ export namespace DownlinkTXInfo {
     IMMEDIATELY_TIMING_INFO = 13,
     DELAY_TIMING_INFO = 14,
     GPS_EPOCH_TIMING_INFO = 15,
+  }
+}
+
+export class DownlinkTxInfo extends jspb.Message {
+  getFrequency(): number;
+  setFrequency(value: number): void;
+
+  getPower(): number;
+  setPower(value: number): void;
+
+  hasModulation(): boolean;
+  clearModulation(): void;
+  getModulation(): Modulation | undefined;
+  setModulation(value?: Modulation): void;
+
+  getBoard(): number;
+  setBoard(value: number): void;
+
+  getAntenna(): number;
+  setAntenna(value: number): void;
+
+  hasTiming(): boolean;
+  clearTiming(): void;
+  getTiming(): Timing | undefined;
+  setTiming(value?: Timing): void;
+
+  getContext(): Uint8Array | string;
+  getContext_asU8(): Uint8Array;
+  getContext_asB64(): string;
+  setContext(value: Uint8Array | string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DownlinkTxInfo.AsObject;
+  static toObject(includeInstance: boolean, msg: DownlinkTxInfo): DownlinkTxInfo.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: DownlinkTxInfo, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownlinkTxInfo;
+  static deserializeBinaryFromReader(message: DownlinkTxInfo, reader: jspb.BinaryReader): DownlinkTxInfo;
+}
+
+export namespace DownlinkTxInfo {
+  export type AsObject = {
+    frequency: number,
+    power: number,
+    modulation?: Modulation.AsObject,
+    board: number,
+    antenna: number,
+    timing?: Timing.AsObject,
+    context: Uint8Array | string,
+  }
+}
+
+export class Timing extends jspb.Message {
+  hasImmediately(): boolean;
+  clearImmediately(): void;
+  getImmediately(): ImmediatelyTimingInfo | undefined;
+  setImmediately(value?: ImmediatelyTimingInfo): void;
+
+  hasDelay(): boolean;
+  clearDelay(): void;
+  getDelay(): DelayTimingInfo | undefined;
+  setDelay(value?: DelayTimingInfo): void;
+
+  hasGpsEpoch(): boolean;
+  clearGpsEpoch(): void;
+  getGpsEpoch(): GPSEpochTimingInfo | undefined;
+  setGpsEpoch(value?: GPSEpochTimingInfo): void;
+
+  getParametersCase(): Timing.ParametersCase;
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Timing.AsObject;
+  static toObject(includeInstance: boolean, msg: Timing): Timing.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Timing, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Timing;
+  static deserializeBinaryFromReader(message: Timing, reader: jspb.BinaryReader): Timing;
+}
+
+export namespace Timing {
+  export type AsObject = {
+    immediately?: ImmediatelyTimingInfo.AsObject,
+    delay?: DelayTimingInfo.AsObject,
+    gpsEpoch?: GPSEpochTimingInfo.AsObject,
+  }
+
+  export enum ParametersCase {
+    PARAMETERS_NOT_SET = 0,
+    IMMEDIATELY = 1,
+    DELAY = 2,
+    GPS_EPOCH = 3,
   }
 }
 
@@ -619,15 +818,25 @@ export class UplinkFrame extends jspb.Message {
   getPhyPayload_asB64(): string;
   setPhyPayload(value: Uint8Array | string): void;
 
+  hasTxInfoLegacy(): boolean;
+  clearTxInfoLegacy(): void;
+  getTxInfoLegacy(): UplinkTxInfoLegacy | undefined;
+  setTxInfoLegacy(value?: UplinkTxInfoLegacy): void;
+
+  hasRxInfoLegacy(): boolean;
+  clearRxInfoLegacy(): void;
+  getRxInfoLegacy(): UplinkRxInfoLegacy | undefined;
+  setRxInfoLegacy(value?: UplinkRxInfoLegacy): void;
+
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): UplinkTXInfo | undefined;
-  setTxInfo(value?: UplinkTXInfo): void;
+  getTxInfo(): UplinkTxInfo | undefined;
+  setTxInfo(value?: UplinkTxInfo): void;
 
   hasRxInfo(): boolean;
   clearRxInfo(): void;
-  getRxInfo(): UplinkRXInfo | undefined;
-  setRxInfo(value?: UplinkRXInfo): void;
+  getRxInfo(): UplinkRxInfo | undefined;
+  setRxInfo(value?: UplinkRxInfo): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UplinkFrame.AsObject;
@@ -642,8 +851,10 @@ export class UplinkFrame extends jspb.Message {
 export namespace UplinkFrame {
   export type AsObject = {
     phyPayload: Uint8Array | string,
-    txInfo?: UplinkTXInfo.AsObject,
-    rxInfo?: UplinkRXInfo.AsObject,
+    txInfoLegacy?: UplinkTxInfoLegacy.AsObject,
+    rxInfoLegacy?: UplinkRxInfoLegacy.AsObject,
+    txInfo?: UplinkTxInfo.AsObject,
+    rxInfo?: UplinkRxInfo.AsObject,
   }
 }
 
@@ -655,13 +866,13 @@ export class UplinkFrameSet extends jspb.Message {
 
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): UplinkTXInfo | undefined;
-  setTxInfo(value?: UplinkTXInfo): void;
+  getTxInfo(): UplinkTxInfo | undefined;
+  setTxInfo(value?: UplinkTxInfo): void;
 
   clearRxInfoList(): void;
-  getRxInfoList(): Array<UplinkRXInfo>;
-  setRxInfoList(value: Array<UplinkRXInfo>): void;
-  addRxInfo(value?: UplinkRXInfo, index?: number): UplinkRXInfo;
+  getRxInfoList(): Array<UplinkRxInfo>;
+  setRxInfoList(value: Array<UplinkRxInfo>): void;
+  addRxInfo(value?: UplinkRxInfo, index?: number): UplinkRxInfo;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UplinkFrameSet.AsObject;
@@ -676,39 +887,32 @@ export class UplinkFrameSet extends jspb.Message {
 export namespace UplinkFrameSet {
   export type AsObject = {
     phyPayload: Uint8Array | string,
-    txInfo?: UplinkTXInfo.AsObject,
-    rxInfoList: Array<UplinkRXInfo.AsObject>,
+    txInfo?: UplinkTxInfo.AsObject,
+    rxInfoList: Array<UplinkRxInfo.AsObject>,
   }
 }
 
 export class DownlinkFrame extends jspb.Message {
-  getPhyPayload(): Uint8Array | string;
-  getPhyPayload_asU8(): Uint8Array;
-  getPhyPayload_asB64(): string;
-  setPhyPayload(value: Uint8Array | string): void;
+  getDownlinkId(): number;
+  setDownlinkId(value: number): void;
 
-  hasTxInfo(): boolean;
-  clearTxInfo(): void;
-  getTxInfo(): DownlinkTXInfo | undefined;
-  setTxInfo(value?: DownlinkTXInfo): void;
-
-  getToken(): number;
-  setToken(value: number): void;
-
-  getDownlinkId(): Uint8Array | string;
-  getDownlinkId_asU8(): Uint8Array;
-  getDownlinkId_asB64(): string;
-  setDownlinkId(value: Uint8Array | string): void;
+  getDownlinkIdLegacy(): Uint8Array | string;
+  getDownlinkIdLegacy_asU8(): Uint8Array;
+  getDownlinkIdLegacy_asB64(): string;
+  setDownlinkIdLegacy(value: Uint8Array | string): void;
 
   clearItemsList(): void;
   getItemsList(): Array<DownlinkFrameItem>;
   setItemsList(value: Array<DownlinkFrameItem>): void;
   addItems(value?: DownlinkFrameItem, index?: number): DownlinkFrameItem;
 
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DownlinkFrame.AsObject;
@@ -722,12 +926,11 @@ export class DownlinkFrame extends jspb.Message {
 
 export namespace DownlinkFrame {
   export type AsObject = {
-    phyPayload: Uint8Array | string,
-    txInfo?: DownlinkTXInfo.AsObject,
-    token: number,
-    downlinkId: Uint8Array | string,
+    downlinkId: number,
+    downlinkIdLegacy: Uint8Array | string,
     itemsList: Array<DownlinkFrameItem.AsObject>,
-    gatewayId: Uint8Array | string,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
   }
 }
 
@@ -737,10 +940,15 @@ export class DownlinkFrameItem extends jspb.Message {
   getPhyPayload_asB64(): string;
   setPhyPayload(value: Uint8Array | string): void;
 
+  hasTxInfoLegacy(): boolean;
+  clearTxInfoLegacy(): void;
+  getTxInfoLegacy(): DownlinkTxInfoLegacy | undefined;
+  setTxInfoLegacy(value?: DownlinkTxInfoLegacy): void;
+
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): DownlinkTXInfo | undefined;
-  setTxInfo(value?: DownlinkTXInfo): void;
+  getTxInfo(): DownlinkTxInfo | undefined;
+  setTxInfo(value?: DownlinkTxInfo): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DownlinkFrameItem.AsObject;
@@ -755,67 +963,68 @@ export class DownlinkFrameItem extends jspb.Message {
 export namespace DownlinkFrameItem {
   export type AsObject = {
     phyPayload: Uint8Array | string,
-    txInfo?: DownlinkTXInfo.AsObject,
+    txInfoLegacy?: DownlinkTxInfoLegacy.AsObject,
+    txInfo?: DownlinkTxInfo.AsObject,
   }
 }
 
-export class DownlinkTXAck extends jspb.Message {
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+export class DownlinkTxAck extends jspb.Message {
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
 
-  getToken(): number;
-  setToken(value: number): void;
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
-  getError(): string;
-  setError(value: string): void;
+  getDownlinkId(): number;
+  setDownlinkId(value: number): void;
 
-  getDownlinkId(): Uint8Array | string;
-  getDownlinkId_asU8(): Uint8Array;
-  getDownlinkId_asB64(): string;
-  setDownlinkId(value: Uint8Array | string): void;
+  getDownlinkIdLegacy(): Uint8Array | string;
+  getDownlinkIdLegacy_asU8(): Uint8Array;
+  getDownlinkIdLegacy_asB64(): string;
+  setDownlinkIdLegacy(value: Uint8Array | string): void;
 
   clearItemsList(): void;
-  getItemsList(): Array<DownlinkTXAckItem>;
-  setItemsList(value: Array<DownlinkTXAckItem>): void;
-  addItems(value?: DownlinkTXAckItem, index?: number): DownlinkTXAckItem;
+  getItemsList(): Array<DownlinkTxAckItem>;
+  setItemsList(value: Array<DownlinkTxAckItem>): void;
+  addItems(value?: DownlinkTxAckItem, index?: number): DownlinkTxAckItem;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DownlinkTXAck.AsObject;
-  static toObject(includeInstance: boolean, msg: DownlinkTXAck): DownlinkTXAck.AsObject;
+  toObject(includeInstance?: boolean): DownlinkTxAck.AsObject;
+  static toObject(includeInstance: boolean, msg: DownlinkTxAck): DownlinkTxAck.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: DownlinkTXAck, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DownlinkTXAck;
-  static deserializeBinaryFromReader(message: DownlinkTXAck, reader: jspb.BinaryReader): DownlinkTXAck;
+  static serializeBinaryToWriter(message: DownlinkTxAck, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownlinkTxAck;
+  static deserializeBinaryFromReader(message: DownlinkTxAck, reader: jspb.BinaryReader): DownlinkTxAck;
 }
 
-export namespace DownlinkTXAck {
+export namespace DownlinkTxAck {
   export type AsObject = {
-    gatewayId: Uint8Array | string,
-    token: number,
-    error: string,
-    downlinkId: Uint8Array | string,
-    itemsList: Array<DownlinkTXAckItem.AsObject>,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
+    downlinkId: number,
+    downlinkIdLegacy: Uint8Array | string,
+    itemsList: Array<DownlinkTxAckItem.AsObject>,
   }
 }
 
-export class DownlinkTXAckItem extends jspb.Message {
+export class DownlinkTxAckItem extends jspb.Message {
   getStatus(): TxAckStatusMap[keyof TxAckStatusMap];
   setStatus(value: TxAckStatusMap[keyof TxAckStatusMap]): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DownlinkTXAckItem.AsObject;
-  static toObject(includeInstance: boolean, msg: DownlinkTXAckItem): DownlinkTXAckItem.AsObject;
+  toObject(includeInstance?: boolean): DownlinkTxAckItem.AsObject;
+  static toObject(includeInstance: boolean, msg: DownlinkTxAckItem): DownlinkTxAckItem.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: DownlinkTXAckItem, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DownlinkTXAckItem;
-  static deserializeBinaryFromReader(message: DownlinkTXAckItem, reader: jspb.BinaryReader): DownlinkTXAckItem;
+  static serializeBinaryToWriter(message: DownlinkTxAckItem, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownlinkTxAckItem;
+  static deserializeBinaryFromReader(message: DownlinkTxAckItem, reader: jspb.BinaryReader): DownlinkTxAckItem;
 }
 
-export namespace DownlinkTXAckItem {
+export namespace DownlinkTxAckItem {
   export type AsObject = {
     status: TxAckStatusMap[keyof TxAckStatusMap],
   }
@@ -1145,6 +1354,16 @@ export namespace ConnState {
 
   export const State: StateMap;
 }
+
+export interface CodeRateMap {
+  CR_UNDEFINED: 0;
+  CR_4_5: 1;
+  CR_4_6: 2;
+  CR_4_7: 3;
+  CR_4_8: 4;
+}
+
+export const CodeRate: CodeRateMap;
 
 export interface DownlinkTimingMap {
   IMMEDIATELY: 0;

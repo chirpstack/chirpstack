@@ -4,8 +4,8 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
+use rand::Rng;
 use tracing::{span, trace, warn, Instrument, Level};
-use uuid::Uuid;
 
 use crate::api::helpers::FromProto;
 use crate::downlink::{classb, helpers};
@@ -121,7 +121,7 @@ impl Data {
             device_gateway_rx_info: Some(dev_gw_rx_info),
             downlink_gateway: None,
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: Uuid::new_v4().as_bytes().to_vec(),
+                downlink_id: rand::thread_rng().gen(),
                 ..Default::default()
             },
             downlink_frame_items: Vec::new(),
@@ -174,7 +174,7 @@ impl Data {
             device_gateway_rx_info: Some(dev_gw),
             downlink_gateway: None,
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: Uuid::new_v4().as_bytes().to_vec(),
+                downlink_id: rand::thread_rng().gen(),
                 ..Default::default()
             },
             downlink_frame_items: vec![],
@@ -215,7 +215,7 @@ impl Data {
             self.device_gateway_rx_info.as_mut().unwrap(),
         )?;
 
-        self.downlink_frame.gateway_id = gw_down.gateway_id.clone();
+        self.downlink_frame.gateway_id = hex::encode(&gw_down.gateway_id);
         self.downlink_gateway = Some(gw_down);
 
         Ok(())
@@ -598,7 +598,7 @@ impl Data {
         trace!("Saving downlink frame");
 
         downlink_frame::save(&internal::DownlinkFrame {
-            downlink_id: self.downlink_frame.downlink_id.clone(),
+            downlink_id: self.downlink_frame.downlink_id,
             dev_eui: self.device.dev_eui.to_be_bytes().to_vec(),
             device_queue_item_id: match &self.device_queue_item {
                 Some(qi) => qi.id.as_bytes().to_vec(),
@@ -1050,12 +1050,11 @@ impl Data {
         } else {
             self.region_conf.get_defaults().rx1_delay
         };
-        tx_info.set_timing(gw::DownlinkTiming::Delay);
-        tx_info.timing_info = Some(gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
-            gw::DelayTimingInfo {
+        tx_info.timing = Some(gw::Timing {
+            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
                 delay: Some(pbjson_types::Duration::from(delay)),
-            },
-        ));
+            })),
+        });
 
         // get remaining payload size
         let max_pl_size = self.region_conf.get_max_payload_size(
@@ -1107,19 +1106,20 @@ impl Data {
             } else {
                 self.region_conf.get_defaults().rx2_delay
             };
-            tx_info.set_timing(gw::DownlinkTiming::Delay);
-            tx_info.timing_info = Some(gw::downlink_tx_info::TimingInfo::DelayTimingInfo(
-                gw::DelayTimingInfo {
+
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
                     delay: Some(pbjson_types::Duration::from(delay)),
-                },
-            ));
+                })),
+            });
         }
 
         if self.immediately {
-            tx_info.set_timing(gw::DownlinkTiming::Immediately);
-            tx_info.timing_info = Some(gw::downlink_tx_info::TimingInfo::ImmediatelyTimingInfo(
-                gw::ImmediatelyTimingInfo {},
-            ));
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Immediately(
+                    gw::ImmediatelyTimingInfo {},
+                )),
+            });
         }
 
         // get remaining payload size
@@ -1173,12 +1173,11 @@ impl Data {
             self.device_session.class_b_ping_slot_nb as usize,
         )?;
         trace!(gps_time_now_ts = %now_gps_ts, ping_slot_ts = %ping_slot_ts, "Calculated ping-slot timestamp");
-        tx_info.set_timing(gw::DownlinkTiming::GpsEpoch);
-        tx_info.timing_info = Some(gw::downlink_tx_info::TimingInfo::GpsEpochTimingInfo(
-            gw::GpsEpochTimingInfo {
+        tx_info.timing = Some(gw::Timing {
+            parameters: Some(gw::timing::Parameters::GpsEpoch(gw::GpsEpochTimingInfo {
                 time_since_gps_epoch: Some(pbjson_types::Duration::from(ping_slot_ts.to_std()?)),
-            },
-        ));
+            })),
+        });
 
         let scheduler_run_after_ts = ping_slot_ts.to_date_time();
         // Try to aquire the device lock.

@@ -39,6 +39,9 @@ impl ToStatus for storage::error::Error {
             storage::error::Error::Lrwn(_) => Status::new(Code::Internal, format!("{}", self)),
             storage::error::Error::TokioJoin(_) => Status::new(Code::Internal, format!("{}", self)),
             storage::error::Error::Redis(_) => Status::new(Code::Internal, format!("{}", self)),
+            storage::error::Error::ProstDecode(_) => {
+                Status::new(Code::Internal, format!("{}", self))
+            }
         }
     }
 }

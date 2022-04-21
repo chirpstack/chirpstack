@@ -11,13 +11,13 @@ export class UplinkMeta extends jspb.Message {
 
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): gw_gw_pb.UplinkTXInfo | undefined;
-  setTxInfo(value?: gw_gw_pb.UplinkTXInfo): void;
+  getTxInfo(): gw_gw_pb.UplinkTxInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.UplinkTxInfo): void;
 
   clearRxInfoList(): void;
-  getRxInfoList(): Array<gw_gw_pb.UplinkRXInfo>;
-  setRxInfoList(value: Array<gw_gw_pb.UplinkRXInfo>): void;
-  addRxInfo(value?: gw_gw_pb.UplinkRXInfo, index?: number): gw_gw_pb.UplinkRXInfo;
+  getRxInfoList(): Array<gw_gw_pb.UplinkRxInfo>;
+  setRxInfoList(value: Array<gw_gw_pb.UplinkRxInfo>): void;
+  addRxInfo(value?: gw_gw_pb.UplinkRxInfo, index?: number): gw_gw_pb.UplinkRxInfo;
 
   getPhyPayloadByteCount(): number;
   setPhyPayloadByteCount(value: number): void;
@@ -44,8 +44,8 @@ export class UplinkMeta extends jspb.Message {
 export namespace UplinkMeta {
   export type AsObject = {
     devEui: string,
-    txInfo?: gw_gw_pb.UplinkTXInfo.AsObject,
-    rxInfoList: Array<gw_gw_pb.UplinkRXInfo.AsObject>,
+    txInfo?: gw_gw_pb.UplinkTxInfo.AsObject,
+    rxInfoList: Array<gw_gw_pb.UplinkRxInfo.AsObject>,
     phyPayloadByteCount: number,
     macCommandByteCount: number,
     applicationPayloadByteCount: number,
@@ -62,8 +62,8 @@ export class DownlinkMeta extends jspb.Message {
 
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): gw_gw_pb.DownlinkTXInfo | undefined;
-  setTxInfo(value?: gw_gw_pb.DownlinkTXInfo): void;
+  getTxInfo(): gw_gw_pb.DownlinkTxInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.DownlinkTxInfo): void;
 
   getPhyPayloadByteCount(): number;
   setPhyPayloadByteCount(value: number): void;
@@ -94,7 +94,7 @@ export namespace DownlinkMeta {
   export type AsObject = {
     devEui: string,
     multicastGroupId: string,
-    txInfo?: gw_gw_pb.DownlinkTXInfo.AsObject,
+    txInfo?: gw_gw_pb.DownlinkTxInfo.AsObject,
     phyPayloadByteCount: number,
     macCommandByteCount: number,
     applicationPayloadByteCount: number,

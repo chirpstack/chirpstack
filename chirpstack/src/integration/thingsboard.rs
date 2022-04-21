@@ -132,12 +132,13 @@ impl IntegrationTrait for Integration {
                     pl.rx_info
                         .iter()
                         .max_by(|x, y| {
-                            x.lora_snr
-                                .partial_cmp(&y.lora_snr)
+                            x.snr
+                                .partial_cmp(&y.snr)
                                 .unwrap_or(std::cmp::Ordering::Less)
                         })
                         .unwrap()
-                        .lora_snr,
+                        .snr
+                        .into(),
                 ),
             );
             let telemetry = Payload(telemetry);
@@ -335,17 +336,17 @@ pub mod test {
                 rx_info: vec![
                     gw::UplinkRxInfo {
                         rssi: -60,
-                        lora_snr: 1.0,
+                        snr: 1.0,
                         ..Default::default()
                     },
                     gw::UplinkRxInfo {
                         rssi: -55,
-                        lora_snr: 2.5,
+                        snr: 2.5,
                         ..Default::default()
                     },
                     gw::UplinkRxInfo {
                         rssi: -70,
-                        lora_snr: 1.0,
+                        snr: 1.0,
                         ..Default::default()
                     },
                 ],

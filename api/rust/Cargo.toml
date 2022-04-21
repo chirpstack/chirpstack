@@ -18,6 +18,8 @@ prost = "0.10"
 prost-types = "0.10"
 pbjson = "0.3"
 pbjson-types = "0.3"
+hex = "0.4"
+rand = "0.8"
 
 tonic = { version = "0.7", features = ["codegen", "prost"], default-features = false }
 tokio = { version = "1.17", features = ["macros"], optional = true }

@@ -1,4 +1,5 @@
 use std::io::Cursor;
+use std::str::FromStr;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -29,7 +30,7 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
             let mut c = get_redis_conn()?;
 
             for rx_info in &ufl.rx_info {
-                let gateway_id = EUI64::from_slice(&rx_info.gateway_id)?;
+                let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
 
                 let ufl_copy = api::UplinkFrameLog {
                     phy_payload: ufl.phy_payload.clone(),

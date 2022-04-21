@@ -478,9 +478,9 @@ impl Data {
                 .rx_info_set
                 .iter()
                 .map(|rx_info| internal::DeviceGatewayRxInfoItem {
-                    gateway_id: rx_info.gateway_id.clone(),
+                    gateway_id: hex::decode(&rx_info.gateway_id).unwrap(),
                     rssi: rx_info.rssi,
-                    lora_snr: rx_info.lora_snr as f32,
+                    lora_snr: rx_info.snr,
                     antenna: rx_info.antenna,
                     board: rx_info.board,
                     context: rx_info.context.clone(),
@@ -510,8 +510,8 @@ impl Data {
 
         let mut max_snr = 0.0;
         for (i, rx_info) in self.uplink_frame_set.rx_info_set.iter().enumerate() {
-            if i == 0 || rx_info.lora_snr > max_snr {
-                max_snr = rx_info.lora_snr;
+            if i == 0 || rx_info.snr > max_snr {
+                max_snr = rx_info.snr;
             }
         }
 
@@ -524,7 +524,7 @@ impl Data {
 
         ds.uplink_adr_history.push(internal::UplinkAdrHistory {
             f_cnt: self.f_cnt_up_full,
-            max_snr: max_snr as f32,
+            max_snr,
             max_rssi,
             tx_power_index: ds.tx_power_index,
             gateway_count: self.uplink_frame_set.rx_info_set.len() as u32,
@@ -687,20 +687,20 @@ impl Data {
     async fn save_metrics(&self) -> Result<()> {
         trace!("Saving device metrics");
         let mut max_rssi: i32 = 0;
-        let mut max_snr: f64 = 0.0;
+        let mut max_snr: f32 = 0.0;
 
         for (i, rx_info) in self.uplink_frame_set.rx_info_set.iter().enumerate() {
             if i == 0 {
                 max_rssi = rx_info.rssi;
-                max_snr = rx_info.lora_snr;
+                max_snr = rx_info.snr;
             }
 
             if rx_info.rssi > max_rssi {
                 max_rssi = rx_info.rssi;
             }
 
-            if rx_info.lora_snr > max_snr {
-                max_snr = rx_info.lora_snr;
+            if rx_info.snr > max_snr {
+                max_snr = rx_info.snr;
             }
         }
 
@@ -711,7 +711,7 @@ impl Data {
 
         record.metrics.insert("rx_count".into(), 1.0);
         record.metrics.insert("gw_rssi_sum".into(), max_rssi as f64);
-        record.metrics.insert("gw_snr_sum".into(), max_snr);
+        record.metrics.insert("gw_snr_sum".into(), max_snr as f64);
         record.metrics.insert(
             format!("rx_freq_{}", self.uplink_frame_set.tx_info.frequency),
             1.0,

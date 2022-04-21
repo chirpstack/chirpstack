@@ -4,6 +4,7 @@ use anyhow::{Context, Result};
 use petgraph::algo::min_spanning_tree;
 use petgraph::data::FromElements;
 use petgraph::graph::{DefaultIx, Graph, NodeIndex, UnGraph};
+use rand::Rng;
 use tracing::{span, trace, warn, Instrument, Level};
 
 use crate::downlink::helpers;
@@ -41,8 +42,8 @@ impl Multicast {
 
         let mut ctx = Multicast {
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: qi.id.as_bytes().to_vec(),
-                gateway_id: qi.gateway_id.to_vec(),
+                downlink_id: rand::thread_rng().gen(),
+                gateway_id: qi.gateway_id.to_string(),
                 ..Default::default()
             },
             multicast_group_queue_item: qi,
@@ -140,27 +141,27 @@ impl Multicast {
 
         match self.multicast_group_queue_item.emit_at_time_since_gps_epoch {
             Some(v) => {
-                tx_info.set_timing(gw::DownlinkTiming::GpsEpoch);
-                tx_info.timing_info = Some(gw::downlink_tx_info::TimingInfo::GpsEpochTimingInfo(
-                    gw::GpsEpochTimingInfo {
+                tx_info.timing = Some(gw::Timing {
+                    parameters: Some(gw::timing::Parameters::GpsEpoch(gw::GpsEpochTimingInfo {
                         time_since_gps_epoch: Some(pbjson_types::Duration::from(
                             std::time::Duration::from_millis(v as u64),
                         )),
-                    },
-                ));
+                    })),
+                });
             }
             None => {
-                tx_info.set_timing(gw::DownlinkTiming::Immediately);
-                tx_info.timing_info =
-                    Some(gw::downlink_tx_info::TimingInfo::ImmediatelyTimingInfo(
+                tx_info.timing = Some(gw::Timing {
+                    parameters: Some(gw::timing::Parameters::Immediately(
                         gw::ImmediatelyTimingInfo {},
-                    ));
+                    )),
+                });
             }
         }
 
         self.downlink_frame.items.push(gw::DownlinkFrameItem {
             phy_payload: vec![],
             tx_info: Some(tx_info),
+            tx_info_legacy: None,
         });
 
         Ok(())
@@ -204,7 +205,7 @@ impl Multicast {
         trace!("Saving downlink frame");
 
         downlink_frame::save(&internal::DownlinkFrame {
-            downlink_id: self.downlink_frame.downlink_id.clone(),
+            downlink_id: self.downlink_frame.downlink_id,
             multicast_group_id: self
                 .multicast_group_queue_item
                 .multicast_group_id

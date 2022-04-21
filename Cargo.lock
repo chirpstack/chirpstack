@@ -873,11 +873,13 @@ dependencies = [
 name = "chirpstack_api"
 version = "4.0.0"
 dependencies = [
+ "hex",
  "pbjson",
  "pbjson-build",
  "pbjson-types",
  "prost",
  "prost-types",
+ "rand",
  "serde",
  "tokio",
  "tonic",

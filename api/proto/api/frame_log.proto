@@ -16,10 +16,10 @@ message UplinkFrameLog {
     bytes phy_payload = 1;
 
     // TX meta-data.
-    gw.UplinkTXInfo tx_info = 2;
+    gw.UplinkTxInfo tx_info = 2;
 
     // RX meta-data.
-    repeated gw.UplinkRXInfo rx_info = 3;
+    repeated gw.UplinkRxInfo rx_info = 3;
 
     // Message type.
     common.MType m_type = 4;
@@ -42,10 +42,10 @@ message DownlinkFrameLog {
     bytes phy_payload = 2;
 
     // TX meta-data.
-    gw.DownlinkTXInfo tx_info = 3;
+    gw.DownlinkTxInfo tx_info = 3;
 
-    // Downlink ID (UUID).
-    string downlink_id = 4;
+    // Downlink ID.
+    uint32 downlink_id = 4;
 
     // Gateway ID (EUI64).
     string gateway_id = 5;
