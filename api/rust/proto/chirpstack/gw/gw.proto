@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package gw;
 
-option go_package = "github.com/chirpstack/chirpstack-api/go/v4/gw";
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4/gw";
 option java_package = "io.chirpstack.api.gw";
 option java_multiple_files = true;
 option java_outer_classname = "GatewayProto";

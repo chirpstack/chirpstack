@@ -7,8 +7,8 @@
 package integration
 
 import (
-	gw "github.com/chirpstack/chirpstack-api/go/v4/gw"
 	common "github.com/chirpstack/chirpstack/api/go/v4/common"
+	gw "github.com/chirpstack/chirpstack/api/go/v4/gw"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
