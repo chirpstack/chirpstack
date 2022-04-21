@@ -28,7 +28,33 @@ class CreateDeviceProfile extends Component<IProps> {
   }
 
   render() {
-    const deviceProfile = new DeviceProfile(); 
+    const encodeScript = `// Encode encodes the given object into an array of bytes.
+//
+// Input is an object with the following fields:
+// - f_port = LoRaWAN fPort
+// - variables = Device variables
+// - object = Input object, e.g. {"temperature": 22.5}
+//
+// This function must return an array of bytes, e.g. [225, 230, 255, 0]
+export function Encode(input) {
+  return [];
+}`;
+
+    const decodeScript = `// Decode decodes an array of bytes into an object.
+//
+// Input is an object with the following fields:
+// - f_port = LoRaWAN fPort
+// - variables = Device variables
+// - bytes = Input byte array, e.g. [225, 230, 255, 0]
+//
+// This function must return an object, e.g. {"temperature": 22.5}
+export function Decode(input) {
+  return {};
+}`;
+
+    let deviceProfile = new DeviceProfile(); 
+    deviceProfile.setPayloadEncoderConfig(encodeScript);
+    deviceProfile.setPayloadDecoderConfig(decodeScript);
 
     return(
       <Space direction="vertical" style={{width: "100%"}} size="large">
