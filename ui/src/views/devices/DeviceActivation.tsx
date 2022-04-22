@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { RouteComponentProps } from "react-router-dom";
 
-import { Space, Form, Button, Row, Col, InputNumber } from "antd";
+import { Space, Form, Button, Row, Col, InputNumber, Alert } from "antd";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -23,6 +23,7 @@ import DeviceStore from "../../stores/DeviceStore";
 interface FormProps {
   initialValues: DeviceActivationPb;
   device: Device;
+  disabled?: boolean;
   onFinish: (obj: DeviceActivationPb) => void;
 }
 
@@ -55,6 +56,7 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           value={this.props.initialValues.getDevAddr()}
           devEui={this.props.device.getDevEui()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <AesKeyInput 
@@ -62,6 +64,7 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           name="nwkSEncKey"
           value={this.props.initialValues.getNwkSEncKey()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <AesKeyInput 
@@ -69,6 +72,7 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           name="appSKey"
           value={this.props.initialValues.getAppSKey()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <Row gutter={24}>
@@ -77,7 +81,7 @@ class LW10DeviceActivationForm extends Component<FormProps> {
               label="Uplink frame-counter"
               name="fCntUp"
             >
-              <InputNumber min={0} />
+              <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
           </Col>
           <Col span={6}>
@@ -85,12 +89,14 @@ class LW10DeviceActivationForm extends Component<FormProps> {
               label="Downlink frame-counter"
               name="nFCntDown"
             >
-              <InputNumber min={0} />
+              <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
           </Col>
         </Row>
         <Form.Item>
+        {!this.props.disabled && (
           <Button type="primary" htmlType="submit">(Re)activate device</Button>
+        )}
         </Form.Item>
       </Form>
     );
@@ -240,6 +246,7 @@ class DeviceActivation extends Component<IProps, IState> {
       return null;
     }
 
+	let isOtaa = false;
     let macVersion = this.props.deviceProfile.getMacVersion();
     const lw11 = macVersion === MacVersion.LORAWAN_1_1_0;
 
@@ -247,12 +254,16 @@ class DeviceActivation extends Component<IProps, IState> {
     if (this.state.deviceActivation) {
       initialValues = this.state.deviceActivation;
     }
+    
+    if (!this.props.deviceProfile.getSupportsOtaa() || (this.props.deviceProfile.getSupportsOtaa() && initialValues.getDevAddr() !== "")) {
+      isOtaa = true;
+    }
 
     return(
       <Space direction="vertical" style={{width: "100%"}} size="large">
-        {!lw11 && <LW10DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} /> }
-        {lw11 && <LW11DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} /> }
-      </Space>
+        {isOtaa && !lw11 && <LW10DeviceActivationForm initialValues={initialValues} device={this.props.device} disabled={this.props.deviceProfile.getSupportsOtaa()} onFinish={this.onFinish} />}
+        {isOtaa && lw11 && <LW11DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} />}
+        {!isOtaa && <Alert message="This device has not (yet) been activated." type="info" showIcon />}      </Space>
     );
   }
 }

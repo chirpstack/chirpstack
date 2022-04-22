@@ -1,21 +1,23 @@
 import React, { Component } from "react";
 
 import { Input, Select, Button, Space, Form } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 
 interface IProps {
-  formRef: React.RefObject<any>,
-  label: string,
-  name: string,
+  formRef: React.RefObject<any>;
+  label: string;
+  name: string;
   required?: boolean;
   value?: string;
   disabled?: boolean;
   tooltip?: string;
+  showKey?: boolean;
 }
 
 interface IState {
   byteOrder: string;
   value: string;
+  showKey: boolean;
 }
 
 
@@ -25,6 +27,7 @@ class AesKeyInput extends Component<IProps, IState> {
     this.state = {
       byteOrder: "msb",
       value: "",
+      showKey: false,
     };
   }
 
@@ -46,12 +49,16 @@ class AesKeyInput extends Component<IProps, IState> {
       this.setState({
         value: this.props.value,
       });
+    } else {
+      this.setState({
+        showKey: true,
+      });
     }
   }
 
   onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let v = e.target.value;
-    const match = v.match(/[A-Fa-f0-9]/g); 
+    const match = v.match(/[A-Fa-f0-9]/g);
 
     let value = "";
     if (match) {
@@ -83,6 +90,12 @@ class AesKeyInput extends Component<IProps, IState> {
       value: bytes.reverse().join(""),
     }, this.updateField);
   }
+  
+  toggleShowPassword = () => {
+    this.setState({
+      showKey: !this.state.showKey,
+    });
+  };
 
   generateRandom = () => {
     let cryptoObj = window.crypto || window.Crypto;
@@ -98,11 +111,18 @@ class AesKeyInput extends Component<IProps, IState> {
   render() {
     const addon = (
       <Space size="large">
+      {this.state.showKey && (
         <Select value={this.state.byteOrder} onChange={this.onByteOrderSelect}>
           <Select.Option value="msb">MSB</Select.Option>
           <Select.Option value="lsb">LSB</Select.Option>
         </Select>
+       )}
+       {this.state.showKey && !this.props.disabled && (
         <Button type="text" size="small" shape="circle" onClick={this.generateRandom}><ReloadOutlined /></Button>
+       )}
+       <Button type="text" size="small" shape="circle" onClick={this.toggleShowPassword}>
+          {this.state.showKey ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
+       </Button>
       </Space>
     );
 
@@ -118,7 +138,7 @@ class AesKeyInput extends Component<IProps, IState> {
         tooltip={this.props.tooltip}
       >
         <Input hidden />
-        <Input.Password id={`${this.props.name}Render`} onChange={this.onChange} addonAfter={!this.props.disabled && addon} style={{fontFamily: "monospace"}} value={this.state.value} disabled={this.props.disabled} />
+        <Input type={this.state.showKey ? "text" : "password"} id={`${this.props.name}Render`} onChange={this.onChange} addonAfter={addon} style={{fontFamily: "monospace"}} value={this.state.value} disabled={this.props.disabled} />
       </Form.Item>
     );
   }
