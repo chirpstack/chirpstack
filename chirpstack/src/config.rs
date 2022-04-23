@@ -1,7 +1,7 @@
-use std::fs;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use std::{env, fs};
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
@@ -538,6 +538,11 @@ pub fn load(config_dir: &Path) -> Result<()> {
                 );
             }
         }
+    }
+
+    // substitute environment variables in config file
+    for (k, v) in env::vars() {
+        content = content.replace(&format!("${}", k), &v);
     }
 
     let conf: Configuration = toml::from_str(&content)?;
