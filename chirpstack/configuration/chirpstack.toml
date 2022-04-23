@@ -19,7 +19,7 @@
   #  * require - Always SSL (skip verification)
   #  * verify-ca - Always SSL (verify that the certificate presented by the server was signed by a trusted CA)
   #  * verify-full - Always SSL (verify that the certification presented by the server was signed by a trusted CA and the server host name matches the one in the certificate)
-  dsn="postgres://chirpstack:chirpstack@postgres/chirpstack?sslmode=disable"
+  dsn="postgres://chirpstack:chirpstack@$POSTGRESQL_HOST/chirpstack?sslmode=disable"
 
   # Max open connections.
   #
@@ -41,7 +41,7 @@
   #
   # Set multiple addresses when connecting to a cluster.
   servers=[
-    "redis://redis/",
+    "redis://$REDIS_HOST/",
   ]
 
   # TLS enabled.
@@ -99,17 +99,17 @@
 
 [gateway]
   client_cert_lifetime="365days"
-  ca_cert="configuration/certs/ca.crt"
-  ca_key="configuration/certs/ca.key"
+  ca_cert="configuration/certs/ca.pem"
+  ca_key="configuration/certs/ca-key.pem"
 
 [integration]
   enabled=["mqtt"]
 
   [integration.mqtt]
-    server="tcp://mosquitto:1883/"
+    server="tcp://$MQTT_BROKER_HOST:1883/"
     json=true
 
     [integration.mqtt.client]
       client_cert_lifetime="365days"
-      ca_cert="configuration/certs/ca.crt"
-      ca_key="configuration/certs/ca.key"
+      ca_cert="configuration/certs/ca.pem"
+      ca_key="configuration/certs/ca-key.pem"

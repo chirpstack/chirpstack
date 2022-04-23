@@ -9,6 +9,9 @@ services:
       - mosquitto
     environment:
       - DATABASE_URL=postgres://chirpstack_test:chirpstack_test@postgres/chirpstack_test?sslmode=disable
+      - REDIS_HOST=redis
+      - POSTGRESQL_HOST=postgres
+      - MQTT_BROKER_HOST=mosquitto
     ports:
       - "8080:8080"
 
