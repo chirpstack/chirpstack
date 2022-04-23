@@ -4,7 +4,6 @@ Documentation=https://www.chirpstack.io/
 Wants=network-online.target
 After=network-online.target
 
-
 [Service]
 User=chirpstack
 Group=chirpstack

@@ -4,11 +4,18 @@
 # Log files
 *.log
 
+# Binary packages
+*.deb
+
 # Rust target directory
 **/target
 
 # Certificates
-/chirpstack/configuration/certs
+/chirpstack/configuration/certs/*.crt
+/chirpstack/configuration/certs/*.key
+/chirpstack/configuration/certs/*.trust
+/chirpstack/configuration/certs/*.pem
+/chirpstack/configuration/certs/*.csr
 /chirpstack/configuration/private_*.toml
 
 # UI

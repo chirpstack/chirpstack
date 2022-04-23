@@ -1,0 +1,10 @@
+{
+	"CN": "mqtt-broker",
+	"hosts": [
+		"*"
+	],
+	"key": {
+		"algo": "rsa",
+		"size": 4096
+	}
+}

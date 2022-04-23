@@ -112,7 +112,10 @@ httpmock = "0.6"
 assets = [
 	["target/release/chirpstack", "usr/bin/", "755"],
 	["configuration/*.toml", "etc/chirpstack/", "640"],
+	["configuration/certs/*.json", "etc/chirpstack/certs", "640"],
+	["debian/environment.conf", "etc/systemd/system/chirpstack.service.d/environment.conf", "640"],
 ]
-
+depends = "$auto, golang-cfssl"
+suggests = "postgresql, mosquitto, redis"
 maintainer-scripts = "debian/"
 systemd-units = { enable = true }

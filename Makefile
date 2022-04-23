@@ -6,6 +6,10 @@ build-debug:
 build-release:
 	docker-compose run --rm chirpstack make release
 
+# Builds a .deb release package.
+build-release-deb:
+	docker-compose run --rm chirpstack make release-deb
+
 # Builds the UI.
 build-ui:
 	docker-compose run --rm chirpstack-ui make build
