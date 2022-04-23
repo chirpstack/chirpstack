@@ -1,3 +1,5 @@
+.PHONY: dist
+
 # Builds a debug / development binary.
 build-debug:
 	docker-compose run --rm chirpstack make debug
@@ -6,9 +8,9 @@ build-debug:
 build-release:
 	docker-compose run --rm chirpstack make release
 
-# Builds a .deb release package.
-build-release-deb:
-	docker-compose run --rm chirpstack make release-deb
+# Build distributable binaries.
+dist:
+	docker-compose run --rm chirpstack make dist
 
 # Builds the UI.
 build-ui:

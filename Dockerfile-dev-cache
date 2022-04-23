@@ -21,6 +21,7 @@ RUN apt-get update && \
 		clang \
 		yarnpkg \
 		golang-cfssl \
+		jq \
 		&& rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/yarnpkg /usr/bin/yarn

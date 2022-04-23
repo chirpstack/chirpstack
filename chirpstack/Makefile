@@ -1,4 +1,7 @@
-.PHONY: debug release release-deb test test-server dbshell
+.PHONY: debug release release-deb test test-server dbshell dist
+
+TARGET_ARCH := $(shell rustc --print cfg |grep target_arch |sed 's/target_arch="\(.*\)"/\1/')
+PKG_VERSION := $(shell cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
 
 debug:
 	cargo build
@@ -6,8 +9,20 @@ debug:
 release:
 	cargo build --release
 
+dist: release-deb release-rpm release-targz
+
 release-deb:
+	mkdir -p /chirpstack/dist/deb
 	cargo deb
+	cp /target/debian/*.deb /chirpstack/dist/deb
+
+release-rpm:
+	mkdir -p /chirpstack/dist/rpm
+	cargo rpm build
+	find /target/release/rpmbuild/RPMS -type f -exec cp {} /chirpstack/dist/rpm \;
+
+release-targz:
+	tar -czvf /chirpstack/dist/chirpstack_$(PKG_VERSION)_$(TARGET_ARCH).tar.gz -C /target/release chirpstack
 
 test:
 	cargo fmt --check

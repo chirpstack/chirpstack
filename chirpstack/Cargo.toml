@@ -119,3 +119,18 @@ depends = "$auto, golang-cfssl"
 suggests = "postgresql, mosquitto, redis"
 maintainer-scripts = "debian/"
 systemd-units = { enable = true }
+
+[package.metadata.rpm]
+package = "chirpstack"
+config = "rpm"
+
+[package.metadata.rpm.files]
+"configuration/" = { path = "/etc/chirpstack/" }
+"chirpstack.service" = { path = "/lib/systemd/system/chirpstack.service" }
+"chirpstack.env" = { path = "/etc/systemd/system/chirpstack.service.d/environment" }
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+chirpstack = { path = "/usr/bin/chirpstack" }

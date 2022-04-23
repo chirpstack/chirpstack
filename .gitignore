@@ -5,7 +5,7 @@
 *.log
 
 # Binary packages
-*.deb
+/dist
 
 # Rust target directory
 **/target
@@ -29,5 +29,4 @@
 *.bb
 
 # Exclude from gitignore
-!/chirpstack/.rpm
 !/.github
