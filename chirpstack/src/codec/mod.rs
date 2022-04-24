@@ -74,11 +74,7 @@ pub async fn binary_to_struct(
     Ok(match codec {
         Codec::NONE => None,
         Codec::CAYENNE_LPP => Some(cayenne_lpp::decode(b).context("CayenneLpp decode")?),
-        Codec::JS => Some(
-            js::decode(f_port, variables, decoder_config, b)
-                .await
-                .context("JavaScript decoder")?,
-        ),
+        Codec::JS => Some(js::decode(f_port, variables, decoder_config, b).await?),
     })
 }
 

@@ -45,7 +45,7 @@ export function Encode(input) {
 // Input is an object with the following fields:
 // - f_port = LoRaWAN fPort
 // - variables = Device variables
-// - bytes = Input byte array, e.g. [225, 230, 255, 0]
+// - data = Input byte array, e.g. [225, 230, 255, 0]
 //
 // This function must return an object, e.g. {"temperature": 22.5}
 export function Decode(input) {
