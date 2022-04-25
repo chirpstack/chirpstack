@@ -12,11 +12,9 @@ import {
 import InfluxDbIntegrationForm from "./InfluxDbIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
-
 
 class CreateInfluxDbIntegration extends Component<IProps> {
   onFinish = (obj: InfluxDbIntegration) => {
@@ -26,14 +24,16 @@ class CreateInfluxDbIntegration extends Component<IProps> {
     req.setIntegration(obj);
 
     ApplicationStore.createInfluxDbIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     const i = new InfluxDbIntegration();
 
-    return(
+    return (
       <Card title="Add InfluxDB integration">
         <InfluxDbIntegrationForm initialValues={i} onFinish={this.onFinish} />
       </Card>

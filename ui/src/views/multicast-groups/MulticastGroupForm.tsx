@@ -7,7 +7,6 @@ import { MulticastGroup, MulticastGroupType } from "@chirpstack/chirpstack-api-g
 import AesKeyInput from "../../components/AesKeyInput";
 import DevAddrInput from "../../components/DevAddrInput";
 
-
 interface IProps {
   initialValues: MulticastGroup;
   onFinish: (obj: MulticastGroup) => void;
@@ -17,7 +16,6 @@ interface IProps {
 interface IState {
   selectPingSlotPeriod: boolean;
 }
-
 
 class MulticastGroupForm extends Component<IProps, IState> {
   formRef = React.createRef<any>();
@@ -46,27 +44,32 @@ class MulticastGroupForm extends Component<IProps, IState> {
     mg.setClassBPingSlotPeriod(v.classBPingSlotPeriod);
 
     this.props.onFinish(mg);
-  }
+  };
 
   onGroupTypeChange = (groupType: MulticastGroupType) => {
     this.setState({
       selectPingSlotPeriod: groupType === MulticastGroupType.CLASS_B,
     });
-  }
+  };
 
   render() {
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish} ref={this.formRef}>
+    return (
+      <Form
+        layout="vertical"
+        initialValues={this.props.initialValues.toObject()}
+        onFinish={this.onFinish}
+        ref={this.formRef}
+      >
         <Form.Item
           label="Multicast-group name"
           name="name"
-          rules={[{required: true, message: "Please enter a name!"}]}
+          rules={[{ required: true, message: "Please enter a name!" }]}
         >
-          <Input disabled={this.props.disabled} /> 
+          <Input disabled={this.props.disabled} />
         </Form.Item>
         <DevAddrInput
           label="Multicast address"
-          name="mcAddr" 
+          name="mcAddr"
           value={this.props.initialValues.getMcAddr()}
           formRef={this.formRef}
           devEui=""
@@ -94,17 +97,17 @@ class MulticastGroupForm extends Component<IProps, IState> {
             <Form.Item
               label="Data-rate"
               name="dr"
-              rules={[{required: true, message: "Please enter a data-rate!"}]}
+              rules={[{ required: true, message: "Please enter a data-rate!" }]}
               tooltip="The data-rate to use when transmitting the multicast frames. Please refer to the LoRaWAN Regional Parameters specification for valid values."
             >
-              <InputNumber min={0} max={15} disabled={this.props.disabled} /> 
+              <InputNumber min={0} max={15} disabled={this.props.disabled} />
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item
               label="Frame-counter"
               name="fCnt"
-              rules={[{required: true, message: "Please enter a frame-counter!"}]}
+              rules={[{ required: true, message: "Please enter a frame-counter!" }]}
             >
               <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
@@ -114,9 +117,9 @@ class MulticastGroupForm extends Component<IProps, IState> {
               label="Frequency (Hz)"
               name="frequency"
               tooltip="The frequency to use when transmitting the multicast frames. Please refer to the LoRaWAN Regional Parameters specification for valid values."
-              rules={[{required: true, message: "Please enter a frequency!"}]}
+              rules={[{ required: true, message: "Please enter a frequency!" }]}
             >
-              <InputNumber min={0} disabled={this.props.disabled} style={{width: "200px"}} />
+              <InputNumber min={0} disabled={this.props.disabled} style={{ width: "200px" }} />
             </Form.Item>
           </Col>
         </Row>
@@ -126,7 +129,7 @@ class MulticastGroupForm extends Component<IProps, IState> {
               label="Group type"
               name="groupType"
               tooltip="The multicast-group type defines the way how multicast frames are scheduled by the network-server."
-              rules={[{required: true, message: "Please select a group-type!"}]}
+              rules={[{ required: true, message: "Please select a group-type!" }]}
             >
               <Select onChange={this.onGroupTypeChange} disabled={this.props.disabled}>
                 <Select.Option value={MulticastGroupType.CLASS_C}>Class-C</Select.Option>
@@ -135,10 +138,7 @@ class MulticastGroupForm extends Component<IProps, IState> {
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              label="Class-B ping-slot periodicity"
-              name="classBPingSlotPeriod"
-            >
+            <Form.Item label="Class-B ping-slot periodicity" name="classBPingSlotPeriod">
               <Select disabled={!this.state.selectPingSlotPeriod || this.props.disabled}>
                 <Select.Option value={32 * 1}>Every second</Select.Option>
                 <Select.Option value={32 * 2}>Every 2 seconds</Select.Option>
@@ -153,7 +153,9 @@ class MulticastGroupForm extends Component<IProps, IState> {
           </Col>
         </Row>
         <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>Submit</Button>
+          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

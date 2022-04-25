@@ -24,14 +24,16 @@ class CreateAwsSnsIntegration extends Component<IProps> {
     req.setIntegration(obj);
 
     ApplicationStore.createAwsSnsIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     const i = new AwsSnsIntegration();
 
-    return(
+    return (
       <Card title="Add AWS SNS integration">
         <AwsSnsIntegrationForm initialValues={i} onFinish={this.onFinish} />
       </Card>

@@ -47,7 +47,14 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "prettier --check .",
+    "format": "prettier --write . && git add -A ."
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn format"
+    }
   },
   "eslintConfig": {
     "extends": [
@@ -63,5 +70,9 @@
     "not dead",
     "not op_mini all"
   ],
-  "proxy": "http://127.0.0.1:8080/"
+  "proxy": "http://127.0.0.1:8080/",
+  "devDependencies": {
+    "husky": "^7.0.4",
+    "prettier": "^2.6.2"
+  }
 }

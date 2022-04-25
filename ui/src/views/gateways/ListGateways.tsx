@@ -5,18 +5,20 @@ import moment from "moment";
 import { Space, Breadcrumb, Button, PageHeader } from "antd";
 import { ColumnsType } from "antd/es/table";
 
-import { ListGatewaysRequest, ListGatewaysResponse, GatewayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import {
+  ListGatewaysRequest,
+  ListGatewaysResponse,
+  GatewayListItem,
+} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 import GatewayStore from "../../stores/GatewayStore";
 import Admin from "../../components/Admin";
 
-
 interface IProps {
   tenant: Tenant;
 }
-
 
 class ListGateways extends Component<IProps> {
   columns = (): ColumnsType<GatewayListItem.AsObject> => {
@@ -32,8 +34,8 @@ class ListGateways extends Component<IProps> {
             ts.setUTCSeconds(record.lastSeenAt.seconds);
             return moment(ts).format("YYYY-MM-DD HH:mm:ss");
           }
-		  return "Never";
-        }
+          return "Never";
+        },
       },
       {
         title: "Gateway ID",
@@ -80,7 +82,7 @@ class ListGateways extends Component<IProps> {
         },
       },
     ];
-  }
+  };
 
   getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new ListGatewaysRequest();
@@ -92,35 +94,37 @@ class ListGateways extends Component<IProps> {
       const obj = resp.toObject();
       callbackFunc(obj.totalCount, obj.resultList);
     });
-  }
+  };
 
   render() {
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
           title="Gateways"
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Gateways</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
-            extra={[
-              <Admin tenantId={this.props.tenant.getId()} isGatewayAdmin>
-                <Button type="primary"><Link to={`/tenants/${this.props.tenant.getId()}/gateways/create`}>Add gateway</Link></Button>
-              </Admin>
-            ]}
+            </Breadcrumb>
+          )}
+          extra={[
+            <Admin tenantId={this.props.tenant.getId()} isGatewayAdmin>
+              <Button type="primary">
+                <Link to={`/tenants/${this.props.tenant.getId()}/gateways/create`}>Add gateway</Link>
+              </Button>
+            </Admin>,
+          ]}
         />
-        <DataTable 
-          columns={this.columns()}
-          getPage={this.getPage}
-          rowKey="gatewayId"
-        />
+        <DataTable columns={this.columns()} getPage={this.getPage} rowKey="gatewayId" />
       </Space>
     );
   }

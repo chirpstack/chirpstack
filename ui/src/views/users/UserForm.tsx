@@ -4,7 +4,6 @@ import { Form, Input, Switch, Row, Col, Button } from "antd";
 
 import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
-
 interface IProps {
   initialValues: User;
   onFinish: (obj: User, password: string) => void;
@@ -16,7 +15,6 @@ interface IState {}
 interface UserWithPassword extends User.AsObject {
   password: string;
 }
-
 
 class UserForm extends Component<IProps, IState> {
   onFinish = (v: UserWithPassword) => {
@@ -30,53 +28,38 @@ class UserForm extends Component<IProps, IState> {
     user.setIsAdmin(values.isAdmin);
 
     this.props.onFinish(user, v.password);
-  }
+  };
 
   render() {
-    return(
+    return (
       <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish}>
-        <Form.Item
-          label="Email"
-          name="email"
-          rules={[{required: true, message: "Please enter an email address!"}]}
-        >
+        <Form.Item label="Email" name="email" rules={[{ required: true, message: "Please enter an email address!" }]}>
           <Input />
         </Form.Item>
-        <Form.Item
-          label="Optional notes"
-          name="note"
-        >
+        <Form.Item label="Optional notes" name="note">
           <Input.TextArea />
         </Form.Item>
-        {this.props.password && <Form.Item
-          label="Password"
-          name="password"
-          rules={[{required: true, message: "Please enter a password!"}]}
-        >
-          <Input type="password" />
-        </Form.Item>}
+        {this.props.password && (
+          <Form.Item label="Password" name="password" rules={[{ required: true, message: "Please enter a password!" }]}>
+            <Input type="password" />
+          </Form.Item>
+        )}
         <Row>
           <Col span={12}>
-            <Form.Item
-              label="Is active"
-              name="isActive"
-              valuePropName="checked"
-            >
+            <Form.Item label="Is active" name="isActive" valuePropName="checked">
               <Switch />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              label="Is admin"
-              name="isAdmin"
-              valuePropName="checked"
-            >
+            <Form.Item label="Is admin" name="isAdmin" valuePropName="checked">
               <Switch />
             </Form.Item>
           </Col>
         </Row>
         <Form.Item>
-          <Button type="primary" htmlType="submit">Submit</Button>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

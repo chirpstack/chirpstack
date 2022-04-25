@@ -5,11 +5,7 @@ import { Form, Input, Button } from "antd";
 
 import SessionStore from "../../stores/SessionStore";
 import InternalStore from "../../stores/InternalStore";
-import {
-  SettingsResponse,
-  OpenIdConnectLoginRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
-
+import { SettingsResponse, OpenIdConnectLoginRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 const layout = {
   labelCol: {
@@ -27,31 +23,26 @@ const tailLayout = {
   },
 };
 
-interface LoginFormState {};
+interface LoginFormState {}
 
 interface LoginFormValues {
   email: string;
   password: string;
-};
+}
 
 class LoginForm extends Component<RouteComponentProps, LoginFormState> {
   onFinish = (values: LoginFormValues) => {
     SessionStore.login(values.email, values.password, () => {
       this.props.history.push("/");
     });
-  }
+  };
 
   render() {
     return (
-      <Row style={{marginTop:"200px"}}>
+      <Row style={{ marginTop: "200px" }}>
         <Col span={8} offset={8}>
-          <Card
-            title="ChirpStack login"
-          >
-            <Form
-              {...layout}
-              onFinish={this.onFinish}
-            >
+          <Card title="ChirpStack login">
+            <Form {...layout} onFinish={this.onFinish}>
               <Form.Item
                 label="Username / email"
                 name="email"
@@ -78,9 +69,7 @@ class LoginForm extends Component<RouteComponentProps, LoginFormState> {
                 <Input.Password />
               </Form.Item>
 
-              <Form.Item
-                {...tailLayout}
-              >
+              <Form.Item {...tailLayout}>
                 <Button type="primary" htmlType="submit">
                   Submit
                 </Button>
@@ -93,29 +82,26 @@ class LoginForm extends Component<RouteComponentProps, LoginFormState> {
   }
 }
 
-
 interface OidcLoginProps {
-  loginUrl: string,
-  loginLabel: string,
+  loginUrl: string;
+  loginLabel: string;
 }
-
 
 class OidcLogin extends Component<OidcLoginProps> {
   render() {
-    return(
-      <Row style={{marginTop:"200px"}}>
+    return (
+      <Row style={{ marginTop: "200px" }}>
         <Col span={8} offset={8}>
-          <Card
-            title="ChirpStack login"
-          >
-            <a href={this.props.loginUrl}><Button type="primary">{this.props.loginLabel}</Button></a>
+          <Card title="ChirpStack login">
+            <a href={this.props.loginUrl}>
+              <Button type="primary">{this.props.loginLabel}</Button>
+            </a>
           </Card>
         </Col>
       </Row>
     );
   }
 }
-
 
 interface LoginState {
   loaded: boolean;
@@ -166,9 +152,9 @@ class Login extends Component<RouteComponentProps, LoginState> {
     }
 
     if (this.state.oidcEnabled) {
-      return <OidcLogin loginUrl={this.state.oidcLoginUrl} loginLabel={this.state.oidcLoginLabel} />
+      return <OidcLogin loginUrl={this.state.oidcLoginUrl} loginLabel={this.state.oidcLoginLabel} />;
     } else {
-      return <LoginForm {...this.props} />
+      return <LoginForm {...this.props} />;
     }
   }
 }

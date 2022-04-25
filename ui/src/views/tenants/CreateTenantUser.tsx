@@ -8,11 +8,9 @@ import { Tenant, TenantUser, AddTenantUserRequest } from "@chirpstack/chirpstack
 import TenantUserForm from "./TenantUserForm";
 import TenantStore from "../../stores/TenantStore";
 
-
 interface IProps extends RouteComponentProps {
   tenant: Tenant;
 }
-
 
 class CreateTenantUser extends Component<IProps> {
   onFinish = (obj: TenantUser) => {
@@ -24,28 +22,34 @@ class CreateTenantUser extends Component<IProps> {
     TenantStore.addUser(req, () => {
       this.props.history.push(`/tenants/${this.props.tenant.getId()}/users`);
     });
-  }
+  };
 
   render() {
     const tu = new TenantUser();
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/users`}>Tenant users</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/users`}>Tenant users</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Add</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title="Add tenant user"
         />
         <Card>

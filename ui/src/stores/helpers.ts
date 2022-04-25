@@ -6,7 +6,7 @@ import history from "../history";
 export function HandleError(e: Error) {
   console.log("API error: ", e);
 
-  if (e.code === 16 || e.code === 2)  {
+  if (e.code === 16 || e.code === 2) {
     history.push("/login");
     return;
   }

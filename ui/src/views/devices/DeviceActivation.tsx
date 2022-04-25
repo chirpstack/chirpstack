@@ -5,7 +5,7 @@ import { Space, Form, Button, Row, Col, InputNumber } from "antd";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import { 
+import {
   Device,
   GetDeviceActivationRequest,
   GetDeviceActivationResponse,
@@ -19,13 +19,11 @@ import AesKeyInput from "../../components/AesKeyInput";
 import DevAddrInput from "../../components/DevAddrInput";
 import DeviceStore from "../../stores/DeviceStore";
 
-
 interface FormProps {
   initialValues: DeviceActivationPb;
   device: Device;
   onFinish: (obj: DeviceActivationPb) => void;
 }
-
 
 class LW10DeviceActivationForm extends Component<FormProps> {
   formRef = React.createRef<any>();
@@ -44,12 +42,17 @@ class LW10DeviceActivationForm extends Component<FormProps> {
     da.setNFCntDown(v.nFCntDown);
 
     this.props.onFinish(da);
-  }
+  };
 
   render() {
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish} ref={this.formRef}>
-        <DevAddrInput 
+    return (
+      <Form
+        layout="vertical"
+        initialValues={this.props.initialValues.toObject()}
+        onFinish={this.onFinish}
+        ref={this.formRef}
+      >
+        <DevAddrInput
           label="Device address"
           name="devAddr"
           value={this.props.initialValues.getDevAddr()}
@@ -57,14 +60,14 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           formRef={this.formRef}
           required
         />
-        <AesKeyInput 
+        <AesKeyInput
           label="Network session key (LoRaWAN 1.0)"
           name="nwkSEncKey"
           value={this.props.initialValues.getNwkSEncKey()}
           formRef={this.formRef}
           required
         />
-        <AesKeyInput 
+        <AesKeyInput
           label="Application session key (LoRaWAN 1.0)"
           name="appSKey"
           value={this.props.initialValues.getAppSKey()}
@@ -73,30 +76,25 @@ class LW10DeviceActivationForm extends Component<FormProps> {
         />
         <Row gutter={24}>
           <Col span={6}>
-            <Form.Item
-              label="Uplink frame-counter"
-              name="fCntUp"
-            >
+            <Form.Item label="Uplink frame-counter" name="fCntUp">
               <InputNumber min={0} />
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item
-              label="Downlink frame-counter"
-              name="nFCntDown"
-            >
+            <Form.Item label="Downlink frame-counter" name="nFCntDown">
               <InputNumber min={0} />
             </Form.Item>
           </Col>
         </Row>
         <Form.Item>
-          <Button type="primary" htmlType="submit">(Re)activate device</Button>
+          <Button type="primary" htmlType="submit">
+            (Re)activate device
+          </Button>
         </Form.Item>
       </Form>
     );
   }
 }
-
 
 class LW11DeviceActivationForm extends Component<FormProps> {
   formRef = React.createRef<any>();
@@ -115,12 +113,17 @@ class LW11DeviceActivationForm extends Component<FormProps> {
     da.setNFCntDown(v.nFCntDown);
 
     this.props.onFinish(da);
-  }
+  };
 
   render() {
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish} ref={this.formRef}>
-        <DevAddrInput 
+    return (
+      <Form
+        layout="vertical"
+        initialValues={this.props.initialValues.toObject()}
+        onFinish={this.onFinish}
+        ref={this.formRef}
+      >
+        <DevAddrInput
           label="Device address"
           name="devAddr"
           value={this.props.initialValues.getDevAddr()}
@@ -128,28 +131,28 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           formRef={this.formRef}
           required
         />
-        <AesKeyInput 
+        <AesKeyInput
           label="Network session encryption key"
           name="nwkSEncKey"
           value={this.props.initialValues.getNwkSEncKey()}
           formRef={this.formRef}
           required
         />
-        <AesKeyInput 
+        <AesKeyInput
           label="Serving network session integrity key"
           name="sNwkSIntKey"
           value={this.props.initialValues.getSNwkSIntKey()}
           formRef={this.formRef}
           required
         />
-        <AesKeyInput 
+        <AesKeyInput
           label="Forwarding network session integrity key"
           name="fNwkSIntKey"
           value={this.props.initialValues.getFNwkSIntKey()}
           formRef={this.formRef}
           required
         />
-        <AesKeyInput 
+        <AesKeyInput
           label="Application session key"
           name="appSKey"
           value={this.props.initialValues.getAppSKey()}
@@ -158,38 +161,30 @@ class LW11DeviceActivationForm extends Component<FormProps> {
         />
         <Row gutter={24}>
           <Col span={6}>
-            <Form.Item
-              label="Uplink frame-counter"
-              name="fCntUp"
-            >
+            <Form.Item label="Uplink frame-counter" name="fCntUp">
               <InputNumber min={0} />
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item
-              label="Downlink frame-counter (network)"
-              name="nFCntDown"
-            >
+            <Form.Item label="Downlink frame-counter (network)" name="nFCntDown">
               <InputNumber min={0} />
             </Form.Item>
           </Col>
           <Col span={6}>
-            <Form.Item
-              label="Downlink frame-counter (application)"
-              name="aFCntDown"
-            >
+            <Form.Item label="Downlink frame-counter (application)" name="aFCntDown">
               <InputNumber min={0} />
             </Form.Item>
           </Col>
         </Row>
         <Form.Item>
-          <Button type="primary" htmlType="submit">(Re)activate device</Button>
+          <Button type="primary" htmlType="submit">
+            (Re)activate device
+          </Button>
         </Form.Item>
       </Form>
     );
   }
 }
-
 
 interface IProps extends RouteComponentProps {
   tenant: Tenant;
@@ -198,12 +193,10 @@ interface IProps extends RouteComponentProps {
   deviceProfile: DeviceProfile;
 }
 
-
 interface IState {
   deviceActivation?: DeviceActivationPb;
   deviceActivationRequested: boolean;
 }
-
 
 class DeviceActivation extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -231,9 +224,11 @@ class DeviceActivation extends Component<IProps, IState> {
     req.setDeviceActivation(obj);
 
     DeviceStore.activate(req, () => {
-        this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`);
+      this.props.history.push(
+        `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`,
+      );
     });
-  }
+  };
 
   render() {
     if (!this.state.deviceActivationRequested) {
@@ -248,10 +243,14 @@ class DeviceActivation extends Component<IProps, IState> {
       initialValues = this.state.deviceActivation;
     }
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
-        {!lw11 && <LW10DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} /> }
-        {lw11 && <LW11DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} /> }
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
+        {!lw11 && (
+          <LW10DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} />
+        )}
+        {lw11 && (
+          <LW11DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} />
+        )}
       </Space>
     );
   }

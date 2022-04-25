@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { presetPalettes } from '@ant-design/colors';
+import { presetPalettes } from "@ant-design/colors";
 import { Space, Breadcrumb, Card, Row, Col, PageHeader, Empty } from "antd";
 
 import moment from "moment";
@@ -30,7 +30,7 @@ interface GatewaysMapState {
   items: GatewayListItem[];
 }
 
-class GatewaysMap extends Component<{},GatewaysMapState> {
+class GatewaysMap extends Component<{}, GatewaysMapState> {
   constructor(props: {}) {
     super(props);
 
@@ -51,17 +51,15 @@ class GatewaysMap extends Component<{},GatewaysMapState> {
         items: resp.getResultList(),
       });
     });
-  }
+  };
 
   render() {
     if (this.state.items.length === 0) {
-      return(
-        <Empty />
-      );
+      return <Empty />;
     }
 
     const boundsOptions: {
-      padding: PointTuple,
+      padding: PointTuple;
     } = {
       padding: [50, 50],
     };
@@ -79,7 +77,7 @@ class GatewaysMap extends Component<{},GatewaysMapState> {
       if (item.getLastSeenAt() !== undefined) {
         let ts = moment(item.getLastSeenAt()!.toDate());
         lastSeen = ts.fromNow();
-        if (ts.isBefore(moment().subtract(5, 'minutes'))) {
+        if (ts.isBefore(moment().subtract(5, "minutes"))) {
           color = "red";
         } else {
           color = "green";
@@ -89,15 +87,18 @@ class GatewaysMap extends Component<{},GatewaysMapState> {
       markers.push(
         <Marker position={pos} faIcon="wifi" color={color}>
           <Popup>
-            <Link to={`/tenants/${item.getTenantId()}/gateways/${item.getGatewayId()}`}>{item.getName()}</Link><br />
-              {item.getGatewayId()}<br /><br />
+            <Link to={`/tenants/${item.getTenantId()}/gateways/${item.getGatewayId()}`}>{item.getName()}</Link>
+            <br />
+            {item.getGatewayId()}
+            <br />
+            <br />
             {lastSeen}
           </Popup>
-        </Marker>
+        </Marker>,
       );
     }
 
-    return(
+    return (
       <Map height={500} bounds={bounds} boundsOptions={boundsOptions}>
         {markers}
       </Map>
@@ -105,18 +106,18 @@ class GatewaysMap extends Component<{},GatewaysMapState> {
   }
 }
 
-
 interface GatewayProps {
   summary?: GetGatewaysSummaryResponse;
 }
 
 class GatewaysActiveInactive extends Component<GatewayProps> {
   render() {
-    if (this.props.summary === undefined || (
-      this.props.summary.getNeverSeenCount() === 0 &&
-      this.props.summary.getInactiveCount() === 0 &&
-      this.props.summary.getActiveCount() === 0
-    )) {
+    if (
+      this.props.summary === undefined ||
+      (this.props.summary.getNeverSeenCount() === 0 &&
+        this.props.summary.getInactiveCount() === 0 &&
+        this.props.summary.getActiveCount() === 0)
+    ) {
       return <Empty />;
     }
 
@@ -124,13 +125,13 @@ class GatewaysActiveInactive extends Component<GatewayProps> {
       labels: ["Never seen", "Inactive", "Active"],
       datasets: [
         {
-          data: [this.props.summary.getNeverSeenCount(), this.props.summary.getInactiveCount(), this.props.summary.getActiveCount()],
-          backgroundColor: [
-            presetPalettes.orange.primary,
-            presetPalettes.red.primary,
-            presetPalettes.green.primary,
+          data: [
+            this.props.summary.getNeverSeenCount(),
+            this.props.summary.getInactiveCount(),
+            this.props.summary.getActiveCount(),
           ],
-        }
+          backgroundColor: [presetPalettes.orange.primary, presetPalettes.red.primary, presetPalettes.green.primary],
+        },
       ],
     };
 
@@ -139,13 +140,10 @@ class GatewaysActiveInactive extends Component<GatewayProps> {
     } = {
       animation: false,
     };
-    
-    return(
-      <Doughnut data={data} options={options} className="chart-doughtnut" />
-    );
+
+    return <Doughnut data={data} options={options} className="chart-doughtnut" />;
   }
 }
-
 
 interface DeviceProps {
   summary?: GetDevicesSummaryResponse;
@@ -153,11 +151,12 @@ interface DeviceProps {
 
 class DevicesActiveInactive extends Component<DeviceProps> {
   render() {
-    if (this.props.summary === undefined || (
-      this.props.summary.getNeverSeenCount() === 0 &&
-      this.props.summary.getInactiveCount() === 0 &&
-      this.props.summary.getActiveCount() === 0
-    )) {
+    if (
+      this.props.summary === undefined ||
+      (this.props.summary.getNeverSeenCount() === 0 &&
+        this.props.summary.getInactiveCount() === 0 &&
+        this.props.summary.getActiveCount() === 0)
+    ) {
       return <Empty />;
     }
 
@@ -165,13 +164,13 @@ class DevicesActiveInactive extends Component<DeviceProps> {
       labels: ["Never seen", "Inactive", "Active"],
       datasets: [
         {
-          data: [this.props.summary.getNeverSeenCount(), this.props.summary.getInactiveCount(), this.props.summary.getActiveCount()],
-          backgroundColor: [
-            presetPalettes.orange.primary,
-            presetPalettes.red.primary,
-            presetPalettes.green.primary,
+          data: [
+            this.props.summary.getNeverSeenCount(),
+            this.props.summary.getInactiveCount(),
+            this.props.summary.getActiveCount(),
           ],
-        }
+          backgroundColor: [presetPalettes.orange.primary, presetPalettes.red.primary, presetPalettes.green.primary],
+        },
       ],
     };
 
@@ -180,19 +179,31 @@ class DevicesActiveInactive extends Component<DeviceProps> {
     } = {
       animation: false,
     };
-    
-    
-    return(
-      <Doughnut data={data} options={options} className="chart-doughtnut" />
-    );
+
+    return <Doughnut data={data} options={options} className="chart-doughtnut" />;
   }
 }
 
-
 class DevicesDataRates extends Component<DeviceProps> {
   getColor = (dr: number) => {
-    return ['#ff5722', '#ff9800', '#ffc107', '#ffeb3b', '#cddc39', '#8bc34a', '#4caf50', '#009688', '#00bcd4', '#03a9f4', '#2196f3', '#3f51b5', '#673ab7', '#9c27b0', '#e91e63'][dr];
-  }
+    return [
+      "#ff5722",
+      "#ff9800",
+      "#ffc107",
+      "#ffeb3b",
+      "#cddc39",
+      "#8bc34a",
+      "#4caf50",
+      "#009688",
+      "#00bcd4",
+      "#03a9f4",
+      "#2196f3",
+      "#3f51b5",
+      "#673ab7",
+      "#9c27b0",
+      "#e91e63",
+    ][dr];
+  };
 
   render() {
     if (this.props.summary === undefined || this.props.summary.getDrCountMap().toArray().length === 0) {
@@ -200,17 +211,19 @@ class DevicesDataRates extends Component<DeviceProps> {
     }
 
     let data: {
-      labels: string[],
+      labels: string[];
       datasets: {
-        data: number[],
-        backgroundColor: string[],
-      }[],
+        data: number[];
+        backgroundColor: string[];
+      }[];
     } = {
       labels: [],
-      datasets: [{
-        data: [],
-        backgroundColor: [],
-      }],
+      datasets: [
+        {
+          data: [],
+          backgroundColor: [],
+        },
+      ],
     };
 
     for (const elm of this.props.summary.getDrCountMap().toArray()) {
@@ -225,14 +238,11 @@ class DevicesDataRates extends Component<DeviceProps> {
       animation: false,
     };
 
-    return(
-      <Doughnut data={data} options={options} className="chart-doughtnut" />
-    );
+    return <Doughnut data={data} options={options} className="chart-doughtnut" />;
   }
 }
 
-
-interface IProps{}
+interface IProps {}
 
 interface IState {
   gatewaysSummary?: GetGatewaysSummaryResponse;
@@ -260,17 +270,19 @@ class Dashboard extends Component<IProps, IState> {
   }
 
   render() {
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Network Server</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Dashboard</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title="Dashboard"
         />
         <Row gutter={24}>
@@ -290,7 +302,9 @@ class Dashboard extends Component<IProps, IState> {
             </Card>
           </Col>
         </Row>
-        <Card title="Gateway map"><GatewaysMap /></Card>
+        <Card title="Gateway map">
+          <GatewaysMap />
+        </Card>
       </Space>
     );
   }

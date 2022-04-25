@@ -6,7 +6,6 @@ import { ListTenantsRequest, ListTenantsResponse } from "@chirpstack/chirpstack-
 import TenantStore from "../../stores/TenantStore";
 import SessionStore from "../../stores/SessionStore";
 
-
 class TenantRedirect extends Component<RouteComponentProps> {
   componentDidMount() {
     const tenantId = SessionStore.getTenantId();
@@ -25,7 +24,7 @@ class TenantRedirect extends Component<RouteComponentProps> {
   }
 
   render() {
-    return(null);
+    return null;
   }
 }
 

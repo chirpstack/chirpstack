@@ -16,7 +16,6 @@ import GatewayStore from "../../stores/GatewayStore";
 import Map, { Marker } from "../../components/Map";
 import Heatmap from "../../components/Heatmap";
 
-
 interface HeatmapStats {
   x: string;
   y: Array<[string, number]>;
@@ -36,7 +35,6 @@ interface IState {
   statsDownDr: HeatmapStats[];
   statsDownStatus?: any;
 }
-
 
 class GatewayDashboard extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -149,22 +147,34 @@ class GatewayDashboard extends Component<IProps, IState> {
 
         statsUpFreq.push({
           x: moment(row.getTime()!.toDate()).format("YYYY-MM-DD"),
-          y: row.getRxPacketsPerFrequencyMap().toObject().map(v => [v[0].toString(), v[1]]),
+          y: row
+            .getRxPacketsPerFrequencyMap()
+            .toObject()
+            .map(v => [v[0].toString(), v[1]]),
         });
 
         statsDownFreq.push({
           x: moment(row.getTime()!.toDate()).format("YYYY-MM-DD"),
-          y: row.getTxPacketsPerFrequencyMap().toObject().map(v => [v[0].toString(), v[1]]),
+          y: row
+            .getTxPacketsPerFrequencyMap()
+            .toObject()
+            .map(v => [v[0].toString(), v[1]]),
         });
 
         statsUpDr.push({
           x: moment(row.getTime()!.toDate()).format("YYYY-MM-DD"),
-          y: row.getRxPacketsPerDrMap().toObject().map(v => [v[0].toString(), v[1]]),
+          y: row
+            .getRxPacketsPerDrMap()
+            .toObject()
+            .map(v => [v[0].toString(), v[1]]),
         });
 
         statsDownDr.push({
           x: moment(row.getTime()!.toDate()).format("YYYY-MM-DD"),
-          y: row.getTxPacketsPerDrMap().toObject().map(v => [v[0].toString(), v[1]]),
+          y: row
+            .getTxPacketsPerDrMap()
+            .toObject()
+            .map(v => [v[0].toString(), v[1]]),
         });
 
         for (const v of row.getTxPacketsPerStatusMap().toObject()) {
@@ -179,7 +189,23 @@ class GatewayDashboard extends Component<IProps, IState> {
         }
       }
 
-      let backgroundColors = ['#8bc34a', '#ff5722', '#ff9800', '#ffc107', '#ffeb3b', '#cddc39', '#4caf50', '#009688', '#00bcd4', '#03a9f4', '#2196f3', '#3f51b5', '#673ab7', '#9c27b0', '#e91e63'];
+      let backgroundColors = [
+        "#8bc34a",
+        "#ff5722",
+        "#ff9800",
+        "#ffc107",
+        "#ffeb3b",
+        "#cddc39",
+        "#4caf50",
+        "#009688",
+        "#00bcd4",
+        "#03a9f4",
+        "#2196f3",
+        "#3f51b5",
+        "#673ab7",
+        "#9c27b0",
+        "#e91e63",
+      ];
       Object.entries(statsDownStatusSet).forEach(([k, v]) => {
         statsDownStatus.datasets.push({
           label: k,
@@ -198,13 +224,11 @@ class GatewayDashboard extends Component<IProps, IState> {
         statsDownStatus: statsDownStatus,
       });
     });
-  }
+  };
 
   render() {
     const loc = this.props.gateway.getLocation()!;
-    const location: [number, number] = [
-      loc.getLatitude(), loc.getLongitude()
-    ];
+    const location: [number, number] = [loc.getLatitude(), loc.getLongitude()];
 
     const animation: false = false;
     const unit: TimeUnit = "day";
@@ -258,67 +282,71 @@ class GatewayDashboard extends Component<IProps, IState> {
       lastSeenAt = moment(this.props.lastSeenAt).format("YYYY-MM-DD HH:mm:ss");
     }
 
-    return(
-        <Space direction="vertical" style={{width: "100%"}} size="large">
-          <Card>
-            <Descriptions>
-              <Descriptions.Item label="Last seen">{lastSeenAt}</Descriptions.Item>
-              <Descriptions.Item label="Region">{this.props.gateway.getPropertiesMap().get("region_name")}</Descriptions.Item>
-              <Descriptions.Item label="Region common-name">{this.props.gateway.getPropertiesMap().get("region_common_name")}</Descriptions.Item>
-              <Descriptions.Item label="Description">{this.props.gateway.getDescription()}</Descriptions.Item>
-            </Descriptions>
-          </Card>
-          <Row gutter={24}>
-            <Col span={24}>
-              <Map height={500} center={location}>
-                <Marker position={location} faIcon="wifi" color="blue" />
-              </Map>
-            </Col>
-          </Row>
-          <Row gutter={24}>
-            <Col span={12}>
-              <Card title="Received" className="dashboard-chart">
-                <Line height={75} options={statsOptions} data={this.state.statsUp} />
-              </Card>
-            </Col>
-            <Col span={12}>
-              <Card title="Transmitted" className="dashboard-chart">
-                <Line height={75} options={statsOptions} data={this.state.statsDown} />
-              </Card>
-            </Col>
-          </Row>
-          <Row gutter={24}>
-            <Col span={12}>
-              <Card title="Received / frequency" className="dashboard-chart">
-                <Heatmap data={this.state.statsUpFreq} fromColor="rgb(227, 242, 253)" toColor="rgb(33, 150, 243, 1)" />
-              </Card>
-            </Col>
-            <Col span={12}>
-              <Card title="Transmitted / frequency" className="dashboard-chart">
-                <Heatmap data={this.state.statsDownFreq} fromColor="rgb(227, 242, 253)" toColor="rgb(33, 150, 243, 1)" />
-              </Card>
-            </Col>
-          </Row>
-          <Row gutter={24}>
-            <Col span={12}>
-              <Card title="Received / DR" className="dashboard-chart">
-                <Heatmap data={this.state.statsUpDr} fromColor="rgb(227, 242, 253)" toColor="rgb(33, 150, 243, 1)" />
-              </Card>
-            </Col>
-            <Col span={12}>
-              <Card title="Transmitted / DR" className="dashboard-chart">
-                <Heatmap data={this.state.statsDownDr} fromColor="rgb(227, 242, 253)" toColor="rgb(33, 150, 243, 1)" />
-              </Card>
-            </Col>
-          </Row>
-          <Row gutter={24}>
-            <Col span={12}>
-              <Card title="Transmission / Ack status" className="dashboard-chart">
-                <Bar data={this.state.statsDownStatus} options={barOptions} />
-              </Card>
-            </Col>
-          </Row>
-        </Space>
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
+        <Card>
+          <Descriptions>
+            <Descriptions.Item label="Last seen">{lastSeenAt}</Descriptions.Item>
+            <Descriptions.Item label="Region">
+              {this.props.gateway.getPropertiesMap().get("region_name")}
+            </Descriptions.Item>
+            <Descriptions.Item label="Region common-name">
+              {this.props.gateway.getPropertiesMap().get("region_common_name")}
+            </Descriptions.Item>
+            <Descriptions.Item label="Description">{this.props.gateway.getDescription()}</Descriptions.Item>
+          </Descriptions>
+        </Card>
+        <Row gutter={24}>
+          <Col span={24}>
+            <Map height={500} center={location}>
+              <Marker position={location} faIcon="wifi" color="blue" />
+            </Map>
+          </Col>
+        </Row>
+        <Row gutter={24}>
+          <Col span={12}>
+            <Card title="Received" className="dashboard-chart">
+              <Line height={75} options={statsOptions} data={this.state.statsUp} />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card title="Transmitted" className="dashboard-chart">
+              <Line height={75} options={statsOptions} data={this.state.statsDown} />
+            </Card>
+          </Col>
+        </Row>
+        <Row gutter={24}>
+          <Col span={12}>
+            <Card title="Received / frequency" className="dashboard-chart">
+              <Heatmap data={this.state.statsUpFreq} fromColor="rgb(227, 242, 253)" toColor="rgb(33, 150, 243, 1)" />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card title="Transmitted / frequency" className="dashboard-chart">
+              <Heatmap data={this.state.statsDownFreq} fromColor="rgb(227, 242, 253)" toColor="rgb(33, 150, 243, 1)" />
+            </Card>
+          </Col>
+        </Row>
+        <Row gutter={24}>
+          <Col span={12}>
+            <Card title="Received / DR" className="dashboard-chart">
+              <Heatmap data={this.state.statsUpDr} fromColor="rgb(227, 242, 253)" toColor="rgb(33, 150, 243, 1)" />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card title="Transmitted / DR" className="dashboard-chart">
+              <Heatmap data={this.state.statsDownDr} fromColor="rgb(227, 242, 253)" toColor="rgb(33, 150, 243, 1)" />
+            </Card>
+          </Col>
+        </Row>
+        <Row gutter={24}>
+          <Col span={12}>
+            <Card title="Transmission / Ack status" className="dashboard-chart">
+              <Bar data={this.state.statsDownStatus} options={barOptions} />
+            </Card>
+          </Col>
+        </Row>
+      </Space>
     );
   }
 }

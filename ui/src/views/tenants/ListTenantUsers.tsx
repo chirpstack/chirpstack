@@ -4,20 +4,22 @@ import { Link } from "react-router-dom";
 import { Space, Breadcrumb, Button, PageHeader } from "antd";
 import { ColumnsType } from "antd/es/table";
 
-import { ListTenantUsersRequest, ListTenantUsersResponse, TenantUserListItem } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import {
+  ListTenantUsersRequest,
+  ListTenantUsersResponse,
+  TenantUserListItem,
+} from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 import TenantStore from "../../stores/TenantStore";
 import Admin from "../../components/Admin";
 
-
 interface IProps {
   tenant: Tenant;
 }
 
 interface IState {}
-
 
 class ListTenantUsers extends Component<IProps, IState> {
   columns = (): ColumnsType<TenantUserListItem.AsObject> => {
@@ -67,7 +69,7 @@ class ListTenantUsers extends Component<IProps, IState> {
         },
       },
     ];
-  }
+  };
 
   getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new ListTenantUsersRequest();
@@ -79,35 +81,37 @@ class ListTenantUsers extends Component<IProps, IState> {
       const obj = resp.toObject();
       callbackFunc(obj.totalCount, obj.resultList);
     });
-  }
+  };
 
   render() {
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Tenant users</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title="Tenant users"
           extra={[
             <Admin tenantId={this.props.tenant.getId()} isTenantAdmin>
-              <Button type="primary"><Link to={`/tenants/${this.props.tenant.getId()}/users/create`}>Add tenant user</Link></Button>
-            </Admin>
+              <Button type="primary">
+                <Link to={`/tenants/${this.props.tenant.getId()}/users/create`}>Add tenant user</Link>
+              </Button>
+            </Admin>,
           ]}
         />
-        <DataTable
-          columns={this.columns()}
-          getPage={this.getPage}
-          rowKey="userId"
-        />
+        <DataTable columns={this.columns()} getPage={this.getPage} rowKey="userId" />
       </Space>
     );
   }

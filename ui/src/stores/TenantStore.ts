@@ -22,7 +22,6 @@ import {
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
 
-
 class TenantStore extends EventEmitter {
   client: TenantServiceClient;
 
@@ -45,7 +44,7 @@ class TenantStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   get = (id: string, callbackFunc: (resp: GetTenantResponse) => void) => {
     let req = new GetTenantRequest();
@@ -59,14 +58,14 @@ class TenantStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   update = (req: UpdateTenantRequest, callbackFunc: () => void) => {
     this.client.update(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;
-      } 
+      }
 
       notification.success({
         message: "Tenant updated",
@@ -77,7 +76,7 @@ class TenantStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   delete = (req: DeleteTenantRequest, callbackFunc: () => void) => {
     this.client.delete(req, SessionStore.getMetadata(), (err, resp) => {
@@ -93,7 +92,7 @@ class TenantStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   list = (req: ListTenantsRequest, callbackFunc: (resp: ListTenantsResponse) => void) => {
     this.client.list(req, SessionStore.getMetadata(), (err, resp) => {
@@ -104,10 +103,10 @@ class TenantStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   addUser = (req: AddTenantUserRequest, callbackFunc: () => void) => {
-    this.client.addUser(req, SessionStore.getMetadata(), (err) => {
+    this.client.addUser(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -131,10 +130,10 @@ class TenantStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateUser = (req: UpdateTenantUserRequest, callbackFunc: () => void) => {
-    this.client.updateUser(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateUser(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -147,10 +146,10 @@ class TenantStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteUser = (req: DeleteTenantUserRequest, callbackFunc: () => void) => {
-    this.client.deleteUser(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteUser(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -163,7 +162,7 @@ class TenantStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   listUsers = (req: ListTenantUsersRequest, callbackFunc: (resp: ListTenantUsersResponse) => void) => {
     this.client.listUsers(req, SessionStore.getMetadata(), (err, resp) => {
@@ -174,7 +173,7 @@ class TenantStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const tenantStore = new TenantStore();

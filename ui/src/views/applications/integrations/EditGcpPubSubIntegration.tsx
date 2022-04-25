@@ -14,23 +14,20 @@ import {
 import GcpPubSubIntegrationForm from "./GcpPubSubIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
 
-
 interface IState {
   integration?: GcpPubSubIntegration;
 }
-
 
 class EditGcpPubSubIntegration extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {};
   }
-  
+
   componentDidMount() {
     let req = new GetGcpPubSubIntegrationRequest();
     req.setApplicationId(this.props.application.getId());
@@ -47,19 +44,21 @@ class EditGcpPubSubIntegration extends Component<IProps, IState> {
     req.setIntegration(obj);
 
     ApplicationStore.updateGcpPubSubIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     if (this.state.integration === undefined) {
       return null;
     }
 
-    return(
-    <Card title="Update GCP Pub/Sub integration">
-      <GcpPubSubIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
-    </Card>
+    return (
+      <Card title="Update GCP Pub/Sub integration">
+        <GcpPubSubIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
+      </Card>
     );
   }
 }

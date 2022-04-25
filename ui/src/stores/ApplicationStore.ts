@@ -64,7 +64,6 @@ import {
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
 
-
 class ApplicationStore extends EventEmitter {
   client: ApplicationServiceClient;
 
@@ -87,7 +86,7 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   get = (req: GetApplicationRequest, callbackFunc: (resp: GetApplicationResponse) => void) => {
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {
@@ -98,10 +97,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   update = (req: UpdateApplicationRequest, callbackFunc: () => void) => {
-    this.client.update(req, SessionStore.getMetadata(), (err) => {
+    this.client.update(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -114,10 +113,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   delete = (req: DeleteApplicationRequest, callbackFunc: () => void) => {
-    this.client.delete(req, SessionStore.getMetadata(), (err) => {
+    this.client.delete(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -130,7 +129,7 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   list = (req: ListApplicationsRequest, callbackFunc: (resp: ListApplicationsResponse) => void) => {
     this.client.list(req, SessionStore.getMetadata(), (err, resp) => {
@@ -141,7 +140,7 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   listIntegrations = (req: ListIntegrationsRequest, callbackFunc: (resp: ListIntegrationsResponse) => void) => {
     this.client.listIntegrations(req, SessionStore.getMetadata(), (err, resp) => {
@@ -151,11 +150,11 @@ class ApplicationStore extends EventEmitter {
       }
 
       callbackFunc(resp);
-    })
-  }
+    });
+  };
 
   createHttpIntegration = (req: CreateHttpIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createHttpIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createHttpIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -168,7 +167,7 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   getHttpIntegration = (req: GetHttpIntegrationRequest, callbackFunc: (resp: GetHttpIntegrationResponse) => void) => {
     this.client.getHttpIntegration(req, SessionStore.getMetadata(), (err, resp) => {
@@ -179,10 +178,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateHttpIntegration = (req: UpdateHttpIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateHttpIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateHttpIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -195,10 +194,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteHttpIntegration = (req: DeleteHttpIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteHttpIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteHttpIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -212,10 +211,10 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
   createAwsSnsIntegration = (req: CreateAwsSnsIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createAwsSnsIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createAwsSnsIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -228,9 +227,12 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
-  getAwsSnsIntegration = (req: GetAwsSnsIntegrationRequest, callbackFunc: (resp: GetAwsSnsIntegrationResponse) => void) => {
+  getAwsSnsIntegration = (
+    req: GetAwsSnsIntegrationRequest,
+    callbackFunc: (resp: GetAwsSnsIntegrationResponse) => void,
+  ) => {
     this.client.getAwsSnsIntegration(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -239,10 +241,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateAwsSnsIntegration = (req: UpdateAwsSnsIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateAwsSnsIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateAwsSnsIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -255,10 +257,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteAwsSnsIntegration = (req: DeleteAwsSnsIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteAwsSnsIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteAwsSnsIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -272,10 +274,10 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
   createAzureServiceBusIntegration = (req: CreateAzureServiceBusIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createAzureServiceBusIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createAzureServiceBusIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -288,9 +290,12 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
-  getAzureServiceBusIntegration = (req: GetAzureServiceBusIntegrationRequest, callbackFunc: (resp: GetAzureServiceBusIntegrationResponse) => void) => {
+  getAzureServiceBusIntegration = (
+    req: GetAzureServiceBusIntegrationRequest,
+    callbackFunc: (resp: GetAzureServiceBusIntegrationResponse) => void,
+  ) => {
     this.client.getAzureServiceBusIntegration(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -299,10 +304,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateAzureServiceBusIntegration = (req: UpdateAzureServiceBusIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateAzureServiceBusIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateAzureServiceBusIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -315,10 +320,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteAzureServiceBusIntegration = (req: DeleteAzureServiceBusIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteAzureServiceBusIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteAzureServiceBusIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -332,10 +337,10 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
   createGcpPubSubIntegration = (req: CreateGcpPubSubIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createGcpPubSubIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createGcpPubSubIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -348,9 +353,12 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
-  getGcpPubSubIntegration = (req: GetGcpPubSubIntegrationRequest, callbackFunc: (resp: GetGcpPubSubIntegrationResponse) => void) => {
+  getGcpPubSubIntegration = (
+    req: GetGcpPubSubIntegrationRequest,
+    callbackFunc: (resp: GetGcpPubSubIntegrationResponse) => void,
+  ) => {
     this.client.getGcpPubSubIntegration(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -359,10 +367,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateGcpPubSubIntegration = (req: UpdateGcpPubSubIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateGcpPubSubIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateGcpPubSubIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -375,10 +383,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteGcpPubSubIntegration = (req: DeleteGcpPubSubIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteGcpPubSubIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteGcpPubSubIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -392,10 +400,10 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
   createInfluxDbIntegration = (req: CreateInfluxDbIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createInfluxDbIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createInfluxDbIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -408,9 +416,12 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
-  getInfluxDbIntegration = (req: GetInfluxDbIntegrationRequest, callbackFunc: (resp: GetInfluxDbIntegrationResponse) => void) => {
+  getInfluxDbIntegration = (
+    req: GetInfluxDbIntegrationRequest,
+    callbackFunc: (resp: GetInfluxDbIntegrationResponse) => void,
+  ) => {
     this.client.getInfluxDbIntegration(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -419,10 +430,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateInfluxDbIntegration = (req: UpdateInfluxDbIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateInfluxDbIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateInfluxDbIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -435,10 +446,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteInfluxDbIntegration = (req: DeleteInfluxDbIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteInfluxDbIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteInfluxDbIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -452,10 +463,10 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
   createMyDevicesIntegration = (req: CreateMyDevicesIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createMyDevicesIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createMyDevicesIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -468,9 +479,12 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
-  getMyDevicesIntegration = (req: GetMyDevicesIntegrationRequest, callbackFunc: (resp: GetMyDevicesIntegrationResponse) => void) => {
+  getMyDevicesIntegration = (
+    req: GetMyDevicesIntegrationRequest,
+    callbackFunc: (resp: GetMyDevicesIntegrationResponse) => void,
+  ) => {
     this.client.getMyDevicesIntegration(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -479,10 +493,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateMyDevicesIntegration = (req: UpdateMyDevicesIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateMyDevicesIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateMyDevicesIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -495,10 +509,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteMyDevicesIntegration = (req: DeleteMyDevicesIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteMyDevicesIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteMyDevicesIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -512,10 +526,10 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
   createPilotThingsIntegration = (req: CreatePilotThingsIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createPilotThingsIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createPilotThingsIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -528,9 +542,12 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
-  getPilotThingsIntegration = (req: GetPilotThingsIntegrationRequest, callbackFunc: (resp: GetPilotThingsIntegrationResponse) => void) => {
+  getPilotThingsIntegration = (
+    req: GetPilotThingsIntegrationRequest,
+    callbackFunc: (resp: GetPilotThingsIntegrationResponse) => void,
+  ) => {
     this.client.getPilotThingsIntegration(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -539,10 +556,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updatePilotThingsIntegration = (req: UpdatePilotThingsIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updatePilotThingsIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updatePilotThingsIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -555,10 +572,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deletePilotThingsIntegration = (req: DeletePilotThingsIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deletePilotThingsIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deletePilotThingsIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -572,10 +589,10 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
   createLoraCloudIntegration = (req: CreateLoraCloudIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createLoraCloudIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createLoraCloudIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -588,9 +605,12 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
-  getLoraCloudIntegration = (req: GetLoraCloudIntegrationRequest, callbackFunc: (resp: GetLoraCloudIntegrationResponse) => void) => {
+  getLoraCloudIntegration = (
+    req: GetLoraCloudIntegrationRequest,
+    callbackFunc: (resp: GetLoraCloudIntegrationResponse) => void,
+  ) => {
     this.client.getLoraCloudIntegration(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -599,10 +619,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateLoraCloudIntegration = (req: UpdateLoraCloudIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateLoraCloudIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateLoraCloudIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -615,10 +635,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteLoraCloudIntegration = (req: DeleteLoraCloudIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteLoraCloudIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteLoraCloudIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -632,10 +652,10 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
   createThingsBoardIntegration = (req: CreateThingsBoardIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createThingsBoardIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.createThingsBoardIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -648,9 +668,12 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
-  getThingsBoardIntegration = (req: GetThingsBoardIntegrationRequest, callbackFunc: (resp: GetThingsBoardIntegrationResponse) => void) => {
+  getThingsBoardIntegration = (
+    req: GetThingsBoardIntegrationRequest,
+    callbackFunc: (resp: GetThingsBoardIntegrationResponse) => void,
+  ) => {
     this.client.getThingsBoardIntegration(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -659,10 +682,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateThingsBoardIntegration = (req: UpdateThingsBoardIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateThingsBoardIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateThingsBoardIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -675,10 +698,10 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteThingsBoardIntegration = (req: DeleteThingsBoardIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteThingsBoardIntegration(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteThingsBoardIntegration(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -692,9 +715,12 @@ class ApplicationStore extends EventEmitter {
       this.emit("integration.delete");
       callbackFunc();
     });
-  }
+  };
 
-  generateMqttIntegrationClientCertificate = (req: GenerateMqttIntegrationClientCertificateRequest, callbackFunc: (resp: GenerateMqttIntegrationClientCertificateResponse) => void) => {
+  generateMqttIntegrationClientCertificate = (
+    req: GenerateMqttIntegrationClientCertificateRequest,
+    callbackFunc: (resp: GenerateMqttIntegrationClientCertificateResponse) => void,
+  ) => {
     this.client.generateMqttIntegrationClientCertificate(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -703,7 +729,7 @@ class ApplicationStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const applicationStore = new ApplicationStore();

@@ -4,9 +4,9 @@ import { Input, Select, Button, Space, Form } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 
 interface IProps {
-  formRef: React.RefObject<any>,
-  label: string,
-  name: string,
+  formRef: React.RefObject<any>;
+  label: string;
+  name: string;
   required?: boolean;
   value?: string;
   disabled?: boolean;
@@ -17,7 +17,6 @@ interface IState {
   byteOrder: string;
   value: string;
 }
-
 
 class AesKeyInput extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -39,7 +38,7 @@ class AesKeyInput extends Component<IProps, IState> {
     this.props.formRef.current.setFieldsValue({
       [this.props.name]: value,
     });
-  }
+  };
 
   componentDidMount() {
     if (this.props.value) {
@@ -51,7 +50,7 @@ class AesKeyInput extends Component<IProps, IState> {
 
   onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let v = e.target.value;
-    const match = v.match(/[A-Fa-f0-9]/g); 
+    const match = v.match(/[A-Fa-f0-9]/g);
 
     let value = "";
     if (match) {
@@ -62,10 +61,13 @@ class AesKeyInput extends Component<IProps, IState> {
       }
     }
 
-    this.setState({
-      value: value,
-    }, this.updateField);
-  }
+    this.setState(
+      {
+        value: value,
+      },
+      this.updateField,
+    );
+  };
 
   onByteOrderSelect = (v: string) => {
     if (v === this.state.byteOrder) {
@@ -79,21 +81,27 @@ class AesKeyInput extends Component<IProps, IState> {
     const current = this.state.value;
     const bytes = current.match(/[A-Fa-f0-9]{2}/g) || [];
 
-    this.setState({
-      value: bytes.reverse().join(""),
-    }, this.updateField);
-  }
+    this.setState(
+      {
+        value: bytes.reverse().join(""),
+      },
+      this.updateField,
+    );
+  };
 
   generateRandom = () => {
     let cryptoObj = window.crypto || window.Crypto;
     let b = new Uint8Array(16);
     cryptoObj.getRandomValues(b);
 
-    let key = Buffer.from(b).toString('hex');
-    this.setState({
-      value: key,
-    }, this.updateField);
-  }
+    let key = Buffer.from(b).toString("hex");
+    this.setState(
+      {
+        value: key,
+      },
+      this.updateField,
+    );
+  };
 
   render() {
     const addon = (
@@ -102,23 +110,34 @@ class AesKeyInput extends Component<IProps, IState> {
           <Select.Option value="msb">MSB</Select.Option>
           <Select.Option value="lsb">LSB</Select.Option>
         </Select>
-        <Button type="text" size="small" shape="circle" onClick={this.generateRandom}><ReloadOutlined /></Button>
+        <Button type="text" size="small" shape="circle" onClick={this.generateRandom}>
+          <ReloadOutlined />
+        </Button>
       </Space>
     );
 
-    return(
+    return (
       <Form.Item
-        rules={[{
-          required: this.props.required,
-          message: `Please enter a valid ${this.props.label}`,
-          pattern: new RegExp(/[A-Fa-f0-9]{32}/g),
-        }]}
+        rules={[
+          {
+            required: this.props.required,
+            message: `Please enter a valid ${this.props.label}`,
+            pattern: new RegExp(/[A-Fa-f0-9]{32}/g),
+          },
+        ]}
         label={this.props.label}
         name={this.props.name}
         tooltip={this.props.tooltip}
       >
         <Input hidden />
-        <Input.Password id={`${this.props.name}Render`} onChange={this.onChange} addonAfter={!this.props.disabled && addon} style={{fontFamily: "monospace"}} value={this.state.value} disabled={this.props.disabled} />
+        <Input.Password
+          id={`${this.props.name}Render`}
+          onChange={this.onChange}
+          addonAfter={!this.props.disabled && addon}
+          style={{ fontFamily: "monospace" }}
+          value={this.state.value}
+          disabled={this.props.disabled}
+        />
       </Form.Item>
     );
   }

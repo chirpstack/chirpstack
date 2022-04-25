@@ -11,7 +11,6 @@ import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 
 import UserStore from "../../stores/UserStore";
 
-
 class ListUsers extends Component {
   columns = (): ColumnsType<UserListItem.AsObject> => {
     return [
@@ -19,9 +18,7 @@ class ListUsers extends Component {
         title: "Email",
         dataIndex: "email",
         key: "email",
-        render: (text, record) => (
-          <Link to={`/users/${record.id}`}>{text}</Link>
-        ),
+        render: (text, record) => <Link to={`/users/${record.id}`}>{text}</Link>,
       },
       {
         title: "Is admin",
@@ -50,7 +47,7 @@ class ListUsers extends Component {
         },
       },
     ];
-  }
+  };
 
   getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new ListUsersRequest();
@@ -61,31 +58,30 @@ class ListUsers extends Component {
       const obj = resp.toObject();
       callbackFunc(obj.totalCount, obj.resultList);
     });
-  }
-
+  };
 
   render() {
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Network-server</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Users</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title="Users"
           extra={[
-            <Button type="primary"><Link to="/users/create">Add user</Link></Button>
+            <Button type="primary">
+              <Link to="/users/create">Add user</Link>
+            </Button>,
           ]}
         />
-        <DataTable
-          columns={this.columns()}
-          getPage={this.getPage}
-          rowKey="id"
-        />
+        <DataTable columns={this.columns()} getPage={this.getPage} rowKey="id" />
       </Space>
     );
   }

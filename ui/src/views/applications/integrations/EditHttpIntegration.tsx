@@ -14,7 +14,6 @@ import {
 import HttpIntegrationForm from "./HttpIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
@@ -45,16 +44,18 @@ class EditHttpIntegration extends Component<IProps, IState> {
     req.setIntegration(obj);
 
     ApplicationStore.updateHttpIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     if (this.state.integration === undefined) {
       return null;
     }
 
-    return(
+    return (
       <Card title="Update HTTP integration">
         <HttpIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
       </Card>

@@ -7,12 +7,10 @@ import {
   LoraCloudModemGeolocationServices,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
-
 interface IProps {
   initialValues: LoraCloudIntegration;
   onFinish: (obj: LoraCloudIntegration) => void;
 }
-
 
 interface IState {
   modemEnabled: boolean;
@@ -21,7 +19,6 @@ interface IState {
   geolocationWifi: boolean;
   geolocationGnss: boolean;
 }
-
 
 class LoRaCloudIntegrationForm extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -56,7 +53,6 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
 
     let mgs = new LoraCloudModemGeolocationServices();
 
-
     if (mgsv !== undefined) {
       mgs.setToken(mgsv.token);
       mgs.setModemEnabled(mgsv.modemEnabled);
@@ -80,48 +76,48 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
     i.setModemGeolocationServices(mgs);
 
     this.props.onFinish(i);
-  }
+  };
 
   onModemEnabledChange = (v: boolean) => {
     this.setState({
       modemEnabled: v,
     });
-  }
+  };
 
   onGeolocationTdoaChange = (v: boolean) => {
     this.setState({
       geolocationTdoa: v,
     });
-  }
+  };
 
   onGeolocationRssiChange = (v: boolean) => {
     this.setState({
       geolocationRssi: v,
     });
-  }
+  };
 
   onGeolocationWifiChange = (v: boolean) => {
     this.setState({
       geolocationWifi: v,
     });
-  }
+  };
 
   onGeolocationGnssChange = (v: boolean) => {
     this.setState({
       geolocationGnss: v,
     });
-  }
+  };
 
   render() {
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()}  onFinish={this.onFinish}>
+    return (
+      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish}>
         <Tabs>
           <Tabs.TabPane tab="Modem & Geolocation Services" key="1">
             <Form.Item
               label="Token"
               name={["modemGeolocationServices", "token"]}
               tooltip="This token can be obtained from loracloud.com"
-              rules={[{required: true, message: "Please enter a token!"}]}
+              rules={[{ required: true, message: "Please enter a token!" }]}
             >
               <Input />
             </Form.Item>
@@ -132,39 +128,47 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
             >
               <Switch onChange={this.onModemEnabledChange} />
             </Form.Item>
-            {this.state.modemEnabled && <Form.Item
-              label="GNSS port (FPort)"
-              name={["modemGeolocationServices", "gnssPort"]}
-              tooltip="ChirpStack will only forward the FRMPayload for GNSS geolocation to LoRa Cloud when the uplink matches the configured port."
-              rules={[{required: true, message: "Please enter a port number!"}]}
-            >
-              <InputNumber min={0} max={255} />
-            </Form.Item>}
-            {this.state.modemEnabled && <Form.Item
-              label="Modem port (FPort)"
-              name={["modemGeolocationServices", "modemPort"]}
-              tooltip="ChirpStack will only forward the FRMPayload to LoRa Cloud when the uplink matches the configured port."
-              rules={[{required: true, message: "Please enter a port number!"}]}
-            >
-              <InputNumber min={0} max={255} />
-            </Form.Item>}
-            {this.state.modemEnabled && <Form.Item
-              label="Use receive timestamp for GNSS geolocation"
-              name={["modemGeolocationServices", "gnssUseRxTime"]}
-              tooltip="If enabled, the receive timestamp of the gateway will be used as reference instead of the timestamp included in the GNSS payload."
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>}
-            {this.state.modemEnabled && <Form.Item
-              label="My device adheres to the LoRa Edge&trade; Tracker Reference Design protocol"
-              name={["modemGeolocationServices", "parseTlv"]}
-              tooltip="If enabled, ChirpStack Application Server will try to resolve the location of the device if a geolocation payload is detected."
-              valuePropName="checked"
-            >
-              <Switch />
-            </Form.Item>}
-            <Collapse style={{marginBottom: 24}}>
+            {this.state.modemEnabled && (
+              <Form.Item
+                label="GNSS port (FPort)"
+                name={["modemGeolocationServices", "gnssPort"]}
+                tooltip="ChirpStack will only forward the FRMPayload for GNSS geolocation to LoRa Cloud when the uplink matches the configured port."
+                rules={[{ required: true, message: "Please enter a port number!" }]}
+              >
+                <InputNumber min={0} max={255} />
+              </Form.Item>
+            )}
+            {this.state.modemEnabled && (
+              <Form.Item
+                label="Modem port (FPort)"
+                name={["modemGeolocationServices", "modemPort"]}
+                tooltip="ChirpStack will only forward the FRMPayload to LoRa Cloud when the uplink matches the configured port."
+                rules={[{ required: true, message: "Please enter a port number!" }]}
+              >
+                <InputNumber min={0} max={255} />
+              </Form.Item>
+            )}
+            {this.state.modemEnabled && (
+              <Form.Item
+                label="Use receive timestamp for GNSS geolocation"
+                name={["modemGeolocationServices", "gnssUseRxTime"]}
+                tooltip="If enabled, the receive timestamp of the gateway will be used as reference instead of the timestamp included in the GNSS payload."
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            )}
+            {this.state.modemEnabled && (
+              <Form.Item
+                label="My device adheres to the LoRa Edge&trade; Tracker Reference Design protocol"
+                name={["modemGeolocationServices", "parseTlv"]}
+                tooltip="If enabled, ChirpStack Application Server will try to resolve the location of the device if a geolocation payload is detected."
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            )}
+            <Collapse style={{ marginBottom: 24 }}>
               <Collapse.Panel header="Advanced geolocation options" key={1}>
                 <Form.Item
                   label="TDOA based geolocation"
@@ -198,47 +202,59 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
                 >
                   <Switch onChange={this.onGeolocationGnssChange} />
                 </Form.Item>
-                {(this.state.geolocationTdoa || this.state.geolocationRssi) && <Form.Item
-                  label="Geolocation buffer (TTL in seconds)"
-                  name={["modemGeolocationServices", "geolocationBufferTtl"]}
-                  tooltip="The time in seconds that historical uplinks will be stored in the geolocation buffer. Used for TDOA and RSSI geolocation."
-                >
-                  <InputNumber min={0} max={86400} />
-                </Form.Item>}
-                {(this.state.geolocationTdoa || this.state.geolocationRssi) && <Form.Item
-                  label="Geolocation min buffer size"
-                  name={["modemGeolocationServices", "geolocationMinBufferSize"]}
-                  tooltip="The minimum buffer size required before using geolocation. Using multiple uplinks for geolocation can increase the accuracy of the geolocation results. Used for TDOA and RSSI geolocation."
-                >
-                  <InputNumber min={0} />
-                </Form.Item>}
-                {this.state.geolocationWifi && <Form.Item
-                  label="Wifi payload field"
-                  name={["modemGeolocationServices", "geolocationWifiPayloadField"]}
-                  tooltip="This must match the name of the field in the decoded payload which holds array of Wifi access-points. Each element in the array must contain two keys: 1) macAddress: array of 6 bytes, 2) signalStrength: RSSI of the access-point."
-                >
-                  <Input />
-                </Form.Item>}
-                {this.state.geolocationGnss && <Form.Item
-                  label="GNSS payload field"
-                  name={["modemGeolocationServices", "geolocationGnssPayloadField"]}
-                  tooltip="This must match the name of the field in the decoded payload which holds the LR1110 GNSS bytes."
-                >
-                  <Input />
-                </Form.Item>}
-                {this.state.geolocationGnss && <Form.Item
-                  label="Use receive timestamp for GNSS geolocation"
-                  name={["modemGeolocationServices", "geolocationGnssUseRxTime"]}
-                  valuePropName="checked"
-                >
-                  <Switch />
-                </Form.Item>}
+                {(this.state.geolocationTdoa || this.state.geolocationRssi) && (
+                  <Form.Item
+                    label="Geolocation buffer (TTL in seconds)"
+                    name={["modemGeolocationServices", "geolocationBufferTtl"]}
+                    tooltip="The time in seconds that historical uplinks will be stored in the geolocation buffer. Used for TDOA and RSSI geolocation."
+                  >
+                    <InputNumber min={0} max={86400} />
+                  </Form.Item>
+                )}
+                {(this.state.geolocationTdoa || this.state.geolocationRssi) && (
+                  <Form.Item
+                    label="Geolocation min buffer size"
+                    name={["modemGeolocationServices", "geolocationMinBufferSize"]}
+                    tooltip="The minimum buffer size required before using geolocation. Using multiple uplinks for geolocation can increase the accuracy of the geolocation results. Used for TDOA and RSSI geolocation."
+                  >
+                    <InputNumber min={0} />
+                  </Form.Item>
+                )}
+                {this.state.geolocationWifi && (
+                  <Form.Item
+                    label="Wifi payload field"
+                    name={["modemGeolocationServices", "geolocationWifiPayloadField"]}
+                    tooltip="This must match the name of the field in the decoded payload which holds array of Wifi access-points. Each element in the array must contain two keys: 1) macAddress: array of 6 bytes, 2) signalStrength: RSSI of the access-point."
+                  >
+                    <Input />
+                  </Form.Item>
+                )}
+                {this.state.geolocationGnss && (
+                  <Form.Item
+                    label="GNSS payload field"
+                    name={["modemGeolocationServices", "geolocationGnssPayloadField"]}
+                    tooltip="This must match the name of the field in the decoded payload which holds the LR1110 GNSS bytes."
+                  >
+                    <Input />
+                  </Form.Item>
+                )}
+                {this.state.geolocationGnss && (
+                  <Form.Item
+                    label="Use receive timestamp for GNSS geolocation"
+                    name={["modemGeolocationServices", "geolocationGnssUseRxTime"]}
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+                )}
               </Collapse.Panel>
             </Collapse>
           </Tabs.TabPane>
         </Tabs>
         <Form.Item>
-          <Button type="primary" htmlType="submit">Submit</Button>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

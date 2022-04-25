@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 
 import { Form, Input, Row, Col, Button, Tabs } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { Location } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { Gateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
@@ -10,7 +9,6 @@ import { Gateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import EuiInput from "../../components/EuiInput";
 import Map, { Marker } from "../../components/Map";
 import LocationStore from "../../stores/LocationStore";
-
 
 interface IProps {
   initialValues: Gateway;
@@ -23,7 +21,6 @@ interface IState {
   latValue: number;
   lonValue: number;
 }
-
 
 class GatewayForm extends Component<IProps, IState> {
   formRef = React.createRef<any>();
@@ -39,10 +36,13 @@ class GatewayForm extends Component<IProps, IState> {
   componentDidMount() {
     if (!this.props.update) {
       LocationStore.getLocation((loc: [number, number]) => {
-        this.setState({
-          latValue: loc[0],
-          lonValue: loc[1],
-        }, this.setLocationFields);
+        this.setState(
+          {
+            latValue: loc[0],
+            lonValue: loc[1],
+          },
+          this.setLocationFields,
+        );
       });
     } else {
       const loc = this.props.initialValues.getLocation();
@@ -65,7 +65,6 @@ class GatewayForm extends Component<IProps, IState> {
       loc.setLongitude(v.location.longitude);
     }
 
-
     gw.setTenantId(v.tenantId);
     gw.setName(v.name);
     gw.setDescription(v.description);
@@ -78,16 +77,19 @@ class GatewayForm extends Component<IProps, IState> {
     }
 
     this.props.onFinish(gw);
-  }
+  };
 
   updateLocation = (e: any) => {
     const loc = e.target.getLatLng();
 
-    this.setState({
-      latValue: loc.lat,
-      lonValue: loc.lng,
-    }, this.setLocationFields);
-  }
+    this.setState(
+      {
+        latValue: loc.lat,
+        lonValue: loc.lng,
+      },
+      this.setLocationFields,
+    );
+  };
 
   setLocationFields = () => {
     this.formRef.current.setFieldsValue({
@@ -96,26 +98,24 @@ class GatewayForm extends Component<IProps, IState> {
         longitude: this.state.lonValue,
       },
     });
-  }
+  };
 
   render() {
     const location: [number, number] = [this.state.latValue, this.state.lonValue];
 
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish} ref={this.formRef}>
+    return (
+      <Form
+        layout="vertical"
+        initialValues={this.props.initialValues.toObject()}
+        onFinish={this.onFinish}
+        ref={this.formRef}
+      >
         <Tabs>
           <Tabs.TabPane tab="General" key="1">
-            <Form.Item
-              label="Name"
-              name="name"
-              rules={[{required: true, message: "Please enter a name!"}]}
-            >
+            <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
               <Input disabled={this.props.disabled} />
             </Form.Item>
-            <Form.Item
-              label="Description"
-              name="description"
-            >
+            <Form.Item label="Description" name="description">
               <Input.TextArea disabled={this.props.disabled} />
             </Form.Item>
             <EuiInput
@@ -126,28 +126,36 @@ class GatewayForm extends Component<IProps, IState> {
               disabled={this.props.update || this.props.disabled}
               required
             />
-            <Form.Item
-              label="Location"
-            >
-              <Form.Item name={["location", "latitude"]} noStyle><Input hidden /></Form.Item>
-              <Form.Item name={["location", "longitude"]} noStyle><Input hidden /></Form.Item>
+            <Form.Item label="Location">
+              <Form.Item name={["location", "latitude"]} noStyle>
+                <Input hidden />
+              </Form.Item>
+              <Form.Item name={["location", "longitude"]} noStyle>
+                <Input hidden />
+              </Form.Item>
               <Map height={500} center={location}>
-                <Marker position={location} faIcon="wifi" color="blue" draggable={!this.props.disabled} eventHandlers={{"dragend": this.updateLocation}} /> 
+                <Marker
+                  position={location}
+                  faIcon="wifi"
+                  color="blue"
+                  draggable={!this.props.disabled}
+                  eventHandlers={{ dragend: this.updateLocation }}
+                />
               </Map>
             </Form.Item>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Tags" key="2">
             <Form.List name="tagsMap">
-              {(fields, { add, remove }) =>   (
+              {(fields, { add, remove }) => (
                 <>
-                  {fields.map(( {key, name, fieldKey, ...restField} ) => (
+                  {fields.map(({ key, name, fieldKey, ...restField }) => (
                     <Row gutter={24}>
                       <Col span={6}>
                         <Form.Item
                           {...restField}
                           name={[name, 0]}
                           fieldKey={[name, 0]}
-                          rules={[{ required: true, message: 'Please enter a key!' }]}
+                          rules={[{ required: true, message: "Please enter a key!" }]}
                         >
                           <Input placeholder="Key" disabled={this.props.disabled} />
                         </Form.Item>
@@ -157,18 +165,24 @@ class GatewayForm extends Component<IProps, IState> {
                           {...restField}
                           name={[name, 1]}
                           fieldKey={[name, 1]}
-                          rules={[{ required: true, message: 'Please enter a value!' }]}
+                          rules={[{ required: true, message: "Please enter a value!" }]}
                         >
                           <Input placeholder="Value" disabled={this.props.disabled} />
                         </Form.Item>
                       </Col>
-                        <Col span={2}>
-                          <MinusCircleOutlined onClick={() => remove(name)} disabled={this.props.disabled} />
-                        </Col>
+                      <Col span={2}>
+                        <MinusCircleOutlined onClick={() => remove(name)} disabled={this.props.disabled} />
+                      </Col>
                     </Row>
                   ))}
                   <Form.Item>
-                    <Button type="dashed" disabled={this.props.disabled} onClick={() => add()} block icon={<PlusOutlined />}>
+                    <Button
+                      type="dashed"
+                      disabled={this.props.disabled}
+                      onClick={() => add()}
+                      block
+                      icon={<PlusOutlined />}
+                    >
                       Add tag
                     </Button>
                   </Form.Item>
@@ -178,7 +192,9 @@ class GatewayForm extends Component<IProps, IState> {
           </Tabs.TabPane>
         </Tabs>
         <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>Submit</Button>
+          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

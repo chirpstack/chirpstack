@@ -9,7 +9,7 @@ import {
   DeviceListItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
-import { 
+import {
   MulticastGroup,
   RemoveDeviceFromMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
@@ -17,7 +17,6 @@ import {
 import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
-
 
 interface IProps {
   multicastGroup: MulticastGroup;
@@ -27,7 +26,6 @@ interface IState {
   selectedRowIds: string[];
   refreshKey: number;
 }
-
 
 class ListMulticastGroupDevices extends Component<IProps, IState> {
   columns = (): ColumnsType<DeviceListItem.AsObject> => {
@@ -44,7 +42,7 @@ class ListMulticastGroupDevices extends Component<IProps, IState> {
         width: 250,
       },
     ];
-  }
+  };
 
   constructor(props: IProps) {
     super(props);
@@ -59,7 +57,7 @@ class ListMulticastGroupDevices extends Component<IProps, IState> {
     this.setState({
       selectedRowIds: ids,
     });
-  }
+  };
 
   getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new ListDevicesRequest();
@@ -72,10 +70,10 @@ class ListMulticastGroupDevices extends Component<IProps, IState> {
       const obj = resp.toObject();
       callbackFunc(obj.totalCount, obj.resultList);
     });
-  }
+  };
 
   removeDevicesFromMulticastGroup = () => {
-    if(!window.confirm("Are you sure you want to remove the selected devices from the multicast-group?"))  {
+    if (!window.confirm("Are you sure you want to remove the selected devices from the multicast-group?")) {
       return;
     }
 
@@ -101,13 +99,15 @@ class ListMulticastGroupDevices extends Component<IProps, IState> {
 
       MulticastGroupStore.removeDevice(req, cbFunc(count));
     }
-  }
+  };
 
   render() {
-    return(
-      <Space direction="vertical" size="large" style={{width: "100%"}}>
-        <Space direction="horizontal" style={{float: "right"}}>
-          <Button onClick={this.removeDevicesFromMulticastGroup} disabled={this.state.selectedRowIds.length === 0}>Remove from multicast-group</Button>
+    return (
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Space direction="horizontal" style={{ float: "right" }}>
+          <Button onClick={this.removeDevicesFromMulticastGroup} disabled={this.state.selectedRowIds.length === 0}>
+            Remove from multicast-group
+          </Button>
         </Space>
         <DataTable
           columns={this.columns()}

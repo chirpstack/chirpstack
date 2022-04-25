@@ -1,14 +1,13 @@
 import React, { Component } from "react";
 
 import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { DeviceProfile, CodecRuntime } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import CodeEditor from "../../components/CodeEditor";
-
 
 interface IProps {
   initialValues: DeviceProfile;
@@ -23,7 +22,6 @@ interface IState {
   payloadCodecRuntime: CodecRuntime;
   adrAlgorithms: [string, string][];
 }
-
 
 class DeviceProfileForm extends Component<IProps, IState> {
   formRef = React.createRef<any>();
@@ -101,51 +99,48 @@ class DeviceProfileForm extends Component<IProps, IState> {
     }
 
     this.props.onFinish(dp);
-  }
+  };
 
   onSupportsOtaaChange = (checked: boolean) => {
     this.setState({
       supportsOtaa: checked,
     });
-  }
+  };
 
   onSupportsClassBChnage = (checked: boolean) => {
     this.setState({
       supportsClassB: checked,
     });
-  }
+  };
 
   onSupportsClassCChange = (checked: boolean) => {
     this.setState({
       supportsClassC: checked,
     });
-  }
+  };
 
   onPayloadCodecRuntimeChange = (value: CodecRuntime) => {
     this.setState({
       payloadCodecRuntime: value,
     });
-  }
+  };
 
   render() {
-    const adrOptions = this.state.adrAlgorithms.map((v) => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
+    const adrOptions = this.state.adrAlgorithms.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
 
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish} ref={this.formRef}>
+    return (
+      <Form
+        layout="vertical"
+        initialValues={this.props.initialValues.toObject()}
+        onFinish={this.onFinish}
+        ref={this.formRef}
+      >
         <Tabs>
           <Tabs.TabPane tab="General" key="1">
-            <Form.Item
-              label="Name"
-              name="name"
-              rules={[{required: true, message: "Please enter a name!"}]}
-            >
+            <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
               <Input disabled={this.props.disabled} />
             </Form.Item>
-            <Form.Item
-              label="Region"
-              name="region"
-              rules={[{required: true, message: "Please select a region!"}]}
-            >
+            <Form.Item label="Region" name="region" rules={[{ required: true, message: "Please select a region!" }]}>
               <Select disabled={this.props.disabled}>
                 <Select.Option value={Region.AS923}>AS923</Select.Option>
                 <Select.Option value={Region.AS923_2}>AS923-2</Select.Option>
@@ -168,7 +163,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   label="MAC version"
                   tooltip="The LoRaWAN MAC version supported by the device."
                   name="macVersion"
-                  rules={[{required: true, message: "Please select a MAC version!"}]}
+                  rules={[{ required: true, message: "Please select a MAC version!" }]}
                 >
                   <Select disabled={this.props.disabled}>
                     <Select.Option value={MacVersion.LORAWAN_1_0_0}>LoRaWAN 1.0.0</Select.Option>
@@ -185,7 +180,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   label="Regional parameters revision"
                   tooltip="Revision of the Regional Parameters specification supported by the device."
                   name="regParamsRevision"
-                  rules={[{required: true, message: "Please select a regional parameters revision!"}]}
+                  rules={[{ required: true, message: "Please select a regional parameters revision!" }]}
                 >
                   <Select disabled={this.props.disabled}>
                     <Select.Option value={RegParamsRevision.A}>A</Select.Option>
@@ -202,17 +197,15 @@ class DeviceProfileForm extends Component<IProps, IState> {
               label="ADR algorithm"
               tooltip="The ADR algorithm that will be used for controlling the device data-rate."
               name="adrAlgorithmId"
-              rules={[{required: true, message: "Please select an ADR algorithm!"}]}
+              rules={[{ required: true, message: "Please select an ADR algorithm!" }]}
             >
-              <Select disabled={this.props.disabled}>
-                {adrOptions}
-              </Select>
+              <Select disabled={this.props.disabled}>{adrOptions}</Select>
             </Form.Item>
             <Form.Item
               label="Expected uplink interval"
               tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
               name="uplinkInterval"
-              rules={[{required: true, message: "Please enter an uplink interval!"}]}
+              rules={[{ required: true, message: "Please enter an uplink interval!" }]}
             >
               <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
@@ -221,23 +214,20 @@ class DeviceProfileForm extends Component<IProps, IState> {
               tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
               name="deviceStatusReqInterval"
             >
-              <InputNumber min={0} disabled={this.props.disabled}  />
+              <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Join (OTAA / ABP)" key="2">
-            <Form.Item
-              label="Device supports OTAA"
-              name="supportsOtaa"
-              valuePropName="checked"
-            >
+            <Form.Item label="Device supports OTAA" name="supportsOtaa" valuePropName="checked">
               <Switch onChange={this.onSupportsOtaaChange} disabled={this.props.disabled} />
             </Form.Item>
-              {!this.state.supportsOtaa && <Row>
+            {!this.state.supportsOtaa && (
+              <Row>
                 <Col span={12}>
                   <Form.Item
                     label="RX1 delay"
                     name="abpRx1Delay"
-                    rules={[{required: true, message: "Please enter a RX1 delay!"}]}
+                    rules={[{ required: true, message: "Please enter a RX1 delay!" }]}
                   >
                     <InputNumber min={0} max={15} disabled={this.props.disabled} />
                   </Form.Item>
@@ -247,19 +237,21 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     label="RX1 data-rate offset"
                     tooltip="Please refer the LoRaWAN Regional Parameters specification for valid values."
                     name="abpRx1DrOffset"
-                    rules={[{required: true, message: "Please enter a RX1 data-rate offset!"}]}
+                    rules={[{ required: true, message: "Please enter a RX1 data-rate offset!" }]}
                   >
                     <InputNumber min={0} max={15} disabled={this.props.disabled} />
                   </Form.Item>
                 </Col>
-              </Row>}
-              {!this.state.supportsOtaa && <Row>
+              </Row>
+            )}
+            {!this.state.supportsOtaa && (
+              <Row>
                 <Col span={12}>
                   <Form.Item
                     label="RX2 data-rate"
                     tooltip="Please refer the LoRaWAN Regional Parameters specification for valid values."
                     name="abpRx2Dr"
-                    rules={[{required: true, message: "Please enter a RX2 data-rate!"}]}
+                    rules={[{ required: true, message: "Please enter a RX2 data-rate!" }]}
                   >
                     <InputNumber min={0} max={15} disabled={this.props.disabled} />
                   </Form.Item>
@@ -268,46 +260,43 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   <Form.Item
                     label="RX2 frequency (Hz)"
                     name="abpRx2Freq"
-                    rules={[{required: true, message: "Please enter a RX2 frequency!"}]}
+                    rules={[{ required: true, message: "Please enter a RX2 frequency!" }]}
                   >
-                    <InputNumber min={0} style={{width: "200px"}} disabled={this.props.disabled} />
+                    <InputNumber min={0} style={{ width: "200px" }} disabled={this.props.disabled} />
                   </Form.Item>
                 </Col>
-              </Row>}
+              </Row>
+            )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Class-B" key="3">
-            <Form.Item
-              label="Device supports Class-B"
-              name="supportsClassB"
-              valuePropName="checked"
-            >
+            <Form.Item label="Device supports Class-B" name="supportsClassB" valuePropName="checked">
               <Switch onChange={this.onSupportsClassBChnage} disabled={this.props.disabled} />
             </Form.Item>
-            {this.state.supportsClassB && <Form.Item
-              label="Class-B confirmed downlink timeout (seconds)"
-              tooltip="Class-B timeout (in seconds) for confirmed downlink transmissions."
-              name="classBTimeout"
-              rules={[{required: true, message: "Please enter a Class-B confirmed downlink timeout!"}]}
-            >
-              <InputNumber min={0} />
-            </Form.Item>}
+            {this.state.supportsClassB && (
+              <Form.Item
+                label="Class-B confirmed downlink timeout (seconds)"
+                tooltip="Class-B timeout (in seconds) for confirmed downlink transmissions."
+                name="classBTimeout"
+                rules={[{ required: true, message: "Please enter a Class-B confirmed downlink timeout!" }]}
+              >
+                <InputNumber min={0} />
+              </Form.Item>
+            )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Class-C" key="4">
-            <Form.Item
-              label="Device supports Class-C"
-              name="supportsClassC"
-              valuePropName="checked"
-            >
+            <Form.Item label="Device supports Class-C" name="supportsClassC" valuePropName="checked">
               <Switch onChange={this.onSupportsClassCChange} disabled={this.props.disabled} />
             </Form.Item>
-            {this.state.supportsClassC && <Form.Item
-              label="Class-C confirmed downlink timeout (seconds)"
-              tooltip="Class-C timeout (in seconds) for confirmed downlink transmissions."
-              name="classCTimeout"
-              rules={[{required: true, message: "Please enter a Class-C confirmed downlink timeout!"}]}
-            >
-              <InputNumber min={0} disabled={this.props.disabled} />
-            </Form.Item>}
+            {this.state.supportsClassC && (
+              <Form.Item
+                label="Class-C confirmed downlink timeout (seconds)"
+                tooltip="Class-C timeout (in seconds) for confirmed downlink transmissions."
+                name="classCTimeout"
+                rules={[{ required: true, message: "Please enter a Class-C confirmed downlink timeout!" }]}
+              >
+                <InputNumber min={0} disabled={this.props.disabled} />
+              </Form.Item>
+            )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Codec" key="5">
             <Form.Item
@@ -321,33 +310,39 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 <Select.Option value={CodecRuntime.JS}>JavaScript functions</Select.Option>
               </Select>
             </Form.Item>
-            {this.state.payloadCodecRuntime === CodecRuntime.JS && <CodeEditor
-              label="Decode function"
-              tooltip="The function must have the signature function Decode(fPort, bytes) and must return an object. ChirpStack Application Server will convert this object to JSON."
-              name="payloadDecoderConfig"
-              value={this.props.initialValues.getPayloadDecoderConfig()}
-              formRef={this.formRef} disabled={this.props.disabled}
-            />}
-            {this.state.payloadCodecRuntime === CodecRuntime.JS && <CodeEditor
-              label="Encode function"
-              tooltip="The function must have the signature function Encode(fPort, obj) and must return an array of bytes."
-              name="payloadEncoderConfig"
-              value={this.props.initialValues.getPayloadEncoderConfig()}
-              formRef={this.formRef} disabled={this.props.disabled}
-            />}
+            {this.state.payloadCodecRuntime === CodecRuntime.JS && (
+              <CodeEditor
+                label="Decode function"
+                tooltip="The function must have the signature function Decode(fPort, bytes) and must return an object. ChirpStack Application Server will convert this object to JSON."
+                name="payloadDecoderConfig"
+                value={this.props.initialValues.getPayloadDecoderConfig()}
+                formRef={this.formRef}
+                disabled={this.props.disabled}
+              />
+            )}
+            {this.state.payloadCodecRuntime === CodecRuntime.JS && (
+              <CodeEditor
+                label="Encode function"
+                tooltip="The function must have the signature function Encode(fPort, obj) and must return an array of bytes."
+                name="payloadEncoderConfig"
+                value={this.props.initialValues.getPayloadEncoderConfig()}
+                formRef={this.formRef}
+                disabled={this.props.disabled}
+              />
+            )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Tags" key="6">
             <Form.List name="tagsMap">
-              {(fields, { add, remove }) =>   (
+              {(fields, { add, remove }) => (
                 <>
-                  {fields.map(( {key, name, fieldKey, ...restField} ) => (
+                  {fields.map(({ key, name, fieldKey, ...restField }) => (
                     <Row gutter={24}>
                       <Col span={6}>
                         <Form.Item
                           {...restField}
                           name={[name, 0]}
                           fieldKey={[name, 0]}
-                          rules={[{ required: true, message: 'Please enter a key!' }]}
+                          rules={[{ required: true, message: "Please enter a key!" }]}
                         >
                           <Input placeholder="Key" disabled={this.props.disabled} />
                         </Form.Item>
@@ -357,18 +352,24 @@ class DeviceProfileForm extends Component<IProps, IState> {
                           {...restField}
                           name={[name, 1]}
                           fieldKey={[name, 1]}
-                          rules={[{ required: true, message: 'Please enter a value!' }]}
+                          rules={[{ required: true, message: "Please enter a value!" }]}
                         >
                           <Input placeholder="Value" disabled={this.props.disabled} />
                         </Form.Item>
                       </Col>
-                        <Col span={2}>
-                          <MinusCircleOutlined onClick={() => remove(name)} />
-                        </Col>
+                      <Col span={2}>
+                        <MinusCircleOutlined onClick={() => remove(name)} />
+                      </Col>
                     </Row>
                   ))}
                   <Form.Item>
-                    <Button disabled={this.props.disabled} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                    <Button
+                      disabled={this.props.disabled}
+                      type="dashed"
+                      onClick={() => add()}
+                      block
+                      icon={<PlusOutlined />}
+                    >
                       Add tag
                     </Button>
                   </Form.Item>
@@ -378,7 +379,9 @@ class DeviceProfileForm extends Component<IProps, IState> {
           </Tabs.TabPane>
         </Tabs>
         <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>Submit</Button>
+          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

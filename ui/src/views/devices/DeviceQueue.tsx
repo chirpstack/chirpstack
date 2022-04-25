@@ -13,12 +13,12 @@ import {
   GetDeviceQueueItemsRequest,
   GetDeviceQueueItemsResponse,
   FlushDeviceQueueRequest,
-  DeviceQueueItem } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+  DeviceQueueItem,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import CodeEditor from "../../components/CodeEditor";
-
 
 interface IProps {
   device: Device;
@@ -27,7 +27,6 @@ interface IProps {
 interface IState {
   refreshCounter: number;
 }
-
 
 class DeviceQueue extends Component<IProps, IState> {
   formRef = React.createRef<any>();
@@ -97,11 +96,11 @@ class DeviceQueue extends Component<IProps, IState> {
         dataIndex: "data",
         key: "data",
         render: (text, record) => {
-          return Buffer.from(record.data as string, 'base64').toString('hex');
+          return Buffer.from(record.data as string, "base64").toString("hex");
         },
       },
-    ]
-  }
+    ];
+  };
 
   getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new GetDeviceQueueItemsRequest();
@@ -111,13 +110,13 @@ class DeviceQueue extends Component<IProps, IState> {
       const obj = resp.toObject();
       callbackFunc(obj.totalCount, obj.resultList);
     });
-  }
+  };
 
   refreshQueue = () => {
     this.setState({
       refreshCounter: this.state.refreshCounter + 1,
     });
-  }
+  };
 
   flushQueue = () => {
     let req = new FlushDeviceQueueRequest();
@@ -125,7 +124,7 @@ class DeviceQueue extends Component<IProps, IState> {
     DeviceStore.flushQueue(req, () => {
       this.refreshQueue();
     });
-  }
+  };
 
   onEnqueue = (values: any) => {
     let req = new EnqueueDeviceQueueItemRequest();
@@ -136,11 +135,11 @@ class DeviceQueue extends Component<IProps, IState> {
     item.setConfirmed(values.confirmed);
 
     if (values.hex !== undefined) {
-      item.setData(Buffer.from(values.hex, 'hex'));
+      item.setData(Buffer.from(values.hex, "hex"));
     }
 
     if (values.base64 !== undefined) {
-      item.setData(Buffer.from(values.base64, 'base64'));
+      item.setData(Buffer.from(values.base64, "base64"));
     }
 
     if (values.json !== undefined) {
@@ -149,7 +148,7 @@ class DeviceQueue extends Component<IProps, IState> {
         let struct = Struct.fromJavaScript(obj);
 
         item.setObject(struct);
-      } catch(err) {
+      } catch (err) {
         if (err instanceof Error) {
           notification.error({
             message: "Error",
@@ -162,19 +161,19 @@ class DeviceQueue extends Component<IProps, IState> {
 
     req.setItem(item);
 
-    DeviceStore.enqueue(req, (_) => {
+    DeviceStore.enqueue(req, _ => {
       this.formRef.current.resetFields();
       this.refreshQueue();
     });
-  }
+  };
 
   render() {
     return (
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <Card title="Enqueue">
-          <Form layout="horizontal" onFinish={this.onEnqueue} ref={this.formRef} initialValues={{fPort: 1}}>
+          <Form layout="horizontal" onFinish={this.onEnqueue} ref={this.formRef} initialValues={{ fPort: 1 }}>
             <Row>
-              <Space direction="horizontal" style={{width: "100%"}} size="large">
+              <Space direction="horizontal" style={{ width: "100%" }} size="large">
                 <Form.Item name="confirmed" label="Confirmed" valuePropName="checked">
                   <Checkbox />
                 </Form.Item>
@@ -195,24 +194,20 @@ class DeviceQueue extends Component<IProps, IState> {
                 </Form.Item>
               </Tabs.TabPane>
               <Tabs.TabPane tab="JSON" key="3">
-                <CodeEditor
-                  name="json" 
-                  value="{}"
-                  formRef={this.formRef}
-                />
+                <CodeEditor name="json" value="{}" formRef={this.formRef} />
               </Tabs.TabPane>
             </Tabs>
-            <Button type="primary" htmlType="submit">Enqueue</Button>
+            <Button type="primary" htmlType="submit">
+              Enqueue
+            </Button>
           </Form>
         </Card>
         <Row justify="end">
           <Space direction="horizontal" size="large">
-            <Button icon={<RedoOutlined />} onClick={this.refreshQueue}>Reload</Button>
-            <Popconfirm
-              title="Are you sure you want to flush the queue?"
-              placement="left"
-              onConfirm={this.flushQueue}
-            >
+            <Button icon={<RedoOutlined />} onClick={this.refreshQueue}>
+              Reload
+            </Button>
+            <Popconfirm title="Are you sure you want to flush the queue?" placement="left" onConfirm={this.flushQueue}>
               <Button icon={<DeleteOutlined />}>Flush queue</Button>
             </Popconfirm>
           </Space>

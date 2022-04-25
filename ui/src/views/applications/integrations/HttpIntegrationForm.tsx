@@ -1,13 +1,9 @@
 import React, { Component } from "react";
 
 import { Form, Input, Button, Select, Row, Col, Typography, Space } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
-import {
-  HttpIntegration,
-  Encoding,
-} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-
+import { HttpIntegration, Encoding } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 interface IProps {
   initialValues: HttpIntegration;
@@ -29,15 +25,15 @@ class HttpIntegrationForm extends Component<IProps> {
     }
 
     this.props.onFinish(i);
-  }
+  };
 
   render() {
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()}  onFinish={this.onFinish}>
+    return (
+      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish}>
         <Form.Item
           label="Payload encoding"
           name="encoding"
-          rules={[{required: true, message: "Please select an encoding!"}]}
+          rules={[{ required: true, message: "Please select an encoding!" }]}
         >
           <Select>
             <Select.Option value={Encoding.JSON}>JSON</Select.Option>
@@ -48,23 +44,23 @@ class HttpIntegrationForm extends Component<IProps> {
           label="Event endpoint URL(s)"
           name="eventEndpointUrl"
           tooltip="ChirpStack will make a POST request to this URL(s) with 'event' as query parameter. Multiple URLs can be defined as a comma separated list. Whitespace will be automatically removed."
-          rules={[{required: true, message: "Please enter an event endpoint URL!"}]}
+          rules={[{ required: true, message: "Please enter an event endpoint URL!" }]}
         >
           <Input />
         </Form.Item>
-        <Space direction="vertical" style={{width: "100%"}}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           <Typography.Text>Headers</Typography.Text>
           <Form.List name="headersMap">
-            {(fields, { add, remove }) =>   (
+            {(fields, { add, remove }) => (
               <>
-                {fields.map(( {key, name, fieldKey, ...restField} ) => (
+                {fields.map(({ key, name, fieldKey, ...restField }) => (
                   <Row gutter={24}>
                     <Col span={6}>
                       <Form.Item
                         {...restField}
                         name={[name, 0]}
                         fieldKey={[name, 0]}
-                        rules={[{ required: true, message: 'Please enter a key!' }]}
+                        rules={[{ required: true, message: "Please enter a key!" }]}
                       >
                         <Input placeholder="Key" />
                       </Form.Item>
@@ -74,14 +70,14 @@ class HttpIntegrationForm extends Component<IProps> {
                         {...restField}
                         name={[name, 1]}
                         fieldKey={[name, 1]}
-                        rules={[{ required: true, message: 'Please enter a value!' }]}
+                        rules={[{ required: true, message: "Please enter a value!" }]}
                       >
                         <Input placeholder="Value" />
                       </Form.Item>
                     </Col>
-                      <Col span={2}>
-                        <MinusCircleOutlined onClick={() => remove(name)} />
-                      </Col>
+                    <Col span={2}>
+                      <MinusCircleOutlined onClick={() => remove(name)} />
+                    </Col>
                   </Row>
                 ))}
                 <Form.Item>
@@ -94,7 +90,9 @@ class HttpIntegrationForm extends Component<IProps> {
           </Form.List>
         </Space>
         <Form.Item>
-          <Button type="primary" htmlType="submit">Submit</Button>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

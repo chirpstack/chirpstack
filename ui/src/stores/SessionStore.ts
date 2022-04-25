@@ -3,7 +3,11 @@ import { Metadata } from "grpc-web";
 
 import { EventEmitter } from "events";
 import { InternalServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/internal_grpc_web_pb";
-import { LoginRequest, UserTenantLink, OpenIdConnectLoginRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import {
+  LoginRequest,
+  UserTenantLink,
+  OpenIdConnectLoginRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
 import { HandleError, HandleLoginError } from "./helpers";
@@ -30,12 +34,12 @@ class SessionStore extends EventEmitter {
       if (err !== null) {
         HandleLoginError(err);
         return;
-      } 
+      }
 
       this.setToken(resp.getJwt());
       this.fetchProfile(callbackFunc);
     });
-  }
+  };
 
   openIdConnectLogin = (req: OpenIdConnectLoginRequest, callbackFunc: any) => {
     this.client.openIdConnectLogin(req, {}, (err, resp) => {
@@ -47,7 +51,7 @@ class SessionStore extends EventEmitter {
       this.setToken(resp.getToken());
       this.fetchProfile(callbackFunc);
     });
-  }
+  };
 
   logout = (emit: boolean, callbackFunc: () => void) => {
     localStorage.clear();
@@ -59,11 +63,11 @@ class SessionStore extends EventEmitter {
     }
 
     callbackFunc();
-  }
+  };
 
   setToken = (s: string) => {
     localStorage.setItem("token", s);
-  }
+  };
 
   getToken = (): string => {
     let token = localStorage.getItem("token");
@@ -71,25 +75,25 @@ class SessionStore extends EventEmitter {
       return "";
     }
     return token;
-  }
+  };
 
   getTenantId = (): string => {
     return localStorage.getItem("tenantId") || "";
-  }
+  };
 
   setTenantId = (id: string) => {
     console.log("tenantId set to", id);
     localStorage.setItem("tenantId", id);
     this.emit("tenant.change");
-  }
+  };
 
   getRowsPerPage = (): number => {
     return parseInt(localStorage.getItem("rowsPerPage") || "10", 10);
-  }
+  };
 
   setRowsPerPage = (count: number) => {
     localStorage.setItem("rowsPerPage", count.toString());
-  }
+  };
 
   getMetadata = (): Metadata => {
     if (this.getToken() === "") {
@@ -99,7 +103,7 @@ class SessionStore extends EventEmitter {
     return {
       authorization: "Bearer " + this.getToken(),
     };
-  }
+  };
 
   fetchProfile = (callbackFunc: any) => {
     if (this.getToken() === "") {
@@ -118,19 +122,19 @@ class SessionStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   getUser = (): User | undefined => {
     return this.user;
-  }
+  };
 
   isAdmin = (): boolean => {
-    if(!this.user) {
+    if (!this.user) {
       return false;
     }
 
     return this.user.getIsAdmin();
-  }
+  };
 
   isTenantAdmin = (tenantId: string): boolean => {
     for (const t of this.tenants) {
@@ -140,7 +144,7 @@ class SessionStore extends EventEmitter {
     }
 
     return false;
-  }
+  };
 
   isTenantDeviceAdmin = (tenantId: string): boolean => {
     for (const t of this.tenants) {
@@ -150,7 +154,7 @@ class SessionStore extends EventEmitter {
     }
 
     return false;
-  }
+  };
 
   isTenantGatewayAdmin = (tenantId: string): boolean => {
     for (const t of this.tenants) {
@@ -158,7 +162,7 @@ class SessionStore extends EventEmitter {
     }
 
     return false;
-  }
+  };
 }
 
 const sessionStore = new SessionStore();

@@ -10,15 +10,12 @@ import {
   CreateLoraCloudIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
-
 import LoRaCloudIntegrationForm from "./LoRaCloudIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
-
 
 interface IProps extends RouteComponentProps {
   application: Application;
 }
-
 
 class CreateLoRaCloudIntegration extends Component<IProps> {
   onFinish = (obj: LoraCloudIntegration) => {
@@ -28,9 +25,11 @@ class CreateLoRaCloudIntegration extends Component<IProps> {
     req.setIntegration(obj);
 
     ApplicationStore.createLoraCloudIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     let i = new LoraCloudIntegration();
@@ -41,8 +40,7 @@ class CreateLoRaCloudIntegration extends Component<IProps> {
 
     i.setModemGeolocationServices(mgs);
 
-
-    return(
+    return (
       <Card title="Add Semtech LoRa Cloud&trade; integration">
         <LoRaCloudIntegrationForm initialValues={i} onFinish={this.onFinish} />
       </Card>

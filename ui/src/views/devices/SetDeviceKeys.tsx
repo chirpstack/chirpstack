@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { RouteComponentProps } from "react-router-dom";
 
-import { Form, Button, Space, Popconfirm} from "antd";
+import { Form, Button, Space, Popconfirm } from "antd";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -20,12 +20,10 @@ import { MacVersion } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb
 import AesKeyInput from "../../components/AesKeyInput";
 import DeviceStore from "../../stores/DeviceStore";
 
-
 interface FormProps {
   initialValues: DeviceKeys;
   onFinish: (obj: DeviceKeys) => void;
 }
-
 
 class LW10DeviceKeysForm extends Component<FormProps> {
   formRef = React.createRef<any>();
@@ -40,11 +38,16 @@ class LW10DeviceKeysForm extends Component<FormProps> {
     dk.setNwkKey(v.nwkKey);
 
     this.props.onFinish(dk);
-  }
+  };
 
   render() {
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish} ref={this.formRef}>
+    return (
+      <Form
+        layout="vertical"
+        initialValues={this.props.initialValues.toObject()}
+        onFinish={this.onFinish}
+        ref={this.formRef}
+      >
         <AesKeyInput
           label="Application key"
           name="nwkKey"
@@ -54,13 +57,14 @@ class LW10DeviceKeysForm extends Component<FormProps> {
           required
         />
         <Form.Item>
-          <Button type="primary" htmlType="submit">Submit</Button>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );
   }
 }
-
 
 class LW11DeviceKeysForm extends Component<FormProps> {
   formRef = React.createRef<any>();
@@ -74,11 +78,16 @@ class LW11DeviceKeysForm extends Component<FormProps> {
     dk.setNwkKey(v.nwkKey);
 
     this.props.onFinish(dk);
-  }
+  };
 
   render() {
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish} ref={this.formRef}>
+    return (
+      <Form
+        layout="vertical"
+        initialValues={this.props.initialValues.toObject()}
+        onFinish={this.onFinish}
+        ref={this.formRef}
+      >
         <AesKeyInput
           label="Application key"
           tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
@@ -96,13 +105,14 @@ class LW11DeviceKeysForm extends Component<FormProps> {
           required
         />
         <Form.Item>
-          <Button type="primary" htmlType="submit">Submit</Button>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );
   }
 }
-
 
 interface IProps extends RouteComponentProps {
   tenant: Tenant;
@@ -123,7 +133,7 @@ class SetDeviceKeys extends Component<IProps, IState> {
       deviceKeysRequested: false,
     };
   }
-  
+
   componentDidMount() {
     this.getDeviceKeys();
   }
@@ -144,7 +154,7 @@ class SetDeviceKeys extends Component<IProps, IState> {
         });
       }
     });
-  }
+  };
 
   onFinish = (obj: DeviceKeys) => {
     if (this.state.deviceKeys) {
@@ -153,9 +163,10 @@ class SetDeviceKeys extends Component<IProps, IState> {
       req.setDeviceKeys(obj);
 
       DeviceStore.updateKeys(req, () => {
-        this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`);
+        this.props.history.push(
+          `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`,
+        );
       });
-
     } else {
       // this is a create
       let req = new CreateDeviceKeysRequest();
@@ -163,16 +174,18 @@ class SetDeviceKeys extends Component<IProps, IState> {
       req.setDeviceKeys(obj);
 
       DeviceStore.createKeys(req, () => {
-        this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`);
+        this.props.history.push(
+          `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`,
+        );
       });
     }
-  }
+  };
 
   flushDevNonces = () => {
     let req = new FlushDevNoncesRequest();
     req.setDevEui(this.props.device.getDevEui());
     DeviceStore.flushDevNonces(req, () => {});
-  }
+  };
 
   render() {
     if (!this.state.deviceKeysRequested) {
@@ -187,17 +200,19 @@ class SetDeviceKeys extends Component<IProps, IState> {
       initialValues = this.state.deviceKeys;
     }
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
-        {this.state.deviceKeys && <div style={{float: "right"}}>
-          <Popconfirm
-            placement="left"
-            title="Are you sure you want to flush all device-nonces that have been used during previous OTAA activations?"
-            onConfirm={this.flushDevNonces}
-          >
-            <Button>Flush OTAA device nonces</Button>
-          </Popconfirm>
-        </div>}
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
+        {this.state.deviceKeys && (
+          <div style={{ float: "right" }}>
+            <Popconfirm
+              placement="left"
+              title="Are you sure you want to flush all device-nonces that have been used during previous OTAA activations?"
+              onConfirm={this.flushDevNonces}
+            >
+              <Button>Flush OTAA device nonces</Button>
+            </Popconfirm>
+          </div>
+        )}
         {!lw11 && <LW10DeviceKeysForm initialValues={initialValues} onFinish={this.onFinish} />}
         {lw11 && <LW11DeviceKeysForm initialValues={initialValues} onFinish={this.onFinish} />}
       </Space>

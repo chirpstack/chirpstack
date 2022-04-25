@@ -4,7 +4,6 @@ import { Form, Input, InputNumber, Switch, Row, Col, Button } from "antd";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-
 interface IProps {
   initialValues: Tenant;
   onFinish: (obj: Tenant) => void;
@@ -27,22 +26,15 @@ class TenantForm extends Component<IProps, IState> {
     tenant.setPrivateGateways(values.privateGateways);
 
     this.props.onFinish(tenant);
-  }
+  };
 
   render() {
-    return(
+    return (
       <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish}>
-        <Form.Item
-          label="Name"
-          name="name"
-          rules={[{required: true, message: "Please enter a name!"}]}
-        >
+        <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
           <Input disabled={this.props.disabled} />
         </Form.Item>
-        <Form.Item
-          label="Description"
-          name="description"
-        >
+        <Form.Item label="Description" name="description">
           <Input.TextArea disabled={this.props.disabled} />
         </Form.Item>
         <Row>
@@ -89,7 +81,9 @@ class TenantForm extends Component<IProps, IState> {
           </Col>
         </Row>
         <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>Submit</Button>
+          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

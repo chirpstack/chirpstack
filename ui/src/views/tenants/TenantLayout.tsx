@@ -11,13 +11,11 @@ import Admin from "../../components/Admin";
 import TenantDashboard from "./TenantDashboard";
 import EditTenant from "./EditTenant";
 
-
 interface IState {}
 
 interface IProps extends RouteComponentProps {
   tenant: Tenant;
 }
-
 
 class TenantLayout extends Component<IProps, IState> {
   deleteTenant = () => {
@@ -27,7 +25,7 @@ class TenantLayout extends Component<IProps, IState> {
     TenantStore.delete(req, () => {
       this.props.history.push("/tenants");
     });
-  }
+  };
 
   render() {
     const tenant = this.props.tenant;
@@ -39,40 +37,52 @@ class TenantLayout extends Component<IProps, IState> {
       tab = "edit";
     }
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>{tenant.getName()}</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title={tenant.getName()}
           subTitle={`tenant id: ${tenant.getId()}`}
           extra={[
             <Admin>
-              <DeleteConfirm
-                confirm={tenant.getName()}
-                typ="tenant"
-                onConfirm={this.deleteTenant}
-              >
-                <Button danger type="primary">Delete tenant</Button>
+              <DeleteConfirm confirm={tenant.getName()} typ="tenant" onConfirm={this.deleteTenant}>
+                <Button danger type="primary">
+                  Delete tenant
+                </Button>
               </DeleteConfirm>
-            </Admin>
+            </Admin>,
           ]}
         />
 
         <Card>
-          <Menu mode="horizontal" selectedKeys={[tab]} style={{marginBottom: 24}}>
-            <Menu.Item key="dashboard"><Link to={`/tenants/${tenant.getId()}`}>Dashboard</Link></Menu.Item>
-            <Menu.Item key="edit"><Link to={`/tenants/${tenant.getId()}/edit`}>Configuration</Link></Menu.Item>
+          <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
+            <Menu.Item key="dashboard">
+              <Link to={`/tenants/${tenant.getId()}`}>Dashboard</Link>
+            </Menu.Item>
+            <Menu.Item key="edit">
+              <Link to={`/tenants/${tenant.getId()}/edit`}>Configuration</Link>
+            </Menu.Item>
           </Menu>
           <Switch>
-            <Route exact path={`${this.props.match.path}`} render={props => <TenantDashboard tenant={tenant} {...props} />} />
-            <Route exact path={`${this.props.match.path}/edit`} render={props => <EditTenant tenant={tenant} {...props} />} />
+            <Route
+              exact
+              path={`${this.props.match.path}`}
+              render={props => <TenantDashboard tenant={tenant} {...props} />}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/edit`}
+              render={props => <EditTenant tenant={tenant} {...props} />}
+            />
           </Switch>
         </Card>
       </Space>

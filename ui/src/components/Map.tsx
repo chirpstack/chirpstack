@@ -3,8 +3,7 @@ import React, { Component } from "react";
 import L, { LatLngTuple, FitBoundsOptions } from "leaflet";
 import "leaflet.awesome-markers";
 import { MarkerProps as LMarkerProps } from "react-leaflet";
-import { MapContainer, Marker as LMarker, TileLayer } from 'react-leaflet';
-
+import { MapContainer, Marker as LMarker, TileLayer } from "react-leaflet";
 
 interface IProps {
   height: number;
@@ -17,7 +16,6 @@ interface IState {
   map?: L.Map;
 }
 
-
 class Map extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
@@ -25,22 +23,25 @@ class Map extends Component<IProps, IState> {
   }
 
   setMap = (map: L.Map) => {
-    this.setState({
-      map: map,
-    }, () => {
-      // This is needed as setMap is called after the map has been created.
-      // There is a small amount of time where componentDidUpdate can't update
-      // the map with the new center because setMap hasn't been called yet.
-      // In such case, the map would never update to the new center.
-      if (this.props.center !== undefined) {
-        map.panTo(this.props.center);
-      }
+    this.setState(
+      {
+        map: map,
+      },
+      () => {
+        // This is needed as setMap is called after the map has been created.
+        // There is a small amount of time where componentDidUpdate can't update
+        // the map with the new center because setMap hasn't been called yet.
+        // In such case, the map would never update to the new center.
+        if (this.props.center !== undefined) {
+          map.panTo(this.props.center);
+        }
 
-      if (this.props.bounds !== undefined) {
-        map.fitBounds(this.props.bounds, this.props.boundsOptions);
-      }
-    });
-  }
+        if (this.props.bounds !== undefined) {
+          map.fitBounds(this.props.bounds, this.props.boundsOptions);
+        }
+      },
+    );
+  };
 
   componentDidUpdate(oldProps: IProps) {
     if (this.props === oldProps) {
@@ -63,7 +64,7 @@ class Map extends Component<IProps, IState> {
       height: this.props.height,
     };
 
-    return(
+    return (
       <MapContainer
         bounds={this.props.bounds}
         boundsOptions={this.props.boundsOptions}
@@ -84,7 +85,17 @@ class Map extends Component<IProps, IState> {
   }
 }
 
-export type MarkerColor  = "red" | "darkred" | "orange" | "green" | "darkgreen" | "blue" | "purple" | "darkpurple" | "cadetblue" | undefined;
+export type MarkerColor =
+  | "red"
+  | "darkred"
+  | "orange"
+  | "green"
+  | "darkgreen"
+  | "blue"
+  | "purple"
+  | "darkpurple"
+  | "cadetblue"
+  | undefined;
 
 interface MarkerProps extends LMarkerProps {
   position: [number, number];
@@ -100,11 +111,12 @@ export class Marker extends Component<MarkerProps> {
       icon: faIcon,
       prefix: "fa",
       markerColor: color,
-    }); 
+    });
 
-
-    return(
-      <LMarker icon={iconMarker} position={position} {...otherProps}>{this.props.children}</LMarker>
+    return (
+      <LMarker icon={iconMarker} position={position} {...otherProps}>
+        {this.props.children}
+      </LMarker>
     );
   }
 }

@@ -6,14 +6,13 @@ import { StreamDeviceFramesRequest, LogItem } from "@chirpstack/chirpstack-api-g
 import InternalStore from "../../stores/InternalStore";
 import LogTable from "../../components/LogTable";
 
-
 interface IProps {
   device: Device;
 }
 
 interface IState {
   frames: LogItem[];
-  cancelFunc?: () => void,
+  cancelFunc?: () => void;
 }
 
 class DeviceFrames extends Component<IProps, IState> {
@@ -44,7 +43,7 @@ class DeviceFrames extends Component<IProps, IState> {
     this.setState({
       cancelFunc: cancelFunc,
     });
-  }
+  };
 
   onMessage = (l: LogItem) => {
     let frames = this.state.frames;
@@ -55,10 +54,10 @@ class DeviceFrames extends Component<IProps, IState> {
         frames: frames,
       });
     }
-  }
+  };
 
   render() {
-    return(<LogTable logs={this.state.frames} />);
+    return <LogTable logs={this.state.frames} />;
   }
 }
 

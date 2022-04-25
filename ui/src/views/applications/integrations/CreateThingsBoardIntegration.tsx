@@ -12,11 +12,9 @@ import {
 import ThingsBoardIntegrationForm from "./ThingsBoardIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
-
 
 class CreateThingsBoardIntegration extends Component<IProps> {
   onFinish = (obj: ThingsBoardIntegration) => {
@@ -26,14 +24,16 @@ class CreateThingsBoardIntegration extends Component<IProps> {
     req.setIntegration(obj);
 
     ApplicationStore.createThingsBoardIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     const i = new ThingsBoardIntegration();
 
-    return(
+    return (
       <Card title="Add ThingsBoard integration">
         <ThingsBoardIntegrationForm initialValues={i} onFinish={this.onFinish} />
       </Card>

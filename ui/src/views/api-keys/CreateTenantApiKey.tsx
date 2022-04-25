@@ -10,7 +10,6 @@ import ApiKeyForm from "./ApiKeyForm";
 import ApiKeyToken from "./ApiKeyToken";
 import InternalStore from "../../stores/InternalStore";
 
-
 interface IState {
   createApiKeyResponse?: CreateApiKeyResponse;
 }
@@ -18,7 +17,6 @@ interface IState {
 interface IProps {
   tenant: Tenant;
 }
-
 
 class CreateTenantApiKey extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -37,28 +35,34 @@ class CreateTenantApiKey extends Component<IProps, IState> {
         createApiKeyResponse: resp,
       });
     });
-  }
+  };
 
   render() {
     const apiKey = new ApiKey();
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/api-keys`}>API Keys</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/api-keys`}>API Keys</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Add</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title="Add API key"
         />
         <Card>

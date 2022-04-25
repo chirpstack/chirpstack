@@ -14,7 +14,6 @@ import {
 import MyDevicesIntegrationForm from "./MyDevicesIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
@@ -22,7 +21,6 @@ interface IProps extends RouteComponentProps {
 interface IState {
   integration?: MyDevicesIntegration;
 }
-
 
 class EditMyDevicesIntegration extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -46,16 +44,18 @@ class EditMyDevicesIntegration extends Component<IProps, IState> {
     req.setIntegration(obj);
 
     ApplicationStore.updateMyDevicesIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     if (this.state.integration === undefined) {
       return null;
     }
 
-    return(
+    return (
       <Card title="Update myDevices integration">
         <MyDevicesIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
       </Card>
