@@ -31,11 +31,8 @@ export class DeviceProfile extends jspb.Message {
   getPayloadCodecRuntime(): CodecRuntimeMap[keyof CodecRuntimeMap];
   setPayloadCodecRuntime(value: CodecRuntimeMap[keyof CodecRuntimeMap]): void;
 
-  getPayloadEncoderConfig(): string;
-  setPayloadEncoderConfig(value: string): void;
-
-  getPayloadDecoderConfig(): string;
-  setPayloadDecoderConfig(value: string): void;
+  getPayloadCodecScript(): string;
+  setPayloadCodecScript(value: string): void;
 
   getUplinkInterval(): number;
   setUplinkInterval(value: number): void;
@@ -101,8 +98,7 @@ export namespace DeviceProfile {
     regParamsRevision: common_common_pb.RegParamsRevisionMap[keyof common_common_pb.RegParamsRevisionMap],
     adrAlgorithmId: string,
     payloadCodecRuntime: CodecRuntimeMap[keyof CodecRuntimeMap],
-    payloadEncoderConfig: string,
-    payloadDecoderConfig: string,
+    payloadCodecScript: string,
     uplinkInterval: number,
     deviceStatusReqInterval: number,
     supportsOtaa: boolean,

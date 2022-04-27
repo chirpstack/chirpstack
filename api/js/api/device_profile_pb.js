@@ -79,8 +79,7 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     regParamsRevision: msg.getRegParamsRevision(),
     adrAlgorithmId: msg.getAdrAlgorithmId(),
     payloadCodecRuntime: msg.getPayloadCodecRuntime(),
-    payloadEncoderConfig: msg.getPayloadEncoderConfig(),
-    payloadDecoderConfig: msg.getPayloadDecoderConfig(),
+    payloadCodecScript: msg.getPayloadCodecScript(),
     uplinkInterval: msg.getUplinkInterval(),
     deviceStatusReqInterval: msg.getDeviceStatusReqInterval(),
     supportsOtaa: msg.getSupportsOtaa(),
@@ -166,11 +165,7 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
-      msg.setPayloadEncoderConfig(value);
-      break;
-    case 10:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setPayloadDecoderConfig(value);
+      msg.setPayloadCodecScript(value);
       break;
     case 11:
       var value = /** @type {number} */ (reader.readUint32());
@@ -328,17 +323,10 @@ proto.api.DeviceProfile.prototype.serializeBinaryToWriter = function (writer) {
       f
     );
   }
-  f = this.getPayloadEncoderConfig();
+  f = this.getPayloadCodecScript();
   if (f.length > 0) {
     writer.writeString(
       9,
-      f
-    );
-  }
-  f = this.getPayloadDecoderConfig();
-  if (f.length > 0) {
-    writer.writeString(
-      10,
       f
     );
   }
@@ -577,32 +565,17 @@ proto.api.DeviceProfile.prototype.setPayloadCodecRuntime = function(value) {
 
 
 /**
- * optional string payload_encoder_config = 9;
+ * optional string payload_codec_script = 9;
  * @return {string}
  */
-proto.api.DeviceProfile.prototype.getPayloadEncoderConfig = function() {
+proto.api.DeviceProfile.prototype.getPayloadCodecScript = function() {
   return /** @type {string} */ (jspb.Message.getFieldProto3(this, 9, ""));
 };
 
 
 /** @param {string} value  */
-proto.api.DeviceProfile.prototype.setPayloadEncoderConfig = function(value) {
+proto.api.DeviceProfile.prototype.setPayloadCodecScript = function(value) {
   jspb.Message.setField(this, 9, value);
-};
-
-
-/**
- * optional string payload_decoder_config = 10;
- * @return {string}
- */
-proto.api.DeviceProfile.prototype.getPayloadDecoderConfig = function() {
-  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 10, ""));
-};
-
-
-/** @param {string} value  */
-proto.api.DeviceProfile.prototype.setPayloadDecoderConfig = function(value) {
-  jspb.Message.setField(this, 10, value);
 };
 
 

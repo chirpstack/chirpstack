@@ -69,11 +69,8 @@ message DeviceProfile {
     // Payload codec runtime.
     CodecRuntime payload_codec_runtime = 8;
 
-    // Payload codec encoder config.
-    string payload_encoder_config = 9;
-
-    // Payload codec decoder config.
-    string payload_decoder_config = 10;
+    // Payload codec script.
+    string payload_codec_script = 9;
 
     // Uplink interval (seconds).
     // This defines the expected uplink interval which the device uses for

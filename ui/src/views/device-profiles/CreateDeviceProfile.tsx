@@ -28,33 +28,40 @@ class CreateDeviceProfile extends Component<IProps> {
   }
 
   render() {
-    const encodeScript = `// Encode encodes the given object into an array of bytes.
+    const codecScript = `// Decode uplink function.
 //
 // Input is an object with the following fields:
-// - f_port = LoRaWAN fPort
-// - variables = Device variables
-// - object = Input object, e.g. {"temperature": 22.5}
+// - bytes = Byte array containing the uplink payload, e.g. [255, 230, 255, 0]
+// - fPort = Uplink fPort.
+// - variables = Object containing the configured device variables.
 //
-// This function must return an array of bytes, e.g. [225, 230, 255, 0]
-export function Encode(input) {
-  return [];
-}`;
+// Output must be an object with the following fields:
+// - data = Object representing the decoded payload.
+function decodeUplink(input) {
+  return {
+    object: {
+      temp: 22.5
+    }
+  };
+}
 
-    const decodeScript = `// Decode decodes an array of bytes into an object.
+// Encode downlink function.
 //
 // Input is an object with the following fields:
-// - f_port = LoRaWAN fPort
-// - variables = Device variables
-// - data = Input byte array, e.g. [225, 230, 255, 0]
+// - data = Object representing the payload that must be encoded.
+// - variables = Object containing the configured device variables.
 //
-// This function must return an object, e.g. {"temperature": 22.5}
-export function Decode(input) {
-  return {};
-}`;
+// Output must be an object with the following fields:
+// - bytes = Byte array containing the downlink payload.
+function encodeDownlink(input) {
+  return {
+    data: [225, 230, 255, 0]
+  };
+}
+`;
 
     let deviceProfile = new DeviceProfile(); 
-    deviceProfile.setPayloadEncoderConfig(encodeScript);
-    deviceProfile.setPayloadDecoderConfig(decodeScript);
+    deviceProfile.setPayloadCodecScript(codecScript);
 
     return(
       <Space direction="vertical" style={{width: "100%"}} size="large">

@@ -81,8 +81,6 @@ table! {
         reg_params_revision -> Varchar,
         adr_algorithm_id -> Varchar,
         payload_codec_runtime -> Varchar,
-        payload_encoder_config -> Text,
-        payload_decoder_config -> Text,
         uplink_interval -> Int4,
         device_status_req_interval -> Int4,
         supports_otaa -> Bool,
@@ -98,6 +96,7 @@ table! {
         abp_rx2_dr -> Int2,
         abp_rx2_freq -> Int8,
         tags -> Jsonb,
+        payload_codec_script -> Text,
     }
 }
 

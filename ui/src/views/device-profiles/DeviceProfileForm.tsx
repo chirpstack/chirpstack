@@ -92,8 +92,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
 
     // codec
     dp.setPayloadCodecRuntime(v.payloadCodecRuntime);
-    dp.setPayloadEncoderConfig(v.payloadEncoderConfig);
-    dp.setPayloadDecoderConfig(v.payloadDecoderConfig);
+    dp.setPayloadCodecScript(v.payloadCodecScript);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -322,17 +321,9 @@ class DeviceProfileForm extends Component<IProps, IState> {
               </Select>
             </Form.Item>
             {this.state.payloadCodecRuntime === CodecRuntime.JS && <CodeEditor
-              label="Decode function"
-              tooltip="The function must have the signature function Decode(fPort, bytes) and must return an object. ChirpStack Application Server will convert this object to JSON."
-              name="payloadDecoderConfig"
-              value={this.props.initialValues.getPayloadDecoderConfig()}
-              formRef={this.formRef} disabled={this.props.disabled}
-            />}
-            {this.state.payloadCodecRuntime === CodecRuntime.JS && <CodeEditor
-              label="Encode function"
-              tooltip="The function must have the signature function Encode(fPort, obj) and must return an array of bytes."
-              name="payloadEncoderConfig"
-              value={this.props.initialValues.getPayloadEncoderConfig()}
+              label="Codec functions"
+              name="payloadCodecScript"
+              value={this.props.initialValues.getPayloadCodecScript()}
               formRef={this.formRef} disabled={this.props.disabled}
             />}
           </Tabs.TabPane>

@@ -574,7 +574,7 @@ impl Data {
             dp.payload_codec_runtime,
             mac.f_port.unwrap_or(0),
             &dev.variables,
-            &dp.payload_decoder_config,
+            &dp.payload_codec_script,
             &pl.data,
         )
         .await

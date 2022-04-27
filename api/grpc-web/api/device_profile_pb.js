@@ -326,8 +326,7 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     regParamsRevision: jspb.Message.getFieldWithDefault(msg, 6, 0),
     adrAlgorithmId: jspb.Message.getFieldWithDefault(msg, 7, ""),
     payloadCodecRuntime: jspb.Message.getFieldWithDefault(msg, 8, 0),
-    payloadEncoderConfig: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    payloadDecoderConfig: jspb.Message.getFieldWithDefault(msg, 10, ""),
+    payloadCodecScript: jspb.Message.getFieldWithDefault(msg, 9, ""),
     uplinkInterval: jspb.Message.getFieldWithDefault(msg, 11, 0),
     deviceStatusReqInterval: jspb.Message.getFieldWithDefault(msg, 12, 0),
     supportsOtaa: jspb.Message.getBooleanFieldWithDefault(msg, 13, false),
@@ -413,11 +412,7 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
-      msg.setPayloadEncoderConfig(value);
-      break;
-    case 10:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setPayloadDecoderConfig(value);
+      msg.setPayloadCodecScript(value);
       break;
     case 11:
       var value = /** @type {number} */ (reader.readUint32());
@@ -566,17 +561,10 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getPayloadEncoderConfig();
+  f = message.getPayloadCodecScript();
   if (f.length > 0) {
     writer.writeString(
       9,
-      f
-    );
-  }
-  f = message.getPayloadDecoderConfig();
-  if (f.length > 0) {
-    writer.writeString(
-      10,
       f
     );
   }
@@ -830,10 +818,10 @@ proto.api.DeviceProfile.prototype.setPayloadCodecRuntime = function(value) {
 
 
 /**
- * optional string payload_encoder_config = 9;
+ * optional string payload_codec_script = 9;
  * @return {string}
  */
-proto.api.DeviceProfile.prototype.getPayloadEncoderConfig = function() {
+proto.api.DeviceProfile.prototype.getPayloadCodecScript = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
 };
 
@@ -842,26 +830,8 @@ proto.api.DeviceProfile.prototype.getPayloadEncoderConfig = function() {
  * @param {string} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setPayloadEncoderConfig = function(value) {
+proto.api.DeviceProfile.prototype.setPayloadCodecScript = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
-};
-
-
-/**
- * optional string payload_decoder_config = 10;
- * @return {string}
- */
-proto.api.DeviceProfile.prototype.getPayloadDecoderConfig = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.api.DeviceProfile} returns this
- */
-proto.api.DeviceProfile.prototype.setPayloadDecoderConfig = function(value) {
-  return jspb.Message.setProto3StringField(this, 10, value);
 };
 
 

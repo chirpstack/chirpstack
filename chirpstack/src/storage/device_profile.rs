@@ -29,8 +29,6 @@ pub struct DeviceProfile {
     pub reg_params_revision: Revision,
     pub adr_algorithm_id: String,
     pub payload_codec_runtime: Codec,
-    pub payload_decoder_config: String,
-    pub payload_encoder_config: String,
     pub uplink_interval: i32,
     pub device_status_req_interval: i32,
     pub supports_otaa: bool,
@@ -46,6 +44,7 @@ pub struct DeviceProfile {
     pub abp_rx2_dr: i16,
     pub abp_rx2_freq: i64,
     pub tags: fields::KeyValue,
+    pub payload_codec_script: String,
 }
 
 impl DeviceProfile {
@@ -72,8 +71,7 @@ impl Default for DeviceProfile {
             reg_params_revision: Revision::A,
             adr_algorithm_id: "".into(),
             payload_codec_runtime: Codec::NONE,
-            payload_decoder_config: "".into(),
-            payload_encoder_config: "".into(),
+            payload_codec_script: "".into(),
             uplink_interval: 0,
             device_status_req_interval: 0,
             supports_otaa: false,
@@ -184,8 +182,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::reg_params_revision.eq(&dp.reg_params_revision),
                     device_profile::adr_algorithm_id.eq(&dp.adr_algorithm_id),
                     device_profile::payload_codec_runtime.eq(&dp.payload_codec_runtime),
-                    device_profile::payload_decoder_config.eq(&dp.payload_decoder_config),
-                    device_profile::payload_encoder_config.eq(&dp.payload_encoder_config),
+                    device_profile::payload_codec_script.eq(&dp.payload_codec_script),
                     device_profile::uplink_interval.eq(&dp.uplink_interval),
                     device_profile::device_status_req_interval.eq(&dp.device_status_req_interval),
                     device_profile::supports_otaa.eq(&dp.supports_otaa),
