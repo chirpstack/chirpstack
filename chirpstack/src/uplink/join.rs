@@ -17,7 +17,9 @@ use super::{filter_rx_info_by_tenant_id, helpers, UplinkFrameSet};
 use crate::api::helpers::ToProto;
 use crate::backend::{joinserver, keywrap};
 use crate::storage::device_session;
-use crate::storage::{application, device, device_keys, device_profile, metrics, tenant};
+use crate::storage::{
+    application, device, device_keys, device_profile, error::Error as StorageError, metrics, tenant,
+};
 use crate::{config, downlink, framelog, integration, metalog, region};
 use chirpstack_api::{api, common, integration as integration_pb, internal, meta};
 
@@ -87,9 +89,8 @@ impl JoinRequest {
             ctx.get_join_accept_from_js().await?;
         } else {
             // Using internal keys
-            ctx.get_device_keys().await?;
+            ctx.validate_dev_nonce_and_get_device_keys().await?;
             ctx.validate_mic().await?;
-            ctx.validate_dev_nonce().await?;
             ctx.construct_join_accept_and_set_keys()?;
             ctx.save_device_keys().await?;
         }
@@ -208,10 +209,55 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn get_device_keys(&mut self) -> Result<()> {
-        trace!("Getting device-keys");
+    async fn validate_dev_nonce_and_get_device_keys(&mut self) -> Result<()> {
+        trace!("Validate dev-nonce and get device-keys");
+        let dev = self.device.as_ref().unwrap();
+        let app = self.application.as_ref().unwrap();
+        let join_request = self.join_request.as_ref().unwrap();
 
-        self.device_keys = Some(device_keys::get(&self.device.as_ref().unwrap().dev_eui).await?);
+        self.device_keys = Some(
+            match device_keys::validate_and_store_dev_nonce(
+                &dev.dev_eui,
+                join_request.dev_nonce as i32,
+            )
+            .await
+            {
+                Ok(v) => v,
+                Err(v) => match v {
+                    StorageError::InvalidDevNonce => {
+                        integration::log_event(
+                            &app.id,
+                            &dev.variables,
+                            &integration_pb::LogEvent {
+                                deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
+                                time: Some(Utc::now().into()),
+                                device_info: self.device_info.clone(),
+                                level: integration_pb::LogLevel::Error.into(),
+                                code: integration_pb::LogCode::Otaa.into(),
+                                description: "DevNonce has already been used".into(),
+                                ..Default::default()
+                            },
+                        )
+                        .await?;
+
+                        metrics::save(
+                            &format!("device:{}", dev.dev_eui),
+                            &metrics::Record {
+                                time: Local::now(),
+                                metrics: [("error_OTAA".into(), 1f64)].iter().cloned().collect(),
+                            },
+                        )
+                        .await?;
+
+                        return Err(v.into());
+                    }
+                    _ => {
+                        return Err(v.into());
+                    }
+                },
+            },
+        );
+
         Ok(())
     }
 
@@ -256,48 +302,6 @@ impl JoinRequest {
         .await?;
 
         Err(anyhow!("Invalid MIC"))
-    }
-
-    async fn validate_dev_nonce(&mut self) -> Result<()> {
-        let device_keys = self.device_keys.as_mut().unwrap();
-        let join_request = self.join_request.as_ref().unwrap();
-
-        if !device_keys
-            .dev_nonces
-            .contains(&(join_request.dev_nonce as i32))
-        {
-            device_keys.dev_nonces.push(join_request.dev_nonce as i32);
-            return Ok(());
-        }
-
-        let app = self.application.as_ref().unwrap();
-        let dev = self.device.as_ref().unwrap();
-
-        integration::log_event(
-            &app.id,
-            &dev.variables,
-            &integration_pb::LogEvent {
-                deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
-                time: Some(Utc::now().into()),
-                device_info: self.device_info.clone(),
-                level: integration_pb::LogLevel::Error.into(),
-                code: integration_pb::LogCode::Otaa.into(),
-                description: "DevNonce has already been used".into(),
-                ..Default::default()
-            },
-        )
-        .await?;
-
-        metrics::save(
-            &format!("device:{}", dev.dev_eui),
-            &metrics::Record {
-                time: Local::now(),
-                metrics: [("error_OTAA".into(), 1f64)].iter().cloned().collect(),
-            },
-        )
-        .await?;
-
-        Err(anyhow!("DevNone has already been used"))
     }
 
     fn get_random_dev_addr(&mut self) -> Result<()> {

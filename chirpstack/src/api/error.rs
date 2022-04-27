@@ -28,6 +28,9 @@ impl ToStatus for storage::error::Error {
             storage::error::Error::InvalidMIC => {
                 Status::new(Code::InvalidArgument, format!("{}", self))
             }
+            storage::error::Error::InvalidDevNonce => {
+                Status::new(Code::InvalidArgument, format!("{}", self))
+            }
             storage::error::Error::Validation(_) => {
                 Status::new(Code::InvalidArgument, format!("{}", self))
             }
