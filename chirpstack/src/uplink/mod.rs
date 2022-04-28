@@ -246,22 +246,20 @@ async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
 }
 
 pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -> Result<()> {
-    let metadata = &uplink
+    let rx_info = &uplink
         .rx_info
         .get(0)
-        .context("Unable to get first item from rx_info")?
-        .metadata;
+        .context("Unable to get first item from rx_info")?;
 
-    let region_name = metadata
-        .get("region_name")
-        .context("No region_name in metadata")?
-        .clone();
+    let region_name = rx_info
+        .get_metadata_string("region_name")
+        .ok_or(anyhow!("No region_name in metadata"))?;
 
-    let common_name = &metadata
-        .get("region_common_name")
-        .context("No region_common_name in metadata")?;
+    let common_name = rx_info
+        .get_metadata_string("region_common_name")
+        .ok_or(anyhow!("No region_common_name in metadata"))?;
 
-    let common_name = CommonName::from_str(common_name)?;
+    let common_name = CommonName::from_str(&common_name)?;
 
     let mut uplink = UplinkFrameSet {
         uplink_set_id: deduplication_id,
@@ -309,7 +307,7 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
 
 async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
     for rx_info in &mut ufs.rx_info_set {
-        let gw_id = EUI64::from_slice(&rx_info.gateway_id)?;
+        let gw_id = EUI64::from_str(&rx_info.gateway_id)?;
         let gw_meta = match gateway::get_meta(&gw_id).await {
             Ok(v) => v,
             Err(e) => {
@@ -341,12 +339,11 @@ fn filter_rx_info_by_tenant_id(tenant_id: &Uuid, uplink: &mut UplinkFrameSet) ->
     let mut rx_info_set: Vec<gw::UplinkRxInfo> = Vec::new();
 
     for rx_info in &uplink.rx_info_set {
-        let gateway_id = EUI64::from_slice(&rx_info.gateway_id)?;
+        let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
         let region_name = rx_info
-            .metadata
-            .get(&"region_name".to_string())
+            .get_metadata_string("region_name")
             .ok_or(anyhow!("No region_name in rx_info metadata"))?;
-        let force_gws_private = config::get_force_gws_private(region_name)?;
+        let force_gws_private = config::get_force_gws_private(&region_name)?;
 
         if !(*uplink
             .gateway_private_map

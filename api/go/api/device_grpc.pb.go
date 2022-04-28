@@ -4,7 +4,7 @@
 // - protoc             v3.18.1
 // source: api/device.proto
 
-package v4
+package api
 
 import (
 	context "context"

@@ -1,7 +1,7 @@
-use std::fs;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use std::{env, fs};
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
@@ -24,6 +24,7 @@ pub struct Configuration {
     pub network: Network,
     pub monitoring: Monitoring,
     pub integration: Integration,
+    pub codec: Codec,
     pub user_authentication: UserAuthentication,
     pub join_server: JoinServer,
     pub keks: Vec<Kek>,
@@ -41,6 +42,7 @@ impl Default for Configuration {
             network: Default::default(),
             monitoring: Default::default(),
             integration: Default::default(),
+            codec: Default::default(),
             user_authentication: Default::default(),
             join_server: Default::default(),
             keks: Vec::new(),
@@ -295,6 +297,27 @@ impl Default for MqttIntegrationClient {
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 #[serde(default)]
+pub struct Codec {
+    pub js: CodecJs,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct CodecJs {
+    #[serde(with = "humantime_serde")]
+    pub max_execution_time: Duration,
+}
+
+impl Default for CodecJs {
+    fn default() -> Self {
+        CodecJs {
+            max_execution_time: Duration::from_millis(100),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Default)]
+#[serde(default)]
 pub struct UserAuthentication {
     pub openid_connect: OpenIdConnect,
 }
@@ -515,6 +538,11 @@ pub fn load(config_dir: &Path) -> Result<()> {
                 );
             }
         }
+    }
+
+    // substitute environment variables in config file
+    for (k, v) in env::vars() {
+        content = content.replace(&format!("${}", k), &v);
     }
 
     let conf: Configuration = toml::from_str(&content)?;

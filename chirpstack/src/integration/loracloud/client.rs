@@ -401,7 +401,7 @@ pub struct UplinkTdoa {
     #[serde(rename = "gatewayId")]
     pub gateway_id: String,
     pub rssi: f64,
-    pub snr: f64,
+    pub snr: f32,
     pub toa: u32,
     #[serde(rename = "antennaId")]
     pub antenna_id: u32,
@@ -414,7 +414,7 @@ impl UplinkTdoa {
         UplinkTdoa {
             gateway_id: hex::encode(&rx_info.gateway_id),
             rssi: rx_info.rssi.into(),
-            snr: rx_info.lora_snr,
+            snr: rx_info.snr,
             antenna_id: rx_info.antenna,
             antenna_location: match &rx_info.location {
                 Some(loc) => AntennaLocation {
@@ -428,12 +428,9 @@ impl UplinkTdoa {
                     altitude: 0.0,
                 },
             },
-            toa: match &rx_info.fine_timestamp {
-                Some(gw::uplink_rx_info::FineTimestamp::PlainFineTimestamp(ft)) => match &ft.time {
-                    Some(v) => v.nanos as u32,
-                    None => 0,
-                },
-                _ => 0,
+            toa: match &rx_info.fine_time_since_gps_epoch {
+                Some(v) => v.nanos as u32,
+                None => 0,
             },
         }
     }
@@ -444,7 +441,7 @@ pub struct UplinkRssi {
     #[serde(rename = "gatewayId")]
     pub gateway_id: String,
     pub rssi: f64,
-    pub snr: f64,
+    pub snr: f32,
     #[serde(rename = "antennaId")]
     pub antenna_id: u32,
     #[serde(rename = "antennaLocation")]
@@ -456,7 +453,7 @@ impl UplinkRssi {
         UplinkRssi {
             gateway_id: hex::encode(&rx_info.gateway_id),
             rssi: rx_info.rssi.into(),
-            snr: rx_info.lora_snr,
+            snr: rx_info.snr,
             antenna_id: rx_info.antenna,
             antenna_location: match &rx_info.location {
                 Some(loc) => AntennaLocation {

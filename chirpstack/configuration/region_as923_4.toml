@@ -1,12 +1,12 @@
-# This file contains an example CN779 configuration.
+# This file contains an example AS923_4 configuration.
 [[regions]]
 
   # Name is an user-defined identifier for this region.
-  name="cn779"
+  name="as923_4"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.
-  common_name="CN779"
+  common_name="AS923_4"
 
 
   # Gateway configuration.
@@ -28,13 +28,13 @@
       [regions.gateway.backend.mqtt]
 
         # Event topic template.
-        event_topic="cn779/gateway/+/event/+"
+        event_topic="as923_4/gateway/+/event/+"
 
         # Command topic template.
-        command_topic="cn779/gateway/{{ gateway_id }}/command/{{ command }}"
+        command_topic="as923_4/gateway/{{ gateway_id }}/command/{{ command }}"
 
         # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-        server="tcp://mosquitto:1883"
+        server="tcp://$MQTT_BROKER_HOST:1883"
 
         # Connect with the given username (optional)
         username=""
@@ -86,19 +86,13 @@
     # ChirpStack Concentratord daemon. In any other case, this configuration 
     # is ignored.
     [[regions.gateway.channels]]
-      frequency=779500000
+      frequency=917300000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=779700000
-      bandwidth=125000
-      modulation="LORA"
-      spreading_factors=[7, 8, 9, 10, 11, 12]
-
-    [[regions.gateway.channels]]
-      frequency=779900000
+      frequency=917500000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
@@ -130,10 +124,10 @@
     rx1_dr_offset=0
 
     # RX2 data-rate
-    rx2_dr=0
+    rx2_dr=2
 
     # RX2 frequency (Hz)
-    rx2_frequency=786000000
+    rx2_frequency=917300000
 
     # Prefer RX2 on RX1 data-rate less than.
     #

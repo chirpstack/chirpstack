@@ -14,13 +14,13 @@ export class UplinkFrameLog extends jspb.Message {
 
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): gw_gw_pb.UplinkTXInfo | undefined;
-  setTxInfo(value?: gw_gw_pb.UplinkTXInfo): void;
+  getTxInfo(): gw_gw_pb.UplinkTxInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.UplinkTxInfo): void;
 
   clearRxInfoList(): void;
-  getRxInfoList(): Array<gw_gw_pb.UplinkRXInfo>;
-  setRxInfoList(value: Array<gw_gw_pb.UplinkRXInfo>): void;
-  addRxInfo(value?: gw_gw_pb.UplinkRXInfo, index?: number): gw_gw_pb.UplinkRXInfo;
+  getRxInfoList(): Array<gw_gw_pb.UplinkRxInfo>;
+  setRxInfoList(value: Array<gw_gw_pb.UplinkRxInfo>): void;
+  addRxInfo(value?: gw_gw_pb.UplinkRxInfo, index?: number): gw_gw_pb.UplinkRxInfo;
 
   getMType(): common_common_pb.MTypeMap[keyof common_common_pb.MTypeMap];
   setMType(value: common_common_pb.MTypeMap[keyof common_common_pb.MTypeMap]): void;
@@ -49,8 +49,8 @@ export class UplinkFrameLog extends jspb.Message {
 export namespace UplinkFrameLog {
   export type AsObject = {
     phyPayload: Uint8Array | string,
-    txInfo?: gw_gw_pb.UplinkTXInfo.AsObject,
-    rxInfoList: Array<gw_gw_pb.UplinkRXInfo.AsObject>,
+    txInfo?: gw_gw_pb.UplinkTxInfo.AsObject,
+    rxInfoList: Array<gw_gw_pb.UplinkRxInfo.AsObject>,
     mType: common_common_pb.MTypeMap[keyof common_common_pb.MTypeMap],
     devAddr: string,
     devEui: string,
@@ -71,11 +71,11 @@ export class DownlinkFrameLog extends jspb.Message {
 
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): gw_gw_pb.DownlinkTXInfo | undefined;
-  setTxInfo(value?: gw_gw_pb.DownlinkTXInfo): void;
+  getTxInfo(): gw_gw_pb.DownlinkTxInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.DownlinkTxInfo): void;
 
-  getDownlinkId(): string;
-  setDownlinkId(value: string): void;
+  getDownlinkId(): number;
+  setDownlinkId(value: number): void;
 
   getGatewayId(): string;
   setGatewayId(value: string): void;
@@ -103,8 +103,8 @@ export namespace DownlinkFrameLog {
   export type AsObject = {
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     phyPayload: Uint8Array | string,
-    txInfo?: gw_gw_pb.DownlinkTXInfo.AsObject,
-    downlinkId: string,
+    txInfo?: gw_gw_pb.DownlinkTxInfo.AsObject,
+    downlinkId: number,
     gatewayId: string,
     mType: common_common_pb.MTypeMap[keyof common_common_pb.MTypeMap],
     devAddr: string,

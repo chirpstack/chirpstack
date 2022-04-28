@@ -24,6 +24,9 @@ pub enum Error {
     #[error("Invalid MIC")]
     InvalidMIC,
 
+    #[error("Invalid DevNonce")]
+    InvalidDevNonce,
+
     #[error("Validation error: {0}")]
     Validation(String),
 
@@ -44,6 +47,9 @@ pub enum Error {
 
     #[error(transparent)]
     Redis(#[from] redis::RedisError),
+
+    #[error(transparent)]
+    ProstDecode(#[from] prost::DecodeError),
 }
 
 impl Error {

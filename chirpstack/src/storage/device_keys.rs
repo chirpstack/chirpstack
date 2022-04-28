@@ -157,6 +157,43 @@ pub async fn reset_nonces(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
     Ok(dk)
 }
 
+pub async fn validate_and_store_dev_nonce(
+    dev_eui: &EUI64,
+    dev_nonce: i32,
+) -> Result<DeviceKeys, Error> {
+    let dk = task::spawn_blocking({
+        let dev_eui = *dev_eui;
+        move || -> Result<DeviceKeys, Error> {
+            let c = get_db_conn()?;
+            c.transaction::<DeviceKeys, Error, _>(|| {
+                let mut dk: DeviceKeys = device_keys::dsl::device_keys
+                    .find(&dev_eui)
+                    .for_update()
+                    .first(&c)
+                    .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+
+                if dk.dev_nonces.contains(&(dev_nonce)) {
+                    return Err(Error::InvalidDevNonce);
+                }
+
+                dk.dev_nonces.push(dev_nonce);
+
+                diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
+                    .set((
+                        device_keys::updated_at.eq(Utc::now()),
+                        device_keys::dev_nonces.eq(&dk.dev_nonces),
+                    ))
+                    .get_result(&c)
+                    .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
+            })
+        }
+    })
+    .await??;
+
+    info!(dev_eui = %dev_eui, dev_nonce = dev_nonce, "Device-nonce validated and stored");
+    Ok(dk)
+}
+
 #[cfg(test)]
 pub mod test {
     use super::*;

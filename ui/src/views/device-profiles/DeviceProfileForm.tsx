@@ -72,6 +72,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
     dp.setMacVersion(v.macVersion);
     dp.setRegParamsRevision(v.regParamsRevision);
     dp.setAdrAlgorithmId(v.adrAlgorithmId);
+    dp.setFlushQueueOnActivate(v.flushQueueOnActivate);
     dp.setUplinkInterval(v.uplinkInterval);
     dp.setDeviceStatusReqInterval(v.deviceStatusReqInterval);
 
@@ -92,8 +93,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
 
     // codec
     dp.setPayloadCodecRuntime(v.payloadCodecRuntime);
-    dp.setPayloadEncoderConfig(v.payloadEncoderConfig);
-    dp.setPayloadDecoderConfig(v.payloadDecoderConfig);
+    dp.setPayloadCodecScript(v.payloadCodecScript);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -208,21 +208,37 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 {adrOptions}
               </Select>
             </Form.Item>
-            <Form.Item
-              label="Expected uplink interval"
-              tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
-              name="uplinkInterval"
-              rules={[{required: true, message: "Please enter an uplink interval!"}]}
-            >
-              <InputNumber min={0} disabled={this.props.disabled} />
-            </Form.Item>
-            <Form.Item
-              label="Device-status request frequency (requests / day)"
-              tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
-              name="deviceStatusReqInterval"
-            >
-              <InputNumber min={0} disabled={this.props.disabled}  />
-            </Form.Item>
+            <Row gutter={24}>
+              <Col span={8}>
+                <Form.Item
+                  label="Flush queue on activate"
+                  name="flushQueueOnActivate"
+                  valuePropName="checked"
+                  tooltip="If enabled, the device-queue will be flushed on ABP or OTAA activation."
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  label="Expected uplink interval (secs)"
+                  tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
+                  name="uplinkInterval"
+                  rules={[{required: true, message: "Please enter an uplink interval!"}]}
+                >
+                  <InputNumber min={0} disabled={this.props.disabled} />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  label="Device-status request frequency (req/day)"
+                  tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
+                  name="deviceStatusReqInterval"
+                >
+                  <InputNumber min={0} disabled={this.props.disabled}  />
+                </Form.Item>
+              </Col>
+            </Row>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Join (OTAA / ABP)" key="2">
             <Form.Item
@@ -322,17 +338,9 @@ class DeviceProfileForm extends Component<IProps, IState> {
               </Select>
             </Form.Item>
             {this.state.payloadCodecRuntime === CodecRuntime.JS && <CodeEditor
-              label="Decode function"
-              tooltip="The function must have the signature function Decode(fPort, bytes) and must return an object. ChirpStack Application Server will convert this object to JSON."
-              name="payloadDecoderConfig"
-              value={this.props.initialValues.getPayloadDecoderConfig()}
-              formRef={this.formRef} disabled={this.props.disabled}
-            />}
-            {this.state.payloadCodecRuntime === CodecRuntime.JS && <CodeEditor
-              label="Encode function"
-              tooltip="The function must have the signature function Encode(fPort, obj) and must return an array of bytes."
-              name="payloadEncoderConfig"
-              value={this.props.initialValues.getPayloadEncoderConfig()}
+              label="Codec functions"
+              name="payloadCodecScript"
+              value={this.props.initialValues.getPayloadCodecScript()}
               formRef={this.formRef} disabled={this.props.disabled}
             />}
           </Tabs.TabPane>

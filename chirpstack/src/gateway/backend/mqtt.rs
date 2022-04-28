@@ -152,11 +152,12 @@ impl<'a> MqttBackend<'a> {
 #[async_trait]
 impl GatewayBackend for MqttBackend<'_> {
     async fn send_downlink(&self, df: &chirpstack_api::gw::DownlinkFrame) -> Result<()> {
-        let gateway_id = EUI64::from_slice(&df.gateway_id)?;
-        let topic = self.get_command_topic(&gateway_id.to_string(), "down")?;
+        let topic = self.get_command_topic(&df.gateway_id, "down")?;
+        let mut df = df.clone();
+        df.v4_migrate();
         let b = df.encode_to_vec();
 
-        info!(gateway_id = %gateway_id, topic = %topic, "Sending downlink frame");
+        info!(gateway_id = %df.gateway_id, topic = %topic, "Sending downlink frame");
         let msg = mqtt::Message::new(topic, b, self.qos as i32);
         self.client.publish(msg).await?;
         trace!("Message sent");
@@ -196,14 +197,11 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
     let err = || -> Result<()> {
         if topic.ends_with("/up") {
             let mut event = chirpstack_api::gw::UplinkFrame::decode(&mut Cursor::new(b))?;
+            event.v4_migrate();
+
             if let Some(rx_info) = &mut event.rx_info {
-                rx_info
-                    .metadata
-                    .insert("region_name".to_string(), region_name.to_string());
-                rx_info.metadata.insert(
-                    "region_common_name".to_string(),
-                    region_common_name.to_string(),
-                );
+                rx_info.set_metadata_string("region_name", region_name);
+                rx_info.set_metadata_string("region_common_name", &region_common_name.to_string());
             }
 
             tokio::spawn(uplink::deduplicate_uplink(event));
@@ -218,7 +216,8 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
             );
             tokio::spawn(uplink::stats::Stats::handle(event));
         } else if topic.ends_with("/ack") {
-            let event = chirpstack_api::gw::DownlinkTxAck::decode(&mut Cursor::new(b))?;
+            let mut event = chirpstack_api::gw::DownlinkTxAck::decode(&mut Cursor::new(b))?;
+            event.v4_migrate();
             tokio::spawn(downlink::tx_ack::TxAck::handle(event));
         } else {
             return Err(anyhow!("Unknown event type"));

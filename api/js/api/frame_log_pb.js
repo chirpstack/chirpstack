@@ -68,9 +68,9 @@ proto.api.UplinkFrameLog.prototype.toObject = function(opt_includeInstance) {
 proto.api.UplinkFrameLog.toObject = function(includeInstance, msg) {
   var f, obj = {
     phyPayload: msg.getPhyPayload_asB64(),
-    txInfo: (f = msg.getTxInfo()) && gw_gw_pb.UplinkTXInfo.toObject(includeInstance, f),
+    txInfo: (f = msg.getTxInfo()) && gw_gw_pb.UplinkTxInfo.toObject(includeInstance, f),
     rxInfoList: jspb.Message.toObjectList(msg.getRxInfoList(),
-    gw_gw_pb.UplinkRXInfo.toObject, includeInstance),
+    gw_gw_pb.UplinkRxInfo.toObject, includeInstance),
     mType: msg.getMType(),
     devAddr: msg.getDevAddr(),
     devEui: msg.getDevEui(),
@@ -116,13 +116,13 @@ proto.api.UplinkFrameLog.deserializeBinaryFromReader = function(msg, reader) {
       msg.setPhyPayload(value);
       break;
     case 2:
-      var value = new gw_gw_pb.UplinkTXInfo;
-      reader.readMessage(value,gw_gw_pb.UplinkTXInfo.deserializeBinaryFromReader);
+      var value = new gw_gw_pb.UplinkTxInfo;
+      reader.readMessage(value,gw_gw_pb.UplinkTxInfo.deserializeBinaryFromReader);
       msg.setTxInfo(value);
       break;
     case 3:
-      var value = new gw_gw_pb.UplinkRXInfo;
-      reader.readMessage(value,gw_gw_pb.UplinkRXInfo.deserializeBinaryFromReader);
+      var value = new gw_gw_pb.UplinkRxInfo;
+      reader.readMessage(value,gw_gw_pb.UplinkRxInfo.deserializeBinaryFromReader);
       msg.getRxInfoList().push(value);
       msg.setRxInfoList(msg.getRxInfoList());
       break;
@@ -193,7 +193,7 @@ proto.api.UplinkFrameLog.prototype.serializeBinaryToWriter = function (writer) {
     writer.writeMessage(
       2,
       f,
-      gw_gw_pb.UplinkTXInfo.serializeBinaryToWriter
+      gw_gw_pb.UplinkTxInfo.serializeBinaryToWriter
     );
   }
   f = this.getRxInfoList();
@@ -201,7 +201,7 @@ proto.api.UplinkFrameLog.prototype.serializeBinaryToWriter = function (writer) {
     writer.writeRepeatedMessage(
       3,
       f,
-      gw_gw_pb.UplinkRXInfo.serializeBinaryToWriter
+      gw_gw_pb.UplinkRxInfo.serializeBinaryToWriter
     );
   }
   f = this.getMType();
@@ -285,16 +285,16 @@ proto.api.UplinkFrameLog.prototype.setPhyPayload = function(value) {
 
 
 /**
- * optional gw.UplinkTXInfo tx_info = 2;
- * @return {proto.gw.UplinkTXInfo}
+ * optional gw.UplinkTxInfo tx_info = 2;
+ * @return {proto.gw.UplinkTxInfo}
  */
 proto.api.UplinkFrameLog.prototype.getTxInfo = function() {
-  return /** @type{proto.gw.UplinkTXInfo} */ (
-    jspb.Message.getWrapperField(this, gw_gw_pb.UplinkTXInfo, 2));
+  return /** @type{proto.gw.UplinkTxInfo} */ (
+    jspb.Message.getWrapperField(this, gw_gw_pb.UplinkTxInfo, 2));
 };
 
 
-/** @param {proto.gw.UplinkTXInfo|undefined} value  */
+/** @param {proto.gw.UplinkTxInfo|undefined} value  */
 proto.api.UplinkFrameLog.prototype.setTxInfo = function(value) {
   jspb.Message.setWrapperField(this, 2, value);
 };
@@ -315,18 +315,18 @@ proto.api.UplinkFrameLog.prototype.hasTxInfo = function() {
 
 
 /**
- * repeated gw.UplinkRXInfo rx_info = 3;
+ * repeated gw.UplinkRxInfo rx_info = 3;
  * If you change this array by adding, removing or replacing elements, or if you
  * replace the array itself, then you must call the setter to update it.
- * @return {!Array.<!proto.gw.UplinkRXInfo>}
+ * @return {!Array.<!proto.gw.UplinkRxInfo>}
  */
 proto.api.UplinkFrameLog.prototype.getRxInfoList = function() {
-  return /** @type{!Array.<!proto.gw.UplinkRXInfo>} */ (
-    jspb.Message.getRepeatedWrapperField(this, gw_gw_pb.UplinkRXInfo, 3));
+  return /** @type{!Array.<!proto.gw.UplinkRxInfo>} */ (
+    jspb.Message.getRepeatedWrapperField(this, gw_gw_pb.UplinkRxInfo, 3));
 };
 
 
-/** @param {Array.<!proto.gw.UplinkRXInfo>} value  */
+/** @param {Array.<!proto.gw.UplinkRxInfo>} value  */
 proto.api.UplinkFrameLog.prototype.setRxInfoList = function(value) {
   jspb.Message.setRepeatedWrapperField(this, 3, value);
 };
@@ -460,7 +460,7 @@ proto.api.DownlinkFrameLog.toObject = function(includeInstance, msg) {
   var f, obj = {
     time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     phyPayload: msg.getPhyPayload_asB64(),
-    txInfo: (f = msg.getTxInfo()) && gw_gw_pb.DownlinkTXInfo.toObject(includeInstance, f),
+    txInfo: (f = msg.getTxInfo()) && gw_gw_pb.DownlinkTxInfo.toObject(includeInstance, f),
     downlinkId: msg.getDownlinkId(),
     gatewayId: msg.getGatewayId(),
     mType: msg.getMType(),
@@ -512,12 +512,12 @@ proto.api.DownlinkFrameLog.deserializeBinaryFromReader = function(msg, reader) {
       msg.setPhyPayload(value);
       break;
     case 3:
-      var value = new gw_gw_pb.DownlinkTXInfo;
-      reader.readMessage(value,gw_gw_pb.DownlinkTXInfo.deserializeBinaryFromReader);
+      var value = new gw_gw_pb.DownlinkTxInfo;
+      reader.readMessage(value,gw_gw_pb.DownlinkTxInfo.deserializeBinaryFromReader);
       msg.setTxInfo(value);
       break;
     case 4:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {number} */ (reader.readUint32());
       msg.setDownlinkId(value);
       break;
     case 5:
@@ -594,12 +594,12 @@ proto.api.DownlinkFrameLog.prototype.serializeBinaryToWriter = function (writer)
     writer.writeMessage(
       3,
       f,
-      gw_gw_pb.DownlinkTXInfo.serializeBinaryToWriter
+      gw_gw_pb.DownlinkTxInfo.serializeBinaryToWriter
     );
   }
   f = this.getDownlinkId();
-  if (f.length > 0) {
-    writer.writeString(
+  if (f !== 0) {
+    writer.writeUint32(
       4,
       f
     );
@@ -714,16 +714,16 @@ proto.api.DownlinkFrameLog.prototype.setPhyPayload = function(value) {
 
 
 /**
- * optional gw.DownlinkTXInfo tx_info = 3;
- * @return {proto.gw.DownlinkTXInfo}
+ * optional gw.DownlinkTxInfo tx_info = 3;
+ * @return {proto.gw.DownlinkTxInfo}
  */
 proto.api.DownlinkFrameLog.prototype.getTxInfo = function() {
-  return /** @type{proto.gw.DownlinkTXInfo} */ (
-    jspb.Message.getWrapperField(this, gw_gw_pb.DownlinkTXInfo, 3));
+  return /** @type{proto.gw.DownlinkTxInfo} */ (
+    jspb.Message.getWrapperField(this, gw_gw_pb.DownlinkTxInfo, 3));
 };
 
 
-/** @param {proto.gw.DownlinkTXInfo|undefined} value  */
+/** @param {proto.gw.DownlinkTxInfo|undefined} value  */
 proto.api.DownlinkFrameLog.prototype.setTxInfo = function(value) {
   jspb.Message.setWrapperField(this, 3, value);
 };
@@ -744,15 +744,15 @@ proto.api.DownlinkFrameLog.prototype.hasTxInfo = function() {
 
 
 /**
- * optional string downlink_id = 4;
- * @return {string}
+ * optional uint32 downlink_id = 4;
+ * @return {number}
  */
 proto.api.DownlinkFrameLog.prototype.getDownlinkId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 4, ""));
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 4, 0));
 };
 
 
-/** @param {string} value  */
+/** @param {number} value  */
 proto.api.DownlinkFrameLog.prototype.setDownlinkId = function(value) {
   jspb.Message.setField(this, 4, value);
 };

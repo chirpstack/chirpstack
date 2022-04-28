@@ -15,19 +15,27 @@ pub fn handle(
 
     info!(dev_eui = %dev.dev_eui, "Received LinkCheckReq");
 
-    if let Some(gw::uplink_tx_info::ModulationInfo::LoraModulationInfo(pl)) =
-        &ufs.tx_info.modulation_info
-    {
+    let mod_info = ufs
+        .tx_info
+        .modulation
+        .as_ref()
+        .ok_or(anyhow!("modulation can not be None"))?;
+    let mod_params = mod_info
+        .parameters
+        .as_ref()
+        .ok_or(anyhow!("parameters can not be None"))?;
+
+    if let gw::modulation::Parameters::Lora(pl) = mod_params {
         let required_snr = config::get_required_snr_for_sf(pl.spreading_factor as u8)?;
-        let mut max_snr: f64 = 0.0;
+        let mut max_snr: f32 = 0.0;
 
         for (i, rx_info) in ufs.rx_info_set.iter().enumerate() {
-            if i == 0 || rx_info.lora_snr > max_snr {
-                max_snr = rx_info.lora_snr;
+            if i == 0 || rx_info.snr > max_snr {
+                max_snr = rx_info.snr;
             }
         }
 
-        let mut margin = max_snr - required_snr as f64;
+        let mut margin = max_snr - required_snr;
         if margin < 0.0 {
             margin = 0.0;
         }
@@ -69,21 +77,21 @@ pub mod test {
                 mic: None,
             },
             tx_info: gw::UplinkTxInfo {
-                modulation_info: Some(gw::uplink_tx_info::ModulationInfo::LoraModulationInfo(
-                    gw::LoRaModulationInfo {
+                modulation: Some(gw::Modulation {
+                    parameters: Some(gw::modulation::Parameters::Lora(gw::LoraModulationInfo {
                         spreading_factor: 10,
                         ..Default::default()
-                    },
-                )),
+                    })),
+                }),
                 ..Default::default()
             },
             rx_info_set: vec![
                 gw::UplinkRxInfo {
-                    lora_snr: -2.0,
+                    snr: -2.0,
                     ..Default::default()
                 },
                 gw::UplinkRxInfo {
-                    lora_snr: 2.0,
+                    snr: 2.0,
                     ..Default::default()
                 },
             ],

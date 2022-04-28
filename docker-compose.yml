@@ -1,19 +1,17 @@
-version: "3"
 services:
   chirpstack:
-    build:
-      context: .
-      dockerfile: Dockerfile-devel
+    image: chirpstack/chirpstack-dev-cache:latest
     volumes:
       - ./:/chirpstack
-      - ./.cargo/registry:/usr/local/cargo/registry
-      - ./.cargo/git:/usr/local/cargo/git
     depends_on:
       - postgres
       - redis
       - mosquitto
     environment:
       - DATABASE_URL=postgres://chirpstack_test:chirpstack_test@postgres/chirpstack_test?sslmode=disable
+      - REDIS_HOST=redis
+      - POSTGRESQL_HOST=postgres
+      - MQTT_BROKER_HOST=mosquitto
     ports:
       - "8080:8080"
 

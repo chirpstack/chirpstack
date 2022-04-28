@@ -27,6 +27,7 @@ diesel_migrations = { version = "1.4" }
 r2d2 = "0.8"
 bigdecimal = "0.1.2"
 redis = { version = "0.21", features = ["r2d2", "cluster"] }
+pq-sys = { version = "0.4.6", features = ["pkg-config"] }
 
 # Logging
 tracing = "0.1"
@@ -79,7 +80,7 @@ anyhow = "1.0"
 pbkdf2 = "0.8"
 rand_core = { version = "0.6", features = ["std"] }
 # jsonwebtoken = "8.0"
-jsonwebtoken = { git = "https://github.com/brocaar/jsonwebtoken.git", branch = "fix-issue-190" }
+jsonwebtoken = "8.1.0"
 openssl = { version = "0.10", features = ["vendored"] }
 openidconnect = { version = "2.2.0", features = ["accept-rfc3339-timestamps"] }
 
@@ -111,7 +112,25 @@ httpmock = "0.6"
 assets = [
 	["target/release/chirpstack", "usr/bin/", "755"],
 	["configuration/*.toml", "etc/chirpstack/", "640"],
+	["configuration/certs/*.json", "etc/chirpstack/certs", "640"],
+	["debian/environment.conf", "etc/systemd/system/chirpstack.service.d/environment.conf", "640"],
 ]
-
+depends = "$auto, golang-cfssl"
+suggests = "postgresql, mosquitto, redis"
 maintainer-scripts = "debian/"
 systemd-units = { enable = true }
+
+[package.metadata.rpm]
+package = "chirpstack"
+config = "rpm"
+
+[package.metadata.rpm.files]
+"configuration/" = { path = "/etc/chirpstack/" }
+"chirpstack.service" = { path = "/lib/systemd/system/chirpstack.service" }
+"chirpstack.env" = { path = "/etc/systemd/system/chirpstack.service.d/environment" }
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+chirpstack = { path = "/usr/bin/chirpstack" }

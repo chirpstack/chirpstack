@@ -3,6 +3,7 @@ import { Link, RouteComponentProps } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, PageHeader } from "antd";
 
+import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { DeviceProfile, CreateDeviceProfileRequest, CreateDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
@@ -28,7 +29,47 @@ class CreateDeviceProfile extends Component<IProps> {
   }
 
   render() {
-    const deviceProfile = new DeviceProfile(); 
+    const codecScript = `// Decode uplink function.
+//
+// Input is an object with the following fields:
+// - bytes = Byte array containing the uplink payload, e.g. [255, 230, 255, 0]
+// - fPort = Uplink fPort.
+// - variables = Object containing the configured device variables.
+//
+// Output must be an object with the following fields:
+// - data = Object representing the decoded payload.
+function decodeUplink(input) {
+  return {
+    object: {
+      temp: 22.5
+    }
+  };
+}
+
+// Encode downlink function.
+//
+// Input is an object with the following fields:
+// - data = Object representing the payload that must be encoded.
+// - variables = Object containing the configured device variables.
+//
+// Output must be an object with the following fields:
+// - bytes = Byte array containing the downlink payload.
+function encodeDownlink(input) {
+  return {
+    data: [225, 230, 255, 0]
+  };
+}
+`;
+
+    let deviceProfile = new DeviceProfile(); 
+    deviceProfile.setPayloadCodecScript(codecScript);
+    deviceProfile.setSupportsOtaa(true);
+    deviceProfile.setUplinkInterval(3600);
+    deviceProfile.setDeviceStatusReqInterval(1);
+    deviceProfile.setAdrAlgorithmId("default");
+    deviceProfile.setMacVersion(MacVersion.LORAWAN_1_0_3);
+    deviceProfile.setRegParamsRevision(RegParamsRevision.A);
+    deviceProfile.setFlushQueueOnActivate(true);
 
     return(
       <Space direction="vertical" style={{width: "100%"}} size="large">

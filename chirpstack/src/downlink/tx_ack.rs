@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use chrono::{Duration, Utc};
 use std::time::SystemTime;
 use tracing::{error, info, span, trace, Instrument, Level};
@@ -16,7 +16,7 @@ use chirpstack_api::{api, common, gw, integration as integration_pb, internal};
 pub struct TxAck {
     downlink_tx_ack: gw::DownlinkTxAck,
     downlink_tx_ack_status: gw::TxAckStatus,
-    downlink_id: Uuid,
+    downlink_id: u32,
 
     downlink_frame: Option<internal::DownlinkFrame>,
     downlink_frame_item: Option<gw::DownlinkFrameItem>,
@@ -31,23 +31,13 @@ pub struct TxAck {
 
 impl TxAck {
     pub async fn handle(tx_ack: gw::DownlinkTxAck) {
-        let downlink_id = match Uuid::from_slice(&tx_ack.downlink_id) {
-            Ok(v) => v,
-            Err(e) => {
-                error!(error = %e, "Get downlink_id error");
-                return;
-            }
-        };
-        let span = span!(Level::TRACE, "tx_ack", downlink_id = %downlink_id);
-
+        let span = span!(Level::TRACE, "tx_ack", downlink_id = tx_ack.downlink_id);
         if let Err(e) = TxAck::_handle(tx_ack).instrument(span).await {
             error!(error = %e, "Handling tx ack error");
         }
     }
 
     async fn _handle(tx_ack: gw::DownlinkTxAck) -> Result<()> {
-        let downlink_id = Uuid::from_slice(&tx_ack.downlink_id).context("Uuid from downlink_id")?;
-
         if tx_ack.items.is_empty() {
             return Err(anyhow!("Zero items in tx ack"));
         }
@@ -63,8 +53,8 @@ impl TxAck {
                 }
                 status
             },
+            downlink_id: tx_ack.downlink_id,
             downlink_tx_ack: tx_ack,
-            downlink_id,
             downlink_frame: None,
             downlink_frame_item: None,
             phy_payload: None,
@@ -132,7 +122,7 @@ impl TxAck {
 
     async fn get_downlink_frame(&mut self) -> Result<()> {
         trace!("Get downlink-frame from Redis");
-        let df = downlink_frame::get(&self.downlink_id).await?;
+        let df = downlink_frame::get(self.downlink_id).await?;
         let gw_df = &df
             .downlink_frame
             .as_ref()
@@ -343,20 +333,19 @@ impl TxAck {
         let mut tags = (&*dp.tags).clone();
         tags.clone_from(&*dev.tags);
 
-        let downlink_id = Uuid::from_slice(&self.downlink_frame.as_ref().unwrap().downlink_id)?;
-        let gateway_id = EUI64::from_slice(
-            &self
-                .downlink_frame
-                .as_ref()
-                .unwrap()
-                .downlink_frame
-                .as_ref()
-                .unwrap()
-                .gateway_id,
-        )?;
+        let downlink_id = self.downlink_frame.as_ref().unwrap().downlink_id;
+        let gateway_id = self
+            .downlink_frame
+            .as_ref()
+            .unwrap()
+            .downlink_frame
+            .as_ref()
+            .unwrap()
+            .gateway_id
+            .clone();
 
         let pl = integration_pb::TxAckEvent {
-            downlink_id: downlink_id.to_string(),
+            downlink_id,
             time: Some(Utc::now().into()),
             device_info: Some(integration_pb::DeviceInfo {
                 tenant_id: tenant.id.to_string(),
@@ -371,7 +360,7 @@ impl TxAck {
             }),
             queue_item_id: qi.id.to_string(),
             f_cnt_down: qi.f_cnt_down.unwrap_or(0) as u32,
-            gateway_id: gateway_id.to_string(),
+            gateway_id,
             tx_info: self.downlink_frame_item.as_ref().unwrap().tx_info.clone(),
         };
 
@@ -403,8 +392,8 @@ impl TxAck {
             time: Some(SystemTime::now().into()),
             phy_payload: dfi.phy_payload.clone(),
             tx_info: dfi.tx_info.clone(),
-            downlink_id: Uuid::from_slice(&gw_df.downlink_id)?.to_string(),
-            gateway_id: EUI64::from_slice(&gw_df.gateway_id)?.to_string(),
+            downlink_id: gw_df.downlink_id,
+            gateway_id: gw_df.gateway_id.clone(),
             m_type: match &phy.mhdr.m_type {
                 MType::JoinAccept => common::MType::JoinAccept,
                 MType::UnconfirmedDataDown => common::MType::UnconfirmedDataDown,
@@ -457,7 +446,7 @@ impl TxAck {
             time: dfl.time.clone(),
             phy_payload: phy.to_vec()?,
             tx_info: dfl.tx_info.clone(),
-            downlink_id: dfl.downlink_id.clone(),
+            downlink_id: dfl.downlink_id,
             gateway_id: dfl.gateway_id.clone(),
             m_type: dfl.m_type,
             dev_addr: dfl.dev_addr.clone(),

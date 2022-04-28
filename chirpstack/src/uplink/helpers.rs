@@ -10,23 +10,28 @@ use chirpstack_api::{common, gw};
 pub fn get_uplink_dr(region_name: &str, tx_info: &chirpstack_api::gw::UplinkTxInfo) -> Result<u8> {
     let region_conf = region::get(region_name)?;
     let mod_info = tx_info
-        .modulation_info
+        .modulation
         .as_ref()
-        .ok_or(anyhow!("modulation_info must not be None"))?;
+        .ok_or(anyhow!("modulation must not be None"))?;
 
-    let dr_modulation = match &mod_info {
-        chirpstack_api::gw::uplink_tx_info::ModulationInfo::LoraModulationInfo(v) => {
+    let mod_params = mod_info
+        .parameters
+        .as_ref()
+        .ok_or(anyhow!("parameters must not be None"))?;
+
+    let dr_modulation = match &mod_params {
+        chirpstack_api::gw::modulation::Parameters::Lora(v) => {
             lrwn::region::DataRateModulation::Lora(lrwn::region::LoraDataRate {
                 spreading_factor: v.spreading_factor as u8,
-                bandwidth: v.bandwidth * 1000, // kHz to Hz
+                bandwidth: v.bandwidth,
             })
         }
-        chirpstack_api::gw::uplink_tx_info::ModulationInfo::FskModulationInfo(v) => {
+        chirpstack_api::gw::modulation::Parameters::Fsk(v) => {
             lrwn::region::DataRateModulation::Fsk(lrwn::region::FskDataRate {
                 bitrate: v.datarate,
             })
         }
-        chirpstack_api::gw::uplink_tx_info::ModulationInfo::LrFhssModulationInfo(v) => {
+        chirpstack_api::gw::modulation::Parameters::LrFhss(v) => {
             lrwn::region::DataRateModulation::LrFhss(lrwn::region::LrFhssDataRate {
                 coding_rate: v.code_rate.clone(),
                 occupied_channel_width: v.operating_channel_width,
@@ -45,40 +50,33 @@ pub fn set_uplink_modulation(
     let region_conf = region::get(region_name)?;
     let params = region_conf.get_data_rate(dr)?;
 
-    match params {
-        lrwn::region::DataRateModulation::Lora(v) => {
-            tx_info.set_modulation(common::Modulation::Lora);
-            tx_info.modulation_info = Some(gw::uplink_tx_info::ModulationInfo::LoraModulationInfo(
-                gw::LoRaModulationInfo {
-                    bandwidth: v.bandwidth / 1000,
+    tx_info.modulation = Some(gw::Modulation {
+        parameters: Some(match params {
+            lrwn::region::DataRateModulation::Lora(v) => {
+                gw::modulation::Parameters::Lora(gw::LoraModulationInfo {
+                    bandwidth: v.bandwidth,
                     spreading_factor: v.spreading_factor as u32,
-                    code_rate: "4/5".to_string(),
+                    code_rate: gw::CodeRate::Cr45.into(),
+                    code_rate_legacy: "".into(),
                     polarization_inversion: true,
-                },
-            ));
-        }
-        lrwn::region::DataRateModulation::Fsk(v) => {
-            tx_info.set_modulation(common::Modulation::Fsk);
-            tx_info.modulation_info = Some(gw::uplink_tx_info::ModulationInfo::FskModulationInfo(
-                gw::FskModulationInfo {
+                })
+            }
+            lrwn::region::DataRateModulation::Fsk(v) => {
+                gw::modulation::Parameters::Fsk(gw::FskModulationInfo {
                     datarate: v.bitrate,
                     ..Default::default()
-                },
-            ));
-        }
-        lrwn::region::DataRateModulation::LrFhss(v) => {
-            tx_info.set_modulation(common::Modulation::LrFhss);
-            tx_info.modulation_info =
-                Some(gw::uplink_tx_info::ModulationInfo::LrFhssModulationInfo(
-                    gw::LrfhssModulationInfo {
-                        operating_channel_width: v.occupied_channel_width,
-                        code_rate: v.coding_rate,
-                        // GridSteps: this value can't be derived from a DR?
-                        ..Default::default()
-                    },
-                ));
-        }
-    }
+                })
+            }
+            lrwn::region::DataRateModulation::LrFhss(v) => {
+                gw::modulation::Parameters::LrFhss(gw::LrFhssModulationInfo {
+                    operating_channel_width: v.occupied_channel_width,
+                    code_rate: v.coding_rate,
+                    // GridSteps: this value can't be derived from a DR?
+                    ..Default::default()
+                })
+            }
+        }),
+    });
 
     Ok(())
 }
@@ -176,7 +174,7 @@ pub fn get_start_location(rx_info: &[gw::UplinkRxInfo]) -> Option<common::Locati
         .cloned()
         .filter(|i| i.location.is_some())
         .collect();
-    with_loc.sort_by(|a, b| a.lora_snr.partial_cmp(&b.lora_snr).unwrap());
+    with_loc.sort_by(|a, b| a.snr.partial_cmp(&b.snr).unwrap());
     with_loc
         .first()
         .map(|i| i.location.as_ref().unwrap().clone())

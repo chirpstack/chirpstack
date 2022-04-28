@@ -1,6 +1,7 @@
 use anyhow::Result;
 use rand::seq::SliceRandom;
 
+use chirpstack_api::gw;
 use lrwn::region::DataRateModulation;
 
 use crate::config;
@@ -60,28 +61,23 @@ pub fn set_tx_info_data_rate(
 ) -> Result<()> {
     match dr {
         DataRateModulation::Lora(v) => {
-            tx_info.set_modulation(chirpstack_api::common::Modulation::Lora);
-            tx_info.modulation_info = Some(
-                chirpstack_api::gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                    chirpstack_api::gw::LoRaModulationInfo {
-                        bandwidth: v.bandwidth / 1000,
-                        spreading_factor: v.spreading_factor as u32,
-                        code_rate: "4/5".to_string(),
-                        polarization_inversion: true,
-                    },
-                ),
-            );
+            tx_info.modulation = Some(gw::Modulation {
+                parameters: Some(gw::modulation::Parameters::Lora(gw::LoraModulationInfo {
+                    bandwidth: v.bandwidth,
+                    spreading_factor: v.spreading_factor as u32,
+                    code_rate: chirpstack_api::gw::CodeRate::Cr45.into(),
+                    polarization_inversion: true,
+                    code_rate_legacy: "".into(),
+                })),
+            });
         }
         DataRateModulation::Fsk(v) => {
-            tx_info.set_modulation(chirpstack_api::common::Modulation::Fsk);
-            tx_info.modulation_info = Some(
-                chirpstack_api::gw::downlink_tx_info::ModulationInfo::FskModulationInfo(
-                    chirpstack_api::gw::FskModulationInfo {
-                        datarate: v.bitrate,
-                        frequency_deviation: v.bitrate / 2, // see: https://github.com/brocaar/chirpstack-gateway-bridge/issues/16
-                    },
-                ),
-            );
+            tx_info.modulation = Some(gw::Modulation {
+                parameters: Some(gw::modulation::Parameters::Fsk(gw::FskModulationInfo {
+                    datarate: v.bitrate,
+                    frequency_deviation: v.bitrate / 2, // see: https://github.com/brocaar/chirpstack-gateway-bridge/issues/16
+                })),
+            });
         }
         DataRateModulation::LrFhss(_) => {
             return Err(anyhow!("LR-FHSS is not supported for downlink"));

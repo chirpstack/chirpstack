@@ -118,27 +118,29 @@ async fn test_downlink_scheduler() {
         assert: vec![
             assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
             assert::downlink_frame(gw::DownlinkFrame {
-                gateway_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                gateway_id: "0102030405060708".into(),
                 items: vec![gw::DownlinkFrameItem {
                     phy_payload: vec![96, 4, 3, 2, 1, 128, 5, 0, 10, 115, 46, 73, 41, 113, 46, 49],
+                    tx_info_legacy: None,
                     tx_info: Some(gw::DownlinkTxInfo {
                         frequency: 869525000,
                         power: 27,
-                        modulation: common::Modulation::Lora.into(),
-                        modulation_info: Some(
-                            gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                gw::LoRaModulationInfo {
-                                    bandwidth: 125,
+                        modulation: Some(gw::Modulation {
+                            parameters: Some(gw::modulation::Parameters::Lora(
+                                gw::LoraModulationInfo {
+                                    bandwidth: 125000,
                                     spreading_factor: 12,
-                                    code_rate: "4/5".into(),
+                                    code_rate: gw::CodeRate::Cr45.into(),
                                     polarization_inversion: true,
+                                    ..Default::default()
                                 },
-                            ),
-                        ),
-                        timing: gw::DownlinkTiming::Immediately.into(),
-                        timing_info: Some(gw::downlink_tx_info::TimingInfo::ImmediatelyTimingInfo(
-                            gw::ImmediatelyTimingInfo {},
-                        )),
+                            )),
+                        }),
+                        timing: Some(gw::Timing {
+                            parameters: Some(gw::timing::Parameters::Immediately(
+                                gw::ImmediatelyTimingInfo {},
+                            )),
+                        }),
                         ..Default::default()
                     }),
                 }],
@@ -183,29 +185,31 @@ async fn test_downlink_scheduler() {
         assert: vec![
             assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
             assert::downlink_frame(gw::DownlinkFrame {
-                gateway_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                gateway_id: "0102030405060708".into(),
                 items: vec![gw::DownlinkFrameItem {
                     phy_payload: vec![
                         160, 4, 3, 2, 1, 128, 5, 0, 10, 115, 46, 73, 138, 39, 53, 228,
                     ],
+                    tx_info_legacy: None,
                     tx_info: Some(gw::DownlinkTxInfo {
                         frequency: 869525000,
                         power: 27,
-                        modulation: common::Modulation::Lora.into(),
-                        modulation_info: Some(
-                            gw::downlink_tx_info::ModulationInfo::LoraModulationInfo(
-                                gw::LoRaModulationInfo {
-                                    bandwidth: 125,
+                        modulation: Some(gw::Modulation {
+                            parameters: Some(gw::modulation::Parameters::Lora(
+                                gw::LoraModulationInfo {
+                                    bandwidth: 125000,
                                     spreading_factor: 12,
-                                    code_rate: "4/5".into(),
+                                    code_rate: gw::CodeRate::Cr45.into(),
                                     polarization_inversion: true,
+                                    ..Default::default()
                                 },
-                            ),
-                        ),
-                        timing: gw::DownlinkTiming::Immediately.into(),
-                        timing_info: Some(gw::downlink_tx_info::TimingInfo::ImmediatelyTimingInfo(
-                            gw::ImmediatelyTimingInfo {},
-                        )),
+                            )),
+                        }),
+                        timing: Some(gw::Timing {
+                            parameters: Some(gw::timing::Parameters::Immediately(
+                                gw::ImmediatelyTimingInfo {},
+                            )),
+                        }),
                         ..Default::default()
                     }),
                 }],

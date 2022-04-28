@@ -11,15 +11,15 @@ export class UplinkFrameLog extends jspb.Message {
   getPhyPayload_asB64(): string;
   setPhyPayload(value: Uint8Array | string): UplinkFrameLog;
 
-  getTxInfo(): gw_gw_pb.UplinkTXInfo | undefined;
-  setTxInfo(value?: gw_gw_pb.UplinkTXInfo): UplinkFrameLog;
+  getTxInfo(): gw_gw_pb.UplinkTxInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.UplinkTxInfo): UplinkFrameLog;
   hasTxInfo(): boolean;
   clearTxInfo(): UplinkFrameLog;
 
-  getRxInfoList(): Array<gw_gw_pb.UplinkRXInfo>;
-  setRxInfoList(value: Array<gw_gw_pb.UplinkRXInfo>): UplinkFrameLog;
+  getRxInfoList(): Array<gw_gw_pb.UplinkRxInfo>;
+  setRxInfoList(value: Array<gw_gw_pb.UplinkRxInfo>): UplinkFrameLog;
   clearRxInfoList(): UplinkFrameLog;
-  addRxInfo(value?: gw_gw_pb.UplinkRXInfo, index?: number): gw_gw_pb.UplinkRXInfo;
+  addRxInfo(value?: gw_gw_pb.UplinkRxInfo, index?: number): gw_gw_pb.UplinkRxInfo;
 
   getMType(): common_common_pb.MType;
   setMType(value: common_common_pb.MType): UplinkFrameLog;
@@ -46,8 +46,8 @@ export class UplinkFrameLog extends jspb.Message {
 export namespace UplinkFrameLog {
   export type AsObject = {
     phyPayload: Uint8Array | string,
-    txInfo?: gw_gw_pb.UplinkTXInfo.AsObject,
-    rxInfoList: Array<gw_gw_pb.UplinkRXInfo.AsObject>,
+    txInfo?: gw_gw_pb.UplinkTxInfo.AsObject,
+    rxInfoList: Array<gw_gw_pb.UplinkRxInfo.AsObject>,
     mType: common_common_pb.MType,
     devAddr: string,
     devEui: string,
@@ -66,13 +66,13 @@ export class DownlinkFrameLog extends jspb.Message {
   getPhyPayload_asB64(): string;
   setPhyPayload(value: Uint8Array | string): DownlinkFrameLog;
 
-  getTxInfo(): gw_gw_pb.DownlinkTXInfo | undefined;
-  setTxInfo(value?: gw_gw_pb.DownlinkTXInfo): DownlinkFrameLog;
+  getTxInfo(): gw_gw_pb.DownlinkTxInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.DownlinkTxInfo): DownlinkFrameLog;
   hasTxInfo(): boolean;
   clearTxInfo(): DownlinkFrameLog;
 
-  getDownlinkId(): string;
-  setDownlinkId(value: string): DownlinkFrameLog;
+  getDownlinkId(): number;
+  setDownlinkId(value: number): DownlinkFrameLog;
 
   getGatewayId(): string;
   setGatewayId(value: string): DownlinkFrameLog;
@@ -98,8 +98,8 @@ export namespace DownlinkFrameLog {
   export type AsObject = {
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     phyPayload: Uint8Array | string,
-    txInfo?: gw_gw_pb.DownlinkTXInfo.AsObject,
-    downlinkId: string,
+    txInfo?: gw_gw_pb.DownlinkTxInfo.AsObject,
+    downlinkId: number,
     gatewayId: string,
     mType: common_common_pb.MType,
     devAddr: string,

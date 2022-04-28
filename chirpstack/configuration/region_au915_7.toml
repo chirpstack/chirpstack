@@ -1,8 +1,8 @@
-# This file contains an example AU915 example (channels 48-55 + 70).
+# This file contains an example AU915 example (channels 56-63 + 71).
 [[regions]]
 
   # Name is an use-defined identifier for this region.
-  name="au915_6"
+  name="au915_7"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.
@@ -28,13 +28,13 @@
       [regions.gateway.backend.mqtt]
 
         # Event topic template.
-        event_topic="au915_6/gateway/+/event/+"
+        event_topic="au915_7/gateway/+/event/+"
 
         # Command topic template.
-        command_topic="au915_6/gateway/{{ gateway_id }}/command/{{ command }}"
+        command_topic="au915_7/gateway/{{ gateway_id }}/command/{{ command }}"
 
         # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-        server="tcp://mosquitto:1883"
+        server="tcp://$MQTT_BROKER_HOST:1883"
 
         # Connect with the given username (optional)
         username=""
@@ -86,55 +86,55 @@
     # ChirpStack Concentratord daemon. In any other case, this configuration 
     # is ignored.
     [[regions.gateway.channels]]
-      frequency=924800000
+      frequency=926400000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=925000000
+      frequency=926600000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=925200000
+      frequency=926800000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=925400000
+      frequency=927000000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=925600000
+      frequency=927200000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=925800000
+      frequency=927400000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=926000000
+      frequency=927600000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=926200000
+      frequency=927800000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=925500000
+      frequency=927100000
       bandwidth=500000
       modulation="LORA"
       spreading_factors=[8]
@@ -209,7 +209,7 @@
     # Use this when ony a sub-set of the by default enabled channels are being
     # used. For example when only using the first 8 channels of the US band.
     # Note: when left blank / empty array, all channels will be enabled.
-    enabled_uplink_channels=[48, 49, 50, 51, 52, 53, 54, 55, 70]
+    enabled_uplink_channels=[56, 57, 58, 59, 60, 61, 62, 63, 71]
 
 
     # Rejoin-request configuration (LoRaWAN 1.1)

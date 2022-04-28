@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::time::SystemTime;
 
 use anyhow::Result;
 use rquickjs::IntoJs;
 
 use super::convert;
+use crate::config;
 
 pub async fn decode(
     f_port: u8,
@@ -11,26 +13,43 @@ pub async fn decode(
     decode_config: &str,
     b: &[u8],
 ) -> Result<pbjson_types::Struct> {
-    let rt = rquickjs::Runtime::new().unwrap();
-    let ctx = rquickjs::Context::full(&rt).unwrap();
+    let conf = config::get();
+    let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
 
-    let script = decode_config.to_string();
+    let rt = rquickjs::Runtime::new()?;
+    rt.set_interrupt_handler(Some(Box::new(move || SystemTime::now() > max_run_ts)));
+
+    let ctx = rquickjs::Context::full(&rt)?;
+
+    let script = format!(
+        r#"
+        {}
+
+        export {{ decodeUplink }};
+        "#,
+        decode_config
+    );
     let b = b.to_vec();
 
-    ctx.with(|ctx| {
-        let m = ctx.compile("script", script).unwrap();
-        let func: rquickjs::Function = m.get("Decode").unwrap();
+    let out = ctx.with(|ctx| -> Result<pbjson_types::Struct> {
+        let m = ctx.compile("script", script)?;
+        let func: rquickjs::Function = m.get("decodeUplink")?;
 
-        let input = rquickjs::Object::new(ctx).unwrap();
-        input.set("f_port", f_port.into_js(ctx).unwrap()).unwrap();
-        input
-            .set("variables", variables.into_js(ctx).unwrap())
-            .unwrap();
-        input.set("data", b.into_js(ctx).unwrap()).unwrap();
+        let input = rquickjs::Object::new(ctx)?;
+        input.set("fPort", f_port.into_js(ctx)?)?;
+        input.set("variables", variables.into_js(ctx)?)?;
+        input.set("bytes", b.into_js(ctx)?)?;
 
-        let res: rquickjs::Object = func.call((input,)).unwrap();
+        let res: rquickjs::Object = func.call((input,))?;
         Ok(convert::rquickjs_to_struct(&res))
-    })
+    })?;
+
+    let obj = out.fields.get("object").cloned().unwrap_or_default();
+    if let Some(pbjson_types::value::Kind::StructValue(v)) = obj.kind {
+        return Ok(v);
+    }
+
+    Err(anyhow!("decodeUplink did not return 'object'"))
 }
 
 pub async fn encode(
@@ -39,26 +58,34 @@ pub async fn encode(
     encode_config: &str,
     s: &prost_types::Struct,
 ) -> Result<Vec<u8>> {
-    let rt = rquickjs::Runtime::new().unwrap();
-    let ctx = rquickjs::Context::full(&rt).unwrap();
+    let conf = config::get();
+    let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
 
-    let script = encode_config.to_string();
+    let rt = rquickjs::Runtime::new()?;
+    rt.set_interrupt_handler(Some(Box::new(move || SystemTime::now() > max_run_ts)));
+
+    let ctx = rquickjs::Context::full(&rt)?;
+
+    let script = format!(
+        r#"
+        {}
+        export {{ encodeDownlink }};
+        "#,
+        encode_config,
+    );
 
     ctx.with(|ctx| {
-        let m = ctx.compile("script", script).unwrap();
-        let func: rquickjs::Function = m.get("Encode").unwrap();
+        let m = ctx.compile("script", script)?;
+        let func: rquickjs::Function = m.get("encodeDownlink")?;
 
-        let input = rquickjs::Object::new(ctx).unwrap();
-        input.set("f_port", f_port.into_js(ctx).unwrap()).unwrap();
-        input
-            .set("variables", variables.into_js(ctx).unwrap())
-            .unwrap();
-        input
-            .set("object", convert::struct_to_rquickjs(ctx, s))
-            .unwrap();
+        let input = rquickjs::Object::new(ctx)?;
+        input.set("fPort", f_port.into_js(ctx)?)?;
+        input.set("variables", variables.into_js(ctx)?)?;
+        input.set("data", convert::struct_to_rquickjs(ctx, s))?;
 
-        let res: Vec<u8> = func.call((input,)).unwrap();
-        Ok(res)
+        let res: rquickjs::Object = func.call((input,))?;
+        let v: Vec<u8> = res.get("bytes")?;
+        Ok(v)
     })
 }
 
@@ -67,13 +94,31 @@ pub mod test {
     use super::*;
 
     #[tokio::test]
+    pub async fn test_decode_timeout() {
+        let decoder = r#"
+            function decodeUplink(input) {
+                while (true) {
+
+                }
+            }
+        "#
+        .to_string();
+
+        let vars: HashMap<String, String> = HashMap::new();
+        let out = decode(10, &vars, &decoder, &[0x01, 0x02, 0x03]).await;
+        assert!(out.is_err());
+    }
+
+    #[tokio::test]
     pub async fn test_decode() {
         let decoder = r#"
-            export function Decode(input) {
+            function decodeUplink(input) {
                 return {
-                    f_port: input.f_port,
-                    variables: input.variables,
-                    data: input.data
+                    object: {
+                        f_port: input.fPort,
+                        variables: input.variables,
+                        data: input.bytes
+                    }
                 };
             }
         "#
@@ -144,13 +189,38 @@ pub mod test {
     }
 
     #[tokio::test]
+    pub async fn test_encode_timeout() {
+        let encoder = r#"
+            function encodeDownlink(input) {
+                while (true) {
+
+                }
+            }
+        "#
+        .to_string();
+
+        let vars: HashMap<String, String> = HashMap::new();
+
+        let input = prost_types::Struct {
+            ..Default::default()
+        };
+
+        let out = encode(10, &vars, &encoder, &input).await;
+        assert!(out.is_err());
+    }
+
+    #[tokio::test]
     pub async fn test_encode() {
         let encoder = r#"
-            export function Encode(input) {
-                if (input.object.enabled) {
-                    return [input.f_port, 0x01];
+            function encodeDownlink(input) {
+                if (input.data.enabled) {
+                    return {
+                        bytes: [0x01] 
+                    };
                 } else {
-                    return [input.f_port, 0x00];
+                    return {
+                        bytes: [0x02]
+                    };
                 }
             }
         "#
@@ -159,19 +229,15 @@ pub mod test {
         let mut vars: HashMap<String, String> = HashMap::new();
         vars.insert("foo".into(), "bar".into());
 
-        let input = prost_types::Struct {
-            fields: [(
-                "enabled".to_string(),
-                prost_types::Value {
-                    kind: Some(prost_types::value::Kind::BoolValue(true)),
-                },
-            )]
-            .iter()
-            .cloned()
-            .collect(),
-        };
+        let mut input = prost_types::Struct::default();
+        input.fields.insert(
+            "enabled".to_string(),
+            prost_types::Value {
+                kind: Some(prost_types::value::Kind::BoolValue(true)),
+            },
+        );
 
         let out = encode(10, &vars, &encoder, &input).await.unwrap();
-        assert_eq!(vec![10, 1], out);
+        assert_eq!(vec![1], out);
     }
 }

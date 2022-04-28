@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package gw;
 
-option go_package = "github.com/chirpstack/chirpstack-api/go/v4/gw";
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4/gw";
 option java_package = "io.chirpstack.api.gw";
 option java_multiple_files = true;
 option java_outer_classname = "GatewayProto";
@@ -10,7 +10,16 @@ option java_outer_classname = "GatewayProto";
 import "common/common.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
 
+
+enum CodeRate {
+    CR_UNDEFINED = 0;
+    CR_4_5 = 1;
+    CR_4_6 = 2;
+    CR_4_7 = 3;
+    CR_4_8 = 4;
+}
 
 enum DownlinkTiming {
     // Send the downlink immediately.
@@ -22,7 +31,6 @@ enum DownlinkTiming {
     // Send at given GPS epoch value.
     GPS_EPOCH = 2;
 }
-
 
 enum FineTimestampType {
     // No fine-timestamp available.
@@ -84,17 +92,17 @@ enum TxAckStatus {
 message Modulation {
     oneof parameters {
         // LoRa modulation information.
-        LoRaModulationInfo lora = 3 [json_name = "loRa"];
+        LoraModulationInfo lora = 3;
 
         // FSK modulation information.
-        FSKModulationInfo fsk = 4;
+        FskModulationInfo fsk = 4;
 
         // LR-FHSS modulation information.
-        LRFHSSModulationInfo lr_fhss = 5 [json_name = "lrFHSS"];
+        LrFhssModulationInfo lr_fhss = 5;
     }
 }
 
-message UplinkTXInfo {
+message UplinkTxInfoLegacy {
     // Frequency (Hz).
     uint32 frequency = 1;
 
@@ -103,17 +111,25 @@ message UplinkTXInfo {
 
     oneof modulation_info {
         // LoRa modulation information.
-        LoRaModulationInfo lora_modulation_info = 3 [json_name = "loRaModulationInfo"];
+        LoraModulationInfo lora_modulation_info = 3;
 
         // FSK modulation information.
-        FSKModulationInfo fsk_modulation_info = 4;
+        FskModulationInfo fsk_modulation_info = 4;
 
         // LR-FHSS modulation information.
-        LRFHSSModulationInfo lr_fhss_modulation_info = 5 [json_name = "lrFHSSModulationInfo"];
+        LrFhssModulationInfo lr_fhss_modulation_info = 5;
     }
 }
 
-message LoRaModulationInfo {
+message UplinkTxInfo {
+    // Frequency (Hz).
+    uint32 frequency = 1;
+
+    // Modulation.
+    Modulation modulation = 2;
+}
+
+message LoraModulationInfo {
     // Bandwidth.
     uint32 bandwidth = 1;
 
@@ -121,13 +137,16 @@ message LoRaModulationInfo {
     uint32 spreading_factor = 2;
 
     // Code-rate.
-    string code_rate = 3;
+    string code_rate_legacy = 3;
+
+    // Code-rate.
+    CodeRate code_rate = 5;
 
     // Polarization inversion.
     bool polarization_inversion = 4;
 }
 
-message FSKModulationInfo {
+message FskModulationInfo {
     // Frequency deviation.
     uint32 frequency_deviation = 1;
 
@@ -135,7 +154,7 @@ message FSKModulationInfo {
     uint32 datarate = 2;
 }
 
-message LRFHSSModulationInfo {
+message LrFhssModulationInfo {
     // Operating channel width (OCW) in Hz.
     uint32 operating_channel_width = 1;
 
@@ -151,10 +170,10 @@ message EncryptedFineTimestamp {
     uint32 aes_key_index = 1;
 
     // Encrypted 'main' fine-timestamp (ns precision part of the timestamp).
-    bytes encrypted_ns = 2 [json_name = "encryptedNS"];
+    bytes encrypted_ns = 2;
 
     // FPGA ID.
-    bytes fpga_id = 3 [json_name = "fpgaID"];
+    bytes fpga_id = 3;
 }
 
 message PlainFineTimestamp {
@@ -164,7 +183,7 @@ message PlainFineTimestamp {
 
 message GatewayStats {
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     // Gateway IP.
     string ip = 9;
@@ -183,7 +202,7 @@ message GatewayStats {
     uint32 rx_packets_received = 5;
 
     // Number of radio packets received with valid PHY CRC.
-    uint32 rx_packets_received_ok = 6 [json_name = "rxPacketsReceivedOK"];
+    uint32 rx_packets_received_ok = 6;
 
     // Number of downlink packets received for transmission.
     uint32 tx_packets_received = 7;
@@ -196,7 +215,7 @@ message GatewayStats {
 
     // Stats ID (UUID).
     // Unique identifier for the gateway stats.
-    bytes stats_id = 11 [json_name = "statsID"];
+    bytes stats_id = 11;
 
     // Tx packets per frequency.
     map<uint32, uint32> tx_packets_per_frequency = 12;
@@ -222,21 +241,21 @@ message PerModulationCount {
     uint32 count = 2;
 }
 
-message UplinkRXInfo {
+message UplinkRxInfoLegacy {
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     // RX time (only set when the gateway has a GPS module).
     google.protobuf.Timestamp time = 2;
 
     // RX time since GPS epoch (only set when the gateway has a GPS module).
-    google.protobuf.Duration time_since_gps_epoch = 3 [json_name = "timeSinceGPSEpoch"];
+    google.protobuf.Duration time_since_gps_epoch = 3;
 
     // RSSI.
     int32 rssi = 5;
 
     // LoRa SNR.
-    double lora_snr = 6 [json_name = "loRaSNR"];
+    double lora_snr = 6;
 
     // Channel.
     uint32 channel = 7;
@@ -270,19 +289,60 @@ message UplinkRXInfo {
 
     // Uplink ID (UUID bytes).
     // Unique and random ID which can be used to correlate the uplink across multiple logs.
-    bytes uplink_id = 16 [json_name = "uplinkID"];
+    bytes uplink_id = 16;
 
     // CRC status.
-    CRCStatus crc_status = 17 [json_name = "crcStatus"];
+    CRCStatus crc_status = 17;
 
     // Optional meta-data map.
     map<string, string> metadata = 18;
 }
 
-message DownlinkTXInfo {
+message UplinkRxInfo {
+    // Gateway ID.
+    string gateway_id = 1;
+
+    // Uplink ID.
+    uint32 uplink_id = 2;
+
+    // RX time (only set when the gateway has a GPS module).
+    google.protobuf.Timestamp time = 3;
+
+    // RX time since GPS epoch (only set when the gateway has a GPS module).
+    google.protobuf.Duration time_since_gps_epoch = 4;
+
+    // Fine-timestamp.
+    // This timestamp can be used for TDOA based geolocation.
+    google.protobuf.Duration fine_time_since_gps_epoch = 5;
+
+    // RSSI.
+    int32 rssi = 6;
+
+    // SNR.
+    // Note: only available for LoRa modulation.
+    float snr = 7;
+
+    // Board.
+    uint32 board = 8;
+
+    // Antenna.
+    uint32 antenna = 9;
+
+    // Location.
+    common.Location location = 10;
+
+    // Gateway specific context.
+    // This value must be returned to the gateway on (Class-A) downlink.
+    bytes context = 11;
+
+    // Properties.
+    google.protobuf.Struct metadata = 12;
+}
+
+message DownlinkTxInfoLegacy {
     // Gateway ID.
     // Deprecated: replaced by gateway_id in DownlinkFrame.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     // TX frequency (in Hz).
     uint32 frequency = 5;
@@ -295,10 +355,10 @@ message DownlinkTXInfo {
 
     oneof modulation_info {
         // LoRa modulation information.
-        LoRaModulationInfo lora_modulation_info = 8 [json_name = "loRaModulationInfo"];
+        LoraModulationInfo lora_modulation_info = 8;
 
         // FSK modulation information.
-        FSKModulationInfo fsk_modulation_info = 9;
+        FskModulationInfo fsk_modulation_info = 9;
     }
 
     // The board identifier for emitting the frame.
@@ -326,6 +386,43 @@ message DownlinkTXInfo {
     bytes context = 16;
 }
 
+message DownlinkTxInfo {
+    // TX frequency (in Hz).
+    uint32 frequency = 1;
+
+    // TX power (in dBm).
+    int32 power = 2;
+
+    // Modulation.
+    Modulation modulation = 3;
+
+    // The board identifier for emitting the frame.
+    uint32 board = 4;
+
+    // The antenna identifier for emitting the frame.
+    uint32 antenna = 5;
+
+    // Timing.
+    Timing timing = 6;
+
+    // Gateway specific context.
+    // In case of a Class-A downlink, this contains a copy of the uplink context.
+    bytes context = 7;
+}
+
+message Timing {
+    oneof parameters {
+         // Immediately timing information.
+        ImmediatelyTimingInfo immediately = 1;
+
+        // Context based delay timing information.
+        DelayTimingInfo delay = 2;
+
+        // GPS Epoch timing information.
+        GPSEpochTimingInfo gps_epoch = 3;
+    }
+}
+
 message ImmediatelyTimingInfo {
     // Not implemented yet.
 }
@@ -339,18 +436,24 @@ message DelayTimingInfo {
 
 message GPSEpochTimingInfo {
     // Duration since GPS Epoch.
-    google.protobuf.Duration time_since_gps_epoch = 1 [json_name = "timeSinceGPSEpoch"];
+    google.protobuf.Duration time_since_gps_epoch = 1;
 }
 
 message UplinkFrame {
     // PHYPayload.
     bytes phy_payload = 1;
 
-    // TX meta-data.
-    UplinkTXInfo tx_info = 2;
+    // TX meta-data (deprecated).
+    UplinkTxInfoLegacy tx_info_legacy = 2;
 
-    // RX meta-data.
-    UplinkRXInfo rx_info = 3;
+    // RX meta-data (deprecated).
+    UplinkRxInfoLegacy rx_info_legacy = 3;
+
+    // Tx meta-data.
+    UplinkTxInfo tx_info = 4;
+
+    // Rx meta-data.
+    UplinkRxInfo rx_info = 5;
 }
 
 message UplinkFrameSet {
@@ -358,27 +461,19 @@ message UplinkFrameSet {
     bytes phy_payload = 1;
 
     // TX meta-data.
-    UplinkTXInfo tx_info = 2;
+    UplinkTxInfo tx_info = 2;
 
     // RX meta-data set.
-    repeated UplinkRXInfo rx_info = 3;
+    repeated UplinkRxInfo rx_info = 3;
 }
 
 message DownlinkFrame {
-    // PHYPayload.
-    // Deprecated: replaced by items.
-    bytes phy_payload = 1;
-
-    // TX meta-data.
-    // Deprecated: replaced by items.
-    DownlinkTXInfo tx_info = 2;
-
-    // Token (uint16 value).
-    // Deprecated: replaced by downlink_id.
-    uint32 token = 3;
+    // Downlink ID.
+    uint32 downlink_id = 3;
 
     // Downlink ID (UUID).
-    bytes downlink_id = 4 [json_name = "downlinkID"];
+    // Deprecated: use downlink_id.
+    bytes downlink_id_legacy = 4;
 
     // Downlink frame items.
     // This makes it possible to send multiple downlink opportunities to the
@@ -388,47 +483,52 @@ message DownlinkFrame {
     repeated DownlinkFrameItem items = 5;
 
     // Gateway ID.
-    bytes gateway_id = 6 [json_name = "gatewayID"];
+    // Deprecated: use gateway_id
+    bytes gateway_id_legacy = 6;
+
+    // Gateway ID.
+    string gateway_id = 7;
 }
 
 message DownlinkFrameItem {
     // PHYPayload.
     bytes phy_payload = 1;
 
-    // TX meta-data.
-    DownlinkTXInfo tx_info = 2;
+    // TX meta-data (deprecated).
+    DownlinkTxInfoLegacy tx_info_legacy = 2;
+    
+    // Tx meta-data.
+    DownlinkTxInfo tx_info = 3;
 }
 
-message DownlinkTXAck {
+message DownlinkTxAck {
+    // Gateway ID (deprecated).
+    bytes gateway_id_legacy = 1;
+
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    string gateway_id = 6;
 
-    // Token (uint16 value).
-    // Deprecated: replaced by downlink_id.
-    uint32 token = 2;
+    // Downlink ID.
+    uint32 downlink_id = 2;
 
-    // Error.
-    // Deprecated: replaced by items.
-    string error = 3;
-
-    // Downlink ID (UUID).
-    bytes downlink_id = 4 [json_name = "downlinkID"];
+    // Downlink ID (deprecated).
+    bytes downlink_id_legacy = 4;
 
     // Downlink frame items.
     // This list has the same length as the request and indicates which
     // downlink frame has been emitted of the requested list (or why it failed).
     // Note that at most one item has a positive acknowledgement.
-    repeated DownlinkTXAckItem items = 5;
+    repeated DownlinkTxAckItem items = 5;
 }
 
-message DownlinkTXAckItem {
+message DownlinkTxAckItem {
     // The Ack status of this item.
     TxAckStatus status = 1;
 }
 
 message GatewayConfiguration {
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     // Configuration version.
     string version = 2;
@@ -449,7 +549,7 @@ message ChannelConfiguration {
 
     oneof modulation_config {
         // LoRa modulation config.
-        LoRaModulationConfig lora_modulation_config = 3 [json_name = "loRaModulationConfig"];
+        LoRaModulationConfig lora_modulation_config = 3;
 
         // FSK modulation config.
         FSKModulationConfig fsk_modulation_config = 4;
@@ -480,7 +580,7 @@ message FSKModulationConfig {
 
 message GatewayCommandExecRequest {
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     // Command to execute.
     // This command must be pre-configured in the LoRa Gateway Bridge configuration.
@@ -489,7 +589,7 @@ message GatewayCommandExecRequest {
     // Execution request ID (UUID).
     // The same token will be returned when the execution of the command has
     // completed.
-    bytes ExecId = 3 [json_name = "execID"];
+    bytes ExecId = 3;
 
     // Standard input.
     bytes stdin = 4;
@@ -500,10 +600,10 @@ message GatewayCommandExecRequest {
 
 message GatewayCommandExecResponse {
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     // Execution request ID (UUID).
-    bytes exec_id = 2 [json_name = "execID"];
+    bytes exec_id = 2;
 
     // Standard output.
     bytes stdout = 3;
@@ -520,10 +620,10 @@ message GatewayCommandExecResponse {
 // integrated with the ChirpStack Gateway Bridge.
 message RawPacketForwarderEvent {
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     // Raw ID (UUID).
-    bytes raw_id = 2 [json_name = "rawID"];
+    bytes raw_id = 2;
 
     // Payload contains the raw payload.
     bytes payload = 3;
@@ -534,10 +634,10 @@ message RawPacketForwarderEvent {
 // integrated with the ChirpStack Gateway Bridge.
 message RawPacketForwarderCommand {
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     // Raw ID (UUID).
-    bytes raw_id = 2 [json_name = "rawID"];
+    bytes raw_id = 2;
 
     // Payload contains the raw payload.
     bytes payload = 3;
@@ -546,7 +646,7 @@ message RawPacketForwarderCommand {
 // ConnState contains the connection state of a gateway.
 message ConnState {
     // Gateway ID.
-    bytes gateway_id = 1 [json_name = "gatewayID"];
+    bytes gateway_id = 1;
 
     enum State {
         OFFLINE = 0;

@@ -138,7 +138,7 @@ struct UplinkPayload {
 struct UplinkMetadata {
     pub rssi: i32,
     #[serde(rename = "lorasnr")]
-    pub lora_snr: f64,
+    pub lora_snr: f32,
     #[serde(rename = "rfchain")]
     pub rf_chain: u32,
     pub antenna: u32,
@@ -161,8 +161,8 @@ impl UplinkPayload {
                 .iter()
                 .map(|i| UplinkMetadata {
                     rssi: i.rssi,
-                    lora_snr: i.lora_snr,
-                    rf_chain: i.rf_chain,
+                    lora_snr: i.snr,
+                    rf_chain: 0,
                     antenna: i.antenna,
                     board: i.board,
                 })
@@ -212,7 +212,7 @@ pub mod test {
                 dev_addr: "04030201".into(),
                 rx_info: vec![gw::UplinkRxInfo {
                     rssi: -10,
-                    lora_snr: 3.5,
+                    snr: 3.5,
                     antenna: 1,
                     board: 2,
                     ..Default::default()

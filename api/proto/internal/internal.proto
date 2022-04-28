@@ -199,8 +199,8 @@ message DeviceGatewayRxInfoItem {
 }
 
 message DownlinkFrame {
-    // Downlink ID (UUID).
-    bytes downlink_id = 1;
+    // Downlink ID.
+    uint32 downlink_id = 1;
 
     // DevEUI.
     bytes dev_eui = 2;
@@ -231,5 +231,5 @@ message LoraCloudGeolocBuffer {
 
 message LoraCloudGeolocBufferUplink {
     // RxInfo set for a single uplink.
-    repeated gw.UplinkRXInfo rx_info = 1;
+    repeated gw.UplinkRxInfo rx_info = 1;
 }

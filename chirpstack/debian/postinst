@@ -3,6 +3,12 @@
 # Set config-file permissions
 chown -R chirpstack:chirpstack /etc/chirpstack
 chmod 750 /etc/chirpstack
+chmod 750 /etc/chirpstack/certs
 chmod 640 /etc/chirpstack/*.toml
+
+# Generate certificates
+CERTROOT=/etc/chirpstack/certs
+cfssl gencert -initca $CERTROOT/ca-csr.json | cfssljson -bare $CERTROOT/ca
+cfssl gencert -ca $CERTROOT/ca.pem -ca-key $CERTROOT/ca-key.pem -config $CERTROOT/ca-config.json -profile server $CERTROOT/mqtt-server.json | cfssljson -bare $CERTROOT/mqtt-server
 
 #DEBHELPER#

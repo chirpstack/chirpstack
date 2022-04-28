@@ -30,11 +30,11 @@ export class DeviceProfile extends jspb.Message {
   getPayloadCodecRuntime(): CodecRuntime;
   setPayloadCodecRuntime(value: CodecRuntime): DeviceProfile;
 
-  getPayloadEncoderConfig(): string;
-  setPayloadEncoderConfig(value: string): DeviceProfile;
+  getPayloadCodecScript(): string;
+  setPayloadCodecScript(value: string): DeviceProfile;
 
-  getPayloadDecoderConfig(): string;
-  setPayloadDecoderConfig(value: string): DeviceProfile;
+  getFlushQueueOnActivate(): boolean;
+  setFlushQueueOnActivate(value: boolean): DeviceProfile;
 
   getUplinkInterval(): number;
   setUplinkInterval(value: number): DeviceProfile;
@@ -99,8 +99,8 @@ export namespace DeviceProfile {
     regParamsRevision: common_common_pb.RegParamsRevision,
     adrAlgorithmId: string,
     payloadCodecRuntime: CodecRuntime,
-    payloadEncoderConfig: string,
-    payloadDecoderConfig: string,
+    payloadCodecScript: string,
+    flushQueueOnActivate: boolean,
     uplinkInterval: number,
     deviceStatusReqInterval: number,
     supportsOtaa: boolean,

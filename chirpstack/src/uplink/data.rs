@@ -72,12 +72,12 @@ impl Data {
         ctx.get_device_profile().await?;
         ctx.get_application().await?;
         ctx.get_tenant().await?;
-        ctx.abort_on_device_is_disabled()?;
+        ctx.abort_on_device_is_disabled().await?;
         ctx.set_device_info()?;
         ctx.handle_retransmission_reset().await?;
         ctx.set_device_lock().await?;
         ctx.set_scheduler_run_after().await?;
-        ctx.filter_rx_info_by_tenant()?;
+        ctx.filter_rx_info_by_tenant().await?;
         ctx.decrypt_f_opts_mac_commands()?;
         ctx.decrypt_frm_payload()?;
         ctx.get_mac_payload()?;
@@ -105,7 +105,7 @@ impl Data {
         trace!("Getting device-session for dev_addr");
 
         if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload {
-            match device_session::get_for_phypayload(
+            match device_session::get_for_phypayload_and_incr_f_cnt_up(
                 &self.uplink_frame_set.phy_payload,
                 self.uplink_frame_set.dr,
                 self.uplink_frame_set.ch as u8,
@@ -202,10 +202,17 @@ impl Data {
         Ok(())
     }
 
-    fn abort_on_device_is_disabled(&self) -> Result<(), Error> {
+    async fn abort_on_device_is_disabled(&self) -> Result<(), Error> {
         let device = self.device.as_ref().unwrap();
 
         if device.is_disabled {
+            // Restore the device-session in case the device is disabled.
+            // This is because during the fcnt validation, we immediately store the
+            // device-session with incremented fcnt to avoid race conditions.
+            device_session::save(self.device_session.as_ref().unwrap())
+                .await
+                .context("Savel device-session")?;
+
             info!(dev_eui = %device.dev_eui, "Device is disabled, aborting flow");
             return Err(Error::Abort);
         }
@@ -215,13 +222,13 @@ impl Data {
 
     async fn handle_retransmission_reset(&self) -> Result<(), Error> {
         trace!("Handle retransmission and reset");
+        let dev = self.device.as_ref().unwrap();
 
-        if (!self.retransmission && !self.reset) || self.device.as_ref().unwrap().skip_fcnt_check {
+        if (!self.retransmission && !self.reset) || dev.skip_fcnt_check {
             return Ok(());
         }
 
         let app = self.application.as_ref().unwrap();
-        let dev = self.device.as_ref().unwrap();
         let ts: DateTime<Utc> =
             helpers::get_rx_timestamp(&self.uplink_frame_set.rx_info_set).into();
 
@@ -291,14 +298,25 @@ impl Data {
         Ok(())
     }
 
-    fn filter_rx_info_by_tenant(&mut self) -> Result<()> {
+    async fn filter_rx_info_by_tenant(&mut self) -> Result<()> {
         trace!("Filtering rx_info by tenant_id");
 
-        filter_rx_info_by_tenant_id(
+        match filter_rx_info_by_tenant_id(
             &self.application.as_ref().unwrap().tenant_id,
             &mut self.uplink_frame_set,
-        )?;
-        Ok(())
+        ) {
+            Ok(_) => Ok(()),
+            Err(v) => {
+                // Restore the device-session in case of an error (no gateways available).
+                // This is because during the fcnt validation, we immediately store the
+                // device-session with incremented fcnt to avoid race conditions.
+                device_session::save(self.device_session.as_ref().unwrap())
+                    .await
+                    .context("Savel device-session")?;
+
+                Err(v)
+            }
+        }
     }
 
     fn decrypt_f_opts_mac_commands(&mut self) -> Result<()> {
@@ -478,9 +496,9 @@ impl Data {
                 .rx_info_set
                 .iter()
                 .map(|rx_info| internal::DeviceGatewayRxInfoItem {
-                    gateway_id: rx_info.gateway_id.clone(),
+                    gateway_id: hex::decode(&rx_info.gateway_id).unwrap(),
                     rssi: rx_info.rssi,
-                    lora_snr: rx_info.lora_snr as f32,
+                    lora_snr: rx_info.snr,
                     antenna: rx_info.antenna,
                     board: rx_info.board,
                     context: rx_info.context.clone(),
@@ -510,8 +528,8 @@ impl Data {
 
         let mut max_snr = 0.0;
         for (i, rx_info) in self.uplink_frame_set.rx_info_set.iter().enumerate() {
-            if i == 0 || rx_info.lora_snr > max_snr {
-                max_snr = rx_info.lora_snr;
+            if i == 0 || rx_info.snr > max_snr {
+                max_snr = rx_info.snr;
             }
         }
 
@@ -524,7 +542,7 @@ impl Data {
 
         ds.uplink_adr_history.push(internal::UplinkAdrHistory {
             f_cnt: self.f_cnt_up_full,
-            max_snr: max_snr as f32,
+            max_snr,
             max_rssi,
             tx_power_index: ds.tx_power_index,
             gateway_count: self.uplink_frame_set.rx_info_set.len() as u32,
@@ -574,7 +592,7 @@ impl Data {
             dp.payload_codec_runtime,
             mac.f_port.unwrap_or(0),
             &dev.variables,
-            &dp.payload_decoder_config,
+            &dp.payload_codec_script,
             &pl.data,
         )
         .await
@@ -604,6 +622,9 @@ impl Data {
         Ok(())
     }
 
+    // for "normal" uplinks, this is already set by the get_for_phypayload_and_incr_f_cnt_up
+    // function, however in case of retransmission or reset (if skip_fcnt_check) this is still
+    // required.
     fn sync_uplink_f_cnt(&mut self) -> Result<()> {
         trace!("Syncing uplink frame-counter");
         let mut ds = self.device_session.as_mut().unwrap();
@@ -687,20 +708,20 @@ impl Data {
     async fn save_metrics(&self) -> Result<()> {
         trace!("Saving device metrics");
         let mut max_rssi: i32 = 0;
-        let mut max_snr: f64 = 0.0;
+        let mut max_snr: f32 = 0.0;
 
         for (i, rx_info) in self.uplink_frame_set.rx_info_set.iter().enumerate() {
             if i == 0 {
                 max_rssi = rx_info.rssi;
-                max_snr = rx_info.lora_snr;
+                max_snr = rx_info.snr;
             }
 
             if rx_info.rssi > max_rssi {
                 max_rssi = rx_info.rssi;
             }
 
-            if rx_info.lora_snr > max_snr {
-                max_snr = rx_info.lora_snr;
+            if rx_info.snr > max_snr {
+                max_snr = rx_info.snr;
             }
         }
 
@@ -711,7 +732,7 @@ impl Data {
 
         record.metrics.insert("rx_count".into(), 1.0);
         record.metrics.insert("gw_rssi_sum".into(), max_rssi as f64);
-        record.metrics.insert("gw_snr_sum".into(), max_snr);
+        record.metrics.insert("gw_snr_sum".into(), max_snr as f64);
         record.metrics.insert(
             format!("rx_freq_{}", self.uplink_frame_set.tx_info.frequency),
             1.0,

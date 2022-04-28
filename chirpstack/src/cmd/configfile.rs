@@ -298,6 +298,16 @@ pub fn run() {
     tls_key="{{ integration.mqtt.tls_key }}"
 
 
+# Codec configuration.
+[codec]
+
+  # JS codec configuration.
+  [codec.js]
+
+    # Maximum execution time.
+    max_execution_time="{{ codec.js.max_execution_time }}"
+
+
 # User authentication configuration.
 [user_authentication]
 

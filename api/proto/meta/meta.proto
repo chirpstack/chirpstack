@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package meta;
 
-option go_package = "github.com/chirpstack/chirpstack-api/go/v4/meta";
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4/meta";
 option java_package = "io.chirpstack.api.meta";
 option java_multiple_files = true;
 option java_outer_classname = "MetaProto";
@@ -16,10 +16,10 @@ message UplinkMeta {
     string dev_eui = 1;
 
     // TX meta-data.
-    gw.UplinkTXInfo tx_info = 2;
+    gw.UplinkTxInfo tx_info = 2;
 
     // RX meta-data.
-    repeated gw.UplinkRXInfo rx_info = 3;
+    repeated gw.UplinkRxInfo rx_info = 3;
 
 	// PHYPayload byte count.
 	uint32 phy_payload_byte_count = 4;
@@ -42,7 +42,7 @@ message DownlinkMeta {
 	string multicast_group_id = 2;
 
 	// TX meta-data.
-	gw.DownlinkTXInfo tx_info = 3;
+	gw.DownlinkTxInfo tx_info = 3;
 
 	// PHYPayload byte count.
 	uint32 phy_payload_byte_count = 4;

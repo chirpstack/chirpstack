@@ -1,12 +1,12 @@
-# This file contains an example IN865 configuration.
+# This file contains an example ISM2400 configuration.
 [[regions]]
 
   # Name is an user-defined identifier for this region.
-  name="in865"
+  name="ism2400"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.
-  common_name="IN865"
+  common_name="ISM2400"
 
 
   # Gateway configuration.
@@ -28,13 +28,13 @@
       [regions.gateway.backend.mqtt]
 
         # Event topic template.
-        event_topic="in865/gateway/+/event/+"
+        event_topic="ism2400/gateway/+/event/+"
 
         # Command topic template.
-        command_topic="in865/gateway/{{ gateway_id }}/command/{{ command }}"
+        command_topic="ism2400/gateway/{{ gateway_id }}/command/{{ command }}"
 
         # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-        server="tcp://mosquitto:1883"
+        server="tcp://$MQTT_BROKER_HOST:1883"
 
         # Connect with the given username (optional)
         username=""
@@ -86,22 +86,22 @@
     # ChirpStack Concentratord daemon. In any other case, this configuration 
     # is ignored.
     [[regions.gateway.channels]]
-      frequency=865062500
-      bandwidth=125000
+      frequency=2403000000
+      bandwidth=812000
       modulation="LORA"
-      spreading_factors=[7, 8, 9, 10, 11, 12]
+      spreading_factors=[12]
 
     [[regions.gateway.channels]]
-      frequency=865402500
-      bandwidth=125000
+      frequency=2479000000
+      bandwidth=812000
       modulation="LORA"
-      spreading_factors=[7, 8, 9, 10, 11, 12]
+      spreading_factors=[12]
 
     [[regions.gateway.channels]]
-      frequency=865985000
-      bandwidth=125000
+      frequency=2425000000
+      bandwidth=812000
       modulation="LORA"
-      spreading_factors=[7, 8, 9, 10, 11, 12]
+      spreading_factors=[12]
 
 
   # Region specific network configuration.
@@ -130,10 +130,10 @@
     rx1_dr_offset=0
 
     # RX2 data-rate
-    rx2_dr=2
+    rx2_dr=0
 
     # RX2 frequency (Hz)
-    rx2_frequency=866550000
+    rx2_frequency=2423000000
 
     # Prefer RX2 on RX1 data-rate less than.
     #
@@ -166,7 +166,7 @@
     min_dr=0
 
     # Maximum data-rate.
-    max_dr=5
+    max_dr=7
 
 
     # Rejoin-request configuration (LoRaWAN 1.1)

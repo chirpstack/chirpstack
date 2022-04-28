@@ -119,10 +119,10 @@ message UplinkEvent {
     google.protobuf.Struct object = 11;
 
     // Receiving gateway RX info.
-    repeated gw.UplinkRXInfo rx_info = 12;
+    repeated gw.UplinkRxInfo rx_info = 12;
 
     // TX info.
-    gw.UplinkTXInfo tx_info = 13;
+    gw.UplinkTxInfo tx_info = 13;
 }
 
 // JoinEvent is the message sent when a device joined the network.
@@ -167,8 +167,8 @@ message AckEvent {
 // for transmission. As a downlink can be scheduled in the future, this event
 // does not confirm that the message has already been transmitted.
 message TxAckEvent {
-    // Downlink ID (UUID).
-    string downlink_id = 1;
+    // Downlink ID.
+    uint32 downlink_id = 1;
 
     // Timestamp.
     google.protobuf.Timestamp time = 2;
@@ -186,7 +186,7 @@ message TxAckEvent {
     string gateway_id = 6;
 
     // TX info.
-    gw.DownlinkTXInfo tx_info = 7;
+    gw.DownlinkTxInfo tx_info = 7;
 }
 
 // LogEvent is the message sent when a device-related log was sent.

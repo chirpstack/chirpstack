@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "github.com/chirpstack/chirpstack/api/go/v4";
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
 option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "DeviceProfileProto";
@@ -69,11 +69,11 @@ message DeviceProfile {
     // Payload codec runtime.
     CodecRuntime payload_codec_runtime = 8;
 
-    // Payload codec encoder config.
-    string payload_encoder_config = 9;
+    // Payload codec script.
+    string payload_codec_script = 9;
 
-    // Payload codec decoder config.
-    string payload_decoder_config = 10;
+    // Flush queue on device activation.
+    bool flush_queue_on_activate = 10;
 
     // Uplink interval (seconds).
     // This defines the expected uplink interval which the device uses for

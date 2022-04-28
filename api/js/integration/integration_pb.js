@@ -461,8 +461,8 @@ proto.integration.UplinkEvent.toObject = function(includeInstance, msg) {
     data: msg.getData_asB64(),
     object: (f = msg.getObject()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f),
     rxInfoList: jspb.Message.toObjectList(msg.getRxInfoList(),
-    gw_gw_pb.UplinkRXInfo.toObject, includeInstance),
-    txInfo: (f = msg.getTxInfo()) && gw_gw_pb.UplinkTXInfo.toObject(includeInstance, f)
+    gw_gw_pb.UplinkRxInfo.toObject, includeInstance),
+    txInfo: (f = msg.getTxInfo()) && gw_gw_pb.UplinkTxInfo.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -547,14 +547,14 @@ proto.integration.UplinkEvent.deserializeBinaryFromReader = function(msg, reader
       msg.setObject(value);
       break;
     case 12:
-      var value = new gw_gw_pb.UplinkRXInfo;
-      reader.readMessage(value,gw_gw_pb.UplinkRXInfo.deserializeBinaryFromReader);
+      var value = new gw_gw_pb.UplinkRxInfo;
+      reader.readMessage(value,gw_gw_pb.UplinkRxInfo.deserializeBinaryFromReader);
       msg.getRxInfoList().push(value);
       msg.setRxInfoList(msg.getRxInfoList());
       break;
     case 13:
-      var value = new gw_gw_pb.UplinkTXInfo;
-      reader.readMessage(value,gw_gw_pb.UplinkTXInfo.deserializeBinaryFromReader);
+      var value = new gw_gw_pb.UplinkTxInfo;
+      reader.readMessage(value,gw_gw_pb.UplinkTxInfo.deserializeBinaryFromReader);
       msg.setTxInfo(value);
       break;
     default:
@@ -680,7 +680,7 @@ proto.integration.UplinkEvent.prototype.serializeBinaryToWriter = function (writ
     writer.writeRepeatedMessage(
       12,
       f,
-      gw_gw_pb.UplinkRXInfo.serializeBinaryToWriter
+      gw_gw_pb.UplinkRxInfo.serializeBinaryToWriter
     );
   }
   f = this.getTxInfo();
@@ -688,7 +688,7 @@ proto.integration.UplinkEvent.prototype.serializeBinaryToWriter = function (writ
     writer.writeMessage(
       13,
       f,
-      gw_gw_pb.UplinkTXInfo.serializeBinaryToWriter
+      gw_gw_pb.UplinkTxInfo.serializeBinaryToWriter
     );
   }
 };
@@ -942,18 +942,18 @@ proto.integration.UplinkEvent.prototype.hasObject = function() {
 
 
 /**
- * repeated gw.UplinkRXInfo rx_info = 12;
+ * repeated gw.UplinkRxInfo rx_info = 12;
  * If you change this array by adding, removing or replacing elements, or if you
  * replace the array itself, then you must call the setter to update it.
- * @return {!Array.<!proto.gw.UplinkRXInfo>}
+ * @return {!Array.<!proto.gw.UplinkRxInfo>}
  */
 proto.integration.UplinkEvent.prototype.getRxInfoList = function() {
-  return /** @type{!Array.<!proto.gw.UplinkRXInfo>} */ (
-    jspb.Message.getRepeatedWrapperField(this, gw_gw_pb.UplinkRXInfo, 12));
+  return /** @type{!Array.<!proto.gw.UplinkRxInfo>} */ (
+    jspb.Message.getRepeatedWrapperField(this, gw_gw_pb.UplinkRxInfo, 12));
 };
 
 
-/** @param {Array.<!proto.gw.UplinkRXInfo>} value  */
+/** @param {Array.<!proto.gw.UplinkRxInfo>} value  */
 proto.integration.UplinkEvent.prototype.setRxInfoList = function(value) {
   jspb.Message.setRepeatedWrapperField(this, 12, value);
 };
@@ -965,16 +965,16 @@ proto.integration.UplinkEvent.prototype.clearRxInfoList = function() {
 
 
 /**
- * optional gw.UplinkTXInfo tx_info = 13;
- * @return {proto.gw.UplinkTXInfo}
+ * optional gw.UplinkTxInfo tx_info = 13;
+ * @return {proto.gw.UplinkTxInfo}
  */
 proto.integration.UplinkEvent.prototype.getTxInfo = function() {
-  return /** @type{proto.gw.UplinkTXInfo} */ (
-    jspb.Message.getWrapperField(this, gw_gw_pb.UplinkTXInfo, 13));
+  return /** @type{proto.gw.UplinkTxInfo} */ (
+    jspb.Message.getWrapperField(this, gw_gw_pb.UplinkTxInfo, 13));
 };
 
 
-/** @param {proto.gw.UplinkTXInfo|undefined} value  */
+/** @param {proto.gw.UplinkTxInfo|undefined} value  */
 proto.integration.UplinkEvent.prototype.setTxInfo = function(value) {
   jspb.Message.setWrapperField(this, 13, value);
 };
@@ -1650,7 +1650,7 @@ proto.integration.TxAckEvent.toObject = function(includeInstance, msg) {
     queueItemId: msg.getQueueItemId(),
     fCntDown: msg.getFCntDown(),
     gatewayId: msg.getGatewayId(),
-    txInfo: (f = msg.getTxInfo()) && gw_gw_pb.DownlinkTXInfo.toObject(includeInstance, f)
+    txInfo: (f = msg.getTxInfo()) && gw_gw_pb.DownlinkTxInfo.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1688,7 +1688,7 @@ proto.integration.TxAckEvent.deserializeBinaryFromReader = function(msg, reader)
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {number} */ (reader.readUint32());
       msg.setDownlinkId(value);
       break;
     case 2:
@@ -1714,8 +1714,8 @@ proto.integration.TxAckEvent.deserializeBinaryFromReader = function(msg, reader)
       msg.setGatewayId(value);
       break;
     case 7:
-      var value = new gw_gw_pb.DownlinkTXInfo;
-      reader.readMessage(value,gw_gw_pb.DownlinkTXInfo.deserializeBinaryFromReader);
+      var value = new gw_gw_pb.DownlinkTxInfo;
+      reader.readMessage(value,gw_gw_pb.DownlinkTxInfo.deserializeBinaryFromReader);
       msg.setTxInfo(value);
       break;
     default:
@@ -1757,8 +1757,8 @@ proto.integration.TxAckEvent.prototype.serializeBinary = function() {
 proto.integration.TxAckEvent.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
   f = this.getDownlinkId();
-  if (f.length > 0) {
-    writer.writeString(
+  if (f !== 0) {
+    writer.writeUint32(
       1,
       f
     );
@@ -1805,7 +1805,7 @@ proto.integration.TxAckEvent.prototype.serializeBinaryToWriter = function (write
     writer.writeMessage(
       7,
       f,
-      gw_gw_pb.DownlinkTXInfo.serializeBinaryToWriter
+      gw_gw_pb.DownlinkTxInfo.serializeBinaryToWriter
     );
   }
 };
@@ -1821,15 +1821,15 @@ proto.integration.TxAckEvent.prototype.cloneMessage = function() {
 
 
 /**
- * optional string downlink_id = 1;
- * @return {string}
+ * optional uint32 downlink_id = 1;
+ * @return {number}
  */
 proto.integration.TxAckEvent.prototype.getDownlinkId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 1, ""));
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 1, 0));
 };
 
 
-/** @param {string} value  */
+/** @param {number} value  */
 proto.integration.TxAckEvent.prototype.setDownlinkId = function(value) {
   jspb.Message.setField(this, 1, value);
 };
@@ -1941,16 +1941,16 @@ proto.integration.TxAckEvent.prototype.setGatewayId = function(value) {
 
 
 /**
- * optional gw.DownlinkTXInfo tx_info = 7;
- * @return {proto.gw.DownlinkTXInfo}
+ * optional gw.DownlinkTxInfo tx_info = 7;
+ * @return {proto.gw.DownlinkTxInfo}
  */
 proto.integration.TxAckEvent.prototype.getTxInfo = function() {
-  return /** @type{proto.gw.DownlinkTXInfo} */ (
-    jspb.Message.getWrapperField(this, gw_gw_pb.DownlinkTXInfo, 7));
+  return /** @type{proto.gw.DownlinkTxInfo} */ (
+    jspb.Message.getWrapperField(this, gw_gw_pb.DownlinkTxInfo, 7));
 };
 
 
-/** @param {proto.gw.DownlinkTXInfo|undefined} value  */
+/** @param {proto.gw.DownlinkTxInfo|undefined} value  */
 proto.integration.TxAckEvent.prototype.setTxInfo = function(value) {
   jspb.Message.setWrapperField(this, 7, value);
 };

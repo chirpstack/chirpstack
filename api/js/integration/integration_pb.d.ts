@@ -101,14 +101,14 @@ export class UplinkEvent extends jspb.Message {
   setObject(value?: google_protobuf_struct_pb.Struct): void;
 
   clearRxInfoList(): void;
-  getRxInfoList(): Array<gw_gw_pb.UplinkRXInfo>;
-  setRxInfoList(value: Array<gw_gw_pb.UplinkRXInfo>): void;
-  addRxInfo(value?: gw_gw_pb.UplinkRXInfo, index?: number): gw_gw_pb.UplinkRXInfo;
+  getRxInfoList(): Array<gw_gw_pb.UplinkRxInfo>;
+  setRxInfoList(value: Array<gw_gw_pb.UplinkRxInfo>): void;
+  addRxInfo(value?: gw_gw_pb.UplinkRxInfo, index?: number): gw_gw_pb.UplinkRxInfo;
 
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): gw_gw_pb.UplinkTXInfo | undefined;
-  setTxInfo(value?: gw_gw_pb.UplinkTXInfo): void;
+  getTxInfo(): gw_gw_pb.UplinkTxInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.UplinkTxInfo): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UplinkEvent.AsObject;
@@ -133,8 +133,8 @@ export namespace UplinkEvent {
     confirmed: boolean,
     data: Uint8Array | string,
     object?: google_protobuf_struct_pb.Struct.AsObject,
-    rxInfoList: Array<gw_gw_pb.UplinkRXInfo.AsObject>,
-    txInfo?: gw_gw_pb.UplinkTXInfo.AsObject,
+    rxInfoList: Array<gw_gw_pb.UplinkRxInfo.AsObject>,
+    txInfo?: gw_gw_pb.UplinkTxInfo.AsObject,
   }
 }
 
@@ -219,8 +219,8 @@ export namespace AckEvent {
 }
 
 export class TxAckEvent extends jspb.Message {
-  getDownlinkId(): string;
-  setDownlinkId(value: string): void;
+  getDownlinkId(): number;
+  setDownlinkId(value: number): void;
 
   hasTime(): boolean;
   clearTime(): void;
@@ -243,8 +243,8 @@ export class TxAckEvent extends jspb.Message {
 
   hasTxInfo(): boolean;
   clearTxInfo(): void;
-  getTxInfo(): gw_gw_pb.DownlinkTXInfo | undefined;
-  setTxInfo(value?: gw_gw_pb.DownlinkTXInfo): void;
+  getTxInfo(): gw_gw_pb.DownlinkTxInfo | undefined;
+  setTxInfo(value?: gw_gw_pb.DownlinkTxInfo): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): TxAckEvent.AsObject;
@@ -258,13 +258,13 @@ export class TxAckEvent extends jspb.Message {
 
 export namespace TxAckEvent {
   export type AsObject = {
-    downlinkId: string,
+    downlinkId: number,
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     deviceInfo?: DeviceInfo.AsObject,
     queueItemId: string,
     fCntDown: number,
     gatewayId: string,
-    txInfo?: gw_gw_pb.DownlinkTXInfo.AsObject,
+    txInfo?: gw_gw_pb.DownlinkTxInfo.AsObject,
   }
 }
 

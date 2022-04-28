@@ -119,7 +119,7 @@ pub async fn delete(dev_eui: &EUI64) -> Result<()> {
 
 // Return the device-session matching the given PhyPayload. This will fetch all device-session
 // associated with the used DevAddr and based on f_cont and mic, decides which one to use.
-pub async fn get_for_phypayload(
+pub async fn get_for_phypayload_and_incr_f_cnt_up(
     phy: &PhyPayload,
     tx_dr: u8,
     tx_ch: u8,
@@ -193,6 +193,34 @@ pub async fn get_for_phypayload(
             };
 
             if full_f_cnt >= ds.f_cnt_up {
+                // Make sure that in case of concurrent calls for the same uplink only one will
+                // pass. Either the concurrent call would read the incremented uplink frame-counter
+                // or it is unable to aquire the lock.
+                let mut c = get_redis_conn()?;
+                let lock_key = redis_key(format!(
+                    "device:{{{}}}:ds:lock:{}",
+                    hex::encode(&ds.dev_eui),
+                    full_f_cnt,
+                ));
+                let set: bool = redis::cmd("SET")
+                    .arg(&lock_key)
+                    .arg("lock")
+                    .arg("EX")
+                    .arg(1_usize)
+                    .arg("NX")
+                    .query(&mut *c)?;
+
+                if !set {
+                    return Ok(ValidationStatus::Retransmission(full_f_cnt, ds));
+                }
+
+                // We immediately save the device-session to make sure that concurrent calls for
+                // the same uplink will fail on the frame-counter validation.
+                let ds_f_cnt_up = ds.f_cnt_up;
+                ds.f_cnt_up = full_f_cnt + 1;
+                save(&ds).await?;
+                ds.f_cnt_up = ds_f_cnt_up;
+
                 return Ok(ValidationStatus::Ok(full_f_cnt, ds));
             } else if ds.skip_f_cnt_check {
                 // re-transmission or frame-counter reset
@@ -542,7 +570,7 @@ pub mod test {
             )
             .unwrap();
 
-            let ds_res = get_for_phypayload(&phy, 0, 0).await;
+            let ds_res = get_for_phypayload_and_incr_f_cnt_up(&phy, 0, 0).await;
             if tst.expected_error.is_some() {
                 assert_eq!(true, ds_res.is_err());
                 assert_eq!(
