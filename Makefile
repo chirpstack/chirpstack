@@ -10,7 +10,8 @@ build-release:
 
 # Build distributable binaries.
 dist:
-	docker-compose run --rm chirpstack make dist
+	docker-compose run --rm chirpstack-build-amd64 make dist
+	docker-compose run --rm chirpstack-build-arm64 make dist
 
 # Builds the UI.
 build-ui:

@@ -1,5 +1,6 @@
 # hidden files
 .*
+!/chirpstack/.rpm
 
 # Log files
 *.log
