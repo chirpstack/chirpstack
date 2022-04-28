@@ -13,9 +13,9 @@ use crate::storage::{get_redis_conn, redis_key};
 #[allow(non_camel_case_types)]
 #[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Aggregation {
-    Hour,
-    Day,
-    Month,
+    HOUR,
+    DAY,
+    MONTH,
 }
 
 impl fmt::Display for Aggregation {
@@ -32,14 +32,14 @@ pub struct Record {
 
 fn get_ttl(a: Aggregation) -> Duration {
     match a {
-        Aggregation::Hour => Duration::from_secs(60 * 60 * 24 * 2), // two days
-        Aggregation::Day => Duration::from_secs(60 * 60 * 24 * 31 * 2), // two months
-        Aggregation::Month => Duration::from_secs(60 * 60 * 24 * 365 * 2), // two years
+        Aggregation::HOUR => Duration::from_secs(60 * 60 * 24 * 2), // two days
+        Aggregation::DAY => Duration::from_secs(60 * 60 * 24 * 31 * 2), // two months
+        Aggregation::MONTH => Duration::from_secs(60 * 60 * 24 * 365 * 2), // two years
     }
 }
 
 fn get_aggregations() -> Vec<Aggregation> {
-    vec![Aggregation::Hour, Aggregation::Day, Aggregation::Month]
+    vec![Aggregation::HOUR, Aggregation::DAY, Aggregation::MONTH]
 }
 
 fn get_key(name: &str, a: Aggregation, dt: DateTime<Local>) -> String {
@@ -70,13 +70,13 @@ async fn save_for_interval(a: Aggregation, name: &str, record: &Record) -> Resul
         let ttl = get_ttl(a);
 
         let ts: DateTime<Local> = match a {
-            Aggregation::Hour => Local
+            Aggregation::HOUR => Local
                 .ymd(record.time.year(), record.time.month(), record.time.day())
                 .and_hms(record.time.hour(), 0, 0),
-            Aggregation::Day => Local
+            Aggregation::DAY => Local
                 .ymd(record.time.year(), record.time.month(), record.time.day())
                 .and_hms(0, 0, 0),
-            Aggregation::Month => Local
+            Aggregation::MONTH => Local
                 .ymd(record.time.year(), record.time.month(), 1)
                 .and_hms(0, 0, 0),
         };
@@ -119,7 +119,7 @@ pub async fn get(
     let mut timestamps: Vec<DateTime<Local>> = Vec::new();
 
     match a {
-        Aggregation::Hour => {
+        Aggregation::HOUR => {
             let mut ts =
                 Local
                     .ymd(start.year(), start.month(), start.day())
@@ -134,7 +134,7 @@ pub async fn get(
                 ts = ts + ChronoDuration::hours(1);
             }
         }
-        Aggregation::Day => {
+        Aggregation::DAY => {
             let mut ts = Local
                 .ymd(start.year(), start.month(), start.day())
                 .and_hms(0, 0, 0);
@@ -149,7 +149,7 @@ pub async fn get(
                 ts = (ts + ChronoDuration::days(1)).date().and_hms(0, 0, 0);
             }
         }
-        Aggregation::Month => {
+        Aggregation::MONTH => {
             let mut ts = Local.ymd(start.year(), start.month(), 1).and_hms(0, 0, 0);
             let end = Local.ymd(end.year(), end.month(), 1).and_hms(0, 0, 0);
 
@@ -228,14 +228,14 @@ pub mod test {
             },
         ];
         for r in &records {
-            save_for_interval(Aggregation::Hour, "test", r)
+            save_for_interval(Aggregation::HOUR, "test", r)
                 .await
                 .unwrap();
         }
 
         let resp = get(
             "test",
-            Aggregation::Hour,
+            Aggregation::HOUR,
             Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
             Local.ymd(2018, 1, 1).and_hms(2, 0, 0),
         )
@@ -291,14 +291,14 @@ pub mod test {
             },
         ];
         for r in &records {
-            save_for_interval(Aggregation::Day, "test", r)
+            save_for_interval(Aggregation::DAY, "test", r)
                 .await
                 .unwrap();
         }
 
         let resp = get(
             "test",
-            Aggregation::Day,
+            Aggregation::DAY,
             Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
             Local.ymd(2018, 1, 2).and_hms(1, 0, 0),
         )
@@ -354,14 +354,14 @@ pub mod test {
             },
         ];
         for r in &records {
-            save_for_interval(Aggregation::Month, "test", r)
+            save_for_interval(Aggregation::MONTH, "test", r)
                 .await
                 .unwrap();
         }
 
         let resp = get(
             "test",
-            Aggregation::Month,
+            Aggregation::MONTH,
             Local.ymd(2018, 1, 1).and_hms(0, 0, 0),
             Local.ymd(2018, 2, 1).and_hms(0, 0, 0),
         )

@@ -598,7 +598,7 @@ impl DeviceService for Device {
 
         let device_metrics = metrics::get(
             &format!("device:{}", dev_eui),
-            metrics::Aggregation::Day,
+            metrics::Aggregation::DAY,
             start,
             end,
         )

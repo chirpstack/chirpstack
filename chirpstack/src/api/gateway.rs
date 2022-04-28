@@ -298,7 +298,7 @@ impl GatewayService for Gateway {
 
         let gw_metrics = metrics::get(
             &format!("gw:{}", gateway_id),
-            metrics::Aggregation::Day,
+            metrics::Aggregation::DAY,
             start,
             end,
         )
