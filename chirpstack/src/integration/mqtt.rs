@@ -1,12 +1,15 @@
 use std::collections::HashMap;
+use std::io::Cursor;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
+use futures::stream::StreamExt;
 use handlebars::Handlebars;
 use paho_mqtt as mqtt;
 use prost::Message;
+use regex::Regex;
 use serde::Serialize;
-use tracing::info;
+use tracing::{error, info};
 
 use super::Integration as IntegrationTrait;
 use crate::config::MqttIntegration as Config;
@@ -17,6 +20,7 @@ pub struct Integration<'a> {
     templates: Handlebars<'a>,
     json: bool,
     qos: usize,
+    command_regex: Regex,
 }
 
 #[derive(Serialize)]
@@ -33,14 +37,23 @@ struct StateTopicContext {
     pub state: String,
 }
 
+#[derive(Serialize)]
+struct CommandTopicContext {
+    pub application_id: String,
+    pub dev_eui: String,
+    pub command: String,
+}
+
 impl<'a> Integration<'a> {
     pub async fn new(conf: &Config) -> Result<Integration<'a>> {
         info!("Initializing MQTT integration");
 
         // topic templates
         let mut templates = Handlebars::new();
+        templates.register_escape_fn(handlebars::no_escape);
         templates.register_template_string("event_topic", &conf.event_topic)?;
         templates.register_template_string("state_topic", &conf.state_topic)?;
+        templates.register_template_string("command_topic", &conf.command_topic)?;
 
         // create client
         let create_opts = mqtt::CreateOptionsBuilder::new()
@@ -88,11 +101,22 @@ impl<'a> Integration<'a> {
         }
         let conn_opts = conn_opts_b.finalize();
 
+        // get message stream
+        let mut stream = client.get_stream(25);
+
         let i = Integration {
-            client,
-            templates,
+            command_regex: Regex::new(&templates.render(
+                "command_topic",
+                &CommandTopicContext {
+                    application_id: r#"(?P<application_id>[\w-]+)"#.to_string(),
+                    dev_eui: r#"(?P<dev_eui>[\w]+)"#.to_string(),
+                    command: r#"(?P<command>[\w]+)"#.to_string(),
+                },
+            )?)?,
             qos: conf.qos,
             json: conf.json,
+            client,
+            templates,
         };
 
         // connect
@@ -101,6 +125,55 @@ impl<'a> Integration<'a> {
             .connect(conn_opts)
             .await
             .context("Connect to MQTT broker")?;
+
+        let command_topic = i.templates.render(
+            "command_topic",
+            &CommandTopicContext {
+                application_id: "+".into(),
+                dev_eui: "+".into(),
+                command: "+".into(),
+            },
+        )?;
+        info!(
+            command_topic = %command_topic,
+            "Subscribing to command topic"
+        );
+        i.client
+            .subscribe(&command_topic, conf.qos as i32)
+            .await
+            .context("MQTT subscribe")?;
+
+        tokio::spawn({
+            let command_regex = i.command_regex.clone();
+
+            async move {
+                info!("Starting MQTT consumer loop");
+                while let Some(msg_opt) = stream.next().await {
+                    if let Some(msg) = msg_opt {
+                        let caps = match command_regex.captures(&msg.topic()) {
+                            Some(v) => v,
+                            None => {
+                                error!(topic = %msg.topic(), "Error parsing command topic (regex captures returned None)");
+                                continue;
+                            }
+                        };
+                        if caps.len() != 4 {
+                            error!(topic = %msg.topic(), "Parsing command topic returned invalid match count");
+                            continue;
+                        }
+
+                        message_callback(
+                            caps.get(1).map_or("", |m| m.as_str()).to_string(),
+                            caps.get(2).map_or("", |m| m.as_str()).to_string(),
+                            caps.get(3).map_or("", |m| m.as_str()).to_string(),
+                            i.json,
+                            msg,
+                        )
+                        .await;
+                    }
+                }
+            }
+        });
 
         // Return integration.
         Ok(i)
@@ -308,19 +381,102 @@ fn connection_lost_callback(_: &mqtt::AsyncClient) {
     info!("Connection to MQTT broker lost");
 }
 
+async fn message_callback(
+    application_id: String,
+    dev_eui: String,
+    command: String,
+    json: bool,
+    msg: mqtt::Message,
+) {
+    let topic = msg.topic();
+    let qos = msg.qos();
+    let b = msg.payload();
+
+    info!(topic = topic, qos = qos, "Command received for device");
+
+    let err = || -> Result<()> {
+        match command.as_ref() {
+            "down" => {
+                let cmd: integration::DownlinkCommand = match json {
+                    true => serde_json::from_slice(&b)?,
+                    false => integration::DownlinkCommand::decode(&mut Cursor::new(b))?,
+                };
+                if dev_eui != cmd.dev_eui {
+                    return Err(anyhow!(
+                        "Payload dev_eui {} does not match topic dev_eui {}",
+                        cmd.dev_eui,
+                        dev_eui
+                    ));
+                }
+                tokio::spawn(super::handle_down_command(application_id, cmd));
+            }
+            _ => {
+                return Err(anyhow!("Unknown command type"));
+            }
+        }
+
+        Ok(())
+    }()
+    .err();
+
+    if err.is_some() {
+        error!(
+            topic = topic,
+            qos = qos,
+            "Processing command error: {}",
+            err.as_ref().unwrap()
+        );
+    }
+}
+
 #[cfg(test)]
 pub mod test {
+
     use super::*;
     use crate::config::MqttIntegration;
+    use crate::storage::{application, device, device_profile, device_queue, tenant};
     use crate::test;
     use futures::stream::StreamExt;
+    use lrwn::EUI64;
     use paho_mqtt as mqtt;
+    use tokio::time::{sleep, Duration};
     use uuid::Uuid;
 
     #[tokio::test]
     async fn test_mqtt() {
         // to avoid race-conditions with other tests using MQTT
         let _guard = test::prepare().await;
+
+        // setup base objects
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            name: "test-dp".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let dev = device::create(device::Device {
+            name: "test-device".into(),
+            dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            application_id: app.id,
+            device_profile_id: dp.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
 
         // setup of integration and MQTT client
         let conf = MqttIntegration {
@@ -498,5 +654,34 @@ pub mod test {
             msg.topic()
         );
         assert_eq!(serde_json::to_string(&pl).unwrap(), msg.payload_str());
+
+        // downlink command
+        let down_cmd = integration::DownlinkCommand {
+            id: Uuid::new_v4().to_string(),
+            dev_eui: dev.dev_eui.to_string(),
+            confirmed: false,
+            f_port: 10,
+            data: vec![1, 2, 3],
+            object: None,
+        };
+        let down_cmd_json = serde_json::to_string(&down_cmd).unwrap();
+        client
+            .publish(mqtt::Message::new(
+                format!("application/{}/device/{}/command/down", app.id, dev.dev_eui),
+                down_cmd_json,
+                mqtt::QOS_0,
+            ))
+            .await
+            .unwrap();
+
+        // give the async consumer some time to process
+        sleep(Duration::from_millis(200)).await;
+
+        let queue_items = device_queue::get_for_dev_eui(&dev.dev_eui).await.unwrap();
+        assert_eq!(1, queue_items.len());
+        assert_eq!(down_cmd.id, queue_items[0].id.to_string());
+        assert_eq!(dev.dev_eui, queue_items[0].dev_eui);
+        assert_eq!(10, queue_items[0].f_port);
+        assert_eq!(vec![1, 2, 3], queue_items[0].data);
     }
 }

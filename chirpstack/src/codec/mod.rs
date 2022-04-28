@@ -10,7 +10,7 @@ use diesel::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
 
 mod cayenne_lpp;
-mod convert;
+pub mod convert;
 mod js;
 
 #[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq, AsExpression, FromSqlRow)]

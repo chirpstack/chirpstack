@@ -447,6 +447,50 @@ export namespace IntegrationEvent {
   }
 }
 
+export class DownlinkCommand extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
+  getDevEui(): string;
+  setDevEui(value: string): void;
+
+  getConfirmed(): boolean;
+  setConfirmed(value: boolean): void;
+
+  getFPort(): number;
+  setFPort(value: number): void;
+
+  getData(): Uint8Array | string;
+  getData_asU8(): Uint8Array;
+  getData_asB64(): string;
+  setData(value: Uint8Array | string): void;
+
+  hasObject(): boolean;
+  clearObject(): void;
+  getObject(): google_protobuf_struct_pb.Struct | undefined;
+  setObject(value?: google_protobuf_struct_pb.Struct): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DownlinkCommand.AsObject;
+  static toObject(includeInstance: boolean, msg: DownlinkCommand): DownlinkCommand.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: DownlinkCommand, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DownlinkCommand;
+  static deserializeBinaryFromReader(message: DownlinkCommand, reader: jspb.BinaryReader): DownlinkCommand;
+}
+
+export namespace DownlinkCommand {
+  export type AsObject = {
+    id: string,
+    devEui: string,
+    confirmed: boolean,
+    fPort: number,
+    data: Uint8Array | string,
+    object?: google_protobuf_struct_pb.Struct.AsObject,
+  }
+}
+
 export interface LogLevelMap {
   INFO: 0;
   WARNING: 1;
