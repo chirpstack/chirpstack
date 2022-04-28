@@ -327,6 +327,7 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     adrAlgorithmId: jspb.Message.getFieldWithDefault(msg, 7, ""),
     payloadCodecRuntime: jspb.Message.getFieldWithDefault(msg, 8, 0),
     payloadCodecScript: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    flushQueueOnActivate: jspb.Message.getBooleanFieldWithDefault(msg, 10, false),
     uplinkInterval: jspb.Message.getFieldWithDefault(msg, 11, 0),
     deviceStatusReqInterval: jspb.Message.getFieldWithDefault(msg, 12, 0),
     supportsOtaa: jspb.Message.getBooleanFieldWithDefault(msg, 13, false),
@@ -413,6 +414,10 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setPayloadCodecScript(value);
+      break;
+    case 10:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setFlushQueueOnActivate(value);
       break;
     case 11:
       var value = /** @type {number} */ (reader.readUint32());
@@ -565,6 +570,13 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       9,
+      f
+    );
+  }
+  f = message.getFlushQueueOnActivate();
+  if (f) {
+    writer.writeBool(
+      10,
       f
     );
   }
@@ -832,6 +844,24 @@ proto.api.DeviceProfile.prototype.getPayloadCodecScript = function() {
  */
 proto.api.DeviceProfile.prototype.setPayloadCodecScript = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * optional bool flush_queue_on_activate = 10;
+ * @return {boolean}
+ */
+proto.api.DeviceProfile.prototype.getFlushQueueOnActivate = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 10, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setFlushQueueOnActivate = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 10, value);
 };
 
 

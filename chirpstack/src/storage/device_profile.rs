@@ -45,6 +45,7 @@ pub struct DeviceProfile {
     pub abp_rx2_freq: i64,
     pub tags: fields::KeyValue,
     pub payload_codec_script: String,
+    pub flush_queue_on_activate: bool,
 }
 
 impl DeviceProfile {
@@ -72,6 +73,7 @@ impl Default for DeviceProfile {
             adr_algorithm_id: "".into(),
             payload_codec_runtime: Codec::NONE,
             payload_codec_script: "".into(),
+            flush_queue_on_activate: false,
             uplink_interval: 0,
             device_status_req_interval: 0,
             supports_otaa: false,
@@ -183,6 +185,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::adr_algorithm_id.eq(&dp.adr_algorithm_id),
                     device_profile::payload_codec_runtime.eq(&dp.payload_codec_runtime),
                     device_profile::payload_codec_script.eq(&dp.payload_codec_script),
+                    device_profile::flush_queue_on_activate.eq(&dp.flush_queue_on_activate),
                     device_profile::uplink_interval.eq(&dp.uplink_interval),
                     device_profile::device_status_req_interval.eq(&dp.device_status_req_interval),
                     device_profile::supports_otaa.eq(&dp.supports_otaa),

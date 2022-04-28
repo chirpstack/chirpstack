@@ -80,6 +80,7 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     adrAlgorithmId: msg.getAdrAlgorithmId(),
     payloadCodecRuntime: msg.getPayloadCodecRuntime(),
     payloadCodecScript: msg.getPayloadCodecScript(),
+    flushQueueOnActivate: msg.getFlushQueueOnActivate(),
     uplinkInterval: msg.getUplinkInterval(),
     deviceStatusReqInterval: msg.getDeviceStatusReqInterval(),
     supportsOtaa: msg.getSupportsOtaa(),
@@ -166,6 +167,10 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setPayloadCodecScript(value);
+      break;
+    case 10:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setFlushQueueOnActivate(value);
       break;
     case 11:
       var value = /** @type {number} */ (reader.readUint32());
@@ -327,6 +332,13 @@ proto.api.DeviceProfile.prototype.serializeBinaryToWriter = function (writer) {
   if (f.length > 0) {
     writer.writeString(
       9,
+      f
+    );
+  }
+  f = this.getFlushQueueOnActivate();
+  if (f) {
+    writer.writeBool(
+      10,
       f
     );
   }
@@ -576,6 +588,23 @@ proto.api.DeviceProfile.prototype.getPayloadCodecScript = function() {
 /** @param {string} value  */
 proto.api.DeviceProfile.prototype.setPayloadCodecScript = function(value) {
   jspb.Message.setField(this, 9, value);
+};
+
+
+/**
+ * optional bool flush_queue_on_activate = 10;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.api.DeviceProfile.prototype.getFlushQueueOnActivate = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldProto3(this, 10, false));
+};
+
+
+/** @param {boolean} value  */
+proto.api.DeviceProfile.prototype.setFlushQueueOnActivate = function(value) {
+  jspb.Message.setField(this, 10, value);
 };
 
 

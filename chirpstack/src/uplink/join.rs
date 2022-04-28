@@ -18,7 +18,8 @@ use crate::api::helpers::ToProto;
 use crate::backend::{joinserver, keywrap};
 use crate::storage::device_session;
 use crate::storage::{
-    application, device, device_keys, device_profile, error::Error as StorageError, metrics, tenant,
+    application, device, device_keys, device_profile, device_queue, error::Error as StorageError,
+    metrics, tenant,
 };
 use crate::{config, downlink, framelog, integration, metalog, region};
 use chirpstack_api::{api, common, integration as integration_pb, internal, meta};
@@ -96,6 +97,7 @@ impl JoinRequest {
         }
         ctx.log_uplink_meta().await?;
         ctx.create_device_session().await?;
+        ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
         ctx.start_downlink_join_accept_flow().await?;
         ctx.send_join_event().await?;
@@ -632,6 +634,18 @@ impl JoinRequest {
 
         self.device_session = Some(ds);
 
+        Ok(())
+    }
+
+    async fn flush_device_queue(&self) -> Result<()> {
+        let dp = self.device_profile.as_ref().unwrap();
+        if !dp.flush_queue_on_activate {
+            return Ok(());
+        }
+
+        trace!("Flushing device-queue");
+        let dev = self.device.as_ref().unwrap();
+        device_queue::flush_for_dev_eui(&dev.dev_eui).await?;
         Ok(())
     }
 

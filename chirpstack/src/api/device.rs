@@ -461,9 +461,11 @@ impl DeviceService for Device {
         };
 
         device_session::save(&ds).await.map_err(|e| e.status())?;
-        device_queue::flush_for_dev_eui(&dev_eui)
-            .await
-            .map_err(|e| e.status())?;
+        if dp.flush_queue_on_activate {
+            device_queue::flush_for_dev_eui(&dev_eui)
+                .await
+                .map_err(|e| e.status())?;
+        }
 
         Ok(Response::new(()))
     }

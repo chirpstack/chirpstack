@@ -97,6 +97,7 @@ table! {
         abp_rx2_freq -> Int8,
         tags -> Jsonb,
         payload_codec_script -> Text,
+        flush_queue_on_activate -> Bool,
     }
 }
 

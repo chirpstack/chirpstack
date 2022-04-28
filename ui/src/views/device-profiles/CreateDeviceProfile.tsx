@@ -3,6 +3,7 @@ import { Link, RouteComponentProps } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, PageHeader } from "antd";
 
+import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { DeviceProfile, CreateDeviceProfileRequest, CreateDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
@@ -62,6 +63,13 @@ function encodeDownlink(input) {
 
     let deviceProfile = new DeviceProfile(); 
     deviceProfile.setPayloadCodecScript(codecScript);
+    deviceProfile.setSupportsOtaa(true);
+    deviceProfile.setUplinkInterval(3600);
+    deviceProfile.setDeviceStatusReqInterval(1);
+    deviceProfile.setAdrAlgorithmId("default");
+    deviceProfile.setMacVersion(MacVersion.LORAWAN_1_0_3);
+    deviceProfile.setRegParamsRevision(RegParamsRevision.A);
+    deviceProfile.setFlushQueueOnActivate(true);
 
     return(
       <Space direction="vertical" style={{width: "100%"}} size="large">

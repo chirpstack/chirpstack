@@ -33,6 +33,9 @@ export class DeviceProfile extends jspb.Message {
   getPayloadCodecScript(): string;
   setPayloadCodecScript(value: string): DeviceProfile;
 
+  getFlushQueueOnActivate(): boolean;
+  setFlushQueueOnActivate(value: boolean): DeviceProfile;
+
   getUplinkInterval(): number;
   setUplinkInterval(value: number): DeviceProfile;
 
@@ -97,6 +100,7 @@ export namespace DeviceProfile {
     adrAlgorithmId: string,
     payloadCodecRuntime: CodecRuntime,
     payloadCodecScript: string,
+    flushQueueOnActivate: boolean,
     uplinkInterval: number,
     deviceStatusReqInterval: number,
     supportsOtaa: boolean,
