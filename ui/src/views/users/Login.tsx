@@ -140,6 +140,7 @@ class Login extends Component<RouteComponentProps, LoginState> {
 
     if (this.props.location.search === "") {
       InternalStore.settings((resp: SettingsResponse) => {
+      console.log("SDF");
         this.setState({
           loaded: true,
           oidcEnabled: resp.getOpenidConnect()!.getEnabled(),

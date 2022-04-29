@@ -110,7 +110,7 @@ class DeviceForm extends Component<IProps> {
             <Form.List name="tagsMap">
               {(fields, { add, remove }) =>   (
                 <>
-                  {fields.map(( {key, name, fieldKey, ...restField} ) => (
+                  {fields.map(( {key, name, ...restField} ) => (
                     <Row gutter={24}>
                       <Col span={6}>
                         <Form.Item
@@ -150,7 +150,7 @@ class DeviceForm extends Component<IProps> {
             <Form.List name="variablesMap">
               {(fields, { add, remove }) =>   (
                 <>
-                  {fields.map(( {key, name, fieldKey, ...restField} ) => (
+                  {fields.map(( {key, name, ...restField} ) => (
                     <Row gutter={24}>
                       <Col span={6}>
                         <Form.Item

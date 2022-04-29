@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter, RouteComponentProps, Link } from "react-router-dom";
 
-import { Menu } from "antd";
+import { Menu, MenuProps } from "antd";
 import { CloudOutlined, HomeOutlined, UserOutlined, DashboardOutlined, KeyOutlined, WifiOutlined, ControlOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 import { GetTenantResponse, ListTenantsRequest, ListTenantsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -10,7 +10,6 @@ import Autocomplete, { OptionCallbackFunc, OptionsCallbackFunc } from "../compon
 import TenantStore from "../stores/TenantStore";
 import SessionStore from "../stores/SessionStore";
 
-const { SubMenu } = Menu;
 
 interface IState {
   tenantId: string;
@@ -139,6 +138,37 @@ class SideMenu extends Component<RouteComponentProps, IState> {
 
   render() {
     const tenantId = this.state.tenantId;
+    let items: MenuProps["items"] = [];
+
+    if (SessionStore.isAdmin()) {
+      items.push({
+        key: "ns",
+        label: "Network Server",
+        icon: <CloudOutlined />,
+        children: [
+          {key: "ns-dashboard", icon: <DashboardOutlined />, label: <Link to="/dashboard">Dashboard</Link>},
+          {key: "ns-tenants", icon: <HomeOutlined />, label: <Link to="/tenants">Tenants</Link>},
+          {key: "ns-users", icon: <UserOutlined />, label: <Link to="/users">Users</Link>},
+          {key: "ns-api-keys", icon: <KeyOutlined />, label: <Link to="/api-keys">API keys</Link>},
+        ],
+      });
+    }
+
+    if (tenantId !== "") {
+      items.push({
+        key: "tenant",
+        label: "Tenant",
+        icon: <HomeOutlined />,
+        children: [
+          {key: "tenant-dashboard", icon: <DashboardOutlined />, label: <Link to={`/tenants/${tenantId}`}>Dashboard</Link>},
+          {key: "tenant-users", icon: <UserOutlined />, label: <Link to={`/tenants/${tenantId}/users`}>Users</Link>},
+          {key: "tenant-api-keys", icon: <KeyOutlined />, label: <Link to={`/tenants/${tenantId}/api-keys`}>API keys</Link>},
+          {key: "tenant-device-profiles", icon: <ControlOutlined />, label: <Link to={`/tenants/${tenantId}/device-profiles`}>Device profiles</Link>},
+          {key: "tenant-gateways", icon: <WifiOutlined />, label: <Link to={`/tenants/${tenantId}/gateways`}>Gateways</Link>},
+          {key: "tenant-applications", icon: <AppstoreOutlined />, label: <Link to={`/tenants/${tenantId}/applications`}>Applications</Link>},
+        ],
+      });
+    }
 
     return(
       <div>
@@ -155,22 +185,8 @@ class SideMenu extends Component<RouteComponentProps, IState> {
           openKeys={["ns", "tenant"]}
           selectedKeys={[this.state.selectedKey]}
           expandIcon={<div></div>}
-        >
-          {SessionStore.isAdmin() && <SubMenu key="ns" title="Network Server" icon={<CloudOutlined />}>
-            <Menu.Item key="ns-dashboard" icon={<DashboardOutlined />}><Link to="/dashboard">Dashboard</Link></Menu.Item>
-            <Menu.Item key="ns-tenants" icon={<HomeOutlined />}><Link to="/tenants">Tenants</Link></Menu.Item>
-            <Menu.Item key="ns-users" icon={<UserOutlined />}><Link to="/users">Users</Link></Menu.Item>
-            <Menu.Item key="ns-api-keys" icon={<KeyOutlined />}><Link to="/api-keys">API keys</Link></Menu.Item>
-          </SubMenu>}
-          {tenantId !== "" && <SubMenu key="tenant" title="Tenant" icon={<HomeOutlined />}>
-            <Menu.Item key="tenant-dashboard" icon={<DashboardOutlined />}><Link to={`/tenants/${tenantId}`}>Dashboard</Link></Menu.Item>
-            <Menu.Item key="tenant-users" icon={<UserOutlined />}><Link to={`/tenants/${tenantId}/users`}>Users</Link></Menu.Item>
-            <Menu.Item key="tenant-api-keys" icon={<KeyOutlined />}><Link to={`/tenants/${tenantId}/api-keys`}>API keys</Link></Menu.Item>
-            <Menu.Item key="tenant-device-profiles" icon={<ControlOutlined />}><Link to={`/tenants/${tenantId}/device-profiles`}>Device profiles</Link></Menu.Item>
-            <Menu.Item key="tenant-gateways" icon={<WifiOutlined />}><Link to={`/tenants/${tenantId}/gateways`}>Gateways</Link></Menu.Item>
-            <Menu.Item key="tenant-applications" icon={<AppstoreOutlined />}><Link to={`/tenants/${tenantId}/applications`}>Applications</Link></Menu.Item>
-          </SubMenu>}
-        </Menu>
+          items={items}
+        />
       </div>
     );
   }
