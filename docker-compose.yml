@@ -1,6 +1,7 @@
 services:
   chirpstack:
     image: chirpstack/chirpstack-dev-cache:latest
+    platform: linux/amd64
     volumes:
       - ./:/chirpstack
     depends_on:
@@ -14,6 +15,18 @@ services:
       - MQTT_BROKER_HOST=mosquitto
     ports:
       - "8080:8080"
+
+  chirpstack-build-amd64:
+    image: chirpstack/chirpstack-dev-cache:latest
+    platform: linux/amd64
+    volumes:
+      - ./:/chirpstack
+
+  chirpstack-build-arm64:
+    image: chirpstack/chirpstack-dev-cache:latest
+    platform: linux/arm64
+    volumes:
+      - ./:/chirpstack
 
   chirpstack-ui:
     build:

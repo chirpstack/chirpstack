@@ -1,8 +1,6 @@
 version: "2"
 services:
   chirpstack-api-rust:
-    environment:
-      - VERSION=4.0.0
     build:
       context: .
       dockerfile: Dockerfile-rust
@@ -17,8 +15,6 @@ services:
     volumes:
       - ./:/chirpstack/api
   chirpstack-api-grpc-web:
-    environment:
-      - VERSION=4.0.0
     build:
       context: .
       dockerfile: Dockerfile-grpc-web
@@ -26,8 +22,6 @@ services:
     volumes:
       - ./:/chirpstack/api
   chirpstack-api-js:
-    environment:
-      - VERSION=4.0.0
     build:
       context: .
       dockerfile: Dockerfile-js
@@ -35,8 +29,6 @@ services:
     volumes:
       - ./:/chirpstack/api
   chirpstack-api-python:
-    environment:
-      - VERSION=4.0.0
     build:
       context: .
       dockerfile: Dockerfile-python

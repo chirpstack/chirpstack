@@ -53,7 +53,7 @@ class HttpIntegrationForm extends Component<IProps> {
           <Form.List name="headersMap">
             {(fields, { add, remove }) => (
               <>
-                {fields.map(({ key, name, fieldKey, ...restField }) => (
+                {fields.map(( {key, name, ...restField} ) => (
                   <Row gutter={24}>
                     <Col span={6}>
                       <Form.Item

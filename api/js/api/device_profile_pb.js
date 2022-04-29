@@ -79,8 +79,8 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     regParamsRevision: msg.getRegParamsRevision(),
     adrAlgorithmId: msg.getAdrAlgorithmId(),
     payloadCodecRuntime: msg.getPayloadCodecRuntime(),
-    payloadEncoderConfig: msg.getPayloadEncoderConfig(),
-    payloadDecoderConfig: msg.getPayloadDecoderConfig(),
+    payloadCodecScript: msg.getPayloadCodecScript(),
+    flushQueueOnActivate: msg.getFlushQueueOnActivate(),
     uplinkInterval: msg.getUplinkInterval(),
     deviceStatusReqInterval: msg.getDeviceStatusReqInterval(),
     supportsOtaa: msg.getSupportsOtaa(),
@@ -166,11 +166,11 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
-      msg.setPayloadEncoderConfig(value);
+      msg.setPayloadCodecScript(value);
       break;
     case 10:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setPayloadDecoderConfig(value);
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setFlushQueueOnActivate(value);
       break;
     case 11:
       var value = /** @type {number} */ (reader.readUint32());
@@ -328,16 +328,16 @@ proto.api.DeviceProfile.prototype.serializeBinaryToWriter = function (writer) {
       f
     );
   }
-  f = this.getPayloadEncoderConfig();
+  f = this.getPayloadCodecScript();
   if (f.length > 0) {
     writer.writeString(
       9,
       f
     );
   }
-  f = this.getPayloadDecoderConfig();
-  if (f.length > 0) {
-    writer.writeString(
+  f = this.getFlushQueueOnActivate();
+  if (f) {
+    writer.writeBool(
       10,
       f
     );
@@ -577,31 +577,33 @@ proto.api.DeviceProfile.prototype.setPayloadCodecRuntime = function(value) {
 
 
 /**
- * optional string payload_encoder_config = 9;
+ * optional string payload_codec_script = 9;
  * @return {string}
  */
-proto.api.DeviceProfile.prototype.getPayloadEncoderConfig = function() {
+proto.api.DeviceProfile.prototype.getPayloadCodecScript = function() {
   return /** @type {string} */ (jspb.Message.getFieldProto3(this, 9, ""));
 };
 
 
 /** @param {string} value  */
-proto.api.DeviceProfile.prototype.setPayloadEncoderConfig = function(value) {
+proto.api.DeviceProfile.prototype.setPayloadCodecScript = function(value) {
   jspb.Message.setField(this, 9, value);
 };
 
 
 /**
- * optional string payload_decoder_config = 10;
- * @return {string}
+ * optional bool flush_queue_on_activate = 10;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
  */
-proto.api.DeviceProfile.prototype.getPayloadDecoderConfig = function() {
-  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 10, ""));
+proto.api.DeviceProfile.prototype.getFlushQueueOnActivate = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldProto3(this, 10, false));
 };
 
 
-/** @param {string} value  */
-proto.api.DeviceProfile.prototype.setPayloadDecoderConfig = function(value) {
+/** @param {boolean} value  */
+proto.api.DeviceProfile.prototype.setFlushQueueOnActivate = function(value) {
   jspb.Message.setField(this, 10, value);
 };
 

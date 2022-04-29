@@ -244,6 +244,7 @@ pub struct MqttIntegration {
     pub client: MqttIntegrationClient,
     pub event_topic: String,
     pub state_topic: String,
+    pub command_topic: String,
     pub json: bool,
     pub server: String,
     pub username: String,
@@ -262,6 +263,8 @@ impl Default for MqttIntegration {
             client: Default::default(),
             event_topic: "application/{{application_id}}/device/{{dev_eui}}/event/{{event}}".into(),
             state_topic: "application/{{application_id}}/device/{{dev_eui}}/state/{{state}}".into(),
+            command_topic: "application/{{application_id}}/device/{{dev_eui}}/command/{{command}}"
+                .into(),
             json: true,
             server: "tcp://127.0.0.1:1883/".into(),
             username: "".into(),

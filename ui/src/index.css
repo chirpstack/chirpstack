@@ -106,3 +106,7 @@ pre {
 .search-dropdown .ant-select-dropdown-menu {
   max-height: 600px;
 }
+
+.CodeMirror {
+	height: 600px;
+}

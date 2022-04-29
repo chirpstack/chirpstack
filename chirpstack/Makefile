@@ -12,16 +12,17 @@ release:
 dist: release-deb release-rpm release-targz
 
 release-deb:
-	mkdir -p /chirpstack/dist/deb
+	mkdir -p /chirpstack/dist
 	cargo deb
-	cp /target/debian/*.deb /chirpstack/dist/deb
+	cp /target/debian/*.deb /chirpstack/dist
 
 release-rpm:
-	mkdir -p /chirpstack/dist/rpm
+	mkdir -p /chirpstack/dist
 	cargo rpm build
-	find /target/release/rpmbuild/RPMS -type f -exec cp {} /chirpstack/dist/rpm \;
+	find /target/release/rpmbuild/RPMS -type f -exec cp {} /chirpstack/dist \;
 
 release-targz:
+	mkdir -p /chirpstack/dist
 	tar -czvf /chirpstack/dist/chirpstack_$(PKG_VERSION)_$(TARGET_ARCH).tar.gz -C /target/release chirpstack
 
 test:

@@ -4,13 +4,10 @@ PROTOC := python -m grpc_tools.protoc
 PROTOC_ARGS := -I=/googleapis -I=proto --python_out=src --grpc_python_out=src
 PACKAGE_NAME := import \"chirpstack-api/
 
-all: requirements pre-build version common gw api integration meta
+all: requirements pre-build common gw api integration meta
 
 requirements:
 	pip install grpcio-tools
-
-version:
-	sed -i 's/version.*/version = "$(VERSION)",/g' ./src/setup.py
 
 # See: https://github.com/protocolbuffers/protobuf/issues/7061
 pre-build:

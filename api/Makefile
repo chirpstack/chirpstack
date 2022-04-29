@@ -1,4 +1,4 @@
-.PHONY: rust grpc-web go
+.PHONY: rust grpc-web go js python
 
 all:
 	docker-compose up
@@ -11,3 +11,9 @@ grpc-web:
 
 go:
 	docker-compose run --rm chirpstack-api-go
+
+js:
+	docker-compose run --rm chirpstack-api-js
+
+python:
+	docker-compose run --rm chirpstack-api-python

@@ -148,7 +148,7 @@ class GatewayForm extends Component<IProps, IState> {
             <Form.List name="tagsMap">
               {(fields, { add, remove }) => (
                 <>
-                  {fields.map(({ key, name, fieldKey, ...restField }) => (
+                  {fields.map(( {key, name, ...restField} ) => (
                     <Row gutter={24}>
                       <Col span={6}>
                         <Form.Item

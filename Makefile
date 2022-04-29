@@ -1,4 +1,4 @@
-.PHONY: dist
+.PHONY: dist api
 
 # Builds a debug / development binary.
 build-debug:
@@ -10,7 +10,23 @@ build-release:
 
 # Build distributable binaries.
 dist:
-	docker-compose run --rm chirpstack make dist
+	docker-compose run --rm chirpstack-build-amd64 make dist
+	docker-compose run --rm chirpstack-build-arm64 make dist
+
+# Set the versions
+version:
+	test -n "$(VERSION)"
+	sed -i 's/^version.*/version = "$(VERSION)"/g' ./chirpstack/Cargo.toml
+	sed -i 's/^version.*/version = "$(VERSION)"/g' ./backend/Cargo.toml
+	sed -i 's/^version.*/version = "$(VERSION)"/g' ./lrwn/Cargo.toml
+	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./ui/package.json
+	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/grpc-web/package.json
+	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/js/package.json
+	sed -i 's/version.*/version = "$(VERSION)",/g' ./api/python/src/setup.py
+	sed -i 's/^version.*/version = "$(VERSION)"/g' ./api/rust/Cargo.toml
+
+api: version
+	cd api && make
 
 # Builds the UI.
 build-ui:

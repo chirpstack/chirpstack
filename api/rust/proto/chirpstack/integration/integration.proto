@@ -276,3 +276,28 @@ message IntegrationEvent {
     // Struct containing the event object.
     google.protobuf.Struct object = 6;
 }
+
+// DownlinkCommand is the command to enqueue a downlink payload for the given
+// device.
+message DownlinkCommand {
+    // ID (UUID).
+    // If left blank, a random UUID will be generated.
+    string id = 1;
+
+    // Device EUI (EUI64).
+    string dev_eui = 2;
+
+    // Confirmed.
+    bool confirmed = 3;
+
+    // FPort (must be > 0).
+    uint32 f_port = 4;
+
+    // Data.
+    // Or use the json_object field when a codec has been configured.
+    bytes data = 5;
+
+    // Only use this when a codec has been configured that can encode this
+    // object to bytes.
+    google.protobuf.Struct object = 6;
+}

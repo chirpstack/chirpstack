@@ -1,6 +1,6 @@
 .PHONY: proto version test
 
-all: proto version test
+all: proto test
 
 proto:
 	rm -rf proto
@@ -9,9 +9,6 @@ proto:
 	mkdir -p proto/google/google/api
 	cp  /googleapis/google/api/annotations.proto proto/google/google/api
 	cp  /googleapis/google/api/http.proto proto/google/google/api
-
-version:
-	sed -i 's/^version.*/version = "$(VERSION)"/g' ./Cargo.toml
 
 test:
 	cargo test

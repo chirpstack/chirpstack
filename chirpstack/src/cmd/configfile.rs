@@ -248,6 +248,11 @@ pub fn run() {
     # to the state topic.
     state_topic="{{ integration.mqtt.state_topic }}"
 
+    # Command topic.
+    #
+    # This is the topic on which the MQTT subscribes for receiving (enqueue) commands.
+    command_topic="{{ integration.mqtt.command_topic }}"
+
     # Use JSON encoding instead of Protobuf (binary).
     json={{ integration.mqtt.json }}
 

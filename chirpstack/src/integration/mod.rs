@@ -1,15 +1,17 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use futures::future::join_all;
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{error, info};
 use uuid::Uuid;
 
-use crate::config;
-use crate::storage::application;
+use crate::storage::{application, device, device_profile, device_queue};
+use crate::{codec, config};
 use chirpstack_api::integration;
+use lrwn::EUI64;
 
 mod aws_sns;
 mod azure_service_bus;
@@ -362,4 +364,57 @@ pub async fn integration_event(
     }
 
     Ok(())
+}
+
+async fn handle_down_command(application_id: String, pl: integration::DownlinkCommand) {
+    let err = async {
+        info!(dev_eui = %pl.dev_eui, "Handling downlink command for device");
+        let dev_eui = EUI64::from_str(&pl.dev_eui)?;
+        let app_id = Uuid::from_str(&application_id)?;
+
+        // Validate that the application_id from the topic is indeed the application ID to which
+        // the device belongs.
+        let dev = device::get(&dev_eui).await?;
+        if dev.application_id != app_id {
+            return Err(anyhow!(
+                "Application ID from topic does not match application ID from device"
+            ));
+        }
+
+        let mut data = pl.data.clone();
+        if let Some(obj) = &pl.object {
+            let dp = device_profile::get(&dev.device_profile_id).await?;
+
+            data = codec::struct_to_binary(
+                dp.payload_codec_runtime,
+                pl.f_port as u8,
+                &dev.variables,
+                &dp.payload_codec_script,
+                &codec::convert::pb_json_to_prost(obj),
+            )
+            .await?;
+        }
+
+        let qi = device_queue::DeviceQueueItem {
+            id: match pl.id.is_empty() {
+                true => Uuid::new_v4(),
+                false => Uuid::from_str(&pl.id)?,
+            },
+            f_port: pl.f_port as i16,
+            confirmed: pl.confirmed,
+            data,
+            dev_eui,
+            ..Default::default()
+        };
+
+        let _ = device_queue::enqueue_item(qi).await?;
+
+        Ok(())
+    }
+    .await
+    .err();
+
+    if err.is_some() {
+        error!(dev_eui = %pl.dev_eui, error = %err.as_ref().unwrap(), "Handling downlink command error");
+    }
 }

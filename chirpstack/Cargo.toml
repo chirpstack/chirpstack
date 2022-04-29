@@ -122,7 +122,6 @@ systemd-units = { enable = true }
 
 [package.metadata.rpm]
 package = "chirpstack"
-config = "rpm"
 
 [package.metadata.rpm.files]
 "configuration/" = { path = "/etc/chirpstack/" }

@@ -461,9 +461,11 @@ impl DeviceService for Device {
         };
 
         device_session::save(&ds).await.map_err(|e| e.status())?;
-        device_queue::flush_for_dev_eui(&dev_eui)
-            .await
-            .map_err(|e| e.status())?;
+        if dp.flush_queue_on_activate {
+            device_queue::flush_for_dev_eui(&dev_eui)
+                .await
+                .map_err(|e| e.status())?;
+        }
 
         Ok(Response::new(()))
     }
@@ -596,7 +598,7 @@ impl DeviceService for Device {
 
         let device_metrics = metrics::get(
             &format!("device:{}", dev_eui),
-            metrics::Aggregation::Day,
+            metrics::Aggregation::DAY,
             start,
             end,
         )
@@ -684,7 +686,7 @@ impl DeviceService for Device {
                 dp.payload_codec_runtime,
                 req_qi.f_port as u8,
                 &dev.variables,
-                &dp.payload_encoder_config,
+                &dp.payload_codec_script,
                 obj,
             )
             .await
