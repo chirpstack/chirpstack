@@ -19,12 +19,9 @@ RUN apt-get update && \
 		redis-tools \
 		rpm \
 		clang \
-		yarnpkg \
 		golang-cfssl \
 		jq \
 		&& rm -rf /var/lib/apt/lists/*
-
-RUN ln -s /usr/bin/yarnpkg /usr/bin/yarn
 
 RUN rustup component add rustfmt clippy
 
