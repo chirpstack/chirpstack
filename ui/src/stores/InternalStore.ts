@@ -1,4 +1,4 @@
-import * as grpcWeb from 'grpc-web';
+import * as grpcWeb from "grpc-web";
 import google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 
 import { notification } from "antd";
@@ -26,7 +26,6 @@ import {
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
 
-
 class InternalStore extends EventEmitter {
   client: InternalServiceClient;
 
@@ -49,7 +48,7 @@ class InternalStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   deleteApiKey = (req: DeleteApiKeyRequest, callbackFunc: () => void) => {
     this.client.deleteApiKey(req, SessionStore.getMetadata(), (err, resp) => {
@@ -65,7 +64,7 @@ class InternalStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   listApiKeys = (req: ListApiKeysRequest, callbackFunc: (resp: ListApiKeysResponse) => void) => {
     this.client.listApiKeys(req, SessionStore.getMetadata(), (err, resp) => {
@@ -76,25 +75,24 @@ class InternalStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
-  streamGatewayFrames = (req: StreamGatewayFramesRequest, callbackFunc: (resp: LogItem) => void): () => void => {
+  streamGatewayFrames = (req: StreamGatewayFramesRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
     var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
     let setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamGatewayFrames(req, SessionStore.getMetadata());
 
-      stream = stream.on("data", (resp) => {
+      stream = stream.on("data", resp => {
         callbackFunc(resp);
       });
 
-      stream = stream.on('end', function() {
+      stream = stream.on("end", function () {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });
     };
-
 
     setup();
 
@@ -103,25 +101,24 @@ class InternalStore extends EventEmitter {
         stream.cancel();
       }
     };
-  }
+  };
 
-  streamDeviceFrames = (req: StreamDeviceFramesRequest, callbackFunc: (resp: LogItem) => void): () => void => {
+  streamDeviceFrames = (req: StreamDeviceFramesRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
     var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
     let setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamDeviceFrames(req, SessionStore.getMetadata());
 
-      stream = stream.on("data", (resp) => {
+      stream = stream.on("data", resp => {
         callbackFunc(resp);
       });
 
-      stream = stream.on('end', function() {
+      stream = stream.on("end", function () {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });
     };
-
 
     setup();
 
@@ -130,20 +127,20 @@ class InternalStore extends EventEmitter {
         stream.cancel();
       }
     };
-  }
+  };
 
-  streamDeviceEvents = (req: StreamDeviceEventsRequest, callbackFunc: (resp: LogItem) => void): () => void => {
+  streamDeviceEvents = (req: StreamDeviceEventsRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
     var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
     let setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamDeviceEvents(req, SessionStore.getMetadata());
 
-      stream = stream.on("data", (resp) => {
+      stream = stream.on("data", resp => {
         callbackFunc(resp);
       });
 
-      stream = stream.on('end', function() {
+      stream = stream.on("end", function () {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });
@@ -156,7 +153,7 @@ class InternalStore extends EventEmitter {
         stream.cancel();
       }
     };
-  }
+  };
 
   getGatewaysSummary = (req: GetGatewaysSummaryRequest, callbackFunc: (resp: GetGatewaysSummaryResponse) => void) => {
     this.client.getGatewaysSummary(req, SessionStore.getMetadata(), (err, resp) => {
@@ -167,7 +164,7 @@ class InternalStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   getDevicesSummary = (req: GetDevicesSummaryRequest, callbackFunc: (resp: GetDevicesSummaryResponse) => void) => {
     this.client.getDevicesSummary(req, SessionStore.getMetadata(), (err, resp) => {
@@ -178,7 +175,7 @@ class InternalStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   settings = (callbackFunc: (resp: SettingsResponse) => void) => {
     this.client.settings(new google_protobuf_empty_pb.Empty(), {}, (err, resp) => {
@@ -189,7 +186,7 @@ class InternalStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  } 
+  };
 
   globalSearch = (req: GlobalSearchRequest, callbackFunc: (resp: GlobalSearchResponse) => void) => {
     this.client.globalSearch(req, SessionStore.getMetadata(), (err, resp) => {
@@ -200,7 +197,7 @@ class InternalStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const internalStore = new InternalStore();

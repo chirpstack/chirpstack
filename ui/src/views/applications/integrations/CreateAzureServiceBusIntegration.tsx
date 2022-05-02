@@ -12,11 +12,9 @@ import {
 import AzureServiceBusIntegrationForm from "./AzureServiceBusIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
-
 
 class CreateAzureServiceBusIntegration extends Component<IProps> {
   onFinish = (obj: AzureServiceBusIntegration) => {
@@ -26,14 +24,16 @@ class CreateAzureServiceBusIntegration extends Component<IProps> {
     req.setIntegration(obj);
 
     ApplicationStore.createAzureServiceBusIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     const i = new AzureServiceBusIntegration();
 
-    return(
+    return (
       <Card title="Add Azure Service-Bus integration">
         <AzureServiceBusIntegrationForm initialValues={i} onFinish={this.onFinish} />
       </Card>

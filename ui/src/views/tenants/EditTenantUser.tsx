@@ -3,14 +3,20 @@ import { RouteComponentProps, Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button, PageHeader } from "antd";
 
-import { Tenant, TenantUser, GetTenantUserRequest, GetTenantUserResponse, UpdateTenantUserRequest, DeleteTenantUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import {
+  Tenant,
+  TenantUser,
+  GetTenantUserRequest,
+  GetTenantUserResponse,
+  UpdateTenantUserRequest,
+  DeleteTenantUserRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import TenantUserForm from "./TenantUserForm";
 import TenantStore from "../../stores/TenantStore";
 import SessionStore from "../../stores/SessionStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
-
 
 interface IState {
   tenantUser?: TenantUser;
@@ -23,7 +29,6 @@ interface MatchParams {
 interface IProps extends RouteComponentProps<MatchParams> {
   tenant: Tenant;
 }
-
 
 class EditTenantUser extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -46,7 +51,7 @@ class EditTenantUser extends Component<IProps, IState> {
         tenantUser: resp.getTenantUser(),
       });
     });
-  }
+  };
 
   onFinish = (obj: TenantUser) => {
     let req = new UpdateTenantUserRequest();
@@ -55,7 +60,7 @@ class EditTenantUser extends Component<IProps, IState> {
     TenantStore.updateUser(req, () => {
       this.props.history.push(`/tenants/${this.props.tenant.getId()}/users`);
     });
-  }
+  };
 
   deleteTenantUser = () => {
     let req = new DeleteTenantUserRequest();
@@ -65,7 +70,7 @@ class EditTenantUser extends Component<IProps, IState> {
     TenantStore.deleteUser(req, () => {
       this.props.history.push(`/tenants/${this.props.tenant.getId()}/users`);
     });
-  }
+  };
 
   render() {
     const tu = this.state.tenantUser;
@@ -76,35 +81,39 @@ class EditTenantUser extends Component<IProps, IState> {
 
     const disabled = !(SessionStore.isAdmin() || SessionStore.isTenantAdmin(this.props.tenant.getId()));
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/users`}>Tenant users</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/users`}>Tenant users</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>{tu.getEmail()}</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title={tu.getEmail()}
           subTitle={`user id: ${tu.getUserId()}`}
           extra={[
             <Admin tenantId={this.props.tenant.getId()} isTenantAdmin>
-              <DeleteConfirm
-                typ="tenant user"
-                confirm={tu.getEmail()}
-                onConfirm={this.deleteTenantUser}
-              >
-                <Button danger type="primary">Delete tenant user</Button>
+              <DeleteConfirm typ="tenant user" confirm={tu.getEmail()} onConfirm={this.deleteTenantUser}>
+                <Button danger type="primary">
+                  Delete tenant user
+                </Button>
               </DeleteConfirm>
-            </Admin>
+            </Admin>,
           ]}
         />
         <Card>

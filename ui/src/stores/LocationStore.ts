@@ -11,17 +11,21 @@ class LocationStore extends EventEmitter {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition((p: GeolocationPosition) => {
-      callbackFunc([p.coords.latitude, p.coords.longitude]);
-    }, (e: GeolocationPositionError) => {
-      notification.error({
-        message: e.message,
-        duration: 3,
-      });
-    }, {
-      timeout: 3000,
-    });
-  }
+    navigator.geolocation.getCurrentPosition(
+      (p: GeolocationPosition) => {
+        callbackFunc([p.coords.latitude, p.coords.longitude]);
+      },
+      (e: GeolocationPositionError) => {
+        notification.error({
+          message: e.message,
+          duration: 3,
+        });
+      },
+      {
+        timeout: 3000,
+      },
+    );
+  };
 }
 
 const locationStore = new LocationStore();

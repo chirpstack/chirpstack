@@ -2,17 +2,14 @@ import React, { Component } from "react";
 
 import { Form, Input, Button, notification } from "antd";
 
-
 interface FormValues {
   password: string;
   passwordConfirm: string;
 }
 
-
 interface IProps {
   onFinish: (pw: string) => void;
 }
-
 
 class PasswordForm extends Component<IProps> {
   onFinish = (v: FormValues) => {
@@ -24,27 +21,25 @@ class PasswordForm extends Component<IProps> {
     } else {
       this.props.onFinish(v.password);
     }
-  }
+  };
 
   render() {
-    return(
+    return (
       <Form layout="vertical" onFinish={this.onFinish}>
-        <Form.Item
-          label="Password"
-          name="password"
-          rules={[{required: true, message: "Please enter a password!"}]}
-        >
+        <Form.Item label="Password" name="password" rules={[{ required: true, message: "Please enter a password!" }]}>
           <Input type="password" />
         </Form.Item>
         <Form.Item
           label="Confirm password"
           name="passwordConfirm"
-          rules={[{required: true, message: "Please enter a password!"}]}
+          rules={[{ required: true, message: "Please enter a password!" }]}
         >
           <Input type="password" />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit">Submit</Button>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

@@ -33,7 +33,6 @@ import {
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
 
-
 class DeviceStore extends EventEmitter {
   client: DeviceServiceClient;
 
@@ -43,7 +42,7 @@ class DeviceStore extends EventEmitter {
   }
 
   create = (req: CreateDeviceRequest, callbackFunc: () => void) => {
-    this.client.create(req, SessionStore.getMetadata(), (err) => {
+    this.client.create(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -56,7 +55,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   get = (req: GetDeviceRequest, callbackFunc: (resp: GetDeviceResponse) => void) => {
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {
@@ -67,10 +66,10 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   update = (req: UpdateDeviceRequest, callbackFunc: () => void) => {
-    this.client.update(req, SessionStore.getMetadata(), (err) => {
+    this.client.update(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -83,10 +82,10 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   delete = (req: DeleteDeviceRequest, callbackFunc: () => void) => {
-    this.client.delete(req, SessionStore.getMetadata(), (err) => {
+    this.client.delete(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -99,7 +98,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   list = (req: ListDevicesRequest, callbackFunc: (resp: ListDevicesResponse) => void) => {
     this.client.list(req, SessionStore.getMetadata(), (err, resp) => {
@@ -110,10 +109,10 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   createKeys = (req: CreateDeviceKeysRequest, callbackFunc: () => void) => {
-    this.client.createKeys(req, SessionStore.getMetadata(), (err) => {
+    this.client.createKeys(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -126,7 +125,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   getKeys = (req: GetDeviceKeysRequest, callbackFunc: (resp?: GetDeviceKeysResponse) => void) => {
     this.client.getKeys(req, SessionStore.getMetadata(), (err, resp) => {
@@ -139,10 +138,10 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updateKeys = (req: UpdateDeviceKeysRequest, callbackFunc: () => void) => {
-    this.client.updateKeys(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateKeys(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -155,10 +154,10 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   deleteKeys = (req: DeleteDeviceKeysRequest, callbackFunc: () => void) => {
-    this.client.deleteKeys(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteKeys(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -171,7 +170,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   getStats = (req: GetDeviceStatsRequest, callbackFunc: (resp: GetDeviceStatsResponse) => void) => {
     this.client.getStats(req, SessionStore.getMetadata(), (err, resp) => {
@@ -182,7 +181,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   enqueue = (req: EnqueueDeviceQueueItemRequest, callbackFunc: (resp: EnqueueDeviceQueueItemResponse) => void) => {
     this.client.enqueue(req, SessionStore.getMetadata(), (err, resp) => {
@@ -193,10 +192,10 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   flushQueue = (req: FlushDeviceQueueRequest, callbackFunc: () => void) => {
-    this.client.flushQueue(req, SessionStore.getMetadata(), (err) => {
+    this.client.flushQueue(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -204,10 +203,10 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   flushDevNonces = (req: FlushDevNoncesRequest, callbackFunc: () => void) => {
-    this.client.flushDevNonces(req, SessionStore.getMetadata(), (err) => {
+    this.client.flushDevNonces(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -220,7 +219,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   getQueue = (req: GetDeviceQueueItemsRequest, callbackFunc: (resp: GetDeviceQueueItemsResponse) => void) => {
     this.client.getQueue(req, SessionStore.getMetadata(), (err, resp) => {
@@ -231,10 +230,10 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   activate = (req: ActivateDeviceRequest, callbackFunc: () => void) => {
-    this.client.activate(req, SessionStore.getMetadata(), (err) => {
+    this.client.activate(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -247,7 +246,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   getActivation = (req: GetDeviceActivationRequest, callbackFunc: (resp: GetDeviceActivationResponse) => void) => {
     this.client.getActivation(req, SessionStore.getMetadata(), (err, resp) => {
@@ -258,7 +257,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   getRandomDevAddr = (req: GetRandomDevAddrRequest, callbackFunc: (resp: GetRandomDevAddrResponse) => void) => {
     this.client.getRandomDevAddr(req, SessionStore.getMetadata(), (err, resp) => {
@@ -269,7 +268,7 @@ class DeviceStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const deviceStore = new DeviceStore();

@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 
 // import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, Title } from "chart.js";
 import { Chart, registerables } from "chart.js";
-import { MatrixElement, MatrixController } from 'chartjs-chart-matrix';
+import { MatrixElement, MatrixController } from "chartjs-chart-matrix";
 import "chartjs-adapter-moment";
 
 import App from "./App";
@@ -23,7 +23,7 @@ ReactDOM.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-  document.getElementById("root")
+  document.getElementById("root"),
 );
 
 // If you want to start measuring performance in your app, pass a function

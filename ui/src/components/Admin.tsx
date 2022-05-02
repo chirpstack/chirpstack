@@ -2,7 +2,6 @@ import { Component } from "react";
 
 import SessionStore from "../stores/SessionStore";
 
-
 interface IProps {
   tenantId?: string;
   isDeviceAdmin?: boolean;
@@ -68,14 +67,14 @@ class Admin extends Component<IProps, IState> {
         });
       }
     }
-  }
+  };
 
   render() {
     if (this.state.admin) {
-      return(this.props.children);
+      return this.props.children;
     }
 
-    return(null);
+    return null;
   }
 }
 

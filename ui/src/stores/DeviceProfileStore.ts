@@ -17,7 +17,6 @@ import {
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
 
-
 class DeviceProfileStore extends EventEmitter {
   client: DeviceProfileServiceClient;
 
@@ -40,7 +39,7 @@ class DeviceProfileStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   get = (req: GetDeviceProfileRequest, callbackFunc: (resp: GetDeviceProfileResponse) => void) => {
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {
@@ -51,10 +50,10 @@ class DeviceProfileStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   update = (req: UpdateDeviceProfileRequest, callbackFunc: () => void) => {
-    this.client.update(req, SessionStore.getMetadata(), (err) => {
+    this.client.update(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -67,10 +66,10 @@ class DeviceProfileStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   delete = (req: DeleteDeviceProfileRequest, callbackFunc: () => void) => {
-    this.client.delete(req, SessionStore.getMetadata(), (err) => {
+    this.client.delete(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -83,7 +82,7 @@ class DeviceProfileStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   list = (req: ListDeviceProfilesRequest, callbackFunc: (resp: ListDeviceProfilesResponse) => void) => {
     this.client.list(req, SessionStore.getMetadata(), (err, resp) => {
@@ -93,8 +92,8 @@ class DeviceProfileStore extends EventEmitter {
       }
 
       callbackFunc(resp);
-    })
-  }
+    });
+  };
 
   listAdrAlgorithms = (callbackFunc: (resp: ListDeviceProfileAdrAlgorithmsResponse) => void) => {
     this.client.listAdrAlgorithms(new google_protobuf_empty_pb.Empty(), SessionStore.getMetadata(), (err, resp) => {
@@ -105,7 +104,7 @@ class DeviceProfileStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const deviceProfileStore = new DeviceProfileStore();

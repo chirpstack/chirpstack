@@ -6,18 +6,19 @@ import { Space, Breadcrumb, Card, PageHeader } from "antd";
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import { CreateDeviceRequest, Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import { GetDeviceProfileRequest, GetDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import {
+  GetDeviceProfileRequest,
+  GetDeviceProfileResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import DeviceForm from "./DeviceForm";
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 
-
 interface IProps extends RouteComponentProps {
   tenant: Tenant;
   application: Application;
 }
-
 
 class CreateDevice extends Component<IProps> {
   onFinish = (obj: Device) => {
@@ -33,38 +34,52 @@ class CreateDevice extends Component<IProps> {
       DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
         let dp = resp.getDeviceProfile()!;
         if (dp.getSupportsOtaa()) {
-          this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${obj.getDevEui()}/keys`);
+          this.props.history.push(
+            `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${obj.getDevEui()}/keys`,
+          );
         } else {
-          this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${obj.getDevEui()}`);
+          this.props.history.push(
+            `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${obj.getDevEui()}`,
+          );
         }
       });
     });
-  }
+  };
 
   render() {
     let device = new Device();
     device.setApplicationId(this.props.application.getId());
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/applications`}>Applications</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/applications`}>Applications</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}`}>{this.props.application.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}`}>
+                    {this.props.application.getName()}
+                  </Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Add device</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title="Add device"
         />
         <Card>

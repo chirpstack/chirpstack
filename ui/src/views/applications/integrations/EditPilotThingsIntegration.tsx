@@ -14,16 +14,13 @@ import {
 import PilotThingsIntegrationForm from "./PilotThingsIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
 
-
 interface IState {
   integration?: PilotThingsIntegration;
 }
-
 
 class EditPilotThingsIntegration extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -47,16 +44,18 @@ class EditPilotThingsIntegration extends Component<IProps, IState> {
     req.setIntegration(obj);
 
     ApplicationStore.updatePilotThingsIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     if (this.state.integration === undefined) {
       return null;
     }
 
-    return(
+    return (
       <Card title="Update Pilot Things integration">
         <PilotThingsIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
       </Card>

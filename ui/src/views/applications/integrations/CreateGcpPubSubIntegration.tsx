@@ -12,11 +12,9 @@ import {
 import GcpPubSubIntegrationForm from "./GcpPubSubIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
-
 
 class CreateGcpPubSubIntegration extends Component<IProps> {
   onFinish = (obj: GcpPubSubIntegration) => {
@@ -26,14 +24,16 @@ class CreateGcpPubSubIntegration extends Component<IProps> {
     req.setIntegration(obj);
 
     ApplicationStore.createGcpPubSubIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     const i = new GcpPubSubIntegration();
 
-    return(
+    return (
       <Card title="Add GCP Pub/Sub integration">
         <GcpPubSubIntegrationForm initialValues={i} onFinish={this.onFinish} />
       </Card>

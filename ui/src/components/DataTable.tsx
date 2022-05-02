@@ -5,9 +5,7 @@ import { ColumnsType } from "antd/es/table";
 
 import SessionStore from "../stores/SessionStore";
 
-
 export type GetPageCallbackFunc = (totalCount: number, rows: object[]) => void;
-
 
 interface IProps {
   columns: ColumnsType<any>;
@@ -23,9 +21,8 @@ interface IState {
   pageSize: number;
   currentPage: number;
   rows: object[];
-  loading: boolean,
+  loading: boolean;
 }
-
 
 class DataTable extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -53,37 +50,40 @@ class DataTable extends Component<IProps, IState> {
   }
 
   onChangePage = (page: number, pageSize?: number | void) => {
-    this.setState({
-      loading: true,
-    }, () => {
-      let pz = pageSize;
-      if (!pz) {
-        pz = this.state.pageSize;
-      }
+    this.setState(
+      {
+        loading: true,
+      },
+      () => {
+        let pz = pageSize;
+        if (!pz) {
+          pz = this.state.pageSize;
+        }
 
-      this.props.getPage(pz, (page - 1) * pz, (totalCount: number, rows: object[]) => {
-        this.setState({
-          currentPage: page,
-          totalCount: totalCount,
-          rows: rows,
-          pageSize: pz || 0,
-          loading: false,
+        this.props.getPage(pz, (page - 1) * pz, (totalCount: number, rows: object[]) => {
+          this.setState({
+            currentPage: page,
+            totalCount: totalCount,
+            rows: rows,
+            pageSize: pz || 0,
+            loading: false,
+          });
         });
-      });
-    });
-  }
+      },
+    );
+  };
 
   onShowSizeChange = (page: number, pageSize: number) => {
     this.onChangePage(page, pageSize);
     SessionStore.setRowsPerPage(pageSize);
-  }
+  };
 
   onRowsSelectChange = (ids: React.Key[]) => {
     const idss = ids as string[];
     if (this.props.onRowsSelectChange) {
       this.props.onRowsSelectChange(idss);
     }
-  }
+  };
 
   render() {
     const { getPage, refreshKey, ...otherProps } = this.props;
@@ -97,12 +97,12 @@ class DataTable extends Component<IProps, IState> {
     let pagination = undefined;
     if (this.props.noPagination === undefined || this.props.noPagination === false) {
       pagination = {
-          current: this.state.currentPage,
-          total: this.state.totalCount,
-          pageSize: this.state.pageSize,
-          onChange: this.onChangePage,
-          showSizeChanger: true,
-          onShowSizeChange: this.onShowSizeChange,
+        current: this.state.currentPage,
+        total: this.state.totalCount,
+        pageSize: this.state.pageSize,
+        onChange: this.onChangePage,
+        showSizeChanger: true,
+        onShowSizeChange: this.onShowSizeChange,
       };
     }
 
@@ -113,8 +113,7 @@ class DataTable extends Component<IProps, IState> {
       };
     }
 
-
-    return(
+    return (
       <Table
         loading={loadingProps}
         dataSource={this.state.rows}

@@ -16,7 +16,6 @@ import {
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
 
-
 class UserStore extends EventEmitter {
   client: UserServiceClient;
 
@@ -39,7 +38,7 @@ class UserStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   get = (req: GetUserRequest, callbackFunc: (resp: GetUserResponse) => void) => {
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {
@@ -50,7 +49,7 @@ class UserStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   update = (req: UpdateUserRequest, callbackFunc: () => void) => {
     this.client.update(req, SessionStore.getMetadata(), (err, resp) => {
@@ -66,7 +65,7 @@ class UserStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   delete = (req: DeleteUserRequest, callbackFunc: () => void) => {
     this.client.delete(req, SessionStore.getMetadata(), (err, resp) => {
@@ -82,7 +81,7 @@ class UserStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   list = (req: ListUsersRequest, callbackFunc: (resp: ListUsersResponse) => void) => {
     this.client.list(req, SessionStore.getMetadata(), (err, resp) => {
@@ -93,10 +92,10 @@ class UserStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   updatePassword = (req: UpdateUserPasswordRequest, callbackFunc: () => void) => {
-    this.client.updatePassword(req, SessionStore.getMetadata(), (err) => {
+    this.client.updatePassword(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -109,7 +108,7 @@ class UserStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 }
 
 const userStore = new UserStore();

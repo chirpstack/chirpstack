@@ -5,13 +5,23 @@ import moment from "moment";
 import { Space, Button, Dropdown, Menu, Modal, Select } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlug, faBatteryFull, faBatteryQuarter, faBatteryHalf, faBatteryThreeQuarters } from '@fortawesome/free-solid-svg-icons'
+import {
+  faPlug,
+  faBatteryFull,
+  faBatteryQuarter,
+  faBatteryHalf,
+  faBatteryThreeQuarters,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import { ListDevicesRequest, ListDevicesResponse, DeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import { 
-  ListMulticastGroupsRequest, 
-  ListMulticastGroupsResponse, 
+import {
+  ListDevicesRequest,
+  ListDevicesResponse,
+  DeviceListItem,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import {
+  ListMulticastGroupsRequest,
+  ListMulticastGroupsResponse,
   MulticastGroupListItem,
   AddDeviceToMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
@@ -21,19 +31,16 @@ import DeviceStore from "../../stores/DeviceStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import Admin from "../../components/Admin";
 
-
 interface IProps {
   application: Application;
 }
-
 
 interface IState {
   selectedRowIds: string[];
   multicastGroups: MulticastGroupListItem[];
   mgModalVisible: boolean;
-  mgSelected: string,
+  mgSelected: string;
 }
-
 
 class ListDevices extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -71,7 +78,7 @@ class ListDevices extends Component<IProps, IState> {
             ts.setUTCSeconds(record.lastSeenAt.seconds);
             return moment(ts).format("YYYY-MM-DD HH:mm:ss");
           }
-		  return "Never";
+          return "Never";
         },
       },
       {
@@ -80,7 +87,13 @@ class ListDevices extends Component<IProps, IState> {
         key: "devEui",
         width: 250,
         render: (text, record) => (
-          <Link to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/devices/${record.devEui}`}>{text}</Link>
+          <Link
+            to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/devices/${
+              record.devEui
+            }`}
+          >
+            {text}
+          </Link>
         ),
       },
       {
@@ -92,8 +105,10 @@ class ListDevices extends Component<IProps, IState> {
         title: "Device profile",
         dataIndex: "deviceProfileName",
         key: "deviceProfileName",
-        render: (text, record) => ( 
-           <Link to={`/tenants/${this.props.application.getTenantId()}/device-profiles/${record.deviceProfileId}/edit`}>{text}</Link>
+        render: (text, record) => (
+          <Link to={`/tenants/${this.props.application.getTenantId()}/device-profiles/${record.deviceProfileId}/edit`}>
+            {text}
+          </Link>
         ),
       },
       {
@@ -119,7 +134,7 @@ class ListDevices extends Component<IProps, IState> {
         },
       },
     ];
-  }
+  };
 
   getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new ListDevicesRequest();
@@ -131,31 +146,31 @@ class ListDevices extends Component<IProps, IState> {
       const obj = resp.toObject();
       callbackFunc(obj.totalCount, obj.resultList);
     });
-  }
+  };
 
   onRowsSelectChange = (ids: string[]) => {
     this.setState({
       selectedRowIds: ids,
     });
-  }
+  };
 
   showMgModal = () => {
     this.setState({
       mgModalVisible: true,
     });
-  }
+  };
 
   hideMgModal = () => {
     this.setState({
       mgModalVisible: false,
     });
-  }
+  };
 
   onMgSelected = (value: string) => {
     this.setState({
       mgSelected: value,
     });
-  }
+  };
 
   handleMgModalOk = () => {
     for (let devEui of this.state.selectedRowIds) {
@@ -164,12 +179,12 @@ class ListDevices extends Component<IProps, IState> {
       req.setDevEui(devEui);
 
       MulticastGroupStore.addDevice(req, () => {});
-    } 
+    }
 
     this.setState({
       mgModalVisible: false,
     });
-  }
+  };
 
   render() {
     const menu = (
@@ -178,21 +193,42 @@ class ListDevices extends Component<IProps, IState> {
       </Menu>
     );
 
-    const mgOptions = this.state.multicastGroups.map((mg, i) => <Select.Option value={mg.getId()}>{mg.getName()}</Select.Option>);
+    const mgOptions = this.state.multicastGroups.map((mg, i) => (
+      <Select.Option value={mg.getId()}>{mg.getName()}</Select.Option>
+    ));
 
-    return(
-      <Space direction="vertical" size="large" style={{width: "100%"}}>
-        <Modal title="Add selected devices to multicast-group" visible={this.state.mgModalVisible} onOk={this.handleMgModalOk} onCancel={this.hideMgModal} okButtonProps={{disabled: this.state.mgSelected === ""}}>
-          <Space direction="vertical" size="large" style={{width: "100%"}}>
-            <Select style={{width: "100%"}} onChange={this.onMgSelected} placeholder="Select Multicast-group">
+    return (
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Modal
+          title="Add selected devices to multicast-group"
+          visible={this.state.mgModalVisible}
+          onOk={this.handleMgModalOk}
+          onCancel={this.hideMgModal}
+          okButtonProps={{ disabled: this.state.mgSelected === "" }}
+        >
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            <Select style={{ width: "100%" }} onChange={this.onMgSelected} placeholder="Select Multicast-group">
               {mgOptions}
             </Select>
           </Space>
         </Modal>
         <Admin tenantId={this.props.application.getTenantId()} isDeviceAdmin>
-          <Space direction="horizontal" style={{float: "right"}}>
-              <Button type="primary"><Link to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/devices/create`}>Add device</Link></Button>
-              <Dropdown placement="bottomRight" overlay={menu} trigger={['click']} disabled={this.state.selectedRowIds.length === 0}><Button>Selected devices</Button></Dropdown>
+          <Space direction="horizontal" style={{ float: "right" }}>
+            <Button type="primary">
+              <Link
+                to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/devices/create`}
+              >
+                Add device
+              </Link>
+            </Button>
+            <Dropdown
+              placement="bottomRight"
+              overlay={menu}
+              trigger={["click"]}
+              disabled={this.state.selectedRowIds.length === 0}
+            >
+              <Button>Selected devices</Button>
+            </Dropdown>
           </Space>
         </Admin>
         <DataTable

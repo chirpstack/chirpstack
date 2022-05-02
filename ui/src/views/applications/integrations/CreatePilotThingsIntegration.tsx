@@ -12,11 +12,9 @@ import {
 import PilotThingsIntegrationForm from "./PilotThingsIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
-
 
 class CreatePilotThingsIntegration extends Component<IProps> {
   onFinish = (obj: PilotThingsIntegration) => {
@@ -26,14 +24,16 @@ class CreatePilotThingsIntegration extends Component<IProps> {
     req.setIntegration(obj);
 
     ApplicationStore.createPilotThingsIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     const i = new PilotThingsIntegration();
 
-    return(
+    return (
       <Card title="Add Pilot Things integration">
         <PilotThingsIntegrationForm initialValues={i} onFinish={this.onFinish} />
       </Card>

@@ -1,15 +1,14 @@
 import React, { Component } from "react";
-import {Controlled as CodeMirror} from "react-codemirror2";
+import { Controlled as CodeMirror } from "react-codemirror2";
 
 import { Form } from "antd";
 
 import "codemirror/mode/javascript/javascript";
 
-
 interface IProps {
-  formRef: React.RefObject<any>,
-  label?: string,
-  name: string,
+  formRef: React.RefObject<any>;
+  label?: string;
+  name: string;
   required?: boolean;
   value?: string;
   disabled?: boolean;
@@ -19,7 +18,6 @@ interface IProps {
 interface IState {
   value: string;
 }
-
 
 class CodeEditor extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -43,13 +41,16 @@ class CodeEditor extends Component<IProps, IState> {
     this.props.formRef.current.setFieldsValue({
       [this.props.name]: value,
     });
-  }
+  };
 
   handleChange = (editor: any, data: any, newCode: string) => {
-    this.setState({
-      value: newCode,
-    }, this.updateField);
-  }
+    this.setState(
+      {
+        value: newCode,
+      },
+      this.updateField,
+    );
+  };
 
   render() {
     const codeMirrorOptions = {
@@ -60,21 +61,13 @@ class CodeEditor extends Component<IProps, IState> {
     };
 
     return (
-      <Form.Item
-        label={this.props.label}
-        name={this.props.name}
-        tooltip={this.props.tooltip}
-      >
-        <div style={{border: "1px solid #cccccc"}}>
-          <CodeMirror
-            value={this.state.value}
-            options={codeMirrorOptions}
-            onBeforeChange={this.handleChange}
-          />
+      <Form.Item label={this.props.label} name={this.props.name} tooltip={this.props.tooltip}>
+        <div style={{ border: "1px solid #cccccc" }}>
+          <CodeMirror value={this.state.value} options={codeMirrorOptions} onBeforeChange={this.handleChange} />
         </div>
       </Form.Item>
     );
   }
 }
 
-export default CodeEditor
+export default CodeEditor;

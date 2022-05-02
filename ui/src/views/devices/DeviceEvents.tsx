@@ -6,14 +6,13 @@ import { StreamDeviceEventsRequest, LogItem } from "@chirpstack/chirpstack-api-g
 import InternalStore from "../../stores/InternalStore";
 import LogTable from "../../components/LogTable";
 
-
 interface IProps {
   device: Device;
 }
 
 interface IState {
   events: LogItem[];
-  cancelFunc?: () => void,
+  cancelFunc?: () => void;
 }
 
 class DeviceEvents extends Component<IProps, IState> {
@@ -44,7 +43,7 @@ class DeviceEvents extends Component<IProps, IState> {
     this.setState({
       cancelFunc: cancelFunc,
     });
-  }
+  };
 
   onMessage = (l: LogItem) => {
     let events = this.state.events;
@@ -55,10 +54,10 @@ class DeviceEvents extends Component<IProps, IState> {
         events: events,
       });
     }
-  }
+  };
 
   render() {
-    return(<LogTable logs={this.state.events} />);
+    return <LogTable logs={this.state.events} />;
   }
 }
 

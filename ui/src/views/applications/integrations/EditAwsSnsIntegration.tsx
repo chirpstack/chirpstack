@@ -22,7 +22,6 @@ interface IState {
   integration?: AwsSnsIntegration;
 }
 
-
 class EditAwsSnsIntegration extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
@@ -45,16 +44,18 @@ class EditAwsSnsIntegration extends Component<IProps, IState> {
     req.setIntegration(obj);
 
     ApplicationStore.updateAwsSnsIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     if (this.state.integration === undefined) {
       return null;
     }
 
-    return(
+    return (
       <Card title="Update AWS SNS integration">
         <AwsSnsIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
       </Card>

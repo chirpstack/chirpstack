@@ -18,7 +18,6 @@ import {
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
 
-
 class GatewayStore extends EventEmitter {
   client: GatewayServiceClient;
 
@@ -28,7 +27,7 @@ class GatewayStore extends EventEmitter {
   }
 
   create = (req: CreateGatewayRequest, callbackFunc: () => void) => {
-    this.client.create(req, SessionStore.getMetadata(), (err) => {
+    this.client.create(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -41,7 +40,7 @@ class GatewayStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   get = (req: GetGatewayRequest, callbackFunc: (resp: GetGatewayResponse) => void) => {
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {
@@ -52,10 +51,10 @@ class GatewayStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   update = (req: UpdateGatewayRequest, callbackFunc: () => void) => {
-    this.client.update(req, SessionStore.getMetadata(), (err) => {
+    this.client.update(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -68,10 +67,10 @@ class GatewayStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   delete = (req: DeleteGatewayRequest, callbackFunc: () => void) => {
-    this.client.delete(req, SessionStore.getMetadata(), (err) => {
+    this.client.delete(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -84,7 +83,7 @@ class GatewayStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   list = (req: ListGatewaysRequest, callbackFunc: (resp: ListGatewaysResponse) => void) => {
     this.client.list(req, SessionStore.getMetadata(), (err, resp) => {
@@ -95,7 +94,7 @@ class GatewayStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   getStats = (req: GetGatewayStatsRequest, callbackFunc: (resp: GetGatewayStatsResponse) => void) => {
     this.client.getStats(req, SessionStore.getMetadata(), (err, resp) => {
@@ -106,9 +105,12 @@ class GatewayStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
-  generateClientCertificate = (req: GenerateGatewayClientCertificateRequest, callbackFunc: (resp: GenerateGatewayClientCertificateResponse) => void) => {
+  generateClientCertificate = (
+    req: GenerateGatewayClientCertificateRequest,
+    callbackFunc: (resp: GenerateGatewayClientCertificateResponse) => void,
+  ) => {
     this.client.generateClientCertificate(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
@@ -117,7 +119,7 @@ class GatewayStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const gatewayStore = new GatewayStore();

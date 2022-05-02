@@ -20,7 +20,6 @@ import {
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
 
-
 class MulticastGroupStore extends EventEmitter {
   client: MulticastGroupServiceClient;
 
@@ -43,7 +42,7 @@ class MulticastGroupStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   get = (req: GetMulticastGroupRequest, callbackFunc: (resp: GetMulticastGroupResponse) => void) => {
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {
@@ -54,10 +53,10 @@ class MulticastGroupStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
-  
+  };
+
   update = (req: UpdateMulticastGroupRequest, callbackFunc: () => void) => {
-    this.client.update(req, SessionStore.getMetadata(), (err) => {
+    this.client.update(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -70,10 +69,10 @@ class MulticastGroupStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   delete = (req: DeleteMulticastGroupRequest, callbackFunc: () => void) => {
-    this.client.delete(req, SessionStore.getMetadata(), (err) => {
+    this.client.delete(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -86,7 +85,7 @@ class MulticastGroupStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   list = (req: ListMulticastGroupsRequest, callbackFunc: (resp: ListMulticastGroupsResponse) => void) => {
     this.client.list(req, SessionStore.getMetadata(), (err, resp) => {
@@ -97,10 +96,10 @@ class MulticastGroupStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   addDevice = (req: AddDeviceToMulticastGroupRequest, callbackFunc: () => void) => {
-    this.client.addDevice(req, SessionStore.getMetadata(), (err) => {
+    this.client.addDevice(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -113,10 +112,10 @@ class MulticastGroupStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   removeDevice = (req: RemoveDeviceFromMulticastGroupRequest, callbackFunc: () => void) => {
-    this.client.removeDevice(req, SessionStore.getMetadata(), (err) => {
+    this.client.removeDevice(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -124,7 +123,7 @@ class MulticastGroupStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   listQueue = (req: ListMulticastGroupQueueRequest, callbackFunc: (resp: ListMulticastGroupQueueResponse) => void) => {
     this.client.listQueue(req, SessionStore.getMetadata(), (err, resp) => {
@@ -135,7 +134,7 @@ class MulticastGroupStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const multicastGroupStore = new MulticastGroupStore();

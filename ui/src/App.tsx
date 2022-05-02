@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Router, Route, Switch } from "react-router-dom";
 
-import { Layout } from 'antd';
+import { Layout } from "antd";
 
 import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
@@ -35,14 +35,11 @@ import SessionStore from "./stores/SessionStore";
 
 import history from "./history";
 
-
-interface IProps {
-}
+interface IProps {}
 
 interface IState {
   user?: User;
 }
-
 
 class App extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -66,13 +63,14 @@ class App extends Component<IProps, IState> {
   }
 
   render() {
-    return(
-      <Layout style={{minHeight:"100vh"}}>
+    return (
+      <Layout style={{ minHeight: "100vh" }}>
         <Router history={history}>
           <Switch>
-              <Route exact path="/" component={TenantRedirect} />
-              <Route exact path="/login" component={Login} />
-              {this.state.user && <Route>
+            <Route exact path="/" component={TenantRedirect} />
+            <Route exact path="/login" component={Login} />
+            {this.state.user && (
+              <Route>
                 <Layout.Header className="layout-header">
                   <Header user={this.state.user} />
                 </Layout.Header>
@@ -80,7 +78,7 @@ class App extends Component<IProps, IState> {
                   <Layout.Sider width="300" theme="light" className="layout-menu">
                     <Menu />
                   </Layout.Sider>
-                  <Layout.Content className="layout-content" style={{ padding: '24px 24px 24px' }}>
+                  <Layout.Content className="layout-content" style={{ padding: "24px 24px 24px" }}>
                     <Switch>
                       <Route exact path="/dashboard" component={Dashboard} />
 
@@ -98,7 +96,8 @@ class App extends Component<IProps, IState> {
                     </Switch>
                   </Layout.Content>
                 </Layout>
-              </Route>}
+              </Route>
+            )}
           </Switch>
         </Router>
       </Layout>

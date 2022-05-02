@@ -1,88 +1,88 @@
 .layout {
-	margin-left: 300px;
+  margin-left: 300px;
 }
 
 .layout-header {
-	background: #ffffff;
-  	box-shadow: 0px 0px 10px 0px #ccc;
-  	z-index: 999;
+  background: #ffffff;
+  box-shadow: 0px 0px 10px 0px #ccc;
+  z-index: 999;
 
-	position: fixed;
-	width: 100%;
+  position: fixed;
+  width: 100%;
 }
 
 .layout-header .logo {
-	float: left;
-	margin-top: 16px;
-	height: 32px;
+  float: left;
+  margin-top: 16px;
+  height: 32px;
 }
 
 .layout-header .actions {
-	float: right;
+  float: right;
 }
 
 .layout-header .actions > div {
-	display: inline;
-	padding-left: 24px;
+  display: inline;
+  padding-left: 24px;
 }
 
 .layout-menu {
-	padding-top: 85px;
+  padding-top: 85px;
 
-	overflow: auto;
-	position: fixed;
-	height: 100vh;
-	left: 0;
+  overflow: auto;
+  position: fixed;
+  height: 100vh;
+  left: 0;
 }
 
 .layout-menu .organiation-select {
-	margin-left: 24px;
-	margin-bottom: 12px;
-	width: 252px;
+  margin-left: 24px;
+  margin-bottom: 12px;
+  width: 252px;
 }
 
 .layout-content {
-	margin-top: 65px;
+  margin-top: 65px;
 }
 
 .layout-content .content-header > * {
-	float: right;
+  float: right;
 }
 
 .layout-content .content-header h3 {
-	float: left;
-	display: inline;
+  float: left;
+  display: inline;
 }
 
 .layout-content .content {
-	background: #ffffff;
+  background: #ffffff;
 }
 
 .spinner {
-	text-align: center;
+  text-align: center;
 }
 
 pre {
-	margin: 0px;
+  margin: 0px;
 }
 
 .chart-doughtnut {
-	max-width: 350;
-	padding: 0;
-	margin: auto;
-	display: block;
+  max-width: 350;
+  padding: 0;
+  margin: auto;
+  display: block;
 }
 
 .dashboard-chart > .ant-card-body {
-	height: 300px;
+  height: 300px;
 }
 
 .integration-card {
-	margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .integration-card .ant-card-meta-description {
-	min-height: 75px;
+  min-height: 75px;
 }
 
 .search-dropdown .ant-select-dropdown-menu-item-group-title {

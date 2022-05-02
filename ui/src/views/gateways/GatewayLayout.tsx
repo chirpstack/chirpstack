@@ -4,7 +4,12 @@ import { Route, Switch, RouteComponentProps, Link } from "react-router-dom";
 import { Space, Breadcrumb, Card, Button, PageHeader, Menu } from "antd";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Gateway, GetGatewayRequest, GetGatewayResponse, DeleteGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import {
+  Gateway,
+  GetGatewayRequest,
+  GetGatewayResponse,
+  DeleteGatewayRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import GatewayStore from "../../stores/GatewayStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
@@ -15,7 +20,6 @@ import GatewayFrames from "./GatewayFrames";
 import GatewayCertificate from "./GatewayCertificate";
 import Admin from "../../components/Admin";
 import SessionStore from "../../stores/SessionStore";
-
 
 interface MatchParams {
   gatewayId: string;
@@ -29,7 +33,6 @@ interface IState {
   gateway?: Gateway;
   lastSeenAt?: Date;
 }
-
 
 class GatewayLayout extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -56,7 +59,7 @@ class GatewayLayout extends Component<IProps, IState> {
         });
       }
     });
-  }
+  };
 
   deleteGateway = () => {
     let req = new DeleteGatewayRequest();
@@ -65,7 +68,7 @@ class GatewayLayout extends Component<IProps, IState> {
     GatewayStore.delete(req, () => {
       this.props.history.push(`/tenants/${this.props.tenant.getId()}/gateways`);
     });
-  }
+  };
 
   render() {
     const tenant = this.props.tenant;
@@ -87,53 +90,86 @@ class GatewayLayout extends Component<IProps, IState> {
       tab = "frames";
     }
 
-    let isGatewayAdmin = SessionStore.isAdmin() || SessionStore.isTenantAdmin(this.props.tenant.getId()) || SessionStore.isTenantGatewayAdmin(this.props.tenant.getId());
+    let isGatewayAdmin =
+      SessionStore.isAdmin() ||
+      SessionStore.isTenantAdmin(this.props.tenant.getId()) ||
+      SessionStore.isTenantGatewayAdmin(this.props.tenant.getId());
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/gateways`}>Gateways</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/gateways`}>Gateways</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>{gw.getName()}</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title={gw.getName()}
           subTitle={`gateway id: ${gw.getGatewayId()}`}
           extra={[
             <Admin tenantId={this.props.tenant.getId()} isGatewayAdmin>
-              <DeleteConfirm
-                confirm={gw.getName()}
-                typ="gateway"
-                onConfirm={this.deleteGateway}
-              >
-                <Button danger type="primary">Delete gateway</Button>
+              <DeleteConfirm confirm={gw.getName()} typ="gateway" onConfirm={this.deleteGateway}>
+                <Button danger type="primary">
+                  Delete gateway
+                </Button>
               </DeleteConfirm>
-            </Admin>
+            </Admin>,
           ]}
         />
-          <Card>
-            <Menu mode="horizontal" selectedKeys={[tab]} style={{marginBottom: 24}}>
-              <Menu.Item key="dashboard"><Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}`}>Dashboard</Link></Menu.Item>
-              <Menu.Item key="edit"><Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/edit`}>Configuration</Link></Menu.Item>
-              {isGatewayAdmin &&<Menu.Item key="cert"><Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/certificate`}>TLS certificate</Link></Menu.Item>}
-              <Menu.Item key="frames"><Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/frames`}>LoRaWAN frames</Link></Menu.Item>
-            </Menu>
-            <Switch>
-              <Route exact path={`${this.props.match.path}`} render={props => <GatewayDashboard gateway={gw} lastSeenAt={this.state.lastSeenAt} {...props} /> } />
-              <Route exact path={`${this.props.match.path}/edit`} render={props => <EditGateway gateway={gw} {...props} /> } />
-              <Route exact path={`${this.props.match.path}/certificate`} render={props => <GatewayCertificate gateway={gw} {...props} /> } />
-              <Route exact path={`${this.props.match.path}/frames`} render={props => <GatewayFrames gateway={gw} {...props} /> } />
-            </Switch>
-          </Card>
+        <Card>
+          <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
+            <Menu.Item key="dashboard">
+              <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}`}>Dashboard</Link>
+            </Menu.Item>
+            <Menu.Item key="edit">
+              <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/edit`}>Configuration</Link>
+            </Menu.Item>
+            {isGatewayAdmin && (
+              <Menu.Item key="cert">
+                <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/certificate`}>TLS certificate</Link>
+              </Menu.Item>
+            )}
+            <Menu.Item key="frames">
+              <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/frames`}>LoRaWAN frames</Link>
+            </Menu.Item>
+          </Menu>
+          <Switch>
+            <Route
+              exact
+              path={`${this.props.match.path}`}
+              render={props => <GatewayDashboard gateway={gw} lastSeenAt={this.state.lastSeenAt} {...props} />}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/edit`}
+              render={props => <EditGateway gateway={gw} {...props} />}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/certificate`}
+              render={props => <GatewayCertificate gateway={gw} {...props} />}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/frames`}
+              render={props => <GatewayFrames gateway={gw} {...props} />}
+            />
+          </Switch>
+        </Card>
       </Space>
     );
   }

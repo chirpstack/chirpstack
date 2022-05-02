@@ -3,12 +3,10 @@ import React, { Component } from "react";
 import { color } from "chart.js/helpers";
 import { Chart } from "react-chartjs-2";
 
-
 interface HeatmapData {
   x: string;
   y: Array<[string, number]>;
 }
-
 
 interface IProps {
   data: HeatmapData[];
@@ -16,15 +14,14 @@ interface IProps {
   toColor: string;
 }
 
-
 class Heatmap extends Component<IProps> {
   render() {
     if (this.props.data.length === 0) {
       return null;
     }
 
-    let xSet: {[key: string]: any} = {};
-    let ySet: {[key: string]: any} = {};
+    let xSet: { [key: string]: any } = {};
+    let ySet: { [key: string]: any } = {};
 
     let dataData: {
       x: string;
@@ -45,18 +42,22 @@ class Heatmap extends Component<IProps> {
           fromColor: this.props.fromColor.match(/\d+/g)!.map(Number),
           toColor: this.props.toColor.match(/\d+/g)!.map(Number),
           backgroundColor: (ctx: any): string => {
-            if (ctx.dataset === undefined || ctx.dataset.data === undefined || ctx.dataset.data[ctx.dataIndex] === undefined) {
-              return color('white').rgbString();
+            if (
+              ctx.dataset === undefined ||
+              ctx.dataset.data === undefined ||
+              ctx.dataset.data[ctx.dataIndex] === undefined
+            ) {
+              return color("white").rgbString();
             }
 
             const value = ctx.dataset.data[ctx.dataIndex].v;
             const steps = ctx.dataset.maxValue - ctx.dataset.minValue + 1;
             const step = value - ctx.dataset.minValue;
-            const factor = 1 / steps * step;
+            const factor = (1 / steps) * step;
 
             let result: [number, number, number] = ctx.dataset.fromColor.slice();
             for (var i = 0; i < 3; i++) {
-                result[i] = Math.round(result[i] + factor * (ctx.dataset.toColor[i] - ctx.dataset.fromColor[i]));
+              result[i] = Math.round(result[i] + factor * (ctx.dataset.toColor[i] - ctx.dataset.fromColor[i]));
             }
 
             return color(result).rgbString();
@@ -94,19 +95,18 @@ class Heatmap extends Component<IProps> {
           grid: {
             display: false,
           },
-
         },
       },
       plugins: {
-        legend: {display: false},
+        legend: { display: false },
         tooltip: {
           callbacks: {
             title: () => {
-              return '';
+              return "";
             },
             label: (ctx: any) => {
               const v = ctx.dataset.data[ctx.dataIndex].v;
-              return 'Count: ' + v;
+              return "Count: " + v;
             },
           },
         },
@@ -136,9 +136,7 @@ class Heatmap extends Component<IProps> {
       }
     }
 
-    return(
-      <Chart type="matrix" data={data} options={options} />
-    );
+    return <Chart type="matrix" data={data} options={options} />;
   }
 }
 

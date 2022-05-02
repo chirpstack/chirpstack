@@ -13,27 +13,20 @@ import {
 
 import InternalStore from "../stores/InternalStore";
 
-
 interface IProps {
   user: User;
 }
 
 interface IState {
   searchResult?: GlobalSearchResponse;
-  settings?: SettingsResponse,
+  settings?: SettingsResponse;
 }
 
-const renderTitle = (title: string) => (
-  <span>
-    {title}
-  </span>
-);
+const renderTitle = (title: string) => <span>{title}</span>;
 
 const renderItem = (title: string, url: string) => ({
   value: title,
-  label: (
-    <Link to={url}>{title}</Link>
-  ),
+  label: <Link to={url}>{title}</Link>,
 });
 
 class Header extends Component<IProps, IState> {
@@ -65,7 +58,7 @@ class Header extends Component<IProps, IState> {
         searchResult: resp,
       });
     });
-  }
+  };
 
   render() {
     if (this.state.settings === undefined) {
@@ -76,9 +69,11 @@ class Header extends Component<IProps, IState> {
 
     const menu = (
       <Menu>
-        {!oidcEnabled && <Menu.Item>
-          <Link to={`/users/${this.props.user.getId()}/password`}>Change password</Link>
-        </Menu.Item>}
+        {!oidcEnabled && (
+          <Menu.Item>
+            <Link to={`/users/${this.props.user.getId()}/password`}>Change password</Link>
+          </Menu.Item>
+        )}
         <Menu.Item>
           <Link to="/login">Logout</Link>
         </Menu.Item>
@@ -90,19 +85,19 @@ class Header extends Component<IProps, IState> {
       options: any[];
     }[] = [
       {
-        label: renderTitle('Tenants'),
+        label: renderTitle("Tenants"),
         options: [],
       },
       {
-        label: renderTitle('Gateways'),
+        label: renderTitle("Gateways"),
         options: [],
       },
       {
-        label: renderTitle('Applications'),
+        label: renderTitle("Applications"),
         options: [],
       },
       {
-        label: renderTitle('Devices'),
+        label: renderTitle("Devices"),
         options: [],
       },
     ];
@@ -110,24 +105,36 @@ class Header extends Component<IProps, IState> {
     if (this.state.searchResult !== undefined) {
       for (const res of this.state.searchResult.getResultList()) {
         if (res.getKind() === "tenant") {
-          options[0].options.push(renderItem(res.getTenantName(), `/tenants/${res.getTenantId()}`))
+          options[0].options.push(renderItem(res.getTenantName(), `/tenants/${res.getTenantId()}`));
         }
 
         if (res.getKind() === "gateway") {
-          options[1].options.push(renderItem(res.getGatewayName(), `/tenants/${res.getTenantId()}/gateways/${res.getGatewayId()}`))
+          options[1].options.push(
+            renderItem(res.getGatewayName(), `/tenants/${res.getTenantId()}/gateways/${res.getGatewayId()}`),
+          );
         }
 
         if (res.getKind() === "application") {
-          options[2].options.push(renderItem(res.getApplicationName(), `/tenants/${res.getTenantId()}/applications/${res.getApplicationId()}`))
+          options[2].options.push(
+            renderItem(
+              res.getApplicationName(),
+              `/tenants/${res.getTenantId()}/applications/${res.getApplicationId()}`,
+            ),
+          );
         }
 
         if (res.getKind() === "device") {
-          options[3].options.push(renderItem(res.getDeviceName(), `/tenants/${res.getTenantId()}/applications/${res.getApplicationId()}/devices/${res.getDeviceDevEui()}`));
+          options[3].options.push(
+            renderItem(
+              res.getDeviceName(),
+              `/tenants/${res.getTenantId()}/applications/${res.getApplicationId()}/devices/${res.getDeviceDevEui()}`,
+            ),
+          );
         }
       }
     }
 
-    return(
+    return (
       <div>
         <img className="logo" alt="ChirpStack" src="/logo.png" />
         <div className="actions">
@@ -138,15 +145,19 @@ class Header extends Component<IProps, IState> {
               options={options}
               onSearch={this.onSearch}
             >
-              <Input.Search placeholder="Search..." style={{width: 500, marginTop: -5}} />
+              <Input.Search placeholder="Search..." style={{ width: 500, marginTop: -5 }} />
             </AutoComplete>
           </div>
           <div className="help">
-            <a href="https://www.chirpstack.io" target="_blank" rel="noreferrer"><Button icon={<QuestionOutlined />}/></a>
+            <a href="https://www.chirpstack.io" target="_blank" rel="noreferrer">
+              <Button icon={<QuestionOutlined />} />
+            </a>
           </div>
           <div className="user">
-            <Dropdown overlay={menu} placement="bottomRight" trigger={['click']}>
-              <Button type="primary" icon={<UserOutlined />}>{this.props.user.getEmail()} <DownOutlined /></Button>
+            <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
+              <Button type="primary" icon={<UserOutlined />}>
+                {this.props.user.getEmail()} <DownOutlined />
+              </Button>
             </Dropdown>
           </div>
         </div>

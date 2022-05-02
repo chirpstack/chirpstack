@@ -9,13 +9,11 @@ import ApiKeyForm from "./ApiKeyForm";
 import ApiKeyToken from "./ApiKeyToken";
 import InternalStore from "../../stores/InternalStore";
 
-
 interface IProps {}
 
 interface IState {
   createApiKeyResponse?: CreateApiKeyResponse;
 }
-
 
 class CreateAdminApiKey extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -34,26 +32,30 @@ class CreateAdminApiKey extends Component<IProps, IState> {
         createApiKeyResponse: resp,
       });
     });
-  }
+  };
 
   render() {
     const apiKey = new ApiKey();
 
-    return(
+    return (
       <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
           title="Add API key"
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Network-server</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to="/api-keys">API keys</Link></span>
+                <span>
+                  <Link to="/api-keys">API keys</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Add</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
         />
         <Card>
           {!this.state.createApiKeyResponse && <ApiKeyForm initialValues={apiKey} onFinish={this.onFinish} />}

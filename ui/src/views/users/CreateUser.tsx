@@ -8,7 +8,6 @@ import { User, CreateUserRequest, CreateUserResponse } from "@chirpstack/chirpst
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";
 
-
 class CreateUser extends Component<RouteComponentProps> {
   onFinish = (obj: User, password: string) => {
     let req = new CreateUserRequest();
@@ -18,25 +17,29 @@ class CreateUser extends Component<RouteComponentProps> {
     UserStore.create(req, (resp: CreateUserResponse) => {
       this.props.history.push("/users");
     });
-  }
+  };
 
   render() {
     const user = new User();
 
-    return(
+    return (
       <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Network-server</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to="/users">Users</Link></span>
+                <span>
+                  <Link to="/users">Users</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Add</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title="Add user"
         />
         <Card>

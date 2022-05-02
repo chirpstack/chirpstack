@@ -3,10 +3,14 @@ import { RouteComponentProps } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, PageHeader } from "antd";
 
-import { User, GetUserRequest, GetUserResponse, UpdateUserPasswordRequest } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import {
+  User,
+  GetUserRequest,
+  GetUserResponse,
+  UpdateUserPasswordRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 import UserStore from "../../stores/UserStore";
 import PasswordForm from "./PasswordForm";
-
 
 interface MatchParams {
   userId: string;
@@ -15,7 +19,6 @@ interface MatchParams {
 interface IState {
   user?: User;
 }
-
 
 class ChangeUserPassword extends Component<RouteComponentProps<MatchParams>, IState> {
   constructor(props: RouteComponentProps<MatchParams>) {
@@ -42,7 +45,7 @@ class ChangeUserPassword extends Component<RouteComponentProps<MatchParams>, ISt
     UserStore.updatePassword(req, () => {
       this.props.history.push("/");
     });
-  }
+  };
 
   render() {
     const user = this.state.user;
@@ -50,10 +53,11 @@ class ChangeUserPassword extends Component<RouteComponentProps<MatchParams>, ISt
       return null;
     }
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Users</span>
               </Breadcrumb.Item>
@@ -63,7 +67,8 @@ class ChangeUserPassword extends Component<RouteComponentProps<MatchParams>, ISt
               <Breadcrumb.Item>
                 <span>Change password</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title={user.getEmail()}
           subTitle={`user id: ${user.getId()}`}
         />

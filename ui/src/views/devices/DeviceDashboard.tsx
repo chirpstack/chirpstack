@@ -7,18 +7,15 @@ import { TimeUnit } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
-import { 
+import {
   Device,
   GetDeviceStatsRequest,
   GetDeviceStatsResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import {
-  DeviceProfile,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import DeviceStore from "../../stores/DeviceStore";
 import Heatmap from "../../components/Heatmap";
-
 
 interface IProps {
   device: Device;
@@ -32,7 +29,7 @@ interface IState {
   statsUpFreq: HeatmapStats[];
   statsUpDr?: any;
   statsGwRssi?: any;
-  statsGwSnr?: any,
+  statsGwSnr?: any;
 }
 
 interface HeatmapStats {
@@ -78,7 +75,7 @@ class DeviceDashboard extends Component<IProps, IState> {
           lineTension: number;
           pointBackgroundColor: string;
           data: number[];
-        }[],
+        }[];
       } = {
         labels: [],
         datasets: [
@@ -129,28 +126,32 @@ class DeviceDashboard extends Component<IProps, IState> {
       let statsGwRssiData: (number | null)[] = [];
       let statsGwRssi = {
         labels: statsGwRssiLabels,
-        datasets: [{
-          label: "rssi (reported by gateways)",
-          borderColor: "rgba(33, 150, 243, 1)",
-          backgroundColor: "rgba(0, 0, 0, 0)",
-          lineTension: 0,
-          pointBackgroundColor: "rgba(33, 150, 243, 1)",
-          data: statsGwRssiData,
-        }],
+        datasets: [
+          {
+            label: "rssi (reported by gateways)",
+            borderColor: "rgba(33, 150, 243, 1)",
+            backgroundColor: "rgba(0, 0, 0, 0)",
+            lineTension: 0,
+            pointBackgroundColor: "rgba(33, 150, 243, 1)",
+            data: statsGwRssiData,
+          },
+        ],
       };
 
       let statsGwSnrLabels: string[] = [];
       let statsGwSnrData: (number | null)[] = [];
       let statsGwSnr = {
         labels: statsGwSnrLabels,
-        datasets: [{
-          label: "rssi (reported by gateways)",
-          borderColor: "rgba(33, 150, 243, 1)",
-          backgroundColor: "rgba(0, 0, 0, 0)",
-          lineTension: 0,
-          pointBackgroundColor: "rgba(33, 150, 243, 1)",
-          data: statsGwSnrData,
-        }],
+        datasets: [
+          {
+            label: "rssi (reported by gateways)",
+            borderColor: "rgba(33, 150, 243, 1)",
+            backgroundColor: "rgba(0, 0, 0, 0)",
+            lineTension: 0,
+            pointBackgroundColor: "rgba(33, 150, 243, 1)",
+            data: statsGwSnrData,
+          },
+        ],
       };
 
       let statsUpFreq: HeatmapStats[] = [];
@@ -160,7 +161,10 @@ class DeviceDashboard extends Component<IProps, IState> {
 
         statsUpFreq.push({
           x: moment(row.getTime()!.toDate()).format("YYYY-MM-DD"),
-          y: row.getRxPacketsPerFrequencyMap().toObject().map(v => [v[0].toString(), v[1]]),
+          y: row
+            .getRxPacketsPerFrequencyMap()
+            .toObject()
+            .map(v => [v[0].toString(), v[1]]),
         });
 
         statsErrors.labels.push(moment(row.getTime()!.toDate()).format("YYYY-MM-DD"));
@@ -187,7 +191,6 @@ class DeviceDashboard extends Component<IProps, IState> {
           }
 
           statsErrorsSet[v[0]].push(v[1]);
-
         }
 
         for (const v of row.getRxPacketsPerDrMap().toObject()) {
@@ -204,7 +207,23 @@ class DeviceDashboard extends Component<IProps, IState> {
         }
       }
 
-      let backgroundColors = ['#8bc34a', '#ff5722', '#ff9800', '#ffc107', '#ffeb3b', '#cddc39', '#4caf50', '#009688', '#00bcd4', '#03a9f4', '#2196f3', '#3f51b5', '#673ab7', '#9c27b0', '#e91e63'];
+      let backgroundColors = [
+        "#8bc34a",
+        "#ff5722",
+        "#ff9800",
+        "#ffc107",
+        "#ffeb3b",
+        "#cddc39",
+        "#4caf50",
+        "#009688",
+        "#00bcd4",
+        "#03a9f4",
+        "#2196f3",
+        "#3f51b5",
+        "#673ab7",
+        "#9c27b0",
+        "#e91e63",
+      ];
       Object.entries(statsErrorsSet).forEach(([k, v]) => {
         statsErrors.datasets.push({
           label: k,
@@ -213,7 +232,23 @@ class DeviceDashboard extends Component<IProps, IState> {
         });
       });
 
-      backgroundColors = ['#8bc34a', '#ff5722', '#ff9800', '#ffc107', '#ffeb3b', '#cddc39', '#4caf50', '#009688', '#00bcd4', '#03a9f4', '#2196f3', '#3f51b5', '#673ab7', '#9c27b0', '#e91e63'];
+      backgroundColors = [
+        "#8bc34a",
+        "#ff5722",
+        "#ff9800",
+        "#ffc107",
+        "#ffeb3b",
+        "#cddc39",
+        "#4caf50",
+        "#009688",
+        "#00bcd4",
+        "#03a9f4",
+        "#2196f3",
+        "#3f51b5",
+        "#673ab7",
+        "#9c27b0",
+        "#e91e63",
+      ];
       Object.entries(statsUpDrSet).forEach(([k, v]) => {
         statsUpDr.datasets.push({
           label: k,
@@ -231,8 +266,7 @@ class DeviceDashboard extends Component<IProps, IState> {
         statsGwSnr: statsGwSnr,
       });
     });
-  }
-
+  };
 
   render() {
     const animation: false = false;
@@ -287,15 +321,21 @@ class DeviceDashboard extends Component<IProps, IState> {
       lastSeenAt = moment(this.props.lastSeenAt).format("YYYY-MM-DD HH:mm:ss");
     }
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <Card>
-        <Descriptions>
-          <Descriptions.Item label="Last seen">{lastSeenAt}</Descriptions.Item>
-          <Descriptions.Item label="Device profile"><Link to={`/tenants/${this.props.deviceProfile.getTenantId()}/device-profiles/${this.props.deviceProfile.getId()}/edit`}>{this.props.deviceProfile.getName()}</Link></Descriptions.Item>
-          <Descriptions.Item label="Enabled">{this.props.device.getIsDisabled() ? "no" : "yes"}</Descriptions.Item>
-          <Descriptions.Item label="Description">{this.props.device.getDescription()}</Descriptions.Item>
-        </Descriptions>
+          <Descriptions>
+            <Descriptions.Item label="Last seen">{lastSeenAt}</Descriptions.Item>
+            <Descriptions.Item label="Device profile">
+              <Link
+                to={`/tenants/${this.props.deviceProfile.getTenantId()}/device-profiles/${this.props.deviceProfile.getId()}/edit`}
+              >
+                {this.props.deviceProfile.getName()}
+              </Link>
+            </Descriptions.Item>
+            <Descriptions.Item label="Enabled">{this.props.device.getIsDisabled() ? "no" : "yes"}</Descriptions.Item>
+            <Descriptions.Item label="Description">{this.props.device.getDescription()}</Descriptions.Item>
+          </Descriptions>
         </Card>
         <Row gutter={24}>
           <Col span={12}>

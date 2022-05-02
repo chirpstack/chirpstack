@@ -22,7 +22,6 @@ import ListApplications from "../applications/ListApplications";
 import CreateApplication from "../applications/CreateApplication";
 import ApplicationLoader from "../applications/ApplicationLoader";
 
-
 interface IState {
   tenant?: Tenant;
   isAdmin: boolean;
@@ -36,7 +35,6 @@ interface MatchParams {
 }
 
 interface IProps extends RouteComponentProps<MatchParams> {}
-
 
 class TenantLoader extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -79,7 +77,7 @@ class TenantLoader extends Component<IProps, IState> {
         tenant: resp.getTenant(),
       });
     });
-  }
+  };
 
   setIsAdmin = () => {
     const tenantId = this.props.match.params.tenantId;
@@ -87,10 +85,12 @@ class TenantLoader extends Component<IProps, IState> {
     this.setState({
       isAdmin: SessionStore.isAdmin(),
       isTenantAdmin: SessionStore.isAdmin() || SessionStore.isTenantAdmin(tenantId),
-      isDeviceAdmin: SessionStore.isAdmin() || SessionStore.isTenantAdmin(tenantId) || SessionStore.isTenantDeviceAdmin(tenantId),
-      isGatewayAdmin: SessionStore.isAdmin() || SessionStore.isTenantAdmin(tenantId) || SessionStore.isTenantGatewayAdmin(tenantId),
+      isDeviceAdmin:
+        SessionStore.isAdmin() || SessionStore.isTenantAdmin(tenantId) || SessionStore.isTenantDeviceAdmin(tenantId),
+      isGatewayAdmin:
+        SessionStore.isAdmin() || SessionStore.isTenantAdmin(tenantId) || SessionStore.isTenantGatewayAdmin(tenantId),
     });
-  }
+  };
 
   render() {
     if (this.state.tenant === undefined) {
@@ -98,24 +98,58 @@ class TenantLoader extends Component<IProps, IState> {
     }
 
     const path = this.props.match.path;
-    const tenant:Tenant = this.state.tenant!;
+    const tenant: Tenant = this.state.tenant!;
 
     return (
       <Switch>
-        <Route exact path={`${path}/api-keys`} render={props => <ListTenantApiKeys tenant={tenant} isAdmin={this.state.isAdmin} {...props} />} />
-        <Route exact path={`${path}/api-keys/create`} render={props => <CreateTenantApiKey tenant={tenant} {...props} />} />
-        <Route exact path={`${path}/device-profiles`} render={props => <ListDeviceProfiles tenant={tenant} {...props} />} />
-        <Route exact path={`${path}/device-profiles/create`} render={props => <CreateDeviceProfile tenant={tenant} {...props} />} />
-        <Route exact path={`${path}/device-profiles/:deviceProfileId([\\w-]{36})/edit`} component={(props: any) => <EditDeviceProfile tenant={tenant} {...props} />} />
+        <Route
+          exact
+          path={`${path}/api-keys`}
+          render={props => <ListTenantApiKeys tenant={tenant} isAdmin={this.state.isAdmin} {...props} />}
+        />
+        <Route
+          exact
+          path={`${path}/api-keys/create`}
+          render={props => <CreateTenantApiKey tenant={tenant} {...props} />}
+        />
+        <Route
+          exact
+          path={`${path}/device-profiles`}
+          render={props => <ListDeviceProfiles tenant={tenant} {...props} />}
+        />
+        <Route
+          exact
+          path={`${path}/device-profiles/create`}
+          render={props => <CreateDeviceProfile tenant={tenant} {...props} />}
+        />
+        <Route
+          exact
+          path={`${path}/device-profiles/:deviceProfileId([\\w-]{36})/edit`}
+          component={(props: any) => <EditDeviceProfile tenant={tenant} {...props} />}
+        />
         <Route exact path={`${path}/users`} render={props => <ListTenantUsers tenant={tenant} {...props} />} />
         <Route exact path={`${path}/users/create`} render={props => <CreateTenantUser tenant={tenant} {...props} />} />
-        <Route exact path={`${path}/users/:userId([\\w-]{36})/edit`} component={(props: any) => <EditTenantUser tenant={tenant} {...props} />} />
-        <Route exact path={`${path}/gateways`} render={props => <ListGateways tenant={tenant} {...props} /> } />
-        <Route exact path={`${path}/gateways/create`} render={props => <CreateGateway tenant={tenant} {...props} /> } />
-        <Route path={`${path}/gateways/:gatewayId([a-f0-9]{16})`} component={(props: any) => <GatewayLayout tenant={tenant} {...props} />} />
-        <Route exact path={`${path}/applications`} render={props => <ListApplications tenant={tenant} {...props} /> } />
-        <Route exact path={`${path}/applications/create`} render={props => <CreateApplication tenant={tenant} {...props} /> } />
-        <Route path={`${path}/applications/:applicationId([\\w-]{36})`} component={(props: any) => <ApplicationLoader tenant={tenant} {...props} />} />
+        <Route
+          exact
+          path={`${path}/users/:userId([\\w-]{36})/edit`}
+          component={(props: any) => <EditTenantUser tenant={tenant} {...props} />}
+        />
+        <Route exact path={`${path}/gateways`} render={props => <ListGateways tenant={tenant} {...props} />} />
+        <Route exact path={`${path}/gateways/create`} render={props => <CreateGateway tenant={tenant} {...props} />} />
+        <Route
+          path={`${path}/gateways/:gatewayId([a-f0-9]{16})`}
+          component={(props: any) => <GatewayLayout tenant={tenant} {...props} />}
+        />
+        <Route exact path={`${path}/applications`} render={props => <ListApplications tenant={tenant} {...props} />} />
+        <Route
+          exact
+          path={`${path}/applications/create`}
+          render={props => <CreateApplication tenant={tenant} {...props} />}
+        />
+        <Route
+          path={`${path}/applications/:applicationId([\\w-]{36})`}
+          component={(props: any) => <ApplicationLoader tenant={tenant} {...props} />}
+        />
         <Route path={`${path}`} render={props => <TenantLayout tenant={tenant} {...props} />} />
       </Switch>
     );

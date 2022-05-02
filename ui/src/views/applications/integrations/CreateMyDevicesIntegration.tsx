@@ -12,11 +12,9 @@ import {
 import MyDevicesIntegrationForm from "./MyDevicesIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-
 interface IProps extends RouteComponentProps {
   application: Application;
 }
-
 
 class CreateMyDevicesIntegration extends Component<IProps> {
   onFinish = (obj: MyDevicesIntegration) => {
@@ -26,14 +24,16 @@ class CreateMyDevicesIntegration extends Component<IProps> {
     req.setIntegration(obj);
 
     ApplicationStore.createMyDevicesIntegration(req, () => {
-      this.props.history.push(`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`);
+      this.props.history.push(
+        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
+      );
     });
-  }
+  };
 
   render() {
     const i = new MyDevicesIntegration();
 
-    return(
+    return (
       <Card title="Add myDevices integration">
         <MyDevicesIntegrationForm initialValues={i} onFinish={this.onFinish} />
       </Card>

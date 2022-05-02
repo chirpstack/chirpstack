@@ -2,9 +2,22 @@ import React, { Component } from "react";
 import { withRouter, RouteComponentProps, Link } from "react-router-dom";
 
 import { Menu, MenuProps } from "antd";
-import { CloudOutlined, HomeOutlined, UserOutlined, DashboardOutlined, KeyOutlined, WifiOutlined, ControlOutlined, AppstoreOutlined } from "@ant-design/icons";
+import {
+  CloudOutlined,
+  HomeOutlined,
+  UserOutlined,
+  DashboardOutlined,
+  KeyOutlined,
+  WifiOutlined,
+  ControlOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
 
-import { GetTenantResponse, ListTenantsRequest, ListTenantsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import {
+  GetTenantResponse,
+  ListTenantsRequest,
+  ListTenantsResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import Autocomplete, { OptionCallbackFunc, OptionsCallbackFunc } from "../components/Autocomplete";
 import TenantStore from "../stores/TenantStore";
@@ -48,7 +61,7 @@ class SideMenu extends Component<RouteComponentProps, IState> {
     this.setState({
       tenantId: SessionStore.getTenantId(),
     });
-  }
+  };
 
   getTenantOptions = (search: string, fn: OptionsCallbackFunc) => {
     let req = new ListTenantsRequest();
@@ -56,85 +69,86 @@ class SideMenu extends Component<RouteComponentProps, IState> {
     req.setLimit(10);
 
     TenantStore.list(req, (resp: ListTenantsResponse) => {
-      const options = resp.getResultList().map((o, i) => {return {label: o.getName(), value: o.getId()}});
+      const options = resp.getResultList().map((o, i) => {
+        return { label: o.getName(), value: o.getId() };
+      });
       fn(options);
     });
-  } 
+  };
 
   getTenantOption = (id: string, fn: OptionCallbackFunc) => {
     TenantStore.get(id, (resp: GetTenantResponse) => {
       const tenant = resp.getTenant();
       if (tenant) {
-        fn({label: tenant.getName(), value: tenant.getId()});
+        fn({ label: tenant.getName(), value: tenant.getId() });
       }
     });
-  }
+  };
 
   onTenantSelect = (value: string) => {
     SessionStore.setTenantId(value);
     this.props.history.push(`/tenants/${value}`);
-  }
+  };
 
   parseLocation = () => {
     const path = this.props.history.location.pathname;
     const tenantRe = /\/tenants\/([\w-]{36})/g;
     const match = tenantRe.exec(path);
 
-    if (match !== null && (this.state.tenantId !== match[1])) {
+    if (match !== null && this.state.tenantId !== match[1]) {
       SessionStore.setTenantId(match[1]);
     }
 
     // ns dashboard
     if (path === "/dashboard") {
-      this.setState({selectedKey: "ns-dashboard"});
+      this.setState({ selectedKey: "ns-dashboard" });
     }
 
     // ns tenants
     if (/\/tenants(\/([\w-]{36}\/edit|create))?/g.exec(path)) {
-      this.setState({selectedKey: "ns-tenants"});
+      this.setState({ selectedKey: "ns-tenants" });
     }
 
     // ns tenants
     if (/\/users(\/([\w-]{36}\/edit|create))?/g.exec(path)) {
-      this.setState({selectedKey: "ns-users"});
+      this.setState({ selectedKey: "ns-users" });
     }
 
     // ns api keys
     if (/\/api-keys(\/([\w-]{36}\/edit|create))?/g.exec(path)) {
-      this.setState({selectedKey: "ns-api-keys"});
+      this.setState({ selectedKey: "ns-api-keys" });
     }
-
 
     // tenant dashboard
     if (/\/tenants\/[\w-]{36}/g.exec(path)) {
-      this.setState({selectedKey: "tenant-dashboard"});
+      this.setState({ selectedKey: "tenant-dashboard" });
     }
 
     // tenant users
     if (/\/tenants\/[\w-]{36}\/users.*/g.exec(path)) {
-      this.setState({selectedKey: "tenant-users"});
+      this.setState({ selectedKey: "tenant-users" });
     }
 
     // tenant api-keys
     if (/\/tenants\/[\w-]{36}\/api-keys.*/g.exec(path)) {
-      this.setState({selectedKey: "tenant-api-keys"});
+      this.setState({ selectedKey: "tenant-api-keys" });
     }
 
     // tenant device-profiles
     if (/\/tenants\/[\w-]{36}\/device-profiles.*/g.exec(path)) {
-      this.setState({selectedKey: "tenant-device-profiles"});
+      this.setState({ selectedKey: "tenant-device-profiles" });
     }
 
     // tenant gateways
     if (/\/tenants\/[\w-]{36}\/gateways.*/g.exec(path)) {
-      this.setState({selectedKey: "tenant-gateways"});
+      this.setState({ selectedKey: "tenant-gateways" });
     }
 
     // tenant applications
     if (/\/tenants\/[\w-]{36}\/applications.*/g.exec(path)) {
-      this.setState({selectedKey: "tenant-applications"});
+      this.setState({ selectedKey: "tenant-applications" });
     }
-  }
+  };
 
   render() {
     const tenantId = this.state.tenantId;
@@ -170,13 +184,13 @@ class SideMenu extends Component<RouteComponentProps, IState> {
       });
     }
 
-    return(
+    return (
       <div>
         <Autocomplete
           placeholder="Select tenant"
           className="organiation-select"
           getOption={this.getTenantOption}
-          getOptions={this.getTenantOptions} 
+          getOptions={this.getTenantOptions}
           onSelect={this.onTenantSelect}
           value={this.state.tenantId}
         />

@@ -8,7 +8,6 @@ import { Tenant, CreateTenantRequest, CreateTenantResponse } from "@chirpstack/c
 import TenantForm from "./TenantForm";
 import TenantStore from "../../stores/TenantStore";
 
-
 class CreateTenant extends Component<RouteComponentProps> {
   onFinish = (obj: Tenant) => {
     let req = new CreateTenantRequest();
@@ -17,25 +16,29 @@ class CreateTenant extends Component<RouteComponentProps> {
     TenantStore.create(req, (resp: CreateTenantResponse) => {
       this.props.history.push("/tenants/" + resp.getId());
     });
-  }
+  };
 
   render() {
     const tenant = new Tenant();
 
-    return(
+    return (
       <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Network-server</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to="/tenants">Tenants</Link></span>
+                <span>
+                  <Link to="/tenants">Tenants</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Add</span>
               </Breadcrumb.Item>
-            </Breadcrumb>}
+            </Breadcrumb>
+          )}
           title="Add tenant"
         />
         <Card>

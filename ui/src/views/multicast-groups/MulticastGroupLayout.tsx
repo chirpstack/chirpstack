@@ -18,22 +18,18 @@ import ListMulticastGroupDevices from "./ListMulticastGroupDevices";
 import EditMulticastGroup from "./EditMulticastGroup";
 import Admin from "../../components/Admin";
 
-
 interface MatchParams {
   multicastGroupId: string;
 }
-
 
 interface IProps extends RouteComponentProps<MatchParams> {
   tenant: Tenant;
   application: Application;
 }
 
-
 interface IState {
   multicastGroup?: MulticastGroup;
 }
-
 
 class MulticastGroupLayout extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -50,16 +46,18 @@ class MulticastGroupLayout extends Component<IProps, IState> {
         multicastGroup: resp.getMulticastGroup(),
       });
     });
-  } 
+  }
 
   deleteMulticastGroup = () => {
     let req = new DeleteMulticastGroupRequest();
     req.setId(this.props.match.params.multicastGroupId);
 
     MulticastGroupStore.delete(req, () => {
-      this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/multicast-groups`);
+      this.props.history.push(
+        `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/multicast-groups`,
+      );
     });
-  }
+  };
 
   render() {
     const tenant = this.props.tenant;
@@ -77,52 +75,76 @@ class MulticastGroupLayout extends Component<IProps, IState> {
       tab = "edit";
     }
 
-    return(
-      <Space direction="vertical" style={{width: "100%"}} size="large">
+    return (
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
         <PageHeader
-          breadcrumbRender={() => <Breadcrumb>
+          breadcrumbRender={() => (
+            <Breadcrumb>
               <Breadcrumb.Item>
                 <span>Tenants</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/applications`}>Applications</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/applications`}>Applications</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/applications/${app.getId()}`}>{app.getName()}</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/applications/${app.getId()}`}>{app.getName()}</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to={`/tenants/${this.props.tenant.getId()}/applications/${app.getId()}/multicast-groups`}>Multicast-groups</Link></span>
+                <span>
+                  <Link to={`/tenants/${this.props.tenant.getId()}/applications/${app.getId()}/multicast-groups`}>
+                    Multicast-groups
+                  </Link>
+                </span>
               </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                {mg.getName()}
-              </Breadcrumb.Item>
-            </Breadcrumb>}
+              <Breadcrumb.Item>{mg.getName()}</Breadcrumb.Item>
+            </Breadcrumb>
+          )}
           title={app.getName()}
           subTitle={`multicast-group id: ${mg.getId()}`}
           extra={[
             <Admin tenantId={tenant.getId()} isDeviceAdmin>
-              <DeleteConfirm
-                typ="multicast-group"
-                confirm={mg.getName()}
-                onConfirm={this.deleteMulticastGroup}
-              >
-                <Button danger type="primary">Delete multicast-group</Button>
+              <DeleteConfirm typ="multicast-group" confirm={mg.getName()} onConfirm={this.deleteMulticastGroup}>
+                <Button danger type="primary">
+                  Delete multicast-group
+                </Button>
               </DeleteConfirm>
-            </Admin>
+            </Admin>,
           ]}
         />
         <Card>
-            <Menu mode="horizontal" selectedKeys={[tab]} style={{marginBottom: 24}}>
-              <Menu.Item key="devices"><Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}`}>Devices</Link></Menu.Item>
-              <Menu.Item key="edit"><Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/edit`}>Configuration</Link></Menu.Item>
-            </Menu>
-            <Switch>
-              <Route exact path={this.props.match.path} render={props => <ListMulticastGroupDevices multicastGroup={mg} {...props} />} />
-              <Route exact path={`${this.props.match.path}/edit`} render={props => <EditMulticastGroup application={app} multicastGroup={mg} {...props} />} />
-            </Switch>
+          <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
+            <Menu.Item key="devices">
+              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}`}>
+                Devices
+              </Link>
+            </Menu.Item>
+            <Menu.Item key="edit">
+              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/edit`}>
+                Configuration
+              </Link>
+            </Menu.Item>
+          </Menu>
+          <Switch>
+            <Route
+              exact
+              path={this.props.match.path}
+              render={props => <ListMulticastGroupDevices multicastGroup={mg} {...props} />}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/edit`}
+              render={props => <EditMulticastGroup application={app} multicastGroup={mg} {...props} />}
+            />
+          </Switch>
         </Card>
       </Space>
     );

@@ -13,17 +13,14 @@ import {
   MulticastGroupListItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
-
 import { getEnumName } from "../helpers";
 import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import Admin from "../../components/Admin";
 
-
 interface IProps {
   application: Application;
 }
-
 
 class ListMulticastGroups extends Component<IProps> {
   columns = (): ColumnsType<MulticastGroupListItem.AsObject> => {
@@ -33,8 +30,14 @@ class ListMulticastGroups extends Component<IProps> {
         dataIndex: "name",
         key: "name",
         render: (text, record) => (
-          <Link to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/multicast-groups/${record.id}`}>{text}</Link>
-        )
+          <Link
+            to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/multicast-groups/${
+              record.id
+            }`}
+          >
+            {text}
+          </Link>
+        ),
       },
       {
         title: "Region",
@@ -55,7 +58,7 @@ class ListMulticastGroups extends Component<IProps> {
         },
       },
     ];
-  }
+  };
 
   getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new ListMulticastGroupsRequest();
@@ -67,21 +70,21 @@ class ListMulticastGroups extends Component<IProps> {
       const obj = resp.toObject();
       callbackFunc(obj.totalCount, obj.resultList);
     });
-  }
+  };
 
   render() {
-    return(
-      <Space direction="vertical" size="large" style={{width: "100%"}}>
+    return (
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <Admin tenantId={this.props.application.getTenantId()} isDeviceAdmin>
-          <Button type="primary" style={{float: "right"}}>
-            <Link to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/multicast-groups/create`}>Add multicast-group</Link>
+          <Button type="primary" style={{ float: "right" }}>
+            <Link
+              to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/multicast-groups/create`}
+            >
+              Add multicast-group
+            </Link>
           </Button>
         </Admin>
-        <DataTable
-          columns={this.columns()}
-          getPage={this.getPage}
-          rowKey="id"
-        />
+        <DataTable columns={this.columns()} getPage={this.getPage} rowKey="id" />
       </Space>
     );
   }

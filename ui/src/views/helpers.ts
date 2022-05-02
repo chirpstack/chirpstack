@@ -1,7 +1,7 @@
 import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
 export function formatMacVersion(m: MacVersion) {
-  switch(m) {
+  switch (m) {
     case MacVersion.LORAWAN_1_0_0:
       return "LoRaWAN 1.0.0";
     case MacVersion.LORAWAN_1_0_1:
@@ -20,7 +20,7 @@ export function formatMacVersion(m: MacVersion) {
 }
 
 export function formatRegParamsRevision(r: RegParamsRevision) {
-  switch(r) {
+  switch (r) {
     case RegParamsRevision.A:
       return "A";
     case RegParamsRevision.B:
@@ -38,8 +38,7 @@ export function formatRegParamsRevision(r: RegParamsRevision) {
   return "";
 }
 
-
-export function getEnumName(enums: {[key: number]: string}, index: number) {
+export function getEnumName(enums: { [key: number]: string }, index: number) {
   for (const [k, v] of Object.entries(enums)) {
     // This is weird. 'typeof v' returns 'number', but 'v === 0' errors
     // that v (string) can't be compared to number.

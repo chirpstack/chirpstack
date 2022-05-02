@@ -1,17 +1,21 @@
 import React, { Component } from "react";
 
 import { Form, Input, Row, Col, Button, Tabs } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import { ListDeviceProfilesRequest, ListDeviceProfilesResponse, GetDeviceProfileRequest, GetDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import {
+  ListDeviceProfilesRequest,
+  ListDeviceProfilesResponse,
+  GetDeviceProfileRequest,
+  GetDeviceProfileResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import EuiInput from "../../components/EuiInput";
-import{ OptionsCallbackFunc, OptionCallbackFunc }  from "../../components/Autocomplete";
+import { OptionsCallbackFunc, OptionCallbackFunc } from "../../components/Autocomplete";
 import AutocompleteInput from "../../components/AutocompleteInput";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
-
 
 interface IProps {
   tenant: Tenant;
@@ -19,7 +23,6 @@ interface IProps {
   onFinish: (obj: Device) => void;
   update?: boolean;
 }
-
 
 class DeviceForm extends Component<IProps> {
   formRef = React.createRef<any>();
@@ -45,7 +48,7 @@ class DeviceForm extends Component<IProps> {
     }
 
     this.props.onFinish(d);
-  }
+  };
 
   getDeviceProfileOptions = (search: string, fn: OptionsCallbackFunc) => {
     let req = new ListDeviceProfilesRequest();
@@ -54,10 +57,12 @@ class DeviceForm extends Component<IProps> {
     req.setLimit(10);
 
     DeviceProfileStore.list(req, (resp: ListDeviceProfilesResponse) => {
-      const options = resp.getResultList().map((o, i) => {return {label: o.getName(), value: o.getId()}});
+      const options = resp.getResultList().map((o, i) => {
+        return { label: o.getName(), value: o.getId() };
+      });
       fn(options);
     });
-  }
+  };
 
   getDeviceProfileOption = (id: string, fn: OptionCallbackFunc) => {
     let req = new GetDeviceProfileRequest();
@@ -66,30 +71,28 @@ class DeviceForm extends Component<IProps> {
     DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
       const dp = resp.getDeviceProfile();
       if (dp) {
-        fn({label: dp.getName(), value: dp.getId()});
+        fn({ label: dp.getName(), value: dp.getId() });
       }
     });
-  }
+  };
 
   render() {
-    return(
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish} ref={this.formRef}>
+    return (
+      <Form
+        layout="vertical"
+        initialValues={this.props.initialValues.toObject()}
+        onFinish={this.onFinish}
+        ref={this.formRef}
+      >
         <Tabs>
           <Tabs.TabPane tab="Device" key="1">
-            <Form.Item
-              label="Name"
-              name="name"
-              rules={[{required: true, message: "Please enter a name!"}]}
-            >
+            <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
               <Input />
             </Form.Item>
-            <Form.Item
-              label="Description"
-              name="description"
-            >
+            <Form.Item label="Description" name="description">
               <Input.TextArea />
             </Form.Item>
-            <EuiInput 
+            <EuiInput
               label="Device EUI (EUI64)"
               name="devEui"
               value={this.props.initialValues.getDevEui()}
@@ -108,7 +111,7 @@ class DeviceForm extends Component<IProps> {
           </Tabs.TabPane>
           <Tabs.TabPane tab="Tags" key="2">
             <Form.List name="tagsMap">
-              {(fields, { add, remove }) =>   (
+              {(fields, { add, remove }) => (
                 <>
                   {fields.map(( {key, name, ...restField} ) => (
                     <Row gutter={24}>
@@ -117,7 +120,7 @@ class DeviceForm extends Component<IProps> {
                           {...restField}
                           name={[name, 0]}
                           fieldKey={[name, 0]}
-                          rules={[{ required: true, message: 'Please enter a key!' }]}
+                          rules={[{ required: true, message: "Please enter a key!" }]}
                         >
                           <Input placeholder="Key" />
                         </Form.Item>
@@ -127,14 +130,14 @@ class DeviceForm extends Component<IProps> {
                           {...restField}
                           name={[name, 1]}
                           fieldKey={[name, 1]}
-                          rules={[{ required: true, message: 'Please enter a value!' }]}
+                          rules={[{ required: true, message: "Please enter a value!" }]}
                         >
                           <Input placeholder="Value" />
                         </Form.Item>
                       </Col>
-                        <Col span={2}>
-                          <MinusCircleOutlined onClick={() => remove(name)} />
-                        </Col>
+                      <Col span={2}>
+                        <MinusCircleOutlined onClick={() => remove(name)} />
+                      </Col>
                     </Row>
                   ))}
                   <Form.Item>
@@ -148,7 +151,7 @@ class DeviceForm extends Component<IProps> {
           </Tabs.TabPane>
           <Tabs.TabPane tab="Variables" key="3">
             <Form.List name="variablesMap">
-              {(fields, { add, remove }) =>   (
+              {(fields, { add, remove }) => (
                 <>
                   {fields.map(( {key, name, ...restField} ) => (
                     <Row gutter={24}>
@@ -157,7 +160,7 @@ class DeviceForm extends Component<IProps> {
                           {...restField}
                           name={[name, 0]}
                           fieldKey={[name, 0]}
-                          rules={[{ required: true, message: 'Please enter a key!' }]}
+                          rules={[{ required: true, message: "Please enter a key!" }]}
                         >
                           <Input placeholder="Key" />
                         </Form.Item>
@@ -167,14 +170,14 @@ class DeviceForm extends Component<IProps> {
                           {...restField}
                           name={[name, 1]}
                           fieldKey={[name, 1]}
-                          rules={[{ required: true, message: 'Please enter a value!' }]}
+                          rules={[{ required: true, message: "Please enter a value!" }]}
                         >
                           <Input placeholder="Value" />
                         </Form.Item>
                       </Col>
-                        <Col span={2}>
-                          <MinusCircleOutlined onClick={() => remove(name)} />
-                        </Col>
+                      <Col span={2}>
+                        <MinusCircleOutlined onClick={() => remove(name)} />
+                      </Col>
                     </Row>
                   ))}
                   <Form.Item>
@@ -188,7 +191,9 @@ class DeviceForm extends Component<IProps> {
           </Tabs.TabPane>
         </Tabs>
         <Form.Item>
-          <Button type="primary" htmlType="submit">Submit</Button>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
         </Form.Item>
       </Form>
     );

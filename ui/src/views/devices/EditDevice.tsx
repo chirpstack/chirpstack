@@ -14,21 +14,20 @@ interface IProps extends RouteComponentProps {
   device: Device;
 }
 
-
 class EditDevice extends Component<IProps> {
   onFinish = (obj: Device) => {
     let req = new UpdateDeviceRequest();
     req.setDevice(obj);
 
     DeviceStore.update(req, () => {
-      this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${obj.getDevEui()}`);
+      this.props.history.push(
+        `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${obj.getDevEui()}`,
+      );
     });
-  }
+  };
 
   render() {
-    return(
-      <DeviceForm initialValues={this.props.device} onFinish={this.onFinish} tenant={this.props.tenant} update />
-    );
+    return <DeviceForm initialValues={this.props.device} onFinish={this.onFinish} tenant={this.props.tenant} update />;
   }
 }
 
