@@ -217,7 +217,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   label="Expected uplink interval (secs)"
                   tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
                   name="uplinkInterval"
-                  rules={[{required: true, message: "Please enter an uplink interval!"}]}
+                  rules={[{ required: true, message: "Please enter an uplink interval!" }]}
                 >
                   <InputNumber min={0} disabled={this.props.disabled} />
                 </Form.Item>
@@ -228,7 +228,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
                   name="deviceStatusReqInterval"
                 >
-                  <InputNumber min={0} disabled={this.props.disabled}  />
+                  <InputNumber min={0} disabled={this.props.disabled} />
                 </Form.Item>
               </Col>
             </Row>
@@ -326,18 +326,21 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 <Select.Option value={CodecRuntime.JS}>JavaScript functions</Select.Option>
               </Select>
             </Form.Item>
-            {this.state.payloadCodecRuntime === CodecRuntime.JS && <CodeEditor
-              label="Codec functions"
-              name="payloadCodecScript"
-              value={this.props.initialValues.getPayloadCodecScript()}
-              formRef={this.formRef} disabled={this.props.disabled}
-            />}
+            {this.state.payloadCodecRuntime === CodecRuntime.JS && (
+              <CodeEditor
+                label="Codec functions"
+                name="payloadCodecScript"
+                value={this.props.initialValues.getPayloadCodecScript()}
+                formRef={this.formRef}
+                disabled={this.props.disabled}
+              />
+            )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Tags" key="6">
             <Form.List name="tagsMap">
               {(fields, { add, remove }) => (
                 <>
-                  {fields.map(( {key, name, ...restField} ) => (
+                  {fields.map(({ key, name, ...restField }) => (
                     <Row gutter={24}>
                       <Col span={6}>
                         <Form.Item

@@ -23,7 +23,6 @@ import Autocomplete, { OptionCallbackFunc, OptionsCallbackFunc } from "../compon
 import TenantStore from "../stores/TenantStore";
 import SessionStore from "../stores/SessionStore";
 
-
 interface IState {
   tenantId: string;
   selectedKey: string;
@@ -160,10 +159,10 @@ class SideMenu extends Component<RouteComponentProps, IState> {
         label: "Network Server",
         icon: <CloudOutlined />,
         children: [
-          {key: "ns-dashboard", icon: <DashboardOutlined />, label: <Link to="/dashboard">Dashboard</Link>},
-          {key: "ns-tenants", icon: <HomeOutlined />, label: <Link to="/tenants">Tenants</Link>},
-          {key: "ns-users", icon: <UserOutlined />, label: <Link to="/users">Users</Link>},
-          {key: "ns-api-keys", icon: <KeyOutlined />, label: <Link to="/api-keys">API keys</Link>},
+          { key: "ns-dashboard", icon: <DashboardOutlined />, label: <Link to="/dashboard">Dashboard</Link> },
+          { key: "ns-tenants", icon: <HomeOutlined />, label: <Link to="/tenants">Tenants</Link> },
+          { key: "ns-users", icon: <UserOutlined />, label: <Link to="/users">Users</Link> },
+          { key: "ns-api-keys", icon: <KeyOutlined />, label: <Link to="/api-keys">API keys</Link> },
         ],
       });
     }
@@ -174,12 +173,32 @@ class SideMenu extends Component<RouteComponentProps, IState> {
         label: "Tenant",
         icon: <HomeOutlined />,
         children: [
-          {key: "tenant-dashboard", icon: <DashboardOutlined />, label: <Link to={`/tenants/${tenantId}`}>Dashboard</Link>},
-          {key: "tenant-users", icon: <UserOutlined />, label: <Link to={`/tenants/${tenantId}/users`}>Users</Link>},
-          {key: "tenant-api-keys", icon: <KeyOutlined />, label: <Link to={`/tenants/${tenantId}/api-keys`}>API keys</Link>},
-          {key: "tenant-device-profiles", icon: <ControlOutlined />, label: <Link to={`/tenants/${tenantId}/device-profiles`}>Device profiles</Link>},
-          {key: "tenant-gateways", icon: <WifiOutlined />, label: <Link to={`/tenants/${tenantId}/gateways`}>Gateways</Link>},
-          {key: "tenant-applications", icon: <AppstoreOutlined />, label: <Link to={`/tenants/${tenantId}/applications`}>Applications</Link>},
+          {
+            key: "tenant-dashboard",
+            icon: <DashboardOutlined />,
+            label: <Link to={`/tenants/${tenantId}`}>Dashboard</Link>,
+          },
+          { key: "tenant-users", icon: <UserOutlined />, label: <Link to={`/tenants/${tenantId}/users`}>Users</Link> },
+          {
+            key: "tenant-api-keys",
+            icon: <KeyOutlined />,
+            label: <Link to={`/tenants/${tenantId}/api-keys`}>API keys</Link>,
+          },
+          {
+            key: "tenant-device-profiles",
+            icon: <ControlOutlined />,
+            label: <Link to={`/tenants/${tenantId}/device-profiles`}>Device profiles</Link>,
+          },
+          {
+            key: "tenant-gateways",
+            icon: <WifiOutlined />,
+            label: <Link to={`/tenants/${tenantId}/gateways`}>Gateways</Link>,
+          },
+          {
+            key: "tenant-applications",
+            icon: <AppstoreOutlined />,
+            label: <Link to={`/tenants/${tenantId}/applications`}>Applications</Link>,
+          },
         ],
       });
     }

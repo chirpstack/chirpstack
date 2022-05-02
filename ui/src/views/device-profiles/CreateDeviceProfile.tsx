@@ -64,7 +64,7 @@ function encodeDownlink(input) {
 }
 `;
 
-    let deviceProfile = new DeviceProfile(); 
+    let deviceProfile = new DeviceProfile();
     deviceProfile.setPayloadCodecScript(codecScript);
     deviceProfile.setSupportsOtaa(true);
     deviceProfile.setUplinkInterval(3600);
