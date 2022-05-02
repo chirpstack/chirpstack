@@ -10,8 +10,9 @@ build-release:
 
 # Build distributable binaries.
 dist:
-	docker-compose run --rm chirpstack-build-amd64 make dist
-	docker-compose run --rm chirpstack-build-arm64 make dist
+	# The pull is needed as else the specified platform is not respected.
+	docker-compose pull chirpstack-build-amd64 && docker-compose run --rm chirpstack-build-amd64 make dist
+	docker-compose pull chirpstack-build-arm64 && docker-compose run --rm chirpstack-build-arm64 make dist
 
 # Set the versions
 version:
