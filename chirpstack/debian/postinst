@@ -8,7 +8,13 @@ chmod 640 /etc/chirpstack/*.toml
 
 # Generate certificates
 CERTROOT=/etc/chirpstack/certs
-cfssl gencert -initca $CERTROOT/ca-csr.json | cfssljson -bare $CERTROOT/ca
-cfssl gencert -ca $CERTROOT/ca.pem -ca-key $CERTROOT/ca-key.pem -config $CERTROOT/ca-config.json -profile server $CERTROOT/mqtt-server.json | cfssljson -bare $CERTROOT/mqtt-server
+
+if [ ! -f $CERTROOT/ca.pem ]; then
+	cfssl gencert -initca $CERTROOT/ca-csr.json | cfssljson -bare $CERTROOT/ca
+fi
+
+if [ ! -f $CERTROOT/mqtt-server.pem ]; then
+	cfssl gencert -ca $CERTROOT/ca.pem -ca-key $CERTROOT/ca-key.pem -config $CERTROOT/ca-config.json -profile server $CERTROOT/mqtt-server.json | cfssljson -bare $CERTROOT/mqtt-server
+fi
 
 #DEBHELPER#

@@ -3,7 +3,7 @@ name = "chirpstack"
 description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
 repository = "https://github.com/chirpstack/chirpstack"
 homepage="https://www.chirpstack.io/"
-version = "4.0.0-test.4"
+version = "4.0.0-test.5"
 authors = ["Orne Brocaar <info@brocaar.com>"]
 edition = "2021"
 publish = false
@@ -114,6 +114,39 @@ assets = [
 	["configuration/*.toml", "etc/chirpstack/", "640"],
 	["configuration/certs/*.json", "etc/chirpstack/certs", "640"],
 	["debian/environment.conf", "etc/systemd/system/chirpstack.service.d/environment.conf", "640"],
+]
+conf-files = [
+	"/etc/chirpstack/certs/ca-config.json",
+	"/etc/chirpstack/certs/ca-csr.json",
+	"/etc/chirpstack/certs/mqtt-server.json",
+	"/etc/chirpstack/chirpstack.toml",
+	"/etc/chirpstack/region_as923.toml",
+	"/etc/chirpstack/region_as923_2.toml",
+	"/etc/chirpstack/region_as923_3.toml",
+	"/etc/chirpstack/region_as923_4.toml",
+	"/etc/chirpstack/region_au915_0.toml",
+	"/etc/chirpstack/region_au915_1.toml",
+	"/etc/chirpstack/region_au915_2.toml",
+	"/etc/chirpstack/region_au915_3.toml",
+	"/etc/chirpstack/region_au915_4.toml",
+	"/etc/chirpstack/region_au915_5.toml",
+	"/etc/chirpstack/region_au915_6.toml",
+	"/etc/chirpstack/region_au915_7.toml",
+	"/etc/chirpstack/region_cn779.toml",
+	"/etc/chirpstack/region_eu433.toml",
+	"/etc/chirpstack/region_eu868.toml",
+	"/etc/chirpstack/region_in865.toml",
+	"/etc/chirpstack/region_ism2400.toml",
+	"/etc/chirpstack/region_kr920.toml",
+	"/etc/chirpstack/region_ru864.toml",
+	"/etc/chirpstack/region_us915_0.toml",
+	"/etc/chirpstack/region_us915_1.toml",
+	"/etc/chirpstack/region_us915_2.toml",
+	"/etc/chirpstack/region_us915_3.toml",
+	"/etc/chirpstack/region_us915_4.toml",
+	"/etc/chirpstack/region_us915_5.toml",
+	"/etc/chirpstack/region_us915_6.toml",
+	"/etc/chirpstack/region_us915_7.toml",
 ]
 depends = "$auto, golang-cfssl"
 suggests = "postgresql, mosquitto, redis"
