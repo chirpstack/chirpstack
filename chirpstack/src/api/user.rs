@@ -7,7 +7,7 @@ use uuid::Uuid;
 use chirpstack_api::api;
 use chirpstack_api::api::user_service_server::UserService;
 
-use super::auth::validator;
+use super::auth::{validator, AuthID};
 use super::error::ToStatus;
 use super::helpers;
 use crate::storage::{tenant, user};
@@ -157,6 +157,15 @@ impl UserService for User {
                 validator::ValidateUserAccess::new(validator::Flag::Delete, user_id),
             )
             .await?;
+
+        let auth_id = request.extensions().get::<AuthID>().unwrap();
+        if let AuthID::User(id) = auth_id {
+            if id == &user_id {
+                return Err(Status::invalid_argument(
+                    "you can not delete yourself from the user",
+                ));
+            }
+        }
 
         user::delete(&user_id).await.map_err(|e| e.status())?;
 
@@ -354,6 +363,14 @@ pub mod test {
 
         let del_req = api::DeleteUserRequest {
             id: create_resp.get_ref().id.clone(),
+        };
+        let mut del_req = Request::new(del_req);
+        del_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        let del_resp = service.delete(del_req).await;
+        assert!(del_resp.is_err());
+
+        let del_req = api::DeleteUserRequest {
+            id: u.id.to_string(),
         };
         let mut del_req = Request::new(del_req);
         del_req.extensions_mut().insert(AuthID::User(u.id.clone()));
