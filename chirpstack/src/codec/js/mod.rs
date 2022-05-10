@@ -7,6 +7,10 @@ use rquickjs::IntoJs;
 use super::convert;
 use crate::config;
 
+mod vendor_base64_js;
+mod vendor_buffer;
+mod vendor_ieee754;
+
 pub async fn decode(
     f_port: u8,
     variables: &HashMap<String, String>,
@@ -16,13 +20,25 @@ pub async fn decode(
     let conf = config::get();
     let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
 
+    let resolver = rquickjs::BuiltinResolver::default()
+        .with_module("base64-js")
+        .with_module("ieee754")
+        .with_module("buffer");
+    let loader = rquickjs::BuiltinLoader::default()
+        .with_module("base64-js", vendor_base64_js::SCRIPT)
+        .with_module("ieee754", vendor_ieee754::SCRIPT)
+        .with_module("buffer", vendor_buffer::SCRIPT);
+
     let rt = rquickjs::Runtime::new()?;
     rt.set_interrupt_handler(Some(Box::new(move || SystemTime::now() > max_run_ts)));
+    rt.set_loader(resolver, loader);
 
     let ctx = rquickjs::Context::full(&rt)?;
 
     let script = format!(
         r#"
+        import {{ Buffer }} from "buffer";
+
         {}
 
         export {{ decodeUplink }};
@@ -61,14 +77,27 @@ pub async fn encode(
     let conf = config::get();
     let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
 
+    let resolver = rquickjs::BuiltinResolver::default()
+        .with_module("base64-js")
+        .with_module("ieee754")
+        .with_module("buffer");
+    let loader = rquickjs::BuiltinLoader::default()
+        .with_module("base64-js", vendor_base64_js::SCRIPT)
+        .with_module("ieee754", vendor_ieee754::SCRIPT)
+        .with_module("buffer", vendor_buffer::SCRIPT);
+
     let rt = rquickjs::Runtime::new()?;
     rt.set_interrupt_handler(Some(Box::new(move || SystemTime::now() > max_run_ts)));
+    rt.set_loader(resolver, loader);
 
     let ctx = rquickjs::Context::full(&rt)?;
 
     let script = format!(
         r#"
+        import {{ Buffer }} from "buffer";
+
         {}
+
         export {{ encodeDownlink }};
         "#,
         encode_config,
@@ -113,10 +142,13 @@ pub mod test {
     pub async fn test_decode() {
         let decoder = r#"
             function decodeUplink(input) {
+                var buff = new Buffer(input.bytes);
+
                 return {
                     object: {
                         f_port: input.fPort,
                         variables: input.variables,
+                        data_hex: buff.toString('hex'),
                         data: input.bytes
                     }
                 };
@@ -157,6 +189,12 @@ pub mod test {
                                 .collect(),
                             },
                         )),
+                    },
+                ),
+                (
+                    "data_hex".to_string(),
+                    pbjson_types::Value {
+                        kind: Some(pbjson_types::value::Kind::StringValue("010203".to_string())),
                     },
                 ),
                 (
