@@ -351,6 +351,8 @@ impl DeviceService for Device {
         let dk = device_keys::DeviceKeys {
             dev_eui: dk.dev_eui,
             created_at: dk.created_at,
+            dev_nonces: dk.dev_nonces,
+            join_nonce: dk.join_nonce,
             nwk_key: AES128Key::from_str(&req_dk.nwk_key).map_err(|e| e.status())?,
             app_key: if !req_dk.app_key.is_empty() {
                 AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?
