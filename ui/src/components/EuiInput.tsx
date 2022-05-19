@@ -17,6 +17,11 @@ interface IState {
   value: string;
 }
 
+// NB: adapted from https://stackoverflow.com/questions/39225161/convert-uint8array-into-hex-string-equivalent-in-node-js
+function i2hex(i: number) {
+  return ('0' + i.toString(16)).slice(-2);
+}
+
 class EuiInput extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
@@ -93,7 +98,8 @@ class EuiInput extends Component<IProps, IState> {
     let b = new Uint8Array(8);
     cryptoObj.getRandomValues(b);
 
-    let key = Buffer.from(b).toString("hex");
+    let key = Array.from(b).map(i2hex).join('');
+
     this.setState(
       {
         value: key,
