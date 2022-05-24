@@ -10,6 +10,7 @@ use tracing::info;
 
 use crate::storage::{get_redis_conn, redis_key};
 
+#[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
 #[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Aggregation {

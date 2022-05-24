@@ -150,7 +150,7 @@ impl<'a> Integration<'a> {
                 info!("Starting MQTT consumer loop");
                 while let Some(msg_opt) = stream.next().await {
                     if let Some(msg) = msg_opt {
-                        let caps = match command_regex.captures(&msg.topic()) {
+                        let caps = match command_regex.captures(msg.topic()) {
                             Some(v) => v,
                             None => {
                                 error!(topic = %msg.topic(), "Error parsing command topic (regex captures returned None)");
@@ -398,7 +398,7 @@ async fn message_callback(
         match command.as_ref() {
             "down" => {
                 let cmd: integration::DownlinkCommand = match json {
-                    true => serde_json::from_slice(&b)?,
+                    true => serde_json::from_slice(b)?,
                     false => integration::DownlinkCommand::decode(&mut Cursor::new(b))?,
                 };
                 if dev_eui != cmd.dev_eui {

@@ -110,32 +110,27 @@ pub fn pb_json_to_prost(obj: &pbjson_types::Struct) -> prost_types::Struct {
 
 fn _pb_json_to_prost(v: &pbjson_types::Value) -> prost_types::Value {
     prost_types::Value {
-        kind: match &v.kind {
-            None => None,
-            Some(v) => Some(match v {
-                pbjson_types::value::Kind::NullValue(v) => prost_types::value::Kind::NullValue(*v),
-                pbjson_types::value::Kind::NumberValue(v) => {
-                    prost_types::value::Kind::NumberValue(*v)
-                }
-                pbjson_types::value::Kind::StringValue(v) => {
-                    prost_types::value::Kind::StringValue(v.to_string())
-                }
-                pbjson_types::value::Kind::BoolValue(v) => prost_types::value::Kind::BoolValue(*v),
-                pbjson_types::value::Kind::StructValue(v) => {
-                    prost_types::value::Kind::StructValue(prost_types::Struct {
-                        fields: v
-                            .fields
-                            .iter()
-                            .map(|(k, v)| (k.to_string(), _pb_json_to_prost(v)))
-                            .collect(),
-                    })
-                }
-                pbjson_types::value::Kind::ListValue(v) => {
-                    prost_types::value::Kind::ListValue(prost_types::ListValue {
-                        values: v.values.iter().map(|i| _pb_json_to_prost(i)).collect(),
-                    })
-                }
-            }),
-        },
+        kind: v.kind.as_ref().map(|v| match v {
+            pbjson_types::value::Kind::NullValue(v) => prost_types::value::Kind::NullValue(*v),
+            pbjson_types::value::Kind::NumberValue(v) => prost_types::value::Kind::NumberValue(*v),
+            pbjson_types::value::Kind::StringValue(v) => {
+                prost_types::value::Kind::StringValue(v.to_string())
+            }
+            pbjson_types::value::Kind::BoolValue(v) => prost_types::value::Kind::BoolValue(*v),
+            pbjson_types::value::Kind::StructValue(v) => {
+                prost_types::value::Kind::StructValue(prost_types::Struct {
+                    fields: v
+                        .fields
+                        .iter()
+                        .map(|(k, v)| (k.to_string(), _pb_json_to_prost(v)))
+                        .collect(),
+                })
+            }
+            pbjson_types::value::Kind::ListValue(v) => {
+                prost_types::value::Kind::ListValue(prost_types::ListValue {
+                    values: v.values.iter().map(_pb_json_to_prost).collect(),
+                })
+            }
+        }),
     }
 }
