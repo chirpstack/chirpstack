@@ -2,6 +2,7 @@ import React, { Component } from "react";
 
 import { Input, Select, Button, Space, Form } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
+import {Buffer} from "buffer";
 
 interface IProps {
   formRef: React.RefObject<any>;

@@ -6,6 +6,7 @@ import { notification } from "antd";
 import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Checkbox, Popconfirm } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
+import {Buffer} from "buffer";
 
 import {
   Device,

@@ -21,6 +21,7 @@
     "@types/react-router-dom": "^5.3.3",
     "antd": "^4.20.1",
     "antd-mask-input": "^2.0.7",
+    "buffer": "^6.0.3",
     "chart.js": "^3.7.1",
     "chartjs-adapter-moment": "^1.0.0",
     "chartjs-chart-matrix": "^1.1.1",
