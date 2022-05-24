@@ -136,11 +136,11 @@ class DeviceQueue extends Component<IProps, IState> {
     item.setConfirmed(values.confirmed);
 
     if (values.hex !== undefined) {
-      item.setData(Buffer.from(values.hex, "hex"));
+      item.setData(new Uint8Array(Buffer.from(values.hex, "hex")));
     }
 
     if (values.base64 !== undefined) {
-      item.setData(Buffer.from(values.base64, "base64"));
+      item.setData(new Uint8Array(Buffer.from(values.base64, "base64")));
     }
 
     if (values.json !== undefined) {
