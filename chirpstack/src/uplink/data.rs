@@ -158,8 +158,12 @@ impl Data {
 
     async fn get_device_profile(&mut self) -> Result<()> {
         trace!("Getting the device-profile");
-        self.device_profile =
-            Some(device_profile::get(&self.device.as_ref().unwrap().device_profile_id).await?);
+        let dp = device_profile::get(&self.device.as_ref().unwrap().device_profile_id).await?;
+        if dp.region != self.uplink_frame_set.region_common_name {
+            return Err(anyhow!("Invalid device-profile region"));
+        }
+        self.device_profile = Some(dp);
+
         Ok(())
     }
 
