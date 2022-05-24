@@ -127,6 +127,7 @@ async fn test_gateway_filtering() {
         f_cnt_up: 7,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
         rx2_frequency: 869525000,
         region_name: "eu868".into(),
         ..Default::default()
@@ -268,6 +269,7 @@ async fn test_lorawan_10_errors() {
         f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
         rx2_frequency: 869525000,
         region_name: "eu868".into(),
         ..Default::default()
@@ -452,6 +454,7 @@ async fn test_lorawan_11_errors() {
         f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
         rx2_frequency: 869525000,
         region_name: "eu868".into(),
         ..Default::default()
@@ -594,6 +597,7 @@ async fn test_lorawan_10_skip_f_cnt() {
         f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
         rx2_frequency: 869525000,
         skip_f_cnt_check: true,
         region_name: "eu868".into(),
@@ -781,6 +785,7 @@ async fn test_lorawan_10_device_disabled() {
         f_cnt_up: 7,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
         rx2_frequency: 869525000,
         region_name: "eu868".into(),
         ..Default::default()
@@ -908,6 +913,7 @@ async fn test_lorawan_10_uplink() {
         f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
         rx2_frequency: 869525000,
         region_name: "eu868".into(),
         ..Default::default()
@@ -1522,6 +1528,7 @@ async fn test_lorawan_11_uplink() {
         n_f_cnt_down: 5,
         conf_f_cnt: 4,
         enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
         rx2_frequency: 869525000,
         region_name: "eu868".into(),
         ..Default::default()
@@ -1666,6 +1673,10 @@ async fn test_lorawan_11_uplink() {
 #[tokio::test]
 async fn test_lorawan_10_rx_delay() {
     let _guard = test::prepare().await;
+
+    let mut conf = (*config::get()).clone();
+    conf.regions[0].network.rx1_delay = 3;
+    config::set(conf);
 
     let t = tenant::create(tenant::Tenant {
         name: "tenant".into(),
@@ -2504,6 +2515,7 @@ async fn test_lorawan_10_device_queue() {
         f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
         rx2_frequency: 869525000,
         region_name: "eu868".into(),
         ..Default::default()
@@ -2973,6 +2985,7 @@ async fn test_lorawan_11_device_queue() {
         a_f_cnt_down: 3,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
+        rx1_delay: 1,
         region_name: "eu868".into(),
         ..Default::default()
     };
@@ -3443,6 +3456,7 @@ async fn test_lorawan_10_adr() {
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
+        rx1_delay: 1,
         region_name: "eu868".into(),
         ..Default::default()
     };
@@ -4279,6 +4293,7 @@ async fn test_lorawan_10_device_status_request() {
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
+        rx1_delay: 1,
         region_name: "eu868".into(),
         ..Default::default()
     };
@@ -4543,6 +4558,7 @@ async fn test_lorawan_11_receive_window_selection() {
         conf_f_cnt: 4,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
+        rx1_delay: 1,
         region_name: "eu868".into(),
         ..Default::default()
     };

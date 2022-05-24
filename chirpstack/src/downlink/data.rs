@@ -977,6 +977,14 @@ impl Data {
             self.mac_commands.push(set);
         }
 
+        let rx1_delay = self.device_session.rx1_delay as u8;
+        if rx1_delay != self.network_conf.rx1_delay {
+            let set = maccommand::rx_timing_setup::request(self.network_conf.rx1_delay);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::RxTimingSetupReq, &set)
+                .await?;
+            self.mac_commands.push(set);
+        }
+
         Ok(())
     }
 
