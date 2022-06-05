@@ -1,0 +1,9 @@
+FROM golang:1.18-alpine
+
+ENV PROJECT_PATH=/chirpstack/api
+RUN apk add --no-cache make git bash protobuf protobuf-dev
+
+RUN git clone https://github.com/googleapis/googleapis.git /googleapis
+
+RUN mkdir -p $PROJECT_PATH
+WORKDIR $PROJECT_PATH

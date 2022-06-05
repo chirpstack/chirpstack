@@ -17,3 +17,6 @@ js:
 
 python:
 	docker-compose run --rm chirpstack-api-python
+
+md:
+	docker-compose run --rm chirpstack-api-md

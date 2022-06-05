@@ -35,3 +35,10 @@ services:
     command: bash -c "cd js && make all"
     volumes:
       - ./:/chirpstack/api
+  chirpstack-api-md:
+    build:
+      context: .
+      dockerfile: Dockerfile-md
+    command: bash -c "cd md && make all"
+    volumes:
+      - ./:/chirpstack/api
