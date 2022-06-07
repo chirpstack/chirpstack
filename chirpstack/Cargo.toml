@@ -83,7 +83,7 @@ rand_core = { version = "0.6", features = ["std"] }
 # jsonwebtoken = "8.0"
 jsonwebtoken = "8.1.0"
 openssl = { version = "0.10", features = ["vendored"] }
-openidconnect = { version = "2.2.0", features = ["accept-rfc3339-timestamps"] }
+openidconnect = { version = "2.3.1", features = ["accept-rfc3339-timestamps"] }
 
 # MQTT
 paho-mqtt = { version = "0.9", features = ["vendored-ssl"] }
