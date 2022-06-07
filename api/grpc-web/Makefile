@@ -20,6 +20,7 @@ api:
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/tenant.proto
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/application.proto
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/device_profile.proto
+	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/device_profile_template.proto
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/device.proto
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/gateway.proto
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/frame_log.proto

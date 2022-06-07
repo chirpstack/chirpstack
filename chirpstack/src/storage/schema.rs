@@ -88,7 +88,7 @@ table! {
         supports_class_c -> Bool,
         class_b_timeout -> Int4,
         class_b_ping_slot_period -> Int4,
-        class_b_ping_slot_dr -> Int4,
+        class_b_ping_slot_dr -> Int2,
         class_b_ping_slot_freq -> Int8,
         class_c_timeout -> Int4,
         abp_rx1_delay -> Int2,
@@ -98,6 +98,41 @@ table! {
         tags -> Jsonb,
         payload_codec_script -> Text,
         flush_queue_on_activate -> Bool,
+        description -> Text,
+    }
+}
+
+table! {
+    device_profile_template (id) {
+        id -> Text,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        name -> Varchar,
+        description -> Text,
+        vendor -> Varchar,
+        firmware -> Varchar,
+        region -> Varchar,
+        mac_version -> Varchar,
+        reg_params_revision -> Varchar,
+        adr_algorithm_id -> Varchar,
+        payload_codec_runtime -> Varchar,
+        payload_codec_script -> Text,
+        uplink_interval -> Int4,
+        device_status_req_interval -> Int4,
+        flush_queue_on_activate -> Bool,
+        supports_otaa -> Bool,
+        supports_class_b -> Bool,
+        supports_class_c -> Bool,
+        class_b_timeout -> Int4,
+        class_b_ping_slot_period -> Int4,
+        class_b_ping_slot_dr -> Int2,
+        class_b_ping_slot_freq -> Int8,
+        class_c_timeout -> Int4,
+        abp_rx1_delay -> Int2,
+        abp_rx1_dr_offset -> Int2,
+        abp_rx2_dr -> Int2,
+        abp_rx2_freq -> Int8,
+        tags -> Jsonb,
     }
 }
 
@@ -240,6 +275,7 @@ allow_tables_to_appear_in_same_query!(
     device,
     device_keys,
     device_profile,
+    device_profile_template,
     device_queue_item,
     gateway,
     multicast_group,

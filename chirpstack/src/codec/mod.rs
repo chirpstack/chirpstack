@@ -4,6 +4,7 @@ use std::io::Write;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
+use chrono::{DateTime, Utc};
 use diesel::backend::Backend;
 use diesel::sql_types::Text;
 use diesel::{deserialize, serialize};
@@ -66,6 +67,7 @@ impl FromStr for Codec {
 
 pub async fn binary_to_struct(
     codec: Codec,
+    recv_time: DateTime<Utc>,
     f_port: u8,
     variables: &HashMap<String, String>,
     decoder_config: &str,
@@ -74,7 +76,7 @@ pub async fn binary_to_struct(
     Ok(match codec {
         Codec::NONE => None,
         Codec::CAYENNE_LPP => Some(cayenne_lpp::decode(b).context("CayenneLpp decode")?),
-        Codec::JS => Some(js::decode(f_port, variables, decoder_config, b).await?),
+        Codec::JS => Some(js::decode(recv_time, f_port, variables, decoder_config, b).await?),
     })
 }
 

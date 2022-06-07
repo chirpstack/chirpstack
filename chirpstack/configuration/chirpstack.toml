@@ -65,20 +65,20 @@
   # Multiple regions can be enabled simultaneously. Each region must match
   # the 'name' parameter of the region configuration in '[[regions]]'.
   enabled_regions=[
-    "as923",
-    "as923_2",
-    "as923_3",
-    "as923_4",
-    "au915_0",
-    "cn779",
-    "eu433",
+    #"as923",
+    #"as923_2",
+    #"as923_3",
+    #"as923_4",
+    #"au915_0",
+    #"cn779",
+    #"eu433",
     "eu868",
-    "in865",
-    "ism2400",
-    "kr920",
-    "ru864",
-    "us915_0",
-    "us915_1",
+    #"in865",
+    #"ism2400",
+    #"kr920",
+    #"ru864",
+    #"us915_0",
+    #"us915_1",
   ]
 
 

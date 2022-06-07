@@ -54,6 +54,9 @@ message DeviceProfile {
     // Name.
     string name = 3;
 
+    // Description.
+    string description = 26;
+
     // Region.
     common.Region region = 4; 
 

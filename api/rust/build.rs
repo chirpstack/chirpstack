@@ -136,6 +136,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "api/tenant.proto",
                 "api/application.proto",
                 "api/device_profile.proto",
+                "api/device_profile_template.proto",
                 "api/device.proto",
                 "api/gateway.proto",
                 "api/frame_log.proto",

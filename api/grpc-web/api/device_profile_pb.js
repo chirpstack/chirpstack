@@ -321,6 +321,7 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     tenantId: jspb.Message.getFieldWithDefault(msg, 2, ""),
     name: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    description: jspb.Message.getFieldWithDefault(msg, 26, ""),
     region: jspb.Message.getFieldWithDefault(msg, 4, 0),
     macVersion: jspb.Message.getFieldWithDefault(msg, 5, 0),
     regParamsRevision: jspb.Message.getFieldWithDefault(msg, 6, 0),
@@ -390,6 +391,10 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
+      break;
+    case 26:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDescription(value);
       break;
     case 4:
       var value = /** @type {!proto.common.Region} */ (reader.readEnum());
@@ -528,6 +533,13 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = message.getDescription();
+  if (f.length > 0) {
+    writer.writeString(
+      26,
       f
     );
   }
@@ -736,6 +748,24 @@ proto.api.DeviceProfile.prototype.getName = function() {
  */
 proto.api.DeviceProfile.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional string description = 26;
+ * @return {string}
+ */
+proto.api.DeviceProfile.prototype.getDescription = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 26, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setDescription = function(value) {
+  return jspb.Message.setProto3StringField(this, 26, value);
 };
 
 

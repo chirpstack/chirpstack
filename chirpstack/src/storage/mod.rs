@@ -16,6 +16,7 @@ pub mod device;
 pub mod device_gateway;
 pub mod device_keys;
 pub mod device_profile;
+pub mod device_profile_template;
 pub mod device_queue;
 pub mod device_session;
 pub mod downlink_frame;

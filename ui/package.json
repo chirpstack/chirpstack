@@ -19,7 +19,7 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.3.3",
-    "antd": "^4.20.1",
+    "antd": "^4.20.6",
     "antd-mask-input": "^2.0.7",
     "buffer": "^6.0.3",
     "chart.js": "^3.7.1",

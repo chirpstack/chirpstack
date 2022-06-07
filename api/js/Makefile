@@ -23,6 +23,7 @@ api:
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/tenant.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/application.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/device_profile.proto
+	protoc ${PROTOC_GRPC_ARGS} ../proto/api/device_profile_template.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/device.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/gateway.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/frame_log.proto

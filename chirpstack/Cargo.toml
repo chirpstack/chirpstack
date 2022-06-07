@@ -15,6 +15,7 @@ clap = "2.33"
 
 # Configuration
 serde = { version = "1.0", features = ["derive", "rc"] }
+serde_yaml = "0.8"
 serde_json = "1.0"
 humantime-serde = "1.0"
 toml = "0.5"
@@ -89,7 +90,7 @@ paho-mqtt = { version = "0.9", features = ["vendored-ssl"] }
 hex = "0.4"
 
 # Codecs
-rquickjs = { version = "0.1.5", features = ["bindgen", "loader", "array-buffer"] }
+rquickjs = { version = "0.1.6", features = ["bindgen", "loader", "array-buffer", "chrono"] }
 
 # Misc
 lazy_static = "1.4"

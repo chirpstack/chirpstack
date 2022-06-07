@@ -1,188 +1,20 @@
 import React, { Component } from "react";
 
-import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader } from "antd";
+import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
-import { DeviceProfile, CodecRuntime } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import { DeviceProfileTemplate } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
+import { CodecRuntime } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import {
-  ListDeviceProfileTemplatesRequest,
-  ListDeviceProfileTemplatesResponse,
-  GetDeviceProfileTemplateRequest,
-  GetDeviceProfileTemplateResponse,
-  DeviceProfileTemplateListItem,
-  DeviceProfileTemplate,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
 
-import { getEnumName } from "../helpers";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
-import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
 import CodeEditor from "../../components/CodeEditor";
 
-interface ModalProps {
-  onOk: (dp: DeviceProfileTemplate) => void;
-  onCancel: () => void;
-  visible: boolean;
-}
-
-interface ModalState {
-  templates: DeviceProfileTemplateListItem[];
-  templatesLoaded: boolean;
-  templateId?: string;
-}
-
-interface Option {
-  value: string;
-  label: string;
-  children?: Option[];
-}
-
-class TemplateModal extends Component<ModalProps, ModalState> {
-  constructor(props: ModalProps) {
-    super(props);
-    this.state = {
-      templates: [],
-      templatesLoaded: false,
-    };
-  }
-
-  componentDidUpdate(prevProps: ModalProps) {
-    if (prevProps === this.props) {
-      return;
-    }
-
-    if (this.props.visible) {
-      this.setState({
-        templatesLoaded: false,
-      });
-
-      let req = new ListDeviceProfileTemplatesRequest();
-      req.setLimit(99999);
-
-      DeviceProfileTemplateStore.list(req, (resp: ListDeviceProfileTemplatesResponse) => {
-        this.setState({
-          templatesLoaded: true,
-          templates: resp.getResultList(),
-        });
-      });
-    }
-  }
-
-  onChange = (value: (string | number)[]) => {
-    this.setState({
-      templateId: value.at(-1)! as string,
-    });
-  };
-
-  onOk = () => {
-    if (this.state.templateId) {
-      let req = new GetDeviceProfileTemplateRequest();
-      req.setId(this.state.templateId);
-
-      DeviceProfileTemplateStore.get(req, (resp: GetDeviceProfileTemplateResponse) => {
-        const dp = resp.getDeviceProfileTemplate();
-        if (dp) {
-          this.props.onOk(dp);
-        }
-      });
-    }
-  };
-
-  render() {
-    let options: Option[] = [];
-    let vendor = "";
-    let device = "";
-    let firmware = "";
-    let region = "";
-
-    for (const item of this.state.templates) {
-      if (vendor !== item.getVendor()) {
-        options.push({
-          value: item.getId(),
-          label: item.getVendor(),
-          children: [],
-        });
-
-        vendor = item.getVendor();
-        device = "";
-        firmware = "";
-        region = "";
-      }
-
-      if (device !== item.getName()) {
-        options.at(-1)!.children!.push({
-          value: item.getId(),
-          label: item.getName(),
-          children: [],
-        });
-
-        device = item.getName();
-        firmware = "";
-        region = "";
-      }
-
-      if (firmware !== item.getFirmware()) {
-        options
-          .at(-1)!
-          .children!.at(-1)!
-          .children!.push({
-            value: item.getId(),
-            label: "FW version: " + item.getFirmware(),
-            children: [],
-          });
-
-        firmware = item.getFirmware();
-        region = "";
-      }
-
-      if (region !== getEnumName(Region, item.getRegion())) {
-        options
-          .at(-1)!
-          .children!.at(-1)!
-          .children!.at(-1)!
-          .children!.push({
-            value: item.getId(),
-            label: getEnumName(Region, item.getRegion()),
-            children: [],
-          });
-
-        region = getEnumName(Region, item.getRegion());
-      }
-    }
-
-    return (
-      <Modal
-        title="Select device-profile template"
-        visible={this.props.visible}
-        width="80%"
-        bodyStyle={{ height: 300 }}
-        onOk={this.onOk}
-        onCancel={this.props.onCancel}
-        okButtonProps={{ disabled: !!!this.state.templateId }}
-      >
-        {!this.state.templatesLoaded && (
-          <div className="spinner">
-            <Spin />
-          </div>
-        )}
-        {this.state.templatesLoaded && (
-          <Cascader
-            style={{ width: "100%" }}
-            placeholder="Select a device-profile template"
-            options={options}
-            onChange={this.onChange}
-          />
-        )}
-      </Modal>
-    );
-  }
-}
-
 interface IProps {
-  initialValues: DeviceProfile;
-  onFinish: (obj: DeviceProfile) => void;
-  disabled?: boolean;
+  initialValues: DeviceProfileTemplate;
+  onFinish: (obj: DeviceProfileTemplate) => void;
+  update?: boolean;
 }
 
 interface IState {
@@ -191,11 +23,9 @@ interface IState {
   supportsClassC: boolean;
   payloadCodecRuntime: CodecRuntime;
   adrAlgorithms: [string, string][];
-  templateModalVisible: boolean;
-  tabActive: string;
 }
 
-class DeviceProfileForm extends Component<IProps, IState> {
+class DeviceProfileTemplateForm extends Component<IProps, IState> {
   formRef = React.createRef<any>();
 
   constructor(props: IProps) {
@@ -206,8 +36,6 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsClassC: false,
       payloadCodecRuntime: CodecRuntime.NONE,
       adrAlgorithms: [],
-      templateModalVisible: false,
-      tabActive: "1",
     };
   }
 
@@ -233,21 +61,15 @@ class DeviceProfileForm extends Component<IProps, IState> {
     });
   }
 
-  onTabChange = (activeKey: string) => {
-    this.setState({
-      tabActive: activeKey,
-    });
-  }
-
-  onFinish = (values: DeviceProfile.AsObject) => {
+  onFinish = (values: DeviceProfileTemplate.AsObject) => {
     const v = Object.assign(this.props.initialValues.toObject(), values);
-
-    let dp = new DeviceProfile();
+    let dp = new DeviceProfileTemplate();
     dp.setId(v.id);
-    dp.setTenantId(v.tenantId);
 
     dp.setName(v.name);
     dp.setDescription(v.description);
+    dp.setVendor(v.vendor);
+    dp.setFirmware(v.firmware);
     dp.setRegion(v.region);
     dp.setMacVersion(v.macVersion);
     dp.setRegParamsRevision(v.regParamsRevision);
@@ -280,7 +102,6 @@ class DeviceProfileForm extends Component<IProps, IState> {
       dp.getTagsMap().set(elm[0], elm[1]);
     }
 
-
     this.props.onFinish(dp);
   };
 
@@ -308,102 +129,8 @@ class DeviceProfileForm extends Component<IProps, IState> {
     });
   };
 
-  showTemplateModal = () => {
-    this.setState({
-      templateModalVisible: true,
-    });
-  };
-
-  onTemplateModalOk = (dp: DeviceProfileTemplate) => {
-    this.setState({
-      templateModalVisible: false,
-    });
-
-    this.formRef.current.setFieldsValue({
-      name: dp.getName(),
-      description: dp.getDescription(),
-      region: dp.getRegion(),
-      macVersion: dp.getMacVersion(),
-      regParamsRevision: dp.getRegParamsRevision(),
-      adrAlgorithmId: dp.getAdrAlgorithmId(),
-      payloadCodecRuntime: dp.getPayloadCodecRuntime(),
-      payloadCodecScript: dp.getPayloadCodecScript(),
-      flushQueueOnActivate: dp.getFlushQueueOnActivate(),
-      uplinkInterval: dp.getUplinkInterval(),
-      deviceStatusReqInterval: dp.getDeviceStatusReqInterval(),
-      supportsOtaa: dp.getSupportsOtaa(),
-      supportsClassB: dp.getSupportsClassB(),
-      supportsClassC: dp.getSupportsClassC(),
-      classBTimeout: dp.getClassBTimeout(),
-      abpRx1Delay: dp.getAbpRx1Delay(),
-      abpRx2Dr: dp.getAbpRx2Dr(),
-      abpRx2Freq: dp.getAbpRx2Freq(),
-      tagsMap: [
-        ["firmware", dp.getFirmware()],
-        ["vendor", dp.getVendor()],
-        ["device", dp.getName()],
-        ["device_profile_template_id", dp.getId()],
-      ],
-    });
-
-    const tabActive = this.state.tabActive;
-
-    this.setState({
-      supportsOtaa: dp.getSupportsOtaa(),
-      supportsClassB: dp.getSupportsClassB(),
-      supportsClassC: dp.getSupportsClassC(),
-      payloadCodecRuntime: dp.getPayloadCodecRuntime(),
-    }, () => {
-      // This is a workaround as without rendering the TabPane (e.g. the user
-      // does not click through the different tabs), setFieldsValue does not
-      // actually update the fields. For example if selecting a template with
-      // a codec script and immediately click the save button, no codec script
-      // is passed to the onFinish function. This seems to be with every field
-      // that is not actually rendered before clicking the Save button.
-      this.setState({
-        tabActive: "1",
-      }, () => {
-        this.setState({
-          tabActive: "2",
-        }, () => {
-          this.setState({
-            tabActive: "3",
-          }, () => {
-            this.setState({
-              tabActive: "4",
-            }, () => {
-              this.setState({
-                tabActive: "5",
-              }, () => {
-                this.setState({
-                  tabActive: "6",
-                }, () => {
-                  this.setState({
-                    tabActive: tabActive,
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
-    });
-
-  };
-
-  onTemplateModalCancel = () => {
-    this.setState({
-      templateModalVisible: false,
-    });
-  };
-
   render() {
     const adrOptions = this.state.adrAlgorithms.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
-    const operations = (
-      <Button type="primary" onClick={this.showTemplateModal}>
-        Select device-profile template
-      </Button>
-    );
 
     return (
       <Form
@@ -412,21 +139,39 @@ class DeviceProfileForm extends Component<IProps, IState> {
         onFinish={this.onFinish}
         ref={this.formRef}
       >
-        <TemplateModal
-          visible={this.state.templateModalVisible}
-          onOk={this.onTemplateModalOk}
-          onCancel={this.onTemplateModalCancel}
-        />
-        <Tabs tabBarExtraContent={operations} activeKey={this.state.tabActive} onChange={this.onTabChange}>
+        <Tabs>
           <Tabs.TabPane tab="General" key="1">
+            <Form.Item
+              label="ID"
+              name="id"
+              rules={[
+                {
+                  required: true,
+                  pattern: new RegExp(/^[\w-]*$/g),
+                  message: "Please enter a valid id!",
+                },
+              ]}
+            >
+              <Input disabled={!!this.props.update} />
+            </Form.Item>
             <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
-              <Input disabled={this.props.disabled} />
+              <Input />
+            </Form.Item>
+            <Form.Item label="Vendor" name="vendor" rules={[{ required: true, message: "Please enter a vendor!" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Firmware version"
+              name="firmware"
+              rules={[{ required: true, message: "Please enter a firmware version!" }]}
+            >
+              <Input />
             </Form.Item>
             <Form.Item label="Description" name="description">
-              <Input.TextArea rows={6} disabled={this.props.disabled} />
+              <Input.TextArea rows={6} />
             </Form.Item>
             <Form.Item label="Region" name="region" rules={[{ required: true, message: "Please select a region!" }]}>
-              <Select disabled={this.props.disabled}>
+              <Select>
                 <Select.Option value={Region.AS923}>AS923</Select.Option>
                 <Select.Option value={Region.AS923_2}>AS923-2</Select.Option>
                 <Select.Option value={Region.AS923_3}>AS923-3</Select.Option>
@@ -450,7 +195,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   name="macVersion"
                   rules={[{ required: true, message: "Please select a MAC version!" }]}
                 >
-                  <Select disabled={this.props.disabled}>
+                  <Select>
                     <Select.Option value={MacVersion.LORAWAN_1_0_0}>LoRaWAN 1.0.0</Select.Option>
                     <Select.Option value={MacVersion.LORAWAN_1_0_1}>LoRaWAN 1.0.1</Select.Option>
                     <Select.Option value={MacVersion.LORAWAN_1_0_2}>LoRaWAN 1.0.2</Select.Option>
@@ -467,7 +212,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   name="regParamsRevision"
                   rules={[{ required: true, message: "Please select a regional parameters revision!" }]}
                 >
-                  <Select disabled={this.props.disabled}>
+                  <Select>
                     <Select.Option value={RegParamsRevision.A}>A</Select.Option>
                     <Select.Option value={RegParamsRevision.B}>B</Select.Option>
                     <Select.Option value={RegParamsRevision.RP002_1_0_0}>RP002-1.0.0</Select.Option>
@@ -484,7 +229,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
               name="adrAlgorithmId"
               rules={[{ required: true, message: "Please select an ADR algorithm!" }]}
             >
-              <Select disabled={this.props.disabled}>{adrOptions}</Select>
+              <Select>{adrOptions}</Select>
             </Form.Item>
             <Row gutter={24}>
               <Col span={8}>
@@ -504,7 +249,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   name="uplinkInterval"
                   rules={[{ required: true, message: "Please enter an uplink interval!" }]}
                 >
-                  <InputNumber min={0} disabled={this.props.disabled} />
+                  <InputNumber min={0} />
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -513,14 +258,14 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
                   name="deviceStatusReqInterval"
                 >
-                  <InputNumber min={0} disabled={this.props.disabled} />
+                  <InputNumber min={0} />
                 </Form.Item>
               </Col>
             </Row>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Join (OTAA / ABP)" key="2">
             <Form.Item label="Device supports OTAA" name="supportsOtaa" valuePropName="checked">
-              <Switch onChange={this.onSupportsOtaaChange} disabled={this.props.disabled} />
+              <Switch onChange={this.onSupportsOtaaChange} />
             </Form.Item>
             {!this.state.supportsOtaa && (
               <Row>
@@ -530,7 +275,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     name="abpRx1Delay"
                     rules={[{ required: true, message: "Please enter a RX1 delay!" }]}
                   >
-                    <InputNumber min={0} max={15} disabled={this.props.disabled} />
+                    <InputNumber min={0} max={15} />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -540,7 +285,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     name="abpRx1DrOffset"
                     rules={[{ required: true, message: "Please enter a RX1 data-rate offset!" }]}
                   >
-                    <InputNumber min={0} max={15} disabled={this.props.disabled} />
+                    <InputNumber min={0} max={15} />
                   </Form.Item>
                 </Col>
               </Row>
@@ -554,7 +299,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     name="abpRx2Dr"
                     rules={[{ required: true, message: "Please enter a RX2 data-rate!" }]}
                   >
-                    <InputNumber min={0} max={15} disabled={this.props.disabled} />
+                    <InputNumber min={0} max={15} />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -563,7 +308,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     name="abpRx2Freq"
                     rules={[{ required: true, message: "Please enter a RX2 frequency!" }]}
                   >
-                    <InputNumber min={0} style={{ width: "200px" }} disabled={this.props.disabled} />
+                    <InputNumber min={0} style={{ width: "200px" }} />
                   </Form.Item>
                 </Col>
               </Row>
@@ -571,7 +316,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
           </Tabs.TabPane>
           <Tabs.TabPane tab="Class-B" key="3">
             <Form.Item label="Device supports Class-B" name="supportsClassB" valuePropName="checked">
-              <Switch onChange={this.onSupportsClassBChnage} disabled={this.props.disabled} />
+              <Switch onChange={this.onSupportsClassBChnage} />
             </Form.Item>
             {this.state.supportsClassB && (
               <Form.Item
@@ -586,7 +331,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
           </Tabs.TabPane>
           <Tabs.TabPane tab="Class-C" key="4">
             <Form.Item label="Device supports Class-C" name="supportsClassC" valuePropName="checked">
-              <Switch onChange={this.onSupportsClassCChange} disabled={this.props.disabled} />
+              <Switch onChange={this.onSupportsClassCChange} />
             </Form.Item>
             {this.state.supportsClassC && (
               <Form.Item
@@ -595,7 +340,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 name="classCTimeout"
                 rules={[{ required: true, message: "Please enter a Class-C confirmed downlink timeout!" }]}
               >
-                <InputNumber min={0} disabled={this.props.disabled} />
+                <InputNumber min={0} />
               </Form.Item>
             )}
           </Tabs.TabPane>
@@ -605,7 +350,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
               name="payloadCodecRuntime"
               tooltip="By defining a payload codec, ChirpStack Application Server can encode and decode the binary device payload for you."
             >
-              <Select onChange={this.onPayloadCodecRuntimeChange} disabled={this.props.disabled}>
+              <Select onChange={this.onPayloadCodecRuntimeChange}>
                 <Select.Option value={CodecRuntime.NONE}>None</Select.Option>
                 <Select.Option value={CodecRuntime.CAYENNE_LPP}>Cayenne LPP</Select.Option>
                 <Select.Option value={CodecRuntime.JS}>JavaScript functions</Select.Option>
@@ -617,7 +362,6 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 name="payloadCodecScript"
                 value={this.formRef.current.getFieldValue("payloadCodecScript")}
                 formRef={this.formRef}
-                disabled={this.props.disabled}
               />
             )}
           </Tabs.TabPane>
@@ -634,7 +378,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                           fieldKey={[name, 0]}
                           rules={[{ required: true, message: "Please enter a key!" }]}
                         >
-                          <Input placeholder="Key" disabled={this.props.disabled} />
+                          <Input placeholder="Key" />
                         </Form.Item>
                       </Col>
                       <Col span={16}>
@@ -644,7 +388,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                           fieldKey={[name, 1]}
                           rules={[{ required: true, message: "Please enter a value!" }]}
                         >
-                          <Input placeholder="Value" disabled={this.props.disabled} />
+                          <Input placeholder="Value" />
                         </Form.Item>
                       </Col>
                       <Col span={2}>
@@ -653,13 +397,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     </Row>
                   ))}
                   <Form.Item>
-                    <Button
-                      disabled={this.props.disabled}
-                      type="dashed"
-                      onClick={() => add()}
-                      block
-                      icon={<PlusOutlined />}
-                    >
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
                       Add tag
                     </Button>
                   </Form.Item>
@@ -669,7 +407,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
           </Tabs.TabPane>
         </Tabs>
         <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
+          <Button type="primary" htmlType="submit">
             Submit
           </Button>
         </Form.Item>
@@ -678,4 +416,4 @@ class DeviceProfileForm extends Component<IProps, IState> {
   }
 }
 
-export default DeviceProfileForm;
+export default DeviceProfileTemplateForm;

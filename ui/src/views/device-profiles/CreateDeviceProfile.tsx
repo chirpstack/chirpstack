@@ -43,7 +43,7 @@ class CreateDeviceProfile extends Component<IProps> {
 // - data = Object representing the decoded payload.
 function decodeUplink(input) {
   return {
-    object: {
+    data: {
       temp: 22.5
     }
   };

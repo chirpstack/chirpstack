@@ -35,6 +35,18 @@ class CodeEditor extends Component<IProps, IState> {
     }
   }
 
+  componentDidUpdate(oldProps: IProps) {
+    if (this.props === oldProps) {
+      return;
+    }
+
+    if (this.props.value) {
+      this.setState({
+        value: this.props.value,
+      });
+    }
+  }
+
   updateField = () => {
     let value = this.state.value;
 

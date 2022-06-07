@@ -960,6 +960,157 @@ impl Validator for ValidateApplicationAccess {
     }
 }
 
+pub struct ValidateDeviceProfileTemplatesAccess {
+    flag: Flag,
+}
+
+impl ValidateDeviceProfileTemplatesAccess {
+    pub fn new(flag: Flag) -> Self {
+        ValidateDeviceProfileTemplatesAccess { flag }
+    }
+}
+
+#[async_trait]
+impl Validator for ValidateDeviceProfileTemplatesAccess {
+    async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
+        task::spawn_blocking({
+            let id = *id;
+            let flag = self.flag;
+
+            move || -> Result<i64, Error> {
+                let c = get_db_conn()?;
+                let mut q = user::dsl::user
+                    .select(dsl::count_star())
+                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
+                    .into_boxed();
+
+                match flag {
+                    // global admin
+                    Flag::Create => {
+                        q = q.filter(user::dsl::is_admin.eq(true));
+                    }
+                    // any active user
+                    Flag::List => {}
+                    _ => {
+                        return Ok(0);
+                    }
+                };
+
+                Ok(q.first(&c)?)
+            }
+        })
+        .await?
+    }
+
+    async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
+        task::spawn_blocking({
+            let id = *id;
+            let flag = self.flag;
+
+            move || -> Result<i64, Error> {
+                let c = get_db_conn()?;
+                let mut q = api_key::dsl::api_key
+                    .select(dsl::count_star())
+                    .find(&id)
+                    .into_boxed();
+
+                match flag {
+                    // admin api key
+                    Flag::Create => {
+                        q = q.filter(api_key::dsl::is_admin.eq(true));
+                    }
+                    // any api key
+                    Flag::List => {}
+                    _ => {
+                        return Ok(0);
+                    }
+                };
+
+                Ok(q.first(&c)?)
+            }
+        })
+        .await?
+    }
+}
+
+pub struct ValidateDeviceProfileTemplateAccess {
+    flag: Flag,
+    device_profile_template_id: String,
+}
+
+impl ValidateDeviceProfileTemplateAccess {
+    pub fn new(flag: Flag, device_profile_template_id: &str) -> Self {
+        let device_profile_template_id = device_profile_template_id.to_string();
+        ValidateDeviceProfileTemplateAccess {
+            flag,
+            device_profile_template_id,
+        }
+    }
+}
+
+#[async_trait]
+impl Validator for ValidateDeviceProfileTemplateAccess {
+    async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
+        task::spawn_blocking({
+            let id = *id;
+            let flag = self.flag;
+
+            move || -> Result<i64, Error> {
+                let c = get_db_conn()?;
+                let mut q = user::dsl::user
+                    .select(dsl::count_star())
+                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
+                    .into_boxed();
+
+                match flag {
+                    // any active user
+                    Flag::Read => {}
+                    // global admin user
+                    Flag::Update | Flag::Delete => {
+                        q = q.filter(user::dsl::is_admin.eq(true));
+                    }
+                    _ => {
+                        return Ok(0);
+                    }
+                };
+
+                Ok(q.first(&c)?)
+            }
+        })
+        .await?
+    }
+
+    async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
+        task::spawn_blocking({
+            let id = *id;
+            let flag = self.flag;
+
+            move || -> Result<i64, Error> {
+                let c = get_db_conn()?;
+                let mut q = api_key::dsl::api_key
+                    .select(dsl::count_star())
+                    .find(&id)
+                    .into_boxed();
+
+                match flag {
+                    // any api key
+                    Flag::Read => {}
+                    // admin api key
+                    Flag::Update | Flag::Delete => {
+                        q = q.filter(api_key::dsl::is_admin.eq(true));
+                    }
+                    _ => {
+                        return Ok(0);
+                    }
+                };
+
+                Ok(q.first(&c)?)
+            }
+        })
+        .await?
+    }
+}
+
 pub struct ValidateDeviceProfilesAccess {
     flag: Flag,
     tenant_id: Uuid,
@@ -2043,7 +2194,8 @@ impl Validator for ValidateMulticastGroupQueueAccess {
 pub mod test {
     use super::*;
     use crate::storage::{
-        api_key, application, device, device_profile, gateway, multicast, tenant, user,
+        api_key, application, device, device_profile, device_profile_template, gateway, multicast,
+        tenant, user,
     };
     use crate::test;
     use std::str::FromStr;
@@ -2951,6 +3103,153 @@ pub mod test {
                     ValidateApplicationAccess::new(Flag::Read, app.id),
                     ValidateApplicationAccess::new(Flag::Update, app.id),
                     ValidateApplicationAccess::new(Flag::Delete, app.id),
+                ],
+                id: AuthID::Key(api_key_tenant.id),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+    }
+
+    #[tokio::test]
+    async fn device_profile_test() {
+        let _guard = test::prepare().await;
+
+        let user_active = user::User {
+            email: "user@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+
+        let user_admin = user::User {
+            email: "admin@user".into(),
+            is_active: true,
+            is_admin: true,
+            ..Default::default()
+        };
+
+        for u in vec![&user_active, &user_admin] {
+            user::create(u.clone()).await.unwrap();
+        }
+
+        let api_key_admin = api_key::test::create_api_key(true, false).await;
+        let api_key_tenant = api_key::test::create_api_key(false, true).await;
+
+        let dp = device_profile_template::create(device_profile_template::DeviceProfileTemplate {
+            id: "test-dp".to_string(),
+            name: "test-dp".to_string(),
+            vendor: "Test Vendor".to_string(),
+            firmware: "1.2.3".to_string(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // device-profile templates with user
+        let tests = vec![
+            // admin user can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceProfileTemplatesAccess::new(Flag::Create),
+                    ValidateDeviceProfileTemplatesAccess::new(Flag::List),
+                ],
+                id: AuthID::User(user_admin.id),
+                ok: true,
+            },
+            // user can list
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfileTemplatesAccess::new(Flag::List)],
+                id: AuthID::User(user_active.id),
+                ok: true,
+            },
+            // user can not create
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfileTemplatesAccess::new(Flag::Create)],
+                id: AuthID::User(user_active.id),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+
+        // device-profile templates with api key
+        let tests = vec![
+            // admin api can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceProfileTemplatesAccess::new(Flag::Create),
+                    ValidateDeviceProfileTemplatesAccess::new(Flag::List),
+                ],
+                id: AuthID::Key(api_key_admin.id),
+                ok: true,
+            },
+            // tenant api key can list
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfileTemplatesAccess::new(Flag::List)],
+                id: AuthID::Key(api_key_tenant.id),
+                ok: true,
+            },
+            // tenant api can not create
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfileTemplatesAccess::new(Flag::Create)],
+                id: AuthID::Key(api_key_tenant.id),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+
+        // device-profile template with user
+        let tests = vec![
+            // admin user can read, update and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Read, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Update, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete, &dp.id),
+                ],
+                id: AuthID::User(user_admin.id),
+                ok: true,
+            },
+            // user can read
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfileTemplateAccess::new(Flag::Read, &dp.id)],
+                id: AuthID::User(user_active.id),
+                ok: true,
+            },
+            // user can not update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Update, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete, &dp.id),
+                ],
+                id: AuthID::User(user_active.id),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+
+        // device-profile template with api key
+        let tests = vec![
+            // admin api key can read, update and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Read, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Update, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete, &dp.id),
+                ],
+                id: AuthID::Key(api_key_admin.id),
+                ok: true,
+            },
+            // tenant api key can read
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfileTemplateAccess::new(Flag::Read, &dp.id)],
+                id: AuthID::Key(api_key_tenant.id),
+                ok: true,
+            },
+            // tenant api key can not update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Update, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete, &dp.id),
                 ],
                 id: AuthID::Key(api_key_tenant.id),
                 ok: false,

@@ -100,7 +100,7 @@ class ListTenants extends Component {
           breadcrumbRender={() => (
             <Breadcrumb>
               <Breadcrumb.Item>
-                <span>Network-server</span>
+                <span>Network Server</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>Tenants</span>

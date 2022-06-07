@@ -30,6 +30,11 @@ import ChangeUserPassword from "./views/users/ChangeUserPassword";
 import ListAdminApiKeys from "./views/api-keys/ListAdminApiKeys";
 import CreateAdminApiKey from "./views/api-keys/CreateAdminApiKey";
 
+// device-profile templates
+import ListDeviceProfileTemplates from "./views/device-profile-templates/ListDeviceProfileTemplates";
+import EditDeviceProfileTemplate from "./views/device-profile-templates/EditDeviceProfileTemplate";
+import CreateDeviceProfileTemplate from "./views/device-profile-templates/CreateDeviceProfileTemplate";
+
 // stores
 import SessionStore from "./stores/SessionStore";
 
@@ -93,6 +98,14 @@ class App extends Component<IProps, IState> {
 
                       <Route exact path="/api-keys" component={ListAdminApiKeys} />
                       <Route exact path="/api-keys/create" component={CreateAdminApiKey} />
+
+                      <Route exact path="/device-profile-templates" component={ListDeviceProfileTemplates} />
+                      <Route exact path="/device-profile-templates/create" component={CreateDeviceProfileTemplate} />
+                      <Route
+                        exact
+                        path="/device-profile-templates/:deviceProfileTemplateId([\w-]+)/edit"
+                        component={EditDeviceProfileTemplate}
+                      />
                     </Switch>
                   </Layout.Content>
                 </Layout>

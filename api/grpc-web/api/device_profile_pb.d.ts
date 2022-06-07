@@ -15,6 +15,9 @@ export class DeviceProfile extends jspb.Message {
   getName(): string;
   setName(value: string): DeviceProfile;
 
+  getDescription(): string;
+  setDescription(value: string): DeviceProfile;
+
   getRegion(): common_common_pb.Region;
   setRegion(value: common_common_pb.Region): DeviceProfile;
 
@@ -94,6 +97,7 @@ export namespace DeviceProfile {
     id: string,
     tenantId: string,
     name: string,
+    description: string,
     region: common_common_pb.Region,
     macVersion: common_common_pb.MacVersion,
     regParamsRevision: common_common_pb.RegParamsRevision,

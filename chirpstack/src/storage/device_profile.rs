@@ -36,7 +36,7 @@ pub struct DeviceProfile {
     pub supports_class_c: bool,
     pub class_b_timeout: i32,
     pub class_b_ping_slot_period: i32,
-    pub class_b_ping_slot_dr: i32,
+    pub class_b_ping_slot_dr: i16,
     pub class_b_ping_slot_freq: i64,
     pub class_c_timeout: i32,
     pub abp_rx1_delay: i16,
@@ -46,6 +46,7 @@ pub struct DeviceProfile {
     pub tags: fields::KeyValue,
     pub payload_codec_script: String,
     pub flush_queue_on_activate: bool,
+    pub description: String,
 }
 
 impl DeviceProfile {
@@ -67,6 +68,7 @@ impl Default for DeviceProfile {
             created_at: now,
             updated_at: now,
             name: "".into(),
+            description: "".into(),
             region: CommonName::EU868,
             mac_version: MacVersion::LORAWAN_1_0_0,
             reg_params_revision: Revision::A,
@@ -179,6 +181,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                 .set((
                     device_profile::updated_at.eq(Utc::now()),
                     device_profile::name.eq(&dp.name),
+                    device_profile::description.eq(&dp.description),
                     device_profile::region.eq(&dp.region),
                     device_profile::mac_version.eq(&dp.mac_version),
                     device_profile::reg_params_revision.eq(&dp.reg_params_revision),

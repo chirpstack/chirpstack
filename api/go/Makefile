@@ -21,6 +21,7 @@ api:
 	protoc ${PROTOC_ARGS} api/tenant.proto
 	protoc ${PROTOC_ARGS} api/application.proto
 	protoc ${PROTOC_ARGS} api/device_profile.proto
+	protoc ${PROTOC_ARGS} api/device_profile_template.proto
 	protoc ${PROTOC_ARGS} api/device.proto
 	protoc ${PROTOC_ARGS} api/gateway.proto
 	protoc ${PROTOC_ARGS} api/frame_log.proto

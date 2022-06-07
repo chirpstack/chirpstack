@@ -118,6 +118,11 @@ class SideMenu extends Component<RouteComponentProps, IState> {
       this.setState({ selectedKey: "ns-api-keys" });
     }
 
+    // ns device-profile templates
+    if (/\/device-profile-templates(\/([\w-]{36}\/edit|create))?/g.exec(path)) {
+      this.setState({ selectedKey: "ns-device-profile-templates" });
+    }
+
     // tenant dashboard
     if (/\/tenants\/[\w-]{36}/g.exec(path)) {
       this.setState({ selectedKey: "tenant-dashboard" });
@@ -163,6 +168,11 @@ class SideMenu extends Component<RouteComponentProps, IState> {
           { key: "ns-tenants", icon: <HomeOutlined />, label: <Link to="/tenants">Tenants</Link> },
           { key: "ns-users", icon: <UserOutlined />, label: <Link to="/users">Users</Link> },
           { key: "ns-api-keys", icon: <KeyOutlined />, label: <Link to="/api-keys">API keys</Link> },
+          {
+            key: "ns-device-profile-templates",
+            icon: <ControlOutlined />,
+            label: <Link to="/device-profile-templates">Device-profile templates</Link>,
+          },
         ],
       });
     }

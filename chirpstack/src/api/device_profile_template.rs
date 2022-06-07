@@ -1,53 +1,52 @@
-use std::str::FromStr;
-
 use tonic::{Request, Response, Status};
-use uuid::Uuid;
 
 use chirpstack_api::api;
-use chirpstack_api::api::device_profile_service_server::DeviceProfileService;
+use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateService;
 
 use super::auth::validator;
 use super::error::ToStatus;
 use super::helpers;
 use super::helpers::{FromProto, ToProto};
-use crate::adr;
-use crate::storage::{device_profile, fields};
+use crate::storage::{device_profile_template, fields};
 
-pub struct DeviceProfile {
+pub struct DeviceProfileTemplate {
     validator: validator::RequestValidator,
 }
 
-impl DeviceProfile {
+impl DeviceProfileTemplate {
     pub fn new(validator: validator::RequestValidator) -> Self {
-        DeviceProfile { validator }
+        DeviceProfileTemplate { validator }
     }
 }
 
 #[tonic::async_trait]
-impl DeviceProfileService for DeviceProfile {
+impl DeviceProfileTemplateService for DeviceProfileTemplate {
     async fn create(
         &self,
-        request: Request<api::CreateDeviceProfileRequest>,
-    ) -> Result<Response<api::CreateDeviceProfileResponse>, Status> {
-        let req_dp = match &request.get_ref().device_profile {
+        request: Request<api::CreateDeviceProfileTemplateRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_dp = match &request.get_ref().device_profile_template {
             Some(v) => v,
             None => {
-                return Err(Status::invalid_argument("device_profile is missing"));
+                return Err(Status::invalid_argument(
+                    "device_profile_template is missing",
+                ));
             }
         };
-        let tenant_id = Uuid::from_str(&req_dp.tenant_id).map_err(|e| e.status())?;
 
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateDeviceProfilesAccess::new(validator::Flag::Create, tenant_id),
+                validator::ValidateDeviceProfileTemplatesAccess::new(validator::Flag::Create),
             )
             .await?;
 
-        let mut dp = device_profile::DeviceProfile {
-            tenant_id,
+        let dp = device_profile_template::DeviceProfileTemplate {
+            id: req_dp.id.clone(),
             name: req_dp.name.clone(),
             description: req_dp.description.clone(),
+            vendor: req_dp.vendor.clone(),
+            firmware: req_dp.firmware.clone(),
             region: req_dp.region().from_proto(),
             mac_version: req_dp.mac_version().from_proto(),
             reg_params_revision: req_dp.reg_params_revision().from_proto(),
@@ -73,35 +72,37 @@ impl DeviceProfileService for DeviceProfile {
             ..Default::default()
         };
 
-        dp = device_profile::create(dp).await.map_err(|e| e.status())?;
+        device_profile_template::create(dp)
+            .await
+            .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::CreateDeviceProfileResponse {
-            id: dp.id.to_string(),
-        }))
+        Ok(Response::new(()))
     }
 
     async fn get(
         &self,
-        request: Request<api::GetDeviceProfileRequest>,
-    ) -> Result<Response<api::GetDeviceProfileResponse>, Status> {
+        request: Request<api::GetDeviceProfileTemplateRequest>,
+    ) -> Result<Response<api::GetDeviceProfileTemplateResponse>, Status> {
         let req = request.get_ref();
-        let dp_id = Uuid::from_str(&req.id).map_err(|e| e.status())?;
 
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateDeviceProfileAccess::new(validator::Flag::Read, dp_id),
+                validator::ValidateDeviceProfileTemplateAccess::new(validator::Flag::Read, &req.id),
             )
             .await?;
 
-        let dp = device_profile::get(&dp_id).await.map_err(|e| e.status())?;
+        let dp = device_profile_template::get(&req.id)
+            .await
+            .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetDeviceProfileResponse {
-            device_profile: Some(api::DeviceProfile {
+        Ok(Response::new(api::GetDeviceProfileTemplateResponse {
+            device_profile_template: Some(api::DeviceProfileTemplate {
                 id: dp.id.to_string(),
-                tenant_id: dp.tenant_id.to_string(),
                 name: dp.name,
                 description: dp.description,
+                vendor: dp.vendor,
+                firmware: dp.firmware,
                 region: dp.region.to_proto().into(),
                 mac_version: dp.mac_version.to_proto().into(),
                 reg_params_revision: dp.reg_params_revision.to_proto().into(),
@@ -132,28 +133,33 @@ impl DeviceProfileService for DeviceProfile {
 
     async fn update(
         &self,
-        request: Request<api::UpdateDeviceProfileRequest>,
+        request: Request<api::UpdateDeviceProfileTemplateRequest>,
     ) -> Result<Response<()>, Status> {
-        let req_dp = match &request.get_ref().device_profile {
+        let req_dp = match &request.get_ref().device_profile_template {
             Some(v) => v,
             None => {
-                return Err(Status::invalid_argument("device_profile is missing"));
+                return Err(Status::invalid_argument(
+                    "device_profile_template is missing",
+                ));
             }
         };
-        let dp_id = Uuid::from_str(&req_dp.id).map_err(|e| e.status())?;
 
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateDeviceProfileAccess::new(validator::Flag::Update, dp_id),
+                validator::ValidateDeviceProfileTemplateAccess::new(
+                    validator::Flag::Update,
+                    &req_dp.id,
+                ),
             )
             .await?;
 
-        // update
-        let _ = device_profile::update(device_profile::DeviceProfile {
-            id: dp_id,
+        device_profile_template::update(device_profile_template::DeviceProfileTemplate {
+            id: req_dp.id.clone(),
             name: req_dp.name.clone(),
             description: req_dp.description.clone(),
+            vendor: req_dp.vendor.clone(),
+            firmware: req_dp.firmware.clone(),
             region: req_dp.region().from_proto(),
             mac_version: req_dp.mac_version().from_proto(),
             reg_params_revision: req_dp.reg_params_revision().from_proto(),
@@ -186,63 +192,59 @@ impl DeviceProfileService for DeviceProfile {
 
     async fn delete(
         &self,
-        request: Request<api::DeleteDeviceProfileRequest>,
+        request: Request<api::DeleteDeviceProfileTemplateRequest>,
     ) -> Result<Response<()>, Status> {
         let req = request.get_ref();
-        let dp_id = Uuid::from_str(&req.id).map_err(|e| e.status())?;
 
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateDeviceProfileAccess::new(validator::Flag::Delete, dp_id),
+                validator::ValidateDeviceProfileTemplateAccess::new(
+                    validator::Flag::Delete,
+                    &req.id,
+                ),
             )
             .await?;
 
-        device_profile::delete(&dp_id)
+        device_profile_template::delete(&req.id)
             .await
             .map_err(|e| e.status())?;
+
         Ok(Response::new(()))
     }
 
     async fn list(
         &self,
-        request: Request<api::ListDeviceProfilesRequest>,
-    ) -> Result<Response<api::ListDeviceProfilesResponse>, Status> {
+        request: Request<api::ListDeviceProfileTemplatesRequest>,
+    ) -> Result<Response<api::ListDeviceProfileTemplatesResponse>, Status> {
         let req = request.get_ref();
-        let tenant_id = Uuid::from_str(&req.tenant_id).map_err(|e| e.status())?;
 
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateDeviceProfilesAccess::new(validator::Flag::List, tenant_id),
+                validator::ValidateDeviceProfileTemplatesAccess::new(validator::Flag::List),
             )
             .await?;
 
-        let filters = device_profile::Filters {
-            tenant_id: Some(tenant_id),
-            search: if req.search.is_empty() {
-                None
-            } else {
-                Some(req.search.to_string())
-            },
-        };
-
-        let count = device_profile::get_count(&filters)
-            .await
-            .map_err(|e| e.status())?;
-        let items = device_profile::list(req.limit as i64, req.offset as i64, &filters)
+        let count = device_profile_template::get_count()
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::ListDeviceProfilesResponse {
+        let items = device_profile_template::list(req.limit as i64, req.offset as i64)
+            .await
+            .map_err(|e| e.status())?;
+
+        Ok(Response::new(api::ListDeviceProfileTemplatesResponse {
             total_count: count as u32,
             result: items
                 .iter()
-                .map(|dp| api::DeviceProfileListItem {
+                .map(|dp| api::DeviceProfileTemplateListItem {
                     id: dp.id.to_string(),
                     created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
                     updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
                     name: dp.name.clone(),
+                    vendor: dp.vendor.clone(),
+                    firmware: dp.firmware.clone(),
                     region: dp.region.to_proto().into(),
                     mac_version: dp.mac_version.to_proto().into(),
                     reg_params_revision: dp.reg_params_revision.to_proto().into(),
@@ -253,30 +255,6 @@ impl DeviceProfileService for DeviceProfile {
                 .collect(),
         }))
     }
-
-    async fn list_adr_algorithms(
-        &self,
-        request: Request<()>,
-    ) -> Result<Response<api::ListDeviceProfileAdrAlgorithmsResponse>, Status> {
-        self.validator
-            .validate(request.extensions(), validator::ValidateActiveUser::new())
-            .await?;
-
-        let items = adr::get_algorithms().await;
-        let mut result: Vec<api::AdrAlgorithmListItem> = items
-            .iter()
-            .map(|(k, v)| api::AdrAlgorithmListItem {
-                id: k.clone(),
-                name: v.clone(),
-            })
-            .collect();
-        result.sort_by(|a, b| a.name.cmp(&b.name));
-
-        Ok(Response::new(api::ListDeviceProfileAdrAlgorithmsResponse {
-            total_count: items.len() as u32,
-            result,
-        }))
-    }
 }
 
 #[cfg(test)]
@@ -284,12 +262,13 @@ pub mod test {
     use super::*;
     use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
-    use crate::storage::{tenant, user};
+    use crate::storage::user;
     use crate::test;
     use chirpstack_api::common;
+    use uuid::Uuid;
 
     #[tokio::test]
-    async fn test_device_profile() {
+    async fn test_device_profile_template() {
         let _guard = test::prepare().await;
 
         // setup admin user
@@ -302,26 +281,18 @@ pub mod test {
         };
         let u = user::create(u).await.unwrap();
 
-        // create tenant
-        let t = tenant::create(tenant::Tenant {
-            name: "test-tenant".into(),
-            can_have_gateways: true,
-            max_gateway_count: 10,
-            ..Default::default()
-        })
-        .await
-        .unwrap();
-
         // setup the api
-        let service = DeviceProfile::new(RequestValidator::new());
+        let service = DeviceProfileTemplate::new(RequestValidator::new());
 
         // create
         let create_req = get_request(
             &u.id,
-            api::CreateDeviceProfileRequest {
-                device_profile: Some(api::DeviceProfile {
-                    tenant_id: t.id.to_string(),
-                    name: "test-dp".into(),
+            api::CreateDeviceProfileTemplateRequest {
+                device_profile_template: Some(api::DeviceProfileTemplate {
+                    id: "test-id".into(),
+                    name: "test-template".into(),
+                    vendor: "Test Vendor".into(),
+                    firmware: "1.2.3".into(),
                     region: common::Region::Eu868.into(),
                     mac_version: common::MacVersion::Lorawan103.into(),
                     reg_params_revision: common::RegParamsRevision::A.into(),
@@ -330,40 +301,41 @@ pub mod test {
                 }),
             },
         );
-        let create_resp = service.create(create_req).await.unwrap();
-        let dp_id = Uuid::from_str(&create_resp.get_ref().id).unwrap();
+        let _ = service.create(create_req).await.unwrap();
 
         // get
         let get_req = get_request(
             &u.id,
-            api::GetDeviceProfileRequest {
-                id: dp_id.to_string(),
+            api::GetDeviceProfileTemplateRequest {
+                id: "test-id".into(),
             },
         );
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
-            Some(api::DeviceProfile {
-                id: dp_id.to_string(),
-                tenant_id: t.id.to_string(),
-                name: "test-dp".into(),
+            Some(api::DeviceProfileTemplate {
+                id: "test-id".into(),
+                name: "test-template".into(),
+                vendor: "Test Vendor".into(),
+                firmware: "1.2.3".into(),
                 region: common::Region::Eu868.into(),
                 mac_version: common::MacVersion::Lorawan103.into(),
                 reg_params_revision: common::RegParamsRevision::A.into(),
                 adr_algorithm_id: "default".into(),
                 ..Default::default()
             }),
-            get_resp.get_ref().device_profile
+            get_resp.get_ref().device_profile_template
         );
 
         // update
         let update_req = get_request(
             &u.id,
-            api::UpdateDeviceProfileRequest {
-                device_profile: Some(api::DeviceProfile {
-                    id: dp_id.to_string(),
-                    tenant_id: t.id.to_string(),
-                    name: "test-dp-updated".into(),
-                    region: common::Region::Us915.into(),
+            api::UpdateDeviceProfileTemplateRequest {
+                device_profile_template: Some(api::DeviceProfileTemplate {
+                    id: "test-id".into(),
+                    name: "test-template-updated".into(),
+                    vendor: "Test Vendor".into(),
+                    firmware: "1.2.3".into(),
+                    region: common::Region::Eu868.into(),
                     mac_version: common::MacVersion::Lorawan103.into(),
                     reg_params_revision: common::RegParamsRevision::A.into(),
                     adr_algorithm_id: "default".into(),
@@ -376,32 +348,32 @@ pub mod test {
         // get
         let get_req = get_request(
             &u.id,
-            api::GetDeviceProfileRequest {
-                id: dp_id.to_string(),
+            api::GetDeviceProfileTemplateRequest {
+                id: "test-id".into(),
             },
         );
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
-            Some(api::DeviceProfile {
-                id: dp_id.to_string(),
-                tenant_id: t.id.to_string(),
-                name: "test-dp-updated".into(),
-                region: common::Region::Us915.into(),
+            Some(api::DeviceProfileTemplate {
+                id: "test-id".into(),
+                name: "test-template-updated".into(),
+                vendor: "Test Vendor".into(),
+                firmware: "1.2.3".into(),
+                region: common::Region::Eu868.into(),
                 mac_version: common::MacVersion::Lorawan103.into(),
                 reg_params_revision: common::RegParamsRevision::A.into(),
                 adr_algorithm_id: "default".into(),
                 ..Default::default()
             }),
-            get_resp.get_ref().device_profile
+            get_resp.get_ref().device_profile_template
         );
 
         // list
         let list_req = get_request(
             &u.id,
-            api::ListDeviceProfilesRequest {
-                tenant_id: t.id.to_string(),
+            api::ListDeviceProfileTemplatesRequest {
                 limit: 10,
-                search: "update".into(),
+                offset: 0,
                 ..Default::default()
             },
         );
@@ -409,37 +381,24 @@ pub mod test {
         let list_resp = list_resp.get_ref();
         assert_eq!(1, list_resp.total_count);
         assert_eq!(1, list_resp.result.len());
-        assert_eq!(dp_id.to_string(), list_resp.result[0].id);
+        assert_eq!("test-id".to_string(), list_resp.result[0].id);
 
         // delete
         let del_req = get_request(
             &u.id,
-            api::DeleteDeviceProfileRequest {
-                id: dp_id.to_string(),
+            api::DeleteDeviceProfileTemplateRequest {
+                id: "test-id".into(),
             },
         );
         let _ = service.delete(del_req).await.unwrap();
         let del_req = get_request(
             &u.id,
-            api::DeleteDeviceProfileRequest {
-                id: dp_id.to_string(),
+            api::DeleteDeviceProfileTemplateRequest {
+                id: "test-id".into(),
             },
         );
         let del_resp = service.delete(del_req).await;
         assert!(del_resp.is_err());
-
-        // list adr algorithms
-        let list_adr_algs_req = get_request(&u.id, ());
-        let list_adr_algs_resp = service
-            .list_adr_algorithms(list_adr_algs_req)
-            .await
-            .unwrap();
-        let list_adr_algs_resp = list_adr_algs_resp.get_ref();
-        assert_eq!(3, list_adr_algs_resp.total_count);
-        assert_eq!(3, list_adr_algs_resp.result.len());
-        assert_eq!("default", list_adr_algs_resp.result[0].id);
-        assert_eq!("lr_fhss", list_adr_algs_resp.result[1].id);
-        assert_eq!("lora_lr_fhss", list_adr_algs_resp.result[2].id);
     }
 
     fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {

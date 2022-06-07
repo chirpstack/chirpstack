@@ -73,10 +73,37 @@ async fn main() -> Result<()> {
                         .takes_value(true),
                 ),
         )
+        .subcommand(
+            App::new("import-ttn-lorawan-devices")
+                .about("Import TheThingsNetwork LoRaWAN devices repository")
+                .arg(
+                    Arg::with_name("dir")
+                        .required(true)
+                        .short("d")
+                        .long("dir")
+                        .value_name("DIR")
+                        .multiple(false)
+                        .number_of_values(1)
+                        .help("Path to repository root")
+                        .takes_value(true),
+                ),
+        )
         .get_matches();
 
     let config_dir = matches.value_of_lossy("config-dir").unwrap();
     config::load(Path::new(config_dir.as_ref()))?;
+
+    let conf = config::get();
+    let filter = filter::Targets::new().with_targets(vec![
+        ("chirpstack", Level::from_str(&conf.logging.level).unwrap()),
+        ("backend", Level::from_str(&conf.logging.level).unwrap()),
+        ("lrwn", Level::from_str(&conf.logging.level).unwrap()),
+    ]);
+
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())
+        .with(filter)
+        .init();
 
     if matches.subcommand_matches("configfile").is_some() {
         cmd::configfile::run();
@@ -91,23 +118,13 @@ async fn main() -> Result<()> {
         process::exit(0);
     }
 
-    /*
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::from_str(&config::get().logging.level).unwrap())
-        .init();
-    */
-
-    let conf = config::get();
-    let filter = filter::Targets::new().with_targets(vec![
-        ("chirpstack", Level::from_str(&conf.logging.level).unwrap()),
-        ("backend", Level::from_str(&conf.logging.level).unwrap()),
-        ("lrwn", Level::from_str(&conf.logging.level).unwrap()),
-    ]);
-
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
-        .with(filter)
-        .init();
+    if let Some(v) = matches.subcommand_matches("import-ttn-lorawan-devices") {
+        let dir = v.value_of_lossy("dir").unwrap();
+        cmd::import_ttn_lorawan_devices::run(Path::new(&*dir))
+            .await
+            .unwrap();
+        process::exit(0);
+    }
 
     cmd::root::run().await?;
 

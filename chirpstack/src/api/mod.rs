@@ -18,6 +18,7 @@ use warp::{http::header::HeaderValue, path::Tail, reply::Response, Filter, Rejec
 
 use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
+use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateServiceServer;
 use chirpstack_api::api::device_service_server::DeviceServiceServer;
 use chirpstack_api::api::gateway_service_server::GatewayServiceServer;
 use chirpstack_api::api::internal_service_server::InternalServiceServer;
@@ -32,6 +33,7 @@ pub mod application;
 pub mod auth;
 pub mod device;
 pub mod device_profile;
+pub mod device_profile_template;
 pub mod error;
 pub mod gateway;
 pub mod helpers;
@@ -85,6 +87,14 @@ pub async fn setup() -> Result<()> {
             .add_service(tonic_web::enable(
                 DeviceProfileServiceServer::with_interceptor(
                     device_profile::DeviceProfile::new(validator::RequestValidator::new()),
+                    auth::auth_interceptor,
+                ),
+            ))
+            .add_service(tonic_web::enable(
+                DeviceProfileTemplateServiceServer::with_interceptor(
+                    device_profile_template::DeviceProfileTemplate::new(
+                        validator::RequestValidator::new(),
+                    ),
                     auth::auth_interceptor,
                 ),
             ))
