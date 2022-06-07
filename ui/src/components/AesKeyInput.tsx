@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
-import { Input, Select, Button, Space, Form } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { notification, Input, Select, Button, Space, Form, Dropdown, Menu } from "antd";
+import { ReloadOutlined, CopyOutlined } from "@ant-design/icons";
 import {Buffer} from "buffer";
 
 interface IProps {
@@ -104,7 +104,58 @@ class AesKeyInput extends Component<IProps, IState> {
     );
   };
 
+  copyToClipboard = () => {
+    const bytes = this.state.value.match(/[A-Fa-f0-9]{2}/g);
+
+    if (bytes !== null && navigator.clipboard !== undefined) {
+        navigator.clipboard.writeText(bytes.join("").toUpperCase())
+        .then(() => {
+          notification.success({
+            message: "Copied to clipboard",
+            duration: 3,
+          });
+        }).catch((e) => {
+          notification.error({
+            message: "Error",
+            description: e,
+            duration: 3,
+          });
+        });
+    }
+  }
+
+  copyToClipboardHexArray = () => {
+    const bytes = this.state.value.match(/[A-Fa-f0-9]{2}/g);
+
+    if (bytes !== null && navigator.clipboard !== undefined) {
+        navigator.clipboard.writeText(bytes.join(", ").toUpperCase().replace(/[A-Fa-f0-9]{2}/g, "0x$&"))
+        .then(() => {
+          notification.success({
+            message: "Copied to clipboard",
+            duration: 3,
+          });
+        }).catch((e) => {
+          notification.error({
+            message: "Error",
+            description: e,
+            duration: 3,
+          });
+        });
+    }
+  }
+
   render() {
+    const copyMenu = <Menu items={[
+      {
+        key: "1",
+        label: <Button type="text" onClick={this.copyToClipboard}>HEX string</Button>,
+      },
+      {
+        key: "2",
+        label: <Button type="text" onClick={this.copyToClipboardHexArray}>HEX array</Button>,
+      },
+    ]} />;
+
     const addon = (
       <Space size="large">
         <Select value={this.state.byteOrder} onChange={this.onByteOrderSelect}>
@@ -114,6 +165,11 @@ class AesKeyInput extends Component<IProps, IState> {
         <Button type="text" size="small" shape="circle" onClick={this.generateRandom}>
           <ReloadOutlined />
         </Button>
+        <Dropdown overlay={copyMenu}>
+          <Button type="text" size="small">
+            <CopyOutlined />
+          </Button>
+        </Dropdown>
       </Space>
     );
 
