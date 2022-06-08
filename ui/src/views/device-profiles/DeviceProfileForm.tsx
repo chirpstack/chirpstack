@@ -237,7 +237,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
     this.setState({
       tabActive: activeKey,
     });
-  }
+  };
 
   onFinish = (values: DeviceProfile.AsObject) => {
     const v = Object.assign(this.props.initialValues.toObject(), values);
@@ -279,7 +279,6 @@ class DeviceProfileForm extends Component<IProps, IState> {
     for (const elm of v.tagsMap) {
       dp.getTagsMap().set(elm[0], elm[1]);
     }
-
 
     this.props.onFinish(dp);
   };
@@ -348,47 +347,67 @@ class DeviceProfileForm extends Component<IProps, IState> {
 
     const tabActive = this.state.tabActive;
 
-    this.setState({
-      supportsOtaa: dp.getSupportsOtaa(),
-      supportsClassB: dp.getSupportsClassB(),
-      supportsClassC: dp.getSupportsClassC(),
-      payloadCodecRuntime: dp.getPayloadCodecRuntime(),
-    }, () => {
-      // This is a workaround as without rendering the TabPane (e.g. the user
-      // does not click through the different tabs), setFieldsValue does not
-      // actually update the fields. For example if selecting a template with
-      // a codec script and immediately click the save button, no codec script
-      // is passed to the onFinish function. This seems to be with every field
-      // that is not actually rendered before clicking the Save button.
-      this.setState({
-        tabActive: "1",
-      }, () => {
-        this.setState({
-          tabActive: "2",
-        }, () => {
-          this.setState({
-            tabActive: "3",
-          }, () => {
-            this.setState({
-              tabActive: "4",
-            }, () => {
-              this.setState({
-                tabActive: "5",
-              }, () => {
-                this.setState({
-                  tabActive: "6",
-                }, () => {
-                  this.setState({
-                    tabActive: tabActive,
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
-    });
-
+    this.setState(
+      {
+        supportsOtaa: dp.getSupportsOtaa(),
+        supportsClassB: dp.getSupportsClassB(),
+        supportsClassC: dp.getSupportsClassC(),
+        payloadCodecRuntime: dp.getPayloadCodecRuntime(),
+      },
+      () => {
+        // This is a workaround as without rendering the TabPane (e.g. the user
+        // does not click through the different tabs), setFieldsValue does not
+        // actually update the fields. For example if selecting a template with
+        // a codec script and immediately click the save button, no codec script
+        // is passed to the onFinish function. This seems to be with every field
+        // that is not actually rendered before clicking the Save button.
+        this.setState(
+          {
+            tabActive: "1",
+          },
+          () => {
+            this.setState(
+              {
+                tabActive: "2",
+              },
+              () => {
+                this.setState(
+                  {
+                    tabActive: "3",
+                  },
+                  () => {
+                    this.setState(
+                      {
+                        tabActive: "4",
+                      },
+                      () => {
+                        this.setState(
+                          {
+                            tabActive: "5",
+                          },
+                          () => {
+                            this.setState(
+                              {
+                                tabActive: "6",
+                              },
+                              () => {
+                                this.setState({
+                                  tabActive: tabActive,
+                                });
+                              },
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   };
 
   onTemplateModalCancel = () => {

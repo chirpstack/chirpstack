@@ -107,18 +107,19 @@ class DevAddrInput extends Component<IProps, IState> {
     });
   };
 
-
   copyToClipboard = () => {
     const bytes = this.state.value.match(/[A-Fa-f0-9]{2}/g);
 
     if (bytes !== null && navigator.clipboard !== undefined) {
-        navigator.clipboard.writeText(bytes.join("").toUpperCase())
+      navigator.clipboard
+        .writeText(bytes.join("").toUpperCase())
         .then(() => {
           notification.success({
             message: "Copied to clipboard",
             duration: 3,
           });
-        }).catch((e) => {
+        })
+        .catch(e => {
           notification.error({
             message: "Error",
             description: e,
@@ -126,19 +127,26 @@ class DevAddrInput extends Component<IProps, IState> {
           });
         });
     }
-  }
+  };
 
   copyToClipboardHexArray = () => {
     const bytes = this.state.value.match(/[A-Fa-f0-9]{2}/g);
 
     if (bytes !== null && navigator.clipboard !== undefined) {
-        navigator.clipboard.writeText(bytes.join(", ").toUpperCase().replace(/[A-Fa-f0-9]{2}/g, "0x$&"))
+      navigator.clipboard
+        .writeText(
+          bytes
+            .join(", ")
+            .toUpperCase()
+            .replace(/[A-Fa-f0-9]{2}/g, "0x$&"),
+        )
         .then(() => {
           notification.success({
             message: "Copied to clipboard",
             duration: 3,
           });
-        }).catch((e) => {
+        })
+        .catch(e => {
           notification.error({
             message: "Error",
             description: e,
@@ -146,20 +154,31 @@ class DevAddrInput extends Component<IProps, IState> {
           });
         });
     }
-  }
-
+  };
 
   render() {
-    const copyMenu = <Menu items={[
-      {
-        key: "1",
-        label: <Button type="text" onClick={this.copyToClipboard}>HEX string</Button>,
-      },
-      {
-        key: "2",
-        label: <Button type="text" onClick={this.copyToClipboardHexArray}>HEX array</Button>,
-      },
-    ]} />;
+    const copyMenu = (
+      <Menu
+        items={[
+          {
+            key: "1",
+            label: (
+              <Button type="text" onClick={this.copyToClipboard}>
+                HEX string
+              </Button>
+            ),
+          },
+          {
+            key: "2",
+            label: (
+              <Button type="text" onClick={this.copyToClipboardHexArray}>
+                HEX array
+              </Button>
+            ),
+          },
+        ]}
+      />
+    );
 
     const addon = (
       <Space size="large">
