@@ -1,24 +1,24 @@
-import React, { Component } from "react";
-
-import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-
-import { DeviceProfile, CodecRuntime } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import {
-  ListDeviceProfileTemplatesRequest,
-  ListDeviceProfileTemplatesResponse,
+  CodecRuntime,
+  DeviceProfile,
+  ListDeviceProfileAdrAlgorithmsResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import {
+  DeviceProfileTemplate,
+  DeviceProfileTemplateListItem,
   GetDeviceProfileTemplateRequest,
   GetDeviceProfileTemplateResponse,
-  DeviceProfileTemplateListItem,
-  DeviceProfileTemplate,
+  ListDeviceProfileTemplatesRequest,
+  ListDeviceProfileTemplatesResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
-
-import { getEnumName } from "../helpers";
+import { MacVersion, Region, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import { Button, Cascader, Col, Form, Input, InputNumber, Modal, Row, Select, Spin, Switch, Tabs } from "antd";
+import React, { Component } from "react";
+import CodeEditor from "../../components/CodeEditor";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
-import CodeEditor from "../../components/CodeEditor";
+import { getEnumName } from "../helpers";
 
 interface ModalProps {
   onOk: (dp: DeviceProfileTemplate) => void;
@@ -159,8 +159,7 @@ class TemplateModal extends Component<ModalProps, ModalState> {
         bodyStyle={{ height: 300 }}
         onOk={this.onOk}
         onCancel={this.props.onCancel}
-        okButtonProps={{ disabled: !!!this.state.templateId }}
-      >
+        okButtonProps={{ disabled: !!!this.state.templateId }}>
         {!this.state.templatesLoaded && (
           <div className="spinner">
             <Spin />
@@ -237,7 +236,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
     this.setState({
       tabActive: activeKey,
     });
-  }
+  };
 
   onFinish = (values: DeviceProfile.AsObject) => {
     const v = Object.assign(this.props.initialValues.toObject(), values);
@@ -279,7 +278,6 @@ class DeviceProfileForm extends Component<IProps, IState> {
     for (const elm of v.tagsMap) {
       dp.getTagsMap().set(elm[0], elm[1]);
     }
-
 
     this.props.onFinish(dp);
   };
@@ -333,9 +331,11 @@ class DeviceProfileForm extends Component<IProps, IState> {
       deviceStatusReqInterval: dp.getDeviceStatusReqInterval(),
       supportsOtaa: dp.getSupportsOtaa(),
       supportsClassB: dp.getSupportsClassB(),
-      supportsClassC: dp.getSupportsClassC(),
       classBTimeout: dp.getClassBTimeout(),
+      supportsClassC: dp.getSupportsClassC(),
+      classCTimeout: dp.getClassCTimeout(),
       abpRx1Delay: dp.getAbpRx1Delay(),
+      abpRx1DrOffset: dp.getAbpRx1DrOffset(),
       abpRx2Dr: dp.getAbpRx2Dr(),
       abpRx2Freq: dp.getAbpRx2Freq(),
       tagsMap: [
@@ -348,47 +348,67 @@ class DeviceProfileForm extends Component<IProps, IState> {
 
     const tabActive = this.state.tabActive;
 
-    this.setState({
-      supportsOtaa: dp.getSupportsOtaa(),
-      supportsClassB: dp.getSupportsClassB(),
-      supportsClassC: dp.getSupportsClassC(),
-      payloadCodecRuntime: dp.getPayloadCodecRuntime(),
-    }, () => {
-      // This is a workaround as without rendering the TabPane (e.g. the user
-      // does not click through the different tabs), setFieldsValue does not
-      // actually update the fields. For example if selecting a template with
-      // a codec script and immediately click the save button, no codec script
-      // is passed to the onFinish function. This seems to be with every field
-      // that is not actually rendered before clicking the Save button.
-      this.setState({
-        tabActive: "1",
-      }, () => {
-        this.setState({
-          tabActive: "2",
-        }, () => {
-          this.setState({
-            tabActive: "3",
-          }, () => {
-            this.setState({
-              tabActive: "4",
-            }, () => {
-              this.setState({
-                tabActive: "5",
-              }, () => {
-                this.setState({
-                  tabActive: "6",
-                }, () => {
-                  this.setState({
-                    tabActive: tabActive,
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
-    });
-
+    this.setState(
+      {
+        supportsOtaa: dp.getSupportsOtaa(),
+        supportsClassB: dp.getSupportsClassB(),
+        supportsClassC: dp.getSupportsClassC(),
+        payloadCodecRuntime: dp.getPayloadCodecRuntime(),
+      },
+      () => {
+        // This is a workaround as without rendering the TabPane (e.g. the user
+        // does not click through the different tabs), setFieldsValue does not
+        // actually update the fields. For example if selecting a template with
+        // a codec script and immediately click the save button, no codec script
+        // is passed to the onFinish function. This seems to be with every field
+        // that is not actually rendered before clicking the Save button.
+        this.setState(
+          {
+            tabActive: "1",
+          },
+          () => {
+            this.setState(
+              {
+                tabActive: "2",
+              },
+              () => {
+                this.setState(
+                  {
+                    tabActive: "3",
+                  },
+                  () => {
+                    this.setState(
+                      {
+                        tabActive: "4",
+                      },
+                      () => {
+                        this.setState(
+                          {
+                            tabActive: "5",
+                          },
+                          () => {
+                            this.setState(
+                              {
+                                tabActive: "6",
+                              },
+                              () => {
+                                this.setState({
+                                  tabActive: tabActive,
+                                });
+                              },
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   };
 
   onTemplateModalCancel = () => {
@@ -410,8 +430,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
         layout="vertical"
         initialValues={this.props.initialValues.toObject()}
         onFinish={this.onFinish}
-        ref={this.formRef}
-      >
+        ref={this.formRef}>
         <TemplateModal
           visible={this.state.templateModalVisible}
           onOk={this.onTemplateModalOk}
@@ -448,8 +467,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   label="MAC version"
                   tooltip="The LoRaWAN MAC version supported by the device."
                   name="macVersion"
-                  rules={[{ required: true, message: "Please select a MAC version!" }]}
-                >
+                  rules={[{ required: true, message: "Please select a MAC version!" }]}>
                   <Select disabled={this.props.disabled}>
                     <Select.Option value={MacVersion.LORAWAN_1_0_0}>LoRaWAN 1.0.0</Select.Option>
                     <Select.Option value={MacVersion.LORAWAN_1_0_1}>LoRaWAN 1.0.1</Select.Option>
@@ -465,8 +483,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   label="Regional parameters revision"
                   tooltip="Revision of the Regional Parameters specification supported by the device."
                   name="regParamsRevision"
-                  rules={[{ required: true, message: "Please select a regional parameters revision!" }]}
-                >
+                  rules={[{ required: true, message: "Please select a regional parameters revision!" }]}>
                   <Select disabled={this.props.disabled}>
                     <Select.Option value={RegParamsRevision.A}>A</Select.Option>
                     <Select.Option value={RegParamsRevision.B}>B</Select.Option>
@@ -482,8 +499,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
               label="ADR algorithm"
               tooltip="The ADR algorithm that will be used for controlling the device data-rate."
               name="adrAlgorithmId"
-              rules={[{ required: true, message: "Please select an ADR algorithm!" }]}
-            >
+              rules={[{ required: true, message: "Please select an ADR algorithm!" }]}>
               <Select disabled={this.props.disabled}>{adrOptions}</Select>
             </Form.Item>
             <Row gutter={24}>
@@ -492,8 +508,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   label="Flush queue on activate"
                   name="flushQueueOnActivate"
                   valuePropName="checked"
-                  tooltip="If enabled, the device-queue will be flushed on ABP or OTAA activation."
-                >
+                  tooltip="If enabled, the device-queue will be flushed on ABP or OTAA activation.">
                   <Switch />
                 </Form.Item>
               </Col>
@@ -502,8 +517,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   label="Expected uplink interval (secs)"
                   tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
                   name="uplinkInterval"
-                  rules={[{ required: true, message: "Please enter an uplink interval!" }]}
-                >
+                  rules={[{ required: true, message: "Please enter an uplink interval!" }]}>
                   <InputNumber min={0} disabled={this.props.disabled} />
                 </Form.Item>
               </Col>
@@ -511,8 +525,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 <Form.Item
                   label="Device-status request frequency (req/day)"
                   tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
-                  name="deviceStatusReqInterval"
-                >
+                  name="deviceStatusReqInterval">
                   <InputNumber min={0} disabled={this.props.disabled} />
                 </Form.Item>
               </Col>
@@ -528,8 +541,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   <Form.Item
                     label="RX1 delay"
                     name="abpRx1Delay"
-                    rules={[{ required: true, message: "Please enter a RX1 delay!" }]}
-                  >
+                    rules={[{ required: true, message: "Please enter a RX1 delay!" }]}>
                     <InputNumber min={0} max={15} disabled={this.props.disabled} />
                   </Form.Item>
                 </Col>
@@ -538,8 +550,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     label="RX1 data-rate offset"
                     tooltip="Please refer the LoRaWAN Regional Parameters specification for valid values."
                     name="abpRx1DrOffset"
-                    rules={[{ required: true, message: "Please enter a RX1 data-rate offset!" }]}
-                  >
+                    rules={[{ required: true, message: "Please enter a RX1 data-rate offset!" }]}>
                     <InputNumber min={0} max={15} disabled={this.props.disabled} />
                   </Form.Item>
                 </Col>
@@ -552,8 +563,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     label="RX2 data-rate"
                     tooltip="Please refer the LoRaWAN Regional Parameters specification for valid values."
                     name="abpRx2Dr"
-                    rules={[{ required: true, message: "Please enter a RX2 data-rate!" }]}
-                  >
+                    rules={[{ required: true, message: "Please enter a RX2 data-rate!" }]}>
                     <InputNumber min={0} max={15} disabled={this.props.disabled} />
                   </Form.Item>
                 </Col>
@@ -561,8 +571,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   <Form.Item
                     label="RX2 frequency (Hz)"
                     name="abpRx2Freq"
-                    rules={[{ required: true, message: "Please enter a RX2 frequency!" }]}
-                  >
+                    rules={[{ required: true, message: "Please enter a RX2 frequency!" }]}>
                     <InputNumber min={0} style={{ width: "200px" }} disabled={this.props.disabled} />
                   </Form.Item>
                 </Col>
@@ -578,8 +587,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 label="Class-B confirmed downlink timeout (seconds)"
                 tooltip="Class-B timeout (in seconds) for confirmed downlink transmissions."
                 name="classBTimeout"
-                rules={[{ required: true, message: "Please enter a Class-B confirmed downlink timeout!" }]}
-              >
+                rules={[{ required: true, message: "Please enter a Class-B confirmed downlink timeout!" }]}>
                 <InputNumber min={0} />
               </Form.Item>
             )}
@@ -593,8 +601,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 label="Class-C confirmed downlink timeout (seconds)"
                 tooltip="Class-C timeout (in seconds) for confirmed downlink transmissions."
                 name="classCTimeout"
-                rules={[{ required: true, message: "Please enter a Class-C confirmed downlink timeout!" }]}
-              >
+                rules={[{ required: true, message: "Please enter a Class-C confirmed downlink timeout!" }]}>
                 <InputNumber min={0} disabled={this.props.disabled} />
               </Form.Item>
             )}
@@ -603,8 +610,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
             <Form.Item
               label="Payload codec"
               name="payloadCodecRuntime"
-              tooltip="By defining a payload codec, ChirpStack Application Server can encode and decode the binary device payload for you."
-            >
+              tooltip="By defining a payload codec, ChirpStack Application Server can encode and decode the binary device payload for you.">
               <Select onChange={this.onPayloadCodecRuntimeChange} disabled={this.props.disabled}>
                 <Select.Option value={CodecRuntime.NONE}>None</Select.Option>
                 <Select.Option value={CodecRuntime.CAYENNE_LPP}>Cayenne LPP</Select.Option>
@@ -632,8 +638,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                           {...restField}
                           name={[name, 0]}
                           fieldKey={[name, 0]}
-                          rules={[{ required: true, message: "Please enter a key!" }]}
-                        >
+                          rules={[{ required: true, message: "Please enter a key!" }]}>
                           <Input placeholder="Key" disabled={this.props.disabled} />
                         </Form.Item>
                       </Col>
@@ -642,8 +647,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                           {...restField}
                           name={[name, 1]}
                           fieldKey={[name, 1]}
-                          rules={[{ required: true, message: "Please enter a value!" }]}
-                        >
+                          rules={[{ required: true, message: "Please enter a value!" }]}>
                           <Input placeholder="Value" disabled={this.props.disabled} />
                         </Form.Item>
                       </Col>
@@ -658,8 +662,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                       type="dashed"
                       onClick={() => add()}
                       block
-                      icon={<PlusOutlined />}
-                    >
+                      icon={<PlusOutlined />}>
                       Add tag
                     </Button>
                   </Form.Item>
