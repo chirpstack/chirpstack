@@ -333,10 +333,12 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsOtaa: dp.getSupportsOtaa(),
       supportsClassB: dp.getSupportsClassB(),
       supportsClassC: dp.getSupportsClassC(),
+      classCTimeout: dp.getClassCTimeout(),
       classBTimeout: dp.getClassBTimeout(),
       abpRx1Delay: dp.getAbpRx1Delay(),
       abpRx2Dr: dp.getAbpRx2Dr(),
       abpRx2Freq: dp.getAbpRx2Freq(),
+      abpRx1DrOffset: dp.getAbpRx1DrOffset(),
       tagsMap: [
         ["firmware", dp.getFirmware()],
         ["vendor", dp.getVendor()],
