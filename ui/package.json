@@ -47,7 +47,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "prettier --check .",
-    "format": "prettier --write . && git add -A ."
+    "format": "prettier --write ."
   },
   "husky": {
     "hooks": {

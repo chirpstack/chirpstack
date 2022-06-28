@@ -1881,7 +1881,7 @@
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
 "@chirpstack/chirpstack-api-grpc-web@file:../api/grpc-web":
-  version "4.0.0-test.5"
+  version "4.0.0-test.6"
   dependencies:
     "@types/google-protobuf" "^3.15.2"
     google-protobuf "^3.17.3"

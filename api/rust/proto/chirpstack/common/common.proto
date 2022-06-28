@@ -7,6 +7,8 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "CommonProto";
 
+import "google/protobuf/timestamp.proto";
+
 enum Modulation {
     // LoRa
     LORA = 0;
@@ -129,6 +131,17 @@ enum LocationSource {
     GEO_RESOLVER_WIFI = 6;
 }
 
+enum Aggregation {
+    // Hour.
+    HOUR = 0;
+
+    // Day.
+    DAY = 1;
+
+    // Month.
+    MONTH = 2;
+}
+
 message Location {
     // Latitude.
     double latitude = 1;
@@ -152,4 +165,24 @@ message KeyEnvelope {
 
     // AES key (when the kek_label is set, this value must first be decrypted).
     bytes aes_key = 2;
+}
+
+message Metric {
+    // Name.
+    string name = 1;
+
+    // Timestamps.
+    repeated google.protobuf.Timestamp timestamps = 2;
+
+    // Datasets.
+    repeated MetricDataset datasets = 3;
+}
+
+message MetricDataset {
+    // Label.
+    string label = 1;
+
+    // Data.
+    // Each value index corresponds with the same timestamp index of the Metric.
+    repeated float data = 2;
 }

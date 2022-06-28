@@ -51,6 +51,28 @@ function deserialize_api_GenerateGatewayClientCertificateResponse(buffer_arg) {
   return api_gateway_pb.GenerateGatewayClientCertificateResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_GetGatewayMetricsRequest(arg) {
+  if (!(arg instanceof api_gateway_pb.GetGatewayMetricsRequest)) {
+    throw new Error('Expected argument of type api.GetGatewayMetricsRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetGatewayMetricsRequest(buffer_arg) {
+  return api_gateway_pb.GetGatewayMetricsRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_GetGatewayMetricsResponse(arg) {
+  if (!(arg instanceof api_gateway_pb.GetGatewayMetricsResponse)) {
+    throw new Error('Expected argument of type api.GetGatewayMetricsResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetGatewayMetricsResponse(buffer_arg) {
+  return api_gateway_pb.GetGatewayMetricsResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_GetGatewayRequest(arg) {
   if (!(arg instanceof api_gateway_pb.GetGatewayRequest)) {
     throw new Error('Expected argument of type api.GetGatewayRequest');
@@ -71,28 +93,6 @@ function serialize_api_GetGatewayResponse(arg) {
 
 function deserialize_api_GetGatewayResponse(buffer_arg) {
   return api_gateway_pb.GetGatewayResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_api_GetGatewayStatsRequest(arg) {
-  if (!(arg instanceof api_gateway_pb.GetGatewayStatsRequest)) {
-    throw new Error('Expected argument of type api.GetGatewayStatsRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_api_GetGatewayStatsRequest(buffer_arg) {
-  return api_gateway_pb.GetGatewayStatsRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_api_GetGatewayStatsResponse(arg) {
-  if (!(arg instanceof api_gateway_pb.GetGatewayStatsResponse)) {
-    throw new Error('Expected argument of type api.GetGatewayStatsResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_api_GetGatewayStatsResponse(buffer_arg) {
-  return api_gateway_pb.GetGatewayStatsResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_api_ListGatewaysRequest(arg) {
@@ -214,17 +214,17 @@ generateClientCertificate: {
     responseSerialize: serialize_api_GenerateGatewayClientCertificateResponse,
     responseDeserialize: deserialize_api_GenerateGatewayClientCertificateResponse,
   },
-  // GetStats returns the gateway stats.
-getStats: {
-    path: '/api.GatewayService/GetStats',
+  // GetMetrics returns the gateway metrics.
+getMetrics: {
+    path: '/api.GatewayService/GetMetrics',
     requestStream: false,
     responseStream: false,
-    requestType: api_gateway_pb.GetGatewayStatsRequest,
-    responseType: api_gateway_pb.GetGatewayStatsResponse,
-    requestSerialize: serialize_api_GetGatewayStatsRequest,
-    requestDeserialize: deserialize_api_GetGatewayStatsRequest,
-    responseSerialize: serialize_api_GetGatewayStatsResponse,
-    responseDeserialize: deserialize_api_GetGatewayStatsResponse,
+    requestType: api_gateway_pb.GetGatewayMetricsRequest,
+    responseType: api_gateway_pb.GetGatewayMetricsResponse,
+    requestSerialize: serialize_api_GetGatewayMetricsRequest,
+    requestDeserialize: deserialize_api_GetGatewayMetricsRequest,
+    responseSerialize: serialize_api_GetGatewayMetricsResponse,
+    responseDeserialize: deserialize_api_GetGatewayMetricsResponse,
   },
 };
 

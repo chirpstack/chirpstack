@@ -51,12 +51,12 @@ export class GatewayServiceClient {
                response: api_gateway_pb.GenerateGatewayClientCertificateResponse) => void
   ): grpcWeb.ClientReadableStream<api_gateway_pb.GenerateGatewayClientCertificateResponse>;
 
-  getStats(
-    request: api_gateway_pb.GetGatewayStatsRequest,
+  getMetrics(
+    request: api_gateway_pb.GetGatewayMetricsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: api_gateway_pb.GetGatewayStatsResponse) => void
-  ): grpcWeb.ClientReadableStream<api_gateway_pb.GetGatewayStatsResponse>;
+               response: api_gateway_pb.GetGatewayMetricsResponse) => void
+  ): grpcWeb.ClientReadableStream<api_gateway_pb.GetGatewayMetricsResponse>;
 
 }
 
@@ -95,10 +95,10 @@ export class GatewayServicePromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<api_gateway_pb.GenerateGatewayClientCertificateResponse>;
 
-  getStats(
-    request: api_gateway_pb.GetGatewayStatsRequest,
+  getMetrics(
+    request: api_gateway_pb.GetGatewayMetricsRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<api_gateway_pb.GetGatewayStatsResponse>;
+  ): Promise<api_gateway_pb.GetGatewayMetricsResponse>;
 
 }
 

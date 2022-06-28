@@ -31,8 +31,8 @@ service GatewayService {
    // Generate client-certificate for the gateway.
    rpc GenerateClientCertificate(GenerateGatewayClientCertificateRequest) returns (GenerateGatewayClientCertificateResponse) {}
 
-   // GetStats returns the gateway stats.
-   rpc GetStats(GetGatewayStatsRequest) returns (GetGatewayStatsResponse) {}
+   // GetMetrics returns the gateway metrics.
+   rpc GetMetrics(GetGatewayMetricsRequest) returns (GetGatewayMetricsResponse) {}
 }
 
 message Gateway {
@@ -163,7 +163,7 @@ message GenerateGatewayClientCertificateResponse {
     google.protobuf.Timestamp expires_at = 4;
 }
 
-message GetGatewayStatsRequest {
+message GetGatewayMetricsRequest {
     // Gateway ID (EUI64).
     string gateway_id = 1;
 
@@ -172,34 +172,30 @@ message GetGatewayStatsRequest {
 
     // Interval end timestamp.
     google.protobuf.Timestamp end = 3;
+
+    // Aggregation.
+    common.Aggregation aggregation = 4;
 }
 
-message GetGatewayStatsResponse {
-    repeated GatewayStats result = 1;
-}
+message GetGatewayMetricsResponse {
+    // RX packets.
+    common.Metric rx_packets = 1;
 
-message GatewayStats {
-	// Timestamp of the (aggregated) measurement.
-	google.protobuf.Timestamp time = 1;
+    // TX packets.
+    common.Metric tx_packets = 2;
 
-    // Packets received.
-    uint32 rx_packets = 2;
+    // TX packets / frequency.
+    common.Metric tx_packets_per_freq = 3;
 
-    // Packets emitted.
-    uint32 tx_packets = 3;
+    // RX packets / frequency.
+    common.Metric rx_packets_per_freq = 4;
 
-    // Tx packets per frequency.
-    map<uint32, uint32> tx_packets_per_frequency = 4;
+    // TX packets / DR.
+    common.Metric tx_packets_per_dr = 5;
 
-    // Rx packets per frequency.
-    map<uint32, uint32> rx_packets_per_frequency = 5;
+    // RX packets / DR.
+    common.Metric rx_packets_per_dr = 6;
 
-    // Tx packets per DR.
-    map<uint32, uint32> tx_packets_per_dr = 6;
-
-    // Rx packets per DR.
-    map<uint32, uint32> rx_packets_per_dr = 7;
-
-    // Tx packets per status.
-    map<string, uint32> tx_packets_per_status = 8;
+    // TX packets per status.
+    common.Metric tx_packets_per_status = 7;
 }

@@ -84,6 +84,9 @@ export class DeviceProfile extends jspb.Message {
   getTagsMap(): jspb.Map<string, string>;
   clearTagsMap(): DeviceProfile;
 
+  getMeasurementsMap(): jspb.Map<string, Measurement>;
+  clearMeasurementsMap(): DeviceProfile;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -120,6 +123,29 @@ export namespace DeviceProfile {
     abpRx2Dr: number,
     abpRx2Freq: number,
     tagsMap: Array<[string, string]>,
+    measurementsMap: Array<[string, Measurement.AsObject]>,
+  }
+}
+
+export class Measurement extends jspb.Message {
+  getName(): string;
+  setName(value: string): Measurement;
+
+  getKind(): MeasurementKind;
+  setKind(value: MeasurementKind): Measurement;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Measurement.AsObject;
+  static toObject(includeInstance: boolean, msg: Measurement): Measurement.AsObject;
+  static serializeBinaryToWriter(message: Measurement, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Measurement;
+  static deserializeBinaryFromReader(message: Measurement, reader: jspb.BinaryReader): Measurement;
+}
+
+export namespace Measurement {
+  export type AsObject = {
+    name: string,
+    kind: MeasurementKind,
   }
 }
 
@@ -411,4 +437,11 @@ export enum CodecRuntime {
   NONE = 0,
   CAYENNE_LPP = 1,
   JS = 2,
+}
+export enum MeasurementKind { 
+  UNKNOWN = 0,
+  COUNTER = 1,
+  ABSOLUTE = 2,
+  GAUGE = 3,
+  STRING = 4,
 }

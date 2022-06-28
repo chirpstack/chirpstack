@@ -16,13 +16,12 @@ goog.exportSymbol('proto.api.CreateGatewayRequest', null, global);
 goog.exportSymbol('proto.api.DeleteGatewayRequest', null, global);
 goog.exportSymbol('proto.api.Gateway', null, global);
 goog.exportSymbol('proto.api.GatewayListItem', null, global);
-goog.exportSymbol('proto.api.GatewayStats', null, global);
 goog.exportSymbol('proto.api.GenerateGatewayClientCertificateRequest', null, global);
 goog.exportSymbol('proto.api.GenerateGatewayClientCertificateResponse', null, global);
+goog.exportSymbol('proto.api.GetGatewayMetricsRequest', null, global);
+goog.exportSymbol('proto.api.GetGatewayMetricsResponse', null, global);
 goog.exportSymbol('proto.api.GetGatewayRequest', null, global);
 goog.exportSymbol('proto.api.GetGatewayResponse', null, global);
-goog.exportSymbol('proto.api.GetGatewayStatsRequest', null, global);
-goog.exportSymbol('proto.api.GetGatewayStatsResponse', null, global);
 goog.exportSymbol('proto.api.ListGatewaysRequest', null, global);
 goog.exportSymbol('proto.api.ListGatewaysResponse', null, global);
 goog.exportSymbol('proto.api.UpdateGatewayRequest', null, global);
@@ -2648,12 +2647,12 @@ proto.api.GenerateGatewayClientCertificateResponse.prototype.hasExpiresAt = func
  * @extends {jspb.Message}
  * @constructor
  */
-proto.api.GetGatewayStatsRequest = function(opt_data) {
+proto.api.GetGatewayMetricsRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.api.GetGatewayStatsRequest, jspb.Message);
+goog.inherits(proto.api.GetGatewayMetricsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.api.GetGatewayStatsRequest.displayName = 'proto.api.GetGatewayStatsRequest';
+  proto.api.GetGatewayMetricsRequest.displayName = 'proto.api.GetGatewayMetricsRequest';
 }
 
 
@@ -2668,8 +2667,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.api.GetGatewayStatsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.api.GetGatewayStatsRequest.toObject(opt_includeInstance, this);
+proto.api.GetGatewayMetricsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.GetGatewayMetricsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -2678,14 +2677,15 @@ proto.api.GetGatewayStatsRequest.prototype.toObject = function(opt_includeInstan
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.api.GetGatewayStatsRequest} msg The msg instance to transform.
+ * @param {!proto.api.GetGatewayMetricsRequest} msg The msg instance to transform.
  * @return {!Object}
  */
-proto.api.GetGatewayStatsRequest.toObject = function(includeInstance, msg) {
+proto.api.GetGatewayMetricsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     gatewayId: msg.getGatewayId(),
     start: (f = msg.getStart()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    end: (f = msg.getEnd()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+    end: (f = msg.getEnd()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    aggregation: msg.getAggregation()
   };
 
   if (includeInstance) {
@@ -2699,23 +2699,23 @@ proto.api.GetGatewayStatsRequest.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.api.GetGatewayStatsRequest}
+ * @return {!proto.api.GetGatewayMetricsRequest}
  */
-proto.api.GetGatewayStatsRequest.deserializeBinary = function(bytes) {
+proto.api.GetGatewayMetricsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.api.GetGatewayStatsRequest;
-  return proto.api.GetGatewayStatsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.api.GetGatewayMetricsRequest;
+  return proto.api.GetGatewayMetricsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.api.GetGatewayStatsRequest} msg The message object to deserialize into.
+ * @param {!proto.api.GetGatewayMetricsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.api.GetGatewayStatsRequest}
+ * @return {!proto.api.GetGatewayMetricsRequest}
  */
-proto.api.GetGatewayStatsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.api.GetGatewayMetricsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2736,6 +2736,10 @@ proto.api.GetGatewayStatsRequest.deserializeBinaryFromReader = function(msg, rea
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setEnd(value);
       break;
+    case 4:
+      var value = /** @type {!proto.common.Aggregation} */ (reader.readEnum());
+      msg.setAggregation(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2748,10 +2752,10 @@ proto.api.GetGatewayStatsRequest.deserializeBinaryFromReader = function(msg, rea
 /**
  * Class method variant: serializes the given message to binary data
  * (in protobuf wire format), writing to the given BinaryWriter.
- * @param {!proto.api.GetGatewayStatsRequest} message
+ * @param {!proto.api.GetGatewayMetricsRequest} message
  * @param {!jspb.BinaryWriter} writer
  */
-proto.api.GetGatewayStatsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.api.GetGatewayMetricsRequest.serializeBinaryToWriter = function(message, writer) {
   message.serializeBinaryToWriter(writer);
 };
 
@@ -2760,7 +2764,7 @@ proto.api.GetGatewayStatsRequest.serializeBinaryToWriter = function(message, wri
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.api.GetGatewayStatsRequest.prototype.serializeBinary = function() {
+proto.api.GetGatewayMetricsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
@@ -2772,7 +2776,7 @@ proto.api.GetGatewayStatsRequest.prototype.serializeBinary = function() {
  * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
  */
-proto.api.GetGatewayStatsRequest.prototype.serializeBinaryToWriter = function (writer) {
+proto.api.GetGatewayMetricsRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
   f = this.getGatewayId();
   if (f.length > 0) {
@@ -2797,15 +2801,22 @@ proto.api.GetGatewayStatsRequest.prototype.serializeBinaryToWriter = function (w
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
+  f = this.getAggregation();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      4,
+      f
+    );
+  }
 };
 
 
 /**
  * Creates a deep clone of this proto. No data is shared with the original.
- * @return {!proto.api.GetGatewayStatsRequest} The clone.
+ * @return {!proto.api.GetGatewayMetricsRequest} The clone.
  */
-proto.api.GetGatewayStatsRequest.prototype.cloneMessage = function() {
-  return /** @type {!proto.api.GetGatewayStatsRequest} */ (jspb.Message.cloneMessage(this));
+proto.api.GetGatewayMetricsRequest.prototype.cloneMessage = function() {
+  return /** @type {!proto.api.GetGatewayMetricsRequest} */ (jspb.Message.cloneMessage(this));
 };
 
 
@@ -2813,13 +2824,13 @@ proto.api.GetGatewayStatsRequest.prototype.cloneMessage = function() {
  * optional string gateway_id = 1;
  * @return {string}
  */
-proto.api.GetGatewayStatsRequest.prototype.getGatewayId = function() {
+proto.api.GetGatewayMetricsRequest.prototype.getGatewayId = function() {
   return /** @type {string} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
 /** @param {string} value  */
-proto.api.GetGatewayStatsRequest.prototype.setGatewayId = function(value) {
+proto.api.GetGatewayMetricsRequest.prototype.setGatewayId = function(value) {
   jspb.Message.setField(this, 1, value);
 };
 
@@ -2828,19 +2839,19 @@ proto.api.GetGatewayStatsRequest.prototype.setGatewayId = function(value) {
  * optional google.protobuf.Timestamp start = 2;
  * @return {proto.google.protobuf.Timestamp}
  */
-proto.api.GetGatewayStatsRequest.prototype.getStart = function() {
+proto.api.GetGatewayMetricsRequest.prototype.getStart = function() {
   return /** @type{proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 2));
 };
 
 
 /** @param {proto.google.protobuf.Timestamp|undefined} value  */
-proto.api.GetGatewayStatsRequest.prototype.setStart = function(value) {
+proto.api.GetGatewayMetricsRequest.prototype.setStart = function(value) {
   jspb.Message.setWrapperField(this, 2, value);
 };
 
 
-proto.api.GetGatewayStatsRequest.prototype.clearStart = function() {
+proto.api.GetGatewayMetricsRequest.prototype.clearStart = function() {
   this.setStart(undefined);
 };
 
@@ -2849,7 +2860,7 @@ proto.api.GetGatewayStatsRequest.prototype.clearStart = function() {
  * Returns whether this field is set.
  * @return{!boolean}
  */
-proto.api.GetGatewayStatsRequest.prototype.hasStart = function() {
+proto.api.GetGatewayMetricsRequest.prototype.hasStart = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
@@ -2858,19 +2869,19 @@ proto.api.GetGatewayStatsRequest.prototype.hasStart = function() {
  * optional google.protobuf.Timestamp end = 3;
  * @return {proto.google.protobuf.Timestamp}
  */
-proto.api.GetGatewayStatsRequest.prototype.getEnd = function() {
+proto.api.GetGatewayMetricsRequest.prototype.getEnd = function() {
   return /** @type{proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 3));
 };
 
 
 /** @param {proto.google.protobuf.Timestamp|undefined} value  */
-proto.api.GetGatewayStatsRequest.prototype.setEnd = function(value) {
+proto.api.GetGatewayMetricsRequest.prototype.setEnd = function(value) {
   jspb.Message.setWrapperField(this, 3, value);
 };
 
 
-proto.api.GetGatewayStatsRequest.prototype.clearEnd = function() {
+proto.api.GetGatewayMetricsRequest.prototype.clearEnd = function() {
   this.setEnd(undefined);
 };
 
@@ -2879,186 +2890,23 @@ proto.api.GetGatewayStatsRequest.prototype.clearEnd = function() {
  * Returns whether this field is set.
  * @return{!boolean}
  */
-proto.api.GetGatewayStatsRequest.prototype.hasEnd = function() {
+proto.api.GetGatewayMetricsRequest.prototype.hasEnd = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
 
-
 /**
- * Generated by JsPbCodeGenerator.
- * @param {Array=} opt_data Optional initial data array, typically from a
- * server response, or constructed directly in Javascript. The array is used
- * in place and becomes part of the constructed object. It is not cloned.
- * If no data is provided, the constructed object will be empty, but still
- * valid.
- * @extends {jspb.Message}
- * @constructor
+ * optional common.Aggregation aggregation = 4;
+ * @return {!proto.common.Aggregation}
  */
-proto.api.GetGatewayStatsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.api.GetGatewayStatsResponse.repeatedFields_, null);
-};
-goog.inherits(proto.api.GetGatewayStatsResponse, jspb.Message);
-if (goog.DEBUG && !COMPILED) {
-  proto.api.GetGatewayStatsResponse.displayName = 'proto.api.GetGatewayStatsResponse';
-}
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.api.GetGatewayStatsResponse.repeatedFields_ = [1];
-
-
-
-if (jspb.Message.GENERATE_TO_OBJECT) {
-/**
- * Creates an object representation of this proto suitable for use in Soy templates.
- * Field names that are reserved in JavaScript and will be renamed to pb_name.
- * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
- * For the list of reserved names please see:
- *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
- * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
- *     for transitional soy proto support: http://goto/soy-param-migration
- * @return {!Object}
- */
-proto.api.GetGatewayStatsResponse.prototype.toObject = function(opt_includeInstance) {
-  return proto.api.GetGatewayStatsResponse.toObject(opt_includeInstance, this);
+proto.api.GetGatewayMetricsRequest.prototype.getAggregation = function() {
+  return /** @type {!proto.common.Aggregation} */ (jspb.Message.getFieldProto3(this, 4, 0));
 };
 
 
-/**
- * Static version of the {@see toObject} method.
- * @param {boolean|undefined} includeInstance Whether to include the JSPB
- *     instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @param {!proto.api.GetGatewayStatsResponse} msg The msg instance to transform.
- * @return {!Object}
- */
-proto.api.GetGatewayStatsResponse.toObject = function(includeInstance, msg) {
-  var f, obj = {
-    resultList: jspb.Message.toObjectList(msg.getResultList(),
-    proto.api.GatewayStats.toObject, includeInstance)
-  };
-
-  if (includeInstance) {
-    obj.$jspbMessageInstance = msg;
-  }
-  return obj;
-};
-}
-
-
-/**
- * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.api.GetGatewayStatsResponse}
- */
-proto.api.GetGatewayStatsResponse.deserializeBinary = function(bytes) {
-  var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.api.GetGatewayStatsResponse;
-  return proto.api.GetGatewayStatsResponse.deserializeBinaryFromReader(msg, reader);
-};
-
-
-/**
- * Deserializes binary data (in protobuf wire format) from the
- * given reader into the given message object.
- * @param {!proto.api.GetGatewayStatsResponse} msg The message object to deserialize into.
- * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.api.GetGatewayStatsResponse}
- */
-proto.api.GetGatewayStatsResponse.deserializeBinaryFromReader = function(msg, reader) {
-  while (reader.nextField()) {
-    if (reader.isEndGroup()) {
-      break;
-    }
-    var field = reader.getFieldNumber();
-    switch (field) {
-    case 1:
-      var value = new proto.api.GatewayStats;
-      reader.readMessage(value,proto.api.GatewayStats.deserializeBinaryFromReader);
-      msg.getResultList().push(value);
-      msg.setResultList(msg.getResultList());
-      break;
-    default:
-      reader.skipField();
-      break;
-    }
-  }
-  return msg;
-};
-
-
-/**
- * Class method variant: serializes the given message to binary data
- * (in protobuf wire format), writing to the given BinaryWriter.
- * @param {!proto.api.GetGatewayStatsResponse} message
- * @param {!jspb.BinaryWriter} writer
- */
-proto.api.GetGatewayStatsResponse.serializeBinaryToWriter = function(message, writer) {
-  message.serializeBinaryToWriter(writer);
-};
-
-
-/**
- * Serializes the message to binary data (in protobuf wire format).
- * @return {!Uint8Array}
- */
-proto.api.GetGatewayStatsResponse.prototype.serializeBinary = function() {
-  var writer = new jspb.BinaryWriter();
-  this.serializeBinaryToWriter(writer);
-  return writer.getResultBuffer();
-};
-
-
-/**
- * Serializes the message to binary data (in protobuf wire format),
- * writing to the given BinaryWriter.
- * @param {!jspb.BinaryWriter} writer
- */
-proto.api.GetGatewayStatsResponse.prototype.serializeBinaryToWriter = function (writer) {
-  var f = undefined;
-  f = this.getResultList();
-  if (f.length > 0) {
-    writer.writeRepeatedMessage(
-      1,
-      f,
-      proto.api.GatewayStats.serializeBinaryToWriter
-    );
-  }
-};
-
-
-/**
- * Creates a deep clone of this proto. No data is shared with the original.
- * @return {!proto.api.GetGatewayStatsResponse} The clone.
- */
-proto.api.GetGatewayStatsResponse.prototype.cloneMessage = function() {
-  return /** @type {!proto.api.GetGatewayStatsResponse} */ (jspb.Message.cloneMessage(this));
-};
-
-
-/**
- * repeated GatewayStats result = 1;
- * If you change this array by adding, removing or replacing elements, or if you
- * replace the array itself, then you must call the setter to update it.
- * @return {!Array.<!proto.api.GatewayStats>}
- */
-proto.api.GetGatewayStatsResponse.prototype.getResultList = function() {
-  return /** @type{!Array.<!proto.api.GatewayStats>} */ (
-    jspb.Message.getRepeatedWrapperField(this, proto.api.GatewayStats, 1));
-};
-
-
-/** @param {Array.<!proto.api.GatewayStats>} value  */
-proto.api.GetGatewayStatsResponse.prototype.setResultList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 1, value);
-};
-
-
-proto.api.GetGatewayStatsResponse.prototype.clearResultList = function() {
-  this.setResultList([]);
+/** @param {!proto.common.Aggregation} value  */
+proto.api.GetGatewayMetricsRequest.prototype.setAggregation = function(value) {
+  jspb.Message.setField(this, 4, value);
 };
 
 
@@ -3073,12 +2921,12 @@ proto.api.GetGatewayStatsResponse.prototype.clearResultList = function() {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.api.GatewayStats = function(opt_data) {
+proto.api.GetGatewayMetricsResponse = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.api.GatewayStats, jspb.Message);
+goog.inherits(proto.api.GetGatewayMetricsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.api.GatewayStats.displayName = 'proto.api.GatewayStats';
+  proto.api.GetGatewayMetricsResponse.displayName = 'proto.api.GetGatewayMetricsResponse';
 }
 
 
@@ -3093,8 +2941,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.api.GatewayStats.prototype.toObject = function(opt_includeInstance) {
-  return proto.api.GatewayStats.toObject(opt_includeInstance, this);
+proto.api.GetGatewayMetricsResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.GetGatewayMetricsResponse.toObject(opt_includeInstance, this);
 };
 
 
@@ -3103,19 +2951,18 @@ proto.api.GatewayStats.prototype.toObject = function(opt_includeInstance) {
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.api.GatewayStats} msg The msg instance to transform.
+ * @param {!proto.api.GetGatewayMetricsResponse} msg The msg instance to transform.
  * @return {!Object}
  */
-proto.api.GatewayStats.toObject = function(includeInstance, msg) {
+proto.api.GetGatewayMetricsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    rxPackets: msg.getRxPackets(),
-    txPackets: msg.getTxPackets(),
-    txPacketsPerFrequencyMap: (f = msg.getTxPacketsPerFrequencyMap(true)) ? f.toArray() : [],
-    rxPacketsPerFrequencyMap: (f = msg.getRxPacketsPerFrequencyMap(true)) ? f.toArray() : [],
-    txPacketsPerDrMap: (f = msg.getTxPacketsPerDrMap(true)) ? f.toArray() : [],
-    rxPacketsPerDrMap: (f = msg.getRxPacketsPerDrMap(true)) ? f.toArray() : [],
-    txPacketsPerStatusMap: (f = msg.getTxPacketsPerStatusMap(true)) ? f.toArray() : []
+    rxPackets: (f = msg.getRxPackets()) && common_common_pb.Metric.toObject(includeInstance, f),
+    txPackets: (f = msg.getTxPackets()) && common_common_pb.Metric.toObject(includeInstance, f),
+    txPacketsPerFreq: (f = msg.getTxPacketsPerFreq()) && common_common_pb.Metric.toObject(includeInstance, f),
+    rxPacketsPerFreq: (f = msg.getRxPacketsPerFreq()) && common_common_pb.Metric.toObject(includeInstance, f),
+    txPacketsPerDr: (f = msg.getTxPacketsPerDr()) && common_common_pb.Metric.toObject(includeInstance, f),
+    rxPacketsPerDr: (f = msg.getRxPacketsPerDr()) && common_common_pb.Metric.toObject(includeInstance, f),
+    txPacketsPerStatus: (f = msg.getTxPacketsPerStatus()) && common_common_pb.Metric.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3129,23 +2976,23 @@ proto.api.GatewayStats.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.api.GatewayStats}
+ * @return {!proto.api.GetGatewayMetricsResponse}
  */
-proto.api.GatewayStats.deserializeBinary = function(bytes) {
+proto.api.GetGatewayMetricsResponse.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.api.GatewayStats;
-  return proto.api.GatewayStats.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.api.GetGatewayMetricsResponse;
+  return proto.api.GetGatewayMetricsResponse.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.api.GatewayStats} msg The message object to deserialize into.
+ * @param {!proto.api.GetGatewayMetricsResponse} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.api.GatewayStats}
+ * @return {!proto.api.GetGatewayMetricsResponse}
  */
-proto.api.GatewayStats.deserializeBinaryFromReader = function(msg, reader) {
+proto.api.GetGatewayMetricsResponse.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3153,47 +3000,39 @@ proto.api.GatewayStats.deserializeBinaryFromReader = function(msg, reader) {
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new google_protobuf_timestamp_pb.Timestamp;
-      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setTime(value);
-      break;
-    case 2:
-      var value = /** @type {number} */ (reader.readUint32());
+      var value = new common_common_pb.Metric;
+      reader.readMessage(value,common_common_pb.Metric.deserializeBinaryFromReader);
       msg.setRxPackets(value);
       break;
-    case 3:
-      var value = /** @type {number} */ (reader.readUint32());
+    case 2:
+      var value = new common_common_pb.Metric;
+      reader.readMessage(value,common_common_pb.Metric.deserializeBinaryFromReader);
       msg.setTxPackets(value);
       break;
+    case 3:
+      var value = new common_common_pb.Metric;
+      reader.readMessage(value,common_common_pb.Metric.deserializeBinaryFromReader);
+      msg.setTxPacketsPerFreq(value);
+      break;
     case 4:
-      var value = msg.getTxPacketsPerFrequencyMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readUint32, jspb.BinaryReader.prototype.readUint32);
-         });
+      var value = new common_common_pb.Metric;
+      reader.readMessage(value,common_common_pb.Metric.deserializeBinaryFromReader);
+      msg.setRxPacketsPerFreq(value);
       break;
     case 5:
-      var value = msg.getRxPacketsPerFrequencyMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readUint32, jspb.BinaryReader.prototype.readUint32);
-         });
+      var value = new common_common_pb.Metric;
+      reader.readMessage(value,common_common_pb.Metric.deserializeBinaryFromReader);
+      msg.setTxPacketsPerDr(value);
       break;
     case 6:
-      var value = msg.getTxPacketsPerDrMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readUint32, jspb.BinaryReader.prototype.readUint32);
-         });
+      var value = new common_common_pb.Metric;
+      reader.readMessage(value,common_common_pb.Metric.deserializeBinaryFromReader);
+      msg.setRxPacketsPerDr(value);
       break;
     case 7:
-      var value = msg.getRxPacketsPerDrMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readUint32, jspb.BinaryReader.prototype.readUint32);
-         });
-      break;
-    case 8:
-      var value = msg.getTxPacketsPerStatusMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readUint32);
-         });
+      var value = new common_common_pb.Metric;
+      reader.readMessage(value,common_common_pb.Metric.deserializeBinaryFromReader);
+      msg.setTxPacketsPerStatus(value);
       break;
     default:
       reader.skipField();
@@ -3207,10 +3046,10 @@ proto.api.GatewayStats.deserializeBinaryFromReader = function(msg, reader) {
 /**
  * Class method variant: serializes the given message to binary data
  * (in protobuf wire format), writing to the given BinaryWriter.
- * @param {!proto.api.GatewayStats} message
+ * @param {!proto.api.GetGatewayMetricsResponse} message
  * @param {!jspb.BinaryWriter} writer
  */
-proto.api.GatewayStats.serializeBinaryToWriter = function(message, writer) {
+proto.api.GetGatewayMetricsResponse.serializeBinaryToWriter = function(message, writer) {
   message.serializeBinaryToWriter(writer);
 };
 
@@ -3219,7 +3058,7 @@ proto.api.GatewayStats.serializeBinaryToWriter = function(message, writer) {
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.api.GatewayStats.prototype.serializeBinary = function() {
+proto.api.GetGatewayMetricsResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
@@ -3231,80 +3070,94 @@ proto.api.GatewayStats.prototype.serializeBinary = function() {
  * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
  */
-proto.api.GatewayStats.prototype.serializeBinaryToWriter = function (writer) {
+proto.api.GetGatewayMetricsResponse.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getTime();
+  f = this.getRxPackets();
   if (f != null) {
     writer.writeMessage(
       1,
       f,
-      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
-    );
-  }
-  f = this.getRxPackets();
-  if (f !== 0) {
-    writer.writeUint32(
-      2,
-      f
+      common_common_pb.Metric.serializeBinaryToWriter
     );
   }
   f = this.getTxPackets();
-  if (f !== 0) {
-    writer.writeUint32(
-      3,
-      f
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      common_common_pb.Metric.serializeBinaryToWriter
     );
   }
-  f = this.getTxPacketsPerFrequencyMap(true);
-  if (f && f.getLength() > 0) {
-    f.serializeBinary(4, writer, jspb.BinaryWriter.prototype.writeUint32, jspb.BinaryWriter.prototype.writeUint32);
+  f = this.getTxPacketsPerFreq();
+  if (f != null) {
+    writer.writeMessage(
+      3,
+      f,
+      common_common_pb.Metric.serializeBinaryToWriter
+    );
   }
-  f = this.getRxPacketsPerFrequencyMap(true);
-  if (f && f.getLength() > 0) {
-    f.serializeBinary(5, writer, jspb.BinaryWriter.prototype.writeUint32, jspb.BinaryWriter.prototype.writeUint32);
+  f = this.getRxPacketsPerFreq();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      common_common_pb.Metric.serializeBinaryToWriter
+    );
   }
-  f = this.getTxPacketsPerDrMap(true);
-  if (f && f.getLength() > 0) {
-    f.serializeBinary(6, writer, jspb.BinaryWriter.prototype.writeUint32, jspb.BinaryWriter.prototype.writeUint32);
+  f = this.getTxPacketsPerDr();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      common_common_pb.Metric.serializeBinaryToWriter
+    );
   }
-  f = this.getRxPacketsPerDrMap(true);
-  if (f && f.getLength() > 0) {
-    f.serializeBinary(7, writer, jspb.BinaryWriter.prototype.writeUint32, jspb.BinaryWriter.prototype.writeUint32);
+  f = this.getRxPacketsPerDr();
+  if (f != null) {
+    writer.writeMessage(
+      6,
+      f,
+      common_common_pb.Metric.serializeBinaryToWriter
+    );
   }
-  f = this.getTxPacketsPerStatusMap(true);
-  if (f && f.getLength() > 0) {
-    f.serializeBinary(8, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeUint32);
+  f = this.getTxPacketsPerStatus();
+  if (f != null) {
+    writer.writeMessage(
+      7,
+      f,
+      common_common_pb.Metric.serializeBinaryToWriter
+    );
   }
 };
 
 
 /**
  * Creates a deep clone of this proto. No data is shared with the original.
- * @return {!proto.api.GatewayStats} The clone.
+ * @return {!proto.api.GetGatewayMetricsResponse} The clone.
  */
-proto.api.GatewayStats.prototype.cloneMessage = function() {
-  return /** @type {!proto.api.GatewayStats} */ (jspb.Message.cloneMessage(this));
+proto.api.GetGatewayMetricsResponse.prototype.cloneMessage = function() {
+  return /** @type {!proto.api.GetGatewayMetricsResponse} */ (jspb.Message.cloneMessage(this));
 };
 
 
 /**
- * optional google.protobuf.Timestamp time = 1;
- * @return {proto.google.protobuf.Timestamp}
+ * optional common.Metric rx_packets = 1;
+ * @return {proto.common.Metric}
  */
-proto.api.GatewayStats.prototype.getTime = function() {
-  return /** @type{proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
+proto.api.GetGatewayMetricsResponse.prototype.getRxPackets = function() {
+  return /** @type{proto.common.Metric} */ (
+    jspb.Message.getWrapperField(this, common_common_pb.Metric, 1));
 };
 
 
-/** @param {proto.google.protobuf.Timestamp|undefined} value  */
-proto.api.GatewayStats.prototype.setTime = function(value) {
+/** @param {proto.common.Metric|undefined} value  */
+proto.api.GetGatewayMetricsResponse.prototype.setRxPackets = function(value) {
   jspb.Message.setWrapperField(this, 1, value);
 };
 
 
-proto.api.GatewayStats.prototype.clearTime = function() {
-  this.setTime(undefined);
+proto.api.GetGatewayMetricsResponse.prototype.clearRxPackets = function() {
+  this.setRxPackets(undefined);
 };
 
 
@@ -3312,103 +3165,188 @@ proto.api.GatewayStats.prototype.clearTime = function() {
  * Returns whether this field is set.
  * @return{!boolean}
  */
-proto.api.GatewayStats.prototype.hasTime = function() {
+proto.api.GetGatewayMetricsResponse.prototype.hasRxPackets = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
 
 /**
- * optional uint32 rx_packets = 2;
- * @return {number}
+ * optional common.Metric tx_packets = 2;
+ * @return {proto.common.Metric}
  */
-proto.api.GatewayStats.prototype.getRxPackets = function() {
-  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 2, 0));
+proto.api.GetGatewayMetricsResponse.prototype.getTxPackets = function() {
+  return /** @type{proto.common.Metric} */ (
+    jspb.Message.getWrapperField(this, common_common_pb.Metric, 2));
 };
 
 
-/** @param {number} value  */
-proto.api.GatewayStats.prototype.setRxPackets = function(value) {
-  jspb.Message.setField(this, 2, value);
+/** @param {proto.common.Metric|undefined} value  */
+proto.api.GetGatewayMetricsResponse.prototype.setTxPackets = function(value) {
+  jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+proto.api.GetGatewayMetricsResponse.prototype.clearTxPackets = function() {
+  this.setTxPackets(undefined);
 };
 
 
 /**
- * optional uint32 tx_packets = 3;
- * @return {number}
+ * Returns whether this field is set.
+ * @return{!boolean}
  */
-proto.api.GatewayStats.prototype.getTxPackets = function() {
-  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 3, 0));
-};
-
-
-/** @param {number} value  */
-proto.api.GatewayStats.prototype.setTxPackets = function(value) {
-  jspb.Message.setField(this, 3, value);
+proto.api.GetGatewayMetricsResponse.prototype.hasTxPackets = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
 /**
- * map<uint32, uint32> tx_packets_per_frequency = 4;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<number,number>}
+ * optional common.Metric tx_packets_per_freq = 3;
+ * @return {proto.common.Metric}
  */
-proto.api.GatewayStats.prototype.getTxPacketsPerFrequencyMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<number,number>} */ (
-      jspb.Message.getMapField(this, 4, opt_noLazyCreate,
-      null));
+proto.api.GetGatewayMetricsResponse.prototype.getTxPacketsPerFreq = function() {
+  return /** @type{proto.common.Metric} */ (
+    jspb.Message.getWrapperField(this, common_common_pb.Metric, 3));
+};
+
+
+/** @param {proto.common.Metric|undefined} value  */
+proto.api.GetGatewayMetricsResponse.prototype.setTxPacketsPerFreq = function(value) {
+  jspb.Message.setWrapperField(this, 3, value);
+};
+
+
+proto.api.GetGatewayMetricsResponse.prototype.clearTxPacketsPerFreq = function() {
+  this.setTxPacketsPerFreq(undefined);
 };
 
 
 /**
- * map<uint32, uint32> rx_packets_per_frequency = 5;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<number,number>}
+ * Returns whether this field is set.
+ * @return{!boolean}
  */
-proto.api.GatewayStats.prototype.getRxPacketsPerFrequencyMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<number,number>} */ (
-      jspb.Message.getMapField(this, 5, opt_noLazyCreate,
-      null));
+proto.api.GetGatewayMetricsResponse.prototype.hasTxPacketsPerFreq = function() {
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
 /**
- * map<uint32, uint32> tx_packets_per_dr = 6;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<number,number>}
+ * optional common.Metric rx_packets_per_freq = 4;
+ * @return {proto.common.Metric}
  */
-proto.api.GatewayStats.prototype.getTxPacketsPerDrMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<number,number>} */ (
-      jspb.Message.getMapField(this, 6, opt_noLazyCreate,
-      null));
+proto.api.GetGatewayMetricsResponse.prototype.getRxPacketsPerFreq = function() {
+  return /** @type{proto.common.Metric} */ (
+    jspb.Message.getWrapperField(this, common_common_pb.Metric, 4));
+};
+
+
+/** @param {proto.common.Metric|undefined} value  */
+proto.api.GetGatewayMetricsResponse.prototype.setRxPacketsPerFreq = function(value) {
+  jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+proto.api.GetGatewayMetricsResponse.prototype.clearRxPacketsPerFreq = function() {
+  this.setRxPacketsPerFreq(undefined);
 };
 
 
 /**
- * map<uint32, uint32> rx_packets_per_dr = 7;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<number,number>}
+ * Returns whether this field is set.
+ * @return{!boolean}
  */
-proto.api.GatewayStats.prototype.getRxPacketsPerDrMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<number,number>} */ (
-      jspb.Message.getMapField(this, 7, opt_noLazyCreate,
-      null));
+proto.api.GetGatewayMetricsResponse.prototype.hasRxPacketsPerFreq = function() {
+  return jspb.Message.getField(this, 4) != null;
 };
 
 
 /**
- * map<string, uint32> tx_packets_per_status = 8;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<string,number>}
+ * optional common.Metric tx_packets_per_dr = 5;
+ * @return {proto.common.Metric}
  */
-proto.api.GatewayStats.prototype.getTxPacketsPerStatusMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<string,number>} */ (
-      jspb.Message.getMapField(this, 8, opt_noLazyCreate,
-      null));
+proto.api.GetGatewayMetricsResponse.prototype.getTxPacketsPerDr = function() {
+  return /** @type{proto.common.Metric} */ (
+    jspb.Message.getWrapperField(this, common_common_pb.Metric, 5));
+};
+
+
+/** @param {proto.common.Metric|undefined} value  */
+proto.api.GetGatewayMetricsResponse.prototype.setTxPacketsPerDr = function(value) {
+  jspb.Message.setWrapperField(this, 5, value);
+};
+
+
+proto.api.GetGatewayMetricsResponse.prototype.clearTxPacketsPerDr = function() {
+  this.setTxPacketsPerDr(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return{!boolean}
+ */
+proto.api.GetGatewayMetricsResponse.prototype.hasTxPacketsPerDr = function() {
+  return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional common.Metric rx_packets_per_dr = 6;
+ * @return {proto.common.Metric}
+ */
+proto.api.GetGatewayMetricsResponse.prototype.getRxPacketsPerDr = function() {
+  return /** @type{proto.common.Metric} */ (
+    jspb.Message.getWrapperField(this, common_common_pb.Metric, 6));
+};
+
+
+/** @param {proto.common.Metric|undefined} value  */
+proto.api.GetGatewayMetricsResponse.prototype.setRxPacketsPerDr = function(value) {
+  jspb.Message.setWrapperField(this, 6, value);
+};
+
+
+proto.api.GetGatewayMetricsResponse.prototype.clearRxPacketsPerDr = function() {
+  this.setRxPacketsPerDr(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return{!boolean}
+ */
+proto.api.GetGatewayMetricsResponse.prototype.hasRxPacketsPerDr = function() {
+  return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional common.Metric tx_packets_per_status = 7;
+ * @return {proto.common.Metric}
+ */
+proto.api.GetGatewayMetricsResponse.prototype.getTxPacketsPerStatus = function() {
+  return /** @type{proto.common.Metric} */ (
+    jspb.Message.getWrapperField(this, common_common_pb.Metric, 7));
+};
+
+
+/** @param {proto.common.Metric|undefined} value  */
+proto.api.GetGatewayMetricsResponse.prototype.setTxPacketsPerStatus = function(value) {
+  jspb.Message.setWrapperField(this, 7, value);
+};
+
+
+proto.api.GetGatewayMetricsResponse.prototype.clearTxPacketsPerStatus = function() {
+  this.setTxPacketsPerStatus(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return{!boolean}
+ */
+proto.api.GetGatewayMetricsResponse.prototype.hasTxPacketsPerStatus = function() {
+  return jspb.Message.getField(this, 7) != null;
 };
 
 

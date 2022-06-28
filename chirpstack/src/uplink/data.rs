@@ -8,8 +8,8 @@ use super::error::Error;
 use super::{filter_rx_info_by_tenant_id, helpers, UplinkFrameSet};
 use crate::storage::error::Error as StorageError;
 use crate::storage::{
-    application, device, device_gateway, device_profile, device_queue, device_session, metrics,
-    tenant,
+    application, device, device_gateway, device_profile, device_queue, device_session, fields,
+    metrics, tenant,
 };
 use crate::{codec, config, downlink, framelog, integration, maccommand};
 use chirpstack_api::{api, common, integration as integration_pb, internal};
@@ -28,6 +28,7 @@ pub struct Data {
     application: Option<application::Application>,
     device_info: Option<integration_pb::DeviceInfo>,
     mac_payload: Option<lrwn::MACPayload>,
+    uplink_event: Option<integration_pb::UplinkEvent>,
     must_send_downlink: bool,
     downlink_mac_commands: Vec<lrwn::MACCommandSet>,
     device_gateway_rx_info: Option<internal::DeviceGatewayRxInfo>,
@@ -62,6 +63,7 @@ impl Data {
             application: None,
             device_info: None,
             mac_payload: None,
+            uplink_event: None,
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
             device_gateway_rx_info: None,
@@ -91,6 +93,7 @@ impl Data {
         ctx.save_device_gateway_rx_info().await?;
         ctx.append_meta_data_to_uplink_history()?;
         ctx.send_uplink_event().await?;
+        ctx.detect_and_save_measurements().await?;
         ctx.sync_uplink_f_cnt()?;
         ctx.set_region_name()?;
         ctx.save_device_session().await?;
@@ -562,7 +565,7 @@ impl Data {
         Ok(())
     }
 
-    async fn send_uplink_event(&self) -> Result<()> {
+    async fn send_uplink_event(&mut self) -> Result<()> {
         trace!("Sending uplink event");
 
         let ts: DateTime<Utc> =
@@ -623,6 +626,86 @@ impl Data {
         };
 
         integration::uplink_event(&app.id, &dev.variables, &pl).await?;
+
+        self.uplink_event = Some(pl);
+
+        Ok(())
+    }
+
+    async fn detect_and_save_measurements(&mut self) -> Result<()> {
+        trace!("Detecing and saving measurements");
+
+        let dp = self.device_profile.as_ref().unwrap();
+        let up_event = self.uplink_event.as_ref().unwrap();
+        let dev = self.device.as_ref().unwrap();
+
+        let data_measurements: HashMap<String, pbjson_types::value::Kind> = match &up_event.object {
+            None => HashMap::new(),
+            Some(v) => codec::get_measurements(v),
+        };
+
+        let mut measurements = dp.measurements.clone();
+        let mut update_dp_measurements = false;
+
+        for (k, v) in data_measurements {
+            if let Some(dp_m) = measurements.get(&k) {
+                if dp_m.kind == fields::MeasurementKind::UNKNOWN {
+                    continue;
+                }
+
+                // Only Number, String and BoolValues are expected.
+                match v {
+                    pbjson_types::value::Kind::NumberValue(v) => {
+                        let record = metrics::Record {
+                            time: DateTime::<Utc>::try_from(
+                                up_event.time.as_ref().unwrap().clone(),
+                            )?
+                            .with_timezone(&Local),
+                            kind: match dp_m.kind {
+                                fields::MeasurementKind::COUNTER => metrics::Kind::COUNTER,
+                                fields::MeasurementKind::ABSOLUTE => metrics::Kind::ABSOLUTE,
+                                fields::MeasurementKind::GAUGE => metrics::Kind::GAUGE,
+                                _ => {
+                                    continue;
+                                }
+                            },
+                            metrics: [("value".to_string(), v)].iter().cloned().collect(),
+                        };
+
+                        metrics::save(&format!("device:{}:{}", dev.dev_eui, k), &record).await?;
+                    }
+                    pbjson_types::value::Kind::StringValue(v) => {
+                        metrics::save_state(
+                            &format!("device:{}:{}", dev.dev_eui, k),
+                            &v.to_string(),
+                        )
+                        .await?;
+                    }
+                    pbjson_types::value::Kind::BoolValue(v) => {
+                        metrics::save_state(
+                            &format!("device:{}:{}", dev.dev_eui, k),
+                            &format!("{}", v),
+                        )
+                        .await?;
+                    }
+                    _ => {}
+                }
+            } else {
+                update_dp_measurements = true;
+                measurements.insert(
+                    k.clone(),
+                    fields::Measurement {
+                        kind: fields::MeasurementKind::UNKNOWN,
+                        name: "".to_string(),
+                    },
+                );
+            }
+        }
+
+        if update_dp_measurements {
+            self.device_profile =
+                Some(device_profile::set_measurements(dp.id, &measurements).await?);
+        }
 
         Ok(())
     }
@@ -732,6 +815,7 @@ impl Data {
 
         let mut record = metrics::Record {
             time: Local::now(),
+            kind: metrics::Kind::ABSOLUTE,
             metrics: HashMap::new(),
         };
 

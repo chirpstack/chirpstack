@@ -2,6 +2,7 @@
 // file: common/common.proto
 
 import * as jspb from "google-protobuf";
+import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 
 export class Location extends jspb.Message {
   getLatitude(): number;
@@ -62,6 +63,64 @@ export namespace KeyEnvelope {
   export type AsObject = {
     kekLabel: string,
     aesKey: Uint8Array | string,
+  }
+}
+
+export class Metric extends jspb.Message {
+  getName(): string;
+  setName(value: string): void;
+
+  clearTimestampsList(): void;
+  getTimestampsList(): Array<google_protobuf_timestamp_pb.Timestamp>;
+  setTimestampsList(value: Array<google_protobuf_timestamp_pb.Timestamp>): void;
+  addTimestamps(value?: google_protobuf_timestamp_pb.Timestamp, index?: number): google_protobuf_timestamp_pb.Timestamp;
+
+  clearDatasetsList(): void;
+  getDatasetsList(): Array<MetricDataset>;
+  setDatasetsList(value: Array<MetricDataset>): void;
+  addDatasets(value?: MetricDataset, index?: number): MetricDataset;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Metric.AsObject;
+  static toObject(includeInstance: boolean, msg: Metric): Metric.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Metric, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Metric;
+  static deserializeBinaryFromReader(message: Metric, reader: jspb.BinaryReader): Metric;
+}
+
+export namespace Metric {
+  export type AsObject = {
+    name: string,
+    timestampsList: Array<google_protobuf_timestamp_pb.Timestamp.AsObject>,
+    datasetsList: Array<MetricDataset.AsObject>,
+  }
+}
+
+export class MetricDataset extends jspb.Message {
+  getLabel(): string;
+  setLabel(value: string): void;
+
+  clearDataList(): void;
+  getDataList(): Array<number>;
+  setDataList(value: Array<number>): void;
+  addData(value: number, index?: number): number;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): MetricDataset.AsObject;
+  static toObject(includeInstance: boolean, msg: MetricDataset): MetricDataset.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: MetricDataset, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): MetricDataset;
+  static deserializeBinaryFromReader(message: MetricDataset, reader: jspb.BinaryReader): MetricDataset;
+}
+
+export namespace MetricDataset {
+  export type AsObject = {
+    label: string,
+    dataList: Array<number>,
   }
 }
 
@@ -138,4 +197,12 @@ export interface LocationSourceMap {
 }
 
 export const LocationSource: LocationSourceMap;
+
+export interface AggregationMap {
+  HOUR: 0;
+  DAY: 1;
+  MONTH: 2;
+}
+
+export const Aggregation: AggregationMap;
 

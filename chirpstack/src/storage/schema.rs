@@ -99,6 +99,7 @@ table! {
         payload_codec_script -> Text,
         flush_queue_on_activate -> Bool,
         description -> Text,
+        measurements -> Jsonb,
     }
 }
 
@@ -133,6 +134,7 @@ table! {
         abp_rx2_dr -> Int2,
         abp_rx2_freq -> Int8,
         tags -> Jsonb,
+        measurements -> Jsonb,
     }
 }
 

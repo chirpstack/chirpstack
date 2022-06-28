@@ -1,5 +1,6 @@
 import * as jspb from 'google-protobuf'
 
+import * as common_common_pb from '../common/common_pb';
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import * as google_protobuf_struct_pb from 'google-protobuf/google/protobuf/struct_pb';
 import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb';
@@ -613,97 +614,165 @@ export namespace GetRandomDevAddrResponse {
   }
 }
 
-export class GetDeviceStatsRequest extends jspb.Message {
+export class GetDeviceMetricsRequest extends jspb.Message {
   getDevEui(): string;
-  setDevEui(value: string): GetDeviceStatsRequest;
+  setDevEui(value: string): GetDeviceMetricsRequest;
 
   getStart(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setStart(value?: google_protobuf_timestamp_pb.Timestamp): GetDeviceStatsRequest;
+  setStart(value?: google_protobuf_timestamp_pb.Timestamp): GetDeviceMetricsRequest;
   hasStart(): boolean;
-  clearStart(): GetDeviceStatsRequest;
+  clearStart(): GetDeviceMetricsRequest;
 
   getEnd(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setEnd(value?: google_protobuf_timestamp_pb.Timestamp): GetDeviceStatsRequest;
+  setEnd(value?: google_protobuf_timestamp_pb.Timestamp): GetDeviceMetricsRequest;
   hasEnd(): boolean;
-  clearEnd(): GetDeviceStatsRequest;
+  clearEnd(): GetDeviceMetricsRequest;
+
+  getAggregation(): common_common_pb.Aggregation;
+  setAggregation(value: common_common_pb.Aggregation): GetDeviceMetricsRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetDeviceStatsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetDeviceStatsRequest): GetDeviceStatsRequest.AsObject;
-  static serializeBinaryToWriter(message: GetDeviceStatsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetDeviceStatsRequest;
-  static deserializeBinaryFromReader(message: GetDeviceStatsRequest, reader: jspb.BinaryReader): GetDeviceStatsRequest;
+  toObject(includeInstance?: boolean): GetDeviceMetricsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDeviceMetricsRequest): GetDeviceMetricsRequest.AsObject;
+  static serializeBinaryToWriter(message: GetDeviceMetricsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDeviceMetricsRequest;
+  static deserializeBinaryFromReader(message: GetDeviceMetricsRequest, reader: jspb.BinaryReader): GetDeviceMetricsRequest;
 }
 
-export namespace GetDeviceStatsRequest {
+export namespace GetDeviceMetricsRequest {
   export type AsObject = {
     devEui: string,
     start?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     end?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    aggregation: common_common_pb.Aggregation,
   }
 }
 
-export class GetDeviceStatsResponse extends jspb.Message {
-  getResultList(): Array<DeviceStats>;
-  setResultList(value: Array<DeviceStats>): GetDeviceStatsResponse;
-  clearResultList(): GetDeviceStatsResponse;
-  addResult(value?: DeviceStats, index?: number): DeviceStats;
+export class GetDeviceMetricsResponse extends jspb.Message {
+  getMetricsMap(): jspb.Map<string, common_common_pb.Metric>;
+  clearMetricsMap(): GetDeviceMetricsResponse;
+
+  getStatesMap(): jspb.Map<string, DeviceState>;
+  clearStatesMap(): GetDeviceMetricsResponse;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetDeviceStatsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: GetDeviceStatsResponse): GetDeviceStatsResponse.AsObject;
-  static serializeBinaryToWriter(message: GetDeviceStatsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetDeviceStatsResponse;
-  static deserializeBinaryFromReader(message: GetDeviceStatsResponse, reader: jspb.BinaryReader): GetDeviceStatsResponse;
+  toObject(includeInstance?: boolean): GetDeviceMetricsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDeviceMetricsResponse): GetDeviceMetricsResponse.AsObject;
+  static serializeBinaryToWriter(message: GetDeviceMetricsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDeviceMetricsResponse;
+  static deserializeBinaryFromReader(message: GetDeviceMetricsResponse, reader: jspb.BinaryReader): GetDeviceMetricsResponse;
 }
 
-export namespace GetDeviceStatsResponse {
+export namespace GetDeviceMetricsResponse {
   export type AsObject = {
-    resultList: Array<DeviceStats.AsObject>,
+    metricsMap: Array<[string, common_common_pb.Metric.AsObject]>,
+    statesMap: Array<[string, DeviceState.AsObject]>,
   }
 }
 
-export class DeviceStats extends jspb.Message {
-  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setTime(value?: google_protobuf_timestamp_pb.Timestamp): DeviceStats;
-  hasTime(): boolean;
-  clearTime(): DeviceStats;
+export class DeviceState extends jspb.Message {
+  getName(): string;
+  setName(value: string): DeviceState;
 
-  getRxPackets(): number;
-  setRxPackets(value: number): DeviceStats;
-
-  getGwRssi(): number;
-  setGwRssi(value: number): DeviceStats;
-
-  getGwSnr(): number;
-  setGwSnr(value: number): DeviceStats;
-
-  getRxPacketsPerFrequencyMap(): jspb.Map<number, number>;
-  clearRxPacketsPerFrequencyMap(): DeviceStats;
-
-  getRxPacketsPerDrMap(): jspb.Map<number, number>;
-  clearRxPacketsPerDrMap(): DeviceStats;
-
-  getErrorsMap(): jspb.Map<string, number>;
-  clearErrorsMap(): DeviceStats;
+  getValue(): string;
+  setValue(value: string): DeviceState;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeviceStats.AsObject;
-  static toObject(includeInstance: boolean, msg: DeviceStats): DeviceStats.AsObject;
-  static serializeBinaryToWriter(message: DeviceStats, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeviceStats;
-  static deserializeBinaryFromReader(message: DeviceStats, reader: jspb.BinaryReader): DeviceStats;
+  toObject(includeInstance?: boolean): DeviceState.AsObject;
+  static toObject(includeInstance: boolean, msg: DeviceState): DeviceState.AsObject;
+  static serializeBinaryToWriter(message: DeviceState, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeviceState;
+  static deserializeBinaryFromReader(message: DeviceState, reader: jspb.BinaryReader): DeviceState;
 }
 
-export namespace DeviceStats {
+export namespace DeviceState {
   export type AsObject = {
-    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    rxPackets: number,
-    gwRssi: number,
-    gwSnr: number,
-    rxPacketsPerFrequencyMap: Array<[number, number]>,
-    rxPacketsPerDrMap: Array<[number, number]>,
-    errorsMap: Array<[string, number]>,
+    name: string,
+    value: string,
+  }
+}
+
+export class GetDeviceLinkMetricsRequest extends jspb.Message {
+  getDevEui(): string;
+  setDevEui(value: string): GetDeviceLinkMetricsRequest;
+
+  getStart(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setStart(value?: google_protobuf_timestamp_pb.Timestamp): GetDeviceLinkMetricsRequest;
+  hasStart(): boolean;
+  clearStart(): GetDeviceLinkMetricsRequest;
+
+  getEnd(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setEnd(value?: google_protobuf_timestamp_pb.Timestamp): GetDeviceLinkMetricsRequest;
+  hasEnd(): boolean;
+  clearEnd(): GetDeviceLinkMetricsRequest;
+
+  getAggregation(): common_common_pb.Aggregation;
+  setAggregation(value: common_common_pb.Aggregation): GetDeviceLinkMetricsRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetDeviceLinkMetricsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDeviceLinkMetricsRequest): GetDeviceLinkMetricsRequest.AsObject;
+  static serializeBinaryToWriter(message: GetDeviceLinkMetricsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDeviceLinkMetricsRequest;
+  static deserializeBinaryFromReader(message: GetDeviceLinkMetricsRequest, reader: jspb.BinaryReader): GetDeviceLinkMetricsRequest;
+}
+
+export namespace GetDeviceLinkMetricsRequest {
+  export type AsObject = {
+    devEui: string,
+    start?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    end?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    aggregation: common_common_pb.Aggregation,
+  }
+}
+
+export class GetDeviceLinkMetricsResponse extends jspb.Message {
+  getRxPackets(): common_common_pb.Metric | undefined;
+  setRxPackets(value?: common_common_pb.Metric): GetDeviceLinkMetricsResponse;
+  hasRxPackets(): boolean;
+  clearRxPackets(): GetDeviceLinkMetricsResponse;
+
+  getGwRssi(): common_common_pb.Metric | undefined;
+  setGwRssi(value?: common_common_pb.Metric): GetDeviceLinkMetricsResponse;
+  hasGwRssi(): boolean;
+  clearGwRssi(): GetDeviceLinkMetricsResponse;
+
+  getGwSnr(): common_common_pb.Metric | undefined;
+  setGwSnr(value?: common_common_pb.Metric): GetDeviceLinkMetricsResponse;
+  hasGwSnr(): boolean;
+  clearGwSnr(): GetDeviceLinkMetricsResponse;
+
+  getRxPacketsPerFreq(): common_common_pb.Metric | undefined;
+  setRxPacketsPerFreq(value?: common_common_pb.Metric): GetDeviceLinkMetricsResponse;
+  hasRxPacketsPerFreq(): boolean;
+  clearRxPacketsPerFreq(): GetDeviceLinkMetricsResponse;
+
+  getRxPacketsPerDr(): common_common_pb.Metric | undefined;
+  setRxPacketsPerDr(value?: common_common_pb.Metric): GetDeviceLinkMetricsResponse;
+  hasRxPacketsPerDr(): boolean;
+  clearRxPacketsPerDr(): GetDeviceLinkMetricsResponse;
+
+  getErrors(): common_common_pb.Metric | undefined;
+  setErrors(value?: common_common_pb.Metric): GetDeviceLinkMetricsResponse;
+  hasErrors(): boolean;
+  clearErrors(): GetDeviceLinkMetricsResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetDeviceLinkMetricsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDeviceLinkMetricsResponse): GetDeviceLinkMetricsResponse.AsObject;
+  static serializeBinaryToWriter(message: GetDeviceLinkMetricsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDeviceLinkMetricsResponse;
+  static deserializeBinaryFromReader(message: GetDeviceLinkMetricsResponse, reader: jspb.BinaryReader): GetDeviceLinkMetricsResponse;
+}
+
+export namespace GetDeviceLinkMetricsResponse {
+  export type AsObject = {
+    rxPackets?: common_common_pb.Metric.AsObject,
+    gwRssi?: common_common_pb.Metric.AsObject,
+    gwSnr?: common_common_pb.Metric.AsObject,
+    rxPacketsPerFreq?: common_common_pb.Metric.AsObject,
+    rxPacketsPerDr?: common_common_pb.Metric.AsObject,
+    errors?: common_common_pb.Metric.AsObject,
   }
 }
 

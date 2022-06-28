@@ -16,6 +16,8 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 
+var common_common_pb = require('../common/common_pb.js')
+
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js')
 
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js')
@@ -1199,80 +1201,160 @@ proto.api.DeviceServicePromiseClient.prototype.getRandomDevAddr =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.api.GetDeviceStatsRequest,
- *   !proto.api.GetDeviceStatsResponse>}
+ *   !proto.api.GetDeviceMetricsRequest,
+ *   !proto.api.GetDeviceMetricsResponse>}
  */
-const methodDescriptor_DeviceService_GetStats = new grpc.web.MethodDescriptor(
-  '/api.DeviceService/GetStats',
+const methodDescriptor_DeviceService_GetMetrics = new grpc.web.MethodDescriptor(
+  '/api.DeviceService/GetMetrics',
   grpc.web.MethodType.UNARY,
-  proto.api.GetDeviceStatsRequest,
-  proto.api.GetDeviceStatsResponse,
+  proto.api.GetDeviceMetricsRequest,
+  proto.api.GetDeviceMetricsResponse,
   /**
-   * @param {!proto.api.GetDeviceStatsRequest} request
+   * @param {!proto.api.GetDeviceMetricsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.api.GetDeviceStatsResponse.deserializeBinary
+  proto.api.GetDeviceMetricsResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.api.GetDeviceStatsRequest,
- *   !proto.api.GetDeviceStatsResponse>}
+ *   !proto.api.GetDeviceMetricsRequest,
+ *   !proto.api.GetDeviceMetricsResponse>}
  */
-const methodInfo_DeviceService_GetStats = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.api.GetDeviceStatsResponse,
+const methodInfo_DeviceService_GetMetrics = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.api.GetDeviceMetricsResponse,
   /**
-   * @param {!proto.api.GetDeviceStatsRequest} request
+   * @param {!proto.api.GetDeviceMetricsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.api.GetDeviceStatsResponse.deserializeBinary
+  proto.api.GetDeviceMetricsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.api.GetDeviceStatsRequest} request The
+ * @param {!proto.api.GetDeviceMetricsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.api.GetDeviceStatsResponse)}
+ * @param {function(?grpc.web.Error, ?proto.api.GetDeviceMetricsResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.api.GetDeviceStatsResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.api.GetDeviceMetricsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.api.DeviceServiceClient.prototype.getStats =
+proto.api.DeviceServiceClient.prototype.getMetrics =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/api.DeviceService/GetStats',
+      '/api.DeviceService/GetMetrics',
       request,
       metadata || {},
-      methodDescriptor_DeviceService_GetStats,
+      methodDescriptor_DeviceService_GetMetrics,
       callback);
 };
 
 
 /**
- * @param {!proto.api.GetDeviceStatsRequest} request The
+ * @param {!proto.api.GetDeviceMetricsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.api.GetDeviceStatsResponse>}
+ * @return {!Promise<!proto.api.GetDeviceMetricsResponse>}
  *     Promise that resolves to the response
  */
-proto.api.DeviceServicePromiseClient.prototype.getStats =
+proto.api.DeviceServicePromiseClient.prototype.getMetrics =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/api.DeviceService/GetStats',
+      '/api.DeviceService/GetMetrics',
       request,
       metadata || {},
-      methodDescriptor_DeviceService_GetStats);
+      methodDescriptor_DeviceService_GetMetrics);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.api.GetDeviceLinkMetricsRequest,
+ *   !proto.api.GetDeviceLinkMetricsResponse>}
+ */
+const methodDescriptor_DeviceService_GetLinkMetrics = new grpc.web.MethodDescriptor(
+  '/api.DeviceService/GetLinkMetrics',
+  grpc.web.MethodType.UNARY,
+  proto.api.GetDeviceLinkMetricsRequest,
+  proto.api.GetDeviceLinkMetricsResponse,
+  /**
+   * @param {!proto.api.GetDeviceLinkMetricsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.GetDeviceLinkMetricsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.api.GetDeviceLinkMetricsRequest,
+ *   !proto.api.GetDeviceLinkMetricsResponse>}
+ */
+const methodInfo_DeviceService_GetLinkMetrics = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.api.GetDeviceLinkMetricsResponse,
+  /**
+   * @param {!proto.api.GetDeviceLinkMetricsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.GetDeviceLinkMetricsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.api.GetDeviceLinkMetricsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.api.GetDeviceLinkMetricsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.api.GetDeviceLinkMetricsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.DeviceServiceClient.prototype.getLinkMetrics =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.DeviceService/GetLinkMetrics',
+      request,
+      metadata || {},
+      methodDescriptor_DeviceService_GetLinkMetrics,
+      callback);
+};
+
+
+/**
+ * @param {!proto.api.GetDeviceLinkMetricsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.api.GetDeviceLinkMetricsResponse>}
+ *     Promise that resolves to the response
+ */
+proto.api.DeviceServicePromiseClient.prototype.getLinkMetrics =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.DeviceService/GetLinkMetrics',
+      request,
+      metadata || {},
+      methodDescriptor_DeviceService_GetLinkMetrics);
 };
 
 

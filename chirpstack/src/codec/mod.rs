@@ -95,3 +95,84 @@ pub async fn struct_to_binary(
             .context("JavaScript encoder")?,
     })
 }
+
+/*
+pub fn get_data_keys(s: &pbjson_types::Struct) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+
+    for (k, v) in &s.fields {
+        out.extend_from_slice(&_get_data_keys(k, v));
+    }
+
+    out
+}
+
+fn _get_data_keys(prefix: &str, v: &pbjson_types::Value) -> Vec<String> {
+    match &v.kind {
+        None => vec![prefix.to_string()],
+        Some(v) => match v {
+            pbjson_types::value::Kind::NullValue(_)
+            | pbjson_types::value::Kind::NumberValue(_)
+            | pbjson_types::value::Kind::StringValue(_)
+            | pbjson_types::value::Kind::BoolValue(_) => {
+                vec![prefix.to_string()]
+            }
+            pbjson_types::value::Kind::StructValue(v) => {
+                let mut out: Vec<String> = Vec::new();
+                for (k, v) in &v.fields {
+                    out.extend_from_slice(&_get_data_keys(&format!("{}_{}", prefix, k), v));
+                }
+                out
+            }
+            pbjson_types::value::Kind::ListValue(v) => {
+                let mut out: Vec<String> = Vec::new();
+                for (i, v) in v.values.iter().enumerate() {
+                    out.extend_from_slice(&_get_data_keys(&format!("{}_{}", prefix, i), v));
+                }
+                out
+            }
+        },
+    }
+}
+*/
+
+pub fn get_measurements(s: &pbjson_types::Struct) -> HashMap<String, pbjson_types::value::Kind> {
+    let mut out: HashMap<String, pbjson_types::value::Kind> = HashMap::new();
+
+    for (k, v) in &s.fields {
+        out.extend(_get_measurements(k, v));
+    }
+
+    out
+}
+
+fn _get_measurements(
+    prefix: &str,
+    v: &pbjson_types::Value,
+) -> HashMap<String, pbjson_types::value::Kind> {
+    let mut out: HashMap<String, pbjson_types::value::Kind> = HashMap::new();
+
+    match &v.kind {
+        None => {}
+        Some(v) => match v {
+            pbjson_types::value::Kind::NullValue(_) => {}
+            pbjson_types::value::Kind::NumberValue(_)
+            | pbjson_types::value::Kind::StringValue(_)
+            | pbjson_types::value::Kind::BoolValue(_) => {
+                out.insert(prefix.to_string(), v.clone());
+            }
+            pbjson_types::value::Kind::StructValue(v) => {
+                for (k, v) in &v.fields {
+                    out.extend(_get_measurements(&format!("{}_{}", prefix, k), v));
+                }
+            }
+            pbjson_types::value::Kind::ListValue(v) => {
+                for (i, v) in v.values.iter().enumerate() {
+                    out.extend(_get_measurements(&format!("{}_{}", prefix, i), v));
+                }
+            }
+        },
+    }
+
+    out
+}

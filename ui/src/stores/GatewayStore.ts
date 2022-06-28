@@ -9,8 +9,8 @@ import {
   DeleteGatewayRequest,
   ListGatewaysRequest,
   ListGatewaysResponse,
-  GetGatewayStatsRequest,
-  GetGatewayStatsResponse,
+  GetGatewayMetricsRequest,
+  GetGatewayMetricsResponse,
   GenerateGatewayClientCertificateRequest,
   GenerateGatewayClientCertificateResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
@@ -96,8 +96,8 @@ class GatewayStore extends EventEmitter {
     });
   };
 
-  getStats = (req: GetGatewayStatsRequest, callbackFunc: (resp: GetGatewayStatsResponse) => void) => {
-    this.client.getStats(req, SessionStore.getMetadata(), (err, resp) => {
+  getMetrics = (req: GetGatewayMetricsRequest, callbackFunc: (resp: GetGatewayMetricsResponse) => void) => {
+    this.client.getMetrics(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;

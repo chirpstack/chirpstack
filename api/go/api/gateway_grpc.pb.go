@@ -35,8 +35,8 @@ type GatewayServiceClient interface {
 	List(ctx context.Context, in *ListGatewaysRequest, opts ...grpc.CallOption) (*ListGatewaysResponse, error)
 	// Generate client-certificate for the gateway.
 	GenerateClientCertificate(ctx context.Context, in *GenerateGatewayClientCertificateRequest, opts ...grpc.CallOption) (*GenerateGatewayClientCertificateResponse, error)
-	// GetStats returns the gateway stats.
-	GetStats(ctx context.Context, in *GetGatewayStatsRequest, opts ...grpc.CallOption) (*GetGatewayStatsResponse, error)
+	// GetMetrics returns the gateway metrics.
+	GetMetrics(ctx context.Context, in *GetGatewayMetricsRequest, opts ...grpc.CallOption) (*GetGatewayMetricsResponse, error)
 }
 
 type gatewayServiceClient struct {
@@ -101,9 +101,9 @@ func (c *gatewayServiceClient) GenerateClientCertificate(ctx context.Context, in
 	return out, nil
 }
 
-func (c *gatewayServiceClient) GetStats(ctx context.Context, in *GetGatewayStatsRequest, opts ...grpc.CallOption) (*GetGatewayStatsResponse, error) {
-	out := new(GetGatewayStatsResponse)
-	err := c.cc.Invoke(ctx, "/api.GatewayService/GetStats", in, out, opts...)
+func (c *gatewayServiceClient) GetMetrics(ctx context.Context, in *GetGatewayMetricsRequest, opts ...grpc.CallOption) (*GetGatewayMetricsResponse, error) {
+	out := new(GetGatewayMetricsResponse)
+	err := c.cc.Invoke(ctx, "/api.GatewayService/GetMetrics", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -126,8 +126,8 @@ type GatewayServiceServer interface {
 	List(context.Context, *ListGatewaysRequest) (*ListGatewaysResponse, error)
 	// Generate client-certificate for the gateway.
 	GenerateClientCertificate(context.Context, *GenerateGatewayClientCertificateRequest) (*GenerateGatewayClientCertificateResponse, error)
-	// GetStats returns the gateway stats.
-	GetStats(context.Context, *GetGatewayStatsRequest) (*GetGatewayStatsResponse, error)
+	// GetMetrics returns the gateway metrics.
+	GetMetrics(context.Context, *GetGatewayMetricsRequest) (*GetGatewayMetricsResponse, error)
 	mustEmbedUnimplementedGatewayServiceServer()
 }
 
@@ -153,8 +153,8 @@ func (UnimplementedGatewayServiceServer) List(context.Context, *ListGatewaysRequ
 func (UnimplementedGatewayServiceServer) GenerateClientCertificate(context.Context, *GenerateGatewayClientCertificateRequest) (*GenerateGatewayClientCertificateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateClientCertificate not implemented")
 }
-func (UnimplementedGatewayServiceServer) GetStats(context.Context, *GetGatewayStatsRequest) (*GetGatewayStatsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
+func (UnimplementedGatewayServiceServer) GetMetrics(context.Context, *GetGatewayMetricsRequest) (*GetGatewayMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetrics not implemented")
 }
 func (UnimplementedGatewayServiceServer) mustEmbedUnimplementedGatewayServiceServer() {}
 
@@ -277,20 +277,20 @@ func _GatewayService_GenerateClientCertificate_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GatewayService_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetGatewayStatsRequest)
+func _GatewayService_GetMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGatewayMetricsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GatewayServiceServer).GetStats(ctx, in)
+		return srv.(GatewayServiceServer).GetMetrics(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.GatewayService/GetStats",
+		FullMethod: "/api.GatewayService/GetMetrics",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GatewayServiceServer).GetStats(ctx, req.(*GetGatewayStatsRequest))
+		return srv.(GatewayServiceServer).GetMetrics(ctx, req.(*GetGatewayMetricsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -327,8 +327,8 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GatewayService_GenerateClientCertificate_Handler,
 		},
 		{
-			MethodName: "GetStats",
-			Handler:    _GatewayService_GetStats_Handler,
+			MethodName: "GetMetrics",
+			Handler:    _GatewayService_GetMetrics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -94,7 +94,8 @@ proto.api.DeviceProfileTemplate.toObject = function(includeInstance, msg) {
     abpRx1DrOffset: msg.getAbpRx1DrOffset(),
     abpRx2Dr: msg.getAbpRx2Dr(),
     abpRx2Freq: msg.getAbpRx2Freq(),
-    tagsMap: (f = msg.getTagsMap(true)) ? f.toArray() : []
+    tagsMap: (f = msg.getTagsMap(true)) ? f.toArray() : [],
+    measurementsMap: (f = msg.getMeasurementsMap(true)) ? f.toArray() : []
   };
 
   if (includeInstance) {
@@ -239,6 +240,12 @@ proto.api.DeviceProfileTemplate.deserializeBinaryFromReader = function(msg, read
       var value = msg.getTagsMap();
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString);
+         });
+      break;
+    case 28:
+      var value = msg.getMeasurementsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.api.Measurement.deserializeBinaryFromReader);
          });
       break;
     default:
@@ -464,6 +471,10 @@ proto.api.DeviceProfileTemplate.prototype.serializeBinaryToWriter = function (wr
   f = this.getTagsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(27, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = this.getMeasurementsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(28, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.api.Measurement.serializeBinaryToWriter);
   }
 };
 
@@ -885,6 +896,19 @@ proto.api.DeviceProfileTemplate.prototype.getTagsMap = function(opt_noLazyCreate
   return /** @type {!jspb.Map<string,string>} */ (
       jspb.Message.getMapField(this, 27, opt_noLazyCreate,
       null));
+};
+
+
+/**
+ * map<string, Measurement> measurements = 28;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.api.Measurement>}
+ */
+proto.api.DeviceProfileTemplate.prototype.getMeasurementsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.api.Measurement>} */ (
+      jspb.Message.getMapField(this, 28, opt_noLazyCreate,
+      proto.api.Measurement));
 };
 
 

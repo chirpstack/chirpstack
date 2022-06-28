@@ -70,6 +70,21 @@ impl DeviceProfileService for DeviceProfile {
             abp_rx2_dr: req_dp.abp_rx2_dr as i16,
             abp_rx2_freq: req_dp.abp_rx2_freq as i64,
             tags: fields::KeyValue::new(req_dp.tags.clone()),
+            measurements: fields::Measurements::new(
+                req_dp
+                    .measurements
+                    .iter()
+                    .map(|(k, v)| {
+                        (
+                            k.to_string(),
+                            fields::Measurement {
+                                name: v.name.clone(),
+                                kind: v.kind().from_proto(),
+                            },
+                        )
+                    })
+                    .collect(),
+            ),
             ..Default::default()
         };
 
@@ -124,6 +139,20 @@ impl DeviceProfileService for DeviceProfile {
                 abp_rx2_dr: dp.abp_rx2_dr as u32,
                 abp_rx2_freq: dp.abp_rx2_freq as u32,
                 tags: dp.tags.into_hashmap(),
+                measurements: dp
+                    .measurements
+                    .into_hashmap()
+                    .iter()
+                    .map(|(k, v)| {
+                        (
+                            k.to_string(),
+                            api::Measurement {
+                                name: v.name.clone(),
+                                kind: v.kind.to_proto().into(),
+                            },
+                        )
+                    })
+                    .collect(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -176,6 +205,21 @@ impl DeviceProfileService for DeviceProfile {
             abp_rx2_dr: req_dp.abp_rx2_dr as i16,
             abp_rx2_freq: req_dp.abp_rx2_freq as i64,
             tags: fields::KeyValue::new(req_dp.tags.clone()),
+            measurements: fields::Measurements::new(
+                req_dp
+                    .measurements
+                    .iter()
+                    .map(|(k, v)| {
+                        (
+                            k.to_string(),
+                            fields::Measurement {
+                                name: v.name.clone(),
+                                kind: v.kind().from_proto(),
+                            },
+                        )
+                    })
+                    .collect(),
+            ),
             ..Default::default()
         })
         .await

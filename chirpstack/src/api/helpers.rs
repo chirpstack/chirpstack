@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 
 use crate::codec::Codec;
+use crate::storage::fields::MeasurementKind;
+use crate::storage::metrics::Aggregation;
 use chirpstack_api::{api, common};
 use lrwn::region::{CommonName, MacVersion, Revision};
 
@@ -136,6 +138,50 @@ impl FromProto<Codec> for api::CodecRuntime {
             api::CodecRuntime::None => Codec::NONE,
             api::CodecRuntime::CayenneLpp => Codec::CAYENNE_LPP,
             api::CodecRuntime::Js => Codec::JS,
+        }
+    }
+}
+
+impl ToProto<api::MeasurementKind> for MeasurementKind {
+    fn to_proto(self) -> api::MeasurementKind {
+        match self {
+            MeasurementKind::UNKNOWN => api::MeasurementKind::Unknown,
+            MeasurementKind::COUNTER => api::MeasurementKind::Counter,
+            MeasurementKind::ABSOLUTE => api::MeasurementKind::Absolute,
+            MeasurementKind::GAUGE => api::MeasurementKind::Gauge,
+            MeasurementKind::STRING => api::MeasurementKind::String,
+        }
+    }
+}
+
+impl FromProto<MeasurementKind> for api::MeasurementKind {
+    fn from_proto(self) -> MeasurementKind {
+        match self {
+            api::MeasurementKind::Unknown => MeasurementKind::UNKNOWN,
+            api::MeasurementKind::Counter => MeasurementKind::COUNTER,
+            api::MeasurementKind::Absolute => MeasurementKind::ABSOLUTE,
+            api::MeasurementKind::Gauge => MeasurementKind::GAUGE,
+            api::MeasurementKind::String => MeasurementKind::STRING,
+        }
+    }
+}
+
+impl ToProto<common::Aggregation> for Aggregation {
+    fn to_proto(self) -> common::Aggregation {
+        match self {
+            Aggregation::HOUR => common::Aggregation::Hour,
+            Aggregation::DAY => common::Aggregation::Day,
+            Aggregation::MONTH => common::Aggregation::Month,
+        }
+    }
+}
+
+impl FromProto<Aggregation> for common::Aggregation {
+    fn from_proto(self) -> Aggregation {
+        match self {
+            common::Aggregation::Hour => Aggregation::HOUR,
+            common::Aggregation::Day => Aggregation::DAY,
+            common::Aggregation::Month => Aggregation::MONTH,
         }
     }
 }

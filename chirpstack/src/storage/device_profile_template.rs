@@ -47,6 +47,7 @@ pub struct DeviceProfileTemplate {
     pub abp_rx2_dr: i16,
     pub abp_rx2_freq: i64,
     pub tags: fields::KeyValue,
+    pub measurements: fields::Measurements,
 }
 
 impl DeviceProfileTemplate {
@@ -108,6 +109,7 @@ impl Default for DeviceProfileTemplate {
             abp_rx2_dr: 0,
             abp_rx2_freq: 0,
             tags: fields::KeyValue::new(HashMap::new()),
+            measurements: fields::Measurements::new(HashMap::new()),
         }
     }
 }
@@ -184,6 +186,7 @@ pub async fn upsert(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
                     device_profile_template::abp_rx2_dr.eq(&dp.abp_rx2_dr),
                     device_profile_template::abp_rx2_freq.eq(&dp.abp_rx2_freq),
                     device_profile_template::tags.eq(&dp.tags),
+                    device_profile_template::measurements.eq(&dp.measurements),
                 ))
                 .get_result(&c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))

@@ -1,7 +1,8 @@
+use std::collections::HashSet;
 use std::str::FromStr;
 use std::time::SystemTime;
 
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, Utc};
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
@@ -11,7 +12,7 @@ use lrwn::EUI64;
 
 use super::auth::validator;
 use super::error::ToStatus;
-use super::helpers;
+use super::helpers::{self, FromProto};
 use crate::certificate;
 use crate::storage::{fields, gateway, metrics};
 
@@ -261,10 +262,10 @@ impl GatewayService for Gateway {
         ))
     }
 
-    async fn get_stats(
+    async fn get_metrics(
         &self,
-        request: Request<api::GetGatewayStatsRequest>,
-    ) -> Result<Response<api::GetGatewayStatsResponse>, Status> {
+        request: Request<api::GetGatewayMetricsRequest>,
+    ) -> Result<Response<api::GetGatewayMetricsResponse>, Status> {
         let req = request.get_ref();
         let gateway_id = EUI64::from_str(&req.gateway_id).map_err(|e| e.status())?;
 
@@ -295,71 +296,246 @@ impl GatewayService for Gateway {
 
         let start: DateTime<Local> = start.into();
         let end: DateTime<Local> = end.into();
+        let aggregation = req.aggregation().from_proto();
 
         let gw_metrics = metrics::get(
             &format!("gw:{}", gateway_id),
-            metrics::Aggregation::DAY,
+            metrics::Kind::ABSOLUTE,
+            aggregation,
             start,
             end,
         )
         .await
         .map_err(|e| e.status())?;
 
-        let mut out: api::GetGatewayStatsResponse = Default::default();
-
-        for m in gw_metrics {
-            let ts: SystemTime = m.time.into();
-            let ts: prost_types::Timestamp = ts.into();
-
-            let mut item = api::GatewayStats {
-                time: Some(ts),
-                ..Default::default()
-            };
-
-            item.rx_packets = m.metrics.get("rx_count").cloned().unwrap_or(0.0) as u32;
-            item.tx_packets = m.metrics.get("tx_count").cloned().unwrap_or(0.0) as u32;
-
-            for (k, v) in m.metrics {
-                if k.starts_with("tx_freq_") {
-                    let freq: u32 = k
-                        .trim_start_matches("tx_freq_")
-                        .parse()
-                        .map_err(|e: std::num::ParseIntError| e.status())?;
-                    item.tx_packets_per_frequency.insert(freq, v as u32);
+        let out = api::GetGatewayMetricsResponse {
+            rx_packets: Some(common::Metric {
+                name: "Received".to_string(),
+                timestamps: gw_metrics
+                    .iter()
+                    .map(|row| {
+                        let ts: DateTime<Utc> = row.time.into();
+                        let ts: pbjson_types::Timestamp = ts.into();
+                        ts
+                    })
+                    .collect(),
+                datasets: vec![common::MetricDataset {
+                    label: "rx_count".to_string(),
+                    data: gw_metrics
+                        .iter()
+                        .map(|row| row.metrics.get("rx_count").cloned().unwrap_or(0.0) as f32)
+                        .collect(),
+                }],
+            }),
+            tx_packets: Some(common::Metric {
+                name: "Transmitted".to_string(),
+                timestamps: gw_metrics
+                    .iter()
+                    .map(|row| {
+                        let ts: DateTime<Utc> = row.time.into();
+                        let ts: pbjson_types::Timestamp = ts.into();
+                        ts
+                    })
+                    .collect(),
+                datasets: vec![common::MetricDataset {
+                    label: "tx_count".to_string(),
+                    data: gw_metrics
+                        .iter()
+                        .map(|row| row.metrics.get("tx_count").cloned().unwrap_or(0.0) as f32)
+                        .collect(),
+                }],
+            }),
+            tx_packets_per_freq: Some({
+                // discover all data-sets
+                let mut datasets: HashSet<String> = HashSet::new();
+                for m in &gw_metrics {
+                    for k in m.metrics.keys() {
+                        if k.starts_with("tx_freq_") {
+                            datasets.insert(k.trim_start_matches("tx_freq_").to_string());
+                        }
+                    }
                 }
 
-                if k.starts_with("rx_freq_") {
-                    let freq: u32 = k
-                        .trim_start_matches("rx_freq_")
-                        .parse()
-                        .map_err(|e: std::num::ParseIntError| e.status())?;
-                    item.rx_packets_per_frequency.insert(freq, v as u32);
+                common::Metric {
+                    name: "Transmitted / frequency".to_string(),
+                    timestamps: gw_metrics
+                        .iter()
+                        .map(|row| {
+                            let ts: DateTime<Utc> = row.time.into();
+                            let ts: pbjson_types::Timestamp = ts.into();
+                            ts
+                        })
+                        .collect(),
+                    datasets: datasets
+                        .iter()
+                        .map(|label| common::MetricDataset {
+                            label: label.to_string(),
+                            data: gw_metrics
+                                .iter()
+                                .map(|row| {
+                                    row.metrics
+                                        .get(&format!("tx_freq_{}", label))
+                                        .cloned()
+                                        .unwrap_or(0.0) as f32
+                                })
+                                .collect(),
+                        })
+                        .collect(),
+                }
+            }),
+            rx_packets_per_freq: Some({
+                // discover all data-sets
+                let mut datasets: HashSet<String> = HashSet::new();
+                for m in &gw_metrics {
+                    for k in m.metrics.keys() {
+                        if k.starts_with("rx_freq_") {
+                            datasets.insert(k.trim_start_matches("rx_freq_").to_string());
+                        }
+                    }
                 }
 
-                if k.starts_with("tx_status_") {
-                    let code = k.trim_start_matches("tx_status_").to_string();
-                    item.tx_packets_per_status.insert(code, v as u32);
+                common::Metric {
+                    name: "Received / frequency".to_string(),
+                    timestamps: gw_metrics
+                        .iter()
+                        .map(|row| {
+                            let ts: DateTime<Utc> = row.time.into();
+                            let ts: pbjson_types::Timestamp = ts.into();
+                            ts
+                        })
+                        .collect(),
+                    datasets: datasets
+                        .iter()
+                        .map(|label| common::MetricDataset {
+                            label: label.to_string(),
+                            data: gw_metrics
+                                .iter()
+                                .map(|row| {
+                                    row.metrics
+                                        .get(&format!("rx_freq_{}", label))
+                                        .cloned()
+                                        .unwrap_or(0.0) as f32
+                                })
+                                .collect(),
+                        })
+                        .collect(),
+                }
+            }),
+            rx_packets_per_dr: Some({
+                // discover all data-sets
+                let mut datasets: HashSet<String> = HashSet::new();
+                for m in &gw_metrics {
+                    for k in m.metrics.keys() {
+                        if k.starts_with("rx_dr_") {
+                            datasets.insert(k.trim_start_matches("rx_dr_").to_string());
+                        }
+                    }
                 }
 
-                if k.starts_with("tx_dr_") {
-                    let dr: u32 = k
-                        .trim_start_matches("tx_dr_")
-                        .parse()
-                        .map_err(|e: std::num::ParseIntError| e.status())?;
-                    item.tx_packets_per_dr.insert(dr, v as u32);
+                common::Metric {
+                    name: "Received / DR".to_string(),
+                    timestamps: gw_metrics
+                        .iter()
+                        .map(|row| {
+                            let ts: DateTime<Utc> = row.time.into();
+                            let ts: pbjson_types::Timestamp = ts.into();
+                            ts
+                        })
+                        .collect(),
+                    datasets: datasets
+                        .iter()
+                        .map(|label| common::MetricDataset {
+                            label: label.to_string(),
+                            data: gw_metrics
+                                .iter()
+                                .map(|row| {
+                                    row.metrics
+                                        .get(&format!("rx_dr_{}", label))
+                                        .cloned()
+                                        .unwrap_or(0.0) as f32
+                                })
+                                .collect(),
+                        })
+                        .collect(),
+                }
+            }),
+            tx_packets_per_dr: Some({
+                // discover all data-sets
+                let mut datasets: HashSet<String> = HashSet::new();
+                for m in &gw_metrics {
+                    for k in m.metrics.keys() {
+                        if k.starts_with("tx_dr_") {
+                            datasets.insert(k.trim_start_matches("tx_dr_").to_string());
+                        }
+                    }
                 }
 
-                if k.starts_with("rx_dr_") {
-                    let dr: u32 = k
-                        .trim_start_matches("rx_dr_")
-                        .parse()
-                        .map_err(|e: std::num::ParseIntError| e.status())?;
-                    item.rx_packets_per_dr.insert(dr, v as u32);
+                common::Metric {
+                    name: "Transmitted / DR".to_string(),
+                    timestamps: gw_metrics
+                        .iter()
+                        .map(|row| {
+                            let ts: DateTime<Utc> = row.time.into();
+                            let ts: pbjson_types::Timestamp = ts.into();
+                            ts
+                        })
+                        .collect(),
+                    datasets: datasets
+                        .iter()
+                        .map(|label| common::MetricDataset {
+                            label: label.to_string(),
+                            data: gw_metrics
+                                .iter()
+                                .map(|row| {
+                                    row.metrics
+                                        .get(&format!("tx_dr_{}", label))
+                                        .cloned()
+                                        .unwrap_or(0.0) as f32
+                                })
+                                .collect(),
+                        })
+                        .collect(),
                 }
-            }
+            }),
+            tx_packets_per_status: Some({
+                // discover all data-sets
+                let mut datasets: HashSet<String> = HashSet::new();
+                for m in &gw_metrics {
+                    for k in m.metrics.keys() {
+                        if k.starts_with("tx_status_") {
+                            datasets.insert(k.trim_start_matches("tx_status_").to_string());
+                        }
+                    }
+                }
 
-            out.result.push(item);
-        }
+                common::Metric {
+                    name: "TX packets / status".to_string(),
+                    timestamps: gw_metrics
+                        .iter()
+                        .map(|row| {
+                            let ts: DateTime<Utc> = row.time.into();
+                            let ts: pbjson_types::Timestamp = ts.into();
+                            ts
+                        })
+                        .collect(),
+                    datasets: datasets
+                        .iter()
+                        .map(|label| common::MetricDataset {
+                            label: label.to_string(),
+                            data: gw_metrics
+                                .iter()
+                                .map(|row| {
+                                    row.metrics
+                                        .get(&format!("tx_status_{}", label))
+                                        .cloned()
+                                        .unwrap_or(0.0) as f32
+                                })
+                                .collect(),
+                        })
+                        .collect(),
+                }
+            }),
+        };
 
         Ok(Response::new(out))
     }
@@ -558,6 +734,7 @@ pub mod test {
 
         // insert stats
         let mut m = metrics::Record {
+            kind: metrics::Kind::ABSOLUTE,
             time: now.into(),
             metrics: HashMap::new(),
         };
@@ -577,36 +754,35 @@ pub mod test {
 
         // request stats
         let now_st: SystemTime = now.into();
-        let stats_req = api::GetGatewayStatsRequest {
+        let stats_req = api::GetGatewayMetricsRequest {
             gateway_id: "0102030405060708".into(),
             start: Some(now_st.into()),
             end: Some(now_st.into()),
+            aggregation: common::Aggregation::Day.into(),
         };
         let mut stats_req = Request::new(stats_req);
         stats_req
             .extensions_mut()
             .insert(AuthID::User(u.id.clone()));
-        let stats_resp = service.get_stats(stats_req).await.unwrap();
+        let stats_resp = service.get_metrics(stats_req).await.unwrap();
         let stats_resp = stats_resp.get_ref();
-        assert_eq!(1, stats_resp.result.len());
         assert_eq!(
-            api::GatewayStats {
-                time: Some({
+            Some(common::Metric {
+                name: "Received".to_string(),
+                timestamps: vec![{
                     let ts = Local
                         .ymd(now.year(), now.month(), now.day())
                         .and_hms(0, 0, 0);
-                    let ts: SystemTime = ts.into();
+                    //let ts: SystemTime = ts.into();
+                    let ts: DateTime<Utc> = ts.into();
                     ts.into()
-                }),
-                rx_packets: 10,
-                tx_packets: 5,
-                rx_packets_per_frequency: [(868100000, 10)].iter().cloned().collect(),
-                rx_packets_per_dr: [(5, 10)].iter().cloned().collect(),
-                tx_packets_per_frequency: [(868200000, 5)].iter().cloned().collect(),
-                tx_packets_per_dr: [(4, 5)].iter().cloned().collect(),
-                ..Default::default()
-            },
-            stats_resp.result[0]
+                }],
+                datasets: vec![common::MetricDataset {
+                    label: "rx_count".to_string(),
+                    data: vec![10.0],
+                }],
+            }),
+            stats_resp.rx_packets
         );
     }
 }

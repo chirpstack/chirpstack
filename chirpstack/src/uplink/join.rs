@@ -250,6 +250,7 @@ impl JoinRequest {
                             &format!("device:{}", dev.dev_eui),
                             &metrics::Record {
                                 time: Local::now(),
+                                kind: metrics::Kind::ABSOLUTE,
                                 metrics: [("error_OTAA".into(), 1f64)].iter().cloned().collect(),
                             },
                         )
@@ -299,6 +300,7 @@ impl JoinRequest {
             &format!("device:{}", dev.dev_eui),
             &metrics::Record {
                 time: Local::now(),
+                kind: metrics::Kind::ABSOLUTE,
                 metrics: [("error_UPLINK_MIC".into(), 1f64)]
                     .iter()
                     .cloned()

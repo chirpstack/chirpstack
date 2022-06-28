@@ -84,6 +84,8 @@ export class DeviceProfile extends jspb.Message {
 
   getTagsMap(): jspb.Map<string, string>;
   clearTagsMap(): void;
+  getMeasurementsMap(): jspb.Map<string, Measurement>;
+  clearMeasurementsMap(): void;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -122,6 +124,31 @@ export namespace DeviceProfile {
     abpRx2Dr: number,
     abpRx2Freq: number,
     tagsMap: Array<[string, string]>,
+    measurementsMap: Array<[string, Measurement.AsObject]>,
+  }
+}
+
+export class Measurement extends jspb.Message {
+  getName(): string;
+  setName(value: string): void;
+
+  getKind(): MeasurementKindMap[keyof MeasurementKindMap];
+  setKind(value: MeasurementKindMap[keyof MeasurementKindMap]): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Measurement.AsObject;
+  static toObject(includeInstance: boolean, msg: Measurement): Measurement.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Measurement, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Measurement;
+  static deserializeBinaryFromReader(message: Measurement, reader: jspb.BinaryReader): Measurement;
+}
+
+export namespace Measurement {
+  export type AsObject = {
+    name: string,
+    kind: MeasurementKindMap[keyof MeasurementKindMap],
   }
 }
 
@@ -438,4 +465,14 @@ export interface CodecRuntimeMap {
 }
 
 export const CodecRuntime: CodecRuntimeMap;
+
+export interface MeasurementKindMap {
+  UNKNOWN: 0;
+  COUNTER: 1;
+  ABSOLUTE: 2;
+  GAUGE: 3;
+  STRING: 4;
+}
+
+export const MeasurementKind: MeasurementKindMap;
 

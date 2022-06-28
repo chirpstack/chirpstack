@@ -559,80 +559,80 @@ proto.api.GatewayServicePromiseClient.prototype.generateClientCertificate =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.api.GetGatewayStatsRequest,
- *   !proto.api.GetGatewayStatsResponse>}
+ *   !proto.api.GetGatewayMetricsRequest,
+ *   !proto.api.GetGatewayMetricsResponse>}
  */
-const methodDescriptor_GatewayService_GetStats = new grpc.web.MethodDescriptor(
-  '/api.GatewayService/GetStats',
+const methodDescriptor_GatewayService_GetMetrics = new grpc.web.MethodDescriptor(
+  '/api.GatewayService/GetMetrics',
   grpc.web.MethodType.UNARY,
-  proto.api.GetGatewayStatsRequest,
-  proto.api.GetGatewayStatsResponse,
+  proto.api.GetGatewayMetricsRequest,
+  proto.api.GetGatewayMetricsResponse,
   /**
-   * @param {!proto.api.GetGatewayStatsRequest} request
+   * @param {!proto.api.GetGatewayMetricsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.api.GetGatewayStatsResponse.deserializeBinary
+  proto.api.GetGatewayMetricsResponse.deserializeBinary
 );
 
 
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.api.GetGatewayStatsRequest,
- *   !proto.api.GetGatewayStatsResponse>}
+ *   !proto.api.GetGatewayMetricsRequest,
+ *   !proto.api.GetGatewayMetricsResponse>}
  */
-const methodInfo_GatewayService_GetStats = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.api.GetGatewayStatsResponse,
+const methodInfo_GatewayService_GetMetrics = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.api.GetGatewayMetricsResponse,
   /**
-   * @param {!proto.api.GetGatewayStatsRequest} request
+   * @param {!proto.api.GetGatewayMetricsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.api.GetGatewayStatsResponse.deserializeBinary
+  proto.api.GetGatewayMetricsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.api.GetGatewayStatsRequest} request The
+ * @param {!proto.api.GetGatewayMetricsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.Error, ?proto.api.GetGatewayStatsResponse)}
+ * @param {function(?grpc.web.Error, ?proto.api.GetGatewayMetricsResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.api.GetGatewayStatsResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.api.GetGatewayMetricsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.api.GatewayServiceClient.prototype.getStats =
+proto.api.GatewayServiceClient.prototype.getMetrics =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/api.GatewayService/GetStats',
+      '/api.GatewayService/GetMetrics',
       request,
       metadata || {},
-      methodDescriptor_GatewayService_GetStats,
+      methodDescriptor_GatewayService_GetMetrics,
       callback);
 };
 
 
 /**
- * @param {!proto.api.GetGatewayStatsRequest} request The
+ * @param {!proto.api.GetGatewayMetricsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.api.GetGatewayStatsResponse>}
+ * @return {!Promise<!proto.api.GetGatewayMetricsResponse>}
  *     Promise that resolves to the response
  */
-proto.api.GatewayServicePromiseClient.prototype.getStats =
+proto.api.GatewayServicePromiseClient.prototype.getMetrics =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/api.GatewayService/GetStats',
+      '/api.GatewayService/GetMetrics',
       request,
       metadata || {},
-      methodDescriptor_GatewayService_GetStats);
+      methodDescriptor_GatewayService_GetMetrics);
 };
 
 

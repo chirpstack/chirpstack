@@ -51,8 +51,12 @@ type DeviceServiceClient interface {
 	GetActivation(ctx context.Context, in *GetDeviceActivationRequest, opts ...grpc.CallOption) (*GetDeviceActivationResponse, error)
 	// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
 	GetRandomDevAddr(ctx context.Context, in *GetRandomDevAddrRequest, opts ...grpc.CallOption) (*GetRandomDevAddrResponse, error)
-	// GetStats returns the device stats.
-	GetStats(ctx context.Context, in *GetDeviceStatsRequest, opts ...grpc.CallOption) (*GetDeviceStatsResponse, error)
+	// GetMetrics returns the device metrics.
+	// Note that this requires a device-profile with codec and measurements configured.
+	GetMetrics(ctx context.Context, in *GetDeviceMetricsRequest, opts ...grpc.CallOption) (*GetDeviceMetricsResponse, error)
+	// GetLinkMetrics returns the device link metrics.
+	// This includes uplinks, downlinks, RSSI, SNR, etc...
+	GetLinkMetrics(ctx context.Context, in *GetDeviceLinkMetricsRequest, opts ...grpc.CallOption) (*GetDeviceLinkMetricsResponse, error)
 	// Enqueue adds the given item to the downlink queue.
 	Enqueue(ctx context.Context, in *EnqueueDeviceQueueItemRequest, opts ...grpc.CallOption) (*EnqueueDeviceQueueItemResponse, error)
 	// FlushQueue flushes the downlink device-queue.
@@ -195,9 +199,18 @@ func (c *deviceServiceClient) GetRandomDevAddr(ctx context.Context, in *GetRando
 	return out, nil
 }
 
-func (c *deviceServiceClient) GetStats(ctx context.Context, in *GetDeviceStatsRequest, opts ...grpc.CallOption) (*GetDeviceStatsResponse, error) {
-	out := new(GetDeviceStatsResponse)
-	err := c.cc.Invoke(ctx, "/api.DeviceService/GetStats", in, out, opts...)
+func (c *deviceServiceClient) GetMetrics(ctx context.Context, in *GetDeviceMetricsRequest, opts ...grpc.CallOption) (*GetDeviceMetricsResponse, error) {
+	out := new(GetDeviceMetricsResponse)
+	err := c.cc.Invoke(ctx, "/api.DeviceService/GetMetrics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *deviceServiceClient) GetLinkMetrics(ctx context.Context, in *GetDeviceLinkMetricsRequest, opts ...grpc.CallOption) (*GetDeviceLinkMetricsResponse, error) {
+	out := new(GetDeviceLinkMetricsResponse)
+	err := c.cc.Invoke(ctx, "/api.DeviceService/GetLinkMetrics", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -263,8 +276,12 @@ type DeviceServiceServer interface {
 	GetActivation(context.Context, *GetDeviceActivationRequest) (*GetDeviceActivationResponse, error)
 	// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
 	GetRandomDevAddr(context.Context, *GetRandomDevAddrRequest) (*GetRandomDevAddrResponse, error)
-	// GetStats returns the device stats.
-	GetStats(context.Context, *GetDeviceStatsRequest) (*GetDeviceStatsResponse, error)
+	// GetMetrics returns the device metrics.
+	// Note that this requires a device-profile with codec and measurements configured.
+	GetMetrics(context.Context, *GetDeviceMetricsRequest) (*GetDeviceMetricsResponse, error)
+	// GetLinkMetrics returns the device link metrics.
+	// This includes uplinks, downlinks, RSSI, SNR, etc...
+	GetLinkMetrics(context.Context, *GetDeviceLinkMetricsRequest) (*GetDeviceLinkMetricsResponse, error)
 	// Enqueue adds the given item to the downlink queue.
 	Enqueue(context.Context, *EnqueueDeviceQueueItemRequest) (*EnqueueDeviceQueueItemResponse, error)
 	// FlushQueue flushes the downlink device-queue.
@@ -320,8 +337,11 @@ func (UnimplementedDeviceServiceServer) GetActivation(context.Context, *GetDevic
 func (UnimplementedDeviceServiceServer) GetRandomDevAddr(context.Context, *GetRandomDevAddrRequest) (*GetRandomDevAddrResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRandomDevAddr not implemented")
 }
-func (UnimplementedDeviceServiceServer) GetStats(context.Context, *GetDeviceStatsRequest) (*GetDeviceStatsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
+func (UnimplementedDeviceServiceServer) GetMetrics(context.Context, *GetDeviceMetricsRequest) (*GetDeviceMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMetrics not implemented")
+}
+func (UnimplementedDeviceServiceServer) GetLinkMetrics(context.Context, *GetDeviceLinkMetricsRequest) (*GetDeviceLinkMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLinkMetrics not implemented")
 }
 func (UnimplementedDeviceServiceServer) Enqueue(context.Context, *EnqueueDeviceQueueItemRequest) (*EnqueueDeviceQueueItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Enqueue not implemented")
@@ -597,20 +617,38 @@ func _DeviceService_GetRandomDevAddr_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeviceService_GetStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDeviceStatsRequest)
+func _DeviceService_GetMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceMetricsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeviceServiceServer).GetStats(ctx, in)
+		return srv.(DeviceServiceServer).GetMetrics(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.DeviceService/GetStats",
+		FullMethod: "/api.DeviceService/GetMetrics",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceServiceServer).GetStats(ctx, req.(*GetDeviceStatsRequest))
+		return srv.(DeviceServiceServer).GetMetrics(ctx, req.(*GetDeviceMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DeviceService_GetLinkMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceLinkMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceServiceServer).GetLinkMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.DeviceService/GetLinkMetrics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceServiceServer).GetLinkMetrics(ctx, req.(*GetDeviceLinkMetricsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -733,8 +771,12 @@ var DeviceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DeviceService_GetRandomDevAddr_Handler,
 		},
 		{
-			MethodName: "GetStats",
-			Handler:    _DeviceService_GetStats_Handler,
+			MethodName: "GetMetrics",
+			Handler:    _DeviceService_GetMetrics_Handler,
+		},
+		{
+			MethodName: "GetLinkMetrics",
+			Handler:    _DeviceService_GetLinkMetrics_Handler,
 		},
 		{
 			MethodName: "Enqueue",

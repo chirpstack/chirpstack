@@ -14,7 +14,7 @@ interface IGatewayServiceService extends grpc.ServiceDefinition<grpc.UntypedServ
   delete: grpc.MethodDefinition<api_gateway_pb.DeleteGatewayRequest, google_protobuf_empty_pb.Empty>;
   list: grpc.MethodDefinition<api_gateway_pb.ListGatewaysRequest, api_gateway_pb.ListGatewaysResponse>;
   generateClientCertificate: grpc.MethodDefinition<api_gateway_pb.GenerateGatewayClientCertificateRequest, api_gateway_pb.GenerateGatewayClientCertificateResponse>;
-  getStats: grpc.MethodDefinition<api_gateway_pb.GetGatewayStatsRequest, api_gateway_pb.GetGatewayStatsResponse>;
+  getMetrics: grpc.MethodDefinition<api_gateway_pb.GetGatewayMetricsRequest, api_gateway_pb.GetGatewayMetricsResponse>;
 }
 
 export const GatewayServiceService: IGatewayServiceService;
@@ -26,7 +26,7 @@ export interface IGatewayServiceServer extends grpc.UntypedServiceImplementation
   delete: grpc.handleUnaryCall<api_gateway_pb.DeleteGatewayRequest, google_protobuf_empty_pb.Empty>;
   list: grpc.handleUnaryCall<api_gateway_pb.ListGatewaysRequest, api_gateway_pb.ListGatewaysResponse>;
   generateClientCertificate: grpc.handleUnaryCall<api_gateway_pb.GenerateGatewayClientCertificateRequest, api_gateway_pb.GenerateGatewayClientCertificateResponse>;
-  getStats: grpc.handleUnaryCall<api_gateway_pb.GetGatewayStatsRequest, api_gateway_pb.GetGatewayStatsResponse>;
+  getMetrics: grpc.handleUnaryCall<api_gateway_pb.GetGatewayMetricsRequest, api_gateway_pb.GetGatewayMetricsResponse>;
 }
 
 export class GatewayServiceClient extends grpc.Client {
@@ -49,7 +49,7 @@ export class GatewayServiceClient extends grpc.Client {
   generateClientCertificate(argument: api_gateway_pb.GenerateGatewayClientCertificateRequest, callback: grpc.requestCallback<api_gateway_pb.GenerateGatewayClientCertificateResponse>): grpc.ClientUnaryCall;
   generateClientCertificate(argument: api_gateway_pb.GenerateGatewayClientCertificateRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_gateway_pb.GenerateGatewayClientCertificateResponse>): grpc.ClientUnaryCall;
   generateClientCertificate(argument: api_gateway_pb.GenerateGatewayClientCertificateRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_gateway_pb.GenerateGatewayClientCertificateResponse>): grpc.ClientUnaryCall;
-  getStats(argument: api_gateway_pb.GetGatewayStatsRequest, callback: grpc.requestCallback<api_gateway_pb.GetGatewayStatsResponse>): grpc.ClientUnaryCall;
-  getStats(argument: api_gateway_pb.GetGatewayStatsRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_gateway_pb.GetGatewayStatsResponse>): grpc.ClientUnaryCall;
-  getStats(argument: api_gateway_pb.GetGatewayStatsRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_gateway_pb.GetGatewayStatsResponse>): grpc.ClientUnaryCall;
+  getMetrics(argument: api_gateway_pb.GetGatewayMetricsRequest, callback: grpc.requestCallback<api_gateway_pb.GetGatewayMetricsResponse>): grpc.ClientUnaryCall;
+  getMetrics(argument: api_gateway_pb.GetGatewayMetricsRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_gateway_pb.GetGatewayMetricsResponse>): grpc.ClientUnaryCall;
+  getMetrics(argument: api_gateway_pb.GetGatewayMetricsRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_gateway_pb.GetGatewayMetricsResponse>): grpc.ClientUnaryCall;
 }

@@ -107,12 +107,19 @@ export class DeviceServiceClient {
                response: api_device_pb.GetRandomDevAddrResponse) => void
   ): grpcWeb.ClientReadableStream<api_device_pb.GetRandomDevAddrResponse>;
 
-  getStats(
-    request: api_device_pb.GetDeviceStatsRequest,
+  getMetrics(
+    request: api_device_pb.GetDeviceMetricsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.Error,
-               response: api_device_pb.GetDeviceStatsResponse) => void
-  ): grpcWeb.ClientReadableStream<api_device_pb.GetDeviceStatsResponse>;
+               response: api_device_pb.GetDeviceMetricsResponse) => void
+  ): grpcWeb.ClientReadableStream<api_device_pb.GetDeviceMetricsResponse>;
+
+  getLinkMetrics(
+    request: api_device_pb.GetDeviceLinkMetricsRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: api_device_pb.GetDeviceLinkMetricsResponse) => void
+  ): grpcWeb.ClientReadableStream<api_device_pb.GetDeviceLinkMetricsResponse>;
 
   enqueue(
     request: api_device_pb.EnqueueDeviceQueueItemRequest,
@@ -212,10 +219,15 @@ export class DeviceServicePromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<api_device_pb.GetRandomDevAddrResponse>;
 
-  getStats(
-    request: api_device_pb.GetDeviceStatsRequest,
+  getMetrics(
+    request: api_device_pb.GetDeviceMetricsRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<api_device_pb.GetDeviceStatsResponse>;
+  ): Promise<api_device_pb.GetDeviceMetricsResponse>;
+
+  getLinkMetrics(
+    request: api_device_pb.GetDeviceLinkMetricsRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<api_device_pb.GetDeviceLinkMetricsResponse>;
 
   enqueue(
     request: api_device_pb.EnqueueDeviceQueueItemRequest,

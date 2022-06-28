@@ -1,9 +1,14 @@
 import React, { Component } from "react";
 
-import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader } from "antd";
+import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
-import { DeviceProfile, CodecRuntime } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import {
+  DeviceProfile,
+  CodecRuntime,
+  Measurement,
+  MeasurementKind,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import {
@@ -280,6 +285,14 @@ class DeviceProfileForm extends Component<IProps, IState> {
       dp.getTagsMap().set(elm[0], elm[1]);
     }
 
+    // measurements
+    for (const elm of v.measurementsMap) {
+      let m = new Measurement();
+      m.setKind(elm[1].kind);
+      m.setName(elm[1].name);
+      dp.getMeasurementsMap().set(elm[0], m);
+    }
+
     this.props.onFinish(dp);
   };
 
@@ -318,6 +331,8 @@ class DeviceProfileForm extends Component<IProps, IState> {
       templateModalVisible: false,
     });
 
+    console.log(dp.toObject().tagsMap);
+
     this.formRef.current.setFieldsValue({
       name: dp.getName(),
       description: dp.getDescription(),
@@ -339,12 +354,8 @@ class DeviceProfileForm extends Component<IProps, IState> {
       abpRx2Dr: dp.getAbpRx2Dr(),
       abpRx2Freq: dp.getAbpRx2Freq(),
       abpRx1DrOffset: dp.getAbpRx1DrOffset(),
-      tagsMap: [
-        ["firmware", dp.getFirmware()],
-        ["vendor", dp.getVendor()],
-        ["device", dp.getName()],
-        ["device_profile_template_id", dp.getId()],
-      ],
+      tagsMap: dp.toObject().tagsMap,
+      measurementsMap: dp.toObject().measurementsMap,
     });
 
     const tabActive = this.state.tabActive;
@@ -393,9 +404,16 @@ class DeviceProfileForm extends Component<IProps, IState> {
                                 tabActive: "6",
                               },
                               () => {
-                                this.setState({
-                                  tabActive: tabActive,
-                                });
+                                this.setState(
+                                  {
+                                    tabActive: "7",
+                                  },
+                                  () => {
+                                    this.setState({
+                                      tabActive: tabActive,
+                                    });
+                                  },
+                                );
                               },
                             );
                           },
@@ -682,6 +700,94 @@ class DeviceProfileForm extends Component<IProps, IState> {
                       icon={<PlusOutlined />}
                     >
                       Add tag
+                    </Button>
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Measurements" key="7">
+            <Card bordered={false}>
+              <p>
+                ChirpStack can aggregate and visualize decoded device measurements in the device dashboard. To setup the
+                aggregation of device measurements, you must configure the key, kind of measurement and name
+                (user-defined). Please note that ChirpStack will automatically configure the keys once it has received
+                the first uplink(s). The following measurement-kinds can be selected:
+              </p>
+              <ul>
+                <li>
+                  <strong>Unknown / unset</strong>: Default for auto-detected keys. This disables the aggregation of
+                  this metric.
+                </li>
+                <li>
+                  <strong>Counter</strong>: For continuous incrementing counters.
+                </li>
+                <li>
+                  <strong>Absolute</strong>: For counters which get reset upon reading / uplink.
+                </li>
+                <li>
+                  <strong>Gauge</strong>: For temperature, humidity, pressure etc...
+                </li>
+                <li>
+                  <strong>String</strong>: For boolean or string values.
+                </li>
+              </ul>
+            </Card>
+            <Form.List name="measurementsMap">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Row gutter={24}>
+                      <Col span={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 0]}
+                          fieldKey={[name, 0]}
+                          rules={[{ required: true, message: "Please enter a key!" }]}
+                        >
+                          <Input placeholder="Measurement key" disabled={this.props.disabled} />
+                        </Form.Item>
+                      </Col>
+                      <Col span={6}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 1, "kind"]}
+                          fieldKey={[name, 1, "kind"]}
+                          rules={[{ required: true, message: "Please select a kind!" }]}
+                        >
+                          <Select disabled={this.props.disabled} placeholder="Measurement kind">
+                            <Select.Option value={MeasurementKind.UNKNOWN}>Unknown / unset</Select.Option>
+                            <Select.Option value={MeasurementKind.COUNTER}>Counter</Select.Option>
+                            <Select.Option value={MeasurementKind.ABSOLUTE}>Absolute</Select.Option>
+                            <Select.Option value={MeasurementKind.GAUGE}>Gauge</Select.Option>
+                            <Select.Option value={MeasurementKind.STRING}>String</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                      <Col span={10}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 1, "name"]}
+                          fieldKey={[name, 1, "name"]}
+                          rules={[{ required: true, message: "Please enter a name!" }]}
+                        >
+                          <Input placeholder="Measurement name" disabled={this.props.disabled} />
+                        </Form.Item>
+                      </Col>
+                      <Col span={2}>
+                        <MinusCircleOutlined onClick={() => remove(name)} />
+                      </Col>
+                    </Row>
+                  ))}
+                  <Form.Item>
+                    <Button
+                      disabled={this.props.disabled}
+                      type="dashed"
+                      onClick={() => add()}
+                      block
+                      icon={<PlusOutlined />}
+                    >
+                      Add measurement
                     </Button>
                   </Form.Item>
                 </>

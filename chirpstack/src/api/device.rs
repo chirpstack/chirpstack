@@ -1,8 +1,9 @@
+use std::collections::HashSet;
 use std::str::FromStr;
 use std::time::SystemTime;
 
 use bigdecimal::ToPrimitive;
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, Utc};
 use rand::RngCore;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
@@ -13,7 +14,7 @@ use lrwn::{AES128Key, DevAddr, EUI64};
 
 use super::auth::validator;
 use super::error::ToStatus;
-use super::helpers::{self, ToProto};
+use super::helpers::{self, FromProto, ToProto};
 use crate::storage::error::Error;
 use crate::storage::{
     device, device_keys, device_profile, device_queue, device_session, fields, metrics,
@@ -563,10 +564,10 @@ impl DeviceService for Device {
         }))
     }
 
-    async fn get_stats(
+    async fn get_metrics(
         &self,
-        request: Request<api::GetDeviceStatsRequest>,
-    ) -> Result<Response<api::GetDeviceStatsResponse>, Status> {
+        request: Request<api::GetDeviceMetricsRequest>,
+    ) -> Result<Response<api::GetDeviceMetricsResponse>, Status> {
         let req = request.get_ref();
         let dev_eui = EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?;
 
@@ -597,62 +598,313 @@ impl DeviceService for Device {
 
         let start: DateTime<Local> = start.into();
         let end: DateTime<Local> = end.into();
+        let aggregation = req.aggregation().from_proto();
+
+        let dev = device::get(&dev_eui).await.map_err(|e| e.status())?;
+        let dp = device_profile::get(&dev.device_profile_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut out = api::GetDeviceMetricsResponse {
+            ..Default::default()
+        };
+
+        for (k, v) in dp.measurements.iter() {
+            match v.kind {
+                fields::MeasurementKind::UNKNOWN => {
+                    continue;
+                }
+                fields::MeasurementKind::STRING => {
+                    out.states.insert(
+                        k.to_string(),
+                        api::DeviceState {
+                            name: v.name.to_string(),
+                            value: metrics::get_state(&format!("device:{}:{}", dev.dev_eui, k))
+                                .await
+                                .map_err(|e| e.status())?,
+                        },
+                    );
+                }
+                fields::MeasurementKind::COUNTER
+                | fields::MeasurementKind::ABSOLUTE
+                | fields::MeasurementKind::GAUGE => {
+                    let m = metrics::get(
+                        &format!("device:{}:{}", dev.dev_eui, k),
+                        match v.kind {
+                            fields::MeasurementKind::COUNTER => metrics::Kind::COUNTER,
+                            fields::MeasurementKind::ABSOLUTE => metrics::Kind::ABSOLUTE,
+                            fields::MeasurementKind::GAUGE => metrics::Kind::GAUGE,
+                            _ => panic!("Unexpected MeasurementKind: {:?}", v.kind),
+                        },
+                        aggregation,
+                        start,
+                        end,
+                    )
+                    .await
+                    .map_err(|e| e.status())?;
+
+                    out.metrics.insert(
+                        k.to_string(),
+                        common::Metric {
+                            name: v.name.to_string(),
+                            timestamps: m
+                                .iter()
+                                .map(|row| {
+                                    let ts: DateTime<Utc> = row.time.into();
+                                    let ts: pbjson_types::Timestamp = ts.into();
+                                    ts
+                                })
+                                .collect(),
+                            datasets: vec![common::MetricDataset {
+                                label: k.to_string(),
+                                data: m
+                                    .iter()
+                                    .map(|row| {
+                                        row.metrics.get("value").cloned().unwrap_or(0.0) as f32
+                                    })
+                                    .collect(),
+                            }],
+                        },
+                    );
+                }
+            }
+        }
+
+        Ok(Response::new(out))
+    }
+
+    async fn get_link_metrics(
+        &self,
+        request: Request<api::GetDeviceLinkMetricsRequest>,
+    ) -> Result<Response<api::GetDeviceLinkMetricsResponse>, Status> {
+        let req = request.get_ref();
+        let dev_eui = EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceAccess::new(validator::Flag::Read, dev_eui),
+            )
+            .await?;
+
+        let start = SystemTime::try_from(
+            req.start
+                .as_ref()
+                .ok_or(anyhow!("start is None"))
+                .map_err(|e| e.status())?
+                .clone(),
+        )
+        .map_err(|e| e.status())?;
+
+        let end = SystemTime::try_from(
+            req.end
+                .as_ref()
+                .ok_or(anyhow!("end is None"))
+                .map_err(|e| e.status())?
+                .clone(),
+        )
+        .map_err(|e| e.status())?;
+
+        let start: DateTime<Local> = start.into();
+        let end: DateTime<Local> = end.into();
+        let aggregation = req.aggregation().from_proto();
 
         let device_metrics = metrics::get(
             &format!("device:{}", dev_eui),
-            metrics::Aggregation::DAY,
+            metrics::Kind::ABSOLUTE,
+            aggregation,
             start,
             end,
         )
         .await
         .map_err(|e| e.status())?;
 
-        let mut out: api::GetDeviceStatsResponse = Default::default();
-
-        for m in device_metrics {
-            let ts: SystemTime = m.time.into();
-            let ts: prost_types::Timestamp = ts.into();
-
-            let mut item = api::DeviceStats {
-                time: Some(ts),
-                ..Default::default()
-            };
-
-            item.rx_packets = m.metrics.get("rx_count").cloned().unwrap_or(0.0) as u32;
-
-            if item.rx_packets > 0 {
-                let gw_rssi_sum = m.metrics.get("gw_rssi_sum").cloned().unwrap_or(0.0) as f32;
-                let gw_snr_sum = m.metrics.get("gw_snr_sum").cloned().unwrap_or(0.0) as f32;
-
-                item.gw_rssi = gw_rssi_sum / (item.rx_packets as f32);
-                item.gw_snr = gw_snr_sum / (item.rx_packets as f32);
-            }
-
-            for (k, v) in m.metrics {
-                if k.starts_with("rx_freq_") {
-                    let freq: u32 = k
-                        .trim_start_matches("rx_freq_")
-                        .parse()
-                        .map_err(|e: std::num::ParseIntError| e.status())?;
-                    item.rx_packets_per_frequency.insert(freq, v as u32);
+        let out = api::GetDeviceLinkMetricsResponse {
+            rx_packets: Some(common::Metric {
+                name: "Received".to_string(),
+                timestamps: device_metrics
+                    .iter()
+                    .map(|row| {
+                        let ts: DateTime<Utc> = row.time.into();
+                        let ts: pbjson_types::Timestamp = ts.into();
+                        ts
+                    })
+                    .collect(),
+                datasets: vec![common::MetricDataset {
+                    label: "rx_count".to_string(),
+                    data: device_metrics
+                        .iter()
+                        .map(|row| row.metrics.get("rx_count").cloned().unwrap_or(0.0) as f32)
+                        .collect(),
+                }],
+            }),
+            gw_rssi: Some(common::Metric {
+                name: "RSSI".to_string(),
+                timestamps: device_metrics
+                    .iter()
+                    .map(|row| {
+                        let ts: DateTime<Utc> = row.time.into();
+                        let ts: pbjson_types::Timestamp = ts.into();
+                        ts
+                    })
+                    .collect(),
+                datasets: vec![common::MetricDataset {
+                    label: "rssi".to_string(),
+                    data: device_metrics
+                        .iter()
+                        .map(|row| {
+                            let rx_packets = row.metrics.get("rx_count").cloned().unwrap_or(0.0);
+                            let rssi_sum = row.metrics.get("gw_rssi_sum").cloned().unwrap_or(0.0);
+                            if rx_packets > 0.0 {
+                                (rssi_sum / rx_packets) as f32
+                            } else {
+                                0.0
+                            }
+                        })
+                        .collect(),
+                }],
+            }),
+            gw_snr: Some(common::Metric {
+                name: "SNR".to_string(),
+                timestamps: device_metrics
+                    .iter()
+                    .map(|row| {
+                        let ts: DateTime<Utc> = row.time.into();
+                        let ts: pbjson_types::Timestamp = ts.into();
+                        ts
+                    })
+                    .collect(),
+                datasets: vec![common::MetricDataset {
+                    label: "snr".to_string(),
+                    data: device_metrics
+                        .iter()
+                        .map(|row| {
+                            let rx_packets = row.metrics.get("rx_count").cloned().unwrap_or(0.0);
+                            let rssi_sum = row.metrics.get("gw_snr_sum").cloned().unwrap_or(0.0);
+                            if rx_packets > 0.0 {
+                                (rssi_sum / rx_packets) as f32
+                            } else {
+                                0.0
+                            }
+                        })
+                        .collect(),
+                }],
+            }),
+            rx_packets_per_freq: Some({
+                // discover all data-sets
+                let mut datasets: HashSet<String> = HashSet::new();
+                for m in &device_metrics {
+                    for k in m.metrics.keys() {
+                        if k.starts_with("rx_freq_") {
+                            datasets.insert(k.trim_start_matches("rx_freq_").to_string());
+                        }
+                    }
                 }
 
-                if k.starts_with("rx_dr_") {
-                    let dr: u32 = k
-                        .trim_start_matches("rx_dr_")
-                        .parse()
-                        .map_err(|e: std::num::ParseIntError| e.status())?;
-                    item.rx_packets_per_dr.insert(dr, v as u32);
+                common::Metric {
+                    name: "Received / frequency".to_string(),
+                    timestamps: device_metrics
+                        .iter()
+                        .map(|row| {
+                            let ts: DateTime<Utc> = row.time.into();
+                            let ts: pbjson_types::Timestamp = ts.into();
+                            ts
+                        })
+                        .collect(),
+                    datasets: datasets
+                        .iter()
+                        .map(|label| common::MetricDataset {
+                            label: label.to_string(),
+                            data: device_metrics
+                                .iter()
+                                .map(|row| {
+                                    row.metrics
+                                        .get(&format!("rx_freq_{}", label))
+                                        .cloned()
+                                        .unwrap_or(0.0) as f32
+                                })
+                                .collect(),
+                        })
+                        .collect(),
+                }
+            }),
+            rx_packets_per_dr: Some({
+                // discover all data-sets
+                let mut datasets: HashSet<String> = HashSet::new();
+                for m in &device_metrics {
+                    for k in m.metrics.keys() {
+                        if k.starts_with("rx_dr_") {
+                            datasets.insert(k.trim_start_matches("rx_dr_").to_string());
+                        }
+                    }
                 }
 
-                if k.starts_with("error_") {
-                    let code = k.trim_start_matches("error_").to_string();
-                    item.errors.insert(code, v as u32);
+                common::Metric {
+                    name: "Received / DR".to_string(),
+                    timestamps: device_metrics
+                        .iter()
+                        .map(|row| {
+                            let ts: DateTime<Utc> = row.time.into();
+                            let ts: pbjson_types::Timestamp = ts.into();
+                            ts
+                        })
+                        .collect(),
+                    datasets: datasets
+                        .iter()
+                        .map(|label| common::MetricDataset {
+                            label: label.to_string(),
+                            data: device_metrics
+                                .iter()
+                                .map(|row| {
+                                    row.metrics
+                                        .get(&format!("rx_dr_{}", label))
+                                        .cloned()
+                                        .unwrap_or(0.0) as f32
+                                })
+                                .collect(),
+                        })
+                        .collect(),
                 }
-            }
+            }),
+            errors: Some({
+                // discover all data-sets
+                let mut datasets: HashSet<String> = HashSet::new();
+                for m in &device_metrics {
+                    for k in m.metrics.keys() {
+                        if k.starts_with("error_") {
+                            datasets.insert(k.trim_start_matches("error_").to_string());
+                        }
+                    }
+                }
 
-            out.result.push(item);
-        }
+                common::Metric {
+                    name: "Errors".to_string(),
+                    timestamps: device_metrics
+                        .iter()
+                        .map(|row| {
+                            let ts: DateTime<Utc> = row.time.into();
+                            let ts: pbjson_types::Timestamp = ts.into();
+                            ts
+                        })
+                        .collect(),
+                    datasets: datasets
+                        .iter()
+                        .map(|label| common::MetricDataset {
+                            label: label.to_string(),
+                            data: device_metrics
+                                .iter()
+                                .map(|row| {
+                                    row.metrics
+                                        .get(&format!("error_{}", label))
+                                        .cloned()
+                                        .unwrap_or(0.0) as f32
+                                })
+                                .collect(),
+                        })
+                        .collect(),
+                }
+            }),
+        };
 
         Ok(Response::new(out))
     }

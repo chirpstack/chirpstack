@@ -345,7 +345,7 @@ export namespace GenerateGatewayClientCertificateResponse {
   }
 }
 
-export class GetGatewayStatsRequest extends jspb.Message {
+export class GetGatewayMetricsRequest extends jspb.Message {
   getGatewayId(): string;
   setGatewayId(value: string): void;
 
@@ -359,88 +359,83 @@ export class GetGatewayStatsRequest extends jspb.Message {
   getEnd(): google_protobuf_timestamp_pb.Timestamp | undefined;
   setEnd(value?: google_protobuf_timestamp_pb.Timestamp): void;
 
+  getAggregation(): common_common_pb.AggregationMap[keyof common_common_pb.AggregationMap];
+  setAggregation(value: common_common_pb.AggregationMap[keyof common_common_pb.AggregationMap]): void;
+
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetGatewayStatsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetGatewayStatsRequest): GetGatewayStatsRequest.AsObject;
+  toObject(includeInstance?: boolean): GetGatewayMetricsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetGatewayMetricsRequest): GetGatewayMetricsRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetGatewayStatsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetGatewayStatsRequest;
-  static deserializeBinaryFromReader(message: GetGatewayStatsRequest, reader: jspb.BinaryReader): GetGatewayStatsRequest;
+  static serializeBinaryToWriter(message: GetGatewayMetricsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetGatewayMetricsRequest;
+  static deserializeBinaryFromReader(message: GetGatewayMetricsRequest, reader: jspb.BinaryReader): GetGatewayMetricsRequest;
 }
 
-export namespace GetGatewayStatsRequest {
+export namespace GetGatewayMetricsRequest {
   export type AsObject = {
     gatewayId: string,
     start?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     end?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    aggregation: common_common_pb.AggregationMap[keyof common_common_pb.AggregationMap],
   }
 }
 
-export class GetGatewayStatsResponse extends jspb.Message {
-  clearResultList(): void;
-  getResultList(): Array<GatewayStats>;
-  setResultList(value: Array<GatewayStats>): void;
-  addResult(value?: GatewayStats, index?: number): GatewayStats;
+export class GetGatewayMetricsResponse extends jspb.Message {
+  hasRxPackets(): boolean;
+  clearRxPackets(): void;
+  getRxPackets(): common_common_pb.Metric | undefined;
+  setRxPackets(value?: common_common_pb.Metric): void;
+
+  hasTxPackets(): boolean;
+  clearTxPackets(): void;
+  getTxPackets(): common_common_pb.Metric | undefined;
+  setTxPackets(value?: common_common_pb.Metric): void;
+
+  hasTxPacketsPerFreq(): boolean;
+  clearTxPacketsPerFreq(): void;
+  getTxPacketsPerFreq(): common_common_pb.Metric | undefined;
+  setTxPacketsPerFreq(value?: common_common_pb.Metric): void;
+
+  hasRxPacketsPerFreq(): boolean;
+  clearRxPacketsPerFreq(): void;
+  getRxPacketsPerFreq(): common_common_pb.Metric | undefined;
+  setRxPacketsPerFreq(value?: common_common_pb.Metric): void;
+
+  hasTxPacketsPerDr(): boolean;
+  clearTxPacketsPerDr(): void;
+  getTxPacketsPerDr(): common_common_pb.Metric | undefined;
+  setTxPacketsPerDr(value?: common_common_pb.Metric): void;
+
+  hasRxPacketsPerDr(): boolean;
+  clearRxPacketsPerDr(): void;
+  getRxPacketsPerDr(): common_common_pb.Metric | undefined;
+  setRxPacketsPerDr(value?: common_common_pb.Metric): void;
+
+  hasTxPacketsPerStatus(): boolean;
+  clearTxPacketsPerStatus(): void;
+  getTxPacketsPerStatus(): common_common_pb.Metric | undefined;
+  setTxPacketsPerStatus(value?: common_common_pb.Metric): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetGatewayStatsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: GetGatewayStatsResponse): GetGatewayStatsResponse.AsObject;
+  toObject(includeInstance?: boolean): GetGatewayMetricsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetGatewayMetricsResponse): GetGatewayMetricsResponse.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetGatewayStatsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetGatewayStatsResponse;
-  static deserializeBinaryFromReader(message: GetGatewayStatsResponse, reader: jspb.BinaryReader): GetGatewayStatsResponse;
+  static serializeBinaryToWriter(message: GetGatewayMetricsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetGatewayMetricsResponse;
+  static deserializeBinaryFromReader(message: GetGatewayMetricsResponse, reader: jspb.BinaryReader): GetGatewayMetricsResponse;
 }
 
-export namespace GetGatewayStatsResponse {
+export namespace GetGatewayMetricsResponse {
   export type AsObject = {
-    resultList: Array<GatewayStats.AsObject>,
-  }
-}
-
-export class GatewayStats extends jspb.Message {
-  hasTime(): boolean;
-  clearTime(): void;
-  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
-
-  getRxPackets(): number;
-  setRxPackets(value: number): void;
-
-  getTxPackets(): number;
-  setTxPackets(value: number): void;
-
-  getTxPacketsPerFrequencyMap(): jspb.Map<number, number>;
-  clearTxPacketsPerFrequencyMap(): void;
-  getRxPacketsPerFrequencyMap(): jspb.Map<number, number>;
-  clearRxPacketsPerFrequencyMap(): void;
-  getTxPacketsPerDrMap(): jspb.Map<number, number>;
-  clearTxPacketsPerDrMap(): void;
-  getRxPacketsPerDrMap(): jspb.Map<number, number>;
-  clearRxPacketsPerDrMap(): void;
-  getTxPacketsPerStatusMap(): jspb.Map<string, number>;
-  clearTxPacketsPerStatusMap(): void;
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GatewayStats.AsObject;
-  static toObject(includeInstance: boolean, msg: GatewayStats): GatewayStats.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GatewayStats, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GatewayStats;
-  static deserializeBinaryFromReader(message: GatewayStats, reader: jspb.BinaryReader): GatewayStats;
-}
-
-export namespace GatewayStats {
-  export type AsObject = {
-    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    rxPackets: number,
-    txPackets: number,
-    txPacketsPerFrequencyMap: Array<[number, number]>,
-    rxPacketsPerFrequencyMap: Array<[number, number]>,
-    txPacketsPerDrMap: Array<[number, number]>,
-    rxPacketsPerDrMap: Array<[number, number]>,
-    txPacketsPerStatusMap: Array<[string, number]>,
+    rxPackets?: common_common_pb.Metric.AsObject,
+    txPackets?: common_common_pb.Metric.AsObject,
+    txPacketsPerFreq?: common_common_pb.Metric.AsObject,
+    rxPacketsPerFreq?: common_common_pb.Metric.AsObject,
+    txPacketsPerDr?: common_common_pb.Metric.AsObject,
+    rxPacketsPerDr?: common_common_pb.Metric.AsObject,
+    txPacketsPerStatus?: common_common_pb.Metric.AsObject,
   }
 }
 

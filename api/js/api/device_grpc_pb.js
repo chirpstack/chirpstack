@@ -3,6 +3,7 @@
 'use strict';
 var grpc = require('@grpc/grpc-js');
 var api_device_pb = require('../api/device_pb.js');
+var common_common_pb = require('../common/common_pb.js');
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
@@ -161,6 +162,50 @@ function deserialize_api_GetDeviceKeysResponse(buffer_arg) {
   return api_device_pb.GetDeviceKeysResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_GetDeviceLinkMetricsRequest(arg) {
+  if (!(arg instanceof api_device_pb.GetDeviceLinkMetricsRequest)) {
+    throw new Error('Expected argument of type api.GetDeviceLinkMetricsRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetDeviceLinkMetricsRequest(buffer_arg) {
+  return api_device_pb.GetDeviceLinkMetricsRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_GetDeviceLinkMetricsResponse(arg) {
+  if (!(arg instanceof api_device_pb.GetDeviceLinkMetricsResponse)) {
+    throw new Error('Expected argument of type api.GetDeviceLinkMetricsResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetDeviceLinkMetricsResponse(buffer_arg) {
+  return api_device_pb.GetDeviceLinkMetricsResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_GetDeviceMetricsRequest(arg) {
+  if (!(arg instanceof api_device_pb.GetDeviceMetricsRequest)) {
+    throw new Error('Expected argument of type api.GetDeviceMetricsRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetDeviceMetricsRequest(buffer_arg) {
+  return api_device_pb.GetDeviceMetricsRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_GetDeviceMetricsResponse(arg) {
+  if (!(arg instanceof api_device_pb.GetDeviceMetricsResponse)) {
+    throw new Error('Expected argument of type api.GetDeviceMetricsResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetDeviceMetricsResponse(buffer_arg) {
+  return api_device_pb.GetDeviceMetricsResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_GetDeviceQueueItemsRequest(arg) {
   if (!(arg instanceof api_device_pb.GetDeviceQueueItemsRequest)) {
     throw new Error('Expected argument of type api.GetDeviceQueueItemsRequest');
@@ -203,28 +248,6 @@ function serialize_api_GetDeviceResponse(arg) {
 
 function deserialize_api_GetDeviceResponse(buffer_arg) {
   return api_device_pb.GetDeviceResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_api_GetDeviceStatsRequest(arg) {
-  if (!(arg instanceof api_device_pb.GetDeviceStatsRequest)) {
-    throw new Error('Expected argument of type api.GetDeviceStatsRequest');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_api_GetDeviceStatsRequest(buffer_arg) {
-  return api_device_pb.GetDeviceStatsRequest.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_api_GetDeviceStatsResponse(arg) {
-  if (!(arg instanceof api_device_pb.GetDeviceStatsResponse)) {
-    throw new Error('Expected argument of type api.GetDeviceStatsResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_api_GetDeviceStatsResponse(buffer_arg) {
-  return api_device_pb.GetDeviceStatsResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_api_GetRandomDevAddrRequest(arg) {
@@ -475,17 +498,31 @@ getRandomDevAddr: {
     responseSerialize: serialize_api_GetRandomDevAddrResponse,
     responseDeserialize: deserialize_api_GetRandomDevAddrResponse,
   },
-  // GetStats returns the device stats.
-getStats: {
-    path: '/api.DeviceService/GetStats',
+  // GetMetrics returns the device metrics.
+// Note that this requires a device-profile with codec and measurements configured.
+getMetrics: {
+    path: '/api.DeviceService/GetMetrics',
     requestStream: false,
     responseStream: false,
-    requestType: api_device_pb.GetDeviceStatsRequest,
-    responseType: api_device_pb.GetDeviceStatsResponse,
-    requestSerialize: serialize_api_GetDeviceStatsRequest,
-    requestDeserialize: deserialize_api_GetDeviceStatsRequest,
-    responseSerialize: serialize_api_GetDeviceStatsResponse,
-    responseDeserialize: deserialize_api_GetDeviceStatsResponse,
+    requestType: api_device_pb.GetDeviceMetricsRequest,
+    responseType: api_device_pb.GetDeviceMetricsResponse,
+    requestSerialize: serialize_api_GetDeviceMetricsRequest,
+    requestDeserialize: deserialize_api_GetDeviceMetricsRequest,
+    responseSerialize: serialize_api_GetDeviceMetricsResponse,
+    responseDeserialize: deserialize_api_GetDeviceMetricsResponse,
+  },
+  // GetLinkMetrics returns the device link metrics.
+// This includes uplinks, downlinks, RSSI, SNR, etc...
+getLinkMetrics: {
+    path: '/api.DeviceService/GetLinkMetrics',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_device_pb.GetDeviceLinkMetricsRequest,
+    responseType: api_device_pb.GetDeviceLinkMetricsResponse,
+    requestSerialize: serialize_api_GetDeviceLinkMetricsRequest,
+    requestDeserialize: deserialize_api_GetDeviceLinkMetricsRequest,
+    responseSerialize: serialize_api_GetDeviceLinkMetricsResponse,
+    responseDeserialize: deserialize_api_GetDeviceLinkMetricsResponse,
   },
   // Enqueue adds the given item to the downlink queue.
 enqueue: {

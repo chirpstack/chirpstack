@@ -83,6 +83,7 @@ impl Stats {
                 Some(v) => DateTime::try_from(v.clone())?.into(),
                 None => Local::now(),
             },
+            kind: metrics::Kind::ABSOLUTE,
             metrics: HashMap::new(),
         };
 

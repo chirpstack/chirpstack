@@ -279,7 +279,8 @@ proto.api.DeviceProfileTemplate.toObject = function(includeInstance, msg) {
     abpRx1DrOffset: jspb.Message.getFieldWithDefault(msg, 24, 0),
     abpRx2Dr: jspb.Message.getFieldWithDefault(msg, 25, 0),
     abpRx2Freq: jspb.Message.getFieldWithDefault(msg, 26, 0),
-    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : []
+    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : [],
+    measurementsMap: (f = msg.getMeasurementsMap()) ? f.toObject(includeInstance, proto.api.Measurement.toObject) : []
   };
 
   if (includeInstance) {
@@ -424,6 +425,12 @@ proto.api.DeviceProfileTemplate.deserializeBinaryFromReader = function(msg, read
       var value = msg.getTagsMap();
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
+    case 28:
+      var value = msg.getMeasurementsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.api.Measurement.deserializeBinaryFromReader, "", new proto.api.Measurement());
          });
       break;
     default:
@@ -640,6 +647,10 @@ proto.api.DeviceProfileTemplate.serializeBinaryToWriter = function(message, writ
   f = message.getTagsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(27, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getMeasurementsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(28, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.api.Measurement.serializeBinaryToWriter);
   }
 };
 
@@ -1131,6 +1142,28 @@ proto.api.DeviceProfileTemplate.prototype.getTagsMap = function(opt_noLazyCreate
  */
 proto.api.DeviceProfileTemplate.prototype.clearTagsMap = function() {
   this.getTagsMap().clear();
+  return this;};
+
+
+/**
+ * map<string, Measurement> measurements = 28;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.api.Measurement>}
+ */
+proto.api.DeviceProfileTemplate.prototype.getMeasurementsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.api.Measurement>} */ (
+      jspb.Message.getMapField(this, 28, opt_noLazyCreate,
+      proto.api.Measurement));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.api.DeviceProfileTemplate} returns this
+ */
+proto.api.DeviceProfileTemplate.prototype.clearMeasurementsMap = function() {
+  this.getMeasurementsMap().clear();
   return this;};
 
 

@@ -88,6 +88,9 @@ export class DeviceProfileTemplate extends jspb.Message {
   getTagsMap(): jspb.Map<string, string>;
   clearTagsMap(): DeviceProfileTemplate;
 
+  getMeasurementsMap(): jspb.Map<string, api_device_profile_pb.Measurement>;
+  clearMeasurementsMap(): DeviceProfileTemplate;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfileTemplate.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfileTemplate): DeviceProfileTemplate.AsObject;
@@ -125,6 +128,7 @@ export namespace DeviceProfileTemplate {
     abpRx2Dr: number,
     abpRx2Freq: number,
     tagsMap: Array<[string, string]>,
+    measurementsMap: Array<[string, api_device_profile_pb.Measurement.AsObject]>,
   }
 }
 

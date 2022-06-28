@@ -7,6 +7,7 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "DeviceProto";
 
+import "common/common.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/empty.proto";
@@ -55,8 +56,13 @@ service DeviceService {
     // GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
     rpc GetRandomDevAddr(GetRandomDevAddrRequest) returns (GetRandomDevAddrResponse) {}
 
-    // GetStats returns the device stats.
-    rpc GetStats(GetDeviceStatsRequest) returns (GetDeviceStatsResponse) {}
+    // GetMetrics returns the device metrics.
+    // Note that this requires a device-profile with codec and measurements configured.
+    rpc GetMetrics(GetDeviceMetricsRequest) returns (GetDeviceMetricsResponse) {}
+
+    // GetLinkMetrics returns the device link metrics.
+    // This includes uplinks, downlinks, RSSI, SNR, etc...
+    rpc GetLinkMetrics(GetDeviceLinkMetricsRequest) returns (GetDeviceLinkMetricsResponse) {}
 
     // Enqueue adds the given item to the downlink queue.
     rpc Enqueue(EnqueueDeviceQueueItemRequest) returns (EnqueueDeviceQueueItemResponse) {}
@@ -309,7 +315,7 @@ message GetRandomDevAddrResponse {
     string dev_addr = 1;
 }
 
-message GetDeviceStatsRequest {
+message GetDeviceMetricsRequest {
     // DevEUI (EUI64).
     string dev_eui = 1;
 
@@ -318,33 +324,57 @@ message GetDeviceStatsRequest {
 
     // Interval end timestamp.
     google.protobuf.Timestamp end = 3;
+
+    // Aggregation.
+    common.Aggregation aggregation = 4;
 }
 
-message GetDeviceStatsResponse {
-    repeated DeviceStats result = 1;
+message GetDeviceMetricsResponse {
+    map<string, common.Metric> metrics = 1;
+
+    map<string, DeviceState> states = 2;
 }
 
-message DeviceStats {
-	// Timestamp of the (aggregated) measurement.
-	google.protobuf.Timestamp time = 1;
+message DeviceState {
+    // Name.
+    string name = 2;
 
+    // Value.
+    string value = 3;
+}
+
+message GetDeviceLinkMetricsRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+
+    // Interval start timestamp.
+    google.protobuf.Timestamp start = 2;
+
+    // Interval end timestamp.
+    google.protobuf.Timestamp end = 3;
+
+    // Aggregation.
+    common.Aggregation aggregation = 4;
+}
+
+message GetDeviceLinkMetricsResponse {
     // Packets received from the device.
-    uint32 rx_packets = 2;
+    common.Metric rx_packets = 1;
 
-    // Average RSSI (as reported by the gateway(s)).
-    float gw_rssi = 3;
+    // RSSI (as reported by the gateway(s)).
+    common.Metric gw_rssi = 2;
 
-    // Average SNR (as reported by the gateway(s)).
-    float gw_snr = 4;
+    // SNR (as reported by the gateway(s)).
+    common.Metric gw_snr = 3;
 
     // Packets received by frequency.
-    map<uint32, uint32> rx_packets_per_frequency = 5;
+    common.Metric rx_packets_per_freq = 4;
 
     // Packets received by DR.
-    map<uint32, uint32> rx_packets_per_dr = 6;
+    common.Metric rx_packets_per_dr = 5;
 
-    // Error count.
-    map<string, uint32> errors = 7;
+    // Errors.
+    common.Metric errors = 6;
 }
 
 message DeviceQueueItem {

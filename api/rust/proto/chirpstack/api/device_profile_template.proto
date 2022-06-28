@@ -118,6 +118,10 @@ message DeviceProfileTemplate {
 
     // User defined tags.
     map<string, string> tags = 27;
+
+    // Measurements.
+    // If defined, ChirpStack will visualize these metrics in the web-interface.
+    map<string, Measurement> measurements = 28;
 }
 
 message DeviceProfileTemplateListItem {

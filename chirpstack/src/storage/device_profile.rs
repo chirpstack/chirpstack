@@ -47,6 +47,7 @@ pub struct DeviceProfile {
     pub payload_codec_script: String,
     pub flush_queue_on_activate: bool,
     pub description: String,
+    pub measurements: fields::Measurements,
 }
 
 impl DeviceProfile {
@@ -91,6 +92,7 @@ impl Default for DeviceProfile {
             abp_rx2_dr: 0,
             abp_rx2_freq: 0,
             tags: fields::KeyValue::new(HashMap::new()),
+            measurements: fields::Measurements::new(HashMap::new()),
         }
     }
 }
@@ -204,6 +206,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::abp_rx2_dr.eq(&dp.abp_rx2_dr),
                     device_profile::abp_rx2_freq.eq(&dp.abp_rx2_freq),
                     device_profile::tags.eq(&dp.tags),
+                    device_profile::measurements.eq(&dp.measurements),
                 ))
                 .get_result(&c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))
@@ -211,6 +214,22 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
     })
     .await??;
     info!(id = %dp.id, "Device-profile updated");
+    Ok(dp)
+}
+
+pub async fn set_measurements(id: Uuid, m: &fields::Measurements) -> Result<DeviceProfile, Error> {
+    let dp = task::spawn_blocking({
+        let m = m.clone();
+        move || -> Result<DeviceProfile, Error> {
+            let c = get_db_conn()?;
+            diesel::update(device_profile::dsl::device_profile.find(&id))
+                .set(device_profile::measurements.eq(m))
+                .get_result(&c)
+                .map_err(|e| Error::from_diesel(e, id.to_string()))
+        }
+    })
+    .await??;
+    info!(id = %id, "Device-profile measurements updated");
     Ok(dp)
 }
 

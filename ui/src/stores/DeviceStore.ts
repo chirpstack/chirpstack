@@ -15,8 +15,6 @@ import {
   GetDeviceKeysResponse,
   UpdateDeviceKeysRequest,
   DeleteDeviceKeysRequest,
-  GetDeviceStatsRequest,
-  GetDeviceStatsResponse,
   EnqueueDeviceQueueItemRequest,
   EnqueueDeviceQueueItemResponse,
   FlushDeviceQueueRequest,
@@ -28,6 +26,10 @@ import {
   ActivateDeviceRequest,
   GetRandomDevAddrRequest,
   GetRandomDevAddrResponse,
+  GetDeviceMetricsRequest,
+  GetDeviceMetricsResponse,
+  GetDeviceLinkMetricsRequest,
+  GetDeviceLinkMetricsResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import SessionStore from "./SessionStore";
@@ -172,8 +174,19 @@ class DeviceStore extends EventEmitter {
     });
   };
 
-  getStats = (req: GetDeviceStatsRequest, callbackFunc: (resp: GetDeviceStatsResponse) => void) => {
-    this.client.getStats(req, SessionStore.getMetadata(), (err, resp) => {
+  getMetrics = (req: GetDeviceMetricsRequest, callbackFunc: (resp: GetDeviceMetricsResponse) => void) => {
+    this.client.getMetrics(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  getLinkMetrics = (req: GetDeviceLinkMetricsRequest, callbackFunc: (resp: GetDeviceLinkMetricsResponse) => void) => {
+    this.client.getLinkMetrics(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;
