@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs } from "antd";
+import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { DeviceProfileTemplate } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
