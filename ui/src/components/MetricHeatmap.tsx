@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Card, Empty } from "antd";
+import { Card } from "antd";
 
 import { color } from "chart.js/helpers";
 import { TimeUnit } from "chart.js";
@@ -18,10 +18,6 @@ interface IProps {
 
 class MetricHeatmap extends Component<IProps> {
   render() {
-    if (this.props.metric.getTimestampsList().length === 0 || this.props.metric.getDatasetsList().length === 0) {
-      return <Empty />;
-    }
-
     let unit: TimeUnit = "hour";
     if (this.props.aggregation === Aggregation.DAY) {
       unit = "day";
