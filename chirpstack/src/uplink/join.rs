@@ -261,13 +261,18 @@ impl JoinRequest {
                             &app.id,
                             &dev.variables,
                             &integration_pb::LogEvent {
-                                deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
                                 time: Some(Utc::now().into()),
                                 device_info: self.device_info.clone(),
                                 level: integration_pb::LogLevel::Error.into(),
                                 code: integration_pb::LogCode::Otaa.into(),
                                 description: "DevNonce has already been used".into(),
-                                ..Default::default()
+                                context: [(
+                                    "deduplication_id".to_string(),
+                                    self.uplink_frame_set.uplink_set_id.to_string(),
+                                )]
+                                .iter()
+                                .cloned()
+                                .collect(),
                             },
                         )
                         .await?;
@@ -311,13 +316,18 @@ impl JoinRequest {
             &app.id,
             &dev.variables,
             &integration_pb::LogEvent {
-                deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
                 time: Some(Utc::now().into()),
                 device_info: self.device_info.clone(),
                 level: integration_pb::LogLevel::Error.into(),
                 code: integration_pb::LogCode::UplinkMic.into(),
                 description: "MIC of join-request is invalid, make sure keys are correct".into(),
-                ..Default::default()
+                context: [(
+                    "deduplication_id".to_string(),
+                    self.uplink_frame_set.uplink_set_id.to_string(),
+                )]
+                .iter()
+                .cloned()
+                .collect(),
             },
         )
         .await?;

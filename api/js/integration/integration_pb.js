@@ -2017,7 +2017,6 @@ proto.integration.LogEvent.prototype.toObject = function(opt_includeInstance) {
  */
 proto.integration.LogEvent.toObject = function(includeInstance, msg) {
   var f, obj = {
-    deduplicationId: msg.getDeduplicationId(),
     time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     deviceInfo: (f = msg.getDeviceInfo()) && proto.integration.DeviceInfo.toObject(includeInstance, f),
     level: msg.getLevel(),
@@ -2061,32 +2060,28 @@ proto.integration.LogEvent.deserializeBinaryFromReader = function(msg, reader) {
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setDeduplicationId(value);
-      break;
-    case 2:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setTime(value);
       break;
-    case 3:
+    case 2:
       var value = new proto.integration.DeviceInfo;
       reader.readMessage(value,proto.integration.DeviceInfo.deserializeBinaryFromReader);
       msg.setDeviceInfo(value);
       break;
-    case 4:
+    case 3:
       var value = /** @type {!proto.integration.LogLevel} */ (reader.readEnum());
       msg.setLevel(value);
       break;
-    case 5:
+    case 4:
       var value = /** @type {!proto.integration.LogCode} */ (reader.readEnum());
       msg.setCode(value);
       break;
-    case 6:
+    case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setDescription(value);
       break;
-    case 7:
+    case 6:
       var value = msg.getContextMap();
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString);
@@ -2130,17 +2125,10 @@ proto.integration.LogEvent.prototype.serializeBinary = function() {
  */
 proto.integration.LogEvent.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getDeduplicationId();
-  if (f.length > 0) {
-    writer.writeString(
-      1,
-      f
-    );
-  }
   f = this.getTime();
   if (f != null) {
     writer.writeMessage(
-      2,
+      1,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
@@ -2148,7 +2136,7 @@ proto.integration.LogEvent.prototype.serializeBinaryToWriter = function (writer)
   f = this.getDeviceInfo();
   if (f != null) {
     writer.writeMessage(
-      3,
+      2,
       f,
       proto.integration.DeviceInfo.serializeBinaryToWriter
     );
@@ -2156,27 +2144,27 @@ proto.integration.LogEvent.prototype.serializeBinaryToWriter = function (writer)
   f = this.getLevel();
   if (f !== 0.0) {
     writer.writeEnum(
-      4,
+      3,
       f
     );
   }
   f = this.getCode();
   if (f !== 0.0) {
     writer.writeEnum(
-      5,
+      4,
       f
     );
   }
   f = this.getDescription();
   if (f.length > 0) {
     writer.writeString(
-      6,
+      5,
       f
     );
   }
   f = this.getContextMap(true);
   if (f && f.getLength() > 0) {
-    f.serializeBinary(7, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+    f.serializeBinary(6, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -2191,33 +2179,18 @@ proto.integration.LogEvent.prototype.cloneMessage = function() {
 
 
 /**
- * optional string deduplication_id = 1;
- * @return {string}
- */
-proto.integration.LogEvent.prototype.getDeduplicationId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 1, ""));
-};
-
-
-/** @param {string} value  */
-proto.integration.LogEvent.prototype.setDeduplicationId = function(value) {
-  jspb.Message.setField(this, 1, value);
-};
-
-
-/**
- * optional google.protobuf.Timestamp time = 2;
+ * optional google.protobuf.Timestamp time = 1;
  * @return {proto.google.protobuf.Timestamp}
  */
 proto.integration.LogEvent.prototype.getTime = function() {
   return /** @type{proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 2));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1));
 };
 
 
 /** @param {proto.google.protobuf.Timestamp|undefined} value  */
 proto.integration.LogEvent.prototype.setTime = function(value) {
-  jspb.Message.setWrapperField(this, 2, value);
+  jspb.Message.setWrapperField(this, 1, value);
 };
 
 
@@ -2231,23 +2204,23 @@ proto.integration.LogEvent.prototype.clearTime = function() {
  * @return{!boolean}
  */
 proto.integration.LogEvent.prototype.hasTime = function() {
-  return jspb.Message.getField(this, 2) != null;
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
 /**
- * optional DeviceInfo device_info = 3;
+ * optional DeviceInfo device_info = 2;
  * @return {proto.integration.DeviceInfo}
  */
 proto.integration.LogEvent.prototype.getDeviceInfo = function() {
   return /** @type{proto.integration.DeviceInfo} */ (
-    jspb.Message.getWrapperField(this, proto.integration.DeviceInfo, 3));
+    jspb.Message.getWrapperField(this, proto.integration.DeviceInfo, 2));
 };
 
 
 /** @param {proto.integration.DeviceInfo|undefined} value  */
 proto.integration.LogEvent.prototype.setDeviceInfo = function(value) {
-  jspb.Message.setWrapperField(this, 3, value);
+  jspb.Message.setWrapperField(this, 2, value);
 };
 
 
@@ -2261,64 +2234,64 @@ proto.integration.LogEvent.prototype.clearDeviceInfo = function() {
  * @return{!boolean}
  */
 proto.integration.LogEvent.prototype.hasDeviceInfo = function() {
-  return jspb.Message.getField(this, 3) != null;
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
 /**
- * optional LogLevel level = 4;
+ * optional LogLevel level = 3;
  * @return {!proto.integration.LogLevel}
  */
 proto.integration.LogEvent.prototype.getLevel = function() {
-  return /** @type {!proto.integration.LogLevel} */ (jspb.Message.getFieldProto3(this, 4, 0));
+  return /** @type {!proto.integration.LogLevel} */ (jspb.Message.getFieldProto3(this, 3, 0));
 };
 
 
 /** @param {!proto.integration.LogLevel} value  */
 proto.integration.LogEvent.prototype.setLevel = function(value) {
-  jspb.Message.setField(this, 4, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
 /**
- * optional LogCode code = 5;
+ * optional LogCode code = 4;
  * @return {!proto.integration.LogCode}
  */
 proto.integration.LogEvent.prototype.getCode = function() {
-  return /** @type {!proto.integration.LogCode} */ (jspb.Message.getFieldProto3(this, 5, 0));
+  return /** @type {!proto.integration.LogCode} */ (jspb.Message.getFieldProto3(this, 4, 0));
 };
 
 
 /** @param {!proto.integration.LogCode} value  */
 proto.integration.LogEvent.prototype.setCode = function(value) {
-  jspb.Message.setField(this, 5, value);
+  jspb.Message.setField(this, 4, value);
 };
 
 
 /**
- * optional string description = 6;
+ * optional string description = 5;
  * @return {string}
  */
 proto.integration.LogEvent.prototype.getDescription = function() {
-  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 6, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 5, ""));
 };
 
 
 /** @param {string} value  */
 proto.integration.LogEvent.prototype.setDescription = function(value) {
-  jspb.Message.setField(this, 6, value);
+  jspb.Message.setField(this, 5, value);
 };
 
 
 /**
- * map<string, string> context = 7;
+ * map<string, string> context = 6;
  * @param {boolean=} opt_noLazyCreate Do not create the map if
  * empty, instead returning `undefined`
  * @return {!jspb.Map<string,string>}
  */
 proto.integration.LogEvent.prototype.getContextMap = function(opt_noLazyCreate) {
   return /** @type {!jspb.Map<string,string>} */ (
-      jspb.Message.getMapField(this, 7, opt_noLazyCreate,
+      jspb.Message.getMapField(this, 6, opt_noLazyCreate,
       null));
 };
 

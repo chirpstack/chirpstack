@@ -349,10 +349,6 @@ impl Data {
                     .context("Delete device queue-item")?;
 
                 let pl = integration_pb::LogEvent {
-                    deduplication_id: match &self.uplink_frame_set {
-                        Some(v) => v.uplink_set_id.to_string(),
-                        None => "".to_string(),
-                    },
                     time: Some(Utc::now().into()),
                     device_info: Some(device_info.clone()),
                     level: integration_pb::LogLevel::Error.into(),
@@ -363,6 +359,7 @@ impl Data {
                     context: [
                         ("max_payload_size".to_string(), max_payload_size.to_string()),
                         ("item_size".to_string(), qi.data.len().to_string()),
+                        ("queue_item_id".to_string(), qi.id.to_string()),
                     ]
                     .iter()
                     .cloned()

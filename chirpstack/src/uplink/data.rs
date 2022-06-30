@@ -292,27 +292,37 @@ impl Data {
 
         if self.retransmission {
             let pl = integration_pb::LogEvent {
-                deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
                 time: Some(ts.into()),
                 device_info: self.device_info.clone(),
                 level: integration_pb::LogLevel::Warning.into(),
                 code: integration_pb::LogCode::UplinkFCntRetransmission.into(),
                 description:
                     "Uplink was flagged as re-transmission / frame-counter did not increment".into(),
-                ..Default::default()
+                context: [(
+                    "deduplication_id".to_string(),
+                    self.uplink_frame_set.uplink_set_id.to_string(),
+                )]
+                .iter()
+                .cloned()
+                .collect(),
             };
             integration::log_event(&app.id, &dev.variables, &pl).await?;
         }
 
         if self.reset {
             let pl = integration_pb::LogEvent {
-                deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
                 time: Some(ts.into()),
                 device_info: self.device_info.clone(),
                 level: integration_pb::LogLevel::Warning.into(),
                 code: integration_pb::LogCode::UplinkFCntReset.into(),
                 description: "Frame-counter reset or rollover detected".into(),
-                ..Default::default()
+                context: [(
+                    "deduplication_id".to_string(),
+                    self.uplink_frame_set.uplink_set_id.to_string(),
+                )]
+                .iter()
+                .cloned()
+                .collect(),
             };
             integration::log_event(&app.id, &dev.variables, &pl).await?;
         }
@@ -637,13 +647,15 @@ impl Data {
                     &app.id,
                     &dev.variables,
                     &integration_pb::LogEvent {
-                        deduplication_id: pl.deduplication_id.clone(),
                         time: Some(Utc::now().into()),
                         device_info: self.device_info.clone(),
                         level: integration_pb::LogLevel::Error.into(),
                         code: integration_pb::LogCode::UplinkCodec.into(),
                         description: format!("{}", e),
-                        ..Default::default()
+                        context: [("deduplication_id".to_string(), pl.deduplication_id.clone())]
+                            .iter()
+                            .cloned()
+                            .collect(),
                     },
                 )
                 .await?;

@@ -269,9 +269,6 @@ export namespace TxAckEvent {
 }
 
 export class LogEvent extends jspb.Message {
-  getDeduplicationId(): string;
-  setDeduplicationId(value: string): void;
-
   hasTime(): boolean;
   clearTime(): void;
   getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
@@ -305,7 +302,6 @@ export class LogEvent extends jspb.Message {
 
 export namespace LogEvent {
   export type AsObject = {
-    deduplicationId: string,
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     deviceInfo?: DeviceInfo.AsObject,
     level: LogLevelMap[keyof LogLevelMap],
