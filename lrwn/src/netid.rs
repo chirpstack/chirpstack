@@ -5,10 +5,23 @@ use anyhow::Result;
 use serde::de::{self, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(PartialEq, Clone, Copy)]
+use crate::Error;
+
+#[derive(PartialEq, Clone, Copy, Hash, Eq)]
 pub struct NetID([u8; 3]);
 
 impl NetID {
+    pub fn from_slice(b: &[u8]) -> Result<Self, Error> {
+        if b.len() != 3 {
+            return Err(Error::NetIdLength);
+        }
+
+        let mut bb: [u8; 3] = [0; 3];
+        bb.copy_from_slice(b);
+
+        Ok(NetID(bb))
+    }
+
     pub fn from_be_bytes(b: [u8; 3]) -> Self {
         NetID(b)
     }
@@ -23,6 +36,10 @@ impl NetID {
         let mut b = self.0;
         b.reverse();
         b
+    }
+
+    pub fn to_vec(&self) -> Vec<u8> {
+        self.0.to_vec()
     }
 
     pub fn netid_type(&self) -> u8 {
@@ -59,6 +76,12 @@ impl NetID {
     }
 }
 
+impl Default for NetID {
+    fn default() -> Self {
+        NetID([0, 0, 0])
+    }
+}
+
 impl fmt::Display for NetID {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", hex::encode(self.0))
@@ -72,7 +95,7 @@ impl fmt::Debug for NetID {
 }
 
 impl FromStr for NetID {
-    type Err = Box<dyn std::error::Error>;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut bytes: [u8; 3] = [0; 3];

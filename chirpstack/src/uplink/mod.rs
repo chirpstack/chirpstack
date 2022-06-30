@@ -20,9 +20,13 @@ use lrwn::region::CommonName;
 use lrwn::{MType, PhyPayload, EUI64};
 
 mod data;
+mod data_fns;
+pub mod data_sns;
 mod error;
 pub mod helpers;
 pub mod join;
+pub mod join_fns;
+pub mod join_sns;
 pub mod stats;
 
 lazy_static! {
@@ -41,6 +45,7 @@ pub struct UplinkFrameSet {
     pub gateway_tenant_id_map: HashMap<EUI64, Uuid>,
     pub region_common_name: CommonName,
     pub region_name: String,
+    pub roaming_meta_data: Option<RoamingMetaData>,
 }
 
 impl TryFrom<&UplinkFrameSet> for api::UplinkFrameLog {
@@ -92,6 +97,12 @@ impl TryFrom<&UplinkFrameSet> for api::UplinkFrameLog {
 
         Ok(ufl)
     }
+}
+
+#[derive(Clone)]
+pub struct RoamingMetaData {
+    pub base_payload: backend::BasePayload,
+    pub ul_meta_data: backend::ULMetaData,
 }
 
 pub fn get_deduplication_delay() -> Duration {
@@ -272,6 +283,7 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
         rx_info_set: uplink.rx_info,
         gateway_private_map: HashMap::new(),
         gateway_tenant_id_map: HashMap::new(),
+        roaming_meta_data: None,
     };
 
     uplink.dr = helpers::get_uplink_dr(&uplink.region_name, &uplink.tx_info)?;
@@ -355,6 +367,28 @@ fn filter_rx_info_by_tenant_id(tenant_id: &Uuid, uplink: &mut UplinkFrameSet) ->
                 .get(&gateway_id)
                 .ok_or(anyhow!("gateway_id is missing in gateway_tenant_id_map"))?
                 == tenant_id
+        {
+            rx_info_set.push(rx_info.clone());
+        }
+    }
+
+    uplink.rx_info_set = rx_info_set;
+    if uplink.rx_info_set.is_empty() {
+        return Err(anyhow!("rx_info_set has no items"));
+    }
+
+    Ok(())
+}
+
+fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
+    let mut rx_info_set: Vec<gw::UplinkRxInfo> = Vec::new();
+
+    for rx_info in &uplink.rx_info_set {
+        let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
+        if !(*uplink
+            .gateway_private_map
+            .get(&gateway_id)
+            .ok_or(anyhow!("gateway_id missing in gateway_private_map"))?)
         {
             rx_info_set.push(rx_info.clone());
         }

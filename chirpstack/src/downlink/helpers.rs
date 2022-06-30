@@ -32,7 +32,7 @@ pub fn select_downlink_gateway(
     // sort items by SNR or if SNR is equal between A and B, by RSSI.
     rx_info.items.sort_by(|a, b| {
         if a.lora_snr == b.lora_snr {
-            return a.rssi.partial_cmp(&b.rssi).unwrap();
+            return b.rssi.partial_cmp(&a.rssi).unwrap();
         }
         b.lora_snr.partial_cmp(&a.lora_snr).unwrap()
     });

@@ -119,6 +119,9 @@ pub async fn delete(dev_eui: &EUI64) -> Result<()> {
 
 // Return the device-session matching the given PhyPayload. This will fetch all device-session
 // associated with the used DevAddr and based on f_cont and mic, decides which one to use.
+// This function will increment the uplink frame-counter and will immediately update the
+// device-session in the database, to make sure that in case this function is called multiple
+// times, at most one will be valid.
 pub async fn get_for_phypayload_and_incr_f_cnt_up(
     phy: &PhyPayload,
     tx_dr: u8,
@@ -232,6 +235,67 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
             } else {
                 return Ok(ValidationStatus::Reset(full_f_cnt, ds));
             }
+        }
+    }
+
+    Err(Error::InvalidMIC)
+}
+
+// Simmilar to get_for_phypayload_and_incr_f_cnt_up, but only retrieves the device-session for the
+// given PhyPayload. As it does not return the ValidationStatus, it only returns the DeviceSession
+// in case of a valid frame-counter.
+pub async fn get_for_phypayload(
+    phy: &PhyPayload,
+    tx_dr: u8,
+    tx_ch: u8,
+) -> Result<internal::DeviceSession, Error> {
+    // Clone the PhyPayload, as we will update the f_cnt to the full (32bit) frame-counter value
+    // for calculating the MIC.
+    let mut phy = phy.clone();
+
+    // Get the dev_addr and original f_cnt.
+    let (dev_addr, f_cnt_orig) = if let Payload::MACPayload(pl) = &phy.payload {
+        (pl.fhdr.devaddr, pl.fhdr.f_cnt)
+    } else {
+        return Err(Error::InvalidPayload("MacPayload".to_string()));
+    };
+
+    let device_sessions = get_for_dev_addr(dev_addr)
+        .await
+        .context("Get device-sessions for DevAddr")?;
+    if device_sessions.is_empty() {
+        return Err(Error::NotFound(dev_addr.to_string()));
+    }
+
+    for ds in device_sessions {
+        // Restore the original f_cnt.
+        if let Payload::MACPayload(pl) = &mut phy.payload {
+            pl.fhdr.f_cnt = f_cnt_orig;
+        }
+
+        // Get the full 32bit frame-counter.
+        let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
+        let f_nwk_s_int_key = AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
+        let s_nwk_s_int_key = AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
+
+        // Set the full f_cnt
+        if let Payload::MACPayload(pl) = &mut phy.payload {
+            pl.fhdr.f_cnt = full_f_cnt;
+        }
+
+        let mic_ok = phy
+            .validate_uplink_data_mic(
+                ds.mac_version().from_proto(),
+                ds.conf_f_cnt,
+                tx_dr,
+                tx_ch,
+                &f_nwk_s_int_key,
+                &s_nwk_s_int_key,
+            )
+            .context("Validate MIC")?;
+
+        if mic_ok && full_f_cnt >= ds.f_cnt_up {
+            return Ok(ds);
         }
     }
 

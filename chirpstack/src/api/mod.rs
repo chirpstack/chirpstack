@@ -9,6 +9,7 @@ use anyhow::Result;
 use futures::future::{self, Either, TryFutureExt};
 use hyper::{service::make_service_fn, Server};
 use rust_embed::RustEmbed;
+use tokio::try_join;
 use tonic::transport::Server as TonicServer;
 use tonic_reflection::server::Builder as TonicReflectionBuilder;
 use tower::{Service, ServiceBuilder};
@@ -31,6 +32,7 @@ use crate::api::auth::validator;
 
 pub mod application;
 pub mod auth;
+pub mod backend;
 pub mod device;
 pub mod device_profile;
 pub mod device_profile_template;
@@ -178,7 +180,10 @@ pub async fn setup() -> Result<()> {
         ))
     });
 
-    Server::bind(&addr).serve(service).await?;
+    let backend_handle = tokio::spawn(backend::setup());
+    let api_handle = tokio::spawn(Server::bind(&addr).serve(service));
+
+    let _ = try_join!(api_handle, backend_handle)?;
 
     Ok(())
 }

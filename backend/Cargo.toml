@@ -10,7 +10,6 @@ serde = { version = "1.0", features = ["derive", "rc"] }
 serde_json = "1.0"
 thiserror = "1.0"
 anyhow = "1.0"
-redis = { version = "0.21", features = ["tokio-comp"] }
 tracing = "0.1"
 hex = "0.4"
 rand = "0.8"
@@ -18,3 +17,7 @@ aes-kw = "0.2"
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 chrono = { version = "0.4", features = ["serde"] }
 tokio = { version = "1.6", features = ["macros" ] }
+
+# Development and testing
+[dev-dependencies]
+httpmock = "0.6"

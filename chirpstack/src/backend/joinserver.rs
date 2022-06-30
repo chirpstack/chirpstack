@@ -23,12 +23,13 @@ pub fn setup() -> Result<()> {
         info!("Configuring Join Server");
 
         let c = Client::new(ClientConfig {
-            sender_id: conf.network.net_id.to_string(),
-            receiver_id: js.join_eui.to_string(),
+            sender_id: conf.network.net_id.to_vec(),
+            receiver_id: js.join_eui.to_vec(),
             server: js.server.clone(),
             ca_cert: js.ca_cert.clone(),
             tls_cert: js.tls_cert.clone(),
             tls_key: js.tls_key.clone(),
+            async_timeout: js.async_timeout,
             ..Default::default()
         })?;
 
@@ -54,4 +55,10 @@ pub fn get(join_eui: &EUI64) -> Result<Arc<Client>> {
             )
         })?
         .clone())
+}
+
+#[cfg(test)]
+pub fn reset() {
+    let mut clients_w = CLIENTS.write().unwrap();
+    *clients_w = HashMap::new();
 }

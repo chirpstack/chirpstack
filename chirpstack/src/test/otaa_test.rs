@@ -8,9 +8,9 @@ use super::assert;
 use crate::storage::{
     application, device, device_keys, device_profile, gateway, reset_redis, tenant,
 };
-use crate::uplink::join::get_js_int_key;
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
 use chirpstack_api::{common, gw, internal, meta};
+use lrwn::keys::get_js_int_key;
 use lrwn::{AES128Key, EUI64};
 
 type Function = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;

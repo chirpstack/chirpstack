@@ -26,6 +26,7 @@ pub mod gateway;
 pub mod mac_command;
 pub mod metrics;
 pub mod multicast;
+pub mod passive_roaming;
 pub mod schema;
 pub mod search;
 pub mod tenant;

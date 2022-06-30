@@ -3,25 +3,37 @@ extern crate anyhow;
 
 use std::fs::File;
 use std::io::Read;
+use std::time::Duration;
 
 use aes_kw::Kek;
 use anyhow::{Context, Result};
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Certificate, Identity};
 use serde::{Deserialize, Serialize};
-use tokio::sync::mpsc;
-use tracing::trace;
+use tokio::sync::oneshot::Receiver;
+use tracing::{error, info, trace};
 
 const PROTOCOL_VERSION: &str = "1.0";
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Role {
+    FNS,
+    HNS,
+    SNS,
+}
 
 pub trait BasePayloadProvider {
     fn base_payload(&self) -> &BasePayload;
 }
 
+pub trait BasePayloadResultProvider {
+    fn base_payload(&self) -> &BasePayloadResult;
+}
+
 pub struct ClientConfig {
-    pub sender_id: String,
-    pub receiver_id: String,
+    pub sender_id: Vec<u8>,
+    pub receiver_id: Vec<u8>,
     pub server: String,
     pub ca_cert: String,
     pub tls_cert: String,
@@ -31,27 +43,26 @@ pub struct ClientConfig {
     // include a prefix, like Bearer, Key or Basic.
     pub authorization: Option<String>,
 
-    // Holds the optional Redis database client. When set the client
-    // will use the aysnc protocol scheme. In this case the client will wait
-    // AsyncTimeout before returning a timeout error.
-    // pub redis_client: Option<Box<dyn redis::aio::ConnectionLike>>,
-
     // AsyncTimeout defines the async timeout. This must be set when RedisClient
     // is set.
     pub async_timeout: Duration,
+
+    // Use target-role URL suffix (e.g. /fns, /sns, ...).
+    pub use_target_role_suffix: bool,
 }
 
 impl Default for ClientConfig {
     fn default() -> Self {
         ClientConfig {
-            sender_id: "".into(),
-            receiver_id: "".into(),
+            sender_id: vec![],
+            receiver_id: vec![],
             server: "".into(),
             ca_cert: "".into(),
             tls_cert: "".into(),
             tls_key: "".into(),
             authorization: None,
-            async_timeout: Duration::zero(),
+            async_timeout: Duration::from_secs(0),
+            use_target_role_suffix: false,
         }
     }
 }
@@ -120,87 +131,235 @@ impl Client {
         })
     }
 
-    pub fn get_sender_id(&self) -> String {
+    pub fn get_sender_id(&self) -> Vec<u8> {
         self.config.sender_id.clone()
     }
 
-    pub fn get_receiver_id(&self) -> String {
+    pub fn get_receiver_id(&self) -> Vec<u8> {
         self.config.receiver_id.clone()
     }
 
     pub fn is_async(&self) -> bool {
-        false
+        !self.config.async_timeout.is_zero()
     }
 
-    pub fn get_random_transaction_id(&self) -> u32 {
-        rand::random()
+    pub fn get_async_timeout(&self) -> Duration {
+        self.config.async_timeout
     }
 
-    pub async fn join_req(&self, pl: &mut JoinReqPayload) -> Result<JoinAnsPayload> {
-        pl.base.protocol_version = PROTOCOL_VERSION.to_string();
+    pub async fn join_req(
+        &self,
+        pl: &mut JoinReqPayload,
+        async_resp: Option<Receiver<Vec<u8>>>,
+    ) -> Result<JoinAnsPayload> {
         pl.base.sender_id = self.config.sender_id.clone();
         pl.base.receiver_id = self.config.receiver_id.clone();
         pl.base.message_type = MessageType::JoinReq;
-        if pl.base.transaction_id == 0 {
-            pl.base.transaction_id = self.get_random_transaction_id();
-        }
 
         let mut ans: JoinAnsPayload = Default::default();
-        self.request(&pl, &mut ans).await?;
-
+        self.request(None, &pl, &mut ans, async_resp).await?;
         Ok(ans)
     }
 
-    async fn request<S, D>(&self, pl: &S, ans: &mut D) -> Result<()>
+    pub async fn rejoin_req(
+        &self,
+        pl: &mut RejoinReqPayload,
+        async_resp: Option<Receiver<Vec<u8>>>,
+    ) -> Result<RejoinAnsPayload> {
+        pl.base.sender_id = self.config.sender_id.clone();
+        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.message_type = MessageType::RejoinReq;
+
+        let mut ans: RejoinAnsPayload = Default::default();
+        self.request(None, &pl, &mut ans, async_resp).await?;
+        Ok(ans)
+    }
+
+    pub async fn app_s_key_req(
+        &self,
+        pl: &mut AppSKeyReqPayload,
+        async_resp: Option<Receiver<Vec<u8>>>,
+    ) -> Result<AppSKeyAnsPayload> {
+        pl.base.sender_id = self.config.sender_id.clone();
+        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.message_type = MessageType::AppSKeyReq;
+
+        let mut ans: AppSKeyAnsPayload = Default::default();
+        self.request(None, &pl, &mut ans, async_resp).await?;
+        Ok(ans)
+    }
+
+    pub async fn pr_start_req(
+        &self,
+        target_role: Role,
+        pl: &mut PRStartReqPayload,
+        async_resp: Option<Receiver<Vec<u8>>>,
+    ) -> Result<PRStartAnsPayload> {
+        pl.base.sender_id = self.config.sender_id.clone();
+        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.message_type = MessageType::PRStartReq;
+
+        let mut ans: PRStartAnsPayload = Default::default();
+        self.request(Some(target_role), &pl, &mut ans, async_resp)
+            .await?;
+        Ok(ans)
+    }
+
+    pub async fn pr_start_ans(&self, target_role: Role, pl: &PRStartAnsPayload) -> Result<()> {
+        self.response_request(Some(target_role), pl).await
+    }
+
+    pub async fn pr_stop_req(
+        &self,
+        target_role: Role,
+        pl: &mut PRStopReqPayload,
+        async_resp: Option<Receiver<Vec<u8>>>,
+    ) -> Result<PRStopAnsPayload> {
+        pl.base.sender_id = self.config.sender_id.clone();
+        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.message_type = MessageType::PRStopReq;
+
+        let mut ans: PRStopAnsPayload = Default::default();
+        self.request(Some(target_role), &pl, &mut ans, async_resp)
+            .await?;
+        Ok(ans)
+    }
+
+    pub async fn pr_stop_ans(&self, target_role: Role, pl: &PRStopAnsPayload) -> Result<()> {
+        self.response_request(Some(target_role), pl).await
+    }
+
+    pub async fn home_ns_req(
+        &self,
+        pl: &mut HomeNSReqPayload,
+        async_resp: Option<Receiver<Vec<u8>>>,
+    ) -> Result<HomeNSAnsPayload> {
+        pl.base.sender_id = self.config.sender_id.clone();
+        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.message_type = MessageType::HomeNSReq;
+
+        let mut ans: HomeNSAnsPayload = Default::default();
+        self.request(None, &pl, &mut ans, async_resp).await?;
+        Ok(ans)
+    }
+
+    pub async fn xmit_data_req(
+        &self,
+        target_role: Role,
+        pl: &mut XmitDataReqPayload,
+        async_resp: Option<Receiver<Vec<u8>>>,
+    ) -> Result<XmitDataAnsPayload> {
+        pl.base.sender_id = self.config.sender_id.clone();
+        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.message_type = MessageType::XmitDataReq;
+
+        let mut ans: XmitDataAnsPayload = Default::default();
+        self.request(Some(target_role), &pl, &mut ans, async_resp)
+            .await?;
+        Ok(ans)
+    }
+
+    pub async fn xmit_data_ans(&self, target_role: Role, pl: &XmitDataAnsPayload) -> Result<()> {
+        self.response_request(Some(target_role), pl).await
+    }
+
+    async fn response_request<S>(&self, target_role: Option<Role>, pl: &S) -> Result<()>
+    where
+        S: ?Sized + serde::ser::Serialize + BasePayloadResultProvider,
+    {
+        let server = if self.config.use_target_role_suffix {
+            match target_role {
+                Some(Role::FNS) => format!("{}/fns", self.config.server),
+                Some(Role::SNS) => format!("{}/sns", self.config.server),
+                Some(Role::HNS) => format!("{}/hns", self.config.server),
+                None => self.config.server.clone(),
+            }
+        } else {
+            self.config.server.clone()
+        };
+
+        let bp = pl.base_payload();
+
+        info!(receiver_id = %hex::encode(&bp.base.receiver_id), transaction_id = bp.base.transaction_id, message_type = ?bp.base.message_type, server = %server, "Making request");
+
+        self.client
+            .post(&server)
+            .headers(self.headers.clone())
+            .json(pl)
+            .send()
+            .await?
+            .error_for_status()?;
+        Ok(())
+    }
+
+    async fn request<S, D>(
+        &self,
+        target_role: Option<Role>,
+        pl: &S,
+        ans: &mut D,
+        async_resp: Option<Receiver<Vec<u8>>>,
+    ) -> Result<()>
     where
         S: ?Sized + serde::ser::Serialize + BasePayloadProvider,
-        D: serde::de::DeserializeOwned,
+        D: serde::de::DeserializeOwned + BasePayloadResultProvider,
     {
-        let base = pl.base_payload();
-        let _key = self.get_async_key(base.transaction_id);
+        let server = if self.config.use_target_role_suffix {
+            match target_role {
+                Some(Role::FNS) => format!("{}/fns", self.config.server),
+                Some(Role::SNS) => format!("{}/sns", self.config.server),
+                Some(Role::HNS) => format!("{}/hns", self.config.server),
+                None => self.config.server.clone(),
+            }
+        } else {
+            self.config.server.clone()
+        };
 
-        let (resp_tx, mut resp_rx): (mpsc::Sender<String>, mpsc::Receiver<String>) =
-            mpsc::channel(1);
-        let (_err_tx, mut err_rx): (mpsc::Sender<String>, mpsc::Receiver<String>) =
-            mpsc::channel(1);
+        let bp = pl.base_payload().clone();
 
-        // TODO: implement async
+        info!(receiver_id = %hex::encode(&bp.receiver_id), transaction_id = bp.transaction_id, message_type = ?bp.message_type, server = %server, async_interface = %async_resp.is_some(), "Making request");
 
         let res = self
             .client
-            .post(&self.config.server)
+            .post(&server)
             .headers(self.headers.clone())
             .json(pl)
             .send()
             .await?
             .error_for_status()?;
 
-        if !self.is_async() {
-            resp_tx.send(res.text().await?).await?;
+        let resp_json = match async_resp {
+            Some(rx) => {
+                let sleep = tokio::time::sleep(self.config.async_timeout);
+
+                tokio::select! {
+                    rx_ans = rx => {
+                        String::from_utf8(rx_ans?)?
+                    }
+                    _ = sleep => {
+                        error!(receiver_id = %hex::encode(&bp.receiver_id), transaction_id = bp.transaction_id, message_type = ?bp.message_type, "Async request timeout");
+                        return Err(anyhow!("Async timeout"));
+                    }
+                }
+            }
+            None => res.text().await?,
+        };
+
+        let base: BasePayloadResult = serde_json::from_str(&resp_json)?;
+        if base.result.result_code != ResultCode::Success {
+            error!(result_code = ?base.result.result_code, description = %base.result.description, receiver_id = %hex::encode(&bp.receiver_id), transaction_id = bp.transaction_id, message_type = ?bp.message_type, "Response error");
+            return Err(anyhow!(
+                "Response error, code: {:?}, description: {:?}",
+                base.result.result_code,
+                base.result.description
+            ));
         }
 
-        tokio::select! {
-            err = err_rx.recv() => {
-                if let Some(err) = err {
-                return Err(anyhow!("{}", err));
-                }
-            },
-            v = resp_rx.recv() => {
-                if let Some(v) = v {
-                *ans = serde_json::from_str(&v)?;
-                }
-            },
-        }
-
+        *ans = serde_json::from_str(&resp_json)?;
         Ok(())
-    }
-
-    fn get_async_key(&self, transaction_id: u32) -> String {
-        format!("backend:async:{}", transaction_id)
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 pub enum MessageType {
     JoinReq,
     JoinAns,
@@ -224,7 +383,7 @@ impl Default for MessageType {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
 pub enum ResultCode {
     Success,
     MICFailed,
@@ -253,32 +412,105 @@ impl Default for ResultCode {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Copy, Clone)]
 pub enum RatePolicy {
     Drop,
     Mark,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[serde(default)]
 pub struct BasePayload {
     #[serde(rename = "ProtocolVersion")]
     pub protocol_version: String,
-    #[serde(rename = "SenderID")]
-    pub sender_id: String,
-    #[serde(rename = "ReceiverID")]
-    pub receiver_id: String,
+    #[serde(rename = "SenderID", with = "hex_encode")]
+    pub sender_id: Vec<u8>,
+    #[serde(rename = "ReceiverID", with = "hex_encode")]
+    pub receiver_id: Vec<u8>,
     #[serde(rename = "TransactionID")]
     pub transaction_id: u32,
     #[serde(rename = "MessageType")]
     pub message_type: MessageType,
-    #[serde(rename = "SenderToken", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "SenderToken",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub sender_token: Vec<u8>,
-    #[serde(rename = "ReceiverToken", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "ReceiverToken",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub receiver_token: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+impl BasePayload {
+    pub fn to_base_payload_result(
+        &self,
+        res_code: ResultCode,
+        description: &str,
+    ) -> BasePayloadResult {
+        BasePayloadResult {
+            base: BasePayload {
+                protocol_version: self.protocol_version.clone(),
+                sender_id: self.receiver_id.clone(),
+                receiver_id: self.sender_id.clone(),
+                transaction_id: self.transaction_id,
+                message_type: match self.message_type {
+                    MessageType::PRStartReq => MessageType::PRStartAns,
+                    MessageType::PRStopReq => MessageType::PRStopAns,
+                    MessageType::XmitDataReq => MessageType::XmitDataAns,
+                    _ => self.message_type,
+                },
+                sender_token: self.receiver_token.clone(),
+                receiver_token: self.sender_token.clone(),
+            },
+            result: ResultPayload {
+                result_code: res_code,
+                description: description.to_string(),
+            },
+        }
+    }
+
+    pub fn is_answer(&self) -> bool {
+        match self.message_type {
+            MessageType::JoinAns
+            | MessageType::RejoinAns
+            | MessageType::AppSKeyAns
+            | MessageType::PRStartAns
+            | MessageType::PRStopAns
+            | MessageType::HomeNSAns
+            | MessageType::XmitDataAns => true,
+
+            MessageType::JoinReq
+            | MessageType::RejoinReq
+            | MessageType::AppSKeyReq
+            | MessageType::PRStartReq
+            | MessageType::PRStopReq
+            | MessageType::HomeNSReq
+            | MessageType::XmitDataReq => false,
+        }
+    }
+}
+
+impl Default for BasePayload {
+    fn default() -> Self {
+        BasePayload {
+            protocol_version: PROTOCOL_VERSION.into(),
+            sender_id: "".into(),
+            receiver_id: "".into(),
+            transaction_id: rand::random(),
+            message_type: MessageType::default(),
+            sender_token: vec![],
+            receiver_token: vec![],
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
 #[serde(default)]
 pub struct BasePayloadResult {
     #[serde(flatten)]
@@ -287,7 +519,7 @@ pub struct BasePayloadResult {
     pub result: ResultPayload,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
 pub struct ResultPayload {
     #[serde(rename = "ResultCode")]
     pub result_code: ResultCode,
@@ -295,10 +527,10 @@ pub struct ResultPayload {
     pub description: String,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
 #[serde(default)]
 pub struct KeyEnvelope {
-    #[serde(rename = "KEKLabel")]
+    #[serde(default, rename = "KEKLabel")]
     pub kek_label: String,
     #[serde(rename = "AESKey", with = "hex_encode")]
     pub aes_key: Vec<u8>,
@@ -333,7 +565,7 @@ impl KeyEnvelope {
     }
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, PartialEq, Debug, Clone)]
 pub struct JoinReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -349,7 +581,12 @@ pub struct JoinReqPayload {
     pub dl_settings: Vec<u8>,
     #[serde(rename = "RxDelay")]
     pub rx_delay: u8,
-    #[serde(rename = "CFList", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "CFList",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub cf_list: Vec<u8>,
 }
 
@@ -359,7 +596,7 @@ impl BasePayloadProvider for &mut JoinReqPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
 #[serde(default)]
 pub struct JoinAnsPayload {
     #[serde(flatten)]
@@ -378,11 +615,22 @@ pub struct JoinAnsPayload {
     pub nwk_s_key: Option<KeyEnvelope>,
     #[serde(rename = "AppSKey")]
     pub app_s_key: Option<KeyEnvelope>,
-    #[serde(rename = "SessionKeyID", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "SessionKeyID",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub session_key_id: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadResultProvider for JoinAnsPayload {
+    fn base_payload(&self) -> &BasePayloadResult {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct RejoinReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -398,11 +646,22 @@ pub struct RejoinReqPayload {
     pub dl_settings: Vec<u8>,
     #[serde(rename = "RxDelay")]
     pub rx_delay: u8,
-    #[serde(rename = "CFList", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "CFList",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub cf_list: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadProvider for &mut RejoinReqPayload {
+    fn base_payload(&self) -> &BasePayload {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
 pub struct RejoinAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
@@ -420,11 +679,22 @@ pub struct RejoinAnsPayload {
     pub nwk_s_key: Option<KeyEnvelope>,
     #[serde(rename = "AppSKey")]
     pub app_s_key: Option<KeyEnvelope>,
-    #[serde(rename = "SessionKeyID", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "SessionKeyID",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub session_key_id: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadResultProvider for RejoinAnsPayload {
+    fn base_payload(&self) -> &BasePayloadResult {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct AppSKeyReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -434,7 +704,13 @@ pub struct AppSKeyReqPayload {
     pub session_key_id: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadProvider for &mut AppSKeyReqPayload {
+    fn base_payload(&self) -> &BasePayload {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
 pub struct AppSKeyAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
@@ -446,7 +722,13 @@ pub struct AppSKeyAnsPayload {
     pub session_key_id: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadResultProvider for AppSKeyAnsPayload {
+    fn base_payload(&self) -> &BasePayloadResult {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
 pub struct PRStartReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -456,13 +738,29 @@ pub struct PRStartReqPayload {
     pub ul_meta_data: ULMetaData,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadProvider for &mut PRStartReqPayload {
+    fn base_payload(&self) -> &BasePayload {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
 pub struct PRStartAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
-    #[serde(rename = "PHYPayload", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "PHYPayload",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub phy_payload: Vec<u8>,
-    #[serde(rename = "DevEUI", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "DevEUI",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub dev_eui: Vec<u8>,
     #[serde(rename = "Lifetime")]
     pub lifetime: Option<usize>,
@@ -476,11 +774,22 @@ pub struct PRStartAnsPayload {
     pub service_profile: Option<ServiceProfile>,
     #[serde(rename = "DLMetaData")]
     pub dl_meta_data: Option<DLMetaData>,
-    #[serde(rename = "DevAddr", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "DevAddr",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub dev_addr: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadResultProvider for PRStartAnsPayload {
+    fn base_payload(&self) -> &BasePayloadResult {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct PRStopReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -490,19 +799,41 @@ pub struct PRStopReqPayload {
     pub lifetime: Option<usize>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadProvider for &mut PRStopReqPayload {
+    fn base_payload(&self) -> &BasePayload {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
 pub struct PRStopAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadResultProvider for PRStopAnsPayload {
+    fn base_payload(&self) -> &BasePayloadResult {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
 pub struct XmitDataReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
-    #[serde(rename = "PHYPayload", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "PHYPayload",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub phy_payload: Vec<u8>,
-    #[serde(rename = "FRMPayload", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "FRMPayload",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub frm_payload: Vec<u8>,
     #[serde(rename = "ULMetaData")]
     pub ul_meta_data: Option<ULMetaData>,
@@ -510,7 +841,25 @@ pub struct XmitDataReqPayload {
     pub dl_meta_data: Option<DLMetaData>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadProvider for &mut XmitDataReqPayload {
+    fn base_payload(&self) -> &BasePayload {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
+pub struct XmitDataAnsPayload {
+    #[serde(flatten)]
+    pub base: BasePayloadResult,
+}
+
+impl BasePayloadResultProvider for XmitDataAnsPayload {
+    fn base_payload(&self) -> &BasePayloadResult {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
 pub struct HomeNSReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -518,25 +867,46 @@ pub struct HomeNSReqPayload {
     pub dev_eui: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl BasePayloadProvider for &mut HomeNSReqPayload {
+    fn base_payload(&self) -> &BasePayload {
+        &self.base
+    }
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
 pub struct HomeNSAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
-    #[serde(rename = "HNetID", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "HNetID",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub h_net_id: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct XmitDataAnsPayload {
-    #[serde(flatten)]
-    pub base: BasePayloadResult,
+impl BasePayloadResultProvider for HomeNSAnsPayload {
+    fn base_payload(&self) -> &BasePayloadResult {
+        &self.base
+    }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ULMetaData {
-    #[serde(rename = "DevEUI", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "DevEUI",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub dev_eui: Vec<u8>,
-    #[serde(rename = "DevAddr", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "DevAddr",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub dev_addr: Vec<u8>,
     #[serde(rename = "FPort")]
     pub f_port: Option<u8>,
@@ -545,50 +915,87 @@ pub struct ULMetaData {
     #[serde(rename = "FCntUp")]
     pub f_cnt_up: Option<u32>,
     #[serde(rename = "Confirmed")]
-    pub confirmed: bool,
+    pub confirmed: Option<bool>,
     #[serde(rename = "DataRate")]
-    pub data_rate: Option<usize>,
+    pub data_rate: Option<u8>,
     #[serde(rename = "ULFreq")]
     pub ul_freq: Option<f64>,
     #[serde(rename = "Margin")]
     pub margin: Option<isize>,
     #[serde(rename = "Battery")]
     pub battery: Option<isize>,
-    #[serde(rename = "FNSULToken", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "FNSULToken",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub f_ns_ul_token: Vec<u8>,
     #[serde(rename = "RecvTime")]
     pub recv_time: DateTime<Utc>,
-    #[serde(rename = "RFRegion")]
+    #[serde(default, rename = "RFRegion", skip_serializing_if = "String::is_empty")]
     pub rf_region: String,
     #[serde(rename = "GWCnt")]
     pub gw_cnt: Option<usize>,
-    #[serde(rename = "GWInfoElement")]
-    pub gw_info_element: Vec<GWInfoElement>,
+    #[serde(rename = "GWInfo")]
+    pub gw_info: Vec<GWInfoElement>,
 }
 
-#[derive(Serialize, Deserialize)]
+impl Default for ULMetaData {
+    fn default() -> Self {
+        ULMetaData {
+            dev_eui: Vec::new(),
+            dev_addr: Vec::new(),
+            f_port: None,
+            f_cnt_down: None,
+            f_cnt_up: None,
+            confirmed: None,
+            data_rate: None,
+            ul_freq: None,
+            margin: None,
+            battery: None,
+            f_ns_ul_token: Vec::new(),
+            recv_time: Utc::now(),
+            rf_region: "".to_string(),
+            gw_cnt: None,
+            gw_info: Vec::new(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Default)]
 pub struct GWInfoElement {
-    #[serde(rename = "ID", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "ID",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub id: Vec<u8>,
     #[serde(rename = "FineRecvTime")]
     pub fine_recv_time: Option<usize>,
-    #[serde(rename = "RFRegion")]
+    #[serde(default, rename = "RFRegion", skip_serializing_if = "String::is_empty")]
     pub rf_region: String,
     #[serde(rename = "RSSI")]
     pub rssi: Option<isize>,
     #[serde(rename = "SNR")]
-    pub snr: Option<f64>,
+    pub snr: Option<f32>,
     #[serde(rename = "Lat")]
     pub lat: Option<f64>,
     #[serde(rename = "Lon")]
     pub lon: Option<f64>,
-    #[serde(rename = "ULToken", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "ULToken",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub ul_token: Vec<u8>,
     #[serde(rename = "DLAllowed")]
-    pub dl_allowed: bool,
+    pub dl_allowed: Option<bool>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ServiceProfile {
     #[serde(rename = "ServiceProfile")]
     pub service_profile_id: String,
@@ -632,15 +1039,20 @@ pub struct ServiceProfile {
     pub min_gw_diversity: usize,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Default)]
 pub struct DLMetaData {
-    #[serde(rename = "DevEUI", with = "hex_encode")]
+    #[serde(
+        default,
+        rename = "DevEUI",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub dev_eui: Vec<u8>,
     #[serde(rename = "FPort")]
     pub f_port: Option<u8>,
     #[serde(rename = "FCntDown")]
     pub f_cnt_down: Option<u32>,
-    #[serde(rename = "Confirmed")]
+    #[serde(default, rename = "Confirmed")]
     pub confirmed: bool,
     #[serde(rename = "DLFreq1")]
     pub dl_freq_1: Option<f64>,
@@ -651,14 +1063,19 @@ pub struct DLMetaData {
     #[serde(rename = "ClassMode")]
     pub class_mode: Option<String>,
     #[serde(rename = "DataRate1")]
-    pub data_rate_1: Option<usize>,
+    pub data_rate_1: Option<u8>,
     #[serde(rename = "DataRate2")]
-    pub data_rate_2: Option<usize>,
-    #[serde(rename = "FNSULToken", with = "hex_encode")]
+    pub data_rate_2: Option<u8>,
+    #[serde(
+        default,
+        rename = "FNSULToken",
+        with = "hex_encode",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub f_ns_ul_token: Vec<u8>,
     #[serde(rename = "GWInfo")]
     pub gw_info: Vec<GWInfoElement>,
-    #[serde(rename = "HiPriorityFlag")]
+    #[serde(default, rename = "HiPriorityFlag")]
     pub hi_priority_flag: bool,
 }
 
@@ -677,6 +1094,10 @@ mod hex_encode {
         D: Deserializer<'a>,
     {
         let s: &str = serde::de::Deserialize::deserialize(deserializer)?;
+
+        // HEX encoded values may start with 0x prefix, we must strip this.
+        let s = s.trim_start_matches("0x");
+
         hex::decode(s).map_err(serde::de::Error::custom)
     }
 }
@@ -684,6 +1105,8 @@ mod hex_encode {
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use httpmock::prelude::*;
+    use tokio::sync::oneshot;
 
     #[test]
     fn test_key_envelope() {
@@ -706,5 +1129,132 @@ pub mod test {
         );
         assert_eq!("test-kek", ke.kek_label);
         assert_eq!(key, ke.unwrap(&kek).unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_async_request() {
+        let server = MockServer::start();
+
+        let c = Client::new(ClientConfig {
+            sender_id: "010203".into(),
+            receiver_id: "0102030405060708".into(),
+            server: server.url("/"),
+            async_timeout: Duration::from_secs(1),
+            ..Default::default()
+        })
+        .unwrap();
+
+        let mut req = HomeNSReqPayload {
+            base: BasePayload {
+                sender_id: "010203".into(),
+                receiver_id: "0102030405060708".into(),
+                message_type: MessageType::HomeNSReq,
+                transaction_id: 1234,
+                ..Default::default()
+            },
+            dev_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
+        };
+
+        let ans = HomeNSAnsPayload {
+            base: BasePayloadResult {
+                base: BasePayload {
+                    sender_id: "0102030405060708".into(),
+                    receiver_id: "010203".into(),
+                    message_type: MessageType::HomeNSAns,
+                    transaction_id: 1234,
+                    ..Default::default()
+                },
+                result: ResultPayload {
+                    result_code: ResultCode::Success,
+                    description: "".into(),
+                },
+            },
+            h_net_id: vec![3, 2, 1],
+        };
+
+        let mut mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/")
+                .body(serde_json::to_string(&req).unwrap());
+            then.status(200);
+        });
+
+        // OK
+        let (tx, rx) = oneshot::channel();
+        tx.send(serde_json::to_vec(&ans).unwrap()).unwrap();
+        let resp = c.home_ns_req(&mut req, Some(rx)).await.unwrap();
+        mock.assert();
+        mock.delete();
+        assert_eq!(resp, ans);
+
+        // Timeout
+        let (_tx, rx) = oneshot::channel();
+        let resp = c.home_ns_req(&mut req, Some(rx)).await;
+        assert!(resp.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_sync_request() {
+        let server = MockServer::start();
+
+        let c = Client::new(ClientConfig {
+            sender_id: "010203".into(),
+            receiver_id: "0102030405060708".into(),
+            server: server.url("/"),
+            ..Default::default()
+        })
+        .unwrap();
+
+        let mut req = HomeNSReqPayload {
+            base: BasePayload {
+                sender_id: "010203".into(),
+                receiver_id: "0102030405060708".into(),
+                message_type: MessageType::HomeNSReq,
+                transaction_id: 1234,
+                ..Default::default()
+            },
+            dev_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
+        };
+
+        let ans = HomeNSAnsPayload {
+            base: BasePayloadResult {
+                base: BasePayload {
+                    sender_id: "0102030405060708".into(),
+                    receiver_id: "010203".into(),
+                    message_type: MessageType::HomeNSAns,
+                    transaction_id: 1234,
+                    ..Default::default()
+                },
+                result: ResultPayload {
+                    result_code: ResultCode::Success,
+                    description: "".into(),
+                },
+            },
+            h_net_id: vec![3, 2, 1],
+        };
+
+        // OK
+        let mut mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/")
+                .body(serde_json::to_string(&req).unwrap());
+            then.body(serde_json::to_vec(&ans).unwrap()).status(200);
+        });
+        let resp = c.home_ns_req(&mut req, None).await.unwrap();
+        mock.assert();
+        mock.delete();
+        assert_eq!(resp, ans);
+
+        // Error status
+        let mut mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/")
+                .body(serde_json::to_string(&req).unwrap());
+            then.status(500);
+        });
+        let resp = c.home_ns_req(&mut req, None).await;
+        mock.assert();
+        mock.delete();
+        assert!(resp.is_err());
     }
 }

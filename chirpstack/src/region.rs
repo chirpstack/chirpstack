@@ -75,3 +75,20 @@ pub fn get(region_name: &str) -> Result<Arc<Box<dyn region::Region + Sync + Send
         .ok_or_else(|| anyhow!("region_name {} does not exist in REGIONS", region_name))?
         .clone())
 }
+
+/// This returns the (first) region-name, based on the given common-name.
+/// This function is used for roaming, as within the context of roaming, only
+/// the common-name is given by the other party.
+pub fn get_region_name(common_name: region::CommonName) -> Result<String> {
+    let regions_r = REGIONS.read().unwrap();
+    for (k, v) in &*regions_r {
+        if v.get_name() == common_name {
+            return Ok(k.clone());
+        }
+    }
+
+    Err(anyhow!(
+        "No region configured with common-name: {}",
+        common_name
+    ))
+}

@@ -2,10 +2,11 @@ use std::collections::HashMap;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Local, Utc};
-use tracing::{error, info, span, trace, warn, Instrument, Level};
+use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 
 use super::error::Error;
-use super::{filter_rx_info_by_tenant_id, helpers, UplinkFrameSet};
+use super::{data_fns, filter_rx_info_by_tenant_id, helpers, UplinkFrameSet};
+use crate::backend::roaming;
 use crate::storage::error::Error as StorageError;
 use crate::storage::{
     application, device, device_gateway, device_profile, device_queue, device_session, fields,
@@ -69,6 +70,7 @@ impl Data {
             device_gateway_rx_info: None,
         };
 
+        ctx.handle_passive_roaming_device().await?;
         ctx.get_device_session().await?;
         ctx.get_device().await?;
         ctx.get_device_profile().await?;
@@ -76,13 +78,17 @@ impl Data {
         ctx.get_tenant().await?;
         ctx.abort_on_device_is_disabled().await?;
         ctx.set_device_info()?;
+        ctx.set_device_gateway_rx_info()?;
         ctx.handle_retransmission_reset().await?;
         ctx.set_device_lock().await?;
         ctx.set_scheduler_run_after().await?;
-        ctx.filter_rx_info_by_tenant().await?;
+        if !ctx._is_roaming() {
+            // In case of roaming we do not know the gateways and therefore it must not be
+            // filtered.
+            ctx.filter_rx_info_by_tenant().await?;
+        }
         ctx.decrypt_f_opts_mac_commands()?;
         ctx.decrypt_frm_payload()?;
-        ctx.get_mac_payload()?;
         ctx.log_uplink_frame_set().await?;
         ctx.set_adr()?;
         ctx.set_uplink_data_rate().await?;
@@ -90,7 +96,9 @@ impl Data {
 
         // ctx.send_uplink_meta_data_to_network_controller()?;
         ctx.handle_mac_commands().await?;
-        ctx.save_device_gateway_rx_info().await?;
+        if !ctx._is_roaming() {
+            ctx.save_device_gateway_rx_info().await?;
+        }
         ctx.append_meta_data_to_uplink_history()?;
         ctx.send_uplink_event().await?;
         ctx.detect_and_save_measurements().await?;
@@ -100,6 +108,25 @@ impl Data {
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics().await?;
         ctx.start_downlink_data_flow().await?;
+
+        Ok(())
+    }
+
+    async fn handle_passive_roaming_device(&mut self) -> Result<(), Error> {
+        trace!("Handling passive-roaming device");
+        let mac = if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload
+        {
+            pl
+        } else {
+            return Err(Error::AnyhowError(anyhow!("Expected MacPayload")));
+        };
+
+        if roaming::is_roaming_dev_addr(mac.fhdr.devaddr) {
+            debug!(dev_addr = %mac.fhdr.devaddr, "DevAddr does not match NetID, assuming roaming device");
+            data_fns::Data::handle(self.uplink_frame_set.clone(), mac.clone()).await;
+
+            return Err(Error::Abort);
+        }
 
         Ok(())
     }
@@ -204,6 +231,30 @@ impl Data {
             device_name: dev.name.clone(),
             dev_eui: dev.dev_eui.to_string(),
             tags,
+        });
+
+        Ok(())
+    }
+
+    fn set_device_gateway_rx_info(&mut self) -> Result<()> {
+        trace!("Setting gateway rx-info for device");
+
+        self.device_gateway_rx_info = Some(internal::DeviceGatewayRxInfo {
+            dev_eui: self.device_session.as_ref().unwrap().dev_eui.clone(),
+            dr: self.uplink_frame_set.dr as u32,
+            items: self
+                .uplink_frame_set
+                .rx_info_set
+                .iter()
+                .map(|rx_info| internal::DeviceGatewayRxInfoItem {
+                    gateway_id: hex::decode(&rx_info.gateway_id).unwrap(),
+                    rssi: rx_info.rssi,
+                    lora_snr: rx_info.snr,
+                    antenna: rx_info.antenna,
+                    board: rx_info.board,
+                    context: rx_info.context.clone(),
+                })
+                .collect(),
         });
 
         Ok(())
@@ -348,6 +399,7 @@ impl Data {
                     .context("Decrypt f_opts")?;
             }
         }
+
         Ok(())
     }
 
@@ -371,18 +423,6 @@ impl Data {
             self.uplink_frame_set
                 .phy_payload
                 .decrypt_frm_payload(&app_s_key)?;
-        }
-
-        Ok(())
-    }
-
-    fn get_mac_payload(&mut self) -> Result<()> {
-        if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload {
-            self.mac_payload = Some(pl.clone());
-        }
-
-        if self.mac_payload.is_none() {
-            return Err(anyhow!("No MacPayload"));
         }
 
         Ok(())
@@ -495,29 +535,10 @@ impl Data {
 
     async fn save_device_gateway_rx_info(&mut self) -> Result<()> {
         trace!("Saving gateway rx-info for device");
-        let dev_gw_rx_info = internal::DeviceGatewayRxInfo {
-            dev_eui: self.device_session.as_ref().unwrap().dev_eui.clone(),
-            dr: self.uplink_frame_set.dr as u32,
-            items: self
-                .uplink_frame_set
-                .rx_info_set
-                .iter()
-                .map(|rx_info| internal::DeviceGatewayRxInfoItem {
-                    gateway_id: hex::decode(&rx_info.gateway_id).unwrap(),
-                    rssi: rx_info.rssi,
-                    lora_snr: rx_info.snr,
-                    antenna: rx_info.antenna,
-                    board: rx_info.board,
-                    context: rx_info.context.clone(),
-                })
-                .collect(),
-        };
 
-        device_gateway::save_rx_info(&dev_gw_rx_info)
+        device_gateway::save_rx_info(self.device_gateway_rx_info.as_ref().unwrap())
             .await
-            .context("Save rx-info")?;
-
-        self.device_gateway_rx_info = Some(dev_gw_rx_info);
+            .context("Save gatewa rx-info for device")?;
 
         Ok(())
     }
@@ -573,7 +594,12 @@ impl Data {
         let app = self.application.as_ref().unwrap();
         let dp = self.device_profile.as_ref().unwrap();
         let dev = self.device.as_ref().unwrap();
-        let mac = self.mac_payload.as_ref().unwrap();
+        let mac = if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload
+        {
+            pl
+        } else {
+            return Err(anyhow!("Expected MacPayload"));
+        };
 
         let mut pl = integration_pb::UplinkEvent {
             deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
@@ -739,7 +765,12 @@ impl Data {
     }
 
     async fn handle_uplink_ack(&self) -> Result<()> {
-        let mac = self.mac_payload.as_ref().unwrap();
+        let mac = if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload
+        {
+            pl
+        } else {
+            return Err(anyhow!("Expected MacPayload"));
+        };
         if !mac.fhdr.f_ctrl.ack {
             return Ok(());
         }
@@ -856,5 +887,9 @@ impl Data {
         }
 
         Ok(())
+    }
+
+    fn _is_roaming(&self) -> bool {
+        self.uplink_frame_set.roaming_meta_data.is_some()
     }
 }

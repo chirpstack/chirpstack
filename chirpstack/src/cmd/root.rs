@@ -12,7 +12,7 @@ pub async fn run() -> Result<()> {
     );
 
     region::setup()?;
-    backend::joinserver::setup()?;
+    backend::setup()?;
     adr::setup().await?;
     integration::setup().await?;
     gateway::backend::setup().await?;

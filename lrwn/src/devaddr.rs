@@ -52,6 +52,13 @@ impl DevAddr {
         self.0.to_vec()
     }
 
+    pub fn is_net_id(&self, net_id: NetID) -> bool {
+        let mut dev_addr = *self;
+        dev_addr.set_addr_prefix(&net_id);
+
+        *self == dev_addr
+    }
+
     pub fn netid_type(&self) -> u8 {
         for i in (0..=7).rev() {
             if self.0[0] & (1 << i) == 0 {

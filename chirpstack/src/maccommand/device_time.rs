@@ -72,6 +72,7 @@ pub mod test {
             gateway_tenant_id_map: HashMap::new(),
             region_common_name: lrwn::region::CommonName::EU868,
             region_name: "eu868".into(),
+            roaming_meta_data: None,
         };
 
         let gps_time = rx_time.to_gps_time();

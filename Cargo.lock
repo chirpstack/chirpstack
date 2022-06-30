@@ -580,8 +580,8 @@ dependencies = [
  "anyhow",
  "chrono",
  "hex",
+ "httpmock",
  "rand",
- "redis",
  "reqwest",
  "serde",
  "serde_json",
@@ -812,6 +812,7 @@ dependencies = [
  "backend",
  "base64",
  "bigdecimal",
+ "bytes",
  "chirpstack_api",
  "chrono",
  "clap 2.34.0",
@@ -996,11 +997,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50b727aacc797f9fc28e355d21f34709ac4fc9adecfe470ad07b8f4464f53062"
 dependencies = [
  "bytes",
- "futures-core",
  "memchr",
- "pin-project-lite",
- "tokio",
- "tokio-util 0.6.9",
 ]
 
 [[package]]
@@ -2871,19 +2868,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a80b5f38d7f5a020856a0e16e40a9cfabf88ae8f0e4c2dcd8a3114c1e470852"
 dependencies = [
  "async-trait",
- "bytes",
  "combine",
  "crc16",
  "dtoa",
- "futures-util",
  "itoa 0.4.8",
  "percent-encoding",
- "pin-project-lite",
  "r2d2",
  "rand",
  "sha1",
- "tokio",
- "tokio-util 0.6.9",
  "url",
 ]
 

@@ -63,7 +63,7 @@ prost = "0.10"
 pbjson-types = "0.3"
 
 # gRPC and HTTP multiplexing
-warp = "0.3"
+warp = { version = "0.3" }
 hyper = "0.14"
 tower = "0.4"
 futures = "0.3"
@@ -107,6 +107,7 @@ petgraph = "0.6"
 # Development and testing
 [dev-dependencies]
 httpmock = "0.6"
+bytes = "1.1"
 
 # Debian packaging.
 [package.metadata.deb]

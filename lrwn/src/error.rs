@@ -2,6 +2,9 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("NetID expects exactly 3 bytes")]
+    NetIdLength,
+
     #[error("EUI64 expects exactly 8 bytes")]
     Eui64Length,
 

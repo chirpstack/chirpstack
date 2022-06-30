@@ -25,6 +25,7 @@ mod dl_settings;
 mod error;
 mod eui64;
 mod fhdr;
+pub mod keys;
 mod maccommand;
 mod mhdr;
 mod netid;

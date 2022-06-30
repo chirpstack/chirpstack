@@ -27,6 +27,8 @@ pub struct Configuration {
     pub codec: Codec,
     pub user_authentication: UserAuthentication,
     pub join_server: JoinServer,
+    pub backend_interfaces: BackendInterfaces,
+    pub roaming: Roaming,
     pub keks: Vec<Kek>,
     pub regions: Vec<Region>,
 }
@@ -45,6 +47,8 @@ impl Default for Configuration {
             codec: Default::default(),
             user_authentication: Default::default(),
             join_server: Default::default(),
+            backend_interfaces: Default::default(),
+            roaming: Default::default(),
             keks: Vec::new(),
             regions: vec![Default::default()],
         }
@@ -350,12 +354,62 @@ pub struct JoinServer {
 pub struct JoinServerServer {
     pub join_eui: EUI64,
     pub server: String,
-    pub async_interface: bool,
     #[serde(with = "humantime_serde")]
-    pub async_interface_timeout: Duration,
+    pub async_timeout: Duration,
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone)]
+#[serde(default)]
+pub struct Roaming {
+    pub resolve_net_id_domain_suffix: String,
+    pub servers: Vec<RoamingServer>,
+    pub default: RoamingServerDefault,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone)]
+#[serde(default)]
+pub struct BackendInterfaces {
+    pub bind: String,
+    pub ca_cert: String,
+    pub tls_cert: String,
+    pub tls_key: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone)]
+#[serde(default)]
+pub struct RoamingServer {
+    pub net_id: NetID,
+    #[serde(with = "humantime_serde")]
+    pub async_timeout: Duration,
+    #[serde(with = "humantime_serde")]
+    pub passive_roaming_lifetime: Duration,
+    pub passive_roaming_kek_label: String,
+    pub server: String,
+    pub use_target_role_suffix: bool,
+    pub ca_cert: String,
+    pub tls_cert: String,
+    pub tls_key: String,
+    pub authorization_header: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone)]
+#[serde(default)]
+pub struct RoamingServerDefault {
+    pub enabled: bool,
+    #[serde(with = "humantime_serde")]
+    pub async_timeout: Duration,
+    #[serde(with = "humantime_serde")]
+    pub passive_roaming_lifetime: Duration,
+    pub passive_roaming_kek_label: String,
+    pub server: String,
+    pub use_target_role_suffix: bool,
+    pub ca_cert: String,
+    pub tls_cert: String,
+    pub tls_key: String,
+    pub authorization_header: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
