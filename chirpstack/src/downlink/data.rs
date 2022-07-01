@@ -305,7 +305,7 @@ impl Data {
                 dev_eui: self.device.dev_eui.to_string(),
                 tags: {
                     let mut tags = (&*self.device_profile.tags).clone();
-                    tags.clone_from(&*self.device.tags);
+                    tags.extend((*self.device.tags).clone());
                     tags
                 },
             };

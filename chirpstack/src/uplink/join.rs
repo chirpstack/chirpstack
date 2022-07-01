@@ -194,7 +194,7 @@ impl JoinRequest {
         let dev = self.device.as_ref().unwrap();
 
         let mut tags = (&*dp.tags).clone();
-        tags.clone_from(&*dev.tags);
+        tags.extend((*dev.tags).clone());
 
         self.device_info = Some(integration_pb::DeviceInfo {
             tenant_id: tenant.id.to_string(),

@@ -295,7 +295,7 @@ impl TxAck {
         let dev = self.device.as_ref().unwrap();
 
         let mut tags = (&*dp.tags).clone();
-        tags.clone_from(&*dev.tags);
+        tags.extend((*dev.tags).clone());
 
         let pl = integration_pb::LogEvent {
             time: Some(Utc::now().into()),
@@ -331,7 +331,7 @@ impl TxAck {
         let qi = self.device_queue_item.as_ref().unwrap();
 
         let mut tags = (&*dp.tags).clone();
-        tags.clone_from(&*dev.tags);
+        tags.extend((*dev.tags).clone());
 
         let downlink_id = self.downlink_frame.as_ref().unwrap().downlink_id;
         let gateway_id = self
