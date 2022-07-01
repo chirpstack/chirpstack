@@ -24,6 +24,7 @@ pub mod mock;
 mod mqtt;
 mod mydevices;
 mod pilot_things;
+mod postgresql;
 mod redis;
 mod thingsboard;
 
@@ -49,6 +50,10 @@ pub async fn setup() -> Result<()> {
                         .context("Setup MQTT integration")?,
                 ));
             }
+            "postgresql" => integrations.push(Box::new(
+                postgresql::Integration::new(&conf.integration.postgresql)
+                    .context("Setup PostgreSQL integration")?,
+            )),
             _ => {
                 return Err(anyhow!("Unexpected integration: {}", name));
             }

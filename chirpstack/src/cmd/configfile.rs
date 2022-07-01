@@ -303,6 +303,33 @@ pub fn run() {
     tls_key="{{ integration.mqtt.tls_key }}"
 
 
+  # PostgreSQL integration configuration.
+  [integration.postgresql]
+
+    # PostgreSQL DSN.
+    #
+    # Format example: postgres://<USERNAME>:<PASSWORD>@<HOSTNAME>/<DATABASE>?sslmode=<SSLMODE>.
+    #
+    # SSL mode options:
+    #  * disable - no SSL
+    #  * require - Always SSL (skip verification)
+    #  * verify-ca - Always SSL (verify that the certificate presented by the server was signed by a trusted CA)
+    #  * verify-full - Always SSL (verify that the certification presented by the server was signed by a trusted CA and the server host name matches the one in the certificate)
+    dsn="{{ integration.postgresql.dsn }}"
+
+    # Max open connections.
+    #
+    # This sets the max. number of open connections that are allowed in the
+    # PostgreSQL connection pool.
+    max_open_connections={{ integration.postgresql.max_open_connections }}
+
+    # Min idle connections.
+    #
+    # This sets the min. number of idle connections in the PostgreSQL connection
+    # pool (0 = equal to max_open_connections).
+    min_idle_connections={{ integration.postgresql.min_idle_connections }}
+
+
 # Codec configuration.
 [codec]
 

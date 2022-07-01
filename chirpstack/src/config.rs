@@ -240,6 +240,7 @@ impl Default for Monitoring {
 pub struct Integration {
     pub enabled: Vec<String>,
     pub mqtt: MqttIntegration,
+    pub postgresql: PostgresqlIntegration,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -298,6 +299,24 @@ impl Default for MqttIntegrationClient {
             client_cert_lifetime: Duration::from_secs(60 * 60 * 24 * 365),
             ca_cert: "".into(),
             ca_key: "".into(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct PostgresqlIntegration {
+    pub dsn: String,
+    pub max_open_connections: u32,
+    pub min_idle_connections: u32,
+}
+
+impl Default for PostgresqlIntegration {
+    fn default() -> Self {
+        PostgresqlIntegration {
+            dsn: "postgresql://chirpstack_integration:chirpstack_integration@localhost/chirpstack_integration?sslmode=disable".into(),
+            max_open_connections: 10,
+            min_idle_connections: 0,
         }
     }
 }
