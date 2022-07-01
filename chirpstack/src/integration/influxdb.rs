@@ -135,7 +135,7 @@ impl IntegrationTrait for Integration {
             values: {
                 let mut v: HashMap<String, Value> = HashMap::new();
                 v.insert("value".into(), Value::Integer(1));
-                v.insert("f_cnt".into(), Value::Integer(pl.f_cnt_up.into()));
+                v.insert("f_cnt".into(), Value::Integer(pl.f_cnt.into()));
                 v.insert(
                     "rssi".into(),
                     Value::Integer(pl.rx_info.iter().max_by_key(|x| x.rssi).unwrap().rssi as i64),
@@ -575,7 +575,7 @@ device_uplink,application_name=test-app,dev_eui=0102030405060708,device_name=tes
                     },
                 ],
                 dr: 2,
-                f_cnt_up: 10,
+                f_cnt: 10,
                 f_port: 20,
                 object: Some(pbjson_types::Struct {
                     fields: [
@@ -667,7 +667,7 @@ device_uplink,application_name=test-app,dev_eui=0102030405060708,device_name=tes
                     },
                 ],
                 dr: 2,
-                f_cnt_up: 10,
+                f_cnt: 10,
                 f_port: 20,
                 object: Some(pbjson_types::Struct {
                     fields: [
@@ -785,7 +785,7 @@ device_uplink,application_name=test-app,dev_eui=0102030405060708,device_name=tes
                     },
                 ],
                 dr: 2,
-                f_cnt_up: 10,
+                f_cnt: 10,
                 f_port: 20,
                 object: Some(pbjson_types::Struct {
                     fields: [

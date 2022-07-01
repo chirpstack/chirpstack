@@ -238,7 +238,7 @@ impl IntegrationTrait for Integration {
             dev_addr: pl.dev_addr.clone(),
             adr: pl.adr,
             dr: pl.dr as i16,
-            f_cnt: pl.f_cnt_up as i64,
+            f_cnt: pl.f_cnt as i64,
             f_port: pl.f_port as i16,
             confirmed: pl.confirmed,
             data: pl.data.clone(),

@@ -104,7 +104,7 @@ message UplinkEvent {
     uint32 dr = 6;
 
     // Frame counter.
-    uint32 f_cnt_up = 7;
+    uint32 f_cnt = 7;
 
     // Frame port.
     uint32 f_port = 8;

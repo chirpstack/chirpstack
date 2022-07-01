@@ -120,7 +120,7 @@ impl IntegrationTrait for Integration {
         if let Some(obj) = &pl.object {
             let mut telemetry = struct_to_telemetry(obj);
             telemetry.insert("f_port".to_string(), Value::Integer(pl.f_port.into()));
-            telemetry.insert("f_cnt".to_string(), Value::Integer(pl.f_cnt_up.into()));
+            telemetry.insert("f_cnt".to_string(), Value::Integer(pl.f_cnt.into()));
             telemetry.insert("dr".to_string(), Value::Integer(pl.dr.into()));
             telemetry.insert(
                 "rssi".to_string(),
@@ -331,7 +331,7 @@ pub mod test {
                     ..Default::default()
                 }),
                 f_port: 10,
-                f_cnt_up: 20,
+                f_cnt: 20,
                 dr: 2,
                 rx_info: vec![
                     gw::UplinkRxInfo {

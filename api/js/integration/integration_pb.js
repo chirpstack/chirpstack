@@ -456,7 +456,7 @@ proto.integration.UplinkEvent.toObject = function(includeInstance, msg) {
     devAddr: msg.getDevAddr(),
     adr: msg.getAdr(),
     dr: msg.getDr(),
-    fCntUp: msg.getFCntUp(),
+    fCnt: msg.getFCnt(),
     fPort: msg.getFPort(),
     confirmed: msg.getConfirmed(),
     data: msg.getData_asB64(),
@@ -528,7 +528,7 @@ proto.integration.UplinkEvent.deserializeBinaryFromReader = function(msg, reader
       break;
     case 7:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setFCntUp(value);
+      msg.setFCnt(value);
       break;
     case 8:
       var value = /** @type {number} */ (reader.readUint32());
@@ -640,7 +640,7 @@ proto.integration.UplinkEvent.prototype.serializeBinaryToWriter = function (writ
       f
     );
   }
-  f = this.getFCntUp();
+  f = this.getFCnt();
   if (f !== 0) {
     writer.writeUint32(
       7,
@@ -827,16 +827,16 @@ proto.integration.UplinkEvent.prototype.setDr = function(value) {
 
 
 /**
- * optional uint32 f_cnt_up = 7;
+ * optional uint32 f_cnt = 7;
  * @return {number}
  */
-proto.integration.UplinkEvent.prototype.getFCntUp = function() {
+proto.integration.UplinkEvent.prototype.getFCnt = function() {
   return /** @type {number} */ (jspb.Message.getFieldProto3(this, 7, 0));
 };
 
 
 /** @param {number} value  */
-proto.integration.UplinkEvent.prototype.setFCntUp = function(value) {
+proto.integration.UplinkEvent.prototype.setFCnt = function(value) {
   jspb.Message.setField(this, 7, value);
 };
 

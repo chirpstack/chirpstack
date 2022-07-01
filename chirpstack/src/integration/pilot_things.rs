@@ -155,7 +155,7 @@ impl UplinkPayload {
             dev_eui: di.dev_eui.clone(),
             f_port: pl.f_port,
             dev_addr: pl.dev_addr.clone(),
-            f_cnt: pl.f_cnt_up,
+            f_cnt: pl.f_cnt,
             metadata: pl
                 .rx_info
                 .iter()
@@ -208,7 +208,7 @@ pub mod test {
                 }),
                 data: vec![1, 2, 3, 4],
                 f_port: 10,
-                f_cnt_up: 20,
+                f_cnt: 20,
                 dev_addr: "04030201".into(),
                 rx_info: vec![gw::UplinkRxInfo {
                     rssi: -10,

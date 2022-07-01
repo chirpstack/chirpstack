@@ -75,7 +75,7 @@ impl Integration {
             uplink: client::UplinkMsg::Modem(client::UplinkMsgModem {
                 msg_type: "modem".into(),
                 payload: hex::encode(&pl.data),
-                f_cnt: pl.f_cnt_up,
+                f_cnt: pl.f_cnt,
                 timestamp: ts.timestamp_millis() as f64 / 1000.0,
                 dr: pl.dr as u8,
                 freq: pl.tx_info.as_ref().unwrap().frequency,
@@ -163,7 +163,7 @@ impl Integration {
             dev_eui: client::Eui64Wrapper::new(&dev_eui),
             uplink: client::UplinkMsg::UpDf(client::UplinkMsgUpDf {
                 msg_type: "updf".into(),
-                f_cnt: pl.f_cnt_up,
+                f_cnt: pl.f_cnt,
                 port: pl.f_port as u8,
                 dr: pl.dr as u8,
                 freq: pl.tx_info.as_ref().unwrap().frequency,

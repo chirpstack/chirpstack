@@ -81,8 +81,8 @@ export class UplinkEvent extends jspb.Message {
   getDr(): number;
   setDr(value: number): void;
 
-  getFCntUp(): number;
-  setFCntUp(value: number): void;
+  getFCnt(): number;
+  setFCnt(value: number): void;
 
   getFPort(): number;
   setFPort(value: number): void;
@@ -128,7 +128,7 @@ export namespace UplinkEvent {
     devAddr: string,
     adr: boolean,
     dr: number,
-    fCntUp: number,
+    fCnt: number,
     fPort: number,
     confirmed: boolean,
     data: Uint8Array | string,

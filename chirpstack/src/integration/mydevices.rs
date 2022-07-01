@@ -37,7 +37,7 @@ impl UplinkPayload {
             correlation_id: pl.deduplication_id.clone(),
             dev_eui: di.dev_eui.clone(),
             data: base64::encode(&pl.data),
-            f_cnt: pl.f_cnt_up,
+            f_cnt: pl.f_cnt,
             f_port: pl.f_port,
             rx_info: pl
                 .rx_info
@@ -226,7 +226,7 @@ pub mod test {
                     ..Default::default()
                 }),
                 data: vec![0x01, 0x02, 0x03],
-                f_cnt_up: 10,
+                f_cnt: 10,
                 f_port: 20,
                 tx_info: Some(gw::UplinkTxInfo {
                     frequency: 868100000,

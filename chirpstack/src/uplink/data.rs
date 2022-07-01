@@ -618,7 +618,7 @@ impl Data {
             dev_addr: mac.fhdr.devaddr.to_string(),
             adr: mac.fhdr.f_ctrl.adr,
             dr: self.uplink_frame_set.dr as u32,
-            f_cnt_up: self.f_cnt_up_full,
+            f_cnt: self.f_cnt_up_full,
             f_port: mac.f_port.unwrap_or(0) as u32,
             confirmed: self.uplink_frame_set.phy_payload.mhdr.m_type
                 == lrwn::MType::ConfirmedDataUp,
