@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Form, Input, Row, Col, Button, Tabs } from "antd";
+import { Form, Input, Row, Col, Button, Tabs, Space } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { Location } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
@@ -20,6 +20,7 @@ interface IProps {
 interface IState {
   latValue: number;
   lonValue: number;
+  locationPending: boolean;
 }
 
 class GatewayForm extends Component<IProps, IState> {
@@ -30,20 +31,13 @@ class GatewayForm extends Component<IProps, IState> {
     this.state = {
       latValue: 0,
       lonValue: 0,
+      locationPending: false,
     };
   }
 
   componentDidMount() {
     if (!this.props.update) {
-      LocationStore.getLocation((loc: [number, number]) => {
-        this.setState(
-          {
-            latValue: loc[0],
-            lonValue: loc[1],
-          },
-          this.setLocationFields,
-        );
-      });
+      this.getCurrentLocation();
     } else {
       const loc = this.props.initialValues.getLocation();
       if (loc) {
@@ -53,6 +47,23 @@ class GatewayForm extends Component<IProps, IState> {
         });
       }
     }
+  }
+
+  getCurrentLocation = () => {
+    this.setState({
+      locationPending: true,
+    });
+
+    LocationStore.getLocation((loc: [number, number]) => {
+      this.setState(
+        {
+          latValue: loc[0],
+          lonValue: loc[1],
+          locationPending: false,
+        },
+        this.setLocationFields,
+      );
+    });
   }
 
   onFinish = (values: Gateway.AsObject) => {
@@ -133,15 +144,18 @@ class GatewayForm extends Component<IProps, IState> {
               <Form.Item name={["location", "longitude"]} noStyle>
                 <Input hidden />
               </Form.Item>
-              <Map height={500} center={location}>
-                <Marker
-                  position={location}
-                  faIcon="wifi"
-                  color="blue"
-                  draggable={!this.props.disabled}
-                  eventHandlers={{ dragend: this.updateLocation }}
-                />
-              </Map>
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <Map height={500} center={location}>
+                  <Marker
+                    position={location}
+                    faIcon="wifi"
+                    color="blue"
+                    draggable={!this.props.disabled}
+                    eventHandlers={{ dragend: this.updateLocation }}
+                  />
+                </Map>
+                <Button onClick={this.getCurrentLocation} disabled={this.state.locationPending} type="link" style={{float: "right"}}>Set to current location</Button>
+              </Space>
             </Form.Item>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Tags" key="2">
