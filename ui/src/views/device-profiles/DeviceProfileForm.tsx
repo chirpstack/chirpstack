@@ -331,8 +331,6 @@ class DeviceProfileForm extends Component<IProps, IState> {
       templateModalVisible: false,
     });
 
-    console.log(dp.toObject().tagsMap);
-
     this.formRef.current.setFieldsValue({
       name: dp.getName(),
       description: dp.getDescription(),
