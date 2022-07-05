@@ -5,16 +5,51 @@ use async_trait::async_trait;
 use futures::stream::StreamExt;
 use handlebars::Handlebars;
 use paho_mqtt as mqtt;
+use prometheus_client::encoding::text::Encode;
+use prometheus_client::metrics::counter::Counter;
+use prometheus_client::metrics::family::Family;
 use prost::Message;
 use serde::Serialize;
 use tracing::{error, info, trace};
 
 use crate::config::GatewayBackendMqtt;
+use crate::monitoring::prometheus;
 use crate::{downlink, uplink};
 use lrwn::region::CommonName;
 use lrwn::EUI64;
 
 use super::GatewayBackend;
+
+#[derive(Clone, Hash, PartialEq, Eq, Encode)]
+struct EventLabels {
+    event: String,
+}
+
+#[derive(Clone, Hash, PartialEq, Eq, Encode)]
+struct CommandLabels {
+    command: String,
+}
+
+lazy_static! {
+    static ref EVENT_COUNTER: Family<EventLabels, Counter> = {
+        let counter = Family::<EventLabels, Counter>::default();
+        prometheus::register(
+            "gateway_backend_mqtt_events",
+            "Number of events received",
+            Box::new(counter.clone()),
+        );
+        counter
+    };
+    static ref COMMAND_COUNTER: Family<CommandLabels, Counter> = {
+        let counter = Family::<CommandLabels, Counter>::default();
+        prometheus::register(
+            "gateway_backend_mqtt_commands",
+            "Number of commands sent",
+            Box::new(counter.clone()),
+        );
+        counter
+    };
+}
 
 struct MqttContext {
     region_name: String,
@@ -152,6 +187,11 @@ impl<'a> MqttBackend<'a> {
 #[async_trait]
 impl GatewayBackend for MqttBackend<'_> {
     async fn send_downlink(&self, df: &chirpstack_api::gw::DownlinkFrame) -> Result<()> {
+        COMMAND_COUNTER
+            .get_or_create(&CommandLabels {
+                command: "down".to_string(),
+            })
+            .inc();
         let topic = self.get_command_topic(&df.gateway_id, "down")?;
         let mut df = df.clone();
         df.v4_migrate();
@@ -169,6 +209,11 @@ impl GatewayBackend for MqttBackend<'_> {
         &self,
         gw_conf: &chirpstack_api::gw::GatewayConfiguration,
     ) -> Result<()> {
+        COMMAND_COUNTER
+            .get_or_create(&CommandLabels {
+                command: "config".to_string(),
+            })
+            .inc();
         let gateway_id = EUI64::from_slice(&gw_conf.gateway_id)?;
         let topic = self.get_command_topic(&gateway_id.to_string(), "config")?;
         let b = gw_conf.encode_to_vec();
@@ -196,6 +241,11 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
 
     let err = || -> Result<()> {
         if topic.ends_with("/up") {
+            EVENT_COUNTER
+                .get_or_create(&EventLabels {
+                    event: "up".to_string(),
+                })
+                .inc();
             let mut event = chirpstack_api::gw::UplinkFrame::decode(&mut Cursor::new(b))?;
             event.v4_migrate();
 
@@ -206,6 +256,11 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
 
             tokio::spawn(uplink::deduplicate_uplink(event));
         } else if topic.ends_with("/stats") {
+            EVENT_COUNTER
+                .get_or_create(&EventLabels {
+                    event: "stats".to_string(),
+                })
+                .inc();
             let mut event = chirpstack_api::gw::GatewayStats::decode(&mut Cursor::new(b))?;
             event
                 .meta_data
@@ -216,6 +271,11 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
             );
             tokio::spawn(uplink::stats::Stats::handle(event));
         } else if topic.ends_with("/ack") {
+            EVENT_COUNTER
+                .get_or_create(&EventLabels {
+                    event: "ack".to_string(),
+                })
+                .inc();
             let mut event = chirpstack_api::gw::DownlinkTxAck::decode(&mut Cursor::new(b))?;
             event.v4_migrate();
             tokio::spawn(downlink::tx_ack::TxAck::handle(event));

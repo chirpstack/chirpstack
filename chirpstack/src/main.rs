@@ -34,6 +34,7 @@ mod gpstime;
 mod integration;
 mod maccommand;
 mod metalog;
+mod monitoring;
 mod region;
 mod sensitivity;
 mod storage;

@@ -1,6 +1,7 @@
 use std::convert::Infallible;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::{
+    future::Future,
     pin::Pin,
     task::{Context, Poll},
 };
@@ -8,9 +9,15 @@ use std::{
 use anyhow::Result;
 use futures::future::{self, Either, TryFutureExt};
 use hyper::{service::make_service_fn, Server};
+use pin_project::pin_project;
+use prometheus_client::encoding::text::Encode;
+use prometheus_client::metrics::counter::Counter;
+use prometheus_client::metrics::family::Family;
+use prometheus_client::metrics::histogram::Histogram;
 use rust_embed::RustEmbed;
 use tokio::try_join;
 use tonic::transport::Server as TonicServer;
+use tonic::Code;
 use tonic_reflection::server::Builder as TonicReflectionBuilder;
 use tower::{Service, ServiceBuilder};
 use tower_http::trace::TraceLayer;
@@ -29,6 +36,7 @@ use chirpstack_api::api::user_service_server::UserServiceServer;
 
 use super::config;
 use crate::api::auth::validator;
+use crate::monitoring::prometheus;
 
 pub mod application;
 pub mod auth;
@@ -40,10 +48,39 @@ pub mod error;
 pub mod gateway;
 pub mod helpers;
 pub mod internal;
+pub mod monitoring;
 pub mod multicast;
 pub mod oidc;
 pub mod tenant;
 pub mod user;
+
+lazy_static! {
+    static ref GRPC_COUNTER: Family<GrpcLabels, Counter> = {
+        let counter = Family::<GrpcLabels, Counter>::default();
+        prometheus::register(
+            "api_requests_handled",
+            "Number of API requests handled by service, method and status code",
+            Box::new(counter.clone()),
+        );
+        counter
+    };
+    static ref GRPC_HISTOGRAM: Family<GrpcLabels, Histogram> = {
+        let histogram = Family::<GrpcLabels, Histogram>::new_with_constructor(|| {
+            Histogram::new(
+                [
+                    0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
+                ]
+                .into_iter(),
+            )
+        });
+        prometheus::register(
+            "api_requests_handled_seconds",
+            "Duration of API requests handled by service, method and status code",
+            Box::new(histogram.clone()),
+        );
+        histogram
+    };
+}
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
@@ -135,6 +172,7 @@ pub async fn setup() -> Result<()> {
                     .on_request(OnRequest {})
                     .on_response(OnResponse {}),
             )
+            .layer(PrometheusLogger {})
             .service(tonic_service);
 
         // HTTP service
@@ -181,9 +219,10 @@ pub async fn setup() -> Result<()> {
     });
 
     let backend_handle = tokio::spawn(backend::setup());
+    let monitoring_handle = tokio::spawn(monitoring::setup());
     let api_handle = tokio::spawn(Server::bind(&addr).serve(service));
 
-    let _ = try_join!(api_handle, backend_handle)?;
+    let _ = try_join!(api_handle, backend_handle, monitoring_handle)?;
 
     Ok(())
 }
@@ -267,5 +306,102 @@ struct OnResponse {}
 impl<B> tower_http::trace::OnResponse<B> for OnResponse {
     fn on_response(self, resp: &http::Response<B>, latency: Duration, _: &tracing::Span) {
         tracing::info!(status = resp.status().as_str(), latency = ?latency, "Finished processing request");
+    }
+}
+
+#[derive(Clone, Hash, PartialEq, Eq, Encode)]
+struct GrpcLabels {
+    service: String,
+    method: String,
+    status_code: String,
+}
+
+struct PrometheusLogger {}
+
+impl<S> tower::Layer<S> for PrometheusLogger {
+    type Service = PrometheusLoggerService<S>;
+
+    fn layer(&self, service: S) -> Self::Service {
+        PrometheusLoggerService { inner: service }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct PrometheusLoggerService<S> {
+    inner: S,
+}
+
+impl<S, ReqBody, ResBody> Service<http::Request<ReqBody>> for PrometheusLoggerService<S>
+where
+    S: Service<http::Request<ReqBody>, Response = http::Response<ResBody>>,
+    ReqBody: http_body::Body,
+    ResBody: http_body::Body,
+{
+    type Response = S::Response;
+    type Error = S::Error;
+    type Future = PrometheusLoggerResponseFuture<S::Future>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.inner.poll_ready(cx)
+    }
+
+    fn call(&mut self, request: http::Request<ReqBody>) -> Self::Future {
+        let uri = request.uri().path().to_string();
+        let uri_parts: Vec<&str> = uri.split('/').collect();
+        let response_future = self.inner.call(request);
+        let start = Instant::now();
+        PrometheusLoggerResponseFuture {
+            response_future,
+            start,
+            service: uri_parts.get(1).map(|v| v.to_string()).unwrap_or_default(),
+            method: uri_parts.get(2).map(|v| v.to_string()).unwrap_or_default(),
+        }
+    }
+}
+
+#[pin_project]
+struct PrometheusLoggerResponseFuture<F> {
+    #[pin]
+    response_future: F,
+    start: Instant,
+    service: String,
+    method: String,
+}
+
+impl<F, ResBody, Error> Future for PrometheusLoggerResponseFuture<F>
+where
+    F: Future<Output = Result<http::Response<ResBody>, Error>>,
+    ResBody: http_body::Body,
+{
+    type Output = Result<http::Response<ResBody>, Error>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.project();
+
+        match this.response_future.poll(cx) {
+            Poll::Ready(result) => {
+                if let Ok(response) = &result {
+                    let status_code: i32 = match response.headers().get("grpc-status") {
+                        None => 0,
+                        Some(v) => match v.to_str() {
+                            Ok(s) => s.parse().unwrap_or_default(),
+                            Err(_) => 2,
+                        },
+                    };
+                    let status_code = Code::from_i32(status_code);
+                    let labels = GrpcLabels {
+                        service: this.service.clone(),
+                        method: this.method.clone(),
+                        status_code: format!("{:?}", status_code),
+                    };
+                    GRPC_COUNTER.get_or_create(&labels).inc();
+                    GRPC_HISTOGRAM
+                        .get_or_create(&labels)
+                        .observe(this.start.elapsed().as_secs_f64());
+                }
+                Poll::Ready(result)
+            }
+            Poll::Pending => Poll::Pending,
+        }
     }
 }

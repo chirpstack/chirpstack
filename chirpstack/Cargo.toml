@@ -103,6 +103,8 @@ base64 = "0.13"
 async-recursion = "1.0"
 regex = "1"
 petgraph = "0.6"
+prometheus-client = "0.16"
+pin-project = "1.0"
 
 # Development and testing
 [dev-dependencies]

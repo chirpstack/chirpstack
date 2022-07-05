@@ -209,7 +209,7 @@ impl Integration {
         info!("Applying schema migrations");
         embedded_migrations::run(&db_conn).context("Run migrations error")?;
 
-        Ok(Integration { pg_pool: pg_pool })
+        Ok(Integration { pg_pool })
     }
 }
 
