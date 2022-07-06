@@ -64,7 +64,7 @@ class GatewayForm extends Component<IProps, IState> {
         this.setLocationFields,
       );
     });
-  }
+  };
 
   onFinish = (values: Gateway.AsObject) => {
     const v = Object.assign(this.props.initialValues.toObject(), values);
@@ -154,7 +154,14 @@ class GatewayForm extends Component<IProps, IState> {
                     eventHandlers={{ dragend: this.updateLocation }}
                   />
                 </Map>
-                <Button onClick={this.getCurrentLocation} disabled={this.state.locationPending} type="link" style={{float: "right"}}>Set to current location</Button>
+                <Button
+                  onClick={this.getCurrentLocation}
+                  disabled={this.state.locationPending}
+                  type="link"
+                  style={{ float: "right" }}
+                >
+                  Set to current location
+                </Button>
               </Space>
             </Form.Item>
           </Tabs.TabPane>

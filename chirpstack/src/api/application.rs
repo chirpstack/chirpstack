@@ -72,6 +72,9 @@ impl ApplicationService for Application {
             .await?;
 
         let a = application::get(&app_id).await.map_err(|e| e.status())?;
+        let measurement_keys = application::get_measurement_keys(&app_id)
+            .await
+            .map_err(|e| e.status())?;
 
         Ok(Response::new(api::GetApplicationResponse {
             application: Some(api::Application {
@@ -82,6 +85,7 @@ impl ApplicationService for Application {
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&a.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&a.updated_at)),
+            measurement_keys,
         }))
     }
 
@@ -213,6 +217,7 @@ impl ApplicationService for Application {
                         api::IntegrationKind::AzureServiceBus
                     }
                     application::IntegrationKind::PilotThings => api::IntegrationKind::PilotThings,
+                    application::IntegrationKind::Ifttt => api::IntegrationKind::Ifttt,
                 }
                 .into(),
             })
@@ -1480,6 +1485,136 @@ impl ApplicationService for Application {
             .await?;
 
         application::delete_integration(&app_id, application::IntegrationKind::PilotThings)
+            .await
+            .map_err(|e| e.status())?;
+
+        Ok(Response::new(()))
+    }
+
+    async fn create_ifttt_integration(
+        &self,
+        request: Request<api::CreateIftttIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_int = match &request.get_ref().integration {
+            Some(v) => v,
+            None => {
+                return Err(Status::invalid_argument("integration is missing"));
+            }
+        };
+        let app_id = Uuid::from_str(&req_int.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        let _ = application::create_integration(application::Integration {
+            application_id: app_id,
+            kind: application::IntegrationKind::Ifttt,
+            configuration: application::IntegrationConfiguration::Ifttt(
+                application::IftttConfiguration {
+                    key: req_int.key.clone(),
+                    uplink_values: [
+                        req_int.uplink_values.get(0).cloned().unwrap_or_default(),
+                        req_int.uplink_values.get(1).cloned().unwrap_or_default(),
+                    ],
+                },
+            ),
+            ..Default::default()
+        })
+        .await
+        .map_err(|e| e.status())?;
+
+        Ok(Response::new(()))
+    }
+
+    async fn get_ifttt_integration(
+        &self,
+        request: Request<api::GetIftttIntegrationRequest>,
+    ) -> Result<Response<api::GetIftttIntegrationResponse>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Read, app_id),
+            )
+            .await?;
+
+        let i = application::get_integration(&app_id, application::IntegrationKind::Ifttt)
+            .await
+            .map_err(|e| e.status())?;
+
+        if let application::IntegrationConfiguration::Ifttt(conf) = &i.configuration {
+            Ok(Response::new(api::GetIftttIntegrationResponse {
+                integration: Some(api::IftttIntegration {
+                    application_id: app_id.to_string(),
+                    key: conf.key.clone(),
+                    uplink_values: conf.uplink_values.to_vec(),
+                }),
+            }))
+        } else {
+            Err(Status::internal("Integration has no Ifttt configuration"))
+        }
+    }
+
+    async fn update_ifttt_integration(
+        &self,
+        request: Request<api::UpdateIftttIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_int = match &request.get_ref().integration {
+            Some(v) => v,
+            None => {
+                return Err(Status::invalid_argument("integration is missing"));
+            }
+        };
+        let app_id = Uuid::from_str(&req_int.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        let _ = application::update_integration(application::Integration {
+            application_id: app_id,
+            kind: application::IntegrationKind::Ifttt,
+            configuration: application::IntegrationConfiguration::Ifttt(
+                application::IftttConfiguration {
+                    key: req_int.key.clone(),
+                    uplink_values: [
+                        req_int.uplink_values.get(0).cloned().unwrap_or_default(),
+                        req_int.uplink_values.get(1).cloned().unwrap_or_default(),
+                    ],
+                },
+            ),
+            ..Default::default()
+        })
+        .await
+        .map_err(|e| e.status())?;
+
+        Ok(Response::new(()))
+    }
+
+    async fn delete_ifttt_integration(
+        &self,
+        request: Request<api::DeleteIftttIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        application::delete_integration(&app_id, application::IntegrationKind::Ifttt)
             .await
             .map_err(|e| e.status())?;
 
@@ -2954,6 +3089,128 @@ pub mod test {
             .delete_pilot_things_integration(del_req)
             .await
             .unwrap();
+
+        // list
+        let list_req = get_request(
+            &u.id,
+            api::ListIntegrationsRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let list_resp = service.list_integrations(list_req).await.unwrap();
+        let list_resp = list_resp.get_ref();
+        assert_eq!(
+            &api::ListIntegrationsResponse {
+                total_count: 1,
+                result: vec![api::IntegrationListItem {
+                    kind: api::IntegrationKind::MqttGlobal.into(),
+                },],
+            },
+            list_resp
+        );
+    }
+
+    #[tokio::test]
+    async fn test_ifttt_integration() {
+        let _guard = test::prepare().await;
+        let app = get_application().await;
+        let u = get_user().await;
+        let service = Application::new(RequestValidator::new());
+
+        // create
+        let create_req = get_request(
+            &u.id,
+            api::CreateIftttIntegrationRequest {
+                integration: Some(api::IftttIntegration {
+                    application_id: app.id.to_string(),
+                    key: "verysecret".into(),
+                    uplink_values: vec!["value_1".into(), "value_2".into()],
+                }),
+            },
+        );
+        let _ = service.create_ifttt_integration(create_req).await.unwrap();
+
+        // get
+        let get_req = get_request(
+            &u.id,
+            api::GetIftttIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let get_resp = service.get_ifttt_integration(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(
+            Some(api::IftttIntegration {
+                application_id: app.id.to_string(),
+                key: "verysecret".into(),
+                uplink_values: vec!["value_1".into(), "value_2".into()],
+            }),
+            get_resp.integration
+        );
+
+        // update
+        let update_req = get_request(
+            &u.id,
+            api::UpdateIftttIntegrationRequest {
+                integration: Some(api::IftttIntegration {
+                    application_id: app.id.to_string(),
+                    key: "verysecrettoo".into(),
+                    uplink_values: vec!["value_4".into(), "value_5".into()],
+                }),
+            },
+        );
+        let _ = service.update_ifttt_integration(update_req).await.unwrap();
+
+        // get
+        let get_req = get_request(
+            &u.id,
+            api::GetIftttIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let get_resp = service.get_ifttt_integration(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(
+            Some(api::IftttIntegration {
+                application_id: app.id.to_string(),
+                key: "verysecrettoo".into(),
+                uplink_values: vec!["value_4".into(), "value_5".into()],
+            }),
+            get_resp.integration
+        );
+
+        // list
+        let list_req = get_request(
+            &u.id,
+            api::ListIntegrationsRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let list_resp = service.list_integrations(list_req).await.unwrap();
+        let list_resp = list_resp.get_ref();
+        assert_eq!(
+            &api::ListIntegrationsResponse {
+                total_count: 2,
+                result: vec![
+                    api::IntegrationListItem {
+                        kind: api::IntegrationKind::Ifttt.into(),
+                    },
+                    api::IntegrationListItem {
+                        kind: api::IntegrationKind::MqttGlobal.into(),
+                    }
+                ],
+            },
+            list_resp
+        );
+
+        // delete
+        let del_req = get_request(
+            &u.id,
+            api::DeleteIftttIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let _ = service.delete_ifttt_integration(del_req).await.unwrap();
 
         // list
         let list_req = get_request(

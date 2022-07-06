@@ -21,6 +21,7 @@ import InfluxdbCard from "./integrations/InfluxdbCard";
 import PilotThingsCard from "./integrations/PilotThingsCard";
 import LoRaCloudCard from "./integrations/LoRaCloudCard";
 import ThingsBoardCard from "./integrations/ThingsBoardCard";
+import IftttCard from "./integrations/IftttCard";
 
 interface IProps {
   application: Application;
@@ -93,6 +94,13 @@ class ListIntegrations extends Component<IProps, IState> {
         configured.push(<HttpCard application={this.props.application} />);
       } else {
         available.push(<HttpCard application={this.props.application} add />);
+      }
+
+      // IFTTT
+      if (includes(resp.getResultList(), IntegrationKind.IFTTT)) {
+        configured.push(<IftttCard application={this.props.application} />);
+      } else {
+        available.push(<IftttCard application={this.props.application} add />);
       }
 
       // InfluxDB

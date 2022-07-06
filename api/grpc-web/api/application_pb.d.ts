@@ -144,6 +144,11 @@ export class GetApplicationResponse extends jspb.Message {
   hasUpdatedAt(): boolean;
   clearUpdatedAt(): GetApplicationResponse;
 
+  getMeasurementKeysList(): Array<string>;
+  setMeasurementKeysList(value: Array<string>): GetApplicationResponse;
+  clearMeasurementKeysList(): GetApplicationResponse;
+  addMeasurementKeys(value: string, index?: number): GetApplicationResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetApplicationResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetApplicationResponse): GetApplicationResponse.AsObject;
@@ -157,6 +162,7 @@ export namespace GetApplicationResponse {
     application?: Application.AsObject,
     createdAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    measurementKeysList: Array<string>,
   }
 }
 
@@ -1534,6 +1540,130 @@ export namespace DeletePilotThingsIntegrationRequest {
   }
 }
 
+export class IftttIntegration extends jspb.Message {
+  getApplicationId(): string;
+  setApplicationId(value: string): IftttIntegration;
+
+  getKey(): string;
+  setKey(value: string): IftttIntegration;
+
+  getUplinkValuesList(): Array<string>;
+  setUplinkValuesList(value: Array<string>): IftttIntegration;
+  clearUplinkValuesList(): IftttIntegration;
+  addUplinkValues(value: string, index?: number): IftttIntegration;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): IftttIntegration.AsObject;
+  static toObject(includeInstance: boolean, msg: IftttIntegration): IftttIntegration.AsObject;
+  static serializeBinaryToWriter(message: IftttIntegration, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): IftttIntegration;
+  static deserializeBinaryFromReader(message: IftttIntegration, reader: jspb.BinaryReader): IftttIntegration;
+}
+
+export namespace IftttIntegration {
+  export type AsObject = {
+    applicationId: string,
+    key: string,
+    uplinkValuesList: Array<string>,
+  }
+}
+
+export class CreateIftttIntegrationRequest extends jspb.Message {
+  getIntegration(): IftttIntegration | undefined;
+  setIntegration(value?: IftttIntegration): CreateIftttIntegrationRequest;
+  hasIntegration(): boolean;
+  clearIntegration(): CreateIftttIntegrationRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CreateIftttIntegrationRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: CreateIftttIntegrationRequest): CreateIftttIntegrationRequest.AsObject;
+  static serializeBinaryToWriter(message: CreateIftttIntegrationRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CreateIftttIntegrationRequest;
+  static deserializeBinaryFromReader(message: CreateIftttIntegrationRequest, reader: jspb.BinaryReader): CreateIftttIntegrationRequest;
+}
+
+export namespace CreateIftttIntegrationRequest {
+  export type AsObject = {
+    integration?: IftttIntegration.AsObject,
+  }
+}
+
+export class GetIftttIntegrationRequest extends jspb.Message {
+  getApplicationId(): string;
+  setApplicationId(value: string): GetIftttIntegrationRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetIftttIntegrationRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetIftttIntegrationRequest): GetIftttIntegrationRequest.AsObject;
+  static serializeBinaryToWriter(message: GetIftttIntegrationRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetIftttIntegrationRequest;
+  static deserializeBinaryFromReader(message: GetIftttIntegrationRequest, reader: jspb.BinaryReader): GetIftttIntegrationRequest;
+}
+
+export namespace GetIftttIntegrationRequest {
+  export type AsObject = {
+    applicationId: string,
+  }
+}
+
+export class GetIftttIntegrationResponse extends jspb.Message {
+  getIntegration(): IftttIntegration | undefined;
+  setIntegration(value?: IftttIntegration): GetIftttIntegrationResponse;
+  hasIntegration(): boolean;
+  clearIntegration(): GetIftttIntegrationResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetIftttIntegrationResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetIftttIntegrationResponse): GetIftttIntegrationResponse.AsObject;
+  static serializeBinaryToWriter(message: GetIftttIntegrationResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetIftttIntegrationResponse;
+  static deserializeBinaryFromReader(message: GetIftttIntegrationResponse, reader: jspb.BinaryReader): GetIftttIntegrationResponse;
+}
+
+export namespace GetIftttIntegrationResponse {
+  export type AsObject = {
+    integration?: IftttIntegration.AsObject,
+  }
+}
+
+export class UpdateIftttIntegrationRequest extends jspb.Message {
+  getIntegration(): IftttIntegration | undefined;
+  setIntegration(value?: IftttIntegration): UpdateIftttIntegrationRequest;
+  hasIntegration(): boolean;
+  clearIntegration(): UpdateIftttIntegrationRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateIftttIntegrationRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateIftttIntegrationRequest): UpdateIftttIntegrationRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateIftttIntegrationRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateIftttIntegrationRequest;
+  static deserializeBinaryFromReader(message: UpdateIftttIntegrationRequest, reader: jspb.BinaryReader): UpdateIftttIntegrationRequest;
+}
+
+export namespace UpdateIftttIntegrationRequest {
+  export type AsObject = {
+    integration?: IftttIntegration.AsObject,
+  }
+}
+
+export class DeleteIftttIntegrationRequest extends jspb.Message {
+  getApplicationId(): string;
+  setApplicationId(value: string): DeleteIftttIntegrationRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeleteIftttIntegrationRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteIftttIntegrationRequest): DeleteIftttIntegrationRequest.AsObject;
+  static serializeBinaryToWriter(message: DeleteIftttIntegrationRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteIftttIntegrationRequest;
+  static deserializeBinaryFromReader(message: DeleteIftttIntegrationRequest, reader: jspb.BinaryReader): DeleteIftttIntegrationRequest;
+}
+
+export namespace DeleteIftttIntegrationRequest {
+  export type AsObject = {
+    applicationId: string,
+  }
+}
+
 export class GenerateMqttIntegrationClientCertificateRequest extends jspb.Message {
   getApplicationId(): string;
   setApplicationId(value: string): GenerateMqttIntegrationClientCertificateRequest;
@@ -1599,6 +1729,7 @@ export enum IntegrationKind {
   AZURE_SERVICE_BUS = 7,
   PILOT_THINGS = 8,
   MQTT_GLOBAL = 9,
+  IFTTT = 10,
 }
 export enum InfluxDbPrecision { 
   NS = 0,

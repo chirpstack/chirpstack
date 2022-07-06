@@ -78,7 +78,12 @@ class CodeEditor extends Component<IProps, IState> {
     return (
       <Form.Item label={this.props.label} name={this.props.name} tooltip={this.props.tooltip}>
         <div style={{ border: "1px solid #cccccc" }}>
-          <CodeMirror key={`code-editor-refresh-${this.state.reloadKey}`} value={this.state.value} options={codeMirrorOptions} onBeforeChange={this.handleChange} />
+          <CodeMirror
+            key={`code-editor-refresh-${this.state.reloadKey}`}
+            value={this.state.value}
+            options={codeMirrorOptions}
+            onBeforeChange={this.handleChange}
+          />
         </div>
       </Form.Item>
     );

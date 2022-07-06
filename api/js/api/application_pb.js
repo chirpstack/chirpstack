@@ -21,6 +21,7 @@ goog.exportSymbol('proto.api.CreateAwsSnsIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.CreateAzureServiceBusIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.CreateGcpPubSubIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.CreateHttpIntegrationRequest', null, global);
+goog.exportSymbol('proto.api.CreateIftttIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.CreateInfluxDbIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.CreateLoraCloudIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.CreateMyDevicesIntegrationRequest', null, global);
@@ -31,6 +32,7 @@ goog.exportSymbol('proto.api.DeleteAwsSnsIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.DeleteAzureServiceBusIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.DeleteGcpPubSubIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.DeleteHttpIntegrationRequest', null, global);
+goog.exportSymbol('proto.api.DeleteIftttIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.DeleteInfluxDbIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.DeleteLoraCloudIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.DeleteMyDevicesIntegrationRequest', null, global);
@@ -50,6 +52,8 @@ goog.exportSymbol('proto.api.GetGcpPubSubIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.GetGcpPubSubIntegrationResponse', null, global);
 goog.exportSymbol('proto.api.GetHttpIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.GetHttpIntegrationResponse', null, global);
+goog.exportSymbol('proto.api.GetIftttIntegrationRequest', null, global);
+goog.exportSymbol('proto.api.GetIftttIntegrationResponse', null, global);
 goog.exportSymbol('proto.api.GetInfluxDbIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.GetInfluxDbIntegrationResponse', null, global);
 goog.exportSymbol('proto.api.GetLoraCloudIntegrationRequest', null, global);
@@ -61,6 +65,7 @@ goog.exportSymbol('proto.api.GetPilotThingsIntegrationResponse', null, global);
 goog.exportSymbol('proto.api.GetThingsBoardIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.GetThingsBoardIntegrationResponse', null, global);
 goog.exportSymbol('proto.api.HttpIntegration', null, global);
+goog.exportSymbol('proto.api.IftttIntegration', null, global);
 goog.exportSymbol('proto.api.InfluxDbIntegration', null, global);
 goog.exportSymbol('proto.api.InfluxDbPrecision', null, global);
 goog.exportSymbol('proto.api.InfluxDbVersion', null, global);
@@ -80,6 +85,7 @@ goog.exportSymbol('proto.api.UpdateAwsSnsIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.UpdateAzureServiceBusIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.UpdateGcpPubSubIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.UpdateHttpIntegrationRequest', null, global);
+goog.exportSymbol('proto.api.UpdateIftttIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.UpdateInfluxDbIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.UpdateLoraCloudIntegrationRequest', null, global);
 goog.exportSymbol('proto.api.UpdateMyDevicesIntegrationRequest', null, global);
@@ -1132,12 +1138,19 @@ proto.api.GetApplicationRequest.prototype.setId = function(value) {
  * @constructor
  */
 proto.api.GetApplicationResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.api.GetApplicationResponse.repeatedFields_, null);
 };
 goog.inherits(proto.api.GetApplicationResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   proto.api.GetApplicationResponse.displayName = 'proto.api.GetApplicationResponse';
 }
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.api.GetApplicationResponse.repeatedFields_ = [4];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1168,7 +1181,8 @@ proto.api.GetApplicationResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     application: (f = msg.getApplication()) && proto.api.Application.toObject(includeInstance, f),
     createdAt: (f = msg.getCreatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    updatedAt: (f = msg.getUpdatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+    updatedAt: (f = msg.getUpdatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    measurementKeysList: jspb.Message.getField(msg, 4)
   };
 
   if (includeInstance) {
@@ -1219,6 +1233,11 @@ proto.api.GetApplicationResponse.deserializeBinaryFromReader = function(msg, rea
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setUpdatedAt(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.getMeasurementKeysList().push(value);
+      msg.setMeasurementKeysList(msg.getMeasurementKeysList());
       break;
     default:
       reader.skipField();
@@ -1280,6 +1299,13 @@ proto.api.GetApplicationResponse.prototype.serializeBinaryToWriter = function (w
       3,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = this.getMeasurementKeysList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
+      f
     );
   }
 };
@@ -1381,6 +1407,28 @@ proto.api.GetApplicationResponse.prototype.clearUpdatedAt = function() {
  */
 proto.api.GetApplicationResponse.prototype.hasUpdatedAt = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * repeated string measurement_keys = 4;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
+ * @return {!Array.<string>}
+ */
+proto.api.GetApplicationResponse.prototype.getMeasurementKeysList = function() {
+  return /** @type {!Array.<string>} */ (jspb.Message.getField(this, 4));
+};
+
+
+/** @param {Array.<string>} value  */
+proto.api.GetApplicationResponse.prototype.setMeasurementKeysList = function(value) {
+  jspb.Message.setField(this, 4, value || []);
+};
+
+
+proto.api.GetApplicationResponse.prototype.clearMeasurementKeysList = function() {
+  jspb.Message.setField(this, 4, []);
 };
 
 
@@ -13120,6 +13168,1080 @@ proto.api.DeletePilotThingsIntegrationRequest.prototype.setApplicationId = funct
  * @extends {jspb.Message}
  * @constructor
  */
+proto.api.IftttIntegration = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.api.IftttIntegration.repeatedFields_, null);
+};
+goog.inherits(proto.api.IftttIntegration, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.IftttIntegration.displayName = 'proto.api.IftttIntegration';
+}
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.api.IftttIntegration.repeatedFields_ = [3];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.IftttIntegration.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.IftttIntegration.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.IftttIntegration} msg The msg instance to transform.
+ * @return {!Object}
+ */
+proto.api.IftttIntegration.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    applicationId: msg.getApplicationId(),
+    key: msg.getKey(),
+    uplinkValuesList: jspb.Message.getField(msg, 3)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.IftttIntegration}
+ */
+proto.api.IftttIntegration.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.IftttIntegration;
+  return proto.api.IftttIntegration.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.IftttIntegration} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.IftttIntegration}
+ */
+proto.api.IftttIntegration.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApplicationId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setKey(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.getUplinkValuesList().push(value);
+      msg.setUplinkValuesList(msg.getUplinkValuesList());
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.api.IftttIntegration} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.IftttIntegration.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.IftttIntegration.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  this.serializeBinaryToWriter(writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.IftttIntegration.prototype.serializeBinaryToWriter = function (writer) {
+  var f = undefined;
+  f = this.getApplicationId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = this.getKey();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = this.getUplinkValuesList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      3,
+      f
+    );
+  }
+};
+
+
+/**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.api.IftttIntegration} The clone.
+ */
+proto.api.IftttIntegration.prototype.cloneMessage = function() {
+  return /** @type {!proto.api.IftttIntegration} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
+ * optional string application_id = 1;
+ * @return {string}
+ */
+proto.api.IftttIntegration.prototype.getApplicationId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 1, ""));
+};
+
+
+/** @param {string} value  */
+proto.api.IftttIntegration.prototype.setApplicationId = function(value) {
+  jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional string key = 2;
+ * @return {string}
+ */
+proto.api.IftttIntegration.prototype.getKey = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 2, ""));
+};
+
+
+/** @param {string} value  */
+proto.api.IftttIntegration.prototype.setKey = function(value) {
+  jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * repeated string uplink_values = 3;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
+ * @return {!Array.<string>}
+ */
+proto.api.IftttIntegration.prototype.getUplinkValuesList = function() {
+  return /** @type {!Array.<string>} */ (jspb.Message.getField(this, 3));
+};
+
+
+/** @param {Array.<string>} value  */
+proto.api.IftttIntegration.prototype.setUplinkValuesList = function(value) {
+  jspb.Message.setField(this, 3, value || []);
+};
+
+
+proto.api.IftttIntegration.prototype.clearUplinkValuesList = function() {
+  jspb.Message.setField(this, 3, []);
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.api.CreateIftttIntegrationRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.api.CreateIftttIntegrationRequest, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.CreateIftttIntegrationRequest.displayName = 'proto.api.CreateIftttIntegrationRequest';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.CreateIftttIntegrationRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.CreateIftttIntegrationRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.CreateIftttIntegrationRequest} msg The msg instance to transform.
+ * @return {!Object}
+ */
+proto.api.CreateIftttIntegrationRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    integration: (f = msg.getIntegration()) && proto.api.IftttIntegration.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.CreateIftttIntegrationRequest}
+ */
+proto.api.CreateIftttIntegrationRequest.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.CreateIftttIntegrationRequest;
+  return proto.api.CreateIftttIntegrationRequest.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.CreateIftttIntegrationRequest} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.CreateIftttIntegrationRequest}
+ */
+proto.api.CreateIftttIntegrationRequest.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.api.IftttIntegration;
+      reader.readMessage(value,proto.api.IftttIntegration.deserializeBinaryFromReader);
+      msg.setIntegration(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.api.CreateIftttIntegrationRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.CreateIftttIntegrationRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.CreateIftttIntegrationRequest.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  this.serializeBinaryToWriter(writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.CreateIftttIntegrationRequest.prototype.serializeBinaryToWriter = function (writer) {
+  var f = undefined;
+  f = this.getIntegration();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.api.IftttIntegration.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.api.CreateIftttIntegrationRequest} The clone.
+ */
+proto.api.CreateIftttIntegrationRequest.prototype.cloneMessage = function() {
+  return /** @type {!proto.api.CreateIftttIntegrationRequest} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
+ * optional IftttIntegration integration = 1;
+ * @return {proto.api.IftttIntegration}
+ */
+proto.api.CreateIftttIntegrationRequest.prototype.getIntegration = function() {
+  return /** @type{proto.api.IftttIntegration} */ (
+    jspb.Message.getWrapperField(this, proto.api.IftttIntegration, 1));
+};
+
+
+/** @param {proto.api.IftttIntegration|undefined} value  */
+proto.api.CreateIftttIntegrationRequest.prototype.setIntegration = function(value) {
+  jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+proto.api.CreateIftttIntegrationRequest.prototype.clearIntegration = function() {
+  this.setIntegration(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return{!boolean}
+ */
+proto.api.CreateIftttIntegrationRequest.prototype.hasIntegration = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.api.GetIftttIntegrationRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.api.GetIftttIntegrationRequest, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.GetIftttIntegrationRequest.displayName = 'proto.api.GetIftttIntegrationRequest';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.GetIftttIntegrationRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.GetIftttIntegrationRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.GetIftttIntegrationRequest} msg The msg instance to transform.
+ * @return {!Object}
+ */
+proto.api.GetIftttIntegrationRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    applicationId: msg.getApplicationId()
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.GetIftttIntegrationRequest}
+ */
+proto.api.GetIftttIntegrationRequest.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.GetIftttIntegrationRequest;
+  return proto.api.GetIftttIntegrationRequest.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.GetIftttIntegrationRequest} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.GetIftttIntegrationRequest}
+ */
+proto.api.GetIftttIntegrationRequest.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApplicationId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.api.GetIftttIntegrationRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.GetIftttIntegrationRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.GetIftttIntegrationRequest.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  this.serializeBinaryToWriter(writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.GetIftttIntegrationRequest.prototype.serializeBinaryToWriter = function (writer) {
+  var f = undefined;
+  f = this.getApplicationId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.api.GetIftttIntegrationRequest} The clone.
+ */
+proto.api.GetIftttIntegrationRequest.prototype.cloneMessage = function() {
+  return /** @type {!proto.api.GetIftttIntegrationRequest} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
+ * optional string application_id = 1;
+ * @return {string}
+ */
+proto.api.GetIftttIntegrationRequest.prototype.getApplicationId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 1, ""));
+};
+
+
+/** @param {string} value  */
+proto.api.GetIftttIntegrationRequest.prototype.setApplicationId = function(value) {
+  jspb.Message.setField(this, 1, value);
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.api.GetIftttIntegrationResponse = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.api.GetIftttIntegrationResponse, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.GetIftttIntegrationResponse.displayName = 'proto.api.GetIftttIntegrationResponse';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.GetIftttIntegrationResponse.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.GetIftttIntegrationResponse.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.GetIftttIntegrationResponse} msg The msg instance to transform.
+ * @return {!Object}
+ */
+proto.api.GetIftttIntegrationResponse.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    integration: (f = msg.getIntegration()) && proto.api.IftttIntegration.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.GetIftttIntegrationResponse}
+ */
+proto.api.GetIftttIntegrationResponse.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.GetIftttIntegrationResponse;
+  return proto.api.GetIftttIntegrationResponse.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.GetIftttIntegrationResponse} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.GetIftttIntegrationResponse}
+ */
+proto.api.GetIftttIntegrationResponse.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.api.IftttIntegration;
+      reader.readMessage(value,proto.api.IftttIntegration.deserializeBinaryFromReader);
+      msg.setIntegration(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.api.GetIftttIntegrationResponse} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.GetIftttIntegrationResponse.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.GetIftttIntegrationResponse.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  this.serializeBinaryToWriter(writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.GetIftttIntegrationResponse.prototype.serializeBinaryToWriter = function (writer) {
+  var f = undefined;
+  f = this.getIntegration();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.api.IftttIntegration.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.api.GetIftttIntegrationResponse} The clone.
+ */
+proto.api.GetIftttIntegrationResponse.prototype.cloneMessage = function() {
+  return /** @type {!proto.api.GetIftttIntegrationResponse} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
+ * optional IftttIntegration integration = 1;
+ * @return {proto.api.IftttIntegration}
+ */
+proto.api.GetIftttIntegrationResponse.prototype.getIntegration = function() {
+  return /** @type{proto.api.IftttIntegration} */ (
+    jspb.Message.getWrapperField(this, proto.api.IftttIntegration, 1));
+};
+
+
+/** @param {proto.api.IftttIntegration|undefined} value  */
+proto.api.GetIftttIntegrationResponse.prototype.setIntegration = function(value) {
+  jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+proto.api.GetIftttIntegrationResponse.prototype.clearIntegration = function() {
+  this.setIntegration(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return{!boolean}
+ */
+proto.api.GetIftttIntegrationResponse.prototype.hasIntegration = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.api.UpdateIftttIntegrationRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.api.UpdateIftttIntegrationRequest, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.UpdateIftttIntegrationRequest.displayName = 'proto.api.UpdateIftttIntegrationRequest';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.UpdateIftttIntegrationRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.UpdateIftttIntegrationRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.UpdateIftttIntegrationRequest} msg The msg instance to transform.
+ * @return {!Object}
+ */
+proto.api.UpdateIftttIntegrationRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    integration: (f = msg.getIntegration()) && proto.api.IftttIntegration.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.UpdateIftttIntegrationRequest}
+ */
+proto.api.UpdateIftttIntegrationRequest.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.UpdateIftttIntegrationRequest;
+  return proto.api.UpdateIftttIntegrationRequest.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.UpdateIftttIntegrationRequest} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.UpdateIftttIntegrationRequest}
+ */
+proto.api.UpdateIftttIntegrationRequest.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.api.IftttIntegration;
+      reader.readMessage(value,proto.api.IftttIntegration.deserializeBinaryFromReader);
+      msg.setIntegration(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.api.UpdateIftttIntegrationRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.UpdateIftttIntegrationRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.UpdateIftttIntegrationRequest.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  this.serializeBinaryToWriter(writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.UpdateIftttIntegrationRequest.prototype.serializeBinaryToWriter = function (writer) {
+  var f = undefined;
+  f = this.getIntegration();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.api.IftttIntegration.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.api.UpdateIftttIntegrationRequest} The clone.
+ */
+proto.api.UpdateIftttIntegrationRequest.prototype.cloneMessage = function() {
+  return /** @type {!proto.api.UpdateIftttIntegrationRequest} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
+ * optional IftttIntegration integration = 1;
+ * @return {proto.api.IftttIntegration}
+ */
+proto.api.UpdateIftttIntegrationRequest.prototype.getIntegration = function() {
+  return /** @type{proto.api.IftttIntegration} */ (
+    jspb.Message.getWrapperField(this, proto.api.IftttIntegration, 1));
+};
+
+
+/** @param {proto.api.IftttIntegration|undefined} value  */
+proto.api.UpdateIftttIntegrationRequest.prototype.setIntegration = function(value) {
+  jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+proto.api.UpdateIftttIntegrationRequest.prototype.clearIntegration = function() {
+  this.setIntegration(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return{!boolean}
+ */
+proto.api.UpdateIftttIntegrationRequest.prototype.hasIntegration = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.api.DeleteIftttIntegrationRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.api.DeleteIftttIntegrationRequest, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  proto.api.DeleteIftttIntegrationRequest.displayName = 'proto.api.DeleteIftttIntegrationRequest';
+}
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto suitable for use in Soy templates.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     com.google.apps.jspb.JsClassTemplate.JS_RESERVED_WORDS.
+ * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
+ *     for transitional soy proto support: http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.api.DeleteIftttIntegrationRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.api.DeleteIftttIntegrationRequest.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Whether to include the JSPB
+ *     instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.api.DeleteIftttIntegrationRequest} msg The msg instance to transform.
+ * @return {!Object}
+ */
+proto.api.DeleteIftttIntegrationRequest.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    applicationId: msg.getApplicationId()
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.api.DeleteIftttIntegrationRequest}
+ */
+proto.api.DeleteIftttIntegrationRequest.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.api.DeleteIftttIntegrationRequest;
+  return proto.api.DeleteIftttIntegrationRequest.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.api.DeleteIftttIntegrationRequest} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.api.DeleteIftttIntegrationRequest}
+ */
+proto.api.DeleteIftttIntegrationRequest.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApplicationId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.api.DeleteIftttIntegrationRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.DeleteIftttIntegrationRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.api.DeleteIftttIntegrationRequest.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  this.serializeBinaryToWriter(writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.api.DeleteIftttIntegrationRequest.prototype.serializeBinaryToWriter = function (writer) {
+  var f = undefined;
+  f = this.getApplicationId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.api.DeleteIftttIntegrationRequest} The clone.
+ */
+proto.api.DeleteIftttIntegrationRequest.prototype.cloneMessage = function() {
+  return /** @type {!proto.api.DeleteIftttIntegrationRequest} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
+ * optional string application_id = 1;
+ * @return {string}
+ */
+proto.api.DeleteIftttIntegrationRequest.prototype.getApplicationId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 1, ""));
+};
+
+
+/** @param {string} value  */
+proto.api.DeleteIftttIntegrationRequest.prototype.setApplicationId = function(value) {
+  jspb.Message.setField(this, 1, value);
+};
+
+
+
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.api.GenerateMqttIntegrationClientCertificateRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -13546,7 +14668,8 @@ proto.api.IntegrationKind = {
   AWS_SNS: 6,
   AZURE_SERVICE_BUS: 7,
   PILOT_THINGS: 8,
-  MQTT_GLOBAL: 9
+  MQTT_GLOBAL: 9,
+  IFTTT: 10
 };
 
 /**

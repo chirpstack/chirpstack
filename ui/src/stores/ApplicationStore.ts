@@ -57,6 +57,11 @@ import {
   GetThingsBoardIntegrationResponse,
   UpdateThingsBoardIntegrationRequest,
   DeleteThingsBoardIntegrationRequest,
+  CreateIftttIntegrationRequest,
+  GetIftttIntegrationRequest,
+  GetIftttIntegrationResponse,
+  UpdateIftttIntegrationRequest,
+  DeleteIftttIntegrationRequest,
   GenerateMqttIntegrationClientCertificateRequest,
   GenerateMqttIntegrationClientCertificateResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -709,6 +714,69 @@ class ApplicationStore extends EventEmitter {
 
       notification.success({
         message: "ThingsBoard integration deleted",
+        duration: 3,
+      });
+
+      this.emit("integration.delete");
+      callbackFunc();
+    });
+  };
+
+  createIftttIntegration = (req: CreateIftttIntegrationRequest, callbackFunc: () => void) => {
+    this.client.createIftttIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "IFTTT integration created",
+        duration: 3,
+      });
+
+      callbackFunc();
+    });
+  };
+
+  getIftttIntegration = (
+    req: GetIftttIntegrationRequest,
+    callbackFunc: (resp: GetIftttIntegrationResponse) => void,
+  ) => {
+    this.client.getIftttIntegration(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  updateIftttIntegration = (req: UpdateIftttIntegrationRequest, callbackFunc: () => void) => {
+    this.client.updateIftttIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "IFTTT integration updated",
+        duration: 3,
+      });
+
+      callbackFunc();
+    });
+  };
+
+  deleteIftttIntegration = (req: DeleteIftttIntegrationRequest, callbackFunc: () => void) => {
+    this.client.deleteIftttIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "IFTTT integration deleted",
         duration: 3,
       });
 

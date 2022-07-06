@@ -303,6 +303,34 @@ export class ApplicationServiceClient {
                response: google_protobuf_empty_pb.Empty) => void
   ): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
 
+  createIftttIntegration(
+    request: api_application_pb.CreateIftttIntegrationRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: google_protobuf_empty_pb.Empty) => void
+  ): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
+  getIftttIntegration(
+    request: api_application_pb.GetIftttIntegrationRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: api_application_pb.GetIftttIntegrationResponse) => void
+  ): grpcWeb.ClientReadableStream<api_application_pb.GetIftttIntegrationResponse>;
+
+  updateIftttIntegration(
+    request: api_application_pb.UpdateIftttIntegrationRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: google_protobuf_empty_pb.Empty) => void
+  ): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
+  deleteIftttIntegration(
+    request: api_application_pb.DeleteIftttIntegrationRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: google_protobuf_empty_pb.Empty) => void
+  ): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
   generateMqttIntegrationClientCertificate(
     request: api_application_pb.GenerateMqttIntegrationClientCertificateRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -524,6 +552,26 @@ export class ApplicationServicePromiseClient {
 
   deletePilotThingsIntegration(
     request: api_application_pb.DeletePilotThingsIntegrationRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<google_protobuf_empty_pb.Empty>;
+
+  createIftttIntegration(
+    request: api_application_pb.CreateIftttIntegrationRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<google_protobuf_empty_pb.Empty>;
+
+  getIftttIntegration(
+    request: api_application_pb.GetIftttIntegrationRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<api_application_pb.GetIftttIntegrationResponse>;
+
+  updateIftttIntegration(
+    request: api_application_pb.UpdateIftttIntegrationRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<google_protobuf_empty_pb.Empty>;
+
+  deleteIftttIntegration(
+    request: api_application_pb.DeleteIftttIntegrationRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<google_protobuf_empty_pb.Empty>;
 

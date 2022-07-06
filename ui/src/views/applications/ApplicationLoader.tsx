@@ -25,12 +25,15 @@ interface IProps extends RouteComponentProps<MatchParams> {
 
 interface IState {
   application?: Application;
+  measurementKeys: string[];
 }
 
 class ApplicationLoader extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
-    this.state = {};
+    this.state = {
+      measurementKeys: [],
+    };
   }
 
   componentDidMount() {
@@ -44,6 +47,7 @@ class ApplicationLoader extends Component<IProps, IState> {
     ApplicationStore.get(req, (resp: GetApplicationResponse) => {
       this.setState({
         application: resp.getApplication(),
+        measurementKeys: resp.getMeasurementKeysList(),
       });
     });
   };
@@ -77,7 +81,17 @@ class ApplicationLoader extends Component<IProps, IState> {
           path={`${path}/devices/:devEui([0-9a-f]{16})`}
           component={(props: any) => <DeviceLayout tenant={tenant} application={app} {...props} />}
         />
-        <Route path={path} render={props => <ApplicationLayout tenant={tenant} application={app} {...props} />} />
+        <Route
+          path={path}
+          render={props => (
+            <ApplicationLayout
+              tenant={tenant}
+              application={app}
+              measurementKeys={this.state.measurementKeys}
+              {...props}
+            />
+          )}
+        />
       </Switch>
     );
   }

@@ -138,6 +138,18 @@ service ApplicationService {
     // Delete Pilot Things integration.
     rpc DeletePilotThingsIntegration(DeletePilotThingsIntegrationRequest) returns (google.protobuf.Empty) {}
 
+    // Create IFTTT integration.
+    rpc CreateIftttIntegration(CreateIftttIntegrationRequest) returns (google.protobuf.Empty) {}
+
+    // Get IFTTT integration.
+    rpc GetIftttIntegration(GetIftttIntegrationRequest) returns (GetIftttIntegrationResponse) {}
+
+    // Update IFTTT integration.
+    rpc UpdateIftttIntegration(UpdateIftttIntegrationRequest) returns (google.protobuf.Empty) {}
+
+    // Delete IFTTT integration.
+    rpc DeleteIftttIntegration(DeleteIftttIntegrationRequest) returns (google.protobuf.Empty) {}
+
     // Generates application ID specific client-certificate.
     rpc GenerateMqttIntegrationClientCertificate(GenerateMqttIntegrationClientCertificateRequest) returns (GenerateMqttIntegrationClientCertificateResponse) {}
 }
@@ -158,6 +170,7 @@ enum IntegrationKind {
     AZURE_SERVICE_BUS = 7;
     PILOT_THINGS = 8;
     MQTT_GLOBAL = 9;
+    IFTTT = 10;
 }
 
 message Application {
@@ -216,6 +229,11 @@ message GetApplicationResponse {
 
     // Last update timestamp.
     google.protobuf.Timestamp updated_at = 3;
+
+    // Measurement keys.
+    // This contains the measurement keys from all the device-profiles that
+    // are used by the devices under this application.
+    repeated string measurement_keys = 4;
 }
 
 message UpdateApplicationRequest {
@@ -714,6 +732,53 @@ message UpdatePilotThingsIntegrationRequest {
 }
 
 message DeletePilotThingsIntegrationRequest {
+    // Application ID (UUID).
+    string application_id = 1;
+}
+
+message IftttIntegration {
+    // Application ID (UUID).
+    string application_id = 1;
+
+    // Key.
+    // This key can be obtained from the IFTTT Webhooks documentation page.
+    string key = 2;
+
+    // Values.
+    // Up to 2 values can be forwarded to IFTTT. These values must map to the
+    // decoded payload keys. For example:
+    // {
+    //   "batteryLevel": 75.3,
+    //   "buttons": [{"pressed": false}, {"pressed": true}]
+    // }
+    // You would specify the following fields:
+    // uplink_values = ["batteryLevel", "buttons_0_pressed"]
+    //
+    // Note: The first value is always used for the DevEUI.
+    repeated string uplink_values = 3;
+}
+
+message CreateIftttIntegrationRequest {
+    // Integration object.
+    IftttIntegration integration = 1;
+}
+
+message GetIftttIntegrationRequest {
+    // Application ID (UUID).
+    string application_id = 1;
+}
+
+message GetIftttIntegrationResponse {
+    // Integration object.
+    IftttIntegration integration = 1;
+}
+
+message UpdateIftttIntegrationRequest {
+    // Integration object to update.
+    IftttIntegration integration = 1;
+}
+
+message DeleteIftttIntegrationRequest {
     // Application ID (UUID).
     string application_id = 1;
 }

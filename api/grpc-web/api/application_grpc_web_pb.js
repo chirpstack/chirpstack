@@ -3437,6 +3437,326 @@ proto.api.ApplicationServicePromiseClient.prototype.deletePilotThingsIntegration
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.api.CreateIftttIntegrationRequest,
+ *   !proto.google.protobuf.Empty>}
+ */
+const methodDescriptor_ApplicationService_CreateIftttIntegration = new grpc.web.MethodDescriptor(
+  '/api.ApplicationService/CreateIftttIntegration',
+  grpc.web.MethodType.UNARY,
+  proto.api.CreateIftttIntegrationRequest,
+  google_protobuf_empty_pb.Empty,
+  /**
+   * @param {!proto.api.CreateIftttIntegrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  google_protobuf_empty_pb.Empty.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.api.CreateIftttIntegrationRequest,
+ *   !proto.google.protobuf.Empty>}
+ */
+const methodInfo_ApplicationService_CreateIftttIntegration = new grpc.web.AbstractClientBase.MethodInfo(
+  google_protobuf_empty_pb.Empty,
+  /**
+   * @param {!proto.api.CreateIftttIntegrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  google_protobuf_empty_pb.Empty.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.api.CreateIftttIntegrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.google.protobuf.Empty)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.ApplicationServiceClient.prototype.createIftttIntegration =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.ApplicationService/CreateIftttIntegration',
+      request,
+      metadata || {},
+      methodDescriptor_ApplicationService_CreateIftttIntegration,
+      callback);
+};
+
+
+/**
+ * @param {!proto.api.CreateIftttIntegrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.google.protobuf.Empty>}
+ *     Promise that resolves to the response
+ */
+proto.api.ApplicationServicePromiseClient.prototype.createIftttIntegration =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.ApplicationService/CreateIftttIntegration',
+      request,
+      metadata || {},
+      methodDescriptor_ApplicationService_CreateIftttIntegration);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.api.GetIftttIntegrationRequest,
+ *   !proto.api.GetIftttIntegrationResponse>}
+ */
+const methodDescriptor_ApplicationService_GetIftttIntegration = new grpc.web.MethodDescriptor(
+  '/api.ApplicationService/GetIftttIntegration',
+  grpc.web.MethodType.UNARY,
+  proto.api.GetIftttIntegrationRequest,
+  proto.api.GetIftttIntegrationResponse,
+  /**
+   * @param {!proto.api.GetIftttIntegrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.GetIftttIntegrationResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.api.GetIftttIntegrationRequest,
+ *   !proto.api.GetIftttIntegrationResponse>}
+ */
+const methodInfo_ApplicationService_GetIftttIntegration = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.api.GetIftttIntegrationResponse,
+  /**
+   * @param {!proto.api.GetIftttIntegrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.GetIftttIntegrationResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.api.GetIftttIntegrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.api.GetIftttIntegrationResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.api.GetIftttIntegrationResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.ApplicationServiceClient.prototype.getIftttIntegration =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.ApplicationService/GetIftttIntegration',
+      request,
+      metadata || {},
+      methodDescriptor_ApplicationService_GetIftttIntegration,
+      callback);
+};
+
+
+/**
+ * @param {!proto.api.GetIftttIntegrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.api.GetIftttIntegrationResponse>}
+ *     Promise that resolves to the response
+ */
+proto.api.ApplicationServicePromiseClient.prototype.getIftttIntegration =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.ApplicationService/GetIftttIntegration',
+      request,
+      metadata || {},
+      methodDescriptor_ApplicationService_GetIftttIntegration);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.api.UpdateIftttIntegrationRequest,
+ *   !proto.google.protobuf.Empty>}
+ */
+const methodDescriptor_ApplicationService_UpdateIftttIntegration = new grpc.web.MethodDescriptor(
+  '/api.ApplicationService/UpdateIftttIntegration',
+  grpc.web.MethodType.UNARY,
+  proto.api.UpdateIftttIntegrationRequest,
+  google_protobuf_empty_pb.Empty,
+  /**
+   * @param {!proto.api.UpdateIftttIntegrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  google_protobuf_empty_pb.Empty.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.api.UpdateIftttIntegrationRequest,
+ *   !proto.google.protobuf.Empty>}
+ */
+const methodInfo_ApplicationService_UpdateIftttIntegration = new grpc.web.AbstractClientBase.MethodInfo(
+  google_protobuf_empty_pb.Empty,
+  /**
+   * @param {!proto.api.UpdateIftttIntegrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  google_protobuf_empty_pb.Empty.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.api.UpdateIftttIntegrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.google.protobuf.Empty)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.ApplicationServiceClient.prototype.updateIftttIntegration =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.ApplicationService/UpdateIftttIntegration',
+      request,
+      metadata || {},
+      methodDescriptor_ApplicationService_UpdateIftttIntegration,
+      callback);
+};
+
+
+/**
+ * @param {!proto.api.UpdateIftttIntegrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.google.protobuf.Empty>}
+ *     Promise that resolves to the response
+ */
+proto.api.ApplicationServicePromiseClient.prototype.updateIftttIntegration =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.ApplicationService/UpdateIftttIntegration',
+      request,
+      metadata || {},
+      methodDescriptor_ApplicationService_UpdateIftttIntegration);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.api.DeleteIftttIntegrationRequest,
+ *   !proto.google.protobuf.Empty>}
+ */
+const methodDescriptor_ApplicationService_DeleteIftttIntegration = new grpc.web.MethodDescriptor(
+  '/api.ApplicationService/DeleteIftttIntegration',
+  grpc.web.MethodType.UNARY,
+  proto.api.DeleteIftttIntegrationRequest,
+  google_protobuf_empty_pb.Empty,
+  /**
+   * @param {!proto.api.DeleteIftttIntegrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  google_protobuf_empty_pb.Empty.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.api.DeleteIftttIntegrationRequest,
+ *   !proto.google.protobuf.Empty>}
+ */
+const methodInfo_ApplicationService_DeleteIftttIntegration = new grpc.web.AbstractClientBase.MethodInfo(
+  google_protobuf_empty_pb.Empty,
+  /**
+   * @param {!proto.api.DeleteIftttIntegrationRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  google_protobuf_empty_pb.Empty.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.api.DeleteIftttIntegrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.google.protobuf.Empty)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.ApplicationServiceClient.prototype.deleteIftttIntegration =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.ApplicationService/DeleteIftttIntegration',
+      request,
+      metadata || {},
+      methodDescriptor_ApplicationService_DeleteIftttIntegration,
+      callback);
+};
+
+
+/**
+ * @param {!proto.api.DeleteIftttIntegrationRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.google.protobuf.Empty>}
+ *     Promise that resolves to the response
+ */
+proto.api.ApplicationServicePromiseClient.prototype.deleteIftttIntegration =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.ApplicationService/DeleteIftttIntegration',
+      request,
+      metadata || {},
+      methodDescriptor_ApplicationService_DeleteIftttIntegration);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.api.GenerateMqttIntegrationClientCertificateRequest,
  *   !proto.api.GenerateMqttIntegrationClientCertificateResponse>}
  */

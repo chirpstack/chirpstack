@@ -34,10 +34,13 @@ import EditLoRaCloudIntegration from "./integrations/EditLoRaCloudIntegration";
 import CreateThingsBoardIntegration from "./integrations/CreateThingsBoardIntegration";
 import EditThingsBoardIntegration from "./integrations/EditThingsBoardIntegration";
 import GenerateMqttCertificate from "./integrations/GenerateMqttCertificate";
+import CreateIftttIntegration from "./integrations/CreateIftttIntegration";
+import EditIftttIntegration from "./integrations/EditIftttIntegration";
 
 interface IProps extends RouteComponentProps {
   tenant: Tenant;
   application: Application;
+  measurementKeys: string[];
 }
 
 class ApplicationLayout extends Component<IProps> {
@@ -242,6 +245,20 @@ class ApplicationLayout extends Component<IProps> {
               exact
               path={`${this.props.match.path}/integrations/mqtt/certificate`}
               render={props => <GenerateMqttCertificate application={app} {...props} />}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/integrations/ifttt/create`}
+              render={props => (
+                <CreateIftttIntegration application={app} measurementKeys={this.props.measurementKeys} {...props} />
+              )}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/integrations/ifttt/edit`}
+              render={props => (
+                <EditIftttIntegration application={app} measurementKeys={this.props.measurementKeys} {...props} />
+              )}
             />
           </Switch>
         </Card>

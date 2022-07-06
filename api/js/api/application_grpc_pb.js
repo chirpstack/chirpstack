@@ -72,6 +72,17 @@ function deserialize_api_CreateHttpIntegrationRequest(buffer_arg) {
   return api_application_pb.CreateHttpIntegrationRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_CreateIftttIntegrationRequest(arg) {
+  if (!(arg instanceof api_application_pb.CreateIftttIntegrationRequest)) {
+    throw new Error('Expected argument of type api.CreateIftttIntegrationRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_CreateIftttIntegrationRequest(buffer_arg) {
+  return api_application_pb.CreateIftttIntegrationRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_CreateInfluxDbIntegrationRequest(arg) {
   if (!(arg instanceof api_application_pb.CreateInfluxDbIntegrationRequest)) {
     throw new Error('Expected argument of type api.CreateInfluxDbIntegrationRequest');
@@ -180,6 +191,17 @@ function serialize_api_DeleteHttpIntegrationRequest(arg) {
 
 function deserialize_api_DeleteHttpIntegrationRequest(buffer_arg) {
   return api_application_pb.DeleteHttpIntegrationRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_DeleteIftttIntegrationRequest(arg) {
+  if (!(arg instanceof api_application_pb.DeleteIftttIntegrationRequest)) {
+    throw new Error('Expected argument of type api.DeleteIftttIntegrationRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_DeleteIftttIntegrationRequest(buffer_arg) {
+  return api_application_pb.DeleteIftttIntegrationRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_api_DeleteInfluxDbIntegrationRequest(arg) {
@@ -367,6 +389,28 @@ function serialize_api_GetHttpIntegrationResponse(arg) {
 
 function deserialize_api_GetHttpIntegrationResponse(buffer_arg) {
   return api_application_pb.GetHttpIntegrationResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_GetIftttIntegrationRequest(arg) {
+  if (!(arg instanceof api_application_pb.GetIftttIntegrationRequest)) {
+    throw new Error('Expected argument of type api.GetIftttIntegrationRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetIftttIntegrationRequest(buffer_arg) {
+  return api_application_pb.GetIftttIntegrationRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_GetIftttIntegrationResponse(arg) {
+  if (!(arg instanceof api_application_pb.GetIftttIntegrationResponse)) {
+    throw new Error('Expected argument of type api.GetIftttIntegrationResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetIftttIntegrationResponse(buffer_arg) {
+  return api_application_pb.GetIftttIntegrationResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_api_GetInfluxDbIntegrationRequest(arg) {
@@ -576,6 +620,17 @@ function serialize_api_UpdateHttpIntegrationRequest(arg) {
 
 function deserialize_api_UpdateHttpIntegrationRequest(buffer_arg) {
   return api_application_pb.UpdateHttpIntegrationRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_UpdateIftttIntegrationRequest(arg) {
+  if (!(arg instanceof api_application_pb.UpdateIftttIntegrationRequest)) {
+    throw new Error('Expected argument of type api.UpdateIftttIntegrationRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_UpdateIftttIntegrationRequest(buffer_arg) {
+  return api_application_pb.UpdateIftttIntegrationRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_api_UpdateInfluxDbIntegrationRequest(arg) {
@@ -1148,6 +1203,54 @@ deletePilotThingsIntegration: {
     responseType: google_protobuf_empty_pb.Empty,
     requestSerialize: serialize_api_DeletePilotThingsIntegrationRequest,
     requestDeserialize: deserialize_api_DeletePilotThingsIntegrationRequest,
+    responseSerialize: serialize_google_protobuf_Empty,
+    responseDeserialize: deserialize_google_protobuf_Empty,
+  },
+  // Create IFTTT integration.
+createIftttIntegration: {
+    path: '/api.ApplicationService/CreateIftttIntegration',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_application_pb.CreateIftttIntegrationRequest,
+    responseType: google_protobuf_empty_pb.Empty,
+    requestSerialize: serialize_api_CreateIftttIntegrationRequest,
+    requestDeserialize: deserialize_api_CreateIftttIntegrationRequest,
+    responseSerialize: serialize_google_protobuf_Empty,
+    responseDeserialize: deserialize_google_protobuf_Empty,
+  },
+  // Get IFTTT integration.
+getIftttIntegration: {
+    path: '/api.ApplicationService/GetIftttIntegration',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_application_pb.GetIftttIntegrationRequest,
+    responseType: api_application_pb.GetIftttIntegrationResponse,
+    requestSerialize: serialize_api_GetIftttIntegrationRequest,
+    requestDeserialize: deserialize_api_GetIftttIntegrationRequest,
+    responseSerialize: serialize_api_GetIftttIntegrationResponse,
+    responseDeserialize: deserialize_api_GetIftttIntegrationResponse,
+  },
+  // Update IFTTT integration.
+updateIftttIntegration: {
+    path: '/api.ApplicationService/UpdateIftttIntegration',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_application_pb.UpdateIftttIntegrationRequest,
+    responseType: google_protobuf_empty_pb.Empty,
+    requestSerialize: serialize_api_UpdateIftttIntegrationRequest,
+    requestDeserialize: deserialize_api_UpdateIftttIntegrationRequest,
+    responseSerialize: serialize_google_protobuf_Empty,
+    responseDeserialize: deserialize_google_protobuf_Empty,
+  },
+  // Delete IFTTT integration.
+deleteIftttIntegration: {
+    path: '/api.ApplicationService/DeleteIftttIntegration',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_application_pb.DeleteIftttIntegrationRequest,
+    responseType: google_protobuf_empty_pb.Empty,
+    requestSerialize: serialize_api_DeleteIftttIntegrationRequest,
+    requestDeserialize: deserialize_api_DeleteIftttIntegrationRequest,
     responseSerialize: serialize_google_protobuf_Empty,
     responseDeserialize: deserialize_google_protobuf_Empty,
   },

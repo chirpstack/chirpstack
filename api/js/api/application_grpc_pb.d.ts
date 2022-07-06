@@ -50,6 +50,10 @@ interface IApplicationServiceService extends grpc.ServiceDefinition<grpc.Untyped
   getPilotThingsIntegration: grpc.MethodDefinition<api_application_pb.GetPilotThingsIntegrationRequest, api_application_pb.GetPilotThingsIntegrationResponse>;
   updatePilotThingsIntegration: grpc.MethodDefinition<api_application_pb.UpdatePilotThingsIntegrationRequest, google_protobuf_empty_pb.Empty>;
   deletePilotThingsIntegration: grpc.MethodDefinition<api_application_pb.DeletePilotThingsIntegrationRequest, google_protobuf_empty_pb.Empty>;
+  createIftttIntegration: grpc.MethodDefinition<api_application_pb.CreateIftttIntegrationRequest, google_protobuf_empty_pb.Empty>;
+  getIftttIntegration: grpc.MethodDefinition<api_application_pb.GetIftttIntegrationRequest, api_application_pb.GetIftttIntegrationResponse>;
+  updateIftttIntegration: grpc.MethodDefinition<api_application_pb.UpdateIftttIntegrationRequest, google_protobuf_empty_pb.Empty>;
+  deleteIftttIntegration: grpc.MethodDefinition<api_application_pb.DeleteIftttIntegrationRequest, google_protobuf_empty_pb.Empty>;
   generateMqttIntegrationClientCertificate: grpc.MethodDefinition<api_application_pb.GenerateMqttIntegrationClientCertificateRequest, api_application_pb.GenerateMqttIntegrationClientCertificateResponse>;
 }
 
@@ -98,6 +102,10 @@ export interface IApplicationServiceServer extends grpc.UntypedServiceImplementa
   getPilotThingsIntegration: grpc.handleUnaryCall<api_application_pb.GetPilotThingsIntegrationRequest, api_application_pb.GetPilotThingsIntegrationResponse>;
   updatePilotThingsIntegration: grpc.handleUnaryCall<api_application_pb.UpdatePilotThingsIntegrationRequest, google_protobuf_empty_pb.Empty>;
   deletePilotThingsIntegration: grpc.handleUnaryCall<api_application_pb.DeletePilotThingsIntegrationRequest, google_protobuf_empty_pb.Empty>;
+  createIftttIntegration: grpc.handleUnaryCall<api_application_pb.CreateIftttIntegrationRequest, google_protobuf_empty_pb.Empty>;
+  getIftttIntegration: grpc.handleUnaryCall<api_application_pb.GetIftttIntegrationRequest, api_application_pb.GetIftttIntegrationResponse>;
+  updateIftttIntegration: grpc.handleUnaryCall<api_application_pb.UpdateIftttIntegrationRequest, google_protobuf_empty_pb.Empty>;
+  deleteIftttIntegration: grpc.handleUnaryCall<api_application_pb.DeleteIftttIntegrationRequest, google_protobuf_empty_pb.Empty>;
   generateMqttIntegrationClientCertificate: grpc.handleUnaryCall<api_application_pb.GenerateMqttIntegrationClientCertificateRequest, api_application_pb.GenerateMqttIntegrationClientCertificateResponse>;
 }
 
@@ -229,6 +237,18 @@ export class ApplicationServiceClient extends grpc.Client {
   deletePilotThingsIntegration(argument: api_application_pb.DeletePilotThingsIntegrationRequest, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
   deletePilotThingsIntegration(argument: api_application_pb.DeletePilotThingsIntegrationRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
   deletePilotThingsIntegration(argument: api_application_pb.DeletePilotThingsIntegrationRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  createIftttIntegration(argument: api_application_pb.CreateIftttIntegrationRequest, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  createIftttIntegration(argument: api_application_pb.CreateIftttIntegrationRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  createIftttIntegration(argument: api_application_pb.CreateIftttIntegrationRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  getIftttIntegration(argument: api_application_pb.GetIftttIntegrationRequest, callback: grpc.requestCallback<api_application_pb.GetIftttIntegrationResponse>): grpc.ClientUnaryCall;
+  getIftttIntegration(argument: api_application_pb.GetIftttIntegrationRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_application_pb.GetIftttIntegrationResponse>): grpc.ClientUnaryCall;
+  getIftttIntegration(argument: api_application_pb.GetIftttIntegrationRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_application_pb.GetIftttIntegrationResponse>): grpc.ClientUnaryCall;
+  updateIftttIntegration(argument: api_application_pb.UpdateIftttIntegrationRequest, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  updateIftttIntegration(argument: api_application_pb.UpdateIftttIntegrationRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  updateIftttIntegration(argument: api_application_pb.UpdateIftttIntegrationRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  deleteIftttIntegration(argument: api_application_pb.DeleteIftttIntegrationRequest, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  deleteIftttIntegration(argument: api_application_pb.DeleteIftttIntegrationRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  deleteIftttIntegration(argument: api_application_pb.DeleteIftttIntegrationRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
   generateMqttIntegrationClientCertificate(argument: api_application_pb.GenerateMqttIntegrationClientCertificateRequest, callback: grpc.requestCallback<api_application_pb.GenerateMqttIntegrationClientCertificateResponse>): grpc.ClientUnaryCall;
   generateMqttIntegrationClientCertificate(argument: api_application_pb.GenerateMqttIntegrationClientCertificateRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_application_pb.GenerateMqttIntegrationClientCertificateResponse>): grpc.ClientUnaryCall;
   generateMqttIntegrationClientCertificate(argument: api_application_pb.GenerateMqttIntegrationClientCertificateRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_application_pb.GenerateMqttIntegrationClientCertificateResponse>): grpc.ClientUnaryCall;

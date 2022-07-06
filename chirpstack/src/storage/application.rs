@@ -85,6 +85,7 @@ pub enum IntegrationKind {
     AwsSns,
     AzureServiceBus,
     PilotThings,
+    Ifttt,
 }
 
 impl fmt::Display for IntegrationKind {
@@ -107,6 +108,7 @@ impl FromStr for IntegrationKind {
             "AwsSns" => IntegrationKind::AwsSns,
             "AzureServiceBus" => IntegrationKind::AzureServiceBus,
             "PilotThings" => IntegrationKind::PilotThings,
+            "Ifttt" => IntegrationKind::Ifttt,
             _ => {
                 return Err(anyhow!("Unexpected IntegrationKind: {}", s));
             }
@@ -148,6 +150,7 @@ pub enum IntegrationConfiguration {
     AwsSns(AwsSnsConfiguration),
     AzureServiceBus(AzureServiceBusConfiguration),
     PilotThings(PilotThingsConfiguration),
+    Ifttt(IftttConfiguration),
 }
 
 impl deserialize::FromSql<Jsonb, Pg> for IntegrationConfiguration {
@@ -247,6 +250,12 @@ pub struct AzureServiceBusConfiguration {
 pub struct PilotThingsConfiguration {
     pub server: String,
     pub token: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct IftttConfiguration {
+    pub key: String,
+    pub uplink_values: [String; 2], // The first value is reserved for the DevEUI
 }
 
 #[derive(Clone, Queryable, Insertable, AsChangeset, PartialEq, Debug)]
@@ -537,6 +546,40 @@ pub async fn get_integrations_for_application(
                 .order_by(application_integration::dsl::kind)
                 .load(&c)?;
             Ok(items)
+        }
+    })
+    .await?
+}
+
+pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
+    #[derive(QueryableByName)]
+    struct Measurement {
+        #[sql_type = "diesel::sql_types::Text"]
+        pub key: String,
+    }
+
+    task::spawn_blocking({
+        let application_id = *application_id;
+        move || -> Result<Vec<String>, Error> {
+            let c = get_db_conn()?;
+            let keys: Vec<Measurement> = diesel::sql_query(
+                r#"
+                select
+                    distinct jsonb_object_keys(dp.measurements) as key
+                from
+                    device_profile dp
+                inner join device d
+                    on d.device_profile_id = dp.id
+                where
+                    d.application_id = $1
+                order by
+                    key
+                "#,
+            )
+            .bind::<diesel::pg::types::sql_types::Uuid, _>(application_id)
+            .load(&c)
+            .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
+            Ok(keys.iter().map(|k| k.key.clone()).collect())
         }
     })
     .await?

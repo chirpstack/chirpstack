@@ -107,6 +107,14 @@ type ApplicationServiceClient interface {
 	UpdatePilotThingsIntegration(ctx context.Context, in *UpdatePilotThingsIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Delete Pilot Things integration.
 	DeletePilotThingsIntegration(ctx context.Context, in *DeletePilotThingsIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Create IFTTT integration.
+	CreateIftttIntegration(ctx context.Context, in *CreateIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Get IFTTT integration.
+	GetIftttIntegration(ctx context.Context, in *GetIftttIntegrationRequest, opts ...grpc.CallOption) (*GetIftttIntegrationResponse, error)
+	// Update IFTTT integration.
+	UpdateIftttIntegration(ctx context.Context, in *UpdateIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Delete IFTTT integration.
+	DeleteIftttIntegration(ctx context.Context, in *DeleteIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Generates application ID specific client-certificate.
 	GenerateMqttIntegrationClientCertificate(ctx context.Context, in *GenerateMqttIntegrationClientCertificateRequest, opts ...grpc.CallOption) (*GenerateMqttIntegrationClientCertificateResponse, error)
 }
@@ -497,6 +505,42 @@ func (c *applicationServiceClient) DeletePilotThingsIntegration(ctx context.Cont
 	return out, nil
 }
 
+func (c *applicationServiceClient) CreateIftttIntegration(ctx context.Context, in *CreateIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.ApplicationService/CreateIftttIntegration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationServiceClient) GetIftttIntegration(ctx context.Context, in *GetIftttIntegrationRequest, opts ...grpc.CallOption) (*GetIftttIntegrationResponse, error) {
+	out := new(GetIftttIntegrationResponse)
+	err := c.cc.Invoke(ctx, "/api.ApplicationService/GetIftttIntegration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationServiceClient) UpdateIftttIntegration(ctx context.Context, in *UpdateIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.ApplicationService/UpdateIftttIntegration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationServiceClient) DeleteIftttIntegration(ctx context.Context, in *DeleteIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.ApplicationService/DeleteIftttIntegration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *applicationServiceClient) GenerateMqttIntegrationClientCertificate(ctx context.Context, in *GenerateMqttIntegrationClientCertificateRequest, opts ...grpc.CallOption) (*GenerateMqttIntegrationClientCertificateResponse, error) {
 	out := new(GenerateMqttIntegrationClientCertificateResponse)
 	err := c.cc.Invoke(ctx, "/api.ApplicationService/GenerateMqttIntegrationClientCertificate", in, out, opts...)
@@ -594,6 +638,14 @@ type ApplicationServiceServer interface {
 	UpdatePilotThingsIntegration(context.Context, *UpdatePilotThingsIntegrationRequest) (*emptypb.Empty, error)
 	// Delete Pilot Things integration.
 	DeletePilotThingsIntegration(context.Context, *DeletePilotThingsIntegrationRequest) (*emptypb.Empty, error)
+	// Create IFTTT integration.
+	CreateIftttIntegration(context.Context, *CreateIftttIntegrationRequest) (*emptypb.Empty, error)
+	// Get IFTTT integration.
+	GetIftttIntegration(context.Context, *GetIftttIntegrationRequest) (*GetIftttIntegrationResponse, error)
+	// Update IFTTT integration.
+	UpdateIftttIntegration(context.Context, *UpdateIftttIntegrationRequest) (*emptypb.Empty, error)
+	// Delete IFTTT integration.
+	DeleteIftttIntegration(context.Context, *DeleteIftttIntegrationRequest) (*emptypb.Empty, error)
 	// Generates application ID specific client-certificate.
 	GenerateMqttIntegrationClientCertificate(context.Context, *GenerateMqttIntegrationClientCertificateRequest) (*GenerateMqttIntegrationClientCertificateResponse, error)
 	mustEmbedUnimplementedApplicationServiceServer()
@@ -728,6 +780,18 @@ func (UnimplementedApplicationServiceServer) UpdatePilotThingsIntegration(contex
 }
 func (UnimplementedApplicationServiceServer) DeletePilotThingsIntegration(context.Context, *DeletePilotThingsIntegrationRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePilotThingsIntegration not implemented")
+}
+func (UnimplementedApplicationServiceServer) CreateIftttIntegration(context.Context, *CreateIftttIntegrationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateIftttIntegration not implemented")
+}
+func (UnimplementedApplicationServiceServer) GetIftttIntegration(context.Context, *GetIftttIntegrationRequest) (*GetIftttIntegrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIftttIntegration not implemented")
+}
+func (UnimplementedApplicationServiceServer) UpdateIftttIntegration(context.Context, *UpdateIftttIntegrationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateIftttIntegration not implemented")
+}
+func (UnimplementedApplicationServiceServer) DeleteIftttIntegration(context.Context, *DeleteIftttIntegrationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteIftttIntegration not implemented")
 }
 func (UnimplementedApplicationServiceServer) GenerateMqttIntegrationClientCertificate(context.Context, *GenerateMqttIntegrationClientCertificateRequest) (*GenerateMqttIntegrationClientCertificateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateMqttIntegrationClientCertificate not implemented")
@@ -1501,6 +1565,78 @@ func _ApplicationService_DeletePilotThingsIntegration_Handler(srv interface{}, c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ApplicationService_CreateIftttIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateIftttIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).CreateIftttIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.ApplicationService/CreateIftttIntegration",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).CreateIftttIntegration(ctx, req.(*CreateIftttIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ApplicationService_GetIftttIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIftttIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).GetIftttIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.ApplicationService/GetIftttIntegration",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).GetIftttIntegration(ctx, req.(*GetIftttIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ApplicationService_UpdateIftttIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateIftttIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).UpdateIftttIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.ApplicationService/UpdateIftttIntegration",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).UpdateIftttIntegration(ctx, req.(*UpdateIftttIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ApplicationService_DeleteIftttIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteIftttIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).DeleteIftttIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.ApplicationService/DeleteIftttIntegration",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).DeleteIftttIntegration(ctx, req.(*DeleteIftttIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ApplicationService_GenerateMqttIntegrationClientCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GenerateMqttIntegrationClientCertificateRequest)
 	if err := dec(in); err != nil {
@@ -1693,6 +1829,22 @@ var ApplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePilotThingsIntegration",
 			Handler:    _ApplicationService_DeletePilotThingsIntegration_Handler,
+		},
+		{
+			MethodName: "CreateIftttIntegration",
+			Handler:    _ApplicationService_CreateIftttIntegration_Handler,
+		},
+		{
+			MethodName: "GetIftttIntegration",
+			Handler:    _ApplicationService_GetIftttIntegration_Handler,
+		},
+		{
+			MethodName: "UpdateIftttIntegration",
+			Handler:    _ApplicationService_UpdateIftttIntegration_Handler,
+		},
+		{
+			MethodName: "DeleteIftttIntegration",
+			Handler:    _ApplicationService_DeleteIftttIntegration_Handler,
 		},
 		{
 			MethodName: "GenerateMqttIntegrationClientCertificate",

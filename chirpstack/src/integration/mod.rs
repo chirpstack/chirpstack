@@ -17,6 +17,7 @@ mod aws_sns;
 mod azure_service_bus;
 mod gcp_pub_sub;
 mod http;
+mod ifttt;
 mod influxdb;
 mod loracloud;
 #[cfg(test)]
@@ -161,6 +162,9 @@ async fn for_application_id(id: &Uuid) -> Result<Vec<Box<dyn Integration + Sync 
             }
             application::IntegrationConfiguration::ThingsBoard(conf) => {
                 Box::new(thingsboard::Integration::new(conf))
+            }
+            application::IntegrationConfiguration::Ifttt(conf) => {
+                Box::new(ifttt::Integration::new(conf))
             }
             _ => {
                 continue;
