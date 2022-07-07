@@ -13,6 +13,7 @@ use crate::{codec, config};
 use chirpstack_api::integration;
 use lrwn::EUI64;
 
+mod amqp;
 mod aws_sns;
 mod azure_service_bus;
 mod gcp_pub_sub;
@@ -54,6 +55,11 @@ pub async fn setup() -> Result<()> {
             "postgresql" => integrations.push(Box::new(
                 postgresql::Integration::new(&conf.integration.postgresql)
                     .context("Setup PostgreSQL integration")?,
+            )),
+            "amqp" => integrations.push(Box::new(
+                amqp::Integration::new(&conf.integration.amqp)
+                    .await
+                    .context("Setup AMQP integration")?,
             )),
             _ => {
                 return Err(anyhow!("Unexpected integration: {}", name));

@@ -444,7 +444,6 @@ pub mod test {
 
     #[tokio::test]
     async fn test_mqtt() {
-        // to avoid race-conditions with other tests using MQTT
         let _guard = test::prepare().await;
 
         // setup base objects

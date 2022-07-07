@@ -8,6 +8,7 @@ services:
       - postgres
       - redis
       - mosquitto
+      - rabbitmq
     environment:
       - DATABASE_URL=postgres://chirpstack_test:chirpstack_test@postgres/chirpstack_test?sslmode=disable
       - REDIS_HOST=redis
@@ -52,3 +53,8 @@ services:
     image: eclipse-mosquitto:1.6
     ports:
       - "1883:1883"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "15672:15672"

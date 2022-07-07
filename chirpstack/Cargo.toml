@@ -51,6 +51,9 @@ sha2 = "0.10"
 urlencoding = "2.1"
 geohash = "0.12"
 gcp_auth = "0.7.2"
+lapin = "2.1.1"
+tokio-executor-trait = "2.1.0"
+tokio-reactor-trait = "1.1.0"
 
 # gRPC and Protobuf
 tonic = "0.7"

@@ -243,6 +243,7 @@ pub struct Integration {
     pub enabled: Vec<String>,
     pub mqtt: MqttIntegration,
     pub postgresql: PostgresqlIntegration,
+    pub amqp: AmqpIntegration,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -319,6 +320,25 @@ impl Default for PostgresqlIntegration {
             dsn: "postgresql://chirpstack_integration:chirpstack_integration@localhost/chirpstack_integration?sslmode=disable".into(),
             max_open_connections: 10,
             min_idle_connections: 0,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct AmqpIntegration {
+    pub url: String,
+    pub json: bool,
+    pub event_routing_key: String,
+}
+
+impl Default for AmqpIntegration {
+    fn default() -> Self {
+        AmqpIntegration {
+            url: "amqp://guest:guest@localhost:5672".to_string(),
+            json: true,
+            event_routing_key: "application.{{application_id}}.device.{{dev_eui}}.event.{{event}}"
+                .to_string(),
         }
     }
 }

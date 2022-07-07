@@ -329,6 +329,24 @@ pub fn run() {
     # pool (0 = equal to max_open_connections).
     min_idle_connections={{ integration.postgresql.min_idle_connections }}
 
+  # AMQP / RabbitMQ.
+  [integration.amqp]
+
+    # Server URL.
+    #
+    # See for a specification of all the possible options:
+    # https://www.rabbitmq.com/uri-spec.html
+    url="{{ integration.amqp.url }}"
+
+    # Event routing key.
+    #
+    # This is the event routing-key template used when publishing device
+    # events. Messages will be published to the "amq.topic" exchange.
+    event_routing_key="{{ integration.amqp.event_routing_key }}"
+
+    # Use JSON encoding instead of Protobuf (binary).
+    json={{ integration.mqtt.json }}
+
 
 # Codec configuration.
 [codec]
