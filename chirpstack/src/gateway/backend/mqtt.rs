@@ -1,4 +1,5 @@
 use std::io::Cursor;
+use std::time::Duration;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
@@ -93,6 +94,7 @@ impl<'a> MqttBackend<'a> {
 
         // connection options
         let mut conn_opts_b = mqtt::ConnectOptionsBuilder::new();
+        conn_opts_b.automatic_reconnect(Duration::from_secs(1), Duration::from_secs(30));
         conn_opts_b.clean_session(conf.clean_session);
         conn_opts_b.user_name(&conf.username);
         conn_opts_b.password(&conf.password);
