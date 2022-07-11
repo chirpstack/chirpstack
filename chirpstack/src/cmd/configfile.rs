@@ -242,12 +242,6 @@ pub fn run() {
     # Event topic template.
     event_topic="{{ integration.mqtt.event_topic }}"
 
-    # State topic template.
-    #
-    # Events that expose a certain state of the device, are published as retained messages
-    # to the state topic.
-    state_topic="{{ integration.mqtt.state_topic }}"
-
     # Command topic.
     #
     # This is the topic on which the MQTT subscribes for receiving (enqueue) commands.
@@ -345,7 +339,7 @@ pub fn run() {
     event_routing_key="{{ integration.amqp.event_routing_key }}"
 
     # Use JSON encoding instead of Protobuf (binary).
-    json={{ integration.mqtt.json }}
+    json={{ integration.amqp.json }}
 
 
 # Codec configuration.
