@@ -20,6 +20,7 @@ mod gcp_pub_sub;
 mod http;
 mod ifttt;
 mod influxdb;
+mod kafka;
 mod loracloud;
 #[cfg(test)]
 pub mod mock;

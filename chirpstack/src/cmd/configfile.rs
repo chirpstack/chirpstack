@@ -323,7 +323,8 @@ pub fn run() {
     # pool (0 = equal to max_open_connections).
     min_idle_connections={{ integration.postgresql.min_idle_connections }}
 
-  # AMQP / RabbitMQ.
+
+  # AMQP / RabbitMQ integration configuration.
   [integration.amqp]
 
     # Server URL.
@@ -340,6 +341,50 @@ pub fn run() {
 
     # Use JSON encoding instead of Protobuf (binary).
     json={{ integration.amqp.json }}
+
+
+  # Kafka integration configuration.
+  [integration.kafka]
+
+    # Brokers.
+    brokers=[
+      {{#each integration.kafka.brokers}}
+      "{{this}}",
+      {{/each}}
+    ]
+
+    # TLS.
+    #
+    # Set this to true when the Kafka client must connect using TLS to the Broker.
+    tls={{ integration.kafka.tls }}
+
+    # Topic for events.
+    topic="{{ integration.kafka.topic }}"
+
+    # Template for keys included in Kafka messages.
+    # Kafka uses the key for distributing messages over partitions. You can use
+    # this to ensure some subset of messages end up in the same partition, so
+    # they can be consumed in-order. And Kafka can use the key for data retention
+    # decisions.  A header "event" with the event type is included in each
+    # message. There is no need to parse it from the key.
+    event_key="{{ integration.kafka.event_key }}"
+
+    # Username (optional).
+    username="{{ integration.kafka.username }}"
+
+    # Password.
+    password="{{ integration.kafka.password }}"
+
+    # Mechanism.
+    #
+    # Valid options are:
+    # * PLAIN
+    # * SCRAM-SHA-256
+    # * SCRAM-SHA-512
+    mechanism="{{ integration.kafka.mechanism }}"
+
+    # Use JSON encoding instead of Protobuf (binary).
+    json={{ integration.kafka.json }}
 
 
 # Codec configuration.

@@ -244,6 +244,7 @@ pub struct Integration {
     pub mqtt: MqttIntegration,
     pub postgresql: PostgresqlIntegration,
     pub amqp: AmqpIntegration,
+    pub kafka: KafkaIntegration,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -337,6 +338,35 @@ impl Default for AmqpIntegration {
             json: true,
             event_routing_key: "application.{{application_id}}.device.{{dev_eui}}.event.{{event}}"
                 .to_string(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct KafkaIntegration {
+    pub brokers: Vec<String>,
+    pub tls: bool,
+    pub topic: String,
+    pub event_key: String,
+    pub username: String,
+    pub password: String,
+    pub mechanism: String,
+    pub json: bool,
+}
+
+impl Default for KafkaIntegration {
+    fn default() -> Self {
+        KafkaIntegration {
+            brokers: vec!["localhost:9092".to_string()],
+            tls: false,
+            topic: "chirpstack".to_string(),
+            event_key: "application.{{application_id}}.device.{{dev_eui}}.event.{{event}}"
+                .to_string(),
+            username: "".to_string(),
+            password: "".to_string(),
+            mechanism: "PLAIN".to_string(),
+            json: true,
         }
     }
 }
