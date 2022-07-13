@@ -160,7 +160,7 @@ class DeviceQueue extends Component<IProps, IState> {
       }
     }
 
-    req.setItem(item);
+    req.setQueueItem(item);
 
     DeviceStore.enqueue(req, _ => {
       this.formRef.current.resetFields();
