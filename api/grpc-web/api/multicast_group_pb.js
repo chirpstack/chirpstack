@@ -3153,7 +3153,7 @@ proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.toObject = function(op
  */
 proto.api.EnqueueMulticastGroupQueueItemRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    multicastGroupQueueItem: (f = msg.getMulticastGroupQueueItem()) && proto.api.MulticastGroupQueueItem.toObject(includeInstance, f)
+    queueItem: (f = msg.getQueueItem()) && proto.api.MulticastGroupQueueItem.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3193,7 +3193,7 @@ proto.api.EnqueueMulticastGroupQueueItemRequest.deserializeBinaryFromReader = fu
     case 1:
       var value = new proto.api.MulticastGroupQueueItem;
       reader.readMessage(value,proto.api.MulticastGroupQueueItem.deserializeBinaryFromReader);
-      msg.setMulticastGroupQueueItem(value);
+      msg.setQueueItem(value);
       break;
     default:
       reader.skipField();
@@ -3224,7 +3224,7 @@ proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.serializeBinary = func
  */
 proto.api.EnqueueMulticastGroupQueueItemRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getMulticastGroupQueueItem();
+  f = message.getQueueItem();
   if (f != null) {
     writer.writeMessage(
       1,
@@ -3236,10 +3236,10 @@ proto.api.EnqueueMulticastGroupQueueItemRequest.serializeBinaryToWriter = functi
 
 
 /**
- * optional MulticastGroupQueueItem multicast_group_queue_item = 1;
+ * optional MulticastGroupQueueItem queue_item = 1;
  * @return {?proto.api.MulticastGroupQueueItem}
  */
-proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.getMulticastGroupQueueItem = function() {
+proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.getQueueItem = function() {
   return /** @type{?proto.api.MulticastGroupQueueItem} */ (
     jspb.Message.getWrapperField(this, proto.api.MulticastGroupQueueItem, 1));
 };
@@ -3249,7 +3249,7 @@ proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.getMulticastGroupQueue
  * @param {?proto.api.MulticastGroupQueueItem|undefined} value
  * @return {!proto.api.EnqueueMulticastGroupQueueItemRequest} returns this
 */
-proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.setMulticastGroupQueueItem = function(value) {
+proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.setQueueItem = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -3258,8 +3258,8 @@ proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.setMulticastGroupQueue
  * Clears the message field making it undefined.
  * @return {!proto.api.EnqueueMulticastGroupQueueItemRequest} returns this
  */
-proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.clearMulticastGroupQueueItem = function() {
-  return this.setMulticastGroupQueueItem(undefined);
+proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.clearQueueItem = function() {
+  return this.setQueueItem(undefined);
 };
 
 
@@ -3267,7 +3267,7 @@ proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.clearMulticastGroupQue
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.hasMulticastGroupQueueItem = function() {
+proto.api.EnqueueMulticastGroupQueueItemRequest.prototype.hasQueueItem = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 

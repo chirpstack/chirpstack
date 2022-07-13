@@ -7,6 +7,7 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "UserProto";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
@@ -14,22 +15,49 @@ import "google/protobuf/empty.proto";
 // UserService is the service providing API methods for managing users.
 service UserService {
     // Create a new user.
-    rpc Create(CreateUserRequest) returns (CreateUserResponse) {}
+    rpc Create(CreateUserRequest) returns (CreateUserResponse) {
+        option(google.api.http) = {
+            post: "/api/users"
+            body: "*"
+        };
+    }
 
     // Get the user for the given ID.
-    rpc Get(GetUserRequest) returns (GetUserResponse) {}
+    rpc Get(GetUserRequest) returns (GetUserResponse) {
+        option(google.api.http) = {
+            get: "/api/users/{id}"
+        };
+    }
 
     // Update the given user.
-    rpc Update(UpdateUserRequest) returns (google.protobuf.Empty) {}
+    rpc Update(UpdateUserRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/users/{user.id}"
+            body: "*"
+        };
+    }
 
     // Delete the user with the given ID.
-    rpc Delete(DeleteUserRequest) returns (google.protobuf.Empty) {}
+    rpc Delete(DeleteUserRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/users/{id}"
+        };
+    }
 
     // Get the list of users.
-    rpc List(ListUsersRequest) returns (ListUsersResponse) {}
+    rpc List(ListUsersRequest) returns (ListUsersResponse) {
+        option(google.api.http) = {
+            get: "/api/users"
+        };
+    }
 
     // Update the password for the given user.
-    rpc UpdatePassword(UpdateUserPasswordRequest) returns (google.protobuf.Empty) {}
+    rpc UpdatePassword(UpdateUserPasswordRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/users/{user_id}/password"
+            body: "*"
+        };
+    }
 }
 
 message User {

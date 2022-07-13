@@ -7,6 +7,7 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "DeviceProfileProto";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "common/common.proto";
@@ -42,22 +43,48 @@ enum MeasurementKind {
 // DeviceProfileService is the service providing API methods for managing device-profiles.
 service DeviceProfileService {
     // Create the given device-profile.
-    rpc Create(CreateDeviceProfileRequest) returns (CreateDeviceProfileResponse) {}
+    rpc Create(CreateDeviceProfileRequest) returns (CreateDeviceProfileResponse) {
+        option(google.api.http) = {
+            post: "/api/device-profiles"
+            body: "*"
+        };
+    }
 
     // Get the device-profile for the given ID.
-    rpc Get(GetDeviceProfileRequest) returns (GetDeviceProfileResponse) {}
+    rpc Get(GetDeviceProfileRequest) returns (GetDeviceProfileResponse) {
+        option(google.api.http) = {
+            get: "/api/device-profiles/{id}"
+        };
+    }
 
     // Update the given device-profile.
-    rpc Update(UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {}
+    rpc Update(UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/device-profiles/{device_profile.id}"
+            body: "*"
+        };
+    }
 
     // Delete the device-profile with the given ID.
-    rpc Delete(DeleteDeviceProfileRequest) returns (google.protobuf.Empty) {}
+    rpc Delete(DeleteDeviceProfileRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/device-profiles/{id}"
+        };
+    }
     
     // List the available device-profiles.
-    rpc List(ListDeviceProfilesRequest) returns (ListDeviceProfilesResponse) {}
+    rpc List(ListDeviceProfilesRequest) returns (ListDeviceProfilesResponse) {
+        option(google.api.http) = {
+            get: "/api/device-profiles"
+        };
+    }
 
     // List available ADR algorithms.
-    rpc ListAdrAlgorithms(google.protobuf.Empty) returns (ListDeviceProfileAdrAlgorithmsResponse) {}
+    rpc ListAdrAlgorithms(google.protobuf.Empty) returns (ListDeviceProfileAdrAlgorithmsResponse) {
+        option(google.api.http) = {
+            get: "/api/device-profiles/adr-algorithms"
+        };
+    }
 }
 
 message DeviceProfile {

@@ -913,10 +913,10 @@ impl DeviceService for Device {
         &self,
         request: Request<api::EnqueueDeviceQueueItemRequest>,
     ) -> Result<Response<api::EnqueueDeviceQueueItemResponse>, Status> {
-        let req_qi = match &request.get_ref().item {
+        let req_qi = match &request.get_ref().queue_item {
             Some(v) => v,
             None => {
-                return Err(Status::invalid_argument("item is missing"));
+                return Err(Status::invalid_argument("queue_item is missing"));
             }
         };
         let dev_eui = EUI64::from_str(&req_qi.dev_eui).map_err(|e| e.status())?;
@@ -1341,7 +1341,7 @@ pub mod test {
         let enqueue_req = get_request(
             &u.id,
             api::EnqueueDeviceQueueItemRequest {
-                item: Some(api::DeviceQueueItem {
+                queue_item: Some(api::DeviceQueueItem {
                     dev_eui: "0102030405060708".into(),
                     confirmed: true,
                     f_port: 2,

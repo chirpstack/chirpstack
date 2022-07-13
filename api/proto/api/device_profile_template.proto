@@ -7,6 +7,7 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "DeviceProfileTemplateProto";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "common/common.proto";
@@ -15,19 +16,41 @@ import "api/device_profile.proto";
 // DeviceProfileTemplateService is the service providing API methods for managing device-profile templates.
 service DeviceProfileTemplateService {
     // Create the given device-profile template.
-    rpc Create(CreateDeviceProfileTemplateRequest) returns (google.protobuf.Empty) {}
+    rpc Create(CreateDeviceProfileTemplateRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/device-profile-templates"
+            body: "*"
+        };
+    }
 
     // Get the device-profile template for the given ID.
-    rpc Get(GetDeviceProfileTemplateRequest) returns (GetDeviceProfileTemplateResponse) {}
+    rpc Get(GetDeviceProfileTemplateRequest) returns (GetDeviceProfileTemplateResponse) {
+        option(google.api.http) = {
+            get: "/api/device-profile-templates/{id}"
+        };
+    }
 
     // Update the given device-profile template.
-    rpc Update(UpdateDeviceProfileTemplateRequest) returns (google.protobuf.Empty) {}
+    rpc Update(UpdateDeviceProfileTemplateRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/device-profile-templates/{device_profile_template.id}"
+            body: "*"
+        };
+    }
 
     // Delete the device-profile template with the given ID.
-    rpc Delete(DeleteDeviceProfileTemplateRequest) returns (google.protobuf.Empty) {}
+    rpc Delete(DeleteDeviceProfileTemplateRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/device-profile-templates/{id}"
+        };
+    }
 
     // List the available device-profile templates.
-    rpc List(ListDeviceProfileTemplatesRequest) returns (ListDeviceProfileTemplatesResponse) {}
+    rpc List(ListDeviceProfileTemplatesRequest) returns (ListDeviceProfileTemplatesResponse) {
+        option(google.api.http) = {
+            get: "/api/device-profile-templates"
+        };
+    }
 }
 
 message DeviceProfileTemplate {

@@ -1,6 +1,7 @@
 import * as jspb from 'google-protobuf'
 
 import * as common_common_pb from '../common/common_pb';
+import * as google_api_annotations_pb from '../google/api/annotations_pb';
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import * as google_protobuf_struct_pb from 'google-protobuf/google/protobuf/struct_pb';
 import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb';
@@ -827,10 +828,10 @@ export namespace DeviceQueueItem {
 }
 
 export class EnqueueDeviceQueueItemRequest extends jspb.Message {
-  getItem(): DeviceQueueItem | undefined;
-  setItem(value?: DeviceQueueItem): EnqueueDeviceQueueItemRequest;
-  hasItem(): boolean;
-  clearItem(): EnqueueDeviceQueueItemRequest;
+  getQueueItem(): DeviceQueueItem | undefined;
+  setQueueItem(value?: DeviceQueueItem): EnqueueDeviceQueueItemRequest;
+  hasQueueItem(): boolean;
+  clearQueueItem(): EnqueueDeviceQueueItemRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): EnqueueDeviceQueueItemRequest.AsObject;
@@ -842,7 +843,7 @@ export class EnqueueDeviceQueueItemRequest extends jspb.Message {
 
 export namespace EnqueueDeviceQueueItemRequest {
   export type AsObject = {
-    item?: DeviceQueueItem.AsObject,
+    queueItem?: DeviceQueueItem.AsObject,
   }
 }
 

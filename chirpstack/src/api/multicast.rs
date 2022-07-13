@@ -271,12 +271,10 @@ impl MulticastGroupService for MulticastGroup {
         &self,
         request: Request<api::EnqueueMulticastGroupQueueItemRequest>,
     ) -> Result<Response<api::EnqueueMulticastGroupQueueItemResponse>, Status> {
-        let req_enq = match &request.get_ref().multicast_group_queue_item {
+        let req_enq = match &request.get_ref().queue_item {
             Some(v) => v,
             None => {
-                return Err(Status::invalid_argument(
-                    "multicast_group_queue_item is missing",
-                ));
+                return Err(Status::invalid_argument("queue_item is missing"));
             }
         };
 
@@ -563,7 +561,7 @@ pub mod test {
         let enqueue_req = get_request(
             &u.id,
             api::EnqueueMulticastGroupQueueItemRequest {
-                multicast_group_queue_item: Some(api::MulticastGroupQueueItem {
+                queue_item: Some(api::MulticastGroupQueueItem {
                     multicast_group_id: create_resp.id.clone(),
                     f_port: 10,
                     data: vec![1, 2, 3],
@@ -601,7 +599,7 @@ pub mod test {
         let enqueue_req = get_request(
             &u.id,
             api::EnqueueMulticastGroupQueueItemRequest {
-                multicast_group_queue_item: Some(api::MulticastGroupQueueItem {
+                queue_item: Some(api::MulticastGroupQueueItem {
                     multicast_group_id: create_resp.id.clone(),
                     f_port: 10,
                     data: vec![1, 2, 3],

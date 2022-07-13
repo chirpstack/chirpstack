@@ -7,151 +7,362 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "ApplicationProto";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 // ApplicationService is the service providing API methods for managing applications.
 service ApplicationService {
     // Create creates the given application.
-    rpc Create(CreateApplicationRequest) returns (CreateApplicationResponse) {}
+    rpc Create(CreateApplicationRequest) returns (CreateApplicationResponse) {
+        option(google.api.http) = {
+            post: "/api/applications"
+            body: "*"
+        };
+    }
 
     // Get the application for the given ID.
-    rpc Get(GetApplicationRequest) returns (GetApplicationResponse) {}
+    rpc Get(GetApplicationRequest) returns (GetApplicationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{id}"
+        };
+    }
 
     // Update updates the given application.
-    rpc Update(UpdateApplicationRequest) returns (google.protobuf.Empty) {}
+    rpc Update(UpdateApplicationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{application.id}"
+            body: "*"
+        };
+    }
 
     // Delete the application for the given ID.
-    rpc Delete(DeleteApplicationRequest) returns (google.protobuf.Empty) {}
+    rpc Delete(DeleteApplicationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{id}"
+        };
+    }
 
     // Get the list of applications.
-    rpc List(ListApplicationsRequest) returns (ListApplicationsResponse) {}
+    rpc List(ListApplicationsRequest) returns (ListApplicationsResponse) {
+        option(google.api.http) = {
+            get: "/api/applications"
+        };
+    }
 
     // List all configured integrations.
-    rpc ListIntegrations(ListIntegrationsRequest) returns (ListIntegrationsResponse) {}
+    rpc ListIntegrations(ListIntegrationsRequest) returns (ListIntegrationsResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations"
+        };
+    }
 
     // Create HTTP integration.
-    rpc CreateHttpIntegration(CreateHttpIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateHttpIntegration(CreateHttpIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/http"
+            body: "*"
+        };
+    }
 
     // Get the configured HTTP integration.
-    rpc GetHttpIntegration(GetHttpIntegrationRequest) returns (GetHttpIntegrationResponse) {}
+    rpc GetHttpIntegration(GetHttpIntegrationRequest) returns (GetHttpIntegrationResponse) {
+		option(google.api.http) = {
+			get: "/api/applications/{application_id}/integrations/http"
+		};
+    }
 
     // Update the HTTP integration.
-    rpc UpdateHttpIntegration(UpdateHttpIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateHttpIntegration(UpdateHttpIntegrationRequest) returns (google.protobuf.Empty) {
+		option(google.api.http) = {
+			put: "/api/applications/{integration.application_id}/integrations/http"
+			body: "*"
+		};
+    }
 
     // Delete the HTTP integration.
-    rpc DeleteHttpIntegration(DeleteHttpIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteHttpIntegration(DeleteHttpIntegrationRequest) returns (google.protobuf.Empty) {
+		option(google.api.http) = {
+			delete: "/api/applications/{application_id}/integrations/http"
+		};
+    }
 
     // Create InfluxDb integration.
-    rpc CreateInfluxDbIntegration(CreateInfluxDbIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateInfluxDbIntegration(CreateInfluxDbIntegrationRequest) returns (google.protobuf.Empty) {
+		option(google.api.http) = {
+			post: "/api/applications/{integration.application_id}/integrations/influxdb"
+			body: "*"
+		};
+    }
 
     // Get InfluxDb integration.
-    rpc GetInfluxDbIntegration(GetInfluxDbIntegrationRequest) returns (GetInfluxDbIntegrationResponse) {}
+    rpc GetInfluxDbIntegration(GetInfluxDbIntegrationRequest) returns (GetInfluxDbIntegrationResponse) {
+		option(google.api.http) = {
+			get: "/api/applications/{application_id}/integrations/influxdb"
+		};
+    }
 
     // Update InfluxDb integration.
-    rpc UpdateInfluxDbIntegration(UpdateInfluxDbIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateInfluxDbIntegration(UpdateInfluxDbIntegrationRequest) returns (google.protobuf.Empty) {
+		option(google.api.http) = {
+			put: "/api/applications/{integration.application_id}/integrations/influxdb"
+			body: "*"
+		};
+    }
 
     // Delete InfluxDb integration.
-    rpc DeleteInfluxDbIntegration(DeleteInfluxDbIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteInfluxDbIntegration(DeleteInfluxDbIntegrationRequest) returns (google.protobuf.Empty) {
+		option(google.api.http) = {
+			delete: "/api/applications/{application_id}/integrations/influxdb"
+		};
+    }
 
     // Create ThingsBoard integration.
-    rpc CreateThingsBoardIntegration(CreateThingsBoardIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateThingsBoardIntegration(CreateThingsBoardIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/thingsboard"
+            body: "*"
+        };
+    }
 
     // Get ThingsBoard integration.
-    rpc GetThingsBoardIntegration(GetThingsBoardIntegrationRequest) returns (GetThingsBoardIntegrationResponse) {}
+    rpc GetThingsBoardIntegration(GetThingsBoardIntegrationRequest) returns (GetThingsBoardIntegrationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations/thingsboard"
+        };
+    }
 
     // Update ThingsBoard integration.
-    rpc UpdateThingsBoardIntegration(UpdateThingsBoardIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateThingsBoardIntegration(UpdateThingsBoardIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{integration.application_id}/integrations/thingsboard"
+            body: "*"
+        };
+    }
 
     // Delete ThingsBoard integration.
-    rpc DeleteThingsBoardIntegration(DeleteThingsBoardIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteThingsBoardIntegration(DeleteThingsBoardIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{application_id}/integrations/thingsboard"
+        };
+    }
 
     // Create myDevices integration.
-    rpc CreateMyDevicesIntegration(CreateMyDevicesIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateMyDevicesIntegration(CreateMyDevicesIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/mydevices"
+            body: "*"
+        };
+    }
 
     // Get myDevices integration.
-    rpc GetMyDevicesIntegration(GetMyDevicesIntegrationRequest) returns (GetMyDevicesIntegrationResponse) {}
+    rpc GetMyDevicesIntegration(GetMyDevicesIntegrationRequest) returns (GetMyDevicesIntegrationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations/mydevices"
+        };
+    }
 
     // Update myDevices integration.
-    rpc UpdateMyDevicesIntegration(UpdateMyDevicesIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateMyDevicesIntegration(UpdateMyDevicesIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{integration.application_id}/integrations/mydevices"
+            body: "*"
+        };
+    }
 
     // Delete myDevices integration.
-    rpc DeleteMyDevicesIntegration(DeleteMyDevicesIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteMyDevicesIntegration(DeleteMyDevicesIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{application_id}/integrations/mydevices"
+        };
+    }
 
     // Create LoRaCloud integration.
-    rpc CreateLoraCloudIntegration(CreateLoraCloudIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateLoraCloudIntegration(CreateLoraCloudIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/loracloud"
+            body: "*"
+        };
+    }
 
     // Get LoRaCloud integration.
-    rpc GetLoraCloudIntegration(GetLoraCloudIntegrationRequest) returns (GetLoraCloudIntegrationResponse) {}
+    rpc GetLoraCloudIntegration(GetLoraCloudIntegrationRequest) returns (GetLoraCloudIntegrationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations/loracloud"
+        };
+    }
 
     // Update LoRaCloud integration.
-    rpc UpdateLoraCloudIntegration(UpdateLoraCloudIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateLoraCloudIntegration(UpdateLoraCloudIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{integration.application_id}/integrations/loracloud"
+            body: "*"
+        };
+    }
 
     // Delete LoRaCloud integration.
-    rpc DeleteLoraCloudIntegration(DeleteLoraCloudIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteLoraCloudIntegration(DeleteLoraCloudIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{application_id}/integrations/loracloud"
+        };
+    }
 
     // Create GCP Pub/Sub integration.
-    rpc CreateGcpPubSubIntegration(CreateGcpPubSubIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateGcpPubSubIntegration(CreateGcpPubSubIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/gcp-pub-sub"
+            body: "*"
+        };
+    }
 
     // Get GCP Pub/Sub integration.
-    rpc GetGcpPubSubIntegration(GetGcpPubSubIntegrationRequest) returns (GetGcpPubSubIntegrationResponse) {}
+    rpc GetGcpPubSubIntegration(GetGcpPubSubIntegrationRequest) returns (GetGcpPubSubIntegrationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations/gcp-pub-sub"
+        };
+    }
 
     // Update GCP Pub/Sub integration.
-    rpc UpdateGcpPubSubIntegration(UpdateGcpPubSubIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateGcpPubSubIntegration(UpdateGcpPubSubIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{integration.application_id}/integrations/gcp-pub-sub"
+            body: "*"
+        };
+    }
 
     // Delete GCP Pub/Sub integration.
-    rpc DeleteGcpPubSubIntegration(DeleteGcpPubSubIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteGcpPubSubIntegration(DeleteGcpPubSubIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{application_id}/integrations/gcp-pub-sub"
+        };
+    }
 
     // Create AWS SNS integration.
-    rpc CreateAwsSnsIntegration(CreateAwsSnsIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateAwsSnsIntegration(CreateAwsSnsIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/aws-sns"
+            body: "*"
+        };
+    }
 
     // Get AWS SNS integration.
-    rpc GetAwsSnsIntegration(GetAwsSnsIntegrationRequest) returns (GetAwsSnsIntegrationResponse) {}
+    rpc GetAwsSnsIntegration(GetAwsSnsIntegrationRequest) returns (GetAwsSnsIntegrationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations/aws-sns"
+        };
+    }
 
     // Update AWS SNS integration.
-    rpc UpdateAwsSnsIntegration(UpdateAwsSnsIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateAwsSnsIntegration(UpdateAwsSnsIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{integration.application_id}/integrations/aws-sns"
+            body: "*"
+        };
+    }
 
     // Delete AWS SNS integration.
-    rpc DeleteAwsSnsIntegration(DeleteAwsSnsIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteAwsSnsIntegration(DeleteAwsSnsIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{application_id}/integrations/aws-sns"
+        };
+    }
 
     // Create Azure Service-Bus integration.
-    rpc CreateAzureServiceBusIntegration(CreateAzureServiceBusIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateAzureServiceBusIntegration(CreateAzureServiceBusIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/azure-service-bus"
+            body: "*"
+        };
+    }
 
     // Get Azure Service-Bus integration.
-    rpc GetAzureServiceBusIntegration(GetAzureServiceBusIntegrationRequest) returns (GetAzureServiceBusIntegrationResponse) {}
+    rpc GetAzureServiceBusIntegration(GetAzureServiceBusIntegrationRequest) returns (GetAzureServiceBusIntegrationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations/azure-service-bus"
+        };
+    }
 
     // Update Azure Service-Bus integration.
-    rpc UpdateAzureServiceBusIntegration(UpdateAzureServiceBusIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateAzureServiceBusIntegration(UpdateAzureServiceBusIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{integration.application_id}/integrations/azure-service-bus"
+            body: "*"
+        };
+    }
 
     // Delete Azure Service-Bus integration.
-    rpc DeleteAzureServiceBusIntegration(DeleteAzureServiceBusIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteAzureServiceBusIntegration(DeleteAzureServiceBusIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{application_id}/integrations/azure-service-bus"
+        };
+    }
 
     // Create Pilot Things integration.
-    rpc CreatePilotThingsIntegration(CreatePilotThingsIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreatePilotThingsIntegration(CreatePilotThingsIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/pilot-things"
+            body: "*"
+        };
+    }
 
     // Get Pilot Things integration.
-    rpc GetPilotThingsIntegration(GetPilotThingsIntegrationRequest) returns (GetPilotThingsIntegrationResponse) {}
+    rpc GetPilotThingsIntegration(GetPilotThingsIntegrationRequest) returns (GetPilotThingsIntegrationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations/pilot-things"
+        };
+    }
 
     // Update Pilot Things integration.
-    rpc UpdatePilotThingsIntegration(UpdatePilotThingsIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdatePilotThingsIntegration(UpdatePilotThingsIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{integration.application_id}/integrations/pilot-things"
+            body: "*"
+        };
+    }
 
     // Delete Pilot Things integration.
-    rpc DeletePilotThingsIntegration(DeletePilotThingsIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeletePilotThingsIntegration(DeletePilotThingsIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{application_id}/integrations/pilot-things"
+        };
+    }
 
     // Create IFTTT integration.
-    rpc CreateIftttIntegration(CreateIftttIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc CreateIftttIntegration(CreateIftttIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/applications/{integration.application_id}/integrations/ifttt"
+            body: "*"
+        };
+    }
 
     // Get IFTTT integration.
-    rpc GetIftttIntegration(GetIftttIntegrationRequest) returns (GetIftttIntegrationResponse) {}
+    rpc GetIftttIntegration(GetIftttIntegrationRequest) returns (GetIftttIntegrationResponse) {
+        option(google.api.http) = {
+            get: "/api/applications/{application_id}/integrations/ifttt"
+        };
+    }
 
     // Update IFTTT integration.
-    rpc UpdateIftttIntegration(UpdateIftttIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateIftttIntegration(UpdateIftttIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/applications/{integration.application_id}/integrations/ifttt"
+            body: "*"
+        };
+    }
 
     // Delete IFTTT integration.
-    rpc DeleteIftttIntegration(DeleteIftttIntegrationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteIftttIntegration(DeleteIftttIntegrationRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/applications/{application_id}/integrations/ifttt"
+        };
+    }
 
     // Generates application ID specific client-certificate.
-    rpc GenerateMqttIntegrationClientCertificate(GenerateMqttIntegrationClientCertificateRequest) returns (GenerateMqttIntegrationClientCertificateResponse) {}
+    rpc GenerateMqttIntegrationClientCertificate(GenerateMqttIntegrationClientCertificateRequest) returns (GenerateMqttIntegrationClientCertificateResponse) {
+        option(google.api.http) = {
+            post: "/api/applications/{application_id}/integrations/mqtt/certificate"
+        };
+    }
 }
 
 enum Encoding {

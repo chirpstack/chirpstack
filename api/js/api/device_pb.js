@@ -10,6 +10,7 @@ var goog = jspb;
 var global = Function('return this')();
 
 var common_common_pb = require('../common/common_pb.js');
+var google_api_annotations_pb = require('../google/api/annotations_pb.js');
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
@@ -6832,7 +6833,7 @@ proto.api.EnqueueDeviceQueueItemRequest.prototype.toObject = function(opt_includ
  */
 proto.api.EnqueueDeviceQueueItemRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    item: (f = msg.getItem()) && proto.api.DeviceQueueItem.toObject(includeInstance, f)
+    queueItem: (f = msg.getQueueItem()) && proto.api.DeviceQueueItem.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -6872,7 +6873,7 @@ proto.api.EnqueueDeviceQueueItemRequest.deserializeBinaryFromReader = function(m
     case 1:
       var value = new proto.api.DeviceQueueItem;
       reader.readMessage(value,proto.api.DeviceQueueItem.deserializeBinaryFromReader);
-      msg.setItem(value);
+      msg.setQueueItem(value);
       break;
     default:
       reader.skipField();
@@ -6912,7 +6913,7 @@ proto.api.EnqueueDeviceQueueItemRequest.prototype.serializeBinary = function() {
  */
 proto.api.EnqueueDeviceQueueItemRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getItem();
+  f = this.getQueueItem();
   if (f != null) {
     writer.writeMessage(
       1,
@@ -6933,23 +6934,23 @@ proto.api.EnqueueDeviceQueueItemRequest.prototype.cloneMessage = function() {
 
 
 /**
- * optional DeviceQueueItem item = 1;
+ * optional DeviceQueueItem queue_item = 1;
  * @return {proto.api.DeviceQueueItem}
  */
-proto.api.EnqueueDeviceQueueItemRequest.prototype.getItem = function() {
+proto.api.EnqueueDeviceQueueItemRequest.prototype.getQueueItem = function() {
   return /** @type{proto.api.DeviceQueueItem} */ (
     jspb.Message.getWrapperField(this, proto.api.DeviceQueueItem, 1));
 };
 
 
 /** @param {proto.api.DeviceQueueItem|undefined} value  */
-proto.api.EnqueueDeviceQueueItemRequest.prototype.setItem = function(value) {
+proto.api.EnqueueDeviceQueueItemRequest.prototype.setQueueItem = function(value) {
   jspb.Message.setWrapperField(this, 1, value);
 };
 
 
-proto.api.EnqueueDeviceQueueItemRequest.prototype.clearItem = function() {
-  this.setItem(undefined);
+proto.api.EnqueueDeviceQueueItemRequest.prototype.clearQueueItem = function() {
+  this.setQueueItem(undefined);
 };
 
 
@@ -6957,7 +6958,7 @@ proto.api.EnqueueDeviceQueueItemRequest.prototype.clearItem = function() {
  * Returns whether this field is set.
  * @return{!boolean}
  */
-proto.api.EnqueueDeviceQueueItemRequest.prototype.hasItem = function() {
+proto.api.EnqueueDeviceQueueItemRequest.prototype.hasQueueItem = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 

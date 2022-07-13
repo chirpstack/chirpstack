@@ -367,10 +367,10 @@ export namespace MulticastGroupQueueItem {
 }
 
 export class EnqueueMulticastGroupQueueItemRequest extends jspb.Message {
-  getMulticastGroupQueueItem(): MulticastGroupQueueItem | undefined;
-  setMulticastGroupQueueItem(value?: MulticastGroupQueueItem): EnqueueMulticastGroupQueueItemRequest;
-  hasMulticastGroupQueueItem(): boolean;
-  clearMulticastGroupQueueItem(): EnqueueMulticastGroupQueueItemRequest;
+  getQueueItem(): MulticastGroupQueueItem | undefined;
+  setQueueItem(value?: MulticastGroupQueueItem): EnqueueMulticastGroupQueueItemRequest;
+  hasQueueItem(): boolean;
+  clearQueueItem(): EnqueueMulticastGroupQueueItemRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): EnqueueMulticastGroupQueueItemRequest.AsObject;
@@ -382,7 +382,7 @@ export class EnqueueMulticastGroupQueueItemRequest extends jspb.Message {
 
 export namespace EnqueueMulticastGroupQueueItemRequest {
   export type AsObject = {
-    multicastGroupQueueItem?: MulticastGroupQueueItem.AsObject,
+    queueItem?: MulticastGroupQueueItem.AsObject,
   }
 }
 

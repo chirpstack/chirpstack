@@ -7,32 +7,63 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "GatewayProto";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "common/common.proto";
 
 // GatewayService is the service providing API methods for managing gateways.
 service GatewayService {
-   // Create creates the given gateway.
-   rpc Create(CreateGatewayRequest) returns (google.protobuf.Empty) {}
+    // Create creates the given gateway.
+    rpc Create(CreateGatewayRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/gateways"
+            body: "*"
+        };
+    }
 
-   // Get returns the gateway for the given Gateway ID.
-   rpc Get(GetGatewayRequest) returns (GetGatewayResponse) {}
+    // Get returns the gateway for the given Gateway ID.
+    rpc Get(GetGatewayRequest) returns (GetGatewayResponse) {
+        option(google.api.http) = {
+            get: "/api/gateways/{gateway_id}"
+        };
+    }
 
-   // Update updates the given gateway.
-   rpc Update(UpdateGatewayRequest) returns (google.protobuf.Empty) {}
+    // Update updates the given gateway.
+    rpc Update(UpdateGatewayRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/gateways/{gateway.gateway_id}"
+            body: "*"
+        };
+    }
 
-   // Delete deletes the gateway matching the given Gateway ID.
-   rpc Delete(DeleteGatewayRequest) returns (google.protobuf.Empty) {}
+    // Delete deletes the gateway matching the given Gateway ID.
+    rpc Delete(DeleteGatewayRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/gateways/{gateway_id}"
+        };
+    }
 
-   // Get the list of gateways.
-   rpc List(ListGatewaysRequest) returns (ListGatewaysResponse) {}
+    // Get the list of gateways.
+    rpc List(ListGatewaysRequest) returns (ListGatewaysResponse) {
+        option(google.api.http) = {
+            get: "/api/gateways"
+        };
+    }
 
-   // Generate client-certificate for the gateway.
-   rpc GenerateClientCertificate(GenerateGatewayClientCertificateRequest) returns (GenerateGatewayClientCertificateResponse) {}
+    // Generate client-certificate for the gateway.
+    rpc GenerateClientCertificate(GenerateGatewayClientCertificateRequest) returns (GenerateGatewayClientCertificateResponse) {
+        option(google.api.http) = {
+            post: "/api/gateways/{gateway_id}/generate-certificate"
+        };
+    }
 
-   // GetMetrics returns the gateway metrics.
-   rpc GetMetrics(GetGatewayMetricsRequest) returns (GetGatewayMetricsResponse) {}
+    // GetMetrics returns the gateway metrics.
+    rpc GetMetrics(GetGatewayMetricsRequest) returns (GetGatewayMetricsResponse) {
+        option(google.api.http) = {
+            get: "/api/gateways/{gateway_id}/metrics"
+        };
+    }
 }
 
 message Gateway {
