@@ -67,7 +67,7 @@ prost = "0.10"
 pbjson-types = "0.3"
 
 # gRPC and HTTP multiplexing
-warp = { version = "0.3" }
+warp = { version = "0.3", features = ["tls"] }
 hyper = "0.14"
 tower = "0.4"
 futures = "0.3"

@@ -38,7 +38,24 @@ pub async fn setup() -> Result<()> {
         .and(warp::body::aggregate())
         .then(handle_request);
 
-    warp::serve(routes).run(addr).await;
+    if !conf.backend_interfaces.ca_cert.is_empty()
+        || !conf.backend_interfaces.tls_cert.is_empty()
+        || !conf.backend_interfaces.tls_key.is_empty()
+    {
+        let mut w = warp::serve(routes).tls();
+        if !conf.backend_interfaces.ca_cert.is_empty() {
+            w = w.client_auth_required_path(&conf.backend_interfaces.ca_cert);
+        }
+        if !conf.backend_interfaces.tls_cert.is_empty() {
+            w = w.cert_path(&conf.backend_interfaces.tls_cert);
+        }
+        if !conf.backend_interfaces.tls_key.is_empty() {
+            w = w.key_path(&conf.backend_interfaces.tls_key);
+        }
+        w.run(addr).await;
+    } else {
+        warp::serve(routes).run(addr).await;
+    }
 
     Ok(())
 }
