@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { RouteComponentProps } from "react-router-dom";
 
-import { Space, Form, Button, Row, Col, InputNumber } from "antd";
+import { Space, Form, Button, Row, Col, InputNumber, Alert } from "antd";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -20,6 +20,7 @@ import DevAddrInput from "../../components/DevAddrInput";
 import DeviceStore from "../../stores/DeviceStore";
 
 interface FormProps {
+  disabled: boolean;
   initialValues: DeviceActivationPb;
   device: Device;
   onFinish: (obj: DeviceActivationPb) => void;
@@ -58,6 +59,7 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           value={this.props.initialValues.getDevAddr()}
           devEui={this.props.device.getDevEui()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -65,6 +67,7 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           name="nwkSEncKey"
           value={this.props.initialValues.getNwkSEncKey()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -72,22 +75,23 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           name="appSKey"
           value={this.props.initialValues.getAppSKey()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <Row gutter={24}>
           <Col span={6}>
             <Form.Item label="Uplink frame-counter" name="fCntUp">
-              <InputNumber min={0} />
+              <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
           </Col>
           <Col span={6}>
             <Form.Item label="Downlink frame-counter" name="nFCntDown">
-              <InputNumber min={0} />
+              <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
           </Col>
         </Row>
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
             (Re)activate device
           </Button>
         </Form.Item>
@@ -129,6 +133,7 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           value={this.props.initialValues.getDevAddr()}
           devEui={this.props.device.getDevEui()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -136,6 +141,7 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           name="nwkSEncKey"
           value={this.props.initialValues.getNwkSEncKey()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -143,6 +149,7 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           name="sNwkSIntKey"
           value={this.props.initialValues.getSNwkSIntKey()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -150,6 +157,7 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           name="fNwkSIntKey"
           value={this.props.initialValues.getFNwkSIntKey()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -157,27 +165,28 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           name="appSKey"
           value={this.props.initialValues.getAppSKey()}
           formRef={this.formRef}
+          disabled={this.props.disabled}
           required
         />
         <Row gutter={24}>
           <Col span={6}>
             <Form.Item label="Uplink frame-counter" name="fCntUp">
-              <InputNumber min={0} />
+              <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
           </Col>
           <Col span={6}>
             <Form.Item label="Downlink frame-counter (network)" name="nFCntDown">
-              <InputNumber min={0} />
+              <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
           </Col>
           <Col span={6}>
             <Form.Item label="Downlink frame-counter (application)" name="aFCntDown">
-              <InputNumber min={0} />
+              <InputNumber min={0} disabled={this.props.disabled} />
             </Form.Item>
           </Col>
         </Row>
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
             (Re)activate device
           </Button>
         </Form.Item>
@@ -235,6 +244,10 @@ class DeviceActivation extends Component<IProps, IState> {
       return null;
     }
 
+    if (!this.state.deviceActivation && this.props.deviceProfile.getSupportsOtaa()) {
+      return <Alert type="info" showIcon message="This device has not (yet) been activated." />;
+    }
+
     let macVersion = this.props.deviceProfile.getMacVersion();
     const lw11 = macVersion === MacVersion.LORAWAN_1_1_0;
 
@@ -246,10 +259,20 @@ class DeviceActivation extends Component<IProps, IState> {
     return (
       <Space direction="vertical" style={{ width: "100%" }} size="large">
         {!lw11 && (
-          <LW10DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} />
+          <LW10DeviceActivationForm
+            initialValues={initialValues}
+            device={this.props.device}
+            onFinish={this.onFinish}
+            disabled={this.props.deviceProfile.getSupportsOtaa()}
+          />
         )}
         {lw11 && (
-          <LW11DeviceActivationForm initialValues={initialValues} device={this.props.device} onFinish={this.onFinish} />
+          <LW11DeviceActivationForm
+            initialValues={initialValues}
+            device={this.props.device}
+            onFinish={this.onFinish}
+            disabled={this.props.deviceProfile.getSupportsOtaa()}
+          />
         )}
       </Space>
     );
