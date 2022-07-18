@@ -85,6 +85,26 @@ pub fn run() {
   secret="{{ api.secret }}"
 
 
+# Global gateway configuration.
+# Please note that backend configuration can be found in the per-region
+# configuration.
+[gateway]
+
+  # CA certificate and key file (optional).
+  #
+  # If setting the CA certificate and key file options, ChirpStack 
+  # will generate client certificates which can be used by the gateway for
+  # authentication and authorization. The Common Name of the certificate will
+  # be set to the Gateway ID.
+  client_cert_lifetime="{{ gateway.client_cert_lifetime }}"
+  ca_cert="{{ gateway.ca_cert }}"
+
+  # Certificate lifetime.
+  #
+  # This defines how long (after generating) the certificate remains valid.
+  ca_key="{{ gateway.ca_key }}"
+
+
 # Network related configuration.
 [network]
 
@@ -161,6 +181,15 @@ pub fn run() {
 
 # Monitoring related configuration.
 [monitoring]
+
+  # interface:port to bind the monitoring endpoint to (optional).
+  #
+  # /health  - Returns 200 in case the healthchecks have passed.
+  # /metrics - Returns metrics which can be scraped by Prometheus.
+  #
+  # If not set, this endpoint will be disabled.
+  bind="{{ monitoring.bind }}"
+  
 
   # Meta-log max history.
   #
@@ -493,7 +522,125 @@ pub fn run() {
     #   #
     #   # Set this to enable client-certificate authentication with the join-server.
     #   tls_key="/path/to/tls_key.pem"
+    {{#each join_server.servers}}
 
+    [[join_server.servers]]
+      join_eui="{{ this.join_eui }}"
+      server="{{ this.server }}"
+      async_interface={{ this.async_interface }}
+      async_interface_timeout="{{ this.async_interface_timeout }}"
+      ca_cert="{{ this.ca_cert }}"
+      tls_cert="{{ this.tls_cert }}"
+      tls_key="{{ this.tls_key }}"
+    {{/each}}
+
+
+# Backend Interfaces configuration (optional).
+[backend_interfaces]
+
+  # interface:port to bind the Backend Interfaces API to.
+  #
+  # Note: this interface is used both for passive-roaming and when
+  # integrating with Join Servers that implement the async interface.
+  bind="{{ api.bind }}"
+
+  # CA certificate (path).
+  ca_cert="{{ backend_interfaces.ca_cert }}"
+
+  # TLS certificate (path).
+  tls_cert="{{ backend_interfaces.tls_cert }}"
+
+  # TLS key (path).
+  tls_key="{{ backend_interfaces.tls_key }}"
+
+
+# Roaming configuration.
+[roaming]
+
+  # Resolve NetID domain suffix.
+  resolve_net_id_domain_suffix="{{ backend_interfaces.resolve_net_id_domain_suffix }}"
+
+  # Per server roaming configuration (this can be repeated).
+  # Example:
+  # [[roaming.servers]]
+  #
+  #  # NetID of the roaming server.
+  #  net_id="010203"
+  #
+  #  # Async timeout (set to 0 to disable async interface).
+  #  async_timeout="0s"
+  #
+  #  # Passive-roaming session lifetime (set to 0 for stateless).
+  #  passive_roaming_lifetime="0s"
+  #
+  #  # Passive-roaming KEK label (optional).
+  #  #
+  #  # If set, the session-keys will be encrypted using the given KEK.
+  #  passive_roaming_kek_label=""
+  #
+  #  # Server.
+  #  #
+  #  # If set, this will bypass the DNS resolving of the server.
+  #  server="https://example.com:1234"
+  #
+  #  # Use target role suffix.
+  #  #
+  #  # Depending the context of the remote server, this will add
+  #  # the /sns or /fns path to the server endpoint.
+  #  use_target_role_suffix=false
+  #
+  #  # CA certificate (path).
+  #  ca_cert=""
+  #
+  #  # TLS certificate (path).
+  #  tls_cert=""
+  #
+  #  # TLS key (path).
+  #  tls_key=""
+  #
+  #  # Authorization header.
+  #  #
+  #  # Optional value of the Authorization header, e.g. token or password.
+  #  authorization_header=""
+  {{#each roaming.servers}}
+
+  [[roaming.servers]]
+    net_id="{{ this.net_id }}"
+    async_timeout="{{ this.async_timeout }}"
+    passive_roaming_lifetime="{{ this.passive_roaming_lifetime }}"
+    passive_roaming_kek_label="{{ this.passive_roaming_kek_label }}"
+    server="{{ this.server }}"
+    use_target_role_suffix="{{ this.use_target_role_suffix }}"
+    ca_cert="{{ this.ca_cert }}"
+    tls_cert="{{ this.tls_cert }}"
+    tls_key="{{ this.tls_key }}"
+    authorization_header="{{ this.authorization_header }}"
+  {{/each}}
+
+
+# Key encryption keys (KEKs).
+#
+# KEKs can be used to encrypt session-keys between two endpoints,
+# for example a Join Server and Network Server, or between two
+# Network Servers in case of a roaming agreement. If used, the
+# sender will encrypt the session-key with the KEK and indicates
+# to the receiver the label of the KEK that was used for encryption,
+# such that the receiver is able to decrypt the session-key.
+#
+# Example (can be repeated):
+# [[keks]]
+#
+#   # KEK label.
+#   label="kek-label"
+
+#   # Encryption key.
+#   kek="01020304050607080102030405060708"
+{{#each keks}}
+
+[[keks]]
+  label="{{ this.label }}"
+  kek="{{ this.kek }}"
+{{/each}}
 "#;
 
     let mut reg = Handlebars::new();
