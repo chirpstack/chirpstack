@@ -86,10 +86,15 @@ class DeviceServiceStub(object):
                 request_serializer=chirpstack__api_dot_api_dot_device__pb2.GetRandomDevAddrRequest.SerializeToString,
                 response_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetRandomDevAddrResponse.FromString,
                 )
-        self.GetStats = channel.unary_unary(
-                '/api.DeviceService/GetStats',
-                request_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceStatsRequest.SerializeToString,
-                response_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceStatsResponse.FromString,
+        self.GetMetrics = channel.unary_unary(
+                '/api.DeviceService/GetMetrics',
+                request_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceMetricsRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceMetricsResponse.FromString,
+                )
+        self.GetLinkMetrics = channel.unary_unary(
+                '/api.DeviceService/GetLinkMetrics',
+                request_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceLinkMetricsRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceLinkMetricsResponse.FromString,
                 )
         self.Enqueue = channel.unary_unary(
                 '/api.DeviceService/Enqueue',
@@ -210,8 +215,17 @@ class DeviceServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetStats(self, request, context):
-        """GetStats returns the device stats.
+    def GetMetrics(self, request, context):
+        """GetMetrics returns the device metrics.
+        Note that this requires a device-profile with codec and measurements configured.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetLinkMetrics(self, request, context):
+        """GetLinkMetrics returns the device link metrics.
+        This includes uplinks, downlinks, RSSI, SNR, etc...
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -311,10 +325,15 @@ def add_DeviceServiceServicer_to_server(servicer, server):
                     request_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetRandomDevAddrRequest.FromString,
                     response_serializer=chirpstack__api_dot_api_dot_device__pb2.GetRandomDevAddrResponse.SerializeToString,
             ),
-            'GetStats': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetStats,
-                    request_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceStatsRequest.FromString,
-                    response_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceStatsResponse.SerializeToString,
+            'GetMetrics': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMetrics,
+                    request_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceMetricsRequest.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceMetricsResponse.SerializeToString,
+            ),
+            'GetLinkMetrics': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetLinkMetrics,
+                    request_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceLinkMetricsRequest.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceLinkMetricsResponse.SerializeToString,
             ),
             'Enqueue': grpc.unary_unary_rpc_method_handler(
                     servicer.Enqueue,
@@ -581,7 +600,7 @@ class DeviceService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetStats(request,
+    def GetMetrics(request,
             target,
             options=(),
             channel_credentials=None,
@@ -591,9 +610,26 @@ class DeviceService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/api.DeviceService/GetStats',
-            chirpstack__api_dot_api_dot_device__pb2.GetDeviceStatsRequest.SerializeToString,
-            chirpstack__api_dot_api_dot_device__pb2.GetDeviceStatsResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/api.DeviceService/GetMetrics',
+            chirpstack__api_dot_api_dot_device__pb2.GetDeviceMetricsRequest.SerializeToString,
+            chirpstack__api_dot_api_dot_device__pb2.GetDeviceMetricsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetLinkMetrics(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.DeviceService/GetLinkMetrics',
+            chirpstack__api_dot_api_dot_device__pb2.GetDeviceLinkMetricsRequest.SerializeToString,
+            chirpstack__api_dot_api_dot_device__pb2.GetDeviceLinkMetricsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

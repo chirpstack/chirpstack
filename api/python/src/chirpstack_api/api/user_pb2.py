@@ -12,11 +12,12 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1d\x63hirpstack-api/api/user.proto\x12\x03\x61pi\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"T\n\x04User\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08is_admin\x18\x04 \x01(\x08\x12\x11\n\tis_active\x18\x05 \x01(\x08\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x0c\n\x04note\x18\x07 \x01(\t\"\xae\x01\n\x0cUserListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\r\n\x05\x65mail\x18\x04 \x01(\t\x12\x10\n\x08is_admin\x18\x05 \x01(\x08\x12\x11\n\tis_active\x18\x06 \x01(\x08\"d\n\nUserTenant\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x10\n\x08is_admin\x18\x02 \x01(\x08\x12\x17\n\x0fis_device_admin\x18\x03 \x01(\x08\x12\x18\n\x10is_gateway_admin\x18\x04 \x01(\x08\"`\n\x11\x43reateUserRequest\x12\x17\n\x04user\x18\x01 \x01(\x0b\x32\t.api.User\x12\x10\n\x08password\x18\x02 \x01(\t\x12 \n\x07tenants\x18\x03 \x03(\x0b\x32\x0f.api.UserTenant\" \n\x12\x43reateUserResponse\x12\n\n\x02id\x18\x01 \x01(\t\"\x1c\n\x0eGetUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x8a\x01\n\x0fGetUserResponse\x12\x17\n\x04user\x18\x01 \x01(\x0b\x32\t.api.User\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\",\n\x11UpdateUserRequest\x12\x17\n\x04user\x18\x01 \x01(\x0b\x32\t.api.User\"\x1f\n\x11\x44\x65leteUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"1\n\x10ListUsersRequest\x12\r\n\x05limit\x18\x01 \x01(\r\x12\x0e\n\x06offset\x18\x02 \x01(\r\"K\n\x11ListUsersResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12!\n\x06result\x18\x02 \x03(\x0b\x32\x11.api.UserListItem\">\n\x19UpdateUserPasswordRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t2\xfb\x02\n\x0bUserService\x12;\n\x06\x43reate\x12\x16.api.CreateUserRequest\x1a\x17.api.CreateUserResponse\"\x00\x12\x32\n\x03Get\x12\x13.api.GetUserRequest\x1a\x14.api.GetUserResponse\"\x00\x12:\n\x06Update\x12\x16.api.UpdateUserRequest\x1a\x16.google.protobuf.Empty\"\x00\x12:\n\x06\x44\x65lete\x12\x16.api.DeleteUserRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x37\n\x04List\x12\x15.api.ListUsersRequest\x1a\x16.api.ListUsersResponse\"\x00\x12J\n\x0eUpdatePassword\x12\x1e.api.UpdateUserPasswordRequest\x1a\x16.google.protobuf.Empty\"\x00\x42L\n\x11io.chirpstack.apiB\tUserProtoP\x01Z*github.com/chirpstack/chirpstack/api/go/v4b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1d\x63hirpstack-api/api/user.proto\x12\x03\x61pi\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"T\n\x04User\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08is_admin\x18\x04 \x01(\x08\x12\x11\n\tis_active\x18\x05 \x01(\x08\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x0c\n\x04note\x18\x07 \x01(\t\"\xae\x01\n\x0cUserListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\r\n\x05\x65mail\x18\x04 \x01(\t\x12\x10\n\x08is_admin\x18\x05 \x01(\x08\x12\x11\n\tis_active\x18\x06 \x01(\x08\"d\n\nUserTenant\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x10\n\x08is_admin\x18\x02 \x01(\x08\x12\x17\n\x0fis_device_admin\x18\x03 \x01(\x08\x12\x18\n\x10is_gateway_admin\x18\x04 \x01(\x08\"`\n\x11\x43reateUserRequest\x12\x17\n\x04user\x18\x01 \x01(\x0b\x32\t.api.User\x12\x10\n\x08password\x18\x02 \x01(\t\x12 \n\x07tenants\x18\x03 \x03(\x0b\x32\x0f.api.UserTenant\" \n\x12\x43reateUserResponse\x12\n\n\x02id\x18\x01 \x01(\t\"\x1c\n\x0eGetUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x8a\x01\n\x0fGetUserResponse\x12\x17\n\x04user\x18\x01 \x01(\x0b\x32\t.api.User\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\",\n\x11UpdateUserRequest\x12\x17\n\x04user\x18\x01 \x01(\x0b\x32\t.api.User\"\x1f\n\x11\x44\x65leteUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"1\n\x10ListUsersRequest\x12\r\n\x05limit\x18\x01 \x01(\r\x12\x0e\n\x06offset\x18\x02 \x01(\r\"K\n\x11ListUsersResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12!\n\x06result\x18\x02 \x03(\x0b\x32\x11.api.UserListItem\">\n\x19UpdateUserPasswordRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t2\x97\x04\n\x0bUserService\x12P\n\x06\x43reate\x12\x16.api.CreateUserRequest\x1a\x17.api.CreateUserResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\"\n/api/users:\x01*\x12I\n\x03Get\x12\x13.api.GetUserRequest\x1a\x14.api.GetUserResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/users/{id}\x12Y\n\x06Update\x12\x16.api.UpdateUserRequest\x1a\x16.google.protobuf.Empty\"\x1f\x82\xd3\xe4\x93\x02\x19\x1a\x14/api/users/{user.id}:\x01*\x12Q\n\x06\x44\x65lete\x12\x16.api.DeleteUserRequest\x1a\x16.google.protobuf.Empty\"\x17\x82\xd3\xe4\x93\x02\x11*\x0f/api/users/{id}\x12I\n\x04List\x12\x15.api.ListUsersRequest\x1a\x16.api.ListUsersResponse\"\x12\x82\xd3\xe4\x93\x02\x0c\x12\n/api/users\x12r\n\x0eUpdatePassword\x12\x1e.api.UpdateUserPasswordRequest\x1a\x16.google.protobuf.Empty\"(\x82\xd3\xe4\x93\x02\"\"\x1d/api/users/{user_id}/password:\x01*BP\n\x11io.chirpstack.apiB\tUserProtoP\x01Z.github.com/chirpstack/chirpstack/api/go/v4/apib\x06proto3')
 
 
 
@@ -120,31 +121,43 @@ _USERSERVICE = DESCRIPTOR.services_by_name['UserService']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\tUserProtoP\001Z*github.com/chirpstack/chirpstack/api/go/v4'
-  _USER._serialized_start=100
-  _USER._serialized_end=184
-  _USERLISTITEM._serialized_start=187
-  _USERLISTITEM._serialized_end=361
-  _USERTENANT._serialized_start=363
-  _USERTENANT._serialized_end=463
-  _CREATEUSERREQUEST._serialized_start=465
-  _CREATEUSERREQUEST._serialized_end=561
-  _CREATEUSERRESPONSE._serialized_start=563
-  _CREATEUSERRESPONSE._serialized_end=595
-  _GETUSERREQUEST._serialized_start=597
-  _GETUSERREQUEST._serialized_end=625
-  _GETUSERRESPONSE._serialized_start=628
-  _GETUSERRESPONSE._serialized_end=766
-  _UPDATEUSERREQUEST._serialized_start=768
-  _UPDATEUSERREQUEST._serialized_end=812
-  _DELETEUSERREQUEST._serialized_start=814
-  _DELETEUSERREQUEST._serialized_end=845
-  _LISTUSERSREQUEST._serialized_start=847
-  _LISTUSERSREQUEST._serialized_end=896
-  _LISTUSERSRESPONSE._serialized_start=898
-  _LISTUSERSRESPONSE._serialized_end=973
-  _UPDATEUSERPASSWORDREQUEST._serialized_start=975
-  _UPDATEUSERPASSWORDREQUEST._serialized_end=1037
-  _USERSERVICE._serialized_start=1040
-  _USERSERVICE._serialized_end=1419
+  DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\tUserProtoP\001Z.github.com/chirpstack/chirpstack/api/go/v4/api'
+  _USERSERVICE.methods_by_name['Create']._options = None
+  _USERSERVICE.methods_by_name['Create']._serialized_options = b'\202\323\344\223\002\017\"\n/api/users:\001*'
+  _USERSERVICE.methods_by_name['Get']._options = None
+  _USERSERVICE.methods_by_name['Get']._serialized_options = b'\202\323\344\223\002\021\022\017/api/users/{id}'
+  _USERSERVICE.methods_by_name['Update']._options = None
+  _USERSERVICE.methods_by_name['Update']._serialized_options = b'\202\323\344\223\002\031\032\024/api/users/{user.id}:\001*'
+  _USERSERVICE.methods_by_name['Delete']._options = None
+  _USERSERVICE.methods_by_name['Delete']._serialized_options = b'\202\323\344\223\002\021*\017/api/users/{id}'
+  _USERSERVICE.methods_by_name['List']._options = None
+  _USERSERVICE.methods_by_name['List']._serialized_options = b'\202\323\344\223\002\014\022\n/api/users'
+  _USERSERVICE.methods_by_name['UpdatePassword']._options = None
+  _USERSERVICE.methods_by_name['UpdatePassword']._serialized_options = b'\202\323\344\223\002\"\"\035/api/users/{user_id}/password:\001*'
+  _USER._serialized_start=130
+  _USER._serialized_end=214
+  _USERLISTITEM._serialized_start=217
+  _USERLISTITEM._serialized_end=391
+  _USERTENANT._serialized_start=393
+  _USERTENANT._serialized_end=493
+  _CREATEUSERREQUEST._serialized_start=495
+  _CREATEUSERREQUEST._serialized_end=591
+  _CREATEUSERRESPONSE._serialized_start=593
+  _CREATEUSERRESPONSE._serialized_end=625
+  _GETUSERREQUEST._serialized_start=627
+  _GETUSERREQUEST._serialized_end=655
+  _GETUSERRESPONSE._serialized_start=658
+  _GETUSERRESPONSE._serialized_end=796
+  _UPDATEUSERREQUEST._serialized_start=798
+  _UPDATEUSERREQUEST._serialized_end=842
+  _DELETEUSERREQUEST._serialized_start=844
+  _DELETEUSERREQUEST._serialized_end=875
+  _LISTUSERSREQUEST._serialized_start=877
+  _LISTUSERSREQUEST._serialized_end=926
+  _LISTUSERSRESPONSE._serialized_start=928
+  _LISTUSERSRESPONSE._serialized_end=1003
+  _UPDATEUSERPASSWORDREQUEST._serialized_start=1005
+  _UPDATEUSERPASSWORDREQUEST._serialized_end=1067
+  _USERSERVICE._serialized_start=1070
+  _USERSERVICE._serialized_end=1605
 # @@protoc_insertion_point(module_scope)

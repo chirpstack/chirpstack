@@ -13,9 +13,10 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"chirpstack-api/common/common.proto\x12\x06\x63ommon\"{\n\x08Location\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x01\x12&\n\x06source\x18\x04 \x01(\x0e\x32\x16.common.LocationSource\x12\x10\n\x08\x61\x63\x63uracy\x18\x05 \x01(\x02\"1\n\x0bKeyEnvelope\x12\x11\n\tkek_label\x18\x01 \x01(\t\x12\x0f\n\x07\x61\x65s_key\x18\x02 \x01(\x0c*,\n\nModulation\x12\x08\n\x04LORA\x10\x00\x12\x07\n\x03\x46SK\x10\x01\x12\x0b\n\x07LR_FHSS\x10\x02*\xaa\x01\n\x06Region\x12\t\n\x05\x45U868\x10\x00\x12\t\n\x05US915\x10\x02\x12\t\n\x05\x43N779\x10\x03\x12\t\n\x05\x45U433\x10\x04\x12\t\n\x05\x41U915\x10\x05\x12\t\n\x05\x43N470\x10\x06\x12\t\n\x05\x41S923\x10\x07\x12\x0b\n\x07\x41S923_2\x10\x0c\x12\x0b\n\x07\x41S923_3\x10\r\x12\x0b\n\x07\x41S923_4\x10\x0e\x12\t\n\x05KR920\x10\x08\x12\t\n\x05IN865\x10\t\x12\t\n\x05RU864\x10\n\x12\x0b\n\x07ISM2400\x10\x0b*\xb3\x01\n\x05MType\x12\x10\n\x0cJOIN_REQUEST\x10\x00\x12\x0f\n\x0bJOIN_ACCEPT\x10\x01\x12\x17\n\x13UNCONFIRMED_DATA_UP\x10\x02\x12\x19\n\x15UNCONFIRMED_DATA_DOWN\x10\x03\x12\x15\n\x11\x43ONFIRMED_DATA_UP\x10\x04\x12\x17\n\x13\x43ONFIRMED_DATA_DOWN\x10\x05\x12\x12\n\x0eREJOIN_REQUEST\x10\x06\x12\x0f\n\x0bPROPRIETARY\x10\x07*~\n\nMacVersion\x12\x11\n\rLORAWAN_1_0_0\x10\x00\x12\x11\n\rLORAWAN_1_0_1\x10\x01\x12\x11\n\rLORAWAN_1_0_2\x10\x02\x12\x11\n\rLORAWAN_1_0_3\x10\x03\x12\x11\n\rLORAWAN_1_0_4\x10\x04\x12\x11\n\rLORAWAN_1_1_0\x10\x05*e\n\x11RegParamsRevision\x12\x05\n\x01\x41\x10\x00\x12\x05\n\x01\x42\x10\x01\x12\x0f\n\x0bRP002_1_0_0\x10\x02\x12\x0f\n\x0bRP002_1_0_1\x10\x03\x12\x0f\n\x0bRP002_1_0_2\x10\x04\x12\x0f\n\x0bRP002_1_0_3\x10\x05*\x8e\x01\n\x0eLocationSource\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03GPS\x10\x01\x12\n\n\x06\x43ONFIG\x10\x02\x12\x15\n\x11GEO_RESOLVER_TDOA\x10\x03\x12\x15\n\x11GEO_RESOLVER_RSSI\x10\x04\x12\x15\n\x11GEO_RESOLVER_GNSS\x10\x05\x12\x15\n\x11GEO_RESOLVER_WIFI\x10\x06\x42U\n\x11io.chirpstack.apiB\x0b\x43ommonProtoP\x01Z1github.com/chirpstack/chirpstack/api/go/v4/commonb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"chirpstack-api/common/common.proto\x12\x06\x63ommon\x1a\x1fgoogle/protobuf/timestamp.proto\"{\n\x08Location\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x01\x12&\n\x06source\x18\x04 \x01(\x0e\x32\x16.common.LocationSource\x12\x10\n\x08\x61\x63\x63uracy\x18\x05 \x01(\x02\"1\n\x0bKeyEnvelope\x12\x11\n\tkek_label\x18\x01 \x01(\t\x12\x0f\n\x07\x61\x65s_key\x18\x02 \x01(\x0c\"o\n\x06Metric\x12\x0c\n\x04name\x18\x01 \x01(\t\x12.\n\ntimestamps\x18\x02 \x03(\x0b\x32\x1a.google.protobuf.Timestamp\x12\'\n\x08\x64\x61tasets\x18\x03 \x03(\x0b\x32\x15.common.MetricDataset\",\n\rMetricDataset\x12\r\n\x05label\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x02 \x03(\x02*,\n\nModulation\x12\x08\n\x04LORA\x10\x00\x12\x07\n\x03\x46SK\x10\x01\x12\x0b\n\x07LR_FHSS\x10\x02*\xaa\x01\n\x06Region\x12\t\n\x05\x45U868\x10\x00\x12\t\n\x05US915\x10\x02\x12\t\n\x05\x43N779\x10\x03\x12\t\n\x05\x45U433\x10\x04\x12\t\n\x05\x41U915\x10\x05\x12\t\n\x05\x43N470\x10\x06\x12\t\n\x05\x41S923\x10\x07\x12\x0b\n\x07\x41S923_2\x10\x0c\x12\x0b\n\x07\x41S923_3\x10\r\x12\x0b\n\x07\x41S923_4\x10\x0e\x12\t\n\x05KR920\x10\x08\x12\t\n\x05IN865\x10\t\x12\t\n\x05RU864\x10\n\x12\x0b\n\x07ISM2400\x10\x0b*\xb3\x01\n\x05MType\x12\x10\n\x0cJOIN_REQUEST\x10\x00\x12\x0f\n\x0bJOIN_ACCEPT\x10\x01\x12\x17\n\x13UNCONFIRMED_DATA_UP\x10\x02\x12\x19\n\x15UNCONFIRMED_DATA_DOWN\x10\x03\x12\x15\n\x11\x43ONFIRMED_DATA_UP\x10\x04\x12\x17\n\x13\x43ONFIRMED_DATA_DOWN\x10\x05\x12\x12\n\x0eREJOIN_REQUEST\x10\x06\x12\x0f\n\x0bPROPRIETARY\x10\x07*~\n\nMacVersion\x12\x11\n\rLORAWAN_1_0_0\x10\x00\x12\x11\n\rLORAWAN_1_0_1\x10\x01\x12\x11\n\rLORAWAN_1_0_2\x10\x02\x12\x11\n\rLORAWAN_1_0_3\x10\x03\x12\x11\n\rLORAWAN_1_0_4\x10\x04\x12\x11\n\rLORAWAN_1_1_0\x10\x05*e\n\x11RegParamsRevision\x12\x05\n\x01\x41\x10\x00\x12\x05\n\x01\x42\x10\x01\x12\x0f\n\x0bRP002_1_0_0\x10\x02\x12\x0f\n\x0bRP002_1_0_1\x10\x03\x12\x0f\n\x0bRP002_1_0_2\x10\x04\x12\x0f\n\x0bRP002_1_0_3\x10\x05*\x8e\x01\n\x0eLocationSource\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03GPS\x10\x01\x12\n\n\x06\x43ONFIG\x10\x02\x12\x15\n\x11GEO_RESOLVER_TDOA\x10\x03\x12\x15\n\x11GEO_RESOLVER_RSSI\x10\x04\x12\x15\n\x11GEO_RESOLVER_GNSS\x10\x05\x12\x15\n\x11GEO_RESOLVER_WIFI\x10\x06*+\n\x0b\x41ggregation\x12\x08\n\x04HOUR\x10\x00\x12\x07\n\x03\x44\x41Y\x10\x01\x12\t\n\x05MONTH\x10\x02\x42U\n\x11io.chirpstack.apiB\x0b\x43ommonProtoP\x01Z1github.com/chirpstack/chirpstack/api/go/v4/commonb\x06proto3')
 
 _MODULATION = DESCRIPTOR.enum_types_by_name['Modulation']
 Modulation = enum_type_wrapper.EnumTypeWrapper(_MODULATION)
@@ -29,6 +30,8 @@ _REGPARAMSREVISION = DESCRIPTOR.enum_types_by_name['RegParamsRevision']
 RegParamsRevision = enum_type_wrapper.EnumTypeWrapper(_REGPARAMSREVISION)
 _LOCATIONSOURCE = DESCRIPTOR.enum_types_by_name['LocationSource']
 LocationSource = enum_type_wrapper.EnumTypeWrapper(_LOCATIONSOURCE)
+_AGGREGATION = DESCRIPTOR.enum_types_by_name['Aggregation']
+Aggregation = enum_type_wrapper.EnumTypeWrapper(_AGGREGATION)
 LORA = 0
 FSK = 1
 LR_FHSS = 2
@@ -73,10 +76,15 @@ GEO_RESOLVER_TDOA = 3
 GEO_RESOLVER_RSSI = 4
 GEO_RESOLVER_GNSS = 5
 GEO_RESOLVER_WIFI = 6
+HOUR = 0
+DAY = 1
+MONTH = 2
 
 
 _LOCATION = DESCRIPTOR.message_types_by_name['Location']
 _KEYENVELOPE = DESCRIPTOR.message_types_by_name['KeyEnvelope']
+_METRIC = DESCRIPTOR.message_types_by_name['Metric']
+_METRICDATASET = DESCRIPTOR.message_types_by_name['MetricDataset']
 Location = _reflection.GeneratedProtocolMessageType('Location', (_message.Message,), {
   'DESCRIPTOR' : _LOCATION,
   '__module__' : 'chirpstack_api.common.common_pb2'
@@ -91,24 +99,44 @@ KeyEnvelope = _reflection.GeneratedProtocolMessageType('KeyEnvelope', (_message.
   })
 _sym_db.RegisterMessage(KeyEnvelope)
 
+Metric = _reflection.GeneratedProtocolMessageType('Metric', (_message.Message,), {
+  'DESCRIPTOR' : _METRIC,
+  '__module__' : 'chirpstack_api.common.common_pb2'
+  # @@protoc_insertion_point(class_scope:common.Metric)
+  })
+_sym_db.RegisterMessage(Metric)
+
+MetricDataset = _reflection.GeneratedProtocolMessageType('MetricDataset', (_message.Message,), {
+  'DESCRIPTOR' : _METRICDATASET,
+  '__module__' : 'chirpstack_api.common.common_pb2'
+  # @@protoc_insertion_point(class_scope:common.MetricDataset)
+  })
+_sym_db.RegisterMessage(MetricDataset)
+
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\013CommonProtoP\001Z1github.com/chirpstack/chirpstack/api/go/v4/common'
-  _MODULATION._serialized_start=222
-  _MODULATION._serialized_end=266
-  _REGION._serialized_start=269
-  _REGION._serialized_end=439
-  _MTYPE._serialized_start=442
-  _MTYPE._serialized_end=621
-  _MACVERSION._serialized_start=623
-  _MACVERSION._serialized_end=749
-  _REGPARAMSREVISION._serialized_start=751
-  _REGPARAMSREVISION._serialized_end=852
-  _LOCATIONSOURCE._serialized_start=855
-  _LOCATIONSOURCE._serialized_end=997
-  _LOCATION._serialized_start=46
-  _LOCATION._serialized_end=169
-  _KEYENVELOPE._serialized_start=171
-  _KEYENVELOPE._serialized_end=220
+  _MODULATION._serialized_start=414
+  _MODULATION._serialized_end=458
+  _REGION._serialized_start=461
+  _REGION._serialized_end=631
+  _MTYPE._serialized_start=634
+  _MTYPE._serialized_end=813
+  _MACVERSION._serialized_start=815
+  _MACVERSION._serialized_end=941
+  _REGPARAMSREVISION._serialized_start=943
+  _REGPARAMSREVISION._serialized_end=1044
+  _LOCATIONSOURCE._serialized_start=1047
+  _LOCATIONSOURCE._serialized_end=1189
+  _AGGREGATION._serialized_start=1191
+  _AGGREGATION._serialized_end=1234
+  _LOCATION._serialized_start=79
+  _LOCATION._serialized_end=202
+  _KEYENVELOPE._serialized_start=204
+  _KEYENVELOPE._serialized_end=253
+  _METRIC._serialized_start=255
+  _METRIC._serialized_end=366
+  _METRICDATASET._serialized_start=368
+  _METRICDATASET._serialized_end=412
 # @@protoc_insertion_point(module_scope)

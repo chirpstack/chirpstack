@@ -46,10 +46,10 @@ class GatewayServiceStub(object):
                 request_serializer=chirpstack__api_dot_api_dot_gateway__pb2.GenerateGatewayClientCertificateRequest.SerializeToString,
                 response_deserializer=chirpstack__api_dot_api_dot_gateway__pb2.GenerateGatewayClientCertificateResponse.FromString,
                 )
-        self.GetStats = channel.unary_unary(
-                '/api.GatewayService/GetStats',
-                request_serializer=chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayStatsRequest.SerializeToString,
-                response_deserializer=chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayStatsResponse.FromString,
+        self.GetMetrics = channel.unary_unary(
+                '/api.GatewayService/GetMetrics',
+                request_serializer=chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayMetricsRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayMetricsResponse.FromString,
                 )
 
 
@@ -99,8 +99,8 @@ class GatewayServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetStats(self, request, context):
-        """GetStats returns the gateway stats.
+    def GetMetrics(self, request, context):
+        """GetMetrics returns the gateway metrics.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -139,10 +139,10 @@ def add_GatewayServiceServicer_to_server(servicer, server):
                     request_deserializer=chirpstack__api_dot_api_dot_gateway__pb2.GenerateGatewayClientCertificateRequest.FromString,
                     response_serializer=chirpstack__api_dot_api_dot_gateway__pb2.GenerateGatewayClientCertificateResponse.SerializeToString,
             ),
-            'GetStats': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetStats,
-                    request_deserializer=chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayStatsRequest.FromString,
-                    response_serializer=chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayStatsResponse.SerializeToString,
+            'GetMetrics': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMetrics,
+                    request_deserializer=chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayMetricsRequest.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayMetricsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -258,7 +258,7 @@ class GatewayService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def GetStats(request,
+    def GetMetrics(request,
             target,
             options=(),
             channel_credentials=None,
@@ -268,8 +268,8 @@ class GatewayService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/api.GatewayService/GetStats',
-            chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayStatsRequest.SerializeToString,
-            chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayStatsResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/api.GatewayService/GetMetrics',
+            chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayMetricsRequest.SerializeToString,
+            chirpstack__api_dot_api_dot_gateway__pb2.GetGatewayMetricsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

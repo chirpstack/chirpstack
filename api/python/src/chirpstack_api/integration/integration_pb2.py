@@ -19,7 +19,7 @@ from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n,chirpstack-api/integration/integration.proto\x12\x0bintegration\x1a\"chirpstack-api/common/common.proto\x1a\x1a\x63hirpstack-api/gw/gw.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xa2\x02\n\nDeviceInfo\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x13\n\x0btenant_name\x18\x02 \x01(\t\x12\x16\n\x0e\x61pplication_id\x18\x03 \x01(\t\x12\x18\n\x10\x61pplication_name\x18\x04 \x01(\t\x12\x19\n\x11\x64\x65vice_profile_id\x18\x05 \x01(\t\x12\x1b\n\x13\x64\x65vice_profile_name\x18\x06 \x01(\t\x12\x13\n\x0b\x64\x65vice_name\x18\x07 \x01(\t\x12\x0f\n\x07\x64\x65v_eui\x18\x08 \x01(\t\x12/\n\x04tags\x18\t \x03(\x0b\x32!.integration.DeviceInfo.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xdc\x02\n\x0bUplinkEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x10\n\x08\x64\x65v_addr\x18\x04 \x01(\t\x12\x0b\n\x03\x61\x64r\x18\x05 \x01(\x08\x12\n\n\x02\x64r\x18\x06 \x01(\r\x12\x10\n\x08\x66_cnt_up\x18\x07 \x01(\r\x12\x0e\n\x06\x66_port\x18\x08 \x01(\r\x12\x11\n\tconfirmed\x18\t \x01(\x08\x12\x0c\n\x04\x64\x61ta\x18\n \x01(\x0c\x12\'\n\x06object\x18\x0b \x01(\x0b\x32\x17.google.protobuf.Struct\x12!\n\x07rx_info\x18\x0c \x03(\x0b\x32\x10.gw.UplinkRXInfo\x12!\n\x07tx_info\x18\r \x01(\x0b\x32\x10.gw.UplinkTXInfo\"\x8f\x01\n\tJoinEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x10\n\x08\x64\x65v_addr\x18\x04 \x01(\t\"\xbd\x01\n\x08\x41\x63kEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x15\n\rqueue_item_id\x18\x04 \x01(\t\x12\x14\n\x0c\x61\x63knowledged\x18\x05 \x01(\x08\x12\x12\n\nf_cnt_down\x18\x06 \x01(\r\"\xdd\x01\n\nTxAckEvent\x12\x13\n\x0b\x64ownlink_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x15\n\rqueue_item_id\x18\x04 \x01(\t\x12\x12\n\nf_cnt_down\x18\x05 \x01(\r\x12\x12\n\ngateway_id\x18\x06 \x01(\t\x12#\n\x07tx_info\x18\x07 \x01(\x0b\x32\x12.gw.DownlinkTXInfo\"\xc0\x02\n\x08LogEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12$\n\x05level\x18\x04 \x01(\x0e\x32\x15.integration.LogLevel\x12\"\n\x04\x63ode\x18\x05 \x01(\x0e\x32\x14.integration.LogCode\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x33\n\x07\x63ontext\x18\x07 \x03(\x0b\x32\".integration.LogEvent.ContextEntry\x1a.\n\x0c\x43ontextEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe8\x01\n\x0bStatusEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x0e\n\x06margin\x18\x05 \x01(\x05\x12\x1d\n\x15\x65xternal_power_source\x18\x06 \x01(\x08\x12!\n\x19\x62\x61ttery_level_unavailable\x18\x07 \x01(\x08\x12\x15\n\rbattery_level\x18\x08 \x01(\x02\"\xa5\x01\n\rLocationEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\"\n\x08location\x18\x04 \x01(\x0b\x32\x10.common.Location\"\xdb\x01\n\x10IntegrationEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x18\n\x10integration_name\x18\x04 \x01(\t\x12\x12\n\nevent_type\x18\x05 \x01(\t\x12\'\n\x06object\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct*,\n\x08LogLevel\x12\x08\n\x04INFO\x10\x00\x12\x0b\n\x07WARNING\x10\x01\x12\t\n\x05\x45RROR\x10\x02*\xc0\x01\n\x07LogCode\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x19\n\x15\x44OWNLINK_PAYLOAD_SIZE\x10\x01\x12\x10\n\x0cUPLINK_CODEC\x10\x02\x12\x12\n\x0e\x44OWNLINK_CODEC\x10\x03\x12\x08\n\x04OTAA\x10\x04\x12\x16\n\x12UPLINK_F_CNT_RESET\x10\x05\x12\x0e\n\nUPLINK_MIC\x10\x06\x12\x1f\n\x1bUPLINK_F_CNT_RETRANSMISSION\x10\x07\x12\x14\n\x10\x44OWNLINK_GATEWAY\x10\x08\x42k\n io.chirpstack.api.as.integrationB\x10IntegrationProtoP\x01Z3github.com/brocaar/chirpstack/api/go/v4/integrationb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n,chirpstack-api/integration/integration.proto\x12\x0bintegration\x1a\"chirpstack-api/common/common.proto\x1a\x1a\x63hirpstack-api/gw/gw.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xa2\x02\n\nDeviceInfo\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x13\n\x0btenant_name\x18\x02 \x01(\t\x12\x16\n\x0e\x61pplication_id\x18\x03 \x01(\t\x12\x18\n\x10\x61pplication_name\x18\x04 \x01(\t\x12\x19\n\x11\x64\x65vice_profile_id\x18\x05 \x01(\t\x12\x1b\n\x13\x64\x65vice_profile_name\x18\x06 \x01(\t\x12\x13\n\x0b\x64\x65vice_name\x18\x07 \x01(\t\x12\x0f\n\x07\x64\x65v_eui\x18\x08 \x01(\t\x12/\n\x04tags\x18\t \x03(\x0b\x32!.integration.DeviceInfo.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd9\x02\n\x0bUplinkEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x10\n\x08\x64\x65v_addr\x18\x04 \x01(\t\x12\x0b\n\x03\x61\x64r\x18\x05 \x01(\x08\x12\n\n\x02\x64r\x18\x06 \x01(\r\x12\r\n\x05\x66_cnt\x18\x07 \x01(\r\x12\x0e\n\x06\x66_port\x18\x08 \x01(\r\x12\x11\n\tconfirmed\x18\t \x01(\x08\x12\x0c\n\x04\x64\x61ta\x18\n \x01(\x0c\x12\'\n\x06object\x18\x0b \x01(\x0b\x32\x17.google.protobuf.Struct\x12!\n\x07rx_info\x18\x0c \x03(\x0b\x32\x10.gw.UplinkRxInfo\x12!\n\x07tx_info\x18\r \x01(\x0b\x32\x10.gw.UplinkTxInfo\"\x8f\x01\n\tJoinEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x10\n\x08\x64\x65v_addr\x18\x04 \x01(\t\"\xbd\x01\n\x08\x41\x63kEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x15\n\rqueue_item_id\x18\x04 \x01(\t\x12\x14\n\x0c\x61\x63knowledged\x18\x05 \x01(\x08\x12\x12\n\nf_cnt_down\x18\x06 \x01(\r\"\xdd\x01\n\nTxAckEvent\x12\x13\n\x0b\x64ownlink_id\x18\x01 \x01(\r\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x15\n\rqueue_item_id\x18\x04 \x01(\t\x12\x12\n\nf_cnt_down\x18\x05 \x01(\r\x12\x12\n\ngateway_id\x18\x06 \x01(\t\x12#\n\x07tx_info\x18\x07 \x01(\x0b\x32\x12.gw.DownlinkTxInfo\"\xa6\x02\n\x08LogEvent\x12(\n\x04time\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x02 \x01(\x0b\x32\x17.integration.DeviceInfo\x12$\n\x05level\x18\x03 \x01(\x0e\x32\x15.integration.LogLevel\x12\"\n\x04\x63ode\x18\x04 \x01(\x0e\x32\x14.integration.LogCode\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x33\n\x07\x63ontext\x18\x06 \x03(\x0b\x32\".integration.LogEvent.ContextEntry\x1a.\n\x0c\x43ontextEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe8\x01\n\x0bStatusEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x0e\n\x06margin\x18\x05 \x01(\x05\x12\x1d\n\x15\x65xternal_power_source\x18\x06 \x01(\x08\x12!\n\x19\x62\x61ttery_level_unavailable\x18\x07 \x01(\x08\x12\x15\n\rbattery_level\x18\x08 \x01(\x02\"\xa5\x01\n\rLocationEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\"\n\x08location\x18\x04 \x01(\x0b\x32\x10.common.Location\"\xdb\x01\n\x10IntegrationEvent\x12\x18\n\x10\x64\x65\x64uplication_id\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12,\n\x0b\x64\x65vice_info\x18\x03 \x01(\x0b\x32\x17.integration.DeviceInfo\x12\x18\n\x10integration_name\x18\x04 \x01(\t\x12\x12\n\nevent_type\x18\x05 \x01(\t\x12\'\n\x06object\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\"\x88\x01\n\x0f\x44ownlinkCommand\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07\x64\x65v_eui\x18\x02 \x01(\t\x12\x11\n\tconfirmed\x18\x03 \x01(\x08\x12\x0e\n\x06\x66_port\x18\x04 \x01(\r\x12\x0c\n\x04\x64\x61ta\x18\x05 \x01(\x0c\x12\'\n\x06object\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct*,\n\x08LogLevel\x12\x08\n\x04INFO\x10\x00\x12\x0b\n\x07WARNING\x10\x01\x12\t\n\x05\x45RROR\x10\x02*\xc0\x01\n\x07LogCode\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x19\n\x15\x44OWNLINK_PAYLOAD_SIZE\x10\x01\x12\x10\n\x0cUPLINK_CODEC\x10\x02\x12\x12\n\x0e\x44OWNLINK_CODEC\x10\x03\x12\x08\n\x04OTAA\x10\x04\x12\x16\n\x12UPLINK_F_CNT_RESET\x10\x05\x12\x0e\n\nUPLINK_MIC\x10\x06\x12\x1f\n\x1bUPLINK_F_CNT_RETRANSMISSION\x10\x07\x12\x14\n\x10\x44OWNLINK_GATEWAY\x10\x08\x42k\n io.chirpstack.api.as.integrationB\x10IntegrationProtoP\x01Z3github.com/brocaar/chirpstack/api/go/v4/integrationb\x06proto3')
 
 _LOGLEVEL = DESCRIPTOR.enum_types_by_name['LogLevel']
 LogLevel = enum_type_wrapper.EnumTypeWrapper(_LOGLEVEL)
@@ -50,6 +50,7 @@ _LOGEVENT_CONTEXTENTRY = _LOGEVENT.nested_types_by_name['ContextEntry']
 _STATUSEVENT = DESCRIPTOR.message_types_by_name['StatusEvent']
 _LOCATIONEVENT = DESCRIPTOR.message_types_by_name['LocationEvent']
 _INTEGRATIONEVENT = DESCRIPTOR.message_types_by_name['IntegrationEvent']
+_DOWNLINKCOMMAND = DESCRIPTOR.message_types_by_name['DownlinkCommand']
 DeviceInfo = _reflection.GeneratedProtocolMessageType('DeviceInfo', (_message.Message,), {
 
   'TagsEntry' : _reflection.GeneratedProtocolMessageType('TagsEntry', (_message.Message,), {
@@ -129,6 +130,13 @@ IntegrationEvent = _reflection.GeneratedProtocolMessageType('IntegrationEvent', 
   })
 _sym_db.RegisterMessage(IntegrationEvent)
 
+DownlinkCommand = _reflection.GeneratedProtocolMessageType('DownlinkCommand', (_message.Message,), {
+  'DESCRIPTOR' : _DOWNLINKCOMMAND,
+  '__module__' : 'chirpstack_api.integration.integration_pb2'
+  # @@protoc_insertion_point(class_scope:integration.DownlinkCommand)
+  })
+_sym_db.RegisterMessage(DownlinkCommand)
+
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
@@ -137,30 +145,32 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _DEVICEINFO_TAGSENTRY._serialized_options = b'8\001'
   _LOGEVENT_CONTEXTENTRY._options = None
   _LOGEVENT_CONTEXTENTRY._serialized_options = b'8\001'
-  _LOGLEVEL._serialized_start=2342
-  _LOGLEVEL._serialized_end=2386
-  _LOGCODE._serialized_start=2389
-  _LOGCODE._serialized_end=2581
+  _LOGLEVEL._serialized_start=2452
+  _LOGLEVEL._serialized_end=2496
+  _LOGCODE._serialized_start=2499
+  _LOGCODE._serialized_end=2691
   _DEVICEINFO._serialized_start=189
   _DEVICEINFO._serialized_end=479
   _DEVICEINFO_TAGSENTRY._serialized_start=436
   _DEVICEINFO_TAGSENTRY._serialized_end=479
   _UPLINKEVENT._serialized_start=482
-  _UPLINKEVENT._serialized_end=830
-  _JOINEVENT._serialized_start=833
-  _JOINEVENT._serialized_end=976
-  _ACKEVENT._serialized_start=979
-  _ACKEVENT._serialized_end=1168
-  _TXACKEVENT._serialized_start=1171
-  _TXACKEVENT._serialized_end=1392
-  _LOGEVENT._serialized_start=1395
-  _LOGEVENT._serialized_end=1715
-  _LOGEVENT_CONTEXTENTRY._serialized_start=1669
-  _LOGEVENT_CONTEXTENTRY._serialized_end=1715
-  _STATUSEVENT._serialized_start=1718
-  _STATUSEVENT._serialized_end=1950
-  _LOCATIONEVENT._serialized_start=1953
-  _LOCATIONEVENT._serialized_end=2118
-  _INTEGRATIONEVENT._serialized_start=2121
-  _INTEGRATIONEVENT._serialized_end=2340
+  _UPLINKEVENT._serialized_end=827
+  _JOINEVENT._serialized_start=830
+  _JOINEVENT._serialized_end=973
+  _ACKEVENT._serialized_start=976
+  _ACKEVENT._serialized_end=1165
+  _TXACKEVENT._serialized_start=1168
+  _TXACKEVENT._serialized_end=1389
+  _LOGEVENT._serialized_start=1392
+  _LOGEVENT._serialized_end=1686
+  _LOGEVENT_CONTEXTENTRY._serialized_start=1640
+  _LOGEVENT_CONTEXTENTRY._serialized_end=1686
+  _STATUSEVENT._serialized_start=1689
+  _STATUSEVENT._serialized_end=1921
+  _LOCATIONEVENT._serialized_start=1924
+  _LOCATIONEVENT._serialized_end=2089
+  _INTEGRATIONEVENT._serialized_start=2092
+  _INTEGRATIONEVENT._serialized_end=2311
+  _DOWNLINKCOMMAND._serialized_start=2314
+  _DOWNLINKCOMMAND._serialized_end=2450
 # @@protoc_insertion_point(module_scope)

@@ -2,46 +2,91 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "github.com/chirpstack/chirpstack/api/go/v4";
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
 option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "InternalProto";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 // TenantService is the service providing API methods for managing tenants.
 service TenantService {
 	// Create a new tenant.
-	rpc Create(CreateTenantRequest) returns (CreateTenantResponse) {}
+    rpc Create(CreateTenantRequest) returns (CreateTenantResponse) {
+        option(google.api.http) = {
+            post: "/api/tenants"
+            body: "*"
+        };
+    }
 
 	// Get the tenant for the given ID.
-	rpc Get(GetTenantRequest) returns (GetTenantResponse) {}
+    rpc Get(GetTenantRequest) returns (GetTenantResponse) {
+        option(google.api.http) = {
+            get: "/api/tenants/{id}"
+        };
+    }
 
     // Update the given tenant.
-    rpc Update(UpdateTenantRequest) returns (google.protobuf.Empty) {}
+    rpc Update(UpdateTenantRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/tenants/{tenant.id}"
+            body: "*"
+        };
+    }
 
     // Delete the tenant with the given ID.
-    rpc Delete(DeleteTenantRequest) returns (google.protobuf.Empty) {}
+    rpc Delete(DeleteTenantRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/tenants/{id}"
+        };
+    }
 
     // Get the list of tenants.
-    rpc List(ListTenantsRequest) returns (ListTenantsResponse) {}
+    rpc List(ListTenantsRequest) returns (ListTenantsResponse) {
+        option(google.api.http) = {
+            get: "/api/tenants"
+        };
+    }
 
     // Add an user to the tenant.
     // Note: the user must already exist.
-    rpc AddUser(AddTenantUserRequest) returns (google.protobuf.Empty) {}
+    rpc AddUser(AddTenantUserRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/tenants/{tenant_user.tenant_id}/users"
+            body: "*"
+        };
+    }
 
     // Get the the tenant user for the given tenant and user IDs.
-    rpc GetUser(GetTenantUserRequest) returns (GetTenantUserResponse) {}
+    rpc GetUser(GetTenantUserRequest) returns (GetTenantUserResponse) {
+        option(google.api.http) = {
+            get: "/api/tenants/{tenant_id}/users/{user_id}"
+        };
+    }
 
     // Update the given tenant user.
-    rpc UpdateUser(UpdateTenantUserRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateUser(UpdateTenantUserRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/tenants/{tenant_user.tenant_id}/users/{tenant_user.user_id}"
+            body: "*"
+        };
+    }
 
     // Delete the given tenant user.
-    rpc DeleteUser(DeleteTenantUserRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteUser(DeleteTenantUserRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/tenants/{tenant_id}/users/{user_id}"
+        };
+    }
 
     // Get the list of tenant users.
-    rpc ListUsers(ListTenantUsersRequest) returns (ListTenantUsersResponse) {}
+    rpc ListUsers(ListTenantUsersRequest) returns (ListTenantUsersResponse) {
+        option(google.api.http) = {
+            get: "/api/tenants/{tenant_id}/users"
+        };
+    }
 }
 
 message Tenant {

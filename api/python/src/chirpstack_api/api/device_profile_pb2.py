@@ -13,22 +13,32 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from chirpstack_api.common import common_pb2 as chirpstack__api_dot_common_dot_common__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\'chirpstack-api/api/device_profile.proto\x12\x03\x61pi\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\"chirpstack-api/common/common.proto\"\x98\x06\n\rDeviceProfile\x12\n\n\x02id\x18\x01 \x01(\t\x12\x11\n\ttenant_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x1e\n\x06region\x18\x04 \x01(\x0e\x32\x0e.common.Region\x12\'\n\x0bmac_version\x18\x05 \x01(\x0e\x32\x12.common.MacVersion\x12\x36\n\x13reg_params_revision\x18\x06 \x01(\x0e\x32\x19.common.RegParamsRevision\x12\x18\n\x10\x61\x64r_algorithm_id\x18\x07 \x01(\t\x12\x30\n\x15payload_codec_runtime\x18\x08 \x01(\x0e\x32\x11.api.CodecRuntime\x12\x1e\n\x16payload_encoder_config\x18\t \x01(\t\x12\x1e\n\x16payload_decoder_config\x18\n \x01(\t\x12\x17\n\x0fuplink_interval\x18\x0b \x01(\r\x12\"\n\x1a\x64\x65vice_status_req_interval\x18\x0c \x01(\r\x12\x15\n\rsupports_otaa\x18\r \x01(\x08\x12\x18\n\x10supports_class_b\x18\x0e \x01(\x08\x12\x18\n\x10supports_class_c\x18\x0f \x01(\x08\x12\x17\n\x0f\x63lass_b_timeout\x18\x10 \x01(\r\x12 \n\x18\x63lass_b_ping_slot_period\x18\x11 \x01(\r\x12\x1c\n\x14\x63lass_b_ping_slot_dr\x18\x12 \x01(\r\x12\x1e\n\x16\x63lass_b_ping_slot_freq\x18\x13 \x01(\r\x12\x17\n\x0f\x63lass_c_timeout\x18\x14 \x01(\r\x12\x15\n\rabp_rx1_delay\x18\x15 \x01(\r\x12\x19\n\x11\x61\x62p_rx1_dr_offset\x18\x16 \x01(\r\x12\x12\n\nabp_rx2_dr\x18\x17 \x01(\r\x12\x14\n\x0c\x61\x62p_rx2_freq\x18\x18 \x01(\r\x12*\n\x04tags\x18\x19 \x03(\x0b\x32\x1c.api.DeviceProfile.TagsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xdd\x02\n\x15\x44\x65viceProfileListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x1e\n\x06region\x18\x05 \x01(\x0e\x32\x0e.common.Region\x12\'\n\x0bmac_version\x18\x06 \x01(\x0e\x32\x12.common.MacVersion\x12\x36\n\x13reg_params_revision\x18\x07 \x01(\x0e\x32\x19.common.RegParamsRevision\x12\x15\n\rsupports_otaa\x18\x08 \x01(\x08\x12\x18\n\x10supports_class_b\x18\t \x01(\x08\x12\x18\n\x10supports_class_c\x18\n \x01(\x08\"H\n\x1a\x43reateDeviceProfileRequest\x12*\n\x0e\x64\x65vice_profile\x18\x01 \x01(\x0b\x32\x12.api.DeviceProfile\")\n\x1b\x43reateDeviceProfileResponse\x12\n\n\x02id\x18\x01 \x01(\t\"%\n\x17GetDeviceProfileRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\xa6\x01\n\x18GetDeviceProfileResponse\x12*\n\x0e\x64\x65vice_profile\x18\x01 \x01(\x0b\x32\x12.api.DeviceProfile\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"H\n\x1aUpdateDeviceProfileRequest\x12*\n\x0e\x64\x65vice_profile\x18\x01 \x01(\x0b\x32\x12.api.DeviceProfile\"(\n\x1a\x44\x65leteDeviceProfileRequest\x12\n\n\x02id\x18\x01 \x01(\t\"]\n\x19ListDeviceProfilesRequest\x12\r\n\x05limit\x18\x01 \x01(\r\x12\x0e\n\x06offset\x18\x02 \x01(\r\x12\x0e\n\x06search\x18\x03 \x01(\t\x12\x11\n\ttenant_id\x18\x04 \x01(\t\"]\n\x1aListDeviceProfilesResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12*\n\x06result\x18\x02 \x03(\x0b\x32\x1a.api.DeviceProfileListItem\"h\n&ListDeviceProfileAdrAlgorithmsResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12)\n\x06result\x18\x02 \x03(\x0b\x32\x19.api.AdrAlgorithmListItem\"0\n\x14\x41\x64rAlgorithmListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t*1\n\x0c\x43odecRuntime\x12\x08\n\x04NONE\x10\x00\x12\x0f\n\x0b\x43\x41YENNE_LPP\x10\x01\x12\x06\n\x02JS\x10\x02\x32\xdc\x03\n\x14\x44\x65viceProfileService\x12M\n\x06\x43reate\x12\x1f.api.CreateDeviceProfileRequest\x1a .api.CreateDeviceProfileResponse\"\x00\x12\x44\n\x03Get\x12\x1c.api.GetDeviceProfileRequest\x1a\x1d.api.GetDeviceProfileResponse\"\x00\x12\x43\n\x06Update\x12\x1f.api.UpdateDeviceProfileRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x43\n\x06\x44\x65lete\x12\x1f.api.DeleteDeviceProfileRequest\x1a\x16.google.protobuf.Empty\"\x00\x12I\n\x04List\x12\x1e.api.ListDeviceProfilesRequest\x1a\x1f.api.ListDeviceProfilesResponse\"\x00\x12Z\n\x11ListAdrAlgorithms\x12\x16.google.protobuf.Empty\x1a+.api.ListDeviceProfileAdrAlgorithmsResponse\"\x00\x42U\n\x11io.chirpstack.apiB\x12\x44\x65viceProfileProtoP\x01Z*github.com/chirpstack/chirpstack/api/go/v4b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\'chirpstack-api/api/device_profile.proto\x12\x03\x61pi\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\"chirpstack-api/common/common.proto\"\xaf\x07\n\rDeviceProfile\x12\n\n\x02id\x18\x01 \x01(\t\x12\x11\n\ttenant_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x1a \x01(\t\x12\x1e\n\x06region\x18\x04 \x01(\x0e\x32\x0e.common.Region\x12\'\n\x0bmac_version\x18\x05 \x01(\x0e\x32\x12.common.MacVersion\x12\x36\n\x13reg_params_revision\x18\x06 \x01(\x0e\x32\x19.common.RegParamsRevision\x12\x18\n\x10\x61\x64r_algorithm_id\x18\x07 \x01(\t\x12\x30\n\x15payload_codec_runtime\x18\x08 \x01(\x0e\x32\x11.api.CodecRuntime\x12\x1c\n\x14payload_codec_script\x18\t \x01(\t\x12\x1f\n\x17\x66lush_queue_on_activate\x18\n \x01(\x08\x12\x17\n\x0fuplink_interval\x18\x0b \x01(\r\x12\"\n\x1a\x64\x65vice_status_req_interval\x18\x0c \x01(\r\x12\x15\n\rsupports_otaa\x18\r \x01(\x08\x12\x18\n\x10supports_class_b\x18\x0e \x01(\x08\x12\x18\n\x10supports_class_c\x18\x0f \x01(\x08\x12\x17\n\x0f\x63lass_b_timeout\x18\x10 \x01(\r\x12 \n\x18\x63lass_b_ping_slot_period\x18\x11 \x01(\r\x12\x1c\n\x14\x63lass_b_ping_slot_dr\x18\x12 \x01(\r\x12\x1e\n\x16\x63lass_b_ping_slot_freq\x18\x13 \x01(\r\x12\x17\n\x0f\x63lass_c_timeout\x18\x14 \x01(\r\x12\x15\n\rabp_rx1_delay\x18\x15 \x01(\r\x12\x19\n\x11\x61\x62p_rx1_dr_offset\x18\x16 \x01(\r\x12\x12\n\nabp_rx2_dr\x18\x17 \x01(\r\x12\x14\n\x0c\x61\x62p_rx2_freq\x18\x18 \x01(\r\x12*\n\x04tags\x18\x19 \x03(\x0b\x32\x1c.api.DeviceProfile.TagsEntry\x12:\n\x0cmeasurements\x18\x1b \x03(\x0b\x32$.api.DeviceProfile.MeasurementsEntry\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\x45\n\x11MeasurementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\x05value\x18\x02 \x01(\x0b\x32\x10.api.Measurement:\x02\x38\x01\"?\n\x0bMeasurement\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\"\n\x04kind\x18\x03 \x01(\x0e\x32\x14.api.MeasurementKind\"\xdd\x02\n\x15\x44\x65viceProfileListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x1e\n\x06region\x18\x05 \x01(\x0e\x32\x0e.common.Region\x12\'\n\x0bmac_version\x18\x06 \x01(\x0e\x32\x12.common.MacVersion\x12\x36\n\x13reg_params_revision\x18\x07 \x01(\x0e\x32\x19.common.RegParamsRevision\x12\x15\n\rsupports_otaa\x18\x08 \x01(\x08\x12\x18\n\x10supports_class_b\x18\t \x01(\x08\x12\x18\n\x10supports_class_c\x18\n \x01(\x08\"H\n\x1a\x43reateDeviceProfileRequest\x12*\n\x0e\x64\x65vice_profile\x18\x01 \x01(\x0b\x32\x12.api.DeviceProfile\")\n\x1b\x43reateDeviceProfileResponse\x12\n\n\x02id\x18\x01 \x01(\t\"%\n\x17GetDeviceProfileRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\xa6\x01\n\x18GetDeviceProfileResponse\x12*\n\x0e\x64\x65vice_profile\x18\x01 \x01(\x0b\x32\x12.api.DeviceProfile\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"H\n\x1aUpdateDeviceProfileRequest\x12*\n\x0e\x64\x65vice_profile\x18\x01 \x01(\x0b\x32\x12.api.DeviceProfile\"(\n\x1a\x44\x65leteDeviceProfileRequest\x12\n\n\x02id\x18\x01 \x01(\t\"]\n\x19ListDeviceProfilesRequest\x12\r\n\x05limit\x18\x01 \x01(\r\x12\x0e\n\x06offset\x18\x02 \x01(\r\x12\x0e\n\x06search\x18\x03 \x01(\t\x12\x11\n\ttenant_id\x18\x04 \x01(\t\"]\n\x1aListDeviceProfilesResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12*\n\x06result\x18\x02 \x03(\x0b\x32\x1a.api.DeviceProfileListItem\"h\n&ListDeviceProfileAdrAlgorithmsResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12)\n\x06result\x18\x02 \x03(\x0b\x32\x19.api.AdrAlgorithmListItem\"0\n\x14\x41\x64rAlgorithmListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t*1\n\x0c\x43odecRuntime\x12\x08\n\x04NONE\x10\x00\x12\x0f\n\x0b\x43\x41YENNE_LPP\x10\x01\x12\x06\n\x02JS\x10\x02*P\n\x0fMeasurementKind\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07\x43OUNTER\x10\x01\x12\x0c\n\x08\x41\x42SOLUTE\x10\x02\x12\t\n\x05GAUGE\x10\x03\x12\n\n\x06STRING\x10\x04\x32\xb8\x05\n\x14\x44\x65viceProfileService\x12l\n\x06\x43reate\x12\x1f.api.CreateDeviceProfileRequest\x1a .api.CreateDeviceProfileResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\"\x14/api/device-profiles:\x01*\x12\x65\n\x03Get\x12\x1c.api.GetDeviceProfileRequest\x1a\x1d.api.GetDeviceProfileResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/device-profiles/{id}\x12v\n\x06Update\x12\x1f.api.UpdateDeviceProfileRequest\x1a\x16.google.protobuf.Empty\"3\x82\xd3\xe4\x93\x02-\x1a(/api/device-profiles/{device_profile.id}:\x01*\x12\x64\n\x06\x44\x65lete\x12\x1f.api.DeleteDeviceProfileRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b*\x19/api/device-profiles/{id}\x12\x65\n\x04List\x12\x1e.api.ListDeviceProfilesRequest\x1a\x1f.api.ListDeviceProfilesResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/api/device-profiles\x12\x85\x01\n\x11ListAdrAlgorithms\x12\x16.google.protobuf.Empty\x1a+.api.ListDeviceProfileAdrAlgorithmsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/api/device-profiles/adr-algorithmsBY\n\x11io.chirpstack.apiB\x12\x44\x65viceProfileProtoP\x01Z.github.com/chirpstack/chirpstack/api/go/v4/apib\x06proto3')
 
 _CODECRUNTIME = DESCRIPTOR.enum_types_by_name['CodecRuntime']
 CodecRuntime = enum_type_wrapper.EnumTypeWrapper(_CODECRUNTIME)
+_MEASUREMENTKIND = DESCRIPTOR.enum_types_by_name['MeasurementKind']
+MeasurementKind = enum_type_wrapper.EnumTypeWrapper(_MEASUREMENTKIND)
 NONE = 0
 CAYENNE_LPP = 1
 JS = 2
+UNKNOWN = 0
+COUNTER = 1
+ABSOLUTE = 2
+GAUGE = 3
+STRING = 4
 
 
 _DEVICEPROFILE = DESCRIPTOR.message_types_by_name['DeviceProfile']
 _DEVICEPROFILE_TAGSENTRY = _DEVICEPROFILE.nested_types_by_name['TagsEntry']
+_DEVICEPROFILE_MEASUREMENTSENTRY = _DEVICEPROFILE.nested_types_by_name['MeasurementsEntry']
+_MEASUREMENT = DESCRIPTOR.message_types_by_name['Measurement']
 _DEVICEPROFILELISTITEM = DESCRIPTOR.message_types_by_name['DeviceProfileListItem']
 _CREATEDEVICEPROFILEREQUEST = DESCRIPTOR.message_types_by_name['CreateDeviceProfileRequest']
 _CREATEDEVICEPROFILERESPONSE = DESCRIPTOR.message_types_by_name['CreateDeviceProfileResponse']
@@ -48,12 +58,27 @@ DeviceProfile = _reflection.GeneratedProtocolMessageType('DeviceProfile', (_mess
     # @@protoc_insertion_point(class_scope:api.DeviceProfile.TagsEntry)
     })
   ,
+
+  'MeasurementsEntry' : _reflection.GeneratedProtocolMessageType('MeasurementsEntry', (_message.Message,), {
+    'DESCRIPTOR' : _DEVICEPROFILE_MEASUREMENTSENTRY,
+    '__module__' : 'chirpstack_api.api.device_profile_pb2'
+    # @@protoc_insertion_point(class_scope:api.DeviceProfile.MeasurementsEntry)
+    })
+  ,
   'DESCRIPTOR' : _DEVICEPROFILE,
   '__module__' : 'chirpstack_api.api.device_profile_pb2'
   # @@protoc_insertion_point(class_scope:api.DeviceProfile)
   })
 _sym_db.RegisterMessage(DeviceProfile)
 _sym_db.RegisterMessage(DeviceProfile.TagsEntry)
+_sym_db.RegisterMessage(DeviceProfile.MeasurementsEntry)
+
+Measurement = _reflection.GeneratedProtocolMessageType('Measurement', (_message.Message,), {
+  'DESCRIPTOR' : _MEASUREMENT,
+  '__module__' : 'chirpstack_api.api.device_profile_pb2'
+  # @@protoc_insertion_point(class_scope:api.Measurement)
+  })
+_sym_db.RegisterMessage(Measurement)
 
 DeviceProfileListItem = _reflection.GeneratedProtocolMessageType('DeviceProfileListItem', (_message.Message,), {
   'DESCRIPTOR' : _DEVICEPROFILELISTITEM,
@@ -136,37 +161,57 @@ _DEVICEPROFILESERVICE = DESCRIPTOR.services_by_name['DeviceProfileService']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\022DeviceProfileProtoP\001Z*github.com/chirpstack/chirpstack/api/go/v4'
+  DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\022DeviceProfileProtoP\001Z.github.com/chirpstack/chirpstack/api/go/v4/api'
   _DEVICEPROFILE_TAGSENTRY._options = None
   _DEVICEPROFILE_TAGSENTRY._serialized_options = b'8\001'
-  _CODECRUNTIME._serialized_start=2080
-  _CODECRUNTIME._serialized_end=2129
-  _DEVICEPROFILE._serialized_start=147
-  _DEVICEPROFILE._serialized_end=939
-  _DEVICEPROFILE_TAGSENTRY._serialized_start=896
-  _DEVICEPROFILE_TAGSENTRY._serialized_end=939
-  _DEVICEPROFILELISTITEM._serialized_start=942
-  _DEVICEPROFILELISTITEM._serialized_end=1291
-  _CREATEDEVICEPROFILEREQUEST._serialized_start=1293
-  _CREATEDEVICEPROFILEREQUEST._serialized_end=1365
-  _CREATEDEVICEPROFILERESPONSE._serialized_start=1367
-  _CREATEDEVICEPROFILERESPONSE._serialized_end=1408
-  _GETDEVICEPROFILEREQUEST._serialized_start=1410
-  _GETDEVICEPROFILEREQUEST._serialized_end=1447
-  _GETDEVICEPROFILERESPONSE._serialized_start=1450
-  _GETDEVICEPROFILERESPONSE._serialized_end=1616
-  _UPDATEDEVICEPROFILEREQUEST._serialized_start=1618
-  _UPDATEDEVICEPROFILEREQUEST._serialized_end=1690
-  _DELETEDEVICEPROFILEREQUEST._serialized_start=1692
-  _DELETEDEVICEPROFILEREQUEST._serialized_end=1732
-  _LISTDEVICEPROFILESREQUEST._serialized_start=1734
-  _LISTDEVICEPROFILESREQUEST._serialized_end=1827
-  _LISTDEVICEPROFILESRESPONSE._serialized_start=1829
-  _LISTDEVICEPROFILESRESPONSE._serialized_end=1922
-  _LISTDEVICEPROFILEADRALGORITHMSRESPONSE._serialized_start=1924
-  _LISTDEVICEPROFILEADRALGORITHMSRESPONSE._serialized_end=2028
-  _ADRALGORITHMLISTITEM._serialized_start=2030
-  _ADRALGORITHMLISTITEM._serialized_end=2078
-  _DEVICEPROFILESERVICE._serialized_start=2132
-  _DEVICEPROFILESERVICE._serialized_end=2608
+  _DEVICEPROFILE_MEASUREMENTSENTRY._options = None
+  _DEVICEPROFILE_MEASUREMENTSENTRY._serialized_options = b'8\001'
+  _DEVICEPROFILESERVICE.methods_by_name['Create']._options = None
+  _DEVICEPROFILESERVICE.methods_by_name['Create']._serialized_options = b'\202\323\344\223\002\031\"\024/api/device-profiles:\001*'
+  _DEVICEPROFILESERVICE.methods_by_name['Get']._options = None
+  _DEVICEPROFILESERVICE.methods_by_name['Get']._serialized_options = b'\202\323\344\223\002\033\022\031/api/device-profiles/{id}'
+  _DEVICEPROFILESERVICE.methods_by_name['Update']._options = None
+  _DEVICEPROFILESERVICE.methods_by_name['Update']._serialized_options = b'\202\323\344\223\002-\032(/api/device-profiles/{device_profile.id}:\001*'
+  _DEVICEPROFILESERVICE.methods_by_name['Delete']._options = None
+  _DEVICEPROFILESERVICE.methods_by_name['Delete']._serialized_options = b'\202\323\344\223\002\033*\031/api/device-profiles/{id}'
+  _DEVICEPROFILESERVICE.methods_by_name['List']._options = None
+  _DEVICEPROFILESERVICE.methods_by_name['List']._serialized_options = b'\202\323\344\223\002\026\022\024/api/device-profiles'
+  _DEVICEPROFILESERVICE.methods_by_name['ListAdrAlgorithms']._options = None
+  _DEVICEPROFILESERVICE.methods_by_name['ListAdrAlgorithms']._serialized_options = b'\202\323\344\223\002%\022#/api/device-profiles/adr-algorithms'
+  _CODECRUNTIME._serialized_start=2326
+  _CODECRUNTIME._serialized_end=2375
+  _MEASUREMENTKIND._serialized_start=2377
+  _MEASUREMENTKIND._serialized_end=2457
+  _DEVICEPROFILE._serialized_start=177
+  _DEVICEPROFILE._serialized_end=1120
+  _DEVICEPROFILE_TAGSENTRY._serialized_start=1006
+  _DEVICEPROFILE_TAGSENTRY._serialized_end=1049
+  _DEVICEPROFILE_MEASUREMENTSENTRY._serialized_start=1051
+  _DEVICEPROFILE_MEASUREMENTSENTRY._serialized_end=1120
+  _MEASUREMENT._serialized_start=1122
+  _MEASUREMENT._serialized_end=1185
+  _DEVICEPROFILELISTITEM._serialized_start=1188
+  _DEVICEPROFILELISTITEM._serialized_end=1537
+  _CREATEDEVICEPROFILEREQUEST._serialized_start=1539
+  _CREATEDEVICEPROFILEREQUEST._serialized_end=1611
+  _CREATEDEVICEPROFILERESPONSE._serialized_start=1613
+  _CREATEDEVICEPROFILERESPONSE._serialized_end=1654
+  _GETDEVICEPROFILEREQUEST._serialized_start=1656
+  _GETDEVICEPROFILEREQUEST._serialized_end=1693
+  _GETDEVICEPROFILERESPONSE._serialized_start=1696
+  _GETDEVICEPROFILERESPONSE._serialized_end=1862
+  _UPDATEDEVICEPROFILEREQUEST._serialized_start=1864
+  _UPDATEDEVICEPROFILEREQUEST._serialized_end=1936
+  _DELETEDEVICEPROFILEREQUEST._serialized_start=1938
+  _DELETEDEVICEPROFILEREQUEST._serialized_end=1978
+  _LISTDEVICEPROFILESREQUEST._serialized_start=1980
+  _LISTDEVICEPROFILESREQUEST._serialized_end=2073
+  _LISTDEVICEPROFILESRESPONSE._serialized_start=2075
+  _LISTDEVICEPROFILESRESPONSE._serialized_end=2168
+  _LISTDEVICEPROFILEADRALGORITHMSRESPONSE._serialized_start=2170
+  _LISTDEVICEPROFILEADRALGORITHMSRESPONSE._serialized_end=2274
+  _ADRALGORITHMLISTITEM._serialized_start=2276
+  _ADRALGORITHMLISTITEM._serialized_end=2324
+  _DEVICEPROFILESERVICE._serialized_start=2460
+  _DEVICEPROFILESERVICE._serialized_end=3156
 # @@protoc_insertion_point(module_scope)

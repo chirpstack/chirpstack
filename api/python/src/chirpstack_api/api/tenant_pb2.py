@@ -12,11 +12,12 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1f\x63hirpstack-api/api/tenant.proto\x12\x03\x61pi\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xa1\x01\n\x06Tenant\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x19\n\x11\x63\x61n_have_gateways\x18\x04 \x01(\x08\x12\x19\n\x11max_gateway_count\x18\x05 \x01(\r\x12\x18\n\x10max_device_count\x18\x06 \x01(\r\x12\x18\n\x10private_gateways\x18\x07 \x01(\x08\"\xf4\x01\n\x0eTenantListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x19\n\x11\x63\x61n_have_gateways\x18\x05 \x01(\x08\x12\x18\n\x10private_gateways\x18\x06 \x01(\x08\x12\x19\n\x11max_gateway_count\x18\x07 \x01(\r\x12\x18\n\x10max_device_count\x18\x08 \x01(\r\"2\n\x13\x43reateTenantRequest\x12\x1b\n\x06tenant\x18\x01 \x01(\x0b\x32\x0b.api.Tenant\"\"\n\x14\x43reateTenantResponse\x12\n\n\x02id\x18\x01 \x01(\t\"\x1e\n\x10GetTenantRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x90\x01\n\x11GetTenantResponse\x12\x1b\n\x06tenant\x18\x01 \x01(\x0b\x32\x0b.api.Tenant\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"2\n\x13UpdateTenantRequest\x12\x1b\n\x06tenant\x18\x01 \x01(\x0b\x32\x0b.api.Tenant\"!\n\x13\x44\x65leteTenantRequest\x12\n\n\x02id\x18\x01 \x01(\t\"C\n\x12ListTenantsRequest\x12\r\n\x05limit\x18\x01 \x01(\r\x12\x0e\n\x06offset\x18\x02 \x01(\r\x12\x0e\n\x06search\x18\x03 \x01(\t\"O\n\x13ListTenantsResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12#\n\x06result\x18\x02 \x03(\x0b\x32\x13.api.TenantListItem\"\x84\x01\n\nTenantUser\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x10\n\x08is_admin\x18\x03 \x01(\x08\x12\x17\n\x0fis_device_admin\x18\x04 \x01(\x08\x12\x18\n\x10is_gateway_admin\x18\x05 \x01(\x08\x12\r\n\x05\x65mail\x18\x06 \x01(\t\"\xec\x01\n\x12TenantUserListItem\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12.\n\ncreated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x10\n\x08is_admin\x18\x06 \x01(\x08\x12\x17\n\x0fis_device_admin\x18\x07 \x01(\x08\x12\x18\n\x10is_gateway_admin\x18\x08 \x01(\x08\"<\n\x14\x41\x64\x64TenantUserRequest\x12$\n\x0btenant_user\x18\x01 \x01(\x0b\x32\x0f.api.TenantUser\":\n\x14GetTenantUserRequest\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"\x9d\x01\n\x15GetTenantUserResponse\x12$\n\x0btenant_user\x18\x01 \x01(\x0b\x32\x0f.api.TenantUser\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"?\n\x17UpdateTenantUserRequest\x12$\n\x0btenant_user\x18\x01 \x01(\x0b\x32\x0f.api.TenantUser\"=\n\x17\x44\x65leteTenantUserRequest\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"J\n\x16ListTenantUsersRequest\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\r\x12\x0e\n\x06offset\x18\x03 \x01(\r\"W\n\x17ListTenantUsersResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12\'\n\x06result\x18\x02 \x03(\x0b\x32\x17.api.TenantUserListItem2\x9b\x05\n\rTenantService\x12?\n\x06\x43reate\x12\x18.api.CreateTenantRequest\x1a\x19.api.CreateTenantResponse\"\x00\x12\x36\n\x03Get\x12\x15.api.GetTenantRequest\x1a\x16.api.GetTenantResponse\"\x00\x12<\n\x06Update\x12\x18.api.UpdateTenantRequest\x1a\x16.google.protobuf.Empty\"\x00\x12<\n\x06\x44\x65lete\x12\x18.api.DeleteTenantRequest\x1a\x16.google.protobuf.Empty\"\x00\x12;\n\x04List\x12\x17.api.ListTenantsRequest\x1a\x18.api.ListTenantsResponse\"\x00\x12>\n\x07\x41\x64\x64User\x12\x19.api.AddTenantUserRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x42\n\x07GetUser\x12\x19.api.GetTenantUserRequest\x1a\x1a.api.GetTenantUserResponse\"\x00\x12\x44\n\nUpdateUser\x12\x1c.api.UpdateTenantUserRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x44\n\nDeleteUser\x12\x1c.api.DeleteTenantUserRequest\x1a\x16.google.protobuf.Empty\"\x00\x12H\n\tListUsers\x12\x1b.api.ListTenantUsersRequest\x1a\x1c.api.ListTenantUsersResponse\"\x00\x42P\n\x11io.chirpstack.apiB\rInternalProtoP\x01Z*github.com/chirpstack/chirpstack/api/go/v4b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1f\x63hirpstack-api/api/tenant.proto\x12\x03\x61pi\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xa1\x01\n\x06Tenant\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x19\n\x11\x63\x61n_have_gateways\x18\x04 \x01(\x08\x12\x19\n\x11max_gateway_count\x18\x05 \x01(\r\x12\x18\n\x10max_device_count\x18\x06 \x01(\r\x12\x18\n\x10private_gateways\x18\x07 \x01(\x08\"\xf4\x01\n\x0eTenantListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x19\n\x11\x63\x61n_have_gateways\x18\x05 \x01(\x08\x12\x18\n\x10private_gateways\x18\x06 \x01(\x08\x12\x19\n\x11max_gateway_count\x18\x07 \x01(\r\x12\x18\n\x10max_device_count\x18\x08 \x01(\r\"2\n\x13\x43reateTenantRequest\x12\x1b\n\x06tenant\x18\x01 \x01(\x0b\x32\x0b.api.Tenant\"\"\n\x14\x43reateTenantResponse\x12\n\n\x02id\x18\x01 \x01(\t\"\x1e\n\x10GetTenantRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x90\x01\n\x11GetTenantResponse\x12\x1b\n\x06tenant\x18\x01 \x01(\x0b\x32\x0b.api.Tenant\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"2\n\x13UpdateTenantRequest\x12\x1b\n\x06tenant\x18\x01 \x01(\x0b\x32\x0b.api.Tenant\"!\n\x13\x44\x65leteTenantRequest\x12\n\n\x02id\x18\x01 \x01(\t\"C\n\x12ListTenantsRequest\x12\r\n\x05limit\x18\x01 \x01(\r\x12\x0e\n\x06offset\x18\x02 \x01(\r\x12\x0e\n\x06search\x18\x03 \x01(\t\"O\n\x13ListTenantsResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12#\n\x06result\x18\x02 \x03(\x0b\x32\x13.api.TenantListItem\"\x84\x01\n\nTenantUser\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x10\n\x08is_admin\x18\x03 \x01(\x08\x12\x17\n\x0fis_device_admin\x18\x04 \x01(\x08\x12\x18\n\x10is_gateway_admin\x18\x05 \x01(\x08\x12\r\n\x05\x65mail\x18\x06 \x01(\t\"\xec\x01\n\x12TenantUserListItem\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12.\n\ncreated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x10\n\x08is_admin\x18\x06 \x01(\x08\x12\x17\n\x0fis_device_admin\x18\x07 \x01(\x08\x12\x18\n\x10is_gateway_admin\x18\x08 \x01(\x08\"<\n\x14\x41\x64\x64TenantUserRequest\x12$\n\x0btenant_user\x18\x01 \x01(\x0b\x32\x0f.api.TenantUser\":\n\x14GetTenantUserRequest\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"\x9d\x01\n\x15GetTenantUserResponse\x12$\n\x0btenant_user\x18\x01 \x01(\x0b\x32\x0f.api.TenantUser\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"?\n\x17UpdateTenantUserRequest\x12$\n\x0btenant_user\x18\x01 \x01(\x0b\x32\x0f.api.TenantUser\"=\n\x17\x44\x65leteTenantUserRequest\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"J\n\x16ListTenantUsersRequest\x12\x11\n\ttenant_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\r\x12\x0e\n\x06offset\x18\x03 \x01(\r\"W\n\x17ListTenantUsersResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12\'\n\x06result\x18\x02 \x03(\x0b\x32\x17.api.TenantUserListItem2\xa2\x08\n\rTenantService\x12V\n\x06\x43reate\x12\x18.api.CreateTenantRequest\x1a\x19.api.CreateTenantResponse\"\x17\x82\xd3\xe4\x93\x02\x11\"\x0c/api/tenants:\x01*\x12O\n\x03Get\x12\x15.api.GetTenantRequest\x1a\x16.api.GetTenantResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/api/tenants/{id}\x12_\n\x06Update\x12\x18.api.UpdateTenantRequest\x1a\x16.google.protobuf.Empty\"#\x82\xd3\xe4\x93\x02\x1d\x1a\x18/api/tenants/{tenant.id}:\x01*\x12U\n\x06\x44\x65lete\x12\x18.api.DeleteTenantRequest\x1a\x16.google.protobuf.Empty\"\x19\x82\xd3\xe4\x93\x02\x13*\x11/api/tenants/{id}\x12O\n\x04List\x12\x17.api.ListTenantsRequest\x1a\x18.api.ListTenantsResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\x0c/api/tenants\x12s\n\x07\x41\x64\x64User\x12\x19.api.AddTenantUserRequest\x1a\x16.google.protobuf.Empty\"5\x82\xd3\xe4\x93\x02/\"*/api/tenants/{tenant_user.tenant_id}/users:\x01*\x12r\n\x07GetUser\x12\x19.api.GetTenantUserRequest\x1a\x1a.api.GetTenantUserResponse\"0\x82\xd3\xe4\x93\x02*\x12(/api/tenants/{tenant_id}/users/{user_id}\x12\x8f\x01\n\nUpdateUser\x12\x1c.api.UpdateTenantUserRequest\x1a\x16.google.protobuf.Empty\"K\x82\xd3\xe4\x93\x02\x45\x1a@/api/tenants/{tenant_user.tenant_id}/users/{tenant_user.user_id}:\x01*\x12t\n\nDeleteUser\x12\x1c.api.DeleteTenantUserRequest\x1a\x16.google.protobuf.Empty\"0\x82\xd3\xe4\x93\x02**(/api/tenants/{tenant_id}/users/{user_id}\x12n\n\tListUsers\x12\x1b.api.ListTenantUsersRequest\x1a\x1c.api.ListTenantUsersResponse\"&\x82\xd3\xe4\x93\x02 \x12\x1e/api/tenants/{tenant_id}/usersBT\n\x11io.chirpstack.apiB\rInternalProtoP\x01Z.github.com/chirpstack/chirpstack/api/go/v4/apib\x06proto3')
 
 
 
@@ -176,45 +177,65 @@ _TENANTSERVICE = DESCRIPTOR.services_by_name['TenantService']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\rInternalProtoP\001Z*github.com/chirpstack/chirpstack/api/go/v4'
-  _TENANT._serialized_start=103
-  _TENANT._serialized_end=264
-  _TENANTLISTITEM._serialized_start=267
-  _TENANTLISTITEM._serialized_end=511
-  _CREATETENANTREQUEST._serialized_start=513
-  _CREATETENANTREQUEST._serialized_end=563
-  _CREATETENANTRESPONSE._serialized_start=565
-  _CREATETENANTRESPONSE._serialized_end=599
-  _GETTENANTREQUEST._serialized_start=601
-  _GETTENANTREQUEST._serialized_end=631
-  _GETTENANTRESPONSE._serialized_start=634
-  _GETTENANTRESPONSE._serialized_end=778
-  _UPDATETENANTREQUEST._serialized_start=780
-  _UPDATETENANTREQUEST._serialized_end=830
-  _DELETETENANTREQUEST._serialized_start=832
-  _DELETETENANTREQUEST._serialized_end=865
-  _LISTTENANTSREQUEST._serialized_start=867
-  _LISTTENANTSREQUEST._serialized_end=934
-  _LISTTENANTSRESPONSE._serialized_start=936
-  _LISTTENANTSRESPONSE._serialized_end=1015
-  _TENANTUSER._serialized_start=1018
-  _TENANTUSER._serialized_end=1150
-  _TENANTUSERLISTITEM._serialized_start=1153
-  _TENANTUSERLISTITEM._serialized_end=1389
-  _ADDTENANTUSERREQUEST._serialized_start=1391
-  _ADDTENANTUSERREQUEST._serialized_end=1451
-  _GETTENANTUSERREQUEST._serialized_start=1453
-  _GETTENANTUSERREQUEST._serialized_end=1511
-  _GETTENANTUSERRESPONSE._serialized_start=1514
-  _GETTENANTUSERRESPONSE._serialized_end=1671
-  _UPDATETENANTUSERREQUEST._serialized_start=1673
-  _UPDATETENANTUSERREQUEST._serialized_end=1736
-  _DELETETENANTUSERREQUEST._serialized_start=1738
-  _DELETETENANTUSERREQUEST._serialized_end=1799
-  _LISTTENANTUSERSREQUEST._serialized_start=1801
-  _LISTTENANTUSERSREQUEST._serialized_end=1875
-  _LISTTENANTUSERSRESPONSE._serialized_start=1877
-  _LISTTENANTUSERSRESPONSE._serialized_end=1964
-  _TENANTSERVICE._serialized_start=1967
-  _TENANTSERVICE._serialized_end=2634
+  DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\rInternalProtoP\001Z.github.com/chirpstack/chirpstack/api/go/v4/api'
+  _TENANTSERVICE.methods_by_name['Create']._options = None
+  _TENANTSERVICE.methods_by_name['Create']._serialized_options = b'\202\323\344\223\002\021\"\014/api/tenants:\001*'
+  _TENANTSERVICE.methods_by_name['Get']._options = None
+  _TENANTSERVICE.methods_by_name['Get']._serialized_options = b'\202\323\344\223\002\023\022\021/api/tenants/{id}'
+  _TENANTSERVICE.methods_by_name['Update']._options = None
+  _TENANTSERVICE.methods_by_name['Update']._serialized_options = b'\202\323\344\223\002\035\032\030/api/tenants/{tenant.id}:\001*'
+  _TENANTSERVICE.methods_by_name['Delete']._options = None
+  _TENANTSERVICE.methods_by_name['Delete']._serialized_options = b'\202\323\344\223\002\023*\021/api/tenants/{id}'
+  _TENANTSERVICE.methods_by_name['List']._options = None
+  _TENANTSERVICE.methods_by_name['List']._serialized_options = b'\202\323\344\223\002\016\022\014/api/tenants'
+  _TENANTSERVICE.methods_by_name['AddUser']._options = None
+  _TENANTSERVICE.methods_by_name['AddUser']._serialized_options = b'\202\323\344\223\002/\"*/api/tenants/{tenant_user.tenant_id}/users:\001*'
+  _TENANTSERVICE.methods_by_name['GetUser']._options = None
+  _TENANTSERVICE.methods_by_name['GetUser']._serialized_options = b'\202\323\344\223\002*\022(/api/tenants/{tenant_id}/users/{user_id}'
+  _TENANTSERVICE.methods_by_name['UpdateUser']._options = None
+  _TENANTSERVICE.methods_by_name['UpdateUser']._serialized_options = b'\202\323\344\223\002E\032@/api/tenants/{tenant_user.tenant_id}/users/{tenant_user.user_id}:\001*'
+  _TENANTSERVICE.methods_by_name['DeleteUser']._options = None
+  _TENANTSERVICE.methods_by_name['DeleteUser']._serialized_options = b'\202\323\344\223\002**(/api/tenants/{tenant_id}/users/{user_id}'
+  _TENANTSERVICE.methods_by_name['ListUsers']._options = None
+  _TENANTSERVICE.methods_by_name['ListUsers']._serialized_options = b'\202\323\344\223\002 \022\036/api/tenants/{tenant_id}/users'
+  _TENANT._serialized_start=133
+  _TENANT._serialized_end=294
+  _TENANTLISTITEM._serialized_start=297
+  _TENANTLISTITEM._serialized_end=541
+  _CREATETENANTREQUEST._serialized_start=543
+  _CREATETENANTREQUEST._serialized_end=593
+  _CREATETENANTRESPONSE._serialized_start=595
+  _CREATETENANTRESPONSE._serialized_end=629
+  _GETTENANTREQUEST._serialized_start=631
+  _GETTENANTREQUEST._serialized_end=661
+  _GETTENANTRESPONSE._serialized_start=664
+  _GETTENANTRESPONSE._serialized_end=808
+  _UPDATETENANTREQUEST._serialized_start=810
+  _UPDATETENANTREQUEST._serialized_end=860
+  _DELETETENANTREQUEST._serialized_start=862
+  _DELETETENANTREQUEST._serialized_end=895
+  _LISTTENANTSREQUEST._serialized_start=897
+  _LISTTENANTSREQUEST._serialized_end=964
+  _LISTTENANTSRESPONSE._serialized_start=966
+  _LISTTENANTSRESPONSE._serialized_end=1045
+  _TENANTUSER._serialized_start=1048
+  _TENANTUSER._serialized_end=1180
+  _TENANTUSERLISTITEM._serialized_start=1183
+  _TENANTUSERLISTITEM._serialized_end=1419
+  _ADDTENANTUSERREQUEST._serialized_start=1421
+  _ADDTENANTUSERREQUEST._serialized_end=1481
+  _GETTENANTUSERREQUEST._serialized_start=1483
+  _GETTENANTUSERREQUEST._serialized_end=1541
+  _GETTENANTUSERRESPONSE._serialized_start=1544
+  _GETTENANTUSERRESPONSE._serialized_end=1701
+  _UPDATETENANTUSERREQUEST._serialized_start=1703
+  _UPDATETENANTUSERREQUEST._serialized_end=1766
+  _DELETETENANTUSERREQUEST._serialized_start=1768
+  _DELETETENANTUSERREQUEST._serialized_end=1829
+  _LISTTENANTUSERSREQUEST._serialized_start=1831
+  _LISTTENANTUSERSREQUEST._serialized_end=1905
+  _LISTTENANTUSERSRESPONSE._serialized_start=1907
+  _LISTTENANTUSERSRESPONSE._serialized_end=1994
+  _TENANTSERVICE._serialized_start=1997
+  _TENANTSERVICE._serialized_end=3055
 # @@protoc_insertion_point(module_scope)

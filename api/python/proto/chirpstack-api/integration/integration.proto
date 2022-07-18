@@ -104,7 +104,7 @@ message UplinkEvent {
     uint32 dr = 6;
 
     // Frame counter.
-    uint32 f_cnt_up = 7;
+    uint32 f_cnt = 7;
 
     // Frame port.
     uint32 f_port = 8;
@@ -119,10 +119,10 @@ message UplinkEvent {
     google.protobuf.Struct object = 11;
 
     // Receiving gateway RX info.
-    repeated gw.UplinkRXInfo rx_info = 12;
+    repeated gw.UplinkRxInfo rx_info = 12;
 
     // TX info.
-    gw.UplinkTXInfo tx_info = 13;
+    gw.UplinkTxInfo tx_info = 13;
 }
 
 // JoinEvent is the message sent when a device joined the network.
@@ -167,8 +167,8 @@ message AckEvent {
 // for transmission. As a downlink can be scheduled in the future, this event
 // does not confirm that the message has already been transmitted.
 message TxAckEvent {
-    // Downlink ID (UUID).
-    string downlink_id = 1;
+    // Downlink ID.
+    uint32 downlink_id = 1;
 
     // Timestamp.
     google.protobuf.Timestamp time = 2;
@@ -186,31 +186,28 @@ message TxAckEvent {
     string gateway_id = 6;
 
     // TX info.
-    gw.DownlinkTXInfo tx_info = 7;
+    gw.DownlinkTxInfo tx_info = 7;
 }
 
 // LogEvent is the message sent when a device-related log was sent.
 message LogEvent {
-    // Deduplication ID (UUID).
-    string deduplication_id = 1;
-
     // Timestamp.
-    google.protobuf.Timestamp time = 2;
+    google.protobuf.Timestamp time = 1;
 
     // Device info.
-    DeviceInfo device_info = 3;
+    DeviceInfo device_info = 2;
 
     // Log level.
-    LogLevel level = 4;
+    LogLevel level = 3;
 
     // Log code.
-    LogCode code = 5;
+    LogCode code = 4;
 
     // Description message.
-    string description = 6;
+    string description = 5;
 
     // Context map.
-    map<string, string> context = 7;
+    map<string, string> context = 6;
 }
 
 // StatusEvent is the message sent when a device-status mac-command was sent
@@ -274,5 +271,30 @@ message IntegrationEvent {
     string event_type = 5;
 
     // Struct containing the event object.
+    google.protobuf.Struct object = 6;
+}
+
+// DownlinkCommand is the command to enqueue a downlink payload for the given
+// device.
+message DownlinkCommand {
+    // ID (UUID).
+    // If left blank, a random UUID will be generated.
+    string id = 1;
+
+    // Device EUI (EUI64).
+    string dev_eui = 2;
+
+    // Confirmed.
+    bool confirmed = 3;
+
+    // FPort (must be > 0).
+    uint32 f_port = 4;
+
+    // Data.
+    // Or use the json_object field when a codec has been configured.
+    bytes data = 5;
+
+    // Only use this when a codec has been configured that can encode this
+    // object to bytes.
     google.protobuf.Struct object = 6;
 }

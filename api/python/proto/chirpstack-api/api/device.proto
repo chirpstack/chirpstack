@@ -2,11 +2,13 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "github.com/chirpstack/chirpstack/api/go/v4";
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
 option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "DeviceProto";
 
+import "chirpstack-api/common/common.proto";
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/empty.proto";
@@ -14,58 +16,145 @@ import "google/protobuf/empty.proto";
 // DeviceService is the service providing API methods for managing devices.
 service DeviceService {
     // Create the given device.
-    rpc Create(CreateDeviceRequest) returns (google.protobuf.Empty) {}
+    rpc Create(CreateDeviceRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/devices"
+            body: "*"
+        };
+    }
 
     // Get returns the device for the given DevEUI.
-    rpc Get(GetDeviceRequest) returns (GetDeviceResponse) {}
+    rpc Get(GetDeviceRequest) returns (GetDeviceResponse) {
+        option(google.api.http) = {
+            get: "/api/devices/{dev_eui}"
+        };
+    }
 
     // Update the given device.
-    rpc Update(UpdateDeviceRequest) returns (google.protobuf.Empty) {}
+    rpc Update(UpdateDeviceRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/devices/{device.dev_eui}"
+            body: "*"
+        };
+    }
 
     // Delete the device with the given DevEUI.
-    rpc Delete(DeleteDeviceRequest) returns (google.protobuf.Empty) {}
+    rpc Delete(DeleteDeviceRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/devices/{dev_eui}"
+        };
+    }
 
     // Get the list of devices.
-    rpc List(ListDevicesRequest) returns (ListDevicesResponse) {}
+    rpc List(ListDevicesRequest) returns (ListDevicesResponse) {
+        option(google.api.http) = {
+            get: "/api/devices"
+        };
+    }
 
     // Create the given device-keys.
-    rpc CreateKeys(CreateDeviceKeysRequest) returns (google.protobuf.Empty) {}
+    rpc CreateKeys(CreateDeviceKeysRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/devices/{device_keys.dev_eui}/keys"
+            body: "*"
+        };
+    }
 
     // Get the device-keys for the given DevEUI.
-    rpc GetKeys(GetDeviceKeysRequest) returns (GetDeviceKeysResponse) {}
+    rpc GetKeys(GetDeviceKeysRequest) returns (GetDeviceKeysResponse) {
+        option(google.api.http) = {
+            get: "/api/devices/{dev_eui}/keys"
+        };
+    }
 
     // Update the given device-keys.
-    rpc UpdateKeys(UpdateDeviceKeysRequest) returns (google.protobuf.Empty) {}
+    rpc UpdateKeys(UpdateDeviceKeysRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/devices/{device_keys.dev_eui}/keys"
+            body: "*"
+        };
+    }
 
     // Delete the device-keys for the given DevEUI.
-    rpc DeleteKeys(DeleteDeviceKeysRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteKeys(DeleteDeviceKeysRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/devices/{dev_eui}/keys"
+        };
+    }
 
     // FlushDevNonces flushes the OTAA device nonces.
-    rpc FlushDevNonces(FlushDevNoncesRequest) returns (google.protobuf.Empty) {}
+    rpc FlushDevNonces(FlushDevNoncesRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/devices/{dev_eui}/dev-nonces"
+        };
+    }
 
     // Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
-    rpc Activate(ActivateDeviceRequest) returns (google.protobuf.Empty) {}
+    rpc Activate(ActivateDeviceRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/devices/{device_activation.dev_eui}/activate"
+            body: "*"
+        };
+    }
 
     // Deactivate de-activates the device.
-    rpc Deactivate(DeactivateDeviceRequest) returns (google.protobuf.Empty) {}
+    rpc Deactivate(DeactivateDeviceRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/devices/{dev_eui}/activation"
+        };
+    }
 
     // GetActivation returns the current activation details of the device (OTAA or ABP).
-    rpc GetActivation(GetDeviceActivationRequest) returns (GetDeviceActivationResponse) {}
+    rpc GetActivation(GetDeviceActivationRequest) returns (GetDeviceActivationResponse) {
+        option(google.api.http) = {
+            get: "/api/devices/{dev_eui}/activation"
+        };
+    }
 
     // GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
-    rpc GetRandomDevAddr(GetRandomDevAddrRequest) returns (GetRandomDevAddrResponse) {}
+    rpc GetRandomDevAddr(GetRandomDevAddrRequest) returns (GetRandomDevAddrResponse) {
+        option(google.api.http) = {
+            post: "/api/devices/{dev_eui}/get-random-dev-addr"
+        };
+    }
 
-    // GetStats returns the device stats.
-    rpc GetStats(GetDeviceStatsRequest) returns (GetDeviceStatsResponse) {}
+    // GetMetrics returns the device metrics.
+    // Note that this requires a device-profile with codec and measurements configured.
+    rpc GetMetrics(GetDeviceMetricsRequest) returns (GetDeviceMetricsResponse) {
+        option(google.api.http) = {
+            get: "/api/devices/{dev_eui}/metrics"
+        };
+    }
+
+    // GetLinkMetrics returns the device link metrics.
+    // This includes uplinks, downlinks, RSSI, SNR, etc...
+    rpc GetLinkMetrics(GetDeviceLinkMetricsRequest) returns (GetDeviceLinkMetricsResponse) {
+        option(google.api.http) = {
+            get: "/api/devices/{dev_eui}/link-metrics"
+        };
+    }
 
     // Enqueue adds the given item to the downlink queue.
-    rpc Enqueue(EnqueueDeviceQueueItemRequest) returns (EnqueueDeviceQueueItemResponse) {}
+    rpc Enqueue(EnqueueDeviceQueueItemRequest) returns (EnqueueDeviceQueueItemResponse) {
+        option(google.api.http) = {
+            post: "/api/devices/{queue_item.dev_eui}/queue"
+            body: "*"
+        };
+    }
 
     // FlushQueue flushes the downlink device-queue.
-    rpc FlushQueue(FlushDeviceQueueRequest) returns (google.protobuf.Empty) {}
+    rpc FlushQueue(FlushDeviceQueueRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/devices/{dev_eui}/queue"
+        };
+    }
 
     // GetQueue returns the downlink device-queue.
-    rpc GetQueue(GetDeviceQueueItemsRequest) returns (GetDeviceQueueItemsResponse) {}
+    rpc GetQueue(GetDeviceQueueItemsRequest) returns (GetDeviceQueueItemsResponse) {
+        option(google.api.http) = {
+            get: "/api/devices/{dev_eui}/queue"
+        };
+    }
 }
 
 message Device {
@@ -309,7 +398,7 @@ message GetRandomDevAddrResponse {
     string dev_addr = 1;
 }
 
-message GetDeviceStatsRequest {
+message GetDeviceMetricsRequest {
     // DevEUI (EUI64).
     string dev_eui = 1;
 
@@ -318,33 +407,57 @@ message GetDeviceStatsRequest {
 
     // Interval end timestamp.
     google.protobuf.Timestamp end = 3;
+
+    // Aggregation.
+    common.Aggregation aggregation = 4;
 }
 
-message GetDeviceStatsResponse {
-    repeated DeviceStats result = 1;
+message GetDeviceMetricsResponse {
+    map<string, common.Metric> metrics = 1;
+
+    map<string, DeviceState> states = 2;
 }
 
-message DeviceStats {
-	// Timestamp of the (aggregated) measurement.
-	google.protobuf.Timestamp time = 1;
+message DeviceState {
+    // Name.
+    string name = 2;
 
+    // Value.
+    string value = 3;
+}
+
+message GetDeviceLinkMetricsRequest {
+    // DevEUI (EUI64).
+    string dev_eui = 1;
+
+    // Interval start timestamp.
+    google.protobuf.Timestamp start = 2;
+
+    // Interval end timestamp.
+    google.protobuf.Timestamp end = 3;
+
+    // Aggregation.
+    common.Aggregation aggregation = 4;
+}
+
+message GetDeviceLinkMetricsResponse {
     // Packets received from the device.
-    uint32 rx_packets = 2;
+    common.Metric rx_packets = 1;
 
-    // Average RSSI (as reported by the gateway(s)).
-    float gw_rssi = 3;
+    // RSSI (as reported by the gateway(s)).
+    common.Metric gw_rssi = 2;
 
-    // Average SNR (as reported by the gateway(s)).
-    float gw_snr = 4;
+    // SNR (as reported by the gateway(s)).
+    common.Metric gw_snr = 3;
 
     // Packets received by frequency.
-    map<uint32, uint32> rx_packets_per_frequency = 5;
+    common.Metric rx_packets_per_freq = 4;
 
     // Packets received by DR.
-    map<uint32, uint32> rx_packets_per_dr = 6;
+    common.Metric rx_packets_per_dr = 5;
 
-    // Error count.
-    map<string, uint32> errors = 7;
+    // Errors.
+    common.Metric errors = 6;
 }
 
 message DeviceQueueItem {
@@ -379,7 +492,7 @@ message DeviceQueueItem {
 }
 
 message EnqueueDeviceQueueItemRequest {
-    DeviceQueueItem item = 1;
+    DeviceQueueItem queue_item = 1;
 }
 
 message EnqueueDeviceQueueItemResponse {

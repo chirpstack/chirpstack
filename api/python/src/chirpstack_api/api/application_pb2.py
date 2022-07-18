@@ -13,11 +13,12 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n$chirpstack-api/api/application.proto\x12\x03\x61pi\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"O\n\x0b\x41pplication\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x11\n\ttenant_id\x18\x04 \x01(\t\"\xa4\x01\n\x13\x41pplicationListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\"A\n\x18\x43reateApplicationRequest\x12%\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32\x10.api.Application\"\'\n\x19\x43reateApplicationResponse\x12\n\n\x02id\x18\x01 \x01(\t\"#\n\x15GetApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x9f\x01\n\x16GetApplicationResponse\x12%\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32\x10.api.Application\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"A\n\x18UpdateApplicationRequest\x12%\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32\x10.api.Application\"&\n\x18\x44\x65leteApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t\"[\n\x17ListApplicationsRequest\x12\r\n\x05limit\x18\x01 \x01(\r\x12\x0e\n\x06offset\x18\x02 \x01(\r\x12\x0e\n\x06search\x18\x03 \x01(\t\x12\x11\n\ttenant_id\x18\x04 \x01(\t\"Y\n\x18ListApplicationsResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12(\n\x06result\x18\x02 \x03(\x0b\x32\x18.api.ApplicationListItem\"1\n\x17ListIntegrationsRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"9\n\x13IntegrationListItem\x12\"\n\x04kind\x18\x01 \x01(\x0e\x32\x14.api.IntegrationKind\"Y\n\x18ListIntegrationsResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12(\n\x06result\x18\x02 \x03(\x0b\x32\x18.api.IntegrationListItem\"\xca\x01\n\x0fHttpIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x32\n\x07headers\x18\x02 \x03(\x0b\x32!.api.HttpIntegration.HeadersEntry\x12\x1f\n\x08\x65ncoding\x18\x03 \x01(\x0e\x32\r.api.Encoding\x12\x1a\n\x12\x65vent_endpoint_url\x18\x04 \x01(\t\x1a.\n\x0cHeadersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"I\n\x1c\x43reateHttpIntegrationRequest\x12)\n\x0bintegration\x18\x01 \x01(\x0b\x32\x14.api.HttpIntegration\"3\n\x19GetHttpIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"G\n\x1aGetHttpIntegrationResponse\x12)\n\x0bintegration\x18\x01 \x01(\x0b\x32\x14.api.HttpIntegration\"I\n\x1cUpdateHttpIntegrationRequest\x12)\n\x0bintegration\x18\x01 \x01(\x0b\x32\x14.api.HttpIntegration\"6\n\x1c\x44\x65leteHttpIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\x95\x02\n\x13InfluxDbIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x02 \x01(\t\x12\n\n\x02\x64\x62\x18\x03 \x01(\t\x12\x10\n\x08username\x18\x04 \x01(\t\x12\x10\n\x08password\x18\x05 \x01(\t\x12\x1d\n\x15retention_policy_name\x18\x06 \x01(\t\x12)\n\tprecision\x18\x07 \x01(\x0e\x32\x16.api.InfluxDbPrecision\x12%\n\x07version\x18\x08 \x01(\x0e\x32\x14.api.InfluxDbVersion\x12\r\n\x05token\x18\t \x01(\t\x12\x14\n\x0corganization\x18\n \x01(\t\x12\x0e\n\x06\x62ucket\x18\x0b \x01(\t\"Q\n CreateInfluxDbIntegrationRequest\x12-\n\x0bintegration\x18\x01 \x01(\x0b\x32\x18.api.InfluxDbIntegration\"7\n\x1dGetInfluxDbIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"O\n\x1eGetInfluxDbIntegrationResponse\x12-\n\x0bintegration\x18\x01 \x01(\x0b\x32\x18.api.InfluxDbIntegration\"Q\n UpdateInfluxDbIntegrationRequest\x12-\n\x0bintegration\x18\x01 \x01(\x0b\x32\x18.api.InfluxDbIntegration\":\n DeleteInfluxDbIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"@\n\x16ThingsBoardIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x0e\n\x06server\x18\x02 \x01(\t\"W\n#CreateThingsBoardIntegrationRequest\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.ThingsBoardIntegration\":\n GetThingsBoardIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"U\n!GetThingsBoardIntegrationResponse\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.ThingsBoardIntegration\"W\n#UpdateThingsBoardIntegrationRequest\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.ThingsBoardIntegration\"=\n#DeleteThingsBoardIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"@\n\x14MyDevicesIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x02 \x01(\t\"S\n!CreateMyDevicesIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.MyDevicesIntegration\"8\n\x1eGetMyDevicesIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"Q\n\x1fGetMyDevicesIntegrationResponse\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.MyDevicesIntegration\"S\n!UpdateMyDevicesIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.MyDevicesIntegration\";\n!DeleteMyDevicesIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"z\n\x14LoraCloudIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12J\n\x1amodem_geolocation_services\x18\x02 \x01(\x0b\x32&.api.LoraCloudModemGeolocationServices\"\xc0\x03\n!LoraCloudModemGeolocationServices\x12\r\n\x05token\x18\x01 \x01(\t\x12\x15\n\rmodem_enabled\x18\x02 \x01(\x08\x12\x12\n\nmodem_port\x18\x03 \x01(\r\x12\x11\n\tgnss_port\x18\x04 \x01(\r\x12\x18\n\x10gnss_use_rx_time\x18\x05 \x01(\x08\x12\x11\n\tparse_tlv\x18\x06 \x01(\x08\x12\x1e\n\x16geolocation_buffer_ttl\x18\x07 \x01(\r\x12#\n\x1bgeolocation_min_buffer_size\x18\x08 \x01(\r\x12\x18\n\x10geolocation_tdoa\x18\t \x01(\x08\x12\x18\n\x10geolocation_rssi\x18\n \x01(\x08\x12\x18\n\x10geolocation_gnss\x18\x0b \x01(\x08\x12&\n\x1egeolocation_gnss_payload_field\x18\x0c \x01(\t\x12$\n\x1cgeolocation_gnss_use_rx_time\x18\r \x01(\x08\x12\x18\n\x10geolocation_wifi\x18\x0e \x01(\x08\x12&\n\x1egeolocation_wifi_payload_field\x18\x0f \x01(\t\"S\n!CreateLoraCloudIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.LoraCloudIntegration\"8\n\x1eGetLoraCloudIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"Q\n\x1fGetLoraCloudIntegrationResponse\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.LoraCloudIntegration\"S\n!UpdateLoraCloudIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.LoraCloudIntegration\";\n!DeleteLoraCloudIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\x91\x01\n\x14GcpPubSubIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x1f\n\x08\x65ncoding\x18\x02 \x01(\x0e\x32\r.api.Encoding\x12\x18\n\x10\x63redentials_file\x18\x03 \x01(\t\x12\x12\n\nproject_id\x18\x04 \x01(\t\x12\x12\n\ntopic_name\x18\x05 \x01(\t\"S\n!CreateGcpPubSubIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.GcpPubSubIntegration\"8\n\x1eGetGcpPubSubIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"Q\n\x1fGetGcpPubSubIntegrationResponse\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.GcpPubSubIntegration\"S\n!UpdateGcpPubSubIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.GcpPubSubIntegration\";\n!DeleteGcpPubSubIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\xa1\x01\n\x11\x41wsSnsIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x1f\n\x08\x65ncoding\x18\x02 \x01(\x0e\x32\r.api.Encoding\x12\x0e\n\x06region\x18\x03 \x01(\t\x12\x15\n\raccess_key_id\x18\x04 \x01(\t\x12\x19\n\x11secret_access_key\x18\x05 \x01(\t\x12\x11\n\ttopic_arn\x18\x06 \x01(\t\"M\n\x1e\x43reateAwsSnsIntegrationRequest\x12+\n\x0bintegration\x18\x01 \x01(\x0b\x32\x16.api.AwsSnsIntegration\"5\n\x1bGetAwsSnsIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"K\n\x1cGetAwsSnsIntegrationResponse\x12+\n\x0bintegration\x18\x01 \x01(\x0b\x32\x16.api.AwsSnsIntegration\"M\n\x1eUpdateAwsSnsIntegrationRequest\x12+\n\x0bintegration\x18\x01 \x01(\x0b\x32\x16.api.AwsSnsIntegration\"8\n\x1e\x44\x65leteAwsSnsIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\x86\x01\n\x1a\x41zureServiceBusIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x1f\n\x08\x65ncoding\x18\x02 \x01(\x0e\x32\r.api.Encoding\x12\x19\n\x11\x63onnection_string\x18\x03 \x01(\t\x12\x14\n\x0cpublish_name\x18\x04 \x01(\t\"_\n\'CreateAzureServiceBusIntegrationRequest\x12\x34\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1f.api.AzureServiceBusIntegration\">\n$GetAzureServiceBusIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"]\n%GetAzureServiceBusIntegrationResponse\x12\x34\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1f.api.AzureServiceBusIntegration\"_\n\'UpdateAzureServiceBusIntegrationRequest\x12\x34\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1f.api.AzureServiceBusIntegration\"A\n\'DeleteAzureServiceBusIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"O\n\x16PilotThingsIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x0e\n\x06server\x18\x02 \x01(\t\x12\r\n\x05token\x18\x03 \x01(\t\"W\n#CreatePilotThingsIntegrationRequest\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.PilotThingsIntegration\":\n GetPilotThingsIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"U\n!GetPilotThingsIntegrationResponse\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.PilotThingsIntegration\"W\n#UpdatePilotThingsIntegrationRequest\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.PilotThingsIntegration\"=\n#DeletePilotThingsIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"I\n/GenerateMqttIntegrationClientCertificateRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\x96\x01\n0GenerateMqttIntegrationClientCertificateResponse\x12\x10\n\x08tls_cert\x18\x01 \x01(\t\x12\x0f\n\x07tls_key\x18\x02 \x01(\t\x12\x0f\n\x07\x63\x61_cert\x18\x03 \x01(\t\x12.\n\nexpires_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp*\"\n\x08\x45ncoding\x12\x08\n\x04JSON\x10\x00\x12\x0c\n\x08PROTOBUF\x10\x01*\xb4\x01\n\x0fIntegrationKind\x12\x08\n\x04HTTP\x10\x00\x12\r\n\tINFLUX_DB\x10\x01\x12\x10\n\x0cTHINGS_BOARD\x10\x02\x12\x0e\n\nMY_DEVICES\x10\x03\x12\x0e\n\nLORA_CLOUD\x10\x04\x12\x0f\n\x0bGCP_PUB_SUB\x10\x05\x12\x0b\n\x07\x41WS_SNS\x10\x06\x12\x15\n\x11\x41ZURE_SERVICE_BUS\x10\x07\x12\x10\n\x0cPILOT_THINGS\x10\x08\x12\x0f\n\x0bMQTT_GLOBAL\x10\t*?\n\x11InfluxDbPrecision\x12\x06\n\x02NS\x10\x00\x12\x05\n\x01U\x10\x01\x12\x06\n\x02MS\x10\x02\x12\x05\n\x01S\x10\x03\x12\x05\n\x01M\x10\x04\x12\x05\n\x01H\x10\x05*1\n\x0fInfluxDbVersion\x12\x0e\n\nINFLUXDB_1\x10\x00\x12\x0e\n\nINFLUXDB_2\x10\x01\x32\xae \n\x12\x41pplicationService\x12I\n\x06\x43reate\x12\x1d.api.CreateApplicationRequest\x1a\x1e.api.CreateApplicationResponse\"\x00\x12@\n\x03Get\x12\x1a.api.GetApplicationRequest\x1a\x1b.api.GetApplicationResponse\"\x00\x12\x41\n\x06Update\x12\x1d.api.UpdateApplicationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x41\n\x06\x44\x65lete\x12\x1d.api.DeleteApplicationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x45\n\x04List\x12\x1c.api.ListApplicationsRequest\x1a\x1d.api.ListApplicationsResponse\"\x00\x12Q\n\x10ListIntegrations\x12\x1c.api.ListIntegrationsRequest\x1a\x1d.api.ListIntegrationsResponse\"\x00\x12T\n\x15\x43reateHttpIntegration\x12!.api.CreateHttpIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12W\n\x12GetHttpIntegration\x12\x1e.api.GetHttpIntegrationRequest\x1a\x1f.api.GetHttpIntegrationResponse\"\x00\x12T\n\x15UpdateHttpIntegration\x12!.api.UpdateHttpIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12T\n\x15\x44\x65leteHttpIntegration\x12!.api.DeleteHttpIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\\\n\x19\x43reateInfluxDbIntegration\x12%.api.CreateInfluxDbIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x63\n\x16GetInfluxDbIntegration\x12\".api.GetInfluxDbIntegrationRequest\x1a#.api.GetInfluxDbIntegrationResponse\"\x00\x12\\\n\x19UpdateInfluxDbIntegration\x12%.api.UpdateInfluxDbIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\\\n\x19\x44\x65leteInfluxDbIntegration\x12%.api.DeleteInfluxDbIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x62\n\x1c\x43reateThingsBoardIntegration\x12(.api.CreateThingsBoardIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12l\n\x19GetThingsBoardIntegration\x12%.api.GetThingsBoardIntegrationRequest\x1a&.api.GetThingsBoardIntegrationResponse\"\x00\x12\x62\n\x1cUpdateThingsBoardIntegration\x12(.api.UpdateThingsBoardIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x62\n\x1c\x44\x65leteThingsBoardIntegration\x12(.api.DeleteThingsBoardIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12^\n\x1a\x43reateMyDevicesIntegration\x12&.api.CreateMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x66\n\x17GetMyDevicesIntegration\x12#.api.GetMyDevicesIntegrationRequest\x1a$.api.GetMyDevicesIntegrationResponse\"\x00\x12^\n\x1aUpdateMyDevicesIntegration\x12&.api.UpdateMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12^\n\x1a\x44\x65leteMyDevicesIntegration\x12&.api.DeleteMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12^\n\x1a\x43reateLoraCloudIntegration\x12&.api.CreateLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x66\n\x17GetLoraCloudIntegration\x12#.api.GetLoraCloudIntegrationRequest\x1a$.api.GetLoraCloudIntegrationResponse\"\x00\x12^\n\x1aUpdateLoraCloudIntegration\x12&.api.UpdateLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12^\n\x1a\x44\x65leteLoraCloudIntegration\x12&.api.DeleteLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12^\n\x1a\x43reateGcpPubSubIntegration\x12&.api.CreateGcpPubSubIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x66\n\x17GetGcpPubSubIntegration\x12#.api.GetGcpPubSubIntegrationRequest\x1a$.api.GetGcpPubSubIntegrationResponse\"\x00\x12^\n\x1aUpdateGcpPubSubIntegration\x12&.api.UpdateGcpPubSubIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12^\n\x1a\x44\x65leteGcpPubSubIntegration\x12&.api.DeleteGcpPubSubIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12X\n\x17\x43reateAwsSnsIntegration\x12#.api.CreateAwsSnsIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12]\n\x14GetAwsSnsIntegration\x12 .api.GetAwsSnsIntegrationRequest\x1a!.api.GetAwsSnsIntegrationResponse\"\x00\x12X\n\x17UpdateAwsSnsIntegration\x12#.api.UpdateAwsSnsIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12X\n\x17\x44\x65leteAwsSnsIntegration\x12#.api.DeleteAwsSnsIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12j\n CreateAzureServiceBusIntegration\x12,.api.CreateAzureServiceBusIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12x\n\x1dGetAzureServiceBusIntegration\x12).api.GetAzureServiceBusIntegrationRequest\x1a*.api.GetAzureServiceBusIntegrationResponse\"\x00\x12j\n UpdateAzureServiceBusIntegration\x12,.api.UpdateAzureServiceBusIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12j\n DeleteAzureServiceBusIntegration\x12,.api.DeleteAzureServiceBusIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x62\n\x1c\x43reatePilotThingsIntegration\x12(.api.CreatePilotThingsIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12l\n\x19GetPilotThingsIntegration\x12%.api.GetPilotThingsIntegrationRequest\x1a&.api.GetPilotThingsIntegrationResponse\"\x00\x12\x62\n\x1cUpdatePilotThingsIntegration\x12(.api.UpdatePilotThingsIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x62\n\x1c\x44\x65letePilotThingsIntegration\x12(.api.DeletePilotThingsIntegrationRequest\x1a\x16.google.protobuf.Empty\"\x00\x12\x99\x01\n(GenerateMqttIntegrationClientCertificate\x12\x34.api.GenerateMqttIntegrationClientCertificateRequest\x1a\x35.api.GenerateMqttIntegrationClientCertificateResponse\"\x00\x42S\n\x11io.chirpstack.apiB\x10\x41pplicationProtoP\x01Z*github.com/chirpstack/chirpstack/api/go/v4b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n$chirpstack-api/api/application.proto\x12\x03\x61pi\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"O\n\x0b\x41pplication\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x11\n\ttenant_id\x18\x04 \x01(\t\"\xa4\x01\n\x13\x41pplicationListItem\x12\n\n\x02id\x18\x01 \x01(\t\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\"A\n\x18\x43reateApplicationRequest\x12%\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32\x10.api.Application\"\'\n\x19\x43reateApplicationResponse\x12\n\n\x02id\x18\x01 \x01(\t\"#\n\x15GetApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\xb9\x01\n\x16GetApplicationResponse\x12%\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32\x10.api.Application\x12.\n\ncreated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nupdated_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x18\n\x10measurement_keys\x18\x04 \x03(\t\"A\n\x18UpdateApplicationRequest\x12%\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32\x10.api.Application\"&\n\x18\x44\x65leteApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t\"[\n\x17ListApplicationsRequest\x12\r\n\x05limit\x18\x01 \x01(\r\x12\x0e\n\x06offset\x18\x02 \x01(\r\x12\x0e\n\x06search\x18\x03 \x01(\t\x12\x11\n\ttenant_id\x18\x04 \x01(\t\"Y\n\x18ListApplicationsResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12(\n\x06result\x18\x02 \x03(\x0b\x32\x18.api.ApplicationListItem\"1\n\x17ListIntegrationsRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"9\n\x13IntegrationListItem\x12\"\n\x04kind\x18\x01 \x01(\x0e\x32\x14.api.IntegrationKind\"Y\n\x18ListIntegrationsResponse\x12\x13\n\x0btotal_count\x18\x01 \x01(\r\x12(\n\x06result\x18\x02 \x03(\x0b\x32\x18.api.IntegrationListItem\"\xca\x01\n\x0fHttpIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x32\n\x07headers\x18\x02 \x03(\x0b\x32!.api.HttpIntegration.HeadersEntry\x12\x1f\n\x08\x65ncoding\x18\x03 \x01(\x0e\x32\r.api.Encoding\x12\x1a\n\x12\x65vent_endpoint_url\x18\x04 \x01(\t\x1a.\n\x0cHeadersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"I\n\x1c\x43reateHttpIntegrationRequest\x12)\n\x0bintegration\x18\x01 \x01(\x0b\x32\x14.api.HttpIntegration\"3\n\x19GetHttpIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"G\n\x1aGetHttpIntegrationResponse\x12)\n\x0bintegration\x18\x01 \x01(\x0b\x32\x14.api.HttpIntegration\"I\n\x1cUpdateHttpIntegrationRequest\x12)\n\x0bintegration\x18\x01 \x01(\x0b\x32\x14.api.HttpIntegration\"6\n\x1c\x44\x65leteHttpIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\x95\x02\n\x13InfluxDbIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x02 \x01(\t\x12\n\n\x02\x64\x62\x18\x03 \x01(\t\x12\x10\n\x08username\x18\x04 \x01(\t\x12\x10\n\x08password\x18\x05 \x01(\t\x12\x1d\n\x15retention_policy_name\x18\x06 \x01(\t\x12)\n\tprecision\x18\x07 \x01(\x0e\x32\x16.api.InfluxDbPrecision\x12%\n\x07version\x18\x08 \x01(\x0e\x32\x14.api.InfluxDbVersion\x12\r\n\x05token\x18\t \x01(\t\x12\x14\n\x0corganization\x18\n \x01(\t\x12\x0e\n\x06\x62ucket\x18\x0b \x01(\t\"Q\n CreateInfluxDbIntegrationRequest\x12-\n\x0bintegration\x18\x01 \x01(\x0b\x32\x18.api.InfluxDbIntegration\"7\n\x1dGetInfluxDbIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"O\n\x1eGetInfluxDbIntegrationResponse\x12-\n\x0bintegration\x18\x01 \x01(\x0b\x32\x18.api.InfluxDbIntegration\"Q\n UpdateInfluxDbIntegrationRequest\x12-\n\x0bintegration\x18\x01 \x01(\x0b\x32\x18.api.InfluxDbIntegration\":\n DeleteInfluxDbIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"@\n\x16ThingsBoardIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x0e\n\x06server\x18\x02 \x01(\t\"W\n#CreateThingsBoardIntegrationRequest\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.ThingsBoardIntegration\":\n GetThingsBoardIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"U\n!GetThingsBoardIntegrationResponse\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.ThingsBoardIntegration\"W\n#UpdateThingsBoardIntegrationRequest\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.ThingsBoardIntegration\"=\n#DeleteThingsBoardIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"@\n\x14MyDevicesIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x10\n\x08\x65ndpoint\x18\x02 \x01(\t\"S\n!CreateMyDevicesIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.MyDevicesIntegration\"8\n\x1eGetMyDevicesIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"Q\n\x1fGetMyDevicesIntegrationResponse\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.MyDevicesIntegration\"S\n!UpdateMyDevicesIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.MyDevicesIntegration\";\n!DeleteMyDevicesIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"z\n\x14LoraCloudIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12J\n\x1amodem_geolocation_services\x18\x02 \x01(\x0b\x32&.api.LoraCloudModemGeolocationServices\"\xc0\x03\n!LoraCloudModemGeolocationServices\x12\r\n\x05token\x18\x01 \x01(\t\x12\x15\n\rmodem_enabled\x18\x02 \x01(\x08\x12\x12\n\nmodem_port\x18\x03 \x01(\r\x12\x11\n\tgnss_port\x18\x04 \x01(\r\x12\x18\n\x10gnss_use_rx_time\x18\x05 \x01(\x08\x12\x11\n\tparse_tlv\x18\x06 \x01(\x08\x12\x1e\n\x16geolocation_buffer_ttl\x18\x07 \x01(\r\x12#\n\x1bgeolocation_min_buffer_size\x18\x08 \x01(\r\x12\x18\n\x10geolocation_tdoa\x18\t \x01(\x08\x12\x18\n\x10geolocation_rssi\x18\n \x01(\x08\x12\x18\n\x10geolocation_gnss\x18\x0b \x01(\x08\x12&\n\x1egeolocation_gnss_payload_field\x18\x0c \x01(\t\x12$\n\x1cgeolocation_gnss_use_rx_time\x18\r \x01(\x08\x12\x18\n\x10geolocation_wifi\x18\x0e \x01(\x08\x12&\n\x1egeolocation_wifi_payload_field\x18\x0f \x01(\t\"S\n!CreateLoraCloudIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.LoraCloudIntegration\"8\n\x1eGetLoraCloudIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"Q\n\x1fGetLoraCloudIntegrationResponse\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.LoraCloudIntegration\"S\n!UpdateLoraCloudIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.LoraCloudIntegration\";\n!DeleteLoraCloudIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\x91\x01\n\x14GcpPubSubIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x1f\n\x08\x65ncoding\x18\x02 \x01(\x0e\x32\r.api.Encoding\x12\x18\n\x10\x63redentials_file\x18\x03 \x01(\t\x12\x12\n\nproject_id\x18\x04 \x01(\t\x12\x12\n\ntopic_name\x18\x05 \x01(\t\"S\n!CreateGcpPubSubIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.GcpPubSubIntegration\"8\n\x1eGetGcpPubSubIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"Q\n\x1fGetGcpPubSubIntegrationResponse\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.GcpPubSubIntegration\"S\n!UpdateGcpPubSubIntegrationRequest\x12.\n\x0bintegration\x18\x01 \x01(\x0b\x32\x19.api.GcpPubSubIntegration\";\n!DeleteGcpPubSubIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\xa1\x01\n\x11\x41wsSnsIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x1f\n\x08\x65ncoding\x18\x02 \x01(\x0e\x32\r.api.Encoding\x12\x0e\n\x06region\x18\x03 \x01(\t\x12\x15\n\raccess_key_id\x18\x04 \x01(\t\x12\x19\n\x11secret_access_key\x18\x05 \x01(\t\x12\x11\n\ttopic_arn\x18\x06 \x01(\t\"M\n\x1e\x43reateAwsSnsIntegrationRequest\x12+\n\x0bintegration\x18\x01 \x01(\x0b\x32\x16.api.AwsSnsIntegration\"5\n\x1bGetAwsSnsIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"K\n\x1cGetAwsSnsIntegrationResponse\x12+\n\x0bintegration\x18\x01 \x01(\x0b\x32\x16.api.AwsSnsIntegration\"M\n\x1eUpdateAwsSnsIntegrationRequest\x12+\n\x0bintegration\x18\x01 \x01(\x0b\x32\x16.api.AwsSnsIntegration\"8\n\x1e\x44\x65leteAwsSnsIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\x86\x01\n\x1a\x41zureServiceBusIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x1f\n\x08\x65ncoding\x18\x02 \x01(\x0e\x32\r.api.Encoding\x12\x19\n\x11\x63onnection_string\x18\x03 \x01(\t\x12\x14\n\x0cpublish_name\x18\x04 \x01(\t\"_\n\'CreateAzureServiceBusIntegrationRequest\x12\x34\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1f.api.AzureServiceBusIntegration\">\n$GetAzureServiceBusIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"]\n%GetAzureServiceBusIntegrationResponse\x12\x34\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1f.api.AzureServiceBusIntegration\"_\n\'UpdateAzureServiceBusIntegrationRequest\x12\x34\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1f.api.AzureServiceBusIntegration\"A\n\'DeleteAzureServiceBusIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"O\n\x16PilotThingsIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x0e\n\x06server\x18\x02 \x01(\t\x12\r\n\x05token\x18\x03 \x01(\t\"W\n#CreatePilotThingsIntegrationRequest\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.PilotThingsIntegration\":\n GetPilotThingsIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"U\n!GetPilotThingsIntegrationResponse\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.PilotThingsIntegration\"W\n#UpdatePilotThingsIntegrationRequest\x12\x30\n\x0bintegration\x18\x01 \x01(\x0b\x32\x1b.api.PilotThingsIntegration\"=\n#DeletePilotThingsIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"N\n\x10IftttIntegration\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x15\n\ruplink_values\x18\x03 \x03(\t\"K\n\x1d\x43reateIftttIntegrationRequest\x12*\n\x0bintegration\x18\x01 \x01(\x0b\x32\x15.api.IftttIntegration\"4\n\x1aGetIftttIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"I\n\x1bGetIftttIntegrationResponse\x12*\n\x0bintegration\x18\x01 \x01(\x0b\x32\x15.api.IftttIntegration\"K\n\x1dUpdateIftttIntegrationRequest\x12*\n\x0bintegration\x18\x01 \x01(\x0b\x32\x15.api.IftttIntegration\"7\n\x1d\x44\x65leteIftttIntegrationRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"I\n/GenerateMqttIntegrationClientCertificateRequest\x12\x16\n\x0e\x61pplication_id\x18\x01 \x01(\t\"\x96\x01\n0GenerateMqttIntegrationClientCertificateResponse\x12\x10\n\x08tls_cert\x18\x01 \x01(\t\x12\x0f\n\x07tls_key\x18\x02 \x01(\t\x12\x0f\n\x07\x63\x61_cert\x18\x03 \x01(\t\x12.\n\nexpires_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp*\"\n\x08\x45ncoding\x12\x08\n\x04JSON\x10\x00\x12\x0c\n\x08PROTOBUF\x10\x01*\xbf\x01\n\x0fIntegrationKind\x12\x08\n\x04HTTP\x10\x00\x12\r\n\tINFLUX_DB\x10\x01\x12\x10\n\x0cTHINGS_BOARD\x10\x02\x12\x0e\n\nMY_DEVICES\x10\x03\x12\x0e\n\nLORA_CLOUD\x10\x04\x12\x0f\n\x0bGCP_PUB_SUB\x10\x05\x12\x0b\n\x07\x41WS_SNS\x10\x06\x12\x15\n\x11\x41ZURE_SERVICE_BUS\x10\x07\x12\x10\n\x0cPILOT_THINGS\x10\x08\x12\x0f\n\x0bMQTT_GLOBAL\x10\t\x12\t\n\x05IFTTT\x10\n*?\n\x11InfluxDbPrecision\x12\x06\n\x02NS\x10\x00\x12\x05\n\x01U\x10\x01\x12\x06\n\x02MS\x10\x02\x12\x05\n\x01S\x10\x03\x12\x05\n\x01M\x10\x04\x12\x05\n\x01H\x10\x05*1\n\x0fInfluxDbVersion\x12\x0e\n\nINFLUXDB_1\x10\x00\x12\x0e\n\nINFLUXDB_2\x10\x01\x32\xb8<\n\x12\x41pplicationService\x12\x65\n\x06\x43reate\x12\x1d.api.CreateApplicationRequest\x1a\x1e.api.CreateApplicationResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\"\x11/api/applications:\x01*\x12^\n\x03Get\x12\x1a.api.GetApplicationRequest\x1a\x1b.api.GetApplicationResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/applications/{id}\x12n\n\x06Update\x12\x1d.api.UpdateApplicationRequest\x1a\x16.google.protobuf.Empty\"-\x82\xd3\xe4\x93\x02\'\x1a\"/api/applications/{application.id}:\x01*\x12_\n\x06\x44\x65lete\x12\x1d.api.DeleteApplicationRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18*\x16/api/applications/{id}\x12^\n\x04List\x12\x1c.api.ListApplicationsRequest\x1a\x1d.api.ListApplicationsResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/api/applications\x12\x88\x01\n\x10ListIntegrations\x12\x1c.api.ListIntegrationsRequest\x1a\x1d.api.ListIntegrationsResponse\"7\x82\xd3\xe4\x93\x02\x31\x12//api/applications/{application_id}/integrations\x12\x9f\x01\n\x15\x43reateHttpIntegration\x12!.api.CreateHttpIntegrationRequest\x1a\x16.google.protobuf.Empty\"K\x82\xd3\xe4\x93\x02\x45\"@/api/applications/{integration.application_id}/integrations/http:\x01*\x12\x93\x01\n\x12GetHttpIntegration\x12\x1e.api.GetHttpIntegrationRequest\x1a\x1f.api.GetHttpIntegrationResponse\"<\x82\xd3\xe4\x93\x02\x36\x12\x34/api/applications/{application_id}/integrations/http\x12\x9f\x01\n\x15UpdateHttpIntegration\x12!.api.UpdateHttpIntegrationRequest\x1a\x16.google.protobuf.Empty\"K\x82\xd3\xe4\x93\x02\x45\x1a@/api/applications/{integration.application_id}/integrations/http:\x01*\x12\x90\x01\n\x15\x44\x65leteHttpIntegration\x12!.api.DeleteHttpIntegrationRequest\x1a\x16.google.protobuf.Empty\"<\x82\xd3\xe4\x93\x02\x36*4/api/applications/{application_id}/integrations/http\x12\xab\x01\n\x19\x43reateInfluxDbIntegration\x12%.api.CreateInfluxDbIntegrationRequest\x1a\x16.google.protobuf.Empty\"O\x82\xd3\xe4\x93\x02I\"D/api/applications/{integration.application_id}/integrations/influxdb:\x01*\x12\xa3\x01\n\x16GetInfluxDbIntegration\x12\".api.GetInfluxDbIntegrationRequest\x1a#.api.GetInfluxDbIntegrationResponse\"@\x82\xd3\xe4\x93\x02:\x12\x38/api/applications/{application_id}/integrations/influxdb\x12\xab\x01\n\x19UpdateInfluxDbIntegration\x12%.api.UpdateInfluxDbIntegrationRequest\x1a\x16.google.protobuf.Empty\"O\x82\xd3\xe4\x93\x02I\x1a\x44/api/applications/{integration.application_id}/integrations/influxdb:\x01*\x12\x9c\x01\n\x19\x44\x65leteInfluxDbIntegration\x12%.api.DeleteInfluxDbIntegrationRequest\x1a\x16.google.protobuf.Empty\"@\x82\xd3\xe4\x93\x02:*8/api/applications/{application_id}/integrations/influxdb\x12\xb4\x01\n\x1c\x43reateThingsBoardIntegration\x12(.api.CreateThingsBoardIntegrationRequest\x1a\x16.google.protobuf.Empty\"R\x82\xd3\xe4\x93\x02L\"G/api/applications/{integration.application_id}/integrations/thingsboard:\x01*\x12\xaf\x01\n\x19GetThingsBoardIntegration\x12%.api.GetThingsBoardIntegrationRequest\x1a&.api.GetThingsBoardIntegrationResponse\"C\x82\xd3\xe4\x93\x02=\x12;/api/applications/{application_id}/integrations/thingsboard\x12\xb4\x01\n\x1cUpdateThingsBoardIntegration\x12(.api.UpdateThingsBoardIntegrationRequest\x1a\x16.google.protobuf.Empty\"R\x82\xd3\xe4\x93\x02L\x1aG/api/applications/{integration.application_id}/integrations/thingsboard:\x01*\x12\xa5\x01\n\x1c\x44\x65leteThingsBoardIntegration\x12(.api.DeleteThingsBoardIntegrationRequest\x1a\x16.google.protobuf.Empty\"C\x82\xd3\xe4\x93\x02=*;/api/applications/{application_id}/integrations/thingsboard\x12\xae\x01\n\x1a\x43reateMyDevicesIntegration\x12&.api.CreateMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"P\x82\xd3\xe4\x93\x02J\"E/api/applications/{integration.application_id}/integrations/mydevices:\x01*\x12\xa7\x01\n\x17GetMyDevicesIntegration\x12#.api.GetMyDevicesIntegrationRequest\x1a$.api.GetMyDevicesIntegrationResponse\"A\x82\xd3\xe4\x93\x02;\x12\x39/api/applications/{application_id}/integrations/mydevices\x12\xae\x01\n\x1aUpdateMyDevicesIntegration\x12&.api.UpdateMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"P\x82\xd3\xe4\x93\x02J\x1a\x45/api/applications/{integration.application_id}/integrations/mydevices:\x01*\x12\x9f\x01\n\x1a\x44\x65leteMyDevicesIntegration\x12&.api.DeleteMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"A\x82\xd3\xe4\x93\x02;*9/api/applications/{application_id}/integrations/mydevices\x12\xae\x01\n\x1a\x43reateLoraCloudIntegration\x12&.api.CreateLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"P\x82\xd3\xe4\x93\x02J\"E/api/applications/{integration.application_id}/integrations/loracloud:\x01*\x12\xa7\x01\n\x17GetLoraCloudIntegration\x12#.api.GetLoraCloudIntegrationRequest\x1a$.api.GetLoraCloudIntegrationResponse\"A\x82\xd3\xe4\x93\x02;\x12\x39/api/applications/{application_id}/integrations/loracloud\x12\xae\x01\n\x1aUpdateLoraCloudIntegration\x12&.api.UpdateLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"P\x82\xd3\xe4\x93\x02J\x1a\x45/api/applications/{integration.application_id}/integrations/loracloud:\x01*\x12\x9f\x01\n\x1a\x44\x65leteLoraCloudIntegration\x12&.api.DeleteLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"A\x82\xd3\xe4\x93\x02;*9/api/applications/{application_id}/integrations/loracloud\x12\xb0\x01\n\x1a\x43reateGcpPubSubIntegration\x12&.api.CreateGcpPubSubIntegrationRequest\x1a\x16.google.protobuf.Empty\"R\x82\xd3\xe4\x93\x02L\"G/api/applications/{integration.application_id}/integrations/gcp-pub-sub:\x01*\x12\xa9\x01\n\x17GetGcpPubSubIntegration\x12#.api.GetGcpPubSubIntegrationRequest\x1a$.api.GetGcpPubSubIntegrationResponse\"C\x82\xd3\xe4\x93\x02=\x12;/api/applications/{application_id}/integrations/gcp-pub-sub\x12\xb0\x01\n\x1aUpdateGcpPubSubIntegration\x12&.api.UpdateGcpPubSubIntegrationRequest\x1a\x16.google.protobuf.Empty\"R\x82\xd3\xe4\x93\x02L\x1aG/api/applications/{integration.application_id}/integrations/gcp-pub-sub:\x01*\x12\xa1\x01\n\x1a\x44\x65leteGcpPubSubIntegration\x12&.api.DeleteGcpPubSubIntegrationRequest\x1a\x16.google.protobuf.Empty\"C\x82\xd3\xe4\x93\x02=*;/api/applications/{application_id}/integrations/gcp-pub-sub\x12\xa6\x01\n\x17\x43reateAwsSnsIntegration\x12#.api.CreateAwsSnsIntegrationRequest\x1a\x16.google.protobuf.Empty\"N\x82\xd3\xe4\x93\x02H\"C/api/applications/{integration.application_id}/integrations/aws-sns:\x01*\x12\x9c\x01\n\x14GetAwsSnsIntegration\x12 .api.GetAwsSnsIntegrationRequest\x1a!.api.GetAwsSnsIntegrationResponse\"?\x82\xd3\xe4\x93\x02\x39\x12\x37/api/applications/{application_id}/integrations/aws-sns\x12\xa6\x01\n\x17UpdateAwsSnsIntegration\x12#.api.UpdateAwsSnsIntegrationRequest\x1a\x16.google.protobuf.Empty\"N\x82\xd3\xe4\x93\x02H\x1a\x43/api/applications/{integration.application_id}/integrations/aws-sns:\x01*\x12\x97\x01\n\x17\x44\x65leteAwsSnsIntegration\x12#.api.DeleteAwsSnsIntegrationRequest\x1a\x16.google.protobuf.Empty\"?\x82\xd3\xe4\x93\x02\x39*7/api/applications/{application_id}/integrations/aws-sns\x12\xc2\x01\n CreateAzureServiceBusIntegration\x12,.api.CreateAzureServiceBusIntegrationRequest\x1a\x16.google.protobuf.Empty\"X\x82\xd3\xe4\x93\x02R\"M/api/applications/{integration.application_id}/integrations/azure-service-bus:\x01*\x12\xc1\x01\n\x1dGetAzureServiceBusIntegration\x12).api.GetAzureServiceBusIntegrationRequest\x1a*.api.GetAzureServiceBusIntegrationResponse\"I\x82\xd3\xe4\x93\x02\x43\x12\x41/api/applications/{application_id}/integrations/azure-service-bus\x12\xc2\x01\n UpdateAzureServiceBusIntegration\x12,.api.UpdateAzureServiceBusIntegrationRequest\x1a\x16.google.protobuf.Empty\"X\x82\xd3\xe4\x93\x02R\x1aM/api/applications/{integration.application_id}/integrations/azure-service-bus:\x01*\x12\xb3\x01\n DeleteAzureServiceBusIntegration\x12,.api.DeleteAzureServiceBusIntegrationRequest\x1a\x16.google.protobuf.Empty\"I\x82\xd3\xe4\x93\x02\x43*A/api/applications/{application_id}/integrations/azure-service-bus\x12\xb5\x01\n\x1c\x43reatePilotThingsIntegration\x12(.api.CreatePilotThingsIntegrationRequest\x1a\x16.google.protobuf.Empty\"S\x82\xd3\xe4\x93\x02M\"H/api/applications/{integration.application_id}/integrations/pilot-things:\x01*\x12\xb0\x01\n\x19GetPilotThingsIntegration\x12%.api.GetPilotThingsIntegrationRequest\x1a&.api.GetPilotThingsIntegrationResponse\"D\x82\xd3\xe4\x93\x02>\x12</api/applications/{application_id}/integrations/pilot-things\x12\xb5\x01\n\x1cUpdatePilotThingsIntegration\x12(.api.UpdatePilotThingsIntegrationRequest\x1a\x16.google.protobuf.Empty\"S\x82\xd3\xe4\x93\x02M\x1aH/api/applications/{integration.application_id}/integrations/pilot-things:\x01*\x12\xa6\x01\n\x1c\x44\x65letePilotThingsIntegration\x12(.api.DeletePilotThingsIntegrationRequest\x1a\x16.google.protobuf.Empty\"D\x82\xd3\xe4\x93\x02>*</api/applications/{application_id}/integrations/pilot-things\x12\xa2\x01\n\x16\x43reateIftttIntegration\x12\".api.CreateIftttIntegrationRequest\x1a\x16.google.protobuf.Empty\"L\x82\xd3\xe4\x93\x02\x46\"A/api/applications/{integration.application_id}/integrations/ifttt:\x01*\x12\x97\x01\n\x13GetIftttIntegration\x12\x1f.api.GetIftttIntegrationRequest\x1a .api.GetIftttIntegrationResponse\"=\x82\xd3\xe4\x93\x02\x37\x12\x35/api/applications/{application_id}/integrations/ifttt\x12\xa2\x01\n\x16UpdateIftttIntegration\x12\".api.UpdateIftttIntegrationRequest\x1a\x16.google.protobuf.Empty\"L\x82\xd3\xe4\x93\x02\x46\x1a\x41/api/applications/{integration.application_id}/integrations/ifttt:\x01*\x12\x93\x01\n\x16\x44\x65leteIftttIntegration\x12\".api.DeleteIftttIntegrationRequest\x1a\x16.google.protobuf.Empty\"=\x82\xd3\xe4\x93\x02\x37*5/api/applications/{application_id}/integrations/ifttt\x12\xe1\x01\n(GenerateMqttIntegrationClientCertificate\x12\x34.api.GenerateMqttIntegrationClientCertificateRequest\x1a\x35.api.GenerateMqttIntegrationClientCertificateResponse\"H\x82\xd3\xe4\x93\x02\x42\"@/api/applications/{application_id}/integrations/mqtt/certificateBW\n\x11io.chirpstack.apiB\x10\x41pplicationProtoP\x01Z.github.com/chirpstack/chirpstack/api/go/v4/apib\x06proto3')
 
 _ENCODING = DESCRIPTOR.enum_types_by_name['Encoding']
 Encoding = enum_type_wrapper.EnumTypeWrapper(_ENCODING)
@@ -39,6 +40,7 @@ AWS_SNS = 6
 AZURE_SERVICE_BUS = 7
 PILOT_THINGS = 8
 MQTT_GLOBAL = 9
+IFTTT = 10
 NS = 0
 U = 1
 MS = 2
@@ -118,6 +120,12 @@ _GETPILOTTHINGSINTEGRATIONREQUEST = DESCRIPTOR.message_types_by_name['GetPilotTh
 _GETPILOTTHINGSINTEGRATIONRESPONSE = DESCRIPTOR.message_types_by_name['GetPilotThingsIntegrationResponse']
 _UPDATEPILOTTHINGSINTEGRATIONREQUEST = DESCRIPTOR.message_types_by_name['UpdatePilotThingsIntegrationRequest']
 _DELETEPILOTTHINGSINTEGRATIONREQUEST = DESCRIPTOR.message_types_by_name['DeletePilotThingsIntegrationRequest']
+_IFTTTINTEGRATION = DESCRIPTOR.message_types_by_name['IftttIntegration']
+_CREATEIFTTTINTEGRATIONREQUEST = DESCRIPTOR.message_types_by_name['CreateIftttIntegrationRequest']
+_GETIFTTTINTEGRATIONREQUEST = DESCRIPTOR.message_types_by_name['GetIftttIntegrationRequest']
+_GETIFTTTINTEGRATIONRESPONSE = DESCRIPTOR.message_types_by_name['GetIftttIntegrationResponse']
+_UPDATEIFTTTINTEGRATIONREQUEST = DESCRIPTOR.message_types_by_name['UpdateIftttIntegrationRequest']
+_DELETEIFTTTINTEGRATIONREQUEST = DESCRIPTOR.message_types_by_name['DeleteIftttIntegrationRequest']
 _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATEREQUEST = DESCRIPTOR.message_types_by_name['GenerateMqttIntegrationClientCertificateRequest']
 _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATERESPONSE = DESCRIPTOR.message_types_by_name['GenerateMqttIntegrationClientCertificateResponse']
 Application = _reflection.GeneratedProtocolMessageType('Application', (_message.Message,), {
@@ -604,6 +612,48 @@ DeletePilotThingsIntegrationRequest = _reflection.GeneratedProtocolMessageType('
   })
 _sym_db.RegisterMessage(DeletePilotThingsIntegrationRequest)
 
+IftttIntegration = _reflection.GeneratedProtocolMessageType('IftttIntegration', (_message.Message,), {
+  'DESCRIPTOR' : _IFTTTINTEGRATION,
+  '__module__' : 'chirpstack_api.api.application_pb2'
+  # @@protoc_insertion_point(class_scope:api.IftttIntegration)
+  })
+_sym_db.RegisterMessage(IftttIntegration)
+
+CreateIftttIntegrationRequest = _reflection.GeneratedProtocolMessageType('CreateIftttIntegrationRequest', (_message.Message,), {
+  'DESCRIPTOR' : _CREATEIFTTTINTEGRATIONREQUEST,
+  '__module__' : 'chirpstack_api.api.application_pb2'
+  # @@protoc_insertion_point(class_scope:api.CreateIftttIntegrationRequest)
+  })
+_sym_db.RegisterMessage(CreateIftttIntegrationRequest)
+
+GetIftttIntegrationRequest = _reflection.GeneratedProtocolMessageType('GetIftttIntegrationRequest', (_message.Message,), {
+  'DESCRIPTOR' : _GETIFTTTINTEGRATIONREQUEST,
+  '__module__' : 'chirpstack_api.api.application_pb2'
+  # @@protoc_insertion_point(class_scope:api.GetIftttIntegrationRequest)
+  })
+_sym_db.RegisterMessage(GetIftttIntegrationRequest)
+
+GetIftttIntegrationResponse = _reflection.GeneratedProtocolMessageType('GetIftttIntegrationResponse', (_message.Message,), {
+  'DESCRIPTOR' : _GETIFTTTINTEGRATIONRESPONSE,
+  '__module__' : 'chirpstack_api.api.application_pb2'
+  # @@protoc_insertion_point(class_scope:api.GetIftttIntegrationResponse)
+  })
+_sym_db.RegisterMessage(GetIftttIntegrationResponse)
+
+UpdateIftttIntegrationRequest = _reflection.GeneratedProtocolMessageType('UpdateIftttIntegrationRequest', (_message.Message,), {
+  'DESCRIPTOR' : _UPDATEIFTTTINTEGRATIONREQUEST,
+  '__module__' : 'chirpstack_api.api.application_pb2'
+  # @@protoc_insertion_point(class_scope:api.UpdateIftttIntegrationRequest)
+  })
+_sym_db.RegisterMessage(UpdateIftttIntegrationRequest)
+
+DeleteIftttIntegrationRequest = _reflection.GeneratedProtocolMessageType('DeleteIftttIntegrationRequest', (_message.Message,), {
+  'DESCRIPTOR' : _DELETEIFTTTINTEGRATIONREQUEST,
+  '__module__' : 'chirpstack_api.api.application_pb2'
+  # @@protoc_insertion_point(class_scope:api.DeleteIftttIntegrationRequest)
+  })
+_sym_db.RegisterMessage(DeleteIftttIntegrationRequest)
+
 GenerateMqttIntegrationClientCertificateRequest = _reflection.GeneratedProtocolMessageType('GenerateMqttIntegrationClientCertificateRequest', (_message.Message,), {
   'DESCRIPTOR' : _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATEREQUEST,
   '__module__' : 'chirpstack_api.api.application_pb2'
@@ -622,159 +672,265 @@ _APPLICATIONSERVICE = DESCRIPTOR.services_by_name['ApplicationService']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\020ApplicationProtoP\001Z*github.com/chirpstack/chirpstack/api/go/v4'
+  DESCRIPTOR._serialized_options = b'\n\021io.chirpstack.apiB\020ApplicationProtoP\001Z.github.com/chirpstack/chirpstack/api/go/v4/api'
   _HTTPINTEGRATION_HEADERSENTRY._options = None
   _HTTPINTEGRATION_HEADERSENTRY._serialized_options = b'8\001'
-  _ENCODING._serialized_start=6460
-  _ENCODING._serialized_end=6494
-  _INTEGRATIONKIND._serialized_start=6497
-  _INTEGRATIONKIND._serialized_end=6677
-  _INFLUXDBPRECISION._serialized_start=6679
-  _INFLUXDBPRECISION._serialized_end=6742
-  _INFLUXDBVERSION._serialized_start=6744
-  _INFLUXDBVERSION._serialized_end=6793
-  _APPLICATION._serialized_start=107
-  _APPLICATION._serialized_end=186
-  _APPLICATIONLISTITEM._serialized_start=189
-  _APPLICATIONLISTITEM._serialized_end=353
-  _CREATEAPPLICATIONREQUEST._serialized_start=355
-  _CREATEAPPLICATIONREQUEST._serialized_end=420
-  _CREATEAPPLICATIONRESPONSE._serialized_start=422
-  _CREATEAPPLICATIONRESPONSE._serialized_end=461
-  _GETAPPLICATIONREQUEST._serialized_start=463
-  _GETAPPLICATIONREQUEST._serialized_end=498
-  _GETAPPLICATIONRESPONSE._serialized_start=501
-  _GETAPPLICATIONRESPONSE._serialized_end=660
-  _UPDATEAPPLICATIONREQUEST._serialized_start=662
-  _UPDATEAPPLICATIONREQUEST._serialized_end=727
-  _DELETEAPPLICATIONREQUEST._serialized_start=729
-  _DELETEAPPLICATIONREQUEST._serialized_end=767
-  _LISTAPPLICATIONSREQUEST._serialized_start=769
-  _LISTAPPLICATIONSREQUEST._serialized_end=860
-  _LISTAPPLICATIONSRESPONSE._serialized_start=862
-  _LISTAPPLICATIONSRESPONSE._serialized_end=951
-  _LISTINTEGRATIONSREQUEST._serialized_start=953
-  _LISTINTEGRATIONSREQUEST._serialized_end=1002
-  _INTEGRATIONLISTITEM._serialized_start=1004
-  _INTEGRATIONLISTITEM._serialized_end=1061
-  _LISTINTEGRATIONSRESPONSE._serialized_start=1063
-  _LISTINTEGRATIONSRESPONSE._serialized_end=1152
-  _HTTPINTEGRATION._serialized_start=1155
-  _HTTPINTEGRATION._serialized_end=1357
-  _HTTPINTEGRATION_HEADERSENTRY._serialized_start=1311
-  _HTTPINTEGRATION_HEADERSENTRY._serialized_end=1357
-  _CREATEHTTPINTEGRATIONREQUEST._serialized_start=1359
-  _CREATEHTTPINTEGRATIONREQUEST._serialized_end=1432
-  _GETHTTPINTEGRATIONREQUEST._serialized_start=1434
-  _GETHTTPINTEGRATIONREQUEST._serialized_end=1485
-  _GETHTTPINTEGRATIONRESPONSE._serialized_start=1487
-  _GETHTTPINTEGRATIONRESPONSE._serialized_end=1558
-  _UPDATEHTTPINTEGRATIONREQUEST._serialized_start=1560
-  _UPDATEHTTPINTEGRATIONREQUEST._serialized_end=1633
-  _DELETEHTTPINTEGRATIONREQUEST._serialized_start=1635
-  _DELETEHTTPINTEGRATIONREQUEST._serialized_end=1689
-  _INFLUXDBINTEGRATION._serialized_start=1692
-  _INFLUXDBINTEGRATION._serialized_end=1969
-  _CREATEINFLUXDBINTEGRATIONREQUEST._serialized_start=1971
-  _CREATEINFLUXDBINTEGRATIONREQUEST._serialized_end=2052
-  _GETINFLUXDBINTEGRATIONREQUEST._serialized_start=2054
-  _GETINFLUXDBINTEGRATIONREQUEST._serialized_end=2109
-  _GETINFLUXDBINTEGRATIONRESPONSE._serialized_start=2111
-  _GETINFLUXDBINTEGRATIONRESPONSE._serialized_end=2190
-  _UPDATEINFLUXDBINTEGRATIONREQUEST._serialized_start=2192
-  _UPDATEINFLUXDBINTEGRATIONREQUEST._serialized_end=2273
-  _DELETEINFLUXDBINTEGRATIONREQUEST._serialized_start=2275
-  _DELETEINFLUXDBINTEGRATIONREQUEST._serialized_end=2333
-  _THINGSBOARDINTEGRATION._serialized_start=2335
-  _THINGSBOARDINTEGRATION._serialized_end=2399
-  _CREATETHINGSBOARDINTEGRATIONREQUEST._serialized_start=2401
-  _CREATETHINGSBOARDINTEGRATIONREQUEST._serialized_end=2488
-  _GETTHINGSBOARDINTEGRATIONREQUEST._serialized_start=2490
-  _GETTHINGSBOARDINTEGRATIONREQUEST._serialized_end=2548
-  _GETTHINGSBOARDINTEGRATIONRESPONSE._serialized_start=2550
-  _GETTHINGSBOARDINTEGRATIONRESPONSE._serialized_end=2635
-  _UPDATETHINGSBOARDINTEGRATIONREQUEST._serialized_start=2637
-  _UPDATETHINGSBOARDINTEGRATIONREQUEST._serialized_end=2724
-  _DELETETHINGSBOARDINTEGRATIONREQUEST._serialized_start=2726
-  _DELETETHINGSBOARDINTEGRATIONREQUEST._serialized_end=2787
-  _MYDEVICESINTEGRATION._serialized_start=2789
-  _MYDEVICESINTEGRATION._serialized_end=2853
-  _CREATEMYDEVICESINTEGRATIONREQUEST._serialized_start=2855
-  _CREATEMYDEVICESINTEGRATIONREQUEST._serialized_end=2938
-  _GETMYDEVICESINTEGRATIONREQUEST._serialized_start=2940
-  _GETMYDEVICESINTEGRATIONREQUEST._serialized_end=2996
-  _GETMYDEVICESINTEGRATIONRESPONSE._serialized_start=2998
-  _GETMYDEVICESINTEGRATIONRESPONSE._serialized_end=3079
-  _UPDATEMYDEVICESINTEGRATIONREQUEST._serialized_start=3081
-  _UPDATEMYDEVICESINTEGRATIONREQUEST._serialized_end=3164
-  _DELETEMYDEVICESINTEGRATIONREQUEST._serialized_start=3166
-  _DELETEMYDEVICESINTEGRATIONREQUEST._serialized_end=3225
-  _LORACLOUDINTEGRATION._serialized_start=3227
-  _LORACLOUDINTEGRATION._serialized_end=3349
-  _LORACLOUDMODEMGEOLOCATIONSERVICES._serialized_start=3352
-  _LORACLOUDMODEMGEOLOCATIONSERVICES._serialized_end=3800
-  _CREATELORACLOUDINTEGRATIONREQUEST._serialized_start=3802
-  _CREATELORACLOUDINTEGRATIONREQUEST._serialized_end=3885
-  _GETLORACLOUDINTEGRATIONREQUEST._serialized_start=3887
-  _GETLORACLOUDINTEGRATIONREQUEST._serialized_end=3943
-  _GETLORACLOUDINTEGRATIONRESPONSE._serialized_start=3945
-  _GETLORACLOUDINTEGRATIONRESPONSE._serialized_end=4026
-  _UPDATELORACLOUDINTEGRATIONREQUEST._serialized_start=4028
-  _UPDATELORACLOUDINTEGRATIONREQUEST._serialized_end=4111
-  _DELETELORACLOUDINTEGRATIONREQUEST._serialized_start=4113
-  _DELETELORACLOUDINTEGRATIONREQUEST._serialized_end=4172
-  _GCPPUBSUBINTEGRATION._serialized_start=4175
-  _GCPPUBSUBINTEGRATION._serialized_end=4320
-  _CREATEGCPPUBSUBINTEGRATIONREQUEST._serialized_start=4322
-  _CREATEGCPPUBSUBINTEGRATIONREQUEST._serialized_end=4405
-  _GETGCPPUBSUBINTEGRATIONREQUEST._serialized_start=4407
-  _GETGCPPUBSUBINTEGRATIONREQUEST._serialized_end=4463
-  _GETGCPPUBSUBINTEGRATIONRESPONSE._serialized_start=4465
-  _GETGCPPUBSUBINTEGRATIONRESPONSE._serialized_end=4546
-  _UPDATEGCPPUBSUBINTEGRATIONREQUEST._serialized_start=4548
-  _UPDATEGCPPUBSUBINTEGRATIONREQUEST._serialized_end=4631
-  _DELETEGCPPUBSUBINTEGRATIONREQUEST._serialized_start=4633
-  _DELETEGCPPUBSUBINTEGRATIONREQUEST._serialized_end=4692
-  _AWSSNSINTEGRATION._serialized_start=4695
-  _AWSSNSINTEGRATION._serialized_end=4856
-  _CREATEAWSSNSINTEGRATIONREQUEST._serialized_start=4858
-  _CREATEAWSSNSINTEGRATIONREQUEST._serialized_end=4935
-  _GETAWSSNSINTEGRATIONREQUEST._serialized_start=4937
-  _GETAWSSNSINTEGRATIONREQUEST._serialized_end=4990
-  _GETAWSSNSINTEGRATIONRESPONSE._serialized_start=4992
-  _GETAWSSNSINTEGRATIONRESPONSE._serialized_end=5067
-  _UPDATEAWSSNSINTEGRATIONREQUEST._serialized_start=5069
-  _UPDATEAWSSNSINTEGRATIONREQUEST._serialized_end=5146
-  _DELETEAWSSNSINTEGRATIONREQUEST._serialized_start=5148
-  _DELETEAWSSNSINTEGRATIONREQUEST._serialized_end=5204
-  _AZURESERVICEBUSINTEGRATION._serialized_start=5207
-  _AZURESERVICEBUSINTEGRATION._serialized_end=5341
-  _CREATEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_start=5343
-  _CREATEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_end=5438
-  _GETAZURESERVICEBUSINTEGRATIONREQUEST._serialized_start=5440
-  _GETAZURESERVICEBUSINTEGRATIONREQUEST._serialized_end=5502
-  _GETAZURESERVICEBUSINTEGRATIONRESPONSE._serialized_start=5504
-  _GETAZURESERVICEBUSINTEGRATIONRESPONSE._serialized_end=5597
-  _UPDATEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_start=5599
-  _UPDATEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_end=5694
-  _DELETEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_start=5696
-  _DELETEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_end=5761
-  _PILOTTHINGSINTEGRATION._serialized_start=5763
-  _PILOTTHINGSINTEGRATION._serialized_end=5842
-  _CREATEPILOTTHINGSINTEGRATIONREQUEST._serialized_start=5844
-  _CREATEPILOTTHINGSINTEGRATIONREQUEST._serialized_end=5931
-  _GETPILOTTHINGSINTEGRATIONREQUEST._serialized_start=5933
-  _GETPILOTTHINGSINTEGRATIONREQUEST._serialized_end=5991
-  _GETPILOTTHINGSINTEGRATIONRESPONSE._serialized_start=5993
-  _GETPILOTTHINGSINTEGRATIONRESPONSE._serialized_end=6078
-  _UPDATEPILOTTHINGSINTEGRATIONREQUEST._serialized_start=6080
-  _UPDATEPILOTTHINGSINTEGRATIONREQUEST._serialized_end=6167
-  _DELETEPILOTTHINGSINTEGRATIONREQUEST._serialized_start=6169
-  _DELETEPILOTTHINGSINTEGRATIONREQUEST._serialized_end=6230
-  _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATEREQUEST._serialized_start=6232
-  _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATEREQUEST._serialized_end=6305
-  _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATERESPONSE._serialized_start=6308
-  _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATERESPONSE._serialized_end=6458
-  _APPLICATIONSERVICE._serialized_start=6796
-  _APPLICATIONSERVICE._serialized_end=10938
+  _APPLICATIONSERVICE.methods_by_name['Create']._options = None
+  _APPLICATIONSERVICE.methods_by_name['Create']._serialized_options = b'\202\323\344\223\002\026\"\021/api/applications:\001*'
+  _APPLICATIONSERVICE.methods_by_name['Get']._options = None
+  _APPLICATIONSERVICE.methods_by_name['Get']._serialized_options = b'\202\323\344\223\002\030\022\026/api/applications/{id}'
+  _APPLICATIONSERVICE.methods_by_name['Update']._options = None
+  _APPLICATIONSERVICE.methods_by_name['Update']._serialized_options = b'\202\323\344\223\002\'\032\"/api/applications/{application.id}:\001*'
+  _APPLICATIONSERVICE.methods_by_name['Delete']._options = None
+  _APPLICATIONSERVICE.methods_by_name['Delete']._serialized_options = b'\202\323\344\223\002\030*\026/api/applications/{id}'
+  _APPLICATIONSERVICE.methods_by_name['List']._options = None
+  _APPLICATIONSERVICE.methods_by_name['List']._serialized_options = b'\202\323\344\223\002\023\022\021/api/applications'
+  _APPLICATIONSERVICE.methods_by_name['ListIntegrations']._options = None
+  _APPLICATIONSERVICE.methods_by_name['ListIntegrations']._serialized_options = b'\202\323\344\223\0021\022//api/applications/{application_id}/integrations'
+  _APPLICATIONSERVICE.methods_by_name['CreateHttpIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateHttpIntegration']._serialized_options = b'\202\323\344\223\002E\"@/api/applications/{integration.application_id}/integrations/http:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetHttpIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetHttpIntegration']._serialized_options = b'\202\323\344\223\0026\0224/api/applications/{application_id}/integrations/http'
+  _APPLICATIONSERVICE.methods_by_name['UpdateHttpIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateHttpIntegration']._serialized_options = b'\202\323\344\223\002E\032@/api/applications/{integration.application_id}/integrations/http:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteHttpIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteHttpIntegration']._serialized_options = b'\202\323\344\223\0026*4/api/applications/{application_id}/integrations/http'
+  _APPLICATIONSERVICE.methods_by_name['CreateInfluxDbIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateInfluxDbIntegration']._serialized_options = b'\202\323\344\223\002I\"D/api/applications/{integration.application_id}/integrations/influxdb:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetInfluxDbIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetInfluxDbIntegration']._serialized_options = b'\202\323\344\223\002:\0228/api/applications/{application_id}/integrations/influxdb'
+  _APPLICATIONSERVICE.methods_by_name['UpdateInfluxDbIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateInfluxDbIntegration']._serialized_options = b'\202\323\344\223\002I\032D/api/applications/{integration.application_id}/integrations/influxdb:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteInfluxDbIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteInfluxDbIntegration']._serialized_options = b'\202\323\344\223\002:*8/api/applications/{application_id}/integrations/influxdb'
+  _APPLICATIONSERVICE.methods_by_name['CreateThingsBoardIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateThingsBoardIntegration']._serialized_options = b'\202\323\344\223\002L\"G/api/applications/{integration.application_id}/integrations/thingsboard:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetThingsBoardIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetThingsBoardIntegration']._serialized_options = b'\202\323\344\223\002=\022;/api/applications/{application_id}/integrations/thingsboard'
+  _APPLICATIONSERVICE.methods_by_name['UpdateThingsBoardIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateThingsBoardIntegration']._serialized_options = b'\202\323\344\223\002L\032G/api/applications/{integration.application_id}/integrations/thingsboard:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteThingsBoardIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteThingsBoardIntegration']._serialized_options = b'\202\323\344\223\002=*;/api/applications/{application_id}/integrations/thingsboard'
+  _APPLICATIONSERVICE.methods_by_name['CreateMyDevicesIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateMyDevicesIntegration']._serialized_options = b'\202\323\344\223\002J\"E/api/applications/{integration.application_id}/integrations/mydevices:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetMyDevicesIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetMyDevicesIntegration']._serialized_options = b'\202\323\344\223\002;\0229/api/applications/{application_id}/integrations/mydevices'
+  _APPLICATIONSERVICE.methods_by_name['UpdateMyDevicesIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateMyDevicesIntegration']._serialized_options = b'\202\323\344\223\002J\032E/api/applications/{integration.application_id}/integrations/mydevices:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteMyDevicesIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteMyDevicesIntegration']._serialized_options = b'\202\323\344\223\002;*9/api/applications/{application_id}/integrations/mydevices'
+  _APPLICATIONSERVICE.methods_by_name['CreateLoraCloudIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateLoraCloudIntegration']._serialized_options = b'\202\323\344\223\002J\"E/api/applications/{integration.application_id}/integrations/loracloud:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetLoraCloudIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetLoraCloudIntegration']._serialized_options = b'\202\323\344\223\002;\0229/api/applications/{application_id}/integrations/loracloud'
+  _APPLICATIONSERVICE.methods_by_name['UpdateLoraCloudIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateLoraCloudIntegration']._serialized_options = b'\202\323\344\223\002J\032E/api/applications/{integration.application_id}/integrations/loracloud:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteLoraCloudIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteLoraCloudIntegration']._serialized_options = b'\202\323\344\223\002;*9/api/applications/{application_id}/integrations/loracloud'
+  _APPLICATIONSERVICE.methods_by_name['CreateGcpPubSubIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateGcpPubSubIntegration']._serialized_options = b'\202\323\344\223\002L\"G/api/applications/{integration.application_id}/integrations/gcp-pub-sub:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetGcpPubSubIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetGcpPubSubIntegration']._serialized_options = b'\202\323\344\223\002=\022;/api/applications/{application_id}/integrations/gcp-pub-sub'
+  _APPLICATIONSERVICE.methods_by_name['UpdateGcpPubSubIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateGcpPubSubIntegration']._serialized_options = b'\202\323\344\223\002L\032G/api/applications/{integration.application_id}/integrations/gcp-pub-sub:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteGcpPubSubIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteGcpPubSubIntegration']._serialized_options = b'\202\323\344\223\002=*;/api/applications/{application_id}/integrations/gcp-pub-sub'
+  _APPLICATIONSERVICE.methods_by_name['CreateAwsSnsIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateAwsSnsIntegration']._serialized_options = b'\202\323\344\223\002H\"C/api/applications/{integration.application_id}/integrations/aws-sns:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetAwsSnsIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetAwsSnsIntegration']._serialized_options = b'\202\323\344\223\0029\0227/api/applications/{application_id}/integrations/aws-sns'
+  _APPLICATIONSERVICE.methods_by_name['UpdateAwsSnsIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateAwsSnsIntegration']._serialized_options = b'\202\323\344\223\002H\032C/api/applications/{integration.application_id}/integrations/aws-sns:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteAwsSnsIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteAwsSnsIntegration']._serialized_options = b'\202\323\344\223\0029*7/api/applications/{application_id}/integrations/aws-sns'
+  _APPLICATIONSERVICE.methods_by_name['CreateAzureServiceBusIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateAzureServiceBusIntegration']._serialized_options = b'\202\323\344\223\002R\"M/api/applications/{integration.application_id}/integrations/azure-service-bus:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetAzureServiceBusIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetAzureServiceBusIntegration']._serialized_options = b'\202\323\344\223\002C\022A/api/applications/{application_id}/integrations/azure-service-bus'
+  _APPLICATIONSERVICE.methods_by_name['UpdateAzureServiceBusIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateAzureServiceBusIntegration']._serialized_options = b'\202\323\344\223\002R\032M/api/applications/{integration.application_id}/integrations/azure-service-bus:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteAzureServiceBusIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteAzureServiceBusIntegration']._serialized_options = b'\202\323\344\223\002C*A/api/applications/{application_id}/integrations/azure-service-bus'
+  _APPLICATIONSERVICE.methods_by_name['CreatePilotThingsIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreatePilotThingsIntegration']._serialized_options = b'\202\323\344\223\002M\"H/api/applications/{integration.application_id}/integrations/pilot-things:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetPilotThingsIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetPilotThingsIntegration']._serialized_options = b'\202\323\344\223\002>\022</api/applications/{application_id}/integrations/pilot-things'
+  _APPLICATIONSERVICE.methods_by_name['UpdatePilotThingsIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdatePilotThingsIntegration']._serialized_options = b'\202\323\344\223\002M\032H/api/applications/{integration.application_id}/integrations/pilot-things:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeletePilotThingsIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeletePilotThingsIntegration']._serialized_options = b'\202\323\344\223\002>*</api/applications/{application_id}/integrations/pilot-things'
+  _APPLICATIONSERVICE.methods_by_name['CreateIftttIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['CreateIftttIntegration']._serialized_options = b'\202\323\344\223\002F\"A/api/applications/{integration.application_id}/integrations/ifttt:\001*'
+  _APPLICATIONSERVICE.methods_by_name['GetIftttIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GetIftttIntegration']._serialized_options = b'\202\323\344\223\0027\0225/api/applications/{application_id}/integrations/ifttt'
+  _APPLICATIONSERVICE.methods_by_name['UpdateIftttIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['UpdateIftttIntegration']._serialized_options = b'\202\323\344\223\002F\032A/api/applications/{integration.application_id}/integrations/ifttt:\001*'
+  _APPLICATIONSERVICE.methods_by_name['DeleteIftttIntegration']._options = None
+  _APPLICATIONSERVICE.methods_by_name['DeleteIftttIntegration']._serialized_options = b'\202\323\344\223\0027*5/api/applications/{application_id}/integrations/ifttt'
+  _APPLICATIONSERVICE.methods_by_name['GenerateMqttIntegrationClientCertificate']._options = None
+  _APPLICATIONSERVICE.methods_by_name['GenerateMqttIntegrationClientCertificate']._serialized_options = b'\202\323\344\223\002B\"@/api/applications/{application_id}/integrations/mqtt/certificate'
+  _ENCODING._serialized_start=6936
+  _ENCODING._serialized_end=6970
+  _INTEGRATIONKIND._serialized_start=6973
+  _INTEGRATIONKIND._serialized_end=7164
+  _INFLUXDBPRECISION._serialized_start=7166
+  _INFLUXDBPRECISION._serialized_end=7229
+  _INFLUXDBVERSION._serialized_start=7231
+  _INFLUXDBVERSION._serialized_end=7280
+  _APPLICATION._serialized_start=137
+  _APPLICATION._serialized_end=216
+  _APPLICATIONLISTITEM._serialized_start=219
+  _APPLICATIONLISTITEM._serialized_end=383
+  _CREATEAPPLICATIONREQUEST._serialized_start=385
+  _CREATEAPPLICATIONREQUEST._serialized_end=450
+  _CREATEAPPLICATIONRESPONSE._serialized_start=452
+  _CREATEAPPLICATIONRESPONSE._serialized_end=491
+  _GETAPPLICATIONREQUEST._serialized_start=493
+  _GETAPPLICATIONREQUEST._serialized_end=528
+  _GETAPPLICATIONRESPONSE._serialized_start=531
+  _GETAPPLICATIONRESPONSE._serialized_end=716
+  _UPDATEAPPLICATIONREQUEST._serialized_start=718
+  _UPDATEAPPLICATIONREQUEST._serialized_end=783
+  _DELETEAPPLICATIONREQUEST._serialized_start=785
+  _DELETEAPPLICATIONREQUEST._serialized_end=823
+  _LISTAPPLICATIONSREQUEST._serialized_start=825
+  _LISTAPPLICATIONSREQUEST._serialized_end=916
+  _LISTAPPLICATIONSRESPONSE._serialized_start=918
+  _LISTAPPLICATIONSRESPONSE._serialized_end=1007
+  _LISTINTEGRATIONSREQUEST._serialized_start=1009
+  _LISTINTEGRATIONSREQUEST._serialized_end=1058
+  _INTEGRATIONLISTITEM._serialized_start=1060
+  _INTEGRATIONLISTITEM._serialized_end=1117
+  _LISTINTEGRATIONSRESPONSE._serialized_start=1119
+  _LISTINTEGRATIONSRESPONSE._serialized_end=1208
+  _HTTPINTEGRATION._serialized_start=1211
+  _HTTPINTEGRATION._serialized_end=1413
+  _HTTPINTEGRATION_HEADERSENTRY._serialized_start=1367
+  _HTTPINTEGRATION_HEADERSENTRY._serialized_end=1413
+  _CREATEHTTPINTEGRATIONREQUEST._serialized_start=1415
+  _CREATEHTTPINTEGRATIONREQUEST._serialized_end=1488
+  _GETHTTPINTEGRATIONREQUEST._serialized_start=1490
+  _GETHTTPINTEGRATIONREQUEST._serialized_end=1541
+  _GETHTTPINTEGRATIONRESPONSE._serialized_start=1543
+  _GETHTTPINTEGRATIONRESPONSE._serialized_end=1614
+  _UPDATEHTTPINTEGRATIONREQUEST._serialized_start=1616
+  _UPDATEHTTPINTEGRATIONREQUEST._serialized_end=1689
+  _DELETEHTTPINTEGRATIONREQUEST._serialized_start=1691
+  _DELETEHTTPINTEGRATIONREQUEST._serialized_end=1745
+  _INFLUXDBINTEGRATION._serialized_start=1748
+  _INFLUXDBINTEGRATION._serialized_end=2025
+  _CREATEINFLUXDBINTEGRATIONREQUEST._serialized_start=2027
+  _CREATEINFLUXDBINTEGRATIONREQUEST._serialized_end=2108
+  _GETINFLUXDBINTEGRATIONREQUEST._serialized_start=2110
+  _GETINFLUXDBINTEGRATIONREQUEST._serialized_end=2165
+  _GETINFLUXDBINTEGRATIONRESPONSE._serialized_start=2167
+  _GETINFLUXDBINTEGRATIONRESPONSE._serialized_end=2246
+  _UPDATEINFLUXDBINTEGRATIONREQUEST._serialized_start=2248
+  _UPDATEINFLUXDBINTEGRATIONREQUEST._serialized_end=2329
+  _DELETEINFLUXDBINTEGRATIONREQUEST._serialized_start=2331
+  _DELETEINFLUXDBINTEGRATIONREQUEST._serialized_end=2389
+  _THINGSBOARDINTEGRATION._serialized_start=2391
+  _THINGSBOARDINTEGRATION._serialized_end=2455
+  _CREATETHINGSBOARDINTEGRATIONREQUEST._serialized_start=2457
+  _CREATETHINGSBOARDINTEGRATIONREQUEST._serialized_end=2544
+  _GETTHINGSBOARDINTEGRATIONREQUEST._serialized_start=2546
+  _GETTHINGSBOARDINTEGRATIONREQUEST._serialized_end=2604
+  _GETTHINGSBOARDINTEGRATIONRESPONSE._serialized_start=2606
+  _GETTHINGSBOARDINTEGRATIONRESPONSE._serialized_end=2691
+  _UPDATETHINGSBOARDINTEGRATIONREQUEST._serialized_start=2693
+  _UPDATETHINGSBOARDINTEGRATIONREQUEST._serialized_end=2780
+  _DELETETHINGSBOARDINTEGRATIONREQUEST._serialized_start=2782
+  _DELETETHINGSBOARDINTEGRATIONREQUEST._serialized_end=2843
+  _MYDEVICESINTEGRATION._serialized_start=2845
+  _MYDEVICESINTEGRATION._serialized_end=2909
+  _CREATEMYDEVICESINTEGRATIONREQUEST._serialized_start=2911
+  _CREATEMYDEVICESINTEGRATIONREQUEST._serialized_end=2994
+  _GETMYDEVICESINTEGRATIONREQUEST._serialized_start=2996
+  _GETMYDEVICESINTEGRATIONREQUEST._serialized_end=3052
+  _GETMYDEVICESINTEGRATIONRESPONSE._serialized_start=3054
+  _GETMYDEVICESINTEGRATIONRESPONSE._serialized_end=3135
+  _UPDATEMYDEVICESINTEGRATIONREQUEST._serialized_start=3137
+  _UPDATEMYDEVICESINTEGRATIONREQUEST._serialized_end=3220
+  _DELETEMYDEVICESINTEGRATIONREQUEST._serialized_start=3222
+  _DELETEMYDEVICESINTEGRATIONREQUEST._serialized_end=3281
+  _LORACLOUDINTEGRATION._serialized_start=3283
+  _LORACLOUDINTEGRATION._serialized_end=3405
+  _LORACLOUDMODEMGEOLOCATIONSERVICES._serialized_start=3408
+  _LORACLOUDMODEMGEOLOCATIONSERVICES._serialized_end=3856
+  _CREATELORACLOUDINTEGRATIONREQUEST._serialized_start=3858
+  _CREATELORACLOUDINTEGRATIONREQUEST._serialized_end=3941
+  _GETLORACLOUDINTEGRATIONREQUEST._serialized_start=3943
+  _GETLORACLOUDINTEGRATIONREQUEST._serialized_end=3999
+  _GETLORACLOUDINTEGRATIONRESPONSE._serialized_start=4001
+  _GETLORACLOUDINTEGRATIONRESPONSE._serialized_end=4082
+  _UPDATELORACLOUDINTEGRATIONREQUEST._serialized_start=4084
+  _UPDATELORACLOUDINTEGRATIONREQUEST._serialized_end=4167
+  _DELETELORACLOUDINTEGRATIONREQUEST._serialized_start=4169
+  _DELETELORACLOUDINTEGRATIONREQUEST._serialized_end=4228
+  _GCPPUBSUBINTEGRATION._serialized_start=4231
+  _GCPPUBSUBINTEGRATION._serialized_end=4376
+  _CREATEGCPPUBSUBINTEGRATIONREQUEST._serialized_start=4378
+  _CREATEGCPPUBSUBINTEGRATIONREQUEST._serialized_end=4461
+  _GETGCPPUBSUBINTEGRATIONREQUEST._serialized_start=4463
+  _GETGCPPUBSUBINTEGRATIONREQUEST._serialized_end=4519
+  _GETGCPPUBSUBINTEGRATIONRESPONSE._serialized_start=4521
+  _GETGCPPUBSUBINTEGRATIONRESPONSE._serialized_end=4602
+  _UPDATEGCPPUBSUBINTEGRATIONREQUEST._serialized_start=4604
+  _UPDATEGCPPUBSUBINTEGRATIONREQUEST._serialized_end=4687
+  _DELETEGCPPUBSUBINTEGRATIONREQUEST._serialized_start=4689
+  _DELETEGCPPUBSUBINTEGRATIONREQUEST._serialized_end=4748
+  _AWSSNSINTEGRATION._serialized_start=4751
+  _AWSSNSINTEGRATION._serialized_end=4912
+  _CREATEAWSSNSINTEGRATIONREQUEST._serialized_start=4914
+  _CREATEAWSSNSINTEGRATIONREQUEST._serialized_end=4991
+  _GETAWSSNSINTEGRATIONREQUEST._serialized_start=4993
+  _GETAWSSNSINTEGRATIONREQUEST._serialized_end=5046
+  _GETAWSSNSINTEGRATIONRESPONSE._serialized_start=5048
+  _GETAWSSNSINTEGRATIONRESPONSE._serialized_end=5123
+  _UPDATEAWSSNSINTEGRATIONREQUEST._serialized_start=5125
+  _UPDATEAWSSNSINTEGRATIONREQUEST._serialized_end=5202
+  _DELETEAWSSNSINTEGRATIONREQUEST._serialized_start=5204
+  _DELETEAWSSNSINTEGRATIONREQUEST._serialized_end=5260
+  _AZURESERVICEBUSINTEGRATION._serialized_start=5263
+  _AZURESERVICEBUSINTEGRATION._serialized_end=5397
+  _CREATEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_start=5399
+  _CREATEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_end=5494
+  _GETAZURESERVICEBUSINTEGRATIONREQUEST._serialized_start=5496
+  _GETAZURESERVICEBUSINTEGRATIONREQUEST._serialized_end=5558
+  _GETAZURESERVICEBUSINTEGRATIONRESPONSE._serialized_start=5560
+  _GETAZURESERVICEBUSINTEGRATIONRESPONSE._serialized_end=5653
+  _UPDATEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_start=5655
+  _UPDATEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_end=5750
+  _DELETEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_start=5752
+  _DELETEAZURESERVICEBUSINTEGRATIONREQUEST._serialized_end=5817
+  _PILOTTHINGSINTEGRATION._serialized_start=5819
+  _PILOTTHINGSINTEGRATION._serialized_end=5898
+  _CREATEPILOTTHINGSINTEGRATIONREQUEST._serialized_start=5900
+  _CREATEPILOTTHINGSINTEGRATIONREQUEST._serialized_end=5987
+  _GETPILOTTHINGSINTEGRATIONREQUEST._serialized_start=5989
+  _GETPILOTTHINGSINTEGRATIONREQUEST._serialized_end=6047
+  _GETPILOTTHINGSINTEGRATIONRESPONSE._serialized_start=6049
+  _GETPILOTTHINGSINTEGRATIONRESPONSE._serialized_end=6134
+  _UPDATEPILOTTHINGSINTEGRATIONREQUEST._serialized_start=6136
+  _UPDATEPILOTTHINGSINTEGRATIONREQUEST._serialized_end=6223
+  _DELETEPILOTTHINGSINTEGRATIONREQUEST._serialized_start=6225
+  _DELETEPILOTTHINGSINTEGRATIONREQUEST._serialized_end=6286
+  _IFTTTINTEGRATION._serialized_start=6288
+  _IFTTTINTEGRATION._serialized_end=6366
+  _CREATEIFTTTINTEGRATIONREQUEST._serialized_start=6368
+  _CREATEIFTTTINTEGRATIONREQUEST._serialized_end=6443
+  _GETIFTTTINTEGRATIONREQUEST._serialized_start=6445
+  _GETIFTTTINTEGRATIONREQUEST._serialized_end=6497
+  _GETIFTTTINTEGRATIONRESPONSE._serialized_start=6499
+  _GETIFTTTINTEGRATIONRESPONSE._serialized_end=6572
+  _UPDATEIFTTTINTEGRATIONREQUEST._serialized_start=6574
+  _UPDATEIFTTTINTEGRATIONREQUEST._serialized_end=6649
+  _DELETEIFTTTINTEGRATIONREQUEST._serialized_start=6651
+  _DELETEIFTTTINTEGRATIONREQUEST._serialized_end=6706
+  _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATEREQUEST._serialized_start=6708
+  _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATEREQUEST._serialized_end=6781
+  _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATERESPONSE._serialized_start=6784
+  _GENERATEMQTTINTEGRATIONCLIENTCERTIFICATERESPONSE._serialized_end=6934
+  _APPLICATIONSERVICE._serialized_start=7283
+  _APPLICATIONSERVICE._serialized_end=15019
 # @@protoc_insertion_point(module_scope)

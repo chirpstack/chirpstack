@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "github.com/chirpstack/chirpstack/api/go/v4";
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
 option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "DeviceProfileProto";
 
+import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "chirpstack-api/common/common.proto";
@@ -22,25 +23,68 @@ enum CodecRuntime {
     JS = 2;
 }
 
+enum MeasurementKind {
+    // Unknown (in which case it is not tracked).
+    UNKNOWN = 0;
+
+    // Incrementing counters that never decrease (these are not reset on each reading).
+    COUNTER = 1;
+
+    // Counters that do get reset upon reading.
+    ABSOLUTE = 2;
+
+    // E.g. a temperature value.
+    GAUGE = 3;
+
+    // E.g. a firmware version, true / false value.
+    STRING = 4;
+}
+
 // DeviceProfileService is the service providing API methods for managing device-profiles.
 service DeviceProfileService {
     // Create the given device-profile.
-    rpc Create(CreateDeviceProfileRequest) returns (CreateDeviceProfileResponse) {}
+    rpc Create(CreateDeviceProfileRequest) returns (CreateDeviceProfileResponse) {
+        option(google.api.http) = {
+            post: "/api/device-profiles"
+            body: "*"
+        };
+    }
 
     // Get the device-profile for the given ID.
-    rpc Get(GetDeviceProfileRequest) returns (GetDeviceProfileResponse) {}
+    rpc Get(GetDeviceProfileRequest) returns (GetDeviceProfileResponse) {
+        option(google.api.http) = {
+            get: "/api/device-profiles/{id}"
+        };
+    }
 
     // Update the given device-profile.
-    rpc Update(UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {}
+    rpc Update(UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/device-profiles/{device_profile.id}"
+            body: "*"
+        };
+    }
 
     // Delete the device-profile with the given ID.
-    rpc Delete(DeleteDeviceProfileRequest) returns (google.protobuf.Empty) {}
+    rpc Delete(DeleteDeviceProfileRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/device-profiles/{id}"
+        };
+    }
     
     // List the available device-profiles.
-    rpc List(ListDeviceProfilesRequest) returns (ListDeviceProfilesResponse) {}
+    rpc List(ListDeviceProfilesRequest) returns (ListDeviceProfilesResponse) {
+        option(google.api.http) = {
+            get: "/api/device-profiles"
+        };
+    }
 
     // List available ADR algorithms.
-    rpc ListAdrAlgorithms(google.protobuf.Empty) returns (ListDeviceProfileAdrAlgorithmsResponse) {}
+    rpc ListAdrAlgorithms(google.protobuf.Empty) returns (ListDeviceProfileAdrAlgorithmsResponse) {
+        option(google.api.http) = {
+            get: "/api/device-profiles/adr-algorithms"
+        };
+    }
 }
 
 message DeviceProfile {
@@ -53,6 +97,9 @@ message DeviceProfile {
 
     // Name.
     string name = 3;
+
+    // Description.
+    string description = 26;
 
     // Region.
     common.Region region = 4; 
@@ -69,11 +116,11 @@ message DeviceProfile {
     // Payload codec runtime.
     CodecRuntime payload_codec_runtime = 8;
 
-    // Payload codec encoder config.
-    string payload_encoder_config = 9;
+    // Payload codec script.
+    string payload_codec_script = 9;
 
-    // Payload codec decoder config.
-    string payload_decoder_config = 10;
+    // Flush queue on device activation.
+    bool flush_queue_on_activate = 10;
 
     // Uplink interval (seconds).
     // This defines the expected uplink interval which the device uses for
@@ -126,6 +173,18 @@ message DeviceProfile {
 
     // User defined tags.
     map<string, string> tags = 25;
+
+    // Measurements.
+    // If defined, ChirpStack will visualize these metrics in the web-interface.
+    map<string, Measurement> measurements = 27;
+}
+
+message Measurement {
+    // Name (user defined).
+    string name = 2;
+
+    // Kind.
+    MeasurementKind kind = 3;
 }
 
 message DeviceProfileListItem {

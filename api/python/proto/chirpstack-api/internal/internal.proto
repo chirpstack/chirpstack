@@ -199,8 +199,8 @@ message DeviceGatewayRxInfoItem {
 }
 
 message DownlinkFrame {
-    // Downlink ID (UUID).
-    bytes downlink_id = 1;
+    // Downlink ID.
+    uint32 downlink_id = 1;
 
     // DevEUI.
     bytes dev_eui = 2;
@@ -231,5 +231,36 @@ message LoraCloudGeolocBuffer {
 
 message LoraCloudGeolocBufferUplink {
     // RxInfo set for a single uplink.
-    repeated gw.UplinkRXInfo rx_info = 1;
+    repeated gw.UplinkRxInfo rx_info = 1;
+}
+
+message PassiveRoamingDeviceSession {
+    // Session ID (UUID).
+    // Unfortunately we can not use the DevEUI as unique identifier
+    // as the PRStartAns DevEUI field is optional.
+    bytes session_id = 1;
+
+    // NetID of the hNS.
+    bytes net_id = 2;
+    
+    // DevAddr of the device.
+    bytes dev_addr = 3;
+
+    // DevEUI of the device (optional).
+    bytes dev_eui = 4;
+
+    // LoRaWAN 1.1.
+    bool lorawan_1_1 = 5;
+
+    // LoRaWAN 1.0 NwkSKey / LoRaWAN 1.1 FNwkSIntKey.
+    bytes f_nwk_s_int_key = 6;
+
+    // Lifetime.
+    google.protobuf.Timestamp lifetime = 7;
+
+    // Uplink frame-counter.
+    uint32 f_cnt_up = 8;
+
+    // Validate MIC.
+    bool validate_mic = 9;
 }

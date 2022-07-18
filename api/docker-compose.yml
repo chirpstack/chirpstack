@@ -32,7 +32,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-python
-    command: bash -c "cd js && make all"
+    command: bash -c "cd python && make all"
     volumes:
       - ./:/chirpstack/api
   chirpstack-api-md:

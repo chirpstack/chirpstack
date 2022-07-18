@@ -16,7 +16,7 @@ from chirpstack_api.common import common_pb2 as chirpstack__api_dot_common_dot_c
 from chirpstack_api.gw import gw_pb2 as chirpstack__api_dot_gw_dot_gw__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1e\x63hirpstack-api/meta/meta.proto\x12\x04meta\x1a\"chirpstack-api/common/common.proto\x1a\x1a\x63hirpstack-api/gw/gw.proto\"\xf0\x01\n\nUplinkMeta\x12\x0f\n\x07\x64\x65v_eui\x18\x01 \x01(\t\x12!\n\x07tx_info\x18\x02 \x01(\x0b\x32\x10.gw.UplinkTXInfo\x12!\n\x07rx_info\x18\x03 \x03(\x0b\x32\x10.gw.UplinkRXInfo\x12\x1e\n\x16phy_payload_byte_count\x18\x04 \x01(\r\x12\x1e\n\x16mac_command_byte_count\x18\x05 \x01(\r\x12&\n\x1e\x61pplication_payload_byte_count\x18\x06 \x01(\r\x12#\n\x0cmessage_type\x18\x07 \x01(\x0e\x32\r.common.MType\"\x81\x02\n\x0c\x44ownlinkMeta\x12\x0f\n\x07\x64\x65v_eui\x18\x01 \x01(\t\x12\x1a\n\x12multicast_group_id\x18\x02 \x01(\t\x12#\n\x07tx_info\x18\x03 \x01(\x0b\x32\x12.gw.DownlinkTXInfo\x12\x1e\n\x16phy_payload_byte_count\x18\x04 \x01(\r\x12\x1e\n\x16mac_command_byte_count\x18\x05 \x01(\r\x12&\n\x1e\x61pplication_payload_byte_count\x18\x06 \x01(\r\x12#\n\x0cmessage_type\x18\x07 \x01(\x0e\x32\r.common.MType\x12\x12\n\ngateway_id\x18\x08 \x01(\tBV\n\x16io.chirpstack.api.metaB\tMetaProtoP\x01Z/github.com/chirpstack/chirpstack-api/go/v4/metab\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1e\x63hirpstack-api/meta/meta.proto\x12\x04meta\x1a\"chirpstack-api/common/common.proto\x1a\x1a\x63hirpstack-api/gw/gw.proto\"\xf0\x01\n\nUplinkMeta\x12\x0f\n\x07\x64\x65v_eui\x18\x01 \x01(\t\x12!\n\x07tx_info\x18\x02 \x01(\x0b\x32\x10.gw.UplinkTxInfo\x12!\n\x07rx_info\x18\x03 \x03(\x0b\x32\x10.gw.UplinkRxInfo\x12\x1e\n\x16phy_payload_byte_count\x18\x04 \x01(\r\x12\x1e\n\x16mac_command_byte_count\x18\x05 \x01(\r\x12&\n\x1e\x61pplication_payload_byte_count\x18\x06 \x01(\r\x12#\n\x0cmessage_type\x18\x07 \x01(\x0e\x32\r.common.MType\"\x81\x02\n\x0c\x44ownlinkMeta\x12\x0f\n\x07\x64\x65v_eui\x18\x01 \x01(\t\x12\x1a\n\x12multicast_group_id\x18\x02 \x01(\t\x12#\n\x07tx_info\x18\x03 \x01(\x0b\x32\x12.gw.DownlinkTxInfo\x12\x1e\n\x16phy_payload_byte_count\x18\x04 \x01(\r\x12\x1e\n\x16mac_command_byte_count\x18\x05 \x01(\r\x12&\n\x1e\x61pplication_payload_byte_count\x18\x06 \x01(\r\x12#\n\x0cmessage_type\x18\x07 \x01(\x0e\x32\r.common.MType\x12\x12\n\ngateway_id\x18\x08 \x01(\tBV\n\x16io.chirpstack.api.metaB\tMetaProtoP\x01Z/github.com/chirpstack/chirpstack/api/go/v4/metab\x06proto3')
 
 
 
@@ -39,7 +39,7 @@ _sym_db.RegisterMessage(DownlinkMeta)
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n\026io.chirpstack.api.metaB\tMetaProtoP\001Z/github.com/chirpstack/chirpstack-api/go/v4/meta'
+  DESCRIPTOR._serialized_options = b'\n\026io.chirpstack.api.metaB\tMetaProtoP\001Z/github.com/chirpstack/chirpstack/api/go/v4/meta'
   _UPLINKMETA._serialized_start=105
   _UPLINKMETA._serialized_end=345
   _DOWNLINKMETA._serialized_start=348

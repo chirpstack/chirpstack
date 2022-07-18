@@ -226,6 +226,26 @@ class ApplicationServiceStub(object):
                 request_serializer=chirpstack__api_dot_api_dot_application__pb2.DeletePilotThingsIntegrationRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.CreateIftttIntegration = channel.unary_unary(
+                '/api.ApplicationService/CreateIftttIntegration',
+                request_serializer=chirpstack__api_dot_api_dot_application__pb2.CreateIftttIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.GetIftttIntegration = channel.unary_unary(
+                '/api.ApplicationService/GetIftttIntegration',
+                request_serializer=chirpstack__api_dot_api_dot_application__pb2.GetIftttIntegrationRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_application__pb2.GetIftttIntegrationResponse.FromString,
+                )
+        self.UpdateIftttIntegration = channel.unary_unary(
+                '/api.ApplicationService/UpdateIftttIntegration',
+                request_serializer=chirpstack__api_dot_api_dot_application__pb2.UpdateIftttIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.DeleteIftttIntegration = channel.unary_unary(
+                '/api.ApplicationService/DeleteIftttIntegration',
+                request_serializer=chirpstack__api_dot_api_dot_application__pb2.DeleteIftttIntegrationRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.GenerateMqttIntegrationClientCertificate = channel.unary_unary(
                 '/api.ApplicationService/GenerateMqttIntegrationClientCertificate',
                 request_serializer=chirpstack__api_dot_api_dot_application__pb2.GenerateMqttIntegrationClientCertificateRequest.SerializeToString,
@@ -531,6 +551,34 @@ class ApplicationServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreateIftttIntegration(self, request, context):
+        """Create IFTTT integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetIftttIntegration(self, request, context):
+        """Get IFTTT integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateIftttIntegration(self, request, context):
+        """Update IFTTT integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteIftttIntegration(self, request, context):
+        """Delete IFTTT integration.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GenerateMqttIntegrationClientCertificate(self, request, context):
         """Generates application ID specific client-certificate.
         """
@@ -749,6 +797,26 @@ def add_ApplicationServiceServicer_to_server(servicer, server):
             'DeletePilotThingsIntegration': grpc.unary_unary_rpc_method_handler(
                     servicer.DeletePilotThingsIntegration,
                     request_deserializer=chirpstack__api_dot_api_dot_application__pb2.DeletePilotThingsIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'CreateIftttIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateIftttIntegration,
+                    request_deserializer=chirpstack__api_dot_api_dot_application__pb2.CreateIftttIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'GetIftttIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetIftttIntegration,
+                    request_deserializer=chirpstack__api_dot_api_dot_application__pb2.GetIftttIntegrationRequest.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_application__pb2.GetIftttIntegrationResponse.SerializeToString,
+            ),
+            'UpdateIftttIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateIftttIntegration,
+                    request_deserializer=chirpstack__api_dot_api_dot_application__pb2.UpdateIftttIntegrationRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'DeleteIftttIntegration': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteIftttIntegration,
+                    request_deserializer=chirpstack__api_dot_api_dot_application__pb2.DeleteIftttIntegrationRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'GenerateMqttIntegrationClientCertificate': grpc.unary_unary_rpc_method_handler(
@@ -1477,6 +1545,74 @@ class ApplicationService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/api.ApplicationService/DeletePilotThingsIntegration',
             chirpstack__api_dot_api_dot_application__pb2.DeletePilotThingsIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateIftttIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.ApplicationService/CreateIftttIntegration',
+            chirpstack__api_dot_api_dot_application__pb2.CreateIftttIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetIftttIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.ApplicationService/GetIftttIntegration',
+            chirpstack__api_dot_api_dot_application__pb2.GetIftttIntegrationRequest.SerializeToString,
+            chirpstack__api_dot_api_dot_application__pb2.GetIftttIntegrationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateIftttIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.ApplicationService/UpdateIftttIntegration',
+            chirpstack__api_dot_api_dot_application__pb2.UpdateIftttIntegrationRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteIftttIntegration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.ApplicationService/DeleteIftttIntegration',
+            chirpstack__api_dot_api_dot_application__pb2.DeleteIftttIntegrationRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

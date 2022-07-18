@@ -25,6 +25,9 @@
 
 # API
 /api/js/node_modules
+/api/python/src/*.egg-info/
+/api/python/src/build/
+/api/python/src/dist/
 
 # Bitbake recipes
 *.bb
