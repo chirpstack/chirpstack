@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import moment from "moment";
 import { ReloadOutlined } from "@ant-design/icons";
-import { Descriptions, Space, Card, Statistic, Row, Col, Tabs, Radio, RadioChangeEvent, Button } from "antd";
+import { Descriptions, Space, Card, Statistic, Row, Col, Tabs, Radio, RadioChangeEvent, Button, Spin } from "antd";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
 import {
@@ -31,6 +31,8 @@ interface IState {
   metricsAggregation: Aggregation;
   deviceMetrics?: GetDeviceMetricsResponse;
   deviceLinkMetrics?: GetDeviceLinkMetricsResponse;
+  deviceMetricsLoaded: boolean;
+  deviceLinkMetricsLoaded: boolean;
 }
 
 class DeviceDashboard extends Component<IProps, IState> {
@@ -39,6 +41,8 @@ class DeviceDashboard extends Component<IProps, IState> {
 
     this.state = {
       metricsAggregation: Aggregation.DAY,
+      deviceMetricsLoaded: false,
+      deviceLinkMetricsLoaded: false,
     };
   }
 
@@ -59,8 +63,16 @@ class DeviceDashboard extends Component<IProps, IState> {
       start = start.subtract(12, "months");
     }
 
-    this.loadLinkMetrics(start.toDate(), end.toDate(), agg);
-    this.loadDeviceMetrics(start.toDate(), end.toDate(), agg);
+    this.setState(
+      {
+        deviceMetricsLoaded: false,
+        deviceLinkMetricsLoaded: false,
+      },
+      () => {
+        this.loadLinkMetrics(start.toDate(), end.toDate(), agg);
+        this.loadDeviceMetrics(start.toDate(), end.toDate(), agg);
+      },
+    );
   };
 
   loadDeviceMetrics = (start: Date, end: Date, agg: Aggregation) => {
@@ -79,6 +91,7 @@ class DeviceDashboard extends Component<IProps, IState> {
     DeviceStore.getMetrics(req, (resp: GetDeviceMetricsResponse) => {
       this.setState({
         deviceMetrics: resp,
+        deviceMetricsLoaded: true,
       });
     });
   };
@@ -99,6 +112,7 @@ class DeviceDashboard extends Component<IProps, IState> {
     DeviceStore.getLinkMetrics(req, (resp: GetDeviceLinkMetricsResponse) => {
       this.setState({
         deviceLinkMetrics: resp,
+        deviceLinkMetricsLoaded: true,
       });
     });
   };
@@ -164,14 +178,23 @@ class DeviceDashboard extends Component<IProps, IState> {
       lastSeenAt = moment(this.props.lastSeenAt).format("YYYY-MM-DD HH:mm:ss");
     }
 
+    const loading = !this.state.deviceLinkMetricsLoaded || !this.state.deviceMetrics;
+
     const aggregations = (
       <Space direction="horizontal">
+        {loading && <Spin size="small" />}
         <Radio.Group value={this.state.metricsAggregation} onChange={this.onMetricsAggregationChange} size="small">
-          <Radio.Button value={Aggregation.HOUR}>24h</Radio.Button>
-          <Radio.Button value={Aggregation.DAY}>31d</Radio.Button>
-          <Radio.Button value={Aggregation.MONTH}>1y</Radio.Button>
+          <Radio.Button value={Aggregation.HOUR} disabled={loading}>
+            24h
+          </Radio.Button>
+          <Radio.Button value={Aggregation.DAY} disabled={loading}>
+            31d
+          </Radio.Button>
+          <Radio.Button value={Aggregation.MONTH} disabled={loading}>
+            1y
+          </Radio.Button>
         </Radio.Group>
-        <Button type="primary" size="small" icon={<ReloadOutlined />} onClick={this.loadMetrics} />
+        <Button type="primary" size="small" icon={<ReloadOutlined />} onClick={this.loadMetrics} disabled={loading} />
       </Space>
     );
 
