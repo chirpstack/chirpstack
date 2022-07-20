@@ -3105,6 +3105,7 @@ version = "4.2.0+1.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e542c6863b04ce0fa0c5719bc6b7b348cf8dd21af1bb03c9db5f9805b2a6473"
 dependencies = [
+ "cmake",
  "libc",
  "libz-sys",
  "num_enum",
