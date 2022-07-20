@@ -16,7 +16,7 @@ use super::{error::Error, fields, get_db_conn, get_redis_conn, redis_key};
 use crate::config;
 
 #[derive(Queryable, QueryableByName, Insertable, AsChangeset, PartialEq, Debug, Clone)]
-#[table_name = "device"]
+#[diesel(table_name = device)]
 pub struct Device {
     pub dev_eui: EUI64,
     pub application_id: Uuid,
@@ -106,11 +106,11 @@ pub struct Filters {
 
 #[derive(QueryableByName, PartialEq, Debug)]
 pub struct DevicesActiveInactive {
-    #[sql_type = "diesel::sql_types::BigInt"]
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub never_seen_count: i64,
-    #[sql_type = "diesel::sql_types::BigInt"]
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub active_count: i64,
-    #[sql_type = "diesel::sql_types::BigInt"]
+    #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub inactive_count: i64,
 }
 
@@ -124,8 +124,8 @@ pub async fn create(d: Device) -> Result<Device, Error> {
     d.validate()?;
     let d = task::spawn_blocking({
         move || -> Result<Device, Error> {
-            let c = get_db_conn()?;
-            c.transaction::<Device, Error, _>(|| {
+            let mut c = get_db_conn()?;
+            c.transaction::<Device, Error, _>(|c| {
                 // use for update to lock the tenant
                 let t: super::tenant::Tenant = tenant::dsl::tenant
                     .select((
@@ -141,13 +141,13 @@ pub async fn create(d: Device) -> Result<Device, Error> {
                     ))
                     .inner_join(application::table)
                     .filter(application::dsl::id.eq(&d.application_id))
-                    .first(&c)?;
+                    .first(c)?;
 
                 let dev_count: i64 = device::dsl::device
                     .select(dsl::count_star())
                     .inner_join(application::table)
                     .filter(application::dsl::tenant_id.eq(&t.id))
-                    .first(&c)?;
+                    .first(c)?;
 
                 if t.max_device_count != 0 && dev_count as i32 >= t.max_device_count {
                     return Err(Error::NotAllowed(
@@ -157,7 +157,7 @@ pub async fn create(d: Device) -> Result<Device, Error> {
 
                 diesel::insert_into(device::table)
                     .values(&d)
-                    .get_result(&c)
+                    .get_result(c)
                     .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))
             })
         }
@@ -171,10 +171,10 @@ pub async fn get(dev_eui: &EUI64) -> Result<Device, Error> {
     task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<Device, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let d = device::dsl::device
                 .find(&dev_eui)
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
             Ok(d)
         }
@@ -186,7 +186,7 @@ pub async fn update(d: Device) -> Result<Device, Error> {
     d.validate()?;
     let d = task::spawn_blocking({
         move || -> Result<Device, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device::dsl::device.find(&d.dev_eui))
                 .set((
                     device::updated_at.eq(Utc::now()),
@@ -199,7 +199,7 @@ pub async fn update(d: Device) -> Result<Device, Error> {
                     device::tags.eq(&d.tags),
                     device::variables.eq(&d.variables),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))
         }
     })
@@ -213,10 +213,10 @@ pub async fn set_enabled_class(dev_eui: &EUI64, mode: &str) -> Result<Device, Er
         let dev_eui = *dev_eui;
         let mode = mode.to_string();
         move || -> Result<Device, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device::dsl::device.find(&dev_eui))
                 .set(device::enabled_class.eq(&mode))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
         }
     })
@@ -236,10 +236,10 @@ pub async fn set_scheduler_run_after(
     task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<Device, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device::dsl::device.find(&dev_eui))
                 .set(device::scheduler_run_after.eq(&new_ts))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
         }
     })
@@ -250,13 +250,13 @@ pub async fn set_last_seen_dr(dev_eui: &EUI64, dr: u8) -> Result<Device, Error> 
     let d = task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<Device, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device::dsl::device.find(&dev_eui))
                 .set((
                     device::last_seen_at.eq(Utc::now()),
                     device::dr.eq(dr as i16),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
         }
     })
@@ -274,14 +274,14 @@ pub async fn set_status(
     let d = task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<Device, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device::dsl::device.find(&dev_eui))
                 .set((
                     device::margin.eq(Some(margin)),
                     device::external_power_source.eq(external_power_source),
                     device::battery_level.eq(battery_level),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
         }
     })
@@ -294,8 +294,8 @@ pub async fn delete(dev_eui: &EUI64) -> Result<(), Error> {
     task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
-            let ra = diesel::delete(device::dsl::device.find(&dev_eui)).execute(&c)?;
+            let mut c = get_db_conn()?;
+            let ra = diesel::delete(device::dsl::device.find(&dev_eui)).execute(&mut c)?;
             if ra == 0 {
                 return Err(Error::NotFound(dev_eui.to_string()));
             }
@@ -311,7 +311,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
     task::spawn_blocking({
         let filters = filters.clone();
         move || -> Result<i64, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let mut q = device::dsl::device
                 .select(dsl::count_star())
                 .distinct()
@@ -331,7 +331,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
                     .filter(multicast_group_device::dsl::multicast_group_id.eq(multicast_group_id));
             }
 
-            Ok(q.first(&c)?)
+            Ok(q.first(&mut c)?)
         }
     })
     .await?
@@ -345,7 +345,7 @@ pub async fn list(
     task::spawn_blocking({
         let filters = filters.clone();
         move || -> Result<Vec<DeviceListItem>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let mut q = device::dsl::device
                 .inner_join(device_profile::table)
                 .left_join(multicast_group_device::table)
@@ -381,7 +381,7 @@ pub async fn list(
             q.order_by(device::dsl::name)
                 .limit(limit)
                 .offset(offset)
-                .load(&c)
+                .load(&mut c)
                 .map_err(|e| Error::from_diesel(e, "".into()))
         }
     })
@@ -392,7 +392,7 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
     task::spawn_blocking({
         let tenant_id = *tenant_id;
         move || -> Result<DevicesActiveInactive, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::sql_query(r#"
                 with device_active_inactive as (
                     select
@@ -412,8 +412,8 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
                 from
                     device_active_inactive
             "#)
-            .bind::<diesel::sql_types::Nullable<diesel::pg::types::sql_types::Uuid>, _>(tenant_id)
-            .get_result(&c)
+            .bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id)
+            .get_result(&mut c)
             .map_err(|e| Error::from_diesel(e, "".into()))
         }
     })
@@ -424,7 +424,7 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
     task::spawn_blocking({
         let tenant_id = *tenant_id;
         move || -> Result<Vec<DevicesDataRate>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let mut q = device::dsl::device
                 .inner_join(device_profile::table)
                 //.select((device::dr, dsl::count_star()))
@@ -432,6 +432,7 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
                     device::dr,
                     diesel::dsl::sql::<diesel::sql_types::BigInt>("count(1)"),
                 ))
+                .group_by(device::dr)
                 .filter(device::dsl::dr.is_not_null())
                 .into_boxed();
 
@@ -439,9 +440,7 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
                 q = q.filter(device_profile::dsl::tenant_id.eq(id));
             }
 
-            q.group_by(device::dr)
-                .load(&c)
-                .map_err(|e| Error::from_diesel(e, "".into()))
+            q.load(&mut c).map_err(|e| Error::from_diesel(e, "".into()))
         }
     })
     .await?
@@ -449,8 +448,8 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
 
 pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>> {
     task::spawn_blocking(move || -> Result<Vec<Device>> {
-        let c = get_db_conn()?;
-        c.transaction::<Vec<Device>, Error, _>(|| {
+        let mut c = get_db_conn()?;
+        c.transaction::<Vec<Device>, Error, _>(|c| {
             let conf = config::get();
             diesel::sql_query(
                 r#"
@@ -490,7 +489,7 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
             .bind::<diesel::sql_types::Timestamptz, _>(
                 Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
             )
-            .load(&c)
+            .load(c)
             .map_err(|e| Error::from_diesel(e, "".into()))
         })
         .context("Get with Class B/C queue-items transaction")

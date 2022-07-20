@@ -1,9 +1,8 @@
 use std::fmt;
-use std::io::Write;
 use std::str::FromStr;
 
 use anyhow::Result;
-use diesel::backend::Backend;
+use diesel::backend::{self, Backend};
 use diesel::sql_types::Binary;
 use diesel::{deserialize, serialize};
 use serde::de::{self, Visitor};
@@ -12,7 +11,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use crate::Error;
 
 #[derive(Copy, Clone, PartialEq, AsExpression, FromSqlRow, Default)]
-#[sql_type = "diesel::sql_types::Binary"]
+#[diesel(sql_type = diesel::sql_types::Binary)]
 pub struct AES128Key([u8; 16]);
 
 impl AES128Key {
@@ -100,13 +99,13 @@ impl<'de> Visitor<'de> for Aes128KeyVisitor {
     }
 }
 
-impl<ST, DB> deserialize::FromSql<ST, DB> for AES128Key
+impl<DB> deserialize::FromSql<Binary, DB> for AES128Key
 where
     DB: Backend,
-    *const [u8]: deserialize::FromSql<ST, DB>,
+    *const [u8]: deserialize::FromSql<Binary, DB>,
 {
-    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
-        let bytes = Vec::<u8>::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let bytes = Vec::<u8>::from_sql(value)?;
         if bytes.len() != 16 {
             return Err("AES128Key type expects exactly 16 bytes".into());
         }
@@ -118,13 +117,15 @@ where
     }
 }
 
-impl<DB> serialize::ToSql<Binary, DB> for AES128Key
+impl serialize::ToSql<Binary, diesel::pg::Pg> for AES128Key
 where
-    DB: Backend,
-    [u8]: serialize::ToSql<Binary, DB>,
+    [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
 {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, DB>) -> serialize::Result {
-        (&self.to_bytes() as &[u8]).to_sql(out)
+    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
+        <[u8] as serialize::ToSql<Binary, diesel::pg::Pg>>::to_sql(
+            &self.to_bytes(),
+            &mut out.reborrow(),
+        )
     }
 }
 

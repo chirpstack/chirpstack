@@ -8,7 +8,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use crate::Error;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, AsExpression, FromSqlRow, Default)]
-#[sql_type = "diesel::sql_types::Binary"]
+#[diesel(sql_type = diesel::sql_types::Binary)]
 pub struct EUI64([u8; 8]);
 
 impl EUI64 {
@@ -104,19 +104,17 @@ impl<'de> Visitor<'de> for Eui64Visitor {
     }
 }
 
-use std::io::Write;
-
-use diesel::backend::Backend;
+use diesel::backend::{self, Backend};
 use diesel::sql_types::Binary;
 use diesel::{deserialize, serialize};
 
-impl<DB> deserialize::FromSql<diesel::sql_types::Binary, DB> for EUI64
+impl<DB> deserialize::FromSql<Binary, DB> for EUI64
 where
     DB: Backend,
-    *const [u8]: deserialize::FromSql<diesel::sql_types::Binary, DB>,
+    *const [u8]: deserialize::FromSql<Binary, DB>,
 {
-    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
-        let bytes = Vec::<u8>::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let bytes = Vec::<u8>::from_sql(value)?;
         if bytes.len() != 8 {
             return Err("EUI64 type expects exactly 8 bytes".into());
         }
@@ -128,17 +126,21 @@ where
     }
 }
 
-impl<DB> serialize::ToSql<Binary, DB> for EUI64
+impl serialize::ToSql<Binary, diesel::pg::Pg> for EUI64
 where
-    DB: Backend,
-    [u8]: serialize::ToSql<Binary, DB>,
+    [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
 {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, DB>) -> serialize::Result {
-        (&self.to_be_bytes() as &[u8]).to_sql(out)
+    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
+        <[u8] as serialize::ToSql<Binary, diesel::pg::Pg>>::to_sql(
+            &self.to_be_bytes(),
+            &mut out.reborrow(),
+        )
     }
 }
 
-impl diesel::sql_types::NotNull for EUI64 {}
+impl diesel::sql_types::SqlType for EUI64 {
+    type IsNull = diesel::sql_types::is_nullable::NotNull;
+}
 
 #[cfg(test)]
 mod tests {

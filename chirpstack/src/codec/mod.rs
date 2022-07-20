@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::io::Write;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
-use diesel::backend::Backend;
+use diesel::backend::{self, Backend};
+use diesel::pg::Pg;
 use diesel::sql_types::Text;
 use diesel::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
@@ -16,7 +16,7 @@ mod js;
 
 #[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq, AsExpression, FromSqlRow)]
 #[allow(non_camel_case_types, clippy::upper_case_acronyms)]
-#[sql_type = "diesel::sql_types::Text"]
+#[diesel(sql_type = diesel::sql_types::Text)]
 pub enum Codec {
     NONE,
     CAYENNE_LPP,
@@ -29,24 +29,23 @@ impl fmt::Display for Codec {
     }
 }
 
-impl<ST, DB> deserialize::FromSql<ST, DB> for Codec
+impl<DB> deserialize::FromSql<Text, DB> for Codec
 where
     DB: Backend,
-    *const str: deserialize::FromSql<ST, DB>,
+    *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
-        let string = String::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let string = String::from_sql(value)?;
         Ok(Codec::from_str(&string)?)
     }
 }
 
-impl<DB> serialize::ToSql<Text, DB> for Codec
+impl serialize::ToSql<Text, Pg> for Codec
 where
-    DB: Backend,
-    str: serialize::ToSql<Text, DB>,
+    str: serialize::ToSql<Text, Pg>,
 {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, DB>) -> serialize::Result {
-        self.to_string().as_str().to_sql(out)
+    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+        <str as serialize::ToSql<Text, Pg>>::to_sql(&self.to_string(), &mut out.reborrow())
     }
 }
 

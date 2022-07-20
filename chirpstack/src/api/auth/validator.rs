@@ -96,12 +96,12 @@ impl Validator for ValidateActiveUser {
             let id = *id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let count = user::dsl::user
                     .select(dsl::count_star())
                     .find(id)
                     .filter(user::dsl::is_active.eq(true))
-                    .first(&c)?;
+                    .first(&mut c)?;
                 Ok(count)
             }
         })
@@ -128,7 +128,7 @@ impl Validator for ValidateIsAdmin {
             let id = *id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let count = user::dsl::user
                     .select(dsl::count_star())
                     .find(id)
@@ -137,7 +137,7 @@ impl Validator for ValidateIsAdmin {
                             .eq(true)
                             .and(user::dsl::is_admin.eq(true)),
                     )
-                    .first(&c)?;
+                    .first(&mut c)?;
                 Ok(count)
             }
         })
@@ -163,7 +163,7 @@ impl Validator for ValidateUsersAccess {
             let flag = self.flag;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .find(&id)
@@ -180,7 +180,7 @@ impl Validator for ValidateUsersAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -190,13 +190,13 @@ impl Validator for ValidateUsersAccess {
         task::spawn_blocking({
             let id = *id;
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 // admin api key
                 let count = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
                     .filter(api_key::dsl::is_admin.eq(true))
-                    .first(&c)?;
+                    .first(&mut c)?;
                 Ok(count)
             }
         })
@@ -224,7 +224,7 @@ impl Validator for ValidateUserAccess {
             let flag = self.flag;
 
             move || {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .find(&id)
@@ -246,7 +246,7 @@ impl Validator for ValidateUserAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -256,13 +256,13 @@ impl Validator for ValidateUserAccess {
         task::spawn_blocking({
             let id = *id;
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 // admin api key
                 let count = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
                     .filter(api_key::dsl::is_admin.eq(true))
-                    .first(&c)?;
+                    .first(&mut c)?;
                 Ok(count)
             }
         })
@@ -296,7 +296,7 @@ impl Validator for ValidateApiKeysAccess {
             let flag = self.flag;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
 
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
@@ -328,7 +328,7 @@ impl Validator for ValidateApiKeysAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -359,7 +359,7 @@ impl Validator for ValidateApiKeyAccess {
             let flag = self.flag;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
 
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
@@ -384,7 +384,7 @@ impl Validator for ValidateApiKeyAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -413,7 +413,7 @@ impl Validator for ValidateTenantsAccess {
             let flag = self.flag;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
 
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
@@ -433,7 +433,7 @@ impl Validator for ValidateTenantsAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -443,13 +443,13 @@ impl Validator for ValidateTenantsAccess {
         task::spawn_blocking({
             let id = *id;
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 // admin api key
                 let count = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
                     .filter(api_key::dsl::is_admin.eq(true))
-                    .first(&c)?;
+                    .first(&mut c)?;
                 Ok(count)
             }
         })
@@ -477,7 +477,7 @@ impl Validator for ValidateTenantAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
 
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
@@ -501,7 +501,7 @@ impl Validator for ValidateTenantAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -514,7 +514,7 @@ impl Validator for ValidateTenantAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
 
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
@@ -540,7 +540,7 @@ impl Validator for ValidateTenantAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -567,7 +567,7 @@ impl Validator for ValidateTenantUsersAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(tenant_user::table.left_join(tenant::table))
@@ -598,7 +598,7 @@ impl Validator for ValidateTenantUsersAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -611,7 +611,7 @@ impl Validator for ValidateTenantUsersAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
@@ -632,7 +632,7 @@ impl Validator for ValidateTenantUsersAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -665,7 +665,7 @@ impl Validator for ValidateTenantUserAccess {
             let user_id = self.user_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(tenant_user::table.left_join(tenant::table))
@@ -702,7 +702,7 @@ impl Validator for ValidateTenantUserAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -715,7 +715,7 @@ impl Validator for ValidateTenantUserAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
@@ -736,7 +736,7 @@ impl Validator for ValidateTenantUserAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -763,7 +763,7 @@ impl Validator for ValidateApplicationsAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(tenant_user::table.left_join(tenant::table))
@@ -800,7 +800,7 @@ impl Validator for ValidateApplicationsAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -813,7 +813,7 @@ impl Validator for ValidateApplicationsAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
@@ -843,7 +843,7 @@ impl Validator for ValidateApplicationsAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -873,7 +873,7 @@ impl Validator for ValidateApplicationAccess {
             let application_id = self.application_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -915,7 +915,7 @@ impl Validator for ValidateApplicationAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -928,7 +928,7 @@ impl Validator for ValidateApplicationAccess {
             let application_id = self.application_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .left_join(
@@ -953,7 +953,7 @@ impl Validator for ValidateApplicationAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -978,7 +978,7 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
             let flag = self.flag;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
@@ -996,7 +996,7 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1008,7 +1008,7 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
             let flag = self.flag;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
@@ -1026,7 +1026,7 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1056,7 +1056,7 @@ impl Validator for ValidateDeviceProfileTemplateAccess {
             let flag = self.flag;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
@@ -1074,7 +1074,7 @@ impl Validator for ValidateDeviceProfileTemplateAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1086,7 +1086,7 @@ impl Validator for ValidateDeviceProfileTemplateAccess {
             let flag = self.flag;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
@@ -1104,7 +1104,7 @@ impl Validator for ValidateDeviceProfileTemplateAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1131,7 +1131,7 @@ impl Validator for ValidateDeviceProfilesAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(tenant_user::table)
@@ -1168,7 +1168,7 @@ impl Validator for ValidateDeviceProfilesAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1181,7 +1181,7 @@ impl Validator for ValidateDeviceProfilesAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
@@ -1202,7 +1202,7 @@ impl Validator for ValidateDeviceProfilesAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1232,7 +1232,7 @@ impl Validator for ValidateDeviceProfileAccess {
             let device_profile_id = self.device_profile_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -1276,7 +1276,7 @@ impl Validator for ValidateDeviceProfileAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1289,7 +1289,7 @@ impl Validator for ValidateDeviceProfileAccess {
             let device_profile_id = self.device_profile_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q =
                     api_key::dsl::api_key
                         .select(dsl::count_star())
@@ -1314,7 +1314,7 @@ impl Validator for ValidateDeviceProfileAccess {
                     }
                 };
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1344,7 +1344,7 @@ impl Validator for ValidateDevicesAccess {
             let application_id = self.application_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -1386,7 +1386,7 @@ impl Validator for ValidateDevicesAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1399,7 +1399,7 @@ impl Validator for ValidateDevicesAccess {
             let application_id = self.application_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .left_join(
@@ -1424,7 +1424,7 @@ impl Validator for ValidateDevicesAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1451,7 +1451,7 @@ impl Validator for ValidateDeviceAccess {
             let dev_eui = self.dev_eui;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -1496,7 +1496,7 @@ impl Validator for ValidateDeviceAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1509,7 +1509,7 @@ impl Validator for ValidateDeviceAccess {
             let dev_eui = self.dev_eui;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .left_join(
@@ -1537,7 +1537,7 @@ impl Validator for ValidateDeviceAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1564,7 +1564,7 @@ impl Validator for ValidateDeviceQueueAccess {
             let dev_eui = self.dev_eui;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -1594,7 +1594,7 @@ impl Validator for ValidateDeviceQueueAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1607,7 +1607,7 @@ impl Validator for ValidateDeviceQueueAccess {
             let dev_eui = self.dev_eui;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .left_join(
@@ -1635,7 +1635,7 @@ impl Validator for ValidateDeviceQueueAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1662,7 +1662,7 @@ impl Validator for ValidateGatewaysAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(tenant_user::table.left_join(tenant::table))
@@ -1699,7 +1699,7 @@ impl Validator for ValidateGatewaysAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1712,7 +1712,7 @@ impl Validator for ValidateGatewaysAccess {
             let tenant_id = self.tenant_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .find(&id)
@@ -1733,7 +1733,7 @@ impl Validator for ValidateGatewaysAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1760,7 +1760,7 @@ impl Validator for ValidateGatewayAccess {
             let gateway_id = self.gateway_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -1799,7 +1799,7 @@ impl Validator for ValidateGatewayAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1812,7 +1812,7 @@ impl Validator for ValidateGatewayAccess {
             let gateway_id = self.gateway_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .left_join(
@@ -1837,7 +1837,7 @@ impl Validator for ValidateGatewayAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1867,7 +1867,7 @@ impl Validator for ValidateMulticastGroupsAccess {
             let application_id = self.application_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -1909,7 +1909,7 @@ impl Validator for ValidateMulticastGroupsAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1922,7 +1922,7 @@ impl Validator for ValidateMulticastGroupsAccess {
             let application_id = self.application_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .left_join(
@@ -1947,7 +1947,7 @@ impl Validator for ValidateMulticastGroupsAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -1977,7 +1977,7 @@ impl Validator for ValidateMulticastGroupAccess {
             let multicast_group_id = self.multicast_group_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -2023,7 +2023,7 @@ impl Validator for ValidateMulticastGroupAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -2036,7 +2036,7 @@ impl Validator for ValidateMulticastGroupAccess {
             let multicast_group_id = self.multicast_group_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .left_join(
@@ -2065,7 +2065,7 @@ impl Validator for ValidateMulticastGroupAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -2095,7 +2095,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
             let multicast_group_id = self.multicast_group_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
                     .left_join(
@@ -2141,7 +2141,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?
@@ -2154,7 +2154,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
             let multicast_group_id = self.multicast_group_id;
 
             move || -> Result<i64, Error> {
-                let c = get_db_conn()?;
+                let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
                     .left_join(
@@ -2183,7 +2183,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                     }
                 }
 
-                Ok(q.first(&c)?)
+                Ok(q.first(&mut c)?)
             }
         })
         .await?

@@ -1,14 +1,14 @@
 use std::collections::HashMap;
-use std::io::Write;
 use std::ops::{Deref, DerefMut};
 
-use diesel::pg::types::sql_types::Jsonb;
+use diesel::backend;
 use diesel::pg::Pg;
+use diesel::sql_types::Jsonb;
 use diesel::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, AsExpression, FromSqlRow)]
-#[sql_type = "Jsonb"]
+#[diesel(sql_type = Jsonb)]
 pub struct KeyValue(HashMap<String, String>);
 
 impl KeyValue {
@@ -37,22 +37,22 @@ impl DerefMut for KeyValue {
 }
 
 impl deserialize::FromSql<Jsonb, Pg> for KeyValue {
-    fn from_sql(bytes: Option<&[u8]>) -> deserialize::Result<Self> {
-        let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<Pg>) -> deserialize::Result<Self> {
+        let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
         let kv: HashMap<String, String> = serde_json::from_value(value)?;
         Ok(KeyValue(kv))
     }
 }
 
 impl serialize::ToSql<Jsonb, Pg> for KeyValue {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, Pg>) -> serialize::Result {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(&self.0)?;
-        <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, out)
+        <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
 
 #[derive(Debug, Clone, AsExpression, FromSqlRow, PartialEq)]
-#[sql_type = "Jsonb"]
+#[diesel(sql_type = Jsonb)]
 pub struct Measurements(HashMap<String, Measurement>);
 
 impl Measurements {
@@ -81,17 +81,17 @@ impl DerefMut for Measurements {
 }
 
 impl deserialize::FromSql<Jsonb, Pg> for Measurements {
-    fn from_sql(bytes: Option<&[u8]>) -> deserialize::Result<Self> {
-        let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<Pg>) -> deserialize::Result<Self> {
+        let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
         let kv: HashMap<String, Measurement> = serde_json::from_value(value)?;
         Ok(Measurements::new(kv))
     }
 }
 
 impl serialize::ToSql<Jsonb, Pg> for Measurements {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, Pg>) -> serialize::Result {
+    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(&self.0)?;
-        <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, out)
+        <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
 

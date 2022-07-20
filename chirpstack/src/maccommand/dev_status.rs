@@ -32,7 +32,7 @@ pub async fn handle(
             pl.margin as i32,
             pl.battery == 0,
             if pl.battery > 0 && pl.battery < 255 {
-                let v: BigDecimal = ((pl.battery as f32) / 254.0 * 100.0).into();
+                let v: BigDecimal = ((pl.battery as f32) / 254.0 * 100.0).try_into()?;
                 Some(v.with_scale(2))
             } else {
                 None

@@ -17,7 +17,7 @@ use super::get_db_conn;
 use super::schema::user;
 
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug, Clone)]
-#[table_name = "user"]
+#[diesel(table_name = user)]
 pub struct User {
     pub id: Uuid,
     pub external_id: Option<String>,
@@ -69,11 +69,11 @@ pub async fn create(u: User) -> Result<User, Error> {
     u.validate()?;
     let u = task::spawn_blocking({
         move || -> Result<User, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
 
             diesel::insert_into(user::table)
                 .values(&u)
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, u.id.to_string()))
         }
     })
@@ -86,10 +86,10 @@ pub async fn get(id: &Uuid) -> Result<User, Error> {
     task::spawn_blocking({
         let id = *id;
         move || -> Result<User, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let u = user::dsl::user
                 .find(&id)
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, id.to_string()))?;
             Ok(u)
         }
@@ -101,10 +101,10 @@ pub async fn get_by_email(email: &str) -> Result<User, Error> {
     task::spawn_blocking({
         let email = email.to_string();
         move || -> Result<User, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let u = user::dsl::user
                 .filter(user::dsl::email.eq(&email))
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, email))?;
             Ok(u)
         }
@@ -116,10 +116,10 @@ pub async fn get_by_external_id(external_id: &str) -> Result<User, Error> {
     task::spawn_blocking({
         let external_id = external_id.to_string();
         move || -> Result<User, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let u = user::dsl::user
                 .filter(user::dsl::external_id.eq(&external_id))
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, external_id))?;
             Ok(u)
         }
@@ -132,10 +132,10 @@ pub async fn get_by_email_and_pw(email: &str, pw: &str) -> Result<User, Error> {
         let email = email.to_string();
         let pw = pw.to_string();
         move || -> Result<User, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let u: User = match user::dsl::user
                 .filter(user::dsl::email.eq(&email))
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, email))
             {
                 Ok(v) => v,
@@ -161,7 +161,7 @@ pub async fn update(u: User) -> Result<User, Error> {
     u.validate()?;
     let u = task::spawn_blocking({
         move || -> Result<User, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(user::dsl::user.find(&u.id))
                 .set((
                     user::updated_at.eq(Utc::now()),
@@ -172,7 +172,7 @@ pub async fn update(u: User) -> Result<User, Error> {
                     user::note.eq(&u.note),
                     user::external_id.eq(&u.external_id),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, u.id.to_string()))
         }
     })
@@ -186,10 +186,10 @@ pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
         let id = *id;
         let hash = hash.to_string();
         move || -> Result<User, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(user::dsl::user.find(&id))
                 .set(user::password_hash.eq(&hash))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, id.to_string()))
         }
     })
@@ -202,9 +202,9 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
     task::spawn_blocking({
         let id = *id;
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let ra = diesel::delete(user::dsl::user.find(&id))
-                .execute(&c)
+                .execute(&mut c)
                 .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
             if ra == 0 {
@@ -221,8 +221,8 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
 pub async fn get_count() -> Result<i64, Error> {
     task::spawn_blocking({
         move || -> Result<i64, Error> {
-            let c = get_db_conn()?;
-            let count = user::dsl::user.select(dsl::count_star()).first(&c)?;
+            let mut c = get_db_conn()?;
+            let count = user::dsl::user.select(dsl::count_star()).first(&mut c)?;
             Ok(count)
         }
     })
@@ -232,12 +232,12 @@ pub async fn get_count() -> Result<i64, Error> {
 pub async fn list(limit: i64, offset: i64) -> Result<Vec<User>, Error> {
     task::spawn_blocking({
         move || -> Result<Vec<User>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let items = user::dsl::user
                 .order_by(user::dsl::email)
                 .limit(limit)
                 .offset(offset)
-                .load(&c)?;
+                .load(&mut c)?;
             Ok(items)
         }
     })

@@ -11,7 +11,7 @@ use super::schema::device_queue_item;
 use lrwn::EUI64;
 
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug, Clone)]
-#[table_name = "device_queue_item"]
+#[diesel(table_name = device_queue_item)]
 pub struct DeviceQueueItem {
     pub id: Uuid,
     pub dev_eui: EUI64,
@@ -45,10 +45,10 @@ impl Default for DeviceQueueItem {
 pub async fn enqueue_item(qi: DeviceQueueItem) -> Result<DeviceQueueItem, Error> {
     let qi = task::spawn_blocking({
         move || -> Result<DeviceQueueItem, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::insert_into(device_queue_item::table)
                 .values(&qi)
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, qi.id.to_string()))
         }
     })
@@ -61,10 +61,10 @@ pub async fn get_item(id: &Uuid) -> Result<DeviceQueueItem, Error> {
     task::spawn_blocking({
         let id = *id;
         move || -> Result<DeviceQueueItem, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let qi = device_queue_item::dsl::device_queue_item
                 .find(&id)
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, id.to_string()))?;
             Ok(qi)
         }
@@ -75,14 +75,14 @@ pub async fn get_item(id: &Uuid) -> Result<DeviceQueueItem, Error> {
 pub async fn update_item(qi: DeviceQueueItem) -> Result<DeviceQueueItem, Error> {
     let qi = task::spawn_blocking({
         move || -> Result<DeviceQueueItem, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device_queue_item::dsl::device_queue_item.find(&qi.id))
                 .set((
                     device_queue_item::is_pending.eq(&qi.is_pending),
                     device_queue_item::f_cnt_down.eq(&qi.f_cnt_down),
                     device_queue_item::timeout_after.eq(&qi.timeout_after),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, qi.id.to_string()))
         }
     })
@@ -95,9 +95,9 @@ pub async fn delete_item(id: &Uuid) -> Result<(), Error> {
     task::spawn_blocking({
         let id = *id;
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
-            let ra =
-                diesel::delete(device_queue_item::dsl::device_queue_item.find(&id)).execute(&c)?;
+            let mut c = get_db_conn()?;
+            let ra = diesel::delete(device_queue_item::dsl::device_queue_item.find(&id))
+                .execute(&mut c)?;
             if ra == 0 {
                 return Err(Error::NotFound(id.to_string()));
             }
@@ -114,12 +114,12 @@ pub async fn get_next_for_dev_eui(dev_eui: &EUI64) -> Result<(DeviceQueueItem, b
     task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<(DeviceQueueItem, bool), Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let items: Vec<DeviceQueueItem> = device_queue_item::dsl::device_queue_item
                 .filter(device_queue_item::dev_eui.eq(&dev_eui))
                 .order_by(device_queue_item::created_at)
                 .limit(2)
-                .load(&c)
+                .load(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
             // Return NotFound on empty Vec.
@@ -148,11 +148,11 @@ pub async fn get_for_dev_eui(dev_eui: &EUI64) -> Result<Vec<DeviceQueueItem>, Er
     task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<Vec<DeviceQueueItem>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let items = device_queue_item::dsl::device_queue_item
                 .filter(device_queue_item::dev_eui.eq(&dev_eui))
                 .order_by(device_queue_item::created_at)
-                .load(&c)
+                .load(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
             Ok(items)
         }
@@ -164,12 +164,12 @@ pub async fn flush_for_dev_eui(dev_eui: &EUI64) -> Result<(), Error> {
     let count = task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<usize, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::delete(
                 device_queue_item::dsl::device_queue_item
                     .filter(device_queue_item::dev_eui.eq(&dev_eui)),
             )
-            .execute(&c)
+            .execute(&mut c)
             .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
         }
     })
@@ -182,14 +182,14 @@ pub async fn get_pending_for_dev_eui(dev_eui: &EUI64) -> Result<DeviceQueueItem,
     task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<DeviceQueueItem, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let qi = device_queue_item::dsl::device_queue_item
                 .filter(
                     device_queue_item::dev_eui
                         .eq(&dev_eui)
                         .and(device_queue_item::is_pending.eq(true)),
                 )
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
             Ok(qi)
         }

@@ -23,10 +23,10 @@ handlebars = "4.1"
 
 # Database
 validator = "0.13"
-diesel = { version = "1.4", features = [ "chrono", "postgres", "r2d2", "uuidv07", "serde_json", "numeric" ] }
-diesel_migrations = { version = "1.4" }
+diesel = { version = "2.0.0-rc.0", features = [ "chrono", "postgres", "r2d2", "uuid", "serde_json", "numeric" ] }
+diesel_migrations = { version = "2.0.0-rc.0" }
 r2d2 = "0.8"
-bigdecimal = "0.1.2"
+bigdecimal = "0.3"
 redis = { version = "0.21", features = ["r2d2", "cluster"] }
 pq-sys = { version = "0.4.6", features = ["pkg-config"] }
 
@@ -98,7 +98,7 @@ rquickjs = { version = "0.1.6", features = ["bindgen", "loader", "array-buffer",
 
 # Misc
 lazy_static = "1.4"
-uuid = { version =  "0.8", features = [ "v4", "serde" ] }
+uuid = { version =  "1.1", features = [ "v4", "serde" ] }
 chrono = "0.4"
 async-trait = "0.1"
 aes = "0.7"

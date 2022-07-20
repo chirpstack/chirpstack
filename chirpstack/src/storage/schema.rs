@@ -1,4 +1,6 @@
-table! {
+// @generated automatically by Diesel CLI.
+
+diesel::table! {
     api_key (id) {
         id -> Uuid,
         created_at -> Timestamptz,
@@ -8,7 +10,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     application (id) {
         id -> Uuid,
         tenant_id -> Uuid,
@@ -20,7 +22,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     application_integration (application_id, kind) {
         application_id -> Uuid,
         kind -> Varchar,
@@ -30,7 +32,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     device (dev_eui) {
         dev_eui -> Bytea,
         application_id -> Uuid,
@@ -57,19 +59,19 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     device_keys (dev_eui) {
         dev_eui -> Bytea,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         nwk_key -> Bytea,
         app_key -> Bytea,
-        dev_nonces -> Array<Int4>,
+        dev_nonces -> Array<Nullable<Int4>>,
         join_nonce -> Int4,
     }
 }
 
-table! {
+diesel::table! {
     device_profile (id) {
         id -> Uuid,
         tenant_id -> Uuid,
@@ -103,7 +105,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     device_profile_template (id) {
         id -> Text,
         created_at -> Timestamptz,
@@ -138,7 +140,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     device_queue_item (id) {
         id -> Uuid,
         dev_eui -> Bytea,
@@ -152,7 +154,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     gateway (gateway_id) {
         gateway_id -> Bytea,
         tenant_id -> Uuid,
@@ -171,7 +173,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     multicast_group (id) {
         id -> Uuid,
         application_id -> Uuid,
@@ -190,7 +192,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     multicast_group_device (multicast_group_id, dev_eui) {
         multicast_group_id -> Uuid,
         dev_eui -> Bytea,
@@ -198,7 +200,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     multicast_group_queue_item (id) {
         id -> Uuid,
         created_at -> Timestamptz,
@@ -212,7 +214,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     tenant (id) {
         id -> Uuid,
         created_at -> Timestamptz,
@@ -226,7 +228,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     tenant_user (tenant_id, user_id) {
         tenant_id -> Uuid,
         user_id -> Uuid,
@@ -238,7 +240,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     user (id) {
         id -> Uuid,
         external_id -> Nullable<Text>,
@@ -253,24 +255,24 @@ table! {
     }
 }
 
-joinable!(api_key -> tenant (tenant_id));
-joinable!(application -> tenant (tenant_id));
-joinable!(application_integration -> application (application_id));
-joinable!(device -> application (application_id));
-joinable!(device -> device_profile (device_profile_id));
-joinable!(device_keys -> device (dev_eui));
-joinable!(device_profile -> tenant (tenant_id));
-joinable!(device_queue_item -> device (dev_eui));
-joinable!(gateway -> tenant (tenant_id));
-joinable!(multicast_group -> application (application_id));
-joinable!(multicast_group_device -> device (dev_eui));
-joinable!(multicast_group_device -> multicast_group (multicast_group_id));
-joinable!(multicast_group_queue_item -> gateway (gateway_id));
-joinable!(multicast_group_queue_item -> multicast_group (multicast_group_id));
-joinable!(tenant_user -> tenant (tenant_id));
-joinable!(tenant_user -> user (user_id));
+diesel::joinable!(api_key -> tenant (tenant_id));
+diesel::joinable!(application -> tenant (tenant_id));
+diesel::joinable!(application_integration -> application (application_id));
+diesel::joinable!(device -> application (application_id));
+diesel::joinable!(device -> device_profile (device_profile_id));
+diesel::joinable!(device_keys -> device (dev_eui));
+diesel::joinable!(device_profile -> tenant (tenant_id));
+diesel::joinable!(device_queue_item -> device (dev_eui));
+diesel::joinable!(gateway -> tenant (tenant_id));
+diesel::joinable!(multicast_group -> application (application_id));
+diesel::joinable!(multicast_group_device -> device (dev_eui));
+diesel::joinable!(multicast_group_device -> multicast_group (multicast_group_id));
+diesel::joinable!(multicast_group_queue_item -> gateway (gateway_id));
+diesel::joinable!(multicast_group_queue_item -> multicast_group (multicast_group_id));
+diesel::joinable!(tenant_user -> tenant (tenant_id));
+diesel::joinable!(tenant_user -> user (user_id));
 
-allow_tables_to_appear_in_same_query!(
+diesel::allow_tables_to_appear_in_same_query!(
     api_key,
     application,
     application_integration,

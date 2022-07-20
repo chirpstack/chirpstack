@@ -11,14 +11,14 @@ use super::get_db_conn;
 use super::schema::device_keys;
 
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug, Clone)]
-#[table_name = "device_keys"]
+#[diesel(table_name = device_keys)]
 pub struct DeviceKeys {
     pub dev_eui: EUI64,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub nwk_key: AES128Key,
     pub app_key: AES128Key,
-    pub dev_nonces: Vec<i32>,
+    pub dev_nonces: Vec<Option<i32>>,
     pub join_nonce: i32,
 }
 
@@ -47,10 +47,10 @@ impl Default for DeviceKeys {
 pub async fn create(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
     let dk = task::spawn_blocking({
         move || -> Result<DeviceKeys, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::insert_into(device_keys::table)
                 .values(&dk)
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, dk.dev_eui.to_string()))
         }
     })
@@ -66,10 +66,10 @@ pub async fn get(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
     task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<DeviceKeys, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let dk = device_keys::dsl::device_keys
                 .find(&dev_eui)
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
             Ok(dk)
         }
@@ -80,10 +80,10 @@ pub async fn get(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
 pub async fn update(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
     let dk = task::spawn_blocking({
         move || -> Result<DeviceKeys, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device_keys::dsl::device_keys.find(&dk.dev_eui))
                 .set(&dk)
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, dk.dev_eui.to_string()))
         }
     })
@@ -99,8 +99,9 @@ pub async fn delete(dev_eui: &EUI64) -> Result<(), Error> {
     task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
-            let ra = diesel::delete(device_keys::dsl::device_keys.find(&dev_eui)).execute(&c)?;
+            let mut c = get_db_conn()?;
+            let ra =
+                diesel::delete(device_keys::dsl::device_keys.find(&dev_eui)).execute(&mut c)?;
             if ra == 0 {
                 return Err(Error::NotFound(dev_eui.to_string()));
             }
@@ -120,10 +121,10 @@ pub async fn set_dev_nonces(dev_eui: &EUI64, nonces: &[i32]) -> Result<DeviceKey
         let dev_eui = *dev_eui;
         let nonces = nonces.to_vec();
         move || -> Result<DeviceKeys, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
                 .set(device_keys::dev_nonces.eq(&nonces))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
         }
     })
@@ -139,13 +140,13 @@ pub async fn reset_nonces(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
     let dk = task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<DeviceKeys, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
                 .set((
                     device_keys::dev_nonces.eq::<Vec<i32>>(Vec::new()),
                     device_keys::join_nonce.eq(0),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
         }
     })
@@ -164,26 +165,26 @@ pub async fn validate_and_store_dev_nonce(
     let dk = task::spawn_blocking({
         let dev_eui = *dev_eui;
         move || -> Result<DeviceKeys, Error> {
-            let c = get_db_conn()?;
-            c.transaction::<DeviceKeys, Error, _>(|| {
+            let mut c = get_db_conn()?;
+            c.transaction::<DeviceKeys, Error, _>(|c| {
                 let mut dk: DeviceKeys = device_keys::dsl::device_keys
                     .find(&dev_eui)
                     .for_update()
-                    .first(&c)
+                    .first(c)
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
-                if dk.dev_nonces.contains(&(dev_nonce)) {
+                if dk.dev_nonces.contains(&(Some(dev_nonce))) {
                     return Err(Error::InvalidDevNonce);
                 }
 
-                dk.dev_nonces.push(dev_nonce);
+                dk.dev_nonces.push(Some(dev_nonce));
 
                 diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
                     .set((
                         device_keys::updated_at.eq(Utc::now()),
                         device_keys::dev_nonces.eq(&dk.dev_nonces),
                     ))
-                    .get_result(&c)
+                    .get_result(c)
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
             })
         }

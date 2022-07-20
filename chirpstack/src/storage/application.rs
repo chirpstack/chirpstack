@@ -1,16 +1,14 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::io::Write;
 use std::str::FromStr;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::backend::Backend;
+use diesel::backend::{self, Backend};
 use diesel::dsl;
-use diesel::pg::types::sql_types::Jsonb;
 use diesel::pg::Pg;
 use diesel::prelude::*;
-use diesel::sql_types::Text;
+use diesel::sql_types::{Jsonb, Text};
 use diesel::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
 use tokio::task;
@@ -22,7 +20,7 @@ use super::get_db_conn;
 use super::schema::{application, application_integration};
 
 #[derive(Clone, Queryable, Insertable, AsChangeset, PartialEq, Debug)]
-#[table_name = "application"]
+#[diesel(table_name = application)]
 pub struct Application {
     pub id: Uuid,
     pub tenant_id: Uuid,
@@ -74,7 +72,7 @@ pub struct ApplicationListItem {
 }
 
 #[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq, AsExpression, FromSqlRow)]
-#[sql_type = "Text"]
+#[diesel(sql_type = Text)]
 pub enum IntegrationKind {
     Http,
     InfluxDb,
@@ -116,29 +114,28 @@ impl FromStr for IntegrationKind {
     }
 }
 
-impl<ST, DB> deserialize::FromSql<ST, DB> for IntegrationKind
+impl<DB> deserialize::FromSql<Text, DB> for IntegrationKind
 where
     DB: Backend,
-    *const str: deserialize::FromSql<ST, DB>,
+    *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
-        let string = String::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let string = String::from_sql(value)?;
         Ok(IntegrationKind::from_str(&string)?)
     }
 }
 
-impl<DB> serialize::ToSql<Text, DB> for IntegrationKind
+impl serialize::ToSql<Text, Pg> for IntegrationKind
 where
-    DB: Backend,
-    str: serialize::ToSql<Text, DB>,
+    str: serialize::ToSql<Text, Pg>,
 {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, DB>) -> serialize::Result {
-        self.to_string().as_str().to_sql(out)
+    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+        <str as serialize::ToSql<Text, Pg>>::to_sql(&self.to_string(), &mut out.reborrow())
     }
 }
 
 #[derive(Debug, Clone, PartialEq, AsExpression, FromSqlRow, Serialize, Deserialize)]
-#[sql_type = "Jsonb"]
+#[diesel(sql_type = Jsonb)]
 pub enum IntegrationConfiguration {
     None,
     Http(HttpConfiguration),
@@ -154,16 +151,16 @@ pub enum IntegrationConfiguration {
 }
 
 impl deserialize::FromSql<Jsonb, Pg> for IntegrationConfiguration {
-    fn from_sql(bytes: Option<&[u8]>) -> deserialize::Result<Self> {
-        let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<Pg>) -> deserialize::Result<Self> {
+        let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
         Ok(serde_json::from_value(value)?)
     }
 }
 
 impl serialize::ToSql<Jsonb, Pg> for IntegrationConfiguration {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, Pg>) -> serialize::Result {
+    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(self)?;
-        <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, out)
+        <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
 
@@ -259,7 +256,7 @@ pub struct IftttConfiguration {
 }
 
 #[derive(Clone, Queryable, Insertable, AsChangeset, PartialEq, Debug)]
-#[table_name = "application_integration"]
+#[diesel(table_name = application_integration)]
 pub struct Integration {
     pub application_id: Uuid,
     pub kind: IntegrationKind,
@@ -286,10 +283,10 @@ pub async fn create(a: Application) -> Result<Application, Error> {
     a.validate()?;
     task::spawn_blocking({
         move || -> Result<Application, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let a: Application = diesel::insert_into(application::table)
                 .values(&a)
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;
 
             info!(id = %a.id, "Application created");
@@ -304,10 +301,10 @@ pub async fn get(id: &Uuid) -> Result<Application, Error> {
     task::spawn_blocking({
         let id = *id;
         move || -> Result<Application, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let a = application::dsl::application
                 .find(&id)
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, id.to_string()))?;
             Ok(a)
         }
@@ -319,14 +316,14 @@ pub async fn update(a: Application) -> Result<Application, Error> {
     a.validate()?;
     task::spawn_blocking({
         move || -> Result<Application, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let a: Application = diesel::update(application::dsl::application.find(&a.id))
                 .set((
                     application::updated_at.eq(Utc::now()),
                     application::name.eq(&a.name),
                     application::description.eq(&a.description),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;
 
             info!(
@@ -345,10 +342,10 @@ pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application,
         let id = *id;
         let cert = cert.to_vec();
         move || -> Result<Application, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let app: Application = diesel::update(application::dsl::application.find(&id))
                 .set(application::mqtt_tls_cert.eq(cert))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, id.to_string()))?;
             Ok(app)
         }
@@ -367,8 +364,8 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
     task::spawn_blocking({
         let id = *id;
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
-            let ra = diesel::delete(application::dsl::application.find(&id)).execute(&c)?;
+            let mut c = get_db_conn()?;
+            let ra = diesel::delete(application::dsl::application.find(&id)).execute(&mut c)?;
             if ra == 0 {
                 return Err(Error::NotFound(id.to_string()));
             }
@@ -388,7 +385,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
     task::spawn_blocking({
         let filters = filters.clone();
         move || -> Result<i64, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let mut q = application::dsl::application
                 .select(dsl::count_star())
                 .into_boxed();
@@ -401,7 +398,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
                 q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
             }
 
-            Ok(q.first(&c)?)
+            Ok(q.first(&mut c)?)
         }
     })
     .await?
@@ -415,7 +412,7 @@ pub async fn list(
     task::spawn_blocking({
         let filters = filters.clone();
         move || -> Result<Vec<ApplicationListItem>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let mut q = application::dsl::application
                 .select((
                     application::id,
@@ -438,7 +435,7 @@ pub async fn list(
                 .order_by(application::dsl::name)
                 .limit(limit)
                 .offset(offset)
-                .load(&c)?;
+                .load(&mut c)?;
             Ok(items)
         }
     })
@@ -448,10 +445,10 @@ pub async fn list(
 pub async fn create_integration(i: Integration) -> Result<Integration, Error> {
     task::spawn_blocking({
         move || -> Result<Integration, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let i: Integration = diesel::insert_into(application_integration::table)
                 .values(&i)
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, i.kind.to_string()))?;
 
             info!(application_id = %i.application_id, kind = %i.kind, "Integration created");
@@ -468,14 +465,14 @@ pub async fn get_integration(
     task::spawn_blocking({
         let application_id = *application_id;
         move || -> Result<Integration, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let i: Integration = application_integration::dsl::application_integration
                 .filter(
                     application_integration::dsl::application_id
                         .eq(application_id)
                         .and(application_integration::dsl::kind.eq(kind)),
                 )
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
             Ok(i)
         }
@@ -486,7 +483,7 @@ pub async fn get_integration(
 pub async fn update_integration(i: Integration) -> Result<Integration, Error> {
     task::spawn_blocking({
         move || -> Result<Integration, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let i: Integration = diesel::update(
                 application_integration::dsl::application_integration.filter(
                     application_integration::dsl::application_id
@@ -498,7 +495,7 @@ pub async fn update_integration(i: Integration) -> Result<Integration, Error> {
                 application_integration::updated_at.eq(Utc::now()),
                 application_integration::configuration.eq(&i.configuration),
             ))
-            .get_result(&c)
+            .get_result(&mut c)
             .map_err(|e| Error::from_diesel(e, i.application_id.to_string()))?;
 
             info!(application_id = %i.application_id, kind = %i.kind, "Integration updated");
@@ -513,7 +510,7 @@ pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) ->
     task::spawn_blocking({
         let application_id = *application_id;
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let ra = diesel::delete(
                 application_integration::dsl::application_integration.filter(
                     application_integration::dsl::application_id
@@ -521,7 +518,7 @@ pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) ->
                         .and(application_integration::dsl::kind.eq(&kind)),
                 ),
             )
-            .execute(&c)?;
+            .execute(&mut c)?;
 
             if ra == 0 {
                 return Err(Error::NotFound(application_id.to_string()));
@@ -540,11 +537,11 @@ pub async fn get_integrations_for_application(
     task::spawn_blocking({
         let application_id = *application_id;
         move || -> Result<Vec<Integration>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let items: Vec<Integration> = application_integration::dsl::application_integration
                 .filter(application_integration::dsl::application_id.eq(&application_id))
                 .order_by(application_integration::dsl::kind)
-                .load(&c)?;
+                .load(&mut c)?;
             Ok(items)
         }
     })
@@ -554,14 +551,14 @@ pub async fn get_integrations_for_application(
 pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
     #[derive(QueryableByName)]
     struct Measurement {
-        #[sql_type = "diesel::sql_types::Text"]
+        #[diesel(sql_type = diesel::sql_types::Text)]
         pub key: String,
     }
 
     task::spawn_blocking({
         let application_id = *application_id;
         move || -> Result<Vec<String>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let keys: Vec<Measurement> = diesel::sql_query(
                 r#"
                 select
@@ -576,8 +573,8 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                     key
                 "#,
             )
-            .bind::<diesel::pg::types::sql_types::Uuid, _>(application_id)
-            .load(&c)
+            .bind::<diesel::sql_types::Uuid, _>(application_id)
+            .load(&mut c)
             .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
             Ok(keys.iter().map(|k| k.key.clone()).collect())
         }

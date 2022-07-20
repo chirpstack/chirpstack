@@ -16,7 +16,7 @@ use super::{error, fields, get_db_conn};
 use crate::codec::Codec;
 
 #[derive(Clone, Queryable, Insertable, AsChangeset, Debug, PartialEq)]
-#[table_name = "device_profile_template"]
+#[diesel(table_name = device_profile_template)]
 pub struct DeviceProfileTemplate {
     pub id: String,
     pub created_at: DateTime<Utc>,
@@ -134,10 +134,10 @@ pub async fn create(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
     dp.validate()?;
     let dp = task::spawn_blocking({
         move || -> Result<DeviceProfileTemplate, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::insert_into(device_profile_template::table)
                 .values(&dp)
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))
         }
     })
@@ -150,7 +150,7 @@ pub async fn upsert(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
     dp.validate()?;
     let dp = task::spawn_blocking({
         move || -> Result<DeviceProfileTemplate, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::insert_into(device_profile_template::table)
                 .values(&dp)
                 .on_conflict(device_profile_template::id)
@@ -188,7 +188,7 @@ pub async fn upsert(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
                     device_profile_template::tags.eq(&dp.tags),
                     device_profile_template::measurements.eq(&dp.measurements),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))
         }
     })
@@ -201,10 +201,10 @@ pub async fn get(id: &str) -> Result<DeviceProfileTemplate, Error> {
     task::spawn_blocking({
         let id = id.to_string();
         move || -> Result<DeviceProfileTemplate, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let dp = device_profile_template::dsl::device_profile_template
                 .find(&id)
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, id.clone()))?;
             Ok(dp)
         }
@@ -216,7 +216,7 @@ pub async fn update(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
     dp.validate()?;
     let dp = task::spawn_blocking({
         move || -> Result<DeviceProfileTemplate, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
 
             diesel::update(device_profile_template::dsl::device_profile_template.find(&dp.id))
                 .set((
@@ -251,7 +251,7 @@ pub async fn update(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
                     device_profile_template::abp_rx2_freq.eq(&dp.abp_rx2_freq),
                     device_profile_template::tags.eq(&dp.tags),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.clone()))
         }
     })
@@ -264,10 +264,10 @@ pub async fn delete(id: &str) -> Result<(), Error> {
     task::spawn_blocking({
         let id = id.to_string();
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let ra =
                 diesel::delete(device_profile_template::dsl::device_profile_template.find(&id))
-                    .execute(&c)?;
+                    .execute(&mut c)?;
             if ra == 0 {
                 return Err(error::Error::NotFound(id));
             }
@@ -282,10 +282,10 @@ pub async fn delete(id: &str) -> Result<(), Error> {
 pub async fn get_count() -> Result<i64, Error> {
     task::spawn_blocking({
         move || -> Result<i64, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             Ok(device_profile_template::dsl::device_profile_template
                 .select(dsl::count_star())
-                .first(&c)?)
+                .first(&mut c)?)
         }
     })
     .await?
@@ -294,7 +294,7 @@ pub async fn get_count() -> Result<i64, Error> {
 pub async fn list(limit: i64, offset: i64) -> Result<Vec<DeviceProfileTemplateListItem>, Error> {
     task::spawn_blocking({
         move || -> Result<Vec<DeviceProfileTemplateListItem>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let items = device_profile_template::dsl::device_profile_template
                 .select((
                     device_profile_template::id,
@@ -318,7 +318,7 @@ pub async fn list(limit: i64, offset: i64) -> Result<Vec<DeviceProfileTemplateLi
                 ))
                 .limit(limit)
                 .offset(offset)
-                .load(&c)?;
+                .load(&mut c)?;
             Ok(items)
         }
     })

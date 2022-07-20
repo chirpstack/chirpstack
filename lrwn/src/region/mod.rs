@@ -1,11 +1,10 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt;
-use std::io::Write;
 use std::str::FromStr;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
-use diesel::backend::Backend;
+use diesel::backend::{self, Backend};
 use diesel::sql_types::Text;
 use diesel::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
@@ -28,7 +27,7 @@ pub mod us915;
 
 #[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq, AsExpression, FromSqlRow)]
 #[allow(non_camel_case_types)]
-#[sql_type = "diesel::sql_types::Text"]
+#[diesel(sql_type = diesel::sql_types::Text)]
 pub enum CommonName {
     EU868,
     US915,
@@ -52,24 +51,29 @@ impl fmt::Display for CommonName {
     }
 }
 
-impl<ST, DB> deserialize::FromSql<ST, DB> for CommonName
+impl<DB> deserialize::FromSql<Text, DB> for CommonName
 where
     DB: Backend,
-    *const str: deserialize::FromSql<ST, DB>,
+    *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
-        let string = String::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let string = String::from_sql(value)?;
         Ok(CommonName::from_str(&string)?)
     }
 }
 
-impl<DB> serialize::ToSql<Text, DB> for CommonName
+impl serialize::ToSql<Text, diesel::pg::Pg> for CommonName
 where
-    DB: Backend,
-    str: serialize::ToSql<Text, DB>,
+    str: serialize::ToSql<Text, diesel::pg::Pg>,
 {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, DB>) -> serialize::Result {
-        self.to_string().as_str().to_sql(out)
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut serialize::Output<'b, '_, diesel::pg::Pg>,
+    ) -> serialize::Result {
+        <str as serialize::ToSql<Text, diesel::pg::Pg>>::to_sql(
+            &self.to_string(),
+            &mut out.reborrow(),
+        )
     }
 }
 
@@ -101,7 +105,7 @@ impl FromStr for CommonName {
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, AsExpression, FromSqlRow)]
-#[sql_type = "diesel::sql_types::Text"]
+#[diesel(sql_type = diesel::sql_types::Text)]
 pub enum Revision {
     Latest,
     A,
@@ -155,30 +159,35 @@ impl FromStr for Revision {
     }
 }
 
-impl<ST, DB> deserialize::FromSql<ST, DB> for Revision
+impl<DB> deserialize::FromSql<Text, DB> for Revision
 where
     DB: Backend,
-    *const str: deserialize::FromSql<ST, DB>,
+    *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
-        let string = String::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let string = String::from_sql(value)?;
         Ok(Revision::from_str(&string)?)
     }
 }
 
-impl<DB> serialize::ToSql<Text, DB> for Revision
+impl serialize::ToSql<Text, diesel::pg::Pg> for Revision
 where
-    DB: Backend,
-    str: serialize::ToSql<Text, DB>,
+    str: serialize::ToSql<Text, diesel::pg::Pg>,
 {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, DB>) -> serialize::Result {
-        self.to_string().as_str().to_sql(out)
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut serialize::Output<'b, '_, diesel::pg::Pg>,
+    ) -> serialize::Result {
+        <str as serialize::ToSql<Text, diesel::pg::Pg>>::to_sql(
+            &self.to_string(),
+            &mut out.reborrow(),
+        )
     }
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, PartialEq, Eq, Hash, AsExpression, FromSqlRow)]
-#[sql_type = "diesel::sql_types::Text"]
+#[diesel(sql_type = diesel::sql_types::Text)]
 pub enum MacVersion {
     Latest,
     LORAWAN_1_0_0,
@@ -232,24 +241,29 @@ impl FromStr for MacVersion {
     }
 }
 
-impl<ST, DB> deserialize::FromSql<ST, DB> for MacVersion
+impl<DB> deserialize::FromSql<Text, DB> for MacVersion
 where
     DB: Backend,
-    *const str: deserialize::FromSql<ST, DB>,
+    *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(bytes: Option<&DB::RawValue>) -> deserialize::Result<Self> {
-        let string = String::from_sql(bytes)?;
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let string = String::from_sql(value)?;
         Ok(MacVersion::from_str(&string)?)
     }
 }
 
-impl<DB> serialize::ToSql<Text, DB> for MacVersion
+impl serialize::ToSql<Text, diesel::pg::Pg> for MacVersion
 where
-    DB: Backend,
-    str: serialize::ToSql<Text, DB>,
+    str: serialize::ToSql<Text, diesel::pg::Pg>,
 {
-    fn to_sql<W: Write>(&self, out: &mut serialize::Output<W, DB>) -> serialize::Result {
-        self.to_string().as_str().to_sql(out)
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut serialize::Output<'b, '_, diesel::pg::Pg>,
+    ) -> serialize::Result {
+        <str as serialize::ToSql<Text, diesel::pg::Pg>>::to_sql(
+            &self.to_string(),
+            &mut out.reborrow(),
+        )
     }
 }
 

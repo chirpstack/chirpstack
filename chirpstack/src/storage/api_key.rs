@@ -11,7 +11,7 @@ use super::schema::api_key;
 use super::{error, get_db_conn};
 
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug)]
-#[table_name = "api_key"]
+#[diesel(table_name = api_key)]
 pub struct ApiKey {
     pub id: Uuid,
     pub created_at: DateTime<Utc>,
@@ -52,10 +52,10 @@ pub async fn create(ak: ApiKey) -> Result<ApiKey, Error> {
     ak.validate()?;
 
     let ak = task::spawn_blocking(move || -> Result<ApiKey, Error> {
-        let c = get_db_conn()?;
+        let mut c = get_db_conn()?;
         diesel::insert_into(api_key::table)
             .values(&ak)
-            .get_result(&c)
+            .get_result(&mut c)
             .map_err(|e| error::Error::from_diesel(e, ak.id.to_string()))
     })
     .await??;
@@ -68,10 +68,10 @@ pub async fn get(id: &Uuid) -> Result<ApiKey, Error> {
         let id = *id;
 
         move || -> Result<ApiKey, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             api_key::dsl::api_key
                 .find(&id)
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, id.to_string()))
         }
     })
@@ -83,8 +83,8 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
         let id = *id;
 
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
-            let ra = diesel::delete(api_key::dsl::api_key.find(&id)).execute(&c)?;
+            let mut c = get_db_conn()?;
+            let ra = diesel::delete(api_key::dsl::api_key.find(&id)).execute(&mut c)?;
             if ra == 0 {
                 return Err(Error::NotFound(id.to_string()));
             }
@@ -100,7 +100,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         let filters = filters.clone();
 
         move || -> Result<i64, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
 
             let mut q = api_key::dsl::api_key
                 .select(dsl::count_star())
@@ -111,7 +111,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
                 q = q.filter(api_key::dsl::tenant_id.eq(tenant_id));
             }
 
-            Ok(q.first(&c)?)
+            Ok(q.first(&mut c)?)
         }
     })
     .await?
@@ -122,7 +122,7 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<ApiK
         let filters = filters.clone();
 
         move || -> Result<Vec<ApiKey>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
 
             let mut q = api_key::dsl::api_key
                 .filter(api_key::dsl::is_admin.eq(filters.is_admin))
@@ -136,7 +136,7 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<ApiK
                 .order_by(api_key::dsl::name)
                 .limit(limit)
                 .offset(offset)
-                .load(&c)?;
+                .load(&mut c)?;
             Ok(items)
         }
     })

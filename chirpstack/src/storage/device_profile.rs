@@ -17,7 +17,7 @@ use crate::codec::Codec;
 use chirpstack_api::internal;
 
 #[derive(Clone, Queryable, Insertable, AsChangeset, Debug, PartialEq)]
-#[table_name = "device_profile"]
+#[diesel(table_name = device_profile)]
 pub struct DeviceProfile {
     pub id: Uuid,
     pub tenant_id: Uuid,
@@ -146,10 +146,10 @@ pub async fn create(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
     dp.validate()?;
     let dp = task::spawn_blocking({
         move || -> Result<DeviceProfile, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::insert_into(device_profile::table)
                 .values(&dp)
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))
         }
     })
@@ -162,10 +162,10 @@ pub async fn get(id: &Uuid) -> Result<DeviceProfile, Error> {
     task::spawn_blocking({
         let id = *id;
         move || -> Result<DeviceProfile, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let dp = device_profile::dsl::device_profile
                 .find(&id)
-                .first(&c)
+                .first(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, id.to_string()))?;
             Ok(dp)
         }
@@ -177,7 +177,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
     dp.validate()?;
     let dp = task::spawn_blocking({
         move || -> Result<DeviceProfile, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
 
             diesel::update(device_profile::dsl::device_profile.find(&dp.id))
                 .set((
@@ -208,7 +208,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::tags.eq(&dp.tags),
                     device_profile::measurements.eq(&dp.measurements),
                 ))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))
         }
     })
@@ -221,10 +221,10 @@ pub async fn set_measurements(id: Uuid, m: &fields::Measurements) -> Result<Devi
     let dp = task::spawn_blocking({
         let m = m.clone();
         move || -> Result<DeviceProfile, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             diesel::update(device_profile::dsl::device_profile.find(&id))
                 .set(device_profile::measurements.eq(m))
-                .get_result(&c)
+                .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, id.to_string()))
         }
     })
@@ -237,8 +237,9 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
     task::spawn_blocking({
         let id = *id;
         move || -> Result<(), Error> {
-            let c = get_db_conn()?;
-            let ra = diesel::delete(device_profile::dsl::device_profile.find(&id)).execute(&c)?;
+            let mut c = get_db_conn()?;
+            let ra =
+                diesel::delete(device_profile::dsl::device_profile.find(&id)).execute(&mut c)?;
             if ra == 0 {
                 return Err(error::Error::NotFound(id.to_string()));
             }
@@ -254,7 +255,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
     task::spawn_blocking({
         let filters = filters.clone();
         move || -> Result<i64, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let mut q = device_profile::dsl::device_profile
                 .select(dsl::count_star())
                 .into_boxed();
@@ -267,7 +268,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
                 q = q.filter(device_profile::dsl::name.ilike(format!("%{}%", search)));
             }
 
-            Ok(q.first(&c)?)
+            Ok(q.first(&mut c)?)
         }
     })
     .await?
@@ -281,7 +282,7 @@ pub async fn list(
     task::spawn_blocking({
         let filters = filters.clone();
         move || -> Result<Vec<DeviceProfileListItem>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let mut q = device_profile::dsl::device_profile
                 .select((
                     device_profile::id,
@@ -309,7 +310,7 @@ pub async fn list(
                 .order_by(device_profile::dsl::name)
                 .limit(limit)
                 .offset(offset)
-                .load(&c)?;
+                .load(&mut c)?;
             Ok(items)
         }
     })

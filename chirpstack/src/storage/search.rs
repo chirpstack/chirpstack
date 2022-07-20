@@ -16,25 +16,25 @@ lazy_static! {
 
 #[derive(QueryableByName, PartialEq, Debug)]
 pub struct SearchResult {
-    #[sql_type = "diesel::sql_types::Text"]
+    #[diesel(sql_type = diesel::sql_types::Text)]
     pub kind: String,
-    #[sql_type = "diesel::sql_types::Float"]
+    #[diesel(sql_type = diesel::sql_types::Float)]
     pub score: f32,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Uuid>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Uuid>)]
     pub tenant_id: Option<Uuid>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub tenant_name: Option<String>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Uuid>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Uuid>)]
     pub application_id: Option<Uuid>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub application_name: Option<String>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Binary>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Binary>)]
     pub device_dev_eui: Option<EUI64>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub device_name: Option<String>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Binary>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Binary>)]
     pub gateway_id: Option<EUI64>,
-    #[sql_type = "diesel::sql_types::Nullable<diesel::sql_types::Text>"]
+    #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Text>)]
     pub gateway_name: Option<String>,
 }
 
@@ -53,7 +53,7 @@ pub async fn global_search(
         let tags = serde_json::to_value(&tags).context("To serde_json value")?;
 
         move || -> Result<Vec<SearchResult>, Error> {
-            let c = get_db_conn()?;
+            let mut c = get_db_conn()?;
             let res = diesel::sql_query(
                 r#"
                     -- device
@@ -163,7 +163,7 @@ pub async fn global_search(
             .bind::<diesel::sql_types::BigInt, _>(limit as i64)
             .bind::<diesel::sql_types::BigInt, _>(offset as i64)
             .bind::<diesel::sql_types::Jsonb, _>(tags)
-            .load(&c)?;
+            .load(&mut c)?;
 
             Ok(res)
         }

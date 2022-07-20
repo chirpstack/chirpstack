@@ -56,9 +56,9 @@ async fn _health_handler() -> Result<()> {
             return Err(anyhow!("Redis connection error"));
         }
 
-        let c = get_db_conn()?;
+        let mut c = get_db_conn()?;
         diesel::sql_query("select 1")
-            .execute(&c)
+            .execute(&mut c)
             .context("PostgreSQL connection error")?;
 
         Ok(())

@@ -5,7 +5,7 @@ use anyhow::Context;
 use anyhow::Result;
 use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
-use diesel_migrations::embed_migrations;
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use tracing::info;
 
 use crate::config;
@@ -40,7 +40,7 @@ lazy_static! {
     static ref REDIS_POOL: RwLock<Option<RedisPool>> = RwLock::new(None);
 }
 
-embed_migrations!("./migrations");
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 
 pub enum RedisPool {
     Client(Pool<redis::Client>),
@@ -87,10 +87,12 @@ pub async fn setup() -> Result<()> {
         .build(ConnectionManager::new(&conf.postgresql.dsn))
         .context("Setup PostgreSQL connection pool error")?;
     set_db_pool(pg_pool);
-    let pg_conn = get_db_conn()?;
+    let mut pg_conn = get_db_conn()?;
 
     info!("Applying schema migrations");
-    embedded_migrations::run(&pg_conn).context("Run migrations error")?;
+    pg_conn
+        .run_pending_migrations(MIGRATIONS)
+        .map_err(|e| anyhow!("{}", e))?;
 
     info!("Setting up Redis client");
     if conf.redis.cluster {
@@ -158,20 +160,11 @@ pub fn redis_key(s: String) -> String {
 
 #[cfg(test)]
 pub fn reset_db() -> Result<()> {
-    use diesel_migrations::{revert_latest_migration, run_pending_migrations};
-    let conn = get_db_conn()?;
-
-    loop {
-        match revert_latest_migration(&conn) {
-            Ok(_) => {}
-            Err(_) => {
-                break;
-            }
-        }
-    }
-
-    // and forward again
-    run_pending_migrations(&conn)?;
+    let mut conn = get_db_conn()?;
+    conn.revert_all_migrations(MIGRATIONS)
+        .map_err(|e| anyhow!("{}", e))?;
+    conn.run_pending_migrations(MIGRATIONS)
+        .map_err(|e| anyhow!("{}", e))?;
 
     Ok(())
 }
