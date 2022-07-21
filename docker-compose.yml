@@ -1,9 +1,14 @@
 services:
   chirpstack:
-    image: chirpstack/chirpstack-dev-cache:latest
-    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile-devel
     volumes:
       - ./:/chirpstack
+      - ./.rust/target:/chirpstack/target
+      - ./.rust/.cargo/registry/index:/usr/local/cargo/registry/index
+      - ./.rust/.cargo/registry/cache:/usr/local/cargo/registry/cache
+      - ./.rust/.cargo/git/db:/usr/local/cargo/git/db
     depends_on:
       - postgres
       - redis
