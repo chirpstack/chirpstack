@@ -13,13 +13,11 @@ use prost::Message;
 use serde::Serialize;
 use tracing::{error, info, trace};
 
+use super::GatewayBackend;
 use crate::config::GatewayBackendMqtt;
 use crate::monitoring::prometheus;
 use crate::{downlink, uplink};
 use lrwn::region::CommonName;
-use lrwn::EUI64;
-
-use super::GatewayBackend;
 
 #[derive(Clone, Hash, PartialEq, Eq, Encode)]
 struct EventLabels {
@@ -216,11 +214,10 @@ impl GatewayBackend for MqttBackend<'_> {
                 command: "config".to_string(),
             })
             .inc();
-        let gateway_id = EUI64::from_slice(&gw_conf.gateway_id)?;
-        let topic = self.get_command_topic(&gateway_id.to_string(), "config")?;
+        let topic = self.get_command_topic(&gw_conf.gateway_id, "config")?;
         let b = gw_conf.encode_to_vec();
 
-        info!(gateway_id = %gateway_id, topic = %topic, "Sending gateway configuration");
+        info!(gateway_id = %gw_conf.gateway_id, topic = %topic, "Sending gateway configuration");
         let msg = mqtt::Message::new(topic, b, self.qos as i32);
         self.client.publish(msg).await?;
         trace!("Message sent");

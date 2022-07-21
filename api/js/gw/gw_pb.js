@@ -27,8 +27,8 @@ goog.exportSymbol('proto.gw.DownlinkTxAckItem', null, global);
 goog.exportSymbol('proto.gw.DownlinkTxInfo', null, global);
 goog.exportSymbol('proto.gw.DownlinkTxInfoLegacy', null, global);
 goog.exportSymbol('proto.gw.EncryptedFineTimestamp', null, global);
-goog.exportSymbol('proto.gw.FSKModulationConfig', null, global);
 goog.exportSymbol('proto.gw.FineTimestampType', null, global);
+goog.exportSymbol('proto.gw.FskModulationConfig', null, global);
 goog.exportSymbol('proto.gw.FskModulationInfo', null, global);
 goog.exportSymbol('proto.gw.GPSEpochTimingInfo', null, global);
 goog.exportSymbol('proto.gw.GatewayCommandExecRequest', null, global);
@@ -36,7 +36,7 @@ goog.exportSymbol('proto.gw.GatewayCommandExecResponse', null, global);
 goog.exportSymbol('proto.gw.GatewayConfiguration', null, global);
 goog.exportSymbol('proto.gw.GatewayStats', null, global);
 goog.exportSymbol('proto.gw.ImmediatelyTimingInfo', null, global);
-goog.exportSymbol('proto.gw.LoRaModulationConfig', null, global);
+goog.exportSymbol('proto.gw.LoraModulationConfig', null, global);
 goog.exportSymbol('proto.gw.LoraModulationInfo', null, global);
 goog.exportSymbol('proto.gw.LrFhssModulationInfo', null, global);
 goog.exportSymbol('proto.gw.Modulation', null, global);
@@ -2049,8 +2049,8 @@ proto.gw.GatewayStats.prototype.toObject = function(opt_includeInstance) {
  */
 proto.gw.GatewayStats.toObject = function(includeInstance, msg) {
   var f, obj = {
-    gatewayId: msg.getGatewayId_asB64(),
-    ip: msg.getIp(),
+    gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
+    gatewayId: msg.getGatewayId(),
     time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     location: (f = msg.getLocation()) && common_common_pb.Location.toObject(includeInstance, f),
     configVersion: msg.getConfigVersion(),
@@ -2059,7 +2059,6 @@ proto.gw.GatewayStats.toObject = function(includeInstance, msg) {
     txPacketsReceived: msg.getTxPacketsReceived(),
     txPacketsEmitted: msg.getTxPacketsEmitted(),
     metaDataMap: (f = msg.getMetaDataMap(true)) ? f.toArray() : [],
-    statsId: msg.getStatsId_asB64(),
     txPacketsPerFrequencyMap: (f = msg.getTxPacketsPerFrequencyMap(true)) ? f.toArray() : [],
     rxPacketsPerFrequencyMap: (f = msg.getRxPacketsPerFrequencyMap(true)) ? f.toArray() : [],
     txPacketsPerModulationList: jspb.Message.toObjectList(msg.getTxPacketsPerModulationList(),
@@ -2105,11 +2104,11 @@ proto.gw.GatewayStats.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
-      msg.setGatewayId(value);
+      msg.setGatewayIdLegacy(value);
       break;
-    case 9:
+    case 17:
       var value = /** @type {string} */ (reader.readString());
-      msg.setIp(value);
+      msg.setGatewayId(value);
       break;
     case 2:
       var value = new google_protobuf_timestamp_pb.Timestamp;
@@ -2146,10 +2145,6 @@ proto.gw.GatewayStats.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString);
          });
-      break;
-    case 11:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
-      msg.setStatsId(value);
       break;
     case 12:
       var value = msg.getTxPacketsPerFrequencyMap();
@@ -2219,17 +2214,17 @@ proto.gw.GatewayStats.prototype.serializeBinary = function() {
  */
 proto.gw.GatewayStats.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getGatewayId_asU8();
+  f = this.getGatewayIdLegacy_asU8();
   if (f.length > 0) {
     writer.writeBytes(
       1,
       f
     );
   }
-  f = this.getIp();
+  f = this.getGatewayId();
   if (f.length > 0) {
     writer.writeString(
-      9,
+      17,
       f
     );
   }
@@ -2288,13 +2283,6 @@ proto.gw.GatewayStats.prototype.serializeBinaryToWriter = function (writer) {
   if (f && f.getLength() > 0) {
     f.serializeBinary(10, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
-  f = this.getStatsId_asU8();
-  if (f.length > 0) {
-    writer.writeBytes(
-      11,
-      f
-    );
-  }
   f = this.getTxPacketsPerFrequencyMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(12, writer, jspb.BinaryWriter.prototype.writeUint32, jspb.BinaryWriter.prototype.writeUint32);
@@ -2336,56 +2324,56 @@ proto.gw.GatewayStats.prototype.cloneMessage = function() {
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * @return {!(string|Uint8Array)}
  */
-proto.gw.GatewayStats.prototype.getGatewayId = function() {
+proto.gw.GatewayStats.prototype.getGatewayIdLegacy = function() {
   return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
- * This is a type-conversion wrapper around `getGatewayId()`
+ * optional bytes gateway_id_legacy = 1;
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {string}
  */
-proto.gw.GatewayStats.prototype.getGatewayId_asB64 = function() {
+proto.gw.GatewayStats.prototype.getGatewayIdLegacy_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getGatewayId()`
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {!Uint8Array}
  */
-proto.gw.GatewayStats.prototype.getGatewayId_asU8 = function() {
+proto.gw.GatewayStats.prototype.getGatewayIdLegacy_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /** @param {!(string|Uint8Array)} value  */
-proto.gw.GatewayStats.prototype.setGatewayId = function(value) {
+proto.gw.GatewayStats.prototype.setGatewayIdLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
 };
 
 
 /**
- * optional string ip = 9;
+ * optional string gateway_id = 17;
  * @return {string}
  */
-proto.gw.GatewayStats.prototype.getIp = function() {
-  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 9, ""));
+proto.gw.GatewayStats.prototype.getGatewayId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 17, ""));
 };
 
 
 /** @param {string} value  */
-proto.gw.GatewayStats.prototype.setIp = function(value) {
-  jspb.Message.setField(this, 9, value);
+proto.gw.GatewayStats.prototype.setGatewayId = function(value) {
+  jspb.Message.setField(this, 17, value);
 };
 
 
@@ -2534,45 +2522,6 @@ proto.gw.GatewayStats.prototype.getMetaDataMap = function(opt_noLazyCreate) {
   return /** @type {!jspb.Map<string,string>} */ (
       jspb.Message.getMapField(this, 10, opt_noLazyCreate,
       null));
-};
-
-
-/**
- * optional bytes stats_id = 11;
- * @return {!(string|Uint8Array)}
- */
-proto.gw.GatewayStats.prototype.getStatsId = function() {
-  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 11, ""));
-};
-
-
-/**
- * optional bytes stats_id = 11;
- * This is a type-conversion wrapper around `getStatsId()`
- * @return {string}
- */
-proto.gw.GatewayStats.prototype.getStatsId_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getStatsId()));
-};
-
-
-/**
- * optional bytes stats_id = 11;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getStatsId()`
- * @return {!Uint8Array}
- */
-proto.gw.GatewayStats.prototype.getStatsId_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getStatsId()));
-};
-
-
-/** @param {!(string|Uint8Array)} value  */
-proto.gw.GatewayStats.prototype.setStatsId = function(value) {
-  jspb.Message.setField(this, 11, value);
 };
 
 
@@ -7797,7 +7746,8 @@ proto.gw.GatewayConfiguration.prototype.toObject = function(opt_includeInstance)
  */
 proto.gw.GatewayConfiguration.toObject = function(includeInstance, msg) {
   var f, obj = {
-    gatewayId: msg.getGatewayId_asB64(),
+    gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
+    gatewayId: msg.getGatewayId(),
     version: msg.getVersion(),
     channelsList: jspb.Message.toObjectList(msg.getChannelsList(),
     proto.gw.ChannelConfiguration.toObject, includeInstance),
@@ -7840,6 +7790,10 @@ proto.gw.GatewayConfiguration.deserializeBinaryFromReader = function(msg, reader
     switch (field) {
     case 1:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setGatewayIdLegacy(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
       break;
     case 2:
@@ -7895,10 +7849,17 @@ proto.gw.GatewayConfiguration.prototype.serializeBinary = function() {
  */
 proto.gw.GatewayConfiguration.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getGatewayId_asU8();
+  f = this.getGatewayIdLegacy_asU8();
   if (f.length > 0) {
     writer.writeBytes(
       1,
+      f
+    );
+  }
+  f = this.getGatewayId();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -7938,41 +7899,56 @@ proto.gw.GatewayConfiguration.prototype.cloneMessage = function() {
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * @return {!(string|Uint8Array)}
  */
-proto.gw.GatewayConfiguration.prototype.getGatewayId = function() {
+proto.gw.GatewayConfiguration.prototype.getGatewayIdLegacy = function() {
   return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
- * This is a type-conversion wrapper around `getGatewayId()`
+ * optional bytes gateway_id_legacy = 1;
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {string}
  */
-proto.gw.GatewayConfiguration.prototype.getGatewayId_asB64 = function() {
+proto.gw.GatewayConfiguration.prototype.getGatewayIdLegacy_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getGatewayId()`
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {!Uint8Array}
  */
-proto.gw.GatewayConfiguration.prototype.getGatewayId_asU8 = function() {
+proto.gw.GatewayConfiguration.prototype.getGatewayIdLegacy_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /** @param {!(string|Uint8Array)} value  */
-proto.gw.GatewayConfiguration.prototype.setGatewayId = function(value) {
+proto.gw.GatewayConfiguration.prototype.setGatewayIdLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional string gateway_id = 5;
+ * @return {string}
+ */
+proto.gw.GatewayConfiguration.prototype.getGatewayId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 5, ""));
+};
+
+
+/** @param {string} value  */
+proto.gw.GatewayConfiguration.prototype.setGatewayId = function(value) {
+  jspb.Message.setField(this, 5, value);
 };
 
 
@@ -8117,9 +8093,9 @@ proto.gw.ChannelConfiguration.prototype.toObject = function(opt_includeInstance)
 proto.gw.ChannelConfiguration.toObject = function(includeInstance, msg) {
   var f, obj = {
     frequency: msg.getFrequency(),
-    modulation: msg.getModulation(),
-    loraModulationConfig: (f = msg.getLoraModulationConfig()) && proto.gw.LoRaModulationConfig.toObject(includeInstance, f),
-    fskModulationConfig: (f = msg.getFskModulationConfig()) && proto.gw.FSKModulationConfig.toObject(includeInstance, f),
+    modulationLegacy: msg.getModulationLegacy(),
+    loraModulationConfig: (f = msg.getLoraModulationConfig()) && proto.gw.LoraModulationConfig.toObject(includeInstance, f),
+    fskModulationConfig: (f = msg.getFskModulationConfig()) && proto.gw.FskModulationConfig.toObject(includeInstance, f),
     board: msg.getBoard(),
     demodulator: msg.getDemodulator()
   };
@@ -8164,16 +8140,16 @@ proto.gw.ChannelConfiguration.deserializeBinaryFromReader = function(msg, reader
       break;
     case 2:
       var value = /** @type {!proto.common.Modulation} */ (reader.readEnum());
-      msg.setModulation(value);
+      msg.setModulationLegacy(value);
       break;
     case 3:
-      var value = new proto.gw.LoRaModulationConfig;
-      reader.readMessage(value,proto.gw.LoRaModulationConfig.deserializeBinaryFromReader);
+      var value = new proto.gw.LoraModulationConfig;
+      reader.readMessage(value,proto.gw.LoraModulationConfig.deserializeBinaryFromReader);
       msg.setLoraModulationConfig(value);
       break;
     case 4:
-      var value = new proto.gw.FSKModulationConfig;
-      reader.readMessage(value,proto.gw.FSKModulationConfig.deserializeBinaryFromReader);
+      var value = new proto.gw.FskModulationConfig;
+      reader.readMessage(value,proto.gw.FskModulationConfig.deserializeBinaryFromReader);
       msg.setFskModulationConfig(value);
       break;
     case 5:
@@ -8229,7 +8205,7 @@ proto.gw.ChannelConfiguration.prototype.serializeBinaryToWriter = function (writ
       f
     );
   }
-  f = this.getModulation();
+  f = this.getModulationLegacy();
   if (f !== 0.0) {
     writer.writeEnum(
       2,
@@ -8241,7 +8217,7 @@ proto.gw.ChannelConfiguration.prototype.serializeBinaryToWriter = function (writ
     writer.writeMessage(
       3,
       f,
-      proto.gw.LoRaModulationConfig.serializeBinaryToWriter
+      proto.gw.LoraModulationConfig.serializeBinaryToWriter
     );
   }
   f = this.getFskModulationConfig();
@@ -8249,7 +8225,7 @@ proto.gw.ChannelConfiguration.prototype.serializeBinaryToWriter = function (writ
     writer.writeMessage(
       4,
       f,
-      proto.gw.FSKModulationConfig.serializeBinaryToWriter
+      proto.gw.FskModulationConfig.serializeBinaryToWriter
     );
   }
   f = this.getBoard();
@@ -8294,31 +8270,31 @@ proto.gw.ChannelConfiguration.prototype.setFrequency = function(value) {
 
 
 /**
- * optional common.Modulation modulation = 2;
+ * optional common.Modulation modulation_legacy = 2;
  * @return {!proto.common.Modulation}
  */
-proto.gw.ChannelConfiguration.prototype.getModulation = function() {
+proto.gw.ChannelConfiguration.prototype.getModulationLegacy = function() {
   return /** @type {!proto.common.Modulation} */ (jspb.Message.getFieldProto3(this, 2, 0));
 };
 
 
 /** @param {!proto.common.Modulation} value  */
-proto.gw.ChannelConfiguration.prototype.setModulation = function(value) {
+proto.gw.ChannelConfiguration.prototype.setModulationLegacy = function(value) {
   jspb.Message.setField(this, 2, value);
 };
 
 
 /**
- * optional LoRaModulationConfig lora_modulation_config = 3;
- * @return {proto.gw.LoRaModulationConfig}
+ * optional LoraModulationConfig lora_modulation_config = 3;
+ * @return {proto.gw.LoraModulationConfig}
  */
 proto.gw.ChannelConfiguration.prototype.getLoraModulationConfig = function() {
-  return /** @type{proto.gw.LoRaModulationConfig} */ (
-    jspb.Message.getWrapperField(this, proto.gw.LoRaModulationConfig, 3));
+  return /** @type{proto.gw.LoraModulationConfig} */ (
+    jspb.Message.getWrapperField(this, proto.gw.LoraModulationConfig, 3));
 };
 
 
-/** @param {proto.gw.LoRaModulationConfig|undefined} value  */
+/** @param {proto.gw.LoraModulationConfig|undefined} value  */
 proto.gw.ChannelConfiguration.prototype.setLoraModulationConfig = function(value) {
   jspb.Message.setOneofWrapperField(this, 3, proto.gw.ChannelConfiguration.oneofGroups_[0], value);
 };
@@ -8339,16 +8315,16 @@ proto.gw.ChannelConfiguration.prototype.hasLoraModulationConfig = function() {
 
 
 /**
- * optional FSKModulationConfig fsk_modulation_config = 4;
- * @return {proto.gw.FSKModulationConfig}
+ * optional FskModulationConfig fsk_modulation_config = 4;
+ * @return {proto.gw.FskModulationConfig}
  */
 proto.gw.ChannelConfiguration.prototype.getFskModulationConfig = function() {
-  return /** @type{proto.gw.FSKModulationConfig} */ (
-    jspb.Message.getWrapperField(this, proto.gw.FSKModulationConfig, 4));
+  return /** @type{proto.gw.FskModulationConfig} */ (
+    jspb.Message.getWrapperField(this, proto.gw.FskModulationConfig, 4));
 };
 
 
-/** @param {proto.gw.FSKModulationConfig|undefined} value  */
+/** @param {proto.gw.FskModulationConfig|undefined} value  */
 proto.gw.ChannelConfiguration.prototype.setFskModulationConfig = function(value) {
   jspb.Message.setOneofWrapperField(this, 4, proto.gw.ChannelConfiguration.oneofGroups_[0], value);
 };
@@ -8409,19 +8385,19 @@ proto.gw.ChannelConfiguration.prototype.setDemodulator = function(value) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.gw.LoRaModulationConfig = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.gw.LoRaModulationConfig.repeatedFields_, null);
+proto.gw.LoraModulationConfig = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.gw.LoraModulationConfig.repeatedFields_, null);
 };
-goog.inherits(proto.gw.LoRaModulationConfig, jspb.Message);
+goog.inherits(proto.gw.LoraModulationConfig, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.gw.LoRaModulationConfig.displayName = 'proto.gw.LoRaModulationConfig';
+  proto.gw.LoraModulationConfig.displayName = 'proto.gw.LoraModulationConfig';
 }
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.gw.LoRaModulationConfig.repeatedFields_ = [2];
+proto.gw.LoraModulationConfig.repeatedFields_ = [2];
 
 
 
@@ -8436,8 +8412,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.gw.LoRaModulationConfig.prototype.toObject = function(opt_includeInstance) {
-  return proto.gw.LoRaModulationConfig.toObject(opt_includeInstance, this);
+proto.gw.LoraModulationConfig.prototype.toObject = function(opt_includeInstance) {
+  return proto.gw.LoraModulationConfig.toObject(opt_includeInstance, this);
 };
 
 
@@ -8446,11 +8422,12 @@ proto.gw.LoRaModulationConfig.prototype.toObject = function(opt_includeInstance)
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.gw.LoRaModulationConfig} msg The msg instance to transform.
+ * @param {!proto.gw.LoraModulationConfig} msg The msg instance to transform.
  * @return {!Object}
  */
-proto.gw.LoRaModulationConfig.toObject = function(includeInstance, msg) {
+proto.gw.LoraModulationConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
+    bandwidthLegacy: msg.getBandwidthLegacy(),
     bandwidth: msg.getBandwidth(),
     spreadingFactorsList: jspb.Message.getField(msg, 2)
   };
@@ -8466,23 +8443,23 @@ proto.gw.LoRaModulationConfig.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.gw.LoRaModulationConfig}
+ * @return {!proto.gw.LoraModulationConfig}
  */
-proto.gw.LoRaModulationConfig.deserializeBinary = function(bytes) {
+proto.gw.LoraModulationConfig.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.gw.LoRaModulationConfig;
-  return proto.gw.LoRaModulationConfig.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.gw.LoraModulationConfig;
+  return proto.gw.LoraModulationConfig.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.gw.LoRaModulationConfig} msg The message object to deserialize into.
+ * @param {!proto.gw.LoraModulationConfig} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.gw.LoRaModulationConfig}
+ * @return {!proto.gw.LoraModulationConfig}
  */
-proto.gw.LoRaModulationConfig.deserializeBinaryFromReader = function(msg, reader) {
+proto.gw.LoraModulationConfig.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -8490,6 +8467,10 @@ proto.gw.LoRaModulationConfig.deserializeBinaryFromReader = function(msg, reader
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setBandwidthLegacy(value);
+      break;
+    case 3:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setBandwidth(value);
       break;
@@ -8509,10 +8490,10 @@ proto.gw.LoRaModulationConfig.deserializeBinaryFromReader = function(msg, reader
 /**
  * Class method variant: serializes the given message to binary data
  * (in protobuf wire format), writing to the given BinaryWriter.
- * @param {!proto.gw.LoRaModulationConfig} message
+ * @param {!proto.gw.LoraModulationConfig} message
  * @param {!jspb.BinaryWriter} writer
  */
-proto.gw.LoRaModulationConfig.serializeBinaryToWriter = function(message, writer) {
+proto.gw.LoraModulationConfig.serializeBinaryToWriter = function(message, writer) {
   message.serializeBinaryToWriter(writer);
 };
 
@@ -8521,7 +8502,7 @@ proto.gw.LoRaModulationConfig.serializeBinaryToWriter = function(message, writer
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.gw.LoRaModulationConfig.prototype.serializeBinary = function() {
+proto.gw.LoraModulationConfig.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
@@ -8533,12 +8514,19 @@ proto.gw.LoRaModulationConfig.prototype.serializeBinary = function() {
  * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
  */
-proto.gw.LoRaModulationConfig.prototype.serializeBinaryToWriter = function (writer) {
+proto.gw.LoraModulationConfig.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getBandwidth();
+  f = this.getBandwidthLegacy();
   if (f !== 0) {
     writer.writeUint32(
       1,
+      f
+    );
+  }
+  f = this.getBandwidth();
+  if (f !== 0) {
+    writer.writeUint32(
+      3,
       f
     );
   }
@@ -8554,25 +8542,40 @@ proto.gw.LoRaModulationConfig.prototype.serializeBinaryToWriter = function (writ
 
 /**
  * Creates a deep clone of this proto. No data is shared with the original.
- * @return {!proto.gw.LoRaModulationConfig} The clone.
+ * @return {!proto.gw.LoraModulationConfig} The clone.
  */
-proto.gw.LoRaModulationConfig.prototype.cloneMessage = function() {
-  return /** @type {!proto.gw.LoRaModulationConfig} */ (jspb.Message.cloneMessage(this));
+proto.gw.LoraModulationConfig.prototype.cloneMessage = function() {
+  return /** @type {!proto.gw.LoraModulationConfig} */ (jspb.Message.cloneMessage(this));
 };
 
 
 /**
- * optional uint32 bandwidth = 1;
+ * optional uint32 bandwidth_legacy = 1;
  * @return {number}
  */
-proto.gw.LoRaModulationConfig.prototype.getBandwidth = function() {
+proto.gw.LoraModulationConfig.prototype.getBandwidthLegacy = function() {
   return /** @type {number} */ (jspb.Message.getFieldProto3(this, 1, 0));
 };
 
 
 /** @param {number} value  */
-proto.gw.LoRaModulationConfig.prototype.setBandwidth = function(value) {
+proto.gw.LoraModulationConfig.prototype.setBandwidthLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional uint32 bandwidth = 3;
+ * @return {number}
+ */
+proto.gw.LoraModulationConfig.prototype.getBandwidth = function() {
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 3, 0));
+};
+
+
+/** @param {number} value  */
+proto.gw.LoraModulationConfig.prototype.setBandwidth = function(value) {
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -8582,18 +8585,18 @@ proto.gw.LoRaModulationConfig.prototype.setBandwidth = function(value) {
  * replace the array itself, then you must call the setter to update it.
  * @return {!Array.<number>}
  */
-proto.gw.LoRaModulationConfig.prototype.getSpreadingFactorsList = function() {
+proto.gw.LoraModulationConfig.prototype.getSpreadingFactorsList = function() {
   return /** @type {!Array.<number>} */ (jspb.Message.getField(this, 2));
 };
 
 
 /** @param {Array.<number>} value  */
-proto.gw.LoRaModulationConfig.prototype.setSpreadingFactorsList = function(value) {
+proto.gw.LoraModulationConfig.prototype.setSpreadingFactorsList = function(value) {
   jspb.Message.setField(this, 2, value || []);
 };
 
 
-proto.gw.LoRaModulationConfig.prototype.clearSpreadingFactorsList = function() {
+proto.gw.LoraModulationConfig.prototype.clearSpreadingFactorsList = function() {
   jspb.Message.setField(this, 2, []);
 };
 
@@ -8609,12 +8612,12 @@ proto.gw.LoRaModulationConfig.prototype.clearSpreadingFactorsList = function() {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.gw.FSKModulationConfig = function(opt_data) {
+proto.gw.FskModulationConfig = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.gw.FSKModulationConfig, jspb.Message);
+goog.inherits(proto.gw.FskModulationConfig, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.gw.FSKModulationConfig.displayName = 'proto.gw.FSKModulationConfig';
+  proto.gw.FskModulationConfig.displayName = 'proto.gw.FskModulationConfig';
 }
 
 
@@ -8629,8 +8632,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.gw.FSKModulationConfig.prototype.toObject = function(opt_includeInstance) {
-  return proto.gw.FSKModulationConfig.toObject(opt_includeInstance, this);
+proto.gw.FskModulationConfig.prototype.toObject = function(opt_includeInstance) {
+  return proto.gw.FskModulationConfig.toObject(opt_includeInstance, this);
 };
 
 
@@ -8639,11 +8642,12 @@ proto.gw.FSKModulationConfig.prototype.toObject = function(opt_includeInstance) 
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.gw.FSKModulationConfig} msg The msg instance to transform.
+ * @param {!proto.gw.FskModulationConfig} msg The msg instance to transform.
  * @return {!Object}
  */
-proto.gw.FSKModulationConfig.toObject = function(includeInstance, msg) {
+proto.gw.FskModulationConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
+    bandwidthLegacy: msg.getBandwidthLegacy(),
     bandwidth: msg.getBandwidth(),
     bitrate: msg.getBitrate()
   };
@@ -8659,23 +8663,23 @@ proto.gw.FSKModulationConfig.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.gw.FSKModulationConfig}
+ * @return {!proto.gw.FskModulationConfig}
  */
-proto.gw.FSKModulationConfig.deserializeBinary = function(bytes) {
+proto.gw.FskModulationConfig.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.gw.FSKModulationConfig;
-  return proto.gw.FSKModulationConfig.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.gw.FskModulationConfig;
+  return proto.gw.FskModulationConfig.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.gw.FSKModulationConfig} msg The message object to deserialize into.
+ * @param {!proto.gw.FskModulationConfig} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.gw.FSKModulationConfig}
+ * @return {!proto.gw.FskModulationConfig}
  */
-proto.gw.FSKModulationConfig.deserializeBinaryFromReader = function(msg, reader) {
+proto.gw.FskModulationConfig.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -8683,6 +8687,10 @@ proto.gw.FSKModulationConfig.deserializeBinaryFromReader = function(msg, reader)
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setBandwidthLegacy(value);
+      break;
+    case 3:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setBandwidth(value);
       break;
@@ -8702,10 +8710,10 @@ proto.gw.FSKModulationConfig.deserializeBinaryFromReader = function(msg, reader)
 /**
  * Class method variant: serializes the given message to binary data
  * (in protobuf wire format), writing to the given BinaryWriter.
- * @param {!proto.gw.FSKModulationConfig} message
+ * @param {!proto.gw.FskModulationConfig} message
  * @param {!jspb.BinaryWriter} writer
  */
-proto.gw.FSKModulationConfig.serializeBinaryToWriter = function(message, writer) {
+proto.gw.FskModulationConfig.serializeBinaryToWriter = function(message, writer) {
   message.serializeBinaryToWriter(writer);
 };
 
@@ -8714,7 +8722,7 @@ proto.gw.FSKModulationConfig.serializeBinaryToWriter = function(message, writer)
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.gw.FSKModulationConfig.prototype.serializeBinary = function() {
+proto.gw.FskModulationConfig.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
@@ -8726,12 +8734,19 @@ proto.gw.FSKModulationConfig.prototype.serializeBinary = function() {
  * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
  */
-proto.gw.FSKModulationConfig.prototype.serializeBinaryToWriter = function (writer) {
+proto.gw.FskModulationConfig.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getBandwidth();
+  f = this.getBandwidthLegacy();
   if (f !== 0) {
     writer.writeUint32(
       1,
+      f
+    );
+  }
+  f = this.getBandwidth();
+  if (f !== 0) {
+    writer.writeUint32(
+      3,
       f
     );
   }
@@ -8747,25 +8762,40 @@ proto.gw.FSKModulationConfig.prototype.serializeBinaryToWriter = function (write
 
 /**
  * Creates a deep clone of this proto. No data is shared with the original.
- * @return {!proto.gw.FSKModulationConfig} The clone.
+ * @return {!proto.gw.FskModulationConfig} The clone.
  */
-proto.gw.FSKModulationConfig.prototype.cloneMessage = function() {
-  return /** @type {!proto.gw.FSKModulationConfig} */ (jspb.Message.cloneMessage(this));
+proto.gw.FskModulationConfig.prototype.cloneMessage = function() {
+  return /** @type {!proto.gw.FskModulationConfig} */ (jspb.Message.cloneMessage(this));
 };
 
 
 /**
- * optional uint32 bandwidth = 1;
+ * optional uint32 bandwidth_legacy = 1;
  * @return {number}
  */
-proto.gw.FSKModulationConfig.prototype.getBandwidth = function() {
+proto.gw.FskModulationConfig.prototype.getBandwidthLegacy = function() {
   return /** @type {number} */ (jspb.Message.getFieldProto3(this, 1, 0));
 };
 
 
 /** @param {number} value  */
-proto.gw.FSKModulationConfig.prototype.setBandwidth = function(value) {
+proto.gw.FskModulationConfig.prototype.setBandwidthLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional uint32 bandwidth = 3;
+ * @return {number}
+ */
+proto.gw.FskModulationConfig.prototype.getBandwidth = function() {
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 3, 0));
+};
+
+
+/** @param {number} value  */
+proto.gw.FskModulationConfig.prototype.setBandwidth = function(value) {
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -8773,13 +8803,13 @@ proto.gw.FSKModulationConfig.prototype.setBandwidth = function(value) {
  * optional uint32 bitrate = 2;
  * @return {number}
  */
-proto.gw.FSKModulationConfig.prototype.getBitrate = function() {
+proto.gw.FskModulationConfig.prototype.getBitrate = function() {
   return /** @type {number} */ (jspb.Message.getFieldProto3(this, 2, 0));
 };
 
 
 /** @param {number} value  */
-proto.gw.FSKModulationConfig.prototype.setBitrate = function(value) {
+proto.gw.FskModulationConfig.prototype.setBitrate = function(value) {
   jspb.Message.setField(this, 2, value);
 };
 
@@ -8830,7 +8860,8 @@ proto.gw.GatewayCommandExecRequest.prototype.toObject = function(opt_includeInst
  */
 proto.gw.GatewayCommandExecRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    gatewayId: msg.getGatewayId_asB64(),
+    gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
+    gatewayId: msg.getGatewayId(),
     command: msg.getCommand(),
     execid: msg.getExecid_asB64(),
     stdin: msg.getStdin_asB64(),
@@ -8873,6 +8904,10 @@ proto.gw.GatewayCommandExecRequest.deserializeBinaryFromReader = function(msg, r
     switch (field) {
     case 1:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setGatewayIdLegacy(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
       break;
     case 2:
@@ -8931,10 +8966,17 @@ proto.gw.GatewayCommandExecRequest.prototype.serializeBinary = function() {
  */
 proto.gw.GatewayCommandExecRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getGatewayId_asU8();
+  f = this.getGatewayIdLegacy_asU8();
   if (f.length > 0) {
     writer.writeBytes(
       1,
+      f
+    );
+  }
+  f = this.getGatewayId();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -8976,41 +9018,56 @@ proto.gw.GatewayCommandExecRequest.prototype.cloneMessage = function() {
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * @return {!(string|Uint8Array)}
  */
-proto.gw.GatewayCommandExecRequest.prototype.getGatewayId = function() {
+proto.gw.GatewayCommandExecRequest.prototype.getGatewayIdLegacy = function() {
   return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
- * This is a type-conversion wrapper around `getGatewayId()`
+ * optional bytes gateway_id_legacy = 1;
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {string}
  */
-proto.gw.GatewayCommandExecRequest.prototype.getGatewayId_asB64 = function() {
+proto.gw.GatewayCommandExecRequest.prototype.getGatewayIdLegacy_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getGatewayId()`
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {!Uint8Array}
  */
-proto.gw.GatewayCommandExecRequest.prototype.getGatewayId_asU8 = function() {
+proto.gw.GatewayCommandExecRequest.prototype.getGatewayIdLegacy_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /** @param {!(string|Uint8Array)} value  */
-proto.gw.GatewayCommandExecRequest.prototype.setGatewayId = function(value) {
+proto.gw.GatewayCommandExecRequest.prototype.setGatewayIdLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional string gateway_id = 6;
+ * @return {string}
+ */
+proto.gw.GatewayCommandExecRequest.prototype.getGatewayId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 6, ""));
+};
+
+
+/** @param {string} value  */
+proto.gw.GatewayCommandExecRequest.prototype.setGatewayId = function(value) {
+  jspb.Message.setField(this, 6, value);
 };
 
 
@@ -9166,7 +9223,8 @@ proto.gw.GatewayCommandExecResponse.prototype.toObject = function(opt_includeIns
  */
 proto.gw.GatewayCommandExecResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    gatewayId: msg.getGatewayId_asB64(),
+    gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
+    gatewayId: msg.getGatewayId(),
     execId: msg.getExecId_asB64(),
     stdout: msg.getStdout_asB64(),
     stderr: msg.getStderr_asB64(),
@@ -9209,6 +9267,10 @@ proto.gw.GatewayCommandExecResponse.deserializeBinaryFromReader = function(msg, 
     switch (field) {
     case 1:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setGatewayIdLegacy(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
       break;
     case 2:
@@ -9265,10 +9327,17 @@ proto.gw.GatewayCommandExecResponse.prototype.serializeBinary = function() {
  */
 proto.gw.GatewayCommandExecResponse.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getGatewayId_asU8();
+  f = this.getGatewayIdLegacy_asU8();
   if (f.length > 0) {
     writer.writeBytes(
       1,
+      f
+    );
+  }
+  f = this.getGatewayId();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -9313,41 +9382,56 @@ proto.gw.GatewayCommandExecResponse.prototype.cloneMessage = function() {
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * @return {!(string|Uint8Array)}
  */
-proto.gw.GatewayCommandExecResponse.prototype.getGatewayId = function() {
+proto.gw.GatewayCommandExecResponse.prototype.getGatewayIdLegacy = function() {
   return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
- * This is a type-conversion wrapper around `getGatewayId()`
+ * optional bytes gateway_id_legacy = 1;
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {string}
  */
-proto.gw.GatewayCommandExecResponse.prototype.getGatewayId_asB64 = function() {
+proto.gw.GatewayCommandExecResponse.prototype.getGatewayIdLegacy_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getGatewayId()`
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {!Uint8Array}
  */
-proto.gw.GatewayCommandExecResponse.prototype.getGatewayId_asU8 = function() {
+proto.gw.GatewayCommandExecResponse.prototype.getGatewayIdLegacy_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /** @param {!(string|Uint8Array)} value  */
-proto.gw.GatewayCommandExecResponse.prototype.setGatewayId = function(value) {
+proto.gw.GatewayCommandExecResponse.prototype.setGatewayIdLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional string gateway_id = 6;
+ * @return {string}
+ */
+proto.gw.GatewayCommandExecResponse.prototype.getGatewayId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 6, ""));
+};
+
+
+/** @param {string} value  */
+proto.gw.GatewayCommandExecResponse.prototype.setGatewayId = function(value) {
+  jspb.Message.setField(this, 6, value);
 };
 
 
@@ -9529,7 +9613,8 @@ proto.gw.RawPacketForwarderEvent.prototype.toObject = function(opt_includeInstan
  */
 proto.gw.RawPacketForwarderEvent.toObject = function(includeInstance, msg) {
   var f, obj = {
-    gatewayId: msg.getGatewayId_asB64(),
+    gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
+    gatewayId: msg.getGatewayId(),
     rawId: msg.getRawId_asB64(),
     payload: msg.getPayload_asB64()
   };
@@ -9570,6 +9655,10 @@ proto.gw.RawPacketForwarderEvent.deserializeBinaryFromReader = function(msg, rea
     switch (field) {
     case 1:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setGatewayIdLegacy(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
       break;
     case 2:
@@ -9618,10 +9707,17 @@ proto.gw.RawPacketForwarderEvent.prototype.serializeBinary = function() {
  */
 proto.gw.RawPacketForwarderEvent.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getGatewayId_asU8();
+  f = this.getGatewayIdLegacy_asU8();
   if (f.length > 0) {
     writer.writeBytes(
       1,
+      f
+    );
+  }
+  f = this.getGatewayId();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
       f
     );
   }
@@ -9652,41 +9748,56 @@ proto.gw.RawPacketForwarderEvent.prototype.cloneMessage = function() {
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * @return {!(string|Uint8Array)}
  */
-proto.gw.RawPacketForwarderEvent.prototype.getGatewayId = function() {
+proto.gw.RawPacketForwarderEvent.prototype.getGatewayIdLegacy = function() {
   return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
- * This is a type-conversion wrapper around `getGatewayId()`
+ * optional bytes gateway_id_legacy = 1;
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {string}
  */
-proto.gw.RawPacketForwarderEvent.prototype.getGatewayId_asB64 = function() {
+proto.gw.RawPacketForwarderEvent.prototype.getGatewayIdLegacy_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getGatewayId()`
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {!Uint8Array}
  */
-proto.gw.RawPacketForwarderEvent.prototype.getGatewayId_asU8 = function() {
+proto.gw.RawPacketForwarderEvent.prototype.getGatewayIdLegacy_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /** @param {!(string|Uint8Array)} value  */
-proto.gw.RawPacketForwarderEvent.prototype.setGatewayId = function(value) {
+proto.gw.RawPacketForwarderEvent.prototype.setGatewayIdLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional string gateway_id = 4;
+ * @return {string}
+ */
+proto.gw.RawPacketForwarderEvent.prototype.getGatewayId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 4, ""));
+};
+
+
+/** @param {string} value  */
+proto.gw.RawPacketForwarderEvent.prototype.setGatewayId = function(value) {
+  jspb.Message.setField(this, 4, value);
 };
 
 
@@ -9814,7 +9925,8 @@ proto.gw.RawPacketForwarderCommand.prototype.toObject = function(opt_includeInst
  */
 proto.gw.RawPacketForwarderCommand.toObject = function(includeInstance, msg) {
   var f, obj = {
-    gatewayId: msg.getGatewayId_asB64(),
+    gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
+    gatewayId: msg.getGatewayId(),
     rawId: msg.getRawId_asB64(),
     payload: msg.getPayload_asB64()
   };
@@ -9855,6 +9967,10 @@ proto.gw.RawPacketForwarderCommand.deserializeBinaryFromReader = function(msg, r
     switch (field) {
     case 1:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setGatewayIdLegacy(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
       break;
     case 2:
@@ -9903,10 +10019,17 @@ proto.gw.RawPacketForwarderCommand.prototype.serializeBinary = function() {
  */
 proto.gw.RawPacketForwarderCommand.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getGatewayId_asU8();
+  f = this.getGatewayIdLegacy_asU8();
   if (f.length > 0) {
     writer.writeBytes(
       1,
+      f
+    );
+  }
+  f = this.getGatewayId();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
       f
     );
   }
@@ -9937,41 +10060,56 @@ proto.gw.RawPacketForwarderCommand.prototype.cloneMessage = function() {
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * @return {!(string|Uint8Array)}
  */
-proto.gw.RawPacketForwarderCommand.prototype.getGatewayId = function() {
+proto.gw.RawPacketForwarderCommand.prototype.getGatewayIdLegacy = function() {
   return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
- * This is a type-conversion wrapper around `getGatewayId()`
+ * optional bytes gateway_id_legacy = 1;
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {string}
  */
-proto.gw.RawPacketForwarderCommand.prototype.getGatewayId_asB64 = function() {
+proto.gw.RawPacketForwarderCommand.prototype.getGatewayIdLegacy_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getGatewayId()`
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {!Uint8Array}
  */
-proto.gw.RawPacketForwarderCommand.prototype.getGatewayId_asU8 = function() {
+proto.gw.RawPacketForwarderCommand.prototype.getGatewayIdLegacy_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /** @param {!(string|Uint8Array)} value  */
-proto.gw.RawPacketForwarderCommand.prototype.setGatewayId = function(value) {
+proto.gw.RawPacketForwarderCommand.prototype.setGatewayIdLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional string gateway_id = 4;
+ * @return {string}
+ */
+proto.gw.RawPacketForwarderCommand.prototype.getGatewayId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 4, ""));
+};
+
+
+/** @param {string} value  */
+proto.gw.RawPacketForwarderCommand.prototype.setGatewayId = function(value) {
+  jspb.Message.setField(this, 4, value);
 };
 
 
@@ -10099,7 +10237,8 @@ proto.gw.ConnState.prototype.toObject = function(opt_includeInstance) {
  */
 proto.gw.ConnState.toObject = function(includeInstance, msg) {
   var f, obj = {
-    gatewayId: msg.getGatewayId_asB64(),
+    gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
+    gatewayId: msg.getGatewayId(),
     state: msg.getState()
   };
 
@@ -10139,6 +10278,10 @@ proto.gw.ConnState.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setGatewayIdLegacy(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
       break;
     case 2:
@@ -10183,10 +10326,17 @@ proto.gw.ConnState.prototype.serializeBinary = function() {
  */
 proto.gw.ConnState.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = this.getGatewayId_asU8();
+  f = this.getGatewayIdLegacy_asU8();
   if (f.length > 0) {
     writer.writeBytes(
       1,
+      f
+    );
+  }
+  f = this.getGatewayId();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
       f
     );
   }
@@ -10210,41 +10360,56 @@ proto.gw.ConnState.prototype.cloneMessage = function() {
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * @return {!(string|Uint8Array)}
  */
-proto.gw.ConnState.prototype.getGatewayId = function() {
+proto.gw.ConnState.prototype.getGatewayIdLegacy = function() {
   return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
- * This is a type-conversion wrapper around `getGatewayId()`
+ * optional bytes gateway_id_legacy = 1;
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {string}
  */
-proto.gw.ConnState.prototype.getGatewayId_asB64 = function() {
+proto.gw.ConnState.prototype.getGatewayIdLegacy_asB64 = function() {
   return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /**
- * optional bytes gateway_id = 1;
+ * optional bytes gateway_id_legacy = 1;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getGatewayId()`
+ * This is a type-conversion wrapper around `getGatewayIdLegacy()`
  * @return {!Uint8Array}
  */
-proto.gw.ConnState.prototype.getGatewayId_asU8 = function() {
+proto.gw.ConnState.prototype.getGatewayIdLegacy_asU8 = function() {
   return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getGatewayId()));
+      this.getGatewayIdLegacy()));
 };
 
 
 /** @param {!(string|Uint8Array)} value  */
-proto.gw.ConnState.prototype.setGatewayId = function(value) {
+proto.gw.ConnState.prototype.setGatewayIdLegacy = function(value) {
   jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * optional string gateway_id = 3;
+ * @return {string}
+ */
+proto.gw.ConnState.prototype.getGatewayId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 3, ""));
+};
+
+
+/** @param {string} value  */
+proto.gw.ConnState.prototype.setGatewayId = function(value) {
+  jspb.Message.setField(this, 3, value);
 };
 
 

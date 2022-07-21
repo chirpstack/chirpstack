@@ -183,10 +183,11 @@ message PlainFineTimestamp {
 
 message GatewayStats {
     // Gateway ID.
-    bytes gateway_id = 1;
+    // Deprecated: use gateway_id.
+    bytes gateway_id_legacy = 1;
 
-    // Gateway IP.
-    string ip = 9;
+    // Gateway ID.
+    string gateway_id = 17;
 
     // Gateway time.
     google.protobuf.Timestamp time = 2;
@@ -195,7 +196,7 @@ message GatewayStats {
     common.Location location = 3;
 
     // Gateway configuration version (this maps to the config_version sent
-    // by LoRa Server to the gateway).
+    // by ChirpStack to the gateway).
     string config_version = 4;
 
     // Number of radio packets received.
@@ -212,10 +213,6 @@ message GatewayStats {
 
     // Additional gateway meta-data.
     map<string, string> meta_data = 10;
-
-    // Stats ID (UUID).
-    // Unique identifier for the gateway stats.
-    bytes stats_id = 11;
 
     // Tx packets per frequency.
     map<uint32, uint32> tx_packets_per_frequency = 12;
@@ -528,7 +525,11 @@ message DownlinkTxAckItem {
 
 message GatewayConfiguration {
     // Gateway ID.
-    bytes gateway_id = 1;
+    // Deprecated: use gateway_id.
+    bytes gateway_id_legacy = 1;
+
+    // Gateway ID.
+    string gateway_id = 5;
 
     // Configuration version.
     string version = 2;
@@ -544,15 +545,15 @@ message ChannelConfiguration {
     // Frequency (Hz).
     uint32 frequency = 1;
 
-    // Channel modulation.
-    common.Modulation modulation = 2;
+    // Modulation (deprecated).
+    common.Modulation modulation_legacy = 2;
 
     oneof modulation_config {
         // LoRa modulation config.
-        LoRaModulationConfig lora_modulation_config = 3;
+        LoraModulationConfig lora_modulation_config = 3;
 
         // FSK modulation config.
-        FSKModulationConfig fsk_modulation_config = 4;
+        FskModulationConfig fsk_modulation_config = 4;
     }
 
     // Board index.
@@ -562,17 +563,25 @@ message ChannelConfiguration {
     uint32 demodulator = 6;
 }
 
-message LoRaModulationConfig {
-    // Bandwidth.
-    uint32 bandwidth = 1;
+message LoraModulationConfig {
+    // Bandwidth (kHz).
+    // Deprecated: use bandwidth.
+    uint32 bandwidth_legacy = 1;
+
+    // Bandwidth (Hz).
+    uint32 bandwidth = 3;
 
     // Spreading-factors.
     repeated uint32 spreading_factors = 2;
 }
 
-message FSKModulationConfig {
-    // Bandwidth.
-    uint32 bandwidth = 1;
+message FskModulationConfig {
+    // Bandwidth (kHz).
+    // Deprecated: use bandwidth.
+    uint32 bandwidth_legacy = 1;
+
+    // Bandwidth (Hz).
+    uint32 bandwidth = 3;
 
     // Bitrate.
     uint32 bitrate = 2;
@@ -580,7 +589,11 @@ message FSKModulationConfig {
 
 message GatewayCommandExecRequest {
     // Gateway ID.
-    bytes gateway_id = 1;
+    // Deprecated: use gateway_id.
+    bytes gateway_id_legacy = 1;
+
+    // Gateway ID.
+    string gateway_id = 6;
 
     // Command to execute.
     // This command must be pre-configured in the LoRa Gateway Bridge configuration.
@@ -600,7 +613,11 @@ message GatewayCommandExecRequest {
 
 message GatewayCommandExecResponse {
     // Gateway ID.
-    bytes gateway_id = 1;
+    // Deprecated: use gateway_id.
+    bytes gateway_id_legacy = 1;
+
+    // Gateway ID.
+    string gateway_id = 6;
 
     // Execution request ID (UUID).
     bytes exec_id = 2;
@@ -620,7 +637,11 @@ message GatewayCommandExecResponse {
 // integrated with the ChirpStack Gateway Bridge.
 message RawPacketForwarderEvent {
     // Gateway ID.
-    bytes gateway_id = 1;
+    // Deprecated: use gateway_id.
+    bytes gateway_id_legacy = 1;
+
+    // Gateway ID.
+    string gateway_id = 4;
 
     // Raw ID (UUID).
     bytes raw_id = 2;
@@ -634,7 +655,11 @@ message RawPacketForwarderEvent {
 // integrated with the ChirpStack Gateway Bridge.
 message RawPacketForwarderCommand {
     // Gateway ID.
-    bytes gateway_id = 1;
+    // Deprecated: use gateway_id.
+    bytes gateway_id_legacy = 1;
+
+    // Gateway ID.
+    string gateway_id = 4;
 
     // Raw ID (UUID).
     bytes raw_id = 2;
@@ -646,7 +671,11 @@ message RawPacketForwarderCommand {
 // ConnState contains the connection state of a gateway.
 message ConnState {
     // Gateway ID.
-    bytes gateway_id = 1;
+    // Deprecated: use gateway_id.
+    bytes gateway_id_legacy = 1;
+
+    // Gateway ID.
+    string gateway_id = 3;
 
     enum State {
         OFFLINE = 0;

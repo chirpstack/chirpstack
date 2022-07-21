@@ -268,13 +268,13 @@ export namespace PlainFineTimestamp {
 }
 
 export class GatewayStats extends jspb.Message {
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
 
-  getIp(): string;
-  setIp(value: string): void;
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
   hasTime(): boolean;
   clearTime(): void;
@@ -303,11 +303,6 @@ export class GatewayStats extends jspb.Message {
 
   getMetaDataMap(): jspb.Map<string, string>;
   clearMetaDataMap(): void;
-  getStatsId(): Uint8Array | string;
-  getStatsId_asU8(): Uint8Array;
-  getStatsId_asB64(): string;
-  setStatsId(value: Uint8Array | string): void;
-
   getTxPacketsPerFrequencyMap(): jspb.Map<number, number>;
   clearTxPacketsPerFrequencyMap(): void;
   getRxPacketsPerFrequencyMap(): jspb.Map<number, number>;
@@ -336,8 +331,8 @@ export class GatewayStats extends jspb.Message {
 
 export namespace GatewayStats {
   export type AsObject = {
-    gatewayId: Uint8Array | string,
-    ip: string,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     location?: common_common_pb.Location.AsObject,
     configVersion: string,
@@ -346,7 +341,6 @@ export namespace GatewayStats {
     txPacketsReceived: number,
     txPacketsEmitted: number,
     metaDataMap: Array<[string, string]>,
-    statsId: Uint8Array | string,
     txPacketsPerFrequencyMap: Array<[number, number]>,
     rxPacketsPerFrequencyMap: Array<[number, number]>,
     txPacketsPerModulationList: Array<PerModulationCount.AsObject>,
@@ -1031,10 +1025,13 @@ export namespace DownlinkTxAckItem {
 }
 
 export class GatewayConfiguration extends jspb.Message {
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
   getVersion(): string;
   setVersion(value: string): void;
@@ -1061,7 +1058,8 @@ export class GatewayConfiguration extends jspb.Message {
 
 export namespace GatewayConfiguration {
   export type AsObject = {
-    gatewayId: Uint8Array | string,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
     version: string,
     channelsList: Array<ChannelConfiguration.AsObject>,
     statsInterval?: google_protobuf_duration_pb.Duration.AsObject,
@@ -1072,18 +1070,18 @@ export class ChannelConfiguration extends jspb.Message {
   getFrequency(): number;
   setFrequency(value: number): void;
 
-  getModulation(): common_common_pb.ModulationMap[keyof common_common_pb.ModulationMap];
-  setModulation(value: common_common_pb.ModulationMap[keyof common_common_pb.ModulationMap]): void;
+  getModulationLegacy(): common_common_pb.ModulationMap[keyof common_common_pb.ModulationMap];
+  setModulationLegacy(value: common_common_pb.ModulationMap[keyof common_common_pb.ModulationMap]): void;
 
   hasLoraModulationConfig(): boolean;
   clearLoraModulationConfig(): void;
-  getLoraModulationConfig(): LoRaModulationConfig | undefined;
-  setLoraModulationConfig(value?: LoRaModulationConfig): void;
+  getLoraModulationConfig(): LoraModulationConfig | undefined;
+  setLoraModulationConfig(value?: LoraModulationConfig): void;
 
   hasFskModulationConfig(): boolean;
   clearFskModulationConfig(): void;
-  getFskModulationConfig(): FSKModulationConfig | undefined;
-  setFskModulationConfig(value?: FSKModulationConfig): void;
+  getFskModulationConfig(): FskModulationConfig | undefined;
+  setFskModulationConfig(value?: FskModulationConfig): void;
 
   getBoard(): number;
   setBoard(value: number): void;
@@ -1105,9 +1103,9 @@ export class ChannelConfiguration extends jspb.Message {
 export namespace ChannelConfiguration {
   export type AsObject = {
     frequency: number,
-    modulation: common_common_pb.ModulationMap[keyof common_common_pb.ModulationMap],
-    loraModulationConfig?: LoRaModulationConfig.AsObject,
-    fskModulationConfig?: FSKModulationConfig.AsObject,
+    modulationLegacy: common_common_pb.ModulationMap[keyof common_common_pb.ModulationMap],
+    loraModulationConfig?: LoraModulationConfig.AsObject,
+    fskModulationConfig?: FskModulationConfig.AsObject,
     board: number,
     demodulator: number,
   }
@@ -1119,7 +1117,10 @@ export namespace ChannelConfiguration {
   }
 }
 
-export class LoRaModulationConfig extends jspb.Message {
+export class LoraModulationConfig extends jspb.Message {
+  getBandwidthLegacy(): number;
+  setBandwidthLegacy(value: number): void;
+
   getBandwidth(): number;
   setBandwidth(value: number): void;
 
@@ -1129,23 +1130,27 @@ export class LoRaModulationConfig extends jspb.Message {
   addSpreadingFactors(value: number, index?: number): number;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): LoRaModulationConfig.AsObject;
-  static toObject(includeInstance: boolean, msg: LoRaModulationConfig): LoRaModulationConfig.AsObject;
+  toObject(includeInstance?: boolean): LoraModulationConfig.AsObject;
+  static toObject(includeInstance: boolean, msg: LoraModulationConfig): LoraModulationConfig.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: LoRaModulationConfig, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): LoRaModulationConfig;
-  static deserializeBinaryFromReader(message: LoRaModulationConfig, reader: jspb.BinaryReader): LoRaModulationConfig;
+  static serializeBinaryToWriter(message: LoraModulationConfig, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): LoraModulationConfig;
+  static deserializeBinaryFromReader(message: LoraModulationConfig, reader: jspb.BinaryReader): LoraModulationConfig;
 }
 
-export namespace LoRaModulationConfig {
+export namespace LoraModulationConfig {
   export type AsObject = {
+    bandwidthLegacy: number,
     bandwidth: number,
     spreadingFactorsList: Array<number>,
   }
 }
 
-export class FSKModulationConfig extends jspb.Message {
+export class FskModulationConfig extends jspb.Message {
+  getBandwidthLegacy(): number;
+  setBandwidthLegacy(value: number): void;
+
   getBandwidth(): number;
   setBandwidth(value: number): void;
 
@@ -1153,27 +1158,31 @@ export class FSKModulationConfig extends jspb.Message {
   setBitrate(value: number): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): FSKModulationConfig.AsObject;
-  static toObject(includeInstance: boolean, msg: FSKModulationConfig): FSKModulationConfig.AsObject;
+  toObject(includeInstance?: boolean): FskModulationConfig.AsObject;
+  static toObject(includeInstance: boolean, msg: FskModulationConfig): FskModulationConfig.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: FSKModulationConfig, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): FSKModulationConfig;
-  static deserializeBinaryFromReader(message: FSKModulationConfig, reader: jspb.BinaryReader): FSKModulationConfig;
+  static serializeBinaryToWriter(message: FskModulationConfig, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): FskModulationConfig;
+  static deserializeBinaryFromReader(message: FskModulationConfig, reader: jspb.BinaryReader): FskModulationConfig;
 }
 
-export namespace FSKModulationConfig {
+export namespace FskModulationConfig {
   export type AsObject = {
+    bandwidthLegacy: number,
     bandwidth: number,
     bitrate: number,
   }
 }
 
 export class GatewayCommandExecRequest extends jspb.Message {
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
   getCommand(): string;
   setCommand(value: string): void;
@@ -1202,7 +1211,8 @@ export class GatewayCommandExecRequest extends jspb.Message {
 
 export namespace GatewayCommandExecRequest {
   export type AsObject = {
-    gatewayId: Uint8Array | string,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
     command: string,
     execid: Uint8Array | string,
     stdin: Uint8Array | string,
@@ -1211,10 +1221,13 @@ export namespace GatewayCommandExecRequest {
 }
 
 export class GatewayCommandExecResponse extends jspb.Message {
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
   getExecId(): Uint8Array | string;
   getExecId_asU8(): Uint8Array;
@@ -1246,7 +1259,8 @@ export class GatewayCommandExecResponse extends jspb.Message {
 
 export namespace GatewayCommandExecResponse {
   export type AsObject = {
-    gatewayId: Uint8Array | string,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
     execId: Uint8Array | string,
     stdout: Uint8Array | string,
     stderr: Uint8Array | string,
@@ -1255,10 +1269,13 @@ export namespace GatewayCommandExecResponse {
 }
 
 export class RawPacketForwarderEvent extends jspb.Message {
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
   getRawId(): Uint8Array | string;
   getRawId_asU8(): Uint8Array;
@@ -1282,17 +1299,21 @@ export class RawPacketForwarderEvent extends jspb.Message {
 
 export namespace RawPacketForwarderEvent {
   export type AsObject = {
-    gatewayId: Uint8Array | string,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
     rawId: Uint8Array | string,
     payload: Uint8Array | string,
   }
 }
 
 export class RawPacketForwarderCommand extends jspb.Message {
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
   getRawId(): Uint8Array | string;
   getRawId_asU8(): Uint8Array;
@@ -1316,17 +1337,21 @@ export class RawPacketForwarderCommand extends jspb.Message {
 
 export namespace RawPacketForwarderCommand {
   export type AsObject = {
-    gatewayId: Uint8Array | string,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
     rawId: Uint8Array | string,
     payload: Uint8Array | string,
   }
 }
 
 export class ConnState extends jspb.Message {
-  getGatewayId(): Uint8Array | string;
-  getGatewayId_asU8(): Uint8Array;
-  getGatewayId_asB64(): string;
-  setGatewayId(value: Uint8Array | string): void;
+  getGatewayIdLegacy(): Uint8Array | string;
+  getGatewayIdLegacy_asU8(): Uint8Array;
+  getGatewayIdLegacy_asB64(): string;
+  setGatewayIdLegacy(value: Uint8Array | string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
 
   getState(): ConnState.StateMap[keyof ConnState.StateMap];
   setState(value: ConnState.StateMap[keyof ConnState.StateMap]): void;
@@ -1343,7 +1368,8 @@ export class ConnState extends jspb.Message {
 
 export namespace ConnState {
   export type AsObject = {
-    gatewayId: Uint8Array | string,
+    gatewayIdLegacy: Uint8Array | string,
+    gatewayId: string,
     state: ConnState.StateMap[keyof ConnState.StateMap],
   }
 
