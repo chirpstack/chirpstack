@@ -23,7 +23,9 @@ pub async fn handle(
     dev: &device::Device,
     block: &lrwn::MACCommandSet,
 ) -> Result<Option<lrwn::MACCommandSet>> {
-    let mac = (&**block).first().ok_or_else(|| anyhow!("Expected DevStatusAns"))?;
+    let mac = (&**block)
+        .first()
+        .ok_or_else(|| anyhow!("Expected DevStatusAns"))?;
     if let lrwn::MACCommand::DevStatusAns(pl) = mac {
         info!(dev_eui = %dev.dev_eui, battery = pl.battery, margin = pl.margin, "DevStatusAns received");
 

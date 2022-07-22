@@ -32,7 +32,9 @@ impl Integration {
 
         Ok(Integration {
             timeout: Duration::from_secs(5),
-            json: match Encoding::from_i32(conf.encoding).ok_or_else(|| anyhow!("Invalid encoding"))? {
+            json: match Encoding::from_i32(conf.encoding)
+                .ok_or_else(|| anyhow!("Invalid encoding"))?
+            {
                 Encoding::Json => true,
                 Encoding::Protobuf => false,
             },

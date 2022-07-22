@@ -717,9 +717,18 @@ impl CayenneLpp {
                 };
 
                 if let Some(prost_types::value::Kind::StructValue(s)) = &v.kind {
-                    let x = s.fields.get("x").ok_or_else(|| anyhow!("x field is missing"))?;
-                    let y = s.fields.get("y").ok_or_else(|| anyhow!("y field is missing"))?;
-                    let z = s.fields.get("z").ok_or_else(|| anyhow!("z field is missing"))?;
+                    let x = s
+                        .fields
+                        .get("x")
+                        .ok_or_else(|| anyhow!("x field is missing"))?;
+                    let y = s
+                        .fields
+                        .get("y")
+                        .ok_or_else(|| anyhow!("y field is missing"))?;
+                    let z = s
+                        .fields
+                        .get("z")
+                        .ok_or_else(|| anyhow!("z field is missing"))?;
 
                     if let Some(prost_types::value::Kind::NumberValue(v)) = &x.kind {
                         item.x = *v;
@@ -789,9 +798,18 @@ impl CayenneLpp {
                 };
 
                 if let Some(prost_types::value::Kind::StructValue(s)) = &v.kind {
-                    let x = s.fields.get("x").ok_or_else(|| anyhow!("x field is missing"))?;
-                    let y = s.fields.get("y").ok_or_else(|| anyhow!("y field is missing"))?;
-                    let z = s.fields.get("z").ok_or_else(|| anyhow!("z field is missing"))?;
+                    let x = s
+                        .fields
+                        .get("x")
+                        .ok_or_else(|| anyhow!("x field is missing"))?;
+                    let y = s
+                        .fields
+                        .get("y")
+                        .ok_or_else(|| anyhow!("y field is missing"))?;
+                    let z = s
+                        .fields
+                        .get("z")
+                        .ok_or_else(|| anyhow!("z field is missing"))?;
 
                     if let Some(prost_types::value::Kind::NumberValue(v)) = &x.kind {
                         item.x = *v;

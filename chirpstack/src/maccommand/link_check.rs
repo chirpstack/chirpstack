@@ -11,7 +11,9 @@ pub fn handle(
     dev: &device::Device,
     block: &lrwn::MACCommandSet,
 ) -> Result<Option<lrwn::MACCommandSet>> {
-    let _ = (&**block).first().ok_or_else(|| anyhow!("Expected LinkCheckReq"));
+    let _ = (&**block)
+        .first()
+        .ok_or_else(|| anyhow!("Expected LinkCheckReq"));
 
     info!(dev_eui = %dev.dev_eui, "Received LinkCheckReq");
 

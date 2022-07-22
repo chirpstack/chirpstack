@@ -23,16 +23,18 @@ pub fn handle(
     let block_macs = &**block;
     let pending_macs = &**pending.unwrap();
 
-    let req_pl = if let lrwn::MACCommand::PingSlotChannelReq(pl) =
-        pending_macs.first().ok_or_else(|| anyhow!("Empty MACCommandSet"))?
+    let req_pl = if let lrwn::MACCommand::PingSlotChannelReq(pl) = pending_macs
+        .first()
+        .ok_or_else(|| anyhow!("Empty MACCommandSet"))?
     {
         pl
     } else {
         return Err(anyhow!("Expected PingSlotChannelReq"));
     };
 
-    let ans_pl = if let lrwn::MACCommand::PingSlotChannelAns(pl) =
-        block_macs.first().ok_or_else(|| anyhow!("Empty MACCommandSet"))?
+    let ans_pl = if let lrwn::MACCommand::PingSlotChannelAns(pl) = block_macs
+        .first()
+        .ok_or_else(|| anyhow!("Empty MACCommandSet"))?
     {
         pl
     } else {
