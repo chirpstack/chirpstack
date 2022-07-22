@@ -8890,7 +8890,7 @@ proto.gw.GatewayCommandExecRequest.toObject = function(includeInstance, msg) {
     gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
     gatewayId: msg.getGatewayId(),
     command: msg.getCommand(),
-    execid: msg.getExecid_asB64(),
+    execId: msg.getExecId(),
     stdin: msg.getStdin_asB64(),
     environmentMap: (f = msg.getEnvironmentMap(true)) ? f.toArray() : []
   };
@@ -8941,9 +8941,9 @@ proto.gw.GatewayCommandExecRequest.deserializeBinaryFromReader = function(msg, r
       var value = /** @type {string} */ (reader.readString());
       msg.setCommand(value);
       break;
-    case 3:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
-      msg.setExecid(value);
+    case 7:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setExecId(value);
       break;
     case 4:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
@@ -9014,10 +9014,10 @@ proto.gw.GatewayCommandExecRequest.prototype.serializeBinaryToWriter = function 
       f
     );
   }
-  f = this.getExecid_asU8();
-  if (f.length > 0) {
-    writer.writeBytes(
-      3,
+  f = this.getExecId();
+  if (f !== 0) {
+    writer.writeUint32(
+      7,
       f
     );
   }
@@ -9114,41 +9114,17 @@ proto.gw.GatewayCommandExecRequest.prototype.setCommand = function(value) {
 
 
 /**
- * optional bytes ExecId = 3;
- * @return {!(string|Uint8Array)}
+ * optional uint32 exec_id = 7;
+ * @return {number}
  */
-proto.gw.GatewayCommandExecRequest.prototype.getExecid = function() {
-  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 3, ""));
+proto.gw.GatewayCommandExecRequest.prototype.getExecId = function() {
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 7, 0));
 };
 
 
-/**
- * optional bytes ExecId = 3;
- * This is a type-conversion wrapper around `getExecid()`
- * @return {string}
- */
-proto.gw.GatewayCommandExecRequest.prototype.getExecid_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getExecid()));
-};
-
-
-/**
- * optional bytes ExecId = 3;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getExecid()`
- * @return {!Uint8Array}
- */
-proto.gw.GatewayCommandExecRequest.prototype.getExecid_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getExecid()));
-};
-
-
-/** @param {!(string|Uint8Array)} value  */
-proto.gw.GatewayCommandExecRequest.prototype.setExecid = function(value) {
-  jspb.Message.setField(this, 3, value);
+/** @param {number} value  */
+proto.gw.GatewayCommandExecRequest.prototype.setExecId = function(value) {
+  jspb.Message.setField(this, 7, value);
 };
 
 
@@ -9252,7 +9228,7 @@ proto.gw.GatewayCommandExecResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
     gatewayId: msg.getGatewayId(),
-    execId: msg.getExecId_asB64(),
+    execId: msg.getExecId(),
     stdout: msg.getStdout_asB64(),
     stderr: msg.getStderr_asB64(),
     error: msg.getError()
@@ -9300,8 +9276,8 @@ proto.gw.GatewayCommandExecResponse.deserializeBinaryFromReader = function(msg, 
       var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
       break;
-    case 2:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+    case 7:
+      var value = /** @type {number} */ (reader.readUint32());
       msg.setExecId(value);
       break;
     case 3:
@@ -9368,10 +9344,10 @@ proto.gw.GatewayCommandExecResponse.prototype.serializeBinaryToWriter = function
       f
     );
   }
-  f = this.getExecId_asU8();
-  if (f.length > 0) {
-    writer.writeBytes(
-      2,
+  f = this.getExecId();
+  if (f !== 0) {
+    writer.writeUint32(
+      7,
       f
     );
   }
@@ -9463,41 +9439,17 @@ proto.gw.GatewayCommandExecResponse.prototype.setGatewayId = function(value) {
 
 
 /**
- * optional bytes exec_id = 2;
- * @return {!(string|Uint8Array)}
+ * optional uint32 exec_id = 7;
+ * @return {number}
  */
 proto.gw.GatewayCommandExecResponse.prototype.getExecId = function() {
-  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 2, ""));
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 7, 0));
 };
 
 
-/**
- * optional bytes exec_id = 2;
- * This is a type-conversion wrapper around `getExecId()`
- * @return {string}
- */
-proto.gw.GatewayCommandExecResponse.prototype.getExecId_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getExecId()));
-};
-
-
-/**
- * optional bytes exec_id = 2;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getExecId()`
- * @return {!Uint8Array}
- */
-proto.gw.GatewayCommandExecResponse.prototype.getExecId_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getExecId()));
-};
-
-
-/** @param {!(string|Uint8Array)} value  */
+/** @param {number} value  */
 proto.gw.GatewayCommandExecResponse.prototype.setExecId = function(value) {
-  jspb.Message.setField(this, 2, value);
+  jspb.Message.setField(this, 7, value);
 };
 
 
@@ -9642,7 +9594,6 @@ proto.gw.RawPacketForwarderEvent.toObject = function(includeInstance, msg) {
   var f, obj = {
     gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
     gatewayId: msg.getGatewayId(),
-    rawId: msg.getRawId_asB64(),
     payload: msg.getPayload_asB64()
   };
 
@@ -9687,10 +9638,6 @@ proto.gw.RawPacketForwarderEvent.deserializeBinaryFromReader = function(msg, rea
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
-      break;
-    case 2:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
-      msg.setRawId(value);
       break;
     case 3:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
@@ -9745,13 +9692,6 @@ proto.gw.RawPacketForwarderEvent.prototype.serializeBinaryToWriter = function (w
   if (f.length > 0) {
     writer.writeString(
       4,
-      f
-    );
-  }
-  f = this.getRawId_asU8();
-  if (f.length > 0) {
-    writer.writeBytes(
-      2,
       f
     );
   }
@@ -9825,45 +9765,6 @@ proto.gw.RawPacketForwarderEvent.prototype.getGatewayId = function() {
 /** @param {string} value  */
 proto.gw.RawPacketForwarderEvent.prototype.setGatewayId = function(value) {
   jspb.Message.setField(this, 4, value);
-};
-
-
-/**
- * optional bytes raw_id = 2;
- * @return {!(string|Uint8Array)}
- */
-proto.gw.RawPacketForwarderEvent.prototype.getRawId = function() {
-  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 2, ""));
-};
-
-
-/**
- * optional bytes raw_id = 2;
- * This is a type-conversion wrapper around `getRawId()`
- * @return {string}
- */
-proto.gw.RawPacketForwarderEvent.prototype.getRawId_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getRawId()));
-};
-
-
-/**
- * optional bytes raw_id = 2;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getRawId()`
- * @return {!Uint8Array}
- */
-proto.gw.RawPacketForwarderEvent.prototype.getRawId_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getRawId()));
-};
-
-
-/** @param {!(string|Uint8Array)} value  */
-proto.gw.RawPacketForwarderEvent.prototype.setRawId = function(value) {
-  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -9954,7 +9855,6 @@ proto.gw.RawPacketForwarderCommand.toObject = function(includeInstance, msg) {
   var f, obj = {
     gatewayIdLegacy: msg.getGatewayIdLegacy_asB64(),
     gatewayId: msg.getGatewayId(),
-    rawId: msg.getRawId_asB64(),
     payload: msg.getPayload_asB64()
   };
 
@@ -9999,10 +9899,6 @@ proto.gw.RawPacketForwarderCommand.deserializeBinaryFromReader = function(msg, r
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setGatewayId(value);
-      break;
-    case 2:
-      var value = /** @type {!Uint8Array} */ (reader.readBytes());
-      msg.setRawId(value);
       break;
     case 3:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
@@ -10057,13 +9953,6 @@ proto.gw.RawPacketForwarderCommand.prototype.serializeBinaryToWriter = function 
   if (f.length > 0) {
     writer.writeString(
       4,
-      f
-    );
-  }
-  f = this.getRawId_asU8();
-  if (f.length > 0) {
-    writer.writeBytes(
-      2,
       f
     );
   }
@@ -10137,45 +10026,6 @@ proto.gw.RawPacketForwarderCommand.prototype.getGatewayId = function() {
 /** @param {string} value  */
 proto.gw.RawPacketForwarderCommand.prototype.setGatewayId = function(value) {
   jspb.Message.setField(this, 4, value);
-};
-
-
-/**
- * optional bytes raw_id = 2;
- * @return {!(string|Uint8Array)}
- */
-proto.gw.RawPacketForwarderCommand.prototype.getRawId = function() {
-  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 2, ""));
-};
-
-
-/**
- * optional bytes raw_id = 2;
- * This is a type-conversion wrapper around `getRawId()`
- * @return {string}
- */
-proto.gw.RawPacketForwarderCommand.prototype.getRawId_asB64 = function() {
-  return /** @type {string} */ (jspb.Message.bytesAsB64(
-      this.getRawId()));
-};
-
-
-/**
- * optional bytes raw_id = 2;
- * Note that Uint8Array is not supported on all browsers.
- * @see http://caniuse.com/Uint8Array
- * This is a type-conversion wrapper around `getRawId()`
- * @return {!Uint8Array}
- */
-proto.gw.RawPacketForwarderCommand.prototype.getRawId_asU8 = function() {
-  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
-      this.getRawId()));
-};
-
-
-/** @param {!(string|Uint8Array)} value  */
-proto.gw.RawPacketForwarderCommand.prototype.setRawId = function(value) {
-  jspb.Message.setField(this, 2, value);
 };
 
 

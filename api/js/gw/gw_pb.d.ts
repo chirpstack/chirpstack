@@ -1191,10 +1191,8 @@ export class GatewayCommandExecRequest extends jspb.Message {
   getCommand(): string;
   setCommand(value: string): void;
 
-  getExecid(): Uint8Array | string;
-  getExecid_asU8(): Uint8Array;
-  getExecid_asB64(): string;
-  setExecid(value: Uint8Array | string): void;
+  getExecId(): number;
+  setExecId(value: number): void;
 
   getStdin(): Uint8Array | string;
   getStdin_asU8(): Uint8Array;
@@ -1218,7 +1216,7 @@ export namespace GatewayCommandExecRequest {
     gatewayIdLegacy: Uint8Array | string,
     gatewayId: string,
     command: string,
-    execid: Uint8Array | string,
+    execId: number,
     stdin: Uint8Array | string,
     environmentMap: Array<[string, string]>,
   }
@@ -1233,10 +1231,8 @@ export class GatewayCommandExecResponse extends jspb.Message {
   getGatewayId(): string;
   setGatewayId(value: string): void;
 
-  getExecId(): Uint8Array | string;
-  getExecId_asU8(): Uint8Array;
-  getExecId_asB64(): string;
-  setExecId(value: Uint8Array | string): void;
+  getExecId(): number;
+  setExecId(value: number): void;
 
   getStdout(): Uint8Array | string;
   getStdout_asU8(): Uint8Array;
@@ -1265,7 +1261,7 @@ export namespace GatewayCommandExecResponse {
   export type AsObject = {
     gatewayIdLegacy: Uint8Array | string,
     gatewayId: string,
-    execId: Uint8Array | string,
+    execId: number,
     stdout: Uint8Array | string,
     stderr: Uint8Array | string,
     error: string,
@@ -1280,11 +1276,6 @@ export class RawPacketForwarderEvent extends jspb.Message {
 
   getGatewayId(): string;
   setGatewayId(value: string): void;
-
-  getRawId(): Uint8Array | string;
-  getRawId_asU8(): Uint8Array;
-  getRawId_asB64(): string;
-  setRawId(value: Uint8Array | string): void;
 
   getPayload(): Uint8Array | string;
   getPayload_asU8(): Uint8Array;
@@ -1305,7 +1296,6 @@ export namespace RawPacketForwarderEvent {
   export type AsObject = {
     gatewayIdLegacy: Uint8Array | string,
     gatewayId: string,
-    rawId: Uint8Array | string,
     payload: Uint8Array | string,
   }
 }
@@ -1318,11 +1308,6 @@ export class RawPacketForwarderCommand extends jspb.Message {
 
   getGatewayId(): string;
   setGatewayId(value: string): void;
-
-  getRawId(): Uint8Array | string;
-  getRawId_asU8(): Uint8Array;
-  getRawId_asB64(): string;
-  setRawId(value: Uint8Array | string): void;
 
   getPayload(): Uint8Array | string;
   getPayload_asU8(): Uint8Array;
@@ -1343,7 +1328,6 @@ export namespace RawPacketForwarderCommand {
   export type AsObject = {
     gatewayIdLegacy: Uint8Array | string,
     gatewayId: string,
-    rawId: Uint8Array | string,
     payload: Uint8Array | string,
   }
 }

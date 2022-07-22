@@ -608,10 +608,10 @@ message GatewayCommandExecRequest {
     // This command must be pre-configured in the LoRa Gateway Bridge configuration.
     string command = 2;
 
-    // Execution request ID (UUID).
-    // The same token will be returned when the execution of the command has
+    // Execution request ID.
+    // The same will be returned when the execution of the command has
     // completed.
-    bytes ExecId = 3;
+    uint32 exec_id = 7;
 
     // Standard input.
     bytes stdin = 4;
@@ -628,8 +628,8 @@ message GatewayCommandExecResponse {
     // Gateway ID.
     string gateway_id = 6;
 
-    // Execution request ID (UUID).
-    bytes exec_id = 2;
+    // Execution request ID.
+    uint32 exec_id = 7;
 
     // Standard output.
     bytes stdout = 3;
@@ -652,9 +652,6 @@ message RawPacketForwarderEvent {
     // Gateway ID.
     string gateway_id = 4;
 
-    // Raw ID (UUID).
-    bytes raw_id = 2;
-
     // Payload contains the raw payload.
     bytes payload = 3;
 }
@@ -669,9 +666,6 @@ message RawPacketForwarderCommand {
 
     // Gateway ID.
     string gateway_id = 4;
-
-    // Raw ID (UUID).
-    bytes raw_id = 2;
 
     // Payload contains the raw payload.
     bytes payload = 3;
