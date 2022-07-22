@@ -19,7 +19,7 @@ use super::error::Error;
 use super::get_db_conn;
 use super::schema::{application, application_integration};
 
-#[derive(Clone, Queryable, Insertable, AsChangeset, PartialEq, Debug)]
+#[derive(Clone, Queryable, Insertable, PartialEq, Debug)]
 #[diesel(table_name = application)]
 pub struct Application {
     pub id: Uuid,
@@ -255,7 +255,7 @@ pub struct IftttConfiguration {
     pub uplink_values: [String; 2], // The first value is reserved for the DevEUI
 }
 
-#[derive(Clone, Queryable, Insertable, AsChangeset, PartialEq, Debug)]
+#[derive(Clone, Queryable, Insertable, PartialEq, Debug)]
 #[diesel(table_name = application_integration)]
 pub struct Integration {
     pub application_id: Uuid,

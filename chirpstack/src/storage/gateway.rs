@@ -13,7 +13,7 @@ use lrwn::EUI64;
 use super::schema::{gateway, tenant};
 use super::{error::Error, fields, get_db_conn};
 
-#[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug)]
+#[derive(Queryable, Insertable, PartialEq, Debug)]
 #[diesel(table_name = gateway)]
 pub struct Gateway {
     pub gateway_id: EUI64,

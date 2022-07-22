@@ -10,7 +10,7 @@ use super::error::Error;
 use super::schema::api_key;
 use super::{error, get_db_conn};
 
-#[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug)]
+#[derive(Queryable, Insertable, PartialEq, Debug)]
 #[diesel(table_name = api_key)]
 pub struct ApiKey {
     pub id: Uuid,

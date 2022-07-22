@@ -24,7 +24,7 @@ pub fn handle(
     let pending_macs = &**pending.unwrap();
 
     let req_pl = if let lrwn::MACCommand::PingSlotChannelReq(pl) =
-        pending_macs.first().ok_or(anyhow!("Empty MACCommandSet"))?
+        pending_macs.first().ok_or_else(|| anyhow!("Empty MACCommandSet"))?
     {
         pl
     } else {
@@ -32,7 +32,7 @@ pub fn handle(
     };
 
     let ans_pl = if let lrwn::MACCommand::PingSlotChannelAns(pl) =
-        block_macs.first().ok_or(anyhow!("Empty MACCommandSet"))?
+        block_macs.first().ok_or_else(|| anyhow!("Empty MACCommandSet"))?
     {
         pl
     } else {

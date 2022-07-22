@@ -279,7 +279,7 @@ impl GatewayService for Gateway {
         let start = SystemTime::try_from(
             req.start
                 .as_ref()
-                .ok_or(anyhow!("start is None"))
+                .ok_or_else(|| anyhow!("start is None"))
                 .map_err(|e| e.status())?
                 .clone(),
         )
@@ -288,7 +288,7 @@ impl GatewayService for Gateway {
         let end = SystemTime::try_from(
             req.end
                 .as_ref()
-                .ok_or(anyhow!("end is None"))
+                .ok_or_else(|| anyhow!("end is None"))
                 .map_err(|e| e.status())?
                 .clone(),
         )

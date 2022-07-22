@@ -202,7 +202,7 @@ impl IntegrationTrait for Integration<'_> {
         let dev_info = pl
             .device_info
             .as_ref()
-            .ok_or(anyhow!("device_info is None"))?;
+            .ok_or_else(|| anyhow!("device_info is None"))?;
 
         let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "up")?;
         let b = match self.json {
@@ -221,7 +221,7 @@ impl IntegrationTrait for Integration<'_> {
         let dev_info = pl
             .device_info
             .as_ref()
-            .ok_or(anyhow!("device_info is None"))?;
+            .ok_or_else(|| anyhow!("device_info is None"))?;
 
         let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "join")?;
         let b = match self.json {
@@ -240,7 +240,7 @@ impl IntegrationTrait for Integration<'_> {
         let dev_info = pl
             .device_info
             .as_ref()
-            .ok_or(anyhow!("device_info is None"))?;
+            .ok_or_else(|| anyhow!("device_info is None"))?;
 
         let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "ack")?;
         let b = match self.json {
@@ -259,7 +259,7 @@ impl IntegrationTrait for Integration<'_> {
         let dev_info = pl
             .device_info
             .as_ref()
-            .ok_or(anyhow!("device_info is None"))?;
+            .ok_or_else(|| anyhow!("device_info is None"))?;
 
         let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "txack")?;
         let b = match self.json {
@@ -278,7 +278,7 @@ impl IntegrationTrait for Integration<'_> {
         let dev_info = pl
             .device_info
             .as_ref()
-            .ok_or(anyhow!("device_info is None"))?;
+            .ok_or_else(|| anyhow!("device_info is None"))?;
 
         let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "log")?;
         let b = match self.json {
@@ -297,7 +297,7 @@ impl IntegrationTrait for Integration<'_> {
         let dev_info = pl
             .device_info
             .as_ref()
-            .ok_or(anyhow!("device_info is None"))?;
+            .ok_or_else(|| anyhow!("device_info is None"))?;
 
         let topic = self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "status")?;
         let b = match self.json {
@@ -316,7 +316,7 @@ impl IntegrationTrait for Integration<'_> {
         let dev_info = pl
             .device_info
             .as_ref()
-            .ok_or(anyhow!("device_info is None"))?;
+            .ok_or_else(|| anyhow!("device_info is None"))?;
 
         let topic =
             self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "location")?;
@@ -336,7 +336,7 @@ impl IntegrationTrait for Integration<'_> {
         let dev_info = pl
             .device_info
             .as_ref()
-            .ok_or(anyhow!("device_info is None"))?;
+            .ok_or_else(|| anyhow!("device_info is None"))?;
 
         let topic =
             self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "integration")?;

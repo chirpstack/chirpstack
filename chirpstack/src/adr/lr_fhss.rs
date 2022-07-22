@@ -135,7 +135,7 @@ impl Handler for Algorithm {
         resp.dr = drs
             .choose(&mut rand::thread_rng())
             .cloned()
-            .ok_or(anyhow!("Random returned None"))?;
+            .ok_or_else(|| anyhow!("Random returned None"))?;
         resp.nb_trans = 1; // 1 is the recommeded value
         resp.tx_power_index = 0; // for now this ADR algorithm only controls the DR
 

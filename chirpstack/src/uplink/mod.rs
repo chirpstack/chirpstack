@@ -264,11 +264,11 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
 
     let region_name = rx_info
         .get_metadata_string("region_name")
-        .ok_or(anyhow!("No region_name in metadata"))?;
+        .ok_or_else(|| anyhow!("No region_name in metadata"))?;
 
     let common_name = rx_info
         .get_metadata_string("region_common_name")
-        .ok_or(anyhow!("No region_common_name in metadata"))?;
+        .ok_or_else(|| anyhow!("No region_common_name in metadata"))?;
 
     let common_name = CommonName::from_str(&common_name)?;
 
@@ -354,18 +354,18 @@ fn filter_rx_info_by_tenant_id(tenant_id: &Uuid, uplink: &mut UplinkFrameSet) ->
         let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
         let region_name = rx_info
             .get_metadata_string("region_name")
-            .ok_or(anyhow!("No region_name in rx_info metadata"))?;
+            .ok_or_else(|| anyhow!("No region_name in rx_info metadata"))?;
         let force_gws_private = config::get_force_gws_private(&region_name)?;
 
         if !(*uplink
             .gateway_private_map
             .get(&gateway_id)
-            .ok_or(anyhow!("gateway_id missing in gateway_private_map"))?
+            .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_map"))?
             || force_gws_private)
             || uplink
                 .gateway_tenant_id_map
                 .get(&gateway_id)
-                .ok_or(anyhow!("gateway_id is missing in gateway_tenant_id_map"))?
+                .ok_or_else(|| anyhow!("gateway_id is missing in gateway_tenant_id_map"))?
                 == tenant_id
         {
             rx_info_set.push(rx_info.clone());
@@ -388,7 +388,7 @@ fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
         if !(*uplink
             .gateway_private_map
             .get(&gateway_id)
-            .ok_or(anyhow!("gateway_id missing in gateway_private_map"))?)
+            .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_map"))?)
         {
             rx_info_set.push(rx_info.clone());
         }

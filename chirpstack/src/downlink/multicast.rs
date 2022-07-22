@@ -77,7 +77,7 @@ impl Multicast {
         let region_name = &*(gw.properties)
             .get("region_name")
             .cloned()
-            .ok_or(anyhow!("Gateway does not have region_name property"))?;
+            .ok_or_else(|| anyhow!("Gateway does not have region_name property"))?;
         self.region_name = region_name.to_string();
 
         Ok(())

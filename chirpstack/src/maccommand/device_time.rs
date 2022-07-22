@@ -15,7 +15,7 @@ pub fn handle(
 ) -> Result<Option<lrwn::MACCommandSet>> {
     let _ = (&**block)
         .first()
-        .ok_or(anyhow!("Expected DeviceTimeReq"))?;
+        .ok_or_else(|| anyhow!("Expected DeviceTimeReq"))?;
 
     let rx_time: DateTime<Utc> = helpers::get_rx_timestamp(&uplink_frame_set.rx_info_set).into();
     let gps_time = rx_time.to_gps_time();

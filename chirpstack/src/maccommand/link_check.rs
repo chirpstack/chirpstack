@@ -11,7 +11,7 @@ pub fn handle(
     dev: &device::Device,
     block: &lrwn::MACCommandSet,
 ) -> Result<Option<lrwn::MACCommandSet>> {
-    let _ = (&**block).first().ok_or(anyhow!("Expected LinkCheckReq"));
+    let _ = (&**block).first().ok_or_else(|| anyhow!("Expected LinkCheckReq"));
 
     info!(dev_eui = %dev.dev_eui, "Received LinkCheckReq");
 
@@ -19,11 +19,11 @@ pub fn handle(
         .tx_info
         .modulation
         .as_ref()
-        .ok_or(anyhow!("modulation can not be None"))?;
+        .ok_or_else(|| anyhow!("modulation can not be None"))?;
     let mod_params = mod_info
         .parameters
         .as_ref()
-        .ok_or(anyhow!("parameters can not be None"))?;
+        .ok_or_else(|| anyhow!("parameters can not be None"))?;
 
     if let gw::modulation::Parameters::Lora(pl) = mod_params {
         let required_snr = config::get_required_snr_for_sf(pl.spreading_factor as u8)?;

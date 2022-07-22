@@ -126,7 +126,7 @@ impl TxAck {
         let gw_df = &df
             .downlink_frame
             .as_ref()
-            .ok_or(anyhow!("downlink_frame is None"))?;
+            .ok_or_else(|| anyhow!("downlink_frame is None"))?;
 
         // Validate that we don't receive more ack items than downlink items that were
         // sent to the gateway. Receiving less acks is valid, e.g. the gateway might
@@ -384,7 +384,7 @@ impl TxAck {
         let gw_df = df
             .downlink_frame
             .as_ref()
-            .ok_or(anyhow!("downlink_frame is None"))?;
+            .ok_or_else(|| anyhow!("downlink_frame is None"))?;
         let dfi = self.downlink_frame_item.as_ref().unwrap();
         let phy = self.phy_payload.as_mut().unwrap();
 

@@ -8,7 +8,7 @@ pub async fn handle(
 ) -> Result<Option<lrwn::MACCommandSet>> {
     let mac = (&**block)
         .first()
-        .ok_or(anyhow!("Expected DeviceModeInd"))?;
+        .ok_or_else(|| anyhow!("Expected DeviceModeInd"))?;
     if let lrwn::MACCommand::DeviceModeInd(pl) = mac {
         device::set_enabled_class(&dev.dev_eui, &pl.class.to_string()).await?;
 

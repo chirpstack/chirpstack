@@ -15,7 +15,7 @@ use super::schema::device_profile_template;
 use super::{error, fields, get_db_conn};
 use crate::codec::Codec;
 
-#[derive(Clone, Queryable, Insertable, AsChangeset, Debug, PartialEq)]
+#[derive(Clone, Queryable, Insertable, Debug, PartialEq)]
 #[diesel(table_name = device_profile_template)]
 pub struct DeviceProfileTemplate {
     pub id: String,

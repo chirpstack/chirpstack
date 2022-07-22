@@ -75,17 +75,6 @@ pub async fn callback_handler(args: CallbackArgs) -> Result<impl Reply, Rejectio
     ))
 }
 
-fn handle_error<T: std::error::Error>(fail: &T, msg: &'static str) {
-    let mut err_msg = format!("ERROR: {}", msg);
-    let mut cur_fail: Option<&dyn std::error::Error> = Some(fail);
-    while let Some(cause) = cur_fail {
-        err_msg += &format!("\n    caused by: {}", cause);
-        cur_fail = cause.source();
-    }
-    println!("{}", err_msg);
-    panic!("boom");
-}
-
 pub async fn get_user(code: &str, state: &str) -> Result<User> {
     let state = CsrfToken::new(state.to_string());
     let nonce = get_nonce(&state).await?;
@@ -94,11 +83,7 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
     let token_response = client
         .exchange_code(AuthorizationCode::new(code.to_string()))
         .request_async(async_http_client)
-        .await
-        .unwrap_or_else(|err| {
-            handle_error(&err, "token extahcnage");
-            unreachable!();
-        });
+        .await?;
 
     let id_token_verifier: CoreIdTokenVerifier = client.id_token_verifier();
     let _id_token_claims: &CoreIdTokenClaims = token_response

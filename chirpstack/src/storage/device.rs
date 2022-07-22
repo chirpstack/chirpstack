@@ -15,7 +15,7 @@ use super::schema::{application, device, device_profile, multicast_group_device,
 use super::{error::Error, fields, get_db_conn, get_redis_conn, redis_key};
 use crate::config;
 
-#[derive(Queryable, QueryableByName, Insertable, AsChangeset, PartialEq, Debug, Clone)]
+#[derive(Queryable, QueryableByName, Insertable, PartialEq, Debug, Clone)]
 #[diesel(table_name = device)]
 pub struct Device {
     pub dev_eui: EUI64,

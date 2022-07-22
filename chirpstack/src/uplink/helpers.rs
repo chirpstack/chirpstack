@@ -13,12 +13,12 @@ pub fn get_uplink_dr(region_name: &str, tx_info: &chirpstack_api::gw::UplinkTxIn
     let mod_info = tx_info
         .modulation
         .as_ref()
-        .ok_or(anyhow!("modulation must not be None"))?;
+        .ok_or_else(|| anyhow!("modulation must not be None"))?;
 
     let mod_params = mod_info
         .parameters
         .as_ref()
-        .ok_or(anyhow!("parameters must not be None"))?;
+        .ok_or_else(|| anyhow!("parameters must not be None"))?;
 
     let dr_modulation = match &mod_params {
         chirpstack_api::gw::modulation::Parameters::Lora(v) => {

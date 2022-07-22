@@ -44,11 +44,11 @@ impl Data {
 
         let region_name = uplink_rx_info[0]
             .get_metadata_string("region_name")
-            .ok_or(anyhow!("No region_name in metadata"))?;
+            .ok_or_else(|| anyhow!("No region_name in metadata"))?;
 
         let region_common_name = uplink_rx_info[0]
             .get_metadata_string("region_common_name")
-            .ok_or(anyhow!("No region_common_name in metadata"))?;
+            .ok_or_else(|| anyhow!("No region_common_name in metadata"))?;
         let region_common_name = CommonName::from_str(&region_common_name)?;
 
         let mut ctx = Data {
@@ -78,7 +78,7 @@ impl Data {
             .uplink_rx_info
             .first()
             .cloned()
-            .ok_or(anyhow!("rx_info is empty"))?;
+            .ok_or_else(|| anyhow!("rx_info is empty"))?;
 
         self.downlink_frame.gateway_id = rx_info.gateway_id.clone();
         if self.dl_meta_data.dl_freq_1.is_some()

@@ -16,7 +16,7 @@ use super::{error, fields, get_db_conn};
 use crate::codec::Codec;
 use chirpstack_api::internal;
 
-#[derive(Clone, Queryable, Insertable, AsChangeset, Debug, PartialEq)]
+#[derive(Clone, Queryable, Insertable, Debug, PartialEq)]
 #[diesel(table_name = device_profile)]
 pub struct DeviceProfile {
     pub id: Uuid,

@@ -42,7 +42,7 @@ impl Stats {
 
     async fn _handle(gateway_id: EUI64, s: gw::GatewayStats) -> Result<()> {
         let mut ctx = Stats {
-            gateway_id: gateway_id,
+            gateway_id,
             stats: s,
             gateway: None,
         };
@@ -96,7 +96,7 @@ impl Stats {
             .stats
             .meta_data
             .get("region_name")
-            .ok_or(anyhow!("No region_name in meta-data"))?;
+            .ok_or_else(|| anyhow!("No region_name in meta-data"))?;
 
         let tx_per_dr =
             per_modultation_to_per_dr(region_name, false, &self.stats.tx_packets_per_modulation)
@@ -244,11 +244,11 @@ fn per_modultation_to_per_dr(
         let modu = item
             .modulation
             .as_ref()
-            .ok_or(anyhow!("modulation is None"))?;
+            .ok_or_else(|| anyhow!("modulation is None"))?;
         let params = modu
             .parameters
             .as_ref()
-            .ok_or(anyhow!("parameters is None"))?;
+            .ok_or_else(|| anyhow!("parameters is None"))?;
 
         let dr_modulation = match params {
             gw::modulation::Parameters::Lora(v) => {

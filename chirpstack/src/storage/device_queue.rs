@@ -10,7 +10,7 @@ use super::get_db_conn;
 use super::schema::device_queue_item;
 use lrwn::EUI64;
 
-#[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug, Clone)]
+#[derive(Queryable, Insertable, PartialEq, Debug, Clone)]
 #[diesel(table_name = device_queue_item)]
 pub struct DeviceQueueItem {
     pub id: Uuid,

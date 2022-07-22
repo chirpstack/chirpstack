@@ -38,13 +38,13 @@ impl Integration {
         Ok(Integration {
             timeout: Duration::from_secs(5),
             endpoint: conf.endpoint.clone(),
-            version: InfluxDbVersion::from_i32(conf.version).ok_or(anyhow!("Invalid version"))?,
+            version: InfluxDbVersion::from_i32(conf.version).ok_or_else(|| anyhow!("Invalid version"))?,
             db: conf.db.clone(),
             username: conf.username.clone(),
             password: conf.password.clone(),
             retention_policy_name: conf.retention_policy_name.clone(),
             precision: match InfluxDbPrecision::from_i32(conf.precision)
-                .ok_or(anyhow!("Invalid precision"))?
+                .ok_or_else(|| anyhow!("Invalid precision"))?
             {
                 InfluxDbPrecision::Ns => "ns",
                 InfluxDbPrecision::U => "u",

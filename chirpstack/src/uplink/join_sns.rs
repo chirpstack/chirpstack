@@ -104,7 +104,7 @@ impl JoinRequest {
         ctx.set_pr_start_ans_payload()?;
 
         ctx.pr_start_ans
-            .ok_or(anyhow!("PRStartAnsPayload is not set"))
+            .ok_or_else(|| anyhow!("PRStartAnsPayload is not set"))
     }
 
     fn get_join_request_payload(&mut self) -> Result<()> {
