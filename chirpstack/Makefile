@@ -4,35 +4,35 @@ TARGET_ARCH := $(shell rustc --print cfg |grep target_arch |sed 's/target_arch="
 PKG_VERSION := $(shell cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
 
 debug-amd64:
-	apt update && apt install -y libpq-dev:amd64
+	apt-get install -y libpq-dev:amd64
 	cargo build
 
 debug-armv7hf:
 	# We can not install this by default, as only one libpq-dev version can be
 	# installed at a time.
-	apt update && apt install -y libpq-dev:armhf
+	apt-get install -y libpq-dev:armhf
 	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/arm-linux-gnueabihf" \
 	PKG_CONFIG_SYSROOT_DIR="/usr/arm-linux-gnueabihf" \
 		cargo build --target armv7-unknown-linux-gnueabihf
 
 debug-arm64:
-	apt update && apt install -y libpq-dev:arm64
+	apt-get install -y libpq-dev:arm64
 	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/aarch64-linux-gnu" \
 	PKG_CONFIG_SYSROOT_DIR="/usr/aarch64-linux-gnu" \
 		cargo build --target aarch64-unknown-linux-gnu
 
 release-amd64:
-	apt update && apt install -y libpq-dev:amd64
+	apt-get install -y libpq-dev:amd64
 	cargo build --release
 
 release-armv7hf:
-	apt update && apt install -y libpq-dev:armhf
+	apt-get install -y libpq-dev:armhf
 	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/arm-linux-gnueabihf" \
 	PKG_CONFIG_SYSROOT_DIR="/usr/arm-linux-gnueabihf" \
 		cargo build --target armv7-unknown-linux-gnueabihf --release
 
 release-arm64:
-	apt update && apt install -y libpq-dev:arm64
+	apt-get install -y libpq-dev:arm64
 	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/aarch64-linux-gnu" \
 	PKG_CONFIG_SYSROOT_DIR="/usr/aarch64-linux-gnu" \
 		cargo build --target aarch64-unknown-linux-gnu --release
@@ -48,13 +48,13 @@ dist: release-deb-amd64 \
 	release-targz-arm64 \
 
 release-deb-amd64:
-	apt update && apt install -y libpq-dev:amd64
+	apt-get install -y libpq-dev:amd64
 	mkdir -p /chirpstack/dist
 	cargo deb
 	cp ../target/debian/*.deb /chirpstack/dist
 
 release-deb-armv7hf:
-	apt update && apt install -y libpq-dev:armhf
+	apt-get install -y libpq-dev:armhf
 	mkdir -p /chirpstack/dist
 	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/arm-linux-gnueabihf" \
 	PKG_CONFIG_SYSROOT_DIR="/usr/arm-linux-gnueabihf" \
@@ -62,7 +62,7 @@ release-deb-armv7hf:
 	cp ../target/armv7-unknown-linux-gnueabihf/debian/*.deb /chirpstack/dist
 
 release-deb-arm64:
-	apt update && apt install -y libpq-dev:arm64
+	apt-get install -y libpq-dev:arm64
 	mkdir -p /chirpstack/dist
 	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/aarch64-linux-gnu" \
 	PKG_CONFIG_SYSROOT_DIR="/usr/aarch64-linux-gnu" \
@@ -70,13 +70,13 @@ release-deb-arm64:
 	cp ../target/aarch64-unknown-linux-gnu/debian/*.deb /chirpstack/dist
 
 release-rpm-amd64:
-	apt update && apt install -y libpq-dev:amd64
+	apt-get install -y libpq-dev:amd64
 	mkdir -p /chirpstack/dist
 	cargo rpm build
 	find ../target/release/rpmbuild/RPMS -type f -exec cp {} /chirpstack/dist \;
 
 release-rpm-armv7hf:
-	apt update && apt install -y libpq-dev:armhf
+	apt-get install -y libpq-dev:armhf
 	mkdir -p /chirpstack/dist
 	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/arm-linux-gnueabihf" \
 	PKG_CONFIG_SYSROOT_DIR="/usr/arm-linux-gnueabihf" \
@@ -84,7 +84,7 @@ release-rpm-armv7hf:
 	find ../target/armv7-unknown-linux-gnueabihf/release/rpmbuild/RPMS -type f -exec cp {} /chirpstack/dist \;
 
 release-rpm-arm64:
-	apt update && apt install -y libpq-dev:arm64
+	apt-get install -y libpq-dev:arm64
 	mkdir -p /chirpstack/dist
 	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/aarch64-linux-gnu" \
 	PKG_CONFIG_SYSROOT_DIR="/usr/aarch64-linux-gnu" \
