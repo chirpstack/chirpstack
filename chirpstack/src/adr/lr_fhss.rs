@@ -52,10 +52,10 @@ impl Handler for Algorithm {
         // Get median RSSI.
         let med_rssi = get_median(&req.uplink_history);
 
-        // If the median RSSI is below -130, coding-rate 1/3 is recommended,
+        // If the median RSSI is below -130, coding-rate 2/6 is recommended,
         // if we are on this coding-rate already, there is nothing to do.
         if let lrwn::region::DataRateModulation::LrFhss(dr) = &current_dr {
-            if med_rssi < -130 && dr.coding_rate == "1/3" {
+            if med_rssi < -130 && dr.coding_rate == "2/6" {
                 return Ok(resp);
             }
         }
@@ -85,7 +85,7 @@ impl Handler for Algorithm {
         let mut drs: Vec<u8> = Vec::new();
 
         // Select LR-FHSS data-rate with coding-rate 4/6 (if any available).
-        // Note: that for RSSI (median) < -130, coding-rate 1/3 is recommended.
+        // Note: that for RSSI (median) < -130, coding-rate 2/6 is recommended.
         // As the median is taken from the uplink history, make sure that we
         // take the median from a full history table.
         if med_rssi >= -130 && req.uplink_history.len() == 20 {
@@ -105,8 +105,8 @@ impl Handler for Algorithm {
             );
         }
 
-        // This either means coding-rate 1/3 must be used, or no data-rate with
-        // coding-rate 3/6 is enabled, and thus 1/3 is the only option.
+        // This either means coding-rate 2/6 must be used, or no data-rate with
+        // coding-rate 3/6 is enabled, and thus 2/6 is the only option.
         if drs.is_empty() {
             drs.extend_from_slice(
                 &lr_fhss_drs
@@ -115,7 +115,7 @@ impl Handler for Algorithm {
                     .filter(|dr| {
                         let dr = region_conf.get_data_rate(*dr).unwrap();
                         if let lrwn::region::DataRateModulation::LrFhss(dr) = dr {
-                            dr.coding_rate == "1/3"
+                            dr.coding_rate == "2/6"
                         } else {
                             false
                         }

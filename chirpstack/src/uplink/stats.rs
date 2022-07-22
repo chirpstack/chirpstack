@@ -264,7 +264,7 @@ fn per_modultation_to_per_dr(
             }
             gw::modulation::Parameters::LrFhss(v) => {
                 lrwn::region::DataRateModulation::LrFhss(lrwn::region::LrFhssDataRate {
-                    coding_rate: v.code_rate.clone(),
+                    coding_rate: v.code_rate().into(),
                     occupied_channel_width: v.operating_channel_width,
                 })
             }

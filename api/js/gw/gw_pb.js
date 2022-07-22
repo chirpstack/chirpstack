@@ -1393,6 +1393,7 @@ proto.gw.LrFhssModulationInfo.prototype.toObject = function(opt_includeInstance)
 proto.gw.LrFhssModulationInfo.toObject = function(includeInstance, msg) {
   var f, obj = {
     operatingChannelWidth: msg.getOperatingChannelWidth(),
+    codeRateLegacy: msg.getCodeRateLegacy(),
     codeRate: msg.getCodeRate(),
     gridSteps: msg.getGridSteps()
   };
@@ -1437,6 +1438,10 @@ proto.gw.LrFhssModulationInfo.deserializeBinaryFromReader = function(msg, reader
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
+      msg.setCodeRateLegacy(value);
+      break;
+    case 4:
+      var value = /** @type {!proto.gw.CodeRate} */ (reader.readEnum());
       msg.setCodeRate(value);
       break;
     case 3:
@@ -1488,10 +1493,17 @@ proto.gw.LrFhssModulationInfo.prototype.serializeBinaryToWriter = function (writ
       f
     );
   }
-  f = this.getCodeRate();
+  f = this.getCodeRateLegacy();
   if (f.length > 0) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = this.getCodeRate();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      4,
       f
     );
   }
@@ -1530,17 +1542,32 @@ proto.gw.LrFhssModulationInfo.prototype.setOperatingChannelWidth = function(valu
 
 
 /**
- * optional string code_rate = 2;
+ * optional string code_rate_legacy = 2;
  * @return {string}
  */
-proto.gw.LrFhssModulationInfo.prototype.getCodeRate = function() {
+proto.gw.LrFhssModulationInfo.prototype.getCodeRateLegacy = function() {
   return /** @type {string} */ (jspb.Message.getFieldProto3(this, 2, ""));
 };
 
 
 /** @param {string} value  */
-proto.gw.LrFhssModulationInfo.prototype.setCodeRate = function(value) {
+proto.gw.LrFhssModulationInfo.prototype.setCodeRateLegacy = function(value) {
   jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * optional CodeRate code_rate = 4;
+ * @return {!proto.gw.CodeRate}
+ */
+proto.gw.LrFhssModulationInfo.prototype.getCodeRate = function() {
+  return /** @type {!proto.gw.CodeRate} */ (jspb.Message.getFieldProto3(this, 4, 0));
+};
+
+
+/** @param {!proto.gw.CodeRate} value  */
+proto.gw.LrFhssModulationInfo.prototype.setCodeRate = function(value) {
+  jspb.Message.setField(this, 4, value);
 };
 
 
@@ -10444,7 +10471,12 @@ proto.gw.CodeRate = {
   CR_4_5: 1,
   CR_4_6: 2,
   CR_4_7: 3,
-  CR_4_8: 4
+  CR_4_8: 4,
+  CR_3_8: 5,
+  CR_2_6: 6,
+  CR_1_4: 7,
+  CR_1_6: 8,
+  CR_5_6: 9
 };
 
 /**

@@ -15,10 +15,15 @@ import "google/protobuf/struct.proto";
 
 enum CodeRate {
     CR_UNDEFINED = 0;
-    CR_4_5 = 1;
+    CR_4_5 = 1; // LoRa
     CR_4_6 = 2;
     CR_4_7 = 3;
     CR_4_8 = 4;
+    CR_3_8 = 5; // LR-FHSS
+    CR_2_6 = 6;
+    CR_1_4 = 7;
+    CR_1_6 = 8;
+    CR_5_6 = 9;
 }
 
 enum DownlinkTiming {
@@ -159,7 +164,11 @@ message LrFhssModulationInfo {
     uint32 operating_channel_width = 1;
 
     // Code-rate.
-    string code_rate = 2;
+    // Deprecated: use code_rate.
+    string code_rate_legacy = 2;
+
+    // Code-rate.
+    CodeRate code_rate = 4;
 
     // Hopping grid number of steps.
     uint32 grid_steps = 3;

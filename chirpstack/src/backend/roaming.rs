@@ -289,7 +289,9 @@ pub fn ul_meta_data_to_tx_info(ul_meta_data: &ULMetaData) -> Result<gw::UplinkTx
                 lrwn::region::DataRateModulation::LrFhss(v) => {
                     gw::modulation::Parameters::LrFhss(gw::LrFhssModulationInfo {
                         operating_channel_width: v.occupied_channel_width,
-                        code_rate: v.coding_rate,
+                        code_rate: gw::CodeRate::from_str(&v.coding_rate)
+                            .map_err(|e| anyhow!("{}", e))?
+                            .into(),
                         // GridSteps: this value can't be derived from a DR?
                         ..Default::default()
                     })

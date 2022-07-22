@@ -189,8 +189,11 @@ export class LrFhssModulationInfo extends jspb.Message {
   getOperatingChannelWidth(): number;
   setOperatingChannelWidth(value: number): void;
 
-  getCodeRate(): string;
-  setCodeRate(value: string): void;
+  getCodeRateLegacy(): string;
+  setCodeRateLegacy(value: string): void;
+
+  getCodeRate(): CodeRateMap[keyof CodeRateMap];
+  setCodeRate(value: CodeRateMap[keyof CodeRateMap]): void;
 
   getGridSteps(): number;
   setGridSteps(value: number): void;
@@ -208,7 +211,8 @@ export class LrFhssModulationInfo extends jspb.Message {
 export namespace LrFhssModulationInfo {
   export type AsObject = {
     operatingChannelWidth: number,
-    codeRate: string,
+    codeRateLegacy: string,
+    codeRate: CodeRateMap[keyof CodeRateMap],
     gridSteps: number,
   }
 }
@@ -1387,6 +1391,11 @@ export interface CodeRateMap {
   CR_4_6: 2;
   CR_4_7: 3;
   CR_4_8: 4;
+  CR_3_8: 5;
+  CR_2_6: 6;
+  CR_1_4: 7;
+  CR_1_6: 8;
+  CR_5_6: 9;
 }
 
 export const CodeRate: CodeRateMap;
