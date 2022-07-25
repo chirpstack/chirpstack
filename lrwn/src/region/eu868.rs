@@ -810,7 +810,7 @@ mod tests {
             (
                 true,
                 DataRateModulation::LrFhss(LrFhssDataRate {
-                    coding_rate: "1/3".to_string(),
+                    coding_rate: "2/6".to_string(),
                     occupied_channel_width: 137000,
                 }),
                 8,
