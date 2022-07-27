@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::Cursor;
 use std::str::FromStr;
-use std::sync::RwLock;
 use std::time::{Duration, SystemTime};
 
 use anyhow::{Context, Result};
@@ -28,10 +27,6 @@ pub mod join;
 pub mod join_fns;
 pub mod join_sns;
 pub mod stats;
-
-lazy_static! {
-    static ref DEDUPLICATION_DELAY: RwLock<Duration> = RwLock::new(Duration::from_millis(200));
-}
 
 #[derive(Clone)]
 pub struct UplinkFrameSet {
@@ -105,16 +100,6 @@ pub struct RoamingMetaData {
     pub ul_meta_data: backend::ULMetaData,
 }
 
-pub fn get_deduplication_delay() -> Duration {
-    let dur_r = DEDUPLICATION_DELAY.read().unwrap();
-    *dur_r
-}
-
-pub fn set_deduplication_delay(d: Duration) {
-    let mut dur_w = DEDUPLICATION_DELAY.write().unwrap();
-    *dur_w = d;
-}
-
 pub async fn deduplicate_uplink(event: gw::UplinkFrame) {
     if let Err(e) = _deduplicate_uplink(event).await {
         error!(error = %e, "Deduplication error");
@@ -131,7 +116,7 @@ async fn _deduplicate_uplink(event: gw::UplinkFrame) -> Result<()> {
     let key = redis_key(format!("up:collect:{}:{}", tx_info_str, phy_str));
     let lock_key = redis_key(format!("up:collect:{}:{}:lock", tx_info_str, phy_str));
 
-    let dedup_delay = get_deduplication_delay();
+    let dedup_delay = config::get().network.deduplication_delay;
     let mut dedup_ttl = dedup_delay * 2;
     if dedup_ttl < Duration::from_millis(200) {
         dedup_ttl = Duration::from_millis(200);

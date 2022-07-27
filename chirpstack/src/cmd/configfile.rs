@@ -127,6 +127,14 @@ pub fn run() {
   # after no activity.
   device_session_ttl="{{ network.device_session_ttl }}"
 
+  # Time to wait for uplink de-duplication.
+  #
+  # This is the time that ChirpStack will wait for other gateways to receive
+  # the same uplink frame. Please note that this value affects the
+  # roundtrip time. The total roundtrip time (which includes network latency)
+  # must be less than the (first) receive-window.
+  deduplication_delay="{{ network.deduplication_delay }}"
+
   # Mac-commands disabled.
   mac_commands_disabled={{ network.mac_commands_disabled }}
 

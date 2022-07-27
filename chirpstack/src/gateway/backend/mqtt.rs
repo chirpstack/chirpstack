@@ -1,3 +1,5 @@
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hasher;
 use std::io::Cursor;
 use std::time::Duration;
 
@@ -11,11 +13,13 @@ use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prost::Message;
 use serde::Serialize;
+use tokio::task;
 use tracing::{error, info, trace};
 
 use super::GatewayBackend;
 use crate::config::GatewayBackendMqtt;
 use crate::monitoring::prometheus;
+use crate::storage::{get_redis_conn, redis_key};
 use crate::{downlink, uplink};
 use lrwn::region::CommonName;
 
@@ -231,14 +235,29 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
     let qos = msg.qos();
     let b = msg.payload();
 
-    info!(
-        region_name = region_name,
-        topic = topic,
-        qos = qos,
-        "Message received from gateway"
-    );
+    let mut hasher = DefaultHasher::new();
+    hasher.write(&b);
+    let key = redis_key(format!("gw:mqtt:lock:{:x}", hasher.finish()));
+    let locked = is_locked(key).await;
 
     let err = || -> Result<()> {
+        if locked? {
+            trace!(
+                region_name = region_name,
+                topic = topic,
+                qos = qos,
+                "Message is already handled by different instance"
+            );
+            return Ok(());
+        }
+
+        info!(
+            region_name = region_name,
+            topic = topic,
+            qos = qos,
+            "Message received from gateway"
+        );
+
         if topic.ends_with("/up") {
             EVENT_COUNTER
                 .get_or_create(&EventLabels {
@@ -320,4 +339,23 @@ fn connection_lost_callback(client: &mqtt::AsyncClient) {
         region_name = ctx.region_name.as_str(),
         "MQTT connection to broker lost"
     );
+}
+
+async fn is_locked(key: String) -> Result<bool> {
+    task::spawn_blocking({
+        move || -> Result<bool> {
+            let mut c = get_redis_conn()?;
+
+            let set: bool = redis::cmd("SET")
+                .arg(key)
+                .arg("lock")
+                .arg("PX")
+                .arg(5000)
+                .arg("NX")
+                .query(&mut *c)?;
+
+            Ok(!set)
+        }
+    })
+    .await?
 }
