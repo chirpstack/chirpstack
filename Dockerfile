@@ -30,7 +30,7 @@ RUN apt-get update && \
 	git \
 	libpq-dev \
 	clang \
-	libclang-3.9-dev \
+	libclang-dev \
 	jq \
 	gcc-arm-linux-gnueabihf \
 	g++-arm-linux-gnueabihf \

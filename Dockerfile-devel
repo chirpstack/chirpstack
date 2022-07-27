@@ -19,7 +19,7 @@ RUN apt-get update && \
 	redis-tools \
 	rpm \
 	clang \
-	libclang-3.9-dev \
+	libclang-dev \
 	golang-cfssl \
 	jq \
 	gcc-arm-linux-gnueabihf \
