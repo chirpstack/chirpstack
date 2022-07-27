@@ -1380,6 +1380,9 @@ export interface CodeRateMap {
   CR_1_4: 7;
   CR_1_6: 8;
   CR_5_6: 9;
+  CR_LI_4_5: 10;
+  CR_LI_4_6: 11;
+  CR_LI_4_8: 12;
 }
 
 export const CodeRate: CodeRateMap;

@@ -19,6 +19,9 @@ impl Into<String> for CodeRate {
             CodeRate::Cr14 => "1/4",
             CodeRate::Cr16 => "1/6",
             CodeRate::Cr56 => "5/6",
+            CodeRate::CrLi45 => "4/5LI",
+            CodeRate::CrLi46 => "4/6LI",
+            CodeRate::CrLi48 => "4/8LI",
         }
         .to_string()
     }
@@ -38,6 +41,9 @@ impl FromStr for CodeRate {
             "1/4" => CodeRate::Cr14,
             "1/6" => CodeRate::Cr16,
             "5/6" => CodeRate::Cr56,
+            "4/5LI" => CodeRate::CrLi45,
+            "4/6LI" => CodeRate::CrLi46,
+            "4/8LI" => CodeRate::CrLi48,
             _ => {
                 return Err("invalid code-rate".into());
             }

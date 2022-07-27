@@ -1,6 +1,6 @@
 {
   "name": "@chirpstack/chirpstack-api-grpc-web",
-  "version": "4.0.0-test.12",
+  "version": "4.0.0-test.13",
   "description": "Chirpstack gRPC-web API",
   "license": "MIT",
   "devDependencies": {
