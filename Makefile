@@ -15,6 +15,11 @@ version:
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/js/package.json
 	sed -i 's/version.*/version = "$(VERSION)",/g' ./api/python/src/setup.py
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./api/rust/Cargo.toml
+	make test
+	git add .
+	git commit -v -m "Bump version to $(VERSION)"
+	git tag -a v$(VERSION) -m "v$(VERSION)"
+	git tag -a api/go/v$(VERSION) -m "api/go/v$(VERSION)"
 
 api: version
 	cd api && make
