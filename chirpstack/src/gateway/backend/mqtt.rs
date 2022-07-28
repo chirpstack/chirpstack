@@ -236,7 +236,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
     let b = msg.payload();
 
     let mut hasher = DefaultHasher::new();
-    hasher.write(&b);
+    hasher.write(b);
     let key = redis_key(format!("gw:mqtt:lock:{:x}", hasher.finish()));
     let locked = is_locked(key).await;
 
