@@ -8,8 +8,10 @@ use futures::stream::StreamExt;
 use handlebars::Handlebars;
 use paho_mqtt as mqtt;
 use prost::Message;
+use rand::Rng;
 use regex::Regex;
 use serde::Serialize;
+use tokio::sync::mpsc;
 use tracing::{error, info};
 
 use super::Integration as IntegrationTrait;
@@ -48,14 +50,48 @@ impl<'a> Integration<'a> {
         templates.register_template_string("event_topic", &conf.event_topic)?;
         templates.register_template_string("command_topic", &conf.command_topic)?;
 
+        let command_topic = templates.render(
+            "command_topic",
+            &CommandTopicContext {
+                application_id: "+".into(),
+                dev_eui: "+".into(),
+                command: "+".into(),
+            },
+        )?;
+
+        // get client id, this will generate a random client_id when no client_id has been
+        // configured.
+        let client_id = if conf.client_id.is_empty() {
+            let mut rnd = rand::thread_rng();
+            let client_id: u64 = rnd.gen();
+            format!("{:x}", client_id)
+        } else {
+            conf.client_id.clone()
+        };
+
+        // Create subscribe channel
+        // This is needed as we can't subscribe within the set_connected_callback as this would
+        // block the callback (we want to wait for success or error), which would create a
+        // deadlock. We need to re-subscribe on (re)connect to be sure we have a subscription. Even
+        // in case of a persistent MQTT session, there is no guarantee that the MQTT persisted the
+        // session and that a re-connect would recover the subscription.
+        let (subscribe_tx, mut subscribe_rx) = mpsc::channel(10);
+
         // create client
         let create_opts = mqtt::CreateOptionsBuilder::new()
             .server_uri(&conf.server)
-            .client_id(&conf.client_id)
+            .client_id(&client_id)
             .finalize();
         let mut client = mqtt::AsyncClient::new(create_opts).context("Create MQTT client")?;
-        client.set_connected_callback(connected_callback);
-        client.set_connection_lost_callback(connection_lost_callback);
+        client.set_connected_callback(move |_client| {
+            info!("Connected to MQTT broker");
+            if let Err(e) = subscribe_tx.try_send(()) {
+                error!(error = %e, "Send to subscribe channel error");
+            }
+        });
+        client.set_connection_lost_callback(|_client| {
+            error!("MQTT connection to broker lost");
+        });
 
         // connection options
         let mut conn_opts_b = mqtt::ConnectOptionsBuilder::new();
@@ -114,29 +150,13 @@ impl<'a> Integration<'a> {
         };
 
         // connect
-        info!(server_uri = %conf.server, "Connecting to MQTT broker");
+        info!(server_uri = %conf.server, client_id = %client_id, clean_session = conf.clean_session, "Connecting to MQTT broker");
         i.client
             .connect(conn_opts)
             .await
             .context("Connect to MQTT broker")?;
 
-        let command_topic = i.templates.render(
-            "command_topic",
-            &CommandTopicContext {
-                application_id: "+".into(),
-                dev_eui: "+".into(),
-                command: "+".into(),
-            },
-        )?;
-        info!(
-            command_topic = %command_topic,
-            "Subscribing to command topic"
-        );
-        i.client
-            .subscribe(&command_topic, conf.qos as i32)
-            .await
-            .context("MQTT subscribe")?;
-
+        // Command consume loop.
         tokio::spawn({
             let command_regex = i.command_regex.clone();
 
@@ -164,6 +184,21 @@ impl<'a> Integration<'a> {
                             msg,
                         )
                         .await;
+                    }
+                }
+            }
+        });
+
+        // (Re)subscribe loop.
+        tokio::spawn({
+            let client = i.client.clone();
+            let qos = conf.qos as i32;
+
+            async move {
+                while subscribe_rx.recv().await.is_some() {
+                    info!(command_topic = %command_topic, "Subscribing to command topic");
+                    if let Err(e) = client.subscribe(&command_topic, qos).await {
+                        error!(error = %e, "MQTT subscribe error");
                     }
                 }
             }
@@ -347,14 +382,6 @@ impl IntegrationTrait for Integration<'_> {
 
         self.publish_event(&topic, &b).await
     }
-}
-
-fn connected_callback(_: &mqtt::AsyncClient) {
-    info!("Connected to MQTT broker");
-}
-
-fn connection_lost_callback(_: &mqtt::AsyncClient) {
-    info!("Connection to MQTT broker lost");
 }
 
 async fn message_callback(

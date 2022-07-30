@@ -12,7 +12,9 @@ use prometheus_client::encoding::text::Encode;
 use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prost::Message;
+use rand::Rng;
 use serde::Serialize;
+use tokio::sync::mpsc;
 use tokio::task;
 use tracing::{error, info, trace};
 
@@ -81,18 +83,56 @@ impl<'a> MqttBackend<'a> {
         let mut templates = Handlebars::new();
         templates.register_template_string("command_topic", &conf.command_topic)?;
 
+        // get client id, this will generate a random client_id when no client_id has been
+        // configured.
+        let client_id = if conf.client_id.is_empty() {
+            let mut rnd = rand::thread_rng();
+            let client_id: u64 = rnd.gen();
+            format!("{:x}", client_id)
+        } else {
+            conf.client_id.clone()
+        };
+
+        // Create subscribe channel
+        // This is needed as we can't subscribe within the set_connected_callback as this would
+        // block the callback (we want to wait for success or error), which would create a
+        // deadlock. We need to re-subscribe on (re)connect to be sure we have a subscription. Even
+        // in case of a persistent MQTT session, there is no guarantee that the MQTT persisted the
+        // session and that a re-connect would recover the subscription.
+        let (subscribe_tx, mut subscribe_rx) = mpsc::channel(10);
+
         // create client
         let create_opts = mqtt::CreateOptionsBuilder::new()
             .server_uri(&conf.server)
-            .client_id(&conf.client_id)
+            .client_id(&client_id)
             .user_data(Box::new(MqttContext {
                 region_name: region_name.to_string(),
                 region_common_name,
             }))
             .finalize();
         let mut client = mqtt::AsyncClient::new(create_opts).context("Create MQTT client")?;
-        client.set_connected_callback(connected_callback);
-        client.set_connection_lost_callback(connection_lost_callback);
+        client.set_connected_callback(move |client| {
+            let ctx = client
+                .user_data()
+                .unwrap()
+                .downcast_ref::<MqttContext>()
+                .unwrap();
+
+            info!(region_name = %ctx.region_name, "Connected to MQTT broker");
+
+            if let Err(e) = subscribe_tx.try_send(()) {
+                error!(region_name = %ctx.region_name, error = %e, "Send to subscribe channel error");
+            }
+        });
+        client.set_connection_lost_callback(|client| {
+            let ctx = client
+                .user_data()
+                .unwrap()
+                .downcast_ref::<MqttContext>()
+                .unwrap();
+
+            info!(region_name = %ctx.region_name, "MQTT connection to broker lost");
+        });
 
         // connection options
         let mut conn_opts_b = mqtt::ConnectOptionsBuilder::new();
@@ -142,24 +182,13 @@ impl<'a> MqttBackend<'a> {
         };
 
         // connect
-        info!(
-            server_uri = conf.server.as_str(),
-            "Connecting to MQTT broker"
-        );
+        info!(region_name = %region_name, server_uri = %conf.server, clean_session = conf.clean_session, client_id = %client_id, "Connecting to MQTT broker");
         b.client
             .connect(conn_opts)
             .await
             .context("Connect to MQTT broker")?;
 
-        info!(
-            event_topic = conf.event_topic.as_str(),
-            "Subscribing to gateway event topic"
-        );
-        b.client
-            .subscribe(&conf.event_topic, conf.qos as i32)
-            .await
-            .context("MQTT subscribe error")?;
-
+        // Consumer loop.
         tokio::spawn({
             let region_name = region_name.to_string();
 
@@ -168,6 +197,23 @@ impl<'a> MqttBackend<'a> {
                 while let Some(msg_opt) = stream.next().await {
                     if let Some(msg) = msg_opt {
                         message_callback(&region_name, region_common_name, msg).await;
+                    }
+                }
+            }
+        });
+
+        // (Re)subscribe loop.
+        tokio::spawn({
+            let region_name = region_name.to_string();
+            let event_topic = conf.event_topic.clone();
+            let client = b.client.clone();
+            let qos = conf.qos as i32;
+
+            async move {
+                while subscribe_rx.recv().await.is_some() {
+                    info!(region_name = %region_name, event_topic = %event_topic, "Subscribing to gateway event topic");
+                    if let Err(e) = client.subscribe(&event_topic, qos).await {
+                        error!(region_name = %region_name, event_topic = %event_topic, error = %e, "MQTT subscribe error");
                     }
                 }
             }
@@ -313,32 +359,6 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
             err.as_ref().unwrap()
         );
     }
-}
-
-fn connected_callback(client: &mqtt::AsyncClient) {
-    let ctx = client
-        .user_data()
-        .unwrap()
-        .downcast_ref::<MqttContext>()
-        .unwrap();
-
-    info!(
-        region_name = ctx.region_name.as_str(),
-        "Connected to MQTT broker"
-    );
-}
-
-fn connection_lost_callback(client: &mqtt::AsyncClient) {
-    let ctx = client
-        .user_data()
-        .unwrap()
-        .downcast_ref::<MqttContext>()
-        .unwrap();
-
-    info!(
-        region_name = ctx.region_name.as_str(),
-        "MQTT connection to broker lost"
-    );
 }
 
 async fn is_locked(key: String) -> Result<bool> {

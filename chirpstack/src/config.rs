@@ -280,7 +280,7 @@ impl Default for MqttIntegration {
             username: "".into(),
             password: "".into(),
             qos: 0,
-            clean_session: true,
+            clean_session: false,
             client_id: "".into(),
             ca_cert: "".into(),
             tls_cert: "".into(),
@@ -532,7 +532,7 @@ impl Default for Region {
                         command_topic: "eu868/gateway/{{ gateway_id }}/command/{{ command }}"
                             .into(),
                         server: "tcp://127.0.0.1:1883".into(),
-                        clean_session: true,
+                        clean_session: false,
                         ..Default::default()
                     },
                 },
