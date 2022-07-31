@@ -1,4 +1,5 @@
 use std::collections::hash_map::DefaultHasher;
+use std::env::temp_dir;
 use std::hash::Hasher;
 use std::io::Cursor;
 use std::time::Duration;
@@ -109,6 +110,7 @@ impl<'a> MqttBackend<'a> {
                 region_name: region_name.to_string(),
                 region_common_name,
             }))
+            .persistence(mqtt::create_options::PersistenceType::FilePath(temp_dir()))
             .finalize();
         let mut client = mqtt::AsyncClient::new(create_opts).context("Create MQTT client")?;
         client.set_connected_callback(move |client| {

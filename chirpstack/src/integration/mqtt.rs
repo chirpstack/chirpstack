@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::env::temp_dir;
 use std::io::Cursor;
 use std::time::Duration;
 
@@ -81,6 +82,7 @@ impl<'a> Integration<'a> {
         let create_opts = mqtt::CreateOptionsBuilder::new()
             .server_uri(&conf.server)
             .client_id(&client_id)
+            .persistence(mqtt::create_options::PersistenceType::FilePath(temp_dir()))
             .finalize();
         let mut client = mqtt::AsyncClient::new(create_opts).context("Create MQTT client")?;
         client.set_connected_callback(move |_client| {
