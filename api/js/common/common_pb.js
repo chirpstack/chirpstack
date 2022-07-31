@@ -18,6 +18,7 @@ goog.exportSymbol('proto.common.MType', null, global);
 goog.exportSymbol('proto.common.MacVersion', null, global);
 goog.exportSymbol('proto.common.Metric', null, global);
 goog.exportSymbol('proto.common.MetricDataset', null, global);
+goog.exportSymbol('proto.common.MetricKind', null, global);
 goog.exportSymbol('proto.common.Modulation', null, global);
 goog.exportSymbol('proto.common.RegParamsRevision', null, global);
 goog.exportSymbol('proto.common.Region', null, global);
@@ -555,7 +556,8 @@ proto.common.Metric.toObject = function(includeInstance, msg) {
     timestampsList: jspb.Message.toObjectList(msg.getTimestampsList(),
     google_protobuf_timestamp_pb.Timestamp.toObject, includeInstance),
     datasetsList: jspb.Message.toObjectList(msg.getDatasetsList(),
-    proto.common.MetricDataset.toObject, includeInstance)
+    proto.common.MetricDataset.toObject, includeInstance),
+    kind: msg.getKind()
   };
 
   if (includeInstance) {
@@ -607,6 +609,10 @@ proto.common.Metric.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,proto.common.MetricDataset.deserializeBinaryFromReader);
       msg.getDatasetsList().push(value);
       msg.setDatasetsList(msg.getDatasetsList());
+      break;
+    case 4:
+      var value = /** @type {!proto.common.MetricKind} */ (reader.readEnum());
+      msg.setKind(value);
       break;
     default:
       reader.skipField();
@@ -667,6 +673,13 @@ proto.common.Metric.prototype.serializeBinaryToWriter = function (writer) {
       3,
       f,
       proto.common.MetricDataset.serializeBinaryToWriter
+    );
+  }
+  f = this.getKind();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      4,
+      f
     );
   }
 };
@@ -739,6 +752,21 @@ proto.common.Metric.prototype.setDatasetsList = function(value) {
 
 proto.common.Metric.prototype.clearDatasetsList = function() {
   this.setDatasetsList([]);
+};
+
+
+/**
+ * optional MetricKind kind = 4;
+ * @return {!proto.common.MetricKind}
+ */
+proto.common.Metric.prototype.getKind = function() {
+  return /** @type {!proto.common.MetricKind} */ (jspb.Message.getFieldProto3(this, 4, 0));
+};
+
+
+/** @param {!proto.common.MetricKind} value  */
+proto.common.Metric.prototype.setKind = function(value) {
+  jspb.Message.setField(this, 4, value);
 };
 
 
@@ -1029,6 +1057,15 @@ proto.common.Aggregation = {
   HOUR: 0,
   DAY: 1,
   MONTH: 2
+};
+
+/**
+ * @enum {number}
+ */
+proto.common.MetricKind = {
+  COUNTER: 0,
+  ABSOLUTE: 1,
+  GAUGE: 2
 };
 
 goog.object.extend(exports, proto.common);

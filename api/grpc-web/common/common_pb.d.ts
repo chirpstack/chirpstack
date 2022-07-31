@@ -75,6 +75,9 @@ export class Metric extends jspb.Message {
   clearDatasetsList(): Metric;
   addDatasets(value?: MetricDataset, index?: number): MetricDataset;
 
+  getKind(): MetricKind;
+  setKind(value: MetricKind): Metric;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Metric.AsObject;
   static toObject(includeInstance: boolean, msg: Metric): Metric.AsObject;
@@ -88,6 +91,7 @@ export namespace Metric {
     name: string,
     timestampsList: Array<google_protobuf_timestamp_pb.Timestamp.AsObject>,
     datasetsList: Array<MetricDataset.AsObject>,
+    kind: MetricKind,
   }
 }
 
@@ -175,4 +179,9 @@ export enum Aggregation {
   HOUR = 0,
   DAY = 1,
   MONTH = 2,
+}
+export enum MetricKind { 
+  COUNTER = 0,
+  ABSOLUTE = 1,
+  GAUGE = 2,
 }

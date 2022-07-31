@@ -142,6 +142,17 @@ enum Aggregation {
     MONTH = 2;
 }
 
+enum MetricKind {
+    // Incrementing counters that never decrease (these are not reset on each reading).
+    COUNTER  = 0;
+
+    // Counters that do get reset upon reading.
+    ABSOLUTE = 1;
+
+    // E.g. a temperature value.
+    GAUGE = 2;
+}
+
 message Location {
     // Latitude.
     double latitude = 1;
@@ -176,6 +187,9 @@ message Metric {
 
     // Datasets.
     repeated MetricDataset datasets = 3;
+
+    // Kind.
+    MetricKind kind = 4;
 }
 
 message MetricDataset {

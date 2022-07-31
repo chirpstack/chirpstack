@@ -80,6 +80,9 @@ export class Metric extends jspb.Message {
   setDatasetsList(value: Array<MetricDataset>): void;
   addDatasets(value?: MetricDataset, index?: number): MetricDataset;
 
+  getKind(): MetricKindMap[keyof MetricKindMap];
+  setKind(value: MetricKindMap[keyof MetricKindMap]): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Metric.AsObject;
   static toObject(includeInstance: boolean, msg: Metric): Metric.AsObject;
@@ -95,6 +98,7 @@ export namespace Metric {
     name: string,
     timestampsList: Array<google_protobuf_timestamp_pb.Timestamp.AsObject>,
     datasetsList: Array<MetricDataset.AsObject>,
+    kind: MetricKindMap[keyof MetricKindMap],
   }
 }
 
@@ -205,4 +209,12 @@ export interface AggregationMap {
 }
 
 export const Aggregation: AggregationMap;
+
+export interface MetricKindMap {
+  COUNTER: 0;
+  ABSOLUTE: 1;
+  GAUGE: 2;
+}
+
+export const MetricKind: MetricKindMap;
 

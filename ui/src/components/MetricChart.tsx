@@ -6,7 +6,7 @@ import { TimeUnit } from "chart.js";
 import { Line } from "react-chartjs-2";
 import moment from "moment";
 
-import { Metric, Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import { Metric, Aggregation, MetricKind } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
 interface IProps {
   metric: Metric;
@@ -46,6 +46,7 @@ class MetricChart extends Component<IProps> {
       },
     };
 
+    let prevValue = 0;
     let data = {
       labels: this.props.metric.getTimestampsList().map(v => moment(v.toDate()).valueOf()),
       datasets: this.props.metric.getDatasetsList().map(v => {
@@ -59,15 +60,29 @@ class MetricChart extends Component<IProps> {
             if (v === 0 && this.props.zeroToNull) {
               return null;
             } else {
-              return v;
+              if (this.props.metric.getKind() === MetricKind.COUNTER) {
+                let val = v - prevValue;
+                prevValue = v;
+                if (val < 0) {
+                  return 0;
+                }
+                return val;
+              } else {
+                return v;
+              }
             }
           }),
         };
       }),
     };
 
+    let name = this.props.metric.getName();
+    if (this.props.metric.getKind() === MetricKind.COUNTER) {
+      name = `${name} (per ${unit})`;
+    }
+
     return (
-      <Card title={this.props.metric.getName()} className="dashboard-chart">
+      <Card title={name} className="dashboard-chart">
         <Line height={75} options={options} data={data} />
       </Card>
     );
