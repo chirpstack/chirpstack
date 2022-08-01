@@ -7,7 +7,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::Error;
 
-#[derive(PartialEq, Clone, Copy, Hash, Eq)]
+#[derive(Default, PartialEq, Clone, Copy, Hash, Eq)]
 pub struct NetID([u8; 3]);
 
 impl NetID {
@@ -73,12 +73,6 @@ impl NetID {
         }
 
         out[4 - blen..].to_vec()
-    }
-}
-
-impl Default for NetID {
-    fn default() -> Self {
-        NetID([0, 0, 0])
     }
 }
 

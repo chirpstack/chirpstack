@@ -72,5 +72,5 @@ pub fn get_tx_param_setup_eirp(i: u8) -> Result<f32> {
     EIRP_INDEX
         .get(i as usize)
         .cloned()
-        .ok_or(anyhow!("Index does not exist"))
+        .ok_or_else(|| anyhow!("Index does not exist"))
 }

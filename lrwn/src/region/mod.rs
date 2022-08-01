@@ -472,7 +472,7 @@ impl RegionBaseConfig {
         Ok(self
             .data_rates
             .get(&dr)
-            .ok_or(anyhow!("Unknown data-rate index"))?
+            .ok_or_else(|| anyhow!("Unknown data-rate index"))?
             .modulation
             .clone())
     }
@@ -488,35 +488,38 @@ impl RegionBaseConfig {
             None => self
                 .max_payload_size_per_dr
                 .get(&MacVersion::Latest)
-                .ok_or(anyhow!("Unknown mac-version"))?,
+                .ok_or_else(|| anyhow!("Unknown mac-version"))?,
         };
 
         let dr_map = match reg_params_map.get(&reg_params_revision) {
             Some(v) => v,
             None => reg_params_map
                 .get(&Revision::Latest)
-                .ok_or(anyhow!("Unknown revision"))?,
+                .ok_or_else(|| anyhow!("Unknown revision"))?,
         };
 
-        Ok(dr_map.get(&dr).ok_or(anyhow!("Invalid data-rate"))?.clone())
+        Ok(dr_map
+            .get(&dr)
+            .ok_or_else(|| anyhow!("Invalid data-rate"))?
+            .clone())
     }
 
     fn get_rx1_data_rate_index(&self, uplink_dr: u8, rx1_dr_offset: usize) -> Result<u8> {
         let offset_vec = self
             .rx1_data_rate_table
             .get(&uplink_dr)
-            .ok_or(anyhow!("Unknown data-rate"))?;
+            .ok_or_else(|| anyhow!("Unknown data-rate"))?;
 
         Ok(*offset_vec
             .get(rx1_dr_offset)
-            .ok_or(anyhow!("Invalid rx1 data-rate offset"))?)
+            .ok_or_else(|| anyhow!("Invalid rx1 data-rate offset"))?)
     }
 
     fn get_tx_power_offset(&self, tx_power: usize) -> Result<isize> {
         Ok(*self
             .tx_power_offsets
             .get(tx_power)
-            .ok_or(anyhow!("Invalid tx-power"))?)
+            .ok_or_else(|| anyhow!("Invalid tx-power"))?)
     }
 
     fn add_channel(&mut self, frequency: u32, min_dr: u8, max_dr: u8) -> Result<()> {
@@ -544,7 +547,7 @@ impl RegionBaseConfig {
         Ok(self
             .uplink_channels
             .get(channel)
-            .ok_or(anyhow!("Invalid channel"))?
+            .ok_or_else(|| anyhow!("Invalid channel"))?
             .clone())
     }
 
@@ -589,7 +592,7 @@ impl RegionBaseConfig {
         Ok(self
             .downlink_channels
             .get(channel)
-            .ok_or(anyhow!("Invalid channel"))?
+            .ok_or_else(|| anyhow!("Invalid channel"))?
             .clone())
     }
 
@@ -597,7 +600,7 @@ impl RegionBaseConfig {
         let mut channel = self
             .uplink_channels
             .get_mut(channel)
-            .ok_or(anyhow!("Invalid channel"))?;
+            .ok_or_else(|| anyhow!("Invalid channel"))?;
         channel.enabled = false;
         Ok(())
     }
@@ -606,7 +609,7 @@ impl RegionBaseConfig {
         let mut channel = self
             .uplink_channels
             .get_mut(channel)
-            .ok_or(anyhow!("Invalid channel"))?;
+            .ok_or_else(|| anyhow!("Invalid channel"))?;
         channel.enabled = true;
         Ok(())
     }
