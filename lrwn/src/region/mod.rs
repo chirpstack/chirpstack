@@ -228,12 +228,12 @@ impl FromStr for MacVersion {
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         Ok(match s {
-            "1.0.0" => MacVersion::LORAWAN_1_0_0,
+            "1.0.0" | "1.0" => MacVersion::LORAWAN_1_0_0,
             "1.0.1" => MacVersion::LORAWAN_1_0_1,
             "1.0.2" => MacVersion::LORAWAN_1_0_2,
             "1.0.3" => MacVersion::LORAWAN_1_0_3,
             "1.0.4" => MacVersion::LORAWAN_1_0_4,
-            "1.1.0" => MacVersion::LORAWAN_1_1_0,
+            "1.1.0" | "1.1" => MacVersion::LORAWAN_1_1_0,
             _ => {
                 return Err(anyhow!("Unexpected MacVersion: {}", s));
             }
