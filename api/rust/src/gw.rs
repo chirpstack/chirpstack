@@ -277,3 +277,11 @@ impl DownlinkTxAck {
         }
     }
 }
+
+impl GatewayStats {
+    pub fn v4_migrate(&mut self) {
+        if self.gateway_id.is_empty() {
+            self.gateway_id = hex::encode(&self.gateway_id_legacy);
+        }
+    }
+}

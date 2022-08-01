@@ -328,6 +328,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
                 })
                 .inc();
             let mut event = chirpstack_api::gw::GatewayStats::decode(&mut Cursor::new(b))?;
+            event.v4_migrate();
             event
                 .meta_data
                 .insert("region_name".to_string(), region_name.to_string());
