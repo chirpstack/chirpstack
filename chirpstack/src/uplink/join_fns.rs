@@ -70,8 +70,21 @@ impl JoinRequest {
             home_ns_req.base.transaction_id = 1234;
         }
 
+        let async_receiver = match js_client.is_async() {
+            false => None,
+            true => Some(
+                get_async_receiver(
+                    home_ns_req.base.transaction_id,
+                    js_client.get_async_timeout(),
+                )
+                .await?,
+            ),
+        };
+
         trace!("Requesting home netid");
-        let home_ns_ans = js_client.home_ns_req(&mut home_ns_req, None).await?;
+        let home_ns_ans = js_client
+            .home_ns_req(&mut home_ns_req, async_receiver)
+            .await?;
         self.home_net_id = Some(NetID::from_slice(&home_ns_ans.h_net_id)?);
 
         Ok(())

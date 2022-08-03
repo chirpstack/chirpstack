@@ -12,7 +12,7 @@ use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Certificate, Identity};
 use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot::Receiver;
-use tracing::{error, info, trace};
+use tracing::{debug, error, info, trace};
 
 const PROTOCOL_VERSION: &str = "1.0";
 
@@ -279,13 +279,15 @@ impl Client {
         };
 
         let bp = pl.base_payload();
+        let body = serde_json::to_string(&pl)?;
 
         info!(receiver_id = %hex::encode(&bp.base.receiver_id), transaction_id = bp.base.transaction_id, message_type = ?bp.base.message_type, server = %server, "Making request");
+        debug!("JSON: {}", body);
 
         self.client
             .post(&server)
             .headers(self.headers.clone())
-            .json(pl)
+            .body(body)
             .send()
             .await?
             .error_for_status()?;
@@ -315,14 +317,16 @@ impl Client {
         };
 
         let bp = pl.base_payload().clone();
+        let body = serde_json::to_string(&pl)?;
 
         info!(receiver_id = %hex::encode(&bp.receiver_id), transaction_id = bp.transaction_id, message_type = ?bp.message_type, server = %server, async_interface = %async_resp.is_some(), "Making request");
+        debug!("JSON: {}", body);
 
         let res = self
             .client
             .post(&server)
             .headers(self.headers.clone())
-            .json(pl)
+            .body(body)
             .send()
             .await?
             .error_for_status()?;
@@ -344,6 +348,7 @@ impl Client {
             None => res.text().await?,
         };
 
+        debug!("JSON: {}", resp_json);
         let base: BasePayloadResult = serde_json::from_str(&resp_json)?;
         if base.result.result_code != ResultCode::Success {
             error!(result_code = ?base.result.result_code, description = %base.result.description, receiver_id = %hex::encode(&bp.receiver_id), transaction_id = bp.transaction_id, message_type = ?bp.message_type, "Response error");
@@ -974,7 +979,12 @@ pub struct GWInfoElement {
     pub id: Vec<u8>,
     #[serde(rename = "FineRecvTime")]
     pub fine_recv_time: Option<usize>,
-    #[serde(default, rename = "RFRegion", skip_serializing_if = "String::is_empty")]
+    #[serde(
+        default,
+        rename = "RFRegion",
+        with = "rf_region_encode",
+        skip_serializing_if = "String::is_empty"
+    )]
     pub rf_region: String,
     #[serde(rename = "RSSI")]
     pub rssi: Option<isize>,
@@ -1077,6 +1087,27 @@ pub struct DLMetaData {
     pub gw_info: Vec<GWInfoElement>,
     #[serde(default, rename = "HiPriorityFlag")]
     pub hi_priority_flag: bool,
+}
+
+mod rf_region_encode {
+    use serde::{Deserializer, Serializer};
+
+    pub fn serialize<S>(s: &str, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&s.replace('_', "-"))
+    }
+
+    pub fn deserialize<'a, D>(deserializer: D) -> Result<String, D::Error>
+    where
+        D: Deserializer<'a>,
+    {
+        let s: &str = serde::de::Deserialize::deserialize(deserializer)?;
+
+        // Some implementations use lowercase.
+        Ok(s.to_uppercase())
+    }
 }
 
 mod hex_encode {

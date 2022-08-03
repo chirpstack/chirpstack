@@ -8,7 +8,7 @@ use anyhow::Result;
 use redis::streams::StreamReadReply;
 use tokio::sync::oneshot;
 use tokio::task;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 use uuid::Uuid;
 use warp::{http::StatusCode, Filter, Reply};
 
@@ -68,6 +68,8 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
         let cnt = body.chunk().len();
         body.advance(cnt);
     }
+
+    debug!("JSON: {}", String::from_utf8(b.clone()).unwrap_or_default());
 
     let bp: BasePayload = match serde_json::from_slice(&b) {
         Ok(v) => v,
