@@ -1,0 +1,9 @@
+FROM node:latest
+WORKDIR /app/ui
+COPY /ui .
+COPY /api/grpc-web ../api/grpc-web
+RUN yarn
+RUN yarn build
+
+EXPOSE 3000
+ENTRYPOINT ["node", "index.js"]
