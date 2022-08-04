@@ -3664,6 +3664,8 @@ proto.gw.UplinkRxInfo.toObject = function(includeInstance, msg) {
     fineTimeSinceGpsEpoch: (f = msg.getFineTimeSinceGpsEpoch()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f),
     rssi: msg.getRssi(),
     snr: msg.getSnr(),
+    channel: msg.getChannel(),
+    rfChain: msg.getRfChain(),
     board: msg.getBoard(),
     antenna: msg.getAntenna(),
     location: (f = msg.getLocation()) && common_common_pb.Location.toObject(includeInstance, f),
@@ -3738,22 +3740,30 @@ proto.gw.UplinkRxInfo.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 8:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setBoard(value);
+      msg.setChannel(value);
       break;
     case 9:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setAntenna(value);
+      msg.setRfChain(value);
       break;
     case 10:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setBoard(value);
+      break;
+    case 11:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setAntenna(value);
+      break;
+    case 12:
       var value = new common_common_pb.Location;
       reader.readMessage(value,common_common_pb.Location.deserializeBinaryFromReader);
       msg.setLocation(value);
       break;
-    case 11:
+    case 13:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setContext(value);
       break;
-    case 12:
+    case 14:
       var value = new google_protobuf_struct_pb.Struct;
       reader.readMessage(value,google_protobuf_struct_pb.Struct.deserializeBinaryFromReader);
       msg.setMetadata(value);
@@ -3848,24 +3858,38 @@ proto.gw.UplinkRxInfo.prototype.serializeBinaryToWriter = function (writer) {
       f
     );
   }
-  f = this.getBoard();
+  f = this.getChannel();
   if (f !== 0) {
     writer.writeUint32(
       8,
       f
     );
   }
-  f = this.getAntenna();
+  f = this.getRfChain();
   if (f !== 0) {
     writer.writeUint32(
       9,
       f
     );
   }
+  f = this.getBoard();
+  if (f !== 0) {
+    writer.writeUint32(
+      10,
+      f
+    );
+  }
+  f = this.getAntenna();
+  if (f !== 0) {
+    writer.writeUint32(
+      11,
+      f
+    );
+  }
   f = this.getLocation();
   if (f != null) {
     writer.writeMessage(
-      10,
+      12,
       f,
       common_common_pb.Location.serializeBinaryToWriter
     );
@@ -3873,14 +3897,14 @@ proto.gw.UplinkRxInfo.prototype.serializeBinaryToWriter = function (writer) {
   f = this.getContext_asU8();
   if (f.length > 0) {
     writer.writeBytes(
-      11,
+      13,
       f
     );
   }
   f = this.getMetadata();
   if (f != null) {
     writer.writeMessage(
-      12,
+      14,
       f,
       google_protobuf_struct_pb.Struct.serializeBinaryToWriter
     );
@@ -4048,48 +4072,78 @@ proto.gw.UplinkRxInfo.prototype.setSnr = function(value) {
 
 
 /**
- * optional uint32 board = 8;
+ * optional uint32 channel = 8;
  * @return {number}
  */
-proto.gw.UplinkRxInfo.prototype.getBoard = function() {
+proto.gw.UplinkRxInfo.prototype.getChannel = function() {
   return /** @type {number} */ (jspb.Message.getFieldProto3(this, 8, 0));
 };
 
 
 /** @param {number} value  */
-proto.gw.UplinkRxInfo.prototype.setBoard = function(value) {
+proto.gw.UplinkRxInfo.prototype.setChannel = function(value) {
   jspb.Message.setField(this, 8, value);
 };
 
 
 /**
- * optional uint32 antenna = 9;
+ * optional uint32 rf_chain = 9;
  * @return {number}
  */
-proto.gw.UplinkRxInfo.prototype.getAntenna = function() {
+proto.gw.UplinkRxInfo.prototype.getRfChain = function() {
   return /** @type {number} */ (jspb.Message.getFieldProto3(this, 9, 0));
 };
 
 
 /** @param {number} value  */
-proto.gw.UplinkRxInfo.prototype.setAntenna = function(value) {
+proto.gw.UplinkRxInfo.prototype.setRfChain = function(value) {
   jspb.Message.setField(this, 9, value);
 };
 
 
 /**
- * optional common.Location location = 10;
+ * optional uint32 board = 10;
+ * @return {number}
+ */
+proto.gw.UplinkRxInfo.prototype.getBoard = function() {
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 10, 0));
+};
+
+
+/** @param {number} value  */
+proto.gw.UplinkRxInfo.prototype.setBoard = function(value) {
+  jspb.Message.setField(this, 10, value);
+};
+
+
+/**
+ * optional uint32 antenna = 11;
+ * @return {number}
+ */
+proto.gw.UplinkRxInfo.prototype.getAntenna = function() {
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 11, 0));
+};
+
+
+/** @param {number} value  */
+proto.gw.UplinkRxInfo.prototype.setAntenna = function(value) {
+  jspb.Message.setField(this, 11, value);
+};
+
+
+/**
+ * optional common.Location location = 12;
  * @return {proto.common.Location}
  */
 proto.gw.UplinkRxInfo.prototype.getLocation = function() {
   return /** @type{proto.common.Location} */ (
-    jspb.Message.getWrapperField(this, common_common_pb.Location, 10));
+    jspb.Message.getWrapperField(this, common_common_pb.Location, 12));
 };
 
 
 /** @param {proto.common.Location|undefined} value  */
 proto.gw.UplinkRxInfo.prototype.setLocation = function(value) {
-  jspb.Message.setWrapperField(this, 10, value);
+  jspb.Message.setWrapperField(this, 12, value);
 };
 
 
@@ -4103,21 +4157,21 @@ proto.gw.UplinkRxInfo.prototype.clearLocation = function() {
  * @return{!boolean}
  */
 proto.gw.UplinkRxInfo.prototype.hasLocation = function() {
-  return jspb.Message.getField(this, 10) != null;
+  return jspb.Message.getField(this, 12) != null;
 };
 
 
 /**
- * optional bytes context = 11;
+ * optional bytes context = 13;
  * @return {!(string|Uint8Array)}
  */
 proto.gw.UplinkRxInfo.prototype.getContext = function() {
-  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 11, ""));
+  return /** @type {!(string|Uint8Array)} */ (jspb.Message.getFieldProto3(this, 13, ""));
 };
 
 
 /**
- * optional bytes context = 11;
+ * optional bytes context = 13;
  * This is a type-conversion wrapper around `getContext()`
  * @return {string}
  */
@@ -4128,7 +4182,7 @@ proto.gw.UplinkRxInfo.prototype.getContext_asB64 = function() {
 
 
 /**
- * optional bytes context = 11;
+ * optional bytes context = 13;
  * Note that Uint8Array is not supported on all browsers.
  * @see http://caniuse.com/Uint8Array
  * This is a type-conversion wrapper around `getContext()`
@@ -4142,23 +4196,23 @@ proto.gw.UplinkRxInfo.prototype.getContext_asU8 = function() {
 
 /** @param {!(string|Uint8Array)} value  */
 proto.gw.UplinkRxInfo.prototype.setContext = function(value) {
-  jspb.Message.setField(this, 11, value);
+  jspb.Message.setField(this, 13, value);
 };
 
 
 /**
- * optional google.protobuf.Struct metadata = 12;
+ * optional google.protobuf.Struct metadata = 14;
  * @return {proto.google.protobuf.Struct}
  */
 proto.gw.UplinkRxInfo.prototype.getMetadata = function() {
   return /** @type{proto.google.protobuf.Struct} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Struct, 12));
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Struct, 14));
 };
 
 
 /** @param {proto.google.protobuf.Struct|undefined} value  */
 proto.gw.UplinkRxInfo.prototype.setMetadata = function(value) {
-  jspb.Message.setWrapperField(this, 12, value);
+  jspb.Message.setWrapperField(this, 14, value);
 };
 
 
@@ -4172,7 +4226,7 @@ proto.gw.UplinkRxInfo.prototype.clearMetadata = function() {
  * @return{!boolean}
  */
 proto.gw.UplinkRxInfo.prototype.hasMetadata = function() {
-  return jspb.Message.getField(this, 12) != null;
+  return jspb.Message.getField(this, 14) != null;
 };
 
 

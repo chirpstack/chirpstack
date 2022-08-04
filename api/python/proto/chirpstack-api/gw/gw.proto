@@ -331,21 +331,27 @@ message UplinkRxInfo {
     // Note: only available for LoRa modulation.
     float snr = 7;
 
+    // Channel.
+    uint32 channel = 8;
+
+    // RF chain.
+    uint32 rf_chain = 9;
+
     // Board.
-    uint32 board = 8;
+    uint32 board = 10;
 
     // Antenna.
-    uint32 antenna = 9;
+    uint32 antenna = 11;
 
     // Location.
-    common.Location location = 10;
+    common.Location location = 12;
 
     // Gateway specific context.
     // This value must be returned to the gateway on (Class-A) downlink.
-    bytes context = 11;
+    bytes context = 13;
 
     // Properties.
-    google.protobuf.Struct metadata = 12;
+    google.protobuf.Struct metadata = 14;
 }
 
 message DownlinkTxInfoLegacy {

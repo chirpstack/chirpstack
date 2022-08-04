@@ -121,6 +121,8 @@ impl UplinkFrame {
                     fine_time_since_gps_epoch: None,
                     rssi: rx_info.rssi,
                     snr: rx_info.lora_snr as f32,
+                    channel: rx_info.channel,
+                    rf_chain: rx_info.rf_chain,
                     board: rx_info.board,
                     antenna: rx_info.antenna,
                     location: rx_info.location.clone(),

@@ -513,6 +513,12 @@ export class UplinkRxInfo extends jspb.Message {
   getSnr(): number;
   setSnr(value: number): void;
 
+  getChannel(): number;
+  setChannel(value: number): void;
+
+  getRfChain(): number;
+  setRfChain(value: number): void;
+
   getBoard(): number;
   setBoard(value: number): void;
 
@@ -553,6 +559,8 @@ export namespace UplinkRxInfo {
     fineTimeSinceGpsEpoch?: google_protobuf_duration_pb.Duration.AsObject,
     rssi: number,
     snr: number,
+    channel: number,
+    rfChain: number,
     board: number,
     antenna: number,
     location?: common_common_pb.Location.AsObject,
