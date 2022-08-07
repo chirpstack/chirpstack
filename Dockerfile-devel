@@ -36,5 +36,6 @@ RUN rustup target add aarch64-unknown-linux-gnu
 RUN cargo install diesel_cli --version 2.0.0-rc.1 --no-default-features --features postgres
 RUN cargo install cargo-deb
 RUN cargo install cargo-rpm
+RUN cargo install cargo-bitbake
 
 WORKDIR $PROJECT_PATH/chirpstack
