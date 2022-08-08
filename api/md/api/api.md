@@ -14,6 +14,7 @@
     - [CreateAzureServiceBusIntegrationRequest](#api-CreateAzureServiceBusIntegrationRequest)
     - [CreateGcpPubSubIntegrationRequest](#api-CreateGcpPubSubIntegrationRequest)
     - [CreateHttpIntegrationRequest](#api-CreateHttpIntegrationRequest)
+    - [CreateIftttIntegrationRequest](#api-CreateIftttIntegrationRequest)
     - [CreateInfluxDbIntegrationRequest](#api-CreateInfluxDbIntegrationRequest)
     - [CreateLoraCloudIntegrationRequest](#api-CreateLoraCloudIntegrationRequest)
     - [CreateMyDevicesIntegrationRequest](#api-CreateMyDevicesIntegrationRequest)
@@ -24,6 +25,7 @@
     - [DeleteAzureServiceBusIntegrationRequest](#api-DeleteAzureServiceBusIntegrationRequest)
     - [DeleteGcpPubSubIntegrationRequest](#api-DeleteGcpPubSubIntegrationRequest)
     - [DeleteHttpIntegrationRequest](#api-DeleteHttpIntegrationRequest)
+    - [DeleteIftttIntegrationRequest](#api-DeleteIftttIntegrationRequest)
     - [DeleteInfluxDbIntegrationRequest](#api-DeleteInfluxDbIntegrationRequest)
     - [DeleteLoraCloudIntegrationRequest](#api-DeleteLoraCloudIntegrationRequest)
     - [DeleteMyDevicesIntegrationRequest](#api-DeleteMyDevicesIntegrationRequest)
@@ -42,6 +44,8 @@
     - [GetGcpPubSubIntegrationResponse](#api-GetGcpPubSubIntegrationResponse)
     - [GetHttpIntegrationRequest](#api-GetHttpIntegrationRequest)
     - [GetHttpIntegrationResponse](#api-GetHttpIntegrationResponse)
+    - [GetIftttIntegrationRequest](#api-GetIftttIntegrationRequest)
+    - [GetIftttIntegrationResponse](#api-GetIftttIntegrationResponse)
     - [GetInfluxDbIntegrationRequest](#api-GetInfluxDbIntegrationRequest)
     - [GetInfluxDbIntegrationResponse](#api-GetInfluxDbIntegrationResponse)
     - [GetLoraCloudIntegrationRequest](#api-GetLoraCloudIntegrationRequest)
@@ -54,6 +58,7 @@
     - [GetThingsBoardIntegrationResponse](#api-GetThingsBoardIntegrationResponse)
     - [HttpIntegration](#api-HttpIntegration)
     - [HttpIntegration.HeadersEntry](#api-HttpIntegration-HeadersEntry)
+    - [IftttIntegration](#api-IftttIntegration)
     - [InfluxDbIntegration](#api-InfluxDbIntegration)
     - [IntegrationListItem](#api-IntegrationListItem)
     - [ListApplicationsRequest](#api-ListApplicationsRequest)
@@ -70,6 +75,7 @@
     - [UpdateAzureServiceBusIntegrationRequest](#api-UpdateAzureServiceBusIntegrationRequest)
     - [UpdateGcpPubSubIntegrationRequest](#api-UpdateGcpPubSubIntegrationRequest)
     - [UpdateHttpIntegrationRequest](#api-UpdateHttpIntegrationRequest)
+    - [UpdateIftttIntegrationRequest](#api-UpdateIftttIntegrationRequest)
     - [UpdateInfluxDbIntegrationRequest](#api-UpdateInfluxDbIntegrationRequest)
     - [UpdateLoraCloudIntegrationRequest](#api-UpdateLoraCloudIntegrationRequest)
     - [UpdateMyDevicesIntegrationRequest](#api-UpdateMyDevicesIntegrationRequest)
@@ -97,10 +103,7 @@
     - [DeviceKeys](#api-DeviceKeys)
     - [DeviceListItem](#api-DeviceListItem)
     - [DeviceQueueItem](#api-DeviceQueueItem)
-    - [DeviceStats](#api-DeviceStats)
-    - [DeviceStats.ErrorsEntry](#api-DeviceStats-ErrorsEntry)
-    - [DeviceStats.RxPacketsPerDrEntry](#api-DeviceStats-RxPacketsPerDrEntry)
-    - [DeviceStats.RxPacketsPerFrequencyEntry](#api-DeviceStats-RxPacketsPerFrequencyEntry)
+    - [DeviceState](#api-DeviceState)
     - [DeviceStatus](#api-DeviceStatus)
     - [EnqueueDeviceQueueItemRequest](#api-EnqueueDeviceQueueItemRequest)
     - [EnqueueDeviceQueueItemResponse](#api-EnqueueDeviceQueueItemResponse)
@@ -110,12 +113,16 @@
     - [GetDeviceActivationResponse](#api-GetDeviceActivationResponse)
     - [GetDeviceKeysRequest](#api-GetDeviceKeysRequest)
     - [GetDeviceKeysResponse](#api-GetDeviceKeysResponse)
+    - [GetDeviceLinkMetricsRequest](#api-GetDeviceLinkMetricsRequest)
+    - [GetDeviceLinkMetricsResponse](#api-GetDeviceLinkMetricsResponse)
+    - [GetDeviceMetricsRequest](#api-GetDeviceMetricsRequest)
+    - [GetDeviceMetricsResponse](#api-GetDeviceMetricsResponse)
+    - [GetDeviceMetricsResponse.MetricsEntry](#api-GetDeviceMetricsResponse-MetricsEntry)
+    - [GetDeviceMetricsResponse.StatesEntry](#api-GetDeviceMetricsResponse-StatesEntry)
     - [GetDeviceQueueItemsRequest](#api-GetDeviceQueueItemsRequest)
     - [GetDeviceQueueItemsResponse](#api-GetDeviceQueueItemsResponse)
     - [GetDeviceRequest](#api-GetDeviceRequest)
     - [GetDeviceResponse](#api-GetDeviceResponse)
-    - [GetDeviceStatsRequest](#api-GetDeviceStatsRequest)
-    - [GetDeviceStatsResponse](#api-GetDeviceStatsResponse)
     - [GetRandomDevAddrRequest](#api-GetRandomDevAddrRequest)
     - [GetRandomDevAddrResponse](#api-GetRandomDevAddrResponse)
     - [ListDevicesRequest](#api-ListDevicesRequest)
@@ -131,6 +138,7 @@
     - [CreateDeviceProfileResponse](#api-CreateDeviceProfileResponse)
     - [DeleteDeviceProfileRequest](#api-DeleteDeviceProfileRequest)
     - [DeviceProfile](#api-DeviceProfile)
+    - [DeviceProfile.MeasurementsEntry](#api-DeviceProfile-MeasurementsEntry)
     - [DeviceProfile.TagsEntry](#api-DeviceProfile-TagsEntry)
     - [DeviceProfileListItem](#api-DeviceProfileListItem)
     - [GetDeviceProfileRequest](#api-GetDeviceProfileRequest)
@@ -138,9 +146,11 @@
     - [ListDeviceProfileAdrAlgorithmsResponse](#api-ListDeviceProfileAdrAlgorithmsResponse)
     - [ListDeviceProfilesRequest](#api-ListDeviceProfilesRequest)
     - [ListDeviceProfilesResponse](#api-ListDeviceProfilesResponse)
+    - [Measurement](#api-Measurement)
     - [UpdateDeviceProfileRequest](#api-UpdateDeviceProfileRequest)
   
     - [CodecRuntime](#api-CodecRuntime)
+    - [MeasurementKind](#api-MeasurementKind)
   
     - [DeviceProfileService](#api-DeviceProfileService)
   
@@ -156,18 +166,12 @@
     - [Gateway.TagsEntry](#api-Gateway-TagsEntry)
     - [GatewayListItem](#api-GatewayListItem)
     - [GatewayListItem.PropertiesEntry](#api-GatewayListItem-PropertiesEntry)
-    - [GatewayStats](#api-GatewayStats)
-    - [GatewayStats.RxPacketsPerDrEntry](#api-GatewayStats-RxPacketsPerDrEntry)
-    - [GatewayStats.RxPacketsPerFrequencyEntry](#api-GatewayStats-RxPacketsPerFrequencyEntry)
-    - [GatewayStats.TxPacketsPerDrEntry](#api-GatewayStats-TxPacketsPerDrEntry)
-    - [GatewayStats.TxPacketsPerFrequencyEntry](#api-GatewayStats-TxPacketsPerFrequencyEntry)
-    - [GatewayStats.TxPacketsPerStatusEntry](#api-GatewayStats-TxPacketsPerStatusEntry)
     - [GenerateGatewayClientCertificateRequest](#api-GenerateGatewayClientCertificateRequest)
     - [GenerateGatewayClientCertificateResponse](#api-GenerateGatewayClientCertificateResponse)
+    - [GetGatewayMetricsRequest](#api-GetGatewayMetricsRequest)
+    - [GetGatewayMetricsResponse](#api-GetGatewayMetricsResponse)
     - [GetGatewayRequest](#api-GetGatewayRequest)
     - [GetGatewayResponse](#api-GetGatewayResponse)
-    - [GetGatewayStatsRequest](#api-GetGatewayStatsRequest)
-    - [GetGatewayStatsResponse](#api-GetGatewayStatsResponse)
     - [ListGatewaysRequest](#api-ListGatewaysRequest)
     - [ListGatewaysResponse](#api-ListGatewaysResponse)
     - [UpdateGatewayRequest](#api-UpdateGatewayRequest)
@@ -413,6 +417,21 @@
 
 
 
+<a name="api-CreateIftttIntegrationRequest"></a>
+
+### CreateIftttIntegrationRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| integration | [IftttIntegration](#api-IftttIntegration) |  | Integration object. |
+
+
+
+
+
+
 <a name="api-CreateInfluxDbIntegrationRequest"></a>
 
 ### CreateInfluxDbIntegrationRequest
@@ -557,6 +576,21 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | application_id | [string](#string) |  | Application ID (UUIO). |
+
+
+
+
+
+
+<a name="api-DeleteIftttIntegrationRequest"></a>
+
+### DeleteIftttIntegrationRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -716,6 +750,7 @@
 | application | [Application](#api-Application) |  | Application object. |
 | created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Created at timestamp. |
 | updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last update timestamp. |
+| measurement_keys | [string](#string) | repeated | Measurement keys. This contains the measurement keys from all the device-profiles that are used by the devices under this application. |
 
 
 
@@ -836,6 +871,36 @@
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | integration | [HttpIntegration](#api-HttpIntegration) |  | Integration object. |
+
+
+
+
+
+
+<a name="api-GetIftttIntegrationRequest"></a>
+
+### GetIftttIntegrationRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| application_id | [string](#string) |  | Application ID (UUID). |
+
+
+
+
+
+
+<a name="api-GetIftttIntegrationResponse"></a>
+
+### GetIftttIntegrationResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| integration | [IftttIntegration](#api-IftttIntegration) |  | Integration object. |
 
 
 
@@ -1020,6 +1085,25 @@
 | ----- | ---- | ----- | ----------- |
 | key | [string](#string) |  |  |
 | value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="api-IftttIntegration"></a>
+
+### IftttIntegration
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| application_id | [string](#string) |  | Application ID (UUID). |
+| key | [string](#string) |  | Key. This key can be obtained from the IFTTT Webhooks documentation page. |
+| uplink_values | [string](#string) | repeated | Values. Up to 2 values can be forwarded to IFTTT. These values must map to the decoded payload keys. For example: { &#34;batteryLevel&#34;: 75.3, &#34;buttons&#34;: [{&#34;pressed&#34;: false}, {&#34;pressed&#34;: true}] } You would specify the following fields: uplink_values = [&#34;batteryLevel&#34;, &#34;buttons_0_pressed&#34;]
+
+Note: The first value is always used for the DevEUI. |
 
 
 
@@ -1300,6 +1384,21 @@
 
 
 
+<a name="api-UpdateIftttIntegrationRequest"></a>
+
+### UpdateIftttIntegrationRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| integration | [IftttIntegration](#api-IftttIntegration) |  | Integration object to update. |
+
+
+
+
+
+
 <a name="api-UpdateInfluxDbIntegrationRequest"></a>
 
 ### UpdateInfluxDbIntegrationRequest
@@ -1434,6 +1533,7 @@
 | AZURE_SERVICE_BUS | 7 |  |
 | PILOT_THINGS | 8 |  |
 | MQTT_GLOBAL | 9 |  |
+| IFTTT | 10 |  |
 
 
  
@@ -1490,6 +1590,10 @@ ApplicationService is the service providing API methods for managing application
 | GetPilotThingsIntegration | [GetPilotThingsIntegrationRequest](#api-GetPilotThingsIntegrationRequest) | [GetPilotThingsIntegrationResponse](#api-GetPilotThingsIntegrationResponse) | Get Pilot Things integration. |
 | UpdatePilotThingsIntegration | [UpdatePilotThingsIntegrationRequest](#api-UpdatePilotThingsIntegrationRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Update Pilot Things integration. |
 | DeletePilotThingsIntegration | [DeletePilotThingsIntegrationRequest](#api-DeletePilotThingsIntegrationRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Delete Pilot Things integration. |
+| CreateIftttIntegration | [CreateIftttIntegrationRequest](#api-CreateIftttIntegrationRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Create IFTTT integration. |
+| GetIftttIntegration | [GetIftttIntegrationRequest](#api-GetIftttIntegrationRequest) | [GetIftttIntegrationResponse](#api-GetIftttIntegrationResponse) | Get IFTTT integration. |
+| UpdateIftttIntegration | [UpdateIftttIntegrationRequest](#api-UpdateIftttIntegrationRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Update IFTTT integration. |
+| DeleteIftttIntegration | [DeleteIftttIntegrationRequest](#api-DeleteIftttIntegrationRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Delete IFTTT integration. |
 | GenerateMqttIntegrationClientCertificate | [GenerateMqttIntegrationClientCertificateRequest](#api-GenerateMqttIntegrationClientCertificateRequest) | [GenerateMqttIntegrationClientCertificateResponse](#api-GenerateMqttIntegrationClientCertificateResponse) | Generates application ID specific client-certificate. |
 
  
@@ -1733,69 +1837,16 @@ ApplicationService is the service providing API methods for managing application
 
 
 
-<a name="api-DeviceStats"></a>
+<a name="api-DeviceState"></a>
 
-### DeviceStats
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Timestamp of the (aggregated) measurement. |
-| rx_packets | [uint32](#uint32) |  | Packets received from the device. |
-| gw_rssi | [float](#float) |  | Average RSSI (as reported by the gateway(s)). |
-| gw_snr | [float](#float) |  | Average SNR (as reported by the gateway(s)). |
-| rx_packets_per_frequency | [DeviceStats.RxPacketsPerFrequencyEntry](#api-DeviceStats-RxPacketsPerFrequencyEntry) | repeated | Packets received by frequency. |
-| rx_packets_per_dr | [DeviceStats.RxPacketsPerDrEntry](#api-DeviceStats-RxPacketsPerDrEntry) | repeated | Packets received by DR. |
-| errors | [DeviceStats.ErrorsEntry](#api-DeviceStats-ErrorsEntry) | repeated | Error count. |
-
-
-
-
-
-
-<a name="api-DeviceStats-ErrorsEntry"></a>
-
-### DeviceStats.ErrorsEntry
+### DeviceState
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [uint32](#uint32) |  |  |
-
-
-
-
-
-
-<a name="api-DeviceStats-RxPacketsPerDrEntry"></a>
-
-### DeviceStats.RxPacketsPerDrEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [uint32](#uint32) |  |  |
-| value | [uint32](#uint32) |  |  |
-
-
-
-
-
-
-<a name="api-DeviceStats-RxPacketsPerFrequencyEntry"></a>
-
-### DeviceStats.RxPacketsPerFrequencyEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [uint32](#uint32) |  |  |
-| value | [uint32](#uint32) |  |  |
+| name | [string](#string) |  | Name. |
+| value | [string](#string) |  | Value. |
 
 
 
@@ -1827,7 +1878,7 @@ ApplicationService is the service providing API methods for managing application
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| item | [DeviceQueueItem](#api-DeviceQueueItem) |  |  |
+| queue_item | [DeviceQueueItem](#api-DeviceQueueItem) |  |  |
 
 
 
@@ -1941,6 +1992,110 @@ ApplicationService is the service providing API methods for managing application
 
 
 
+<a name="api-GetDeviceLinkMetricsRequest"></a>
+
+### GetDeviceLinkMetricsRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dev_eui | [string](#string) |  | DevEUI (EUI64). |
+| start | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval start timestamp. |
+| end | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval end timestamp. |
+| aggregation | [common.Aggregation](#common-Aggregation) |  | Aggregation. |
+
+
+
+
+
+
+<a name="api-GetDeviceLinkMetricsResponse"></a>
+
+### GetDeviceLinkMetricsResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| rx_packets | [common.Metric](#common-Metric) |  | Packets received from the device. |
+| gw_rssi | [common.Metric](#common-Metric) |  | RSSI (as reported by the gateway(s)). |
+| gw_snr | [common.Metric](#common-Metric) |  | SNR (as reported by the gateway(s)). |
+| rx_packets_per_freq | [common.Metric](#common-Metric) |  | Packets received by frequency. |
+| rx_packets_per_dr | [common.Metric](#common-Metric) |  | Packets received by DR. |
+| errors | [common.Metric](#common-Metric) |  | Errors. |
+
+
+
+
+
+
+<a name="api-GetDeviceMetricsRequest"></a>
+
+### GetDeviceMetricsRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dev_eui | [string](#string) |  | DevEUI (EUI64). |
+| start | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval start timestamp. |
+| end | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval end timestamp. |
+| aggregation | [common.Aggregation](#common-Aggregation) |  | Aggregation. |
+
+
+
+
+
+
+<a name="api-GetDeviceMetricsResponse"></a>
+
+### GetDeviceMetricsResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| metrics | [GetDeviceMetricsResponse.MetricsEntry](#api-GetDeviceMetricsResponse-MetricsEntry) | repeated |  |
+| states | [GetDeviceMetricsResponse.StatesEntry](#api-GetDeviceMetricsResponse-StatesEntry) | repeated |  |
+
+
+
+
+
+
+<a name="api-GetDeviceMetricsResponse-MetricsEntry"></a>
+
+### GetDeviceMetricsResponse.MetricsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [common.Metric](#common-Metric) |  |  |
+
+
+
+
+
+
+<a name="api-GetDeviceMetricsResponse-StatesEntry"></a>
+
+### GetDeviceMetricsResponse.StatesEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [DeviceState](#api-DeviceState) |  |  |
+
+
+
+
+
+
 <a name="api-GetDeviceQueueItemsRequest"></a>
 
 ### GetDeviceQueueItemsRequest
@@ -2001,38 +2156,6 @@ ApplicationService is the service providing API methods for managing application
 | updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last update timestamp. |
 | last_seen_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last seen at timestamp. |
 | device_status | [DeviceStatus](#api-DeviceStatus) |  | Device status. |
-
-
-
-
-
-
-<a name="api-GetDeviceStatsRequest"></a>
-
-### GetDeviceStatsRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| dev_eui | [string](#string) |  | DevEUI (EUI64). |
-| start | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval start timestamp. |
-| end | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval end timestamp. |
-
-
-
-
-
-
-<a name="api-GetDeviceStatsResponse"></a>
-
-### GetDeviceStatsResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| result | [DeviceStats](#api-DeviceStats) | repeated |  |
 
 
 
@@ -2161,7 +2284,8 @@ DeviceService is the service providing API methods for managing devices.
 | Deactivate | [DeactivateDeviceRequest](#api-DeactivateDeviceRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Deactivate de-activates the device. |
 | GetActivation | [GetDeviceActivationRequest](#api-GetDeviceActivationRequest) | [GetDeviceActivationResponse](#api-GetDeviceActivationResponse) | GetActivation returns the current activation details of the device (OTAA or ABP). |
 | GetRandomDevAddr | [GetRandomDevAddrRequest](#api-GetRandomDevAddrRequest) | [GetRandomDevAddrResponse](#api-GetRandomDevAddrResponse) | GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account. |
-| GetStats | [GetDeviceStatsRequest](#api-GetDeviceStatsRequest) | [GetDeviceStatsResponse](#api-GetDeviceStatsResponse) | GetStats returns the device stats. |
+| GetMetrics | [GetDeviceMetricsRequest](#api-GetDeviceMetricsRequest) | [GetDeviceMetricsResponse](#api-GetDeviceMetricsResponse) | GetMetrics returns the device metrics. Note that this requires a device-profile with codec and measurements configured. |
+| GetLinkMetrics | [GetDeviceLinkMetricsRequest](#api-GetDeviceLinkMetricsRequest) | [GetDeviceLinkMetricsResponse](#api-GetDeviceLinkMetricsResponse) | GetLinkMetrics returns the device link metrics. This includes uplinks, downlinks, RSSI, SNR, etc... |
 | Enqueue | [EnqueueDeviceQueueItemRequest](#api-EnqueueDeviceQueueItemRequest) | [EnqueueDeviceQueueItemResponse](#api-EnqueueDeviceQueueItemResponse) | Enqueue adds the given item to the downlink queue. |
 | FlushQueue | [FlushDeviceQueueRequest](#api-FlushDeviceQueueRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | FlushQueue flushes the downlink device-queue. |
 | GetQueue | [GetDeviceQueueItemsRequest](#api-GetDeviceQueueItemsRequest) | [GetDeviceQueueItemsResponse](#api-GetDeviceQueueItemsResponse) | GetQueue returns the downlink device-queue. |
@@ -2249,6 +2373,7 @@ DeviceService is the service providing API methods for managing devices.
 | id | [string](#string) |  | Device-profile ID (UUID). Note: on create this will be automatically generated. |
 | tenant_id | [string](#string) |  | Tenant ID (UUID). |
 | name | [string](#string) |  | Name. |
+| description | [string](#string) |  | Description. |
 | region | [common.Region](#common-Region) |  | Region. |
 | mac_version | [common.MacVersion](#common-MacVersion) |  | LoRaWAN mac-version. |
 | reg_params_revision | [common.RegParamsRevision](#common-RegParamsRevision) |  | Regional parameters revision. |
@@ -2271,6 +2396,23 @@ DeviceService is the service providing API methods for managing devices.
 | abp_rx2_dr | [uint32](#uint32) |  | RX2 DR (for ABP). |
 | abp_rx2_freq | [uint32](#uint32) |  | RX2 frequency (for ABP, Hz). |
 | tags | [DeviceProfile.TagsEntry](#api-DeviceProfile-TagsEntry) | repeated | User defined tags. |
+| measurements | [DeviceProfile.MeasurementsEntry](#api-DeviceProfile-MeasurementsEntry) | repeated | Measurements. If defined, ChirpStack will visualize these metrics in the web-interface. |
+
+
+
+
+
+
+<a name="api-DeviceProfile-MeasurementsEntry"></a>
+
+### DeviceProfile.MeasurementsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [Measurement](#api-Measurement) |  |  |
 
 
 
@@ -2399,6 +2541,22 @@ DeviceService is the service providing API methods for managing devices.
 
 
 
+<a name="api-Measurement"></a>
+
+### Measurement
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  | Name (user defined). |
+| kind | [MeasurementKind](#api-MeasurementKind) |  | Kind. |
+
+
+
+
+
+
 <a name="api-UpdateDeviceProfileRequest"></a>
 
 ### UpdateDeviceProfileRequest
@@ -2426,6 +2584,21 @@ DeviceService is the service providing API methods for managing devices.
 | NONE | 0 | None. |
 | CAYENNE_LPP | 1 | Cayenne LPP. |
 | JS | 2 | JavaScript. |
+
+
+
+<a name="api-MeasurementKind"></a>
+
+### MeasurementKind
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| UNKNOWN | 0 | Unknown (in which case it is not tracked). |
+| COUNTER | 1 | Incrementing counters that never decrease (these are not reset on each reading). |
+| ABSOLUTE | 2 | Counters that do get reset upon reading. |
+| GAUGE | 3 | E.g. a temperature value. |
+| STRING | 4 | E.g. a firmware version, true / false value. |
 
 
  
@@ -2639,108 +2812,6 @@ DeviceProfileService is the service providing API methods for managing device-pr
 
 
 
-<a name="api-GatewayStats"></a>
-
-### GatewayStats
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Timestamp of the (aggregated) measurement. |
-| rx_packets | [uint32](#uint32) |  | Packets received. |
-| tx_packets | [uint32](#uint32) |  | Packets emitted. |
-| tx_packets_per_frequency | [GatewayStats.TxPacketsPerFrequencyEntry](#api-GatewayStats-TxPacketsPerFrequencyEntry) | repeated | Tx packets per frequency. |
-| rx_packets_per_frequency | [GatewayStats.RxPacketsPerFrequencyEntry](#api-GatewayStats-RxPacketsPerFrequencyEntry) | repeated | Rx packets per frequency. |
-| tx_packets_per_dr | [GatewayStats.TxPacketsPerDrEntry](#api-GatewayStats-TxPacketsPerDrEntry) | repeated | Tx packets per DR. |
-| rx_packets_per_dr | [GatewayStats.RxPacketsPerDrEntry](#api-GatewayStats-RxPacketsPerDrEntry) | repeated | Rx packets per DR. |
-| tx_packets_per_status | [GatewayStats.TxPacketsPerStatusEntry](#api-GatewayStats-TxPacketsPerStatusEntry) | repeated | Tx packets per status. |
-
-
-
-
-
-
-<a name="api-GatewayStats-RxPacketsPerDrEntry"></a>
-
-### GatewayStats.RxPacketsPerDrEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [uint32](#uint32) |  |  |
-| value | [uint32](#uint32) |  |  |
-
-
-
-
-
-
-<a name="api-GatewayStats-RxPacketsPerFrequencyEntry"></a>
-
-### GatewayStats.RxPacketsPerFrequencyEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [uint32](#uint32) |  |  |
-| value | [uint32](#uint32) |  |  |
-
-
-
-
-
-
-<a name="api-GatewayStats-TxPacketsPerDrEntry"></a>
-
-### GatewayStats.TxPacketsPerDrEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [uint32](#uint32) |  |  |
-| value | [uint32](#uint32) |  |  |
-
-
-
-
-
-
-<a name="api-GatewayStats-TxPacketsPerFrequencyEntry"></a>
-
-### GatewayStats.TxPacketsPerFrequencyEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [uint32](#uint32) |  |  |
-| value | [uint32](#uint32) |  |  |
-
-
-
-
-
-
-<a name="api-GatewayStats-TxPacketsPerStatusEntry"></a>
-
-### GatewayStats.TxPacketsPerStatusEntry
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| key | [string](#string) |  |  |
-| value | [uint32](#uint32) |  |  |
-
-
-
-
-
-
 <a name="api-GenerateGatewayClientCertificateRequest"></a>
 
 ### GenerateGatewayClientCertificateRequest
@@ -2774,6 +2845,45 @@ DeviceProfileService is the service providing API methods for managing device-pr
 
 
 
+<a name="api-GetGatewayMetricsRequest"></a>
+
+### GetGatewayMetricsRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| gateway_id | [string](#string) |  | Gateway ID (EUI64). |
+| start | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval start timestamp. |
+| end | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval end timestamp. |
+| aggregation | [common.Aggregation](#common-Aggregation) |  | Aggregation. |
+
+
+
+
+
+
+<a name="api-GetGatewayMetricsResponse"></a>
+
+### GetGatewayMetricsResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| rx_packets | [common.Metric](#common-Metric) |  | RX packets. |
+| tx_packets | [common.Metric](#common-Metric) |  | TX packets. |
+| tx_packets_per_freq | [common.Metric](#common-Metric) |  | TX packets / frequency. |
+| rx_packets_per_freq | [common.Metric](#common-Metric) |  | RX packets / frequency. |
+| tx_packets_per_dr | [common.Metric](#common-Metric) |  | TX packets / DR. |
+| rx_packets_per_dr | [common.Metric](#common-Metric) |  | RX packets / DR. |
+| tx_packets_per_status | [common.Metric](#common-Metric) |  | TX packets per status. |
+
+
+
+
+
+
 <a name="api-GetGatewayRequest"></a>
 
 ### GetGatewayRequest
@@ -2801,38 +2911,6 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Created at timestamp. |
 | updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last update timestamp. |
 | last_seen_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last seen at timestamp. |
-
-
-
-
-
-
-<a name="api-GetGatewayStatsRequest"></a>
-
-### GetGatewayStatsRequest
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| gateway_id | [string](#string) |  | Gateway ID (EUI64). |
-| start | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval start timestamp. |
-| end | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Interval end timestamp. |
-
-
-
-
-
-
-<a name="api-GetGatewayStatsResponse"></a>
-
-### GetGatewayStatsResponse
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| result | [GatewayStats](#api-GatewayStats) | repeated |  |
 
 
 
@@ -2907,7 +2985,7 @@ GatewayService is the service providing API methods for managing gateways.
 | Delete | [DeleteGatewayRequest](#api-DeleteGatewayRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Delete deletes the gateway matching the given Gateway ID. |
 | List | [ListGatewaysRequest](#api-ListGatewaysRequest) | [ListGatewaysResponse](#api-ListGatewaysResponse) | Get the list of gateways. |
 | GenerateClientCertificate | [GenerateGatewayClientCertificateRequest](#api-GenerateGatewayClientCertificateRequest) | [GenerateGatewayClientCertificateResponse](#api-GenerateGatewayClientCertificateResponse) | Generate client-certificate for the gateway. |
-| GetStats | [GetGatewayStatsRequest](#api-GetGatewayStatsRequest) | [GetGatewayStatsResponse](#api-GetGatewayStatsResponse) | GetStats returns the gateway stats. |
+| GetMetrics | [GetGatewayMetricsRequest](#api-GetGatewayMetricsRequest) | [GetGatewayMetricsResponse](#api-GetGatewayMetricsResponse) | GetMetrics returns the gateway metrics. |
 
  
 
@@ -2989,7 +3067,7 @@ GatewayService is the service providing API methods for managing gateways.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| multicast_group_queue_item | [MulticastGroupQueueItem](#api-MulticastGroupQueueItem) |  | Multicast queue-item to enqueue. |
+| queue_item | [MulticastGroupQueueItem](#api-MulticastGroupQueueItem) |  | Multicast queue-item to enqueue. |
 
 
 

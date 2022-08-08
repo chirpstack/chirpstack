@@ -1,6 +1,6 @@
 .PHONY: requirements api
 
-all: requirements
+all: requirements api
 
 requirements:
 	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.5.1

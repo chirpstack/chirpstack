@@ -1,4 +1,4 @@
-.PHONY: rust grpc-web go js python
+.PHONY: rust grpc-web go js python md
 
 all:
 	docker-compose up
