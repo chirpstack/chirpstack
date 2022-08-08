@@ -4,7 +4,7 @@ const fs = require('fs')
 const app = express()
 const port = 3000
 
-app.get('/js/*', (req, res) => {
+app.get('/static/js/main.*', (req, res) => {
   fs.readdir(`${__dirname}/build/static/js`, (err, files) => {
     if (err) {
       console.log("Main js bundle not created, check yarn build in Dockerfile")
