@@ -1131,7 +1131,14 @@ impl NewChannelReqPayload {
             freq: {
                 let mut freq_b: [u8; 4] = [0; 4];
                 freq_b[0..3].copy_from_slice(&b[1..4]);
-                u32::from_le_bytes(freq_b) * 100
+                let freq = u32::from_le_bytes(freq_b);
+
+                if freq >= 12000000 {
+                    // 2.4GHz frequency
+                    freq * 200
+                } else {
+                    freq * 100
+                }
             },
             min_dr: b[4] & 0x0f,
             max_dr: (b[4] & 0xf0) >> 4,
@@ -1139,10 +1146,19 @@ impl NewChannelReqPayload {
     }
 
     pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
-        if self.freq / 100 >= (1 << 24) {
+        let mut freq = self.freq;
+
+        // Support LoRaWAN 2.4GHz, in which case the stepping is 200Hz:
+        // See Frequency Encoding in MAC Commands
+        // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
+        if freq >= 2400000000 {
+            freq = freq / 2;
+        }
+
+        if freq / 100 >= (1 << 24) {
             return Err(anyhow!("max freq value is 2^24 - 1"));
         }
-        if self.freq % 100 != 0 {
+        if freq % 100 != 0 {
             return Err(anyhow!("freq must be multiple of 100"));
         }
         if self.min_dr > 15 {
@@ -1154,7 +1170,7 @@ impl NewChannelReqPayload {
 
         let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
         b[0] = self.ch_index;
-        b[1..5].copy_from_slice(&(self.freq / 100).to_le_bytes());
+        b[1..5].copy_from_slice(&(freq / 100).to_le_bytes());
         b[4] = self.min_dr | (self.max_dr << 4);
 
         Ok(b)
@@ -2004,6 +2020,18 @@ mod test {
                     },
                 )]),
                 bytes: vec![0x07, 0x03, 0x01, 0x02, 0x04, 0x5a],
+            },
+            MACTest {
+                uplink: false,
+                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelReq(
+                    NewChannelReqPayload {
+                        ch_index: 3,
+                        freq: 2410_000_000,
+                        max_dr: 5,
+                        min_dr: 0,
+                    },
+                )]),
+                bytes: vec![7, 3, 80, 222, 183, 80],
             },
             MACTest {
                 uplink: true,
