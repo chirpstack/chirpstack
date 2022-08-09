@@ -111,7 +111,8 @@ proto.api.UplinkFrameLog.toObject = function(includeInstance, msg) {
     mType: jspb.Message.getFieldWithDefault(msg, 4, 0),
     devAddr: jspb.Message.getFieldWithDefault(msg, 5, ""),
     devEui: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+    time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    plaintextMacCommands: jspb.Message.getBooleanFieldWithDefault(msg, 8, false)
   };
 
   if (includeInstance) {
@@ -178,6 +179,10 @@ proto.api.UplinkFrameLog.deserializeBinaryFromReader = function(msg, reader) {
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setTime(value);
+      break;
+    case 8:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setPlaintextMacCommands(value);
       break;
     default:
       reader.skipField();
@@ -258,6 +263,13 @@ proto.api.UplinkFrameLog.serializeBinaryToWriter = function(message, writer) {
       7,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getPlaintextMacCommands();
+  if (f) {
+    writer.writeBool(
+      8,
+      f
     );
   }
 };
@@ -471,6 +483,24 @@ proto.api.UplinkFrameLog.prototype.hasTime = function() {
 };
 
 
+/**
+ * optional bool plaintext_mac_commands = 8;
+ * @return {boolean}
+ */
+proto.api.UplinkFrameLog.prototype.getPlaintextMacCommands = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 8, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.UplinkFrameLog} returns this
+ */
+proto.api.UplinkFrameLog.prototype.setPlaintextMacCommands = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 8, value);
+};
+
+
 
 
 
@@ -510,7 +540,8 @@ proto.api.DownlinkFrameLog.toObject = function(includeInstance, msg) {
     gatewayId: jspb.Message.getFieldWithDefault(msg, 5, ""),
     mType: jspb.Message.getFieldWithDefault(msg, 6, 0),
     devAddr: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    devEui: jspb.Message.getFieldWithDefault(msg, 8, "")
+    devEui: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    plaintextMacCommands: jspb.Message.getBooleanFieldWithDefault(msg, 9, false)
   };
 
   if (includeInstance) {
@@ -580,6 +611,10 @@ proto.api.DownlinkFrameLog.deserializeBinaryFromReader = function(msg, reader) {
     case 8:
       var value = /** @type {string} */ (reader.readString());
       msg.setDevEui(value);
+      break;
+    case 9:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setPlaintextMacCommands(value);
       break;
     default:
       reader.skipField();
@@ -665,6 +700,13 @@ proto.api.DownlinkFrameLog.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       8,
+      f
+    );
+  }
+  f = message.getPlaintextMacCommands();
+  if (f) {
+    writer.writeBool(
+      9,
       f
     );
   }
@@ -874,6 +916,24 @@ proto.api.DownlinkFrameLog.prototype.getDevEui = function() {
  */
 proto.api.DownlinkFrameLog.prototype.setDevEui = function(value) {
   return jspb.Message.setProto3StringField(this, 8, value);
+};
+
+
+/**
+ * optional bool plaintext_mac_commands = 9;
+ * @return {boolean}
+ */
+proto.api.DownlinkFrameLog.prototype.getPlaintextMacCommands = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 9, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.DownlinkFrameLog} returns this
+ */
+proto.api.DownlinkFrameLog.prototype.setPlaintextMacCommands = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 9, value);
 };
 
 

@@ -35,6 +35,9 @@ export class UplinkFrameLog extends jspb.Message {
   hasTime(): boolean;
   clearTime(): UplinkFrameLog;
 
+  getPlaintextMacCommands(): boolean;
+  setPlaintextMacCommands(value: boolean): UplinkFrameLog;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UplinkFrameLog.AsObject;
   static toObject(includeInstance: boolean, msg: UplinkFrameLog): UplinkFrameLog.AsObject;
@@ -52,6 +55,7 @@ export namespace UplinkFrameLog {
     devAddr: string,
     devEui: string,
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    plaintextMacCommands: boolean,
   }
 }
 
@@ -86,6 +90,9 @@ export class DownlinkFrameLog extends jspb.Message {
   getDevEui(): string;
   setDevEui(value: string): DownlinkFrameLog;
 
+  getPlaintextMacCommands(): boolean;
+  setPlaintextMacCommands(value: boolean): DownlinkFrameLog;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DownlinkFrameLog.AsObject;
   static toObject(includeInstance: boolean, msg: DownlinkFrameLog): DownlinkFrameLog.AsObject;
@@ -104,6 +111,7 @@ export namespace DownlinkFrameLog {
     mType: common_common_pb.MType,
     devAddr: string,
     devEui: string,
+    plaintextMacCommands: boolean,
   }
 }
 

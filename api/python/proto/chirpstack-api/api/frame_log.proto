@@ -32,6 +32,9 @@ message UplinkFrameLog {
 
     // Time.
     google.protobuf.Timestamp time = 7;
+
+    // Plaintext mac-commands.
+    bool plaintext_mac_commands = 8;
 }
 
 message DownlinkFrameLog {
@@ -58,4 +61,7 @@ message DownlinkFrameLog {
 
     // Device EUI (optional).
     string dev_eui = 8;
+
+    // Plaintext mac-commands.
+    bool plaintext_mac_commands = 9;
 }

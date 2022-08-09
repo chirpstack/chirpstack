@@ -2647,6 +2647,7 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | m_type | [common.MType](#common-MType) |  | Message type. |
 | dev_addr | [string](#string) |  | Device address (optional). |
 | dev_eui | [string](#string) |  | Device EUI (optional). |
+| plaintext_mac_commands | [bool](#bool) |  | Plaintext mac-commands. |
 
 
 
@@ -2668,6 +2669,7 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | dev_addr | [string](#string) |  | Device address (optional). |
 | dev_eui | [string](#string) |  | Device EUI (optional). |
 | time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Time. |
+| plaintext_mac_commands | [bool](#bool) |  | Plaintext mac-commands. |
 
 
 
