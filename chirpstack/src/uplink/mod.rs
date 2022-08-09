@@ -74,6 +74,7 @@ impl TryFrom<&UplinkFrameSet> for api::UplinkFrameLog {
                 _ => "".to_string(),
             },
             time: None, // is set below
+            plaintext_mac_commands: false,
         };
 
         for rx_info in &ufl.rx_info {

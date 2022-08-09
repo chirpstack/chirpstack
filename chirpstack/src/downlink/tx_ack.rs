@@ -415,6 +415,7 @@ impl TxAck {
                     "".to_string()
                 }
             },
+            plaintext_mac_commands: false,
         };
 
         // Log for gateway (with potentially encrypted mac-commands).
@@ -451,6 +452,7 @@ impl TxAck {
             m_type: dfl.m_type,
             dev_addr: dfl.dev_addr.clone(),
             dev_eui: dfl.dev_eui.clone(),
+            plaintext_mac_commands: true,
         };
 
         // Log for device.

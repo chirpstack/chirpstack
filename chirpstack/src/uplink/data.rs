@@ -442,6 +442,7 @@ impl Data {
         trace!("Logging uplink frame-set");
         let mut ufl: api::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
         ufl.dev_eui = self.device.as_ref().unwrap().dev_eui.to_string();
+        ufl.plaintext_mac_commands = true;
         framelog::log_uplink_for_device(&ufl).await?;
         Ok(())
     }

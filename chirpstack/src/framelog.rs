@@ -40,6 +40,7 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
                     dev_addr: ufl.dev_addr.clone(),
                     dev_eui: ufl.dev_eui.clone(),
                     time: ufl.time.clone(),
+                    plaintext_mac_commands: ufl.plaintext_mac_commands,
                 };
 
                 let b = ufl_copy.encode_to_vec();
@@ -268,71 +269,90 @@ pub async fn get_frame_logs(
                     for stream_id in &stream_key.ids {
                         last_id = stream_id.id.clone();
                         for (k, v) in &stream_id.map {
-                            match k.as_ref() {
-                                "up" => {
-                                    trace!(key = %k, id = %last_id, "Frame-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = api::UplinkFrameLog::decode(&mut Cursor::new(b))?;
-                                        let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
-                                        phy.decode_f_opts_to_mac_commands()?;
+                            let res = || -> Result<()> {
+                                match k.as_ref() {
+                                    "up" => {
+                                        trace!(key = %k, id = %last_id, "Frame-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = api::UplinkFrameLog::decode(&mut Cursor::new(b))?;
+                                            let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
+                                            if pl.plaintext_mac_commands {
+                                                phy.decode_f_opts_to_mac_commands()?;
+                                            }
 
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.clone(),
-                                            description: pl.m_type().into(),
-                                            body: json!({
-                                                "phy_payload": phy,
-                                                "tx_info": pl.tx_info,
-                                                "rx_info": pl.rx_info,
-                                            })
-                                            .to_string(),
-                                            properties: [
-                                                ("DevAddr".to_string(), pl.dev_addr),
-                                                ("DevEUI".to_string(), pl.dev_eui),
-                                            ]
-                                            .iter()
-                                            .cloned()
-                                            .collect(),
-                                        };
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.clone(),
+                                                description: pl.m_type().into(),
+                                                body: json!({
+                                                    "phy_payload": phy,
+                                                    "tx_info": pl.tx_info,
+                                                    "rx_info": pl.rx_info,
+                                                })
+                                                .to_string(),
+                                                properties: [
+                                                    ("DevAddr".to_string(), pl.dev_addr),
+                                                    ("DevEUI".to_string(), pl.dev_eui),
+                                                ]
+                                                .iter()
+                                                .cloned()
+                                                .collect(),
+                                            };
+
+                                            if let Err(e) = channel.blocking_send(pl) {
+                                                return Err(anyhow::Error::new(e));
+                                            }
                                         }
                                     }
-                                }
-                                "down" => {
-                                    trace!(key = %k, id = %last_id, "frame-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = api::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
-                                        let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
-                                        phy.decode_f_opts_to_mac_commands()?;
+                                    "down" => {
+                                        trace!(key = %k, id = %last_id, "frame-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = api::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
+                                            let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
+                                            if pl.plaintext_mac_commands {
+                                                phy.decode_f_opts_to_mac_commands()?;
+                                            }
 
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.clone(),
-                                            description: pl.m_type().into(),
-                                            body: json!({
-                                                "phy_payload": phy,
-                                                "tx_info": pl.tx_info,
-                                            })
-                                            .to_string(),
-                                            properties: [
-                                                ("DevAddr".to_string(), pl.dev_addr),
-                                                ("DevEUI".to_string(), pl.dev_eui),
-                                                ("Gateway ID".to_string(), pl.gateway_id),
-                                            ]
-                                            .iter()
-                                            .cloned()
-                                            .collect(),
-                                        };
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.clone(),
+                                                description: pl.m_type().into(),
+                                                body: json!({
+                                                    "phy_payload": phy,
+                                                    "tx_info": pl.tx_info,
+                                                })
+                                                .to_string(),
+                                                properties: [
+                                                    ("DevAddr".to_string(), pl.dev_addr),
+                                                    ("DevEUI".to_string(), pl.dev_eui),
+                                                    ("Gateway ID".to_string(), pl.gateway_id),
+                                                ]
+                                                .iter()
+                                                .cloned()
+                                                .collect(),
+                                            };
 
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
+                                            if let Err(e) = channel.blocking_send(pl) {
+                                                return Err(anyhow::Error::new(e));
+                                            }
                                         }
                                     }
+                                    _ => {
+                                        error!(key = %k, "Unexpected key in frame-log stream");
+                                    }
                                 }
-                                _ => {
-                                    error!(key = %k, "Unexpected key in frame-log stream");
+
+                                Ok(())
+                            }();
+
+                            if let Err(e) = res {
+                                // Return in case of channel error, in any other case we just log
+                                // the error.
+                                if let Some(_) = e.downcast_ref::<mpsc::error::SendError<api::LogItem>>() {
+                                    return Err(e);
                                 }
+
+                                error!(key = %k, error = %e, "Parsing frame-log error");
                             }
                         }
                     }
