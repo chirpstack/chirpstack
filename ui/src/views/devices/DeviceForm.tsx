@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Form, Input, Row, Col, Button, Tabs } from "antd";
+import { Form, Input, Row, Col, Button, Tabs, Switch } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -36,6 +36,8 @@ class DeviceForm extends Component<IProps> {
     d.setDescription(v.description);
     d.setDevEui(v.devEui);
     d.setDeviceProfileId(v.deviceProfileId);
+    d.setIsDisabled(v.isDisabled);
+    d.setSkipFcntCheck(v.skipFcntCheck);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -108,6 +110,28 @@ class DeviceForm extends Component<IProps> {
               getOptions={this.getDeviceProfileOptions}
               required
             />
+            <Row gutter={24}>
+              <Col span={12}>
+                <Form.Item
+                  label="Device is disabled"
+                  name="isDisabled"
+                  valuePropName="checked"
+                  tooltip="Received uplink frames and join-requests will be ignored."
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Disable frame-counter validation"
+                  name="skipFcntCheck"
+                  valuePropName="checked"
+                  tooltip="You must re-activate your device before this setting becomes effective. Note that disabling the frame-counter validation will compromise security as it allows replay-attacks."
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
+            </Row>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Tags" key="2">
             <Form.List name="tagsMap">
