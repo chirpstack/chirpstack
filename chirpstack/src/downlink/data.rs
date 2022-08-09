@@ -557,6 +557,19 @@ impl Data {
                 }
             }
 
+            // Encrypt f_opts mac-commands (LoRaWAN 1.1)
+            if !self
+                .device_session
+                .mac_version()
+                .to_string()
+                .starts_with("1.0")
+            {
+                phy.encrypt_f_opts(&lrwn::AES128Key::from_slice(
+                    &self.device_session.nwk_s_enc_key,
+                )?)
+                .context("Encrypt f_opts")?;
+            }
+
             // Set MIC.
             // If this is an ACK, then FCntUp has already been incremented by one. If
             // this is not an ACK, then DownlinkDataMIC will zero out ConfFCnt.

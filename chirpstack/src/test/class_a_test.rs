@@ -2393,14 +2393,14 @@ async fn test_lorawan_11_mac_commands() {
                                 ..Default::default()
                             },
                             f_opts: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::Raw(vec![
-                                2, 20, 1,
+                                85, 88, 242,
                             ])]),
                             ..Default::default()
                         },
                         f_port: None,
                         frm_payload: None,
                     }),
-                    mic: Some([119, 74, 235, 162]),
+                    mic: Some([124, 101, 247, 223]),
                 },
                 lrwn::PhyPayload {
                     mhdr: lrwn::MHDR {
@@ -2417,14 +2417,14 @@ async fn test_lorawan_11_mac_commands() {
                                 ..Default::default()
                             },
                             f_opts: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::Raw(vec![
-                                2, 20, 1,
+                                85, 88, 242,
                             ])]),
                             ..Default::default()
                         },
                         f_port: None,
                         frm_payload: None,
                     }),
-                    mic: Some([119, 74, 235, 162]),
+                    mic: Some([124, 101, 247, 223]),
                 },
             ]),
         ],
@@ -3329,14 +3329,14 @@ async fn test_lorawan_11_device_queue() {
                                     ..Default::default()
                                 },
                                 f_opts: lrwn::MACCommandSet::new(vec![
-                                    lrwn::MACCommand::Raw(vec![2,20,1]),
+                                    lrwn::MACCommand::Raw(vec![85, 88, 242]),
                                 ]),
                                 ..Default::default()
                             },
                             f_port: None,
                             frm_payload: None,
                         }),
-                        mic: Some([183, 102, 104, 194]),
+                        mic: Some([227, 104, 50, 163]),
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -3355,14 +3355,14 @@ async fn test_lorawan_11_device_queue() {
                                     ..Default::default()
                                 },
                                 f_opts: lrwn::MACCommandSet::new(vec![
-                                    lrwn::MACCommand::Raw(vec![2,20,1]),
+                                    lrwn::MACCommand::Raw(vec![85, 88, 242]),
                                 ]),
                                 ..Default::default()
                             },
                             f_port: None,
                             frm_payload: None,
                         }),
-                        mic: Some([183, 102, 104, 194]),
+                        mic: Some([227, 104, 50, 163]),
                     },
                 ]),
             ],
