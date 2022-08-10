@@ -96,13 +96,13 @@ pub fn run() {
   # will generate client certificates which can be used by the gateway for
   # authentication and authorization. The Common Name of the certificate will
   # be set to the Gateway ID.
-  client_cert_lifetime="{{ gateway.client_cert_lifetime }}"
+  ca_key="{{ gateway.ca_key }}"
   ca_cert="{{ gateway.ca_cert }}"
 
   # Certificate lifetime.
   #
   # This defines how long (after generating) the certificate remains valid.
-  ca_key="{{ gateway.ca_key }}"
+  client_cert_lifetime="{{ gateway.client_cert_lifetime }}"
 
 
 # Network related configuration.
@@ -332,6 +332,24 @@ pub fn run() {
 
     # TLS key file (optional)
     tls_key="{{ integration.mqtt.tls_key }}"
+
+
+    # Configuration for MQTT clients.
+    [integration.mqtt.client]
+
+      # CA certificate and key file (optional).
+      #
+      # If setting the CA certificate and key file options, ChirpStack 
+      # will generate client certificates which can be used by the MQTT clients for
+      # authentication and authorization. The Common Name of the certificate will
+      # be set to the ID of the application.
+      ca_key="{{ integration.mqtt.ca_key }}"
+      ca_cert="{{ integration.mqtt.ca_cert }}"
+
+      # Certificate lifetime.
+      #
+      # This defines how long (after generating) the certificate remains valid.
+      client_cert_lifetime="{{ integration.mqtt.client_cert_lifetime }}"
 
 
   # PostgreSQL integration configuration.
