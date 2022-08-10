@@ -667,7 +667,8 @@ impl DeviceService for Device {
                             kind: match v.kind {
                                 fields::MeasurementKind::COUNTER => common::MetricKind::Counter,
                                 fields::MeasurementKind::ABSOLUTE => common::MetricKind::Absolute,
-                                fields::MeasurementKind::GAUGE | _ => common::MetricKind::Gauge,
+                                fields::MeasurementKind::GAUGE => common::MetricKind::Gauge,
+                                _ => common::MetricKind::Gauge,
                             }
                             .into(),
                         },

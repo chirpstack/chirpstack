@@ -311,7 +311,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
             return Ok(());
         }
 
-        let json = payload_is_json(&b);
+        let json = payload_is_json(b);
 
         info!(
             region_name = region_name,
@@ -328,7 +328,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
                 })
                 .inc();
             let mut event = match json {
-                true => serde_json::from_slice(&b)?,
+                true => serde_json::from_slice(b)?,
                 false => chirpstack_api::gw::UplinkFrame::decode(&mut Cursor::new(b))?,
             };
             event.v4_migrate();
@@ -347,7 +347,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
                 })
                 .inc();
             let mut event = match json {
-                true => serde_json::from_slice(&b)?,
+                true => serde_json::from_slice(b)?,
                 false => chirpstack_api::gw::GatewayStats::decode(&mut Cursor::new(b))?,
             };
             event.v4_migrate();
@@ -367,7 +367,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
                 })
                 .inc();
             let mut event = match json {
-                true => serde_json::from_slice(&b)?,
+                true => serde_json::from_slice(b)?,
                 false => chirpstack_api::gw::DownlinkTxAck::decode(&mut Cursor::new(b))?,
             };
             event.v4_migrate();

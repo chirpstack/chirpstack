@@ -348,7 +348,7 @@ pub async fn get_frame_logs(
                             if let Err(e) = res {
                                 // Return in case of channel error, in any other case we just log
                                 // the error.
-                                if let Some(_) = e.downcast_ref::<mpsc::error::SendError<api::LogItem>>() {
+                                if e.downcast_ref::<mpsc::error::SendError<api::LogItem>>().is_some() {
                                     return Err(e);
                                 }
 
