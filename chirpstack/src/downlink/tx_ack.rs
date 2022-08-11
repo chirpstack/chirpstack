@@ -262,7 +262,7 @@ impl TxAck {
 
         let mut ds = self.device_session.as_mut().unwrap();
 
-        if ds.mac_version.to_string().starts_with("1.0") {
+        if ds.mac_version().to_string().starts_with("1.0") {
             ds.n_f_cnt_down += 1;
         } else {
             ds.a_f_cnt_down += 1;
