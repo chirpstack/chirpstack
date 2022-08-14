@@ -106,6 +106,7 @@ async fn test_gateway_filtering() {
 
     let mut rx_info_a = gw::UplinkRxInfo {
         gateway_id: gw_a.gateway_id.to_string(),
+        location: Some(Default::default()),
         ..Default::default()
     };
     rx_info_a.set_metadata_string("region_name", "eu868");
@@ -113,6 +114,7 @@ async fn test_gateway_filtering() {
 
     let mut rx_info_b = gw::UplinkRxInfo {
         gateway_id: gw_b.gateway_id.to_string(),
+        location: Some(Default::default()),
         ..Default::default()
     };
     rx_info_b.set_metadata_string("region_name", "eu868");
@@ -267,6 +269,7 @@ async fn test_lorawan_10() {
 
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
+        location: Some(Default::default()),
         ..Default::default()
     };
     rx_info.set_metadata_string("region_name", "eu868");
@@ -910,6 +913,7 @@ async fn test_lorawan_11() {
 
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
+        location: Some(Default::default()),
         ..Default::default()
     };
     rx_info.set_metadata_string("region_name", "eu868");

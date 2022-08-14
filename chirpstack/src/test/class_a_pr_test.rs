@@ -60,6 +60,12 @@ async fn test_fns_uplink() {
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
         time: Some(recv_time.into()),
+        location: Some(common::Location {
+            latitude: 0.0,
+            longitude: 0.0,
+            altitude: 0.0,
+            ..Default::default()
+        }),
         ..Default::default()
     };
     rx_info.set_metadata_string("region_name", "eu868");

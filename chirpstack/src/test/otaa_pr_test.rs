@@ -67,6 +67,7 @@ async fn test_fns() {
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
         time: Some(recv_time.into()),
+        location: Some(Default::default()),
         ..Default::default()
     };
     rx_info.set_metadata_string("region_name", "eu868");
@@ -327,6 +328,7 @@ async fn test_sns() {
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: "0302030405060708".to_string(),
         time: Some(recv_time.into()),
+        location: Some(Default::default()),
         ..Default::default()
     };
     rx_info.set_metadata_string("region_name", "eu868");

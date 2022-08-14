@@ -318,7 +318,6 @@ async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
             }
         };
 
-        let mut rx_info = rx_info.clone();
         rx_info.location = Some(common::Location {
             latitude: gw_meta.latitude,
             longitude: gw_meta.longitude,
