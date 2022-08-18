@@ -132,6 +132,7 @@ pub struct Gateway {
     pub client_cert_lifetime: Duration,
     pub ca_cert: String,
     pub ca_key: String,
+    pub allow_unknown_gateways: bool,
 }
 
 impl Default for Gateway {
@@ -140,6 +141,7 @@ impl Default for Gateway {
             client_cert_lifetime: Duration::from_secs(60 * 60 * 24 * 365),
             ca_cert: "".to_string(),
             ca_key: "".to_string(),
+            allow_unknown_gateways: false,
         }
     }
 }

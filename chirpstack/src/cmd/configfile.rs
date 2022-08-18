@@ -104,6 +104,12 @@ pub fn run() {
   # This defines how long (after generating) the certificate remains valid.
   client_cert_lifetime="{{ gateway.client_cert_lifetime }}"
 
+  # Allow unknown gateways.
+  #
+  # If set to true, then uplinks received from gateways not configured in
+  # ChirpStack will be allowed.
+  allow_unknown_gateways={{ gateway.allow_unknown_gateways }}
+
 
 # Network related configuration.
 [network]
