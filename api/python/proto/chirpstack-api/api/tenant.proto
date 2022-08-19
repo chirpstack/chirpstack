@@ -192,7 +192,7 @@ message ListTenantsRequest {
 
     // If set, filters the result set to the tenants of the user.
     // Only global API keys are able to filter by this field.
-	string user_id = 4;
+    string user_id = 4;
 }
 
 message ListTenantsResponse {
