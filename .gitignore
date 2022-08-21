@@ -13,11 +13,7 @@
 **/target
 
 # Certificates
-/chirpstack/configuration/certs/*.crt
-/chirpstack/configuration/certs/*.key
-/chirpstack/configuration/certs/*.trust
-/chirpstack/configuration/certs/*.pem
-/chirpstack/configuration/certs/*.csr
+/chirpstack/configuration/certs/*
 /chirpstack/configuration/private_*.toml
 
 # UI

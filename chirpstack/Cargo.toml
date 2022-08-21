@@ -120,13 +120,9 @@ bytes = "1.1"
 assets = [
 	["target/release/chirpstack", "usr/bin/", "755"],
 	["configuration/*.toml", "etc/chirpstack/", "640"],
-	["configuration/certs/*.json", "etc/chirpstack/certs", "640"],
 	["debian/environment.conf", "etc/systemd/system/chirpstack.service.d/environment.conf", "640"],
 ]
 conf-files = [
-	"/etc/chirpstack/certs/ca-config.json",
-	"/etc/chirpstack/certs/ca-csr.json",
-	"/etc/chirpstack/certs/mqtt-server.json",
 	"/etc/chirpstack/chirpstack.toml",
 	"/etc/chirpstack/region_as923.toml",
 	"/etc/chirpstack/region_as923_2.toml",
@@ -156,7 +152,6 @@ conf-files = [
 	"/etc/chirpstack/region_us915_6.toml",
 	"/etc/chirpstack/region_us915_7.toml",
 ]
-depends = "$auto, golang-cfssl"
 suggests = "postgresql, mosquitto, redis"
 maintainer-scripts = "debian/"
 systemd-units = { enable = true }

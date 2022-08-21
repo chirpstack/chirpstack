@@ -97,19 +97,9 @@
   secret="you-must-replace-this"
 
 
-[gateway]
-  client_cert_lifetime="365days"
-  ca_cert="configuration/certs/ca.pem"
-  ca_key="configuration/certs/ca-key.pem"
-
 [integration]
   enabled=["mqtt"]
 
   [integration.mqtt]
     server="tcp://$MQTT_BROKER_HOST:1883/"
     json=true
-
-    [integration.mqtt.client]
-      client_cert_lifetime="365days"
-      ca_cert="configuration/certs/ca.pem"
-      ca_key="configuration/certs/ca-key.pem"
