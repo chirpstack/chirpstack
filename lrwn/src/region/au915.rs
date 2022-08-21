@@ -1107,7 +1107,7 @@ impl Region for Configuration {
             // use the ChMask of the first LinkADRReqPayload, besides
             // turning off all 125 kHz this payload contains the ChMask
             // for the last block of channels.
-            if c > 64 {
+            if c >= 64 {
                 out[0].ch_mask.set(c % 16, true);
                 continue;
             }
@@ -1419,11 +1419,11 @@ pub mod test {
                 expected_uplink_channels: c.get_uplink_channel_indices(),
                 expected_link_adr_req_payloads: vec![],
             },
-            // Only activate 0 - 7.
+            // Only activate 0 - 7 + 64.
             Test {
                 device_channels: c.get_uplink_channel_indices(),
-                enabled_channels: vec![0, 1, 2, 3, 4, 5, 6, 7],
-                expected_uplink_channels: vec![0, 1, 2, 3, 4, 5, 6, 7],
+                enabled_channels: vec![0, 1, 2, 3, 4, 5, 6, 7, 64],
+                expected_uplink_channels: vec![0, 1, 2, 3, 4, 5, 6, 7, 64],
                 expected_link_adr_req_payloads: vec![
                     LinkADRReqPayload {
                         dr: 0,
@@ -1432,7 +1432,10 @@ pub mod test {
                             ch_mask_cntl: 7,
                             nb_rep: 0,
                         },
-                        ch_mask: ChMask::new([false; 16]),
+                        ch_mask: ChMask::new([
+                            true, false, false, false, false, false, false, false, false, false,
+                            false, false, false, false, false, false,
+                        ]),
                     },
                     LinkADRReqPayload {
                         dr: 0,
@@ -1444,6 +1447,42 @@ pub mod test {
                         ch_mask: ChMask::new([
                             true, true, true, true, true, true, true, true, false, false, false,
                             false, false, false, false, false,
+                        ]),
+                    },
+                ],
+            },
+            // Only activate 0 - 15 + 64 & 65.
+            Test {
+                device_channels: c.get_uplink_channel_indices(),
+                enabled_channels: vec![
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 64, 65,
+                ],
+                expected_uplink_channels: vec![
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 64, 65,
+                ],
+                expected_link_adr_req_payloads: vec![
+                    LinkADRReqPayload {
+                        dr: 0,
+                        tx_power: 0,
+                        redundancy: Redundancy {
+                            ch_mask_cntl: 7,
+                            nb_rep: 0,
+                        },
+                        ch_mask: ChMask::new([
+                            true, true, false, false, false, false, false, false, false, false,
+                            false, false, false, false, false, false,
+                        ]),
+                    },
+                    LinkADRReqPayload {
+                        dr: 0,
+                        tx_power: 0,
+                        redundancy: Redundancy {
+                            ch_mask_cntl: 0,
+                            nb_rep: 0,
+                        },
+                        ch_mask: ChMask::new([
+                            true, true, true, true, true, true, true, true, true, true, true, true,
+                            true, true, true, true,
                         ]),
                     },
                 ],
