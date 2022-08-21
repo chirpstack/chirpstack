@@ -120,7 +120,6 @@ bytes = "1.1"
 assets = [
 	["target/release/chirpstack", "usr/bin/", "755"],
 	["configuration/*.toml", "etc/chirpstack/", "640"],
-	["debian/environment.conf", "etc/systemd/system/chirpstack.service.d/environment.conf", "640"],
 ]
 conf-files = [
 	"/etc/chirpstack/chirpstack.toml",
@@ -162,7 +161,6 @@ package = "chirpstack"
 [package.metadata.rpm.files]
 "configuration/" = { path = "/etc/chirpstack/" }
 "chirpstack.service" = { path = "/lib/systemd/system/chirpstack.service" }
-"chirpstack.env" = { path = "/etc/systemd/system/chirpstack.service.d/environment" }
 
 [package.metadata.rpm.cargo]
 buildflags = ["--release"]

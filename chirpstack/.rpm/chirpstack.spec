@@ -23,6 +23,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 rm -rf %{buildroot}
 mkdir -p %{buildroot}
 cp -a * %{buildroot}
+sed -i "s/\$MQTT_BROKER_HOST/localhost/" %{buildroot}/etc/chirpstack/*.toml
+sed -i "s/\$POSTGRESQL_HOST/localhost/" %{buildroot}/etc/chirpstack/*.toml
+sed -i "s/\$REDIS_HOST/localhost/" %{buildroot}/etc/chirpstack/*.toml
 
 %clean
 rm -rf %{buildroot}
@@ -32,4 +35,3 @@ rm -rf %{buildroot}
 %{_bindir}/*
 /lib/systemd/system/chirpstack.service
 %config /etc/chirpstack/*
-%config /etc/systemd/system/chirpstack.service.d/*
