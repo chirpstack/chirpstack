@@ -164,10 +164,6 @@ impl TenantService for Tenant {
             filters.search = Some(req.search.clone());
         }
 
-        if !req.user_id.is_empty() {
-            filters.user_id = Some(user_id);
-        }
-
         match auth_id {
             AuthID::User(id) => {
                 let u = user::get(id).await.map_err(|e| e.status())?;
@@ -177,8 +173,12 @@ impl TenantService for Tenant {
                 }
             }
             AuthID::Key(_) => {
-                // Nothing to do as the validator function already validated that the
+                // Nothing else to do as the validator function already validated that the
                 // API key must be a global admin key.
+
+                if !req.user_id.is_empty() {
+                    filters.user_id = Some(user_id);
+                }
             }
             _ => {
                 // this should never happen
