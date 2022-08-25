@@ -942,7 +942,12 @@ pub struct ULMetaData {
     pub f_ns_ul_token: Vec<u8>,
     #[serde(rename = "RecvTime")]
     pub recv_time: DateTime<Utc>,
-    #[serde(default, rename = "RFRegion", skip_serializing_if = "String::is_empty")]
+    #[serde(
+        default,
+        rename = "RFRegion",
+        with = "rf_region_encode",
+        skip_serializing_if = "String::is_empty"
+    )]
     pub rf_region: String,
     #[serde(rename = "GWCnt")]
     pub gw_cnt: Option<usize>,
