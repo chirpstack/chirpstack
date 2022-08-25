@@ -528,7 +528,11 @@ pub struct BasePayloadResult {
 pub struct ResultPayload {
     #[serde(rename = "ResultCode")]
     pub result_code: ResultCode,
-    #[serde(rename = "Description")]
+    #[serde(
+        default,
+        rename = "Description",
+        skip_serializing_if = "String::is_empty"
+    )]
     pub description: String,
 }
 
