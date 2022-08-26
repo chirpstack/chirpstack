@@ -142,15 +142,15 @@ impl Data {
             ctx.update_device_queue_item().await?;
             ctx.save_downlink_frame().await?;
             if ctx._is_roaming() {
+                ctx.save_device_session().await?;
                 ctx.send_downlink_frame_passive_roaming().await?;
                 ctx.handle_passive_roaming_tx_ack().await?;
             } else {
+                // Some mac-commands set their state (e.g. last requested) to the device-session.
+                ctx.save_device_session().await?;
                 ctx.send_downlink_frame().await?;
             }
         }
-
-        // Some mac-commands set their state (e.g. last requested) to the device-session.
-        ctx.save_device_session().await?;
 
         Ok(())
     }
