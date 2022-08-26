@@ -429,6 +429,18 @@ pub mod test {
         let t_get = get(&t.id).await.unwrap();
         assert_eq!(t, t_get);
 
+        // add tenant user for filter by user_id test
+        let user = create_user().await;
+
+        let tu = TenantUser {
+            tenant_id: t.id,
+            user_id: user.id,
+            is_admin: true,
+            ..Default::default()
+        };
+
+        add_user(tu).await.unwrap();
+
         // get_count and list
         let tests = vec![
             FilterTest {
@@ -480,6 +492,16 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 10,
+            },
+            FilterTest {
+                filter: Filters {
+                    user_id: Some(user.id),
+                    search: None,
+                },
+                ts: vec![&t],
+                count: 1,
+                limit: 10,
+                offset: 0,
             },
         ];
         for tst in tests {

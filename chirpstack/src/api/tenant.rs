@@ -497,6 +497,7 @@ pub mod test {
             search: "update".into(),
             offset: 0,
             limit: 10,
+            user_id: "".into(),
         };
         let mut list_req = Request::new(list_req);
         list_req.extensions_mut().insert(AuthID::User(u.id.clone()));
