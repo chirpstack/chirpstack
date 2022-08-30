@@ -158,7 +158,6 @@ impl TenantService for Tenant {
         let auth_id = request.extensions().get::<AuthID>().unwrap();
         let req = request.get_ref();
         let mut filters = tenant::Filters::default();
-        let user_id = Uuid::from_str(&req.user_id).map_err(|e| e.status())?;
 
         if !req.search.is_empty() {
             filters.search = Some(req.search.clone());
@@ -177,6 +176,7 @@ impl TenantService for Tenant {
                 // API key must be a global admin key.
 
                 if !req.user_id.is_empty() {
+                    let user_id = Uuid::from_str(&req.user_id).map_err(|e| e.status())?;
                     filters.user_id = Some(user_id);
                 }
             }
