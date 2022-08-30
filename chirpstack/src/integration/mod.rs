@@ -62,6 +62,10 @@ pub async fn setup() -> Result<()> {
                     .await
                     .context("Setup AMQP integration")?,
             )),
+            "kafka" => integrations.push(Box::new(
+                kafka::Integration::new(&conf.integration.kafka)
+                    .context("Setup Kafka integration")?,
+            )),
             _ => {
                 return Err(anyhow!("Unexpected integration: {}", name));
             }
