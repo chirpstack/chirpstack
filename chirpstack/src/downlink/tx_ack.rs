@@ -70,7 +70,7 @@ impl TxAck {
         ctx.decode_phy_payload()?;
 
         if ctx.is_error() {
-            if ctx.is_application_payload() {
+            if ctx.is_application_payload() || ctx.is_mac_only_downlink() {
                 ctx.get_device().await?;
                 ctx.get_device_profile().await?;
                 ctx.get_application().await?;
