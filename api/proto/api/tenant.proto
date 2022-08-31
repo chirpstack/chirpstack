@@ -189,6 +189,10 @@ message ListTenantsRequest {
 
     // If set, the given string will be used to search on name.
     string search = 3;
+
+    // If set, filters the result set to the tenants of the user.
+    // Only global API keys are able to filter by this field.
+    string user_id = 4;
 }
 
 message ListTenantsResponse {

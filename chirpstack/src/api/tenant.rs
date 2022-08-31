@@ -172,8 +172,13 @@ impl TenantService for Tenant {
                 }
             }
             AuthID::Key(_) => {
-                // Nothing to do as the validator function already validated that the
+                // Nothing else to do as the validator function already validated that the
                 // API key must be a global admin key.
+
+                if !req.user_id.is_empty() {
+                    let user_id = Uuid::from_str(&req.user_id).map_err(|e| e.status())?;
+                    filters.user_id = Some(user_id);
+                }
             }
             _ => {
                 // this should never happen
@@ -492,6 +497,7 @@ pub mod test {
             search: "update".into(),
             offset: 0,
             limit: 10,
+            user_id: "".into(),
         };
         let mut list_req = Request::new(list_req);
         list_req.extensions_mut().insert(AuthID::User(u.id.clone()));
