@@ -469,6 +469,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 <Select.Option value={Region.AS923_3}>AS923-3</Select.Option>
                 <Select.Option value={Region.AS923_4}>AS923-4</Select.Option>
                 <Select.Option value={Region.AU915}>AU915</Select.Option>
+                <Select.Option value={Region.CN470}>CN470</Select.Option>
                 <Select.Option value={Region.CN779}>CN779</Select.Option>
                 <Select.Option value={Region.EU433}>EU433</Select.Option>
                 <Select.Option value={Region.EU868}>EU868</Select.Option>
