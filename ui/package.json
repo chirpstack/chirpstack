@@ -68,7 +68,7 @@
     "not dead",
     "not op_mini all"
   ],
-  "proxy": "http://127.0.0.1:8080/",
+  "proxy": "http://chirpstack:8080/",
   "devDependencies": {
     "husky": "^7.0.4",
     "prettier": "^2.6.2"

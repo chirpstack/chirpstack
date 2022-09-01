@@ -30,11 +30,11 @@ build-ui:
 
 # Enters the devshell for ChirpStack development.
 devshell:
-	docker-compose run --rm --service-ports chirpstack bash
+	docker-compose run --rm --service-ports --name chirpstack chirpstack bash
 
 # Enters the devshell for ChirpStack UI development.
 devshell-ui:
-	docker-compose run --rm --service-ports chirpstack-ui bash
+	docker-compose run --rm --service-ports --name chirpstack-ui chirpstack-ui bash
 
 # Runs the tests
 test:
