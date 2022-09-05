@@ -823,17 +823,6 @@ impl Data {
     async fn _request_channel_mask_reconfiguration(&mut self) -> Result<()> {
         trace!("Requesting channel-mask reconfiguration");
 
-        // The channel-mask reconfiguration (using LinkADRReq) is incompatible with the
-        // NewChannelReq.
-        for set in &self.mac_commands {
-            for mac in &**set {
-                if let lrwn::MACCommand::NewChannelReq(_) = &mac {
-                    trace!("Skipping channel-mask reconfiguration due to pending NewChannelReq");
-                    return Ok(());
-                }
-            }
-        }
-
         let enabled_uplink_channel_indices: Vec<usize> = self
             .device_session
             .enabled_uplink_channel_indices
