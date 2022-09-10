@@ -34,7 +34,7 @@ class CreateDeviceProfileTemplate extends Component<RouteComponentProps> {
 // - data = Object representing the decoded payload.
 function decodeUplink(input) {
   return {
-    object: {
+    data: {
       temp: 22.5
     }
   };
