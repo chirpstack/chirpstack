@@ -89,9 +89,7 @@ pub async fn struct_to_binary(
     Ok(match codec {
         Codec::NONE => Vec::new(),
         Codec::CAYENNE_LPP => cayenne_lpp::encode(obj).context("CayenneLpp encode")?,
-        Codec::JS => js::encode(f_port, variables, encoder_config, obj)
-            .await
-            .context("JavaScript encoder")?,
+        Codec::JS => js::encode(f_port, variables, encoder_config, obj).await?,
     })
 }
 
