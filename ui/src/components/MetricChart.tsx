@@ -17,10 +17,13 @@ interface IProps {
 class MetricChart extends Component<IProps> {
   render() {
     let unit: TimeUnit = "hour";
+    let tooltipFormat = "LT";
     if (this.props.aggregation === Aggregation.DAY) {
       unit = "day";
+      tooltipFormat = "MMM Do";
     } else if (this.props.aggregation === Aggregation.MONTH) {
       unit = "month";
+      tooltipFormat = "MMM YYYY";
     }
 
     const animation: false = false;
@@ -41,6 +44,7 @@ class MetricChart extends Component<IProps> {
           type: "time" as const,
           time: {
             unit: unit,
+            tooltipFormat: tooltipFormat,
           },
         },
       },
