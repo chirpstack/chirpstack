@@ -11,6 +11,7 @@ use crate::config;
 pub mod mock;
 mod mqtt;
 mod azure;
+mod common;
 
 lazy_static! {
     static ref BACKENDS: RwLock<HashMap<String, Box<dyn GatewayBackend + Sync + Send>>> =
