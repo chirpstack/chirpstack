@@ -233,6 +233,9 @@ export class ListTenantsRequest extends jspb.Message {
   getSearch(): string;
   setSearch(value: string): ListTenantsRequest;
 
+  getUserId(): string;
+  setUserId(value: string): ListTenantsRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListTenantsRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListTenantsRequest): ListTenantsRequest.AsObject;
@@ -246,6 +249,7 @@ export namespace ListTenantsRequest {
     limit: number,
     offset: number,
     search: string,
+    userId: string,
   }
 }
 

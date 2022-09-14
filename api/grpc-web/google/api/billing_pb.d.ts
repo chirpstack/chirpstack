@@ -1,6 +1,5 @@
 import * as jspb from 'google-protobuf'
 
-import * as google_api_metric_pb from '../../google/api/metric_pb';
 
 
 export class Billing extends jspb.Message {

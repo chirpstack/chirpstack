@@ -2110,7 +2110,8 @@ proto.api.ListTenantsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     limit: jspb.Message.getFieldWithDefault(msg, 1, 0),
     offset: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    search: jspb.Message.getFieldWithDefault(msg, 3, "")
+    search: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    userId: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -2159,6 +2160,10 @@ proto.api.ListTenantsRequest.deserializeBinaryFromReader = function(msg, reader)
       var value = /** @type {string} */ (reader.readString());
       msg.setSearch(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setUserId(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2206,6 +2211,13 @@ proto.api.ListTenantsRequest.serializeBinaryToWriter = function(message, writer)
   if (f.length > 0) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = message.getUserId();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
       f
     );
   }
@@ -2263,6 +2275,24 @@ proto.api.ListTenantsRequest.prototype.getSearch = function() {
  */
 proto.api.ListTenantsRequest.prototype.setSearch = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional string user_id = 4;
+ * @return {string}
+ */
+proto.api.ListTenantsRequest.prototype.getUserId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.ListTenantsRequest} returns this
+ */
+proto.api.ListTenantsRequest.prototype.setUserId = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 

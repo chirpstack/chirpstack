@@ -15,8 +15,6 @@ var jspb = require('google-protobuf');
 var goog = jspb;
 var global = Function('return this')();
 
-var google_api_metric_pb = require('../../google/api/metric_pb.js');
-goog.object.extend(proto, google_api_metric_pb);
 goog.exportSymbol('proto.google.api.Billing', null, global);
 goog.exportSymbol('proto.google.api.Billing.BillingDestination', null, global);
 /**

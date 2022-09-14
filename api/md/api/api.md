@@ -3529,6 +3529,7 @@ MulticastGroupService is the service managing multicast-groups.
 | limit | [uint32](#uint32) |  | Max number of tenants to return in the result-set. |
 | offset | [uint32](#uint32) |  | Offset in the result-set (for pagination). |
 | search | [string](#string) |  | If set, the given string will be used to search on name. |
+| user_id | [string](#string) |  | If set, filters the result set to the tenants of the user. Only global API keys are able to filter by this field. |
 
 
 
