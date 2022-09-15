@@ -1,95 +1,138 @@
 use std::str;
 
-use anyhow::Result;
+use anyhow::{Error, Result};
+use async_trait::async_trait;
+use base64::decode;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
 use rdkafka::message::{BorrowedMessage, Message as KafkaMessage};
 use serde_json::Value;
-use tracing::{error, trace};
+use tracing::{error, info, trace};
 
 use lrwn::region::CommonName;
 
+use crate::config::GatewayBackendAzure;
+
 use super::common::message_callback;
-
-pub struct AzureEventHubParameters {
-    event_hub_namespace: String,
-    topic_name: String,
-    share_access_key: String,
-    group_id: String,
-}
-
-impl AzureEventHubParameters {
-    pub fn new(event_hub_namespace: String,
-               topic_name: String,
-               share_access_key: String,
-               group_id: String, ) -> AzureEventHubParameters {
-        return AzureEventHubParameters {
-            event_hub_namespace,
-            topic_name,
-            share_access_key,
-            group_id,
-        };
-    }
-}
+use super::GatewayBackend;
 
 struct AzureKafkaClient {
     consumer: StreamConsumer,
 }
 
+struct MessageProperties {
+    payload: Vec<u8>,
+    region_name: String,
+    topic: String,
+}
+
 pub struct AzureKafkaBackend {}
 
 impl AzureKafkaBackend {
-    pub fn new() -> AzureKafkaBackend {
+    pub async fn new(region_name: &str,
+                     region_common_name: CommonName, conf: &GatewayBackendAzure) -> Result<AzureKafkaBackend> {
         let azure_backend = AzureKafkaBackend {};
-        azure_backend
+        let client = AzureKafkaClient::new(region_name, conf).await.expect("can't init azure client");
+        azure_backend.run_consumer(region_name, region_common_name, client);
+        Ok(azure_backend)
     }
 
-    pub async fn run(&self, parameters: AzureEventHubParameters) {
-        let fetch_thread = tokio::spawn(AzureKafkaBackend::_start_fetch(parameters));
-        fetch_thread.await.unwrap();
-    }
-
-    async fn _start_fetch(parameters: AzureEventHubParameters) {
-        let client = AzureKafkaClient::new(parameters).await.expect("can't init azure client");
-        loop {
-            match client.consumer.recv().await {
-                Err(e) => {
-                    error!("Kafka error: {}", e);
-                }
-                Ok(m) => {
-                    match client.process(&m).await {
+    fn run_consumer(&self, region: &str, region_common_name: CommonName, client: AzureKafkaClient) {
+        tokio::spawn({
+            let region = region.to_string();
+            async move {
+                loop {
+                    match client.consumer.recv().await {
                         Err(e) => {
-                            error!("error when processing message and retrieving payload: {}", e);
+                            error!("Kafka error: {}", e);
                         }
-                        Ok(payload) => {
-                            trace!("payload: '{}'",
-                                     payload);
-                            let msg: Value = serde_json::from_str(payload).expect("");
-                            //TODO
-                            let gateway_id = msg[0]["data"]["systemProperties"]["iothub-connection-device-id"].as_str().expect("can't retrieve gateway id");
-                            let region_name = msg[0]["data"]["properties"]["region"].as_str().expect("can't retrieve region id");
-                            let payload = msg[0]["data"]["body"].as_str().expect("can't retrieve body").as_bytes();
-                            trace!("gateway_id {}, region {}", gateway_id,region_name);
-
-                            let topic = msg[0]["data"]["properties"]["event_type"].as_str().expect("can't retrieve topic");
-                            message_callback(CommonName::EU868, payload, region_name, topic).await;
+                        Ok(m) => {
+                            match client.process(&m).await {
+                                Err(e) => {
+                                    error!("error when processing message and retrieving payload: {}", e);
+                                }
+                                Ok(payload) => {
+                                    let region = region.clone();
+                                    match Self::check_payload_and_callback(payload) {
+                                        Ok(m) => {
+                                            if region == m.region_name {
+                                                let payload_decode_array: &[u8] = &m.payload;
+                                                message_callback(region_common_name, payload_decode_array, m.region_name.as_str(), m.topic.as_str()).await;
+                                                trace!("message has been processed");
+                                            }
+                                            continue;
+                                        }
+                                        Err(err) => {
+                                            error!("Problem processing msg {:?}",err);
+                                            continue;
+                                        }
+                                    }
+                                }
+                            };
                         }
                     };
                 }
-            };
-        }
+            }
+        });
+    }
+
+    fn check_payload_and_callback(payload: &str) -> Result<MessageProperties, Error> {
+        type Err = Error;
+
+        info!("payload: '{}'",payload);
+        let msg: Value = serde_json::from_str(payload).unwrap_or_default();
+        let gateway_id = match msg[0]["data"]["systemProperties"]["iothub-connection-device-id"].as_str() {
+            Some(s) => s,
+            None => ""
+        };
+        let region_name = match msg[0]["data"]["properties"]["region"].as_str() {
+            Some(s) => s,
+            None => return Err(anyhow!("Region does not exist"))
+        };
+        let payload = match msg[0]["data"]["body"].as_str() {
+            Some(s) => s,
+            None => return Err(anyhow!("Payload does not exist"))
+        };
+        let payload = payload.as_bytes();
+        trace!("gateway_id {}, region {}", gateway_id,region_name );
+        let payload_decode = match decode(payload) {
+            Ok(vec) => vec,
+            Err(err) => {
+                return Err(anyhow!("Problem decoding payload in base64: {:?}", err));
+            }
+        };
+        let topic = match msg[0]["data"]["properties"]["event_type"].as_str() {
+            Some(s) => s,
+            None => return Err(anyhow!("Problem retrieving topic"))
+        };
+        Ok(MessageProperties {
+            payload: payload_decode,
+            topic: topic.to_string(),
+            region_name: region_name.to_string(),
+        })
+    }
+}
+
+#[async_trait]
+impl GatewayBackend for AzureKafkaBackend {
+    async fn send_downlink(&self, _df: &chirpstack_api::gw::DownlinkFrame) -> Result<()> {
+        Ok(())
+    }
+
+    async fn send_configuration(&self, _gw_conf: &chirpstack_api::gw::GatewayConfiguration) -> Result<()> {
+        Ok(())
     }
 }
 
 impl AzureKafkaClient {
-    pub async fn new(parameters: AzureEventHubParameters) -> Result<AzureKafkaClient> {
+    pub async fn new(region: &str, parameters: &GatewayBackendAzure) -> Result<AzureKafkaClient> {
         let consumer: StreamConsumer = ClientConfig::new()
             .set("bootstrap.servers", format!("{}.servicebus.windows.net:9093", &parameters.event_hub_namespace))
             .set("security.protocol", "SASL_SSL")
             .set("sasl.mechanisms", "PLAIN")
             .set("sasl.username", "$ConnectionString")
             .set("sasl.password", &parameters.share_access_key)
-            .set("group.id", &parameters.group_id)
+            .set("group.id", region)
             .create()
             .expect("Consumer creation failed");
         consumer.subscribe(&[&parameters.topic_name])
@@ -117,22 +160,30 @@ impl AzureKafkaClient {
     }
 }
 
-
-//payload: '[{"id":"47b0b740-8c32-1d88-b84b-343c765f11d8","topic":"/SUBSCRIPTIONS/D2037D29-C0F0-4E03-8E1E-87A0BFEAF16F/RESOURCEGROUPS/TEST/PROVIDERS/MICROSOFT.DEVICES/IOTHUBS/HIBER-TEST-HUB","subject":"devices/test-cecile","eventType":"Microsoft.Devices.DeviceTelemetry","data":{"properties":{"up":""},"systemProperties":{"iothub-connection-device-id":"test-cecile","iothub-connection-auth-method":"{\"scope\":\"device\",\"type\":\"sas\",\"issuer\":\"iothub\",\"acceptingIpFilterRule\":null}","iothub-connection-auth-generation-id":"637968607726449711","iothub-enqueuedtime":"2022-09-13T13:41:36.7740000Z","iothub-message-source":"Telemetry"},"body":"aGVsbG8="},"dataVersion":"","metadataVersion":"1","eventTime":"2022-09-13T13:41:36.774Z"}]'
-
 #[cfg(test)]
 pub mod test {
     use super::*;
 
     #[test]
-    fn test() {
-        let parsed: Value = serde_json::from_str(r#"
-
-[{"id":"47b0b740-8c32-1d88-b84b-343c765f11d8","topic":"/SUBSCRIPTIONS/D2037D29-C0F0-4E03-8E1E-87A0BFEAF16F/RESOURCEGROUPS/TEST/PROVIDERS/MICROSOFT.DEVICES/IOTHUBS/HIBER-TEST-HUB","subject":"devices/test-cecile","eventType":"Microsoft.Devices.DeviceTelemetry","data":{"properties":{"up":""},"systemProperties":{"iothub-connection-device-id":"test-cecile","iothub-connection-auth-method":"{\"scope\":\"device\",\"type\":\"sas\",\"issuer\":\"iothub\",\"acceptingIpFilterRule\":null}","iothub-connection-auth-generation-id":"637968607726449711","iothub-enqueuedtime":"2022-09-13T13:41:36.7740000Z","iothub-message-source":"Telemetry"},"body":"aGVsbG8="},"dataVersion":"","metadataVersion":"1","eventTime":"2022-09-13T13:41:36.774Z"}]
+    fn test_check_payload_and_callback_ok() {
+        let callback = AzureKafkaBackend::check_payload_and_callback(r#"[{"id":"47b0b740-8c32-1d88-b84b-343c765f11d8","topic":"/SUBSCRIPTIONS/D2037D29-C0F0-4E03-8E1E-87A0BFEAF16F/RESOURCEGROUPS/TEST/PROVIDERS/MICROSOFT.DEVICES/IOTHUBS/HIBER-TEST-HUB","subject":"devices/test-cecile","eventType":"Microsoft.Devices.DeviceTelemetry","data":{"properties":{"event_type":"up","region":"eu868"},"systemProperties":{"iothub-connection-device-id":"test-cecile","iothub-connection-auth-method":"{\"scope\":\"device\",\"type\":\"sas\",\"issuer\":\"iothub\",\"acceptingIpFilterRule\":null}","iothub-connection-auth-generation-id":"637968607726449711","iothub-enqueuedtime":"2022-09-13T13:41:36.7740000Z","iothub-message-source":"Telemetry"},"body":"aGVsbG8="},"dataVersion":"","metadataVersion":"1","eventTime":"2022-09-13T13:41:36.774Z"}]
 "#).unwrap();
-        let gateway_id = parsed[0]["data"]["systemProperties"]["iothub-connection-device-id"].as_str().unwrap();
-        println!("gateway_id {}", gateway_id);
-        assert_eq!(!parsed[0]["data"]["properties"]["up"].is_null(), true);
-        assert_eq!(gateway_id, "test-cecile");
+        assert_eq!(callback.region_name, "eu868");
+        assert_eq!(callback.topic, "up");
+        assert_eq!(callback.payload, decode(b"aGVsbG8=").unwrap());
+    }
+
+    #[test]
+    fn test_check_payload_and_callback_no_region() {
+        let callback_err = AzureKafkaBackend::check_payload_and_callback(r#"[{"id":"47b0b740-8c32-1d88-b84b-343c765f11d8","topic":"/SUBSCRIPTIONS/D2037D29-C0F0-4E03-8E1E-87A0BFEAF16F/RESOURCEGROUPS/TEST/PROVIDERS/MICROSOFT.DEVICES/IOTHUBS/HIBER-TEST-HUB","subject":"devices/test-cecile","eventType":"Microsoft.Devices.DeviceTelemetry","data":{"properties":{"event_type":"up"},"systemProperties":{"iothub-connection-device-id":"test-cecile","iothub-connection-auth-method":"{\"scope\":\"device\",\"type\":\"sas\",\"issuer\":\"iothub\",\"acceptingIpFilterRule\":null}","iothub-connection-auth-generation-id":"637968607726449711","iothub-enqueuedtime":"2022-09-13T13:41:36.7740000Z","iothub-message-source":"Telemetry"},"body":"aGVsbG8="},"dataVersion":"","metadataVersion":"1","eventTime":"2022-09-13T13:41:36.774Z"}]
+"#).err();
+        assert_eq!(callback_err.is_some(), true);
+    }
+
+    #[test]
+    fn test_check_payload_and_callback_no_event_type() {
+        let callback_err = AzureKafkaBackend::check_payload_and_callback(r#"[{"id":"47b0b740-8c32-1d88-b84b-343c765f11d8","topic":"/SUBSCRIPTIONS/D2037D29-C0F0-4E03-8E1E-87A0BFEAF16F/RESOURCEGROUPS/TEST/PROVIDERS/MICROSOFT.DEVICES/IOTHUBS/HIBER-TEST-HUB","subject":"devices/test-cecile","eventType":"Microsoft.Devices.DeviceTelemetry","data":{"properties":{"region":"eu868"},"systemProperties":{"iothub-connection-device-id":"test-cecile","iothub-connection-auth-method":"{\"scope\":\"device\",\"type\":\"sas\",\"issuer\":\"iothub\",\"acceptingIpFilterRule\":null}","iothub-connection-auth-generation-id":"637968607726449711","iothub-enqueuedtime":"2022-09-13T13:41:36.7740000Z","iothub-message-source":"Telemetry"},"body":"aGVsbG8="},"dataVersion":"","metadataVersion":"1","eventTime":"2022-09-13T13:41:36.774Z"}]
+"#).err();
+        assert_eq!(callback_err.is_some(), true);
     }
 }

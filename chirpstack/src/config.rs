@@ -1,13 +1,13 @@
+use std::{env, fs};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use std::{env, fs};
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
+use lrwn::{AES128Key, EUI64, NetID};
 use lrwn::region::CommonName;
-use lrwn::{AES128Key, NetID, EUI64};
 
 lazy_static! {
     static ref CONFIG: Mutex<Arc<Configuration>> = Mutex::new(Arc::new(Default::default()));
@@ -537,6 +537,12 @@ impl Default for Region {
                         clean_session: false,
                         ..Default::default()
                     },
+                    azure: GatewayBackendAzure {
+                        topic_name: "".into(),
+                        share_access_key: "".into(),
+                        event_hub_namespace: "".into(),
+                        ..Default::default()
+                    },
                 },
             },
         }
@@ -606,6 +612,7 @@ pub struct RegionGateway {
 pub struct GatewayBackend {
     pub enabled: String,
     pub mqtt: GatewayBackendMqtt,
+    pub azure: GatewayBackendAzure,
 }
 
 #[derive(Default, Serialize, Deserialize, Clone)]
@@ -622,6 +629,14 @@ pub struct GatewayBackendMqtt {
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,
+}
+
+#[derive(Default, Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct GatewayBackendAzure {
+    pub event_hub_namespace: String,
+    pub topic_name: String,
+    pub share_access_key: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Hash)]

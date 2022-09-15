@@ -180,3 +180,15 @@ pub fn gateway_is_json(gateway_id: &str) -> bool {
     let gw_json_r = GATEWAY_JSON.read().unwrap();
     gw_json_r.get(gateway_id).cloned().unwrap_or(false)
 }
+
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+
+    #[test]
+    fn test_is_json() {
+        let r = payload_is_json(b"{\"phyPayload\":\"ABkCMP7/49dgGQIw/v/j12ChxkpEVts=\",\"txInfo\":{\"frequency\":867500000,\"modulation\":{\"lora\":{\"bandwidth\":125000,\"spreadingFactor\":12,\"codeRate\":\"CR_4_5\"}}},\"rxInfo\":{\"gatewayId\":\"1000000000000009\",\"uplinkId\":64154,\"time\":\"2022-09-15T08:21:25.369388Z\",\"rssi\":-60,\"snr\":5.5,\"channel\":5,\"context\":\"AAAAAA==\"}}");
+        assert_eq!(r, true);
+    }
+}

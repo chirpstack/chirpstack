@@ -40,18 +40,26 @@ pub async fn setup() -> Result<()> {
         info!(
             region_name = %region.name,
             region_common_name = %region.common_name,
+            backend_type = %region.gateway.backend.enabled,
             "Setting up gateway backend for region"
         );
+        if region.gateway.backend.enabled == "azure" {
+            let backend = azure::AzureKafkaBackend::new(
+                &region.name,
+                region.common_name,
+                &region.gateway.backend.azure,
+            ).await.context("New MQTT gateway backend error")?;
 
-        let backend = mqtt::MqttBackend::new(
-            &region.name,
-            region.common_name,
-            &region.gateway.backend.mqtt,
-        )
-        .await
-        .context("New MQTT gateway backend error")?;
-
-        set_backend(&region.name, Box::new(backend)).await;
+            set_backend(&region.name, Box::new(backend)).await;
+        } else {
+            let backend = mqtt::MqttBackend::new(
+                &region.name,
+                region.common_name,
+                &region.gateway.backend.mqtt,
+            ).await
+                .context("New MQTT gateway backend error")?;
+            set_backend(&region.name, Box::new(backend)).await;
+        }
     }
 
     Ok(())
