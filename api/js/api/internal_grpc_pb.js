@@ -5,6 +5,7 @@ var grpc = require('@grpc/grpc-js');
 var api_internal_pb = require('../api/internal_pb.js');
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
+var common_common_pb = require('../common/common_pb.js');
 var api_user_pb = require('../api/user_pb.js');
 
 function serialize_api_CreateApiKeyRequest(arg) {
@@ -84,6 +85,28 @@ function deserialize_api_GetGatewaysSummaryResponse(buffer_arg) {
   return api_internal_pb.GetGatewaysSummaryResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_GetRegionRequest(arg) {
+  if (!(arg instanceof api_internal_pb.GetRegionRequest)) {
+    throw new Error('Expected argument of type api.GetRegionRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetRegionRequest(buffer_arg) {
+  return api_internal_pb.GetRegionRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_GetRegionResponse(arg) {
+  if (!(arg instanceof api_internal_pb.GetRegionResponse)) {
+    throw new Error('Expected argument of type api.GetRegionResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetRegionResponse(buffer_arg) {
+  return api_internal_pb.GetRegionResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_GlobalSearchRequest(arg) {
   if (!(arg instanceof api_internal_pb.GlobalSearchRequest)) {
     throw new Error('Expected argument of type api.GlobalSearchRequest');
@@ -126,6 +149,17 @@ function serialize_api_ListApiKeysResponse(arg) {
 
 function deserialize_api_ListApiKeysResponse(buffer_arg) {
   return api_internal_pb.ListApiKeysResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_ListRegionsResponse(arg) {
+  if (!(arg instanceof api_internal_pb.ListRegionsResponse)) {
+    throw new Error('Expected argument of type api.ListRegionsResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_ListRegionsResponse(buffer_arg) {
+  return api_internal_pb.ListRegionsResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_api_LogItem(arg) {
@@ -407,6 +441,30 @@ streamDeviceEvents: {
     requestDeserialize: deserialize_api_StreamDeviceEventsRequest,
     responseSerialize: serialize_api_LogItem,
     responseDeserialize: deserialize_api_LogItem,
+  },
+  // ListRegions lists the available (configured) regions.
+listRegions: {
+    path: '/api.InternalService/ListRegions',
+    requestStream: false,
+    responseStream: false,
+    requestType: google_protobuf_empty_pb.Empty,
+    responseType: api_internal_pb.ListRegionsResponse,
+    requestSerialize: serialize_google_protobuf_Empty,
+    requestDeserialize: deserialize_google_protobuf_Empty,
+    responseSerialize: serialize_api_ListRegionsResponse,
+    responseDeserialize: deserialize_api_ListRegionsResponse,
+  },
+  // GetRegion returns the region details for the given region.
+getRegion: {
+    path: '/api.InternalService/GetRegion',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_internal_pb.GetRegionRequest,
+    responseType: api_internal_pb.GetRegionResponse,
+    requestSerialize: serialize_api_GetRegionRequest,
+    requestDeserialize: deserialize_api_GetRegionRequest,
+    responseSerialize: serialize_api_GetRegionResponse,
+    responseDeserialize: deserialize_api_GetRegionResponse,
   },
 };
 

@@ -19,9 +19,10 @@ use chirpstack_api::api::internal_service_server::InternalService;
 use super::auth::claims;
 use super::auth::{validator, AuthID};
 use super::error::ToStatus;
+use super::helpers::ToProto;
 use super::{helpers, oidc};
 use crate::storage::{api_key, device, error::Error, gateway, redis_key, search, tenant, user};
-use crate::{config, eventlog, framelog};
+use crate::{config, eventlog, framelog, region};
 use lrwn::EUI64;
 
 pub struct Internal {
@@ -777,5 +778,77 @@ impl InternalService for Internal {
         });
 
         Ok(Response::new(drop_receiver))
+    }
+
+    async fn list_regions(
+        &self,
+        request: Request<()>,
+    ) -> Result<Response<api::ListRegionsResponse>, Status> {
+        self.validator
+            .validate(request.extensions(), validator::ValidateActiveUser::new())
+            .await?;
+
+        let conf = config::get();
+
+        let mut out: api::ListRegionsResponse = Default::default();
+
+        for region_config in &conf.regions {
+            // Check if region is enabled.
+            if !conf.network.enabled_regions.contains(&region_config.name) {
+                continue;
+            }
+
+            out.regions.push(api::RegionListItem {
+                name: region_config.name.clone(),
+                region: region_config.common_name.to_proto().into(),
+            });
+        }
+
+        out.regions.sort_by(|a, b| a.name.cmp(&b.name));
+        Ok(Response::new(out))
+    }
+
+    async fn get_region(
+        &self,
+        request: Request<api::GetRegionRequest>,
+    ) -> Result<Response<api::GetRegionResponse>, Status> {
+        let req = request.get_ref();
+        self.validator
+            .validate(request.extensions(), validator::ValidateActiveUser::new())
+            .await?;
+
+        let conf = config::get();
+        let reg = region::get(&req.name).map_err(|e| e.status())?;
+
+        let mut out = api::GetRegionResponse {
+            ..Default::default()
+        };
+
+        for region_conf in &conf.regions {
+            if req.name == region_conf.name {
+                out.name = region_conf.name.clone();
+                out.region = region_conf.common_name.to_proto().into();
+                out.user_info = region_conf.user_info.clone();
+                out.rx1_delay = region_conf.network.rx1_delay as u32;
+                out.rx1_dr_offset = region_conf.network.rx1_dr_offset as u32;
+                out.rx2_dr = region_conf.network.rx2_dr as u32;
+                out.rx2_frequency = region_conf.network.rx2_frequency as u32;
+                out.class_b_ping_slot_dr = region_conf.network.class_b.ping_slot_dr as u32;
+                out.class_b_ping_slot_frequency = region_conf.network.class_b.ping_slot_frequency;
+            }
+        }
+
+        let enabled_channels = reg.get_enabled_uplink_channel_indices();
+
+        for i in enabled_channels {
+            let ch = reg.get_uplink_channel(i).map_err(|e| e.status())?;
+            out.uplink_channels.push(api::RegionChannel {
+                frequency: ch.frequency,
+                dr_min: ch.min_dr as u32,
+                dr_max: ch.max_dr as u32,
+            });
+        }
+
+        Ok(Response::new(out))
     }
 }

@@ -94,6 +94,20 @@ export class InternalServiceClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<api_internal_pb.LogItem>;
 
+  listRegions(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: api_internal_pb.ListRegionsResponse) => void
+  ): grpcWeb.ClientReadableStream<api_internal_pb.ListRegionsResponse>;
+
+  getRegion(
+    request: api_internal_pb.GetRegionRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.Error,
+               response: api_internal_pb.GetRegionResponse) => void
+  ): grpcWeb.ClientReadableStream<api_internal_pb.GetRegionResponse>;
+
 }
 
 export class InternalServicePromiseClient {
@@ -165,6 +179,16 @@ export class InternalServicePromiseClient {
     request: api_internal_pb.StreamDeviceEventsRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<api_internal_pb.LogItem>;
+
+  listRegions(
+    request: google_protobuf_empty_pb.Empty,
+    metadata?: grpcWeb.Metadata
+  ): Promise<api_internal_pb.ListRegionsResponse>;
+
+  getRegion(
+    request: api_internal_pb.GetRegionRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<api_internal_pb.GetRegionResponse>;
 
 }
 

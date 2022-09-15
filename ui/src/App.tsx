@@ -35,6 +35,10 @@ import ListDeviceProfileTemplates from "./views/device-profile-templates/ListDev
 import EditDeviceProfileTemplate from "./views/device-profile-templates/EditDeviceProfileTemplate";
 import CreateDeviceProfileTemplate from "./views/device-profile-templates/CreateDeviceProfileTemplate";
 
+// regions
+import ListRegions from "./views/regions/ListRegions";
+import RegionDetails from "./views/regions/RegionDetails";
+
 // stores
 import SessionStore from "./stores/SessionStore";
 
@@ -106,6 +110,9 @@ class App extends Component<IProps, IState> {
                         path="/device-profile-templates/:deviceProfileTemplateId([\w-]+)/edit"
                         component={EditDeviceProfileTemplate}
                       />
+
+                      <Route exact path="/regions" component={ListRegions} />
+                      <Route path="/regions/:name(.*)" component={RegionDetails} />
                     </Switch>
                   </Layout.Content>
                 </Layout>

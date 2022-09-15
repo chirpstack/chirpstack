@@ -21,6 +21,8 @@ interface IInternalServiceService extends grpc.ServiceDefinition<grpc.UntypedSer
   streamGatewayFrames: grpc.MethodDefinition<api_internal_pb.StreamGatewayFramesRequest, api_internal_pb.LogItem>;
   streamDeviceFrames: grpc.MethodDefinition<api_internal_pb.StreamDeviceFramesRequest, api_internal_pb.LogItem>;
   streamDeviceEvents: grpc.MethodDefinition<api_internal_pb.StreamDeviceEventsRequest, api_internal_pb.LogItem>;
+  listRegions: grpc.MethodDefinition<google_protobuf_empty_pb.Empty, api_internal_pb.ListRegionsResponse>;
+  getRegion: grpc.MethodDefinition<api_internal_pb.GetRegionRequest, api_internal_pb.GetRegionResponse>;
 }
 
 export const InternalServiceService: IInternalServiceService;
@@ -39,6 +41,8 @@ export interface IInternalServiceServer extends grpc.UntypedServiceImplementatio
   streamGatewayFrames: grpc.handleServerStreamingCall<api_internal_pb.StreamGatewayFramesRequest, api_internal_pb.LogItem>;
   streamDeviceFrames: grpc.handleServerStreamingCall<api_internal_pb.StreamDeviceFramesRequest, api_internal_pb.LogItem>;
   streamDeviceEvents: grpc.handleServerStreamingCall<api_internal_pb.StreamDeviceEventsRequest, api_internal_pb.LogItem>;
+  listRegions: grpc.handleUnaryCall<google_protobuf_empty_pb.Empty, api_internal_pb.ListRegionsResponse>;
+  getRegion: grpc.handleUnaryCall<api_internal_pb.GetRegionRequest, api_internal_pb.GetRegionResponse>;
 }
 
 export class InternalServiceClient extends grpc.Client {
@@ -79,4 +83,10 @@ export class InternalServiceClient extends grpc.Client {
   streamDeviceFrames(argument: api_internal_pb.StreamDeviceFramesRequest, metadata?: grpc.Metadata | null, options?: grpc.CallOptions | null): grpc.ClientReadableStream<api_internal_pb.LogItem>;
   streamDeviceEvents(argument: api_internal_pb.StreamDeviceEventsRequest, metadataOrOptions?: grpc.Metadata | grpc.CallOptions | null): grpc.ClientReadableStream<api_internal_pb.LogItem>;
   streamDeviceEvents(argument: api_internal_pb.StreamDeviceEventsRequest, metadata?: grpc.Metadata | null, options?: grpc.CallOptions | null): grpc.ClientReadableStream<api_internal_pb.LogItem>;
+  listRegions(argument: google_protobuf_empty_pb.Empty, callback: grpc.requestCallback<api_internal_pb.ListRegionsResponse>): grpc.ClientUnaryCall;
+  listRegions(argument: google_protobuf_empty_pb.Empty, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.ListRegionsResponse>): grpc.ClientUnaryCall;
+  listRegions(argument: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.ListRegionsResponse>): grpc.ClientUnaryCall;
+  getRegion(argument: api_internal_pb.GetRegionRequest, callback: grpc.requestCallback<api_internal_pb.GetRegionResponse>): grpc.ClientUnaryCall;
+  getRegion(argument: api_internal_pb.GetRegionRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.GetRegionResponse>): grpc.ClientUnaryCall;
+  getRegion(argument: api_internal_pb.GetRegionRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.GetRegionResponse>): grpc.ClientUnaryCall;
 }

@@ -498,6 +498,7 @@ pub struct Kek {
 pub struct Region {
     pub name: String,
     pub common_name: CommonName,
+    pub user_info: String,
     pub network: RegionNetwork,
     pub gateway: RegionGateway,
 }
@@ -507,6 +508,7 @@ impl Default for Region {
         Region {
             name: "eu868".to_string(),
             common_name: CommonName::EU868,
+            user_info: "".into(),
             network: RegionNetwork {
                 installation_margin: 10.0,
                 rx1_delay: 1,

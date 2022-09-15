@@ -49,6 +49,10 @@ type InternalServiceClient interface {
 	StreamDeviceFrames(ctx context.Context, in *StreamDeviceFramesRequest, opts ...grpc.CallOption) (InternalService_StreamDeviceFramesClient, error)
 	// Stream events for the given Device EUI.
 	StreamDeviceEvents(ctx context.Context, in *StreamDeviceEventsRequest, opts ...grpc.CallOption) (InternalService_StreamDeviceEventsClient, error)
+	// ListRegions lists the available (configured) regions.
+	ListRegions(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListRegionsResponse, error)
+	// GetRegion returns the region details for the given region.
+	GetRegion(ctx context.Context, in *GetRegionRequest, opts ...grpc.CallOption) (*GetRegionResponse, error)
 }
 
 type internalServiceClient struct {
@@ -245,6 +249,24 @@ func (x *internalServiceStreamDeviceEventsClient) Recv() (*LogItem, error) {
 	return m, nil
 }
 
+func (c *internalServiceClient) ListRegions(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListRegionsResponse, error) {
+	out := new(ListRegionsResponse)
+	err := c.cc.Invoke(ctx, "/api.InternalService/ListRegions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *internalServiceClient) GetRegion(ctx context.Context, in *GetRegionRequest, opts ...grpc.CallOption) (*GetRegionResponse, error) {
+	out := new(GetRegionResponse)
+	err := c.cc.Invoke(ctx, "/api.InternalService/GetRegion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // InternalServiceServer is the server API for InternalService service.
 // All implementations must embed UnimplementedInternalServiceServer
 // for forward compatibility
@@ -275,6 +297,10 @@ type InternalServiceServer interface {
 	StreamDeviceFrames(*StreamDeviceFramesRequest, InternalService_StreamDeviceFramesServer) error
 	// Stream events for the given Device EUI.
 	StreamDeviceEvents(*StreamDeviceEventsRequest, InternalService_StreamDeviceEventsServer) error
+	// ListRegions lists the available (configured) regions.
+	ListRegions(context.Context, *emptypb.Empty) (*ListRegionsResponse, error)
+	// GetRegion returns the region details for the given region.
+	GetRegion(context.Context, *GetRegionRequest) (*GetRegionResponse, error)
 	mustEmbedUnimplementedInternalServiceServer()
 }
 
@@ -320,6 +346,12 @@ func (UnimplementedInternalServiceServer) StreamDeviceFrames(*StreamDeviceFrames
 }
 func (UnimplementedInternalServiceServer) StreamDeviceEvents(*StreamDeviceEventsRequest, InternalService_StreamDeviceEventsServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamDeviceEvents not implemented")
+}
+func (UnimplementedInternalServiceServer) ListRegions(context.Context, *emptypb.Empty) (*ListRegionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRegions not implemented")
+}
+func (UnimplementedInternalServiceServer) GetRegion(context.Context, *GetRegionRequest) (*GetRegionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRegion not implemented")
 }
 func (UnimplementedInternalServiceServer) mustEmbedUnimplementedInternalServiceServer() {}
 
@@ -577,6 +609,42 @@ func (x *internalServiceStreamDeviceEventsServer) Send(m *LogItem) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _InternalService_ListRegions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InternalServiceServer).ListRegions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.InternalService/ListRegions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InternalServiceServer).ListRegions(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InternalService_GetRegion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRegionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InternalServiceServer).GetRegion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.InternalService/GetRegion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InternalServiceServer).GetRegion(ctx, req.(*GetRegionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // InternalService_ServiceDesc is the grpc.ServiceDesc for InternalService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -623,6 +691,14 @@ var InternalService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetGatewaysSummary",
 			Handler:    _InternalService_GetGatewaysSummary_Handler,
+		},
+		{
+			MethodName: "ListRegions",
+			Handler:    _InternalService_ListRegions_Handler,
+		},
+		{
+			MethodName: "GetRegion",
+			Handler:    _InternalService_GetRegion_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

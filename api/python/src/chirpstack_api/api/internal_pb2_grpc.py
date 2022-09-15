@@ -81,6 +81,16 @@ class InternalServiceStub(object):
                 request_serializer=chirpstack__api_dot_api_dot_internal__pb2.StreamDeviceEventsRequest.SerializeToString,
                 response_deserializer=chirpstack__api_dot_api_dot_internal__pb2.LogItem.FromString,
                 )
+        self.ListRegions = channel.unary_unary(
+                '/api.InternalService/ListRegions',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_internal__pb2.ListRegionsResponse.FromString,
+                )
+        self.GetRegion = channel.unary_unary(
+                '/api.InternalService/GetRegion',
+                request_serializer=chirpstack__api_dot_api_dot_internal__pb2.GetRegionRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_internal__pb2.GetRegionResponse.FromString,
+                )
 
 
 class InternalServiceServicer(object):
@@ -178,6 +188,20 @@ class InternalServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListRegions(self, request, context):
+        """ListRegions lists the available (configured) regions.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetRegion(self, request, context):
+        """GetRegion returns the region details for the given region.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_InternalServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -245,6 +269,16 @@ def add_InternalServiceServicer_to_server(servicer, server):
                     servicer.StreamDeviceEvents,
                     request_deserializer=chirpstack__api_dot_api_dot_internal__pb2.StreamDeviceEventsRequest.FromString,
                     response_serializer=chirpstack__api_dot_api_dot_internal__pb2.LogItem.SerializeToString,
+            ),
+            'ListRegions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListRegions,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_internal__pb2.ListRegionsResponse.SerializeToString,
+            ),
+            'GetRegion': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetRegion,
+                    request_deserializer=chirpstack__api_dot_api_dot_internal__pb2.GetRegionRequest.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_internal__pb2.GetRegionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -475,5 +509,39 @@ class InternalService(object):
         return grpc.experimental.unary_stream(request, target, '/api.InternalService/StreamDeviceEvents',
             chirpstack__api_dot_api_dot_internal__pb2.StreamDeviceEventsRequest.SerializeToString,
             chirpstack__api_dot_api_dot_internal__pb2.LogItem.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListRegions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.InternalService/ListRegions',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            chirpstack__api_dot_api_dot_internal__pb2.ListRegionsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetRegion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.InternalService/GetRegion',
+            chirpstack__api_dot_api_dot_internal__pb2.GetRegionRequest.SerializeToString,
+            chirpstack__api_dot_api_dot_internal__pb2.GetRegionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

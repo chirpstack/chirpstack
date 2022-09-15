@@ -20,6 +20,8 @@ var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/time
 
 var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js')
 
+var common_common_pb = require('../common/common_pb.js')
+
 var api_user_pb = require('../api/user_pb.js')
 const proto = {};
 proto.api = require('./internal_pb.js');
@@ -1098,6 +1100,166 @@ proto.api.InternalServicePromiseClient.prototype.streamDeviceEvents =
       request,
       metadata || {},
       methodDescriptor_InternalService_StreamDeviceEvents);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.google.protobuf.Empty,
+ *   !proto.api.ListRegionsResponse>}
+ */
+const methodDescriptor_InternalService_ListRegions = new grpc.web.MethodDescriptor(
+  '/api.InternalService/ListRegions',
+  grpc.web.MethodType.UNARY,
+  google_protobuf_empty_pb.Empty,
+  proto.api.ListRegionsResponse,
+  /**
+   * @param {!proto.google.protobuf.Empty} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.ListRegionsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.google.protobuf.Empty,
+ *   !proto.api.ListRegionsResponse>}
+ */
+const methodInfo_InternalService_ListRegions = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.api.ListRegionsResponse,
+  /**
+   * @param {!proto.google.protobuf.Empty} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.ListRegionsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.api.ListRegionsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.api.ListRegionsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.InternalServiceClient.prototype.listRegions =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.InternalService/ListRegions',
+      request,
+      metadata || {},
+      methodDescriptor_InternalService_ListRegions,
+      callback);
+};
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.api.ListRegionsResponse>}
+ *     Promise that resolves to the response
+ */
+proto.api.InternalServicePromiseClient.prototype.listRegions =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.InternalService/ListRegions',
+      request,
+      metadata || {},
+      methodDescriptor_InternalService_ListRegions);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.api.GetRegionRequest,
+ *   !proto.api.GetRegionResponse>}
+ */
+const methodDescriptor_InternalService_GetRegion = new grpc.web.MethodDescriptor(
+  '/api.InternalService/GetRegion',
+  grpc.web.MethodType.UNARY,
+  proto.api.GetRegionRequest,
+  proto.api.GetRegionResponse,
+  /**
+   * @param {!proto.api.GetRegionRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.GetRegionResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.api.GetRegionRequest,
+ *   !proto.api.GetRegionResponse>}
+ */
+const methodInfo_InternalService_GetRegion = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.api.GetRegionResponse,
+  /**
+   * @param {!proto.api.GetRegionRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.GetRegionResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.api.GetRegionRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.api.GetRegionResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.api.GetRegionResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.InternalServiceClient.prototype.getRegion =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.InternalService/GetRegion',
+      request,
+      metadata || {},
+      methodDescriptor_InternalService_GetRegion,
+      callback);
+};
+
+
+/**
+ * @param {!proto.api.GetRegionRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.api.GetRegionResponse>}
+ *     Promise that resolves to the response
+ */
+proto.api.InternalServicePromiseClient.prototype.getRegion =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.InternalService/GetRegion',
+      request,
+      metadata || {},
+      methodDescriptor_InternalService_GetRegion);
 };
 
 

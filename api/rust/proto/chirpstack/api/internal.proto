@@ -9,6 +9,7 @@ option java_outer_classname = "InternalProto";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+import "common/common.proto";
 import "api/user.proto";
 
 // InternalService is the service providing API endpoints for internal usage.
@@ -51,6 +52,12 @@ service InternalService {
 
     // Stream events for the given Device EUI.
     rpc StreamDeviceEvents(StreamDeviceEventsRequest) returns (stream LogItem) {}
+
+    // ListRegions lists the available (configured) regions.
+    rpc ListRegions(google.protobuf.Empty) returns (ListRegionsResponse) {}
+
+    // GetRegion returns the region details for the given region.
+    rpc GetRegion(GetRegionRequest) returns (GetRegionResponse) {}
 }
 
 message ApiKey {
@@ -297,4 +304,65 @@ message StreamDeviceFramesRequest {
 message StreamDeviceEventsRequest {
     // Device EUI.
     string dev_eui = 1;
+}
+
+message ListRegionsResponse {
+    // Configured regions.
+    repeated RegionListItem regions = 1;
+}
+
+message RegionListItem {
+    // Name.
+    string name = 1;
+
+    // Region.
+    common.Region region = 2;
+}
+
+message GetRegionRequest {
+    // Region name.
+    string name = 1;
+}
+
+message GetRegionResponse {
+    // Name.
+    string name = 1;
+
+    // Region.
+    common.Region region = 2;
+
+    // User information.
+    string user_info = 3;
+
+    // Uplink channels.
+    repeated RegionChannel uplink_channels = 4;
+
+    // RX1 delay.
+    uint32 rx1_delay = 5;
+
+    // RX1 data-rate offset.
+    uint32 rx1_dr_offset = 6;
+
+    // RX2 DR.
+    uint32 rx2_dr = 7;
+
+    // RX2 frequency.
+    uint32 rx2_frequency = 8;
+
+    // Class-B ping-slot DR.
+    uint32 class_b_ping_slot_dr = 9;
+
+    // Class-B ping-slot frequency.
+    uint32 class_b_ping_slot_frequency = 10;
+}
+
+message RegionChannel {
+    // Frequency (Hz).
+    uint32 frequency = 1;
+
+    // Min DR.
+    uint32 dr_min = 2;
+
+    // Max DR.
+    uint32 dr_max = 3;
 }
