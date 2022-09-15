@@ -119,7 +119,7 @@ impl<'a> MqttBackend<'a> {
 
             if !conf.ca_cert.is_empty() {
                 ssl_opts_b
-                    .ca_path(&conf.ca_cert)
+                    .trust_store(&conf.ca_cert)
                     .context("Failed to set gateway ca_cert")?;
             }
 

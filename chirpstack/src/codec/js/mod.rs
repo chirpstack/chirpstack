@@ -170,7 +170,11 @@ pub async fn encode(
             }
         }
 
-        let v: Vec<u8> = res.get("bytes")?;
+        // Directly into u8 can result into the following error:
+        // Error converting from js 'float' into type 'i32'
+        let v: Vec<f64> = res.get("bytes")?;
+        let v: Vec<u8> = v.iter().map(|v| *v as u8).collect();
+
         Ok(v)
     })
 }

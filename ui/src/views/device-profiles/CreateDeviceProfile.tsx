@@ -59,7 +59,7 @@ function decodeUplink(input) {
 // - bytes = Byte array containing the downlink payload.
 function encodeDownlink(input) {
   return {
-    data: [225, 230, 255, 0]
+    bytes: [225, 230, 255, 0]
   };
 }
 `;

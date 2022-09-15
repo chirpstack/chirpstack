@@ -89,51 +89,9 @@ pub async fn struct_to_binary(
     Ok(match codec {
         Codec::NONE => Vec::new(),
         Codec::CAYENNE_LPP => cayenne_lpp::encode(obj).context("CayenneLpp encode")?,
-        Codec::JS => js::encode(f_port, variables, encoder_config, obj)
-            .await
-            .context("JavaScript encoder")?,
+        Codec::JS => js::encode(f_port, variables, encoder_config, obj).await?,
     })
 }
-
-/*
-pub fn get_data_keys(s: &pbjson_types::Struct) -> Vec<String> {
-    let mut out: Vec<String> = Vec::new();
-
-    for (k, v) in &s.fields {
-        out.extend_from_slice(&_get_data_keys(k, v));
-    }
-
-    out
-}
-
-fn _get_data_keys(prefix: &str, v: &pbjson_types::Value) -> Vec<String> {
-    match &v.kind {
-        None => vec![prefix.to_string()],
-        Some(v) => match v {
-            pbjson_types::value::Kind::NullValue(_)
-            | pbjson_types::value::Kind::NumberValue(_)
-            | pbjson_types::value::Kind::StringValue(_)
-            | pbjson_types::value::Kind::BoolValue(_) => {
-                vec![prefix.to_string()]
-            }
-            pbjson_types::value::Kind::StructValue(v) => {
-                let mut out: Vec<String> = Vec::new();
-                for (k, v) in &v.fields {
-                    out.extend_from_slice(&_get_data_keys(&format!("{}_{}", prefix, k), v));
-                }
-                out
-            }
-            pbjson_types::value::Kind::ListValue(v) => {
-                let mut out: Vec<String> = Vec::new();
-                for (i, v) in v.values.iter().enumerate() {
-                    out.extend_from_slice(&_get_data_keys(&format!("{}_{}", prefix, i), v));
-                }
-                out
-            }
-        },
-    }
-}
-*/
 
 pub fn get_measurements(s: &pbjson_types::Struct) -> HashMap<String, pbjson_types::value::Kind> {
     let mut out: HashMap<String, pbjson_types::value::Kind> = HashMap::new();

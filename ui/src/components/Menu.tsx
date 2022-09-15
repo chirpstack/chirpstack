@@ -11,6 +11,7 @@ import {
   WifiOutlined,
   ControlOutlined,
   AppstoreOutlined,
+  CompassOutlined,
 } from "@ant-design/icons";
 
 import {
@@ -123,6 +124,10 @@ class SideMenu extends Component<RouteComponentProps, IState> {
       this.setState({ selectedKey: "ns-device-profile-templates" });
     }
 
+    if (/\/regions\/.*/g.exec(path)) {
+      this.setState({ selectedKey: "ns-regions" });
+    }
+
     // tenant dashboard
     if (/\/tenants\/[\w-]{36}/g.exec(path)) {
       this.setState({ selectedKey: "tenant-dashboard" });
@@ -173,6 +178,16 @@ class SideMenu extends Component<RouteComponentProps, IState> {
             icon: <ControlOutlined />,
             label: <Link to="/device-profile-templates">Device-profile templates</Link>,
           },
+          { key: "ns-regions", icon: <CompassOutlined />, label: <Link to="/regions">Regions</Link> },
+        ],
+      });
+    } else {
+      items.push({
+        key: "ns",
+        label: "Network Server",
+        icon: <CloudOutlined />,
+        children: [
+          { key: "ns-regions", icon: <CompassOutlined />, label: <Link to="/regions">Regions</Link> },
         ],
       });
     }

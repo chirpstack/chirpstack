@@ -4,6 +4,7 @@
 import * as jspb from "google-protobuf";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
+import * as common_common_pb from "../common/common_pb";
 import * as api_user_pb from "../api/user_pb";
 
 export class ApiKey extends jspb.Message {
@@ -675,6 +676,158 @@ export class StreamDeviceEventsRequest extends jspb.Message {
 export namespace StreamDeviceEventsRequest {
   export type AsObject = {
     devEui: string,
+  }
+}
+
+export class ListRegionsResponse extends jspb.Message {
+  clearRegionsList(): void;
+  getRegionsList(): Array<RegionListItem>;
+  setRegionsList(value: Array<RegionListItem>): void;
+  addRegions(value?: RegionListItem, index?: number): RegionListItem;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListRegionsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListRegionsResponse): ListRegionsResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ListRegionsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListRegionsResponse;
+  static deserializeBinaryFromReader(message: ListRegionsResponse, reader: jspb.BinaryReader): ListRegionsResponse;
+}
+
+export namespace ListRegionsResponse {
+  export type AsObject = {
+    regionsList: Array<RegionListItem.AsObject>,
+  }
+}
+
+export class RegionListItem extends jspb.Message {
+  getName(): string;
+  setName(value: string): void;
+
+  getRegion(): common_common_pb.RegionMap[keyof common_common_pb.RegionMap];
+  setRegion(value: common_common_pb.RegionMap[keyof common_common_pb.RegionMap]): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RegionListItem.AsObject;
+  static toObject(includeInstance: boolean, msg: RegionListItem): RegionListItem.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: RegionListItem, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RegionListItem;
+  static deserializeBinaryFromReader(message: RegionListItem, reader: jspb.BinaryReader): RegionListItem;
+}
+
+export namespace RegionListItem {
+  export type AsObject = {
+    name: string,
+    region: common_common_pb.RegionMap[keyof common_common_pb.RegionMap],
+  }
+}
+
+export class GetRegionRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetRegionRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetRegionRequest): GetRegionRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: GetRegionRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetRegionRequest;
+  static deserializeBinaryFromReader(message: GetRegionRequest, reader: jspb.BinaryReader): GetRegionRequest;
+}
+
+export namespace GetRegionRequest {
+  export type AsObject = {
+    name: string,
+  }
+}
+
+export class GetRegionResponse extends jspb.Message {
+  getName(): string;
+  setName(value: string): void;
+
+  getRegion(): common_common_pb.RegionMap[keyof common_common_pb.RegionMap];
+  setRegion(value: common_common_pb.RegionMap[keyof common_common_pb.RegionMap]): void;
+
+  getUserInfo(): string;
+  setUserInfo(value: string): void;
+
+  clearUplinkChannelsList(): void;
+  getUplinkChannelsList(): Array<RegionChannel>;
+  setUplinkChannelsList(value: Array<RegionChannel>): void;
+  addUplinkChannels(value?: RegionChannel, index?: number): RegionChannel;
+
+  getRx1Delay(): number;
+  setRx1Delay(value: number): void;
+
+  getRx1DrOffset(): number;
+  setRx1DrOffset(value: number): void;
+
+  getRx2Dr(): number;
+  setRx2Dr(value: number): void;
+
+  getRx2Frequency(): number;
+  setRx2Frequency(value: number): void;
+
+  getClassBPingSlotDr(): number;
+  setClassBPingSlotDr(value: number): void;
+
+  getClassBPingSlotFrequency(): number;
+  setClassBPingSlotFrequency(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetRegionResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetRegionResponse): GetRegionResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: GetRegionResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetRegionResponse;
+  static deserializeBinaryFromReader(message: GetRegionResponse, reader: jspb.BinaryReader): GetRegionResponse;
+}
+
+export namespace GetRegionResponse {
+  export type AsObject = {
+    name: string,
+    region: common_common_pb.RegionMap[keyof common_common_pb.RegionMap],
+    userInfo: string,
+    uplinkChannelsList: Array<RegionChannel.AsObject>,
+    rx1Delay: number,
+    rx1DrOffset: number,
+    rx2Dr: number,
+    rx2Frequency: number,
+    classBPingSlotDr: number,
+    classBPingSlotFrequency: number,
+  }
+}
+
+export class RegionChannel extends jspb.Message {
+  getFrequency(): number;
+  setFrequency(value: number): void;
+
+  getDrMin(): number;
+  setDrMin(value: number): void;
+
+  getDrMax(): number;
+  setDrMax(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RegionChannel.AsObject;
+  static toObject(includeInstance: boolean, msg: RegionChannel): RegionChannel.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: RegionChannel, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RegionChannel;
+  static deserializeBinaryFromReader(message: RegionChannel, reader: jspb.BinaryReader): RegionChannel;
+}
+
+export namespace RegionChannel {
+  export type AsObject = {
+    frequency: number,
+    drMin: number,
+    drMax: number,
   }
 }
 
