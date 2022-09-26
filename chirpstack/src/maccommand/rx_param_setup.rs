@@ -27,10 +27,10 @@ pub fn handle(
         return Err(anyhow!("Expected pending RxParamSetupReq"));
     }
 
-    let req_mac = (&**pending.unwrap())
+    let req_mac = (**pending.unwrap())
         .first()
         .ok_or_else(|| anyhow!("MACCommandSet is empty"))?;
-    let ans_mac = (&**block)
+    let ans_mac = (**block)
         .first()
         .ok_or_else(|| anyhow!("MACCommandSet is empty"))?;
 

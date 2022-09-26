@@ -1,7 +1,7 @@
-use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, NewBlockCipher};
+use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt};
 use aes::{Aes128, Block};
 use anyhow::Result;
-use cmac::{Cmac, Mac, NewMac};
+use cmac::{Cmac, Mac};
 use serde::Serialize;
 
 use super::aes128::AES128Key;
@@ -523,6 +523,8 @@ impl PhyPayload {
     /// For encrypting a join-request response, use the nwk_key, for rejoin-request 0, 1 and 3
     /// response, use the js_enc_key.
     pub fn encrypt_join_accept_payload(&mut self, key: &AES128Key) -> Result<()> {
+        use aes::cipher::KeyInit;
+
         if self.mic.is_none() {
             return Err(anyhow!("mic must be set first"));
         }
@@ -565,6 +567,8 @@ impl PhyPayload {
     /// For decrypting a join-request response, use the nwk_key, for rejoin-request 0, 1 and 3
     /// response, use the js_enc_key.
     pub fn decrypt_join_accept_payload(&mut self, key: &AES128Key) -> Result<()> {
+        use aes::cipher::KeyInit;
+
         if self.mic.is_none() {
             return Err(anyhow!("mic must be set first"));
         }
@@ -901,6 +905,8 @@ pub fn encrypt_f_opts(
     f_cnt: u32,
     data: &[u8],
 ) -> Result<Vec<u8>> {
+    use aes::cipher::KeyInit;
+
     if data.len() > 15 {
         return Err(anyhow!("max size of f_opts is 15 bytes"));
     }
@@ -945,6 +951,8 @@ pub fn encrypt_frm_payload(
     f_cnt: u32,
     data: &[u8],
 ) -> Result<Vec<u8>> {
+    use aes::cipher::KeyInit;
+
     let mut data = data.to_vec();
     let data_len = data.len();
 

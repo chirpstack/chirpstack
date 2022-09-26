@@ -51,7 +51,7 @@ async fn main() -> Result<()> {
         .arg(
             Arg::with_name("config-dir")
                 .required(true)
-                .short("c")
+                .short('c')
                 .long("config-dir")
                 .value_name("DIR")
                 .multiple(false)
@@ -79,7 +79,7 @@ async fn main() -> Result<()> {
                 .arg(
                     Arg::with_name("dir")
                         .required(true)
-                        .short("d")
+                        .short('d')
                         .long("dir")
                         .value_name("DIR")
                         .multiple(false)

@@ -15,7 +15,7 @@ RUN cd $PROJECT_PATH/ui && \
 
 
 # ChirpStack build stage
-FROM --platform=$BUILDPLATFORM rust:1.62.0-buster AS rust-build
+FROM --platform=$BUILDPLATFORM rust:1.64.0-buster AS rust-build
 
 ENV PROJECT_PATH=/chirpstack
 RUN mkdir -p $PROJECT_PATH
@@ -32,6 +32,7 @@ RUN apt-get update && \
 	clang \
 	libclang-dev \
 	jq \
+	protobuf-compiler \
 	gcc-arm-linux-gnueabihf \
 	g++-arm-linux-gnueabihf \
 	gcc-aarch64-linux-gnu \

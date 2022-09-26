@@ -16,7 +16,7 @@ use super::error::Error;
 use super::get_db_conn;
 use super::schema::user;
 
-#[derive(Queryable, Insertable, PartialEq, Debug, Clone)]
+#[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = user)]
 pub struct User {
     pub id: Uuid,
@@ -248,9 +248,10 @@ pub async fn list(limit: i64, offset: i64) -> Result<Vec<User>, Error> {
 // https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#specification
 fn hash_password(pw: &str, rounds: u32) -> Result<String, Error> {
     let salt = SaltString::generate(&mut OsRng);
-    let hash_resp = Pbkdf2.hash_password(
+    let hash_resp = Pbkdf2.hash_password_customized(
         pw.as_bytes(),
         Some(Algorithm::Pbkdf2Sha512.ident()),
+        None,
         pbkdf2::Params {
             rounds,
             ..Default::default()

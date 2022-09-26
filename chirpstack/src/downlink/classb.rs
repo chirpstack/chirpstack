@@ -1,5 +1,6 @@
 use aes::cipher::generic_array::GenericArray;
-use aes::{Aes128, Block, BlockEncrypt, NewBlockCipher};
+use aes::cipher::{BlockEncrypt, KeyInit};
+use aes::{Aes128, Block};
 use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
 use tracing::info;

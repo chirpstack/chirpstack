@@ -82,7 +82,7 @@ impl Default for Device {
     }
 }
 
-#[derive(Queryable, PartialEq, Debug)]
+#[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct DeviceListItem {
     pub dev_eui: EUI64,
     pub name: String,
@@ -104,7 +104,7 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
-#[derive(QueryableByName, PartialEq, Debug)]
+#[derive(QueryableByName, PartialEq, Eq, Debug)]
 pub struct DevicesActiveInactive {
     #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub never_seen_count: i64,
@@ -114,7 +114,7 @@ pub struct DevicesActiveInactive {
     pub inactive_count: i64,
 }
 
-#[derive(Queryable, PartialEq, Debug)]
+#[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct DevicesDataRate {
     pub dr: Option<i16>, // as the column is nullable
     pub count: i64,

@@ -85,7 +85,7 @@ impl ToStatus for tokio::task::JoinError {
     }
 }
 
-impl ToStatus for prost_types::TimestampOutOfSystemRangeError {
+impl ToStatus for prost_types::TimestampError {
     fn status(&self) -> Status {
         Status::new(Code::Internal, format!("{}", self))
     }

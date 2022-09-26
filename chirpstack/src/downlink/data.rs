@@ -304,7 +304,7 @@ impl Data {
                 device_name: self.device.name.clone(),
                 dev_eui: self.device.dev_eui.to_string(),
                 tags: {
-                    let mut tags = (&*self.device_profile.tags).clone();
+                    let mut tags = (*self.device_profile.tags).clone();
                     tags.extend((*self.device.tags).clone());
                     tags
                 },

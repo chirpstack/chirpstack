@@ -7,7 +7,7 @@ use diesel::sql_types::Jsonb;
 use diesel::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, AsExpression, FromSqlRow)]
+#[derive(Debug, Clone, PartialEq, Eq, AsExpression, FromSqlRow)]
 #[diesel(sql_type = Jsonb)]
 pub struct KeyValue(HashMap<String, String>);
 
@@ -51,7 +51,7 @@ impl serialize::ToSql<Jsonb, Pg> for KeyValue {
     }
 }
 
-#[derive(Debug, Clone, AsExpression, FromSqlRow, PartialEq)]
+#[derive(Debug, Clone, AsExpression, FromSqlRow, PartialEq, Eq)]
 #[diesel(sql_type = Jsonb)]
 pub struct Measurements(HashMap<String, Measurement>);
 
@@ -95,7 +95,7 @@ impl serialize::ToSql<Jsonb, Pg> for Measurements {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Measurement {
     pub name: String,
     pub kind: MeasurementKind,
@@ -103,7 +103,7 @@ pub struct Measurement {
 
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub enum MeasurementKind {
     // Unknown.
     UNKNOWN,
