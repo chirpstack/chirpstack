@@ -112,7 +112,7 @@ async fn main() -> Result<()> {
 
     if let Some(v) = matches.subcommand_matches("print-ds") {
         let dev_eui = v.get_one::<String>("dev-eui").unwrap();
-        let dev_eui = EUI64::from_str(&dev_eui).unwrap();
+        let dev_eui = EUI64::from_str(dev_eui).unwrap();
 
         cmd::print_ds::run(&dev_eui).await.unwrap();
         process::exit(0);
@@ -120,7 +120,7 @@ async fn main() -> Result<()> {
 
     if let Some(v) = matches.subcommand_matches("import-ttn-lorawan-devices") {
         let dir = v.get_one::<String>("dir").unwrap();
-        cmd::import_ttn_lorawan_devices::run(Path::new(&*dir))
+        cmd::import_ttn_lorawan_devices::run(Path::new(dir))
             .await
             .unwrap();
         process::exit(0);
