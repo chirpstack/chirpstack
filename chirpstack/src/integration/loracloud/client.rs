@@ -386,17 +386,13 @@ pub struct LocationResult {
 
 #[derive(Deserialize, Clone)]
 pub struct LocationSolverResult {
-    #[serde(default)]
     pub ecef: Vec<f64>,
-    #[serde(default)]
     pub llh: Vec<f64>,
-    #[serde(default)]
     pub gdop: f64,
-    #[serde(default)]
     pub accuracy: f64,
-    #[serde(default, rename = "capture_time_gps")]
+    #[serde(rename = "capture_time_gps")]
     pub capture_time_gps: f64,
-    #[serde(default, rename = "capture_time_utc")]
+    #[serde(rename = "capture_time_utc")]
     pub capture_time_utc: f64,
 }
 
