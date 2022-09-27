@@ -254,7 +254,7 @@ fn per_modultation_to_per_dr(
             gw::modulation::Parameters::Lora(v) => {
                 lrwn::region::DataRateModulation::Lora(lrwn::region::LoraDataRate {
                     spreading_factor: v.spreading_factor as u8,
-                    bandwidth: v.bandwidth * 1000,
+                    bandwidth: v.bandwidth,
                 })
             }
             gw::modulation::Parameters::Fsk(v) => {
