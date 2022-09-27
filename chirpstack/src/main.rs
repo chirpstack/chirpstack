@@ -90,8 +90,8 @@ async fn main() -> Result<()> {
         )
         .get_matches();
 
-    let config_dir = matches.value_of_lossy("config-dir").unwrap();
-    config::load(Path::new(config_dir.as_ref()))?;
+    let config_dir = matches.get_one::<String>("config-dir").unwrap();
+    config::load(Path::new(&config_dir))?;
 
     let conf = config::get();
     let filter = filter::Targets::new().with_targets(vec![
@@ -111,7 +111,7 @@ async fn main() -> Result<()> {
     }
 
     if let Some(v) = matches.subcommand_matches("print-ds") {
-        let dev_eui = v.value_of_lossy("dev-eui").unwrap();
+        let dev_eui = v.get_one::<String>("dev-eui").unwrap();
         let dev_eui = EUI64::from_str(&dev_eui).unwrap();
 
         cmd::print_ds::run(&dev_eui).await.unwrap();
@@ -119,7 +119,7 @@ async fn main() -> Result<()> {
     }
 
     if let Some(v) = matches.subcommand_matches("import-ttn-lorawan-devices") {
-        let dir = v.value_of_lossy("dir").unwrap();
+        let dir = v.get_one::<String>("dir").unwrap();
         cmd::import_ttn_lorawan_devices::run(Path::new(&*dir))
             .await
             .unwrap();
