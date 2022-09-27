@@ -540,9 +540,8 @@ impl Default for Region {
                         ..Default::default()
                     },
                     azure: GatewayBackendAzure {
-                        topic_name: "".into(),
-                        share_access_key: "".into(),
-                        event_hub_namespace: "".into(),
+                        events_connection_string: "".into(),
+                        commands_connection_string: "".into(),
                         ..Default::default()
                     },
                 },
@@ -636,9 +635,8 @@ pub struct GatewayBackendMqtt {
 #[derive(Default, Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct GatewayBackendAzure {
-    pub event_hub_namespace: String,
-    pub topic_name: String,
-    pub share_access_key: String,
+    pub events_connection_string: String,
+    pub commands_connection_string: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Hash)]

@@ -44,7 +44,7 @@ pub async fn setup() -> Result<()> {
             "Setting up gateway backend for region"
         );
         if region.gateway.backend.enabled == "azure" {
-            let backend = azure::AzureKafkaBackend::new(
+            let backend = azure::AzureBackend::new(
                 &region.name,
                 region.common_name,
                 &region.gateway.backend.azure,

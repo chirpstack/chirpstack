@@ -17,6 +17,7 @@ clap = "2.33"
 serde = { version = "1.0", features = ["derive", "rc"] }
 serde_yaml = "0.8"
 serde_json = "1.0"
+serde_amqp = "0.4.3"
 humantime-serde = "1.0"
 toml = "0.5"
 handlebars = "4.1"
@@ -109,6 +110,12 @@ regex = "1"
 petgraph = "0.6"
 prometheus-client = "0.18"
 pin-project = "1.0"
+
+rustls = "0.19.1"
+mio = { version = "0.7.11", features = ["tcp","os-poll"] }
+tokio-rustls = "0.23"
+webpki-roots = "0.22.4"
+fe2o3-amqp = {version = "0.6.3", features = ["rustls"]}
 
 # Development and testing
 [dev-dependencies]
