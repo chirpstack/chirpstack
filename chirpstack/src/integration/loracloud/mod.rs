@@ -192,6 +192,9 @@ impl Integration {
             return Err(anyhow!("{}", resp.error));
         }
 
+        self.handle_response_integration_event(vars, pl, &resp.result)
+            .await?;
+
         if self.config.modem_geolocation_services.parse_tlv && resp.result.stream_records.is_some()
         {
             self.handle_response_tlv_records(
@@ -201,9 +204,6 @@ impl Integration {
             )
             .await?;
         }
-
-        self.handle_response_integration_event(vars, pl, &resp.result)
-            .await?;
 
         if let Some(v) = &resp.result.downlink {
             self.handle_response_downlink(pl, v).await?;
@@ -427,7 +427,7 @@ impl Integration {
                 longitude: result.llh[1],
                 altitude: result.llh[2],
                 source: source.into(),
-                accuracy: result.accuracy,
+                accuracy: result.accuracy.unwrap_or_default(),
             }),
         };
 
