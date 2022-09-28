@@ -355,7 +355,7 @@ pub fn run() {
       # Certificate lifetime.
       #
       # This defines how long (after generating) the certificate remains valid.
-      client_cert_lifetime="{{ integration.mqtt.client_cert_lifetime }}"
+      client_cert_lifetime="{{ integration.mqtt.client.client_cert_lifetime }}"
 
 
   # PostgreSQL integration configuration.
