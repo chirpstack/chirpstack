@@ -1,7 +1,7 @@
-use std::str;
+use std::{str, thread};
 use std::sync::mpsc::{Receiver as ChanRceiver, SyncSender as ChanSender};
 use std::sync::mpsc;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Error, Result};
 use async_trait::async_trait;
@@ -81,77 +81,142 @@ impl AzureBackend {
         azure_backend.run_downlink(downlink_client, rx);
 
         let event_information = build_event_connection_string(conf.events_connection_string.to_string()).unwrap();
-        let uplink_client = AzureKafkaClient::new(region_name, &event_information).await.expect("can't init azure client");
-        azure_backend.run_uplink(region_name, region_common_name, uplink_client);
+
+        azure_backend.run_uplink(region_name, region_common_name, event_information);
         Ok(azure_backend)
     }
 
     fn run_downlink(&self, downlink_client: AzureAmqpClient, rx: ChanRceiver<AmqpMessage<serde_amqp::value::Value>>) {
         tokio::spawn(async move {
-            let mut connection = match downlink_client.build_sender().await {
-                Ok(s) => s,
-                Err(err) => {
-                    error!("can not build connection{:?}",err);
-                    return;
-                }
-            };
-            let mut session = match Session::begin(&mut connection).await {
-                Ok(s) => s,
-                Err(err) => {
-                    error!("can not build session{:?}",err);
-                    return;
-                }
-            };
-            //todo name
-            let mut sender = match Sender::attach(&mut session, "rust-topic-sende-3r", "/messages/devicebound")
-                .await {
-                Ok(s) => s,
-                Err(err) => {
-                    error!("{:?}",err);
-                    return;
-                }
-            };
             loop {
-                info!("loop to send messages running");
-
-                let message = match rx.recv() {
-                    Ok(message) => message,
-                    Err(err) => {
-                        error!("{:?}",err);
+                trace!("Initiate amqp connection");
+                let sas_token_duration = Duration::from_secs(60 * 60 * 24);
+                let event_pubsub_connection_duration = Duration::from_millis(240000);
+                let mut start = Instant::now();
+                let mut connection = match downlink_client.build_sender(sas_token_duration.clone()).await {
+                    Ok(s) => s,
+                    Err(e) => {
+                        error!("can not build connection{:?}",e);
+                        thread::sleep(Duration::from_secs(10));
                         continue;
                     }
                 };
 
-                let outcome = match sender.send(message).await {
-                    Ok(m) => m,
-                    Err(err) => {
-                        error!("error {:?}",err);
+                let mut session = match Session::begin(&mut connection).await {
+                    Ok(s) => s,
+                    Err(e) => {
+                        error!("can not build session{:?}",e);
                         continue;
                     }
                 };
-                let _state = match outcome.accepted_or_else(|outcome| outcome) {
-                    Ok(m) => m,
-                    Err(err) => {
-                        error!("messages not accepted {:?}",err);
-                        continue;
+
+                let mut reconnect = false;
+                loop {
+                    let check_duration = start.elapsed();
+                    if check_duration >= (sas_token_duration - event_pubsub_connection_duration) {
+                        trace!("sas about to expire, needs reconnection");
+                        reconnect = true;
                     }
-                };
+
+                    if reconnect {
+                        trace!("Reconnect amqp client");
+                        match session.close().await {
+                            Ok(r) => r,
+                            Err(err) => {
+                                trace!("can't close amqp connection: {:?}", err);
+                                ()
+                            }
+                        };
+                        match connection.close().await {
+                            Ok(r) => r,
+                            Err(err) => {
+                                trace!("can't close amqp connection: {:?}", err);
+                                ()
+                            }
+                        };
+                        start = Instant::now();
+                        let clone_duration = sas_token_duration.clone();
+                        connection = match downlink_client.build_sender(clone_duration).await {
+                            Ok(s) => s,
+                            Err(e) => {
+                                error!("can not build connection{:?}",e);
+                                break;
+                            }
+                        };
+                        session = match Session::begin(&mut connection).await {
+                            Ok(s) => s,
+                            Err(e) => {
+                                error!("can not build session{:?}",e);
+                                break;
+                            }
+                        };
+                        reconnect = false;
+                    }
+                    let timeout_duration = event_pubsub_connection_duration.clone();
+                    let message = match rx.recv_timeout(timeout_duration) {
+                        Ok(message) => message,
+                        Err(_) => {
+                            reconnect = true;
+                            trace!("Inactivity occured, set reconnection");
+                            continue;
+                        }
+                    };
+
+                    let mut sender = match Sender::attach(&mut session, "chirpstack-sender", "/messages/devicebound")
+                        .await {
+                        Ok(s) => s,
+                        Err(e) => {
+                            error!("can not create sender {:?}",e);
+                            reconnect = true;
+                            continue;
+                        }
+                    };
+
+                    let outcome = match sender.send(message).await {
+                        Ok(m) => m,
+                        Err(err) => {
+                            error!("error while sending amqp message {:?}",err);
+                            reconnect = true;
+                            continue;
+                        }
+                    };
+
+                    let _state = match outcome.accepted_or_else(|outcome| outcome) {
+                        Ok(m) => m,
+                        Err(err) => {
+                            error!("amqp message not accepted {:?}",err);
+                            continue;
+                        }
+                    };
+
+                    match sender.close().await {
+                        Ok(r) => r,
+                        Err(err) => {
+                            error!("can't close amqp sender: {:?}", err);
+                            ()
+                        }
+                    };
+                }
             }
         }
         );
     }
 
-    fn run_uplink(&self, region: &str, region_common_name: CommonName, client: AzureKafkaClient) {
+
+    fn run_uplink(&self, region: &str, region_common_name: CommonName, event_information: EventConnectionInformation) {
         tokio::spawn({
             let region = region.to_string();
             async move {
+                let mut uplink_client = AzureKafkaClient::new(region.as_str(), &event_information).await.expect("can't init azure client");
                 loop {
-                    match client.consumer.as_ref().unwrap().recv().await {
+                    match uplink_client.consumer.as_ref().unwrap().recv().await {
                         Err(e) => {
-                            error!("Kafka error: {}", e);
+                            error!("Kafka error, rebuilding the client: {}", e);
+                            uplink_client = AzureKafkaClient::new(region.as_str(), &event_information).await.expect("can't init azure client");
+                            continue;
                         }
                         Ok(m) => {
-                            match client.process(&m).await {
+                            match uplink_client.process(&m).await {
                                 Err(e) => {
                                     error!("error when processing message and retrieving payload: {}", e);
                                 }
@@ -337,7 +402,40 @@ impl GatewayBackend for AzureBackend {
         Ok(())
     }
 
-    async fn send_configuration(&self, _gw_conf: &chirpstack_api::gw::GatewayConfiguration) -> Result<()> {
+    async fn send_configuration(&self, gw_conf: &chirpstack_api::gw::GatewayConfiguration) -> Result<()> {
+        let json = gateway_is_json(&gw_conf.gateway_id);
+        let b = match json {
+            true => serde_json::to_vec(&gw_conf)?,
+            false => gw_conf.encode_to_vec(),
+        };
+
+        let topic = format!("/devices/{}/messages/devicebound", &gw_conf.gateway_id);
+        info!(gateway_id = %gw_conf.gateway_id, topic = %topic, json = json, "Sending gateway configuration");
+
+        let message_id = Uuid::new_v4();
+        // All of the Microsoft AMQP clients represent the event body as an uninterpreted bag of bytes.
+        let data = b.to_bytes();
+
+        let message = AmqpMessage::builder()
+            .properties(Properties::builder()
+                .message_id(message_id.to_string())
+                .to(topic)
+                .build())
+            .application_properties(ApplicationProperties::builder()
+                .insert("iothub-ack", "none")
+                .insert("command", "config")
+                .build()
+            )
+            .data(Binary::from(data))
+            .build();
+
+        match self.tx.as_ref().unwrap().send(message) {
+            Err(err) => {
+                error!("{:?}",err)
+            }
+            _ => {}
+        };
+
         Ok(())
     }
 }
@@ -347,9 +445,9 @@ impl AzureAmqpClient {
         Ok(AzureAmqpClient { parameters })
     }
 
-    async fn build_sender(&self) -> Result<ConnectionHandle<()>> {
+    async fn build_sender(&self, duration: Duration) -> Result<ConnectionHandle<()>> {
         let port = 5671;
-        let sa_key_value = create_sas_token(&self.parameters.hostname, &self.parameters.shared_access_key_name, &self.parameters.shared_access_key, &(SystemTime::now() + Duration::from_secs(60 * 60 * 24))).unwrap();
+        let sa_key_value = create_sas_token(&self.parameters.hostname, &self.parameters.shared_access_key_name, &self.parameters.shared_access_key, &(SystemTime::now() + duration)).unwrap();
         let url = format!("amqps://{}:{}", &self.parameters.hostname, port);
         let connection = match Connection::builder()
             .container_id("rust-receiver-connection-1")
@@ -363,7 +461,8 @@ impl AzureAmqpClient {
             .await {
             Ok(c) => c,
             Err(e) => {
-                panic!("Can not connect to Amqp azure iot core{:?}", e)
+                error!("can not build connection{:?}",e);
+                return Err(Error::new(e));
             }
         };
         Ok(connection)
