@@ -5,25 +5,14 @@
 ChirpStack is an open-source LoRaWAN Network Server, part of the
 [ChirpStack](https://www.chirpstack.io/) project.
 
-**Note:** this repository contains the source of what is going to be
-ChirpStack v4. This release merges the ChirpStack Network Server and
-ChirpStack Application Server components into a single service, making
-it a lot easier to setup a multi-region ChirpStack instance. This is
-still work in progress.
+This repository contains the source-code of ChirpStack v4, which merges the
+ChirpStack Application Server (v3) and ChirpStack Network Server (v3) into a
+single binary, making it easier to setup and use.
 
-Please refer to the forum announcement for background information:
-https://forum.chirpstack.io/t/changes-coming-to-chirpstack/13101
+## Documentation
 
-## Testing / building from source
-
-To build ChirpStack from source, run the following command:
-
-```bash
-make test-server
-```
-
-Note: this requires a Linux environment With Docker and Docker Compose
-setup. Pre-compiled (test) binaries will be provided soon.
+Please refer to the [ChirpStack](https://www.chirpstack.io/) website for
+documentation.
 
 ## License
 
