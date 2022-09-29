@@ -116,11 +116,13 @@ mio = { version = "0.7.11", features = ["tcp","os-poll"] }
 tokio-rustls = "0.23"
 webpki-roots = "0.22.4"
 fe2o3-amqp = {version = "0.6.3", features = ["rustls"]}
+tokio-util = "0.7.4"
 
 # Development and testing
 [dev-dependencies]
 httpmock = "0.6"
 bytes = "1.1"
+
 
 # Debian packaging.
 [package.metadata.deb]

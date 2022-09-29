@@ -144,8 +144,6 @@ fn manage_message(region_common_name: &CommonName, payload: &&[u8], region_name:
     Ok(())
 }
 
-
-//TODO common
 async fn is_locked(key: String) -> Result<bool> {
     task::spawn_blocking({
         move || -> Result<bool> {
@@ -165,12 +163,10 @@ async fn is_locked(key: String) -> Result<bool> {
         .await?
 }
 
-//TODO common
 fn payload_is_json(b: &[u8]) -> bool {
     String::from_utf8_lossy(b).contains("gatewayId")
 }
 
-//TODO common
 fn set_gateway_json(gateway_id: &str, is_json: bool) {
     let mut gw_json_w = GATEWAY_JSON.write().unwrap();
     gw_json_w.insert(gateway_id.to_string(), is_json);
