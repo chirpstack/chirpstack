@@ -315,7 +315,6 @@ impl AzureBackend {
 
 
     async fn run_uplink(region: String, region_common_name: CommonName, event_information: EventConnectionInformation) {
-        info!("RUN UPLINK)");
         let mut uplink_client = AzureKafkaClient::new(region.as_str(), &event_information).await.expect("can't init azure client");
         loop {
             match uplink_client.consumer.as_ref().unwrap().recv().await {
