@@ -475,7 +475,10 @@ impl GatewayBackend for AzureBackend {
         };
 
         let topic = format!("/devices/{}/messages/devicebound", &df.gateway_id);
-        //info!(gateway_id = %df.gateway_id, topic = %topic, json = json, "Sending downlink frame");
+        #[cfg(not(test))]
+        info!(gateway_id = %df.gateway_id, topic = %topic, json = json, "Sending downlink frame");
+        #[cfg(test)]
+        info!("Sending downlink frame");
 
         let message_id = Uuid::new_v4();
         // All of the Microsoft AMQP clients represent the event body as an uninterpreted bag of bytes.
@@ -513,7 +516,10 @@ impl GatewayBackend for AzureBackend {
         };
 
         let topic = format!("/devices/{}/messages/devicebound", &gw_conf.gateway_id);
-        //info!(gateway_id = %gw_conf.gateway_id, topic = %topic, json = json, "Sending gateway configuration");
+        #[cfg(test)]
+        info!("Sending gateway configuration");
+        #[cfg(not(test))]
+        info!(gateway_id = %gw_conf.gateway_id, topic = %topic, json = json, "Sending gateway configuration");
 
         let message_id = Uuid::new_v4();
         // All of the Microsoft AMQP clients represent the event body as an uninterpreted bag of bytes.
@@ -656,16 +662,16 @@ pub mod test {
             shared_access_key_name: "a share access key name".to_string(),
         };
 
-        let (tx, rx): (ChanSender<AmqpMessage<serde_amqp::value::Value>>, ChanRceiver<AmqpMessage<serde_amqp::value::Value>>) = mpsc::sync_channel(1);
+        let (_tx, rx): (ChanSender<AmqpMessage<serde_amqp::value::Value>>, ChanRceiver<AmqpMessage<serde_amqp::value::Value>>) = mpsc::sync_channel(1);
         let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
         let mock_box = Box::new(MockAmqpConnectivity {
-            mock_connect_fn: |info: &BusConnectionInformation, d: Duration| {
+            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| {
                 Ok(())
             },
-            mock_reconnect_fn: |info, d: Duration| {
+            mock_reconnect_fn: |_info, _d: Duration| {
                 Ok(())
             },
-            mock_send_fn: |message| {
+            mock_send_fn: |_message| {
                 Ok(())
             },
             call_connect_tx: Some(call_connect_tx),
@@ -692,13 +698,13 @@ pub mod test {
         let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
         let (call_send_tx, call_send_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
         let mock_box = Box::new(MockAmqpConnectivity {
-            mock_connect_fn: |info: &BusConnectionInformation, d: Duration| {
+            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| {
                 Ok(())
             },
-            mock_reconnect_fn: |info, d: Duration| {
+            mock_reconnect_fn: |_info, _d: Duration| {
                 Ok(())
             },
-            mock_send_fn: |message| {
+            mock_send_fn: |_message| {
                 Ok(())
             },
             call_connect_tx: Some(call_connect_tx),
@@ -737,6 +743,71 @@ pub mod test {
         thread::sleep(Duration::from_secs(2));
 
         handle.abort();
+        token.cancel();
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_downlink_needs_reconnect() {
+        let (tx, rx): (ChanSender<AmqpMessage<serde_amqp::value::Value>>, ChanRceiver<AmqpMessage<serde_amqp::value::Value>>) = mpsc::sync_channel(1);
+        let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
+        let (call_reconnect_tx, call_reconnect_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
+        let (call_send_tx, call_send_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
+        let mock_box = Box::new(MockAmqpConnectivity {
+            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| {
+                Ok(())
+            },
+            mock_reconnect_fn: |_info, _d: Duration| {
+                Ok(())
+            },
+            mock_send_fn: |_message| {
+                return Err(Error::msg("problem"));
+            },
+            call_connect_tx: Some(call_connect_tx),
+            call_reconnect_tx: Some(call_reconnect_tx),
+            call_send_tx: Some(call_send_tx),
+
+        });
+        let info = BusConnectionInformation {
+            shared_access_key: "a share key".to_string(),
+            hostname: "a hostname".to_string(),
+            shared_access_key_name: "a share access key name".to_string(),
+        };
+        let token = CancellationToken::new();
+        let cloned_token = token.clone();
+        tokio::spawn(async move {
+            AzureBackend::run_downlink(mock_box, info, rx, cloned_token).await
+        });
+        let result = call_connect_rx.recv_timeout(Duration::from_secs(2));
+
+        assert_eq!(result.is_err(), false);
+        assert_eq!(result.unwrap(), true);
+
+
+        let handle_send = tokio::spawn(async move {
+            let result = call_send_rx.recv_timeout(Duration::from_secs(20));
+            if result.is_err() {
+                info!("{:?}",result.err())
+            }
+            assert_eq!(result.is_err(), false);
+            assert_eq!(result.unwrap(), true);
+        });
+
+        let handle_reconnect = tokio::spawn(async move {
+            let result = call_reconnect_rx.recv_timeout(Duration::from_secs(20));
+            if result.is_err() {
+                info!("{:?}",result.err())
+            }
+            assert_eq!(result.is_err(), false);
+            assert_eq!(result.unwrap(), true);
+        });
+
+        let message = AmqpMessage::builder().data(Binary::from("test".to_bytes())).build();
+        tx.send(message).expect("problem");
+
+        thread::sleep(Duration::from_secs(2));
+
+        handle_send.abort();
+        handle_reconnect.abort();
         token.cancel();
     }
 
