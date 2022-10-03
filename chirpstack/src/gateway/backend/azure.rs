@@ -1,4 +1,6 @@
 use std::{str, thread};
+#[cfg(test)]
+use std::{println as trace, println as info, println as error};
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver as ChanRceiver, SyncSender as ChanSender};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -28,7 +30,6 @@ use serde_amqp;
 use serde_json::Value;
 use sha2::Sha256;
 use tokio_util::sync::CancellationToken;
-
 #[cfg(not(test))]
 use tracing::{error, info, trace};
 use uuid::Uuid;
@@ -61,7 +62,6 @@ struct AzureKafkaClient {
 
 struct MessageProperties {
     payload: Vec<u8>,
-    region_name: String,
     topic: String,
 }
 
@@ -329,14 +329,12 @@ impl AzureBackend {
                             error!("error when processing message and retrieving payload: {}", e);
                         }
                         Ok(payload) => {
-                            let region = region.clone();
                             match Self::check_payload_and_callback(payload) {
                                 Ok(m) => {
-                                    if region == m.region_name {
-                                        let payload_decode_array: &[u8] = &m.payload;
-                                        message_callback(region_common_name, payload_decode_array, m.region_name.as_str(), m.topic.as_str()).await;
-                                        trace!("message has been processed");
-                                    }
+                                    let payload_decode_array: &[u8] = &m.payload;
+                                    let region = region.clone();
+                                    message_callback(region_common_name, payload_decode_array, region.as_str(), m.topic.as_str()).await;
+                                    trace!("message has been processed");
                                     continue;
                                 }
                                 Err(err) => {
@@ -353,37 +351,37 @@ impl AzureBackend {
 
     fn check_payload_and_callback(payload: &str) -> Result<MessageProperties, Error> {
         type Err = Error;
-
+        let topic: &str;
         info!("payload: '{}'",payload);
         let msg: Value = serde_json::from_str(payload).unwrap_or_default();
         let gateway_id = match msg[0]["data"]["systemProperties"]["iothub-connection-device-id"].as_str() {
             Some(s) => s,
             None => ""
         };
-        let region_name = match msg[0]["data"]["properties"]["region"].as_str() {
-            Some(s) => s,
-            None => return Err(anyhow!("Region does not exist"))
-        };
         let payload = match msg[0]["data"]["body"].as_str() {
             Some(s) => s,
             None => return Err(anyhow!("Payload does not exist"))
         };
         let payload = payload.as_bytes();
-        trace!("gateway_id {}, region {}", gateway_id,region_name );
+        trace!("gateway_id {}", gateway_id);
         let payload_decode = match decode(payload) {
             Ok(vec) => vec,
             Err(err) => {
                 return Err(anyhow!("Problem decoding payload in base64: {:?}", err));
             }
         };
-        let topic = match msg[0]["data"]["properties"]["event_type"].as_str() {
-            Some(s) => s,
-            None => return Err(anyhow!("Problem retrieving topic"))
-        };
+        if msg[0]["data"]["properties"]["up"].as_str().is_some() {
+            topic = "up";
+        } else if msg[0]["data"]["properties"]["ack"].as_str().is_some() {
+            topic = "ack";
+        } else if msg[0]["data"]["properties"]["stats"].as_str().is_some() {
+            topic = "stats";
+        } else {
+            return Err(anyhow!("Problem retrieving topic"));
+        }
         Ok(MessageProperties {
             payload: payload_decode,
             topic: topic.to_string(),
-            region_name: region_name.to_string(),
         })
     }
 }
@@ -612,8 +610,6 @@ fn create_sas_token(
     ))
 }
 
-#[cfg(test)]
-use std::{println as trace, println as info, println as error};
 #[cfg(test)]
 pub mod test {
     use tokio_util::sync::CancellationToken;
