@@ -68,7 +68,7 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
 
                 // global gateway stream
                 if conf.monitoring.gateway_frame_log_max_history > 0 {
-                    let key = redis_key("gw:stream::frame".to_string());
+                    let key = redis_key("gw:stream:frame".to_string());
                     redis::cmd("XADD")
                         .arg(&key)
                         .arg("MAXLEN")
