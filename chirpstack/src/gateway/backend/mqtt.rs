@@ -1,9 +1,4 @@
-use std::collections::hash_map::DefaultHasher;
-use std::collections::HashMap;
 use std::env::temp_dir;
-use std::hash::Hasher;
-use std::io::Cursor;
-use std::sync::RwLock;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
@@ -11,54 +6,21 @@ use async_trait::async_trait;
 use futures::stream::StreamExt;
 use handlebars::Handlebars;
 use paho_mqtt as mqtt;
-use prometheus_client::encoding::text::Encode;
-use prometheus_client::metrics::counter::Counter;
-use prometheus_client::metrics::family::Family;
 use prost::Message;
 use rand::Rng;
 use serde::Serialize;
 use tokio::sync::mpsc;
-use tokio::task;
 use tracing::{error, info, trace};
 
-use super::GatewayBackend;
-use crate::config::GatewayBackendMqtt;
-use crate::monitoring::prometheus;
-use crate::storage::{get_redis_conn, redis_key};
-use crate::{downlink, uplink};
 use lrwn::region::CommonName;
 
-#[derive(Clone, Hash, PartialEq, Eq, Encode)]
-struct EventLabels {
-    event: String,
-}
+use crate::config::GatewayBackendMqtt;
 
-#[derive(Clone, Hash, PartialEq, Eq, Encode)]
-struct CommandLabels {
-    command: String,
-}
-
-lazy_static! {
-    static ref EVENT_COUNTER: Family<EventLabels, Counter> = {
-        let counter = Family::<EventLabels, Counter>::default();
-        prometheus::register(
-            "gateway_backend_mqtt_events",
-            "Number of events received",
-            Box::new(counter.clone()),
-        );
-        counter
-    };
-    static ref COMMAND_COUNTER: Family<CommandLabels, Counter> = {
-        let counter = Family::<CommandLabels, Counter>::default();
-        prometheus::register(
-            "gateway_backend_mqtt_commands",
-            "Number of commands sent",
-            Box::new(counter.clone()),
-        );
-        counter
-    };
-    static ref GATEWAY_JSON: RwLock<HashMap<String, bool>> = RwLock::new(HashMap::new());
-}
+use super::common::COMMAND_COUNTER;
+use super::common::CommandLabels;
+use super::common::gateway_is_json;
+use super::common::message_callback;
+use super::GatewayBackend;
 
 struct MqttContext {
     region_name: String,
@@ -201,7 +163,20 @@ impl<'a> MqttBackend<'a> {
                 info!("Starting MQTT consumer loop");
                 while let Some(msg_opt) = stream.next().await {
                     if let Some(msg) = msg_opt {
-                        message_callback(&region_name, region_common_name, msg).await;
+                        let mqtt_topic = msg.topic();
+                        let topic: &str;
+                        let qos = msg.qos();
+                        if mqtt_topic.ends_with("/up") {
+                            topic = "up";
+                        } else if mqtt_topic.ends_with("/ack") {
+                            topic = "ack";
+                        } else if mqtt_topic.ends_with("/stats") {
+                            topic = "stats";
+                        } else {
+                            topic = "";
+                        }
+                        trace!("mqtt_topic {}, region {}, qos {}", mqtt_topic,region_name,qos);
+                        message_callback(region_common_name, msg.payload(), &region_name, &topic).await;
                     }
                 }
             }
@@ -288,138 +263,4 @@ impl GatewayBackend for MqttBackend<'_> {
 
         Ok(())
     }
-}
-
-async fn message_callback(region_name: &str, region_common_name: CommonName, msg: mqtt::Message) {
-    let topic = msg.topic();
-    let qos = msg.qos();
-    let b = msg.payload();
-
-    let mut hasher = DefaultHasher::new();
-    hasher.write(b);
-    let key = redis_key(format!("gw:mqtt:lock:{:x}", hasher.finish()));
-    let locked = is_locked(key).await;
-
-    let err = || -> Result<()> {
-        if locked? {
-            trace!(
-                region_name = region_name,
-                topic = topic,
-                qos = qos,
-                "Message is already handled by different instance"
-            );
-            return Ok(());
-        }
-
-        let json = payload_is_json(b);
-
-        info!(
-            region_name = region_name,
-            topic = topic,
-            qos = qos,
-            json = json,
-            "Message received from gateway"
-        );
-
-        if topic.ends_with("/up") {
-            EVENT_COUNTER
-                .get_or_create(&EventLabels {
-                    event: "up".to_string(),
-                })
-                .inc();
-            let mut event = match json {
-                true => serde_json::from_slice(b)?,
-                false => chirpstack_api::gw::UplinkFrame::decode(&mut Cursor::new(b))?,
-            };
-            event.v4_migrate();
-
-            if let Some(rx_info) = &mut event.rx_info {
-                set_gateway_json(&rx_info.gateway_id, json);
-                rx_info.set_metadata_string("region_name", region_name);
-                rx_info.set_metadata_string("region_common_name", &region_common_name.to_string());
-            }
-
-            tokio::spawn(uplink::deduplicate_uplink(event));
-        } else if topic.ends_with("/stats") {
-            EVENT_COUNTER
-                .get_or_create(&EventLabels {
-                    event: "stats".to_string(),
-                })
-                .inc();
-            let mut event = match json {
-                true => serde_json::from_slice(b)?,
-                false => chirpstack_api::gw::GatewayStats::decode(&mut Cursor::new(b))?,
-            };
-            event.v4_migrate();
-            event
-                .meta_data
-                .insert("region_name".to_string(), region_name.to_string());
-            event.meta_data.insert(
-                "region_common_name".to_string(),
-                region_common_name.to_string(),
-            );
-            set_gateway_json(&event.gateway_id, json);
-            tokio::spawn(uplink::stats::Stats::handle(event));
-        } else if topic.ends_with("/ack") {
-            EVENT_COUNTER
-                .get_or_create(&EventLabels {
-                    event: "ack".to_string(),
-                })
-                .inc();
-            let mut event = match json {
-                true => serde_json::from_slice(b)?,
-                false => chirpstack_api::gw::DownlinkTxAck::decode(&mut Cursor::new(b))?,
-            };
-            event.v4_migrate();
-            set_gateway_json(&event.gateway_id, json);
-            tokio::spawn(downlink::tx_ack::TxAck::handle(event));
-        } else {
-            return Err(anyhow!("Unknown event type"));
-        }
-
-        Ok(())
-    }()
-    .err();
-
-    if err.is_some() {
-        error!(
-            topic = topic,
-            qos = qos,
-            "Processing gateway event error: {}",
-            err.as_ref().unwrap()
-        );
-    }
-}
-
-async fn is_locked(key: String) -> Result<bool> {
-    task::spawn_blocking({
-        move || -> Result<bool> {
-            let mut c = get_redis_conn()?;
-
-            let set: bool = redis::cmd("SET")
-                .arg(key)
-                .arg("lock")
-                .arg("PX")
-                .arg(5000)
-                .arg("NX")
-                .query(&mut *c)?;
-
-            Ok(!set)
-        }
-    })
-    .await?
-}
-
-fn gateway_is_json(gateway_id: &str) -> bool {
-    let gw_json_r = GATEWAY_JSON.read().unwrap();
-    gw_json_r.get(gateway_id).cloned().unwrap_or(false)
-}
-
-fn set_gateway_json(gateway_id: &str, is_json: bool) {
-    let mut gw_json_w = GATEWAY_JSON.write().unwrap();
-    gw_json_w.insert(gateway_id.to_string(), is_json);
-}
-
-fn payload_is_json(b: &[u8]) -> bool {
-    String::from_utf8_lossy(b).contains("gatewayId")
 }

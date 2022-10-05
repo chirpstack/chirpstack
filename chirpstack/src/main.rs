@@ -6,6 +6,7 @@ extern crate diesel_migrations;
 extern crate diesel;
 #[macro_use]
 extern crate anyhow;
+extern crate core;
 
 use std::path::Path;
 use std::process;
