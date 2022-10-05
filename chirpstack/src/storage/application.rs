@@ -19,7 +19,7 @@ use super::error::Error;
 use super::get_db_conn;
 use super::schema::{application, application_integration};
 
-#[derive(Clone, Queryable, Insertable, PartialEq, Debug)]
+#[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application)]
 pub struct Application {
     pub id: Uuid,
@@ -62,7 +62,7 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
-#[derive(Queryable, PartialEq, Debug)]
+#[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct ApplicationListItem {
     pub id: Uuid,
     pub created_at: DateTime<Utc>,
@@ -134,7 +134,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, AsExpression, FromSqlRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize)]
 #[diesel(sql_type = Jsonb)]
 pub enum IntegrationConfiguration {
     None,
@@ -164,14 +164,14 @@ impl serialize::ToSql<Jsonb, Pg> for IntegrationConfiguration {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HttpConfiguration {
     pub headers: HashMap<String, String>,
     pub json: bool,
     pub event_endpoint_url: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InfluxDbConfiguration {
     pub endpoint: String,
     pub db: String,
@@ -185,22 +185,22 @@ pub struct InfluxDbConfiguration {
     pub bucket: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ThingsBoardConfiguration {
     pub server: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MyDevicesConfiguration {
     pub endpoint: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LoraCloudConfiguration {
     pub modem_geolocation_services: LoraCloudModemGeolocationServices,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LoraCloudModemGeolocationServices {
     pub token: String,
     pub modem_enabled: bool,
@@ -219,7 +219,7 @@ pub struct LoraCloudModemGeolocationServices {
     pub geolocation_wifi_payload_field: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct GcpPubSubConfiguration {
     pub encoding: i32,
     pub credentials_file: String,
@@ -227,7 +227,7 @@ pub struct GcpPubSubConfiguration {
     pub topic_name: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AwsSnsConfiguration {
     pub encoding: i32,
     pub region: String,
@@ -236,26 +236,26 @@ pub struct AwsSnsConfiguration {
     pub topic_arn: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AzureServiceBusConfiguration {
     pub encoding: i32,
     pub connection_string: String,
     pub publish_name: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PilotThingsConfiguration {
     pub server: String,
     pub token: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct IftttConfiguration {
     pub key: String,
     pub uplink_values: [String; 2], // The first value is reserved for the DevEUI
 }
 
-#[derive(Clone, Queryable, Insertable, PartialEq, Debug)]
+#[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application_integration)]
 pub struct Integration {
     pub application_id: Uuid,

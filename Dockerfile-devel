@@ -1,4 +1,4 @@
-FROM rust:1.62.0-buster
+FROM rust:1.64.0-buster
 
 ENV PROJECT_PATH=/chirpstack
 RUN mkdir -p $PROJECT_PATH
@@ -22,6 +22,7 @@ RUN apt-get update && \
 	libclang-dev \
 	golang-cfssl \
 	jq \
+	protobuf-compiler \
 	gcc-arm-linux-gnueabihf \
 	g++-arm-linux-gnueabihf \
 	gcc-aarch64-linux-gnu \
@@ -33,7 +34,7 @@ RUN rustup component add rustfmt clippy
 RUN rustup target add armv7-unknown-linux-gnueabihf
 RUN rustup target add aarch64-unknown-linux-gnu
 
-RUN cargo install diesel_cli --version 2.0.0-rc.1 --no-default-features --features postgres
+RUN cargo install diesel_cli --version 2.0.0 --no-default-features --features postgres
 RUN cargo install cargo-deb
 RUN cargo install cargo-rpm
 RUN cargo install cargo-bitbake

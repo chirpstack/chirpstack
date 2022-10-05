@@ -9,7 +9,7 @@ use redis::streams::StreamReadReply;
 use serde_json::json;
 use tokio::sync::mpsc;
 use tokio::task;
-use tracing::{error, trace};
+use tracing::{debug, error, trace};
 
 use lrwn::EUI64;
 
@@ -68,7 +68,7 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
 
                 // global gateway stream
                 if conf.monitoring.gateway_frame_log_max_history > 0 {
-                    let key = redis_key("gw:stream::frame".to_string());
+                    let key = redis_key("gw:stream:frame".to_string());
                     redis::cmd("XADD")
                         .arg(&key)
                         .arg("MAXLEN")
@@ -256,6 +256,11 @@ pub async fn get_frame_logs(
             let mut c = get_redis_conn()?;
 
             loop {
+                if channel.is_closed() {
+                    debug!("Channel has been closed, returning");
+                    return Ok(());
+                }
+
                 let srr: StreamReadReply = redis::cmd("XREAD")
                     .arg("COUNT")
                     .arg(count)
@@ -362,6 +367,7 @@ pub async fn get_frame_logs(
                 // check every 1 second if there are new messages, which should be sufficient.
                 sleep(Duration::from_secs(1));
             }
+
         }
     }).await?
 }

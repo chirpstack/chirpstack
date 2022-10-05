@@ -104,7 +104,7 @@ impl ToDateTime for Duration {
         let mut t = *GPS_EPOCH_TIME + *self;
         for ls in LEAP_SECONDS_TABLE.iter() {
             if ls.0 < t {
-                t = t - ls.1;
+                t -= ls.1;
             }
         }
         t

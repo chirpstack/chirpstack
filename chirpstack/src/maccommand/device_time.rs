@@ -13,7 +13,7 @@ pub fn handle(
     dev: &device::Device,
     block: &lrwn::MACCommandSet,
 ) -> Result<Option<lrwn::MACCommandSet>> {
-    let _ = (&**block)
+    let _ = (**block)
         .first()
         .ok_or_else(|| anyhow!("Expected DeviceTimeReq"))?;
 

@@ -3,7 +3,7 @@ name = "chirpstack"
 description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
 repository = "https://github.com/chirpstack/chirpstack"
 homepage="https://www.chirpstack.io/"
-version = "4.0.0"
+version = "4.0.2"
 authors = ["Orne Brocaar <info@brocaar.com>"]
 edition = "2021"
 publish = false
@@ -11,29 +11,29 @@ license = "MIT"
 
 [dependencies]
 # CLI interface
-clap = "2.33"
+clap = { version = "4.0", features = ["derive"] }
 
 # Configuration
 serde = { version = "1.0", features = ["derive", "rc"] }
-serde_yaml = "0.8"
+serde_yaml = "0.9"
 serde_json = "1.0"
+humantime-serde = "1.1"
 serde_amqp = "0.4.3"
-humantime-serde = "1.0"
 toml = "0.5"
-handlebars = "4.1"
+handlebars = "4.3"
 
 # Database
-validator = "0.13"
-diesel = { version = "2.0.0-rc.1", features = [ "chrono", "postgres", "r2d2", "uuid", "serde_json", "numeric" ] }
-diesel_migrations = { version = "2.0.0-rc.1" }
+validator = "0.16"
+diesel = { version = "2.0.0", features = [ "chrono", "postgres", "r2d2", "uuid", "serde_json", "numeric" ] }
+diesel_migrations = { version = "2.0.0" }
 r2d2 = "0.8"
 bigdecimal = "0.3"
 redis = { version = "0.21", features = ["r2d2", "cluster"] }
-pq-sys = { version = "0.4.6", features = ["pkg-config"] }
+pq-sys = { version = "0.4.7", features = ["pkg-config"] }
 
 # Logging
 tracing = "0.1"
-tracing-subscriber = { version = "0.2", features = ["fmt", "ansi"], default-features = true }
+tracing-subscriber = { version = "0.3", features = ["fmt", "ansi"], default-features = true }
 
 # ChirpStack API definitions
 chirpstack_api = { path = "../api/rust", features = ["default", "internal"] }
@@ -44,9 +44,9 @@ backend = { path = "../backend" }
 reqwest = { version = "0.11", features = ["json"] }
 
 # Integrations
-aws-types = "0.3.0"
-aws-config = "0.3.0"
-aws-sdk-sns = "0.3.0"
+aws-types = "0.49"
+aws-config = "0.49"
+aws-sdk-sns = "0.19"
 hmac = "0.12"
 sha2 = "0.10"
 urlencoding = "2.1"
@@ -55,17 +55,17 @@ gcp_auth = "0.7.2"
 lapin = "2.1.1"
 tokio-executor-trait = "2.1.0"
 tokio-reactor-trait = "1.1.0"
-rdkafka = { version = "0.28.0", features = ["cmake-build","gssapi-vendored", "ssl-vendored"]}
+rdkafka = { version = "0.28.0", features = ["cmake-build"]}
 
 # gRPC and Protobuf
-tonic = "0.7"
-tonic-web = "0.3"
-tonic-reflection = "0.4"
-tokio = { version = "1.17", features = ["macros", "rt-multi-thread"] }
-tokio-stream = "0.1.8"
-prost-types = "0.10"
-prost = "0.10"
-pbjson-types = "0.3"
+tonic = "0.8"
+tonic-web = "0.4"
+tonic-reflection = "0.5"
+tokio = { version = "1.21", features = ["macros", "rt-multi-thread"] }
+tokio-stream = "0.1"
+prost-types = "0.11"
+prost = "0.11"
+pbjson-types = "0.5"
 
 # gRPC and HTTP multiplexing
 warp = { version = "0.3", features = ["tls"] }
@@ -76,37 +76,36 @@ http = "0.2"
 http-body = "0.4"
 rust-embed = "6.4"
 mime_guess = "2.0"
-tower-http = { version = "0.1", features = ["trace", "auth"] }
+tower-http = { version = "0.3", features = ["trace", "auth"] }
 
 # Error handling
 thiserror = "1.0"
 anyhow = "1.0"
 
 # Authentication
-pbkdf2 = "0.8"
+pbkdf2 = "0.11"
 rand_core = { version = "0.6", features = ["std"] }
-# jsonwebtoken = "8.0"
-jsonwebtoken = "8.1.0"
+jsonwebtoken = "8.1"
 openssl = { version = "0.10", features = ["vendored"] }
-openidconnect = { version = "2.3.1", features = ["accept-rfc3339-timestamps"] }
+openidconnect = { version = "2.3", features = ["accept-rfc3339-timestamps"] }
 
 # MQTT
 paho-mqtt = { version = "0.11", features = ["vendored-ssl"] }
 hex = "0.4"
 
 # Codecs
-rquickjs = { version = "0.1.6", features = ["bindgen", "loader", "array-buffer", "chrono"] }
+rquickjs = { version = "0.1", features = ["bindgen", "loader", "array-buffer", "chrono"] }
 
 # Misc
 lazy_static = "1.4"
 uuid = { version =  "1.1", features = [ "v4", "serde" ] }
 chrono = "0.4"
 async-trait = "0.1"
-aes = "0.7"
+aes = "0.8"
 rand = "0.8"
 base64 = "0.13"
 async-recursion = "1.0"
-regex = "1"
+regex = "1.6"
 petgraph = "0.6"
 prometheus-client = "0.18"
 pin-project = "1.0"
@@ -121,7 +120,7 @@ tokio-util = "0.7.4"
 # Development and testing
 [dev-dependencies]
 httpmock = "0.6"
-bytes = "1.1"
+bytes = "1.2"
 
 
 # Debian packaging.

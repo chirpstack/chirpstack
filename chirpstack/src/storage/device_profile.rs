@@ -16,7 +16,7 @@ use super::{error, fields, get_db_conn};
 use crate::codec::Codec;
 use chirpstack_api::internal;
 
-#[derive(Clone, Queryable, Insertable, Debug, PartialEq)]
+#[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
 #[diesel(table_name = device_profile)]
 pub struct DeviceProfile {
     pub id: Uuid,
@@ -122,7 +122,7 @@ impl DeviceProfile {
     }
 }
 
-#[derive(Queryable, PartialEq, Debug)]
+#[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct DeviceProfileListItem {
     pub id: Uuid,
     pub created_at: DateTime<Utc>,

@@ -200,7 +200,7 @@ pub async fn get(
             while ts.le(&end) {
                 timestamps.push(ts);
                 keys.push(get_key(name, a, ts));
-                ts = ts + ChronoDuration::hours(1);
+                ts += ChronoDuration::hours(1);
             }
         }
         Aggregation::DAY => {

@@ -10,7 +10,7 @@ use super::error::Error;
 use super::get_db_conn;
 use super::schema::{tenant, tenant_user, user};
 
-#[derive(Queryable, Insertable, PartialEq, Debug, Clone)]
+#[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = tenant)]
 pub struct Tenant {
     pub id: Uuid,
@@ -51,7 +51,7 @@ impl Default for Tenant {
     }
 }
 
-#[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug)]
+#[derive(Queryable, Insertable, AsChangeset, PartialEq, Eq, Debug)]
 #[diesel(table_name = tenant_user)]
 pub struct TenantUser {
     pub tenant_id: Uuid,
@@ -79,7 +79,7 @@ impl Default for TenantUser {
     }
 }
 
-#[derive(Queryable, PartialEq, Debug)]
+#[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct TenantUserListItem {
     pub tenant_id: Uuid,
     pub user_id: Uuid,

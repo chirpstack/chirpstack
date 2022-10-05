@@ -1,4 +1,4 @@
-use aes::cipher::{generic_array::GenericArray, BlockEncrypt, NewBlockCipher};
+use aes::cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit};
 use aes::{Aes128, Block};
 use anyhow::Result;
 

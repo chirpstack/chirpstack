@@ -20,7 +20,7 @@ pub fn handle(
         return Err(anyhow!("Pending RxTimingSetupReq expected"));
     }
 
-    let req_mac = (&**pending.unwrap())
+    let req_mac = (**pending.unwrap())
         .first()
         .ok_or_else(|| anyhow!("MACCommandSet is empty"))?;
 

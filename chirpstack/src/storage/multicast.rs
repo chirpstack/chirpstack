@@ -66,7 +66,7 @@ impl Default for MulticastGroup {
     }
 }
 
-#[derive(Queryable, PartialEq, Debug)]
+#[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct MulticastGroupListItem {
     pub id: Uuid,
     pub created_at: DateTime<Utc>,
@@ -82,7 +82,7 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
-#[derive(Clone, Queryable, QueryableByName, Insertable, AsChangeset, Debug, PartialEq)]
+#[derive(Clone, Queryable, QueryableByName, Insertable, AsChangeset, Debug, PartialEq, Eq)]
 #[diesel(table_name = multicast_group_queue_item)]
 pub struct MulticastGroupQueueItem {
     pub id: Uuid,
@@ -448,11 +448,10 @@ pub async fn enqueue(
                                 true => {
                                     // Increment with margin as requesting the gateway to send the
                                     // downlink 'now' will result in a too late error from the gateway.
-                                    scheduler_run_after_ts = scheduler_run_after_ts
-                                        + Duration::from_std(
-                                            conf.network.scheduler.multicast_class_c_margin,
-                                        )
-                                        .unwrap();
+                                    scheduler_run_after_ts += Duration::from_std(
+                                        conf.network.scheduler.multicast_class_c_margin,
+                                    )
+                                    .unwrap();
                                     Some(scheduler_run_after_ts.to_gps_time().num_milliseconds())
                                 }
                             };
@@ -478,11 +477,10 @@ pub async fn enqueue(
 
                             if !conf.network.scheduler.multicast_class_c_use_gps_time {
                                 // Increment timing for each gateway to avoid colissions.
-                                scheduler_run_after_ts = scheduler_run_after_ts
-                                    + Duration::from_std(
-                                        conf.network.scheduler.multicast_class_c_margin,
-                                    )
-                                    .unwrap();
+                                scheduler_run_after_ts += Duration::from_std(
+                                    conf.network.scheduler.multicast_class_c_margin,
+                                )
+                                .unwrap();
                             }
                         }
                     }

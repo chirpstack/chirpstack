@@ -23,7 +23,7 @@ pub async fn handle(
     dev: &device::Device,
     block: &lrwn::MACCommandSet,
 ) -> Result<Option<lrwn::MACCommandSet>> {
-    let mac = (&**block)
+    let mac = (**block)
         .first()
         .ok_or_else(|| anyhow!("Expected DevStatusAns"))?;
     if let lrwn::MACCommand::DevStatusAns(pl) = mac {
@@ -42,7 +42,7 @@ pub async fn handle(
         )
         .await?;
 
-        let mut tags = (&*dp.tags).clone();
+        let mut tags = (*dp.tags).clone();
         tags.clone_from(&*dev.tags);
 
         let rx_time: DateTime<Utc> =

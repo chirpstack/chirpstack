@@ -110,7 +110,7 @@ pub struct Request {
     pub uplink_history: Vec<internal::UplinkAdrHistory>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Response {
     pub dr: u8,
     pub tx_power_index: u8,

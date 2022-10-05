@@ -72,7 +72,7 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
-#[derive(QueryableByName, PartialEq, Debug)]
+#[derive(QueryableByName, PartialEq, Eq, Debug)]
 pub struct GatewaysActiveInactive {
     #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub never_seen_count: i64,

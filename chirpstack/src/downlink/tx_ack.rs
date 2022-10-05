@@ -294,7 +294,7 @@ impl TxAck {
         let dp = self.device_profile.as_ref().unwrap();
         let dev = self.device.as_ref().unwrap();
 
-        let mut tags = (&*dp.tags).clone();
+        let mut tags = (*dp.tags).clone();
         tags.extend((*dev.tags).clone());
 
         let pl = integration_pb::LogEvent {
@@ -330,7 +330,7 @@ impl TxAck {
         let dev = self.device.as_ref().unwrap();
         let qi = self.device_queue_item.as_ref().unwrap();
 
-        let mut tags = (&*dp.tags).clone();
+        let mut tags = (*dp.tags).clone();
         tags.extend((*dev.tags).clone());
 
         let downlink_id = self.downlink_frame.as_ref().unwrap().downlink_id;

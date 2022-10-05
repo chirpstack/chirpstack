@@ -13,7 +13,7 @@ use std::process;
 use std::str::FromStr;
 
 use anyhow::Result;
-use clap::{App, Arg};
+use clap::{Parser, Subcommand};
 use tracing::Level;
 use tracing_subscriber::{filter, prelude::*};
 
@@ -42,57 +42,41 @@ mod storage;
 mod test;
 mod uplink;
 
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    /// Path to configuration directory
+    #[arg(short, long, value_name = "DIR")]
+    config: String,
+
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Print the configuration template
+    Configfile {},
+
+    /// Print the device-session for debugging
+    PrintDs {
+        /// Device EUI
+        #[arg(long, value_name = "DEV_EUI")]
+        dev_eui: String,
+    },
+
+    /// Import TheThingsNetwork LoRaWAN devices repository
+    ImportTtnLorawanDevices {
+        /// Path to repository root.
+        #[arg(short, long, value_name = "DIR")]
+        dir: String,
+    },
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    // read CLI
-    let matches = App::new("chirpstack")
-        .version(env!("CARGO_PKG_VERSION"))
-        .author("Orne Brocaar <info@brocaar.com>")
-        .about("ChirpStack open-source LoRaWAN network-server")
-        .arg(
-            Arg::with_name("config-dir")
-                .required(true)
-                .short("c")
-                .long("config-dir")
-                .value_name("DIR")
-                .multiple(false)
-                .number_of_values(1)
-                .help("Path to configuration directory")
-                .takes_value(true),
-        )
-        .subcommand(App::new("configfile").about("Print the configuration template"))
-        .subcommand(
-            App::new("print-ds")
-                .about("Print the device-session for debugging")
-                .arg(
-                    Arg::with_name("dev-eui")
-                        .required(true)
-                        .long("dev-eui")
-                        .value_name("DEV_EUI")
-                        .multiple(false)
-                        .help("Device EUI")
-                        .takes_value(true),
-                ),
-        )
-        .subcommand(
-            App::new("import-ttn-lorawan-devices")
-                .about("Import TheThingsNetwork LoRaWAN devices repository")
-                .arg(
-                    Arg::with_name("dir")
-                        .required(true)
-                        .short("d")
-                        .long("dir")
-                        .value_name("DIR")
-                        .multiple(false)
-                        .number_of_values(1)
-                        .help("Path to repository root")
-                        .takes_value(true),
-                ),
-        )
-        .get_matches();
-
-    let config_dir = matches.value_of_lossy("config-dir").unwrap();
-    config::load(Path::new(config_dir.as_ref()))?;
+    let cli = Cli::parse();
+    config::load(Path::new(&cli.config))?;
 
     let conf = config::get();
     let filter = filter::Targets::new().with_targets(vec![
@@ -106,22 +90,19 @@ async fn main() -> Result<()> {
         .with(filter)
         .init();
 
-    if matches.subcommand_matches("configfile").is_some() {
+    if let Some(Commands::Configfile {}) = &cli.command {
         cmd::configfile::run();
         process::exit(0);
     }
 
-    if let Some(v) = matches.subcommand_matches("print-ds") {
-        let dev_eui = v.value_of_lossy("dev-eui").unwrap();
-        let dev_eui = EUI64::from_str(&dev_eui).unwrap();
-
+    if let Some(Commands::PrintDs { dev_eui }) = &cli.command {
+        let dev_eui = EUI64::from_str(dev_eui).unwrap();
         cmd::print_ds::run(&dev_eui).await.unwrap();
         process::exit(0);
     }
 
-    if let Some(v) = matches.subcommand_matches("import-ttn-lorawan-devices") {
-        let dir = v.value_of_lossy("dir").unwrap();
-        cmd::import_ttn_lorawan_devices::run(Path::new(&*dir))
+    if let Some(Commands::ImportTtnLorawanDevices { dir }) = &cli.command {
+        cmd::import_ttn_lorawan_devices::run(Path::new(&dir))
             .await
             .unwrap();
         process::exit(0);

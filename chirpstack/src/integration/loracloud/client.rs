@@ -663,11 +663,12 @@ pub struct LoraDownlink {
 // PositionSolution implements the Positition Solution object.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct PositionSolution {
-    pub ecef: Vec<f64>,
+    pub algorithm_type: Option<String>,
+    pub ecef: Option<Vec<f64>>,
     pub llh: Vec<f64>,
-    pub capture_time_gps: f64,
-    pub gdop: f64,
-    pub accuracy: f32,
+    pub capture_time_gps: Option<f64>,
+    pub gdop: Option<f64>,
+    pub accuracy: Option<f32>,
     pub timestamp: f64,
 }
 
