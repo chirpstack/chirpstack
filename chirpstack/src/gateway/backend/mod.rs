@@ -7,11 +7,11 @@ use tracing::{info, warn};
 
 use crate::config;
 
+mod azure;
+mod common;
 #[cfg(test)]
 pub mod mock;
 mod mqtt;
-mod azure;
-mod common;
 
 lazy_static! {
     static ref BACKENDS: RwLock<HashMap<String, Box<dyn GatewayBackend + Sync + Send>>> =
@@ -48,7 +48,9 @@ pub async fn setup() -> Result<()> {
                 &region.name,
                 region.common_name,
                 &region.gateway.backend.azure,
-            ).await.context("New MQTT gateway backend error")?;
+            )
+            .await
+            .context("New MQTT gateway backend error")?;
 
             set_backend(&region.name, Box::new(backend)).await;
         } else {
@@ -56,8 +58,9 @@ pub async fn setup() -> Result<()> {
                 &region.name,
                 region.common_name,
                 &region.gateway.backend.mqtt,
-            ).await
-                .context("New MQTT gateway backend error")?;
+            )
+            .await
+            .context("New MQTT gateway backend error")?;
             set_backend(&region.name, Box::new(backend)).await;
         }
     }

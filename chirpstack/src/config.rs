@@ -1,13 +1,13 @@
-use std::{env, fs};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use std::{env, fs};
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
-use lrwn::{AES128Key, EUI64, NetID};
 use lrwn::region::CommonName;
+use lrwn::{AES128Key, NetID, EUI64};
 
 lazy_static! {
     static ref CONFIG: Mutex<Arc<Configuration>> = Mutex::new(Arc::new(Default::default()));

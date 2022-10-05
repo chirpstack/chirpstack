@@ -15,9 +15,9 @@ use tracing::{error, info, trace};
 
 use lrwn::region::CommonName;
 
-use crate::{downlink, uplink};
 use crate::monitoring::prometheus;
 use crate::storage::{get_redis_conn, redis_key};
+use crate::{downlink, uplink};
 
 lazy_static! {
     pub static ref EVENT_COUNTER: Family<EventLabels, Counter> = {
@@ -29,7 +29,7 @@ lazy_static! {
         );
         counter
     };
-  pub static ref COMMAND_COUNTER: Family<CommandLabels, Counter> = {
+    pub static ref COMMAND_COUNTER: Family<CommandLabels, Counter> = {
         let counter = Family::<CommandLabels, Counter>::default();
         prometheus::register(
             "gateway_backend_mqtt_commands",
@@ -50,7 +50,12 @@ pub struct CommandLabels {
     pub command: String,
 }
 
-pub async fn message_callback(region_common_name: CommonName, payload: &[u8], region_name: &str, topic: &str) {
+pub async fn message_callback(
+    region_common_name: CommonName,
+    payload: &[u8],
+    region_name: &str,
+    topic: &str,
+) {
     let mut hasher = DefaultHasher::new();
     hasher.write(payload);
     let key = redis_key(format!("gw:mqtt:lock:{:x}", hasher.finish()));
@@ -58,32 +63,34 @@ pub async fn message_callback(region_common_name: CommonName, payload: &[u8], re
 
     match manage_message(&region_common_name, &payload, region_name, topic, locked) {
         Ok(()) => (),
-        Err(err) =>   error!(
-            topic = topic,
-            "Processing gateway event error: {}",
-            err
-        ),
+        Err(err) => error!(topic = topic, "Processing gateway event error: {}", err),
     };
 }
 
-fn manage_message(region_common_name: &CommonName, payload: &&[u8], region_name: &str, topic: &str, locked: Result<bool>) -> Result<(),anyhow::Error> {
+fn manage_message(
+    region_common_name: &CommonName,
+    payload: &&[u8],
+    region_name: &str,
+    topic: &str,
+    locked: Result<bool>,
+) -> Result<(), anyhow::Error> {
     if locked? {
         trace!(
-                region_name = region_name,
-                topic = topic,
-                "Message is already handled by different instance"
-            );
+            region_name = region_name,
+            topic = topic,
+            "Message is already handled by different instance"
+        );
         return Ok(());
     }
 
     let json = payload_is_json(payload);
 
     info!(
-            region_name = region_name,
-            topic = topic,
-            json = json,
-            "Message received from gateway"
-        );
+        region_name = region_name,
+        topic = topic,
+        json = json,
+        "Message received from gateway"
+    );
 
     if topic.eq("up") {
         EVENT_COUNTER
@@ -160,7 +167,7 @@ async fn is_locked(key: String) -> Result<bool> {
             Ok(!set)
         }
     })
-        .await?
+    .await?
 }
 
 fn payload_is_json(b: &[u8]) -> bool {
@@ -176,7 +183,6 @@ pub fn gateway_is_json(gateway_id: &str) -> bool {
     let gw_json_r = GATEWAY_JSON.read().unwrap();
     gw_json_r.get(gateway_id).cloned().unwrap_or(false)
 }
-
 
 #[cfg(test)]
 pub mod test {

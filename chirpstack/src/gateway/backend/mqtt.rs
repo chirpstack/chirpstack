@@ -16,10 +16,10 @@ use lrwn::region::CommonName;
 
 use crate::config::GatewayBackendMqtt;
 
-use super::common::COMMAND_COUNTER;
-use super::common::CommandLabels;
 use super::common::gateway_is_json;
 use super::common::message_callback;
+use super::common::CommandLabels;
+use super::common::COMMAND_COUNTER;
 use super::GatewayBackend;
 
 struct MqttContext {
@@ -175,8 +175,14 @@ impl<'a> MqttBackend<'a> {
                         } else {
                             topic = "";
                         }
-                        trace!("mqtt_topic {}, region {}, qos {}", mqtt_topic,region_name,qos);
-                        message_callback(region_common_name, msg.payload(), &region_name, &topic).await;
+                        trace!(
+                            "mqtt_topic {}, region {}, qos {}",
+                            mqtt_topic,
+                            region_name,
+                            qos
+                        );
+                        message_callback(region_common_name, msg.payload(), &region_name, &topic)
+                            .await;
                     }
                 }
             }

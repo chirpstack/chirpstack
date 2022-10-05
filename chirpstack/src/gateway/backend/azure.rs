@@ -1,31 +1,27 @@
-use std::{str, thread};
-#[cfg(test)]
-use std::{println as trace, println as info, println as error};
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver as ChanRceiver, SyncSender as ChanSender};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+#[cfg(test)]
+use std::{println as trace, println as info, println as error};
+use std::{str, thread};
 
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use base64::decode;
-use fe2o3_amqp::{
-    Connection, sasl_profile::SaslProfile, Sender, Session,
-};
-use fe2o3_amqp::{
-    types::{
-        messaging::{Message as AmqpMessage, Properties},
-        primitives::Binary,
-    },
-};
 use fe2o3_amqp::connection::ConnectionHandle;
 use fe2o3_amqp::session::SessionHandle;
 use fe2o3_amqp::types::messaging::ApplicationProperties;
+use fe2o3_amqp::types::{
+    messaging::{Message as AmqpMessage, Properties},
+    primitives::Binary,
+};
+use fe2o3_amqp::{sasl_profile::SaslProfile, Connection, Sender, Session};
 use hmac::{Hmac, Mac};
 use prost::Message;
 use rdkafka::config::ClientConfig;
 use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
-use rdkafka::message::{BorrowedMessage, Message as KafkaMessage};
 use rdkafka::message::ToBytes;
+use rdkafka::message::{BorrowedMessage, Message as KafkaMessage};
 use serde_amqp;
 use serde_json::Value;
 use sha2::Sha256;
@@ -38,10 +34,10 @@ use lrwn::region::CommonName;
 
 use crate::config::GatewayBackendAzure;
 
-use super::common::COMMAND_COUNTER;
-use super::common::CommandLabels;
 use super::common::gateway_is_json;
 use super::common::message_callback;
+use super::common::CommandLabels;
+use super::common::COMMAND_COUNTER;
 use super::GatewayBackend;
 
 struct BusConnectionInformation {
@@ -76,8 +72,16 @@ struct AmqpConnectivity {
 
 #[async_trait]
 trait SendConnectivity<T>: Send {
-    async fn connect(&mut self, parameters: &BusConnectionInformation, duration: Duration) -> Result<()>;
-    async fn reconnect(&mut self, parameters: &BusConnectionInformation, duration: Duration) -> Result<()>;
+    async fn connect(
+        &mut self,
+        parameters: &BusConnectionInformation,
+        duration: Duration,
+    ) -> Result<()>;
+    async fn reconnect(
+        &mut self,
+        parameters: &BusConnectionInformation,
+        duration: Duration,
+    ) -> Result<()>;
     async fn send(&mut self, message: T) -> Result<()>;
 }
 
@@ -92,9 +96,19 @@ impl AmqpConnectivity {
 
 #[async_trait]
 impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for AmqpConnectivity {
-    async fn connect(&mut self, parameters: &BusConnectionInformation, duration: Duration) -> Result<()> {
+    async fn connect(
+        &mut self,
+        parameters: &BusConnectionInformation,
+        duration: Duration,
+    ) -> Result<()> {
         let port = 5671;
-        let sa_key_value = create_sas_token(&parameters.hostname, &parameters.shared_access_key_name, &parameters.shared_access_key, &(SystemTime::now() + duration)).unwrap();
+        let sa_key_value = create_sas_token(
+            &parameters.hostname,
+            &parameters.shared_access_key_name,
+            &parameters.shared_access_key,
+            &(SystemTime::now() + duration),
+        )
+        .unwrap();
         let url = format!("amqps://{}:{}", &parameters.hostname, port);
         let mut connection = match Connection::builder()
             .container_id("rust-receiver-connection-1")
@@ -105,10 +119,11 @@ impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for AmqpConnectivit
                 password: sa_key_value,
             })
             .open(&url[..])
-            .await {
+            .await
+        {
             Ok(c) => c,
             Err(e) => {
-                error!("can not build connection{:?}",e);
+                error!("can not build connection{:?}", e);
                 return Err(Error::new(e));
             }
         };
@@ -116,7 +131,7 @@ impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for AmqpConnectivit
         let session = match Session::begin(&mut connection).await {
             Ok(s) => s,
             Err(e) => {
-                error!("can not build session{:?}",e);
+                error!("can not build session{:?}", e);
                 return Err(Error::from(e));
             }
         };
@@ -127,7 +142,11 @@ impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for AmqpConnectivit
         Ok(())
     }
 
-    async fn reconnect(&mut self, parameters: &BusConnectionInformation, duration: Duration) -> Result<()> {
+    async fn reconnect(
+        &mut self,
+        parameters: &BusConnectionInformation,
+        duration: Duration,
+    ) -> Result<()> {
         match self.session.as_mut().unwrap().close().await {
             Ok(r) => r,
             Err(err) => {
@@ -153,11 +172,16 @@ impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for AmqpConnectivit
     }
 
     async fn send(&mut self, message: AmqpMessage<serde_amqp::value::Value>) -> Result<()> {
-        let mut sender = match Sender::attach(&mut self.session.as_mut().unwrap(), "chirpstack-sender", "/messages/devicebound")
-            .await {
+        let mut sender = match Sender::attach(
+            &mut self.session.as_mut().unwrap(),
+            "chirpstack-sender",
+            "/messages/devicebound",
+        )
+        .await
+        {
             Ok(s) => s,
             Err(e) => {
-                error!("can not create sender {:?}",e);
+                error!("can not create sender {:?}", e);
                 return Err(Error::new(e));
             }
         };
@@ -165,7 +189,7 @@ impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for AmqpConnectivit
         let outcome = match sender.send(message).await {
             Ok(m) => m,
             Err(e) => {
-                error!("error while sending amqp message {:?}",e);
+                error!("error while sending amqp message {:?}", e);
                 return Err(Error::new(e));
             }
         };
@@ -173,7 +197,7 @@ impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for AmqpConnectivit
         let _ = match outcome.accepted_or_else(|outcome| outcome) {
             Ok(_) => (),
             Err(e) => {
-                error!("amqp message not accepted {:?}",e);
+                error!("amqp message not accepted {:?}", e);
                 ()
             }
         };
@@ -191,21 +215,26 @@ impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for AmqpConnectivit
 }
 
 impl AzureBackend {
-    pub async fn new(region_name: &str,
-                     region_common_name: CommonName, conf: &GatewayBackendAzure) -> Result<AzureBackend> {
-        let bus_information = build_bus_connection_string(conf.commands_connection_string.to_string()).unwrap();
-        let (tx, rx): (ChanSender<AmqpMessage<serde_amqp::value::Value>>, ChanRceiver<AmqpMessage<serde_amqp::value::Value>>) = mpsc::sync_channel(1000);
-        let azure_backend = AzureBackend {
-            tx: Some(tx),
-        };
+    pub async fn new(
+        region_name: &str,
+        region_common_name: CommonName,
+        conf: &GatewayBackendAzure,
+    ) -> Result<AzureBackend> {
+        let bus_information =
+            build_bus_connection_string(conf.commands_connection_string.to_string()).unwrap();
+        let (tx, rx): (
+            ChanSender<AmqpMessage<serde_amqp::value::Value>>,
+            ChanRceiver<AmqpMessage<serde_amqp::value::Value>>,
+        ) = mpsc::sync_channel(1000);
+        let azure_backend = AzureBackend { tx: Some(tx) };
         let connectivity = AmqpConnectivity::new();
         let token = CancellationToken::new();
         tokio::spawn(async move {
             AzureBackend::run_downlink(Box::new(connectivity), bus_information, rx, token).await;
         });
 
-
-        let event_information = build_event_connection_string(conf.events_connection_string.to_string()).unwrap();
+        let event_information =
+            build_event_connection_string(conf.events_connection_string.to_string()).unwrap();
         let region = region_name.to_string();
         tokio::spawn(async move {
             AzureBackend::run_uplink(region, region_common_name, event_information).await;
@@ -214,7 +243,12 @@ impl AzureBackend {
         Ok(azure_backend)
     }
 
-    async fn run_downlink(mut connectivity: Box<dyn SendConnectivity<AmqpMessage<serde_amqp::value::Value>>>, parameters: BusConnectionInformation, rx: ChanRceiver<AmqpMessage<serde_amqp::value::Value>>, cancel: CancellationToken) {
+    async fn run_downlink(
+        mut connectivity: Box<dyn SendConnectivity<AmqpMessage<serde_amqp::value::Value>>>,
+        parameters: BusConnectionInformation,
+        rx: ChanRceiver<AmqpMessage<serde_amqp::value::Value>>,
+        cancel: CancellationToken,
+    ) {
         loop {
             if cancel.is_cancelled() {
                 return;
@@ -228,10 +262,13 @@ impl AzureBackend {
             let mut start = Instant::now();
             let mut last_receive_message = Instant::now();
 
-            match connectivity.connect(&parameters, sas_token_duration.clone()).await {
+            match connectivity
+                .connect(&parameters, sas_token_duration.clone())
+                .await
+            {
                 Ok(_) => {}
                 Err(e) => {
-                    error!("cant connect, let's try later {:?}",e);
+                    error!("cant connect, let's try later {:?}", e);
                     thread::sleep(Duration::from_secs(10));
                     continue;
                 }
@@ -250,14 +287,19 @@ impl AzureBackend {
                 }
 
                 let check_last_message_duration = last_receive_message.elapsed();
-                if check_last_message_duration >= event_pubsub_connection_duration - Duration::from_secs(10) {
+                if check_last_message_duration
+                    >= event_pubsub_connection_duration - Duration::from_secs(10)
+                {
                     trace!("no message for the connection duration, needs reconnection");
                     reconnect = true;
                 }
 
                 if reconnect {
                     trace!("Reconnect amqp client");
-                    match connectivity.reconnect(&parameters, sas_token_duration.clone()).await {
+                    match connectivity
+                        .reconnect(&parameters, sas_token_duration.clone())
+                        .await
+                    {
                         Ok(_) => {
                             if cancel.is_cancelled() {
                                 return;
@@ -267,7 +309,7 @@ impl AzureBackend {
                             if cancel.is_cancelled() {
                                 return;
                             }
-                            error!("cant reconnect, let's try to wait {:?}",e);
+                            error!("cant reconnect, let's try to wait {:?}", e);
                             thread::sleep(Duration::from_secs(2));
                             continue;
                         }
@@ -305,7 +347,7 @@ impl AzureBackend {
                             return;
                         }
                         reconnect = true;
-                        error!("cant send message, reconnect {:?}",e);
+                        error!("cant send message, reconnect {:?}", e);
                         continue;
                     }
                 };
@@ -313,36 +355,50 @@ impl AzureBackend {
         }
     }
 
-
-    async fn run_uplink(region: String, region_common_name: CommonName, event_information: EventConnectionInformation) {
-        let mut uplink_client = AzureKafkaClient::new(region.as_str(), &event_information).await.expect("can't init azure client");
+    async fn run_uplink(
+        region: String,
+        region_common_name: CommonName,
+        event_information: EventConnectionInformation,
+    ) {
+        let mut uplink_client = AzureKafkaClient::new(region.as_str(), &event_information)
+            .await
+            .expect("can't init azure client");
         loop {
             match uplink_client.consumer.as_ref().unwrap().recv().await {
                 Err(e) => {
                     error!("Kafka error, rebuilding the client: {}", e);
-                    uplink_client = AzureKafkaClient::new(region.as_str(), &event_information).await.expect("can't init azure client");
+                    uplink_client = AzureKafkaClient::new(region.as_str(), &event_information)
+                        .await
+                        .expect("can't init azure client");
                     continue;
                 }
                 Ok(m) => {
                     match uplink_client.process(&m).await {
                         Err(e) => {
-                            error!("error when processing message and retrieving payload: {}", e);
+                            error!(
+                                "error when processing message and retrieving payload: {}",
+                                e
+                            );
                         }
-                        Ok(payload) => {
-                            match Self::check_payload_and_callback(payload) {
-                                Ok(m) => {
-                                    let payload_decode_array: &[u8] = &m.payload;
-                                    let region = region.clone();
-                                    message_callback(region_common_name, payload_decode_array, region.as_str(), m.topic.as_str()).await;
-                                    trace!("message has been processed");
-                                    continue;
-                                }
-                                Err(err) => {
-                                    error!("Problem processing msg {:?}",err);
-                                    continue;
-                                }
+                        Ok(payload) => match Self::check_payload_and_callback(payload) {
+                            Ok(m) => {
+                                let payload_decode_array: &[u8] = &m.payload;
+                                let region = region.clone();
+                                message_callback(
+                                    region_common_name,
+                                    payload_decode_array,
+                                    region.as_str(),
+                                    m.topic.as_str(),
+                                )
+                                .await;
+                                trace!("message has been processed");
+                                continue;
                             }
-                        }
+                            Err(err) => {
+                                error!("Problem processing msg {:?}", err);
+                                continue;
+                            }
+                        },
                     };
                 }
             };
@@ -352,15 +408,16 @@ impl AzureBackend {
     fn check_payload_and_callback(payload: &str) -> Result<MessageProperties, Error> {
         type Err = Error;
         let topic: &str;
-        info!("payload: '{}'",payload);
+        info!("payload: '{}'", payload);
         let msg: Value = serde_json::from_str(payload).unwrap_or_default();
-        let gateway_id = match msg[0]["data"]["systemProperties"]["iothub-connection-device-id"].as_str() {
-            Some(s) => s,
-            None => ""
-        };
+        let gateway_id =
+            match msg[0]["data"]["systemProperties"]["iothub-connection-device-id"].as_str() {
+                Some(s) => s,
+                None => "",
+            };
         let payload = match msg[0]["data"]["body"].as_str() {
             Some(s) => s,
-            None => return Err(anyhow!("Payload does not exist"))
+            None => return Err(anyhow!("Payload does not exist")),
         };
         let payload = payload.as_bytes();
         trace!("gateway_id {}", gateway_id);
@@ -386,7 +443,9 @@ impl AzureBackend {
     }
 }
 
-fn build_bus_connection_string(azure_connection_string: String) -> Result<BusConnectionInformation> {
+fn build_bus_connection_string(
+    azure_connection_string: String,
+) -> Result<BusConnectionInformation> {
     let mut hostname = "";
     let mut shared_access_key_name = "";
     let mut shared_access_key = "";
@@ -413,13 +472,19 @@ fn build_bus_connection_string(azure_connection_string: String) -> Result<BusCon
         error!("no hubname");
     }
     Ok(BusConnectionInformation {
-        shared_access_key_name: format!("{}@sas.root.{}", shared_access_key_name, hub_name.unwrap()),
+        shared_access_key_name: format!(
+            "{}@sas.root.{}",
+            shared_access_key_name,
+            hub_name.unwrap()
+        ),
         hostname: hostname.to_string(),
         shared_access_key: shared_access_key.to_string(),
     })
 }
 
-fn build_event_connection_string(azure_connection_string: String) -> Result<EventConnectionInformation> {
+fn build_event_connection_string(
+    azure_connection_string: String,
+) -> Result<EventConnectionInformation> {
     let mut hostname = "".to_string();
     let mut topic_name = "".to_string();
     for key_value in azure_connection_string.split(";") {
@@ -459,8 +524,7 @@ impl GatewayBackend for AzureBackend {
                 command: "down".to_string(),
             })
             .inc();
-        info!("message: {:?}",df);
-
+        info!("message: {:?}", df);
 
         let mut df = df.clone();
         df.v4_migrate();
@@ -482,30 +546,35 @@ impl GatewayBackend for AzureBackend {
         let data = b.to_bytes();
 
         let message = AmqpMessage::builder()
-            .properties(Properties::builder()
-                .message_id(message_id.to_string())
-                .to(topic)
-                .build())
-            .application_properties(ApplicationProperties::builder()
-                .insert("iothub-ack", "none")
-                .insert("command", "down")
-                .build()
+            .properties(
+                Properties::builder()
+                    .message_id(message_id.to_string())
+                    .to(topic)
+                    .build(),
+            )
+            .application_properties(
+                ApplicationProperties::builder()
+                    .insert("iothub-ack", "none")
+                    .insert("command", "down")
+                    .build(),
             )
             .data(Binary::from(data))
             .build();
 
         match self.tx.as_ref().unwrap().send(message) {
             Err(err) => {
-                error!("{:?}",err)
+                error!("{:?}", err)
             }
             _ => {}
         };
 
-
         Ok(())
     }
 
-    async fn send_configuration(&self, gw_conf: &chirpstack_api::gw::GatewayConfiguration) -> Result<()> {
+    async fn send_configuration(
+        &self,
+        gw_conf: &chirpstack_api::gw::GatewayConfiguration,
+    ) -> Result<()> {
         let json = gateway_is_json(&gw_conf.gateway_id);
         let b = match json {
             true => serde_json::to_vec(&gw_conf)?,
@@ -523,21 +592,24 @@ impl GatewayBackend for AzureBackend {
         let data = b.to_bytes();
 
         let message = AmqpMessage::builder()
-            .properties(Properties::builder()
-                .message_id(message_id.to_string())
-                .to(topic)
-                .build())
-            .application_properties(ApplicationProperties::builder()
-                .insert("iothub-ack", "none")
-                .insert("command", "config")
-                .build()
+            .properties(
+                Properties::builder()
+                    .message_id(message_id.to_string())
+                    .to(topic)
+                    .build(),
+            )
+            .application_properties(
+                ApplicationProperties::builder()
+                    .insert("iothub-ack", "none")
+                    .insert("command", "config")
+                    .build(),
             )
             .data(Binary::from(data))
             .build();
 
         match self.tx.as_ref().unwrap().send(message) {
             Err(err) => {
-                error!("{:?}",err)
+                error!("{:?}", err)
             }
             _ => {}
         };
@@ -547,9 +619,15 @@ impl GatewayBackend for AzureBackend {
 }
 
 impl AzureKafkaClient {
-    pub async fn new(region: &str, parameters: &EventConnectionInformation) -> Result<AzureKafkaClient> {
+    pub async fn new(
+        region: &str,
+        parameters: &EventConnectionInformation,
+    ) -> Result<AzureKafkaClient> {
         let consumer: StreamConsumer = ClientConfig::new()
-            .set("bootstrap.servers", format!("{}.servicebus.windows.net:9093", &parameters.hub_name))
+            .set(
+                "bootstrap.servers",
+                format!("{}.servicebus.windows.net:9093", &parameters.hub_name),
+            )
             .set("security.protocol", "SASL_SSL")
             .set("sasl.mechanisms", "PLAIN")
             .set("sasl.username", "$ConnectionString")
@@ -557,7 +635,8 @@ impl AzureKafkaClient {
             .set("group.id", region)
             .create()
             .expect("Consumer creation failed");
-        consumer.subscribe(&[&parameters.topic_name])
+        consumer
+            .subscribe(&[&parameters.topic_name])
             .expect("Can't subscribe to topic");
 
         let azure_client = AzureKafkaClient {
@@ -575,9 +654,19 @@ impl AzureKafkaClient {
                 ""
             }
         };
-        trace!("key: '{:?}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
-                 m.key(), m.topic(), m.partition(), m.offset(), m.timestamp());
-        self.consumer.as_ref().unwrap().commit_message(&m, CommitMode::Async).unwrap();
+        trace!(
+            "key: '{:?}', topic: {}, partition: {}, offset: {}, timestamp: {:?}",
+            m.key(),
+            m.topic(),
+            m.partition(),
+            m.offset(),
+            m.timestamp()
+        );
+        self.consumer
+            .as_ref()
+            .unwrap()
+            .commit_message(&m, CommitMode::Async)
+            .unwrap();
         Ok(payload)
     }
 }
@@ -617,8 +706,10 @@ pub mod test {
     use super::*;
 
     struct MockAmqpConnectivity {
-        mock_connect_fn: fn(parameters: &BusConnectionInformation, duration: Duration) -> Result<()>,
-        mock_reconnect_fn: fn(parameters: &BusConnectionInformation, duration: Duration) -> Result<()>,
+        mock_connect_fn:
+            fn(parameters: &BusConnectionInformation, duration: Duration) -> Result<()>,
+        mock_reconnect_fn:
+            fn(parameters: &BusConnectionInformation, duration: Duration) -> Result<()>,
         mock_send_fn: fn(message: AmqpMessage<serde_amqp::Value>) -> Result<()>,
         call_connect_tx: Option<ChanSender<bool>>,
         call_reconnect_tx: Option<ChanSender<bool>>,
@@ -627,23 +718,43 @@ pub mod test {
 
     #[async_trait]
     impl SendConnectivity<AmqpMessage<serde_amqp::value::Value>> for MockAmqpConnectivity {
-        async fn connect(&mut self, parameters: &BusConnectionInformation, duration: Duration) -> Result<()> {
+        async fn connect(
+            &mut self,
+            parameters: &BusConnectionInformation,
+            duration: Duration,
+        ) -> Result<()> {
             if self.call_connect_tx.is_some() {
-                self.call_connect_tx.as_ref().unwrap().send(true).expect("TODO: panic message");
+                self.call_connect_tx
+                    .as_ref()
+                    .unwrap()
+                    .send(true)
+                    .expect("TODO: panic message");
             }
             return (self.mock_connect_fn)(parameters, duration);
         }
 
-        async fn reconnect(&mut self, parameters: &BusConnectionInformation, duration: Duration) -> Result<()> {
+        async fn reconnect(
+            &mut self,
+            parameters: &BusConnectionInformation,
+            duration: Duration,
+        ) -> Result<()> {
             if self.call_reconnect_tx.is_some() {
-                self.call_reconnect_tx.as_ref().unwrap().send(true).expect("TODO: panic message");
+                self.call_reconnect_tx
+                    .as_ref()
+                    .unwrap()
+                    .send(true)
+                    .expect("TODO: panic message");
             }
             return (self.mock_reconnect_fn)(parameters, duration);
         }
 
         async fn send(&mut self, message: AmqpMessage<serde_amqp::Value>) -> Result<()> {
             if self.call_send_tx.is_some() {
-                self.call_send_tx.as_ref().unwrap().send(true).expect("TODO: panic message");
+                self.call_send_tx
+                    .as_ref()
+                    .unwrap()
+                    .send(true)
+                    .expect("TODO: panic message");
             }
             return (self.mock_send_fn)(message);
         }
@@ -657,29 +768,26 @@ pub mod test {
             shared_access_key_name: "a share access key name".to_string(),
         };
 
-        let (_tx, rx): (ChanSender<AmqpMessage<serde_amqp::value::Value>>, ChanRceiver<AmqpMessage<serde_amqp::value::Value>>) = mpsc::sync_channel(1);
-        let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
+        let (_tx, rx): (
+            ChanSender<AmqpMessage<serde_amqp::value::Value>>,
+            ChanRceiver<AmqpMessage<serde_amqp::value::Value>>,
+        ) = mpsc::sync_channel(1);
+        let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) =
+            mpsc::sync_channel(1);
         let mock_box = Box::new(MockAmqpConnectivity {
-            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| {
-                Ok(())
-            },
-            mock_reconnect_fn: |_info, _d: Duration| {
-                Ok(())
-            },
-            mock_send_fn: |_message| {
-                Ok(())
-            },
+            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| Ok(()),
+            mock_reconnect_fn: |_info, _d: Duration| Ok(()),
+            mock_send_fn: |_message| Ok(()),
             call_connect_tx: Some(call_connect_tx),
             call_reconnect_tx: None,
             call_send_tx: None,
-
         });
 
         let token = CancellationToken::new();
         let cloned_token = token.clone();
-        tokio::spawn(async move {
-            AzureBackend::run_downlink(mock_box, info, rx, cloned_token).await
-        });
+        tokio::spawn(
+            async move { AzureBackend::run_downlink(mock_box, info, rx, cloned_token).await },
+        );
         let result = call_connect_rx.recv_timeout(Duration::from_secs(2));
         token.cancel();
 
@@ -689,23 +797,21 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn test_downlink_process_message() {
-        let (tx, rx): (ChanSender<AmqpMessage<serde_amqp::value::Value>>, ChanRceiver<AmqpMessage<serde_amqp::value::Value>>) = mpsc::sync_channel(1);
-        let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
-        let (call_send_tx, call_send_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
+        let (tx, rx): (
+            ChanSender<AmqpMessage<serde_amqp::value::Value>>,
+            ChanRceiver<AmqpMessage<serde_amqp::value::Value>>,
+        ) = mpsc::sync_channel(1);
+        let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) =
+            mpsc::sync_channel(1);
+        let (call_send_tx, call_send_rx): (ChanSender<bool>, ChanRceiver<bool>) =
+            mpsc::sync_channel(1);
         let mock_box = Box::new(MockAmqpConnectivity {
-            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| {
-                Ok(())
-            },
-            mock_reconnect_fn: |_info, _d: Duration| {
-                Ok(())
-            },
-            mock_send_fn: |_message| {
-                Ok(())
-            },
+            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| Ok(()),
+            mock_reconnect_fn: |_info, _d: Duration| Ok(()),
+            mock_send_fn: |_message| Ok(()),
             call_connect_tx: Some(call_connect_tx),
             call_reconnect_tx: None,
             call_send_tx: Some(call_send_tx),
-
         });
         let info = BusConnectionInformation {
             shared_access_key: "a share key".to_string(),
@@ -714,25 +820,26 @@ pub mod test {
         };
         let token = CancellationToken::new();
         let cloned_token = token.clone();
-        tokio::spawn(async move {
-            AzureBackend::run_downlink(mock_box, info, rx, cloned_token).await
-        });
+        tokio::spawn(
+            async move { AzureBackend::run_downlink(mock_box, info, rx, cloned_token).await },
+        );
         let result = call_connect_rx.recv_timeout(Duration::from_secs(2));
 
         assert_eq!(result.is_err(), false);
         assert_eq!(result.unwrap(), true);
 
-
         let handle = tokio::spawn(async move {
             let result = call_send_rx.recv_timeout(Duration::from_secs(20));
             if result.is_err() {
-                info!("{:?}",result.err())
+                info!("{:?}", result.err())
             }
             assert_eq!(result.is_err(), false);
             assert_eq!(result.unwrap(), true);
         });
 
-        let message = AmqpMessage::builder().data(Binary::from("test".to_bytes())).build();
+        let message = AmqpMessage::builder()
+            .data(Binary::from("test".to_bytes()))
+            .build();
         tx.send(message).expect("problem");
 
         thread::sleep(Duration::from_secs(2));
@@ -743,24 +850,25 @@ pub mod test {
 
     #[tokio::test(flavor = "multi_thread")]
     async fn test_downlink_needs_reconnect() {
-        let (tx, rx): (ChanSender<AmqpMessage<serde_amqp::value::Value>>, ChanRceiver<AmqpMessage<serde_amqp::value::Value>>) = mpsc::sync_channel(1);
-        let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
-        let (call_reconnect_tx, call_reconnect_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
-        let (call_send_tx, call_send_rx): (ChanSender<bool>, ChanRceiver<bool>) = mpsc::sync_channel(1);
+        let (tx, rx): (
+            ChanSender<AmqpMessage<serde_amqp::value::Value>>,
+            ChanRceiver<AmqpMessage<serde_amqp::value::Value>>,
+        ) = mpsc::sync_channel(1);
+        let (call_connect_tx, call_connect_rx): (ChanSender<bool>, ChanRceiver<bool>) =
+            mpsc::sync_channel(1);
+        let (call_reconnect_tx, call_reconnect_rx): (ChanSender<bool>, ChanRceiver<bool>) =
+            mpsc::sync_channel(1);
+        let (call_send_tx, call_send_rx): (ChanSender<bool>, ChanRceiver<bool>) =
+            mpsc::sync_channel(1);
         let mock_box = Box::new(MockAmqpConnectivity {
-            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| {
-                Ok(())
-            },
-            mock_reconnect_fn: |_info, _d: Duration| {
-                Ok(())
-            },
+            mock_connect_fn: |_info: &BusConnectionInformation, _d: Duration| Ok(()),
+            mock_reconnect_fn: |_info, _d: Duration| Ok(()),
             mock_send_fn: |_message| {
                 return Err(Error::msg("problem"));
             },
             call_connect_tx: Some(call_connect_tx),
             call_reconnect_tx: Some(call_reconnect_tx),
             call_send_tx: Some(call_send_tx),
-
         });
         let info = BusConnectionInformation {
             shared_access_key: "a share key".to_string(),
@@ -769,19 +877,18 @@ pub mod test {
         };
         let token = CancellationToken::new();
         let cloned_token = token.clone();
-        tokio::spawn(async move {
-            AzureBackend::run_downlink(mock_box, info, rx, cloned_token).await
-        });
+        tokio::spawn(
+            async move { AzureBackend::run_downlink(mock_box, info, rx, cloned_token).await },
+        );
         let result = call_connect_rx.recv_timeout(Duration::from_secs(2));
 
         assert_eq!(result.is_err(), false);
         assert_eq!(result.unwrap(), true);
 
-
         let handle_send = tokio::spawn(async move {
             let result = call_send_rx.recv_timeout(Duration::from_secs(20));
             if result.is_err() {
-                info!("{:?}",result.err())
+                info!("{:?}", result.err())
             }
             assert_eq!(result.is_err(), false);
             assert_eq!(result.unwrap(), true);
@@ -790,13 +897,15 @@ pub mod test {
         let handle_reconnect = tokio::spawn(async move {
             let result = call_reconnect_rx.recv_timeout(Duration::from_secs(20));
             if result.is_err() {
-                info!("{:?}",result.err())
+                info!("{:?}", result.err())
             }
             assert_eq!(result.is_err(), false);
             assert_eq!(result.unwrap(), true);
         });
 
-        let message = AmqpMessage::builder().data(Binary::from("test".to_bytes())).build();
+        let message = AmqpMessage::builder()
+            .data(Binary::from("test".to_bytes()))
+            .build();
         tx.send(message).expect("problem");
 
         thread::sleep(Duration::from_secs(2));
@@ -832,9 +941,18 @@ pub mod test {
     #[test]
     fn test_build_bus_connection_string() {
         let connection_information = build_bus_connection_string("HostName=an-iot-hub.azure-devices.net;SharedAccessKeyName=service;SharedAccessKey=yuui58399mfCvhRvmowieujbsdsd".to_string()).unwrap();
-        assert_eq!(connection_information.hostname, "an-iot-hub.azure-devices.net");
-        assert_eq!(connection_information.shared_access_key_name, "service@sas.root.an-iot-hub");
-        assert_eq!(connection_information.shared_access_key, "yuui58399mfCvhRvmowieujbsdsd");
+        assert_eq!(
+            connection_information.hostname,
+            "an-iot-hub.azure-devices.net"
+        );
+        assert_eq!(
+            connection_information.shared_access_key_name,
+            "service@sas.root.an-iot-hub"
+        );
+        assert_eq!(
+            connection_information.shared_access_key,
+            "yuui58399mfCvhRvmowieujbsdsd"
+        );
     }
 
     #[test]
