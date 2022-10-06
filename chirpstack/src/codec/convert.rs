@@ -14,9 +14,15 @@ fn _rquickjs_to_struct_val(val: &rquickjs::Value) -> Option<pbjson_types::value:
         rquickjs::Type::Int => Some(pbjson_types::value::Kind::NumberValue(
             val.as_int().unwrap().into(),
         )),
-        rquickjs::Type::Float => Some(pbjson_types::value::Kind::NumberValue(
-            val.as_float().unwrap(),
-        )),
+        rquickjs::Type::Float => {
+            let v = val.as_float().unwrap();
+            if v.is_nan() {
+                // Avoid Cannot serialize NaN as google.protobuf.Value.number_value error.
+                None
+            } else {
+                Some(pbjson_types::value::Kind::NumberValue(v))
+            }
+        }
         rquickjs::Type::String => Some(pbjson_types::value::Kind::StringValue(
             val.as_string().unwrap().to_string().unwrap(),
         )),

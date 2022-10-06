@@ -96,210 +96,225 @@ pub async fn get_event_logs(
                     for stream_id in &stream_key.ids {
                         last_id = stream_id.id.clone();
                         for (k, v) in &stream_id.map {
-                            match k.as_ref() {
-                                "up" => {
-                                    trace!(key = %k, id = %last_id, "Event-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = integration::UplinkEvent::decode(&mut Cursor::new(b))?;
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.as_ref().map(|v| prost_types::Timestamp{
-                                                seconds: v.seconds,
-                                                nanos: v.nanos,
-                                            }),
-                                            description: k.clone(),
-                                            body: serde_json::to_string(&pl)?,
-                                            properties: [
-                                                ("DR".to_string(), format!("{}", pl.dr)),
-                                                ("FPort".to_string(), format!("{}", pl.f_port)),
-                                                ("Data".to_string(), hex::encode(&pl.data)),
-                                            ]
-                                            .iter()
-                                            .cloned()
-                                            .collect(),
-                                        };
-
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
-                                        }
-                                    }
-                                }
-                                "join" => {
-                                    trace!(key = %k, id = %last_id, "Event-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = integration::JoinEvent::decode(&mut Cursor::new(b))?;
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.as_ref().map(|v| prost_types::Timestamp{
-                                                seconds: v.seconds,
-                                                nanos: v.nanos,
-                                            }),
-                                            description: k.clone(),
-                                            body: serde_json::to_string(&pl)?,
-                                            properties: [("DevAddr".to_string(), pl.dev_addr)]
+                            let res = || -> Result<()> {
+                                match k.as_ref() {
+                                    "up" => {
+                                        trace!(key = %k, id = %last_id, "Event-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = integration::UplinkEvent::decode(&mut Cursor::new(b))?;
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.as_ref().map(|v| prost_types::Timestamp{
+                                                    seconds: v.seconds,
+                                                    nanos: v.nanos,
+                                                }),
+                                                description: k.clone(),
+                                                body: serde_json::to_string(&pl)?,
+                                                properties: [
+                                                    ("DR".to_string(), format!("{}", pl.dr)),
+                                                    ("FPort".to_string(), format!("{}", pl.f_port)),
+                                                    ("Data".to_string(), hex::encode(&pl.data)),
+                                                ]
                                                 .iter()
                                                 .cloned()
                                                 .collect(),
-                                        };
+                                            };
 
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
+                                            if channel.blocking_send(pl).is_err() {
+                                                return Err(anyhow!("Channel send error"));
+                                            }
                                         }
                                     }
-                                }
-                                "ack" => {
-                                    trace!(key = %k, id = %last_id, "Event-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = integration::AckEvent::decode(&mut Cursor::new(b))?;
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.as_ref().map(|v| prost_types::Timestamp{
-                                                seconds: v.seconds,
-                                                nanos: v.nanos,
-                                            }),
-                                            description: k.clone(),
-                                            body: serde_json::to_string(&pl)?,
-                                            properties: [].iter().cloned().collect(),
-                                        };
-
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
-                                        }
-                                    }
-                                }
-                                "txack" => {
-                                    trace!(key = %k, id = %last_id, "Event-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = integration::TxAckEvent::decode(&mut Cursor::new(b))?;
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.as_ref().map(|v| prost_types::Timestamp{
-                                                seconds: v.seconds,
-                                                nanos: v.nanos,
-                                            }),
-                                            description: k.clone(),
-                                            body: serde_json::to_string(&pl)?,
-                                            properties: [].iter().cloned().collect(),
-                                        };
-
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
-                                        }
-                                    }
-                                }
-                                "status" => {
-                                    trace!(key = %k, id = %last_id, "Event-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = integration::StatusEvent::decode(&mut Cursor::new(b))?;
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.as_ref().map(|v| prost_types::Timestamp{
-                                                seconds: v.seconds,
-                                                nanos: v.nanos,
-                                            }),
-                                            description: k.clone(),
-                                            body: serde_json::to_string(&pl)?,
-                                            properties: [
-                                                ("Margin".into(), format!("{}", pl.margin)),
-                                                (
-                                                    "Battery level".into(),
-                                                    format!("{:.0}%", pl.battery_level),
-                                                ),
-                                                (
-                                                    "Battery level unavailable".into(),
-                                                    format!("{}", pl.battery_level_unavailable),
-                                                ),
-                                                (
-                                                    "External power source".into(),
-                                                    format!("{}", pl.external_power_source),
-                                                ),
-                                            ]
-                                            .iter()
-                                            .cloned()
-                                            .collect(),
-                                        };
-
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
-                                        }
-                                    }
-                                }
-                                "log" => {
-                                    trace!(key = %k, id =%last_id, "Event-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = integration::LogEvent::decode(&mut Cursor::new(b))?;
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.as_ref().map(|v| prost_types::Timestamp{
-                                                seconds: v.seconds,
-                                                nanos: v.nanos,
-                                            }),
-                                            description: k.clone(),
-                                            body: serde_json::to_string(&pl)?,
-                                            properties: [
-                                                ("Level".into(), pl.level().into()),
-                                                ("Code".into(), pl.code().into()),
-                                            ]
-                                            .iter()
-                                            .cloned()
-                                            .collect(),
-                                        };
-
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
-                                        }
-                                    }
-                                }
-                                "location" => {
-                                    trace!(key = %k, id=%last_id, "Event-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl = integration::LocationEvent::decode(&mut Cursor::new(b))?;
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.as_ref().map(|v| prost_types::Timestamp{
-                                                seconds: v.seconds,
-                                                nanos: v.nanos,
-                                            }),
-                                            description: k.clone(),
-                                            body: serde_json::to_string(&pl)?,
-                                            properties: [].iter().cloned().collect(),
-                                        };
-
-                                        if channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
-                                        }
-                                    }
-                                }
-                                "integration" => {
-                                    trace!(key = %k, id=%last_id, "Event-log received from stream");
-                                    if let redis::Value::Data(b) = v {
-                                        let pl =
-                                            integration::IntegrationEvent::decode(&mut Cursor::new(b))?;
-                                        let pl = api::LogItem {
-                                            id: stream_id.id.clone(),
-                                            time: pl.time.as_ref().map(|v| prost_types::Timestamp{
+                                    "join" => {
+                                        trace!(key = %k, id = %last_id, "Event-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = integration::JoinEvent::decode(&mut Cursor::new(b))?;
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.as_ref().map(|v| prost_types::Timestamp{
                                                     seconds: v.seconds,
                                                     nanos: v.nanos,
-                                            }),
-                                            description: k.clone(),
-                                            body: serde_json::to_string(&pl)?,
-                                            properties: [
-                                                ("Integration".into(), pl.integration_name.clone()),
-                                                ("Event".into(), pl.event_type.clone()),
-                                            ]
-                                            .iter()
-                                            .cloned()
-                                            .collect(),
-                                        };
+                                                }),
+                                                description: k.clone(),
+                                                body: serde_json::to_string(&pl)?,
+                                                properties: [("DevAddr".to_string(), pl.dev_addr)]
+                                                    .iter()
+                                                    .cloned()
+                                                    .collect(),
+                                            };
 
-                                        if  channel.blocking_send(pl).is_err() {
-                                            return Err(anyhow!("Channel send error"));
+                                            if channel.blocking_send(pl).is_err() {
+                                                return Err(anyhow!("Channel send error"));
+                                            }
                                         }
                                     }
+                                    "ack" => {
+                                        trace!(key = %k, id = %last_id, "Event-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = integration::AckEvent::decode(&mut Cursor::new(b))?;
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.as_ref().map(|v| prost_types::Timestamp{
+                                                    seconds: v.seconds,
+                                                    nanos: v.nanos,
+                                                }),
+                                                description: k.clone(),
+                                                body: serde_json::to_string(&pl)?,
+                                                properties: [].iter().cloned().collect(),
+                                            };
+
+                                            if channel.blocking_send(pl).is_err() {
+                                                return Err(anyhow!("Channel send error"));
+                                            }
+                                        }
+                                    }
+                                    "txack" => {
+                                        trace!(key = %k, id = %last_id, "Event-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = integration::TxAckEvent::decode(&mut Cursor::new(b))?;
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.as_ref().map(|v| prost_types::Timestamp{
+                                                    seconds: v.seconds,
+                                                    nanos: v.nanos,
+                                                }),
+                                                description: k.clone(),
+                                                body: serde_json::to_string(&pl)?,
+                                                properties: [].iter().cloned().collect(),
+                                            };
+
+                                            if channel.blocking_send(pl).is_err() {
+                                                return Err(anyhow!("Channel send error"));
+                                            }
+                                        }
+                                    }
+                                    "status" => {
+                                        trace!(key = %k, id = %last_id, "Event-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = integration::StatusEvent::decode(&mut Cursor::new(b))?;
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.as_ref().map(|v| prost_types::Timestamp{
+                                                    seconds: v.seconds,
+                                                    nanos: v.nanos,
+                                                }),
+                                                description: k.clone(),
+                                                body: serde_json::to_string(&pl)?,
+                                                properties: [
+                                                    ("Margin".into(), format!("{}", pl.margin)),
+                                                    (
+                                                        "Battery level".into(),
+                                                        format!("{:.0}%", pl.battery_level),
+                                                    ),
+                                                    (
+                                                        "Battery level unavailable".into(),
+                                                        format!("{}", pl.battery_level_unavailable),
+                                                    ),
+                                                    (
+                                                        "External power source".into(),
+                                                        format!("{}", pl.external_power_source),
+                                                    ),
+                                                ]
+                                                .iter()
+                                                .cloned()
+                                                .collect(),
+                                            };
+
+                                            if channel.blocking_send(pl).is_err() {
+                                                return Err(anyhow!("Channel send error"));
+                                            }
+                                        }
+                                    }
+                                    "log" => {
+                                        trace!(key = %k, id =%last_id, "Event-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = integration::LogEvent::decode(&mut Cursor::new(b))?;
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.as_ref().map(|v| prost_types::Timestamp{
+                                                    seconds: v.seconds,
+                                                    nanos: v.nanos,
+                                                }),
+                                                description: k.clone(),
+                                                body: serde_json::to_string(&pl)?,
+                                                properties: [
+                                                    ("Level".into(), pl.level().into()),
+                                                    ("Code".into(), pl.code().into()),
+                                                ]
+                                                .iter()
+                                                .cloned()
+                                                .collect(),
+                                            };
+
+                                            if channel.blocking_send(pl).is_err() {
+                                                return Err(anyhow!("Channel send error"));
+                                            }
+                                        }
+                                    }
+                                    "location" => {
+                                        trace!(key = %k, id=%last_id, "Event-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl = integration::LocationEvent::decode(&mut Cursor::new(b))?;
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.as_ref().map(|v| prost_types::Timestamp{
+                                                    seconds: v.seconds,
+                                                    nanos: v.nanos,
+                                                }),
+                                                description: k.clone(),
+                                                body: serde_json::to_string(&pl)?,
+                                                properties: [].iter().cloned().collect(),
+                                            };
+
+                                            if channel.blocking_send(pl).is_err() {
+                                                return Err(anyhow!("Channel send error"));
+                                            }
+                                        }
+                                    }
+                                    "integration" => {
+                                        trace!(key = %k, id=%last_id, "Event-log received from stream");
+                                        if let redis::Value::Data(b) = v {
+                                            let pl =
+                                                integration::IntegrationEvent::decode(&mut Cursor::new(b))?;
+                                            let pl = api::LogItem {
+                                                id: stream_id.id.clone(),
+                                                time: pl.time.as_ref().map(|v| prost_types::Timestamp{
+                                                        seconds: v.seconds,
+                                                        nanos: v.nanos,
+                                                }),
+                                                description: k.clone(),
+                                                body: serde_json::to_string(&pl)?,
+                                                properties: [
+                                                    ("Integration".into(), pl.integration_name.clone()),
+                                                    ("Event".into(), pl.event_type.clone()),
+                                                ]
+                                                .iter()
+                                                .cloned()
+                                                .collect(),
+                                            };
+
+                                            if  channel.blocking_send(pl).is_err() {
+                                                return Err(anyhow!("Channel send error"));
+                                            }
+                                        }
+                                    }
+                                    _ => {
+                                        error!(key = %k, "Unexpected key in in event-log stream");
+                                    }
+
                                 }
-                                _ => {
-                                    error!(key = %k, "Unexpected key in in event-log stream");
+
+                                Ok(())
+                            }();
+
+                            if let Err(e) = res {
+                                // Return in case of channel error, in any other case we just log
+                                // the error.
+                                if e.downcast_ref::<mpsc::error::SendError<api::LogItem>>().is_some() {
+                                    return Err(e);
                                 }
+
+                                error!(key = %k, error = %e, "Parsing frame-log error");
                             }
                         }
                     }
