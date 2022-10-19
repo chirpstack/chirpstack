@@ -14,6 +14,9 @@ pub enum Error {
     #[error("DevAddr expects exactly 4 bytes")]
     DevAddrLength,
 
+    #[error("DevAddrPrefix must be in the form 00000000/0")]
+    DevAddrPrefixFormat,
+
     #[error(transparent)]
     FromHexError(#[from] hex::FromHexError),
 }

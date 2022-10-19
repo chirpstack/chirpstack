@@ -5,6 +5,7 @@ use anyhow::Result;
 use serde::de::{self, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+use crate::devaddr::DevAddrPrefix;
 use crate::Error;
 
 #[derive(Default, PartialEq, Clone, Copy, Hash, Eq)]
@@ -73,6 +74,38 @@ impl NetID {
         }
 
         out[4 - blen..].to_vec()
+    }
+
+    pub fn dev_addr_prefix(&self) -> DevAddrPrefix {
+        match self.netid_type() {
+            0 => self.get_dev_addr_prefix(1, 6),
+            1 => self.get_dev_addr_prefix(2, 6),
+            2 => self.get_dev_addr_prefix(3, 9),
+            3 => self.get_dev_addr_prefix(4, 11),
+            4 => self.get_dev_addr_prefix(5, 12),
+            5 => self.get_dev_addr_prefix(6, 13),
+            6 => self.get_dev_addr_prefix(7, 15),
+            7 => self.get_dev_addr_prefix(8, 17),
+            _ => panic!("netid_type bug"),
+        }
+    }
+
+    fn get_dev_addr_prefix(&self, prefix_length: u32, nwkid_bits: u32) -> DevAddrPrefix {
+        // type prefix
+        let mut prefix: u32 = 254 << (32 - prefix_length);
+
+        // NwkID prefix
+        let mut netid_bytes: [u8; 4] = [0; 4];
+        let netid_id = self.id();
+        netid_bytes[4 - netid_id.len()..].clone_from_slice(&netid_id);
+        let mut nwkid = u32::from_be_bytes(netid_bytes);
+        nwkid <<= 32 - nwkid_bits; // truncate the MSB of the NetID ID field
+        nwkid >>= prefix_length; // shift base for the prefix MSB
+
+        // merge type prefix with nwkid.
+        prefix |= nwkid;
+
+        DevAddrPrefix::new(prefix.to_be_bytes(), prefix_length + nwkid_bits)
     }
 }
 
@@ -144,6 +177,7 @@ mod tests {
         id: Vec<u8>,
         bytes: [u8; 3],
         string: String,
+        dev_addr_prefix: DevAddrPrefix,
     }
 
     fn tests() -> Vec<Test> {
@@ -154,6 +188,7 @@ mod tests {
                 id: vec![0x2d],
                 bytes: [0x6d, 0x00, 0x00],
                 string: "00006d".into(),
+                dev_addr_prefix: DevAddrPrefix::new([0x5a, 0x00, 0x00, 0x00], 7),
             },
             Test {
                 netid: NetID::from_be_bytes([0x20, 0x00, 0x6d]),
@@ -161,6 +196,7 @@ mod tests {
                 id: vec![0x2d],
                 bytes: [0x6d, 0x00, 0x20],
                 string: "20006d".into(),
+                dev_addr_prefix: DevAddrPrefix::new([0xad, 0x00, 0x00, 0x00], 8),
             },
             Test {
                 netid: NetID::from_be_bytes([0x40, 0x03, 0x6d]),
@@ -168,6 +204,7 @@ mod tests {
                 id: vec![0x01, 0x6d],
                 bytes: [0x6d, 0x03, 0x40],
                 string: "40036d".into(),
+                dev_addr_prefix: DevAddrPrefix::new([0xd6, 0xd0, 0x00, 0x00], 12),
             },
             Test {
                 netid: NetID::from_be_bytes([0x76, 0xdb, 0x6d]),
@@ -175,6 +212,7 @@ mod tests {
                 id: vec![0x16, 0xdb, 0x6d],
                 bytes: [0x6d, 0xdb, 0x76],
                 string: "76db6d".into(),
+                dev_addr_prefix: DevAddrPrefix::new([0xe6, 0xda, 0x00, 0x00], 15),
             },
             Test {
                 netid: NetID::from_be_bytes([0x96, 0xdb, 0x6d]),
@@ -182,6 +220,7 @@ mod tests {
                 id: vec![0x16, 0xdb, 0x6d],
                 bytes: [0x6d, 0xdb, 0x96],
                 string: "96db6d".into(),
+                dev_addr_prefix: DevAddrPrefix::new([0xf5, 0xb6, 0x80, 0x00], 17),
             },
             Test {
                 netid: NetID::from_be_bytes([0xb6, 0xdb, 0x6d]),
@@ -189,6 +228,7 @@ mod tests {
                 id: vec![0x16, 0xdb, 0x6d],
                 bytes: [0x6d, 0xdb, 0xb6],
                 string: "b6db6d".into(),
+                dev_addr_prefix: DevAddrPrefix::new([0xfb, 0x6d, 0xa0, 0x00], 19),
             },
             Test {
                 netid: NetID::from_be_bytes([0xd6, 0xdb, 0x6d]),
@@ -196,6 +236,7 @@ mod tests {
                 id: vec![0x16, 0xdb, 0x6d],
                 bytes: [0x6d, 0xdb, 0xd6],
                 string: "d6db6d".into(),
+                dev_addr_prefix: DevAddrPrefix::new([0xfd, 0x6d, 0xb4, 00], 22),
             },
             Test {
                 netid: NetID::from_be_bytes([0xf6, 0xdb, 0x6d]),
@@ -203,6 +244,7 @@ mod tests {
                 id: vec![0x16, 0xdb, 0x6d],
                 bytes: [0x6d, 0xdb, 0xf6],
                 string: "f6db6d".into(),
+                dev_addr_prefix: DevAddrPrefix::new([0xfe, 0x6d, 0xb6, 0x80], 25),
             },
         ]
     }
@@ -246,6 +288,13 @@ mod tests {
     fn test_from_str() {
         for tst in tests() {
             assert_eq!(tst.netid, NetID::from_str(&tst.string).unwrap());
+        }
+    }
+
+    #[test]
+    fn test_dev_addr_prefix() {
+        for tst in tests() {
+            assert_eq!(tst.dev_addr_prefix, tst.netid.dev_addr_prefix());
         }
     }
 }

@@ -2,10 +2,96 @@ use std::fmt;
 use std::str::FromStr;
 
 use anyhow::Result;
-use serde::{Serialize, Serializer};
+use serde::de::{self, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use super::netid::NetID;
 use crate::Error;
+
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+pub struct DevAddrPrefix([u8; 4], u32);
+
+impl DevAddrPrefix {
+    pub fn new(prefix: [u8; 4], size: u32) -> Self {
+        DevAddrPrefix(prefix, size)
+    }
+
+    fn prefix(&self) -> [u8; 4] {
+        self.0
+    }
+
+    fn size(&self) -> u32 {
+        self.1
+    }
+}
+
+impl fmt::Display for DevAddrPrefix {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}/{}", hex::encode(&self.0), self.1)
+    }
+}
+
+impl fmt::Debug for DevAddrPrefix {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}/{}", hex::encode(&self.0), self.1)
+    }
+}
+
+impl FromStr for DevAddrPrefix {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.to_string();
+        let parts: Vec<&str> = s.split("/").collect();
+        if parts.len() != 2 {
+            return Err(Error::DevAddrPrefixFormat);
+        }
+
+        if parts[0].len() != 8 {
+            return Err(Error::DevAddrPrefixFormat);
+        }
+
+        let mut mask: [u8; 4] = [0; 4];
+        hex::decode_to_slice(&parts[0], &mut mask)?;
+        let size: u32 = parts[1].parse().map_err(|_| Error::DevAddrPrefixFormat)?;
+
+        Ok(DevAddrPrefix(mask, size))
+    }
+}
+
+impl Serialize for DevAddrPrefix {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for DevAddrPrefix {
+    fn deserialize<D>(deserialize: D) -> Result<DevAddrPrefix, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserialize.deserialize_str(DevAddrPrefixVisitor)
+    }
+}
+
+struct DevAddrPrefixVisitor;
+
+impl<'de> Visitor<'de> for DevAddrPrefixVisitor {
+    type Value = DevAddrPrefix;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("A DevAddrPrefix in the format 00000000/0 is expected")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        DevAddrPrefix::from_str(value).map_err(|e| E::custom(format!("{}", e)))
+    }
+}
 
 #[derive(PartialEq, Copy, Clone, AsExpression, FromSqlRow, Default)]
 #[diesel(sql_type = diesel::sql_types::Binary)]
@@ -54,7 +140,7 @@ impl DevAddr {
 
     pub fn is_net_id(&self, net_id: NetID) -> bool {
         let mut dev_addr = *self;
-        dev_addr.set_addr_prefix(&net_id);
+        dev_addr.set_dev_addr_prefix(net_id.dev_addr_prefix());
 
         *self == dev_addr
     }
@@ -83,18 +169,18 @@ impl DevAddr {
         }
     }
 
-    pub fn set_addr_prefix(&mut self, netid: &NetID) {
-        match netid.netid_type() {
-            0 => self.set_set_addr_prefix(1, 6, netid),
-            1 => self.set_set_addr_prefix(2, 6, netid),
-            2 => self.set_set_addr_prefix(3, 9, netid),
-            3 => self.set_set_addr_prefix(4, 11, netid),
-            4 => self.set_set_addr_prefix(5, 12, netid),
-            5 => self.set_set_addr_prefix(6, 13, netid),
-            6 => self.set_set_addr_prefix(7, 15, netid),
-            7 => self.set_set_addr_prefix(8, 17, netid),
-            _ => {}
-        }
+    pub fn set_dev_addr_prefix(&mut self, prefix: DevAddrPrefix) {
+        // convert devaddr to u32
+        let mut devaddr = u32::from_be_bytes(self.0);
+
+        // clean the prefix bits
+        let mask = u32::MAX; // all u32 bits to 1
+        devaddr &= !(mask << (32 - prefix.size()));
+
+        // set the prefix
+        devaddr |= u32::from_be_bytes(prefix.prefix());
+
+        self.0 = devaddr.to_be_bytes();
     }
 
     fn get_nwkid(&self, prefix_length: u32, nwkid_bits: u32) -> Vec<u8> {
@@ -116,31 +202,6 @@ impl DevAddr {
         }
 
         out[4 - blen..].to_vec()
-    }
-
-    fn set_set_addr_prefix(&mut self, prefix_length: u32, nwkid_bits: u32, netid: &NetID) {
-        // convert devaddr to u32
-        let mut devaddr = u32::from_be_bytes(self.0);
-
-        // clear the bits for the prefix and NwkID
-        let mask = u32::MAX; // all u32 bits to 1
-        devaddr &= !(mask << (32 - prefix_length - nwkid_bits));
-
-        // set the type prefix
-        let prefix: u32 = 254 << (32 - prefix_length);
-        let mut devaddr = devaddr | prefix;
-
-        // set the NwkID
-        let mut netid_bytes: [u8; 4] = [0; 4];
-        let netid_id = netid.id();
-        netid_bytes[4 - netid_id.len()..].clone_from_slice(&netid_id);
-
-        let mut nwkid = u32::from_be_bytes(netid_bytes);
-        nwkid <<= 32 - nwkid_bits; // truncate the MSB of the NetID ID field
-        nwkid >>= prefix_length; // shift base for the prefix MSB
-        devaddr |= nwkid;
-
-        self.0 = devaddr.to_be_bytes();
     }
 }
 
@@ -237,42 +298,49 @@ mod tests {
     }
 
     #[test]
-    fn test_to_le_bytes() {
+    fn test_dev_addr_prefix() {
+        let p = DevAddrPrefix::from_str("01000000/8").unwrap();
+        assert_eq!(DevAddrPrefix::new([1, 0, 0, 0], 8), p);
+        assert_eq!("01000000/8", p.to_string());
+    }
+
+    #[test]
+    fn test_dev_addr_to_le_bytes() {
         for tst in tests() {
             assert_eq!(tst.bytes, tst.devaddr.to_le_bytes());
         }
     }
 
     #[test]
-    fn test_from_le_bytes() {
+    fn test_dev_addr_from_le_bytes() {
         for tst in tests() {
             assert_eq!(tst.devaddr, DevAddr::from_le_bytes(tst.bytes));
         }
     }
 
     #[test]
-    fn test_netid_type() {
+    fn test_dev_addr_netid_type() {
         for tst in tests() {
             assert_eq!(tst.netid_type, tst.devaddr.netid_type());
         }
     }
 
     #[test]
-    fn test_nwkid() {
+    fn test_dev_addr_nwkid() {
         for tst in tests() {
             assert_eq!(tst.nwkid, tst.devaddr.nwkid());
         }
     }
 
     #[test]
-    fn test_string() {
+    fn test_dev_addr_string() {
         for tst in tests() {
             assert_eq!(tst.string, tst.devaddr.to_string());
         }
     }
 
     #[test]
-    fn test_set_addr_prefix() {
+    fn test_dev_addr_set_addr_prefix() {
         let tests = vec![
             SetAddrPrefixTest {
                 devaddr: DevAddr::from_be_bytes([0xff, 0xff, 0xff, 0xff]),
@@ -288,7 +356,7 @@ mod tests {
 
         for tst in tests {
             let mut devaddr = tst.devaddr.clone();
-            devaddr.set_addr_prefix(&tst.netid);
+            devaddr.set_dev_addr_prefix(tst.netid.dev_addr_prefix());
             assert_eq!(tst.expected_devaddr, devaddr);
         }
     }
