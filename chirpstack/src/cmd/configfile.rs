@@ -117,6 +117,26 @@ pub fn run() {
   # Network identifier (NetID, 3 bytes) encoded as HEX (e.g. 010203).
   net_id="{{ network.net_id }}"
 
+  # DevAddr prefix(es).
+  #
+  # This makes it possible to configure one or multiple sub-ranges within
+  # the configured NetID. If left blank, then the complete DevAddr space
+  # provided by the configured NetID will be used.
+  # If multiple prefixes are configured, a random prefix will be chosen when
+  # generating a DevAddr.
+  #
+  # Example configuration:
+  # dev_addr_prefixes=["0000ff00/24"]
+  #
+  # This example configures the DevAddr range to 0000ff00 - 0000ffff.
+  # The /24 means that the 24MSB of the prefix will be used, meaning that the
+  # 8LSB will be used as address space.
+  dev_addr_prefixes=[
+    {{#each network.dev_addr_prefixes}}
+    "{{this}}",
+    {{/each}}
+  ]
+
   # Enabled regions.
   #
   # Multiple regions can be enabled simultaneously. Each region must match

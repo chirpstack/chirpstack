@@ -86,7 +86,9 @@ async fn test_fns_uplink() {
             fhdr: lrwn::FHDR {
                 devaddr: {
                     let mut d = lrwn::DevAddr::from_be_bytes([0, 0, 0, 0]);
-                    d.set_addr_prefix(&lrwn::NetID::from_str("000505").unwrap());
+                    d.set_dev_addr_prefix(
+                        lrwn::NetID::from_str("000505").unwrap().dev_addr_prefix(),
+                    );
                     d
                 },
                 f_ctrl: Default::default(),
@@ -232,7 +234,7 @@ async fn test_sns_uplink() {
     .unwrap();
 
     let mut dev_addr = lrwn::DevAddr::from_be_bytes([0, 0, 0, 0]);
-    dev_addr.set_addr_prefix(&lrwn::NetID::from_str("000505").unwrap());
+    dev_addr.set_dev_addr_prefix(lrwn::NetID::from_str("000505").unwrap().dev_addr_prefix());
 
     let ds = internal::DeviceSession {
         dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
@@ -428,7 +430,7 @@ async fn test_sns_dev_not_found() {
     roaming::setup().unwrap();
 
     let mut dev_addr = lrwn::DevAddr::from_be_bytes([0, 0, 0, 0]);
-    dev_addr.set_addr_prefix(&lrwn::NetID::from_str("000505").unwrap());
+    dev_addr.set_dev_addr_prefix(lrwn::NetID::from_str("000505").unwrap().dev_addr_prefix());
 
     let data_phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {

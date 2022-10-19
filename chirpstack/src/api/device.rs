@@ -4,7 +4,6 @@ use std::time::SystemTime;
 
 use bigdecimal::ToPrimitive;
 use chrono::{DateTime, Local, Utc};
-use rand::RngCore;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
@@ -19,7 +18,7 @@ use crate::storage::error::Error;
 use crate::storage::{
     device, device_keys, device_profile, device_queue, device_session, fields, metrics,
 };
-use crate::{codec, config};
+use crate::{codec, devaddr::get_random_dev_addr};
 
 pub struct Device {
     validator: validator::RequestValidator,
@@ -547,20 +546,8 @@ impl DeviceService for Device {
         &self,
         _request: Request<api::GetRandomDevAddrRequest>,
     ) -> Result<Response<api::GetRandomDevAddrResponse>, Status> {
-        let conf = config::get();
-        let mut dev_addr: [u8; 4] = [0; 4];
-
-        rand::thread_rng().fill_bytes(&mut dev_addr);
-        #[cfg(test)]
-        {
-            dev_addr = [1, 2, 3, 4];
-        }
-
-        let mut dev_addr = DevAddr::from_be_bytes(dev_addr);
-        dev_addr.set_addr_prefix(&conf.network.net_id);
-
         Ok(Response::new(api::GetRandomDevAddrResponse {
-            dev_addr: dev_addr.to_string(),
+            dev_addr: get_random_dev_addr().to_string(),
         }))
     }
 
@@ -1347,7 +1334,7 @@ pub mod test {
             .unwrap();
         let dev_addr = DevAddr::from_str(&get_random_dev_addr_resp.get_ref().dev_addr).unwrap();
         let mut dev_addr_copy = dev_addr.clone();
-        dev_addr_copy.set_addr_prefix(&NetID::from_str("000000").unwrap());
+        dev_addr_copy.set_dev_addr_prefix(NetID::from_str("000000").unwrap().dev_addr_prefix());
         assert_eq!(dev_addr, dev_addr_copy);
 
         // enqueue

@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
-use rand::RngCore;
 use tracing::{span, trace, Instrument, Level};
 
 use super::{helpers, UplinkFrameSet};
@@ -12,7 +11,7 @@ use crate::storage::{
     application, device, device_keys, device_profile, device_queue, device_session,
     error::Error as StorageError, metrics, tenant,
 };
-use crate::{config, integration, metalog, region};
+use crate::{config, devaddr::get_random_dev_addr, integration, metalog, region};
 use backend::{PRStartAnsPayload, PRStartReqPayload};
 use chirpstack_api::{common, integration as integration_pb, internal, meta};
 use lrwn::{keys, AES128Key, DevAddr, NetID};
@@ -203,21 +202,7 @@ impl JoinRequest {
     }
 
     fn get_random_dev_addr(&mut self) -> Result<()> {
-        let conf = config::get();
-
-        let mut dev_addr: [u8; 4] = [0; 4];
-
-        rand::thread_rng().fill_bytes(&mut dev_addr);
-
-        #[cfg(test)]
-        {
-            dev_addr = [1, 2, 3, 4];
-        }
-
-        let mut dev_addr = DevAddr::from_be_bytes(dev_addr);
-        dev_addr.set_addr_prefix(&conf.network.net_id);
-        self.dev_addr = Some(dev_addr);
-
+        self.dev_addr = Some(get_random_dev_addr());
         Ok(())
     }
 

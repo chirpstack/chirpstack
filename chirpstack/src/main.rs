@@ -25,6 +25,7 @@ mod certificate;
 mod cmd;
 mod codec;
 mod config;
+mod devaddr;
 mod downlink;
 mod eventlog;
 mod framelog;
