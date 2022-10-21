@@ -86,34 +86,17 @@
     # ChirpStack Concentratord daemon. In any other case, this configuration 
     # is ignored.
     [[regions.gateway.channels]]
-      frequency=865100000
+      frequency=868900000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
     [[regions.gateway.channels]]
-      frequency=865300000
+      frequency=869100000
       bandwidth=125000
       modulation="LORA"
       spreading_factors=[7, 8, 9, 10, 11, 12]
 
-    [[regions.gateway.channels]]
-      frequency=865500000
-      bandwidth=125000
-      modulation="LORA"
-      spreading_factors=[7, 8, 9, 10, 11, 12]
-
-    [[regions.gateway.channels]]
-      frequency=865700000
-      bandwidth=125000
-      modulation="LORA"
-      spreading_factors=[7, 8, 9, 10, 11, 12]                  
-
-    [[regions.gateway.channels]]
-      frequency=865900000
-      bandwidth=125000
-      modulation="LORA"
-      spreading_factors=[7, 8, 9, 10, 11, 12]  
 
   # Region specific network configuration.
   [regions.network]
@@ -144,7 +127,7 @@
     rx2_dr=0
 
     # RX2 frequency (Hz)
-    rx2_frequency=866700000
+    rx2_frequency=869100000
 
     # Prefer RX2 on RX1 data-rate less than.
     #

@@ -28,7 +28,6 @@
     "codemirror": "^5.65.3",
     "google-protobuf": "^3.20.1",
     "grpc-web": "^1.3.1",
-    "http-proxy-middleware": "^2.0.6",
     "leaflet": "^1.7.1",
     "leaflet.awesome-markers": "^2.0.5",
     "react": "^17.0.2",
@@ -44,7 +43,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "PORT=8080 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -70,6 +69,7 @@
     "not dead",
     "not op_mini all"
   ],
+  "proxy": "http://chirpstack:8080/",
   "devDependencies": {
     "husky": "^7.0.4",
     "prettier": "^2.6.2"
