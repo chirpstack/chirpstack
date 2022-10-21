@@ -104,6 +104,8 @@ const (
 	Region_RU864 Region = 10
 	// ISM2400 (LoRaWAN 2.4 GHz)
 	Region_ISM2400 Region = 11
+	// KZ865
+	Region_KZ865 Region = 15
 )
 
 // Enum value maps for Region.
@@ -123,6 +125,7 @@ var (
 		9:  "IN865",
 		10: "RU864",
 		11: "ISM2400",
+		15: "KZ865",
 	}
 	Region_value = map[string]int32{
 		"EU868":   0,
@@ -139,6 +142,7 @@ var (
 		"IN865":   9,
 		"RU864":   10,
 		"ISM2400": 11,
+		"KZ865": 15,
 	}
 )
 

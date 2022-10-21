@@ -24,7 +24,7 @@ class ListTenants extends Component {
         render: (text, record) => <Link to={`/tenants/${record.id}`}>{text}</Link>,
       },
       {
-        title: "Can have gateways",
+        title: "Cbn have gateways",
         dataIndex: "canHaveGateways",
         key: "canHaveGateways",
         width: 250,

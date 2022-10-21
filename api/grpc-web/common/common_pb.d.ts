@@ -139,6 +139,7 @@ export enum Region {
   IN865 = 9,
   RU864 = 10,
   ISM2400 = 11,
+  KZ865 = 15,
 }
 export enum MType { 
   JOIN_REQUEST = 0,

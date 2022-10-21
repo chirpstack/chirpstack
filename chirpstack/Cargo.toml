@@ -141,6 +141,7 @@ conf-files = [
 	"/etc/chirpstack/region_ism2400.toml",
 	"/etc/chirpstack/region_kr920.toml",
 	"/etc/chirpstack/region_ru864.toml",
+	"/etc/chirpstack/region_kz865.toml",
 	"/etc/chirpstack/region_us915_0.toml",
 	"/etc/chirpstack/region_us915_1.toml",
 	"/etc/chirpstack/region_us915_2.toml",

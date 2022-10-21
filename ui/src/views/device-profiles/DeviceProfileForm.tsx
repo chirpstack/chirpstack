@@ -477,6 +477,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 <Select.Option value={Region.ISM2400}>ISM2400</Select.Option>
                 <Select.Option value={Region.KR920}>KR920</Select.Option>
                 <Select.Option value={Region.RU864}>RU864</Select.Option>
+                <Select.Option value={Region.KZ865}>KZ865</Select.Option>
                 <Select.Option value={Region.US915}>US915</Select.Option>
               </Select>
             </Form.Item>

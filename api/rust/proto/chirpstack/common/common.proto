@@ -60,6 +60,9 @@ enum Region {
     // RU864
     RU864 = 10;
 
+    // KZ865
+    KZ865 = 15;
+
     // ISM2400 (LoRaWAN 2.4 GHz)
     ISM2400 = 11;
 }

@@ -38,14 +38,14 @@ release-arm64:
 		cargo build --target aarch64-unknown-linux-gnu --release
 
 dist: release-deb-amd64 \
-	release-deb-armv7hf \
-	release-deb-arm64 \
-	release-rpm-amd64 \
-	release-rpm-armv7hf \
-	release-rpm-arm64 \
 	release-targz-amd64 \
-	release-targz-armv7hf \
-	release-targz-arm64 \
+	# release-deb-armv7hf \
+	# release-deb-arm64 \
+	# release-rpm-amd64 \
+	# release-rpm-armv7hf \
+	# release-rpm-arm64 \
+	# release-targz-armv7hf \
+	# release-targz-arm64 \
 
 release-deb-amd64:
 	apt-get install -y libpq-dev:amd64
