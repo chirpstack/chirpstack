@@ -72,13 +72,13 @@ class Header extends Component<IProps, IState> {
     if (!oidc.getEnabled() || oidc.getLogoutUrl() === "") {
       SessionStore.logout(true, () => {
         this.props.history.push("/login");
-      }); 
+      });
     } else {
       SessionStore.logout(false, () => {
         window.location.assign(oidc.getLogoutUrl());
       });
     }
-  }
+  };
 
   render() {
     if (this.state.settings === undefined) {
@@ -94,9 +94,7 @@ class Header extends Component<IProps, IState> {
             <Link to={`/users/${this.props.user.getId()}/password`}>Change password</Link>
           </Menu.Item>
         )}
-        <Menu.Item onClick={this.onLogout}>
-          Logout
-        </Menu.Item>
+        <Menu.Item onClick={this.onLogout}>Logout</Menu.Item>
       </Menu>
     );
 

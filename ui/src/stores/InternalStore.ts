@@ -211,7 +211,7 @@ class InternalStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   getRegion = (req: GetRegionRequest, callbackFunc: (resp: GetRegionResponse) => void) => {
     this.client.getRegion(req, SessionStore.getMetadata(), (err, resp) => {
@@ -222,7 +222,7 @@ class InternalStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const internalStore = new InternalStore();

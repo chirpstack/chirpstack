@@ -6,10 +6,7 @@ import { Space, Breadcrumb, PageHeader, Card, Row, Col, List, Typography } from 
 import ReactMarkdown from "react-markdown";
 
 import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import {
-  GetRegionRequest,
-  GetRegionResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { GetRegionRequest, GetRegionResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import { getEnumName } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
@@ -19,7 +16,7 @@ interface MatchParams {
 }
 
 interface IState {
-  region?: GetRegionResponse,
+  region?: GetRegionResponse;
 }
 
 interface IProps extends RouteComponentProps<MatchParams> {}
@@ -56,7 +53,9 @@ class RegionDetails extends Component<IProps, IState> {
                 <span>Network Server</span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span><Link to="/regions">Regions</Link></span>
+                <span>
+                  <Link to="/regions">Regions</Link>
+                </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
                 <span>{this.props.match.params.name}</span>
@@ -66,14 +65,14 @@ class RegionDetails extends Component<IProps, IState> {
           title={this.props.match.params.name}
           subTitle={`common-name: ${getEnumName(Region, this.state.region.getRegion())}`}
         />
-        {this.state.region.getUserInfo() !== "" && <Card>
-          <ReactMarkdown>
-            {this.state.region.getUserInfo()}
-          </ReactMarkdown>
-        </Card>}
+        {this.state.region.getUserInfo() !== "" && (
+          <Card>
+            <ReactMarkdown>{this.state.region.getUserInfo()}</ReactMarkdown>
+          </Card>
+        )}
         <Row gutter={24}>
           <Col span={12}>
-            <Space direction="vertical" style={{width: "100%"}} size="large">
+            <Space direction="vertical" style={{ width: "100%" }} size="large">
               <Card title="Uplink channels">
                 <List
                   itemLayout="horizontal"
@@ -91,7 +90,7 @@ class RegionDetails extends Component<IProps, IState> {
             </Space>
           </Col>
           <Col span={12}>
-            <Space direction="vertical" style={{width: "100%"}} size="large">
+            <Space direction="vertical" style={{ width: "100%" }} size="large">
               <Card title="Downlink">
                 <List
                   dataSource={[
@@ -100,16 +99,35 @@ class RegionDetails extends Component<IProps, IState> {
                     ["RX2 DR", this.state.region.getRx2Dr()],
                     ["RX2 frequency", `${this.state.region.getRx2Frequency()} Hz`],
                   ]}
-                  renderItem={item => <List.Item><Typography.Text strong style={{width: "175px", display: "block", float: "left"}}>{item[0]}:</Typography.Text> {item[1]}</List.Item>}
+                  renderItem={item => (
+                    <List.Item>
+                      <Typography.Text strong style={{ width: "175px", display: "block", float: "left" }}>
+                        {item[0]}:
+                      </Typography.Text>{" "}
+                      {item[1]}
+                    </List.Item>
+                  )}
                 />
               </Card>
               <Card title="Class-B">
                 <List
                   dataSource={[
                     ["Ping-slot DR", this.state.region.getClassBPingSlotDr()],
-                    ["Ping-slot frequency", this.state.region.getClassBPingSlotFrequency() === 0 ? "default frequency or frequency hopping" : `${this.state.region.getClassBPingSlotFrequency()} Hz`],
+                    [
+                      "Ping-slot frequency",
+                      this.state.region.getClassBPingSlotFrequency() === 0
+                        ? "default frequency or frequency hopping"
+                        : `${this.state.region.getClassBPingSlotFrequency()} Hz`,
+                    ],
                   ]}
-                  renderItem={item => <List.Item><Typography.Text strong style={{width: "175px", display: "block", float: "left"}}>{item[0]}:</Typography.Text> {item[1]}</List.Item>}
+                  renderItem={item => (
+                    <List.Item>
+                      <Typography.Text strong style={{ width: "175px", display: "block", float: "left" }}>
+                        {item[0]}:
+                      </Typography.Text>{" "}
+                      {item[1]}
+                    </List.Item>
+                  )}
                 />
               </Card>
             </Space>

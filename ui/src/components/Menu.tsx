@@ -186,9 +186,7 @@ class SideMenu extends Component<RouteComponentProps, IState> {
         key: "ns",
         label: "Network Server",
         icon: <CloudOutlined />,
-        children: [
-          { key: "ns-regions", icon: <CompassOutlined />, label: <Link to="/regions">Regions</Link> },
-        ],
+        children: [{ key: "ns-regions", icon: <CompassOutlined />, label: <Link to="/regions">Regions</Link> }],
       });
     }
 

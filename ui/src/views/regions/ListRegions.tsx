@@ -4,10 +4,7 @@ import { Link } from "react-router-dom";
 import { Space, Breadcrumb, PageHeader, Table } from "antd";
 
 import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import {
-  ListRegionsResponse,
-  RegionListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import { getEnumName } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
@@ -17,7 +14,6 @@ interface IProps {}
 interface IState {
   regions?: ListRegionsResponse;
 }
-
 
 class ListRegions extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -65,9 +61,7 @@ class ListRegions extends Component<IProps, IState> {
               title: "Name",
               dataIndex: "name",
               key: "name",
-              render: (text, record) => (
-                <Link to={`/regions/${text}`}>{text}</Link>
-              ),
+              render: (text, record) => <Link to={`/regions/${text}`}>{text}</Link>,
             },
             {
               title: "Region",
