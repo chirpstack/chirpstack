@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { Link, withRouter, RouteComponentProps } from "react-router-dom";
 
 import { Button, Menu, Dropdown, Input, AutoComplete } from "antd";
 import { UserOutlined, DownOutlined, QuestionOutlined } from "@ant-design/icons";
@@ -12,8 +12,9 @@ import {
 } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import InternalStore from "../stores/InternalStore";
+import SessionStore from "../stores/SessionStore";
 
-interface IProps {
+interface IProps extends RouteComponentProps {
   user: User;
 }
 
@@ -60,6 +61,25 @@ class Header extends Component<IProps, IState> {
     });
   };
 
+  onLogout = () => {
+    let settings = this.state.settings;
+    if (settings === undefined) {
+      return;
+    }
+
+    let oidc = settings.getOpenidConnect()!;
+
+    if (!oidc.getEnabled() || oidc.getLogoutUrl() === "") {
+      SessionStore.logout(true, () => {
+        this.props.history.push("/login");
+      }); 
+    } else {
+      SessionStore.logout(false, () => {
+        window.location.assign(oidc.getLogoutUrl());
+      });
+    }
+  }
+
   render() {
     if (this.state.settings === undefined) {
       return null;
@@ -74,8 +94,8 @@ class Header extends Component<IProps, IState> {
             <Link to={`/users/${this.props.user.getId()}/password`}>Change password</Link>
           </Menu.Item>
         )}
-        <Menu.Item>
-          <Link to="/login">Logout</Link>
+        <Menu.Item onClick={this.onLogout}>
+          Logout
         </Menu.Item>
       </Menu>
     );
@@ -166,4 +186,4 @@ class Header extends Component<IProps, IState> {
   }
 }
 
-export default Header;
+export default withRouter(Header);
