@@ -36,6 +36,11 @@ pub fn run() {
 
   # Server address or addresses.
   #
+  # Example formats:
+  #   redis://127.0.0.1:6379
+  #   redis://:password@127.0.0.1:6379
+  #   redis://username:password@127.0.0.1:6379
+  #
   # Set multiple addresses when connecting to a cluster.
   servers=[
     {{#each redis.servers}}
