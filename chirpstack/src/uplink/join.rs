@@ -583,7 +583,7 @@ impl JoinRequest {
     async fn log_uplink_meta(&self) -> Result<()> {
         trace!("Logging uplink meta");
 
-        let req = meta::UplinkMeta {
+        let um = meta::UplinkMeta {
             dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
             rx_info: self.uplink_frame_set.rx_info_set.clone(),
@@ -592,7 +592,7 @@ impl JoinRequest {
             ..Default::default()
         };
 
-        metalog::log_uplink(&req).await?;
+        metalog::log_uplink(&um).await?;
 
         Ok(())
     }

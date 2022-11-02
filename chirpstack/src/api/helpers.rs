@@ -186,6 +186,21 @@ impl FromProto<Aggregation> for common::Aggregation {
     }
 }
 
+impl ToProto<common::MType> for lrwn::MType {
+    fn to_proto(self) -> common::MType {
+        match self {
+            lrwn::MType::JoinRequest => common::MType::JoinRequest,
+            lrwn::MType::JoinAccept => common::MType::JoinAccept,
+            lrwn::MType::UnconfirmedDataUp => common::MType::UnconfirmedDataUp,
+            lrwn::MType::UnconfirmedDataDown => common::MType::UnconfirmedDataDown,
+            lrwn::MType::ConfirmedDataUp => common::MType::ConfirmedDataUp,
+            lrwn::MType::ConfirmedDataDown => common::MType::ConfirmedDataDown,
+            lrwn::MType::RejoinRequest => common::MType::RejoinRequest,
+            lrwn::MType::Proprietary => common::MType::Proprietary,
+        }
+    }
+}
+
 pub fn datetime_to_prost_timestamp(dt: &DateTime<Utc>) -> prost_types::Timestamp {
     let ts = dt.timestamp_nanos();
 

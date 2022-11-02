@@ -6,14 +6,15 @@ use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 
 use super::error::Error;
 use super::{data_fns, filter_rx_info_by_tenant_id, helpers, UplinkFrameSet};
+use crate::api::helpers::ToProto;
 use crate::backend::roaming;
 use crate::storage::error::Error as StorageError;
 use crate::storage::{
     application, device, device_gateway, device_profile, device_queue, device_session, fields,
     metrics, tenant,
 };
-use crate::{codec, config, downlink, framelog, integration, maccommand};
-use chirpstack_api::{api, common, integration as integration_pb, internal};
+use crate::{codec, config, downlink, framelog, integration, maccommand, metalog};
+use chirpstack_api::{api, common, integration as integration_pb, internal, meta};
 use lrwn::AES128Key;
 
 pub struct Data {
@@ -28,7 +29,6 @@ pub struct Data {
     device_profile: Option<device_profile::DeviceProfile>,
     application: Option<application::Application>,
     device_info: Option<integration_pb::DeviceInfo>,
-    mac_payload: Option<lrwn::MACPayload>,
     uplink_event: Option<integration_pb::UplinkEvent>,
     must_send_downlink: bool,
     downlink_mac_commands: Vec<lrwn::MACCommandSet>,
@@ -63,7 +63,6 @@ impl Data {
             device_profile: None,
             application: None,
             device_info: None,
-            mac_payload: None,
             uplink_event: None,
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
@@ -93,8 +92,7 @@ impl Data {
         ctx.set_adr()?;
         ctx.set_uplink_data_rate().await?;
         ctx.set_enabled_class().await?;
-
-        // ctx.send_uplink_meta_data_to_network_controller()?;
+        ctx.log_uplink_meta().await?;
         ctx.handle_mac_commands().await?;
         if !ctx._is_roaming() {
             ctx.save_device_gateway_rx_info().await?;
@@ -495,6 +493,52 @@ impl Data {
         // Update if the enabled class has changed.
         if dev.enabled_class != mode {
             *dev = device::set_enabled_class(&dev.dev_eui, &mode).await?;
+        }
+
+        Ok(())
+    }
+
+    async fn log_uplink_meta(&self) -> Result<()> {
+        trace!("Logging uplink meta");
+
+        if let lrwn::Payload::MACPayload(mac_pl) = &self.uplink_frame_set.phy_payload.payload {
+            let um = meta::UplinkMeta {
+                dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
+                tx_info: Some(self.uplink_frame_set.tx_info.clone()),
+                rx_info: self.uplink_frame_set.rx_info_set.clone(),
+                phy_payload_byte_count: self.uplink_frame_set.phy_payload.to_vec()?.len() as u32,
+                mac_command_byte_count: {
+                    if mac_pl.f_port == Some(0) {
+                        if let Some(lrwn::FRMPayload::MACCommandSet(v)) = &mac_pl.frm_payload {
+                            v.size()?
+                        } else {
+                            0
+                        }
+                    } else {
+                        mac_pl.fhdr.f_opts.size()?
+                    }
+                } as u32,
+                application_payload_byte_count: {
+                    if mac_pl.f_port.unwrap_or_default() > 0 {
+                        if let Some(lrwn::FRMPayload::Raw(b)) = &mac_pl.frm_payload {
+                            b.len()
+                        } else {
+                            0
+                        }
+                    } else {
+                        0
+                    }
+                } as u32,
+                message_type: self
+                    .uplink_frame_set
+                    .phy_payload
+                    .mhdr
+                    .m_type
+                    .to_proto()
+                    .into(),
+            };
+
+            metalog::log_uplink(&um).await?;
         }
 
         Ok(())
