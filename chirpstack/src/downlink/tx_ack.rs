@@ -6,12 +6,13 @@ use uuid::Uuid;
 
 use lrwn::{AES128Key, MType, Payload, PhyPayload, EUI64};
 
+use crate::api::helpers::ToProto;
 use crate::storage::{
     application, device, device_profile, device_queue, device_session, downlink_frame, multicast,
     tenant,
 };
-use crate::{framelog, integration};
-use chirpstack_api::{api, common, gw, integration as integration_pb, internal};
+use crate::{framelog, integration, metalog};
+use chirpstack_api::{api, common, gw, integration as integration_pb, internal, meta};
 
 pub struct TxAck {
     downlink_tx_ack: gw::DownlinkTxAck,
@@ -113,8 +114,9 @@ impl TxAck {
                 ctx.delete_multicast_group_queue_item().await?;
             }
 
-            // log downlink meta-data
+            // log downlink frame and meta-data.
             ctx.log_downlink_frame().await?;
+            ctx.log_downlink_meta().await?;
         }
 
         Ok(())
@@ -460,6 +462,60 @@ impl TxAck {
         framelog::log_downlink_for_device(&dfl).await?;
 
         Ok(())
+    }
+
+    async fn log_downlink_meta(&self) -> Result<()> {
+        trace!("Logging downlink meta");
+
+        let df = self.downlink_frame.as_ref().unwrap();
+        let dfi = self.downlink_frame_item.as_ref().unwrap();
+        let phy = self.phy_payload.as_ref().unwrap();
+
+        let dm = meta::DownlinkMeta {
+            dev_eui: if !df.dev_eui.is_empty() {
+                EUI64::from_slice(&df.dev_eui)?.to_string()
+            } else {
+                "".to_string()
+            },
+            multicast_group_id: if !df.multicast_group_id.is_empty() {
+                Uuid::from_slice(&df.multicast_group_id)?.to_string()
+            } else {
+                "".to_string()
+            },
+            tx_info: dfi.tx_info.clone(),
+            phy_payload_byte_count: phy.to_vec()?.len() as u32,
+            mac_command_byte_count: if let lrwn::Payload::MACPayload(mac_pl) = &phy.payload {
+                if mac_pl.f_port == Some(0) {
+                    if let Some(lrwn::FRMPayload::MACCommandSet(v)) = &mac_pl.frm_payload {
+                        v.size()?
+                    } else {
+                        0
+                    }
+                } else {
+                    mac_pl.fhdr.f_opts.size()?
+                }
+            } else {
+                0
+            } as u32,
+            application_payload_byte_count: if let lrwn::Payload::MACPayload(mac_pl) = &phy.payload
+            {
+                if mac_pl.f_port.unwrap_or_default() > 0 {
+                    if let Some(lrwn::FRMPayload::Raw(b)) = &mac_pl.frm_payload {
+                        b.len()
+                    } else {
+                        0
+                    }
+                } else {
+                    0
+                }
+            } else {
+                0
+            } as u32,
+            message_type: phy.mhdr.m_type.to_proto().into(),
+            gateway_id: df.downlink_frame.as_ref().unwrap().gateway_id.clone(),
+        };
+
+        metalog::log_downlink(&dm).await
     }
 
     fn is_error(&self) -> bool {
