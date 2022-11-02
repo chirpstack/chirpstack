@@ -85,6 +85,7 @@ impl DeviceProfileService for DeviceProfile {
                     })
                     .collect(),
             ),
+            auto_detect_measurements: req_dp.auto_detect_measurements,
             ..Default::default()
         };
 
@@ -153,6 +154,7 @@ impl DeviceProfileService for DeviceProfile {
                         )
                     })
                     .collect(),
+                auto_detect_measurements: dp.auto_detect_measurements,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -220,6 +222,7 @@ impl DeviceProfileService for DeviceProfile {
                     })
                     .collect(),
             ),
+            auto_detect_measurements: req_dp.auto_detect_measurements,
             ..Default::default()
         })
         .await

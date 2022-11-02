@@ -177,6 +177,12 @@ message DeviceProfile {
     // Measurements.
     // If defined, ChirpStack will visualize these metrics in the web-interface.
     map<string, Measurement> measurements = 27;
+
+    // Auto-detect measurements.
+    // If set to true, measurements will be automatically added based on the
+    // keys of the decoded payload. In cases where the decoded payload contains
+    // random keys in the data, you want to set this to false.
+    bool auto_detect_measurements = 28;
 }
 
 message Measurement {

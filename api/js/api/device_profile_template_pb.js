@@ -96,7 +96,8 @@ proto.api.DeviceProfileTemplate.toObject = function(includeInstance, msg) {
     abpRx2Dr: msg.getAbpRx2Dr(),
     abpRx2Freq: msg.getAbpRx2Freq(),
     tagsMap: (f = msg.getTagsMap(true)) ? f.toArray() : [],
-    measurementsMap: (f = msg.getMeasurementsMap(true)) ? f.toArray() : []
+    measurementsMap: (f = msg.getMeasurementsMap(true)) ? f.toArray() : [],
+    autoDetectMeasurements: msg.getAutoDetectMeasurements()
   };
 
   if (includeInstance) {
@@ -248,6 +249,10 @@ proto.api.DeviceProfileTemplate.deserializeBinaryFromReader = function(msg, read
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.api.Measurement.deserializeBinaryFromReader);
          });
+      break;
+    case 29:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setAutoDetectMeasurements(value);
       break;
     default:
       reader.skipField();
@@ -476,6 +481,13 @@ proto.api.DeviceProfileTemplate.prototype.serializeBinaryToWriter = function (wr
   f = this.getMeasurementsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(28, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.api.Measurement.serializeBinaryToWriter);
+  }
+  f = this.getAutoDetectMeasurements();
+  if (f) {
+    writer.writeBool(
+      29,
+      f
+    );
   }
 };
 
@@ -910,6 +922,23 @@ proto.api.DeviceProfileTemplate.prototype.getMeasurementsMap = function(opt_noLa
   return /** @type {!jspb.Map<string,!proto.api.Measurement>} */ (
       jspb.Message.getMapField(this, 28, opt_noLazyCreate,
       proto.api.Measurement));
+};
+
+
+/**
+ * optional bool auto_detect_measurements = 29;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.api.DeviceProfileTemplate.prototype.getAutoDetectMeasurements = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldProto3(this, 29, false));
+};
+
+
+/** @param {boolean} value  */
+proto.api.DeviceProfileTemplate.prototype.setAutoDetectMeasurements = function(value) {
+  jspb.Message.setField(this, 29, value);
 };
 
 

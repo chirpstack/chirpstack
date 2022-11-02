@@ -102,6 +102,7 @@ diesel::table! {
         flush_queue_on_activate -> Bool,
         description -> Text,
         measurements -> Jsonb,
+        auto_detect_measurements -> Bool,
     }
 }
 
@@ -137,6 +138,7 @@ diesel::table! {
         abp_rx2_freq -> Int8,
         tags -> Jsonb,
         measurements -> Jsonb,
+        auto_detect_measurements -> Bool,
     }
 }
 

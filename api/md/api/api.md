@@ -2397,6 +2397,7 @@ DeviceService is the service providing API methods for managing devices.
 | abp_rx2_freq | [uint32](#uint32) |  | RX2 frequency (for ABP, Hz). |
 | tags | [DeviceProfile.TagsEntry](#api-DeviceProfile-TagsEntry) | repeated | User defined tags. |
 | measurements | [DeviceProfile.MeasurementsEntry](#api-DeviceProfile-MeasurementsEntry) | repeated | Measurements. If defined, ChirpStack will visualize these metrics in the web-interface. |
+| auto_detect_measurements | [bool](#bool) |  | Auto-detect measurements. If set to true, measurements will be automatically added based on the keys of the decoded payload. In cases where the decoded payload contains random keys in the data, you want to set this to false. |
 
 
 

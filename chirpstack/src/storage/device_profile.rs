@@ -48,6 +48,7 @@ pub struct DeviceProfile {
     pub flush_queue_on_activate: bool,
     pub description: String,
     pub measurements: fields::Measurements,
+    pub auto_detect_measurements: bool,
 }
 
 impl DeviceProfile {
@@ -93,6 +94,7 @@ impl Default for DeviceProfile {
             abp_rx2_freq: 0,
             tags: fields::KeyValue::new(HashMap::new()),
             measurements: fields::Measurements::new(HashMap::new()),
+            auto_detect_measurements: false,
         }
     }
 }
@@ -207,6 +209,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::abp_rx2_freq.eq(&dp.abp_rx2_freq),
                     device_profile::tags.eq(&dp.tags),
                     device_profile::measurements.eq(&dp.measurements),
+                    device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))

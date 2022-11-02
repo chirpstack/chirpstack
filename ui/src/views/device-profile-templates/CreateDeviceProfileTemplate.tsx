@@ -64,6 +64,7 @@ function encodeDownlink(input) {
     deviceProfileTemplate.setMacVersion(MacVersion.LORAWAN_1_0_3);
     deviceProfileTemplate.setRegParamsRevision(RegParamsRevision.A);
     deviceProfileTemplate.setFlushQueueOnActivate(true);
+    deviceProfileTemplate.setAutoDetectMeasurements(true);
 
     return (
       <Space direction="vertical" style={{ width: "100%" }} size="large">

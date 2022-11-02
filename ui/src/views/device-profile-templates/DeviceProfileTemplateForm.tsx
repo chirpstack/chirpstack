@@ -109,6 +109,7 @@ class DeviceProfileTemplateForm extends Component<IProps, IState> {
       m.setName(elm[1].name);
       dp.getMeasurementsMap().set(elm[0], m);
     }
+    dp.setAutoDetectMeasurements(v.autoDetectMeasurements);
 
     this.props.onFinish(dp);
   };
@@ -418,8 +419,7 @@ class DeviceProfileTemplateForm extends Component<IProps, IState> {
               <p>
                 ChirpStack can aggregate and visualize decoded device measurements in the device dashboard. To setup the
                 aggregation of device measurements, you must configure the key, kind of measurement and name
-                (user-defined). Please note that ChirpStack will automatically configure the keys once it has received
-                the first uplink(s). The following measurement-kinds can be selected:
+                (user-defined). The following measurement-kinds can be selected:
               </p>
               <ul>
                 <li>
@@ -440,6 +440,14 @@ class DeviceProfileTemplateForm extends Component<IProps, IState> {
                 </li>
               </ul>
             </Card>
+            <Form.Item
+              label="Automatically detect measurement keys"
+              name="autoDetectMeasurements"
+              valuePropName="checked"
+              tooltip="If enabled, measurement-keys will be automatically added based on the decoded payload keys. If the decoded payload contains random keys, you want to disable auto-detection."
+            >
+              <Switch />
+            </Form.Item>
             <Form.List name="measurementsMap">
               {(fields, { add, remove }) => (
                 <>
