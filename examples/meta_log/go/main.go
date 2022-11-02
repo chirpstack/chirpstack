@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chirpstack/chirpstack/api/go/v4/api"
+	"github.com/chirpstack/chirpstack/api/go/v4/meta"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -19,7 +19,7 @@ var (
 
 func init() {
 	flag.StringVar(&server, "server", "localhost:6379", "Redis hostname:port")
-	flag.StringVar(&key, "key", "gw:stream:frame", "Redis Streams key to read from")
+	flag.StringVar(&key, "key", "stream:meta", "Redis Streams key to read from")
 	flag.Parse()
 }
 
@@ -49,7 +49,7 @@ func main() {
 			lastID = msg.ID
 
 			if b, ok := msg.Values["up"].(string); ok {
-				var pl api.UplinkFrameLog
+				var pl meta.UplinkMeta
 				if err := proto.Unmarshal([]byte(b), &pl); err != nil {
 					log.Fatal(err)
 				}
@@ -60,7 +60,7 @@ func main() {
 			}
 
 			if b, ok := msg.Values["down"].(string); ok {
-				var pl api.DownlinkFrameLog
+				var pl meta.DownlinkMeta
 				if err := proto.Unmarshal([]byte(b), &pl); err != nil {
 					log.Fatal(err)
 				}
