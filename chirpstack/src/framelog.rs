@@ -304,9 +304,7 @@ pub async fn get_frame_logs(
                                                 .collect(),
                                             };
 
-                                            if let Err(e) = channel.blocking_send(pl) {
-                                                return Err(anyhow::Error::new(e));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     "down" => {
@@ -337,9 +335,7 @@ pub async fn get_frame_logs(
                                                 .collect(),
                                             };
 
-                                            if let Err(e) = channel.blocking_send(pl) {
-                                                return Err(anyhow::Error::new(e));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     _ => {
