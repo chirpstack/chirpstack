@@ -85,8 +85,8 @@ message Gateway {
     // Tags.
     map<string, string> tags = 6;
 
-    // Properties (provided by the gateway).
-    map<string, string> properties = 7;
+    // Metadata (provided by the gateway).
+    map<string, string> metadata = 7;
 }
 
 message GatewayListItem {

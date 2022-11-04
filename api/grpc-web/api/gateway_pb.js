@@ -347,7 +347,7 @@ proto.api.Gateway.toObject = function(includeInstance, msg) {
     location: (f = msg.getLocation()) && common_common_pb.Location.toObject(includeInstance, f),
     tenantId: jspb.Message.getFieldWithDefault(msg, 5, ""),
     tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : [],
-    propertiesMap: (f = msg.getPropertiesMap()) ? f.toObject(includeInstance, undefined) : []
+    metadataMap: (f = msg.getMetadataMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -412,7 +412,7 @@ proto.api.Gateway.deserializeBinaryFromReader = function(msg, reader) {
          });
       break;
     case 7:
-      var value = msg.getPropertiesMap();
+      var value = msg.getMetadataMap();
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
          });
@@ -486,7 +486,7 @@ proto.api.Gateway.serializeBinaryToWriter = function(message, writer) {
   if (f && f.getLength() > 0) {
     f.serializeBinary(6, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
-  f = message.getPropertiesMap(true);
+  f = message.getMetadataMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(7, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
@@ -625,12 +625,12 @@ proto.api.Gateway.prototype.clearTagsMap = function() {
 
 
 /**
- * map<string, string> properties = 7;
+ * map<string, string> metadata = 7;
  * @param {boolean=} opt_noLazyCreate Do not create the map if
  * empty, instead returning `undefined`
  * @return {!jspb.Map<string,string>}
  */
-proto.api.Gateway.prototype.getPropertiesMap = function(opt_noLazyCreate) {
+proto.api.Gateway.prototype.getMetadataMap = function(opt_noLazyCreate) {
   return /** @type {!jspb.Map<string,string>} */ (
       jspb.Message.getMapField(this, 7, opt_noLazyCreate,
       null));
@@ -641,8 +641,8 @@ proto.api.Gateway.prototype.getPropertiesMap = function(opt_noLazyCreate) {
  * Clears values from the map. The map will be non-null.
  * @return {!proto.api.Gateway} returns this
  */
-proto.api.Gateway.prototype.clearPropertiesMap = function() {
-  this.getPropertiesMap().clear();
+proto.api.Gateway.prototype.clearMetadataMap = function() {
+  this.getMetadataMap().clear();
   return this;};
 
 

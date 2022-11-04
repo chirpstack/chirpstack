@@ -78,7 +78,7 @@ proto.api.Gateway.toObject = function(includeInstance, msg) {
     location: (f = msg.getLocation()) && common_common_pb.Location.toObject(includeInstance, f),
     tenantId: msg.getTenantId(),
     tagsMap: (f = msg.getTagsMap(true)) ? f.toArray() : [],
-    propertiesMap: (f = msg.getPropertiesMap(true)) ? f.toArray() : []
+    metadataMap: (f = msg.getMetadataMap(true)) ? f.toArray() : []
   };
 
   if (includeInstance) {
@@ -143,7 +143,7 @@ proto.api.Gateway.deserializeBinaryFromReader = function(msg, reader) {
          });
       break;
     case 7:
-      var value = msg.getPropertiesMap();
+      var value = msg.getMetadataMap();
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString);
          });
@@ -226,7 +226,7 @@ proto.api.Gateway.prototype.serializeBinaryToWriter = function (writer) {
   if (f && f.getLength() > 0) {
     f.serializeBinary(6, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
-  f = this.getPropertiesMap(true);
+  f = this.getMetadataMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(7, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
@@ -346,12 +346,12 @@ proto.api.Gateway.prototype.getTagsMap = function(opt_noLazyCreate) {
 
 
 /**
- * map<string, string> properties = 7;
+ * map<string, string> metadata = 7;
  * @param {boolean=} opt_noLazyCreate Do not create the map if
  * empty, instead returning `undefined`
  * @return {!jspb.Map<string,string>}
  */
-proto.api.Gateway.prototype.getPropertiesMap = function(opt_noLazyCreate) {
+proto.api.Gateway.prototype.getMetadataMap = function(opt_noLazyCreate) {
   return /** @type {!jspb.Map<string,string>} */ (
       jspb.Message.getMapField(this, 7, opt_noLazyCreate,
       null));

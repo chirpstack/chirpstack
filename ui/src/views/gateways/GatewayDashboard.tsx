@@ -91,10 +91,10 @@ class GatewayDashboard extends Component<IProps, IState> {
           <Descriptions>
             <Descriptions.Item label="Last seen">{lastSeenAt}</Descriptions.Item>
             <Descriptions.Item label="Region">
-              {this.props.gateway.getPropertiesMap().get("region_name")}
+              {this.props.gateway.getMetadataMap().get("region_name")}
             </Descriptions.Item>
             <Descriptions.Item label="Region common-name">
-              {this.props.gateway.getPropertiesMap().get("region_common_name")}
+              {this.props.gateway.getMetadataMap().get("region_common_name")}
             </Descriptions.Item>
             <Descriptions.Item label="Description">{this.props.gateway.getDescription()}</Descriptions.Item>
           </Descriptions>

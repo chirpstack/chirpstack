@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Form, Input, Row, Col, Button, Tabs, Space } from "antd";
+import { Form, Input, Row, Col, Button, Tabs, Space, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { Location } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
@@ -207,6 +207,34 @@ class GatewayForm extends Component<IProps, IState> {
                       Add tag
                     </Button>
                   </Form.Item>
+                </>
+              )}
+            </Form.List>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Metadata" key="3">
+            <Card bordered={false}>
+              <p>
+                Metadata is pushed by the gateway on every stats update and can be used to expose information about the
+                gateway like ip / hostname, serial number, HAL version.
+              </p>
+            </Card>
+            <Form.List name="metadataMap">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <Row gutter={24}>
+                      <Col span={6}>
+                        <Form.Item {...restField} name={[name, 0]} fieldKey={[name, 0]}>
+                          <Input placeholder="Key" disabled />
+                        </Form.Item>
+                      </Col>
+                      <Col span={18}>
+                        <Form.Item {...restField} name={[name, 1]} fieldKey={[name, 1]}>
+                          <Input placeholder="Value" disabled />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  ))}
                 </>
               )}
             </Form.List>

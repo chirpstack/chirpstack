@@ -162,7 +162,7 @@
     - [CreateGatewayRequest](#api-CreateGatewayRequest)
     - [DeleteGatewayRequest](#api-DeleteGatewayRequest)
     - [Gateway](#api-Gateway)
-    - [Gateway.PropertiesEntry](#api-Gateway-PropertiesEntry)
+    - [Gateway.MetadataEntry](#api-Gateway-MetadataEntry)
     - [Gateway.TagsEntry](#api-Gateway-TagsEntry)
     - [GatewayListItem](#api-GatewayListItem)
     - [GatewayListItem.PropertiesEntry](#api-GatewayListItem-PropertiesEntry)
@@ -2737,16 +2737,16 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | location | [common.Location](#common-Location) |  | Gateway location. |
 | tenant_id | [string](#string) |  | Tenant ID (UUID). |
 | tags | [Gateway.TagsEntry](#api-Gateway-TagsEntry) | repeated | Tags. |
-| properties | [Gateway.PropertiesEntry](#api-Gateway-PropertiesEntry) | repeated | Properties (provided by the gateway). |
+| metadata | [Gateway.MetadataEntry](#api-Gateway-MetadataEntry) | repeated | Metadata (provided by the gateway). |
 
 
 
 
 
 
-<a name="api-Gateway-PropertiesEntry"></a>
+<a name="api-Gateway-MetadataEntry"></a>
 
-### Gateway.PropertiesEntry
+### Gateway.MetadataEntry
 
 
 
