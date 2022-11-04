@@ -743,6 +743,7 @@ impl InternalService for Internal {
                     // detect client disconnect
                     _ = close_rx.recv() => {
                         debug!("Client disconnected");
+                        redis_rx.close();
                         break;
                     },
                     // detect get_event_logs function return

@@ -7,7 +7,7 @@ use prost::Message;
 use redis::streams::StreamReadReply;
 use tokio::sync::mpsc;
 use tokio::task;
-use tracing::{error, trace};
+use tracing::{debug, error, trace};
 
 use crate::config;
 use crate::storage::{get_redis_conn, redis_key};
@@ -83,6 +83,11 @@ pub async fn get_event_logs(
             let mut c = get_redis_conn()?;
 
             loop {
+                if channel.is_closed() {
+                    debug!("Channel has been closed, returning");
+                    return Ok(());
+                }
+
                 let srr: StreamReadReply = redis::cmd("XREAD")
                     .arg("COUNT")
                     .arg(count)
@@ -120,9 +125,7 @@ pub async fn get_event_logs(
                                                 .collect(),
                                             };
 
-                                            if channel.blocking_send(pl).is_err() {
-                                                return Err(anyhow!("Channel send error"));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     "join" => {
@@ -143,9 +146,7 @@ pub async fn get_event_logs(
                                                     .collect(),
                                             };
 
-                                            if channel.blocking_send(pl).is_err() {
-                                                return Err(anyhow!("Channel send error"));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     "ack" => {
@@ -163,9 +164,7 @@ pub async fn get_event_logs(
                                                 properties: [].iter().cloned().collect(),
                                             };
 
-                                            if channel.blocking_send(pl).is_err() {
-                                                return Err(anyhow!("Channel send error"));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     "txack" => {
@@ -183,9 +182,7 @@ pub async fn get_event_logs(
                                                 properties: [].iter().cloned().collect(),
                                             };
 
-                                            if channel.blocking_send(pl).is_err() {
-                                                return Err(anyhow!("Channel send error"));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     "status" => {
@@ -220,9 +217,7 @@ pub async fn get_event_logs(
                                                 .collect(),
                                             };
 
-                                            if channel.blocking_send(pl).is_err() {
-                                                return Err(anyhow!("Channel send error"));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     "log" => {
@@ -246,9 +241,7 @@ pub async fn get_event_logs(
                                                 .collect(),
                                             };
 
-                                            if channel.blocking_send(pl).is_err() {
-                                                return Err(anyhow!("Channel send error"));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     "location" => {
@@ -266,9 +259,7 @@ pub async fn get_event_logs(
                                                 properties: [].iter().cloned().collect(),
                                             };
 
-                                            if channel.blocking_send(pl).is_err() {
-                                                return Err(anyhow!("Channel send error"));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     "integration" => {
@@ -293,9 +284,7 @@ pub async fn get_event_logs(
                                                 .collect(),
                                             };
 
-                                            if  channel.blocking_send(pl).is_err() {
-                                                return Err(anyhow!("Channel send error"));
-                                            }
+                                            channel.blocking_send(pl)?;
                                         }
                                     }
                                     _ => {
