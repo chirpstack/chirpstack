@@ -98,7 +98,7 @@ impl GatewayService for Gateway {
                 }),
                 tenant_id: gw.tenant_id.to_string(),
                 tags: gw.tags.into_hashmap(),
-                properties: gw.properties.into_hashmap(),
+                metadata: gw.properties.into_hashmap(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&gw.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&gw.updated_at)),
