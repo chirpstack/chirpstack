@@ -214,8 +214,18 @@ pub async fn get(
             while ts.le(&end) {
                 timestamps.push(ts);
                 keys.push(get_key(name, a, ts));
-                // Make sure that the timestamp stays at midnight at daylight saving change.
-                ts = (ts + ChronoDuration::days(1)).date().and_hms(0, 0, 0);
+                ts = {
+                    if (ts + ChronoDuration::days(1)).day() == ts.day() {
+                        // In case of DST to non-DST transition, the ts is incremented with less
+                        // than 24h and we end up with the same day. Therefore we increment by two
+                        // days.
+                        (ts + ChronoDuration::days(2)).date().and_hms(0, 0, 0)
+                    } else {
+                        // Make sure that the timestamp stays at midnight in case of non-DST to DST
+                        // change.
+                        (ts + ChronoDuration::days(1)).date().and_hms(0, 0, 0)
+                    }
+                };
             }
         }
         Aggregation::MONTH => {
@@ -420,6 +430,75 @@ pub mod test {
                 },
                 Record {
                     time: Local.ymd(2018, 1, 2).and_hms(0, 0, 0),
+                    kind: Kind::ABSOLUTE,
+                    metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                }
+            ],
+            resp
+        );
+    }
+
+    #[tokio::test]
+    async fn test_day_dst_transition() {
+        let _guard = test::prepare().await;
+
+        let records = vec![
+            Record {
+                time: Local.ymd(2022, 10, 30).and_hms(1, 0, 0),
+                kind: Kind::ABSOLUTE,
+                metrics: [("foo".into(), 1f64), ("bar".into(), 2f64)]
+                    .iter()
+                    .cloned()
+                    .collect(),
+            },
+            Record {
+                time: Local.ymd(2022, 10, 30).and_hms(5, 0, 0),
+                kind: Kind::ABSOLUTE,
+                metrics: [("foo".into(), 3f64), ("bar".into(), 4f64)]
+                    .iter()
+                    .cloned()
+                    .collect(),
+            },
+            Record {
+                time: Local.ymd(2022, 10, 31).and_hms(1, 0, 0),
+                kind: Kind::ABSOLUTE,
+                metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
+                    .iter()
+                    .cloned()
+                    .collect(),
+            },
+        ];
+        for r in &records {
+            save_for_interval(Aggregation::DAY, "test", r)
+                .await
+                .unwrap();
+        }
+
+        let resp = get(
+            "test",
+            Kind::ABSOLUTE,
+            Aggregation::DAY,
+            Local.ymd(2022, 10, 30).and_hms(1, 0, 0),
+            Local.ymd(2022, 10, 31).and_hms(1, 0, 0),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            vec![
+                Record {
+                    time: Local.ymd(2022, 10, 30).and_hms(0, 0, 0),
+                    kind: Kind::ABSOLUTE,
+                    metrics: [("foo".into(), 4f64), ("bar".into(), 6f64)]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                },
+                Record {
+                    time: Local.ymd(2022, 10, 31).and_hms(0, 0, 0),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                         .iter()
