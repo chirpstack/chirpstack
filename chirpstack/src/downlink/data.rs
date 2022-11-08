@@ -495,9 +495,6 @@ impl Data {
 
                 // Network-server FCnt.
                 mac_pl.fhdr.f_cnt = self.device_session.n_f_cnt_down;
-
-                // Unset queue-item.
-                self.device_queue_item = None;
             } else {
                 // In this case mac-commands are sent using the FOpts field. In case there
                 // is a device-queue item, we will validate if it still fits within the
@@ -531,7 +528,6 @@ impl Data {
                     } else {
                         f_pending = true;
                         mac_pl.fhdr.f_ctrl.f_pending = true;
-                        self.device_queue_item = None;
                     }
                 }
             }
