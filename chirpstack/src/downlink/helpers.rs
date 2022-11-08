@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::Result;
 use rand::seq::SliceRandom;
 
@@ -65,7 +67,9 @@ pub fn set_tx_info_data_rate(
                 parameters: Some(gw::modulation::Parameters::Lora(gw::LoraModulationInfo {
                     bandwidth: v.bandwidth,
                     spreading_factor: v.spreading_factor as u32,
-                    code_rate: chirpstack_api::gw::CodeRate::Cr45.into(),
+                    code_rate: gw::CodeRate::from_str(&v.coding_rate)
+                        .map_err(|e| anyhow!("{}", e))?
+                        .into(),
                     polarization_inversion: true,
                     code_rate_legacy: "".into(),
                 })),

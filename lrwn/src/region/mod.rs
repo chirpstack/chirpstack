@@ -274,25 +274,26 @@ pub struct DataRate {
     pub modulation: DataRateModulation,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum DataRateModulation {
     Lora(LoraDataRate),
     Fsk(FskDataRate),
     LrFhss(LrFhssDataRate),
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct LoraDataRate {
     pub spreading_factor: u8,
     pub bandwidth: u32,
+    pub coding_rate: String,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct FskDataRate {
     pub bitrate: u32,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct LrFhssDataRate {
     pub coding_rate: String,
     pub occupied_channel_width: u32,
@@ -465,7 +466,7 @@ impl RegionBaseConfig {
             }
         }
 
-        Err(anyhow!("Unknown data-rate"))
+        Err(anyhow!("Unknown data-rate: {:?}", modulation))
     }
 
     fn get_data_rate(&self, dr: u8) -> Result<DataRateModulation> {

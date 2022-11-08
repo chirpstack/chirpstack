@@ -25,6 +25,7 @@ pub fn get_uplink_dr(region_name: &str, tx_info: &chirpstack_api::gw::UplinkTxIn
             lrwn::region::DataRateModulation::Lora(lrwn::region::LoraDataRate {
                 spreading_factor: v.spreading_factor as u8,
                 bandwidth: v.bandwidth,
+                coding_rate: v.code_rate().into(),
             })
         }
         chirpstack_api::gw::modulation::Parameters::Fsk(v) => {
@@ -57,7 +58,9 @@ pub fn set_uplink_modulation(
                 gw::modulation::Parameters::Lora(gw::LoraModulationInfo {
                     bandwidth: v.bandwidth,
                     spreading_factor: v.spreading_factor as u32,
-                    code_rate: gw::CodeRate::Cr45.into(),
+                    code_rate: gw::CodeRate::from_str(&v.coding_rate)
+                        .map_err(|e| anyhow!("{}", e))?
+                        .into(),
                     code_rate_legacy: "".into(),
                     polarization_inversion: true,
                 })

@@ -28,6 +28,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 10,
                                 bandwidth: 125000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -39,6 +40,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 9,
                                 bandwidth: 125000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -50,6 +52,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 8,
                                 bandwidth: 125000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -61,6 +64,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 7,
                                 bandwidth: 125000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -72,6 +76,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 8,
                                 bandwidth: 500000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -106,6 +111,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 12,
                                 bandwidth: 500000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -117,6 +123,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 11,
                                 bandwidth: 500000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -128,6 +135,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 10,
                                 bandwidth: 500000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -139,6 +147,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 9,
                                 bandwidth: 500000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -150,6 +159,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 8,
                                 bandwidth: 500000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -161,6 +171,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 7,
                                 bandwidth: 500000,
+                                coding_rate: "4/5".into(),
                             }),
                         },
                     ),
@@ -1054,6 +1065,7 @@ pub mod test {
                 dr_modulation: DataRateModulation::Lora(LoraDataRate {
                     spreading_factor: 10,
                     bandwidth: 125000,
+                    coding_rate: "4/5".into(),
                 }),
                 uplink: true,
                 expected_dr: 0,
@@ -1062,6 +1074,7 @@ pub mod test {
                 dr_modulation: DataRateModulation::Lora(LoraDataRate {
                     spreading_factor: 12,
                     bandwidth: 500000,
+                    coding_rate: "4/5".into(),
                 }),
                 uplink: false,
                 expected_dr: 8,
@@ -1070,6 +1083,7 @@ pub mod test {
                 dr_modulation: DataRateModulation::Lora(LoraDataRate {
                     spreading_factor: 8,
                     bandwidth: 500000,
+                    coding_rate: "4/5".into(),
                 }),
                 uplink: true,
                 expected_dr: 4,
@@ -1078,6 +1092,7 @@ pub mod test {
                 dr_modulation: DataRateModulation::Lora(LoraDataRate {
                     spreading_factor: 8,
                     bandwidth: 500000,
+                    coding_rate: "4/5".into(),
                 }),
                 uplink: false,
                 expected_dr: 12,

@@ -28,6 +28,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 12,
                                 bandwidth: 812000,
+                                coding_rate: "4/8LI".into(),
                             }),
                         },
                     ),
@@ -39,6 +40,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 11,
                                 bandwidth: 812000,
+                                coding_rate: "4/8LI".into(),
                             }),
                         },
                     ),
@@ -50,6 +52,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 10,
                                 bandwidth: 812000,
+                                coding_rate: "4/8LI".into(),
                             }),
                         },
                     ),
@@ -61,6 +64,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 9,
                                 bandwidth: 812000,
+                                coding_rate: "4/8LI".into(),
                             }),
                         },
                     ),
@@ -72,6 +76,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 8,
                                 bandwidth: 812000,
+                                coding_rate: "4/8LI".into(),
                             }),
                         },
                     ),
@@ -83,6 +88,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 7,
                                 bandwidth: 812000,
+                                coding_rate: "4/8LI".into(),
                             }),
                         },
                     ),
@@ -94,6 +100,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 6,
                                 bandwidth: 812000,
+                                coding_rate: "4/8LI".into(),
                             }),
                         },
                     ),
@@ -105,6 +112,7 @@ impl Configuration {
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 5,
                                 bandwidth: 812000,
+                                coding_rate: "4/8LI".into(),
                             }),
                         },
                     ),
