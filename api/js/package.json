@@ -1,6 +1,6 @@
 {
   "name": "@chirpstack/chirpstack-api",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "Chirpstack JS and TS API",
   "license": "MIT",
   "devDependencies": {
