@@ -29,7 +29,7 @@ impl Integration {
             json: conf.json,
             endpoints: conf
                 .event_endpoint_url
-                .split(' ')
+                .split(',')
                 .map(|s| s.trim().to_string())
                 .collect(),
         }
@@ -182,6 +182,26 @@ impl IntegrationTrait for Integration {
 pub mod test {
     use super::*;
     use httpmock::prelude::*;
+
+    #[test]
+    fn test_url_split() {
+        let i = Integration::new(&HttpConfiguration {
+            headers: HashMap::new(),
+            json: true,
+            event_endpoint_url: "http://a.com,http://b.com, http://c.com , http://d.com"
+                .to_string(),
+        });
+
+        assert_eq!(
+            vec![
+                "http://a.com".to_string(),
+                "http://b.com".to_string(),
+                "http://c.com".to_string(),
+                "http://d.com".to_string(),
+            ],
+            i.endpoints
+        );
+    }
 
     #[tokio::test]
     async fn test_http() {
