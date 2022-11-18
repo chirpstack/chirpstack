@@ -185,17 +185,55 @@ impl IntegrationTrait for Integration {
 
     async fn status_event(
         &self,
-        _vars: &HashMap<String, String>,
-        _pl: &integration::StatusEvent,
+        vars: &HashMap<String, String>,
+        pl: &integration::StatusEvent,
     ) -> Result<()> {
-        Ok(())
+        let di = pl.device_info.as_ref().unwrap();
+        let mut telemetry: BTreeMap<String, Value> = BTreeMap::new();
+        telemetry.insert(
+            "status_margin".to_string(),
+            Value::Integer(pl.margin.into()),
+        );
+        telemetry.insert(
+            "status_external_power_source".to_string(),
+            Value::Bool(pl.external_power_source),
+        );
+        telemetry.insert(
+            "status_battery_level".to_string(),
+            Value::Float(pl.battery_level.into()),
+        );
+        telemetry.insert(
+            "status_battery_level_unavailable".to_string(),
+            Value::Bool(pl.battery_level_unavailable),
+        );
+
+        let telemetry = Payload(telemetry);
+
+        info!(dev_eui = %di.dev_eui, server = %self.server, "Sending device telemetry");
+        self.send_telemetry(vars, &telemetry).await
     }
 
     async fn location_event(
         &self,
-        _vars: &HashMap<String, String>,
-        _pl: &integration::LocationEvent,
+        vars: &HashMap<String, String>,
+        pl: &integration::LocationEvent,
     ) -> Result<()> {
+        if let Some(loc) = &pl.location {
+            let di = pl.device_info.as_ref().unwrap();
+            let mut telemetry: BTreeMap<String, Value> = BTreeMap::new();
+            telemetry.insert("location_latitude".to_string(), Value::Float(loc.latitude));
+            telemetry.insert(
+                "location_longitude".to_string(),
+                Value::Float(loc.longitude),
+            );
+            telemetry.insert("location_altitude".to_string(), Value::Float(loc.altitude));
+
+            let telemetry = Payload(telemetry);
+
+            info!(dev_eui = %di.dev_eui, server = %self.server, "Sending device telemetry");
+            self.send_telemetry(vars, &telemetry).await?;
+        }
+
         Ok(())
     }
 
@@ -279,7 +317,7 @@ fn struct_value_to_telemetry(prefix: &str, v: &pbjson_types::Value) -> BTreeMap<
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use chirpstack_api::gw;
+    use chirpstack_api::{common, gw};
     use httpmock::prelude::*;
     use uuid::Uuid;
 
@@ -383,6 +421,79 @@ pub mod test {
 
         mock_attr.assert();
         mock_attr.delete();
+        mock_telm.assert();
+        mock_telm.delete();
+
+        // location
+        let mut mock_telm = server.mock(|when, then| {
+            when.method(POST)
+                .path("/api/v1/test-token/telemetry")
+                .header("Content-Type", "application/json")
+                .body(r#"{"location_altitude":3.23,"location_latitude":1.23,"location_longitude":2.23}"#);
+
+            then.status(200);
+        });
+
+        i.location_event(
+            &vars,
+            &integration::LocationEvent {
+                device_info: Some(integration::DeviceInfo {
+                    application_name: "test-app".to_string(),
+                    application_id: Uuid::nil().to_string(),
+                    device_name: "test-device".to_string(),
+                    dev_eui: "0102030405060708".to_string(),
+                    tags: [("foo".to_string(), "bar".to_string())]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                    ..Default::default()
+                }),
+                location: Some(common::Location {
+                    latitude: 1.23,
+                    longitude: 2.23,
+                    altitude: 3.23,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+        mock_telm.assert();
+        mock_telm.delete();
+
+        // status
+        let mut mock_telm = server.mock(|when, then| {
+            when.method(POST).path("/api/v1/test-token/telemetry")
+                .header("Content-Type", "application/json")
+                .body(r#"{"status_battery_level":75.0,"status_battery_level_unavailable":false,"status_external_power_source":false,"status_margin":10}"#);
+
+            then.status(200);
+        });
+
+        i.status_event(
+            &vars,
+            &integration::StatusEvent {
+                device_info: Some(integration::DeviceInfo {
+                    application_name: "test-app".to_string(),
+                    application_id: Uuid::nil().to_string(),
+                    device_name: "test-device".to_string(),
+                    dev_eui: "0102030405060708".to_string(),
+                    tags: [("foo".to_string(), "bar".to_string())]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                    ..Default::default()
+                }),
+                battery_level: 75.0,
+                margin: 10,
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
         mock_telm.assert();
         mock_telm.delete();
     }
