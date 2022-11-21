@@ -117,37 +117,38 @@ impl IntegrationTrait for Integration {
         info!(dev_eui = %di.dev_eui, server = %self.server, "Sending device telemetry");
         self.send_attributes(vars, &attributes).await?;
 
-        if let Some(obj) = &pl.object {
-            let mut telemetry = struct_to_telemetry(obj);
-            telemetry.insert("f_port".to_string(), Value::Integer(pl.f_port.into()));
-            telemetry.insert("f_cnt".to_string(), Value::Integer(pl.f_cnt.into()));
-            telemetry.insert("dr".to_string(), Value::Integer(pl.dr.into()));
-            telemetry.insert(
-                "rssi".to_string(),
-                Value::Integer(pl.rx_info.iter().max_by_key(|x| x.rssi).unwrap().rssi as i64),
-            );
-            telemetry.insert(
-                "snr".to_string(),
-                Value::Float(
-                    pl.rx_info
-                        .iter()
-                        .max_by(|x, y| {
-                            x.snr
-                                .partial_cmp(&y.snr)
-                                .unwrap_or(std::cmp::Ordering::Less)
-                        })
-                        .unwrap()
-                        .snr
-                        .into(),
-                ),
-            );
-            let telemetry = Payload(telemetry);
-
-            info!(dev_eui = %di.dev_eui, server = %self.server, "Sending device telemetry");
-            self.send_telemetry(vars, &telemetry).await?;
+        let mut telemetry: BTreeMap<String, Value> = if let Some(obj) = &pl.object {
+            struct_to_telemetry(obj)
         } else {
-            info!(dev_eui = %di.dev_eui, "No telemetry to send, object is None");
-        }
+            BTreeMap::new()
+        };
+
+        telemetry.insert("f_port".to_string(), Value::Integer(pl.f_port.into()));
+        telemetry.insert("f_cnt".to_string(), Value::Integer(pl.f_cnt.into()));
+        telemetry.insert("dr".to_string(), Value::Integer(pl.dr.into()));
+        telemetry.insert(
+            "rssi".to_string(),
+            Value::Integer(pl.rx_info.iter().max_by_key(|x| x.rssi).unwrap().rssi as i64),
+        );
+        telemetry.insert(
+            "snr".to_string(),
+            Value::Float(
+                pl.rx_info
+                    .iter()
+                    .max_by(|x, y| {
+                        x.snr
+                            .partial_cmp(&y.snr)
+                            .unwrap_or(std::cmp::Ordering::Less)
+                    })
+                    .unwrap()
+                    .snr
+                    .into(),
+            ),
+        );
+        let telemetry = Payload(telemetry);
+
+        info!(dev_eui = %di.dev_eui, server = %self.server, "Sending device telemetry");
+        self.send_telemetry(vars, &telemetry).await?;
 
         Ok(())
     }
@@ -336,7 +337,7 @@ pub mod test {
             "test-token".to_string(),
         );
 
-        // uplink
+        // uplink with decoded payload
         let mut mock_attr = server.mock(|when, then| {
             when.method(POST)
                 .path("/api/v1/test-token/attributes")
@@ -413,6 +414,69 @@ pub mod test {
                     .cloned()
                     .collect(),
                 }),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+
+        mock_attr.assert();
+        mock_attr.delete();
+        mock_telm.assert();
+        mock_telm.delete();
+
+        // uplink without decoded payload
+        let mut mock_attr = server.mock(|when, then| {
+            when.method(POST)
+                .path("/api/v1/test-token/attributes")
+                .header("Content-Type", "application/json")
+                .body(r#"{"application_id":"00000000-0000-0000-0000-000000000000","application_name":"test-app","dev_eui":"0102030405060708","device_name":"test-device","foo":"bar"}"#);
+
+            then.status(200);
+        });
+        let mut mock_telm = server.mock(|when, then| {
+            when.method(POST)
+                .path("/api/v1/test-token/telemetry")
+                .header("Content-Type", "application/json")
+                .body(r#"{"dr":2,"f_cnt":20,"f_port":10,"rssi":-55,"snr":2.5}"#);
+
+            then.status(200);
+        });
+
+        i.uplink_event(
+            &vars,
+            &integration::UplinkEvent {
+                device_info: Some(integration::DeviceInfo {
+                    application_name: "test-app".to_string(),
+                    application_id: Uuid::nil().to_string(),
+                    device_name: "test-device".to_string(),
+                    dev_eui: "0102030405060708".to_string(),
+                    tags: [("foo".to_string(), "bar".to_string())]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                    ..Default::default()
+                }),
+                f_port: 10,
+                f_cnt: 20,
+                dr: 2,
+                rx_info: vec![
+                    gw::UplinkRxInfo {
+                        rssi: -60,
+                        snr: 1.0,
+                        ..Default::default()
+                    },
+                    gw::UplinkRxInfo {
+                        rssi: -55,
+                        snr: 2.5,
+                        ..Default::default()
+                    },
+                    gw::UplinkRxInfo {
+                        rssi: -70,
+                        snr: 1.0,
+                        ..Default::default()
+                    },
+                ],
                 ..Default::default()
             },
         )
