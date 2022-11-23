@@ -66,7 +66,11 @@ impl GatewayService for Gateway {
 
         let _ = gateway::create(gw).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-gateway_id", req_gw.gateway_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get(
@@ -85,7 +89,7 @@ impl GatewayService for Gateway {
 
         let gw = gateway::get(&gw_id).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetGatewayResponse {
+        let mut resp = Response::new(api::GetGatewayResponse {
             gateway: Some(api::Gateway {
                 gateway_id: gw.gateway_id.to_string(),
                 name: gw.name,
@@ -106,7 +110,11 @@ impl GatewayService for Gateway {
                 .last_seen_at
                 .as_ref()
                 .map(helpers::datetime_to_prost_timestamp),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-gateway_id", req.gateway_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update(
@@ -147,7 +155,11 @@ impl GatewayService for Gateway {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-gateway_id", req_gw.gateway_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn delete(
@@ -165,7 +177,12 @@ impl GatewayService for Gateway {
             .await?;
 
         gateway::delete(&gw_id).await.map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-gateway_id", req.gateway_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list(
@@ -203,7 +220,7 @@ impl GatewayService for Gateway {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::ListGatewaysResponse {
+        let mut resp = Response::new(api::ListGatewaysResponse {
             total_count: count as u32,
             result: result
                 .iter()
@@ -227,7 +244,13 @@ impl GatewayService for Gateway {
                         .map(helpers::datetime_to_prost_timestamp),
                 })
                 .collect(),
-        }))
+        });
+        if !req.tenant_id.is_empty() {
+            resp.metadata_mut()
+                .insert("x-log-tenant_id", req.tenant_id.parse().unwrap());
+        }
+
+        Ok(resp)
     }
 
     async fn generate_client_certificate(
@@ -252,14 +275,16 @@ impl GatewayService for Gateway {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(
-            api::GenerateGatewayClientCertificateResponse {
-                ca_cert,
-                tls_cert: cert,
-                tls_key: key,
-                expires_at: Some(ttl.into()),
-            },
-        ))
+        let mut resp = Response::new(api::GenerateGatewayClientCertificateResponse {
+            ca_cert,
+            tls_cert: cert,
+            tls_key: key,
+            expires_at: Some(ttl.into()),
+        });
+        resp.metadata_mut()
+            .insert("x-log-gateway_id", req.gateway_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get_metrics(
@@ -544,7 +569,11 @@ impl GatewayService for Gateway {
             }),
         };
 
-        Ok(Response::new(out))
+        let mut resp = Response::new(out);
+        resp.metadata_mut()
+            .insert("x-log-gateway_id", req.gateway_id.parse().unwrap());
+
+        Ok(resp)
     }
 }
 

@@ -37,6 +37,7 @@ api:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/gateway.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/frame_log.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/multicast_group.proto
+	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/request_log.proto
 
 integration:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/integration/integration.proto

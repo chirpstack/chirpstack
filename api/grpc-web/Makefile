@@ -25,6 +25,7 @@ api:
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/gateway.proto
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/frame_log.proto
 	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/multicast_group.proto
+	protoc -I=$(GOOGLEAPIS_PATH) -I=../protobuf -I=../proto $(PROTOC_ARGS) ../proto/api/request_log.proto
 
 integration:
 	mkdir -p integration

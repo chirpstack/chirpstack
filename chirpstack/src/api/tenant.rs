@@ -53,9 +53,13 @@ impl TenantService for Tenant {
 
         let t = tenant::create(t).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::CreateTenantResponse {
+        let mut resp = Response::new(api::CreateTenantResponse {
             id: t.id.to_string(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", t.id.to_string().parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get(
@@ -74,7 +78,7 @@ impl TenantService for Tenant {
 
         let t = tenant::get(&tenant_id).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetTenantResponse {
+        let mut resp = Response::new(api::GetTenantResponse {
             tenant: Some(api::Tenant {
                 id: t.id.to_string(),
                 name: t.name,
@@ -86,7 +90,11 @@ impl TenantService for Tenant {
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&t.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&t.updated_at)),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update(
@@ -122,7 +130,11 @@ impl TenantService for Tenant {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req_tenant.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn delete(
@@ -141,7 +153,11 @@ impl TenantService for Tenant {
 
         tenant::delete(&tenant_id).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list(
@@ -245,7 +261,13 @@ impl TenantService for Tenant {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req_user.tenant_id.parse().unwrap());
+        resp.metadata_mut()
+            .insert("x-log-user_id", user_id.to_string().parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get_user(
@@ -268,7 +290,7 @@ impl TenantService for Tenant {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetTenantUserResponse {
+        let mut resp = Response::new(api::GetTenantUserResponse {
             tenant_user: Some(api::TenantUser {
                 tenant_id: tenant_id.to_string(),
                 user_id: tu.user_id.to_string(),
@@ -279,7 +301,13 @@ impl TenantService for Tenant {
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&tu.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&tu.updated_at)),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req.tenant_id.parse().unwrap());
+        resp.metadata_mut()
+            .insert("x-log-user_id", req.user_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update_user(
@@ -317,7 +345,13 @@ impl TenantService for Tenant {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req_user.tenant_id.parse().unwrap());
+        resp.metadata_mut()
+            .insert("x-log-user_id", req_user.user_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn delete_user(
@@ -352,7 +386,13 @@ impl TenantService for Tenant {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req.tenant_id.parse().unwrap());
+        resp.metadata_mut()
+            .insert("x-log-user_id", req.user_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list_users(
@@ -376,7 +416,7 @@ impl TenantService for Tenant {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::ListTenantUsersResponse {
+        let mut resp = Response::new(api::ListTenantUsersResponse {
             total_count: count as u32,
             result: result
                 .iter()
@@ -391,7 +431,11 @@ impl TenantService for Tenant {
                     is_gateway_admin: tu.is_gateway_admin,
                 })
                 .collect(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req.tenant_id.parse().unwrap());
+
+        Ok(resp)
     }
 }
 

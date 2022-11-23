@@ -61,6 +61,7 @@ impl DeviceService for Device {
             name: req_d.name.clone(),
             description: req_d.description.clone(),
             skip_fcnt_check: req_d.skip_fcnt_check,
+            is_disabled: req_d.is_disabled,
             tags: fields::KeyValue::new(req_d.tags.clone()),
             variables: fields::KeyValue::new(req_d.variables.clone()),
             ..Default::default()
@@ -68,7 +69,15 @@ impl DeviceService for Device {
 
         let _ = device::create(d).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req_d.dev_eui.parse().unwrap());
+        resp.metadata_mut().insert(
+            "x-log-is_disabled",
+            req_d.is_disabled.to_string().parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get(
@@ -87,7 +96,7 @@ impl DeviceService for Device {
 
         let d = device::get(&dev_eui).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetDeviceResponse {
+        let mut resp = Response::new(api::GetDeviceResponse {
             device: Some(api::Device {
                 dev_eui: d.dev_eui.to_string(),
                 name: d.name.clone(),
@@ -116,7 +125,11 @@ impl DeviceService for Device {
                 }),
                 false => None,
             },
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update(
@@ -175,7 +188,15 @@ impl DeviceService for Device {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req_d.dev_eui.parse().unwrap());
+        resp.metadata_mut().insert(
+            "x-log-is_disabled",
+            req_d.is_disabled.to_string().parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete(
@@ -193,7 +214,12 @@ impl DeviceService for Device {
             .await?;
 
         device::delete(&dev_eui).await.map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list(
@@ -235,7 +261,7 @@ impl DeviceService for Device {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::ListDevicesResponse {
+        let mut resp = Response::new(api::ListDevicesResponse {
             total_count: count as u32,
             result: items
                 .iter()
@@ -264,7 +290,11 @@ impl DeviceService for Device {
                     },
                 })
                 .collect(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_keys(
@@ -298,7 +328,12 @@ impl DeviceService for Device {
         };
 
         let _ = device_keys::create(dk).await.map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req_dk.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get_keys(
@@ -317,7 +352,7 @@ impl DeviceService for Device {
 
         let dk = device_keys::get(&dev_eui).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetDeviceKeysResponse {
+        let mut resp = Response::new(api::GetDeviceKeysResponse {
             device_keys: Some(api::DeviceKeys {
                 dev_eui: dk.dev_eui.to_string(),
                 nwk_key: dk.nwk_key.to_string(),
@@ -325,7 +360,11 @@ impl DeviceService for Device {
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dk.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dk.updated_at)),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update_keys(
@@ -363,7 +402,11 @@ impl DeviceService for Device {
         };
         let _ = device_keys::update(dk).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req_dk.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn delete_keys(
@@ -383,7 +426,12 @@ impl DeviceService for Device {
         device_keys::delete(&dev_eui)
             .await
             .map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn flush_dev_nonces(
@@ -403,7 +451,12 @@ impl DeviceService for Device {
         device_keys::set_dev_nonces(&dev_eui, &Vec::new())
             .await
             .map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn activate(
@@ -469,7 +522,11 @@ impl DeviceService for Device {
                 .map_err(|e| e.status())?;
         }
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req_da.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn deactivate(
@@ -493,7 +550,11 @@ impl DeviceService for Device {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get_activation(
@@ -524,7 +585,7 @@ impl DeviceService for Device {
             },
         };
 
-        Ok(Response::new(api::GetDeviceActivationResponse {
+        let mut resp = Response::new(api::GetDeviceActivationResponse {
             device_activation: Some(api::DeviceActivation {
                 dev_eui: hex::encode(&ds.dev_eui),
                 dev_addr: hex::encode(&ds.dev_addr),
@@ -539,7 +600,11 @@ impl DeviceService for Device {
                 n_f_cnt_down: ds.n_f_cnt_down,
                 a_f_cnt_down: ds.a_f_cnt_down,
             }),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get_random_dev_addr(
@@ -664,7 +729,11 @@ impl DeviceService for Device {
             }
         }
 
-        Ok(Response::new(out))
+        let mut resp = Response::new(out);
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get_link_metrics(
@@ -906,7 +975,11 @@ impl DeviceService for Device {
             }),
         };
 
-        Ok(Response::new(out))
+        let mut resp = Response::new(out);
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn enqueue(
@@ -960,9 +1033,13 @@ impl DeviceService for Device {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::EnqueueDeviceQueueItemResponse {
+        let mut resp = Response::new(api::EnqueueDeviceQueueItemResponse {
             id: qi.id.to_string(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req_qi.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn flush_queue(
@@ -983,7 +1060,11 @@ impl DeviceService for Device {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get_queue(
@@ -1004,7 +1085,7 @@ impl DeviceService for Device {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetDeviceQueueItemsResponse {
+        let mut resp = Response::new(api::GetDeviceQueueItemsResponse {
             total_count: items.len() as u32,
             result: items
                 .iter()
@@ -1022,7 +1103,11 @@ impl DeviceService for Device {
                     },
                 })
                 .collect(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 }
 

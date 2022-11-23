@@ -52,9 +52,13 @@ impl ApplicationService for Application {
 
         let a = application::create(a).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::CreateApplicationResponse {
+        let mut resp = Response::new(api::CreateApplicationResponse {
             id: a.id.to_string(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", a.id.to_string().parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get(
@@ -76,7 +80,7 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetApplicationResponse {
+        let mut resp = Response::new(api::GetApplicationResponse {
             application: Some(api::Application {
                 id: a.id.to_string(),
                 tenant_id: a.tenant_id.to_string(),
@@ -86,7 +90,11 @@ impl ApplicationService for Application {
             created_at: Some(helpers::datetime_to_prost_timestamp(&a.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&a.updated_at)),
             measurement_keys,
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update(
@@ -117,7 +125,11 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req_app.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn delete(
@@ -136,7 +148,11 @@ impl ApplicationService for Application {
 
         application::delete(&app_id).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list(
@@ -169,7 +185,7 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::ListApplicationsResponse {
+        let mut resp = Response::new(api::ListApplicationsResponse {
             total_count: count as u32,
             result: results
                 .iter()
@@ -181,7 +197,11 @@ impl ApplicationService for Application {
                     description: a.description.clone(),
                 })
                 .collect(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req.tenant_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list_integrations(
@@ -226,10 +246,14 @@ impl ApplicationService for Application {
             kind: api::IntegrationKind::MqttGlobal.into(),
         });
 
-        Ok(Response::new(api::ListIntegrationsResponse {
+        let mut resp = Response::new(api::ListIntegrationsResponse {
             total_count: (result.len() + 1) as u32,
             result: items,
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_http_integration(
@@ -271,7 +295,13 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_http_integration(
@@ -293,7 +323,7 @@ impl ApplicationService for Application {
             .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::Http(conf) = &i.configuration {
-            Ok(Response::new(api::GetHttpIntegrationResponse {
+            let mut resp = Response::new(api::GetHttpIntegrationResponse {
                 integration: Some(api::HttpIntegration {
                     application_id: app_id.to_string(),
                     headers: conf.headers.clone(),
@@ -304,7 +334,11 @@ impl ApplicationService for Application {
                     .into(),
                     event_endpoint_url: conf.event_endpoint_url.clone(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal("Integration has no Http configuration"))
         }
@@ -347,7 +381,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_http_integration(
@@ -368,7 +408,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_influx_db_integration(
@@ -414,7 +458,13 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_influx_db_integration(
@@ -436,7 +486,7 @@ impl ApplicationService for Application {
             .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::InfluxDb(conf) = &i.configuration {
-            Ok(Response::new(api::GetInfluxDbIntegrationResponse {
+            let mut resp = Response::new(api::GetInfluxDbIntegrationResponse {
                 integration: Some(api::InfluxDbIntegration {
                     application_id: app_id.to_string(),
                     endpoint: conf.endpoint.clone(),
@@ -450,7 +500,11 @@ impl ApplicationService for Application {
                     organization: conf.organization.clone(),
                     bucket: conf.bucket.clone(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal(
                 "Integration has no InfluxDb configuration",
@@ -499,7 +553,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_influx_db_integration(
@@ -520,7 +580,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_things_board_integration(
@@ -557,7 +621,13 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_things_board_integration(
@@ -579,12 +649,16 @@ impl ApplicationService for Application {
             .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::ThingsBoard(conf) = &i.configuration {
-            Ok(Response::new(api::GetThingsBoardIntegrationResponse {
+            let mut resp = Response::new(api::GetThingsBoardIntegrationResponse {
                 integration: Some(api::ThingsBoardIntegration {
                     application_id: app_id.to_string(),
                     server: conf.server.clone(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal(
                 "Integration has no ThingsBoard configuration",
@@ -624,7 +698,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_things_board_integration(
@@ -645,7 +725,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_my_devices_integration(
@@ -680,7 +764,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_my_devices_integration(
@@ -702,12 +792,16 @@ impl ApplicationService for Application {
             .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::MyDevices(conf) = &i.configuration {
-            Ok(Response::new(api::GetMyDevicesIntegrationResponse {
+            let mut resp = Response::new(api::GetMyDevicesIntegrationResponse {
                 integration: Some(api::MyDevicesIntegration {
                     application_id: app_id.to_string(),
                     endpoint: conf.endpoint.clone(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal(
                 "Integration has no MyDevices configuration",
@@ -747,7 +841,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_my_devices_integration(
@@ -768,7 +868,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_lora_cloud_integration(
@@ -832,7 +936,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_lora_cloud_integration(
@@ -856,7 +966,7 @@ impl ApplicationService for Application {
         if let application::IntegrationConfiguration::LoraCloud(conf) = &i.configuration {
             let mgs = &conf.modem_geolocation_services;
 
-            Ok(Response::new(api::GetLoraCloudIntegrationResponse {
+            let mut resp = Response::new(api::GetLoraCloudIntegrationResponse {
                 integration: Some(api::LoraCloudIntegration {
                     application_id: app_id.to_string(),
                     modem_geolocation_services: Some(api::LoraCloudModemGeolocationServices {
@@ -877,7 +987,11 @@ impl ApplicationService for Application {
                         geolocation_wifi_payload_field: mgs.geolocation_wifi_payload_field.clone(),
                     }),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal(
                 "Integration has no LoraCloud configuration",
@@ -946,7 +1060,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_lora_cloud_integration(
@@ -967,7 +1087,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_gcp_pub_sub_integration(
@@ -1005,7 +1129,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_gcp_pub_sub_integration(
@@ -1027,7 +1157,7 @@ impl ApplicationService for Application {
             .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::GcpPubSub(conf) = &i.configuration {
-            Ok(Response::new(api::GetGcpPubSubIntegrationResponse {
+            let mut resp = Response::new(api::GetGcpPubSubIntegrationResponse {
                 integration: Some(api::GcpPubSubIntegration {
                     application_id: app_id.to_string(),
                     encoding: conf.encoding,
@@ -1035,7 +1165,11 @@ impl ApplicationService for Application {
                     project_id: conf.project_id.clone(),
                     topic_name: conf.topic_name.clone(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal(
                 "Integration has no GcpPubSub configuration",
@@ -1078,7 +1212,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_gcp_pub_sub_integration(
@@ -1099,7 +1239,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_aws_sns_integration(
@@ -1138,7 +1282,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_aws_sns_integration(
@@ -1160,7 +1310,7 @@ impl ApplicationService for Application {
             .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::AwsSns(conf) = &i.configuration {
-            Ok(Response::new(api::GetAwsSnsIntegrationResponse {
+            let mut resp = Response::new(api::GetAwsSnsIntegrationResponse {
                 integration: Some(api::AwsSnsIntegration {
                     application_id: app_id.to_string(),
                     encoding: conf.encoding,
@@ -1169,7 +1319,11 @@ impl ApplicationService for Application {
                     secret_access_key: conf.secret_access_key.clone(),
                     topic_arn: conf.topic_arn.clone(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal("Integration has no AwsSns configuration"))
         }
@@ -1211,7 +1365,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_aws_sns_integration(
@@ -1232,7 +1392,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_azure_service_bus_integration(
@@ -1269,7 +1433,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_azure_service_bus_integration(
@@ -1292,14 +1462,18 @@ impl ApplicationService for Application {
                 .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::AzureServiceBus(conf) = &i.configuration {
-            Ok(Response::new(api::GetAzureServiceBusIntegrationResponse {
+            let mut resp = Response::new(api::GetAzureServiceBusIntegrationResponse {
                 integration: Some(api::AzureServiceBusIntegration {
                     application_id: app_id.to_string(),
                     encoding: conf.encoding,
                     connection_string: conf.connection_string.clone(),
                     publish_name: conf.publish_name.clone(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal(
                 "Integration has no AzureServiceBus configuration",
@@ -1341,7 +1515,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_azure_service_bus_integration(
@@ -1362,7 +1542,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_pilot_things_integration(
@@ -1398,7 +1582,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_pilot_things_integration(
@@ -1420,13 +1610,17 @@ impl ApplicationService for Application {
             .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::PilotThings(conf) = &i.configuration {
-            Ok(Response::new(api::GetPilotThingsIntegrationResponse {
+            let mut resp = Response::new(api::GetPilotThingsIntegrationResponse {
                 integration: Some(api::PilotThingsIntegration {
                     application_id: app_id.to_string(),
                     server: conf.server.clone(),
                     token: conf.token.clone(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal(
                 "Integration has no PilotThings configuration",
@@ -1467,7 +1661,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_pilot_things_integration(
@@ -1488,7 +1688,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn create_ifttt_integration(
@@ -1527,7 +1731,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get_ifttt_integration(
@@ -1549,13 +1759,17 @@ impl ApplicationService for Application {
             .map_err(|e| e.status())?;
 
         if let application::IntegrationConfiguration::Ifttt(conf) = &i.configuration {
-            Ok(Response::new(api::GetIftttIntegrationResponse {
+            let mut resp = Response::new(api::GetIftttIntegrationResponse {
                 integration: Some(api::IftttIntegration {
                     application_id: app_id.to_string(),
                     key: conf.key.clone(),
                     uplink_values: conf.uplink_values.to_vec(),
                 }),
-            }))
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
         } else {
             Err(Status::internal("Integration has no Ifttt configuration"))
         }
@@ -1597,7 +1811,13 @@ impl ApplicationService for Application {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn delete_ifttt_integration(
@@ -1618,7 +1838,11 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn generate_mqtt_integration_client_certificate(
@@ -1643,14 +1867,16 @@ impl ApplicationService for Application {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(
-            api::GenerateMqttIntegrationClientCertificateResponse {
-                ca_cert,
-                tls_cert: cert,
-                tls_key: key,
-                expires_at: Some(ttl.into()),
-            },
-        ))
+        let mut resp = Response::new(api::GenerateMqttIntegrationClientCertificateResponse {
+            ca_cert,
+            tls_cert: cert,
+            tls_key: key,
+            expires_at: Some(ttl.into()),
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 }
 

@@ -65,9 +65,16 @@ impl MulticastGroupService for MulticastGroup {
             ..Default::default()
         };
         let mg = multicast::create(mg).await.map_err(|e| e.status())?;
-        Ok(Response::new(api::CreateMulticastGroupResponse {
+
+        let mut resp = Response::new(api::CreateMulticastGroupResponse {
             id: mg.id.to_string(),
-        }))
+        });
+        resp.metadata_mut().insert(
+            "x-log-multicast_group_id",
+            mg.id.to_string().parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get(
@@ -86,7 +93,7 @@ impl MulticastGroupService for MulticastGroup {
 
         let mg = multicast::get(&mg_id).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetMulticastGroupResponse {
+        let mut resp = Response::new(api::GetMulticastGroupResponse {
             multicast_group: Some(api::MulticastGroup {
                 id: mg.id.to_string(),
                 name: mg.name.clone(),
@@ -110,7 +117,11 @@ impl MulticastGroupService for MulticastGroup {
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&mg.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&mg.updated_at)),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-multicast_group_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update(
@@ -153,7 +164,11 @@ impl MulticastGroupService for MulticastGroup {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-multicast_group_id", req_mg.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn delete(
@@ -171,7 +186,12 @@ impl MulticastGroupService for MulticastGroup {
             .await?;
 
         multicast::delete(&mg_id).await.map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-multicast_group_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list(
@@ -204,7 +224,7 @@ impl MulticastGroupService for MulticastGroup {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::ListMulticastGroupsResponse {
+        let mut resp = Response::new(api::ListMulticastGroupsResponse {
             total_count: count as u32,
             result: items
                 .iter()
@@ -222,7 +242,11 @@ impl MulticastGroupService for MulticastGroup {
                     .into(),
                 })
                 .collect(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn add_device(
@@ -243,7 +267,16 @@ impl MulticastGroupService for MulticastGroup {
         multicast::add_device(&mg_id, &dev_eui)
             .await
             .map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-multicast_group_id",
+            req.multicast_group_id.parse().unwrap(),
+        );
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn remove_device(
@@ -264,7 +297,16 @@ impl MulticastGroupService for MulticastGroup {
         multicast::remove_device(&mg_id, &dev_eui)
             .await
             .map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-multicast_group_id",
+            req.multicast_group_id.parse().unwrap(),
+        );
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn enqueue(
@@ -296,9 +338,13 @@ impl MulticastGroupService for MulticastGroup {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::EnqueueMulticastGroupQueueItemResponse {
-            f_cnt,
-        }))
+        let mut resp = Response::new(api::EnqueueMulticastGroupQueueItemResponse { f_cnt });
+        resp.metadata_mut().insert(
+            "x-log-multicast_group_id",
+            req_enq.multicast_group_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn flush_queue(
@@ -319,7 +365,13 @@ impl MulticastGroupService for MulticastGroup {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-multicast_group_id",
+            req.multicast_group_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn list_queue(
@@ -352,9 +404,15 @@ impl MulticastGroupService for MulticastGroup {
             }
         }
 
-        Ok(Response::new(api::ListMulticastGroupQueueResponse {
+        let mut resp = Response::new(api::ListMulticastGroupQueueResponse {
             items: deduped_items,
-        }))
+        });
+        resp.metadata_mut().insert(
+            "x-log-multicast_group_id",
+            req.multicast_group_id.parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 }
 

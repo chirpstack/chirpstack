@@ -141,6 +141,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "api/gateway.proto",
                 "api/frame_log.proto",
                 "api/multicast_group.proto",
+                "api/frame_log.proto",
+                "api/request_log.proto",
             ],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),

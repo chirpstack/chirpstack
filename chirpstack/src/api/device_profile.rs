@@ -91,9 +91,15 @@ impl DeviceProfileService for DeviceProfile {
 
         dp = device_profile::create(dp).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::CreateDeviceProfileResponse {
+        let mut resp = Response::new(api::CreateDeviceProfileResponse {
             id: dp.id.to_string(),
-        }))
+        });
+        resp.metadata_mut().insert(
+            "x-log-device_profile_id",
+            dp.id.to_string().parse().unwrap(),
+        );
+
+        Ok(resp)
     }
 
     async fn get(
@@ -112,7 +118,7 @@ impl DeviceProfileService for DeviceProfile {
 
         let dp = device_profile::get(&dp_id).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetDeviceProfileResponse {
+        let mut resp = Response::new(api::GetDeviceProfileResponse {
             device_profile: Some(api::DeviceProfile {
                 id: dp.id.to_string(),
                 tenant_id: dp.tenant_id.to_string(),
@@ -158,7 +164,11 @@ impl DeviceProfileService for DeviceProfile {
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-device_profile_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update(
@@ -228,7 +238,11 @@ impl DeviceProfileService for DeviceProfile {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-device_profile_id", req_dp.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn delete(
@@ -248,7 +262,12 @@ impl DeviceProfileService for DeviceProfile {
         device_profile::delete(&dp_id)
             .await
             .map_err(|e| e.status())?;
-        Ok(Response::new(()))
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-device_profile_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list(
@@ -281,7 +300,7 @@ impl DeviceProfileService for DeviceProfile {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(api::ListDeviceProfilesResponse {
+        let mut resp = Response::new(api::ListDeviceProfilesResponse {
             total_count: count as u32,
             result: items
                 .iter()
@@ -298,7 +317,11 @@ impl DeviceProfileService for DeviceProfile {
                     supports_class_c: dp.supports_class_c,
                 })
                 .collect(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-tenant_id", req.tenant_id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list_adr_algorithms(

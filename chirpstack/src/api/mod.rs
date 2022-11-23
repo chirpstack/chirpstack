@@ -15,15 +15,16 @@ use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prometheus_client::metrics::histogram::Histogram;
 use rust_embed::RustEmbed;
-use tokio::try_join;
+use tokio::{task, try_join};
 use tonic::transport::Server as TonicServer;
 use tonic::Code;
 use tonic_reflection::server::Builder as TonicReflectionBuilder;
 use tower::{Service, ServiceBuilder};
 use tower_http::trace::TraceLayer;
-use tracing::{event, Level};
+use tracing::{error, info};
 use warp::{http::header::HeaderValue, path::Tail, reply::Response, Filter, Rejection, Reply};
 
+use chirpstack_api::api;
 use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
 use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateServiceServer;
@@ -37,6 +38,7 @@ use chirpstack_api::api::user_service_server::UserServiceServer;
 use super::config;
 use crate::api::auth::validator;
 use crate::monitoring::prometheus;
+use crate::requestlog;
 
 pub mod application;
 pub mod auth;
@@ -92,11 +94,7 @@ pub async fn setup() -> Result<()> {
     let conf = config::get();
     let addr = conf.api.bind.parse()?;
 
-    event!(
-        Level::INFO,
-        bind = conf.api.bind.as_str(),
-        "Setting up API interface"
-    );
+    info!(bind = %conf.api.bind, "Setting up API interface");
 
     // Taken from the tonic hyper_warp_multiplex example:
     // https://github.com/hyperium/tonic/blob/master/examples/src/hyper_warp_multiplex/server.rs#L101
@@ -172,7 +170,7 @@ pub async fn setup() -> Result<()> {
                     .on_request(OnRequest {})
                     .on_response(OnResponse {}),
             )
-            .layer(PrometheusLogger {})
+            .layer(ApiLogger {})
             .service(tonic_service);
 
         // HTTP service
@@ -316,22 +314,22 @@ struct GrpcLabels {
     status_code: String,
 }
 
-struct PrometheusLogger {}
+struct ApiLogger {}
 
-impl<S> tower::Layer<S> for PrometheusLogger {
-    type Service = PrometheusLoggerService<S>;
+impl<S> tower::Layer<S> for ApiLogger {
+    type Service = ApiLoggerService<S>;
 
     fn layer(&self, service: S) -> Self::Service {
-        PrometheusLoggerService { inner: service }
+        ApiLoggerService { inner: service }
     }
 }
 
 #[derive(Debug, Clone)]
-struct PrometheusLoggerService<S> {
+struct ApiLoggerService<S> {
     inner: S,
 }
 
-impl<S, ReqBody, ResBody> Service<http::Request<ReqBody>> for PrometheusLoggerService<S>
+impl<S, ReqBody, ResBody> Service<http::Request<ReqBody>> for ApiLoggerService<S>
 where
     S: Service<http::Request<ReqBody>, Response = http::Response<ResBody>>,
     ReqBody: http_body::Body,
@@ -339,7 +337,7 @@ where
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = PrometheusLoggerResponseFuture<S::Future>;
+    type Future = ApiLoggerResponseFuture<S::Future>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.inner.poll_ready(cx)
@@ -350,7 +348,7 @@ where
         let uri_parts: Vec<&str> = uri.split('/').collect();
         let response_future = self.inner.call(request);
         let start = Instant::now();
-        PrometheusLoggerResponseFuture {
+        ApiLoggerResponseFuture {
             response_future,
             start,
             service: uri_parts.get(1).map(|v| v.to_string()).unwrap_or_default(),
@@ -360,7 +358,7 @@ where
 }
 
 #[pin_project]
-struct PrometheusLoggerResponseFuture<F> {
+struct ApiLoggerResponseFuture<F> {
     #[pin]
     response_future: F,
     start: Instant,
@@ -368,7 +366,7 @@ struct PrometheusLoggerResponseFuture<F> {
     method: String,
 }
 
-impl<F, ResBody, Error> Future for PrometheusLoggerResponseFuture<F>
+impl<F, ResBody, Error> Future for ApiLoggerResponseFuture<F>
 where
     F: Future<Output = Result<http::Response<ResBody>, Error>>,
     ResBody: http_body::Body,
@@ -389,6 +387,8 @@ where
                         },
                     };
                     let status_code = Code::from_i32(status_code);
+
+                    // Log to Prometheus
                     let labels = GrpcLabels {
                         service: this.service.clone(),
                         method: this.method.clone(),
@@ -398,6 +398,32 @@ where
                     GRPC_HISTOGRAM
                         .get_or_create(&labels)
                         .observe(this.start.elapsed().as_secs_f64());
+
+                    // Log API request to Redis
+                    let req_log = api::RequestLog {
+                        service: this.service.to_string(),
+                        method: this.method.to_string(),
+                        metadata: response
+                            .headers()
+                            .iter()
+                            .filter(|(k, _)| k.as_str().starts_with("x-log-"))
+                            .map(|(k, v)| {
+                                (
+                                    k.as_str()
+                                        .strip_prefix("x-log-")
+                                        .unwrap_or_default()
+                                        .to_string(),
+                                    v.to_str().unwrap().to_string(),
+                                )
+                            })
+                            .collect(),
+                    };
+
+                    task::spawn(async move {
+                        if let Err(err) = requestlog::log_request(&req_log).await {
+                            error!("Log request error, error: {}", err);
+                        }
+                    });
                 }
                 Poll::Ready(result)
             }

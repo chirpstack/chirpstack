@@ -36,6 +36,7 @@ mod maccommand;
 mod metalog;
 mod monitoring;
 mod region;
+mod requestlog;
 mod sensitivity;
 mod storage;
 #[cfg(test)]

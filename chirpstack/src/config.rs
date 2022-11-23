@@ -211,6 +211,7 @@ impl Default for Scheduler {
 #[serde(default)]
 pub struct Monitoring {
     pub bind: String,
+    pub api_request_log_max_history: usize,
     pub meta_log_max_history: usize,
     pub gateway_frame_log_max_history: usize,
     pub device_frame_log_max_history: usize,
@@ -230,6 +231,7 @@ impl Default for Monitoring {
     fn default() -> Self {
         Monitoring {
             bind: "".to_string(),
+            api_request_log_max_history: 10,
             meta_log_max_history: 10,
             gateway_frame_log_max_history: 10,
             device_frame_log_max_history: 10,

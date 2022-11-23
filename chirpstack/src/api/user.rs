@@ -75,9 +75,13 @@ impl UserService for User {
             .map_err(|e| e.status())?;
         }
 
-        Ok(Response::new(api::CreateUserResponse {
+        let mut resp = Response::new(api::CreateUserResponse {
             id: u.id.to_string(),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-user_id", u.id.to_string().parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn get(
@@ -96,7 +100,7 @@ impl UserService for User {
 
         let u = user::get(&user_id).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(api::GetUserResponse {
+        let mut resp = Response::new(api::GetUserResponse {
             user: Some(api::User {
                 id: u.id.to_string(),
                 is_admin: u.is_admin,
@@ -106,7 +110,11 @@ impl UserService for User {
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&u.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&u.updated_at)),
-        }))
+        });
+        resp.metadata_mut()
+            .insert("x-log-user_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn update(
@@ -141,7 +149,11 @@ impl UserService for User {
         .await
         .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-user_id", req_user.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn delete(
@@ -169,7 +181,11 @@ impl UserService for User {
 
         user::delete(&user_id).await.map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-user_id", req.id.parse().unwrap());
+
+        Ok(resp)
     }
 
     async fn list(
@@ -231,7 +247,11 @@ impl UserService for User {
             .await
             .map_err(|e| e.status())?;
 
-        Ok(Response::new(()))
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-user_id", req.user_id.parse().unwrap());
+
+        Ok(resp)
     }
 }
 
