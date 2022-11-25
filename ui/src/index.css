@@ -5,7 +5,7 @@
 .layout-header {
   background: #ffffff;
   box-shadow: 0px 0px 10px 0px #ccc;
-  z-index: 999;
+  z-index: 2000;
 
   position: fixed;
   width: 100%;
