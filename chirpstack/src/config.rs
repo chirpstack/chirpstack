@@ -270,6 +270,8 @@ pub struct MqttIntegration {
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,
+    #[serde(with = "humantime_serde")]
+    pub keep_alive_interval: Duration,
 }
 
 impl Default for MqttIntegration {
@@ -289,6 +291,7 @@ impl Default for MqttIntegration {
             ca_cert: "".into(),
             tls_cert: "".into(),
             tls_key: "".into(),
+            keep_alive_interval: Duration::from_secs(30),
         }
     }
 }
@@ -537,8 +540,6 @@ impl Default for Region {
                         event_topic: "eu868/gateway/+/event/+".into(),
                         command_topic: "eu868/gateway/{{ gateway_id }}/command/{{ command }}"
                             .into(),
-                        server: "tcp://127.0.0.1:1883".into(),
-                        clean_session: false,
                         ..Default::default()
                     },
                 },
@@ -612,7 +613,7 @@ pub struct GatewayBackend {
     pub mqtt: GatewayBackendMqtt,
 }
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct GatewayBackendMqtt {
     pub event_topic: String,
@@ -626,6 +627,27 @@ pub struct GatewayBackendMqtt {
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,
+    #[serde(with = "humantime_serde")]
+    pub keep_alive_interval: Duration,
+}
+
+impl Default for GatewayBackendMqtt {
+    fn default() -> Self {
+        GatewayBackendMqtt {
+            event_topic: "".into(),
+            command_topic: "".into(),
+            server: "tcp://127.0.0.1:1883/".into(),
+            username: "".into(),
+            password: "".into(),
+            qos: 0,
+            clean_session: false,
+            client_id: "".into(),
+            ca_cert: "".into(),
+            tls_cert: "".into(),
+            tls_key: "".into(),
+            keep_alive_interval: Duration::from_secs(30),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Hash)]
