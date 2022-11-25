@@ -11,7 +11,7 @@ use crate::integration::mock;
 use crate::storage::{
     device, device_queue, device_session, downlink_frame, get_redis_conn, redis_key,
 };
-use chirpstack_api::{gw, integration as integration_pb, internal, meta};
+use chirpstack_api::{api, gw, integration as integration_pb, internal, meta};
 use lrwn::EUI64;
 
 lazy_static! {
@@ -372,6 +372,8 @@ pub fn uplink_meta_log(um: meta::UplinkMeta) -> Validator {
                         if let redis::Value::Data(b) = v {
                             let pl = meta::UplinkMeta::decode(&mut Cursor::new(b)).unwrap();
                             assert_eq!(um, pl);
+                        } else {
+                            panic!("Invalid payload");
                         }
 
                         return;
@@ -380,6 +382,41 @@ pub fn uplink_meta_log(um: meta::UplinkMeta) -> Validator {
             }
 
             panic!("No UplinkMeta");
+        })
+    })
+}
+
+pub fn device_uplink_frame_log(uf: api::UplinkFrameLog) -> Validator {
+    Box::new(move || {
+        let uf = uf.clone();
+        Box::pin(async move {
+            let mut c = get_redis_conn().unwrap();
+            let key = redis_key(format!("device:{{{}}}:stream:frame", uf.dev_eui));
+            let srr: StreamReadReply = redis::cmd("XREAD")
+                .arg("COUNT")
+                .arg(1 as usize)
+                .arg("STREAMS")
+                .arg(&key)
+                .arg("0")
+                .query(&mut *c)
+                .unwrap();
+
+            for stream_key in &srr.keys {
+                for stream_id in &stream_key.ids {
+                    for (k, v) in &stream_id.map {
+                        assert_eq!("up", k);
+                        if let redis::Value::Data(b) = v {
+                            let mut pl = api::UplinkFrameLog::decode(&mut Cursor::new(b)).unwrap();
+                            pl.time = None; // we don't have control over this value
+                            assert_eq!(uf, pl);
+                        } else {
+                            panic!("Invalid payload");
+                        }
+
+                        return;
+                    }
+                }
+            }
         })
     })
 }

@@ -163,6 +163,12 @@ impl Data {
                     }
                     StorageError::InvalidMIC => {
                         warn!(dev_addr = %pl.fhdr.devaddr, "None of the device-sessions for dev_addr resulted in valid MIC");
+
+                        // Log uplink for null DevEUI.
+                        let mut ufl: api::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
+                        ufl.dev_eui = "0000000000000000".to_string();
+                        framelog::log_uplink_for_device(&ufl).await?;
+
                         return Err(Error::Abort);
                     }
                     _ => {
