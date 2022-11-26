@@ -15,6 +15,10 @@ repositories {
     mavenCentral()
 }
 
+kotlin {
+    kotlinDaemonJvmArgs = listOf("-Xmx2048m", "-Xms1024m", "-XX:+UseParallelGC")
+}
+
 buildscript {
     dependencies {
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
