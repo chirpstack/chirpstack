@@ -15,6 +15,9 @@ version:
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/js/package.json
 	sed -i 's/version.*/version = "$(VERSION)",/g' ./api/python/src/setup.py
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./api/rust/Cargo.toml
+	sed -i 's/^version.*/version = "$(VERSION)"/g' ./api/java/build.gradle.kts
+	sed -i 's/^version.*/version = "$(VERSION)"/g' ./api/kotlin/build.gradle.kts
+
 	cd api && make
 	make build-ui
 	make test
