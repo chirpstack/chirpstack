@@ -1,4 +1,4 @@
-.PHONY: rust grpc-web go js python md
+.PHONY: rust grpc-web go js python md java kotlin
 
 all:
 	docker-compose up
@@ -20,3 +20,9 @@ python:
 
 md:
 	docker-compose run --rm chirpstack-api-md
+
+java:
+	docker-compose run --rm chirpstack-api-java
+
+kotlin:
+	docker-compose run --rm chirpstack-api-kotlin

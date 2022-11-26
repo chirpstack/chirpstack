@@ -42,3 +42,17 @@ services:
     command: bash -c "cd md && make all"
     volumes:
       - ./:/chirpstack/api
+  chirpstack-api-java:
+    build:
+      context: .
+      dockerfile: Dockerfile-java
+    command: bash -c "cd java && make all"
+    volumes:
+      - ./:/chirpstack/api
+  chirpstack-api-kotlin:
+    build:
+      context: .
+      dockerfile: Dockerfile-kotlin
+    command: bash -c "cd kotlin && make all"
+    volumes:
+      - ./:/chirpstack/api
