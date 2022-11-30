@@ -66,8 +66,8 @@ enum Commands {
         dev_eui: String,
     },
 
-    /// Import TheThingsNetwork LoRaWAN devices repository
-    ImportTtnLorawanDevices {
+    /// Import legacy lorawan-devices repository.
+    ImportLegacyLorawanDevicesRepository {
         /// Path to repository root.
         #[arg(short, long, value_name = "DIR")]
         dir: String,
@@ -102,8 +102,8 @@ async fn main() -> Result<()> {
         process::exit(0);
     }
 
-    if let Some(Commands::ImportTtnLorawanDevices { dir }) = &cli.command {
-        cmd::import_ttn_lorawan_devices::run(Path::new(&dir))
+    if let Some(Commands::ImportLegacyLorawanDevicesRepository { dir }) = &cli.command {
+        cmd::import_legacy_lorawan_devices_repository::run(Path::new(&dir))
             .await
             .unwrap();
         process::exit(0);
