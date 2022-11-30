@@ -166,7 +166,7 @@ async fn deduplicate_put(key: &str, ttl: Duration, event: &gw::UplinkFrame) -> R
         move || -> Result<()> {
             let mut c = get_redis_conn()?;
 
-            redis::pipe()
+            c.new_pipeline()
                 .atomic()
                 .cmd("SADD")
                 .arg(&key)
@@ -176,7 +176,7 @@ async fn deduplicate_put(key: &str, ttl: Duration, event: &gw::UplinkFrame) -> R
                 .arg(&key)
                 .arg(ttl.as_millis() as usize)
                 .ignore()
-                .query(&mut *c)?;
+                .query(&mut c)?;
 
             Ok(())
         }

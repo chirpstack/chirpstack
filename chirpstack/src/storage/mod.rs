@@ -52,6 +52,17 @@ pub enum RedisPoolConnection {
     ClusterClient(PooledConnection<redis::cluster::ClusterClient>),
 }
 
+impl RedisPoolConnection {
+    pub fn new_pipeline(&self) -> RedisPipeline {
+        match self {
+            RedisPoolConnection::Client(_) => RedisPipeline::Pipeline(redis::pipe()),
+            RedisPoolConnection::ClusterClient(_) => {
+                RedisPipeline::ClusterPipeline(redis::cluster::cluster_pipe())
+            }
+        }
+    }
+}
+
 impl Deref for RedisPoolConnection {
     type Target = dyn redis::ConnectionLike;
 
@@ -69,6 +80,84 @@ impl DerefMut for RedisPoolConnection {
             RedisPoolConnection::Client(v) => v.deref_mut() as &mut dyn redis::ConnectionLike,
             RedisPoolConnection::ClusterClient(v) => {
                 v.deref_mut() as &mut dyn redis::ConnectionLike
+            }
+        }
+    }
+}
+
+pub enum RedisPipeline {
+    Pipeline(redis::Pipeline),
+    ClusterPipeline(redis::cluster::ClusterPipeline),
+}
+
+impl RedisPipeline {
+    pub fn cmd(&mut self, name: &str) -> &mut Self {
+        match self {
+            RedisPipeline::Pipeline(p) => {
+                p.cmd(name);
+            }
+            RedisPipeline::ClusterPipeline(p) => {
+                p.cmd(name);
+            }
+        }
+        self
+    }
+
+    pub fn arg<T: redis::ToRedisArgs>(&mut self, arg: T) -> &mut Self {
+        match self {
+            RedisPipeline::Pipeline(p) => {
+                p.arg(arg);
+            }
+            RedisPipeline::ClusterPipeline(p) => {
+                p.arg(arg);
+            }
+        }
+        self
+    }
+
+    pub fn ignore(&mut self) -> &mut Self {
+        match self {
+            RedisPipeline::Pipeline(p) => {
+                p.ignore();
+            }
+            RedisPipeline::ClusterPipeline(p) => {
+                p.ignore();
+            }
+        }
+        self
+    }
+
+    pub fn atomic(&mut self) -> &mut Self {
+        match self {
+            RedisPipeline::Pipeline(p) => {
+                p.atomic();
+            }
+            RedisPipeline::ClusterPipeline(_) => {
+                // TODO: ClusterPipeline does not (yet?) provide .atomic() method.
+                // https://github.com/redis-rs/redis-rs/issues/731
+            }
+        }
+        self
+    }
+
+    pub fn query<T: redis::FromRedisValue>(
+        &mut self,
+        con: &mut RedisPoolConnection,
+    ) -> redis::RedisResult<T> {
+        match self {
+            RedisPipeline::Pipeline(p) => {
+                if let RedisPoolConnection::Client(c) = con {
+                    p.query(&mut **c)
+                } else {
+                    panic!("Mismatch between RedisPipeline and RedisPoolConnection")
+                }
+            }
+            RedisPipeline::ClusterPipeline(p) => {
+                if let RedisPoolConnection::ClusterClient(c) = con {
+                    p.query(&mut **c)
+                } else {
+                    panic!("Mismatch between RedisPipeline and RedisPoolConnection")
+                }
             }
         }
     }

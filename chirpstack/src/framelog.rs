@@ -49,7 +49,7 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
                 if conf.monitoring.per_gateway_frame_log_max_history > 0 {
                     let key = redis_key(format!("gw:{{{}}}:stream:frame", gateway_id));
 
-                    redis::pipe()
+                    c.new_pipeline()
                         .atomic()
                         .cmd("XADD")
                         .arg(&key)
@@ -63,7 +63,7 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
                         .arg(&key)
                         .arg(conf.monitoring.per_gateway_frame_log_ttl.as_millis() as usize)
                         .ignore()
-                        .query(&mut *c)?;
+                        .query(&mut c)?;
                 }
 
                 // global gateway stream
@@ -102,7 +102,7 @@ pub async fn log_downlink_for_gateway(dfl: &api::DownlinkFrameLog) -> Result<()>
             // per gateway stream
             if conf.monitoring.per_gateway_frame_log_max_history > 0 {
                 let key = redis_key(format!("gw:{{{}}}:stream:frame", dfl.gateway_id));
-                redis::pipe()
+                c.new_pipeline()
                     .atomic()
                     .cmd("XADD")
                     .arg(&key)
@@ -116,7 +116,7 @@ pub async fn log_downlink_for_gateway(dfl: &api::DownlinkFrameLog) -> Result<()>
                     .arg(&key)
                     .arg(conf.monitoring.per_gateway_frame_log_ttl.as_millis() as usize)
                     .ignore()
-                    .query(&mut *c)?;
+                    .query(&mut c)?;
             }
 
             // global gateway stream
@@ -154,7 +154,7 @@ pub async fn log_uplink_for_device(ufl: &api::UplinkFrameLog) -> Result<()> {
             if conf.monitoring.per_device_frame_log_max_history > 0 {
                 let key = redis_key(format!("device:{{{}}}:stream:frame", ufl.dev_eui));
 
-                redis::pipe()
+                c.new_pipeline()
                     .atomic()
                     .cmd("XADD")
                     .arg(&key)
@@ -168,7 +168,7 @@ pub async fn log_uplink_for_device(ufl: &api::UplinkFrameLog) -> Result<()> {
                     .arg(&key)
                     .arg(conf.monitoring.per_device_frame_log_ttl.as_millis() as usize)
                     .ignore()
-                    .query(&mut *c)?;
+                    .query(&mut c)?;
             }
 
             // global device stream
@@ -206,7 +206,7 @@ pub async fn log_downlink_for_device(dfl: &api::DownlinkFrameLog) -> Result<()> 
             if conf.monitoring.per_device_frame_log_max_history > 0 {
                 let key = redis_key(format!("device:{{{}}}:stream:frame", dfl.dev_eui));
 
-                redis::pipe()
+                c.new_pipeline()
                     .atomic()
                     .cmd("XADD")
                     .arg(&key)
@@ -220,7 +220,7 @@ pub async fn log_downlink_for_device(dfl: &api::DownlinkFrameLog) -> Result<()> 
                     .arg(&key)
                     .arg(conf.monitoring.per_device_frame_log_ttl.as_millis() as usize)
                     .ignore()
-                    .query(&mut *c)?;
+                    .query(&mut c)?;
             }
 
             // global device stream

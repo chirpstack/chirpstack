@@ -134,8 +134,7 @@ impl Stats {
             &format!("gw:{}", self.gateway.as_ref().unwrap().gateway_id),
             &m,
         )
-        .await
-        .context("Save metrics")?;
+        .await?;
 
         Ok(())
     }

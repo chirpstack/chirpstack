@@ -61,7 +61,7 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
             //  * We need to be able to lookup the session using the DevAddr (potentially
             //    using the MIC validation).
             //  * We need to be able to stop a passive-roaming session given a DevEUI.
-            redis::pipe()
+            c.new_pipeline()
                 .atomic()
                 .cmd("SADD")
                 .arg(&dev_addr_key)
@@ -84,7 +84,7 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
                 .arg(pr_ttl)
                 .arg(b)
                 .ignore()
-                .query(&mut *c)?;
+                .query(&mut c)?;
 
             Ok(())
         }

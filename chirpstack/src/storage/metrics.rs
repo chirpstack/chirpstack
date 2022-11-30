@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::time::Duration;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use chrono::{DateTime, Datelike, Duration as ChronoDuration, Local, TimeZone, Timelike};
 use serde::{Deserialize, Serialize};
 use tokio::task;
@@ -124,7 +124,7 @@ async fn save_for_interval(a: Aggregation, name: &str, record: &Record) -> Resul
         move || -> Result<()> {
             let mut c = get_redis_conn()?;
             let key = get_key(&name, a, ts);
-            let mut pipe = redis::pipe();
+            let mut pipe = c.new_pipeline();
             pipe.atomic();
 
             for (k, v) in &record.metrics {
@@ -154,8 +154,7 @@ async fn save_for_interval(a: Aggregation, name: &str, record: &Record) -> Resul
                 .arg(&key)
                 .arg(ttl.as_millis() as usize)
                 .ignore()
-                .query(&mut *c)
-                .context("Execute metrics pipeline")?;
+                .query(&mut c)?;
 
             Ok(())
         }
@@ -252,13 +251,13 @@ pub async fn get(
         let keys = keys.clone();
         move || -> Result<Vec<Record>> {
             let mut c = get_redis_conn()?;
-            let mut pipe = redis::pipe();
+            let mut pipe = c.new_pipeline();
 
             for k in &keys {
                 pipe.cmd("HGETALL").arg(k);
             }
 
-            let res: Vec<HashMap<String, f64>> = pipe.query(&mut *c)?;
+            let res: Vec<HashMap<String, f64>> = pipe.query(&mut c)?;
             let mut out: Vec<Record> = Vec::new();
 
             for (i, r) in res.iter().enumerate() {

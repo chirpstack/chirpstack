@@ -34,7 +34,7 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
             let mut c = get_redis_conn()?;
 
             // Atomic add and pexpire.
-            redis::pipe()
+            c.new_pipeline()
                 .atomic()
                 .cmd("SADD")
                 .arg(&addr_key)
@@ -44,7 +44,7 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
                 .arg(&addr_key)
                 .arg(ttl)
                 .ignore()
-                .query(&mut *c)?;
+                .query(&mut c)?;
 
             // In case there is a pending rejoin session, make sure that the new
             // DevAddr also resolves to the device-session.
@@ -52,7 +52,7 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
                 let pending_addr = DevAddr::from_slice(&pending_ds.dev_addr)?;
                 let pending_addr_key = redis_key(format!("devaddr:{{{}}}", pending_addr));
 
-                redis::pipe()
+                c.new_pipeline()
                     .atomic()
                     .cmd("SADD")
                     .arg(&pending_addr_key)
@@ -62,7 +62,7 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
                     .arg(&pending_addr_key)
                     .arg(ttl)
                     .ignore()
-                    .query(&mut *c)?;
+                    .query(&mut c)?;
             }
 
             redis::cmd("PSETEX")

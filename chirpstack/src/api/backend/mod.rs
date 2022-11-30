@@ -476,7 +476,7 @@ async fn handle_async_ans(bp: &BasePayload, b: &[u8]) -> Result<http::Response<h
             let mut c = get_redis_conn()?;
             let key = redis_key(format!("backend:async:{}", transaction_id));
 
-            redis::pipe()
+            c.new_pipeline()
                 .atomic()
                 .cmd("XADD")
                 .arg(&key)
@@ -490,7 +490,7 @@ async fn handle_async_ans(bp: &BasePayload, b: &[u8]) -> Result<http::Response<h
                 .arg(&key)
                 .arg(30_i64)
                 .ignore()
-                .query(&mut *c)?;
+                .query(&mut c)?;
 
             Ok(())
         }
