@@ -1,6 +1,9 @@
+// source: google/api/error_reason.proto
 /**
  * @fileoverview
  * @enhanceable
+ * @suppress {messageConventions} JS Compiler reports an error if a variable or
+ *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
@@ -33,7 +36,15 @@ proto.google.api.ErrorReason = {
   ACCESS_TOKEN_EXPIRED: 16,
   ACCESS_TOKEN_SCOPE_INSUFFICIENT: 17,
   ACCOUNT_STATE_INVALID: 18,
-  ACCESS_TOKEN_TYPE_UNSUPPORTED: 19
+  ACCESS_TOKEN_TYPE_UNSUPPORTED: 19,
+  CREDENTIALS_MISSING: 20,
+  RESOURCE_PROJECT_INVALID: 21,
+  SESSION_COOKIE_INVALID: 23,
+  USER_BLOCKED_BY_ADMIN: 24,
+  RESOURCE_USAGE_RESTRICTION_VIOLATED: 25,
+  SYSTEM_PARAMETER_UNSUPPORTED: 26,
+  ORG_RESTRICTION_VIOLATION: 27,
+  ORG_RESTRICTION_HEADER_INVALID: 28
 };
 
 goog.object.extend(exports, proto.google.api);

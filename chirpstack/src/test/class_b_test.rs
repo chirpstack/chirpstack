@@ -88,8 +88,12 @@ async fn test_uplink() {
         gateway_id: gw.gateway_id.to_string(),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,

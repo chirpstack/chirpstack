@@ -127,54 +127,9 @@ impl UplinkFrame {
                     antenna: rx_info.antenna,
                     location: rx_info.location.clone(),
                     context: rx_info.context.clone(),
-                    metadata: Some(pbjson_types::Struct {
-                        fields: rx_info
-                            .metadata
-                            .iter()
-                            .map(|(k, v)| {
-                                (
-                                    k.to_string(),
-                                    pbjson_types::Value {
-                                        kind: Some(pbjson_types::value::Kind::StringValue(
-                                            v.to_string(),
-                                        )),
-                                    },
-                                )
-                            })
-                            .collect(),
-                    }),
+                    metadata: rx_info.metadata.clone(),
                 });
             }
-        }
-    }
-}
-
-impl UplinkRxInfo {
-    pub fn get_metadata_string(&self, k: &str) -> Option<String> {
-        if let Some(v) = &self.metadata {
-            if let Some(v) = v.fields.get(k) {
-                if let Some(pbjson_types::value::Kind::StringValue(v)) = &v.kind {
-                    return Some(v.clone());
-                }
-            }
-        }
-        None
-    }
-
-    pub fn set_metadata_string(&mut self, k: &str, v: &str) {
-        if self.metadata.is_none() {
-            self.metadata = Some(pbjson_types::Struct {
-                ..Default::default()
-            });
-        }
-
-        if let Some(md) = &mut self.metadata {
-            md.fields.insert(
-                k.to_string(),
-                pbjson_types::Value {
-                    kind: Some(pbjson_types::value::Kind::StringValue(v.to_string())),
-                },
-            );
         }
     }
 }

@@ -154,7 +154,7 @@ impl RedisPipeline {
             }
             RedisPipeline::ClusterPipeline(p) => {
                 if let RedisPoolConnection::ClusterClient(c) = con {
-                    p.query(&mut **c)
+                    p.query(c)
                 } else {
                     panic!("Mismatch between RedisPipeline and RedisPoolConnection")
                 }

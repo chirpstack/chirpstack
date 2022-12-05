@@ -109,16 +109,24 @@ async fn test_gateway_filtering() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info_a.set_metadata_string("region_name", "eu868");
-    rx_info_a.set_metadata_string("region_common_name", "EU868");
+    rx_info_a
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info_a
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut rx_info_b = gw::UplinkRxInfo {
         gateway_id: gw_b.gateway_id.to_string(),
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info_b.set_metadata_string("region_name", "eu868");
-    rx_info_b.set_metadata_string("region_common_name", "EU868");
+    rx_info_b
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info_b
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -272,8 +280,12 @@ async fn test_lorawan_10() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -916,8 +928,12 @@ async fn test_lorawan_11() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,

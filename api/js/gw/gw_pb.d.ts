@@ -305,8 +305,8 @@ export class GatewayStats extends jspb.Message {
   getTxPacketsEmitted(): number;
   setTxPacketsEmitted(value: number): void;
 
-  getMetaDataMap(): jspb.Map<string, string>;
-  clearMetaDataMap(): void;
+  getMetadataMap(): jspb.Map<string, string>;
+  clearMetadataMap(): void;
   getTxPacketsPerFrequencyMap(): jspb.Map<number, number>;
   clearTxPacketsPerFrequencyMap(): void;
   getRxPacketsPerFrequencyMap(): jspb.Map<number, number>;
@@ -344,7 +344,7 @@ export namespace GatewayStats {
     rxPacketsReceivedOk: number,
     txPacketsReceived: number,
     txPacketsEmitted: number,
-    metaDataMap: Array<[string, string]>,
+    metadataMap: Array<[string, string]>,
     txPacketsPerFrequencyMap: Array<[number, number]>,
     rxPacketsPerFrequencyMap: Array<[number, number]>,
     txPacketsPerModulationList: Array<PerModulationCount.AsObject>,
@@ -535,11 +535,8 @@ export class UplinkRxInfo extends jspb.Message {
   getContext_asB64(): string;
   setContext(value: Uint8Array | string): void;
 
-  hasMetadata(): boolean;
-  clearMetadata(): void;
-  getMetadata(): google_protobuf_struct_pb.Struct | undefined;
-  setMetadata(value?: google_protobuf_struct_pb.Struct): void;
-
+  getMetadataMap(): jspb.Map<string, string>;
+  clearMetadataMap(): void;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UplinkRxInfo.AsObject;
   static toObject(includeInstance: boolean, msg: UplinkRxInfo): UplinkRxInfo.AsObject;
@@ -565,7 +562,7 @@ export namespace UplinkRxInfo {
     antenna: number,
     location?: common_common_pb.Location.AsObject,
     context: Uint8Array | string,
-    metadata?: google_protobuf_struct_pb.Struct.AsObject,
+    metadataMap: Array<[string, string]>,
   }
 }
 

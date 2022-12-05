@@ -101,16 +101,24 @@ async fn test_gateway_filtering() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info_a.set_metadata_string("region_name", "eu868");
-    rx_info_a.set_metadata_string("region_common_name", "EU868");
+    rx_info_a
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info_a
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut rx_info_b = gw::UplinkRxInfo {
         gateway_id: gw_b.gateway_id.to_string(),
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info_b.set_metadata_string("region_name", "eu868");
-    rx_info_b.set_metadata_string("region_common_name", "EU868");
+    rx_info_b
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info_b
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -252,8 +260,12 @@ async fn test_lorawan_10_errors() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -443,8 +455,12 @@ async fn test_lorawan_11_errors() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info_freq = gw::UplinkTxInfo {
         frequency: 868300000,
@@ -593,8 +609,12 @@ async fn test_lorawan_10_skip_f_cnt() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -782,8 +802,12 @@ async fn test_lorawan_10_device_disabled() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -901,8 +925,12 @@ async fn test_lorawan_10_uplink() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -1516,8 +1544,12 @@ async fn test_lorawan_11_uplink() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -1750,8 +1782,12 @@ async fn test_lorawan_10_rx_delay() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -1959,8 +1995,12 @@ async fn test_lorawan_10_mac_commands() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -2324,8 +2364,12 @@ async fn test_lorawan_11_mac_commands() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -2514,8 +2558,12 @@ async fn test_lorawan_10_device_queue() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -2983,8 +3031,12 @@ async fn test_lorawan_11_device_queue() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -3456,8 +3508,12 @@ async fn test_lorawan_10_adr() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -4294,8 +4350,12 @@ async fn test_lorawan_10_device_status_request() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -4553,8 +4613,12 @@ async fn test_lorawan_11_receive_window_selection() {
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,

@@ -68,8 +68,12 @@ async fn test_fns_uplink() {
         }),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -293,8 +297,12 @@ async fn test_sns_uplink() {
         time: Some(recv_time.into()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -457,8 +465,12 @@ async fn test_sns_dev_not_found() {
         time: Some(recv_time.into()),
         ..Default::default()
     };
-    rx_info.set_metadata_string("region_name", "eu868");
-    rx_info.set_metadata_string("region_common_name", "EU868");
+    rx_info
+        .metadata
+        .insert("region_name".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,

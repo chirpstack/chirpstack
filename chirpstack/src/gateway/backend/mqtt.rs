@@ -336,8 +336,13 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
 
             if let Some(rx_info) = &mut event.rx_info {
                 set_gateway_json(&rx_info.gateway_id, json);
-                rx_info.set_metadata_string("region_name", region_name);
-                rx_info.set_metadata_string("region_common_name", &region_common_name.to_string());
+                rx_info
+                    .metadata
+                    .insert("region_name".to_string(), region_name.to_string());
+                rx_info.metadata.insert(
+                    "region_common_name".to_string(),
+                    region_common_name.to_string(),
+                );
             }
 
             tokio::spawn(uplink::deduplicate_uplink(event));
@@ -353,9 +358,9 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
             };
             event.v4_migrate();
             event
-                .meta_data
+                .metadata
                 .insert("region_name".to_string(), region_name.to_string());
-            event.meta_data.insert(
+            event.metadata.insert(
                 "region_common_name".to_string(),
                 region_common_name.to_string(),
             );

@@ -1,6 +1,9 @@
+// source: google/api/annotations.proto
 /**
  * @fileoverview
  * @enhanceable
+ * @suppress {messageConventions} JS Compiler reports an error if a variable or
+ *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
@@ -10,13 +13,15 @@ var goog = jspb;
 var global = Function('return this')();
 
 var google_api_http_pb = require('../../google/api/http_pb.js');
+goog.object.extend(proto, google_api_http_pb);
 var google_protobuf_descriptor_pb = require('google-protobuf/google/protobuf/descriptor_pb.js');
-goog.exportSymbol('google.api.http', null, global);
+goog.object.extend(proto, google_protobuf_descriptor_pb);
+goog.exportSymbol('proto.google.api.http', null, global);
 
 /**
  * A tuple of {field number, class constructor} for the extension
  * field named `http`.
- * @type {!jspb.ExtensionFieldInfo.<!proto.google.api.HttpRule>}
+ * @type {!jspb.ExtensionFieldInfo<!proto.google.api.HttpRule>}
  */
 proto.google.api.http = new jspb.ExtensionFieldInfo(
     72295728,

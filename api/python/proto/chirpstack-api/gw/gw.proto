@@ -224,7 +224,7 @@ message GatewayStats {
     uint32 tx_packets_emitted = 8;
 
     // Additional gateway meta-data.
-    map<string, string> meta_data = 10;
+    map<string, string> metadata = 10;
 
     // Tx packets per frequency.
     map<uint32, uint32> tx_packets_per_frequency = 12;
@@ -350,8 +350,8 @@ message UplinkRxInfo {
     // This value must be returned to the gateway on (Class-A) downlink.
     bytes context = 13;
 
-    // Properties.
-    google.protobuf.Struct metadata = 14;
+    // Additional gateway meta-data.
+    map<string, string> metadata = 15;
 }
 
 message DownlinkTxInfoLegacy {

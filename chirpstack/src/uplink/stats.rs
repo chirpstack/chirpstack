@@ -64,14 +64,14 @@ impl Stats {
                     loc.latitude,
                     loc.longitude,
                     loc.altitude as f32,
-                    &self.stats.meta_data,
+                    &self.stats.metadata,
                 )
                 .await
                 .context("Update gateway state")?,
             );
         } else {
             self.gateway = Some(
-                gateway::update_state(&self.gateway_id, &self.stats.meta_data)
+                gateway::update_state(&self.gateway_id, &self.stats.metadata)
                     .await
                     .context("Update gateway state")?,
             );
@@ -94,7 +94,7 @@ impl Stats {
 
         let region_name = self
             .stats
-            .meta_data
+            .metadata
             .get("region_name")
             .ok_or_else(|| anyhow!("No region_name in meta-data"))?;
 
@@ -142,7 +142,7 @@ impl Stats {
     async fn update_gateway_configuration(&self) -> Result<()> {
         trace!("Updating gateway configuration");
 
-        if !self.stats.meta_data.contains_key("concentratord_version") {
+        if !self.stats.metadata.contains_key("concentratord_version") {
             trace!("Gateway configuration only works with Concentratord, skipping");
             return Ok(());
         }
@@ -150,7 +150,7 @@ impl Stats {
         let gw = self.gateway.as_ref().unwrap();
         let region_name = self
             .stats
-            .meta_data
+            .metadata
             .get("region_name")
             .cloned()
             .unwrap_or_default();
@@ -164,7 +164,7 @@ impl Stats {
         // get gw config version
         let gw_config_version = self
             .stats
-            .meta_data
+            .metadata
             .get("config_version")
             .cloned()
             .unwrap_or_default();
