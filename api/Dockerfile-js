@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:19
 
 ENV PROJECT_PATH=/chirpstack/api
 RUN apt update && apt install -y protobuf-compiler libprotobuf-dev git bash

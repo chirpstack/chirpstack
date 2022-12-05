@@ -1,4 +1,4 @@
-FROM alpine:3
+FROM alpine:3.17.0
 
 ENV PROJECT_PATH=/chirpstack/api
 RUN apk add --no-cache protobuf protobuf-dev make bash git
