@@ -1,3 +1,7 @@
+.ant-notification {
+	z-index: 3000;
+}
+
 .layout {
   margin-left: 300px;
 }
