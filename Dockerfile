@@ -1,5 +1,5 @@
 # UI build stage
-FROM --platform=$BUILDPLATFORM alpine:3.15.0 AS ui-build
+FROM --platform=$BUILDPLATFORM alpine:3.17.0 AS ui-build
 
 ENV PROJECT_PATH=/chirpstack
 
@@ -15,7 +15,7 @@ RUN cd $PROJECT_PATH/ui && \
 
 
 # ChirpStack build stage
-FROM --platform=$BUILDPLATFORM rust:1.64.0-buster AS rust-build
+FROM --platform=$BUILDPLATFORM rust:1.65.0-buster AS rust-build
 
 ENV PROJECT_PATH=/chirpstack
 RUN mkdir -p $PROJECT_PATH
