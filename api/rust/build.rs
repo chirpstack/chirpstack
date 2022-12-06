@@ -97,6 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let descriptor_set = std::fs::read(out_dir.join("integration").join("proto_descriptor.bin"))?;
     pbjson_build::Builder::new()
+        .emit_fields()
         .register_descriptors(&descriptor_set)?
         .out_dir(out_dir.join("integration"))
         .extern_path(".common", "crate::common")
