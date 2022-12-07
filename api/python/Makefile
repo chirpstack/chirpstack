@@ -1,7 +1,7 @@
 .PHONY: requirements common gw api integration meta
 
 PROTOC := python -m grpc_tools.protoc
-PROTOC_ARGS := -I=/googleapis -I=proto --python_out=src --grpc_python_out=src
+PROTOC_ARGS := -I=/googleapis -I=proto --python_out=src --python_grpc_out=src --mypy_out=src --mypy_grpc_out=src
 PACKAGE_NAME := import \"chirpstack-api/
 
 all: requirements pre-build common gw api integration meta
@@ -21,9 +21,12 @@ pre-build:
 
 common:
 	$(PROTOC) $(PROTOC_ARGS) chirpstack-api/common/common.proto
+	rm -f src/chirpstack_api/common/common_grpc.py
 
 gw:
 	$(PROTOC) $(PROTOC_ARGS) chirpstack-api/gw/gw.proto
+	rm -f src/chirpstack_api/gw/gw_grpc.py
+
 
 
 api:
@@ -38,9 +41,12 @@ api:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/frame_log.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/multicast_group.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/request_log.proto
+	find src/chirpstack_api/api -type f -name "*grpc.py" ! -name "*pb2*" -delete
 
 integration:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/integration/integration.proto
+	rm -f src/chirpstack_api/integration/integration_grpc.py
 
 meta:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/meta/meta.proto
+	rm -f src/chirpstack_api/meta/meta_grpc.py
