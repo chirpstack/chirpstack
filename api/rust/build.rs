@@ -7,6 +7,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let proto_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let proto_dir = Path::new(&proto_dir);
     let proto_dir = proto_dir.join("proto");
+    let cs_dir = proto_dir.join("chirpstack");
 
     std::fs::create_dir_all(out_dir.join("common")).unwrap();
     std::fs::create_dir_all(out_dir.join("gw")).unwrap();
@@ -22,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .compile_well_known_types(true)
         .extern_path(".google.protobuf", "::pbjson_types")
         .compile(
-            &["common/common.proto"],
+            &[cs_dir.join("common").join("common.proto").to_str().unwrap()],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),
                 proto_dir.join("google").to_str().unwrap(),
@@ -43,7 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .extern_path(".google.protobuf", "::pbjson_types")
         .extern_path(".common", "crate::common")
         .compile(
-            &["gw/gw.proto"],
+            &[cs_dir.join("gw").join("gw.proto").to_str().unwrap()],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),
                 proto_dir.join("google").to_str().unwrap(),
@@ -65,7 +66,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .extern_path(".google.protobuf", "::pbjson_types")
         .extern_path(".common", "crate::common")
         .compile(
-            &["internal/internal.proto"],
+            &[cs_dir
+                .join("internal")
+                .join("internal.proto")
+                .to_str()
+                .unwrap()],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),
                 proto_dir.join("google").to_str().unwrap(),
@@ -88,7 +93,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .extern_path(".common", "crate::common")
         .extern_path(".gw", "crate::gw")
         .compile(
-            &["integration/integration.proto"],
+            &[cs_dir
+                .join("integration")
+                .join("integration.proto")
+                .to_str()
+                .unwrap()],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),
                 proto_dir.join("google").to_str().unwrap(),
@@ -112,7 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .extern_path(".common", "crate::common")
         .extern_path(".gw", "crate::gw")
         .compile(
-            &["meta/meta.proto"],
+            &[cs_dir.join("meta").join("meta.proto").to_str().unwrap()],
             &[proto_dir.join("chirpstack").to_str().unwrap()],
         )?;
 
@@ -132,18 +141,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .extern_path(".gw", "crate::gw")
         .compile(
             &[
-                "api/internal.proto",
-                "api/user.proto",
-                "api/tenant.proto",
-                "api/application.proto",
-                "api/device_profile.proto",
-                "api/device_profile_template.proto",
-                "api/device.proto",
-                "api/gateway.proto",
-                "api/frame_log.proto",
-                "api/multicast_group.proto",
-                "api/frame_log.proto",
-                "api/request_log.proto",
+                cs_dir.join("api").join("internal.proto").to_str().unwrap(),
+                cs_dir.join("api").join("user.proto").to_str().unwrap(),
+                cs_dir.join("api").join("tenant.proto").to_str().unwrap(),
+                cs_dir
+                    .join("api")
+                    .join("application.proto")
+                    .to_str()
+                    .unwrap(),
+                cs_dir
+                    .join("api")
+                    .join("device_profile.proto")
+                    .to_str()
+                    .unwrap(),
+                cs_dir
+                    .join("api")
+                    .join("device_profile_template.proto")
+                    .to_str()
+                    .unwrap(),
+                cs_dir.join("api").join("device.proto").to_str().unwrap(),
+                cs_dir.join("api").join("gateway.proto").to_str().unwrap(),
+                cs_dir.join("api").join("frame_log.proto").to_str().unwrap(),
+                cs_dir
+                    .join("api")
+                    .join("multicast_group.proto")
+                    .to_str()
+                    .unwrap(),
+                cs_dir
+                    .join("api")
+                    .join("request_log.proto")
+                    .to_str()
+                    .unwrap(),
             ],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),
