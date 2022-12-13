@@ -262,7 +262,7 @@ async fn _handle_pr_start_req_data(
     let region_name = region::get_region_name(region_common_name)?;
     let dr = pl.ul_meta_data.data_rate.unwrap_or_default();
 
-    let ufs = UplinkFrameSet {
+    let mut ufs = UplinkFrameSet {
         uplink_set_id: Uuid::new_v4(),
         dr,
         ch: helpers::get_uplink_ch(&region_name, tx_info.frequency, dr)?,
@@ -280,7 +280,7 @@ async fn _handle_pr_start_req_data(
     };
 
     // get device-session
-    let ds = device_session::get_for_phypayload(&ufs.phy_payload, ufs.dr, ufs.ch as u8).await?;
+    let ds = device_session::get_for_phypayload(&mut ufs.phy_payload, ufs.dr, ufs.ch as u8).await?;
     let pr_lifetime = roaming::get_passive_roaming_lifetime(sender_id)?;
     let kek_label = roaming::get_passive_roaming_kek_label(sender_id)?;
 

@@ -132,53 +132,58 @@ impl Data {
     async fn get_device_session(&mut self) -> Result<(), Error> {
         trace!("Getting device-session for dev_addr");
 
-        if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload {
-            match device_session::get_for_phypayload_and_incr_f_cnt_up(
-                &self.uplink_frame_set.phy_payload,
-                self.uplink_frame_set.dr,
-                self.uplink_frame_set.ch as u8,
-            )
-            .await
-            {
-                Ok(v) => match v {
-                    device_session::ValidationStatus::Ok(f_cnt, ds) => {
-                        self.device_session = Some(ds);
-                        self.f_cnt_up_full = f_cnt;
-                    }
-                    device_session::ValidationStatus::Retransmission(f_cnt, ds) => {
-                        self.retransmission = true;
-                        self.device_session = Some(ds);
-                        self.f_cnt_up_full = f_cnt;
-                    }
-                    device_session::ValidationStatus::Reset(f_cnt, ds) => {
-                        self.reset = true;
-                        self.device_session = Some(ds);
-                        self.f_cnt_up_full = f_cnt;
-                    }
-                },
-                Err(e) => match e {
-                    StorageError::NotFound(s) => {
-                        warn!(dev_addr = %s, "No device-session exists for dev_addr");
-                        return Err(Error::Abort);
-                    }
-                    StorageError::InvalidMIC => {
-                        warn!(dev_addr = %pl.fhdr.devaddr, "None of the device-sessions for dev_addr resulted in valid MIC");
-
-                        // Log uplink for null DevEUI.
-                        let mut ufl: api::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
-                        ufl.dev_eui = "0000000000000000".to_string();
-                        framelog::log_uplink_for_device(&ufl).await?;
-
-                        return Err(Error::Abort);
-                    }
-                    _ => {
-                        return Err(Error::AnyhowError(
-                            anyhow::Error::new(e).context("Get device-session"),
-                        ));
-                    }
-                },
+        let dev_addr =
+            if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload {
+                pl.fhdr.devaddr
+            } else {
+                return Err(Error::AnyhowError(anyhow!("No MacPayload in PhyPayload")));
             };
-        }
+
+        match device_session::get_for_phypayload_and_incr_f_cnt_up(
+            &mut self.uplink_frame_set.phy_payload,
+            self.uplink_frame_set.dr,
+            self.uplink_frame_set.ch as u8,
+        )
+        .await
+        {
+            Ok(v) => match v {
+                device_session::ValidationStatus::Ok(f_cnt, ds) => {
+                    self.device_session = Some(ds);
+                    self.f_cnt_up_full = f_cnt;
+                }
+                device_session::ValidationStatus::Retransmission(f_cnt, ds) => {
+                    self.retransmission = true;
+                    self.device_session = Some(ds);
+                    self.f_cnt_up_full = f_cnt;
+                }
+                device_session::ValidationStatus::Reset(f_cnt, ds) => {
+                    self.reset = true;
+                    self.device_session = Some(ds);
+                    self.f_cnt_up_full = f_cnt;
+                }
+            },
+            Err(e) => match e {
+                StorageError::NotFound(s) => {
+                    warn!(dev_addr = %s, "No device-session exists for dev_addr");
+                    return Err(Error::Abort);
+                }
+                StorageError::InvalidMIC => {
+                    warn!(dev_addr = %dev_addr, "None of the device-sessions for dev_addr resulted in valid MIC");
+
+                    // Log uplink for null DevEUI.
+                    let mut ufl: api::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
+                    ufl.dev_eui = "0000000000000000".to_string();
+                    framelog::log_uplink_for_device(&ufl).await?;
+
+                    return Err(Error::Abort);
+                }
+                _ => {
+                    return Err(Error::AnyhowError(
+                        anyhow::Error::new(e).context("Get device-session"),
+                    ));
+                }
+            },
+        };
 
         Ok(())
     }

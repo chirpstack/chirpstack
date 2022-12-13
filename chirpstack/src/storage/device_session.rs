@@ -122,15 +122,13 @@ pub async fn delete(dev_eui: &EUI64) -> Result<()> {
 // This function will increment the uplink frame-counter and will immediately update the
 // device-session in the database, to make sure that in case this function is called multiple
 // times, at most one will be valid.
+// On Ok response, the PhyPayload f_cnt will be set to the full 32bit frame-counter based on the
+// device-session context.
 pub async fn get_for_phypayload_and_incr_f_cnt_up(
-    phy: &PhyPayload,
+    phy: &mut PhyPayload,
     tx_dr: u8,
     tx_ch: u8,
 ) -> Result<ValidationStatus, Error> {
-    // Clone the PhyPayload, as we will update the f_cnt to the full (32bit) frame-counter value
-    // for calculating the MIC.
-    let mut phy = phy.clone();
-
     let mut _dev_addr = DevAddr::from_be_bytes([0x00, 0x00, 0x00, 0x00]);
     let mut _f_cnt_orig = 0;
 
@@ -150,11 +148,6 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
     }
 
     for mut ds in device_sessions {
-        // Restore the original f_cnt.
-        if let Payload::MACPayload(pl) = &mut phy.payload {
-            pl.fhdr.f_cnt = _f_cnt_orig;
-        }
-
         // Get the full 32bit frame-counter.
         let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, _f_cnt_orig);
         let f_nwk_s_int_key = AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
@@ -236,6 +229,11 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                 return Ok(ValidationStatus::Reset(full_f_cnt, ds));
             }
         }
+
+        // Restore the original f_cnt.
+        if let Payload::MACPayload(pl) = &mut phy.payload {
+            pl.fhdr.f_cnt = _f_cnt_orig;
+        }
     }
 
     Err(Error::InvalidMIC)
@@ -244,15 +242,13 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
 // Simmilar to get_for_phypayload_and_incr_f_cnt_up, but only retrieves the device-session for the
 // given PhyPayload. As it does not return the ValidationStatus, it only returns the DeviceSession
 // in case of a valid frame-counter.
+// On Ok response, the PhyPayload f_cnt will be set to the full 32bit frame-counter based on the
+// device-session context.
 pub async fn get_for_phypayload(
-    phy: &PhyPayload,
+    phy: &mut PhyPayload,
     tx_dr: u8,
     tx_ch: u8,
 ) -> Result<internal::DeviceSession, Error> {
-    // Clone the PhyPayload, as we will update the f_cnt to the full (32bit) frame-counter value
-    // for calculating the MIC.
-    let mut phy = phy.clone();
-
     // Get the dev_addr and original f_cnt.
     let (dev_addr, f_cnt_orig) = if let Payload::MACPayload(pl) = &phy.payload {
         (pl.fhdr.devaddr, pl.fhdr.f_cnt)
@@ -268,11 +264,6 @@ pub async fn get_for_phypayload(
     }
 
     for ds in device_sessions {
-        // Restore the original f_cnt.
-        if let Payload::MACPayload(pl) = &mut phy.payload {
-            pl.fhdr.f_cnt = f_cnt_orig;
-        }
-
         // Get the full 32bit frame-counter.
         let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
         let f_nwk_s_int_key = AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
@@ -296,6 +287,11 @@ pub async fn get_for_phypayload(
 
         if mic_ok && full_f_cnt >= ds.f_cnt_up {
             return Ok(ds);
+        }
+
+        // Restore the original f_cnt.
+        if let Payload::MACPayload(pl) = &mut phy.payload {
+            pl.fhdr.f_cnt = f_cnt_orig;
         }
     }
 
@@ -511,6 +507,24 @@ pub mod test {
                 })),
                 ..Default::default()
             },
+            internal::DeviceSession {
+                dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                dev_eui: vec![0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05],
+                s_nwk_s_int_key: vec![
+                    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                    0x05, 0x05, 0x05,
+                ],
+                f_nwk_s_int_key: vec![
+                    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                    0x05, 0x05, 0x05,
+                ],
+                nwk_s_enc_key: vec![
+                    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                    0x05, 0x05, 0x05,
+                ],
+                f_cnt_up: (1 << 16) + 1,
+                ..Default::default()
+            },
         ];
 
         for ds in &device_sessions {
@@ -628,6 +642,24 @@ pub mod test {
                 expected_error: None,
                 expected_reset: false,
             },
+            Test {
+                name: "frame-counter rollover (16lsb)".to_string(),
+                dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
+                f_nwk_s_int_key: AES128Key::from_bytes([
+                    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                    0x05, 0x05, 0x05,
+                ]),
+                s_nwk_s_int_key: AES128Key::from_bytes([
+                    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                    0x05, 0x05, 0x05,
+                ]),
+                f_cnt: (1 << 16) + 11,
+                expected_dev_eui: EUI64::from_slice(&device_sessions[3].dev_eui).unwrap(),
+                expected_fcnt_up: (1 << 16) + 11,
+                expected_retransmission: false,
+                expected_error: None,
+                expected_reset: false,
+            },
         ];
 
         for tst in &tests {
@@ -658,15 +690,29 @@ pub mod test {
             )
             .unwrap();
 
-            let ds_res = get_for_phypayload_and_incr_f_cnt_up(&phy, 0, 0).await;
+            // Truncate to 16LSB (as it would be transmitted over the air).
+            if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                pl.fhdr.f_cnt = tst.f_cnt % (1 << 16);
+            }
+
+            let ds_res = get_for_phypayload_and_incr_f_cnt_up(&mut phy, 0, 0).await;
             if tst.expected_error.is_some() {
                 assert_eq!(true, ds_res.is_err());
                 assert_eq!(
                     tst.expected_error.as_ref().unwrap(),
                     &ds_res.err().unwrap().to_string()
                 );
+                if let lrwn::Payload::MACPayload(pl) = &phy.payload {
+                    assert_eq!(tst.f_cnt, pl.fhdr.f_cnt);
+                }
             } else {
                 let ds = ds_res.unwrap();
+
+                // Validate that the f_cnt of the PhyPayload was set to the full frame-counter.
+                if let lrwn::Payload::MACPayload(pl) = &phy.payload {
+                    assert_eq!(tst.expected_fcnt_up, pl.fhdr.f_cnt);
+                }
+
                 if let ValidationStatus::Ok(full_f_cnt, ds) = ds {
                     assert_eq!(false, tst.expected_retransmission);
                     assert_eq!(
