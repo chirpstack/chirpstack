@@ -1,7 +1,7 @@
 use anyhow::Result;
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
-use tracing::{error, info};
+use tracing::info;
 
 use crate::integration;
 use crate::storage::{application, device, device_profile, tenant};
@@ -48,8 +48,8 @@ pub async fn handle(
         let rx_time: DateTime<Utc> =
             helpers::get_rx_timestamp(&uplink_frame_set.rx_info_set).into();
 
-        if let Err(e) = integration::status_event(
-            &app.id,
+        integration::status_event(
+            app.id,
             &dev.variables,
             &integration_pb::StatusEvent {
                 deduplication_id: uplink_frame_set.uplink_set_id.to_string(),
@@ -75,10 +75,7 @@ pub async fn handle(
                 },
             },
         )
-        .await
-        {
-            error!(error = %e, "Sending status event error");
-        }
+        .await;
     }
 
     Ok(None)
@@ -94,6 +91,8 @@ pub mod test {
     use lrwn::EUI64;
     use std::collections::HashMap;
     use std::str::FromStr;
+    use std::time::Duration;
+    use tokio::time::sleep;
     use uuid::Uuid;
 
     #[test]
@@ -188,6 +187,9 @@ pub mod test {
             .await
             .unwrap();
         assert_eq!(true, resp.is_none());
+
+        // Integration events are handled async.
+        sleep(Duration::from_millis(100)).await;
 
         let status_events = mock::get_status_events().await;
         assert_eq!(

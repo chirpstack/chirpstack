@@ -378,7 +378,8 @@ impl Integration {
             )?)),
         };
 
-        integration_event(&Uuid::from_str(&di.application_id)?, vars, &int_pl).await
+        integration_event(Uuid::from_str(&di.application_id)?, vars, &int_pl).await;
+        Ok(())
     }
 
     async fn handle_response_downlink(
@@ -431,7 +432,8 @@ impl Integration {
             }),
         };
 
-        location_event(&Uuid::from_str(&di.application_id)?, vars, &loc_pl).await
+        location_event(Uuid::from_str(&di.application_id)?, vars, &loc_pl).await;
+        Ok(())
     }
 
     async fn update_geoloc_buffer(
@@ -729,7 +731,7 @@ impl IntegrationTrait for Integration {
                 location: Some(v),
             };
 
-            location_event(&Uuid::from_str(&di.application_id)?, vars, &loc_pl).await?;
+            location_event(Uuid::from_str(&di.application_id)?, vars, &loc_pl).await;
         }
 
         Ok(())

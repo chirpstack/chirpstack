@@ -1,10 +1,12 @@
 use std::future::Future;
 use std::io::Cursor;
 use std::pin::Pin;
+use std::time::Duration;
 
 use prost::Message;
 use redis::streams::StreamReadReply;
 use tokio::sync::RwLock;
+use tokio::time::sleep;
 
 use crate::gateway::backend::mock as gateway_mock;
 use crate::integration::mock;
@@ -122,6 +124,9 @@ pub fn integration_log(logs: Vec<String>) -> Validator {
     Box::new(move || {
         let logs = logs.clone();
         Box::pin(async move {
+            // Integration events are handled async.
+            sleep(Duration::from_millis(100)).await;
+
             let mock_logs = mock::get_log_events().await;
             assert_eq!(logs.len(), mock_logs.len());
 
@@ -136,6 +141,9 @@ pub fn integration_log(logs: Vec<String>) -> Validator {
 pub fn no_uplink_event() -> Validator {
     Box::new(move || {
         Box::pin(async move {
+            // Integration events are handled async.
+            sleep(Duration::from_millis(100)).await;
+
             let mock_events = mock::get_uplink_events().await;
             assert_eq!(0, mock_events.len());
         })
@@ -146,6 +154,9 @@ pub fn uplink_event(up: integration_pb::UplinkEvent) -> Validator {
     Box::new(move || {
         let up = up.clone();
         Box::pin(async move {
+            // Integration events are handled async.
+            sleep(Duration::from_millis(100)).await;
+
             let mut mock_events = mock::get_uplink_events().await;
             assert_eq!(1, mock_events.len());
 
@@ -163,6 +174,9 @@ pub fn ack_event(ack: integration_pb::AckEvent) -> Validator {
     Box::new(move || {
         let ack = ack.clone();
         Box::pin(async move {
+            // Integration events are handled async.
+            sleep(Duration::from_millis(100)).await;
+
             let mut mock_events = mock::get_ack_events().await;
             assert_eq!(1, mock_events.len());
 
@@ -180,6 +194,9 @@ pub fn status_event(st: integration_pb::StatusEvent) -> Validator {
     Box::new(move || {
         let st = st.clone();
         Box::pin(async move {
+            // Integration events are handled async.
+            sleep(Duration::from_millis(100)).await;
+
             let mut mock_events = mock::get_status_events().await;
             assert_eq!(1, mock_events.len());
 

@@ -333,10 +333,7 @@ impl Data {
                     },
                 };
 
-                integration::ack_event(&self.application.id, &self.device.variables, &pl)
-                    .await
-                    .context("Publish ack event")?;
-
+                integration::ack_event(self.application.id, &self.device.variables, &pl).await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of timeout");
 
                 continue;
@@ -366,10 +363,7 @@ impl Data {
                     .collect(),
                 };
 
-                integration::log_event(&self.application.id, &self.device.variables, &pl)
-                    .await
-                    .context("Publish log event")?;
-
+                integration::log_event(self.application.id, &self.device.variables, &pl).await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of max. payload size");
 
                 continue;

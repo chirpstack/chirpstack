@@ -315,7 +315,7 @@ impl Data {
                 .cloned()
                 .collect(),
             };
-            integration::log_event(&app.id, &dev.variables, &pl).await?;
+            integration::log_event(app.id, &dev.variables, &pl).await;
         }
 
         if self.reset {
@@ -333,7 +333,7 @@ impl Data {
                 .cloned()
                 .collect(),
             };
-            integration::log_event(&app.id, &dev.variables, &pl).await?;
+            integration::log_event(app.id, &dev.variables, &pl).await;
         }
 
         Err(Error::Abort)
@@ -700,7 +700,7 @@ impl Data {
             Ok(v) => v,
             Err(e) => {
                 integration::log_event(
-                    &app.id,
+                    app.id,
                     &dev.variables,
                     &integration_pb::LogEvent {
                         time: Some(Utc::now().into()),
@@ -714,12 +714,12 @@ impl Data {
                             .collect(),
                     },
                 )
-                .await?;
+                .await;
                 None
             }
         };
 
-        integration::uplink_event(&app.id, &dev.variables, &pl).await?;
+        integration::uplink_event(app.id, &dev.variables, &pl).await;
 
         self.uplink_event = Some(pl);
 
@@ -871,7 +871,7 @@ impl Data {
         tags.extend((*dev.tags).clone());
 
         integration::ack_event(
-            &app.id,
+            app.id,
             &dev.variables,
             &integration_pb::AckEvent {
                 deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
@@ -892,7 +892,7 @@ impl Data {
                 f_cnt_down: qi.f_cnt_down.unwrap_or(0) as u32,
             },
         )
-        .await?;
+        .await;
 
         Ok(())
     }

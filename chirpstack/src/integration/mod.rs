@@ -133,7 +133,7 @@ pub trait Integration {
 }
 
 // Returns a Vec of integrations for the given Application ID.
-async fn for_application_id(id: &Uuid) -> Result<Vec<Box<dyn Integration + Sync + Send>>> {
+async fn for_application_id(id: Uuid) -> Result<Vec<Box<dyn Integration + Sync + Send>>> {
     #[cfg(test)]
     {
         let m = MOCK_INTEGRATION.read().await;
@@ -143,7 +143,7 @@ async fn for_application_id(id: &Uuid) -> Result<Vec<Box<dyn Integration + Sync 
     }
 
     let mut out: Vec<Box<dyn Integration + Sync + Send>> = Vec::new();
-    let integrations = application::get_integrations_for_application(id).await?;
+    let integrations = application::get_integrations_for_application(&id).await?;
 
     for app_i in &integrations {
         out.push(match &app_i.configuration {
@@ -187,7 +187,24 @@ async fn for_application_id(id: &Uuid) -> Result<Vec<Box<dyn Integration + Sync 
 }
 
 pub async fn uplink_event(
-    application_id: &Uuid,
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::UplinkEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _uplink_event(application_id, &vars, &pl).await {
+                error!(application_id = %application_id, error = %err, "Uplink event error");
+            }
+        }
+    });
+}
+
+async fn _uplink_event(
+    application_id: Uuid,
     vars: &HashMap<String, String>,
     pl: &integration::UplinkEvent,
 ) -> Result<()> {
@@ -212,7 +229,24 @@ pub async fn uplink_event(
 }
 
 pub async fn join_event(
-    application_id: &Uuid,
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::JoinEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _join_event(application_id, &vars, &pl).await {
+                error!(application_id = %application_id, error = %err, "Join event error");
+            }
+        }
+    });
+}
+
+async fn _join_event(
+    application_id: Uuid,
     vars: &HashMap<String, String>,
     pl: &integration::JoinEvent,
 ) -> Result<()> {
@@ -237,7 +271,24 @@ pub async fn join_event(
 }
 
 pub async fn ack_event(
-    application_id: &Uuid,
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::AckEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _ack_event(application_id, &vars, &pl).await {
+                error!(application_id = %application_id, error = %err, "Ack event error");
+            }
+        }
+    });
+}
+
+async fn _ack_event(
+    application_id: Uuid,
     vars: &HashMap<String, String>,
     pl: &integration::AckEvent,
 ) -> Result<()> {
@@ -262,7 +313,24 @@ pub async fn ack_event(
 }
 
 pub async fn txack_event(
-    application_id: &Uuid,
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::TxAckEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _txack_event(application_id, &vars, &pl).await {
+                error!(application_id = %application_id, error = %err, "Txack event error");
+            }
+        }
+    });
+}
+
+async fn _txack_event(
+    application_id: Uuid,
     vars: &HashMap<String, String>,
     pl: &integration::TxAckEvent,
 ) -> Result<()> {
@@ -287,7 +355,24 @@ pub async fn txack_event(
 }
 
 pub async fn log_event(
-    application_id: &Uuid,
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::LogEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _log_event(application_id, &vars, &pl).await {
+                error!(application_id = %application_id, error = %err, "Log event error");
+            }
+        }
+    });
+}
+
+async fn _log_event(
+    application_id: Uuid,
     vars: &HashMap<String, String>,
     pl: &integration::LogEvent,
 ) -> Result<()> {
@@ -312,7 +397,24 @@ pub async fn log_event(
 }
 
 pub async fn status_event(
-    application_id: &Uuid,
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::StatusEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _status_event(application_id, &vars, &pl).await {
+                error!(application_id = %application_id, error = %err, "Status event error");
+            }
+        }
+    });
+}
+
+async fn _status_event(
+    application_id: Uuid,
     vars: &HashMap<String, String>,
     pl: &integration::StatusEvent,
 ) -> Result<()> {
@@ -337,7 +439,24 @@ pub async fn status_event(
 }
 
 pub async fn location_event(
-    application_id: &Uuid,
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::LocationEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _location_event(application_id, &vars, &pl).await {
+                error!(application_id = %application_id, error = %err, "Location event error");
+            }
+        }
+    });
+}
+
+async fn _location_event(
+    application_id: Uuid,
     vars: &HashMap<String, String>,
     pl: &integration::LocationEvent,
 ) -> Result<()> {
@@ -362,7 +481,24 @@ pub async fn location_event(
 }
 
 pub async fn integration_event(
-    application_id: &Uuid,
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::IntegrationEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _integration_event(application_id, &vars, &pl).await {
+                error!(application_id = %application_id, error = %err, "Location event error");
+            }
+        }
+    });
+}
+
+async fn _integration_event(
+    application_id: Uuid,
     vars: &HashMap<String, String>,
     pl: &integration::IntegrationEvent,
 ) -> Result<()> {

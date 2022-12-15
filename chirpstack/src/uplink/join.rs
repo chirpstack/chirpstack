@@ -259,7 +259,7 @@ impl JoinRequest {
                 Err(v) => match v {
                     StorageError::InvalidDevNonce => {
                         integration::log_event(
-                            &app.id,
+                            app.id,
                             &dev.variables,
                             &integration_pb::LogEvent {
                                 time: Some(Utc::now().into()),
@@ -276,7 +276,7 @@ impl JoinRequest {
                                 .collect(),
                             },
                         )
-                        .await?;
+                        .await;
 
                         metrics::save(
                             &format!("device:{}", dev.dev_eui),
@@ -314,7 +314,7 @@ impl JoinRequest {
         let dev = self.device.as_ref().unwrap();
 
         integration::log_event(
-            &app.id,
+            app.id,
             &dev.variables,
             &integration_pb::LogEvent {
                 time: Some(Utc::now().into()),
@@ -331,7 +331,7 @@ impl JoinRequest {
                 .collect(),
             },
         )
-        .await?;
+        .await;
 
         metrics::save(
             &format!("device:{}", dev.dev_eui),
@@ -739,7 +739,7 @@ impl JoinRequest {
             dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
         };
 
-        integration::join_event(&app.id, &dev.variables, &pl).await?;
+        integration::join_event(app.id, &dev.variables, &pl).await;
         Ok(())
     }
 }
