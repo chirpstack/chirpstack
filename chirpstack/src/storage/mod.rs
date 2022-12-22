@@ -38,6 +38,7 @@ pub type PgPoolConnection = PooledConnection<ConnectionManager<PgConnection>>;
 lazy_static! {
     static ref PG_POOL: RwLock<Option<PgPool>> = RwLock::new(None);
     static ref REDIS_POOL: RwLock<Option<RedisPool>> = RwLock::new(None);
+    static ref REDIS_PREFIX: RwLock<String> = RwLock::new("".to_string());
 }
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
@@ -210,6 +211,11 @@ pub async fn setup() -> Result<()> {
         set_redis_pool(RedisPool::Client(pool));
     }
 
+    if !conf.redis.key_prefix.is_empty() {
+        info!(prefix = %conf.redis.key_prefix, "Setting Redis prefix");
+        *REDIS_PREFIX.write().unwrap() = conf.redis.key_prefix.clone();
+    }
+
     Ok(())
 }
 
@@ -244,7 +250,8 @@ pub fn set_redis_pool(p: RedisPool) {
 }
 
 pub fn redis_key(s: String) -> String {
-    s
+    let prefix = REDIS_PREFIX.read().unwrap();
+    format!("{}{}", prefix, s)
 }
 
 #[cfg(test)]
@@ -263,4 +270,24 @@ pub async fn reset_redis() -> Result<()> {
     let mut c = get_redis_conn()?;
     redis::cmd("FLUSHALL").query(&mut *c)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_prefix_no_prefix() {
+        *REDIS_PREFIX.write().unwrap() = "".to_string();
+        assert_eq!("lora:test:key", redis_key("lora:test:key".to_string()));
+    }
+
+    #[test]
+    fn test_prefix() {
+        *REDIS_PREFIX.write().unwrap() = "foobar:".to_string();
+        assert_eq!(
+            "foobar:lora:test:key",
+            redis_key("lora:test:key".to_string())
+        );
+    }
 }
