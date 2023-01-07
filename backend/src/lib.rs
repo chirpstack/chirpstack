@@ -16,7 +16,7 @@ use tracing::{debug, error, info, trace};
 
 const PROTOCOL_VERSION: &str = "1.0";
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Role {
     FNS,
     HNS,
@@ -364,7 +364,7 @@ impl Client {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Copy, Clone)]
 pub enum MessageType {
     JoinReq,
     JoinAns,
@@ -388,7 +388,7 @@ impl Default for MessageType {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Copy, Clone)]
 pub enum ResultCode {
     Success,
     MICFailed,
@@ -417,13 +417,13 @@ impl Default for ResultCode {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone)]
 pub enum RatePolicy {
     Drop,
     Mark,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(default)]
 pub struct BasePayload {
     #[serde(rename = "ProtocolVersion")]
@@ -515,7 +515,7 @@ impl Default for BasePayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 #[serde(default)]
 pub struct BasePayloadResult {
     #[serde(flatten)]
@@ -524,7 +524,7 @@ pub struct BasePayloadResult {
     pub result: ResultPayload,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 pub struct ResultPayload {
     #[serde(rename = "ResultCode")]
     pub result_code: ResultCode,
@@ -536,7 +536,7 @@ pub struct ResultPayload {
     pub description: String,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 #[serde(default)]
 pub struct KeyEnvelope {
     #[serde(default, rename = "KEKLabel")]
@@ -574,7 +574,7 @@ impl KeyEnvelope {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, PartialEq, Debug, Clone)]
+#[derive(Serialize, Deserialize, Default, PartialEq, Eq, Debug, Clone)]
 pub struct JoinReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -605,7 +605,7 @@ impl BasePayloadProvider for &mut JoinReqPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 #[serde(default)]
 pub struct JoinAnsPayload {
     #[serde(flatten)]
@@ -639,7 +639,7 @@ impl BasePayloadResultProvider for JoinAnsPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct RejoinReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -670,7 +670,7 @@ impl BasePayloadProvider for &mut RejoinReqPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone)]
 pub struct RejoinAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
@@ -703,7 +703,7 @@ impl BasePayloadResultProvider for RejoinAnsPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct AppSKeyReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -719,7 +719,7 @@ impl BasePayloadProvider for &mut AppSKeyReqPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone)]
 pub struct AppSKeyAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
@@ -798,7 +798,7 @@ impl BasePayloadResultProvider for PRStartAnsPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct PRStopReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -814,7 +814,7 @@ impl BasePayloadProvider for &mut PRStopReqPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone)]
 pub struct PRStopAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
@@ -856,7 +856,7 @@ impl BasePayloadProvider for &mut XmitDataReqPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Default, Clone)]
 pub struct XmitDataAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
@@ -868,7 +868,7 @@ impl BasePayloadResultProvider for XmitDataAnsPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 pub struct HomeNSReqPayload {
     #[serde(flatten)]
     pub base: BasePayload,
@@ -882,7 +882,7 @@ impl BasePayloadProvider for &mut HomeNSReqPayload {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 pub struct HomeNSAnsPayload {
     #[serde(flatten)]
     pub base: BasePayloadResult,
