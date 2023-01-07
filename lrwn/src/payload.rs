@@ -11,7 +11,7 @@ use super::maccommand::MACCommandSet;
 use super::mhdr::MType;
 use super::netid::NetID;
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum Payload {
     JoinRequest(JoinRequestPayload),
     JoinAccept(JoinAcceptPayload),
@@ -37,7 +37,7 @@ impl Serialize for Payload {
     }
 }
 
-#[derive(Serialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
 pub enum JoinType {
     Join,
     RejoinType0,
@@ -85,7 +85,7 @@ impl Payload {
     }
 }
 
-#[derive(Serialize, PartialEq, Debug, Copy, Clone)]
+#[derive(Serialize, PartialEq, Eq, Debug, Copy, Clone)]
 pub struct JoinRequestPayload {
     pub join_eui: EUI64,
     pub dev_eui: EUI64,
@@ -120,7 +120,7 @@ impl JoinRequestPayload {
     }
 }
 
-#[derive(Serialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
 pub struct JoinAcceptPayload {
     pub join_nonce: u32, // the actual max value is (2^24 -1)
     pub home_netid: NetID,
@@ -185,7 +185,7 @@ impl JoinAcceptPayload {
     }
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum FRMPayload {
     Raw(Vec<u8>),
     MACCommandSet(MACCommandSet),
@@ -197,7 +197,7 @@ impl Serialize for FRMPayload {
         S: Serializer,
     {
         match self {
-            FRMPayload::Raw(v) => serializer.serialize_str(&hex::encode(&v)),
+            FRMPayload::Raw(v) => serializer.serialize_str(&hex::encode(v)),
             FRMPayload::MACCommandSet(v) => v.serialize(serializer),
         }
     }
@@ -212,7 +212,7 @@ impl FRMPayload {
     }
 }
 
-#[derive(Serialize, PartialEq, Debug, Clone, Default)]
+#[derive(Serialize, PartialEq, Eq, Debug, Clone, Default)]
 pub struct MACPayload {
     pub fhdr: FHDR,
     pub f_port: Option<u8>,
@@ -287,7 +287,7 @@ impl MACPayload {
     }
 }
 
-#[derive(Serialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
 pub struct RejoinRequestType02Payload {
     pub rejoin_type: JoinType,
     pub netid: NetID,
@@ -343,7 +343,7 @@ impl RejoinRequestType02Payload {
     }
 }
 
-#[derive(Serialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
 pub struct RejoinRequestType1Payload {
     pub rejoin_type: JoinType,
     pub join_eui: EUI64,

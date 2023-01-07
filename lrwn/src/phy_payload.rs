@@ -11,7 +11,7 @@ use super::maccommand::{MACCommand, MACCommandSet};
 use super::mhdr::{MType, MHDR};
 use super::payload::{FRMPayload, JoinAcceptPayload, JoinType, Payload};
 
-#[derive(PartialEq, Clone, Copy, Serialize)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize)]
 pub enum MACVersion {
     LoRaWAN1_0,
     LoRaWAN1_1,
@@ -310,7 +310,7 @@ pub enum MACVersion {
 /// let phy_decoded = PhyPayload::from_slice(&bytes).unwrap();
 /// assert_eq!(phy, phy_decoded);
 /// ```
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct PhyPayload {
     pub mhdr: MHDR,
     pub payload: Payload,
@@ -558,7 +558,7 @@ impl PhyPayload {
             return Ok(());
         }
 
-        return Err(anyhow!("payload must be of type JoinAcceptPayload"));
+        Err(anyhow!("payload must be of type JoinAcceptPayload"))
     }
 
     /// Decrypt the join-accept payload with the given key.
@@ -604,7 +604,7 @@ impl PhyPayload {
             return Ok(());
         }
 
-        return Err(anyhow!("payload must be of type Raw"));
+        Err(anyhow!("payload must be of type Raw"))
     }
 
     /// Encrypt the f_opts with the given key.
@@ -633,7 +633,7 @@ impl PhyPayload {
             return Ok(());
         }
 
-        return Err(anyhow!("payload must be of type MACPayload"));
+        Err(anyhow!("payload must be of type MACPayload"))
     }
 
     /// Decrypt the f_opts with the given key.
@@ -670,7 +670,7 @@ impl PhyPayload {
             return Ok(());
         }
 
-        return Err(anyhow!("payload must be of type MACPayload"));
+        Err(anyhow!("payload must be of type MACPayload"))
     }
 
     /// Decrypt the frm_payload with the given key.
@@ -696,7 +696,7 @@ impl PhyPayload {
             return Ok(());
         }
 
-        return Err(anyhow!("payload must be of type MACPayload"));
+        Err(anyhow!("payload must be of type MACPayload"))
     }
 
     fn calculate_uplink_data_mic(
@@ -775,7 +775,7 @@ impl PhyPayload {
             }
         }
 
-        return Err(anyhow!("payload must be of type MACPayload"));
+        Err(anyhow!("payload must be of type MACPayload"))
     }
 
     fn calculate_downlink_data_mic(
@@ -822,7 +822,7 @@ impl PhyPayload {
             return Ok(mic);
         }
 
-        return Err(anyhow!("payload must be of type MACPayload"));
+        Err(anyhow!("payload must be of type MACPayload"))
     }
 
     fn calculate_upink_join_mic(&self, key: &AES128Key) -> Result<[u8; 4]> {
@@ -886,7 +886,7 @@ impl PhyPayload {
             return Ok(mic);
         }
 
-        return Err(anyhow!("payload must be of type JoinAcceptPayload"));
+        Err(anyhow!("payload must be of type JoinAcceptPayload"))
     }
 }
 

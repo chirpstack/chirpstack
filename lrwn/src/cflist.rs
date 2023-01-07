@@ -1,7 +1,7 @@
 use anyhow::Result;
 use serde::Serialize;
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub enum CFList {
     Channels(CFListChannels),
     ChannelMask(CFListChannelMasks),
@@ -16,9 +16,7 @@ impl CFList {
         match b[15] {
             0x00 => Ok(CFList::Channels(CFListChannels::from_bytes(bb))),
             0x01 => Ok(CFList::ChannelMask(CFListChannelMasks::from_bytes(bb))),
-            _ => {
-                return Err(anyhow!("unexpected CFListType"));
-            }
+            _ => Err(anyhow!("unexpected CFListType")),
         }
     }
 
@@ -40,7 +38,7 @@ impl CFList {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct CFListChannels([u32; 5]);
 
 impl CFListChannels {
@@ -100,7 +98,7 @@ impl CFListChannels {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct CFListChannelMasks(Vec<ChMask>);
 
 impl CFListChannelMasks {
@@ -143,7 +141,7 @@ impl CFListChannelMasks {
 
 /// ChMask encodes the channels usable for uplink access. 0 = channel 1,
 /// 15 = channel 16.
-#[derive(Serialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub struct ChMask([bool; 16]);
 
 impl ChMask {

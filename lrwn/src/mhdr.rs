@@ -3,7 +3,7 @@ use std::fmt;
 use anyhow::Result;
 use serde::Serialize;
 
-#[derive(Serialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum MType {
     JoinRequest,
     JoinAccept,
@@ -21,12 +21,12 @@ impl fmt::Display for MType {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Major {
     LoRaWANR1,
 }
 
-#[derive(Debug, PartialEq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 pub struct MHDR {
     pub m_type: MType,
     pub major: Major,

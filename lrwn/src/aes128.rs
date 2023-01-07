@@ -10,7 +10,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::Error;
 
-#[derive(Copy, Clone, PartialEq, AsExpression, FromSqlRow, Default)]
+#[derive(Copy, Clone, PartialEq, Eq, AsExpression, FromSqlRow, Default)]
 #[diesel(sql_type = diesel::sql_types::Binary)]
 pub struct AES128Key([u8; 16]);
 

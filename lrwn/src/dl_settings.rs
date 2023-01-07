@@ -1,7 +1,7 @@
 use anyhow::Result;
 use serde::Serialize;
 
-#[derive(Serialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
 pub struct DLSettings {
     pub opt_neg: bool,
     pub rx2_dr: u8,

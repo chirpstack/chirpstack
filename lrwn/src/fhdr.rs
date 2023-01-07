@@ -4,7 +4,7 @@ use serde::Serialize;
 use super::devaddr::DevAddr;
 use super::maccommand::MACCommandSet;
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct FHDR {
     pub devaddr: DevAddr,
     pub f_ctrl: FCtrl,
@@ -82,7 +82,7 @@ impl FHDR {
     }
 }
 
-#[derive(Serialize, Default, Debug, PartialEq, Clone)]
+#[derive(Serialize, Default, Debug, PartialEq, Eq, Clone)]
 pub struct FCtrl {
     pub adr: bool,
     pub adr_ack_req: bool,

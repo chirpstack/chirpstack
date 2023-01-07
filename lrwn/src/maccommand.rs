@@ -83,7 +83,7 @@ impl CID {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub enum MACCommand {
     ResetInd(ResetIndPayload),
     ResetConf(ResetConfPayload),
@@ -170,7 +170,7 @@ impl MACCommand {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Version {
     LoRaWAN1_1,
 }
@@ -198,13 +198,13 @@ impl fmt::Display for Version {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum DwellTime {
     NoLimit,
     Limit400ms,
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum DeviceModeClass {
     ClassA,
     ClassC,
@@ -242,7 +242,7 @@ impl fmt::Display for DeviceModeClass {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct MACCommandSet(Vec<MACCommand>);
 
 impl Deref for MACCommandSet {
@@ -774,13 +774,13 @@ impl MACCommandSet {
             }
         }
 
-        return Err(anyhow!(
+        Err(anyhow!(
             "MACCommandSet must contain exactly 1 MACCommand::Raw for decoding"
-        ));
+        ))
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct ResetIndPayload {
     pub dev_lorawan_version: Version,
 }
@@ -803,7 +803,7 @@ impl ResetIndPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct ResetConfPayload {
     pub serv_lorawan_version: Version,
 }
@@ -826,7 +826,7 @@ impl ResetConfPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct LinkCheckAnsPayload {
     pub margin: u8,
     pub gw_cnt: u8,
@@ -851,7 +851,7 @@ impl LinkCheckAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct LinkADRReqPayload {
     pub dr: u8,
     pub tx_power: u8,
@@ -894,7 +894,7 @@ impl LinkADRReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct Redundancy {
     pub ch_mask_cntl: u8,
     pub nb_rep: u8,
@@ -922,7 +922,7 @@ impl Redundancy {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct LinkADRAnsPayload {
     pub ch_mask_ack: bool,
     pub dr_ack: bool,
@@ -961,7 +961,7 @@ impl LinkADRAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct DutyCycleReqPayload {
     pub max_duty_cycle: u8,
 }
@@ -988,7 +988,7 @@ impl DutyCycleReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct RxParamSetupReqPayload {
     pub frequency: u32,
     pub dl_settings: DLSettings,
@@ -1029,7 +1029,7 @@ impl RxParamSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct RxParamSetupAnsPayload {
     pub channel_ack: bool,
     pub rx2_dr_ack: bool,
@@ -1066,7 +1066,7 @@ impl RxParamSetupAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct DevStatusAnsPayload {
     pub battery: u8,
     pub margin: i8,
@@ -1110,7 +1110,7 @@ impl DevStatusAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct NewChannelReqPayload {
     pub ch_index: u8,
     pub freq: u32,
@@ -1152,7 +1152,7 @@ impl NewChannelReqPayload {
         // See Frequency Encoding in MAC Commands
         // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
         if freq >= 2400000000 {
-            freq = freq / 2;
+            freq /= 2;
         }
 
         if freq / 100 >= (1 << 24) {
@@ -1177,7 +1177,7 @@ impl NewChannelReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct NewChannelAnsPayload {
     pub channel_freq_ok: bool,
     pub dr_range_ok: bool,
@@ -1209,7 +1209,7 @@ impl NewChannelAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct RxTimingSetupReqPayload {
     pub delay: u8,
 }
@@ -1234,7 +1234,7 @@ impl RxTimingSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct TxParamSetupReqPayload {
     pub uplink_dwell_time: DwellTime,
     pub downlink_dwell_time: DwellTime,
@@ -1285,7 +1285,7 @@ impl TxParamSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct DlChannelReqPayload {
     pub ch_index: u8,
     pub freq: u32,
@@ -1327,7 +1327,7 @@ impl DlChannelReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct DlChannelAnsPayload {
     pub uplink_freq_exists: bool,
     pub channel_freq_ok: bool,
@@ -1361,7 +1361,7 @@ impl DlChannelAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct RekeyConfPayload {
     pub serv_lorawan_version: Version,
 }
@@ -1384,7 +1384,7 @@ impl RekeyConfPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct RekeyIndPayload {
     pub dev_lorawan_version: Version,
 }
@@ -1407,7 +1407,7 @@ impl RekeyIndPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct ADRParamSetupReqPayload {
     pub adr_param: ADRParam,
 }
@@ -1430,7 +1430,7 @@ impl ADRParamSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct ADRParam {
     pub limit_exp: u8,
     pub delay_exp: u8,
@@ -1462,7 +1462,7 @@ impl ADRParam {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct DeviceTimeAnsPayload {
     pub time_since_gps_epoch: Duration,
 }
@@ -1496,7 +1496,7 @@ impl DeviceTimeAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct ForceRejoinReqPayload {
     pub period: u8,
     pub max_retries: u8,
@@ -1541,7 +1541,7 @@ impl ForceRejoinReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct RejoinParamSetupReqPayload {
     pub max_time_n: u8,
     pub max_count_n: u8,
@@ -1573,7 +1573,7 @@ impl RejoinParamSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct RejoinParamSetupAnsPayload {
     pub time_ok: bool,
 }
@@ -1600,7 +1600,7 @@ impl RejoinParamSetupAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct PingSlotInfoReqPayload {
     pub periodicity: u8,
 }
@@ -1627,7 +1627,7 @@ impl PingSlotInfoReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct PingSlotChannelReqPayload {
     pub freq: u32,
     pub dr: u8,
@@ -1669,7 +1669,7 @@ impl PingSlotChannelReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct PingSlotChannelAnsPayload {
     pub dr_ok: bool,
     pub channel_freq_ok: bool,
@@ -1704,7 +1704,7 @@ impl PingSlotChannelAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct BeaconFreqReqPayload {
     pub freq: u32,
 }
@@ -1741,7 +1741,7 @@ impl BeaconFreqReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct BeaconFreqAnsPayload {
     beacon_freq_ok: bool,
 }
@@ -1768,7 +1768,7 @@ impl BeaconFreqAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct DeviceModeIndPayload {
     pub class: DeviceModeClass,
 }
@@ -1791,7 +1791,7 @@ impl DeviceModeIndPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Clone)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct DeviceModeConfPayload {
     pub class: DeviceModeClass,
 }

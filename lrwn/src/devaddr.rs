@@ -27,13 +27,13 @@ impl DevAddrPrefix {
 
 impl fmt::Display for DevAddrPrefix {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}/{}", hex::encode(&self.0), self.1)
+        write!(f, "{}/{}", hex::encode(self.0), self.1)
     }
 }
 
 impl fmt::Debug for DevAddrPrefix {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}/{}", hex::encode(&self.0), self.1)
+        write!(f, "{}/{}", hex::encode(self.0), self.1)
     }
 }
 
@@ -41,7 +41,7 @@ impl FromStr for DevAddrPrefix {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.to_string();
-        let parts: Vec<&str> = s.split("/").collect();
+        let parts: Vec<&str> = s.split('/').collect();
         if parts.len() != 2 {
             return Err(Error::DevAddrPrefixFormat);
         }
@@ -51,7 +51,7 @@ impl FromStr for DevAddrPrefix {
         }
 
         let mut mask: [u8; 4] = [0; 4];
-        hex::decode_to_slice(&parts[0], &mut mask)?;
+        hex::decode_to_slice(parts[0], &mut mask)?;
         let size: u32 = parts[1].parse().map_err(|_| Error::DevAddrPrefixFormat)?;
 
         Ok(DevAddrPrefix(mask, size))
@@ -93,7 +93,7 @@ impl<'de> Visitor<'de> for DevAddrPrefixVisitor {
     }
 }
 
-#[derive(PartialEq, Copy, Clone, AsExpression, FromSqlRow, Default)]
+#[derive(PartialEq, Eq, Copy, Clone, AsExpression, FromSqlRow, Default)]
 #[diesel(sql_type = diesel::sql_types::Binary)]
 pub struct DevAddr([u8; 4]);
 
