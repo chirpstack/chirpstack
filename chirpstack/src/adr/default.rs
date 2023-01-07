@@ -12,7 +12,6 @@ impl Algorithm {
     }
 
     fn get_ideal_tx_power_index_and_dr(
-        &self,
         nb_step: isize,
         tx_power_index: u8,
         dr: u8,
@@ -46,7 +45,7 @@ impl Algorithm {
             nb_step += 1;
         }
 
-        self.get_ideal_tx_power_index_and_dr(
+        Self::get_ideal_tx_power_index_and_dr(
             nb_step,
             tx_power_index,
             dr,
@@ -191,7 +190,7 @@ impl Handler for Algorithm {
             return Ok(resp);
         }
 
-        let (desired_tx_power_index, desired_dr) = self.get_ideal_tx_power_index_and_dr(
+        let (desired_tx_power_index, desired_dr) = Self::get_ideal_tx_power_index_and_dr(
             n_step,
             resp.tx_power_index,
             resp.dr,

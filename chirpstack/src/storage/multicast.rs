@@ -15,7 +15,7 @@ use super::schema::{device, multicast_group, multicast_group_device, multicast_g
 use crate::downlink::classb;
 use crate::{config, gpstime::ToDateTime, gpstime::ToGpsTime};
 
-#[derive(Clone, Queryable, Insertable, Debug, PartialEq)]
+#[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
 #[diesel(table_name = multicast_group)]
 pub struct MulticastGroup {
     pub id: Uuid,

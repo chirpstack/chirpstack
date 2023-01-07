@@ -10,7 +10,7 @@ use super::error::Error;
 use super::get_db_conn;
 use super::schema::device_keys;
 
-#[derive(Queryable, Insertable, AsChangeset, PartialEq, Debug, Clone)]
+#[derive(Queryable, Insertable, AsChangeset, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = device_keys)]
 pub struct DeviceKeys {
     pub dev_eui: EUI64,
