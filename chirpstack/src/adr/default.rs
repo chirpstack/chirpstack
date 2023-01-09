@@ -418,10 +418,8 @@ mod test {
             },
         ];
 
-        let a = Algorithm::new();
-
         for tst in &tests {
-            let (tx_power_index, dr) = a.get_ideal_tx_power_index_and_dr(
+            let (tx_power_index, dr) = Algorithm::get_ideal_tx_power_index_and_dr(
                 tst.n_step,
                 tst.tx_power_index,
                 tst.dr,
