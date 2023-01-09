@@ -149,7 +149,8 @@ impl Handler for Algorithm {
         // The max DR might be configured to a non LoRa (125kHz) data-rate.
         // As this algorithm works on LoRa (125kHz) data-rates only, we need to
         // find the max LoRa (125 kHz) data-rate.
-        let region_conf = region::get(&req.region_name).context("Get region config for region")?;
+        let region_conf =
+            region::get(&req.region_config_id).context("Get region config for region")?;
         let mut max_dr = req.max_dr;
         let max_lora_dr = region_conf
             .get_enabled_uplink_data_rates()
@@ -222,7 +223,7 @@ mod test {
     fn test_get_packet_loss_percentage() {
         let a = Algorithm::new();
         let mut req = Request {
-            region_name: "eu868".into(),
+            region_config_id: "eu868".into(),
             region_common_name: lrwn::region::CommonName::EU868,
             dev_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
             mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
@@ -443,7 +444,7 @@ mod test {
         let a = Algorithm::new();
 
         let mut req = Request {
-            region_name: "eu868".into(),
+            region_config_id: "eu868".into(),
             region_common_name: lrwn::region::CommonName::EU868,
             dev_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
             mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
@@ -481,7 +482,7 @@ mod test {
         let _guard = test::prepare().await;
 
         let req_template = Request {
-            region_name: "eu868".into(),
+            region_config_id: "eu868".into(),
             region_common_name: lrwn::region::CommonName::EU868,
             dev_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
             mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
@@ -508,7 +509,7 @@ mod test {
             Test {
                 name: "max dr exceeded, adr disabled".into(),
                 request: Request {
-                    region_name: "eu868".into(),
+                    region_config_id: "eu868".into(),
                     adr: false,
                     dr: 5,
                     tx_power_index: 0,
@@ -526,7 +527,7 @@ mod test {
             Test {
                 name: "max dr exceeded, decrease dr".into(),
                 request: Request {
-                    region_name: "eu868".into(),
+                    region_config_id: "eu868".into(),
                     adr: true,
                     dr: 5,
                     tx_power_index: 0,
@@ -548,7 +549,7 @@ mod test {
             Test {
                 name: "increase dr".into(),
                 request: Request {
-                    region_name: "eu868".into(),
+                    region_config_id: "eu868".into(),
                     adr: true,
                     dr: 0,
                     tx_power_index: 0,

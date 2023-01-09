@@ -312,21 +312,24 @@ message ListRegionsResponse {
 }
 
 message RegionListItem {
-    // Name.
-    string name = 1;
+    // ID.
+    string id = 1;
 
     // Region.
     common.Region region = 2;
+
+    // Description.
+    string description = 3;
 }
 
 message GetRegionRequest {
-    // Region name.
-    string name = 1;
+    // Region ID.
+    string id = 1;
 }
 
 message GetRegionResponse {
-    // Name.
-    string name = 1;
+    // ID.
+    string id = 1;
 
     // Region.
     common.Region region = 2;
@@ -354,6 +357,9 @@ message GetRegionResponse {
 
     // Class-B ping-slot frequency.
     uint32 class_b_ping_slot_frequency = 10;
+
+    // Region description.
+    string description = 11;
 }
 
 message RegionChannel {

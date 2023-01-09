@@ -1,9 +1,9 @@
 import { notification } from "antd";
-import { Error } from "grpc-web";
+import { RpcError } from "grpc-web";
 
 import history from "../history";
 
-export function HandleError(e: Error) {
+export function HandleError(e: RpcError) {
   console.log("API error: ", e);
 
   if (e.code === 16 || e.code === 2) {
@@ -18,7 +18,7 @@ export function HandleError(e: Error) {
   });
 }
 
-export function HandleLoginError(e: Error) {
+export function HandleLoginError(e: RpcError) {
   console.log("API error: ", e);
   notification.error({
     message: "Error",

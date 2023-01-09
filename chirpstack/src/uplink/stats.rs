@@ -92,18 +92,24 @@ impl Stats {
             metrics: HashMap::new(),
         };
 
-        let region_name = self
+        let region_config_id = self
             .stats
             .metadata
-            .get("region_name")
-            .ok_or_else(|| anyhow!("No region_name in meta-data"))?;
+            .get("region_config_id")
+            .ok_or_else(|| anyhow!("No region_config_id in meta-data"))?;
 
-        let tx_per_dr =
-            per_modultation_to_per_dr(region_name, false, &self.stats.tx_packets_per_modulation)
-                .context("tx packet per modulation to tx packets per DR")?;
-        let rx_per_dr =
-            per_modultation_to_per_dr(region_name, true, &self.stats.rx_packets_per_modulation)
-                .context("rx packet per modulation to rx packets per DR")?;
+        let tx_per_dr = per_modultation_to_per_dr(
+            region_config_id,
+            false,
+            &self.stats.tx_packets_per_modulation,
+        )
+        .context("tx packet per modulation to tx packets per DR")?;
+        let rx_per_dr = per_modultation_to_per_dr(
+            region_config_id,
+            true,
+            &self.stats.rx_packets_per_modulation,
+        )
+        .context("rx packet per modulation to rx packets per DR")?;
 
         m.metrics
             .insert("rx_count".into(), self.stats.rx_packets_received_ok as f64);
@@ -148,14 +154,14 @@ impl Stats {
         }
 
         let gw = self.gateway.as_ref().unwrap();
-        let region_name = self
+        let region_config_id = self
             .stats
             .metadata
-            .get("region_name")
+            .get("region_config_id")
             .cloned()
             .unwrap_or_default();
 
-        let gateway_conf = config::get_region_gateway(&region_name)?;
+        let gateway_conf = config::get_region_gateway(&region_config_id)?;
         if gateway_conf.channels.is_empty() {
             trace!("Skipping gateway configuration, channels is empty");
             return Ok(());
@@ -225,19 +231,19 @@ impl Stats {
             }),
         };
 
-        gateway_backend::send_configuration(&region_name, &gw_conf)
+        gateway_backend::send_configuration(&region_config_id, &gw_conf)
             .await
             .context("Send gateway configuration")
     }
 }
 
 fn per_modultation_to_per_dr(
-    region_name: &str,
+    region_config_id: &str,
     uplink: bool,
     items: &[gw::PerModulationCount],
 ) -> Result<HashMap<u8, usize>> {
     let mut out: HashMap<u8, usize> = HashMap::new();
-    let region_conf = region::get(region_name)?;
+    let region_conf = region::get(region_config_id)?;
 
     for item in items {
         let modu = item

@@ -210,8 +210,8 @@ impl JoinRequest {
         trace!("Getting join-accept from Join Server");
 
         let js_client = self.js_client.as_ref().unwrap();
-        let region_network = config::get_region_network(&self.uplink_frame_set.region_name)?;
-        let region_conf = region::get(&self.uplink_frame_set.region_name)?;
+        let region_network = config::get_region_network(&self.uplink_frame_set.region_config_id)?;
+        let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
 
         let phy_b = self.uplink_frame_set.phy_payload.to_vec()?;
         let dp = self.device_profile.as_ref().unwrap();
@@ -395,8 +395,8 @@ impl JoinRequest {
         trace!("Constructing JoinAccept payload");
 
         let conf = config::get();
-        let region_network = config::get_region_network(&self.uplink_frame_set.region_name)?;
-        let region_conf = region::get(&self.uplink_frame_set.region_name)?;
+        let region_network = config::get_region_network(&self.uplink_frame_set.region_config_id)?;
+        let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
         let join_request = self.join_request.as_ref().unwrap();
 
         let dk = self.device_keys.as_mut().unwrap();
@@ -558,15 +558,15 @@ impl JoinRequest {
     async fn create_device_session(&mut self) -> Result<()> {
         trace!("Creating device-session");
 
-        let region_conf = region::get(&self.uplink_frame_set.region_name)?;
-        let region_network = config::get_region_network(&self.uplink_frame_set.region_name)?;
+        let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
+        let region_network = config::get_region_network(&self.uplink_frame_set.region_config_id)?;
 
         let device = self.device.as_ref().unwrap();
         let device_profile = self.device_profile.as_ref().unwrap();
         let join_request = self.join_request.as_ref().unwrap();
 
         let mut ds = internal::DeviceSession {
-            region_name: self.uplink_frame_set.region_name.clone(),
+            region_config_id: self.uplink_frame_set.region_config_id.clone(),
             dev_eui: device.dev_eui.to_be_bytes().to_vec(),
             dev_addr: self.dev_addr.unwrap().to_be_bytes().to_vec(),
             join_eui: join_request.join_eui.to_be_bytes().to_vec(),
@@ -683,7 +683,7 @@ impl JoinRequest {
     fn set_pr_start_ans_payload(&mut self) -> Result<()> {
         trace!("Setting PRStartAnsPayload");
         let ds = self.device_session.as_ref().unwrap();
-        let region_conf = region::get(&self.uplink_frame_set.region_name)?;
+        let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
 
         let sender_id = NetID::from_slice(&self.pr_start_req.base.sender_id)?;
         let pr_lifetime = roaming::get_passive_roaming_lifetime(sender_id)?;

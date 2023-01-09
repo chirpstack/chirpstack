@@ -49,6 +49,7 @@ pub struct DeviceProfile {
     pub description: String,
     pub measurements: fields::Measurements,
     pub auto_detect_measurements: bool,
+    pub region_config_id: Option<String>,
 }
 
 impl DeviceProfile {
@@ -95,6 +96,7 @@ impl Default for DeviceProfile {
             tags: fields::KeyValue::new(HashMap::new()),
             measurements: fields::Measurements::new(HashMap::new()),
             auto_detect_measurements: false,
+            region_config_id: None,
         }
     }
 }
@@ -210,6 +212,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::tags.eq(&dp.tags),
                     device_profile::measurements.eq(&dp.measurements),
                     device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
+                    device_profile::region_config_id.eq(&dp.region_config_id),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))

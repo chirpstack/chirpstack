@@ -90,6 +90,9 @@ export class DeviceProfile extends jspb.Message {
   getAutoDetectMeasurements(): boolean;
   setAutoDetectMeasurements(value: boolean): void;
 
+  getRegionConfigId(): string;
+  setRegionConfigId(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -130,6 +133,7 @@ export namespace DeviceProfile {
     tagsMap: Array<[string, string]>,
     measurementsMap: Array<[string, Measurement.AsObject]>,
     autoDetectMeasurements: boolean,
+    regionConfigId: string,
   }
 }
 

@@ -112,7 +112,7 @@ class App extends Component<IProps, IState> {
                       />
 
                       <Route exact path="/regions" component={ListRegions} />
-                      <Route path="/regions/:name(.*)" component={RegionDetails} />
+                      <Route path="/regions/:id(.*)" component={RegionDetails} />
                     </Switch>
                   </Layout.Content>
                 </Layout>

@@ -72,7 +72,7 @@ async fn test_fns() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -337,7 +337,7 @@ async fn test_sns() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());

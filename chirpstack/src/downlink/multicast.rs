@@ -23,7 +23,7 @@ enum Node {
 pub struct Multicast {
     multicast_group_queue_item: multicast::MulticastGroupQueueItem,
     downlink_frame: gw::DownlinkFrame,
-    region_name: String,
+    region_config_id: String,
     gateway: Option<gateway::Gateway>,
     multicast_group: Option<multicast::MulticastGroup>,
 }
@@ -47,13 +47,13 @@ impl Multicast {
                 ..Default::default()
             },
             multicast_group_queue_item: qi,
-            region_name: "".into(),
+            region_config_id: "".into(),
             gateway: None,
             multicast_group: None,
         };
 
         ctx.get_gateway().await?;
-        ctx.set_region_name()?;
+        ctx.set_region_config_id()?;
         ctx.get_multicast_group().await?;
         ctx.validate_payload_size().await?;
         ctx.set_tx_info()?;
@@ -71,14 +71,14 @@ impl Multicast {
         Ok(())
     }
 
-    fn set_region_name(&mut self) -> Result<()> {
+    fn set_region_config_id(&mut self) -> Result<()> {
         trace!("Setting region name");
         let gw = self.gateway.as_ref().unwrap();
-        let region_name = &*(gw.properties)
-            .get("region_name")
+        let region_config_id = &*(gw.properties)
+            .get("region_config_id")
             .cloned()
-            .ok_or_else(|| anyhow!("Gateway does not have region_name property"))?;
-        self.region_name = region_name.to_string();
+            .ok_or_else(|| anyhow!("Gateway does not have region_config_id property"))?;
+        self.region_config_id = region_config_id.to_string();
 
         Ok(())
     }
@@ -93,7 +93,7 @@ impl Multicast {
     async fn validate_payload_size(&self) -> Result<()> {
         trace!("Validating payload size for DR");
         let mg = self.multicast_group.as_ref().unwrap();
-        let region_conf = region::get(&self.region_name)?;
+        let region_conf = region::get(&self.region_config_id)?;
 
         let max_pl_size = region_conf.get_max_payload_size(
             lrwn::region::MacVersion::Latest,
@@ -120,8 +120,8 @@ impl Multicast {
     fn set_tx_info(&mut self) -> Result<()> {
         trace!("Setting tx-info");
 
-        let network_conf = config::get_region_network(&self.region_name)?;
-        let region_conf = region::get(&self.region_name)?;
+        let network_conf = config::get_region_network(&self.region_config_id)?;
+        let region_conf = region::get(&self.region_config_id)?;
         let mg = self.multicast_group.as_ref().unwrap();
         let mc_dr = region_conf.get_data_rate(mg.dr as u8)?;
 
@@ -224,7 +224,7 @@ impl Multicast {
     async fn send_downlink_frame(&self) -> Result<()> {
         trace!("Sending downlink frame");
 
-        gateway_backend::send_downlink(&self.region_name, &self.downlink_frame)
+        gateway_backend::send_downlink(&self.region_config_id, &self.downlink_frame)
             .await
             .context("Send downlink frame")?;
 

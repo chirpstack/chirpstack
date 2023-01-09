@@ -30,6 +30,7 @@ struct Test {
 #[tokio::test]
 async fn test_gateway_filtering() {
     let _guard = test::prepare().await;
+
     let t_a = tenant::create(tenant::Tenant {
         name: "tenant-a".into(),
         private_gateways: true,
@@ -103,7 +104,7 @@ async fn test_gateway_filtering() {
     };
     rx_info_a
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info_a
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -115,7 +116,7 @@ async fn test_gateway_filtering() {
     };
     rx_info_b
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info_b
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -139,7 +140,7 @@ async fn test_gateway_filtering() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -178,6 +179,170 @@ async fn test_gateway_filtering() {
             device_session: Some(ds.clone()),
             tx_info: tx_info.clone(),
             rx_info: rx_info_b.clone(),
+            phy_payload: lrwn::PhyPayload {
+                mhdr: lrwn::MHDR {
+                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: lrwn::FHDR {
+                        devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                        f_cnt: 7,
+                        ..Default::default()
+                    },
+                    f_port: Some(1),
+                    frm_payload: None,
+                }),
+                mic: Some([48, 94, 26, 239]),
+            },
+            assert: vec![assert::f_cnt_up(dev.dev_eui.clone(), 7)],
+        },
+    ];
+
+    for tst in &tests {
+        run_test(tst).await;
+    }
+}
+
+#[tokio::test]
+async fn test_region_config_id_filtering() {
+    let _guard = test::prepare().await;
+
+    // We need to configure the eu868_other region.
+    let region_conf = lrwn::region::get(lrwn::region::CommonName::EU868, false, false);
+    region::set("eu868_other", region_conf);
+
+    let t = tenant::create(tenant::Tenant {
+        name: "tenant".into(),
+        can_have_gateways: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let gw = gateway::create(gateway::Gateway {
+        name: "test-gw".into(),
+        tenant_id: t.id,
+        gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let app = application::create(application::Application {
+        name: "app".into(),
+        tenant_id: t.id,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dp = device_profile::create(device_profile::DeviceProfile {
+        name: "test-dp".into(),
+        tenant_id: t.id,
+        region: lrwn::region::CommonName::EU868,
+        region_config_id: Some("eu868".to_string()),
+        mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
+        reg_params_revision: lrwn::region::Revision::A,
+        supports_otaa: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dev = device::create(device::Device {
+        name: "device".into(),
+        application_id: app.id.clone(),
+        device_profile_id: dp.id.clone(),
+        dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
+        enabled_class: "A".into(),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let mut rx_info_ok = gw::UplinkRxInfo {
+        gateway_id: gw.gateway_id.to_string(),
+        location: Some(Default::default()),
+        ..Default::default()
+    };
+    rx_info_ok
+        .metadata
+        .insert("region_config_id".to_string(), "eu868".to_string());
+    rx_info_ok
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
+
+    let mut rx_info_invalid = gw::UplinkRxInfo {
+        gateway_id: gw.gateway_id.to_string(),
+        location: Some(Default::default()),
+        ..Default::default()
+    };
+    rx_info_invalid
+        .metadata
+        .insert("region_config_id".to_string(), "eu868_other".to_string());
+    rx_info_invalid
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
+
+    let mut tx_info = gw::UplinkTxInfo {
+        frequency: 868100000,
+        ..Default::default()
+    };
+    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+
+    let ds = internal::DeviceSession {
+        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
+        mac_version: common::MacVersion::Lorawan102.into(),
+        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
+        dev_addr: vec![1, 2, 3, 4],
+        f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        f_cnt_up: 7,
+        n_f_cnt_down: 5,
+        enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
+        rx2_frequency: 869525000,
+        region_config_id: "eu868".into(),
+        ..Default::default()
+    };
+
+    let tests = vec![
+        Test {
+            name: "matching config id".into(),
+            device_queue_items: vec![],
+            before_func: None,
+            after_func: None,
+            device_session: Some(ds.clone()),
+            tx_info: tx_info.clone(),
+            rx_info: rx_info_ok.clone(),
+            phy_payload: lrwn::PhyPayload {
+                mhdr: lrwn::MHDR {
+                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: lrwn::FHDR {
+                        devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                        f_cnt: 7,
+                        ..Default::default()
+                    },
+                    f_port: Some(1),
+                    frm_payload: None,
+                }),
+                mic: Some([48, 94, 26, 239]),
+            },
+            assert: vec![assert::f_cnt_up(dev.dev_eui.clone(), 8)],
+        },
+        Test {
+            name: "non-matching configuration id".into(),
+            device_queue_items: vec![],
+            before_func: None,
+            after_func: None,
+            device_session: Some(ds.clone()),
+            tx_info: tx_info.clone(),
+            rx_info: rx_info_invalid.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
                     m_type: lrwn::MType::UnconfirmedDataUp,
@@ -262,7 +427,7 @@ async fn test_lorawan_10_errors() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -286,7 +451,7 @@ async fn test_lorawan_10_errors() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -457,7 +622,7 @@ async fn test_lorawan_11_errors() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -487,7 +652,7 @@ async fn test_lorawan_11_errors() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -611,7 +776,7 @@ async fn test_lorawan_10_skip_f_cnt() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -636,7 +801,7 @@ async fn test_lorawan_10_skip_f_cnt() {
         rx1_delay: 1,
         rx2_frequency: 869525000,
         skip_f_cnt_check: true,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -804,7 +969,7 @@ async fn test_lorawan_10_device_disabled() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -828,7 +993,7 @@ async fn test_lorawan_10_device_disabled() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -927,7 +1092,7 @@ async fn test_lorawan_10_uplink() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -961,7 +1126,7 @@ async fn test_lorawan_10_uplink() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -1546,7 +1711,7 @@ async fn test_lorawan_11_uplink() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -1581,7 +1746,7 @@ async fn test_lorawan_11_uplink() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -1784,7 +1949,7 @@ async fn test_lorawan_10_rx_delay() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -1817,7 +1982,7 @@ async fn test_lorawan_10_rx_delay() {
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         rx1_delay: 3,
         ..Default::default()
     };
@@ -1997,7 +2162,7 @@ async fn test_lorawan_10_mac_commands() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -2030,7 +2195,7 @@ async fn test_lorawan_10_mac_commands() {
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         rx1_delay: 1,
         ..Default::default()
     };
@@ -2366,7 +2531,7 @@ async fn test_lorawan_11_mac_commands() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -2393,7 +2558,7 @@ async fn test_lorawan_11_mac_commands() {
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         rx1_delay: 1,
         ..Default::default()
     };
@@ -2560,7 +2725,7 @@ async fn test_lorawan_10_device_queue() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -2588,7 +2753,7 @@ async fn test_lorawan_10_device_queue() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -3033,7 +3198,7 @@ async fn test_lorawan_11_device_queue() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -3062,7 +3227,7 @@ async fn test_lorawan_11_device_queue() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
         rx1_delay: 1,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -3510,7 +3675,7 @@ async fn test_lorawan_10_adr() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -3538,7 +3703,7 @@ async fn test_lorawan_10_adr() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
         rx1_delay: 1,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -4352,7 +4517,7 @@ async fn test_lorawan_10_device_status_request() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -4380,7 +4545,7 @@ async fn test_lorawan_10_device_status_request() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
         rx1_delay: 1,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -4615,7 +4780,7 @@ async fn test_lorawan_11_receive_window_selection() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -4650,7 +4815,7 @@ async fn test_lorawan_11_receive_window_selection() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
         rx1_delay: 1,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 

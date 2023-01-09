@@ -58,9 +58,9 @@ class ListRegions extends Component<IProps, IState> {
           dataSource={items}
           columns={[
             {
-              title: "Name",
-              dataIndex: "name",
-              key: "name",
+              title: "ID",
+              dataIndex: "id",
+              key: "id",
               render: (text, record) => <Link to={`/regions/${text}`}>{text}</Link>,
             },
             {
@@ -70,6 +70,11 @@ class ListRegions extends Component<IProps, IState> {
               render: (text, record) => {
                 return getEnumName(Region, record.region);
               },
+            },
+            {
+              title: "Description",
+              dataIndex: "description",
+              key: "description",
             },
           ]}
         />

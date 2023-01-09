@@ -183,6 +183,14 @@ message DeviceProfile {
     // keys of the decoded payload. In cases where the decoded payload contains
     // random keys in the data, you want to set this to false.
     bool auto_detect_measurements = 28;
+
+    // Region configuration ID.
+    // If set, devices will only use the associated region. If let blank, then
+    // devices will use all regions matching the selected common-name. Note
+    // that multiple region configurations can exist for the same common-name,
+    // e.g. to provide an 8 channel and 16 channel configuration for the US915
+    // band.
+    string region_config_id = 29;
 }
 
 message Measurement {

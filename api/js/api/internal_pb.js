@@ -5514,8 +5514,9 @@ proto.api.RegionListItem.prototype.toObject = function(opt_includeInstance) {
  */
 proto.api.RegionListItem.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    region: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    region: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    description: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -5554,11 +5555,15 @@ proto.api.RegionListItem.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setName(value);
+      msg.setId(value);
       break;
     case 2:
       var value = /** @type {!proto.common.Region} */ (reader.readEnum());
       msg.setRegion(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDescription(value);
       break;
     default:
       reader.skipField();
@@ -5589,7 +5594,7 @@ proto.api.RegionListItem.prototype.serializeBinary = function() {
  */
 proto.api.RegionListItem.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getName();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -5603,14 +5608,21 @@ proto.api.RegionListItem.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
+  f = message.getDescription();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
 };
 
 
 /**
- * optional string name = 1;
+ * optional string id = 1;
  * @return {string}
  */
-proto.api.RegionListItem.prototype.getName = function() {
+proto.api.RegionListItem.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -5619,7 +5631,7 @@ proto.api.RegionListItem.prototype.getName = function() {
  * @param {string} value
  * @return {!proto.api.RegionListItem} returns this
  */
-proto.api.RegionListItem.prototype.setName = function(value) {
+proto.api.RegionListItem.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -5639,6 +5651,24 @@ proto.api.RegionListItem.prototype.getRegion = function() {
  */
 proto.api.RegionListItem.prototype.setRegion = function(value) {
   return jspb.Message.setProto3EnumField(this, 2, value);
+};
+
+
+/**
+ * optional string description = 3;
+ * @return {string}
+ */
+proto.api.RegionListItem.prototype.getDescription = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.RegionListItem} returns this
+ */
+proto.api.RegionListItem.prototype.setDescription = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -5674,7 +5704,7 @@ proto.api.GetRegionRequest.prototype.toObject = function(opt_includeInstance) {
  */
 proto.api.GetRegionRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+    id: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -5713,7 +5743,7 @@ proto.api.GetRegionRequest.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setName(value);
+      msg.setId(value);
       break;
     default:
       reader.skipField();
@@ -5744,7 +5774,7 @@ proto.api.GetRegionRequest.prototype.serializeBinary = function() {
  */
 proto.api.GetRegionRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getName();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -5755,10 +5785,10 @@ proto.api.GetRegionRequest.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
- * optional string name = 1;
+ * optional string id = 1;
  * @return {string}
  */
-proto.api.GetRegionRequest.prototype.getName = function() {
+proto.api.GetRegionRequest.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -5767,7 +5797,7 @@ proto.api.GetRegionRequest.prototype.getName = function() {
  * @param {string} value
  * @return {!proto.api.GetRegionRequest} returns this
  */
-proto.api.GetRegionRequest.prototype.setName = function(value) {
+proto.api.GetRegionRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -5811,7 +5841,7 @@ proto.api.GetRegionResponse.prototype.toObject = function(opt_includeInstance) {
  */
 proto.api.GetRegionResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     region: jspb.Message.getFieldWithDefault(msg, 2, 0),
     userInfo: jspb.Message.getFieldWithDefault(msg, 3, ""),
     uplinkChannelsList: jspb.Message.toObjectList(msg.getUplinkChannelsList(),
@@ -5821,7 +5851,8 @@ proto.api.GetRegionResponse.toObject = function(includeInstance, msg) {
     rx2Dr: jspb.Message.getFieldWithDefault(msg, 7, 0),
     rx2Frequency: jspb.Message.getFieldWithDefault(msg, 8, 0),
     classBPingSlotDr: jspb.Message.getFieldWithDefault(msg, 9, 0),
-    classBPingSlotFrequency: jspb.Message.getFieldWithDefault(msg, 10, 0)
+    classBPingSlotFrequency: jspb.Message.getFieldWithDefault(msg, 10, 0),
+    description: jspb.Message.getFieldWithDefault(msg, 11, "")
   };
 
   if (includeInstance) {
@@ -5860,7 +5891,7 @@ proto.api.GetRegionResponse.deserializeBinaryFromReader = function(msg, reader) 
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setName(value);
+      msg.setId(value);
       break;
     case 2:
       var value = /** @type {!proto.common.Region} */ (reader.readEnum());
@@ -5899,6 +5930,10 @@ proto.api.GetRegionResponse.deserializeBinaryFromReader = function(msg, reader) 
       var value = /** @type {number} */ (reader.readUint32());
       msg.setClassBPingSlotFrequency(value);
       break;
+    case 11:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDescription(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -5928,7 +5963,7 @@ proto.api.GetRegionResponse.prototype.serializeBinary = function() {
  */
 proto.api.GetRegionResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getName();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -5999,14 +6034,21 @@ proto.api.GetRegionResponse.serializeBinaryToWriter = function(message, writer) 
       f
     );
   }
+  f = message.getDescription();
+  if (f.length > 0) {
+    writer.writeString(
+      11,
+      f
+    );
+  }
 };
 
 
 /**
- * optional string name = 1;
+ * optional string id = 1;
  * @return {string}
  */
-proto.api.GetRegionResponse.prototype.getName = function() {
+proto.api.GetRegionResponse.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -6015,7 +6057,7 @@ proto.api.GetRegionResponse.prototype.getName = function() {
  * @param {string} value
  * @return {!proto.api.GetRegionResponse} returns this
  */
-proto.api.GetRegionResponse.prototype.setName = function(value) {
+proto.api.GetRegionResponse.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -6199,6 +6241,24 @@ proto.api.GetRegionResponse.prototype.getClassBPingSlotFrequency = function() {
  */
 proto.api.GetRegionResponse.prototype.setClassBPingSlotFrequency = function(value) {
   return jspb.Message.setProto3IntField(this, 10, value);
+};
+
+
+/**
+ * optional string description = 11;
+ * @return {string}
+ */
+proto.api.GetRegionResponse.prototype.getDescription = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.GetRegionResponse} returns this
+ */
+proto.api.GetRegionResponse.prototype.setDescription = function(value) {
+  return jspb.Message.setProto3StringField(this, 11, value);
 };
 
 

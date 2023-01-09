@@ -12,7 +12,7 @@ use chirpstack_api::{gw, internal};
 use lrwn::region::CommonName;
 
 pub struct Data {
-    region_name: String,
+    region_config_id: String,
     region_common_name: CommonName,
     xmit_data_req: backend::XmitDataReqPayload,
     dl_meta_data: backend::DLMetaData,
@@ -42,9 +42,9 @@ impl Data {
             return Err(anyhow!("DLMetaData is not set"));
         }
 
-        let region_name = uplink_rx_info[0]
+        let region_config_id = uplink_rx_info[0]
             .metadata
-            .get("region_name")
+            .get("region_config_id")
             .cloned()
             .unwrap_or_default();
 
@@ -56,7 +56,7 @@ impl Data {
         let region_common_name = CommonName::from_str(&region_common_name)?;
 
         let mut ctx = Data {
-            region_name,
+            region_config_id,
             region_common_name,
             uplink_rx_info,
             xmit_data_req: pl,
@@ -76,7 +76,7 @@ impl Data {
 
     fn set_downlink_frame(&mut self) -> Result<()> {
         trace!("Setting DownlinkFrame parameters");
-        let region_conf = region::get(&self.region_name)?;
+        let region_conf = region::get(&self.region_config_id)?;
 
         let rx_info = self
             .uplink_rx_info
@@ -169,7 +169,7 @@ impl Data {
     async fn send_downlink_frame(&self) -> Result<()> {
         trace!("Sending downlink frame");
 
-        gateway::backend::send_downlink(&self.region_name, &self.downlink_frame)
+        gateway::backend::send_downlink(&self.region_config_id, &self.downlink_frame)
             .await
             .context("Send downlink frame")?;
 

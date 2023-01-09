@@ -12,7 +12,7 @@ import { getEnumName } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
 
 interface MatchParams {
-  name: string;
+  id: string;
 }
 
 interface IState {
@@ -30,7 +30,7 @@ class RegionDetails extends Component<IProps, IState> {
 
   componentDidMount() {
     let req = new GetRegionRequest();
-    req.setName(this.props.match.params.name);
+    req.setId(this.props.match.params.id);
 
     InternalStore.getRegion(req, (resp: GetRegionResponse) => {
       this.setState({
@@ -40,7 +40,8 @@ class RegionDetails extends Component<IProps, IState> {
   }
 
   render() {
-    if (this.state.region === undefined) {
+    const region = this.state.region;
+    if (region === undefined) {
       return null;
     }
 
@@ -58,16 +59,16 @@ class RegionDetails extends Component<IProps, IState> {
                 </span>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <span>{this.props.match.params.name}</span>
+                <span>{region.getDescription()}</span>
               </Breadcrumb.Item>
             </Breadcrumb>
           )}
-          title={this.props.match.params.name}
-          subTitle={`common-name: ${getEnumName(Region, this.state.region.getRegion())}`}
+          title={region.getDescription()}
+          subTitle={`id: ${this.props.match.params.id}, common-name: ${getEnumName(Region, region.getRegion())}`}
         />
-        {this.state.region.getUserInfo() !== "" && (
+        {region.getUserInfo() !== "" && (
           <Card>
-            <ReactMarkdown>{this.state.region.getUserInfo()}</ReactMarkdown>
+            <ReactMarkdown>{region.getUserInfo()}</ReactMarkdown>
           </Card>
         )}
         <Row gutter={24}>
@@ -76,7 +77,7 @@ class RegionDetails extends Component<IProps, IState> {
               <Card title="Uplink channels">
                 <List
                   itemLayout="horizontal"
-                  dataSource={this.state.region.getUplinkChannelsList()}
+                  dataSource={region.getUplinkChannelsList()}
                   renderItem={item => (
                     <List.Item>
                       <List.Item.Meta
@@ -94,10 +95,10 @@ class RegionDetails extends Component<IProps, IState> {
               <Card title="Downlink">
                 <List
                   dataSource={[
-                    ["RX1 delay", `${this.state.region.getRx1Delay()} sec`],
-                    ["RX1 DR offset", this.state.region.getRx1DrOffset()],
-                    ["RX2 DR", this.state.region.getRx2Dr()],
-                    ["RX2 frequency", `${this.state.region.getRx2Frequency()} Hz`],
+                    ["RX1 delay", `${region.getRx1Delay()} sec`],
+                    ["RX1 DR offset", region.getRx1DrOffset()],
+                    ["RX2 DR", region.getRx2Dr()],
+                    ["RX2 frequency", `${region.getRx2Frequency()} Hz`],
                   ]}
                   renderItem={item => (
                     <List.Item>
@@ -112,12 +113,12 @@ class RegionDetails extends Component<IProps, IState> {
               <Card title="Class-B">
                 <List
                   dataSource={[
-                    ["Ping-slot DR", this.state.region.getClassBPingSlotDr()],
+                    ["Ping-slot DR", region.getClassBPingSlotDr()],
                     [
                       "Ping-slot frequency",
-                      this.state.region.getClassBPingSlotFrequency() === 0
+                      region.getClassBPingSlotFrequency() === 0
                         ? "default frequency or frequency hopping"
-                        : `${this.state.region.getClassBPingSlotFrequency()} Hz`,
+                        : `${region.getClassBPingSlotFrequency()} Hz`,
                     ],
                   ]}
                   renderItem={item => (

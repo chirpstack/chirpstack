@@ -651,11 +651,14 @@ export namespace ListRegionsResponse {
 }
 
 export class RegionListItem extends jspb.Message {
-  getName(): string;
-  setName(value: string): RegionListItem;
+  getId(): string;
+  setId(value: string): RegionListItem;
 
   getRegion(): common_common_pb.Region;
   setRegion(value: common_common_pb.Region): RegionListItem;
+
+  getDescription(): string;
+  setDescription(value: string): RegionListItem;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): RegionListItem.AsObject;
@@ -667,14 +670,15 @@ export class RegionListItem extends jspb.Message {
 
 export namespace RegionListItem {
   export type AsObject = {
-    name: string,
+    id: string,
     region: common_common_pb.Region,
+    description: string,
   }
 }
 
 export class GetRegionRequest extends jspb.Message {
-  getName(): string;
-  setName(value: string): GetRegionRequest;
+  getId(): string;
+  setId(value: string): GetRegionRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetRegionRequest.AsObject;
@@ -686,13 +690,13 @@ export class GetRegionRequest extends jspb.Message {
 
 export namespace GetRegionRequest {
   export type AsObject = {
-    name: string,
+    id: string,
   }
 }
 
 export class GetRegionResponse extends jspb.Message {
-  getName(): string;
-  setName(value: string): GetRegionResponse;
+  getId(): string;
+  setId(value: string): GetRegionResponse;
 
   getRegion(): common_common_pb.Region;
   setRegion(value: common_common_pb.Region): GetRegionResponse;
@@ -723,6 +727,9 @@ export class GetRegionResponse extends jspb.Message {
   getClassBPingSlotFrequency(): number;
   setClassBPingSlotFrequency(value: number): GetRegionResponse;
 
+  getDescription(): string;
+  setDescription(value: string): GetRegionResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetRegionResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetRegionResponse): GetRegionResponse.AsObject;
@@ -733,7 +740,7 @@ export class GetRegionResponse extends jspb.Message {
 
 export namespace GetRegionResponse {
   export type AsObject = {
-    name: string,
+    id: string,
     region: common_common_pb.Region,
     userInfo: string,
     uplinkChannelsList: Array<RegionChannel.AsObject>,
@@ -743,6 +750,7 @@ export namespace GetRegionResponse {
     rx2Frequency: number,
     classBPingSlotDr: number,
     classBPingSlotFrequency: number,
+    description: string,
   }
 }
 

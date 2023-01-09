@@ -1,8 +1,11 @@
 # This file contains an example US915 example (channels 56-63 + 71).
 [[regions]]
 
-  # Name is an use-defined identifier for this region.
-  name="us915_7"
+  # ID is an use-defined identifier for this region.
+  id="us915_7"
+
+  # Description is a short description for this region.
+  description="US915 (channels 56-63 + 71)"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.

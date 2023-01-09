@@ -2,14 +2,11 @@
 /**
  * @fileoverview
  * @enhanceable
- * @suppress {missingRequire} reports error on implicit type usages.
  * @suppress {messageConventions} JS Compiler reports an error if a variable or
  *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
-/* eslint-disable */
-// @ts-nocheck
 
 var jspb = require('google-protobuf');
 var goog = jspb;
@@ -280,10 +277,8 @@ proto.google.api.Distribution.deserializeBinaryFromReader = function(msg, reader
       msg.setBucketOptions(value);
       break;
     case 7:
-      var values = /** @type {!Array<number>} */ (reader.isDelimited() ? reader.readPackedInt64() : [reader.readInt64()]);
-      for (var i = 0; i < values.length; i++) {
-        msg.addBucketCounts(values[i]);
-      }
+      var value = /** @type {!Array<number>} */ (reader.readPackedInt64());
+      msg.setBucketCountsList(value);
       break;
     case 10:
       var value = new proto.google.api.Distribution.Exemplar;
@@ -1160,10 +1155,8 @@ proto.google.api.Distribution.BucketOptions.Explicit.deserializeBinaryFromReader
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var values = /** @type {!Array<number>} */ (reader.isDelimited() ? reader.readPackedDouble() : [reader.readDouble()]);
-      for (var i = 0; i < values.length; i++) {
-        msg.addBounds(values[i]);
-      }
+      var value = /** @type {!Array<number>} */ (reader.readPackedDouble());
+      msg.setBoundsList(value);
       break;
     default:
       reader.skipField();

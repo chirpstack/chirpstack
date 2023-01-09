@@ -32,7 +32,7 @@ async fn test_multicast() {
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         name: "test-gw".into(),
         properties: fields::KeyValue::new(
-            [("region_name".to_string(), "eu868".to_string())]
+            [("region_config_id".to_string(), "eu868".to_string())]
                 .iter()
                 .cloned()
                 .collect(),

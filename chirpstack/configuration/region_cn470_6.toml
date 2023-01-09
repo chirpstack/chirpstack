@@ -1,8 +1,11 @@
 # This file contains an example CN470 example (channels 48-55).
 [[regions]]
 
-  # Name is an use-defined identifier for this region.
-  name="cn470_6"
+  # ID is an use-defined identifier for this region.
+  id="cn470_6"
+
+  # Description is a short description for this region.
+  description="CN470 (channels 48-55)"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.

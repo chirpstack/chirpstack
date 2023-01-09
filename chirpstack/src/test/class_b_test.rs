@@ -90,7 +90,7 @@ async fn test_uplink() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -117,7 +117,7 @@ async fn test_uplink() {
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 
@@ -264,7 +264,7 @@ async fn test_downlink_scheduler() {
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         class_b_ping_slot_freq: 868300000,
         class_b_ping_slot_dr: 2,
         class_b_ping_slot_nb: 1,

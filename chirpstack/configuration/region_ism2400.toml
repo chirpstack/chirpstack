@@ -1,8 +1,11 @@
 # This file contains an example ISM2400 configuration.
 [[regions]]
 
-  # Name is an user-defined identifier for this region.
-  name="ism2400"
+  # ID is an user-defined identifier for this region.
+  id="ism2400"
+
+  # Description is a short description for this region.
+  description="ISM2400"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.

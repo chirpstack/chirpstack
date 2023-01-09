@@ -21,6 +21,7 @@
 /ui/build
 
 # API
+/api/grpc-web/node_modules
 /api/js/node_modules
 /api/python/src/*.egg-info/
 /api/python/src/build/

@@ -2,14 +2,11 @@
 /**
  * @fileoverview
  * @enhanceable
- * @suppress {missingRequire} reports error on implicit type usages.
  * @suppress {messageConventions} JS Compiler reports an error if a variable or
  *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
-/* eslint-disable */
-// @ts-nocheck
 
 var jspb = require('google-protobuf');
 var goog = jspb;
@@ -370,7 +367,8 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     abpRx2Freq: jspb.Message.getFieldWithDefault(msg, 24, 0),
     tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : [],
     measurementsMap: (f = msg.getMeasurementsMap()) ? f.toObject(includeInstance, proto.api.Measurement.toObject) : [],
-    autoDetectMeasurements: jspb.Message.getBooleanFieldWithDefault(msg, 28, false)
+    autoDetectMeasurements: jspb.Message.getBooleanFieldWithDefault(msg, 28, false),
+    regionConfigId: jspb.Message.getFieldWithDefault(msg, 29, "")
   };
 
   if (includeInstance) {
@@ -522,6 +520,10 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
     case 28:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setAutoDetectMeasurements(value);
+      break;
+    case 29:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setRegionConfigId(value);
       break;
     default:
       reader.skipField();
@@ -739,6 +741,13 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
   if (f) {
     writer.writeBool(
       28,
+      f
+    );
+  }
+  f = message.getRegionConfigId();
+  if (f.length > 0) {
+    writer.writeString(
+      29,
       f
     );
   }
@@ -1254,6 +1263,24 @@ proto.api.DeviceProfile.prototype.getAutoDetectMeasurements = function() {
  */
 proto.api.DeviceProfile.prototype.setAutoDetectMeasurements = function(value) {
   return jspb.Message.setProto3BooleanField(this, 28, value);
+};
+
+
+/**
+ * optional string region_config_id = 29;
+ * @return {string}
+ */
+proto.api.DeviceProfile.prototype.getRegionConfigId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 29, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setRegionConfigId = function(value) {
+  return jspb.Message.setProto3StringField(this, 29, value);
 };
 
 

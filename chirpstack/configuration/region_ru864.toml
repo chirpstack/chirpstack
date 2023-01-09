@@ -1,8 +1,11 @@
 # This file contains an example RU864 configuration.
 [[regions]]
 
-  # Name is an user-defined identifier for this region.
-  name="ru864"
+  # ID is an user-defined identifier for this region.
+  id="ru864"
+
+  # Description is a short description for this region.
+  description="RU864"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.

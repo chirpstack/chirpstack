@@ -57,7 +57,7 @@ impl Handler for Plugin {
             let func: rquickjs::Function = m.get("handle").context("Get handle function")?;
 
             let input = rquickjs::Object::new(ctx)?;
-            input.set("regionName", req.region_name.clone())?;
+            input.set("regionConfigId", req.region_config_id.clone())?;
             input.set("regionCommonName", req.region_common_name.to_string())?;
             input.set("devEui", req.dev_eui.to_string())?;
             input.set("macVersion", req.mac_version.to_string())?;
@@ -112,7 +112,7 @@ pub mod test {
         assert_eq!("example_id", p.get_id());
 
         let req = Request {
-            region_name: "eu868".into(),
+            region_config_id: "eu868".into(),
             region_common_name: lrwn::region::CommonName::EU868,
             dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
             mac_version: lrwn::region::MacVersion::LORAWAN_1_0_3,

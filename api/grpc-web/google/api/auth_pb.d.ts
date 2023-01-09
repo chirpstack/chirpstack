@@ -69,6 +69,9 @@ export class JwtLocation extends jspb.Message {
   getQuery(): string;
   setQuery(value: string): JwtLocation;
 
+  getCookie(): string;
+  setCookie(value: string): JwtLocation;
+
   getValuePrefix(): string;
   setValuePrefix(value: string): JwtLocation;
 
@@ -86,6 +89,7 @@ export namespace JwtLocation {
   export type AsObject = {
     header: string,
     query: string,
+    cookie: string,
     valuePrefix: string,
   }
 
@@ -93,6 +97,7 @@ export namespace JwtLocation {
     IN_NOT_SET = 0,
     HEADER = 1,
     QUERY = 2,
+    COOKIE = 4,
   }
 }
 

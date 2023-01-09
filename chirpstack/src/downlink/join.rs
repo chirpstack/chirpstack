@@ -50,8 +50,8 @@ impl JoinAccept<'_> {
             device,
             device_session,
             join_accept,
-            network_conf: config::get_region_network(&ufs.region_name)?,
-            region_conf: region::get(&ufs.region_name)?,
+            network_conf: config::get_region_network(&ufs.region_config_id)?,
+            region_conf: region::get(&ufs.region_config_id)?,
 
             downlink_frame: chirpstack_api::gw::DownlinkFrame {
                 downlink_id: rand::thread_rng().gen(),
@@ -102,7 +102,7 @@ impl JoinAccept<'_> {
         trace!("Select downlink gateway");
 
         let gw_down = helpers::select_downlink_gateway(
-            &self.uplink_frame_set.region_name,
+            &self.uplink_frame_set.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
             self.device_gateway_rx_info.as_mut().unwrap(),
         )?;
@@ -237,7 +237,11 @@ impl JoinAccept<'_> {
     async fn send_join_accept_response(&self) -> Result<()> {
         trace!("Sending join-accept response");
 
-        send_downlink(&self.uplink_frame_set.region_name, &self.downlink_frame).await?;
+        send_downlink(
+            &self.uplink_frame_set.region_config_id,
+            &self.downlink_frame,
+        )
+        .await?;
         Ok(())
     }
 

@@ -5,7 +5,10 @@ use chrono::{DateTime, Duration, Local, Utc};
 use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 
 use super::error::Error;
-use super::{data_fns, filter_rx_info_by_tenant_id, helpers, UplinkFrameSet};
+use super::{
+    data_fns, filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers,
+    UplinkFrameSet,
+};
 use crate::api::helpers::ToProto;
 use crate::backend::roaming;
 use crate::storage::error::Error as StorageError;
@@ -85,6 +88,7 @@ impl Data {
             // In case of roaming we do not know the gateways and therefore it must not be
             // filtered.
             ctx.filter_rx_info_by_tenant().await?;
+            ctx.filter_rx_info_by_region_config_id()?;
         }
         ctx.decrypt_f_opts_mac_commands()?;
         ctx.decrypt_frm_payload()?;
@@ -101,7 +105,7 @@ impl Data {
         ctx.send_uplink_event().await?;
         ctx.detect_and_save_measurements().await?;
         ctx.sync_uplink_f_cnt()?;
-        ctx.set_region_name()?;
+        ctx.set_region_config_id()?;
         ctx.save_device_session().await?;
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics().await?;
@@ -394,6 +398,17 @@ impl Data {
                 Err(v)
             }
         }
+    }
+
+    fn filter_rx_info_by_region_config_id(&mut self) -> Result<()> {
+        trace!("Filtering rx_info by region_config_id");
+
+        let dp = self.device_profile.as_ref().unwrap();
+        if let Some(v) = &dp.region_config_id {
+            filter_rx_info_by_region_config_id(v, &mut self.uplink_frame_set)?;
+        }
+
+        Ok(())
     }
 
     fn decrypt_f_opts_mac_commands(&mut self) -> Result<()> {
@@ -822,10 +837,10 @@ impl Data {
     // This is called on every uplink as the device might switch between different regions (e.g.
     // US915 8 channels to US915 16 channels). As well with ABP devices on ABP activation this is
     // value is not set initially.
-    fn set_region_name(&mut self) -> Result<()> {
-        trace!("Setting region_name to device-session");
+    fn set_region_config_id(&mut self) -> Result<()> {
+        trace!("Setting region_config_id to device-session");
         let mut ds = self.device_session.as_mut().unwrap();
-        ds.region_name = self.uplink_frame_set.region_name.clone();
+        ds.region_config_id = self.uplink_frame_set.region_config_id.clone();
         Ok(())
     }
 

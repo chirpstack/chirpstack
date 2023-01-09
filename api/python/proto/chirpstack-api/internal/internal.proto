@@ -135,8 +135,8 @@ message DeviceSession {
     // Uplink max. EIRP index.
     uint32 uplink_max_eirp_index = 39;
 
-    // Region name.
-    string region_name = 40;
+    // Region configuration ID.
+    string region_config_id = 40;
 }
 
 message UplinkAdrHistory {

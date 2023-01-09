@@ -493,7 +493,7 @@ impl DeviceService for Device {
         let app_s_key = AES128Key::from_str(&req_da.app_s_key).map_err(|e| e.status())?;
 
         let ds = internal::DeviceSession {
-            region_name: "".to_string(),
+            region_config_id: "".to_string(),
             dev_eui: dev_eui.to_vec(),
             dev_addr: dev_addr.to_vec(),
             mac_version: dp.mac_version.to_proto().into(),

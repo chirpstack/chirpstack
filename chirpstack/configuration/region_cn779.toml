@@ -1,8 +1,11 @@
 # This file contains an example CN779 configuration.
 [[regions]]
 
-  # Name is an user-defined identifier for this region.
-  name="cn779"
+  # ID is an user-defined identifier for this region.
+  id="cn779"
+
+  # Description is a short description for this region.
+  description="CN779"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.

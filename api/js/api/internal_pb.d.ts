@@ -702,11 +702,14 @@ export namespace ListRegionsResponse {
 }
 
 export class RegionListItem extends jspb.Message {
-  getName(): string;
-  setName(value: string): void;
+  getId(): string;
+  setId(value: string): void;
 
   getRegion(): common_common_pb.RegionMap[keyof common_common_pb.RegionMap];
   setRegion(value: common_common_pb.RegionMap[keyof common_common_pb.RegionMap]): void;
+
+  getDescription(): string;
+  setDescription(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): RegionListItem.AsObject;
@@ -720,14 +723,15 @@ export class RegionListItem extends jspb.Message {
 
 export namespace RegionListItem {
   export type AsObject = {
-    name: string,
+    id: string,
     region: common_common_pb.RegionMap[keyof common_common_pb.RegionMap],
+    description: string,
   }
 }
 
 export class GetRegionRequest extends jspb.Message {
-  getName(): string;
-  setName(value: string): void;
+  getId(): string;
+  setId(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetRegionRequest.AsObject;
@@ -741,13 +745,13 @@ export class GetRegionRequest extends jspb.Message {
 
 export namespace GetRegionRequest {
   export type AsObject = {
-    name: string,
+    id: string,
   }
 }
 
 export class GetRegionResponse extends jspb.Message {
-  getName(): string;
-  setName(value: string): void;
+  getId(): string;
+  setId(value: string): void;
 
   getRegion(): common_common_pb.RegionMap[keyof common_common_pb.RegionMap];
   setRegion(value: common_common_pb.RegionMap[keyof common_common_pb.RegionMap]): void;
@@ -778,6 +782,9 @@ export class GetRegionResponse extends jspb.Message {
   getClassBPingSlotFrequency(): number;
   setClassBPingSlotFrequency(value: number): void;
 
+  getDescription(): string;
+  setDescription(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetRegionResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetRegionResponse): GetRegionResponse.AsObject;
@@ -790,7 +797,7 @@ export class GetRegionResponse extends jspb.Message {
 
 export namespace GetRegionResponse {
   export type AsObject = {
-    name: string,
+    id: string,
     region: common_common_pb.RegionMap[keyof common_common_pb.RegionMap],
     userInfo: string,
     uplinkChannelsList: Array<RegionChannel.AsObject>,
@@ -800,6 +807,7 @@ export namespace GetRegionResponse {
     rx2Frequency: number,
     classBPingSlotDr: number,
     classBPingSlotFrequency: number,
+    description: string,
   }
 }
 

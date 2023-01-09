@@ -1,8 +1,11 @@
 # This file contains an example IN865 configuration.
 [[regions]]
 
-  # Name is an user-defined identifier for this region.
-  name="in865"
+  # ID is an user-defined identifier for this region.
+  id="in865"
+
+  # Description is a short description for this region.
+  description="IN865"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.

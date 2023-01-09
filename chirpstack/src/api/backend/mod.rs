@@ -228,20 +228,20 @@ async fn _handle_pr_start_req_join(
     let rx_info = roaming::ul_meta_data_to_rx_info(&pl.ul_meta_data)?;
     let tx_info = roaming::ul_meta_data_to_tx_info(&pl.ul_meta_data)?;
     let region_common_name = CommonName::from_str(&pl.ul_meta_data.rf_region)?;
-    let region_name = region::get_region_name(region_common_name)?;
+    let region_config_id = region::get_region_config_id(region_common_name)?;
     let dr = pl.ul_meta_data.data_rate.unwrap_or_default();
 
     let ufs = UplinkFrameSet {
         uplink_set_id: Uuid::new_v4(),
         dr,
-        ch: helpers::get_uplink_ch(&region_name, tx_info.frequency, dr)?,
+        ch: helpers::get_uplink_ch(&region_config_id, tx_info.frequency, dr)?,
         phy_payload: phy,
         tx_info,
         rx_info_set: rx_info,
         gateway_private_map: HashMap::new(),
         gateway_tenant_id_map: HashMap::new(),
         region_common_name,
-        region_name,
+        region_config_id,
         roaming_meta_data: Some(RoamingMetaData {
             base_payload: pl.base.clone(),
             ul_meta_data: pl.ul_meta_data.clone(),
@@ -259,20 +259,20 @@ async fn _handle_pr_start_req_data(
     let rx_info = roaming::ul_meta_data_to_rx_info(&pl.ul_meta_data)?;
     let tx_info = roaming::ul_meta_data_to_tx_info(&pl.ul_meta_data)?;
     let region_common_name = CommonName::from_str(&pl.ul_meta_data.rf_region)?;
-    let region_name = region::get_region_name(region_common_name)?;
+    let region_config_id = region::get_region_config_id(region_common_name)?;
     let dr = pl.ul_meta_data.data_rate.unwrap_or_default();
 
     let mut ufs = UplinkFrameSet {
         uplink_set_id: Uuid::new_v4(),
         dr,
-        ch: helpers::get_uplink_ch(&region_name, tx_info.frequency, dr)?,
+        ch: helpers::get_uplink_ch(&region_config_id, tx_info.frequency, dr)?,
         phy_payload: phy,
         tx_info,
         rx_info_set: rx_info,
         gateway_private_map: HashMap::new(),
         gateway_tenant_id_map: HashMap::new(),
         region_common_name,
-        region_name,
+        region_config_id,
         roaming_meta_data: Some(RoamingMetaData {
             base_payload: pl.base.clone(),
             ul_meta_data: pl.ul_meta_data.clone(),
@@ -433,21 +433,21 @@ async fn _handle_xmit_data_req(
         let rx_info = roaming::ul_meta_data_to_rx_info(ul_meta_data)?;
         let tx_info = roaming::ul_meta_data_to_tx_info(ul_meta_data)?;
         let region_common_name = CommonName::from_str(&ul_meta_data.rf_region)?;
-        let region_name = region::get_region_name(region_common_name)?;
+        let region_config_id = region::get_region_config_id(region_common_name)?;
         let dr = ul_meta_data.data_rate.unwrap_or_default();
         let phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
 
         let ufs = UplinkFrameSet {
             uplink_set_id: Uuid::new_v4(),
             dr,
-            ch: helpers::get_uplink_ch(&region_name, tx_info.frequency, dr)?,
+            ch: helpers::get_uplink_ch(&region_config_id, tx_info.frequency, dr)?,
             phy_payload: phy,
             tx_info,
             rx_info_set: rx_info,
             gateway_private_map: HashMap::new(),
             gateway_tenant_id_map: HashMap::new(),
             region_common_name,
-            region_name,
+            region_config_id,
             roaming_meta_data: Some(RoamingMetaData {
                 base_payload: pl.base.clone(),
                 ul_meta_data: ul_meta_data.clone(),

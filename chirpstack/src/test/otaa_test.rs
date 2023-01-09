@@ -111,7 +111,7 @@ async fn test_gateway_filtering() {
     };
     rx_info_a
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info_a
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -123,7 +123,7 @@ async fn test_gateway_filtering() {
     };
     rx_info_b
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info_b
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -188,7 +188,7 @@ async fn test_gateway_filtering() {
                     rx2_frequency: 869525000,
                     enabled_uplink_channel_indices: vec![0, 1, 2],
                     nb_trans: 1,
-                    region_name: "eu868".to_string(),
+                    region_config_id: "eu868".to_string(),
                     ..Default::default()
                 },
             )],
@@ -282,7 +282,7 @@ async fn test_lorawan_10() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -423,7 +423,7 @@ async fn test_lorawan_10() {
                         rx2_frequency: 869525000,
                         enabled_uplink_channel_indices: vec![0, 1, 2],
                         nb_trans: 1,
-                        region_name: "eu868".to_string(),
+                        region_config_id: "eu868".to_string(),
                         ..Default::default()
                     },
                 ),
@@ -616,7 +616,7 @@ async fn test_lorawan_10() {
                     rx2_frequency: 869525000,
                     enabled_uplink_channel_indices: vec![0, 1, 2],
                     nb_trans: 1,
-                    region_name: "eu868".to_string(),
+                    region_config_id: "eu868".to_string(),
                     skip_f_cnt_check: true,
                     ..Default::default()
                 },
@@ -708,7 +708,7 @@ async fn test_lorawan_10() {
                         .cloned()
                         .collect(),
                         nb_trans: 1,
-                        region_name: "eu868".to_string(),
+                        region_config_id: "eu868".to_string(),
                         ..Default::default()
                     },
                 ),
@@ -930,7 +930,7 @@ async fn test_lorawan_11() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -1040,7 +1040,7 @@ async fn test_lorawan_11() {
                         rx2_frequency: 869525000,
                         enabled_uplink_channel_indices: vec![0, 1, 2],
                         nb_trans: 1,
-                        region_name: "eu868".to_string(),
+                        region_config_id: "eu868".to_string(),
                         ..Default::default()
                     },
                 ),

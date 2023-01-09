@@ -1,8 +1,11 @@
 # This file contains an example EU433 configuration.
 [[regions]]
 
-  # Name is an user-defined identifier for this region.
-  name="eu433"
+  # ID is an user-defined identifier for this region.
+  id="eu433"
+
+  # Description is a short description for this region.
+  description="EU443"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.

@@ -29,8 +29,8 @@ impl PassiveRoamingDownlink {
     }
 
     async fn _handle(ufs: UplinkFrameSet, phy: Vec<u8>, dl_meta: DLMetaData) -> Result<()> {
-        let network_conf = config::get_region_network(&ufs.region_name)?;
-        let region_conf = region::get(&ufs.region_name)?;
+        let network_conf = config::get_region_network(&ufs.region_config_id)?;
+        let region_conf = region::get(&ufs.region_config_id)?;
 
         let mut ctx = PassiveRoamingDownlink {
             uplink_frame_set: ufs,
@@ -75,7 +75,7 @@ impl PassiveRoamingDownlink {
         };
 
         let gw_down = helpers::select_downlink_gateway(
-            &self.uplink_frame_set.region_name,
+            &self.uplink_frame_set.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
             &mut dev_gw_rx_info,
         )?;
@@ -206,9 +206,12 @@ impl PassiveRoamingDownlink {
     async fn send_downlink_frame(&self) -> Result<()> {
         trace!("Sending downlink frame");
 
-        gateway::backend::send_downlink(&self.uplink_frame_set.region_name, &self.downlink_frame)
-            .await
-            .context("Send downlink frame")?;
+        gateway::backend::send_downlink(
+            &self.uplink_frame_set.region_config_id,
+            &self.downlink_frame,
+        )
+        .await
+        .context("Send downlink frame")?;
 
         Ok(())
     }

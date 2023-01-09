@@ -86,6 +86,8 @@ impl DeviceProfileService for DeviceProfile {
                     .collect(),
             ),
             auto_detect_measurements: req_dp.auto_detect_measurements,
+            region_config_id: (!req_dp.region_config_id.is_empty())
+                .then(|| req_dp.region_config_id.clone()),
             ..Default::default()
         };
 
@@ -161,6 +163,7 @@ impl DeviceProfileService for DeviceProfile {
                     })
                     .collect(),
                 auto_detect_measurements: dp.auto_detect_measurements,
+                region_config_id: dp.region_config_id.clone().unwrap_or_default(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -233,6 +236,8 @@ impl DeviceProfileService for DeviceProfile {
                     .collect(),
             ),
             auto_detect_measurements: req_dp.auto_detect_measurements,
+            region_config_id: (!req_dp.region_config_id.is_empty())
+                .then(|| req_dp.region_config_id.clone()),
             ..Default::default()
         })
         .await

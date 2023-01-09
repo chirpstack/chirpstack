@@ -1,8 +1,11 @@
 # This file contains an example AU915 example (channels 24-31 + 67).
 [[regions]]
 
-  # Name is an use-defined identifier for this region.
-  name="au915_3"
+  # ID is an use-defined identifier for this region.
+  id="au915_3"
+
+  # Description is a short description for this region.
+  description="AU915 (channels 24-31 + 67)"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.

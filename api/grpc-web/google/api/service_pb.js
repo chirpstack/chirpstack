@@ -2,14 +2,11 @@
 /**
  * @fileoverview
  * @enhanceable
- * @suppress {missingRequire} reports error on implicit type usages.
  * @suppress {messageConventions} JS Compiler reports an error if a variable or
  *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
-/* eslint-disable */
-// @ts-nocheck
 
 var jspb = require('google-protobuf');
 var goog = jspb;
@@ -21,6 +18,8 @@ var google_api_backend_pb = require('../../google/api/backend_pb.js');
 goog.object.extend(proto, google_api_backend_pb);
 var google_api_billing_pb = require('../../google/api/billing_pb.js');
 goog.object.extend(proto, google_api_billing_pb);
+var google_api_client_pb = require('../../google/api/client_pb.js');
+goog.object.extend(proto, google_api_client_pb);
 var google_api_context_pb = require('../../google/api/context_pb.js');
 goog.object.extend(proto, google_api_context_pb);
 var google_api_control_pb = require('../../google/api/control_pb.js');
@@ -147,6 +146,7 @@ proto.google.api.Service.toObject = function(includeInstance, msg) {
     monitoring: (f = msg.getMonitoring()) && google_api_monitoring_pb.Monitoring.toObject(includeInstance, f),
     systemParameters: (f = msg.getSystemParameters()) && google_api_system_parameter_pb.SystemParameters.toObject(includeInstance, f),
     sourceInfo: (f = msg.getSourceInfo()) && google_api_source_info_pb.SourceInfo.toObject(includeInstance, f),
+    publishing: (f = msg.getPublishing()) && google_api_client_pb.Publishing.toObject(includeInstance, f),
     configVersion: (f = msg.getConfigVersion()) && google_protobuf_wrappers_pb.UInt32Value.toObject(includeInstance, f)
   };
 
@@ -299,6 +299,11 @@ proto.google.api.Service.deserializeBinaryFromReader = function(msg, reader) {
       var value = new google_api_source_info_pb.SourceInfo;
       reader.readMessage(value,google_api_source_info_pb.SourceInfo.deserializeBinaryFromReader);
       msg.setSourceInfo(value);
+      break;
+    case 45:
+      var value = new google_api_client_pb.Publishing;
+      reader.readMessage(value,google_api_client_pb.Publishing.deserializeBinaryFromReader);
+      msg.setPublishing(value);
       break;
     case 20:
       var value = new google_protobuf_wrappers_pb.UInt32Value;
@@ -520,6 +525,14 @@ proto.google.api.Service.serializeBinaryToWriter = function(message, writer) {
       37,
       f,
       google_api_source_info_pb.SourceInfo.serializeBinaryToWriter
+    );
+  }
+  f = message.getPublishing();
+  if (f != null) {
+    writer.writeMessage(
+      45,
+      f,
+      google_api_client_pb.Publishing.serializeBinaryToWriter
     );
   }
   f = message.getConfigVersion();
@@ -1349,6 +1362,43 @@ proto.google.api.Service.prototype.clearSourceInfo = function() {
  */
 proto.google.api.Service.prototype.hasSourceInfo = function() {
   return jspb.Message.getField(this, 37) != null;
+};
+
+
+/**
+ * optional Publishing publishing = 45;
+ * @return {?proto.google.api.Publishing}
+ */
+proto.google.api.Service.prototype.getPublishing = function() {
+  return /** @type{?proto.google.api.Publishing} */ (
+    jspb.Message.getWrapperField(this, google_api_client_pb.Publishing, 45));
+};
+
+
+/**
+ * @param {?proto.google.api.Publishing|undefined} value
+ * @return {!proto.google.api.Service} returns this
+*/
+proto.google.api.Service.prototype.setPublishing = function(value) {
+  return jspb.Message.setWrapperField(this, 45, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.google.api.Service} returns this
+ */
+proto.google.api.Service.prototype.clearPublishing = function() {
+  return this.setPublishing(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.google.api.Service.prototype.hasPublishing = function() {
+  return jspb.Message.getField(this, 45) != null;
 };
 
 

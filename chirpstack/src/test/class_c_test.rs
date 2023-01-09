@@ -100,7 +100,7 @@ async fn test_downlink_scheduler() {
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
 

@@ -2,14 +2,11 @@
 /**
  * @fileoverview
  * @enhanceable
- * @suppress {missingRequire} reports error on implicit type usages.
  * @suppress {messageConventions} JS Compiler reports an error if a variable or
  *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
-/* eslint-disable */
-// @ts-nocheck
 
 var jspb = require('google-protobuf');
 var goog = jspb;
@@ -173,10 +170,8 @@ proto.google.api.ResourceDescriptor.deserializeBinaryFromReader = function(msg, 
       msg.setSingular(value);
       break;
     case 10:
-      var values = /** @type {!Array<!proto.google.api.ResourceDescriptor.Style>} */ (reader.isDelimited() ? reader.readPackedEnum() : [reader.readEnum()]);
-      for (var i = 0; i < values.length; i++) {
-        msg.addStyle(values[i]);
-      }
+      var value = /** @type {!Array<!proto.google.api.ResourceDescriptor.Style>} */ (reader.readPackedEnum());
+      msg.setStyleList(value);
       break;
     default:
       reader.skipField();

@@ -39,7 +39,7 @@ pub struct UplinkFrameSet {
     pub gateway_private_map: HashMap<EUI64, bool>,
     pub gateway_tenant_id_map: HashMap<EUI64, Uuid>,
     pub region_common_name: CommonName,
-    pub region_name: String,
+    pub region_config_id: String,
     pub roaming_meta_data: Option<RoamingMetaData>,
 }
 
@@ -248,9 +248,9 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
         .get(0)
         .context("Unable to get first item from rx_info")?;
 
-    let region_name = rx_info
+    let region_config_id = rx_info
         .metadata
-        .get("region_name")
+        .get("region_config_id")
         .cloned()
         .unwrap_or_default();
 
@@ -264,7 +264,7 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
 
     let mut uplink = UplinkFrameSet {
         uplink_set_id: deduplication_id,
-        region_name,
+        region_config_id,
         region_common_name: common_name,
         dr: 0,
         ch: 0,
@@ -276,8 +276,12 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
         roaming_meta_data: None,
     };
 
-    uplink.dr = helpers::get_uplink_dr(&uplink.region_name, &uplink.tx_info)?;
-    uplink.ch = helpers::get_uplink_ch(&uplink.region_name, uplink.tx_info.frequency, uplink.dr)?;
+    uplink.dr = helpers::get_uplink_dr(&uplink.region_config_id, &uplink.tx_info)?;
+    uplink.ch = helpers::get_uplink_ch(
+        &uplink.region_config_id,
+        uplink.tx_info.frequency,
+        uplink.dr,
+    )?;
 
     info!(
         m_type = uplink.phy_payload.mhdr.m_type.to_string().as_str(),
@@ -349,12 +353,12 @@ fn filter_rx_info_by_tenant_id(tenant_id: &Uuid, uplink: &mut UplinkFrameSet) ->
 
     for rx_info in &uplink.rx_info_set {
         let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
-        let region_name = rx_info
+        let region_config_id = rx_info
             .metadata
-            .get("region_name")
+            .get("region_config_id")
             .map(|v| v.to_string())
-            .ok_or_else(|| anyhow!("No region_name in rx_info metadata"))?;
-        let force_gws_private = config::get_force_gws_private(&region_name)?;
+            .ok_or_else(|| anyhow!("No region_config_id in rx_info metadata"))?;
+        let force_gws_private = config::get_force_gws_private(&region_config_id)?;
 
         if !(*uplink
             .gateway_private_map
@@ -390,6 +394,28 @@ fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
             .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_map"))?)
         {
             rx_info_set.push(rx_info.clone());
+        }
+    }
+
+    uplink.rx_info_set = rx_info_set;
+    if uplink.rx_info_set.is_empty() {
+        return Err(anyhow!("rx_info_set has no items"));
+    }
+
+    Ok(())
+}
+
+fn filter_rx_info_by_region_config_id(
+    region_config_id: &str,
+    uplink: &mut UplinkFrameSet,
+) -> Result<()> {
+    let mut rx_info_set: Vec<gw::UplinkRxInfo> = Vec::new();
+
+    for rx_info in &uplink.rx_info_set {
+        if let Some(v) = rx_info.metadata.get("region_config_id") {
+            if v == region_config_id {
+                rx_info_set.push(rx_info.clone());
+            }
         }
     }
 

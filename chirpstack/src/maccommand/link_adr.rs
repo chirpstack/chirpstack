@@ -17,7 +17,7 @@ pub fn handle(
         return Err(anyhow!("Expected pending LinkADRReq mac-command"));
     }
 
-    let region_conf = region::get(&uplink_frame_set.region_name)?;
+    let region_conf = region::get(&uplink_frame_set.region_config_id)?;
 
     let mut ch_mask_ack = true;
     let mut dr_ack = true;
@@ -339,7 +339,7 @@ pub mod test {
             gateway_private_map: HashMap::new(),
             gateway_tenant_id_map: HashMap::new(),
             region_common_name: lrwn::region::CommonName::EU868,
-            region_name: "eu868".into(),
+            region_config_id: "eu868".into(),
             roaming_meta_data: None,
         };
 

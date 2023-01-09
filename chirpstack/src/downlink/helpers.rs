@@ -15,7 +15,7 @@ use crate::region;
 //  * A random item from the elements with an SNR > minSNR
 //  * The first item of the sorted slice (failing the above)
 pub fn select_downlink_gateway(
-    region_name: &str,
+    region_config_id: &str,
     min_snr_margin: f32,
     rx_info: &mut chirpstack_api::internal::DeviceGatewayRxInfo,
 ) -> Result<chirpstack_api::internal::DeviceGatewayRxInfoItem> {
@@ -23,7 +23,7 @@ pub fn select_downlink_gateway(
         return Err(anyhow!("rx_info.items can not be empty"));
     }
 
-    let region_conf = region::get(region_name)?;
+    let region_conf = region::get(region_config_id)?;
 
     let dr = region_conf.get_data_rate(rx_info.dr as u8)?;
     let mut required_snr: Option<f32> = None;

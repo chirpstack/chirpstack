@@ -2,14 +2,11 @@
 /**
  * @fileoverview
  * @enhanceable
- * @suppress {missingRequire} reports error on implicit type usages.
  * @suppress {messageConventions} JS Compiler reports an error if a variable or
  *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
-/* eslint-disable */
-// @ts-nocheck
 
 var jspb = require('google-protobuf');
 var goog = jspb;
@@ -641,7 +638,7 @@ proto.google.api.AuthenticationRule.prototype.clearRequirementsList = function()
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.google.api.JwtLocation.oneofGroups_ = [[1,2]];
+proto.google.api.JwtLocation.oneofGroups_ = [[1,2,4]];
 
 /**
  * @enum {number}
@@ -649,7 +646,8 @@ proto.google.api.JwtLocation.oneofGroups_ = [[1,2]];
 proto.google.api.JwtLocation.InCase = {
   IN_NOT_SET: 0,
   HEADER: 1,
-  QUERY: 2
+  QUERY: 2,
+  COOKIE: 4
 };
 
 /**
@@ -692,6 +690,7 @@ proto.google.api.JwtLocation.toObject = function(includeInstance, msg) {
   var f, obj = {
     header: jspb.Message.getFieldWithDefault(msg, 1, ""),
     query: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    cookie: jspb.Message.getFieldWithDefault(msg, 4, ""),
     valuePrefix: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
@@ -737,6 +736,10 @@ proto.google.api.JwtLocation.deserializeBinaryFromReader = function(msg, reader)
       var value = /** @type {string} */ (reader.readString());
       msg.setQuery(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCookie(value);
+      break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setValuePrefix(value);
@@ -781,6 +784,13 @@ proto.google.api.JwtLocation.serializeBinaryToWriter = function(message, writer)
   if (f != null) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 4));
+  if (f != null) {
+    writer.writeString(
+      4,
       f
     );
   }
@@ -863,6 +873,42 @@ proto.google.api.JwtLocation.prototype.clearQuery = function() {
  */
 proto.google.api.JwtLocation.prototype.hasQuery = function() {
   return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional string cookie = 4;
+ * @return {string}
+ */
+proto.google.api.JwtLocation.prototype.getCookie = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.google.api.JwtLocation} returns this
+ */
+proto.google.api.JwtLocation.prototype.setCookie = function(value) {
+  return jspb.Message.setOneofField(this, 4, proto.google.api.JwtLocation.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.google.api.JwtLocation} returns this
+ */
+proto.google.api.JwtLocation.prototype.clearCookie = function() {
+  return jspb.Message.setOneofField(this, 4, proto.google.api.JwtLocation.oneofGroups_[0], undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.google.api.JwtLocation.prototype.hasCookie = function() {
+  return jspb.Message.getField(this, 4) != null;
 };
 
 

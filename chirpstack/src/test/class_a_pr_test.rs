@@ -70,7 +70,7 @@ async fn test_fns_uplink() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -257,7 +257,7 @@ async fn test_sns_uplink() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
         rx2_frequency: 869525000,
-        region_name: "eu868".into(),
+        region_config_id: "eu868".into(),
         ..Default::default()
     };
     device_session::save(&ds).await.unwrap();
@@ -299,7 +299,7 @@ async fn test_sns_uplink() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());
@@ -467,7 +467,7 @@ async fn test_sns_dev_not_found() {
     };
     rx_info
         .metadata
-        .insert("region_name".to_string(), "eu868".to_string());
+        .insert("region_config_id".to_string(), "eu868".to_string());
     rx_info
         .metadata
         .insert("region_common_name".to_string(), "EU868".to_string());

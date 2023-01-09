@@ -103,6 +103,7 @@ diesel::table! {
         description -> Text,
         measurements -> Jsonb,
         auto_detect_measurements -> Bool,
+        region_config_id -> Nullable<Varchar>,
     }
 }
 

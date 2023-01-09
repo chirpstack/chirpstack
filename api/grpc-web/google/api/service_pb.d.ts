@@ -3,6 +3,7 @@ import * as jspb from 'google-protobuf'
 import * as google_api_auth_pb from '../../google/api/auth_pb';
 import * as google_api_backend_pb from '../../google/api/backend_pb';
 import * as google_api_billing_pb from '../../google/api/billing_pb';
+import * as google_api_client_pb from '../../google/api/client_pb';
 import * as google_api_context_pb from '../../google/api/context_pb';
 import * as google_api_control_pb from '../../google/api/control_pb';
 import * as google_api_documentation_pb from '../../google/api/documentation_pb';
@@ -135,6 +136,11 @@ export class Service extends jspb.Message {
   hasSourceInfo(): boolean;
   clearSourceInfo(): Service;
 
+  getPublishing(): google_api_client_pb.Publishing | undefined;
+  setPublishing(value?: google_api_client_pb.Publishing): Service;
+  hasPublishing(): boolean;
+  clearPublishing(): Service;
+
   getConfigVersion(): google_protobuf_wrappers_pb.UInt32Value | undefined;
   setConfigVersion(value?: google_protobuf_wrappers_pb.UInt32Value): Service;
   hasConfigVersion(): boolean;
@@ -174,6 +180,7 @@ export namespace Service {
     monitoring?: google_api_monitoring_pb.Monitoring.AsObject,
     systemParameters?: google_api_system_parameter_pb.SystemParameters.AsObject,
     sourceInfo?: google_api_source_info_pb.SourceInfo.AsObject,
+    publishing?: google_api_client_pb.Publishing.AsObject,
     configVersion?: google_protobuf_wrappers_pb.UInt32Value.AsObject,
   }
 }

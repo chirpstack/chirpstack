@@ -93,7 +93,7 @@ pub trait Handler {
 }
 
 pub struct Request {
-    pub region_name: String,
+    pub region_config_id: String,
     pub region_common_name: lrwn::region::CommonName,
     pub dev_eui: EUI64,
     pub mac_version: lrwn::region::MacVersion,

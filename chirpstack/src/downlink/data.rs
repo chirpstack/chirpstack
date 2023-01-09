@@ -103,10 +103,10 @@ impl Data {
     ) -> Result<()> {
         trace!("Downlink response flow");
 
-        let network_conf = config::get_region_network(&device_session.region_name)
+        let network_conf = config::get_region_network(&device_session.region_config_id)
             .context("Get network config for region")?;
-        let region_conf =
-            region::get(&device_session.region_name).context("Get region config for region")?;
+        let region_conf = region::get(&device_session.region_config_id)
+            .context("Get region config for region")?;
 
         let mut ctx = Data {
             uplink_frame_set: Some(ufs),
@@ -162,8 +162,8 @@ impl Data {
         let app = application::get(&dev.application_id).await?;
         let ten = tenant::get(&app.tenant_id).await?;
         let ds = device_session::get(&dev.dev_eui).await?;
-        let rc = region::get(&ds.region_name)?;
-        let rn = config::get_region_network(&ds.region_name)?;
+        let rc = region::get(&ds.region_config_id)?;
+        let rn = config::get_region_network(&ds.region_config_id)?;
         let dev_gw = device_gateway::get_rx_info(&dev.dev_eui).await?;
 
         let mut ctx = Data {
@@ -217,7 +217,7 @@ impl Data {
         trace!("Selecting downlink gateway");
 
         let gw_down = helpers::select_downlink_gateway(
-            &self.device_session.region_name,
+            &self.device_session.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
             self.device_gateway_rx_info.as_mut().unwrap(),
         )?;
@@ -639,9 +639,12 @@ impl Data {
     async fn send_downlink_frame(&self) -> Result<()> {
         trace!("Sending downlink frame");
 
-        gateway::backend::send_downlink(&self.device_session.region_name, &self.downlink_frame)
-            .await
-            .context("Send downlink frame")?;
+        gateway::backend::send_downlink(
+            &self.device_session.region_config_id,
+            &self.downlink_frame,
+        )
+        .await
+        .context("Send downlink frame")?;
 
         Ok(())
     }
@@ -864,7 +867,7 @@ impl Data {
         let ufs = self.uplink_frame_set.as_ref().unwrap();
 
         let req = adr::Request {
-            region_name: ufs.region_name.clone(),
+            region_config_id: ufs.region_config_id.clone(),
             region_common_name: ufs.region_common_name,
             dev_eui: self.device.dev_eui,
             mac_version: self.device_profile.mac_version,

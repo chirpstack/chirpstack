@@ -61,7 +61,7 @@ lazy_static! {
 }
 
 struct MqttContext {
-    region_name: String,
+    region_config_id: String,
     region_common_name: CommonName,
 }
 
@@ -79,7 +79,7 @@ struct CommandTopicContext {
 
 impl<'a> MqttBackend<'a> {
     pub async fn new(
-        region_name: &str,
+        region_config_id: &str,
         region_common_name: CommonName,
         conf: &GatewayBackendMqtt,
     ) -> Result<MqttBackend<'a>> {
@@ -110,7 +110,7 @@ impl<'a> MqttBackend<'a> {
             .server_uri(&conf.server)
             .client_id(&client_id)
             .user_data(Box::new(MqttContext {
-                region_name: region_name.to_string(),
+                region_config_id: region_config_id.to_string(),
                 region_common_name,
             }))
             .persistence(mqtt::create_options::PersistenceType::FilePath(temp_dir()))
@@ -123,10 +123,10 @@ impl<'a> MqttBackend<'a> {
                 .downcast_ref::<MqttContext>()
                 .unwrap();
 
-            info!(region_name = %ctx.region_name, "Connected to MQTT broker");
+            info!(region_config_id = %ctx.region_config_id, "Connected to MQTT broker");
 
             if let Err(e) = subscribe_tx.try_send(()) {
-                error!(region_name = %ctx.region_name, error = %e, "Send to subscribe channel error");
+                error!(region_config_id = %ctx.region_config_id, error = %e, "Send to subscribe channel error");
             }
         });
         client.set_connection_lost_callback(|client| {
@@ -136,7 +136,7 @@ impl<'a> MqttBackend<'a> {
                 .downcast_ref::<MqttContext>()
                 .unwrap();
 
-            info!(region_name = %ctx.region_name, "MQTT connection to broker lost");
+            info!(region_config_id = %ctx.region_config_id, "MQTT connection to broker lost");
         });
 
         // connection options
@@ -188,7 +188,7 @@ impl<'a> MqttBackend<'a> {
         };
 
         // connect
-        info!(region_name = %region_name, server_uri = %conf.server, clean_session = conf.clean_session, client_id = %client_id, "Connecting to MQTT broker");
+        info!(region_config_id = %region_config_id, server_uri = %conf.server, clean_session = conf.clean_session, client_id = %client_id, "Connecting to MQTT broker");
         b.client
             .connect(conn_opts)
             .await
@@ -196,13 +196,13 @@ impl<'a> MqttBackend<'a> {
 
         // Consumer loop.
         tokio::spawn({
-            let region_name = region_name.to_string();
+            let region_config_id = region_config_id.to_string();
 
             async move {
                 info!("Starting MQTT consumer loop");
                 while let Some(msg_opt) = stream.next().await {
                     if let Some(msg) = msg_opt {
-                        message_callback(&region_name, region_common_name, msg).await;
+                        message_callback(&region_config_id, region_common_name, msg).await;
                     }
                 }
             }
@@ -210,16 +210,16 @@ impl<'a> MqttBackend<'a> {
 
         // (Re)subscribe loop.
         tokio::spawn({
-            let region_name = region_name.to_string();
+            let region_config_id = region_config_id.to_string();
             let event_topic = conf.event_topic.clone();
             let client = b.client.clone();
             let qos = conf.qos as i32;
 
             async move {
                 while subscribe_rx.recv().await.is_some() {
-                    info!(region_name = %region_name, event_topic = %event_topic, "Subscribing to gateway event topic");
+                    info!(region_config_id = %region_config_id, event_topic = %event_topic, "Subscribing to gateway event topic");
                     if let Err(e) = client.subscribe(&event_topic, qos).await {
-                        error!(region_name = %region_name, event_topic = %event_topic, error = %e, "MQTT subscribe error");
+                        error!(region_config_id = %region_config_id, event_topic = %event_topic, error = %e, "MQTT subscribe error");
                     }
                 }
             }
@@ -291,7 +291,11 @@ impl GatewayBackend for MqttBackend<'_> {
     }
 }
 
-async fn message_callback(region_name: &str, region_common_name: CommonName, msg: mqtt::Message) {
+async fn message_callback(
+    region_config_id: &str,
+    region_common_name: CommonName,
+    msg: mqtt::Message,
+) {
     let topic = msg.topic();
     let qos = msg.qos();
     let b = msg.payload();
@@ -304,7 +308,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
     let err = || -> Result<()> {
         if locked? {
             trace!(
-                region_name = region_name,
+                region_config_id = region_config_id,
                 topic = topic,
                 qos = qos,
                 "Message is already handled by different instance"
@@ -315,7 +319,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
         let json = payload_is_json(b);
 
         info!(
-            region_name = region_name,
+            region_config_id = region_config_id,
             topic = topic,
             qos = qos,
             json = json,
@@ -338,7 +342,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
                 set_gateway_json(&rx_info.gateway_id, json);
                 rx_info
                     .metadata
-                    .insert("region_name".to_string(), region_name.to_string());
+                    .insert("region_config_id".to_string(), region_config_id.to_string());
                 rx_info.metadata.insert(
                     "region_common_name".to_string(),
                     region_common_name.to_string(),
@@ -359,7 +363,7 @@ async fn message_callback(region_name: &str, region_common_name: CommonName, msg
             event.v4_migrate();
             event
                 .metadata
-                .insert("region_name".to_string(), region_name.to_string());
+                .insert("region_config_id".to_string(), region_config_id.to_string());
             event.metadata.insert(
                 "region_common_name".to_string(),
                 region_common_name.to_string(),

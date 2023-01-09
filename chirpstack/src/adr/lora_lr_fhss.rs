@@ -24,7 +24,8 @@ impl Handler for Algorithm {
     }
 
     async fn handle(&self, req: &Request) -> Result<Response> {
-        let region_conf = region::get(&req.region_name).context("Get region config for region")?;
+        let region_conf =
+            region::get(&req.region_config_id).context("Get region config for region")?;
         let default_alg = default::Algorithm::new();
         let lr_fhss_alg = lr_fhss::Algorithm::new();
 
@@ -76,7 +77,7 @@ pub mod test {
         region::setup().unwrap();
 
         let req_template = Request {
-            region_name: "eu868".into(),
+            region_config_id: "eu868".into(),
             region_common_name: lrwn::region::CommonName::EU868,
             dev_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
             mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
@@ -103,7 +104,7 @@ pub mod test {
             Test {
                 name: "switch to DR 3 (LoRa)".into(),
                 request: Request {
-                    region_name: "eu868".into(),
+                    region_config_id: "eu868".into(),
                     adr: true,
                     dr: 0,
                     nb_trans: 1,
@@ -124,7 +125,7 @@ pub mod test {
             Test {
                 name: "switch to DR 10 (LR-FHSS)".into(),
                 request: Request {
-                    region_name: "eu868".into(),
+                    region_config_id: "eu868".into(),
                     adr: true,
                     dr: 0,
                     nb_trans: 3,

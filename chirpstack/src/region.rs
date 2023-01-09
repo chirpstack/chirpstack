@@ -17,11 +17,11 @@ pub fn setup() -> Result<()> {
     let conf = config::get();
 
     for r in &conf.regions {
-        let span = span!(Level::INFO, "setup", common_name = %r.common_name, region_name = %r.name);
+        let span = span!(Level::INFO, "setup", common_name = %r.common_name, region_id = %r.id);
         let _guard = span.enter();
 
-        if !conf.network.enabled_regions.contains(&r.name) {
-            warn!("Config exists, but region is not enabled. To enable it, add it to 'network.enabled_regions'");
+        if !conf.network.enabled_regions.contains(&r.id) {
+            warn!("Config exists, but region is not enabled. To enable it, add '{}' to 'network.enabled_regions'", r.id);
             continue;
         }
 
@@ -57,29 +57,34 @@ pub fn setup() -> Result<()> {
             }
         }
 
-        set(&r.name, region_conf);
+        set(&r.id, region_conf);
     }
 
     Ok(())
 }
 
-pub fn set(region_name: &str, r: Box<dyn region::Region + Sync + Send>) {
+pub fn set(region_config_id: &str, r: Box<dyn region::Region + Sync + Send>) {
     let mut regions_w = REGIONS.write().unwrap();
-    regions_w.insert(region_name.to_string(), Arc::new(r));
+    regions_w.insert(region_config_id.to_string(), Arc::new(r));
 }
 
-pub fn get(region_name: &str) -> Result<Arc<Box<dyn region::Region + Sync + Send>>> {
+pub fn get(region_config_id: &str) -> Result<Arc<Box<dyn region::Region + Sync + Send>>> {
     let regions_r = REGIONS.read().unwrap();
     Ok(regions_r
-        .get(region_name)
-        .ok_or_else(|| anyhow!("region_name {} does not exist in REGIONS", region_name))?
+        .get(region_config_id)
+        .ok_or_else(|| {
+            anyhow!(
+                "region_config_id {} does not exist in REGIONS",
+                region_config_id
+            )
+        })?
         .clone())
 }
 
 /// This returns the (first) region-name, based on the given common-name.
 /// This function is used for roaming, as within the context of roaming, only
 /// the common-name is given by the other party.
-pub fn get_region_name(common_name: region::CommonName) -> Result<String> {
+pub fn get_region_config_id(common_name: region::CommonName) -> Result<String> {
     let regions_r = REGIONS.read().unwrap();
     for (k, v) in &*regions_r {
         if v.get_name() == common_name {

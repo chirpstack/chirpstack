@@ -796,17 +796,18 @@ impl InternalService for Internal {
 
         for region_config in &conf.regions {
             // Check if region is enabled.
-            if !conf.network.enabled_regions.contains(&region_config.name) {
+            if !conf.network.enabled_regions.contains(&region_config.id) {
                 continue;
             }
 
             out.regions.push(api::RegionListItem {
-                name: region_config.name.clone(),
+                id: region_config.id.clone(),
+                description: region_config.description.clone(),
                 region: region_config.common_name.to_proto().into(),
             });
         }
 
-        out.regions.sort_by(|a, b| a.name.cmp(&b.name));
+        out.regions.sort_by(|a, b| a.id.cmp(&b.id));
         Ok(Response::new(out))
     }
 
@@ -820,15 +821,16 @@ impl InternalService for Internal {
             .await?;
 
         let conf = config::get();
-        let reg = region::get(&req.name).map_err(|e| e.status())?;
+        let reg = region::get(&req.id).map_err(|e| e.status())?;
 
         let mut out = api::GetRegionResponse {
             ..Default::default()
         };
 
         for region_conf in &conf.regions {
-            if req.name == region_conf.name {
-                out.name = region_conf.name.clone();
+            if req.id == region_conf.id {
+                out.id = region_conf.id.clone();
+                out.description = region_conf.description.clone();
                 out.region = region_conf.common_name.to_proto().into();
                 out.user_info = region_conf.user_info.clone();
                 out.rx1_delay = region_conf.network.rx1_delay as u32;

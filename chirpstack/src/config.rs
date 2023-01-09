@@ -503,7 +503,9 @@ pub struct Kek {
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct Region {
-    pub name: String,
+    #[serde(alias = "name")]
+    pub id: String,
+    pub description: String,
     pub common_name: CommonName,
     pub user_info: String,
     pub network: RegionNetwork,
@@ -513,7 +515,8 @@ pub struct Region {
 impl Default for Region {
     fn default() -> Self {
         Region {
-            name: "eu868".to_string(),
+            id: "eu868".to_string(),
+            description: "EU868".to_string(),
             common_name: CommonName::EU868,
             user_info: "".into(),
             network: RegionNetwork {
@@ -720,37 +723,37 @@ pub fn get() -> Arc<Configuration> {
     conf.clone()
 }
 
-pub fn get_force_gws_private(region_name: &str) -> Result<bool> {
+pub fn get_force_gws_private(region_id: &str) -> Result<bool> {
     let conf = get();
     for region in &conf.regions {
-        if region.name == region_name {
+        if region.id == region_id {
             return Ok(region.gateway.force_gws_private);
         }
     }
 
-    Err(anyhow!("region_name not found"))
+    Err(anyhow!("region_config_id not found"))
 }
 
-pub fn get_region_network(region_name: &str) -> Result<RegionNetwork> {
+pub fn get_region_network(region_id: &str) -> Result<RegionNetwork> {
     let conf = get();
     for region in &conf.regions {
-        if region.name == region_name {
+        if region.id == region_id {
             return Ok(region.network.clone());
         }
     }
 
-    Err(anyhow!("region_name not found"))
+    Err(anyhow!("region_id not found"))
 }
 
-pub fn get_region_gateway(region_name: &str) -> Result<RegionGateway> {
+pub fn get_region_gateway(region_id: &str) -> Result<RegionGateway> {
     let conf = get();
     for region in &conf.regions {
-        if region.name == region_name {
+        if region.id == region_id {
             return Ok(region.gateway.clone());
         }
     }
 
-    Err(anyhow!("region_name not found"))
+    Err(anyhow!("region_id not found"))
 }
 
 pub fn get_required_snr_for_sf(sf: u8) -> Result<f32> {

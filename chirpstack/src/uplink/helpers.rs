@@ -8,8 +8,11 @@ use crate::gpstime::ToDateTime;
 use crate::region;
 use chirpstack_api::{common, gw};
 
-pub fn get_uplink_dr(region_name: &str, tx_info: &chirpstack_api::gw::UplinkTxInfo) -> Result<u8> {
-    let region_conf = region::get(region_name)?;
+pub fn get_uplink_dr(
+    region_config_id: &str,
+    tx_info: &chirpstack_api::gw::UplinkTxInfo,
+) -> Result<u8> {
+    let region_conf = region::get(region_config_id)?;
     let mod_info = tx_info
         .modulation
         .as_ref()
@@ -45,11 +48,11 @@ pub fn get_uplink_dr(region_name: &str, tx_info: &chirpstack_api::gw::UplinkTxIn
 }
 
 pub fn set_uplink_modulation(
-    region_name: &str,
+    region_config_id: &str,
     tx_info: &mut chirpstack_api::gw::UplinkTxInfo,
     dr: u8,
 ) -> Result<()> {
-    let region_conf = region::get(region_name)?;
+    let region_conf = region::get(region_config_id)?;
     let params = region_conf.get_data_rate(dr)?;
 
     tx_info.modulation = Some(gw::Modulation {
@@ -87,8 +90,8 @@ pub fn set_uplink_modulation(
     Ok(())
 }
 
-pub fn get_uplink_ch(region_name: &str, frequency: u32, dr: u8) -> Result<usize> {
-    let region_conf = region::get(region_name)?;
+pub fn get_uplink_ch(region_config_id: &str, frequency: u32, dr: u8) -> Result<usize> {
+    let region_conf = region::get(region_config_id)?;
     region_conf.get_uplink_channel_index_for_freq_dr(frequency, dr)
 }
 

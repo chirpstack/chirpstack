@@ -1,8 +1,11 @@
 # This file contains an example AS923_2 configuration.
 [[regions]]
 
-  # Name is an user-defined identifier for this region.
-  name="as923_2"
+  # ID is an user-defined identifier for this region.
+  id="as923_2"
+
+  # Description is a short description for this region.
+  description="AS923-2"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.
