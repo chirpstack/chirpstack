@@ -52,14 +52,14 @@ class ListGateways extends Component<IProps> {
         key: "name",
       },
       {
-        title: "Region name",
+        title: "Region ID",
         dataIndex: "propertiesMap",
-        key: "regionName",
+        key: "regionConfigId",
         width: 150,
         render: (text, record) => {
           for (const [k, v] of record.propertiesMap) {
-            if (k === "region_name") {
-              return v;
+            if (k === "region_config_id") {
+              return <Link to={`/regions/${v}`}>{v}</Link>;
             }
           }
 
