@@ -124,7 +124,7 @@ class SideMenu extends Component<RouteComponentProps, IState> {
       this.setState({ selectedKey: "ns-device-profile-templates" });
     }
 
-    if (/\/regions\/.*/g.exec(path)) {
+    if (/\/regions.*/g.exec(path)) {
       this.setState({ selectedKey: "ns-regions" });
     }
 
