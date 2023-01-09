@@ -16,6 +16,8 @@ pub fn setup() -> Result<()> {
     info!("Setting up regions");
     let conf = config::get();
 
+    reset();
+
     for r in &conf.regions {
         let span = span!(Level::INFO, "setup", common_name = %r.common_name, region_id = %r.id);
         let _guard = span.enter();
@@ -61,6 +63,11 @@ pub fn setup() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn reset() {
+    let mut regions_w = REGIONS.write().unwrap();
+    regions_w.clear();
 }
 
 pub fn set(region_config_id: &str, r: Box<dyn region::Region + Sync + Send>) {

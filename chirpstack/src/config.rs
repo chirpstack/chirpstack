@@ -742,7 +742,7 @@ pub fn get_region_network(region_id: &str) -> Result<RegionNetwork> {
         }
     }
 
-    Err(anyhow!("region_id not found"))
+    Err(anyhow!("Region ID '{}' not found", region_id))
 }
 
 pub fn get_region_gateway(region_id: &str) -> Result<RegionGateway> {
@@ -753,7 +753,7 @@ pub fn get_region_gateway(region_id: &str) -> Result<RegionGateway> {
         }
     }
 
-    Err(anyhow!("region_id not found"))
+    Err(anyhow!("Region ID '{}' not found", region_id))
 }
 
 pub fn get_required_snr_for_sf(sf: u8) -> Result<f32> {
