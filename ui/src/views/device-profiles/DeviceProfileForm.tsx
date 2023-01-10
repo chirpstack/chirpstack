@@ -10,10 +10,7 @@ import {
   MeasurementKind,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { 
-  ListRegionsResponse,
-  RegionListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import {
   ListDeviceProfileTemplatesRequest,
@@ -236,19 +233,22 @@ class DeviceProfileForm extends Component<IProps, IState> {
     });
 
     InternalStore.listRegions((resp: ListRegionsResponse) => {
-      this.setState({
-        regionConfigurations: resp.getRegionsList(),
-      }, () => {
-        let regionConfigurationsFiltered: [string, string][] = [];
-        for (const r of this.state.regionConfigurations) {
-          if (v.getRegion() === r.getRegion()) {
-            regionConfigurationsFiltered.push([r.getId(), r.getDescription()]);
+      this.setState(
+        {
+          regionConfigurations: resp.getRegionsList(),
+        },
+        () => {
+          let regionConfigurationsFiltered: [string, string][] = [];
+          for (const r of this.state.regionConfigurations) {
+            if (v.getRegion() === r.getRegion()) {
+              regionConfigurationsFiltered.push([r.getId(), r.getDescription()]);
+            }
           }
-        }
-        this.setState({
-          regionConfigurationsFiltered: regionConfigurationsFiltered,
-        });
-      });
+          this.setState({
+            regionConfigurationsFiltered: regionConfigurationsFiltered,
+          });
+        },
+      );
     });
 
     DeviceProfileStore.listAdrAlgorithms((resp: ListDeviceProfileAdrAlgorithmsResponse) => {
@@ -474,12 +474,17 @@ class DeviceProfileForm extends Component<IProps, IState> {
     this.formRef.current.setFieldsValue({
       regionConfigId: "",
     });
-  }
+  };
 
   render() {
     const adrOptions = this.state.adrAlgorithms.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
-    const regionConfigOptions = this.state.regionConfigurationsFiltered.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
-    const regionOptions = this.state.regionConfigurations.map(v => v.getRegion()).filter((v, i, a) => a.indexOf(v) === i).map(v => <Select.Option value={v}>{getEnumName(Region, v).replace('_', '-')}</Select.Option>);
+    const regionConfigOptions = this.state.regionConfigurationsFiltered.map(v => (
+      <Select.Option value={v[0]}>{v[1]}</Select.Option>
+    ));
+    const regionOptions = this.state.regionConfigurations
+      .map(v => v.getRegion())
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .map(v => <Select.Option value={v}>{getEnumName(Region, v).replace("_", "-")}</Select.Option>);
     const operations = (
       <Button type="primary" onClick={this.showTemplateModal}>
         Select device-profile template
@@ -508,7 +513,11 @@ class DeviceProfileForm extends Component<IProps, IState> {
             </Form.Item>
             <Row gutter={24}>
               <Col span={12}>
-                <Form.Item label="Region" name="region" rules={[{ required: true, message: "Please select a region!" }]}>
+                <Form.Item
+                  label="Region"
+                  name="region"
+                  rules={[{ required: true, message: "Please select a region!" }]}
+                >
                   <Select disabled={this.props.disabled} onChange={this.onRegionChange}>
                     {regionOptions}
                   </Select>
@@ -520,7 +529,9 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   tooltip="By selecting a region configuration, the device will only work within the selected region configuration. If left blank, the device will work under all region configurations of the selected region."
                   name="regionConfigId"
                 >
-                  <Select disabled={this.props.disabled} allowClear>{regionConfigOptions}</Select> 
+                  <Select disabled={this.props.disabled} allowClear>
+                    {regionConfigOptions}
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>

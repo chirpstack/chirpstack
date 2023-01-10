@@ -20,6 +20,7 @@ import {
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
+import Admin from "../../components/Admin";
 
 import DeviceDashboard from "./DeviceDashboard";
 import EditDevice from "./EditDevice";
@@ -166,11 +167,13 @@ class DeviceLayout extends Component<IProps, IState> {
           title={device.getName()}
           subTitle={`device eui: ${device.getDevEui()}`}
           extra={[
-            <DeleteConfirm typ="device" confirm={device.getName()} onConfirm={this.deleteDevice}>
-              <Button danger type="primary">
-                Delete device
-              </Button>
-            </DeleteConfirm>,
+            <Admin tenantId={this.props.tenant.getId()} isDeviceAdmin>
+              <DeleteConfirm typ="device" confirm={device.getName()} onConfirm={this.deleteDevice}>
+                <Button danger type="primary">
+                  Delete device
+                </Button>
+              </DeleteConfirm>
+            </Admin>,
           ]}
         />
         <Card>
