@@ -1,0 +1,7 @@
+FROM amazoncorretto:8
+
+ENV PROJECT_PATH=/chirpstack/api
+RUN yum install -y make git bash
+
+RUN mkdir -p $PROJECT_PATH
+WORKDIR $PROJECT_PATH
