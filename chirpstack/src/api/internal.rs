@@ -568,14 +568,14 @@ impl InternalService for Internal {
                 .await?;
         }
 
-        let active_inactive = gateway::get_active_inactive(&tenant_id)
+        let counts = gateway::get_counts_by_state(&tenant_id)
             .await
             .map_err(|e| e.status())?;
 
         Ok(Response::new(api::GetGatewaysSummaryResponse {
-            active_count: active_inactive.active_count as u32,
-            inactive_count: active_inactive.inactive_count as u32,
-            never_seen_count: active_inactive.never_seen_count as u32,
+            online_count: counts.online_count as u32,
+            offline_count: counts.offline_count as u32,
+            never_seen_count: counts.never_seen_count as u32,
         }))
     }
 

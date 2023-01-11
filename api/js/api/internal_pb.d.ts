@@ -555,11 +555,11 @@ export namespace GetGatewaysSummaryRequest {
 }
 
 export class GetGatewaysSummaryResponse extends jspb.Message {
-  getActiveCount(): number;
-  setActiveCount(value: number): void;
+  getOnlineCount(): number;
+  setOnlineCount(value: number): void;
 
-  getInactiveCount(): number;
-  setInactiveCount(value: number): void;
+  getOfflineCount(): number;
+  setOfflineCount(value: number): void;
 
   getNeverSeenCount(): number;
   setNeverSeenCount(value: number): void;
@@ -576,8 +576,8 @@ export class GetGatewaysSummaryResponse extends jspb.Message {
 
 export namespace GetGatewaysSummaryResponse {
   export type AsObject = {
-    activeCount: number,
-    inactiveCount: number,
+    onlineCount: number,
+    offlineCount: number,
     neverSeenCount: number,
   }
 }

@@ -22,6 +22,7 @@ import {
   ListGatewaysRequest,
   ListGatewaysResponse,
   GatewayListItem,
+  GatewayState,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import InternalStore from "../../stores/InternalStore";
@@ -58,14 +59,15 @@ class GatewaysMap extends Component<GatewaysMapProps> {
       let color: MarkerColor = "orange";
       let lastSeen: string = "Never seen online";
 
+      if (item.getState() === GatewayState.OFFLINE) {
+        color = "red";
+      } else if (item.getState() === GatewayState.ONLINE) {
+        color = "green";
+      }
+
       if (item.getLastSeenAt() !== undefined) {
         let ts = moment(item.getLastSeenAt()!.toDate());
         lastSeen = ts.fromNow();
-        if (ts.isBefore(moment().subtract(5, "minutes"))) {
-          color = "red";
-        } else {
-          color = "green";
-        }
       }
 
       markers.push(
@@ -99,20 +101,20 @@ class GatewaysActiveInactive extends Component<GatewayProps> {
     if (
       this.props.summary === undefined ||
       (this.props.summary.getNeverSeenCount() === 0 &&
-        this.props.summary.getInactiveCount() === 0 &&
-        this.props.summary.getActiveCount() === 0)
+        this.props.summary.getOfflineCount() === 0 &&
+        this.props.summary.getOnlineCount() === 0)
     ) {
       return <Empty />;
     }
 
     const data = {
-      labels: ["Never seen", "Inactive", "Active"],
+      labels: ["Never seen", "Offline", "Online"],
       datasets: [
         {
           data: [
             this.props.summary.getNeverSeenCount(),
-            this.props.summary.getInactiveCount(),
-            this.props.summary.getActiveCount(),
+            this.props.summary.getOfflineCount(),
+            this.props.summary.getOnlineCount(),
           ],
           backgroundColor: [presetPalettes.orange.primary, presetPalettes.red.primary, presetPalettes.green.primary],
         },

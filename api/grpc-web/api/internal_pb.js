@@ -4500,8 +4500,8 @@ proto.api.GetGatewaysSummaryResponse.prototype.toObject = function(opt_includeIn
  */
 proto.api.GetGatewaysSummaryResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    activeCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    inactiveCount: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    onlineCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    offlineCount: jspb.Message.getFieldWithDefault(msg, 2, 0),
     neverSeenCount: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
@@ -4541,11 +4541,11 @@ proto.api.GetGatewaysSummaryResponse.deserializeBinaryFromReader = function(msg,
     switch (field) {
     case 1:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setActiveCount(value);
+      msg.setOnlineCount(value);
       break;
     case 2:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setInactiveCount(value);
+      msg.setOfflineCount(value);
       break;
     case 3:
       var value = /** @type {number} */ (reader.readUint32());
@@ -4580,14 +4580,14 @@ proto.api.GetGatewaysSummaryResponse.prototype.serializeBinary = function() {
  */
 proto.api.GetGatewaysSummaryResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getActiveCount();
+  f = message.getOnlineCount();
   if (f !== 0) {
     writer.writeUint32(
       1,
       f
     );
   }
-  f = message.getInactiveCount();
+  f = message.getOfflineCount();
   if (f !== 0) {
     writer.writeUint32(
       2,
@@ -4605,10 +4605,10 @@ proto.api.GetGatewaysSummaryResponse.serializeBinaryToWriter = function(message,
 
 
 /**
- * optional uint32 active_count = 1;
+ * optional uint32 online_count = 1;
  * @return {number}
  */
-proto.api.GetGatewaysSummaryResponse.prototype.getActiveCount = function() {
+proto.api.GetGatewaysSummaryResponse.prototype.getOnlineCount = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
@@ -4617,16 +4617,16 @@ proto.api.GetGatewaysSummaryResponse.prototype.getActiveCount = function() {
  * @param {number} value
  * @return {!proto.api.GetGatewaysSummaryResponse} returns this
  */
-proto.api.GetGatewaysSummaryResponse.prototype.setActiveCount = function(value) {
+proto.api.GetGatewaysSummaryResponse.prototype.setOnlineCount = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
 };
 
 
 /**
- * optional uint32 inactive_count = 2;
+ * optional uint32 offline_count = 2;
  * @return {number}
  */
-proto.api.GetGatewaysSummaryResponse.prototype.getInactiveCount = function() {
+proto.api.GetGatewaysSummaryResponse.prototype.getOfflineCount = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
@@ -4635,7 +4635,7 @@ proto.api.GetGatewaysSummaryResponse.prototype.getInactiveCount = function() {
  * @param {number} value
  * @return {!proto.api.GetGatewaysSummaryResponse} returns this
  */
-proto.api.GetGatewaysSummaryResponse.prototype.setInactiveCount = function(value) {
+proto.api.GetGatewaysSummaryResponse.prototype.setOfflineCount = function(value) {
   return jspb.Message.setProto3IntField(this, 2, value);
 };
 

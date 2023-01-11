@@ -66,6 +66,17 @@ service GatewayService {
     }
 }
 
+enum GatewayState {
+    // The gateway has never sent any stats.
+    NEVER_SEEN = 0;
+
+    // Online.
+    ONLINE = 1;
+
+    // Offline.
+    OFFLINE = 2;
+}
+
 message Gateway {
     // Gateway ID (EUI64).
     string gateway_id = 1;
@@ -87,6 +98,11 @@ message Gateway {
 
     // Metadata (provided by the gateway).
     map<string, string> metadata = 7;
+
+    // Stats interval (seconds).
+    // This defines the expected interval in which the gateway sends its
+    // statistics.
+    uint32 stats_interval = 8;
 }
 
 message GatewayListItem {
@@ -116,6 +132,11 @@ message GatewayListItem {
 
     // Last seen at timestamp.
     google.protobuf.Timestamp last_seen_at = 9;
+
+    // Gateway state.
+    // Please note that the state of the gateway is driven by the stats
+    // packages that are sent by the gateway.
+    GatewayState state = 10;
 }
 
 message CreateGatewayRequest {

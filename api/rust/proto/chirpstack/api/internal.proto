@@ -264,11 +264,11 @@ message GetGatewaysSummaryRequest {
 }
 
 message GetGatewaysSummaryResponse {
-    // Active count.
-    uint32 active_count = 1;
+    // Online count.
+    uint32 online_count = 1;
 
-    // Inactive count.
-    uint32 inactive_count = 2;
+    // Offline count.
+    uint32 offline_count = 2;
 
     // Never seen count.
     uint32 never_seen_count = 3;

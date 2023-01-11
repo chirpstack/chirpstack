@@ -2,13 +2,14 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import moment from "moment";
-import { Space, Breadcrumb, Button, PageHeader } from "antd";
+import { Space, Breadcrumb, Button, PageHeader, Badge } from "antd";
 import { ColumnsType } from "antd/es/table";
 
 import {
   ListGatewaysRequest,
   ListGatewaysResponse,
   GatewayListItem,
+  GatewayState,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
@@ -24,6 +25,21 @@ class ListGateways extends Component<IProps> {
   columns = (): ColumnsType<GatewayListItem.AsObject> => {
     return [
       {
+        title: "",
+        dataIndex: "state",
+        key: "state",
+        width: 150,
+        render: (text, record) => {
+          if (record.state === GatewayState.NEVER_SEEN) {
+            return <Badge status="warning" text="Never seen" />;
+          } else if (record.state === GatewayState.OFFLINE) {
+            return <Badge status="error" text="Offline" />;
+          } else if (record.state === GatewayState.ONLINE) {
+            return <Badge status="success" text="Online" />;
+          }
+        },
+      },
+      {
         title: "Last seen",
         dataIndex: "lastSeenAt",
         key: "lastSeenAt",
@@ -34,7 +50,6 @@ class ListGateways extends Component<IProps> {
             ts.setUTCSeconds(record.lastSeenAt.seconds);
             return moment(ts).format("YYYY-MM-DD HH:mm:ss");
           }
-          return "Never";
         },
       },
       {

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Form, Input, Row, Col, Button, Tabs, Space, Card } from "antd";
+import { Form, Input, InputNumber, Row, Col, Button, Tabs, Space, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { Location } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
@@ -80,6 +80,7 @@ class GatewayForm extends Component<IProps, IState> {
     gw.setName(v.name);
     gw.setDescription(v.description);
     gw.setGatewayId(v.gatewayId);
+    gw.setStatsInterval(v.statsInterval);
     gw.setLocation(loc);
 
     // tags
@@ -129,14 +130,28 @@ class GatewayForm extends Component<IProps, IState> {
             <Form.Item label="Description" name="description">
               <Input.TextArea disabled={this.props.disabled} />
             </Form.Item>
-            <EuiInput
-              label="Gateway ID (EUI64)"
-              name="gatewayId"
-              value={this.props.initialValues.getGatewayId()}
-              formRef={this.formRef}
-              disabled={this.props.update || this.props.disabled}
-              required
-            />
+            <Row gutter={24}>
+              <Col span={12}>
+                <EuiInput
+                  label="Gateway ID (EUI64)"
+                  name="gatewayId"
+                  value={this.props.initialValues.getGatewayId()}
+                  formRef={this.formRef}
+                  disabled={this.props.update || this.props.disabled}
+                  required
+                />
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Stats interval (secs)"
+                  tooltip="The expected interval in seconds in which the gateway sends its statistics"
+                  name="statsInterval"
+                  rules={[{ required: true, message: "Please enter a stats interval!" }]}
+                >
+                  <InputNumber min={0} disabled={this.props.disabled} />
+                </Form.Item>
+              </Col>
+            </Row>
             <Form.Item label="Location">
               <Form.Item name={["location", "latitude"]} noStyle>
                 <Input hidden />

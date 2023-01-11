@@ -30,6 +30,9 @@ export class Gateway extends jspb.Message {
   getMetadataMap(): jspb.Map<string, string>;
   clearMetadataMap(): Gateway;
 
+  getStatsInterval(): number;
+  setStatsInterval(value: number): Gateway;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Gateway.AsObject;
   static toObject(includeInstance: boolean, msg: Gateway): Gateway.AsObject;
@@ -47,6 +50,7 @@ export namespace Gateway {
     tenantId: string,
     tagsMap: Array<[string, string]>,
     metadataMap: Array<[string, string]>,
+    statsInterval: number,
   }
 }
 
@@ -86,6 +90,9 @@ export class GatewayListItem extends jspb.Message {
   hasLastSeenAt(): boolean;
   clearLastSeenAt(): GatewayListItem;
 
+  getState(): GatewayState;
+  setState(value: GatewayState): GatewayListItem;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GatewayListItem.AsObject;
   static toObject(includeInstance: boolean, msg: GatewayListItem): GatewayListItem.AsObject;
@@ -105,6 +112,7 @@ export namespace GatewayListItem {
     createdAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     lastSeenAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    state: GatewayState,
   }
 }
 
@@ -416,3 +424,8 @@ export namespace GetGatewayMetricsResponse {
   }
 }
 
+export enum GatewayState { 
+  NEVER_SEEN = 0,
+  ONLINE = 1,
+  OFFLINE = 2,
+}

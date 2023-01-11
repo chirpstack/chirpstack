@@ -54,6 +54,7 @@ pub struct GatewayListItem {
     pub longitude: f64,
     pub altitude: f32,
     pub properties: fields::KeyValue,
+    pub stats_interval_secs: i32,
 }
 
 #[derive(Queryable, PartialEq, Debug)]
@@ -73,13 +74,13 @@ pub struct Filters {
 }
 
 #[derive(QueryableByName, PartialEq, Eq, Debug)]
-pub struct GatewaysActiveInactive {
+pub struct GatewayCountsByState {
     #[diesel(sql_type = diesel::sql_types::BigInt)]
     pub never_seen_count: i64,
     #[diesel(sql_type = diesel::sql_types::BigInt)]
-    pub active_count: i64,
+    pub online_count: i64,
     #[diesel(sql_type = diesel::sql_types::BigInt)]
-    pub inactive_count: i64,
+    pub offline_count: i64,
 }
 
 impl Default for Gateway {
@@ -340,6 +341,7 @@ pub async fn list(
                     gateway::longitude,
                     gateway::altitude,
                     gateway::properties,
+                    gateway::stats_interval_secs,
                 ))
                 .into_boxed();
 
@@ -387,24 +389,22 @@ pub async fn get_meta(gateway_id: &EUI64) -> Result<GatewayMeta, Error> {
     .await?
 }
 
-pub async fn get_active_inactive(
-    tenant_id: &Option<Uuid>,
-) -> Result<GatewaysActiveInactive, Error> {
+pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCountsByState, Error> {
     task::spawn_blocking({
         let tenant_id = *tenant_id;
-        move || -> Result<GatewaysActiveInactive, Error> {
+        move || -> Result<GatewayCountsByState, Error> {
             let mut c = get_db_conn()?;
-            let ai: GatewaysActiveInactive = diesel::sql_query(r#"
+            let counts: GatewayCountsByState = diesel::sql_query(r#"
                 select
                     coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
-                    coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 1.5)) > last_seen_at then 1 end), 0) as inactive_count,
-                    coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 1.5)) <= last_seen_at then 1 end), 0) as active_count
+                    coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) > last_seen_at then 1 end), 0) as offline_count,
+                    coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) <= last_seen_at then 1 end), 0) as online_count
                 from
                     gateway
                 where
                     $1 is null or tenant_id = $1
             "#).bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id).get_result(&mut c)?;
-            Ok(ai)
+            Ok(counts)
         }
     }).await?
 }

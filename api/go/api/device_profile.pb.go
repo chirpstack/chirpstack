@@ -166,7 +166,7 @@ type DeviceProfile struct {
 	FlushQueueOnActivate bool `protobuf:"varint,10,opt,name=flush_queue_on_activate,json=flushQueueOnActivate,proto3" json:"flush_queue_on_activate,omitempty"`
 	// Uplink interval (seconds).
 	// This defines the expected uplink interval which the device uses for
-	// communication. When the uplink interval has expired and no uplink has
+	// communication. If the uplink interval has expired and no uplink has
 	// been received, the device is considered inactive.
 	UplinkInterval uint32 `protobuf:"varint,11,opt,name=uplink_interval,json=uplinkInterval,proto3" json:"uplink_interval,omitempty"`
 	// Device-status request interval (times / day).

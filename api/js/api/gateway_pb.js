@@ -24,6 +24,7 @@ goog.exportSymbol('proto.api.CreateGatewayRequest', null, global);
 goog.exportSymbol('proto.api.DeleteGatewayRequest', null, global);
 goog.exportSymbol('proto.api.Gateway', null, global);
 goog.exportSymbol('proto.api.GatewayListItem', null, global);
+goog.exportSymbol('proto.api.GatewayState', null, global);
 goog.exportSymbol('proto.api.GenerateGatewayClientCertificateRequest', null, global);
 goog.exportSymbol('proto.api.GenerateGatewayClientCertificateResponse', null, global);
 goog.exportSymbol('proto.api.GetGatewayMetricsRequest', null, global);
@@ -344,7 +345,8 @@ proto.api.Gateway.toObject = function(includeInstance, msg) {
     location: (f = msg.getLocation()) && common_common_pb.Location.toObject(includeInstance, f),
     tenantId: jspb.Message.getFieldWithDefault(msg, 5, ""),
     tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : [],
-    metadataMap: (f = msg.getMetadataMap()) ? f.toObject(includeInstance, undefined) : []
+    metadataMap: (f = msg.getMetadataMap()) ? f.toObject(includeInstance, undefined) : [],
+    statsInterval: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
 
   if (includeInstance) {
@@ -413,6 +415,10 @@ proto.api.Gateway.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
          });
+      break;
+    case 8:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setStatsInterval(value);
       break;
     default:
       reader.skipField();
@@ -486,6 +492,13 @@ proto.api.Gateway.serializeBinaryToWriter = function(message, writer) {
   f = message.getMetadataMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(7, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getStatsInterval();
+  if (f !== 0) {
+    writer.writeUint32(
+      8,
+      f
+    );
   }
 };
 
@@ -643,6 +656,24 @@ proto.api.Gateway.prototype.clearMetadataMap = function() {
   return this;};
 
 
+/**
+ * optional uint32 stats_interval = 8;
+ * @return {number}
+ */
+proto.api.Gateway.prototype.getStatsInterval = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.api.Gateway} returns this
+ */
+proto.api.Gateway.prototype.setStatsInterval = function(value) {
+  return jspb.Message.setProto3IntField(this, 8, value);
+};
+
+
 
 
 
@@ -683,7 +714,8 @@ proto.api.GatewayListItem.toObject = function(includeInstance, msg) {
     propertiesMap: (f = msg.getPropertiesMap()) ? f.toObject(includeInstance, undefined) : [],
     createdAt: (f = msg.getCreatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     updatedAt: (f = msg.getUpdatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    lastSeenAt: (f = msg.getLastSeenAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+    lastSeenAt: (f = msg.getLastSeenAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    state: jspb.Message.getFieldWithDefault(msg, 10, 0)
   };
 
   if (includeInstance) {
@@ -761,6 +793,10 @@ proto.api.GatewayListItem.deserializeBinaryFromReader = function(msg, reader) {
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setLastSeenAt(value);
+      break;
+    case 10:
+      var value = /** @type {!proto.api.GatewayState} */ (reader.readEnum());
+      msg.setState(value);
       break;
     default:
       reader.skipField();
@@ -853,6 +889,13 @@ proto.api.GatewayListItem.serializeBinaryToWriter = function(message, writer) {
       9,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getState();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      10,
+      f
     );
   }
 };
@@ -1097,6 +1140,24 @@ proto.api.GatewayListItem.prototype.clearLastSeenAt = function() {
  */
 proto.api.GatewayListItem.prototype.hasLastSeenAt = function() {
   return jspb.Message.getField(this, 9) != null;
+};
+
+
+/**
+ * optional GatewayState state = 10;
+ * @return {!proto.api.GatewayState}
+ */
+proto.api.GatewayListItem.prototype.getState = function() {
+  return /** @type {!proto.api.GatewayState} */ (jspb.Message.getFieldWithDefault(this, 10, 0));
+};
+
+
+/**
+ * @param {!proto.api.GatewayState} value
+ * @return {!proto.api.GatewayListItem} returns this
+ */
+proto.api.GatewayListItem.prototype.setState = function(value) {
+  return jspb.Message.setProto3EnumField(this, 10, value);
 };
 
 
@@ -3465,5 +3526,14 @@ proto.api.GetGatewayMetricsResponse.prototype.hasTxPacketsPerStatus = function()
   return jspb.Message.getField(this, 7) != null;
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.api.GatewayState = {
+  NEVER_SEEN: 0,
+  ONLINE: 1,
+  OFFLINE: 2
+};
 
 goog.object.extend(exports, proto.api);

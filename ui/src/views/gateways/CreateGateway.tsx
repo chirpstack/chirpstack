@@ -26,7 +26,8 @@ class CreateGateway extends Component<IProps> {
   };
 
   render() {
-    const gateway = new Gateway();
+    let gateway = new Gateway();
+    gateway.setStatsInterval(30);
 
     return (
       <Space direction="vertical" style={{ width: "100%" }} size="large">

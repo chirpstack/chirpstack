@@ -176,6 +176,8 @@
     - [ListGatewaysResponse](#api-ListGatewaysResponse)
     - [UpdateGatewayRequest](#api-UpdateGatewayRequest)
   
+    - [GatewayState](#api-GatewayState)
+  
     - [GatewayService](#api-GatewayService)
   
 - [api/multicast_group.proto](#api_multicast_group-proto)
@@ -2381,7 +2383,7 @@ DeviceService is the service providing API methods for managing devices.
 | payload_codec_runtime | [CodecRuntime](#api-CodecRuntime) |  | Payload codec runtime. |
 | payload_codec_script | [string](#string) |  | Payload codec script. |
 | flush_queue_on_activate | [bool](#bool) |  | Flush queue on device activation. |
-| uplink_interval | [uint32](#uint32) |  | Uplink interval (seconds). This defines the expected uplink interval which the device uses for communication. When the uplink interval has expired and no uplink has been received, the device is considered inactive. |
+| uplink_interval | [uint32](#uint32) |  | Uplink interval (seconds). This defines the expected uplink interval which the device uses for communication. If the uplink interval has expired and no uplink has been received, the device is considered inactive. |
 | device_status_req_interval | [uint32](#uint32) |  | Device-status request interval (times / day). This defines the times per day that ChirpStack will request the device-status from the device. |
 | supports_otaa | [bool](#bool) |  | Supports OTAA. |
 | supports_class_b | [bool](#bool) |  | Supports Class B. |
@@ -2739,6 +2741,7 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | tenant_id | [string](#string) |  | Tenant ID (UUID). |
 | tags | [Gateway.TagsEntry](#api-Gateway-TagsEntry) | repeated | Tags. |
 | metadata | [Gateway.MetadataEntry](#api-Gateway-MetadataEntry) | repeated | Metadata (provided by the gateway). |
+| stats_interval | [uint32](#uint32) |  | Stats interval (seconds). This defines the expected interval in which the gateway sends its statistics. |
 
 
 
@@ -2794,6 +2797,7 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Created at timestamp. |
 | updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last update timestamp. |
 | last_seen_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last seen at timestamp. |
+| state | [GatewayState](#api-GatewayState) |  | Gateway state. Please note that the state of the gateway is driven by the stats packages that are sent by the gateway. |
 
 
 
@@ -2970,6 +2974,19 @@ DeviceProfileService is the service providing API methods for managing device-pr
 
 
  
+
+
+<a name="api-GatewayState"></a>
+
+### GatewayState
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| NEVER_SEEN | 0 | The gateway has never sent any stats. |
+| ONLINE | 1 | Online. |
+| OFFLINE | 2 | Offline. |
+
 
  
 

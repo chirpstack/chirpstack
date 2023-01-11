@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::str::FromStr;
 use std::time::SystemTime;
 
-use chrono::{DateTime, Local, Utc};
+use chrono::{DateTime, Duration, Local, Utc};
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
@@ -61,6 +61,7 @@ impl GatewayService for Gateway {
             longitude: lon,
             altitude: alt,
             tags: fields::KeyValue::new(req_gw.tags.clone()),
+            stats_interval_secs: req_gw.stats_interval as i32,
             ..Default::default()
         };
 
@@ -103,6 +104,7 @@ impl GatewayService for Gateway {
                 tenant_id: gw.tenant_id.to_string(),
                 tags: gw.tags.into_hashmap(),
                 metadata: gw.properties.into_hashmap(),
+                stats_interval: gw.stats_interval_secs as u32,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&gw.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&gw.updated_at)),
@@ -150,6 +152,7 @@ impl GatewayService for Gateway {
             longitude: lon,
             altitude: alt,
             tags: fields::KeyValue::new(req_gw.tags.clone()),
+            stats_interval_secs: req_gw.stats_interval as i32,
             ..Default::default()
         })
         .await
@@ -242,6 +245,20 @@ impl GatewayService for Gateway {
                         .last_seen_at
                         .as_ref()
                         .map(helpers::datetime_to_prost_timestamp),
+                    state: {
+                        if let Some(ts) = gw.last_seen_at {
+                            if (Utc::now() - ts)
+                                > Duration::seconds((gw.stats_interval_secs * 2).into())
+                            {
+                                api::GatewayState::Offline
+                            } else {
+                                api::GatewayState::Online
+                            }
+                        } else {
+                            api::GatewayState::NeverSeen
+                        }
+                    }
+                    .into(),
                 })
                 .collect(),
         });

@@ -29,6 +29,9 @@ export class Gateway extends jspb.Message {
   clearTagsMap(): void;
   getMetadataMap(): jspb.Map<string, string>;
   clearMetadataMap(): void;
+  getStatsInterval(): number;
+  setStatsInterval(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Gateway.AsObject;
   static toObject(includeInstance: boolean, msg: Gateway): Gateway.AsObject;
@@ -48,6 +51,7 @@ export namespace Gateway {
     tenantId: string,
     tagsMap: Array<[string, string]>,
     metadataMap: Array<[string, string]>,
+    statsInterval: number,
   }
 }
 
@@ -86,6 +90,9 @@ export class GatewayListItem extends jspb.Message {
   getLastSeenAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
   setLastSeenAt(value?: google_protobuf_timestamp_pb.Timestamp): void;
 
+  getState(): GatewayStateMap[keyof GatewayStateMap];
+  setState(value: GatewayStateMap[keyof GatewayStateMap]): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GatewayListItem.AsObject;
   static toObject(includeInstance: boolean, msg: GatewayListItem): GatewayListItem.AsObject;
@@ -107,6 +114,7 @@ export namespace GatewayListItem {
     createdAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     lastSeenAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    state: GatewayStateMap[keyof GatewayStateMap],
   }
 }
 
@@ -439,4 +447,12 @@ export namespace GetGatewayMetricsResponse {
     txPacketsPerStatus?: common_common_pb.Metric.AsObject,
   }
 }
+
+export interface GatewayStateMap {
+  NEVER_SEEN: 0;
+  ONLINE: 1;
+  OFFLINE: 2;
+}
+
+export const GatewayState: GatewayStateMap;
 

@@ -124,7 +124,7 @@ message DeviceProfile {
 
     // Uplink interval (seconds).
     // This defines the expected uplink interval which the device uses for
-    // communication. When the uplink interval has expired and no uplink has
+    // communication. If the uplink interval has expired and no uplink has
     // been received, the device is considered inactive.
     uint32 uplink_interval = 11;
 
