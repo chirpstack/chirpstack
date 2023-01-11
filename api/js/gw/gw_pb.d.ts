@@ -537,6 +537,9 @@ export class UplinkRxInfo extends jspb.Message {
 
   getMetadataMap(): jspb.Map<string, string>;
   clearMetadataMap(): void;
+  getCrcStatus(): CRCStatusMap[keyof CRCStatusMap];
+  setCrcStatus(value: CRCStatusMap[keyof CRCStatusMap]): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UplinkRxInfo.AsObject;
   static toObject(includeInstance: boolean, msg: UplinkRxInfo): UplinkRxInfo.AsObject;
@@ -563,6 +566,7 @@ export namespace UplinkRxInfo {
     location?: common_common_pb.Location.AsObject,
     context: Uint8Array | string,
     metadataMap: Array<[string, string]>,
+    crcStatus: CRCStatusMap[keyof CRCStatusMap],
   }
 }
 

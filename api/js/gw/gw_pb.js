@@ -4302,7 +4302,8 @@ proto.gw.UplinkRxInfo.toObject = function(includeInstance, msg) {
     antenna: jspb.Message.getFieldWithDefault(msg, 11, 0),
     location: (f = msg.getLocation()) && common_common_pb.Location.toObject(includeInstance, f),
     context: msg.getContext_asB64(),
-    metadataMap: (f = msg.getMetadataMap()) ? f.toObject(includeInstance, undefined) : []
+    metadataMap: (f = msg.getMetadataMap()) ? f.toObject(includeInstance, undefined) : [],
+    crcStatus: jspb.Message.getFieldWithDefault(msg, 16, 0)
   };
 
   if (includeInstance) {
@@ -4400,6 +4401,10 @@ proto.gw.UplinkRxInfo.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
          });
+      break;
+    case 16:
+      var value = /** @type {!proto.gw.CRCStatus} */ (reader.readEnum());
+      msg.setCrcStatus(value);
       break;
     default:
       reader.skipField();
@@ -4528,6 +4533,13 @@ proto.gw.UplinkRxInfo.serializeBinaryToWriter = function(message, writer) {
   f = message.getMetadataMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(15, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getCrcStatus();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      16,
+      f
+    );
   }
 };
 
@@ -4886,6 +4898,24 @@ proto.gw.UplinkRxInfo.prototype.getMetadataMap = function(opt_noLazyCreate) {
 proto.gw.UplinkRxInfo.prototype.clearMetadataMap = function() {
   this.getMetadataMap().clear();
   return this;};
+
+
+/**
+ * optional CRCStatus crc_status = 16;
+ * @return {!proto.gw.CRCStatus}
+ */
+proto.gw.UplinkRxInfo.prototype.getCrcStatus = function() {
+  return /** @type {!proto.gw.CRCStatus} */ (jspb.Message.getFieldWithDefault(this, 16, 0));
+};
+
+
+/**
+ * @param {!proto.gw.CRCStatus} value
+ * @return {!proto.gw.UplinkRxInfo} returns this
+ */
+proto.gw.UplinkRxInfo.prototype.setCrcStatus = function(value) {
+  return jspb.Message.setProto3EnumField(this, 16, value);
+};
 
 
 

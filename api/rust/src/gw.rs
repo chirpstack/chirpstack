@@ -128,6 +128,7 @@ impl UplinkFrame {
                     location: rx_info.location.clone(),
                     context: rx_info.context.clone(),
                     metadata: rx_info.metadata.clone(),
+                    crc_status: rx_info.crc_status,
                 });
             }
         }
