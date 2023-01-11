@@ -1,7 +1,7 @@
 .PHONY: requirements common gw api integration meta
 
 PROTOC := python -m grpc_tools.protoc
-PROTOC_ARGS := -I=/googleapis -I=proto --python_out=src --grpc_python_out=src
+PROTOC_ARGS := -I=/googleapis -I=proto --python_out=src --grpc_python_out=src --pyi_out=src
 PACKAGE_NAME := import \"chirpstack-api/
 
 all: requirements pre-build common gw api integration meta
