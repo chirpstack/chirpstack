@@ -23,7 +23,7 @@ handlebars = "4.3"
 
 # Database
 validator = "0.16"
-diesel = { version = "2.0.0", features = [ "chrono", "postgres", "r2d2", "uuid", "serde_json", "numeric" ] }
+diesel = { version = "2.0.2", features = [ "chrono", "postgres", "r2d2", "uuid", "serde_json", "numeric" ] }
 diesel_migrations = { version = "2.0.0" }
 r2d2 = "0.8"
 bigdecimal = "0.3"
