@@ -10,6 +10,3 @@ members = [
 opt-level = 'z'
 lto = true
 codegen-units = 1
-
-#[patch.crates-io]
-#quick-js = { path = "../quickjs-rs" }
