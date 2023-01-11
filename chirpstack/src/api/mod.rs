@@ -19,6 +19,7 @@ use tokio::{task, try_join};
 use tonic::transport::Server as TonicServer;
 use tonic::Code;
 use tonic_reflection::server::Builder as TonicReflectionBuilder;
+use tonic_web::GrpcWebLayer;
 use tower::{Service, ServiceBuilder};
 use tower_http::trace::TraceLayer;
 use tracing::{error, info};
@@ -102,60 +103,53 @@ pub async fn setup() -> Result<()> {
         // tonic gRPC service
         let tonic_service = TonicServer::builder()
             .accept_http1(true)
+            .layer(GrpcWebLayer::new())
             .add_service(
                 TonicReflectionBuilder::configure()
                     .register_encoded_file_descriptor_set(chirpstack_api::api::DESCRIPTOR)
                     .build()
                     .unwrap(),
             )
-            .add_service(tonic_web::enable(InternalServiceServer::with_interceptor(
+            .add_service(InternalServiceServer::with_interceptor(
                 internal::Internal::new(
                     validator::RequestValidator::new(),
                     conf.api.secret.clone(),
                 ),
                 auth::auth_interceptor,
-            )))
-            .add_service(tonic_web::enable(
-                ApplicationServiceServer::with_interceptor(
-                    application::Application::new(validator::RequestValidator::new()),
-                    auth::auth_interceptor,
-                ),
             ))
-            .add_service(tonic_web::enable(
-                DeviceProfileServiceServer::with_interceptor(
-                    device_profile::DeviceProfile::new(validator::RequestValidator::new()),
-                    auth::auth_interceptor,
-                ),
+            .add_service(ApplicationServiceServer::with_interceptor(
+                application::Application::new(validator::RequestValidator::new()),
+                auth::auth_interceptor,
             ))
-            .add_service(tonic_web::enable(
-                DeviceProfileTemplateServiceServer::with_interceptor(
-                    device_profile_template::DeviceProfileTemplate::new(
-                        validator::RequestValidator::new(),
-                    ),
-                    auth::auth_interceptor,
-                ),
+            .add_service(DeviceProfileServiceServer::with_interceptor(
+                device_profile::DeviceProfile::new(validator::RequestValidator::new()),
+                auth::auth_interceptor,
             ))
-            .add_service(tonic_web::enable(TenantServiceServer::with_interceptor(
+            .add_service(DeviceProfileTemplateServiceServer::with_interceptor(
+                device_profile_template::DeviceProfileTemplate::new(
+                    validator::RequestValidator::new(),
+                ),
+                auth::auth_interceptor,
+            ))
+            .add_service(TenantServiceServer::with_interceptor(
                 tenant::Tenant::new(validator::RequestValidator::new()),
                 auth::auth_interceptor,
-            )))
-            .add_service(tonic_web::enable(DeviceServiceServer::with_interceptor(
+            ))
+            .add_service(DeviceServiceServer::with_interceptor(
                 device::Device::new(validator::RequestValidator::new()),
                 auth::auth_interceptor,
-            )))
-            .add_service(tonic_web::enable(UserServiceServer::with_interceptor(
+            ))
+            .add_service(UserServiceServer::with_interceptor(
                 user::User::new(validator::RequestValidator::new()),
                 auth::auth_interceptor,
-            )))
-            .add_service(tonic_web::enable(GatewayServiceServer::with_interceptor(
+            ))
+            .add_service(GatewayServiceServer::with_interceptor(
                 gateway::Gateway::new(validator::RequestValidator::new()),
                 auth::auth_interceptor,
-            )))
-            .add_service(tonic_web::enable(
-                MulticastGroupServiceServer::with_interceptor(
-                    multicast::MulticastGroup::new(validator::RequestValidator::new()),
-                    auth::auth_interceptor,
-                ),
+            ))
+            .add_service(MulticastGroupServiceServer::with_interceptor(
+                multicast::MulticastGroup::new(validator::RequestValidator::new()),
+                auth::auth_interceptor,
             ))
             .into_service();
         let mut tonic_service = ServiceBuilder::new()
