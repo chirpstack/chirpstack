@@ -242,7 +242,7 @@
     [regions.network.class_b]
 
       # Ping-slot data-rate. 
-      ping_slot_dr=0
+      ping_slot_dr=3
 
       # Ping-slot frequency (Hz)
       #
