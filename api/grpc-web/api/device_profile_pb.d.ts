@@ -58,8 +58,8 @@ export class DeviceProfile extends jspb.Message {
   getClassBTimeout(): number;
   setClassBTimeout(value: number): DeviceProfile;
 
-  getClassBPingSlotPeriod(): number;
-  setClassBPingSlotPeriod(value: number): DeviceProfile;
+  getClassBPingSlotNbK(): number;
+  setClassBPingSlotNbK(value: number): DeviceProfile;
 
   getClassBPingSlotDr(): number;
   setClassBPingSlotDr(value: number): DeviceProfile;
@@ -121,7 +121,7 @@ export namespace DeviceProfile {
     supportsClassB: boolean,
     supportsClassC: boolean,
     classBTimeout: number,
-    classBPingSlotPeriod: number,
+    classBPingSlotNbK: number,
     classBPingSlotDr: number,
     classBPingSlotFreq: number,
     classCTimeout: number,

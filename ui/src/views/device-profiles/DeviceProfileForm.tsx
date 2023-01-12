@@ -297,6 +297,9 @@ class DeviceProfileForm extends Component<IProps, IState> {
     // class-b
     dp.setSupportsClassB(v.supportsClassB);
     dp.setClassBTimeout(v.classBTimeout);
+    dp.setClassBPingSlotNbK(v.classBPingSlotNbK);
+    dp.setClassBPingSlotDr(v.classBPingSlotDr);
+    dp.setClassBPingSlotFreq(v.classBPingSlotFreq);
 
     // class-c
     dp.setSupportsClassC(v.supportsClassC);
@@ -375,6 +378,9 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsClassC: dp.getSupportsClassC(),
       classCTimeout: dp.getClassCTimeout(),
       classBTimeout: dp.getClassBTimeout(),
+      classBPingSlotNbK: dp.getClassBPingSlotNbK(),
+      classBPingSlotDr: dp.getClassBPingSlotDr(),
+      classBPingSlotFreq: dp.getClassBPingSlotFreq(),
       abpRx1Delay: dp.getAbpRx1Delay(),
       abpRx2Dr: dp.getAbpRx2Dr(),
       abpRx2Freq: dp.getAbpRx2Freq(),
@@ -621,6 +627,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   <Form.Item
                     label="RX1 delay"
                     name="abpRx1Delay"
+                    tooltip="This value must match the RX1 delay of the device. Please refer to the device documentation."
                     rules={[{ required: true, message: "Please enter a RX1 delay!" }]}
                   >
                     <InputNumber min={0} max={15} disabled={this.props.disabled} />
@@ -629,7 +636,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 <Col span={12}>
                   <Form.Item
                     label="RX1 data-rate offset"
-                    tooltip="Please refer the LoRaWAN Regional Parameters specification for valid values."
+                    tooltip="This value must match the RX1 data-rate offset of the device. Please refer to the device documentation."
                     name="abpRx1DrOffset"
                     rules={[{ required: true, message: "Please enter a RX1 data-rate offset!" }]}
                   >
@@ -643,7 +650,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 <Col span={12}>
                   <Form.Item
                     label="RX2 data-rate"
-                    tooltip="Please refer the LoRaWAN Regional Parameters specification for valid values."
+                    tooltip="This value must match the RX2 data-rate of the device. Please refer to the device documentation."
                     name="abpRx2Dr"
                     rules={[{ required: true, message: "Please enter a RX2 data-rate!" }]}
                   >
@@ -654,6 +661,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   <Form.Item
                     label="RX2 frequency (Hz)"
                     name="abpRx2Freq"
+                    tooltip="This value must match the RX2 frequency of the device. Please refer to the device documentation."
                     rules={[{ required: true, message: "Please enter a RX2 frequency!" }]}
                   >
                     <InputNumber min={0} style={{ width: "200px" }} disabled={this.props.disabled} />
@@ -667,14 +675,61 @@ class DeviceProfileForm extends Component<IProps, IState> {
               <Switch onChange={this.onSupportsClassBChnage} disabled={this.props.disabled} />
             </Form.Item>
             {this.state.supportsClassB && (
-              <Form.Item
-                label="Class-B confirmed downlink timeout (seconds)"
-                tooltip="Class-B timeout (in seconds) for confirmed downlink transmissions."
-                name="classBTimeout"
-                rules={[{ required: true, message: "Please enter a Class-B confirmed downlink timeout!" }]}
-              >
-                <InputNumber min={0} />
-              </Form.Item>
+              <>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Class-B confirmed downlink timeout (seconds)"
+                      tooltip="Class-B timeout (in seconds) for confirmed downlink transmissions."
+                      name="classBTimeout"
+                      rules={[{ required: true, message: "Please enter a Class-B confirmed downlink timeout!" }]}
+                    >
+                      <InputNumber min={0} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Class-B ping-slot periodicity"
+                      tooltip="This value must match the ping-slot periodicity of the device. Please refer to the device documentation."
+                      name="classBPingSlotNbK"
+                      rules={[{ required: true, message: "Please select the ping-slot periodicity!" }]}
+                    >
+                      <Select disabled={this.props.disabled}>
+                        <Select.Option value={0}>Every second</Select.Option>
+                        <Select.Option value={1}>Every 2 seconds</Select.Option>
+                        <Select.Option value={2}>Every 4 seconds</Select.Option>
+                        <Select.Option value={3}>Every 8 seconds</Select.Option>
+                        <Select.Option value={4}>Every 16 seconds</Select.Option>
+                        <Select.Option value={5}>Every 32 seconds</Select.Option>
+                        <Select.Option value={6}>Every 64 seconds</Select.Option>
+                        <Select.Option value={8}>Every 128 seconds</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Class-B ping-slot data-rate"
+                      tooltip="This value must match the ping-slot data-rate of the device. Please refer to the device documentation."
+                      name="classBPingSlotDr"
+                      rules={[{ required: true, message: "Please enter the ping-slot data-rate!" }]}
+                    >
+                      <InputNumber min={0} disabled={this.props.disabled} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Class-B ping-slot frequency (Hz)"
+                      tooltip="This value must match the ping-slot frequency of the device. Please refer to the device documentation."
+                      name="classBPingSlotFreq"
+                      rules={[{ required: true, message: "Please enter the ping-slot frequency!" }]}
+                    >
+                      <InputNumber min={0} style={{ width: "200px" }} disabled={this.props.disabled} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </>
             )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Class-C" key="4">

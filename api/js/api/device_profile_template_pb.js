@@ -270,7 +270,7 @@ proto.api.DeviceProfileTemplate.toObject = function(includeInstance, msg) {
     supportsClassB: jspb.Message.getBooleanFieldWithDefault(msg, 16, false),
     supportsClassC: jspb.Message.getBooleanFieldWithDefault(msg, 17, false),
     classBTimeout: jspb.Message.getFieldWithDefault(msg, 18, 0),
-    classBPingSlotPeriod: jspb.Message.getFieldWithDefault(msg, 19, 0),
+    classBPingSlotNbK: jspb.Message.getFieldWithDefault(msg, 19, 0),
     classBPingSlotDr: jspb.Message.getFieldWithDefault(msg, 20, 0),
     classBPingSlotFreq: jspb.Message.getFieldWithDefault(msg, 21, 0),
     classCTimeout: jspb.Message.getFieldWithDefault(msg, 22, 0),
@@ -391,7 +391,7 @@ proto.api.DeviceProfileTemplate.deserializeBinaryFromReader = function(msg, read
       break;
     case 19:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setClassBPingSlotPeriod(value);
+      msg.setClassBPingSlotNbK(value);
       break;
     case 20:
       var value = /** @type {number} */ (reader.readUint32());
@@ -592,7 +592,7 @@ proto.api.DeviceProfileTemplate.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getClassBPingSlotPeriod();
+  f = message.getClassBPingSlotNbK();
   if (f !== 0) {
     writer.writeUint32(
       19,
@@ -991,10 +991,10 @@ proto.api.DeviceProfileTemplate.prototype.setClassBTimeout = function(value) {
 
 
 /**
- * optional uint32 class_b_ping_slot_period = 19;
+ * optional uint32 class_b_ping_slot_nb_k = 19;
  * @return {number}
  */
-proto.api.DeviceProfileTemplate.prototype.getClassBPingSlotPeriod = function() {
+proto.api.DeviceProfileTemplate.prototype.getClassBPingSlotNbK = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 19, 0));
 };
 
@@ -1003,7 +1003,7 @@ proto.api.DeviceProfileTemplate.prototype.getClassBPingSlotPeriod = function() {
  * @param {number} value
  * @return {!proto.api.DeviceProfileTemplate} returns this
  */
-proto.api.DeviceProfileTemplate.prototype.setClassBPingSlotPeriod = function(value) {
+proto.api.DeviceProfileTemplate.prototype.setClassBPingSlotNbK = function(value) {
   return jspb.Message.setProto3IntField(this, 19, value);
 };
 

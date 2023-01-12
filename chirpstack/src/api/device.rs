@@ -492,7 +492,7 @@ impl DeviceService for Device {
         let nwk_s_enc_key = AES128Key::from_str(&req_da.nwk_s_enc_key).map_err(|e| e.status())?;
         let app_s_key = AES128Key::from_str(&req_da.app_s_key).map_err(|e| e.status())?;
 
-        let ds = internal::DeviceSession {
+        let mut ds = internal::DeviceSession {
             region_config_id: "".to_string(),
             dev_eui: dev_eui.to_vec(),
             dev_addr: dev_addr.to_vec(),
@@ -508,12 +508,9 @@ impl DeviceService for Device {
             n_f_cnt_down: req_da.n_f_cnt_down,
             a_f_cnt_down: req_da.a_f_cnt_down,
             skip_f_cnt_check: d.skip_fcnt_check,
-            rx1_delay: dp.abp_rx1_delay as u32,
-            rx1_dr_offset: dp.abp_rx1_dr_offset as u32,
-            rx2_dr: dp.abp_rx2_dr as u32,
-            rx2_frequency: dp.abp_rx2_freq as u32,
             ..Default::default()
         };
+        dp.reset_session_to_boot_params(&mut ds);
 
         device_session::save(&ds).await.map_err(|e| e.status())?;
         if dp.flush_queue_on_activate {

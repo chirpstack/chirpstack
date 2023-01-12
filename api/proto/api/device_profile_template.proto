@@ -114,8 +114,11 @@ message DeviceProfileTemplate {
     // This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested).
     uint32 class_b_timeout = 18;
 
-    // Class-B ping-slot periodicity.
-    uint32 class_b_ping_slot_period = 19;
+    // Class-B ping-slots per beacon period.
+    // Valid options are: 0 - 7.
+    //
+    // The actual number of ping-slots per beacon period equals to 2^k.
+    uint32 class_b_ping_slot_nb_k = 19;
 
     // Class-B ping-slot DR.
     uint32 class_b_ping_slot_dr = 20;

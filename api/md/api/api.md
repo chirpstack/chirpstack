@@ -2389,7 +2389,9 @@ DeviceService is the service providing API methods for managing devices.
 | supports_class_b | [bool](#bool) |  | Supports Class B. |
 | supports_class_c | [bool](#bool) |  | Supports Class-C. |
 | class_b_timeout | [uint32](#uint32) |  | Class-B timeout (seconds). This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested). |
-| class_b_ping_slot_period | [uint32](#uint32) |  | Class-B ping-slot periodicity. |
+| class_b_ping_slot_nb_k | [uint32](#uint32) |  | Class-B ping-slots per beacon period. Valid options are: 0 - 7.
+
+The actual number of ping-slots per beacon period equals to 2^k. |
 | class_b_ping_slot_dr | [uint32](#uint32) |  | Class-B ping-slot DR. |
 | class_b_ping_slot_freq | [uint32](#uint32) |  | Class-B ping-slot freq (Hz). |
 | class_c_timeout | [uint32](#uint32) |  | Class-C timeout (seconds). This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested). |

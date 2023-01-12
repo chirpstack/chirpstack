@@ -88,6 +88,9 @@ class DeviceProfileTemplateForm extends Component<IProps, IState> {
     // class-b
     dp.setSupportsClassB(v.supportsClassB);
     dp.setClassBTimeout(v.classBTimeout);
+    dp.setClassBPingSlotNbK(v.classBPingSlotNbK);
+    dp.setClassBPingSlotDr(v.classBPingSlotDr);
+    dp.setClassBPingSlotFreq(v.classBPingSlotFreq);
 
     // class-c
     dp.setSupportsClassC(v.supportsClassC);
@@ -328,14 +331,61 @@ class DeviceProfileTemplateForm extends Component<IProps, IState> {
               <Switch onChange={this.onSupportsClassBChnage} />
             </Form.Item>
             {this.state.supportsClassB && (
-              <Form.Item
-                label="Class-B confirmed downlink timeout (seconds)"
-                tooltip="Class-B timeout (in seconds) for confirmed downlink transmissions."
-                name="classBTimeout"
-                rules={[{ required: true, message: "Please enter a Class-B confirmed downlink timeout!" }]}
-              >
-                <InputNumber min={0} />
-              </Form.Item>
+              <>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Class-B confirmed downlink timeout (seconds)"
+                      tooltip="Class-B timeout (in seconds) for confirmed downlink transmissions."
+                      name="classBTimeout"
+                      rules={[{ required: true, message: "Please enter a Class-B confirmed downlink timeout!" }]}
+                    >
+                      <InputNumber min={0} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Class-B ping-slot periodicity"
+                      tooltip="This value must match the ping-slot periodicity of the device. Please refer to the device documentation."
+                      name="classBPingSlotNbK"
+                      rules={[{ required: true, message: "Please select the ping-slot periodicity!" }]}
+                    >
+                      <Select>
+                        <Select.Option value={0}>Every second</Select.Option>
+                        <Select.Option value={1}>Every 2 seconds</Select.Option>
+                        <Select.Option value={2}>Every 4 seconds</Select.Option>
+                        <Select.Option value={3}>Every 8 seconds</Select.Option>
+                        <Select.Option value={4}>Every 16 seconds</Select.Option>
+                        <Select.Option value={5}>Every 32 seconds</Select.Option>
+                        <Select.Option value={6}>Every 64 seconds</Select.Option>
+                        <Select.Option value={8}>Every 128 seconds</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Class-B ping-slot data-rate"
+                      tooltip="This value must match the ping-slot data-rate of the device. Please refer to the device documentation."
+                      name="classBPingSlotDr"
+                      rules={[{ required: true, message: "Please enter the ping-slot data-rate!" }]}
+                    >
+                      <InputNumber min={0} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Class-B ping-slot frequency (Hz)"
+                      tooltip="This value must match the ping-slot frequency of the device. Please refer to the device documentation."
+                      name="classBPingSlotFreq"
+                      rules={[{ required: true, message: "Please enter the ping-slot frequency!" }]}
+                    >
+                      <InputNumber min={0} style={{ width: "200px" }} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </>
             )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Class-C" key="4">

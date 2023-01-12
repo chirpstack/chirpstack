@@ -646,6 +646,7 @@ impl JoinRequest {
                 .collect(),
             class_b_ping_slot_dr: device_profile.class_b_ping_slot_dr as u32,
             class_b_ping_slot_freq: device_profile.class_b_ping_slot_freq as u32,
+            class_b_ping_slot_nb: 1 << device_profile.class_b_ping_slot_nb_k as u32,
             nb_trans: 1,
             skip_f_cnt_check: device.skip_fcnt_check,
             ..Default::default()

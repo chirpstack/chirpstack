@@ -357,7 +357,7 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     supportsClassB: jspb.Message.getBooleanFieldWithDefault(msg, 14, false),
     supportsClassC: jspb.Message.getBooleanFieldWithDefault(msg, 15, false),
     classBTimeout: jspb.Message.getFieldWithDefault(msg, 16, 0),
-    classBPingSlotPeriod: jspb.Message.getFieldWithDefault(msg, 17, 0),
+    classBPingSlotNbK: jspb.Message.getFieldWithDefault(msg, 17, 0),
     classBPingSlotDr: jspb.Message.getFieldWithDefault(msg, 18, 0),
     classBPingSlotFreq: jspb.Message.getFieldWithDefault(msg, 19, 0),
     classCTimeout: jspb.Message.getFieldWithDefault(msg, 20, 0),
@@ -475,7 +475,7 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 17:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setClassBPingSlotPeriod(value);
+      msg.setClassBPingSlotNbK(value);
       break;
     case 18:
       var value = /** @type {number} */ (reader.readUint32());
@@ -673,7 +673,7 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getClassBPingSlotPeriod();
+  f = message.getClassBPingSlotNbK();
   if (f !== 0) {
     writer.writeUint32(
       17,
@@ -1061,10 +1061,10 @@ proto.api.DeviceProfile.prototype.setClassBTimeout = function(value) {
 
 
 /**
- * optional uint32 class_b_ping_slot_period = 17;
+ * optional uint32 class_b_ping_slot_nb_k = 17;
  * @return {number}
  */
-proto.api.DeviceProfile.prototype.getClassBPingSlotPeriod = function() {
+proto.api.DeviceProfile.prototype.getClassBPingSlotNbK = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 17, 0));
 };
 
@@ -1073,7 +1073,7 @@ proto.api.DeviceProfile.prototype.getClassBPingSlotPeriod = function() {
  * @param {number} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setClassBPingSlotPeriod = function(value) {
+proto.api.DeviceProfile.prototype.setClassBPingSlotNbK = function(value) {
   return jspb.Message.setProto3IntField(this, 17, value);
 };
 

@@ -54,7 +54,7 @@ pub mod test {
             abp_rx2_freq: 868300000,
             class_b_ping_slot_dr: 2,
             class_b_ping_slot_freq: 868100000,
-            class_b_ping_slot_period: 1,
+            class_b_ping_slot_nb_k: 1,
             ..Default::default()
         };
         let mut ds = internal::DeviceSession {
@@ -104,7 +104,7 @@ pub mod test {
                 max_supported_tx_power_index: 0,
                 nb_trans: 1,
                 enabled_uplink_channel_indices: Vec::new(),
-                class_b_ping_slot_nb: 4096,
+                class_b_ping_slot_nb: 2,
                 class_b_ping_slot_dr: 2,
                 class_b_ping_slot_freq: 868100000,
                 extra_uplink_channels: HashMap::new(),

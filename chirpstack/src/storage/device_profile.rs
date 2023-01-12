@@ -35,7 +35,7 @@ pub struct DeviceProfile {
     pub supports_class_b: bool,
     pub supports_class_c: bool,
     pub class_b_timeout: i32,
-    pub class_b_ping_slot_period: i32,
+    pub class_b_ping_slot_nb_k: i32,
     pub class_b_ping_slot_dr: i16,
     pub class_b_ping_slot_freq: i64,
     pub class_c_timeout: i32,
@@ -85,7 +85,7 @@ impl Default for DeviceProfile {
             supports_class_b: false,
             supports_class_c: false,
             class_b_timeout: 0,
-            class_b_ping_slot_period: 0,
+            class_b_ping_slot_nb_k: 0,
             class_b_ping_slot_dr: 0,
             class_b_ping_slot_freq: 0,
             class_c_timeout: 0,
@@ -118,11 +118,8 @@ impl DeviceProfile {
         ds.enabled_uplink_channel_indices = Vec::new();
         ds.class_b_ping_slot_dr = self.class_b_ping_slot_dr as u32;
         ds.class_b_ping_slot_freq = self.class_b_ping_slot_freq as u32;
+        ds.class_b_ping_slot_nb = 1 << self.class_b_ping_slot_nb_k as u32;
         ds.nb_trans = 1;
-
-        if self.class_b_ping_slot_period != 0 {
-            ds.class_b_ping_slot_nb = (1 << 12) / (self.class_b_ping_slot_period as u32);
-        }
     }
 }
 
@@ -201,7 +198,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::supports_class_b.eq(&dp.supports_class_b),
                     device_profile::supports_class_c.eq(&dp.supports_class_c),
                     device_profile::class_b_timeout.eq(&dp.class_b_timeout),
-                    device_profile::class_b_ping_slot_period.eq(&dp.class_b_ping_slot_period),
+                    device_profile::class_b_ping_slot_nb_k.eq(&dp.class_b_ping_slot_nb_k),
                     device_profile::class_b_ping_slot_dr.eq(&dp.class_b_ping_slot_dr),
                     device_profile::class_b_ping_slot_freq.eq(&dp.class_b_ping_slot_freq),
                     device_profile::class_c_timeout.eq(&dp.class_c_timeout),
