@@ -702,7 +702,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                         <Select.Option value={4}>Every 16 seconds</Select.Option>
                         <Select.Option value={5}>Every 32 seconds</Select.Option>
                         <Select.Option value={6}>Every 64 seconds</Select.Option>
-                        <Select.Option value={8}>Every 128 seconds</Select.Option>
+                        <Select.Option value={7}>Every 128 seconds</Select.Option>
                       </Select>
                     </Form.Item>
                   </Col>
