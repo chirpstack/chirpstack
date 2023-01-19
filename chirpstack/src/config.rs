@@ -542,9 +542,7 @@ impl Default for Region {
                 backend: GatewayBackend {
                     enabled: "mqtt".into(),
                     mqtt: GatewayBackendMqtt {
-                        event_topic: "eu868/gateway/+/event/+".into(),
-                        command_topic: "eu868/gateway/{{ gateway_id }}/command/{{ command }}"
-                            .into(),
+                        topic_prefix: "eu868".into(),
                         ..Default::default()
                     },
                 },
@@ -621,6 +619,7 @@ pub struct GatewayBackend {
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct GatewayBackendMqtt {
+    pub topic_prefix: String,
     pub event_topic: String,
     pub command_topic: String,
     pub server: String,
@@ -639,6 +638,7 @@ pub struct GatewayBackendMqtt {
 impl Default for GatewayBackendMqtt {
     fn default() -> Self {
         GatewayBackendMqtt {
+            topic_prefix: "".into(),
             event_topic: "".into(),
             command_topic: "".into(),
             server: "tcp://127.0.0.1:1883/".into(),

@@ -30,11 +30,12 @@
       # MQTT configuration.
       [regions.gateway.backend.mqtt]
 
-        # Event topic template.
-        event_topic="us915_6/gateway/+/event/+"
-
-        # Command topic template.
-        command_topic="us915_6/gateway/{{ gateway_id }}/command/{{ command }}"
+        # Topic prefix.
+        #
+        # The topic prefix can be used to define the region of the gateway.
+        # Note, there is no need to add a trailing '/' to the prefix. The trailing
+        # '/' is automatically added to the prefix if it is configured.
+        topic_prefix="us915_6"
 
         # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
         server="tcp://$MQTT_BROKER_HOST:1883"

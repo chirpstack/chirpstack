@@ -85,7 +85,19 @@ impl<'a> MqttBackend<'a> {
     ) -> Result<MqttBackend<'a>> {
         // topic templates
         let mut templates = Handlebars::new();
-        templates.register_template_string("command_topic", &conf.command_topic)?;
+        templates.register_template_string(
+            "command_topic",
+            if conf.command_topic.is_empty() {
+                let command_topic = "gateway/{{ gateway_id }}/command/{{ command }}".to_string();
+                if conf.topic_prefix.is_empty() {
+                    command_topic
+                } else {
+                    format!("{}/{}", conf.topic_prefix, command_topic)
+                }
+            } else {
+                conf.command_topic.clone()
+            },
+        )?;
 
         // get client id, this will generate a random client_id when no client_id has been
         // configured.
@@ -211,7 +223,16 @@ impl<'a> MqttBackend<'a> {
         // (Re)subscribe loop.
         tokio::spawn({
             let region_config_id = region_config_id.to_string();
-            let event_topic = conf.event_topic.clone();
+            let event_topic = if conf.event_topic.is_empty() {
+                let event_topic = "gateway/+/event/+".to_string();
+                if conf.topic_prefix.is_empty() {
+                    event_topic
+                } else {
+                    format!("{}/{}", conf.topic_prefix, event_topic)
+                }
+            } else {
+                conf.event_topic.clone()
+            };
             let client = b.client.clone();
             let qos = conf.qos as i32;
 
