@@ -748,11 +748,6 @@ impl Data {
         let up_event = self.uplink_event.as_ref().unwrap();
         let dev = self.device.as_ref().unwrap();
 
-        if !dp.auto_detect_measurements {
-            trace!("Auto detecting measurements is disabled in device-profile");
-            return Ok(());
-        }
-
         let data_measurements: HashMap<String, pbjson_types::value::Kind> = match &up_event.object {
             None => HashMap::new(),
             Some(v) => codec::get_measurements(v),
@@ -804,7 +799,7 @@ impl Data {
                     }
                     _ => {}
                 }
-            } else {
+            } else if dp.auto_detect_measurements {
                 update_dp_measurements = true;
                 measurements.insert(
                     k.clone(),
