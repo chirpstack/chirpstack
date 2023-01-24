@@ -16,7 +16,7 @@ use crate::storage::{
     application, device, device_gateway, device_profile, device_queue, device_session, fields,
     metrics, tenant,
 };
-use crate::{codec, config, downlink, framelog, integration, maccommand, metalog};
+use crate::{codec, config, downlink, framelog, integration, maccommand, metalog, region};
 use chirpstack_api::{api, common, integration as integration_pb, internal, meta};
 use lrwn::AES128Key;
 
@@ -97,6 +97,7 @@ impl Data {
         ctx.set_uplink_data_rate().await?;
         ctx.set_enabled_class().await?;
         ctx.log_uplink_meta().await?;
+        ctx.reset_channels_on_adr_ack_req()?;
         ctx.handle_mac_commands().await?;
         if !ctx._is_roaming() {
             ctx.save_device_gateway_rx_info().await?;
@@ -565,6 +566,35 @@ impl Data {
             };
 
             metalog::log_uplink(&um).await?;
+        }
+
+        Ok(())
+    }
+
+    // This is needed as in case the device sets the ADRAckReq bit, we do not know if the device
+    // has reset its channels / channel-mask or not, as there is no explicit signalling in case
+    // this happens. This way, we make sure that the channels are always in sync, although it could
+    // lead to a small bit of overhead (e.g. re-sending the channels / channel-mask even if the
+    // device did not reset these).
+    fn reset_channels_on_adr_ack_req(&mut self) -> Result<()> {
+        trace!("Reset channels on adr ack req");
+
+        if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload {
+            if pl.fhdr.f_ctrl.adr_ack_req {
+                let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
+                let mut ds = self.device_session.as_mut().unwrap();
+
+                // We reset the device-session enabled_uplink_channel_indices and
+                // extra_uplink_channels. On the downlink path, the mac-command handling will
+                // detect that the device is out-of-sync with the NS configuration and will send
+                // mac-commands to re-sync.
+                ds.enabled_uplink_channel_indices = region_conf
+                    .get_default_uplink_channel_indices()
+                    .iter()
+                    .map(|i| *i as u32)
+                    .collect();
+                ds.extra_uplink_channels = HashMap::new();
+            }
         }
 
         Ok(())

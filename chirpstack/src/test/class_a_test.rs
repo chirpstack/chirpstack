@@ -4001,7 +4001,7 @@ async fn test_lorawan_10_adr() {
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
-            device_session: Some(ds.clone()),
+            device_session: Some(ds_7chan.clone()), // we want to see the NS to reset channels
             tx_info: tx_info.clone(),
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
@@ -4027,6 +4027,7 @@ async fn test_lorawan_10_adr() {
             assert: vec![
                 assert::f_cnt_up(dev.dev_eui.clone(), 11),
                 assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::enabled_uplink_channel_indices(dev.dev_eui.clone(), vec![0, 1, 2]),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
