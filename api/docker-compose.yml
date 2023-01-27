@@ -56,3 +56,10 @@ services:
     command: bash -c "cd kotlin && make all"
     volumes:
       - ./:/chirpstack/api
+  chirpstack-csharp:
+    build:
+      context: .
+      dockerfile: Dockerfile-csharp
+    command: bash -c "cd csharp && make all"
+    volumes:
+      - ./:/chirpstack/api
