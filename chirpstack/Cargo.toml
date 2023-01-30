@@ -27,7 +27,7 @@ diesel = { version = "2.0.2", features = [ "chrono", "postgres", "r2d2", "uuid",
 diesel_migrations = { version = "2.0.0" }
 r2d2 = "0.8"
 bigdecimal = "0.3"
-redis = { version = "0.21", features = ["r2d2", "cluster"] }
+redis = { version = "0.22", features = ["r2d2", "cluster"] }
 pq-sys = { version = "0.4.7", features = ["pkg-config"] }
 
 # Logging

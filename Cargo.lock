@@ -1746,7 +1746,7 @@ dependencies = [
  "http",
  "httpdate",
  "mime",
- "sha1 0.10.5",
+ "sha1",
 ]
 
 [[package]]
@@ -2610,7 +2610,7 @@ dependencies = [
  "hmac",
  "lazy_static",
  "rc2",
- "sha1 0.10.5",
+ "sha1",
  "yasna",
 ]
 
@@ -2791,7 +2791,7 @@ checksum = "bcec162c71c45e269dfc3fc2916eaeb97feab22993a21bcce4721d08cd7801a6"
 dependencies = [
  "once_cell",
  "pest",
- "sha1 0.10.5",
+ "sha1",
 ]
 
 [[package]]
@@ -3143,11 +3143,10 @@ dependencies = [
 
 [[package]]
 name = "redis"
-version = "0.21.6"
+version = "0.22.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "571c252c68d09a2ad3e49edd14e9ee48932f3e0f27b06b4ea4c9b2a706d31103"
+checksum = "aa8455fa3621f6b41c514946de66ea0531f57ca017b2e6c7cc368035ea5b46df"
 dependencies = [
- "async-trait",
  "combine",
  "crc16",
  "itoa",
@@ -3155,7 +3154,7 @@ dependencies = [
  "r2d2",
  "rand",
  "ryu",
- "sha1 0.6.1",
+ "sha1_smol",
  "url",
 ]
 
@@ -3651,15 +3650,6 @@ dependencies = [
  "cpufeatures",
  "digest 0.9.0",
  "opaque-debug",
-]
-
-[[package]]
-name = "sha1"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1da05c97445caa12d05e848c4a4fcbbea29e748ac28f7e80e9b010392063770"
-dependencies = [
- "sha1_smol",
 ]
 
 [[package]]
