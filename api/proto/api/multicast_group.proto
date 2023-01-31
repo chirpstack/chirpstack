@@ -67,10 +67,10 @@ service MulticastGroupService {
         };
     }
 
-    // Add the given item to the multcast group queue.
+    // Add the given item to the multicast group queue.
     rpc Enqueue(EnqueueMulticastGroupQueueItemRequest) returns (EnqueueMulticastGroupQueueItemResponse) {
         option(google.api.http) = {
-            post: "/api/multcast-groups/{queue_item.multicast_group_id}/queue"
+            post: "/api/multicast-groups/{queue_item.multicast_group_id}/queue"
             body: "*"
         };
     }
