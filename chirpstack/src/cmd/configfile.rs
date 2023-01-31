@@ -166,6 +166,17 @@ pub fn run() {
   # must be less than the (first) receive-window.
   deduplication_delay="{{ network.deduplication_delay }}"
 
+  # Get downlink data delay.
+  #
+  # This is the time that ChirpStack waits between forwarding data to the
+  # integration(s) and reading data from the queue. A higher value means that
+  # an end-application has more time to schedule a downlink queue item which
+  # can be processed within the same uplink / downlink transaction.
+  # Please note that this value has influence on the uplink / downlink
+  # roundtrip time. Setting this value too high means ChirpStack will be
+  # unable to respond to the device within its receive-window.
+  get_downlink_data_delay="{{ network.get_downlink_data_delay }}"
+
   # Mac-commands disabled.
   mac_commands_disabled={{ network.mac_commands_disabled }}
 

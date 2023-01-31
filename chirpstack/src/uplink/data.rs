@@ -983,6 +983,10 @@ impl Data {
 
     async fn start_downlink_data_flow(&mut self) -> Result<()> {
         trace!("Starting downlink data flow");
+
+        let conf = config::get();
+        tokio::time::sleep(conf.network.get_downlink_data_delay).await;
+
         if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload {
             downlink::data::Data::handle_response(
                 self.uplink_frame_set.clone(),
