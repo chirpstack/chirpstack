@@ -1,0 +1,11 @@
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+
+ENV PROJECT_PATH=/chirpstack/api
+
+RUN apt update && apt install -y make git
+RUN git clone --depth=1 --branch=master https://github.com/googleapis/googleapis.git /googleapis
+RUN mkdir -p /googleproto/google/api/
+RUN mv /googleapis/google/api/http.proto /googleproto/google/api/ && mv /googleapis/google/api/annotations.proto /googleproto/google/api/
+RUN rm -rf /googleapis
+
+WORKDIR $PROJECT_PATH

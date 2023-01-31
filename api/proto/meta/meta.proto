@@ -6,6 +6,7 @@ option go_package = "github.com/chirpstack/chirpstack/api/go/v4/meta";
 option java_package = "io.chirpstack.api.meta";
 option java_multiple_files = true;
 option java_outer_classname = "MetaProto";
+option csharp_namespace = "Chirpstack.Meta";
 
 import "common/common.proto";
 import "gw/gw.proto";

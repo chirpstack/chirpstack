@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include="../proto/common/common.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/gw/gw.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/internal.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/user.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/tenant.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/application.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/device_profile.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/device_profile_template.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/device.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/gateway.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/frame_log.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/multicast_group.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/api/request_log.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/integration/integration.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/meta/meta.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="/googleproto/google/api/*.proto" ProtoRoot="/googleproto" OutputDir="Chirpstack/" CompileOutputs="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.21.12" />
+    <PackageReference Include="Grpc.Core" Version="2.46.6" />
+    <PackageReference Include="Grpc.Tools" Version="2.51.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
