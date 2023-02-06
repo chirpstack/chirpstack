@@ -22,7 +22,7 @@ hex = "0.4"
 rand = "0.8"
 
 tonic = { version = "0.8", features = ["codegen", "prost"], default-features = false }
-tokio = { version = "1.24", features = ["macros"], optional = true }
+tokio = { version = "1.25", features = ["macros"], optional = true }
 serde = { version = "1.0" }
 
 [build-dependencies]

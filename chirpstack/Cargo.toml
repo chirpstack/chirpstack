@@ -60,7 +60,7 @@ rdkafka = { version = "0.28", features = ["cmake-build"]}
 tonic = "0.8"
 tonic-web = "0.5"
 tonic-reflection = "0.5"
-tokio = { version = "1.24", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.25", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1"
 prost-types = "0.11"
 prost = "0.11"
