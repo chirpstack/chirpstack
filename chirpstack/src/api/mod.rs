@@ -10,7 +10,7 @@ use anyhow::Result;
 use futures::future::{self, Either, TryFutureExt};
 use hyper::{service::make_service_fn, Server};
 use pin_project::pin_project;
-use prometheus_client::encoding::text::Encode;
+use prometheus_client::encoding::EncodeLabelSet;
 use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prometheus_client::metrics::histogram::Histogram;
@@ -63,7 +63,7 @@ lazy_static! {
         prometheus::register(
             "api_requests_handled",
             "Number of API requests handled by service, method and status code",
-            Box::new(counter.clone()),
+            counter.clone(),
         );
         counter
     };
@@ -79,7 +79,7 @@ lazy_static! {
         prometheus::register(
             "api_requests_handled_seconds",
             "Duration of API requests handled by service, method and status code",
-            Box::new(histogram.clone()),
+            histogram.clone(),
         );
         histogram
     };
@@ -301,7 +301,7 @@ impl<B> tower_http::trace::OnResponse<B> for OnResponse {
     }
 }
 
-#[derive(Clone, Hash, PartialEq, Eq, Encode)]
+#[derive(Clone, Hash, PartialEq, Eq, EncodeLabelSet, Debug)]
 struct GrpcLabels {
     service: String,
     method: String,

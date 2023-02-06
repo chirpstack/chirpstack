@@ -2,7 +2,7 @@ use std::sync::RwLock;
 
 use anyhow::Result;
 use prometheus_client::encoding::text::encode;
-use prometheus_client::registry::Registry;
+use prometheus_client::registry::{Metric, Registry};
 
 lazy_static! {
     static ref REGISTRY: RwLock<Registry> = RwLock::new(<Registry>::default());
@@ -10,17 +10,13 @@ lazy_static! {
 
 pub fn encode_to_string() -> Result<String> {
     let registry_r = REGISTRY.read().unwrap();
-    let mut buffer = vec![];
+    let mut buffer = String::new();
     encode(&mut buffer, &registry_r)?;
 
-    Ok(String::from_utf8(buffer)?)
+    Ok(buffer)
 }
 
-pub fn register(
-    name: &str,
-    help: &str,
-    metric: Box<dyn prometheus_client::encoding::text::SendSyncEncodeMetric>,
-) {
+pub fn register(name: &str, help: &str, metric: impl Metric) {
     let mut registry_w = REGISTRY.write().unwrap();
     registry_w.register(name, help, metric)
 }

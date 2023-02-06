@@ -187,7 +187,7 @@ pub async fn setup() -> Result<()> {
     info!("Setting up Redis client");
     if conf.redis.cluster {
         let client = redis::cluster::ClusterClientBuilder::new(conf.redis.servers.clone())
-            .open()
+            .build()
             .context("ClusterClient open")?;
         let pool: r2d2::Pool<redis::cluster::ClusterClient> = r2d2::Pool::builder()
             .max_size(conf.redis.max_open_connections)

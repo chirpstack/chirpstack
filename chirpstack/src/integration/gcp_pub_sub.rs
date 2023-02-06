@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
+use base64::{engine::general_purpose, Engine as _};
 use gcp_auth::{AuthenticationManager, CustomServiceAccount};
 use prost::Message;
 use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
@@ -77,7 +78,7 @@ impl Integration {
 
         let pl = PublishRequest {
             messages: vec![PubSubMessage {
-                data: base64::encode(pl),
+                data: general_purpose::STANDARD.encode(pl),
                 attributes: PubSubMessageAttributes {
                     event: event.to_string(),
                     dev_eui: dev_eui.to_string(),

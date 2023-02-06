@@ -824,8 +824,8 @@ pub mod test {
                 name: "Received".to_string(),
                 timestamps: vec![{
                     let ts = Local
-                        .ymd(now.year(), now.month(), now.day())
-                        .and_hms(0, 0, 0);
+                        .with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0)
+                        .unwrap();
                     //let ts: SystemTime = ts.into();
                     let ts: DateTime<Utc> = ts.into();
                     ts.into()

@@ -7,6 +7,7 @@ use aws_types::credentials::future;
 use aws_types::credentials::ProvideCredentials;
 use aws_types::region::Region;
 use aws_types::{credentials, Credentials};
+use base64::{engine::general_purpose, Engine as _};
 use prost::Message;
 use tracing::{info, trace};
 
@@ -129,7 +130,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("up", &di.application_id, &di.dev_eui, &pl)
@@ -144,7 +145,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("join", &di.application_id, &di.dev_eui, &pl)
@@ -159,7 +160,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("ack", &di.application_id, &di.dev_eui, &pl)
@@ -174,7 +175,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("txack", &di.application_id, &di.dev_eui, &pl)
@@ -189,7 +190,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("log", &di.application_id, &di.dev_eui, &pl)
@@ -204,7 +205,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("status", &di.application_id, &di.dev_eui, &pl)
@@ -219,7 +220,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("location", &di.application_id, &di.dev_eui, &pl)
@@ -234,7 +235,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("integration", &di.application_id, &di.dev_eui, &pl)

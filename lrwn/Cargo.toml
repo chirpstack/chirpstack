@@ -13,7 +13,7 @@ hex = "0.4"
 cmac = "0.7"
 aes = "0.8"
 serde = { version = "1.0", features = ["derive"] }
-diesel = { version = "2.0.2", features = [ "postgres" ] }
+diesel = { version = "2.0", features = [ "postgres" ] }
 
 # Error handling
 thiserror = "1.0"

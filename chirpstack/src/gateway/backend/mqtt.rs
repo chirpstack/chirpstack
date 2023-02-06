@@ -11,7 +11,7 @@ use async_trait::async_trait;
 use futures::stream::StreamExt;
 use handlebars::Handlebars;
 use paho_mqtt as mqtt;
-use prometheus_client::encoding::text::Encode;
+use prometheus_client::encoding::EncodeLabelSet;
 use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prost::Message;
@@ -28,12 +28,12 @@ use crate::storage::{get_redis_conn, redis_key};
 use crate::{downlink, uplink};
 use lrwn::region::CommonName;
 
-#[derive(Clone, Hash, PartialEq, Eq, Encode)]
+#[derive(Clone, Hash, PartialEq, Eq, EncodeLabelSet, Debug)]
 struct EventLabels {
     event: String,
 }
 
-#[derive(Clone, Hash, PartialEq, Eq, Encode)]
+#[derive(Clone, Hash, PartialEq, Eq, EncodeLabelSet, Debug)]
 struct CommandLabels {
     command: String,
 }
@@ -44,7 +44,7 @@ lazy_static! {
         prometheus::register(
             "gateway_backend_mqtt_events",
             "Number of events received",
-            Box::new(counter.clone()),
+            counter.clone(),
         );
         counter
     };
@@ -53,7 +53,7 @@ lazy_static! {
         prometheus::register(
             "gateway_backend_mqtt_commands",
             "Number of commands sent",
-            Box::new(counter.clone()),
+            counter.clone(),
         );
         counter
     };

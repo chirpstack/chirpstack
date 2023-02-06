@@ -94,7 +94,7 @@ pub mod test {
 
     #[test]
     fn test_get_beacon_start_for_time() {
-        let gps_epoch_time: DateTime<Utc> = Utc.ymd(1980, 1, 6).and_hms(0, 0, 0);
+        let gps_epoch_time: DateTime<Utc> = Utc.with_ymd_and_hms(1980, 1, 6, 0, 0, 0).unwrap();
 
         // For GPS epoch time
         let start_ts = get_beacon_start_for_time(gps_epoch_time);

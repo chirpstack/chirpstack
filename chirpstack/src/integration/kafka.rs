@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use handlebars::Handlebars;
 use prost::Message;
 use rdkafka::config::ClientConfig;
-use rdkafka::message::OwnedHeaders;
+use rdkafka::message::{Header, OwnedHeaders};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use serde::Serialize;
 use tracing::{error, info};
@@ -77,7 +77,10 @@ impl<'a> Integration<'a> {
             .send(
                 FutureRecord::to(&self.topic)
                     .key(&event_key)
-                    .headers(OwnedHeaders::new().add("event", event))
+                    .headers(OwnedHeaders::new().insert(Header {
+                        key: "event",
+                        value: Some(event),
+                    }))
                     .payload(b),
                 Duration::from_secs(0),
             )
@@ -289,8 +292,11 @@ pub mod test {
         );
         assert_eq!(serde_json::to_vec(&pl).unwrap(), msg.payload().unwrap());
         assert_eq!(
-            ("event", "up".as_bytes()),
-            msg.headers().unwrap().get(0).unwrap()
+            Header {
+                key: "event",
+                value: Some("up".as_bytes()),
+            },
+            msg.headers().unwrap().get(0)
         );
     }
 }

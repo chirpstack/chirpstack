@@ -3,6 +3,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
 use async_trait::async_trait;
+use base64::{engine::general_purpose, Engine as _};
 use hmac::{Hmac, Mac};
 use prost::Message;
 use reqwest::header::{HeaderMap, HeaderName, AUTHORIZATION, CONTENT_TYPE};
@@ -112,7 +113,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("up", &di.application_id, &di.dev_eui, &pl)
@@ -127,7 +128,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("join", &di.application_id, &di.dev_eui, &pl)
@@ -142,7 +143,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("ack", &di.application_id, &di.dev_eui, &pl)
@@ -157,7 +158,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("txack", &di.application_id, &di.dev_eui, &pl)
@@ -172,7 +173,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("log", &di.application_id, &di.dev_eui, &pl)
@@ -187,7 +188,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("status", &di.application_id, &di.dev_eui, &pl)
@@ -202,7 +203,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("location", &di.application_id, &di.dev_eui, &pl)
@@ -217,7 +218,7 @@ impl IntegrationTrait for Integration {
         let di = pl.device_info.as_ref().unwrap();
         let pl = match self.json {
             true => serde_json::to_string(&pl)?,
-            false => base64::encode(pl.encode_to_vec()),
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
         self.publish("integration", &di.application_id, &di.dev_eui, &pl)
@@ -239,7 +240,7 @@ fn create_sas_token(
     let sig = format!("{}\n{}", encoded_url, exp);
     let mut m = HmacSha256::new_from_slice(key.as_bytes())?;
     m.update(sig.as_bytes());
-    let result = base64::encode(m.finalize().into_bytes());
+    let result = general_purpose::STANDARD.encode(m.finalize().into_bytes());
 
     let hash = urlencoding::encode(&result);
 

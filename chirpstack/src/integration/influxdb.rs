@@ -389,8 +389,7 @@ fn struct_values_to_location(
                 (
                     "geohash".to_string(),
                     Value::String(
-                        geohash::encode(geohash::Coordinate { x: lon, y: lat }, 12)
-                            .unwrap_or_default(),
+                        geohash::encode(geohash::Coord { x: lon, y: lat }, 12).unwrap_or_default(),
                     ),
                 ),
             ]

@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
+use base64::{engine::general_purpose, Engine as _};
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::Client;
 use serde::Serialize;
@@ -36,7 +37,7 @@ impl UplinkPayload {
         UplinkPayload {
             correlation_id: pl.deduplication_id.clone(),
             dev_eui: di.dev_eui.clone(),
-            data: base64::encode(&pl.data),
+            data: general_purpose::STANDARD.encode(&pl.data),
             f_cnt: pl.f_cnt,
             f_port: pl.f_port,
             rx_info: pl

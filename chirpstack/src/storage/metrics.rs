@@ -111,14 +111,28 @@ async fn save_for_interval(a: Aggregation, name: &str, record: &Record) -> Resul
 
         let ts: DateTime<Local> = match a {
             Aggregation::HOUR => Local
-                .ymd(record.time.year(), record.time.month(), record.time.day())
-                .and_hms(record.time.hour(), 0, 0),
+                .with_ymd_and_hms(
+                    record.time.year(),
+                    record.time.month(),
+                    record.time.day(),
+                    record.time.hour(),
+                    0,
+                    0,
+                )
+                .unwrap(),
             Aggregation::DAY => Local
-                .ymd(record.time.year(), record.time.month(), record.time.day())
-                .and_hms(0, 0, 0),
+                .with_ymd_and_hms(
+                    record.time.year(),
+                    record.time.month(),
+                    record.time.day(),
+                    0,
+                    0,
+                    0,
+                )
+                .unwrap(),
             Aggregation::MONTH => Local
-                .ymd(record.time.year(), record.time.month(), 1)
-                .and_hms(0, 0, 0),
+                .with_ymd_and_hms(record.time.year(), record.time.month(), 1, 0, 0, 0)
+                .unwrap(),
         };
 
         move || -> Result<()> {
@@ -188,13 +202,12 @@ pub async fn get(
 
     match a {
         Aggregation::HOUR => {
-            let mut ts =
-                Local
-                    .ymd(start.year(), start.month(), start.day())
-                    .and_hms(start.hour(), 0, 0);
+            let mut ts = Local
+                .with_ymd_and_hms(start.year(), start.month(), start.day(), start.hour(), 0, 0)
+                .unwrap();
             let end = Local
-                .ymd(end.year(), end.month(), end.day())
-                .and_hms(end.hour(), 0, 0);
+                .with_ymd_and_hms(end.year(), end.month(), end.day(), end.hour(), 0, 0)
+                .unwrap();
 
             while ts.le(&end) {
                 timestamps.push(ts);
@@ -204,11 +217,11 @@ pub async fn get(
         }
         Aggregation::DAY => {
             let mut ts = Local
-                .ymd(start.year(), start.month(), start.day())
-                .and_hms(0, 0, 0);
+                .with_ymd_and_hms(start.year(), start.month(), start.day(), 0, 0, 0)
+                .unwrap();
             let end = Local
-                .ymd(end.year(), end.month(), end.day())
-                .and_hms(0, 0, 0);
+                .with_ymd_and_hms(end.year(), end.month(), end.day(), 0, 0, 0)
+                .unwrap();
 
             while ts.le(&end) {
                 timestamps.push(ts);
@@ -218,26 +231,40 @@ pub async fn get(
                         // In case of DST to non-DST transition, the ts is incremented with less
                         // than 24h and we end up with the same day. Therefore we increment by two
                         // days.
-                        (ts + ChronoDuration::days(2)).date().and_hms(0, 0, 0)
+                        (ts + ChronoDuration::days(2))
+                            .date()
+                            .and_hms_opt(0, 0, 0)
+                            .unwrap()
                     } else {
                         // Make sure that the timestamp stays at midnight in case of non-DST to DST
                         // change.
-                        (ts + ChronoDuration::days(1)).date().and_hms(0, 0, 0)
+                        (ts + ChronoDuration::days(1))
+                            .date()
+                            .and_hms_opt(0, 0, 0)
+                            .unwrap()
                     }
                 };
             }
         }
         Aggregation::MONTH => {
-            let mut ts = Local.ymd(start.year(), start.month(), 1).and_hms(0, 0, 0);
-            let end = Local.ymd(end.year(), end.month(), 1).and_hms(0, 0, 0);
+            let mut ts = Local
+                .with_ymd_and_hms(start.year(), start.month(), 1, 0, 0, 0)
+                .unwrap();
+            let end = Local
+                .with_ymd_and_hms(end.year(), end.month(), 1, 0, 0, 0)
+                .unwrap();
 
             while ts.le(&end) {
                 timestamps.push(ts);
                 keys.push(get_key(name, a, ts));
                 ts = if ts.month() == 12 {
-                    Local.ymd(ts.year() + 1, 1, 1).and_hms(0, 0, 0)
+                    Local
+                        .with_ymd_and_hms(ts.year() + 1, 1, 1, 0, 0, 0)
+                        .unwrap()
                 } else {
-                    Local.ymd(ts.year(), ts.month() + 1, 1).and_hms(0, 0, 0)
+                    Local
+                        .with_ymd_and_hms(ts.year(), ts.month() + 1, 1, 0, 0, 0)
+                        .unwrap()
                 };
             }
         }
@@ -308,7 +335,7 @@ pub mod test {
 
         let records = vec![
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 1, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 1, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 1f64), ("bar".into(), 2f64)]
                     .iter()
@@ -316,7 +343,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 2, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 2, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 3f64), ("bar".into(), 4f64)]
                     .iter()
@@ -324,7 +351,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(2, 1, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 2, 1, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                     .iter()
@@ -342,8 +369,8 @@ pub mod test {
             "test",
             Kind::ABSOLUTE,
             Aggregation::HOUR,
-            Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
-            Local.ymd(2018, 1, 1).and_hms(2, 0, 0),
+            Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
+            Local.with_ymd_and_hms(2018, 1, 1, 2, 0, 0).unwrap(),
         )
         .await
         .unwrap();
@@ -351,7 +378,7 @@ pub mod test {
         assert_eq!(
             vec![
                 Record {
-                    time: Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
+                    time: Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 4f64), ("bar".into(), 6f64)]
                         .iter()
@@ -359,7 +386,7 @@ pub mod test {
                         .collect(),
                 },
                 Record {
-                    time: Local.ymd(2018, 1, 1).and_hms(2, 0, 0),
+                    time: Local.with_ymd_and_hms(2018, 1, 1, 2, 0, 0).unwrap(),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                         .iter()
@@ -377,7 +404,7 @@ pub mod test {
 
         let records = vec![
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 1f64), ("bar".into(), 2f64)]
                     .iter()
@@ -385,7 +412,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(2, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 2, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 3f64), ("bar".into(), 4f64)]
                     .iter()
@@ -393,7 +420,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 1, 2).and_hms(1, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 2, 1, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                     .iter()
@@ -411,8 +438,8 @@ pub mod test {
             "test",
             Kind::ABSOLUTE,
             Aggregation::DAY,
-            Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
-            Local.ymd(2018, 1, 2).and_hms(1, 0, 0),
+            Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
+            Local.with_ymd_and_hms(2018, 1, 2, 1, 0, 0).unwrap(),
         )
         .await
         .unwrap();
@@ -420,7 +447,7 @@ pub mod test {
         assert_eq!(
             vec![
                 Record {
-                    time: Local.ymd(2018, 1, 1).and_hms(0, 0, 0),
+                    time: Local.with_ymd_and_hms(2018, 1, 1, 0, 0, 0).unwrap(),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 4f64), ("bar".into(), 6f64)]
                         .iter()
@@ -428,7 +455,7 @@ pub mod test {
                         .collect(),
                 },
                 Record {
-                    time: Local.ymd(2018, 1, 2).and_hms(0, 0, 0),
+                    time: Local.with_ymd_and_hms(2018, 1, 2, 0, 0, 0).unwrap(),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                         .iter()
@@ -446,7 +473,7 @@ pub mod test {
 
         let records = vec![
             Record {
-                time: Local.ymd(2022, 10, 30).and_hms(1, 0, 0),
+                time: Local.with_ymd_and_hms(2022, 10, 30, 1, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 1f64), ("bar".into(), 2f64)]
                     .iter()
@@ -454,7 +481,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2022, 10, 30).and_hms(5, 0, 0),
+                time: Local.with_ymd_and_hms(2022, 10, 30, 5, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 3f64), ("bar".into(), 4f64)]
                     .iter()
@@ -462,7 +489,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2022, 10, 31).and_hms(1, 0, 0),
+                time: Local.with_ymd_and_hms(2022, 10, 31, 1, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                     .iter()
@@ -480,8 +507,8 @@ pub mod test {
             "test",
             Kind::ABSOLUTE,
             Aggregation::DAY,
-            Local.ymd(2022, 10, 30).and_hms(1, 0, 0),
-            Local.ymd(2022, 10, 31).and_hms(1, 0, 0),
+            Local.with_ymd_and_hms(2022, 10, 30, 1, 0, 0).unwrap(),
+            Local.with_ymd_and_hms(2022, 10, 31, 1, 0, 0).unwrap(),
         )
         .await
         .unwrap();
@@ -489,7 +516,7 @@ pub mod test {
         assert_eq!(
             vec![
                 Record {
-                    time: Local.ymd(2022, 10, 30).and_hms(0, 0, 0),
+                    time: Local.with_ymd_and_hms(2022, 10, 30, 0, 0, 0).unwrap(),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 4f64), ("bar".into(), 6f64)]
                         .iter()
@@ -497,7 +524,7 @@ pub mod test {
                         .collect(),
                 },
                 Record {
-                    time: Local.ymd(2022, 10, 31).and_hms(0, 0, 0),
+                    time: Local.with_ymd_and_hms(2022, 10, 31, 0, 0, 0).unwrap(),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                         .iter()
@@ -515,7 +542,7 @@ pub mod test {
 
         let records = vec![
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(0, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 0, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 1f64), ("bar".into(), 2f64)]
                     .iter()
@@ -523,7 +550,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 1, 2).and_hms(0, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 2, 0, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 3f64), ("bar".into(), 4f64)]
                     .iter()
@@ -531,7 +558,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 2, 1).and_hms(0, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 2, 1, 0, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                     .iter()
@@ -549,8 +576,8 @@ pub mod test {
             "test",
             Kind::ABSOLUTE,
             Aggregation::MONTH,
-            Local.ymd(2018, 1, 1).and_hms(0, 0, 0),
-            Local.ymd(2018, 2, 1).and_hms(0, 0, 0),
+            Local.with_ymd_and_hms(2018, 1, 1, 0, 0, 0).unwrap(),
+            Local.with_ymd_and_hms(2018, 2, 1, 0, 0, 0).unwrap(),
         )
         .await
         .unwrap();
@@ -558,7 +585,7 @@ pub mod test {
         assert_eq!(
             vec![
                 Record {
-                    time: Local.ymd(2018, 1, 1).and_hms(0, 0, 0),
+                    time: Local.with_ymd_and_hms(2018, 1, 1, 0, 0, 0).unwrap(),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 4f64), ("bar".into(), 6f64)]
                         .iter()
@@ -566,7 +593,7 @@ pub mod test {
                         .collect(),
                 },
                 Record {
-                    time: Local.ymd(2018, 2, 1).and_hms(0, 0, 0),
+                    time: Local.with_ymd_and_hms(2018, 2, 1, 0, 0, 0).unwrap(),
                     kind: Kind::ABSOLUTE,
                     metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
                         .iter()
@@ -584,7 +611,7 @@ pub mod test {
 
         let records = vec![
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 1, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 1, 0).unwrap(),
                 kind: Kind::COUNTER,
                 metrics: [("foo".into(), 1.0), ("bar".into(), 2.0)]
                     .iter()
@@ -592,7 +619,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 2, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 2, 0).unwrap(),
                 kind: Kind::COUNTER,
                 metrics: [("foo".into(), 2.0), ("bar".into(), 4.0)]
                     .iter()
@@ -610,15 +637,15 @@ pub mod test {
             "test",
             Kind::COUNTER,
             Aggregation::HOUR,
-            Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
-            Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
+            Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
+            Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
         )
         .await
         .unwrap();
 
         assert_eq!(
             vec![Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
                 kind: Kind::COUNTER,
                 metrics: [("foo".into(), 2.0), ("bar".into(), 4.0)]
                     .iter()
@@ -635,7 +662,7 @@ pub mod test {
 
         let records = vec![
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 1, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 1, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 1.0), ("bar".into(), 2.0)]
                     .iter()
@@ -643,7 +670,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 2, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 2, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 2.0), ("bar".into(), 4.0)]
                     .iter()
@@ -661,15 +688,15 @@ pub mod test {
             "test",
             Kind::ABSOLUTE,
             Aggregation::HOUR,
-            Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
-            Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
+            Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
+            Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
         )
         .await
         .unwrap();
 
         assert_eq!(
             vec![Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
                 kind: Kind::ABSOLUTE,
                 metrics: [("foo".into(), 3.0), ("bar".into(), 6.0)]
                     .iter()
@@ -686,7 +713,7 @@ pub mod test {
 
         let records = vec![
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 1, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 1, 0).unwrap(),
                 kind: Kind::GAUGE,
                 metrics: [("foo".into(), 1.0), ("bar".into(), 2.0)]
                     .iter()
@@ -694,7 +721,7 @@ pub mod test {
                     .collect(),
             },
             Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 2, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 2, 0).unwrap(),
                 kind: Kind::GAUGE,
                 metrics: [("foo".into(), 2.0), ("bar".into(), 4.0)]
                     .iter()
@@ -712,15 +739,15 @@ pub mod test {
             "test",
             Kind::GAUGE,
             Aggregation::HOUR,
-            Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
-            Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
+            Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
+            Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
         )
         .await
         .unwrap();
 
         assert_eq!(
             vec![Record {
-                time: Local.ymd(2018, 1, 1).and_hms(1, 0, 0),
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 0, 0).unwrap(),
                 kind: Kind::GAUGE,
                 metrics: [("foo".into(), 1.5), ("bar".into(), 3.0)]
                     .iter()
