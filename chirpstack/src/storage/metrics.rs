@@ -232,15 +232,19 @@ pub async fn get(
                         // than 24h and we end up with the same day. Therefore we increment by two
                         // days.
                         (ts + ChronoDuration::days(2))
-                            .date()
+                            .date_naive()
                             .and_hms_opt(0, 0, 0)
+                            .unwrap()
+                            .and_local_timezone(Local)
                             .unwrap()
                     } else {
                         // Make sure that the timestamp stays at midnight in case of non-DST to DST
                         // change.
                         (ts + ChronoDuration::days(1))
-                            .date()
+                            .date_naive()
                             .and_hms_opt(0, 0, 0)
+                            .unwrap()
+                            .and_local_timezone(Local)
                             .unwrap()
                     }
                 };
