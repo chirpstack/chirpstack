@@ -15,6 +15,7 @@ import {
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import ListMulticastGroupDevices from "./ListMulticastGroupDevices";
+import ListMulticastGroupGateways from "./ListMulticastGroupGateways";
 import EditMulticastGroup from "./EditMulticastGroup";
 import Admin from "../../components/Admin";
 
@@ -71,6 +72,9 @@ class MulticastGroupLayout extends Component<IProps, IState> {
     let tab = "devices";
 
     const path = this.props.history.location.pathname;
+    if (path.endsWith("gateways")) {
+      tab = "gateways";
+    }
     if (path.endsWith("edit")) {
       tab = "edit";
     }
@@ -127,6 +131,13 @@ class MulticastGroupLayout extends Component<IProps, IState> {
                 Devices
               </Link>
             </Menu.Item>
+            <Menu.Item key="gateways">
+              <Link
+                to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/gateways`}
+              >
+                Gateways
+              </Link>
+            </Menu.Item>
             <Menu.Item key="edit">
               <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/edit`}>
                 Configuration
@@ -138,6 +149,11 @@ class MulticastGroupLayout extends Component<IProps, IState> {
               exact
               path={this.props.match.path}
               render={props => <ListMulticastGroupDevices multicastGroup={mg} {...props} />}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/gateways`}
+              render={props => <ListMulticastGroupGateways application={app} multicastGroup={mg} {...props} />}
             />
             <Route
               exact

@@ -10,8 +10,11 @@ use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddr, EUI64};
 
 use super::error::Error;
-use super::get_db_conn;
-use super::schema::{device, multicast_group, multicast_group_device, multicast_group_queue_item};
+use super::schema::{
+    application, device, gateway, multicast_group, multicast_group_device, multicast_group_gateway,
+    multicast_group_queue_item,
+};
+use super::{fields, get_db_conn};
 use crate::downlink::classb;
 use crate::{config, gpstime::ToDateTime, gpstime::ToGpsTime};
 
@@ -32,6 +35,7 @@ pub struct MulticastGroup {
     pub dr: i16,
     pub frequency: i64,
     pub class_b_ping_slot_period: i32,
+    pub class_c_scheduling_type: fields::MulticastGroupSchedulingType,
 }
 
 impl MulticastGroup {
@@ -62,6 +66,7 @@ impl Default for MulticastGroup {
             dr: 0,
             frequency: 0,
             class_b_ping_slot_period: 0,
+            class_c_scheduling_type: fields::MulticastGroupSchedulingType::DELAY,
         }
     }
 }
@@ -163,6 +168,7 @@ pub async fn update(mg: MulticastGroup) -> Result<MulticastGroup, Error> {
                     multicast_group::dr.eq(&mg.dr),
                     multicast_group::frequency.eq(&mg.frequency),
                     multicast_group::class_b_ping_slot_period.eq(&mg.class_b_ping_slot_period),
+                    multicast_group::class_c_scheduling_type.eq(&mg.class_c_scheduling_type),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, mg.id.to_string()))
@@ -320,6 +326,79 @@ pub async fn remove_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error
     Ok(())
 }
 
+pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Error> {
+    task::spawn_blocking({
+        let group_id = *group_id;
+        let gateway_id = *gateway_id;
+        move || -> Result<(), Error> {
+            let mut c = get_db_conn()?;
+            c.transaction::<(), Error, _>(|c| {
+                let gw: super::gateway::Gateway = gateway::dsl::gateway
+                    .find(&gateway_id)
+                    .for_update()
+                    .get_result(c)
+                    .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
+
+                let mg: MulticastGroup = multicast_group::dsl::multicast_group
+                    .find(&group_id)
+                    .for_update()
+                    .get_result(c)
+                    .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
+
+                let a: super::application::Application = application::dsl::application
+                    .find(&mg.application_id)
+                    .for_update()
+                    .get_result(c)
+                    .map_err(|e| Error::from_diesel(e, mg.application_id.to_string()))?;
+
+                if a.tenant_id != gw.tenant_id {
+                    // Gateway and multicast-group are not under same tenant.
+                    return Err(Error::NotFound(gateway_id.to_string()));
+                }
+
+                let _ = diesel::insert_into(multicast_group_gateway::table)
+                    .values((
+                        multicast_group_gateway::multicast_group_id.eq(&group_id),
+                        multicast_group_gateway::gateway_id.eq(&gateway_id),
+                        multicast_group_gateway::created_at.eq(Utc::now()),
+                    ))
+                    .execute(c)
+                    .map_err(|e| Error::from_diesel(e, "".into()))?;
+                Ok(())
+            })
+        }
+    })
+    .await??;
+    info!(multicast_group_id = %group_id, gateway_id = %gateway_id, "Gateway added to multicast-group");
+    Ok(())
+}
+
+pub async fn remove_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Error> {
+    task::spawn_blocking({
+        let group_id = *group_id;
+        let gateway_id = *gateway_id;
+        move || -> Result<(), Error> {
+            let mut c = get_db_conn()?;
+            let ra = diesel::delete(
+                multicast_group_gateway::dsl::multicast_group_gateway
+                    .filter(multicast_group_gateway::multicast_group_id.eq(&group_id))
+                    .filter(multicast_group_gateway::gateway_id.eq(&gateway_id)),
+            )
+            .execute(&mut c)?;
+            if ra == 0 {
+                return Err(Error::NotFound(format!(
+                    "multicast-group: {}, gateway: {}",
+                    group_id, gateway_id
+                )));
+            }
+            Ok(())
+        }
+    })
+    .await??;
+    info!(multicast_group_id = %group_id, gateway_id = %gateway_id, "Gateway removed from multicast-group");
+    Ok(())
+}
+
 pub async fn get_dev_euis(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
     task::spawn_blocking({
         let group_id = *group_id;
@@ -328,6 +407,21 @@ pub async fn get_dev_euis(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
             multicast_group_device::dsl::multicast_group_device
                 .select(multicast_group_device::dev_eui)
                 .filter(multicast_group_device::dsl::multicast_group_id.eq(&group_id))
+                .load(&mut c)
+                .map_err(|e| Error::from_diesel(e, group_id.to_string()))
+        }
+    })
+    .await?
+}
+
+pub async fn get_gateway_ids(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
+    task::spawn_blocking({
+        let group_id = *group_id;
+        move || -> Result<Vec<EUI64>, Error> {
+            let mut c = get_db_conn()?;
+            multicast_group_gateway::dsl::multicast_group_gateway
+                .select(multicast_group_gateway::gateway_id)
+                .filter(multicast_group_gateway::dsl::multicast_group_id.eq(&group_id))
                 .load(&mut c)
                 .map_err(|e| Error::from_diesel(e, group_id.to_string()))
         }
@@ -442,19 +536,18 @@ pub async fn enqueue(
                             None => Utc::now(),
                         };
 
-                        let emit_at_time_since_gps_epoch =
-                            match conf.network.scheduler.multicast_class_c_use_gps_time {
-                                false => None,
-                                true => {
-                                    // Increment with margin as requesting the gateway to send the
-                                    // downlink 'now' will result in a too late error from the gateway.
-                                    scheduler_run_after_ts += Duration::from_std(
-                                        conf.network.scheduler.multicast_class_c_margin,
-                                    )
+                        let emit_at_time_since_gps_epoch = if mg.class_c_scheduling_type
+                            == fields::MulticastGroupSchedulingType::GPS_TIME
+                        {
+                            // Increment with margin as requesting the gateway to send the
+                            // downlink 'now' will result in a too late error from the gateway.
+                            scheduler_run_after_ts +=
+                                Duration::from_std(conf.network.scheduler.multicast_class_c_margin)
                                     .unwrap();
-                                    Some(scheduler_run_after_ts.to_gps_time().num_milliseconds())
-                                }
-                            };
+                            Some(scheduler_run_after_ts.to_gps_time().num_milliseconds())
+                        } else {
+                            None
+                        };
 
                         for gateway_id in &gateway_ids {
                             let qi = MulticastGroupQueueItem {
@@ -475,7 +568,9 @@ pub async fn enqueue(
                                     .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
                             ids.push(qi.id);
 
-                            if !conf.network.scheduler.multicast_class_c_use_gps_time {
+                            if mg.class_c_scheduling_type
+                                == fields::MulticastGroupSchedulingType::DELAY
+                            {
                                 // Increment timing for each gateway to avoid colissions.
                                 scheduler_run_after_ts += Duration::from_std(
                                     conf.network.scheduler.multicast_class_c_margin,
@@ -819,6 +914,64 @@ pub mod test {
     }
 
     #[tokio::test]
+    async fn test_gateway() {
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            can_have_gateways: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let gw = gateway::create(gateway::Gateway {
+            gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            tenant_id: t.id,
+            name: "test-gw".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let mg = create(MulticastGroup {
+            application_id: app.id,
+            name: "test-mg".into(),
+            region: CommonName::EU868,
+            mc_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
+            mc_nwk_s_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
+            f_cnt: 10,
+            group_type: "C".into(),
+            dr: 1,
+            frequency: 868100000,
+            class_b_ping_slot_period: 1,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // add gateway
+        add_gateway(&mg.id, &gw.gateway_id).await.unwrap();
+
+        // get gateway ids
+        let gw_ids = get_gateway_ids(&mg.id).await.unwrap();
+        assert_eq!(vec![gw.gateway_id], gw_ids);
+
+        // remove gateway
+        remove_gateway(&mg.id, &gw.gateway_id).await.unwrap();
+        let gw_ids = get_gateway_ids(&mg.id).await.unwrap();
+        assert!(gw_ids.is_empty());
+    }
+
+    #[tokio::test]
     async fn test_queue() {
         let _guard = test::prepare().await;
 
@@ -858,12 +1011,13 @@ pub mod test {
             dr: 1,
             frequency: 868100000,
             class_b_ping_slot_period: 1,
+            class_c_scheduling_type: fields::MulticastGroupSchedulingType::DELAY,
             ..Default::default()
         })
         .await
         .unwrap();
 
-        // Enqueue (Class-C)
+        // Enqueue (Class-C) (delay)
         let (ids, f_cnt) = enqueue(
             MulticastGroupQueueItem {
                 multicast_group_id: mg.id,
@@ -886,6 +1040,33 @@ pub mod test {
         assert!(qi_get.emit_at_time_since_gps_epoch.is_none());
         assert_eq!(10, qi_get.f_cnt);
         assert_eq!(vec![3, 2, 1], qi_get.data);
+
+        // delete
+        delete_queue_item(&ids[0]).await.unwrap();
+        assert!(delete_queue_item(&ids[0]).await.is_err());
+
+        // Enqueue (Class-C) (GPS time)
+        mg.class_c_scheduling_type = fields::MulticastGroupSchedulingType::GPS_TIME;
+        let mut mg = update(mg).await.unwrap();
+        let (ids, f_cnt) = enqueue(
+            MulticastGroupQueueItem {
+                multicast_group_id: mg.id,
+                gateway_id: gw.gateway_id,
+                f_cnt: 1,
+                f_port: 2,
+                data: vec![3, 2, 1],
+                ..Default::default()
+            },
+            &[gw.gateway_id],
+        )
+        .await
+        .unwrap();
+        assert_eq!(1, ids.len());
+        assert_eq!(10, f_cnt);
+
+        // get
+        let qi_get = get_queue_item(&ids[0]).await.unwrap();
+        assert!(qi_get.emit_at_time_since_gps_epoch.is_some());
 
         // delete
         delete_queue_item(&ids[0]).await.unwrap();

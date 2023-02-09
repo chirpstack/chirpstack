@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use lrwn::EUI64;
 
-use super::schema::{gateway, tenant};
+use super::schema::{gateway, multicast_group_gateway, tenant};
 use super::{error::Error, fields, get_db_conn};
 
 #[derive(Queryable, Insertable, PartialEq, Debug)]
@@ -70,6 +70,7 @@ pub struct GatewayMeta {
 #[derive(Default, Clone)]
 pub struct Filters {
     pub tenant_id: Option<Uuid>,
+    pub multicast_group_id: Option<Uuid>,
     pub search: Option<String>,
 }
 
@@ -303,10 +304,20 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         let filters = filters.clone();
         move || -> Result<i64, Error> {
             let mut c = get_db_conn()?;
-            let mut q = gateway::dsl::gateway.select(dsl::count_star()).into_boxed();
+            let mut q = gateway::dsl::gateway
+                .select(dsl::count_star())
+                .distinct()
+                .left_join(multicast_group_gateway::table)
+                .into_boxed();
 
             if let Some(tenant_id) = &filters.tenant_id {
                 q = q.filter(gateway::dsl::tenant_id.eq(tenant_id));
+            }
+
+            if let Some(multicast_group_id) = &filters.multicast_group_id {
+                q = q.filter(
+                    multicast_group_gateway::dsl::multicast_group_id.eq(multicast_group_id),
+                );
             }
 
             if let Some(search) = &filters.search {
@@ -329,6 +340,7 @@ pub async fn list(
         move || -> Result<Vec<GatewayListItem>, Error> {
             let mut c = get_db_conn()?;
             let mut q = gateway::dsl::gateway
+                .left_join(multicast_group_gateway::table)
                 .select((
                     gateway::tenant_id,
                     gateway::gateway_id,
@@ -343,6 +355,7 @@ pub async fn list(
                     gateway::properties,
                     gateway::stats_interval_secs,
                 ))
+                .distinct()
                 .into_boxed();
 
             if let Some(tenant_id) = &filters.tenant_id {
@@ -351,6 +364,12 @@ pub async fn list(
 
             if let Some(search) = &filters.search {
                 q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
+            }
+
+            if let Some(multicast_group_id) = &filters.multicast_group_id {
+                q = q.filter(
+                    multicast_group_gateway::dsl::multicast_group_id.eq(multicast_group_id),
+                );
             }
 
             let items = q
@@ -413,6 +432,8 @@ pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCoun
 pub mod test {
     use super::*;
     use crate::{storage, test};
+    use lrwn::region::CommonName;
+    use lrwn::{AES128Key, DevAddr};
 
     struct FilterTest<'a> {
         filters: Filters,
@@ -443,6 +464,34 @@ pub mod test {
         let _guard = test::prepare().await;
         let mut gw = create_gateway(EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8])).await;
 
+        let app = storage::application::create(storage::application::Application {
+            tenant_id: gw.tenant_id,
+            name: "test-app".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let mg = storage::multicast::create(storage::multicast::MulticastGroup {
+            application_id: app.id,
+            name: "test-mg".into(),
+            region: CommonName::EU868,
+            mc_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
+            mc_nwk_s_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
+            f_cnt: 10,
+            group_type: "C".into(),
+            dr: 1,
+            frequency: 868100000,
+            class_b_ping_slot_period: 1,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        storage::multicast::add_gateway(&mg.id, &gw.gateway_id)
+            .await
+            .unwrap();
+
         // get
         let gw_get = get(&gw.gateway_id).await.unwrap();
         assert_eq!(gw, gw_get);
@@ -458,6 +507,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     tenant_id: None,
+                    multicast_group_id: None,
                     search: None,
                 },
                 gws: vec![&gw],
@@ -468,6 +518,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     tenant_id: None,
+                    multicast_group_id: None,
                     search: Some("uup".into()),
                 },
                 gws: vec![],
@@ -478,6 +529,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     tenant_id: None,
+                    multicast_group_id: None,
                     search: Some("upd".into()),
                 },
                 gws: vec![&gw],
@@ -488,6 +540,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     tenant_id: Some(gw.tenant_id),
+                    multicast_group_id: None,
                     search: None,
                 },
                 gws: vec![&gw],
@@ -498,6 +551,29 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     tenant_id: Some(Uuid::new_v4()),
+                    multicast_group_id: None,
+                    search: None,
+                },
+                gws: vec![],
+                count: 0,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    multicast_group_id: Some(mg.id),
+                    search: None,
+                },
+                gws: vec![&gw],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    multicast_group_id: Some(Uuid::new_v4()),
                     search: None,
                 },
                 gws: vec![],

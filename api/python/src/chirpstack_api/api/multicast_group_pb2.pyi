@@ -10,7 +10,9 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 CLASS_B: MulticastGroupType
 CLASS_C: MulticastGroupType
+DELAY: MulticastGroupSchedulingType
 DESCRIPTOR: _descriptor.FileDescriptor
+GPS_TIME: MulticastGroupSchedulingType
 
 class AddDeviceToMulticastGroupRequest(_message.Message):
     __slots__ = ["dev_eui", "multicast_group_id"]
@@ -19,6 +21,14 @@ class AddDeviceToMulticastGroupRequest(_message.Message):
     dev_eui: str
     multicast_group_id: str
     def __init__(self, multicast_group_id: _Optional[str] = ..., dev_eui: _Optional[str] = ...) -> None: ...
+
+class AddGatewayToMulticastGroupRequest(_message.Message):
+    __slots__ = ["gateway_id", "multicast_group_id"]
+    GATEWAY_ID_FIELD_NUMBER: _ClassVar[int]
+    MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
+    gateway_id: str
+    multicast_group_id: str
+    def __init__(self, multicast_group_id: _Optional[str] = ..., gateway_id: _Optional[str] = ...) -> None: ...
 
 class CreateMulticastGroupRequest(_message.Message):
     __slots__ = ["multicast_group"]
@@ -105,9 +115,10 @@ class ListMulticastGroupsResponse(_message.Message):
     def __init__(self, total_count: _Optional[int] = ..., result: _Optional[_Iterable[_Union[MulticastGroupListItem, _Mapping]]] = ...) -> None: ...
 
 class MulticastGroup(_message.Message):
-    __slots__ = ["application_id", "class_b_ping_slot_period", "dr", "f_cnt", "frequency", "group_type", "id", "mc_addr", "mc_app_s_key", "mc_nwk_s_key", "name", "region"]
+    __slots__ = ["application_id", "class_b_ping_slot_period", "class_c_scheduling_type", "dr", "f_cnt", "frequency", "group_type", "id", "mc_addr", "mc_app_s_key", "mc_nwk_s_key", "name", "region"]
     APPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
     CLASS_B_PING_SLOT_PERIOD_FIELD_NUMBER: _ClassVar[int]
+    CLASS_C_SCHEDULING_TYPE_FIELD_NUMBER: _ClassVar[int]
     DR_FIELD_NUMBER: _ClassVar[int]
     FREQUENCY_FIELD_NUMBER: _ClassVar[int]
     F_CNT_FIELD_NUMBER: _ClassVar[int]
@@ -120,6 +131,7 @@ class MulticastGroup(_message.Message):
     REGION_FIELD_NUMBER: _ClassVar[int]
     application_id: str
     class_b_ping_slot_period: int
+    class_c_scheduling_type: MulticastGroupSchedulingType
     dr: int
     f_cnt: int
     frequency: int
@@ -130,7 +142,7 @@ class MulticastGroup(_message.Message):
     mc_nwk_s_key: str
     name: str
     region: _common_pb2.Region
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., application_id: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mc_addr: _Optional[str] = ..., mc_nwk_s_key: _Optional[str] = ..., mc_app_s_key: _Optional[str] = ..., f_cnt: _Optional[int] = ..., group_type: _Optional[_Union[MulticastGroupType, str]] = ..., dr: _Optional[int] = ..., frequency: _Optional[int] = ..., class_b_ping_slot_period: _Optional[int] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., application_id: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mc_addr: _Optional[str] = ..., mc_nwk_s_key: _Optional[str] = ..., mc_app_s_key: _Optional[str] = ..., f_cnt: _Optional[int] = ..., group_type: _Optional[_Union[MulticastGroupType, str]] = ..., dr: _Optional[int] = ..., frequency: _Optional[int] = ..., class_b_ping_slot_period: _Optional[int] = ..., class_c_scheduling_type: _Optional[_Union[MulticastGroupSchedulingType, str]] = ...) -> None: ...
 
 class MulticastGroupListItem(_message.Message):
     __slots__ = ["created_at", "group_type", "id", "name", "region", "updated_at"]
@@ -168,6 +180,14 @@ class RemoveDeviceFromMulticastGroupRequest(_message.Message):
     multicast_group_id: str
     def __init__(self, multicast_group_id: _Optional[str] = ..., dev_eui: _Optional[str] = ...) -> None: ...
 
+class RemoveGatewayFromMulticastGroupRequest(_message.Message):
+    __slots__ = ["gateway_id", "multicast_group_id"]
+    GATEWAY_ID_FIELD_NUMBER: _ClassVar[int]
+    MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
+    gateway_id: str
+    multicast_group_id: str
+    def __init__(self, multicast_group_id: _Optional[str] = ..., gateway_id: _Optional[str] = ...) -> None: ...
+
 class UpdateMulticastGroupRequest(_message.Message):
     __slots__ = ["multicast_group"]
     MULTICAST_GROUP_FIELD_NUMBER: _ClassVar[int]
@@ -175,4 +195,7 @@ class UpdateMulticastGroupRequest(_message.Message):
     def __init__(self, multicast_group: _Optional[_Union[MulticastGroup, _Mapping]] = ...) -> None: ...
 
 class MulticastGroupType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = []
+
+class MulticastGroupSchedulingType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []

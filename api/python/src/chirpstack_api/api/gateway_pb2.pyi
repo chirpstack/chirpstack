@@ -157,16 +157,18 @@ class GetGatewayResponse(_message.Message):
     def __init__(self, gateway: _Optional[_Union[Gateway, _Mapping]] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., last_seen_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class ListGatewaysRequest(_message.Message):
-    __slots__ = ["limit", "offset", "search", "tenant_id"]
+    __slots__ = ["limit", "multicast_group_id", "offset", "search", "tenant_id"]
     LIMIT_FIELD_NUMBER: _ClassVar[int]
+    MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     OFFSET_FIELD_NUMBER: _ClassVar[int]
     SEARCH_FIELD_NUMBER: _ClassVar[int]
     TENANT_ID_FIELD_NUMBER: _ClassVar[int]
     limit: int
+    multicast_group_id: str
     offset: int
     search: str
     tenant_id: str
-    def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ..., search: _Optional[str] = ..., tenant_id: _Optional[str] = ...) -> None: ...
+    def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ..., search: _Optional[str] = ..., tenant_id: _Optional[str] = ..., multicast_group_id: _Optional[str] = ...) -> None: ...
 
 class ListGatewaysResponse(_message.Message):
     __slots__ = ["result", "total_count"]

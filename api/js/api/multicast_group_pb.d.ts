@@ -44,6 +44,9 @@ export class MulticastGroup extends jspb.Message {
   getClassBPingSlotPeriod(): number;
   setClassBPingSlotPeriod(value: number): void;
 
+  getClassCSchedulingType(): MulticastGroupSchedulingTypeMap[keyof MulticastGroupSchedulingTypeMap];
+  setClassCSchedulingType(value: MulticastGroupSchedulingTypeMap[keyof MulticastGroupSchedulingTypeMap]): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MulticastGroup.AsObject;
   static toObject(includeInstance: boolean, msg: MulticastGroup): MulticastGroup.AsObject;
@@ -68,6 +71,7 @@ export namespace MulticastGroup {
     dr: number,
     frequency: number,
     classBPingSlotPeriod: number,
+    classCSchedulingType: MulticastGroupSchedulingTypeMap[keyof MulticastGroupSchedulingTypeMap],
   }
 }
 
@@ -359,6 +363,54 @@ export namespace RemoveDeviceFromMulticastGroupRequest {
   }
 }
 
+export class AddGatewayToMulticastGroupRequest extends jspb.Message {
+  getMulticastGroupId(): string;
+  setMulticastGroupId(value: string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AddGatewayToMulticastGroupRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: AddGatewayToMulticastGroupRequest): AddGatewayToMulticastGroupRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: AddGatewayToMulticastGroupRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AddGatewayToMulticastGroupRequest;
+  static deserializeBinaryFromReader(message: AddGatewayToMulticastGroupRequest, reader: jspb.BinaryReader): AddGatewayToMulticastGroupRequest;
+}
+
+export namespace AddGatewayToMulticastGroupRequest {
+  export type AsObject = {
+    multicastGroupId: string,
+    gatewayId: string,
+  }
+}
+
+export class RemoveGatewayFromMulticastGroupRequest extends jspb.Message {
+  getMulticastGroupId(): string;
+  setMulticastGroupId(value: string): void;
+
+  getGatewayId(): string;
+  setGatewayId(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RemoveGatewayFromMulticastGroupRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RemoveGatewayFromMulticastGroupRequest): RemoveGatewayFromMulticastGroupRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: RemoveGatewayFromMulticastGroupRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RemoveGatewayFromMulticastGroupRequest;
+  static deserializeBinaryFromReader(message: RemoveGatewayFromMulticastGroupRequest, reader: jspb.BinaryReader): RemoveGatewayFromMulticastGroupRequest;
+}
+
+export namespace RemoveGatewayFromMulticastGroupRequest {
+  export type AsObject = {
+    multicastGroupId: string,
+    gatewayId: string,
+  }
+}
+
 export class MulticastGroupQueueItem extends jspb.Message {
   getMulticastGroupId(): string;
   setMulticastGroupId(value: string): void;
@@ -503,4 +555,11 @@ export interface MulticastGroupTypeMap {
 }
 
 export const MulticastGroupType: MulticastGroupTypeMap;
+
+export interface MulticastGroupSchedulingTypeMap {
+  DELAY: 0;
+  GPS_TIME: 1;
+}
+
+export const MulticastGroupSchedulingType: MulticastGroupSchedulingTypeMap;
 

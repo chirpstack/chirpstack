@@ -6,6 +6,7 @@ option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
 option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "MulticastGroupProto";
+option csharp_namespace = "Chirpstack.Api";
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
@@ -67,10 +68,25 @@ service MulticastGroupService {
         };
     }
 
-    // Add the given item to the multcast group queue.
+    // Add a gateway to the multicast group.
+    rpc AddGateway(AddGatewayToMulticastGroupRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            post: "/api/multicast-groups/{multicast_group_id}/gateways"
+            body: "*"
+        };
+    }
+
+    // Remove a gateway from the multicast group.
+    rpc RemoveGateway(RemoveGatewayFromMulticastGroupRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/multicast-groups/{multicast_group_id}/gateways/{gateway_id}"
+        };
+    }
+
+    // Add the given item to the multicast group queue.
     rpc Enqueue(EnqueueMulticastGroupQueueItemRequest) returns (EnqueueMulticastGroupQueueItemResponse) {
         option(google.api.http) = {
-            post: "/api/multcast-groups/{queue_item.multicast_group_id}/queue"
+            post: "/api/multicast-groups/{queue_item.multicast_group_id}/queue"
             body: "*"
         };
     }
@@ -96,6 +112,19 @@ enum MulticastGroupType {
 
     // Class-B.
     CLASS_B = 1;
+}
+
+enum MulticastGroupSchedulingType {
+    // Delay.
+    // If multicast downlinks must be sent through multiple gateways, then
+    // these will be sent one by one with a delay between each gateway.
+    DELAY = 0;
+
+    // Time.
+    // If multicast downlinks must be sent through multiple gateways, then
+    // these will be sent simultaneously using GPS time synchronization.
+    // Note that this does require GPS time-synchronized LoRa gateways.
+    GPS_TIME = 1;
 }
 
 message MulticastGroup {
@@ -136,6 +165,9 @@ message MulticastGroup {
 
     // Ping-slot period (only for Class-B).
     uint32 class_b_ping_slot_period = 12;
+
+    // Scheduling type (only for Class-C).
+    MulticastGroupSchedulingType class_c_scheduling_type = 13;
 }
 
 message MulticastGroupListItem {
@@ -230,6 +262,22 @@ message RemoveDeviceFromMulticastGroupRequest {
 
     // Device EUI (HEX encoded).
     string dev_eui = 2;
+}
+
+message AddGatewayToMulticastGroupRequest {
+    // Multicast group ID.
+    string multicast_group_id = 1;
+
+    // Gateway ID (HEX encoded).
+    string gateway_id = 2;
+}
+
+message RemoveGatewayFromMulticastGroupRequest {
+    // Multicast group ID.
+    string multicast_group_id = 1;
+
+    // Gateway ID (HEX encoded).
+    string gateway_id = 2;
 }
 
 message MulticastGroupQueueItem {

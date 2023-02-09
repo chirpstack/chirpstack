@@ -198,6 +198,11 @@ impl GatewayService for Gateway {
         } else {
             Some(Uuid::from_str(&req.tenant_id).map_err(|e| e.status())?)
         };
+        let mg_id: Option<Uuid> = if req.multicast_group_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req.multicast_group_id).map_err(|e| e.status())?)
+        };
 
         self.validator
             .validate(
@@ -209,8 +214,18 @@ impl GatewayService for Gateway {
             )
             .await?;
 
+        if let Some(mg_id) = mg_id {
+            self.validator
+                .validate(
+                    request.extensions(),
+                    validator::ValidateMulticastGroupAccess::new(validator::Flag::Read, mg_id),
+                )
+                .await?;
+        }
+
         let filters = gateway::Filters {
             tenant_id,
+            multicast_group_id: mg_id,
             search: if req.search.is_empty() {
                 None
             } else {
@@ -725,6 +740,7 @@ pub mod test {
             tenant_id: t.id.to_string(),
             limit: 10,
             offset: 0,
+            ..Default::default()
         };
         let mut list_req = Request::new(list_req);
         list_req.extensions_mut().insert(AuthID::User(u.id.clone()));

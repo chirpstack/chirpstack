@@ -58,6 +58,20 @@ export class MulticastGroupServiceClient {
                response: google_protobuf_empty_pb.Empty) => void
   ): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
 
+  addGateway(
+    request: api_multicast_group_pb.AddGatewayToMulticastGroupRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void
+  ): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
+  removeGateway(
+    request: api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void
+  ): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
   enqueue(
     request: api_multicast_group_pb.EnqueueMulticastGroupQueueItemRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -118,6 +132,16 @@ export class MulticastGroupServicePromiseClient {
 
   removeDevice(
     request: api_multicast_group_pb.RemoveDeviceFromMulticastGroupRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<google_protobuf_empty_pb.Empty>;
+
+  addGateway(
+    request: api_multicast_group_pb.AddGatewayToMulticastGroupRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<google_protobuf_empty_pb.Empty>;
+
+  removeGateway(
+    request: api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<google_protobuf_empty_pb.Empty>;
 

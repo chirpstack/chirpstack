@@ -182,6 +182,7 @@
   
 - [api/multicast_group.proto](#api_multicast_group-proto)
     - [AddDeviceToMulticastGroupRequest](#api-AddDeviceToMulticastGroupRequest)
+    - [AddGatewayToMulticastGroupRequest](#api-AddGatewayToMulticastGroupRequest)
     - [CreateMulticastGroupRequest](#api-CreateMulticastGroupRequest)
     - [CreateMulticastGroupResponse](#api-CreateMulticastGroupResponse)
     - [DeleteMulticastGroupRequest](#api-DeleteMulticastGroupRequest)
@@ -198,8 +199,10 @@
     - [MulticastGroupListItem](#api-MulticastGroupListItem)
     - [MulticastGroupQueueItem](#api-MulticastGroupQueueItem)
     - [RemoveDeviceFromMulticastGroupRequest](#api-RemoveDeviceFromMulticastGroupRequest)
+    - [RemoveGatewayFromMulticastGroupRequest](#api-RemoveGatewayFromMulticastGroupRequest)
     - [UpdateMulticastGroupRequest](#api-UpdateMulticastGroupRequest)
   
+    - [MulticastGroupSchedulingType](#api-MulticastGroupSchedulingType)
     - [MulticastGroupType](#api-MulticastGroupType)
   
     - [MulticastGroupService](#api-MulticastGroupService)
@@ -2939,6 +2942,7 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | offset | [uint32](#uint32) |  | Offset in the result-set (for pagination). |
 | search | [string](#string) |  | If set, the given string will be used to search on name (optional). |
 | tenant_id | [string](#string) |  | Tenant ID (UUID) to filter gateways on. To list all gateways as a global admin user, this field can be left blank. |
+| multicast_group_id | [string](#string) |  | Multicast-group ID (UUID) to filter gateways on. |
 
 
 
@@ -3031,6 +3035,22 @@ GatewayService is the service providing API methods for managing gateways.
 | ----- | ---- | ----- | ----------- |
 | multicast_group_id | [string](#string) |  | Multicast group ID. |
 | dev_eui | [string](#string) |  | Device EUI (HEX encoded). |
+
+
+
+
+
+
+<a name="api-AddGatewayToMulticastGroupRequest"></a>
+
+### AddGatewayToMulticastGroupRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| multicast_group_id | [string](#string) |  | Multicast group ID. |
+| gateway_id | [string](#string) |  | Gateway ID (HEX encoded). |
 
 
 
@@ -3243,6 +3263,7 @@ GatewayService is the service providing API methods for managing gateways.
 | dr | [uint32](#uint32) |  | Data-rate. |
 | frequency | [uint32](#uint32) |  | Frequency (Hz). |
 | class_b_ping_slot_period | [uint32](#uint32) |  | Ping-slot period (only for Class-B). |
+| class_c_scheduling_type | [MulticastGroupSchedulingType](#api-MulticastGroupSchedulingType) |  | Scheduling type (only for Class-C). |
 
 
 
@@ -3303,6 +3324,22 @@ GatewayService is the service providing API methods for managing gateways.
 
 
 
+<a name="api-RemoveGatewayFromMulticastGroupRequest"></a>
+
+### RemoveGatewayFromMulticastGroupRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| multicast_group_id | [string](#string) |  | Multicast group ID. |
+| gateway_id | [string](#string) |  | Gateway ID (HEX encoded). |
+
+
+
+
+
+
 <a name="api-UpdateMulticastGroupRequest"></a>
 
 ### UpdateMulticastGroupRequest
@@ -3318,6 +3355,18 @@ GatewayService is the service providing API methods for managing gateways.
 
 
  
+
+
+<a name="api-MulticastGroupSchedulingType"></a>
+
+### MulticastGroupSchedulingType
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| DELAY | 0 | Delay. If multicast downlinks must be sent through multiple gateways, then these will be sent one by one with a delay between each gateway. |
+| GPS_TIME | 1 | Time. If multicast downlinks must be sent through multiple gateways, then these will be sent simultaneously using GPS time synchronization. Note that this does require GPS time-synchronized LoRa gateways. |
+
 
 
 <a name="api-MulticastGroupType"></a>
@@ -3350,7 +3399,9 @@ MulticastGroupService is the service managing multicast-groups.
 | List | [ListMulticastGroupsRequest](#api-ListMulticastGroupsRequest) | [ListMulticastGroupsResponse](#api-ListMulticastGroupsResponse) | List the available multicast groups. |
 | AddDevice | [AddDeviceToMulticastGroupRequest](#api-AddDeviceToMulticastGroupRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Add a device to the multicast group. |
 | RemoveDevice | [RemoveDeviceFromMulticastGroupRequest](#api-RemoveDeviceFromMulticastGroupRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Remove a device from the multicast group. |
-| Enqueue | [EnqueueMulticastGroupQueueItemRequest](#api-EnqueueMulticastGroupQueueItemRequest) | [EnqueueMulticastGroupQueueItemResponse](#api-EnqueueMulticastGroupQueueItemResponse) | Add the given item to the multcast group queue. |
+| AddGateway | [AddGatewayToMulticastGroupRequest](#api-AddGatewayToMulticastGroupRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Add a gateway to the multicast group. |
+| RemoveGateway | [RemoveGatewayFromMulticastGroupRequest](#api-RemoveGatewayFromMulticastGroupRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Remove a gateway from the multicast group. |
+| Enqueue | [EnqueueMulticastGroupQueueItemRequest](#api-EnqueueMulticastGroupQueueItemRequest) | [EnqueueMulticastGroupQueueItemResponse](#api-EnqueueMulticastGroupQueueItemResponse) | Add the given item to the multicast group queue. |
 | FlushQueue | [FlushMulticastGroupQueueRequest](#api-FlushMulticastGroupQueueRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Flush the queue for the given multicast group. |
 | ListQueue | [ListMulticastGroupQueueRequest](#api-ListMulticastGroupQueueRequest) | [ListMulticastGroupQueueResponse](#api-ListMulticastGroupQueueResponse) | List the items in the multicast group queue. |
 

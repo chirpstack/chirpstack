@@ -187,6 +187,9 @@ message ListGatewaysRequest {
     // Tenant ID (UUID) to filter gateways on.
     // To list all gateways as a global admin user, this field can be left blank.
     string tenant_id = 4;
+
+    // Multicast-group ID (UUID) to filter gateways on.
+    string multicast_group_id = 5;
 }
 
 message ListGatewaysResponse {

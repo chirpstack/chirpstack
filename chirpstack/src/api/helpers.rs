@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 
 use crate::codec::Codec;
-use crate::storage::fields::MeasurementKind;
+use crate::storage::fields::{MeasurementKind, MulticastGroupSchedulingType};
 use crate::storage::metrics::Aggregation;
 use chirpstack_api::{api, common};
 use lrwn::region::{CommonName, MacVersion, Revision};
@@ -197,6 +197,24 @@ impl ToProto<common::MType> for lrwn::MType {
             lrwn::MType::ConfirmedDataDown => common::MType::ConfirmedDataDown,
             lrwn::MType::RejoinRequest => common::MType::RejoinRequest,
             lrwn::MType::Proprietary => common::MType::Proprietary,
+        }
+    }
+}
+
+impl ToProto<api::MulticastGroupSchedulingType> for MulticastGroupSchedulingType {
+    fn to_proto(self) -> api::MulticastGroupSchedulingType {
+        match self {
+            MulticastGroupSchedulingType::DELAY => api::MulticastGroupSchedulingType::Delay,
+            MulticastGroupSchedulingType::GPS_TIME => api::MulticastGroupSchedulingType::GpsTime,
+        }
+    }
+}
+
+impl FromProto<MulticastGroupSchedulingType> for api::MulticastGroupSchedulingType {
+    fn from_proto(self) -> MulticastGroupSchedulingType {
+        match self {
+            api::MulticastGroupSchedulingType::Delay => MulticastGroupSchedulingType::DELAY,
+            api::MulticastGroupSchedulingType::GpsTime => MulticastGroupSchedulingType::GPS_TIME,
         }
     }
 }

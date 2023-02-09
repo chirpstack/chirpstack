@@ -189,7 +189,6 @@ pub struct Scheduler {
     pub class_a_lock_duration: Duration,
     #[serde(with = "humantime_serde")]
     pub class_c_lock_duration: Duration,
-    pub multicast_class_c_use_gps_time: bool,
     #[serde(with = "humantime_serde")]
     pub multicast_class_c_margin: Duration,
     #[serde(with = "humantime_serde")]
@@ -203,7 +202,6 @@ impl Default for Scheduler {
             batch_size: 100,
             class_a_lock_duration: Duration::from_secs(5),
             class_c_lock_duration: Duration::from_secs(5),
-            multicast_class_c_use_gps_time: false,
             multicast_class_c_margin: Duration::from_secs(5),
             multicast_class_b_margin: Duration::from_secs(5),
         }

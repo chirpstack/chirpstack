@@ -243,6 +243,9 @@ export class ListGatewaysRequest extends jspb.Message {
   getTenantId(): string;
   setTenantId(value: string): ListGatewaysRequest;
 
+  getMulticastGroupId(): string;
+  setMulticastGroupId(value: string): ListGatewaysRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListGatewaysRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListGatewaysRequest): ListGatewaysRequest.AsObject;
@@ -257,6 +260,7 @@ export namespace ListGatewaysRequest {
     offset: number,
     search: string,
     tenantId: string,
+    multicastGroupId: string,
   }
 }
 

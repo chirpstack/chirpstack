@@ -15,6 +15,8 @@ interface IMulticastGroupServiceService extends grpc.ServiceDefinition<grpc.Unty
   list: grpc.MethodDefinition<api_multicast_group_pb.ListMulticastGroupsRequest, api_multicast_group_pb.ListMulticastGroupsResponse>;
   addDevice: grpc.MethodDefinition<api_multicast_group_pb.AddDeviceToMulticastGroupRequest, google_protobuf_empty_pb.Empty>;
   removeDevice: grpc.MethodDefinition<api_multicast_group_pb.RemoveDeviceFromMulticastGroupRequest, google_protobuf_empty_pb.Empty>;
+  addGateway: grpc.MethodDefinition<api_multicast_group_pb.AddGatewayToMulticastGroupRequest, google_protobuf_empty_pb.Empty>;
+  removeGateway: grpc.MethodDefinition<api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest, google_protobuf_empty_pb.Empty>;
   enqueue: grpc.MethodDefinition<api_multicast_group_pb.EnqueueMulticastGroupQueueItemRequest, api_multicast_group_pb.EnqueueMulticastGroupQueueItemResponse>;
   flushQueue: grpc.MethodDefinition<api_multicast_group_pb.FlushMulticastGroupQueueRequest, google_protobuf_empty_pb.Empty>;
   listQueue: grpc.MethodDefinition<api_multicast_group_pb.ListMulticastGroupQueueRequest, api_multicast_group_pb.ListMulticastGroupQueueResponse>;
@@ -30,6 +32,8 @@ export interface IMulticastGroupServiceServer extends grpc.UntypedServiceImpleme
   list: grpc.handleUnaryCall<api_multicast_group_pb.ListMulticastGroupsRequest, api_multicast_group_pb.ListMulticastGroupsResponse>;
   addDevice: grpc.handleUnaryCall<api_multicast_group_pb.AddDeviceToMulticastGroupRequest, google_protobuf_empty_pb.Empty>;
   removeDevice: grpc.handleUnaryCall<api_multicast_group_pb.RemoveDeviceFromMulticastGroupRequest, google_protobuf_empty_pb.Empty>;
+  addGateway: grpc.handleUnaryCall<api_multicast_group_pb.AddGatewayToMulticastGroupRequest, google_protobuf_empty_pb.Empty>;
+  removeGateway: grpc.handleUnaryCall<api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest, google_protobuf_empty_pb.Empty>;
   enqueue: grpc.handleUnaryCall<api_multicast_group_pb.EnqueueMulticastGroupQueueItemRequest, api_multicast_group_pb.EnqueueMulticastGroupQueueItemResponse>;
   flushQueue: grpc.handleUnaryCall<api_multicast_group_pb.FlushMulticastGroupQueueRequest, google_protobuf_empty_pb.Empty>;
   listQueue: grpc.handleUnaryCall<api_multicast_group_pb.ListMulticastGroupQueueRequest, api_multicast_group_pb.ListMulticastGroupQueueResponse>;
@@ -58,6 +62,12 @@ export class MulticastGroupServiceClient extends grpc.Client {
   removeDevice(argument: api_multicast_group_pb.RemoveDeviceFromMulticastGroupRequest, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
   removeDevice(argument: api_multicast_group_pb.RemoveDeviceFromMulticastGroupRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
   removeDevice(argument: api_multicast_group_pb.RemoveDeviceFromMulticastGroupRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  addGateway(argument: api_multicast_group_pb.AddGatewayToMulticastGroupRequest, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  addGateway(argument: api_multicast_group_pb.AddGatewayToMulticastGroupRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  addGateway(argument: api_multicast_group_pb.AddGatewayToMulticastGroupRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  removeGateway(argument: api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  removeGateway(argument: api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
+  removeGateway(argument: api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<google_protobuf_empty_pb.Empty>): grpc.ClientUnaryCall;
   enqueue(argument: api_multicast_group_pb.EnqueueMulticastGroupQueueItemRequest, callback: grpc.requestCallback<api_multicast_group_pb.EnqueueMulticastGroupQueueItemResponse>): grpc.ClientUnaryCall;
   enqueue(argument: api_multicast_group_pb.EnqueueMulticastGroupQueueItemRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_multicast_group_pb.EnqueueMulticastGroupQueueItemResponse>): grpc.ClientUnaryCall;
   enqueue(argument: api_multicast_group_pb.EnqueueMulticastGroupQueueItemRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_multicast_group_pb.EnqueueMulticastGroupQueueItemResponse>): grpc.ClientUnaryCall;

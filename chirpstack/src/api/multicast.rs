@@ -62,6 +62,7 @@ impl MulticastGroupService for MulticastGroup {
             dr: req_mg.dr as i16,
             frequency: req_mg.frequency as i64,
             class_b_ping_slot_period: req_mg.class_b_ping_slot_period as i32,
+            class_c_scheduling_type: req_mg.class_c_scheduling_type().from_proto(),
             ..Default::default()
         };
         let mg = multicast::create(mg).await.map_err(|e| e.status())?;
@@ -114,6 +115,7 @@ impl MulticastGroupService for MulticastGroup {
                 dr: mg.dr as u32,
                 frequency: mg.frequency as u32,
                 class_b_ping_slot_period: mg.class_b_ping_slot_period as u32,
+                class_c_scheduling_type: mg.class_c_scheduling_type.to_proto().into(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&mg.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&mg.updated_at)),
@@ -159,6 +161,7 @@ impl MulticastGroupService for MulticastGroup {
             dr: req_mg.dr as i16,
             frequency: req_mg.frequency as i64,
             class_b_ping_slot_period: req_mg.class_b_ping_slot_period as i32,
+            class_c_scheduling_type: req_mg.class_c_scheduling_type().from_proto(),
             ..Default::default()
         })
         .await
@@ -309,6 +312,66 @@ impl MulticastGroupService for MulticastGroup {
         Ok(resp)
     }
 
+    async fn add_gateway(
+        &self,
+        request: Request<api::AddGatewayToMulticastGroupRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req = request.get_ref();
+        let mg_id = Uuid::from_str(&req.multicast_group_id).map_err(|e| e.status())?;
+        let gateway_id = EUI64::from_str(&req.gateway_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateMulticastGroupAccess::new(validator::Flag::Update, mg_id),
+            )
+            .await?;
+
+        multicast::add_gateway(&mg_id, &gateway_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-multicast_group_id",
+            req.multicast_group_id.parse().unwrap(),
+        );
+        resp.metadata_mut()
+            .insert("x-log-gateway_id", req.gateway_id.parse().unwrap());
+
+        Ok(resp)
+    }
+
+    async fn remove_gateway(
+        &self,
+        request: Request<api::RemoveGatewayFromMulticastGroupRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req = request.get_ref();
+        let mg_id = Uuid::from_str(&req.multicast_group_id).map_err(|e| e.status())?;
+        let gateway_id = EUI64::from_str(&req.gateway_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateMulticastGroupAccess::new(validator::Flag::Update, mg_id),
+            )
+            .await?;
+
+        multicast::remove_gateway(&mg_id, &gateway_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-multicast_group_id",
+            req.multicast_group_id.parse().unwrap(),
+        );
+        resp.metadata_mut()
+            .insert("x-log-gateway_id", req.gateway_id.parse().unwrap());
+
+        Ok(resp)
+    }
+
     async fn enqueue(
         &self,
         request: Request<api::EnqueueMulticastGroupQueueItemRequest>,
@@ -422,7 +485,7 @@ pub mod test {
     use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
     use crate::storage::{
-        application, device, device_gateway, device_profile, gateway, tenant, user,
+        application, device, device_gateway, device_profile, gateway, multicast, tenant, user,
     };
     use crate::test;
     use chirpstack_api::{common, internal};
@@ -451,11 +514,19 @@ pub mod test {
         .await
         .unwrap();
 
-        // create gw
-        let gw = gateway::create(gateway::Gateway {
-            name: "test-gw".into(),
+        // create gws
+        let gw1 = gateway::create(gateway::Gateway {
+            name: "test-gw-1".into(),
             tenant_id: t.id,
             gateway_id: EUI64::from_be_bytes([8, 7, 6, 54, 4, 3, 2, 1]),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let gw2 = gateway::create(gateway::Gateway {
+            name: "test-gw-2".into(),
+            tenant_id: t.id,
+            gateway_id: EUI64::from_be_bytes([8, 7, 6, 54, 4, 3, 2, 2]),
             ..Default::default()
         })
         .await
@@ -509,6 +580,7 @@ pub mod test {
                     dr: 3,
                     frequency: 868300000,
                     class_b_ping_slot_period: 1,
+                    class_c_scheduling_type: api::MulticastGroupSchedulingType::GpsTime.into(),
                     ..Default::default()
                 }),
             },
@@ -538,6 +610,7 @@ pub mod test {
                 dr: 3,
                 frequency: 868300000,
                 class_b_ping_slot_period: 1,
+                class_c_scheduling_type: api::MulticastGroupSchedulingType::GpsTime.into(),
             }),
             get_resp.get_ref().multicast_group
         );
@@ -559,6 +632,7 @@ pub mod test {
                     dr: 2,
                     frequency: 868200000,
                     class_b_ping_slot_period: 2,
+                    class_c_scheduling_type: api::MulticastGroupSchedulingType::Delay.into(),
                 }),
             },
         );
@@ -586,6 +660,7 @@ pub mod test {
                 dr: 2,
                 frequency: 868200000,
                 class_b_ping_slot_period: 2,
+                class_c_scheduling_type: api::MulticastGroupSchedulingType::Delay.into(),
             }),
             get_resp.get_ref().multicast_group
         );
@@ -645,7 +720,7 @@ pub mod test {
         device_gateway::save_rx_info(&internal::DeviceGatewayRxInfo {
             dev_eui: d.dev_eui.to_vec(),
             items: vec![internal::DeviceGatewayRxInfoItem {
-                gateway_id: gw.gateway_id.to_vec(),
+                gateway_id: gw1.gateway_id.to_vec(),
                 ..Default::default()
             }],
             ..Default::default()
@@ -689,6 +764,55 @@ pub mod test {
             list_queue_resp.items[0]
         );
 
+        // flush queue
+        let flush_queue_req = get_request(
+            &u.id,
+            api::FlushMulticastGroupQueueRequest {
+                multicast_group_id: create_resp.id.clone(),
+            },
+        );
+        service.flush_queue(flush_queue_req).await.unwrap();
+
+        // add gateways
+        let add_gw_req = get_request(
+            &u.id,
+            api::AddGatewayToMulticastGroupRequest {
+                multicast_group_id: create_resp.id.clone(),
+                gateway_id: gw1.gateway_id.to_string(),
+            },
+        );
+        let _ = service.add_gateway(add_gw_req).await.unwrap();
+        let add_gw_req = get_request(
+            &u.id,
+            api::AddGatewayToMulticastGroupRequest {
+                multicast_group_id: create_resp.id.clone(),
+                gateway_id: gw2.gateway_id.to_string(),
+            },
+        );
+        let _ = service.add_gateway(add_gw_req).await.unwrap();
+
+        // enqueue (the two multicast-group gateways will be used)
+        let enqueue_req = get_request(
+            &u.id,
+            api::EnqueueMulticastGroupQueueItemRequest {
+                queue_item: Some(api::MulticastGroupQueueItem {
+                    multicast_group_id: create_resp.id.clone(),
+                    f_port: 10,
+                    data: vec![1, 2, 3],
+                    ..Default::default()
+                }),
+            },
+        );
+        let enqueue_resp = service.enqueue(enqueue_req).await.unwrap();
+        let enqueue_resp = enqueue_resp.get_ref();
+        assert_eq!(32, enqueue_resp.f_cnt);
+
+        // we expect two queue items (for each gateway one)
+        let queue_items = multicast::get_queue(&Uuid::from_str(&create_resp.id).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(2, queue_items.len());
+
         // remove device
         let remove_dev_req = get_request(
             &u.id,
@@ -698,6 +822,16 @@ pub mod test {
             },
         );
         let _ = service.remove_device(remove_dev_req).await.unwrap();
+
+        // remove gateway
+        let remove_gw_req = get_request(
+            &u.id,
+            api::RemoveGatewayFromMulticastGroupRequest {
+                multicast_group_id: create_resp.id.clone(),
+                gateway_id: gw1.gateway_id.to_string(),
+            },
+        );
+        let _ = service.remove_gateway(remove_gw_req).await.unwrap();
 
         // delete
         let del_req = get_request(

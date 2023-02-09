@@ -192,6 +192,7 @@ diesel::table! {
         dr -> Int2,
         frequency -> Int8,
         class_b_ping_slot_period -> Int4,
+        class_c_scheduling_type -> Varchar,
     }
 }
 
@@ -199,6 +200,14 @@ diesel::table! {
     multicast_group_device (multicast_group_id, dev_eui) {
         multicast_group_id -> Uuid,
         dev_eui -> Bytea,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    multicast_group_gateway (multicast_group_id, gateway_id) {
+        multicast_group_id -> Uuid,
+        gateway_id -> Bytea,
         created_at -> Timestamptz,
     }
 }
@@ -270,6 +279,8 @@ diesel::joinable!(gateway -> tenant (tenant_id));
 diesel::joinable!(multicast_group -> application (application_id));
 diesel::joinable!(multicast_group_device -> device (dev_eui));
 diesel::joinable!(multicast_group_device -> multicast_group (multicast_group_id));
+diesel::joinable!(multicast_group_gateway -> gateway (gateway_id));
+diesel::joinable!(multicast_group_gateway -> multicast_group (multicast_group_id));
 diesel::joinable!(multicast_group_queue_item -> gateway (gateway_id));
 diesel::joinable!(multicast_group_queue_item -> multicast_group (multicast_group_id));
 diesel::joinable!(tenant_user -> tenant (tenant_id));
@@ -287,6 +298,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     gateway,
     multicast_group,
     multicast_group_device,
+    multicast_group_gateway,
     multicast_group_queue_item,
     tenant,
     tenant_user,

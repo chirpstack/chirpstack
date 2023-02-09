@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::fmt;
 use std::ops::{Deref, DerefMut};
+use std::str::FromStr;
 
-use diesel::backend;
+use diesel::backend::{self, Backend};
 use diesel::pg::Pg;
-use diesel::sql_types::Jsonb;
+use diesel::sql_types::{Jsonb, Text};
 use diesel::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
 
@@ -115,4 +117,61 @@ pub enum MeasurementKind {
     GAUGE,
     // E.g. a firmware version, true / false value.
     STRING,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, AsExpression, FromSqlRow)]
+#[allow(clippy::upper_case_acronyms)]
+#[allow(non_camel_case_types)]
+#[diesel(sql_type = diesel::sql_types::Text)]
+pub enum MulticastGroupSchedulingType {
+    // Delay.
+    DELAY,
+    // GPS time.
+    GPS_TIME,
+}
+
+impl fmt::Display for MulticastGroupSchedulingType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl<DB> deserialize::FromSql<Text, DB> for MulticastGroupSchedulingType
+where
+    DB: Backend,
+    *const str: deserialize::FromSql<Text, DB>,
+{
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let string = String::from_sql(value)?;
+        Ok(MulticastGroupSchedulingType::from_str(&string)?)
+    }
+}
+
+impl serialize::ToSql<Text, diesel::pg::Pg> for MulticastGroupSchedulingType
+where
+    str: serialize::ToSql<Text, diesel::pg::Pg>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut serialize::Output<'b, '_, diesel::pg::Pg>,
+    ) -> serialize::Result {
+        <str as serialize::ToSql<Text, diesel::pg::Pg>>::to_sql(
+            &self.to_string(),
+            &mut out.reborrow(),
+        )
+    }
+}
+
+impl FromStr for MulticastGroupSchedulingType {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(match s {
+            "DELAY" => MulticastGroupSchedulingType::DELAY,
+            "GPS_TIME" => MulticastGroupSchedulingType::GPS_TIME,
+            _ => {
+                return Err(anyhow!("Unexpected MulticastGroupSchedulingType: {}", s));
+            }
+        })
+    }
 }

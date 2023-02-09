@@ -37,7 +37,11 @@ type MulticastGroupServiceClient interface {
 	AddDevice(ctx context.Context, in *AddDeviceToMulticastGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Remove a device from the multicast group.
 	RemoveDevice(ctx context.Context, in *RemoveDeviceFromMulticastGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Add the given item to the multcast group queue.
+	// Add a gateway to the multicast group.
+	AddGateway(ctx context.Context, in *AddGatewayToMulticastGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Remove a gateway from the multicast group.
+	RemoveGateway(ctx context.Context, in *RemoveGatewayFromMulticastGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Add the given item to the multicast group queue.
 	Enqueue(ctx context.Context, in *EnqueueMulticastGroupQueueItemRequest, opts ...grpc.CallOption) (*EnqueueMulticastGroupQueueItemResponse, error)
 	// Flush the queue for the given multicast group.
 	FlushQueue(ctx context.Context, in *FlushMulticastGroupQueueRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -116,6 +120,24 @@ func (c *multicastGroupServiceClient) RemoveDevice(ctx context.Context, in *Remo
 	return out, nil
 }
 
+func (c *multicastGroupServiceClient) AddGateway(ctx context.Context, in *AddGatewayToMulticastGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/AddGateway", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *multicastGroupServiceClient) RemoveGateway(ctx context.Context, in *RemoveGatewayFromMulticastGroupRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/RemoveGateway", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *multicastGroupServiceClient) Enqueue(ctx context.Context, in *EnqueueMulticastGroupQueueItemRequest, opts ...grpc.CallOption) (*EnqueueMulticastGroupQueueItemResponse, error) {
 	out := new(EnqueueMulticastGroupQueueItemResponse)
 	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/Enqueue", in, out, opts...)
@@ -161,7 +183,11 @@ type MulticastGroupServiceServer interface {
 	AddDevice(context.Context, *AddDeviceToMulticastGroupRequest) (*emptypb.Empty, error)
 	// Remove a device from the multicast group.
 	RemoveDevice(context.Context, *RemoveDeviceFromMulticastGroupRequest) (*emptypb.Empty, error)
-	// Add the given item to the multcast group queue.
+	// Add a gateway to the multicast group.
+	AddGateway(context.Context, *AddGatewayToMulticastGroupRequest) (*emptypb.Empty, error)
+	// Remove a gateway from the multicast group.
+	RemoveGateway(context.Context, *RemoveGatewayFromMulticastGroupRequest) (*emptypb.Empty, error)
+	// Add the given item to the multicast group queue.
 	Enqueue(context.Context, *EnqueueMulticastGroupQueueItemRequest) (*EnqueueMulticastGroupQueueItemResponse, error)
 	// Flush the queue for the given multicast group.
 	FlushQueue(context.Context, *FlushMulticastGroupQueueRequest) (*emptypb.Empty, error)
@@ -194,6 +220,12 @@ func (UnimplementedMulticastGroupServiceServer) AddDevice(context.Context, *AddD
 }
 func (UnimplementedMulticastGroupServiceServer) RemoveDevice(context.Context, *RemoveDeviceFromMulticastGroupRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveDevice not implemented")
+}
+func (UnimplementedMulticastGroupServiceServer) AddGateway(context.Context, *AddGatewayToMulticastGroupRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddGateway not implemented")
+}
+func (UnimplementedMulticastGroupServiceServer) RemoveGateway(context.Context, *RemoveGatewayFromMulticastGroupRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveGateway not implemented")
 }
 func (UnimplementedMulticastGroupServiceServer) Enqueue(context.Context, *EnqueueMulticastGroupQueueItemRequest) (*EnqueueMulticastGroupQueueItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Enqueue not implemented")
@@ -343,6 +375,42 @@ func _MulticastGroupService_RemoveDevice_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MulticastGroupService_AddGateway_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddGatewayToMulticastGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MulticastGroupServiceServer).AddGateway(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.MulticastGroupService/AddGateway",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MulticastGroupServiceServer).AddGateway(ctx, req.(*AddGatewayToMulticastGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MulticastGroupService_RemoveGateway_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveGatewayFromMulticastGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MulticastGroupServiceServer).RemoveGateway(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.MulticastGroupService/RemoveGateway",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MulticastGroupServiceServer).RemoveGateway(ctx, req.(*RemoveGatewayFromMulticastGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MulticastGroupService_Enqueue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EnqueueMulticastGroupQueueItemRequest)
 	if err := dec(in); err != nil {
@@ -431,6 +499,14 @@ var MulticastGroupService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveDevice",
 			Handler:    _MulticastGroupService_RemoveDevice_Handler,
+		},
+		{
+			MethodName: "AddGateway",
+			Handler:    _MulticastGroupService_AddGateway_Handler,
+		},
+		{
+			MethodName: "RemoveGateway",
+			Handler:    _MulticastGroupService_RemoveGateway_Handler,
 		},
 		{
 			MethodName: "Enqueue",

@@ -13,6 +13,8 @@ import {
   ListMulticastGroupsResponse,
   AddDeviceToMulticastGroupRequest,
   RemoveDeviceFromMulticastGroupRequest,
+  AddGatewayToMulticastGroupRequest,
+  RemoveGatewayFromMulticastGroupRequest,
   ListMulticastGroupQueueRequest,
   ListMulticastGroupQueueResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
@@ -116,6 +118,33 @@ class MulticastGroupStore extends EventEmitter {
 
   removeDevice = (req: RemoveDeviceFromMulticastGroupRequest, callbackFunc: () => void) => {
     this.client.removeDevice(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc();
+    });
+  };
+
+  addGateway = (req: AddGatewayToMulticastGroupRequest, callbackFunc: () => void) => {
+    this.client.addGateway(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Gateway has been added to multicast-group",
+        duration: 3,
+      });
+
+      callbackFunc();
+    });
+  };
+
+  removeGateway = (req: RemoveGatewayFromMulticastGroupRequest, callbackFunc: () => void) => {
+    this.client.removeGateway(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;

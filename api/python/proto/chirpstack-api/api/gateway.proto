@@ -6,6 +6,7 @@ option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
 option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "GatewayProto";
+option csharp_namespace = "Chirpstack.Api";
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
@@ -186,6 +187,9 @@ message ListGatewaysRequest {
     // Tenant ID (UUID) to filter gateways on.
     // To list all gateways as a global admin user, this field can be left blank.
     string tenant_id = 4;
+
+    // Multicast-group ID (UUID) to filter gateways on.
+    string multicast_group_id = 5;
 }
 
 message ListGatewaysResponse {

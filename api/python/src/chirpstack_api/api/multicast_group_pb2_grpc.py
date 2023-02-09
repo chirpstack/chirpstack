@@ -51,6 +51,16 @@ class MulticastGroupServiceStub(object):
                 request_serializer=chirpstack__api_dot_api_dot_multicast__group__pb2.RemoveDeviceFromMulticastGroupRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 )
+        self.AddGateway = channel.unary_unary(
+                '/api.MulticastGroupService/AddGateway',
+                request_serializer=chirpstack__api_dot_api_dot_multicast__group__pb2.AddGatewayToMulticastGroupRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.RemoveGateway = channel.unary_unary(
+                '/api.MulticastGroupService/RemoveGateway',
+                request_serializer=chirpstack__api_dot_api_dot_multicast__group__pb2.RemoveGatewayFromMulticastGroupRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
         self.Enqueue = channel.unary_unary(
                 '/api.MulticastGroupService/Enqueue',
                 request_serializer=chirpstack__api_dot_api_dot_multicast__group__pb2.EnqueueMulticastGroupQueueItemRequest.SerializeToString,
@@ -121,8 +131,22 @@ class MulticastGroupServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def AddGateway(self, request, context):
+        """Add a gateway to the multicast group.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RemoveGateway(self, request, context):
+        """Remove a gateway from the multicast group.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def Enqueue(self, request, context):
-        """Add the given item to the multcast group queue.
+        """Add the given item to the multicast group queue.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -178,6 +202,16 @@ def add_MulticastGroupServiceServicer_to_server(servicer, server):
             'RemoveDevice': grpc.unary_unary_rpc_method_handler(
                     servicer.RemoveDevice,
                     request_deserializer=chirpstack__api_dot_api_dot_multicast__group__pb2.RemoveDeviceFromMulticastGroupRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'AddGateway': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddGateway,
+                    request_deserializer=chirpstack__api_dot_api_dot_multicast__group__pb2.AddGatewayToMulticastGroupRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'RemoveGateway': grpc.unary_unary_rpc_method_handler(
+                    servicer.RemoveGateway,
+                    request_deserializer=chirpstack__api_dot_api_dot_multicast__group__pb2.RemoveGatewayFromMulticastGroupRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'Enqueue': grpc.unary_unary_rpc_method_handler(
@@ -321,6 +355,40 @@ class MulticastGroupService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/api.MulticastGroupService/RemoveDevice',
             chirpstack__api_dot_api_dot_multicast__group__pb2.RemoveDeviceFromMulticastGroupRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AddGateway(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.MulticastGroupService/AddGateway',
+            chirpstack__api_dot_api_dot_multicast__group__pb2.AddGatewayToMulticastGroupRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RemoveGateway(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.MulticastGroupService/RemoveGateway',
+            chirpstack__api_dot_api_dot_multicast__group__pb2.RemoveGatewayFromMulticastGroupRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -6,6 +6,7 @@ option go_package = "github.com/chirpstack/chirpstack/api/go/v4/common";
 option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "CommonProto";
+option csharp_namespace = "Chirpstack.Common";
 
 import "google/protobuf/timestamp.proto";
 

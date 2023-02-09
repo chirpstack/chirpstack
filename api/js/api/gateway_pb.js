@@ -2062,7 +2062,8 @@ proto.api.ListGatewaysRequest.toObject = function(includeInstance, msg) {
     limit: jspb.Message.getFieldWithDefault(msg, 1, 0),
     offset: jspb.Message.getFieldWithDefault(msg, 2, 0),
     search: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    tenantId: jspb.Message.getFieldWithDefault(msg, 4, "")
+    tenantId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    multicastGroupId: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -2114,6 +2115,10 @@ proto.api.ListGatewaysRequest.deserializeBinaryFromReader = function(msg, reader
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setTenantId(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setMulticastGroupId(value);
       break;
     default:
       reader.skipField();
@@ -2169,6 +2174,13 @@ proto.api.ListGatewaysRequest.serializeBinaryToWriter = function(message, writer
   if (f.length > 0) {
     writer.writeString(
       4,
+      f
+    );
+  }
+  f = message.getMulticastGroupId();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -2244,6 +2256,24 @@ proto.api.ListGatewaysRequest.prototype.getTenantId = function() {
  */
 proto.api.ListGatewaysRequest.prototype.setTenantId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional string multicast_group_id = 5;
+ * @return {string}
+ */
+proto.api.ListGatewaysRequest.prototype.getMulticastGroupId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.ListGatewaysRequest} returns this
+ */
+proto.api.ListGatewaysRequest.prototype.setMulticastGroupId = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 

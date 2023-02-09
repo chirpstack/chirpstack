@@ -233,17 +233,23 @@ impl Multicast {
 }
 
 pub async fn enqueue(qi: multicast::MulticastGroupQueueItem) -> Result<u32> {
-    // get deveuis for multicast-group
-    let dev_euis = multicast::get_dev_euis(&qi.multicast_group_id).await?;
+    // Try first to get configured gateways for multicast-group.
+    let mut gateway_ids = multicast::get_gateway_ids(&qi.multicast_group_id).await?;
 
-    // get DeviceGatewayRxInfo for all devices.
-    let dev_gw_set = device_gateway::get_rx_info_for_dev_euis(&dev_euis).await?;
+    // Fallback to automatic gateway-set detection.
+    if gateway_ids.is_empty() {
+        // get deveuis for multicast-group
+        let dev_euis = multicast::get_dev_euis(&qi.multicast_group_id).await?;
 
-    // get minimum gateway set to cover all devices
-    let min_gateway_set = get_minimum_gateway_set(&dev_gw_set)?;
+        // get DeviceGatewayRxInfo for all devices.
+        let dev_gw_set = device_gateway::get_rx_info_for_dev_euis(&dev_euis).await?;
+
+        // get minimum gateway set to cover all devices
+        gateway_ids = get_minimum_gateway_set(&dev_gw_set)?;
+    }
 
     // Enqueue multicast downlink for the given gw set.
-    let (_, f_cnt) = multicast::enqueue(qi, &min_gateway_set).await?;
+    let (_, f_cnt) = multicast::enqueue(qi, &gateway_ids).await?;
     Ok(f_cnt)
 }
 

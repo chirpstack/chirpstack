@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import moment from "moment";
-import { Space, Breadcrumb, Button, PageHeader, Badge } from "antd";
+import { Space, Breadcrumb, Button, PageHeader, Badge, Menu, Modal, TreeSelect, Dropdown } from "antd";
 import { ColumnsType } from "antd/es/table";
 
 import {
@@ -11,17 +11,76 @@ import {
   GatewayListItem,
   GatewayState,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import {
+  ListApplicationsRequest,
+  ListApplicationsResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  ListMulticastGroupsRequest,
+  ListMulticastGroupsResponse,
+  AddGatewayToMulticastGroupRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 import GatewayStore from "../../stores/GatewayStore";
+import ApplicationStore from "../../stores/ApplicationStore";
+import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import Admin from "../../components/Admin";
 
 interface IProps {
   tenant: Tenant;
 }
 
-class ListGateways extends Component<IProps> {
+interface IState {
+  selectedRowIds: string[];
+  multicastGroups: any[];
+  mgModalVisible: boolean;
+  mgSelected: string;
+}
+
+class ListGateways extends Component<IProps, IState> {
+  constructor(props: IProps) {
+    super(props);
+    this.state = {
+      selectedRowIds: [],
+      multicastGroups: [],
+      mgModalVisible: false,
+      mgSelected: "",
+    };
+  }
+
+  componentDidMount() {
+    let req = new ListApplicationsRequest();
+    req.setLimit(999);
+    req.setTenantId(this.props.tenant.getId());
+
+    ApplicationStore.list(req, (resp: ListApplicationsResponse) => {
+      for (const app of resp.getResultList()) {
+        let req = new ListMulticastGroupsRequest();
+        req.setLimit(999);
+        req.setApplicationId(app.getId());
+
+        MulticastGroupStore.list(req, (resp: ListMulticastGroupsResponse) => {
+          let multicastGroups = this.state.multicastGroups;
+          multicastGroups.push({
+            title: app.getName(),
+            value: "",
+            disabled: true,
+            children: resp.getResultList().map((mg, i) => ({
+              title: mg.getName(),
+              value: mg.getId(),
+            })),
+          });
+
+          this.setState({
+            multicastGroups: multicastGroups,
+          });
+        });
+      }
+    });
+  }
+
   columns = (): ColumnsType<GatewayListItem.AsObject> => {
     return [
       {
@@ -111,9 +170,71 @@ class ListGateways extends Component<IProps> {
     });
   };
 
+  onRowsSelectChange = (ids: string[]) => {
+    this.setState({
+      selectedRowIds: ids,
+    });
+  };
+
+  showMgModal = () => {
+    this.setState({
+      mgModalVisible: true,
+    });
+  };
+
+  hideMgModal = () => {
+    this.setState({
+      mgModalVisible: false,
+    });
+  };
+
+  onMgSelected = (value: string) => {
+    this.setState({
+      mgSelected: value,
+    });
+  };
+
+  handleMgModalOk = () => {
+    for (let gatewayId of this.state.selectedRowIds) {
+      let req = new AddGatewayToMulticastGroupRequest();
+      req.setMulticastGroupId(this.state.mgSelected);
+      req.setGatewayId(gatewayId);
+
+      MulticastGroupStore.addGateway(req, () => {});
+    }
+
+    this.setState({
+      mgModalVisible: false,
+    });
+  };
+
   render() {
+    const menu = (
+      <Menu>
+        <Menu.Item onClick={this.showMgModal}>Add to multicast-group</Menu.Item>
+      </Menu>
+    );
+
     return (
       <Space direction="vertical" style={{ width: "100%" }} size="large">
+        <Modal
+          title="Add selected gateways to multicast-group"
+          visible={this.state.mgModalVisible}
+          onOk={this.handleMgModalOk}
+          onCancel={this.hideMgModal}
+          okButtonProps={{ disabled: this.state.mgSelected === "" }}
+          bodyStyle={{ height: 300 }}
+        >
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            <TreeSelect
+              style={{ width: "100%" }}
+              placeholder="Select multicast-group"
+              treeData={this.state.multicastGroups}
+              onChange={this.onMgSelected}
+              treeDefaultExpandAll
+            />
+          </Space>
+        </Modal>
         <PageHeader
           title="Gateways"
           breadcrumbRender={() => (
@@ -133,13 +254,28 @@ class ListGateways extends Component<IProps> {
           )}
           extra={[
             <Admin tenantId={this.props.tenant.getId()} isGatewayAdmin>
-              <Button type="primary">
-                <Link to={`/tenants/${this.props.tenant.getId()}/gateways/create`}>Add gateway</Link>
-              </Button>
+              <Space direction="horizontal" style={{ float: "right" }}>
+                <Button type="primary">
+                  <Link to={`/tenants/${this.props.tenant.getId()}/gateways/create`}>Add gateway</Link>
+                </Button>
+                <Dropdown
+                  placement="bottomRight"
+                  overlay={menu}
+                  trigger={["click"]}
+                  disabled={this.state.selectedRowIds.length === 0}
+                >
+                  <Button>Selected gateways</Button>
+                </Dropdown>
+              </Space>
             </Admin>,
           ]}
         />
-        <DataTable columns={this.columns()} getPage={this.getPage} rowKey="gatewayId" />
+        <DataTable
+          columns={this.columns()}
+          getPage={this.getPage}
+          onRowsSelectChange={this.onRowsSelectChange}
+          rowKey="gatewayId"
+        />
       </Space>
     );
   }

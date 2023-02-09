@@ -19,6 +19,17 @@ function deserialize_api_AddDeviceToMulticastGroupRequest(buffer_arg) {
   return api_multicast_group_pb.AddDeviceToMulticastGroupRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_AddGatewayToMulticastGroupRequest(arg) {
+  if (!(arg instanceof api_multicast_group_pb.AddGatewayToMulticastGroupRequest)) {
+    throw new Error('Expected argument of type api.AddGatewayToMulticastGroupRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_AddGatewayToMulticastGroupRequest(buffer_arg) {
+  return api_multicast_group_pb.AddGatewayToMulticastGroupRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_CreateMulticastGroupRequest(arg) {
   if (!(arg instanceof api_multicast_group_pb.CreateMulticastGroupRequest)) {
     throw new Error('Expected argument of type api.CreateMulticastGroupRequest');
@@ -162,6 +173,17 @@ function deserialize_api_RemoveDeviceFromMulticastGroupRequest(buffer_arg) {
   return api_multicast_group_pb.RemoveDeviceFromMulticastGroupRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_RemoveGatewayFromMulticastGroupRequest(arg) {
+  if (!(arg instanceof api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest)) {
+    throw new Error('Expected argument of type api.RemoveGatewayFromMulticastGroupRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_RemoveGatewayFromMulticastGroupRequest(buffer_arg) {
+  return api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_UpdateMulticastGroupRequest(arg) {
   if (!(arg instanceof api_multicast_group_pb.UpdateMulticastGroupRequest)) {
     throw new Error('Expected argument of type api.UpdateMulticastGroupRequest');
@@ -271,7 +293,31 @@ removeDevice: {
     responseSerialize: serialize_google_protobuf_Empty,
     responseDeserialize: deserialize_google_protobuf_Empty,
   },
-  // Add the given item to the multcast group queue.
+  // Add a gateway to the multicast group.
+addGateway: {
+    path: '/api.MulticastGroupService/AddGateway',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_multicast_group_pb.AddGatewayToMulticastGroupRequest,
+    responseType: google_protobuf_empty_pb.Empty,
+    requestSerialize: serialize_api_AddGatewayToMulticastGroupRequest,
+    requestDeserialize: deserialize_api_AddGatewayToMulticastGroupRequest,
+    responseSerialize: serialize_google_protobuf_Empty,
+    responseDeserialize: deserialize_google_protobuf_Empty,
+  },
+  // Remove a gateway from the multicast group.
+removeGateway: {
+    path: '/api.MulticastGroupService/RemoveGateway',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_multicast_group_pb.RemoveGatewayFromMulticastGroupRequest,
+    responseType: google_protobuf_empty_pb.Empty,
+    requestSerialize: serialize_api_RemoveGatewayFromMulticastGroupRequest,
+    requestDeserialize: deserialize_api_RemoveGatewayFromMulticastGroupRequest,
+    responseSerialize: serialize_google_protobuf_Empty,
+    responseDeserialize: deserialize_google_protobuf_Empty,
+  },
+  // Add the given item to the multicast group queue.
 enqueue: {
     path: '/api.MulticastGroupService/Enqueue',
     requestStream: false,

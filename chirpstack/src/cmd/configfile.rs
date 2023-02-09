@@ -205,15 +205,6 @@ pub fn run() {
     # downlink capacity load on the gateway.
     class_c_lock_duration="{{ network.scheduler.class_c_lock_duration }}"
 
-    # Multicast Class-C use GPS time.
-    #
-    # Use GPS time for scheduling multicast class-c downlinks. If this is enabled
-    # and the downlink must be send by multiple gateways to cover all devices
-    # within the multicast-group, these downlinks will be sent at exactly the same
-    # time by these gateways. If disabled, ChirpStack will use the configured
-    # margin. Only enable this features when all gateways have GNSS support.
-    multicast_class_c_use_gps_time={{ network.scheduler.multicast_class_c_use_gps_time }}
-
     # Multicast Class-C margin.
     #
     # This defines the minimum margin between scheduling multiple multicast downlinks
