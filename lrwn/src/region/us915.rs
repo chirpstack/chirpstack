@@ -642,7 +642,7 @@ impl Configuration {
         for i in 0..8 {
             c.base.downlink_channels.push(Channel {
                 frequency: 923300000 + (i * 600000),
-                min_dr: 10,
+                min_dr: 8,
                 max_dr: 13,
                 enabled: true,
                 user_defined: false,
