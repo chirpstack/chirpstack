@@ -145,6 +145,50 @@ impl Validator for ValidateIsAdmin {
     }
 }
 
+pub struct ValidateActiveUserOrKey {}
+
+impl ValidateActiveUserOrKey {
+    pub fn new() -> Self {
+        ValidateActiveUserOrKey {}
+    }
+}
+
+#[async_trait]
+impl Validator for ValidateActiveUserOrKey {
+    async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
+        task::spawn_blocking({
+            let id = *id;
+
+            move || -> Result<i64, Error> {
+                let mut c = get_db_conn()?;
+                let count = api_key::dsl::api_key
+                    .select(dsl::count_star())
+                    .find(&id)
+                    .first(&mut c)?;
+                Ok(count)
+            }
+        })
+        .await?
+    }
+
+    async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
+        task::spawn_blocking({
+            let id = *id;
+
+            move || -> Result<i64, Error> {
+                let mut c = get_db_conn()?;
+                let count = user::dsl::user
+                    .select(dsl::count_star())
+                    .find(id)
+                    .filter(user::dsl::is_active.eq(true))
+                    .first(&mut c)?;
+                Ok(count)
+            }
+        })
+        .await?
+    }
+}
+
 pub struct ValidateUsersAccess {
     flag: Flag,
 }
@@ -2272,7 +2316,7 @@ pub mod test {
     }
 
     #[tokio::test]
-    async fn validate_user() {
+    async fn validate_active_user() {
         let _guard = test::prepare().await;
         let users = vec![
             user::User {
@@ -2311,6 +2355,60 @@ pub mod test {
             ValidatorTest {
                 validators: vec![ValidateActiveUser::new()],
                 id: AuthID::Key(api_key.id),
+                ok: false,
+            },
+        ];
+
+        run_tests(tests).await;
+    }
+
+    #[tokio::test]
+    async fn validate_active_user_or_key() {
+        let _guard = test::prepare().await;
+
+        let users = vec![
+            user::User {
+                email: "active@user".into(),
+                is_active: true,
+                is_admin: false,
+                ..Default::default()
+            },
+            user::User {
+                email: "inactive@user".into(),
+                is_active: false,
+                is_admin: false,
+                ..Default::default()
+            },
+        ];
+        for u in &users {
+            user::create(u.clone()).await.unwrap();
+        }
+
+        let api_key = api_key::test::create_api_key(false, true).await;
+
+        let tests = vec![
+            // active user
+            ValidatorTest {
+                validators: vec![ValidateActiveUserOrKey::new()],
+                id: AuthID::User(users[0].id),
+                ok: true,
+            },
+            // inactive user
+            ValidatorTest {
+                validators: vec![ValidateActiveUserOrKey::new()],
+                id: AuthID::User(users[1].id),
+                ok: false,
+            },
+            // api key
+            ValidatorTest {
+                validators: vec![ValidateActiveUserOrKey::new()],
+                id: AuthID::Key(api_key.id),
+                ok: true,
+            },
+            // non-existing key
+            ValidatorTest {
+                validators: vec![ValidateActiveUserOrKey::new()],
+                id: AuthID::Key(Uuid::new_v4()),
                 ok: false,
             },
         ];

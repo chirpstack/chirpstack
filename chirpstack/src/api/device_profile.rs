@@ -334,7 +334,10 @@ impl DeviceProfileService for DeviceProfile {
         request: Request<()>,
     ) -> Result<Response<api::ListDeviceProfileAdrAlgorithmsResponse>, Status> {
         self.validator
-            .validate(request.extensions(), validator::ValidateActiveUser::new())
+            .validate(
+                request.extensions(),
+                validator::ValidateActiveUserOrKey::new(),
+            )
             .await?;
 
         let items = adr::get_algorithms().await;
