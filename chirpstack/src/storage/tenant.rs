@@ -21,7 +21,8 @@ pub struct Tenant {
     pub can_have_gateways: bool,
     pub max_device_count: i32,
     pub max_gateway_count: i32,
-    pub private_gateways: bool,
+    pub private_gateways_up: bool,
+    pub private_gateways_down: bool,
 }
 
 impl Tenant {
@@ -46,7 +47,8 @@ impl Default for Tenant {
             can_have_gateways: false,
             max_device_count: 0,
             max_gateway_count: 0,
-            private_gateways: false,
+            private_gateways_up: false,
+            private_gateways_down: false,
         }
     }
 }
@@ -141,7 +143,8 @@ pub async fn update(t: Tenant) -> Result<Tenant, Error> {
                     tenant::can_have_gateways.eq(&t.can_have_gateways),
                     tenant::max_device_count.eq(&t.max_device_count),
                     tenant::max_gateway_count.eq(&t.max_gateway_count),
-                    tenant::private_gateways.eq(&t.private_gateways),
+                    tenant::private_gateways_up.eq(&t.private_gateways_up),
+                    tenant::private_gateways_down.eq(&t.private_gateways_down),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, t.id.to_string()))
@@ -403,7 +406,8 @@ pub mod test {
             can_have_gateways: true,
             max_device_count: 20,
             max_gateway_count: 10,
-            private_gateways: true,
+            private_gateways_up: true,
+            private_gateways_down: true,
         };
         create(t).await.unwrap()
     }

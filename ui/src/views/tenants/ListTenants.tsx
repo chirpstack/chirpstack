@@ -37,12 +37,25 @@ class ListTenants extends Component {
         },
       },
       {
-        title: "Private gateways",
-        dataIndex: "privateGateways",
-        key: "privateGateways",
+        title: "Private gateways (uplink)",
+        dataIndex: "privateGatewaysUp",
+        key: "privateGatewaysUp",
         width: 250,
         render: (text, record) => {
-          if (record.privateGateways) {
+          if (record.privateGatewaysUp) {
+            return "yes";
+          } else {
+            return "no";
+          }
+        },
+      },
+      {
+        title: "Private gateways (down)",
+        dataIndex: "privateGatewaysDown",
+        key: "privateGatewaysDown",
+        width: 250,
+        render: (text, record) => {
+          if (record.privateGatewaysDown) {
             return "yes";
           } else {
             return "no";

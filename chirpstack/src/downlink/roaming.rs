@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
@@ -10,6 +11,7 @@ use crate::uplink::UplinkFrameSet;
 use crate::{config, gateway, region};
 use backend::DLMetaData;
 use chirpstack_api::{gw, internal};
+use lrwn::EUI64;
 
 pub struct PassiveRoamingDownlink {
     uplink_frame_set: UplinkFrameSet,
@@ -63,18 +65,41 @@ impl PassiveRoamingDownlink {
                 .uplink_frame_set
                 .rx_info_set
                 .iter()
-                .map(|rx_info| internal::DeviceGatewayRxInfoItem {
-                    gateway_id: hex::decode(&rx_info.gateway_id).unwrap(),
-                    rssi: rx_info.rssi,
-                    lora_snr: rx_info.snr,
-                    antenna: rx_info.antenna,
-                    board: rx_info.board,
-                    context: rx_info.context.clone(),
+                .map(|rx_info| {
+                    let gw_id = EUI64::from_str(&rx_info.gateway_id).unwrap_or_default();
+
+                    internal::DeviceGatewayRxInfoItem {
+                        gateway_id: gw_id.to_vec(),
+                        rssi: rx_info.rssi,
+                        lora_snr: rx_info.snr,
+                        antenna: rx_info.antenna,
+                        board: rx_info.board,
+                        context: rx_info.context.clone(),
+                        is_private_up: self
+                            .uplink_frame_set
+                            .gateway_private_up_map
+                            .get(&gw_id)
+                            .cloned()
+                            .unwrap_or_default(),
+                        is_private_down: self
+                            .uplink_frame_set
+                            .gateway_private_down_map
+                            .get(&gw_id)
+                            .cloned()
+                            .unwrap_or_default(),
+                        tenant_id: self
+                            .uplink_frame_set
+                            .gateway_tenant_id_map
+                            .get(&gw_id)
+                            .map(|v| v.into_bytes().to_vec())
+                            .unwrap_or_else(|| Vec::new()),
+                    }
                 })
                 .collect(),
         };
 
         let gw_down = helpers::select_downlink_gateway(
+            None,
             &self.uplink_frame_set.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
             &mut dev_gw_rx_info,

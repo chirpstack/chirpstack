@@ -64,7 +64,8 @@ pub struct GatewayMeta {
     pub latitude: f64,
     pub longitude: f64,
     pub altitude: f32,
-    pub is_private: bool,
+    pub is_private_up: bool,
+    pub is_private_down: bool,
 }
 
 #[derive(Default, Clone)]
@@ -396,7 +397,8 @@ pub async fn get_meta(gateway_id: &EUI64) -> Result<GatewayMeta, Error> {
                     gateway::latitude,
                     gateway::longitude,
                     gateway::altitude,
-                    tenant::private_gateways,
+                    tenant::private_gateways_up,
+                    tenant::private_gateways_down,
                 ))
                 .filter(gateway::dsl::gateway_id.eq(&gateway_id))
                 .first(&mut c)

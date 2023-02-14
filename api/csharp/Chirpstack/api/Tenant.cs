@@ -26,80 +26,81 @@ namespace Chirpstack.Api {
           string.Concat(
             "ChBhcGkvdGVuYW50LnByb3RvEgNhcGkaHGdvb2dsZS9hcGkvYW5ub3RhdGlv",
             "bnMucHJvdG8aH2dvb2dsZS9wcm90b2J1Zi90aW1lc3RhbXAucHJvdG8aG2dv",
-            "b2dsZS9wcm90b2J1Zi9lbXB0eS5wcm90byKhAQoGVGVuYW50EgoKAmlkGAEg",
+            "b2dsZS9wcm90b2J1Zi9lbXB0eS5wcm90byLDAQoGVGVuYW50EgoKAmlkGAEg",
             "ASgJEgwKBG5hbWUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkSGQoRY2Fu",
             "X2hhdmVfZ2F0ZXdheXMYBCABKAgSGQoRbWF4X2dhdGV3YXlfY291bnQYBSAB",
-            "KA0SGAoQbWF4X2RldmljZV9jb3VudBgGIAEoDRIYChBwcml2YXRlX2dhdGV3",
-            "YXlzGAcgASgIIvQBCg5UZW5hbnRMaXN0SXRlbRIKCgJpZBgBIAEoCRIuCgpj",
-            "cmVhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIu",
-            "Cgp1cGRhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFt",
-            "cBIMCgRuYW1lGAQgASgJEhkKEWNhbl9oYXZlX2dhdGV3YXlzGAUgASgIEhgK",
-            "EHByaXZhdGVfZ2F0ZXdheXMYBiABKAgSGQoRbWF4X2dhdGV3YXlfY291bnQY",
-            "ByABKA0SGAoQbWF4X2RldmljZV9jb3VudBgIIAEoDSIyChNDcmVhdGVUZW5h",
-            "bnRSZXF1ZXN0EhsKBnRlbmFudBgBIAEoCzILLmFwaS5UZW5hbnQiIgoUQ3Jl",
-            "YXRlVGVuYW50UmVzcG9uc2USCgoCaWQYASABKAkiHgoQR2V0VGVuYW50UmVx",
-            "dWVzdBIKCgJpZBgBIAEoCSKQAQoRR2V0VGVuYW50UmVzcG9uc2USGwoGdGVu",
-            "YW50GAEgASgLMgsuYXBpLlRlbmFudBIuCgpjcmVhdGVkX2F0GAIgASgLMhou",
-            "Z29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAMgASgL",
-            "MhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIyChNVcGRhdGVUZW5hbnRS",
-            "ZXF1ZXN0EhsKBnRlbmFudBgBIAEoCzILLmFwaS5UZW5hbnQiIQoTRGVsZXRl",
-            "VGVuYW50UmVxdWVzdBIKCgJpZBgBIAEoCSJUChJMaXN0VGVuYW50c1JlcXVl",
-            "c3QSDQoFbGltaXQYASABKA0SDgoGb2Zmc2V0GAIgASgNEg4KBnNlYXJjaBgD",
-            "IAEoCRIPCgd1c2VyX2lkGAQgASgJIk8KE0xpc3RUZW5hbnRzUmVzcG9uc2US",
-            "EwoLdG90YWxfY291bnQYASABKA0SIwoGcmVzdWx0GAIgAygLMhMuYXBpLlRl",
-            "bmFudExpc3RJdGVtIoQBCgpUZW5hbnRVc2VyEhEKCXRlbmFudF9pZBgBIAEo",
-            "CRIPCgd1c2VyX2lkGAIgASgJEhAKCGlzX2FkbWluGAMgASgIEhcKD2lzX2Rl",
-            "dmljZV9hZG1pbhgEIAEoCBIYChBpc19nYXRld2F5X2FkbWluGAUgASgIEg0K",
-            "BWVtYWlsGAYgASgJIuwBChJUZW5hbnRVc2VyTGlzdEl0ZW0SEQoJdGVuYW50",
-            "X2lkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSLgoKY3JlYXRlZF9hdBgDIAEo",
-            "CzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgE",
-            "IAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFZW1haWwYBSAB",
-            "KAkSEAoIaXNfYWRtaW4YBiABKAgSFwoPaXNfZGV2aWNlX2FkbWluGAcgASgI",
-            "EhgKEGlzX2dhdGV3YXlfYWRtaW4YCCABKAgiPAoUQWRkVGVuYW50VXNlclJl",
-            "cXVlc3QSJAoLdGVuYW50X3VzZXIYASABKAsyDy5hcGkuVGVuYW50VXNlciI6",
-            "ChRHZXRUZW5hbnRVc2VyUmVxdWVzdBIRCgl0ZW5hbnRfaWQYASABKAkSDwoH",
-            "dXNlcl9pZBgCIAEoCSKdAQoVR2V0VGVuYW50VXNlclJlc3BvbnNlEiQKC3Rl",
-            "bmFudF91c2VyGAEgASgLMg8uYXBpLlRlbmFudFVzZXISLgoKY3JlYXRlZF9h",
-            "dBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRl",
-            "ZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiPwoXVXBk",
-            "YXRlVGVuYW50VXNlclJlcXVlc3QSJAoLdGVuYW50X3VzZXIYASABKAsyDy5h",
-            "cGkuVGVuYW50VXNlciI9ChdEZWxldGVUZW5hbnRVc2VyUmVxdWVzdBIRCgl0",
-            "ZW5hbnRfaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCSJKChZMaXN0VGVuYW50",
-            "VXNlcnNSZXF1ZXN0EhEKCXRlbmFudF9pZBgBIAEoCRINCgVsaW1pdBgCIAEo",
-            "DRIOCgZvZmZzZXQYAyABKA0iVwoXTGlzdFRlbmFudFVzZXJzUmVzcG9uc2US",
-            "EwoLdG90YWxfY291bnQYASABKA0SJwoGcmVzdWx0GAIgAygLMhcuYXBpLlRl",
-            "bmFudFVzZXJMaXN0SXRlbTKiCAoNVGVuYW50U2VydmljZRJWCgZDcmVhdGUS",
-            "GC5hcGkuQ3JlYXRlVGVuYW50UmVxdWVzdBoZLmFwaS5DcmVhdGVUZW5hbnRS",
-            "ZXNwb25zZSIXgtPkkwIRIgwvYXBpL3RlbmFudHM6ASoSTwoDR2V0EhUuYXBp",
-            "LkdldFRlbmFudFJlcXVlc3QaFi5hcGkuR2V0VGVuYW50UmVzcG9uc2UiGYLT",
-            "5JMCExIRL2FwaS90ZW5hbnRzL3tpZH0SXwoGVXBkYXRlEhguYXBpLlVwZGF0",
-            "ZVRlbmFudFJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkiI4LT5JMC",
-            "HRoYL2FwaS90ZW5hbnRzL3t0ZW5hbnQuaWR9OgEqElUKBkRlbGV0ZRIYLmFw",
-            "aS5EZWxldGVUZW5hbnRSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5",
-            "IhmC0+STAhMqES9hcGkvdGVuYW50cy97aWR9Ek8KBExpc3QSFy5hcGkuTGlz",
-            "dFRlbmFudHNSZXF1ZXN0GhguYXBpLkxpc3RUZW5hbnRzUmVzcG9uc2UiFILT",
-            "5JMCDhIML2FwaS90ZW5hbnRzEnMKB0FkZFVzZXISGS5hcGkuQWRkVGVuYW50",
-            "VXNlclJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkiNYLT5JMCLyIq",
-            "L2FwaS90ZW5hbnRzL3t0ZW5hbnRfdXNlci50ZW5hbnRfaWR9L3VzZXJzOgEq",
-            "EnIKB0dldFVzZXISGS5hcGkuR2V0VGVuYW50VXNlclJlcXVlc3QaGi5hcGku",
-            "R2V0VGVuYW50VXNlclJlc3BvbnNlIjCC0+STAioSKC9hcGkvdGVuYW50cy97",
-            "dGVuYW50X2lkfS91c2Vycy97dXNlcl9pZH0SjwEKClVwZGF0ZVVzZXISHC5h",
-            "cGkuVXBkYXRlVGVuYW50VXNlclJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYu",
-            "RW1wdHkiS4LT5JMCRRpAL2FwaS90ZW5hbnRzL3t0ZW5hbnRfdXNlci50ZW5h",
-            "bnRfaWR9L3VzZXJzL3t0ZW5hbnRfdXNlci51c2VyX2lkfToBKhJ0CgpEZWxl",
-            "dGVVc2VyEhwuYXBpLkRlbGV0ZVRlbmFudFVzZXJSZXF1ZXN0GhYuZ29vZ2xl",
-            "LnByb3RvYnVmLkVtcHR5IjCC0+STAioqKC9hcGkvdGVuYW50cy97dGVuYW50",
-            "X2lkfS91c2Vycy97dXNlcl9pZH0SbgoJTGlzdFVzZXJzEhsuYXBpLkxpc3RU",
-            "ZW5hbnRVc2Vyc1JlcXVlc3QaHC5hcGkuTGlzdFRlbmFudFVzZXJzUmVzcG9u",
-            "c2UiJoLT5JMCIBIeL2FwaS90ZW5hbnRzL3t0ZW5hbnRfaWR9L3VzZXJzQmMK",
-            "EWlvLmNoaXJwc3RhY2suYXBpQgtUZW5hbnRQcm90b1ABWi5naXRodWIuY29t",
-            "L2NoaXJwc3RhY2svY2hpcnBzdGFjay9hcGkvZ28vdjQvYXBpqgIOQ2hpcnBz",
-            "dGFjay5BcGliBnByb3RvMw=="));
+            "KA0SGAoQbWF4X2RldmljZV9jb3VudBgGIAEoDRIbChNwcml2YXRlX2dhdGV3",
+            "YXlzX3VwGAcgASgIEh0KFXByaXZhdGVfZ2F0ZXdheXNfZG93bhgIIAEoCCKW",
+            "AgoOVGVuYW50TGlzdEl0ZW0SCgoCaWQYASABKAkSLgoKY3JlYXRlZF9hdBgC",
+            "IAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9h",
+            "dBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDAoEbmFtZRgE",
+            "IAEoCRIZChFjYW5faGF2ZV9nYXRld2F5cxgFIAEoCBIbChNwcml2YXRlX2dh",
+            "dGV3YXlzX3VwGAYgASgIEh0KFXByaXZhdGVfZ2F0ZXdheXNfZG93bhgJIAEo",
+            "CBIZChFtYXhfZ2F0ZXdheV9jb3VudBgHIAEoDRIYChBtYXhfZGV2aWNlX2Nv",
+            "dW50GAggASgNIjIKE0NyZWF0ZVRlbmFudFJlcXVlc3QSGwoGdGVuYW50GAEg",
+            "ASgLMgsuYXBpLlRlbmFudCIiChRDcmVhdGVUZW5hbnRSZXNwb25zZRIKCgJp",
+            "ZBgBIAEoCSIeChBHZXRUZW5hbnRSZXF1ZXN0EgoKAmlkGAEgASgJIpABChFH",
+            "ZXRUZW5hbnRSZXNwb25zZRIbCgZ0ZW5hbnQYASABKAsyCy5hcGkuVGVuYW50",
+            "Ei4KCmNyZWF0ZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0",
+            "YW1wEi4KCnVwZGF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGlt",
+            "ZXN0YW1wIjIKE1VwZGF0ZVRlbmFudFJlcXVlc3QSGwoGdGVuYW50GAEgASgL",
+            "MgsuYXBpLlRlbmFudCIhChNEZWxldGVUZW5hbnRSZXF1ZXN0EgoKAmlkGAEg",
+            "ASgJIlQKEkxpc3RUZW5hbnRzUmVxdWVzdBINCgVsaW1pdBgBIAEoDRIOCgZv",
+            "ZmZzZXQYAiABKA0SDgoGc2VhcmNoGAMgASgJEg8KB3VzZXJfaWQYBCABKAki",
+            "TwoTTGlzdFRlbmFudHNSZXNwb25zZRITCgt0b3RhbF9jb3VudBgBIAEoDRIj",
+            "CgZyZXN1bHQYAiADKAsyEy5hcGkuVGVuYW50TGlzdEl0ZW0ihAEKClRlbmFu",
+            "dFVzZXISEQoJdGVuYW50X2lkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSEAoI",
+            "aXNfYWRtaW4YAyABKAgSFwoPaXNfZGV2aWNlX2FkbWluGAQgASgIEhgKEGlz",
+            "X2dhdGV3YXlfYWRtaW4YBSABKAgSDQoFZW1haWwYBiABKAki7AEKElRlbmFu",
+            "dFVzZXJMaXN0SXRlbRIRCgl0ZW5hbnRfaWQYASABKAkSDwoHdXNlcl9pZBgC",
+            "IAEoCRIuCgpjcmVhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRp",
+            "bWVzdGFtcBIuCgp1cGRhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVm",
+            "LlRpbWVzdGFtcBINCgVlbWFpbBgFIAEoCRIQCghpc19hZG1pbhgGIAEoCBIX",
+            "Cg9pc19kZXZpY2VfYWRtaW4YByABKAgSGAoQaXNfZ2F0ZXdheV9hZG1pbhgI",
+            "IAEoCCI8ChRBZGRUZW5hbnRVc2VyUmVxdWVzdBIkCgt0ZW5hbnRfdXNlchgB",
+            "IAEoCzIPLmFwaS5UZW5hbnRVc2VyIjoKFEdldFRlbmFudFVzZXJSZXF1ZXN0",
+            "EhEKCXRlbmFudF9pZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJIp0BChVHZXRU",
+            "ZW5hbnRVc2VyUmVzcG9uc2USJAoLdGVuYW50X3VzZXIYASABKAsyDy5hcGku",
+            "VGVuYW50VXNlchIuCgpjcmVhdGVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3Rv",
+            "YnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnBy",
+            "b3RvYnVmLlRpbWVzdGFtcCI/ChdVcGRhdGVUZW5hbnRVc2VyUmVxdWVzdBIk",
+            "Cgt0ZW5hbnRfdXNlchgBIAEoCzIPLmFwaS5UZW5hbnRVc2VyIj0KF0RlbGV0",
+            "ZVRlbmFudFVzZXJSZXF1ZXN0EhEKCXRlbmFudF9pZBgBIAEoCRIPCgd1c2Vy",
+            "X2lkGAIgASgJIkoKFkxpc3RUZW5hbnRVc2Vyc1JlcXVlc3QSEQoJdGVuYW50",
+            "X2lkGAEgASgJEg0KBWxpbWl0GAIgASgNEg4KBm9mZnNldBgDIAEoDSJXChdM",
+            "aXN0VGVuYW50VXNlcnNSZXNwb25zZRITCgt0b3RhbF9jb3VudBgBIAEoDRIn",
+            "CgZyZXN1bHQYAiADKAsyFy5hcGkuVGVuYW50VXNlckxpc3RJdGVtMqIICg1U",
+            "ZW5hbnRTZXJ2aWNlElYKBkNyZWF0ZRIYLmFwaS5DcmVhdGVUZW5hbnRSZXF1",
+            "ZXN0GhkuYXBpLkNyZWF0ZVRlbmFudFJlc3BvbnNlIheC0+STAhEiDC9hcGkv",
+            "dGVuYW50czoBKhJPCgNHZXQSFS5hcGkuR2V0VGVuYW50UmVxdWVzdBoWLmFw",
+            "aS5HZXRUZW5hbnRSZXNwb25zZSIZgtPkkwITEhEvYXBpL3RlbmFudHMve2lk",
+            "fRJfCgZVcGRhdGUSGC5hcGkuVXBkYXRlVGVuYW50UmVxdWVzdBoWLmdvb2ds",
+            "ZS5wcm90b2J1Zi5FbXB0eSIjgtPkkwIdGhgvYXBpL3RlbmFudHMve3RlbmFu",
+            "dC5pZH06ASoSVQoGRGVsZXRlEhguYXBpLkRlbGV0ZVRlbmFudFJlcXVlc3Qa",
+            "Fi5nb29nbGUucHJvdG9idWYuRW1wdHkiGYLT5JMCEyoRL2FwaS90ZW5hbnRz",
+            "L3tpZH0STwoETGlzdBIXLmFwaS5MaXN0VGVuYW50c1JlcXVlc3QaGC5hcGku",
+            "TGlzdFRlbmFudHNSZXNwb25zZSIUgtPkkwIOEgwvYXBpL3RlbmFudHMScwoH",
+            "QWRkVXNlchIZLmFwaS5BZGRUZW5hbnRVc2VyUmVxdWVzdBoWLmdvb2dsZS5w",
+            "cm90b2J1Zi5FbXB0eSI1gtPkkwIvIiovYXBpL3RlbmFudHMve3RlbmFudF91",
+            "c2VyLnRlbmFudF9pZH0vdXNlcnM6ASoScgoHR2V0VXNlchIZLmFwaS5HZXRU",
+            "ZW5hbnRVc2VyUmVxdWVzdBoaLmFwaS5HZXRUZW5hbnRVc2VyUmVzcG9uc2Ui",
+            "MILT5JMCKhIoL2FwaS90ZW5hbnRzL3t0ZW5hbnRfaWR9L3VzZXJzL3t1c2Vy",
+            "X2lkfRKPAQoKVXBkYXRlVXNlchIcLmFwaS5VcGRhdGVUZW5hbnRVc2VyUmVx",
+            "dWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSJLgtPkkwJFGkAvYXBpL3Rl",
+            "bmFudHMve3RlbmFudF91c2VyLnRlbmFudF9pZH0vdXNlcnMve3RlbmFudF91",
+            "c2VyLnVzZXJfaWR9OgEqEnQKCkRlbGV0ZVVzZXISHC5hcGkuRGVsZXRlVGVu",
+            "YW50VXNlclJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkiMILT5JMC",
+            "KiooL2FwaS90ZW5hbnRzL3t0ZW5hbnRfaWR9L3VzZXJzL3t1c2VyX2lkfRJu",
+            "CglMaXN0VXNlcnMSGy5hcGkuTGlzdFRlbmFudFVzZXJzUmVxdWVzdBocLmFw",
+            "aS5MaXN0VGVuYW50VXNlcnNSZXNwb25zZSImgtPkkwIgEh4vYXBpL3RlbmFu",
+            "dHMve3RlbmFudF9pZH0vdXNlcnNCYwoRaW8uY2hpcnBzdGFjay5hcGlCC1Rl",
+            "bmFudFByb3RvUAFaLmdpdGh1Yi5jb20vY2hpcnBzdGFjay9jaGlycHN0YWNr",
+            "L2FwaS9nby92NC9hcGmqAg5DaGlycHN0YWNrLkFwaWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Api.AnnotationsReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.Tenant), global::Chirpstack.Api.Tenant.Parser, new[]{ "Id", "Name", "Description", "CanHaveGateways", "MaxGatewayCount", "MaxDeviceCount", "PrivateGateways" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.TenantListItem), global::Chirpstack.Api.TenantListItem.Parser, new[]{ "Id", "CreatedAt", "UpdatedAt", "Name", "CanHaveGateways", "PrivateGateways", "MaxGatewayCount", "MaxDeviceCount" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.Tenant), global::Chirpstack.Api.Tenant.Parser, new[]{ "Id", "Name", "Description", "CanHaveGateways", "MaxGatewayCount", "MaxDeviceCount", "PrivateGatewaysUp", "PrivateGatewaysDown" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.TenantListItem), global::Chirpstack.Api.TenantListItem.Parser, new[]{ "Id", "CreatedAt", "UpdatedAt", "Name", "CanHaveGateways", "PrivateGatewaysUp", "PrivateGatewaysDown", "MaxGatewayCount", "MaxDeviceCount" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.CreateTenantRequest), global::Chirpstack.Api.CreateTenantRequest.Parser, new[]{ "Tenant" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.CreateTenantResponse), global::Chirpstack.Api.CreateTenantResponse.Parser, new[]{ "Id" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.GetTenantRequest), global::Chirpstack.Api.GetTenantRequest.Parser, new[]{ "Id" }, null, null, null, null),
@@ -163,7 +164,8 @@ namespace Chirpstack.Api {
       canHaveGateways_ = other.canHaveGateways_;
       maxGatewayCount_ = other.maxGatewayCount_;
       maxDeviceCount_ = other.maxDeviceCount_;
-      privateGateways_ = other.privateGateways_;
+      privateGatewaysUp_ = other.privateGatewaysUp_;
+      privateGatewaysDown_ = other.privateGatewaysDown_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -266,19 +268,38 @@ namespace Chirpstack.Api {
       }
     }
 
-    /// <summary>Field number for the "private_gateways" field.</summary>
-    public const int PrivateGatewaysFieldNumber = 7;
-    private bool privateGateways_;
+    /// <summary>Field number for the "private_gateways_up" field.</summary>
+    public const int PrivateGatewaysUpFieldNumber = 7;
+    private bool privateGatewaysUp_;
     /// <summary>
-    /// Private gateways.
-    /// Gateways under this tenant are private.
+    /// Private gateways (uplink).
+    /// If enabled, then uplink messages will not be shared with other tenants.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool PrivateGateways {
-      get { return privateGateways_; }
+    public bool PrivateGatewaysUp {
+      get { return privateGatewaysUp_; }
       set {
-        privateGateways_ = value;
+        privateGatewaysUp_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "private_gateways_down" field.</summary>
+    public const int PrivateGatewaysDownFieldNumber = 8;
+    private bool privateGatewaysDown_;
+    /// <summary>
+    /// Private gateways (downlink).
+    /// If enabled, then other tenants will not be able to schedule downlink
+    /// messages through the gateways of this tenant. For example, in case you
+    /// do want to share uplinks with other tenants (private_gateways_up=false),
+    /// but you want to prevent other tenants from using gateway airtime.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool PrivateGatewaysDown {
+      get { return privateGatewaysDown_; }
+      set {
+        privateGatewaysDown_ = value;
       }
     }
 
@@ -303,7 +324,8 @@ namespace Chirpstack.Api {
       if (CanHaveGateways != other.CanHaveGateways) return false;
       if (MaxGatewayCount != other.MaxGatewayCount) return false;
       if (MaxDeviceCount != other.MaxDeviceCount) return false;
-      if (PrivateGateways != other.PrivateGateways) return false;
+      if (PrivateGatewaysUp != other.PrivateGatewaysUp) return false;
+      if (PrivateGatewaysDown != other.PrivateGatewaysDown) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -317,7 +339,8 @@ namespace Chirpstack.Api {
       if (CanHaveGateways != false) hash ^= CanHaveGateways.GetHashCode();
       if (MaxGatewayCount != 0) hash ^= MaxGatewayCount.GetHashCode();
       if (MaxDeviceCount != 0) hash ^= MaxDeviceCount.GetHashCode();
-      if (PrivateGateways != false) hash ^= PrivateGateways.GetHashCode();
+      if (PrivateGatewaysUp != false) hash ^= PrivateGatewaysUp.GetHashCode();
+      if (PrivateGatewaysDown != false) hash ^= PrivateGatewaysDown.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -360,9 +383,13 @@ namespace Chirpstack.Api {
         output.WriteRawTag(48);
         output.WriteUInt32(MaxDeviceCount);
       }
-      if (PrivateGateways != false) {
+      if (PrivateGatewaysUp != false) {
         output.WriteRawTag(56);
-        output.WriteBool(PrivateGateways);
+        output.WriteBool(PrivateGatewaysUp);
+      }
+      if (PrivateGatewaysDown != false) {
+        output.WriteRawTag(64);
+        output.WriteBool(PrivateGatewaysDown);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -398,9 +425,13 @@ namespace Chirpstack.Api {
         output.WriteRawTag(48);
         output.WriteUInt32(MaxDeviceCount);
       }
-      if (PrivateGateways != false) {
+      if (PrivateGatewaysUp != false) {
         output.WriteRawTag(56);
-        output.WriteBool(PrivateGateways);
+        output.WriteBool(PrivateGatewaysUp);
+      }
+      if (PrivateGatewaysDown != false) {
+        output.WriteRawTag(64);
+        output.WriteBool(PrivateGatewaysDown);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -430,7 +461,10 @@ namespace Chirpstack.Api {
       if (MaxDeviceCount != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(MaxDeviceCount);
       }
-      if (PrivateGateways != false) {
+      if (PrivateGatewaysUp != false) {
+        size += 1 + 1;
+      }
+      if (PrivateGatewaysDown != false) {
         size += 1 + 1;
       }
       if (_unknownFields != null) {
@@ -463,8 +497,11 @@ namespace Chirpstack.Api {
       if (other.MaxDeviceCount != 0) {
         MaxDeviceCount = other.MaxDeviceCount;
       }
-      if (other.PrivateGateways != false) {
-        PrivateGateways = other.PrivateGateways;
+      if (other.PrivateGatewaysUp != false) {
+        PrivateGatewaysUp = other.PrivateGatewaysUp;
+      }
+      if (other.PrivateGatewaysDown != false) {
+        PrivateGatewaysDown = other.PrivateGatewaysDown;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -506,7 +543,11 @@ namespace Chirpstack.Api {
             break;
           }
           case 56: {
-            PrivateGateways = input.ReadBool();
+            PrivateGatewaysUp = input.ReadBool();
+            break;
+          }
+          case 64: {
+            PrivateGatewaysDown = input.ReadBool();
             break;
           }
         }
@@ -549,7 +590,11 @@ namespace Chirpstack.Api {
             break;
           }
           case 56: {
-            PrivateGateways = input.ReadBool();
+            PrivateGatewaysUp = input.ReadBool();
+            break;
+          }
+          case 64: {
+            PrivateGatewaysDown = input.ReadBool();
             break;
           }
         }
@@ -598,7 +643,8 @@ namespace Chirpstack.Api {
       updatedAt_ = other.updatedAt_ != null ? other.updatedAt_.Clone() : null;
       name_ = other.name_;
       canHaveGateways_ = other.canHaveGateways_;
-      privateGateways_ = other.privateGateways_;
+      privateGatewaysUp_ = other.privateGatewaysUp_;
+      privateGatewaysDown_ = other.privateGatewaysDown_;
       maxGatewayCount_ = other.maxGatewayCount_;
       maxDeviceCount_ = other.maxDeviceCount_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -685,18 +731,33 @@ namespace Chirpstack.Api {
       }
     }
 
-    /// <summary>Field number for the "private_gateways" field.</summary>
-    public const int PrivateGatewaysFieldNumber = 6;
-    private bool privateGateways_;
+    /// <summary>Field number for the "private_gateways_up" field.</summary>
+    public const int PrivateGatewaysUpFieldNumber = 6;
+    private bool privateGatewaysUp_;
     /// <summary>
-    /// Gateways are private to tenant.
+    /// Private gateways (uplink).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool PrivateGateways {
-      get { return privateGateways_; }
+    public bool PrivateGatewaysUp {
+      get { return privateGatewaysUp_; }
       set {
-        privateGateways_ = value;
+        privateGatewaysUp_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "private_gateways_down" field.</summary>
+    public const int PrivateGatewaysDownFieldNumber = 9;
+    private bool privateGatewaysDown_;
+    /// <summary>
+    /// Private gateways (downlink).
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool PrivateGatewaysDown {
+      get { return privateGatewaysDown_; }
+      set {
+        privateGatewaysDown_ = value;
       }
     }
 
@@ -752,7 +813,8 @@ namespace Chirpstack.Api {
       if (!object.Equals(UpdatedAt, other.UpdatedAt)) return false;
       if (Name != other.Name) return false;
       if (CanHaveGateways != other.CanHaveGateways) return false;
-      if (PrivateGateways != other.PrivateGateways) return false;
+      if (PrivateGatewaysUp != other.PrivateGatewaysUp) return false;
+      if (PrivateGatewaysDown != other.PrivateGatewaysDown) return false;
       if (MaxGatewayCount != other.MaxGatewayCount) return false;
       if (MaxDeviceCount != other.MaxDeviceCount) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -767,7 +829,8 @@ namespace Chirpstack.Api {
       if (updatedAt_ != null) hash ^= UpdatedAt.GetHashCode();
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (CanHaveGateways != false) hash ^= CanHaveGateways.GetHashCode();
-      if (PrivateGateways != false) hash ^= PrivateGateways.GetHashCode();
+      if (PrivateGatewaysUp != false) hash ^= PrivateGatewaysUp.GetHashCode();
+      if (PrivateGatewaysDown != false) hash ^= PrivateGatewaysDown.GetHashCode();
       if (MaxGatewayCount != 0) hash ^= MaxGatewayCount.GetHashCode();
       if (MaxDeviceCount != 0) hash ^= MaxDeviceCount.GetHashCode();
       if (_unknownFields != null) {
@@ -808,9 +871,9 @@ namespace Chirpstack.Api {
         output.WriteRawTag(40);
         output.WriteBool(CanHaveGateways);
       }
-      if (PrivateGateways != false) {
+      if (PrivateGatewaysUp != false) {
         output.WriteRawTag(48);
-        output.WriteBool(PrivateGateways);
+        output.WriteBool(PrivateGatewaysUp);
       }
       if (MaxGatewayCount != 0) {
         output.WriteRawTag(56);
@@ -819,6 +882,10 @@ namespace Chirpstack.Api {
       if (MaxDeviceCount != 0) {
         output.WriteRawTag(64);
         output.WriteUInt32(MaxDeviceCount);
+      }
+      if (PrivateGatewaysDown != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(PrivateGatewaysDown);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -850,9 +917,9 @@ namespace Chirpstack.Api {
         output.WriteRawTag(40);
         output.WriteBool(CanHaveGateways);
       }
-      if (PrivateGateways != false) {
+      if (PrivateGatewaysUp != false) {
         output.WriteRawTag(48);
-        output.WriteBool(PrivateGateways);
+        output.WriteBool(PrivateGatewaysUp);
       }
       if (MaxGatewayCount != 0) {
         output.WriteRawTag(56);
@@ -861,6 +928,10 @@ namespace Chirpstack.Api {
       if (MaxDeviceCount != 0) {
         output.WriteRawTag(64);
         output.WriteUInt32(MaxDeviceCount);
+      }
+      if (PrivateGatewaysDown != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(PrivateGatewaysDown);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -887,7 +958,10 @@ namespace Chirpstack.Api {
       if (CanHaveGateways != false) {
         size += 1 + 1;
       }
-      if (PrivateGateways != false) {
+      if (PrivateGatewaysUp != false) {
+        size += 1 + 1;
+      }
+      if (PrivateGatewaysDown != false) {
         size += 1 + 1;
       }
       if (MaxGatewayCount != 0) {
@@ -929,8 +1003,11 @@ namespace Chirpstack.Api {
       if (other.CanHaveGateways != false) {
         CanHaveGateways = other.CanHaveGateways;
       }
-      if (other.PrivateGateways != false) {
-        PrivateGateways = other.PrivateGateways;
+      if (other.PrivateGatewaysUp != false) {
+        PrivateGatewaysUp = other.PrivateGatewaysUp;
+      }
+      if (other.PrivateGatewaysDown != false) {
+        PrivateGatewaysDown = other.PrivateGatewaysDown;
       }
       if (other.MaxGatewayCount != 0) {
         MaxGatewayCount = other.MaxGatewayCount;
@@ -980,7 +1057,7 @@ namespace Chirpstack.Api {
             break;
           }
           case 48: {
-            PrivateGateways = input.ReadBool();
+            PrivateGatewaysUp = input.ReadBool();
             break;
           }
           case 56: {
@@ -989,6 +1066,10 @@ namespace Chirpstack.Api {
           }
           case 64: {
             MaxDeviceCount = input.ReadUInt32();
+            break;
+          }
+          case 72: {
+            PrivateGatewaysDown = input.ReadBool();
             break;
           }
         }
@@ -1033,7 +1114,7 @@ namespace Chirpstack.Api {
             break;
           }
           case 48: {
-            PrivateGateways = input.ReadBool();
+            PrivateGatewaysUp = input.ReadBool();
             break;
           }
           case 56: {
@@ -1042,6 +1123,10 @@ namespace Chirpstack.Api {
           }
           case 64: {
             MaxDeviceCount = input.ReadUInt32();
+            break;
+          }
+          case 72: {
+            PrivateGatewaysDown = input.ReadBool();
             break;
           }
         }

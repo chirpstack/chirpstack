@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Local, Utc};
@@ -18,7 +19,7 @@ use crate::storage::{
 };
 use crate::{codec, config, downlink, framelog, integration, maccommand, metalog, region};
 use chirpstack_api::{api, common, integration as integration_pb, internal, meta};
-use lrwn::AES128Key;
+use lrwn::{AES128Key, EUI64};
 
 pub struct Data {
     uplink_frame_set: UplinkFrameSet,
@@ -260,13 +261,35 @@ impl Data {
                 .uplink_frame_set
                 .rx_info_set
                 .iter()
-                .map(|rx_info| internal::DeviceGatewayRxInfoItem {
-                    gateway_id: hex::decode(&rx_info.gateway_id).unwrap(),
-                    rssi: rx_info.rssi,
-                    lora_snr: rx_info.snr,
-                    antenna: rx_info.antenna,
-                    board: rx_info.board,
-                    context: rx_info.context.clone(),
+                .map(|rx_info| {
+                    let gw_id = EUI64::from_str(&rx_info.gateway_id).unwrap_or_default();
+
+                    internal::DeviceGatewayRxInfoItem {
+                        gateway_id: gw_id.to_vec(),
+                        rssi: rx_info.rssi,
+                        lora_snr: rx_info.snr,
+                        antenna: rx_info.antenna,
+                        board: rx_info.board,
+                        context: rx_info.context.clone(),
+                        is_private_up: self
+                            .uplink_frame_set
+                            .gateway_private_up_map
+                            .get(&gw_id)
+                            .cloned()
+                            .unwrap_or_default(),
+                        is_private_down: self
+                            .uplink_frame_set
+                            .gateway_private_down_map
+                            .get(&gw_id)
+                            .cloned()
+                            .unwrap_or_default(),
+                        tenant_id: self
+                            .uplink_frame_set
+                            .gateway_tenant_id_map
+                            .get(&gw_id)
+                            .map(|v| v.into_bytes().to_vec())
+                            .unwrap_or_else(|| Vec::new()),
+                    }
                 })
                 .collect(),
         });

@@ -236,7 +236,8 @@ diesel::table! {
         can_have_gateways -> Bool,
         max_device_count -> Int4,
         max_gateway_count -> Int4,
-        private_gateways -> Bool,
+        private_gateways_up -> Bool,
+        private_gateways_down -> Bool,
     }
 }
 

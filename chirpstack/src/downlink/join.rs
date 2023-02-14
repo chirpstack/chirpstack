@@ -1,20 +1,22 @@
+use std::str::FromStr;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use rand::Rng;
 use tracing::{span, trace, Instrument, Level};
 
-use lrwn::PhyPayload;
+use lrwn::{PhyPayload, EUI64};
 
 use super::helpers;
 use crate::gateway::backend::send_downlink;
-use crate::storage::{device, downlink_frame};
+use crate::storage::{device, downlink_frame, tenant};
 use crate::uplink::UplinkFrameSet;
 use crate::{config, region};
 use chirpstack_api::{gw, internal};
 
 pub struct JoinAccept<'a> {
     uplink_frame_set: &'a UplinkFrameSet,
+    tenant: &'a tenant::Tenant,
     device: &'a device::Device,
     device_session: &'a internal::DeviceSession,
     join_accept: &'a PhyPayload,
@@ -29,24 +31,27 @@ pub struct JoinAccept<'a> {
 impl JoinAccept<'_> {
     pub async fn handle(
         ufs: &UplinkFrameSet,
+        tenant: &tenant::Tenant,
         device: &device::Device,
         device_session: &internal::DeviceSession,
         join_accept: &PhyPayload,
     ) -> Result<()> {
         let span = span!(Level::TRACE, "join_accept", downlink_id = %ufs.uplink_set_id);
 
-        let fut = JoinAccept::_handle(ufs, device, device_session, join_accept);
+        let fut = JoinAccept::_handle(ufs, tenant, device, device_session, join_accept);
         fut.instrument(span).await
     }
 
     async fn _handle(
         ufs: &UplinkFrameSet,
+        tenant: &tenant::Tenant,
         device: &device::Device,
         device_session: &internal::DeviceSession,
         join_accept: &PhyPayload,
     ) -> Result<()> {
         let mut ctx = JoinAccept {
             uplink_frame_set: ufs,
+            tenant,
             device,
             device_session,
             join_accept,
@@ -74,26 +79,45 @@ impl JoinAccept<'_> {
     fn set_device_gateway_rx_info(&mut self) -> Result<()> {
         trace!("Set device-gateway rx-info");
 
-        let mut d_gw_rx_info = chirpstack_api::internal::DeviceGatewayRxInfo {
+        self.device_gateway_rx_info = Some(internal::DeviceGatewayRxInfo {
             dev_eui: self.device.dev_eui.to_be_bytes().to_vec(),
             dr: self.uplink_frame_set.dr as u32,
-            items: vec![],
-        };
+            items: self
+                .uplink_frame_set
+                .rx_info_set
+                .iter()
+                .map(|rx_info| {
+                    let gw_id = EUI64::from_str(&rx_info.gateway_id).unwrap_or_default();
 
-        for rx_info in &self.uplink_frame_set.rx_info_set {
-            d_gw_rx_info
-                .items
-                .push(chirpstack_api::internal::DeviceGatewayRxInfoItem {
-                    gateway_id: hex::decode(&rx_info.gateway_id)?,
-                    rssi: rx_info.rssi,
-                    lora_snr: rx_info.snr,
-                    antenna: rx_info.antenna,
-                    board: rx_info.board,
-                    context: rx_info.context.clone(),
-                });
-        }
-
-        self.device_gateway_rx_info = Some(d_gw_rx_info);
+                    internal::DeviceGatewayRxInfoItem {
+                        gateway_id: gw_id.to_vec(),
+                        rssi: rx_info.rssi,
+                        lora_snr: rx_info.snr,
+                        antenna: rx_info.antenna,
+                        board: rx_info.board,
+                        context: rx_info.context.clone(),
+                        is_private_up: self
+                            .uplink_frame_set
+                            .gateway_private_up_map
+                            .get(&gw_id)
+                            .cloned()
+                            .unwrap_or_default(),
+                        is_private_down: self
+                            .uplink_frame_set
+                            .gateway_private_down_map
+                            .get(&gw_id)
+                            .cloned()
+                            .unwrap_or_default(),
+                        tenant_id: self
+                            .uplink_frame_set
+                            .gateway_tenant_id_map
+                            .get(&gw_id)
+                            .map(|v| v.into_bytes().to_vec())
+                            .unwrap_or_else(|| Vec::new()),
+                    }
+                })
+                .collect(),
+        });
 
         Ok(())
     }
@@ -102,6 +126,7 @@ impl JoinAccept<'_> {
         trace!("Select downlink gateway");
 
         let gw_down = helpers::select_downlink_gateway(
+            Some(self.tenant.id),
             &self.uplink_frame_set.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
             self.device_gateway_rx_info.as_mut().unwrap(),

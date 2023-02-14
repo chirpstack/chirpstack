@@ -36,7 +36,8 @@ pub struct UplinkFrameSet {
     pub phy_payload: PhyPayload,
     pub tx_info: gw::UplinkTxInfo,
     pub rx_info_set: Vec<gw::UplinkRxInfo>,
-    pub gateway_private_map: HashMap<EUI64, bool>,
+    pub gateway_private_up_map: HashMap<EUI64, bool>,
+    pub gateway_private_down_map: HashMap<EUI64, bool>,
     pub gateway_tenant_id_map: HashMap<EUI64, Uuid>,
     pub region_common_name: CommonName,
     pub region_config_id: String,
@@ -271,7 +272,8 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
         phy_payload: PhyPayload::from_slice(&uplink.phy_payload)?,
         tx_info: uplink.tx_info.context("tx_info must not be None")?,
         rx_info_set: uplink.rx_info,
-        gateway_private_map: HashMap::new(),
+        gateway_private_up_map: HashMap::new(),
+        gateway_private_down_map: HashMap::new(),
         gateway_tenant_id_map: HashMap::new(),
         roaming_meta_data: None,
     };
@@ -320,7 +322,8 @@ async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
             Err(e) => {
                 if conf.gateway.allow_unknown_gateways {
                     if let StorageError::NotFound(_) = e {
-                        ufs.gateway_private_map.insert(gw_id, false);
+                        ufs.gateway_private_up_map.insert(gw_id, false);
+                        ufs.gateway_private_down_map.insert(gw_id, false);
                         continue;
                     }
                 }
@@ -341,7 +344,10 @@ async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
             ..Default::default()
         });
 
-        ufs.gateway_private_map.insert(gw_id, gw_meta.is_private);
+        ufs.gateway_private_up_map
+            .insert(gw_id, gw_meta.is_private_up);
+        ufs.gateway_private_down_map
+            .insert(gw_id, gw_meta.is_private_down);
         ufs.gateway_tenant_id_map.insert(gw_id, gw_meta.tenant_id);
     }
 
@@ -361,9 +367,9 @@ fn filter_rx_info_by_tenant_id(tenant_id: &Uuid, uplink: &mut UplinkFrameSet) ->
         let force_gws_private = config::get_force_gws_private(&region_config_id)?;
 
         if !(*uplink
-            .gateway_private_map
+            .gateway_private_up_map
             .get(&gateway_id)
-            .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_map"))?
+            .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_up_map"))?
             || force_gws_private)
             || uplink
                 .gateway_tenant_id_map
@@ -389,9 +395,9 @@ fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
     for rx_info in &uplink.rx_info_set {
         let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
         if !(*uplink
-            .gateway_private_map
+            .gateway_private_up_map
             .get(&gateway_id)
-            .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_map"))?)
+            .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_up_map"))?)
         {
             rx_info_set.push(rx_info.clone());
         }

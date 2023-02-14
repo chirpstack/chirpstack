@@ -24,8 +24,11 @@ export class Tenant extends jspb.Message {
   getMaxDeviceCount(): number;
   setMaxDeviceCount(value: number): Tenant;
 
-  getPrivateGateways(): boolean;
-  setPrivateGateways(value: boolean): Tenant;
+  getPrivateGatewaysUp(): boolean;
+  setPrivateGatewaysUp(value: boolean): Tenant;
+
+  getPrivateGatewaysDown(): boolean;
+  setPrivateGatewaysDown(value: boolean): Tenant;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Tenant.AsObject;
@@ -43,7 +46,8 @@ export namespace Tenant {
     canHaveGateways: boolean,
     maxGatewayCount: number,
     maxDeviceCount: number,
-    privateGateways: boolean,
+    privateGatewaysUp: boolean,
+    privateGatewaysDown: boolean,
   }
 }
 
@@ -67,8 +71,11 @@ export class TenantListItem extends jspb.Message {
   getCanHaveGateways(): boolean;
   setCanHaveGateways(value: boolean): TenantListItem;
 
-  getPrivateGateways(): boolean;
-  setPrivateGateways(value: boolean): TenantListItem;
+  getPrivateGatewaysUp(): boolean;
+  setPrivateGatewaysUp(value: boolean): TenantListItem;
+
+  getPrivateGatewaysDown(): boolean;
+  setPrivateGatewaysDown(value: boolean): TenantListItem;
 
   getMaxGatewayCount(): number;
   setMaxGatewayCount(value: number): TenantListItem;
@@ -91,7 +98,8 @@ export namespace TenantListItem {
     updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     name: string,
     canHaveGateways: boolean,
-    privateGateways: boolean,
+    privateGatewaysUp: boolean,
+    privateGatewaysDown: boolean,
     maxGatewayCount: number,
     maxDeviceCount: number,
   }

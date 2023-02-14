@@ -23,7 +23,8 @@ class TenantForm extends Component<IProps, IState> {
     tenant.setCanHaveGateways(values.canHaveGateways);
     tenant.setMaxGatewayCount(values.maxGatewayCount);
     tenant.setMaxDeviceCount(values.maxDeviceCount);
-    tenant.setPrivateGateways(values.privateGateways);
+    tenant.setPrivateGatewaysUp(values.privateGatewaysUp);
+    tenant.setPrivateGatewaysDown(values.privateGatewaysDown);
 
     this.props.onFinish(tenant);
   };
@@ -38,7 +39,7 @@ class TenantForm extends Component<IProps, IState> {
           <Input.TextArea disabled={this.props.disabled} />
         </Form.Item>
         <Row>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
               label="Tenant can have gateways"
               name="canHaveGateways"
@@ -48,11 +49,21 @@ class TenantForm extends Component<IProps, IState> {
               <Switch disabled={this.props.disabled} />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item
-              label="Gateways are private"
-              name="privateGateways"
-              tooltip="Gateways can only be used by the devices of this tenant."
+              label="Gateways are private (uplink)"
+              name="privateGatewaysUp"
+              tooltip="Uplink received by gateways of this tenant can only be used by the devices of this tenant."
+              valuePropName="checked"
+            >
+              <Switch disabled={this.props.disabled} />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              label="Gateways are private (downlink)"
+              name="privateGatewaysDown"
+              tooltip="Other tenants can not use the gateways of this tenant for downlinks. This can be useful in case uplinks are shared with other tenants, but you want to avoid other tenants using downlink airtime of your gateways."
               valuePropName="checked"
             >
               <Switch disabled={this.props.disabled} />

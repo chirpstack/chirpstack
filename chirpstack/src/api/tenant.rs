@@ -47,7 +47,8 @@ impl TenantService for Tenant {
             can_have_gateways: req_tenant.can_have_gateways,
             max_device_count: req_tenant.max_device_count as i32,
             max_gateway_count: req_tenant.max_gateway_count as i32,
-            private_gateways: req_tenant.private_gateways,
+            private_gateways_up: req_tenant.private_gateways_up,
+            private_gateways_down: req_tenant.private_gateways_down,
             ..Default::default()
         };
 
@@ -86,7 +87,8 @@ impl TenantService for Tenant {
                 can_have_gateways: t.can_have_gateways,
                 max_gateway_count: t.max_gateway_count as u32,
                 max_device_count: t.max_device_count as u32,
-                private_gateways: t.private_gateways,
+                private_gateways_up: t.private_gateways_up,
+                private_gateways_down: t.private_gateways_down,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&t.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&t.updated_at)),
@@ -124,7 +126,8 @@ impl TenantService for Tenant {
             can_have_gateways: req_tenant.can_have_gateways,
             max_device_count: req_tenant.max_device_count as i32,
             max_gateway_count: req_tenant.max_gateway_count as i32,
-            private_gateways: req_tenant.private_gateways,
+            private_gateways_up: req_tenant.private_gateways_up,
+            private_gateways_down: req_tenant.private_gateways_down,
             ..Default::default()
         })
         .await
@@ -219,7 +222,8 @@ impl TenantService for Tenant {
                     updated_at: Some(helpers::datetime_to_prost_timestamp(&t.updated_at)),
                     name: t.name.clone(),
                     can_have_gateways: t.can_have_gateways,
-                    private_gateways: t.private_gateways,
+                    private_gateways_up: t.private_gateways_up,
+                    private_gateways_down: t.private_gateways_down,
                     max_gateway_count: t.max_gateway_count as u32,
                     max_device_count: t.max_device_count as u32,
                 })

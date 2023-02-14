@@ -113,32 +113,35 @@ class ListTenantsResponse(_message.Message):
     def __init__(self, total_count: _Optional[int] = ..., result: _Optional[_Iterable[_Union[TenantListItem, _Mapping]]] = ...) -> None: ...
 
 class Tenant(_message.Message):
-    __slots__ = ["can_have_gateways", "description", "id", "max_device_count", "max_gateway_count", "name", "private_gateways"]
+    __slots__ = ["can_have_gateways", "description", "id", "max_device_count", "max_gateway_count", "name", "private_gateways_down", "private_gateways_up"]
     CAN_HAVE_GATEWAYS_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     MAX_DEVICE_COUNT_FIELD_NUMBER: _ClassVar[int]
     MAX_GATEWAY_COUNT_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    PRIVATE_GATEWAYS_FIELD_NUMBER: _ClassVar[int]
+    PRIVATE_GATEWAYS_DOWN_FIELD_NUMBER: _ClassVar[int]
+    PRIVATE_GATEWAYS_UP_FIELD_NUMBER: _ClassVar[int]
     can_have_gateways: bool
     description: str
     id: str
     max_device_count: int
     max_gateway_count: int
     name: str
-    private_gateways: bool
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., can_have_gateways: bool = ..., max_gateway_count: _Optional[int] = ..., max_device_count: _Optional[int] = ..., private_gateways: bool = ...) -> None: ...
+    private_gateways_down: bool
+    private_gateways_up: bool
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., can_have_gateways: bool = ..., max_gateway_count: _Optional[int] = ..., max_device_count: _Optional[int] = ..., private_gateways_up: bool = ..., private_gateways_down: bool = ...) -> None: ...
 
 class TenantListItem(_message.Message):
-    __slots__ = ["can_have_gateways", "created_at", "id", "max_device_count", "max_gateway_count", "name", "private_gateways", "updated_at"]
+    __slots__ = ["can_have_gateways", "created_at", "id", "max_device_count", "max_gateway_count", "name", "private_gateways_down", "private_gateways_up", "updated_at"]
     CAN_HAVE_GATEWAYS_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     MAX_DEVICE_COUNT_FIELD_NUMBER: _ClassVar[int]
     MAX_GATEWAY_COUNT_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    PRIVATE_GATEWAYS_FIELD_NUMBER: _ClassVar[int]
+    PRIVATE_GATEWAYS_DOWN_FIELD_NUMBER: _ClassVar[int]
+    PRIVATE_GATEWAYS_UP_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
     can_have_gateways: bool
     created_at: _timestamp_pb2.Timestamp
@@ -146,9 +149,10 @@ class TenantListItem(_message.Message):
     max_device_count: int
     max_gateway_count: int
     name: str
-    private_gateways: bool
+    private_gateways_down: bool
+    private_gateways_up: bool
     updated_at: _timestamp_pb2.Timestamp
-    def __init__(self, id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., name: _Optional[str] = ..., can_have_gateways: bool = ..., private_gateways: bool = ..., max_gateway_count: _Optional[int] = ..., max_device_count: _Optional[int] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., name: _Optional[str] = ..., can_have_gateways: bool = ..., private_gateways_up: bool = ..., private_gateways_down: bool = ..., max_gateway_count: _Optional[int] = ..., max_device_count: _Optional[int] = ...) -> None: ...
 
 class TenantUser(_message.Message):
     __slots__ = ["email", "is_admin", "is_device_admin", "is_gateway_admin", "tenant_id", "user_id"]

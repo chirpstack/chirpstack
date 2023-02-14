@@ -2,23 +2,49 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use rand::seq::SliceRandom;
+use uuid::Uuid;
 
-use chirpstack_api::gw;
+use chirpstack_api::{gw, internal};
 use lrwn::region::DataRateModulation;
 
 use crate::config;
 use crate::region;
 
 // Returns the gateway to use for downlink.
-// In the current implementation it will sort the given slice based on SNR / RSSI,
-// and return:
+// It will filter out private gateways (gateways from a different tenant ID,
+// that do not allow downlinks). The result will be sorted based on SNR / RSSI.
+// The returned value is:
 //  * A random item from the elements with an SNR > minSNR
 //  * The first item of the sorted slice (failing the above)
+//  * An error in case no gateways are available
 pub fn select_downlink_gateway(
+    tenant_id: Option<Uuid>,
     region_config_id: &str,
     min_snr_margin: f32,
-    rx_info: &mut chirpstack_api::internal::DeviceGatewayRxInfo,
-) -> Result<chirpstack_api::internal::DeviceGatewayRxInfoItem> {
+    rx_info: &mut internal::DeviceGatewayRxInfo,
+) -> Result<internal::DeviceGatewayRxInfoItem> {
+    rx_info.items = rx_info
+        .items
+        .iter()
+        .filter(|rx_info| {
+            if let Some(tenant_id) = &tenant_id {
+                if tenant_id.as_bytes().to_vec() == rx_info.tenant_id {
+                    // The tenant is the same as the gateway tenant.
+                    true
+                } else {
+                    // If tenant_id is different, filter out rx_info elements that have
+                    // is_private_down=true.
+                    !rx_info.is_private_down
+                }
+            } else {
+                // If tenant_id is None, filter out rx_info elements that have
+                // is_private_down=true.
+                !rx_info.is_private_down
+            }
+        })
+        .cloned()
+        .collect();
+
     if rx_info.items.is_empty() {
         return Err(anyhow!("rx_info.items can not be empty"));
     }
@@ -96,11 +122,13 @@ mod tests {
     use std::collections::HashMap;
 
     use super::*;
+    use crate::storage::tenant;
     use crate::test;
 
     struct Test {
         min_snr_margin: f32,
-        rx_info: chirpstack_api::internal::DeviceGatewayRxInfo,
+        tenant_id: Option<Uuid>,
+        rx_info: internal::DeviceGatewayRxInfo,
         expected_gws: Vec<Vec<u8>>,
     }
 
@@ -108,13 +136,21 @@ mod tests {
     async fn test_select_downlink_gateway() {
         let _guard = test::prepare().await;
 
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
         let tests = vec![
             // single item
             Test {
+                tenant_id: None,
                 min_snr_margin: 0.0,
-                rx_info: chirpstack_api::internal::DeviceGatewayRxInfo {
+                rx_info: internal::DeviceGatewayRxInfo {
                     dr: 0,
-                    items: vec![chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                    items: vec![internal::DeviceGatewayRxInfoItem {
                         lora_snr: -5.0,
                         gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
                         ..Default::default()
@@ -125,16 +161,17 @@ mod tests {
             },
             // two items, below min snr
             Test {
+                tenant_id: None,
                 min_snr_margin: 5.0,
-                rx_info: chirpstack_api::internal::DeviceGatewayRxInfo {
+                rx_info: internal::DeviceGatewayRxInfo {
                     dr: 2, // -15 is required
                     items: vec![
-                        chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                        internal::DeviceGatewayRxInfoItem {
                             lora_snr: -12.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             ..Default::default()
                         },
-                        chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                        internal::DeviceGatewayRxInfoItem {
                             lora_snr: -11.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             ..Default::default()
@@ -146,16 +183,17 @@ mod tests {
             },
             // two items, one below min snr
             Test {
+                tenant_id: None,
                 min_snr_margin: 5.0,
-                rx_info: chirpstack_api::internal::DeviceGatewayRxInfo {
+                rx_info: internal::DeviceGatewayRxInfo {
                     dr: 2, // -15 is required
                     items: vec![
-                        chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                        internal::DeviceGatewayRxInfoItem {
                             lora_snr: -12.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             ..Default::default()
                         },
-                        chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                        internal::DeviceGatewayRxInfoItem {
                             lora_snr: -10.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             ..Default::default()
@@ -167,26 +205,27 @@ mod tests {
             },
             // four items, two below min snr
             Test {
+                tenant_id: None,
                 min_snr_margin: 5.0,
-                rx_info: chirpstack_api::internal::DeviceGatewayRxInfo {
+                rx_info: internal::DeviceGatewayRxInfo {
                     dr: 2, // -15 is required
                     items: vec![
-                        chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                        internal::DeviceGatewayRxInfoItem {
                             lora_snr: -12.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             ..Default::default()
                         },
-                        chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                        internal::DeviceGatewayRxInfoItem {
                             lora_snr: -11.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             ..Default::default()
                         },
-                        chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                        internal::DeviceGatewayRxInfoItem {
                             lora_snr: -10.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03],
                             ..Default::default()
                         },
-                        chirpstack_api::internal::DeviceGatewayRxInfoItem {
+                        internal::DeviceGatewayRxInfoItem {
                             lora_snr: -9.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04],
                             ..Default::default()
@@ -198,6 +237,74 @@ mod tests {
                     vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03],
                     vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04],
                 ],
+            },
+            // is_private_down is set, first gateway matches tenant.
+            Test {
+                tenant_id: Some(t.id),
+                min_snr_margin: 0.0,
+                rx_info: internal::DeviceGatewayRxInfo {
+                    items: vec![
+                        internal::DeviceGatewayRxInfoItem {
+                            gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                            is_private_down: true,
+                            tenant_id: t.id.as_bytes().to_vec(),
+                            ..Default::default()
+                        },
+                        internal::DeviceGatewayRxInfoItem {
+                            gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
+                            is_private_down: true,
+                            tenant_id: Uuid::new_v4().as_bytes().to_vec(),
+                            ..Default::default()
+                        },
+                    ],
+                    ..Default::default()
+                },
+                expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01]],
+            },
+            // is_private_down is set, second gateway matches tenant.
+            Test {
+                tenant_id: Some(t.id),
+                min_snr_margin: 0.0,
+                rx_info: internal::DeviceGatewayRxInfo {
+                    items: vec![
+                        internal::DeviceGatewayRxInfoItem {
+                            gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                            is_private_down: true,
+                            tenant_id: Uuid::new_v4().as_bytes().to_vec(),
+                            ..Default::default()
+                        },
+                        internal::DeviceGatewayRxInfoItem {
+                            gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
+                            is_private_down: true,
+                            tenant_id: t.id.as_bytes().to_vec(),
+                            ..Default::default()
+                        },
+                    ],
+                    ..Default::default()
+                },
+                expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02]],
+            },
+            // is_private_down is set for one gateway, no tenant id given.
+            Test {
+                tenant_id: None,
+                min_snr_margin: 0.0,
+                rx_info: internal::DeviceGatewayRxInfo {
+                    items: vec![
+                        internal::DeviceGatewayRxInfoItem {
+                            gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+                            is_private_down: true,
+                            tenant_id: t.id.as_bytes().to_vec(),
+                            ..Default::default()
+                        },
+                        internal::DeviceGatewayRxInfoItem {
+                            gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
+                            is_private_down: false,
+                            ..Default::default()
+                        },
+                    ],
+                    ..Default::default()
+                },
+                expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02]],
             },
         ];
 
@@ -211,8 +318,13 @@ mod tests {
             }
 
             for _ in 0..100 {
-                let out =
-                    select_downlink_gateway(&"eu868", test.min_snr_margin, &mut rx_info).unwrap();
+                let out = select_downlink_gateway(
+                    test.tenant_id,
+                    &"eu868",
+                    test.min_snr_margin,
+                    &mut rx_info,
+                )
+                .unwrap();
                 gw_map.insert(out.gateway_id, ());
             }
 

@@ -730,6 +730,7 @@ impl JoinRequest {
         trace!("Starting downlink join-accept flow");
         downlink::join::JoinAccept::handle(
             &self.uplink_frame_set,
+            self.tenant.as_ref().unwrap(),
             self.device.as_ref().unwrap(),
             self.device_session.as_ref().unwrap(),
             self.join_accept.as_ref().unwrap(),

@@ -137,7 +137,8 @@ pub async fn create(d: Device) -> Result<Device, Error> {
                         tenant::dsl::can_have_gateways,
                         tenant::dsl::max_device_count,
                         tenant::dsl::max_gateway_count,
-                        tenant::dsl::private_gateways,
+                        tenant::dsl::private_gateways_up,
+                        tenant::dsl::private_gateways_down,
                     ))
                     .inner_join(application::table)
                     .filter(application::dsl::id.eq(&d.application_id))

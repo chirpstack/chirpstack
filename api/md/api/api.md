@@ -3638,7 +3638,8 @@ MulticastGroupService is the service managing multicast-groups.
 | can_have_gateways | [bool](#bool) |  | Can the tenant create and &#34;own&#34; Gateways? |
 | max_gateway_count | [uint32](#uint32) |  | Max. gateway count for tenant. When set to 0, the tenant can have unlimited gateways. |
 | max_device_count | [uint32](#uint32) |  | Max. device count for tenant. When set to 0, the tenant can have unlimited devices. |
-| private_gateways | [bool](#bool) |  | Private gateways. Gateways under this tenant are private. |
+| private_gateways_up | [bool](#bool) |  | Private gateways (uplink). If enabled, then uplink messages will not be shared with other tenants. |
+| private_gateways_down | [bool](#bool) |  | Private gateways (downlink). If enabled, then other tenants will not be able to schedule downlink messages through the gateways of this tenant. For example, in case you do want to share uplinks with other tenants (private_gateways_up=false), but you want to prevent other tenants from using gateway airtime. |
 
 
 
@@ -3658,7 +3659,8 @@ MulticastGroupService is the service managing multicast-groups.
 | updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last update timestamp. |
 | name | [string](#string) |  | Tenant name. |
 | can_have_gateways | [bool](#bool) |  | Can the tenant create and &#34;own&#34; Gateways? |
-| private_gateways | [bool](#bool) |  | Gateways are private to tenant. |
+| private_gateways_up | [bool](#bool) |  | Private gateways (uplink). |
+| private_gateways_down | [bool](#bool) |  | Private gateways (downlink). |
 | max_gateway_count | [uint32](#uint32) |  | Max gateway count. 0 = unlimited. |
 | max_device_count | [uint32](#uint32) |  | Max device count. 0 = unlimited. |
 

@@ -97,7 +97,8 @@ pub mod test {
                     ..Default::default()
                 },
             ],
-            gateway_private_map: HashMap::new(),
+            gateway_private_up_map: HashMap::new(),
+            gateway_private_down_map: HashMap::new(),
             gateway_tenant_id_map: HashMap::new(),
             region_common_name: lrwn::region::CommonName::EU868,
             region_config_id: "eu868".into(),

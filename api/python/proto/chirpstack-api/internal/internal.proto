@@ -196,6 +196,15 @@ message DeviceGatewayRxInfoItem {
 
     // Context blob.
     bytes context = 6;
+
+    // Gateway is private (uplink).
+    bool is_private_up = 7;
+
+    // Gateway is private (downlink).
+    bool is_private_down = 8;
+
+    // Tenant ID (UUID).
+    bytes tenant_id = 9;
 }
 
 message DownlinkFrame {

@@ -474,7 +474,8 @@ proto.api.Tenant.toObject = function(includeInstance, msg) {
     canHaveGateways: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
     maxGatewayCount: jspb.Message.getFieldWithDefault(msg, 5, 0),
     maxDeviceCount: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    privateGateways: jspb.Message.getBooleanFieldWithDefault(msg, 7, false)
+    privateGatewaysUp: jspb.Message.getBooleanFieldWithDefault(msg, 7, false),
+    privateGatewaysDown: jspb.Message.getBooleanFieldWithDefault(msg, 8, false)
   };
 
   if (includeInstance) {
@@ -537,7 +538,11 @@ proto.api.Tenant.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 7:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setPrivateGateways(value);
+      msg.setPrivateGatewaysUp(value);
+      break;
+    case 8:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setPrivateGatewaysDown(value);
       break;
     default:
       reader.skipField();
@@ -610,10 +615,17 @@ proto.api.Tenant.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getPrivateGateways();
+  f = message.getPrivateGatewaysUp();
   if (f) {
     writer.writeBool(
       7,
+      f
+    );
+  }
+  f = message.getPrivateGatewaysDown();
+  if (f) {
+    writer.writeBool(
+      8,
       f
     );
   }
@@ -729,10 +741,10 @@ proto.api.Tenant.prototype.setMaxDeviceCount = function(value) {
 
 
 /**
- * optional bool private_gateways = 7;
+ * optional bool private_gateways_up = 7;
  * @return {boolean}
  */
-proto.api.Tenant.prototype.getPrivateGateways = function() {
+proto.api.Tenant.prototype.getPrivateGatewaysUp = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 7, false));
 };
 
@@ -741,8 +753,26 @@ proto.api.Tenant.prototype.getPrivateGateways = function() {
  * @param {boolean} value
  * @return {!proto.api.Tenant} returns this
  */
-proto.api.Tenant.prototype.setPrivateGateways = function(value) {
+proto.api.Tenant.prototype.setPrivateGatewaysUp = function(value) {
   return jspb.Message.setProto3BooleanField(this, 7, value);
+};
+
+
+/**
+ * optional bool private_gateways_down = 8;
+ * @return {boolean}
+ */
+proto.api.Tenant.prototype.getPrivateGatewaysDown = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 8, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.Tenant} returns this
+ */
+proto.api.Tenant.prototype.setPrivateGatewaysDown = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 8, value);
 };
 
 
@@ -783,7 +813,8 @@ proto.api.TenantListItem.toObject = function(includeInstance, msg) {
     updatedAt: (f = msg.getUpdatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     name: jspb.Message.getFieldWithDefault(msg, 4, ""),
     canHaveGateways: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
-    privateGateways: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
+    privateGatewaysUp: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
+    privateGatewaysDown: jspb.Message.getBooleanFieldWithDefault(msg, 9, false),
     maxGatewayCount: jspb.Message.getFieldWithDefault(msg, 7, 0),
     maxDeviceCount: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
@@ -846,7 +877,11 @@ proto.api.TenantListItem.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 6:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setPrivateGateways(value);
+      msg.setPrivateGatewaysUp(value);
+      break;
+    case 9:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setPrivateGatewaysDown(value);
       break;
     case 7:
       var value = /** @type {number} */ (reader.readUint32());
@@ -922,10 +957,17 @@ proto.api.TenantListItem.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getPrivateGateways();
+  f = message.getPrivateGatewaysUp();
   if (f) {
     writer.writeBool(
       6,
+      f
+    );
+  }
+  f = message.getPrivateGatewaysDown();
+  if (f) {
+    writer.writeBool(
+      9,
       f
     );
   }
@@ -1075,10 +1117,10 @@ proto.api.TenantListItem.prototype.setCanHaveGateways = function(value) {
 
 
 /**
- * optional bool private_gateways = 6;
+ * optional bool private_gateways_up = 6;
  * @return {boolean}
  */
-proto.api.TenantListItem.prototype.getPrivateGateways = function() {
+proto.api.TenantListItem.prototype.getPrivateGatewaysUp = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 6, false));
 };
 
@@ -1087,8 +1129,26 @@ proto.api.TenantListItem.prototype.getPrivateGateways = function() {
  * @param {boolean} value
  * @return {!proto.api.TenantListItem} returns this
  */
-proto.api.TenantListItem.prototype.setPrivateGateways = function(value) {
+proto.api.TenantListItem.prototype.setPrivateGatewaysUp = function(value) {
   return jspb.Message.setProto3BooleanField(this, 6, value);
+};
+
+
+/**
+ * optional bool private_gateways_down = 9;
+ * @return {boolean}
+ */
+proto.api.TenantListItem.prototype.getPrivateGatewaysDown = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 9, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.TenantListItem} returns this
+ */
+proto.api.TenantListItem.prototype.setPrivateGatewaysDown = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 9, value);
 };
 
 

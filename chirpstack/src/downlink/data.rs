@@ -217,6 +217,7 @@ impl Data {
         trace!("Selecting downlink gateway");
 
         let gw_down = helpers::select_downlink_gateway(
+            Some(self.tenant.id),
             &self.device_session.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
             self.device_gateway_rx_info.as_mut().unwrap(),

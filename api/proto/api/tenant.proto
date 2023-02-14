@@ -112,9 +112,16 @@ message Tenant {
     // When set to 0, the tenant can have unlimited devices.
     uint32 max_device_count = 6;
 
-    // Private gateways.
-    // Gateways under this tenant are private.
-    bool private_gateways = 7;
+    // Private gateways (uplink).
+    // If enabled, then uplink messages will not be shared with other tenants.
+    bool private_gateways_up = 7;
+
+    // Private gateways (downlink).
+    // If enabled, then other tenants will not be able to schedule downlink
+    // messages through the gateways of this tenant. For example, in case you
+    // do want to share uplinks with other tenants (private_gateways_up=false),
+    // but you want to prevent other tenants from using gateway airtime.
+    bool private_gateways_down = 8;
 }
 
 message TenantListItem {
@@ -133,8 +140,11 @@ message TenantListItem {
 	// Can the tenant create and "own" Gateways?
 	bool can_have_gateways = 5;
 
-    // Gateways are private to tenant.
-    bool private_gateways = 6;
+    // Private gateways (uplink).
+    bool private_gateways_up = 6;
+
+    // Private gateways (downlink).
+    bool private_gateways_down = 9;
 
     // Max gateway count.
     // 0 = unlimited.

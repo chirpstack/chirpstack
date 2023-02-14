@@ -31,7 +31,7 @@ async fn test_gateway_filtering() {
     let _guard = test::prepare().await;
     let t_a = tenant::create(tenant::Tenant {
         name: "tenant-a".into(),
-        private_gateways: true,
+        private_gateways_up: true,
         can_have_gateways: true,
         ..Default::default()
     })
@@ -39,7 +39,7 @@ async fn test_gateway_filtering() {
     .unwrap();
     let t_b = tenant::create(tenant::Tenant {
         name: "tenant-b".into(),
-        private_gateways: true,
+        private_gateways_up: true,
         can_have_gateways: true,
         ..Default::default()
     })
