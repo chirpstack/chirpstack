@@ -354,7 +354,7 @@ async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
     Ok(())
 }
 
-fn filter_rx_info_by_tenant_id(tenant_id: &Uuid, uplink: &mut UplinkFrameSet) -> Result<()> {
+fn filter_rx_info_by_tenant_id(tenant_id: Uuid, uplink: &mut UplinkFrameSet) -> Result<()> {
     let mut rx_info_set: Vec<gw::UplinkRxInfo> = Vec::new();
 
     for rx_info in &uplink.rx_info_set {
@@ -366,15 +366,17 @@ fn filter_rx_info_by_tenant_id(tenant_id: &Uuid, uplink: &mut UplinkFrameSet) ->
             .ok_or_else(|| anyhow!("No region_config_id in rx_info metadata"))?;
         let force_gws_private = config::get_force_gws_private(&region_config_id)?;
 
-        if !(*uplink
+        if !(uplink
             .gateway_private_up_map
             .get(&gateway_id)
-            .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_up_map"))?
+            .cloned()
+            .unwrap_or_else(|| true)
             || force_gws_private)
             || uplink
                 .gateway_tenant_id_map
                 .get(&gateway_id)
-                .ok_or_else(|| anyhow!("gateway_id is missing in gateway_tenant_id_map"))?
+                .cloned()
+                .unwrap_or_else(|| Uuid::new_v4())
                 == tenant_id
         {
             rx_info_set.push(rx_info.clone());
@@ -383,7 +385,7 @@ fn filter_rx_info_by_tenant_id(tenant_id: &Uuid, uplink: &mut UplinkFrameSet) ->
 
     uplink.rx_info_set = rx_info_set;
     if uplink.rx_info_set.is_empty() {
-        return Err(anyhow!("rx_info_set has no items"));
+        return Err(anyhow!("RxInfo set is empty after applying filters"));
     }
 
     Ok(())

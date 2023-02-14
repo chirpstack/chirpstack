@@ -46,7 +46,9 @@ pub fn select_downlink_gateway(
         .collect();
 
     if rx_info.items.is_empty() {
-        return Err(anyhow!("rx_info.items can not be empty"));
+        return Err(anyhow!(
+            "RxInfo set is empty after applying filters, no downlink gateway available"
+        ));
     }
 
     let region_conf = region::get(region_config_id)?;

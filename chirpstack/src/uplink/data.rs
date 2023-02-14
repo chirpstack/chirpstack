@@ -407,7 +407,7 @@ impl Data {
         trace!("Filtering rx_info by tenant_id");
 
         match filter_rx_info_by_tenant_id(
-            &self.application.as_ref().unwrap().tenant_id,
+            self.application.as_ref().unwrap().tenant_id,
             &mut self.uplink_frame_set,
         ) {
             Ok(_) => Ok(()),
