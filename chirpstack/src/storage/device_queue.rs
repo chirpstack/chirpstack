@@ -24,6 +24,18 @@ pub struct DeviceQueueItem {
     pub timeout_after: Option<DateTime<Utc>>,
 }
 
+impl DeviceQueueItem {
+    fn validate(&self) -> Result<(), Error> {
+        if self.f_port == 0 || self.f_port > 255 {
+            return Err(Error::Validation(
+                "FPort must be between 1 - 255".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+}
+
 impl Default for DeviceQueueItem {
     fn default() -> Self {
         let now = Utc::now();
@@ -43,6 +55,8 @@ impl Default for DeviceQueueItem {
 }
 
 pub async fn enqueue_item(qi: DeviceQueueItem) -> Result<DeviceQueueItem, Error> {
+    qi.validate()?;
+
     let qi = task::spawn_blocking({
         move || -> Result<DeviceQueueItem, Error> {
             let mut c = get_db_conn()?;
@@ -213,6 +227,23 @@ pub mod test {
             None,
         )
         .await;
+
+        // invalid fport
+        let qi = DeviceQueueItem {
+            dev_eui: d.dev_eui,
+            f_port: 0,
+            data: vec![0x01, 0x02, 0x03],
+            ..Default::default()
+        };
+        assert!(enqueue_item(qi).await.is_err());
+
+        let qi = DeviceQueueItem {
+            dev_eui: d.dev_eui,
+            f_port: 256,
+            data: vec![0x01, 0x02, 0x03],
+            ..Default::default()
+        };
+        assert!(enqueue_item(qi).await.is_err());
 
         // create
         let mut qi = DeviceQueueItem {
