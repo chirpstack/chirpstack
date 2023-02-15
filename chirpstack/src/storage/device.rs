@@ -704,6 +704,7 @@ pub mod test {
         // something in the queue but Class-A mode
         let mut qi = device_queue::enqueue_item(device_queue::DeviceQueueItem {
             dev_eui: d.dev_eui,
+            f_port: 1,
             ..Default::default()
         })
         .await
