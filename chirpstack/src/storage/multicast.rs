@@ -101,6 +101,18 @@ pub struct MulticastGroupQueueItem {
     pub emit_at_time_since_gps_epoch: Option<i64>,
 }
 
+impl MulticastGroupQueueItem {
+    fn validate(&self) -> Result<(), Error> {
+        if self.f_port == 0 || self.f_port > 255 {
+            return Err(Error::Validation(
+                "FPort must be between 1 - 255".to_string(),
+            ));
+        }
+
+        Ok(())
+    }
+}
+
 impl Default for MulticastGroupQueueItem {
     fn default() -> Self {
         let now = Utc::now();
@@ -437,6 +449,8 @@ pub async fn enqueue(
     qi: MulticastGroupQueueItem,
     gateway_ids: &[EUI64],
 ) -> Result<(Vec<Uuid>, u32), Error> {
+    qi.validate()?;
+
     let (ids, f_cnt) = task::spawn_blocking({
         let gateway_ids = gateway_ids.to_vec();
         move || -> Result<(Vec<Uuid>, u32), Error> {
@@ -1016,6 +1030,35 @@ pub mod test {
         })
         .await
         .unwrap();
+
+        // invalid f_port
+        assert!(enqueue(
+            MulticastGroupQueueItem {
+                multicast_group_id: mg.id,
+                gateway_id: gw.gateway_id,
+                f_cnt: 1,
+                f_port: 0,
+                data: vec![3, 2, 1],
+                ..Default::default()
+            },
+            &[gw.gateway_id],
+        )
+        .await
+        .is_err());
+
+        assert!(enqueue(
+            MulticastGroupQueueItem {
+                multicast_group_id: mg.id,
+                gateway_id: gw.gateway_id,
+                f_cnt: 1,
+                f_port: 256,
+                data: vec![3, 2, 1],
+                ..Default::default()
+            },
+            &[gw.gateway_id],
+        )
+        .await
+        .is_err());
 
         // Enqueue (Class-C) (delay)
         let (ids, f_cnt) = enqueue(
