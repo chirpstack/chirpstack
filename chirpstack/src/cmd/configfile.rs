@@ -382,8 +382,8 @@ pub fn run() {
       # will generate client certificates which can be used by the MQTT clients for
       # authentication and authorization. The Common Name of the certificate will
       # be set to the ID of the application.
-      ca_key="{{ integration.mqtt.ca_key }}"
-      ca_cert="{{ integration.mqtt.ca_cert }}"
+      ca_key="{{ integration.mqtt.client.ca_key }}"
+      ca_cert="{{ integration.mqtt.client.ca_cert }}"
 
       # Certificate lifetime.
       #
