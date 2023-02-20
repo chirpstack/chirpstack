@@ -34,6 +34,41 @@ pub async fn prepare<'a>() -> std::sync::MutexGuard<'a, ()> {
         "postgres://chirpstack_test:chirpstack_test@postgres/chirpstack_test?sslmode=disable"
             .to_string();
     conf.redis.servers = vec!["redis://redis/".to_string()];
+    conf.network.enabled_regions = vec!["eu868".to_string()];
+    conf.regions = vec![config::Region {
+        id: "eu868".to_string(),
+        description: "EU868".to_string(),
+        common_name: lrwn::region::CommonName::EU868,
+        user_info: "".into(),
+        network: config::RegionNetwork {
+            installation_margin: 10.0,
+            rx1_delay: 1,
+            rx2_frequency: 869525000,
+            gateway_prefer_min_margin: 10.0,
+            downlink_tx_power: -1,
+            min_dr: 0,
+            max_dr: 5,
+            uplink_max_eirp: 16.0,
+            class_b: config::ClassB {
+                ping_slot_dr: 0,
+                ping_slot_frequency: 868100000,
+            },
+            extra_channels: Vec::new(),
+            enabled_uplink_channels: Vec::new(),
+            ..Default::default()
+        },
+        gateway: config::RegionGateway {
+            force_gws_private: false,
+            channels: vec![],
+            backend: config::GatewayBackend {
+                enabled: "mqtt".into(),
+                mqtt: config::GatewayBackendMqtt {
+                    topic_prefix: "eu868".into(),
+                    ..Default::default()
+                },
+            },
+        },
+    }];
     config::set(conf);
 
     // setup storage

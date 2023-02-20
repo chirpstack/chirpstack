@@ -802,7 +802,11 @@ impl InternalService for Internal {
 
             out.regions.push(api::RegionListItem {
                 id: region_config.id.clone(),
-                description: region_config.description.clone(),
+                description: if region_config.description.is_empty() {
+                    region_config.id.clone()
+                } else {
+                    region_config.description.clone()
+                },
                 region: region_config.common_name.to_proto().into(),
             });
         }
@@ -830,7 +834,11 @@ impl InternalService for Internal {
         for region_conf in &conf.regions {
             if req.id == region_conf.id {
                 out.id = region_conf.id.clone();
-                out.description = region_conf.description.clone();
+                out.description = if region_conf.description.is_empty() {
+                    region_conf.id.clone()
+                } else {
+                    region_conf.description.clone()
+                };
                 out.region = region_conf.common_name.to_proto().into();
                 out.user_info = region_conf.user_info.clone();
                 out.rx1_delay = region_conf.network.rx1_delay as u32;

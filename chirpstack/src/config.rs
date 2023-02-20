@@ -50,7 +50,7 @@ impl Default for Configuration {
             backend_interfaces: Default::default(),
             roaming: Default::default(),
             keks: Vec::new(),
-            regions: vec![Default::default()],
+            regions: vec![],
         }
     }
 }
@@ -168,7 +168,7 @@ impl Default for Network {
         Network {
             net_id: NetID::from_be_bytes([0x00, 0x00, 0x00]),
             dev_addr_prefixes: vec![],
-            enabled_regions: vec!["eu868".into()],
+            enabled_regions: vec![],
             device_session_ttl: Duration::from_secs(60 * 60 * 24 * 31),
             deduplication_delay: Duration::from_millis(200),
             get_downlink_data_delay: Duration::from_millis(100),
@@ -516,43 +516,17 @@ pub struct Region {
 impl Default for Region {
     fn default() -> Self {
         Region {
-            id: "eu868".to_string(),
-            description: "EU868".to_string(),
+            id: "".to_string(),
+            description: "".to_string(),
             common_name: CommonName::EU868,
             user_info: "".into(),
-            network: RegionNetwork {
-                installation_margin: 10.0,
-                rx1_delay: 1,
-                rx2_frequency: 869525000,
-                gateway_prefer_min_margin: 10.0,
-                downlink_tx_power: -1,
-                min_dr: 0,
-                max_dr: 5,
-                uplink_max_eirp: 16.0,
-                class_b: ClassB {
-                    ping_slot_dr: 0,
-                    ping_slot_frequency: 868100000,
-                },
-                extra_channels: Vec::new(),
-                enabled_uplink_channels: Vec::new(),
-                ..Default::default()
-            },
-            gateway: RegionGateway {
-                force_gws_private: false,
-                channels: vec![],
-                backend: GatewayBackend {
-                    enabled: "mqtt".into(),
-                    mqtt: GatewayBackendMqtt {
-                        topic_prefix: "eu868".into(),
-                        ..Default::default()
-                    },
-                },
-            },
+            network: RegionNetwork::default(),
+            gateway: RegionGateway::default(),
         }
     }
 }
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct RegionNetwork {
     pub installation_margin: f32,
@@ -577,6 +551,35 @@ pub struct RegionNetwork {
     pub enabled_uplink_channels: Vec<usize>,
     pub repeater_compatible: bool,
     pub dwell_time_400ms: bool,
+}
+
+impl Default for RegionNetwork {
+    fn default() -> Self {
+        RegionNetwork {
+            installation_margin: 10.0,
+            rx_window: 0,
+            rx1_delay: 1,
+            rx1_dr_offset: 0,
+            rx2_dr: 0,
+            rx2_frequency: 0,
+            rx2_prefer_on_rx1_dr_lt: 0,
+            rx2_prefer_on_link_budget: false,
+            gateway_prefer_min_margin: 10.0,
+            downlink_tx_power: -1,
+            adr_disabled: false,
+            min_dr: 0,
+            max_dr: 0,
+            uplink_dwell_time_400ms: false,
+            downlink_dwell_time_400ms: false,
+            uplink_max_eirp: 0.0,
+            rejoin_request: RejoinRequest::default(),
+            class_b: ClassB::default(),
+            extra_channels: vec![],
+            enabled_uplink_channels: vec![],
+            repeater_compatible: false,
+            dwell_time_400ms: false,
+        }
+    }
 }
 
 #[derive(Default, Serialize, Deserialize, Clone)]

@@ -1220,7 +1220,7 @@ async fn run_test(t: &Test) {
 
     reset_redis().await.unwrap();
 
-    let mut conf: config::Configuration = Default::default();
+    let mut conf: config::Configuration = (*config::get()).clone();
     for f in &t.extra_uplink_channels {
         conf.regions[0]
             .network
