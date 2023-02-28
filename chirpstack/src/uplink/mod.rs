@@ -337,12 +337,17 @@ async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
             }
         };
 
-        rx_info.location = Some(common::Location {
-            latitude: gw_meta.latitude,
-            longitude: gw_meta.longitude,
-            altitude: gw_meta.altitude as f64,
-            ..Default::default()
-        });
+        // Do not overwrite the location if it is already set. In case of a 'virtual' it is
+        // possible that the location is already set in the RxInfo. Overwriting this with the
+        // location of the 'virtual' gateway would mean we will get the wrong location.
+        if rx_info.location.is_none() {
+            rx_info.location = Some(common::Location {
+                latitude: gw_meta.latitude,
+                longitude: gw_meta.longitude,
+                altitude: gw_meta.altitude as f64,
+                ..Default::default()
+            });
+        }
 
         ufs.gateway_private_up_map
             .insert(gw_id, gw_meta.is_private_up);
