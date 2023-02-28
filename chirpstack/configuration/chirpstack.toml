@@ -44,9 +44,6 @@
     "redis://$REDIS_HOST/",
   ]
 
-  # TLS enabled.
-  tls_enabled=false
-
   # Redis Cluster.
   #
   # Set this to true when the provided URLs are pointing to a Redis Cluster
