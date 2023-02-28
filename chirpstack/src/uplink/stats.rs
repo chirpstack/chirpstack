@@ -8,7 +8,7 @@ use chrono::{DateTime, Local};
 use tracing::{error, info, span, trace, Instrument, Level};
 
 use crate::gateway::backend as gateway_backend;
-use crate::storage::{gateway, metrics};
+use crate::storage::{error::Error, gateway, metrics};
 use crate::{config, region};
 use chirpstack_api::{common, gw};
 use lrwn::EUI64;
@@ -36,7 +36,20 @@ impl Stats {
         let span = span!(Level::INFO, "stats", gateway_id = %gateway_id);
 
         if let Err(e) = Stats::_handle(gateway_id, s).instrument(span).await {
-            error!(error = %e, "Handle gateway stats error");
+            match e.downcast_ref::<Error>() {
+                Some(Error::NotFound(_)) => {
+                    // Only log an error in case allow_unknown_gateways is not set. Else it is
+                    // expected that we will see NotFound errors as the gateway might not exist in
+                    // the database.
+                    let conf = config::get();
+                    if !conf.gateway.allow_unknown_gateways {
+                        error!(error = %e, "Handle gateway stats error");
+                    }
+                }
+                Some(_) | None => {
+                    error!(error = %e, "Handle gateway stats error");
+                }
+            }
         }
     }
 
