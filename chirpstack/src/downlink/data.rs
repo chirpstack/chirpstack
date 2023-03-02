@@ -373,6 +373,11 @@ impl Data {
     }
 
     async fn set_mac_commands(&mut self) -> Result<()> {
+        let conf = config::get();
+        if conf.network.mac_commands_disabled {
+            return Ok(());
+        }
+
         // First we set all mac-commands. This does not take the max. payload size in mind, that
         // will be taken care of in one of the next steps.
         self._request_custom_channel_reconfiguration().await?;
