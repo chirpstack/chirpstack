@@ -116,8 +116,9 @@ pub async fn get_event_logs(
                                                 description: k.clone(),
                                                 body: serde_json::to_string(&pl)?,
                                                 properties: [
-                                                    ("DR".to_string(), format!("{}", pl.dr)),
-                                                    ("FPort".to_string(), format!("{}", pl.f_port)),
+                                                    ("DR".to_string(), pl.dr.to_string()),
+                                                    ("FPort".to_string(), pl.f_port.to_string()),
+                                                    ("FCnt".to_string(), pl.f_cnt.to_string()),
                                                     ("Data".to_string(), hex::encode(&pl.data)),
                                                 ]
                                                 .iter()
