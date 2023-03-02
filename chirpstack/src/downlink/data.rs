@@ -288,6 +288,7 @@ impl Data {
             // The queue item should fit within the max payload size and should not be pending
             // already.
             if qi.data.len() <= max_payload_size && !qi.is_pending {
+                trace!(id = %qi.id, more_in_queue = more_in_queue, "Found device queue-item for downlink");
                 self.device_queue_item = Some(qi);
                 self.more_device_queue_items = more_in_queue;
                 return Ok(());
@@ -634,6 +635,7 @@ impl Data {
                 .starts_with("1.1"),
             nwk_s_enc_key: self.device_session.nwk_s_enc_key.clone(),
             downlink_frame: Some(self.downlink_frame.clone()),
+            n_f_cnt_down: self.device_session.n_f_cnt_down,
             ..Default::default()
         })
         .await

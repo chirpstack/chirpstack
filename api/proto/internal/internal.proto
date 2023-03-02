@@ -229,8 +229,11 @@ message DownlinkFrame {
     // Encrypted FOpts (LoRaWAN 1.1).
     bool encrypted_fopts = 8;
 
-    // Network session encryption key (for FOpts).
+    // Network session encryption key (for FOpts and FRMPayload mac-commands).
     bytes nwk_s_enc_key = 9;
+
+    // NFCntDown (for decrypting mac-commands).
+    uint32 n_f_cnt_down = 10;
 }
 
 message LoraCloudGeolocBuffer {

@@ -654,6 +654,25 @@ impl PhyPayload {
         Ok(())
     }
 
+    /// Decode frm_payload to mac-commands.
+    pub fn decode_frm_payload_to_mac_commands(&mut self) -> Result<()> {
+        if let Payload::MACPayload(pl) = &mut self.payload {
+            let uplink = is_uplink(self.mhdr.m_type);
+            if pl.f_port.unwrap_or(0) == 0 {
+                let b = match &pl.frm_payload {
+                    Some(FRMPayload::Raw(v)) => v.clone(),
+                    _ => vec![],
+                };
+
+                let mut macs = MACCommandSet::new(vec![MACCommand::Raw(b)]);
+                macs.decode_from_raw(uplink)?;
+                pl.frm_payload = Some(FRMPayload::MACCommandSet(macs));
+            }
+        }
+
+        Ok(())
+    }
+
     /// Encrypt the frm_payload with the given key.
     pub fn encrypt_frm_payload(&mut self, key: &AES128Key) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {

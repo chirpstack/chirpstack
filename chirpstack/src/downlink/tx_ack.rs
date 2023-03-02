@@ -433,6 +433,13 @@ impl TxAck {
 
         let nwk_s_enc_key = AES128Key::from_slice(&df.nwk_s_enc_key)?;
 
+        if let Payload::MACPayload(pl) = &mut phy.payload {
+            if pl.f_port.unwrap_or(0) == 0 {
+                // We need to set the full NFcntDown to decrypt the mac-commands.
+                pl.fhdr.f_cnt = df.n_f_cnt_down;
+            }
+        }
+
         if let Payload::MACPayload(pl) = &phy.payload {
             // f_port must be either None or 0
             if pl.f_port.unwrap_or(0) == 0 {

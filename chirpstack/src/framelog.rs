@@ -283,6 +283,7 @@ pub async fn get_frame_logs(
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                                             if pl.plaintext_mac_commands {
                                                 phy.decode_f_opts_to_mac_commands()?;
+                                                phy.decode_frm_payload_to_mac_commands()?;
                                             }
 
                                             let pl = api::LogItem {
@@ -314,6 +315,7 @@ pub async fn get_frame_logs(
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                                             if pl.plaintext_mac_commands {
                                                 phy.decode_f_opts_to_mac_commands()?;
+                                                phy.decode_frm_payload_to_mac_commands()?;
                                             }
 
                                             let pl = api::LogItem {
