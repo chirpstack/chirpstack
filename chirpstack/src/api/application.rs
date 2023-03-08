@@ -911,8 +911,7 @@ impl ApplicationService for Application {
                     modem_geolocation_services: application::LoraCloudModemGeolocationServices {
                         token: req_mgs.token.clone(),
                         modem_enabled: req_mgs.modem_enabled,
-                        modem_port: req_mgs.modem_port,
-                        gnss_port: req_mgs.gnss_port,
+                        forward_f_ports: req_mgs.forward_f_ports.clone(),
                         gnss_use_rx_time: req_mgs.gnss_use_rx_time,
                         parse_tlv: req_mgs.parse_tlv,
                         geolocation_buffer_ttl: req_mgs.geolocation_buffer_ttl,
@@ -928,6 +927,7 @@ impl ApplicationService for Application {
                         geolocation_wifi_payload_field: req_mgs
                             .geolocation_wifi_payload_field
                             .clone(),
+                        ..Default::default()
                     },
                 },
             ),
@@ -972,8 +972,7 @@ impl ApplicationService for Application {
                     modem_geolocation_services: Some(api::LoraCloudModemGeolocationServices {
                         token: mgs.token.clone(),
                         modem_enabled: mgs.modem_enabled,
-                        modem_port: mgs.modem_port,
-                        gnss_port: mgs.gnss_port,
+                        forward_f_ports: mgs.forward_f_ports.clone(),
                         gnss_use_rx_time: mgs.gnss_use_rx_time,
                         parse_tlv: mgs.parse_tlv,
                         geolocation_buffer_ttl: mgs.geolocation_buffer_ttl,
@@ -1035,8 +1034,7 @@ impl ApplicationService for Application {
                     modem_geolocation_services: application::LoraCloudModemGeolocationServices {
                         token: req_mgs.token.clone(),
                         modem_enabled: req_mgs.modem_enabled,
-                        modem_port: req_mgs.modem_port,
-                        gnss_port: req_mgs.gnss_port,
+                        forward_f_ports: req_mgs.forward_f_ports.clone(),
                         gnss_use_rx_time: req_mgs.gnss_use_rx_time,
                         parse_tlv: req_mgs.parse_tlv,
                         geolocation_buffer_ttl: req_mgs.geolocation_buffer_ttl,
@@ -1052,6 +1050,7 @@ impl ApplicationService for Application {
                         geolocation_wifi_payload_field: req_mgs
                             .geolocation_wifi_payload_field
                             .clone(),
+                        ..Default::default()
                     },
                 },
             ),
@@ -2610,8 +2609,7 @@ pub mod test {
                     modem_geolocation_services: Some(api::LoraCloudModemGeolocationServices {
                         token: "test-token".into(),
                         modem_enabled: true,
-                        modem_port: 199,
-                        gnss_port: 198,
+                        forward_f_ports: vec![199, 198, 197, 192],
                         gnss_use_rx_time: true,
                         parse_tlv: true,
                         geolocation_buffer_ttl: 300,
@@ -2647,8 +2645,7 @@ pub mod test {
                 modem_geolocation_services: Some(api::LoraCloudModemGeolocationServices {
                     token: "test-token".into(),
                     modem_enabled: true,
-                    modem_port: 199,
-                    gnss_port: 198,
+                    forward_f_ports: vec![199, 198, 197, 192],
                     gnss_use_rx_time: true,
                     parse_tlv: true,
                     geolocation_buffer_ttl: 300,
@@ -2674,8 +2671,7 @@ pub mod test {
                     modem_geolocation_services: Some(api::LoraCloudModemGeolocationServices {
                         token: "test-token-updated".into(),
                         modem_enabled: true,
-                        modem_port: 199,
-                        gnss_port: 198,
+                        forward_f_ports: vec![199, 198, 197, 192],
                         gnss_use_rx_time: true,
                         parse_tlv: true,
                         geolocation_buffer_ttl: 300,
@@ -2711,8 +2707,7 @@ pub mod test {
                 modem_geolocation_services: Some(api::LoraCloudModemGeolocationServices {
                     token: "test-token-updated".into(),
                     modem_enabled: true,
-                    modem_port: 199,
-                    gnss_port: 198,
+                    forward_f_ports: vec![199, 198, 197, 192],
                     gnss_use_rx_time: true,
                     parse_tlv: true,
                     geolocation_buffer_ttl: 300,

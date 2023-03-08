@@ -59,31 +59,66 @@ impl Integration {
         Ok(())
     }
 
-    async fn modem_modem(
+    async fn modem_updf(
         &self,
         vars: &HashMap<String, String>,
         pl: &integration::UplinkEvent,
     ) -> Result<()> {
         let di = pl.device_info.as_ref().unwrap();
 
-        info!(dev_eui = %di.dev_eui, "Forwarding modem message");
+        info!(dev_eui = %di.dev_eui, "Forwarding updf message");
         let ts: DateTime<Utc> = pl.time.as_ref().unwrap().clone().try_into()?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
 
         let req = client::UplinkRequest {
             dev_eui: client::Eui64Wrapper::new(&dev_eui),
-            uplink: client::UplinkMsg::Modem(client::UplinkMsgModem {
-                msg_type: "modem".into(),
-                payload: hex::encode(&pl.data),
-                f_cnt: pl.f_cnt,
-                timestamp: ts.timestamp_millis() as f64 / 1000.0,
-                dr: pl.dr as u8,
-                freq: pl.tx_info.as_ref().unwrap().frequency,
+            uplink: client::UplinkMsg::UpDf({
+                let mut msg_updf = client::UplinkMsgUpDf {
+                    msg_type: "updf".into(),
+                    f_cnt: pl.f_cnt,
+                    port: pl.f_port as u8,
+                    dr: pl.dr as u8,
+                    freq: pl.tx_info.as_ref().unwrap().frequency,
+                    timestamp: ts.timestamp_millis() as f64 / 1000.0,
+                    payload: hex::encode(&pl.data),
+                    gnss_capture_time: match self.config.modem_geolocation_services.gnss_use_rx_time
+                    {
+                        false => None,
+                        true => {
+                            let ts = match get_time_since_gps_epoch_chrono(&pl.rx_info) {
+                                Some(v) => v,
+                                None => Utc::now().to_gps_time(),
+                            };
+
+                            // Compensate for gnss scanning time and uplink.
+                            let ts = ts - Duration::seconds(6);
+                            Some(ts.num_seconds() as f64)
+                        }
+                    },
+                    gnss_capture_time_accuracy: match self
+                        .config
+                        .modem_geolocation_services
+                        .gnss_use_rx_time
+                    {
+                        false => None,
+                        true => Some(15.0),
+                    },
+                    gnss_assist_position: None,
+                    gnss_assist_altitude: None,
+                };
+
+                if let Some(loc) = get_start_location(&pl.rx_info) {
+                    msg_updf.gnss_assist_position = Some(vec![loc.latitude, loc.longitude]);
+                    msg_updf.gnss_assist_altitude = Some(loc.altitude);
+                }
+
+                msg_updf
             }),
         };
 
         let resp = self.client.uplink_send(&req).await?;
-        self.handle_modem_response(vars, pl, &resp, common::LocationSource::Unknown)
+
+        self.handle_modem_response(vars, pl, &resp, common::LocationSource::GeoResolverGnss)
             .await?;
 
         Ok(())
@@ -169,6 +204,7 @@ impl Integration {
                 freq: pl.tx_info.as_ref().unwrap().frequency,
                 timestamp: ts.timestamp_millis() as f64 / 1000.0,
                 payload: "".into(),
+                ..Default::default()
             }),
         };
 
@@ -698,12 +734,13 @@ impl IntegrationTrait for Integration {
         pl: &integration::UplinkEvent,
     ) -> Result<()> {
         if self.config.modem_geolocation_services.modem_enabled {
-            if pl.f_port == self.config.modem_geolocation_services.modem_port {
-                // Modem payloads.
-                self.modem_modem(vars, pl).await?;
-            } else if pl.f_port == self.config.modem_geolocation_services.gnss_port {
-                // GNSS payloads.
-                self.modem_gnss(vars, pl).await?;
+            if self
+                .config
+                .modem_geolocation_services
+                .forward_f_ports
+                .contains(&pl.f_port)
+            {
+                self.modem_updf(vars, pl).await?;
             } else {
                 // Only forward meta-data.
                 self.modem_metadata(vars, pl).await?;

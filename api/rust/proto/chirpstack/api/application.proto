@@ -695,15 +695,9 @@ message LoraCloudModemGeolocationServices {
     // Device implements Modem / Modem-E stack.
     bool modem_enabled = 2;
 
-    // Modem port (fPort).
-    // ChirpStack will only forward the FrmPayload to the MGS if the port
-    // is equal to the configured value.
-    uint32 modem_port = 3;
-
-    // GNSS port (fPort).
-    // ChirpStack will forward the FrmPayload to MGS as GNSS payload if the
-    // port is equal to the configured value.
-    uint32 gnss_port = 4;
+    // Forward FPorts.
+    // Forward uplink messages matching the given FPorts to the MGS.
+    repeated uint32 forward_f_ports = 16;
 
     // Use rx time for GNSS resolving.
     // In case this is set to true, the MGS resolver will use the RX time of the

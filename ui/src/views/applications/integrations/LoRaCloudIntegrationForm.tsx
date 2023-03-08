@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 
 import { Form, Input, InputNumber, Switch, Button, Tabs, Collapse } from "antd";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import {
   LoraCloudIntegration,
@@ -56,8 +57,7 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
     if (mgsv !== undefined) {
       mgs.setToken(mgsv.token);
       mgs.setModemEnabled(mgsv.modemEnabled);
-      mgs.setModemPort(mgsv.modemPort);
-      mgs.setGnssPort(mgsv.gnssPort);
+      mgs.setForwardFPortsList(mgsv.forwardFPortsList);
       mgs.setGnssUseRxTime(mgsv.gnssUseRxTime);
       mgs.setParseTlv(mgsv.parseTlv);
       mgs.setGeolocationBufferTtl(mgsv.geolocationBufferTtl);
@@ -119,7 +119,7 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
               tooltip="This token can be obtained from loracloud.com"
               rules={[{ required: true, message: "Please enter a token!" }]}
             >
-              <Input />
+              <Input type="password" />
             </Form.Item>
             <Form.Item
               name={["modemGeolocationServices", "modemEnabled"]}
@@ -129,24 +129,26 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
               <Switch onChange={this.onModemEnabledChange} />
             </Form.Item>
             {this.state.modemEnabled && (
-              <Form.Item
-                label="GNSS port (FPort)"
-                name={["modemGeolocationServices", "gnssPort"]}
-                tooltip="ChirpStack will only forward the FRMPayload for GNSS geolocation to LoRa Cloud when the uplink matches the configured port."
-                rules={[{ required: true, message: "Please enter a port number!" }]}
-              >
-                <InputNumber min={0} max={255} />
-              </Form.Item>
-            )}
-            {this.state.modemEnabled && (
-              <Form.Item
-                label="Modem port (FPort)"
-                name={["modemGeolocationServices", "modemPort"]}
-                tooltip="ChirpStack will only forward the FRMPayload to LoRa Cloud when the uplink matches the configured port."
-                rules={[{ required: true, message: "Please enter a port number!" }]}
-              >
-                <InputNumber min={0} max={255} />
-              </Form.Item>
+              <Form.List name={["modemGeolocationServices", "forwardFPortsList"]}>
+                {(fields, { add, remove }) => (
+                  <Form.Item label="Forward messages on these FPorts to LoRa Cloud">
+                    {fields.map((field, index) => (
+                      <Form.Item
+                        {...field}
+                        rules={[{ required: true, message: "Please a FPort value!" }]}
+                        style={{ display: "inline-block", width: "100px", marginRight: "24px" }}
+                      >
+                        <InputNumber
+                          min={1}
+                          max={255}
+                          addonAfter={<MinusCircleOutlined onClick={() => remove(index)} />}
+                        />
+                      </Form.Item>
+                    ))}
+                    <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />} />
+                  </Form.Item>
+                )}
+              </Form.List>
             )}
             {this.state.modemEnabled && (
               <Form.Item

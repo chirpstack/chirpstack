@@ -34,9 +34,8 @@ class CreateLoRaCloudIntegration extends Component<IProps> {
   render() {
     let i = new LoraCloudIntegration();
     let mgs = new LoraCloudModemGeolocationServices();
-    mgs.setModemPort(199);
-    mgs.setGnssPort(198);
     mgs.setModemEnabled(true);
+    mgs.setForwardFPortsList([192, 197, 198, 199]);
 
     i.setModemGeolocationServices(mgs);
 

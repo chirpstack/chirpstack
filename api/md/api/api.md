@@ -1246,8 +1246,7 @@ Note: The first value is always used for the DevEUI. |
 | ----- | ---- | ----- | ----------- |
 | token | [string](#string) |  | API token. |
 | modem_enabled | [bool](#bool) |  | Device implements Modem / Modem-E stack. |
-| modem_port | [uint32](#uint32) |  | Modem port (fPort). ChirpStack will only forward the FrmPayload to the MGS if the port is equal to the configured value. |
-| gnss_port | [uint32](#uint32) |  | GNSS port (fPort). ChirpStack will forward the FrmPayload to MGS as GNSS payload if the port is equal to the configured value. |
+| forward_f_ports | [uint32](#uint32) | repeated | Forward FPorts. Forward uplink messages matching the given FPorts to the MGS. |
 | gnss_use_rx_time | [bool](#bool) |  | Use rx time for GNSS resolving. In case this is set to true, the MGS resolver will use the RX time of the network instead of the timestamp included in the LR1110 payload. |
 | parse_tlv | [bool](#bool) |  | Parse TLV records. If enabled, stream records (expected in TLV format) are scanned for GNSS data (0x06 or 0x07). If found, ChirpStack will make an additional geolocation call to the MGS API for resolving the location of the detected payload. |
 | geolocation_buffer_ttl | [uint32](#uint32) |  | Geolocation buffer TTL (in seconds). If &gt; 0, uplink RX meta-data will be stored in a buffer so that the meta-data of multiple uplinks can be used for geolocation. |

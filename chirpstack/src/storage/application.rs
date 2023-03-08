@@ -200,12 +200,13 @@ pub struct LoraCloudConfiguration {
     pub modem_geolocation_services: LoraCloudModemGeolocationServices,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LoraCloudModemGeolocationServices {
     pub token: String,
     pub modem_enabled: bool,
     pub modem_port: u32,
     pub gnss_port: u32,
+    pub forward_f_ports: Vec<u32>,
     pub gnss_use_rx_time: bool,
     pub parse_tlv: bool,
     pub geolocation_buffer_ttl: u32,
@@ -466,7 +467,7 @@ pub async fn get_integration(
         let application_id = *application_id;
         move || -> Result<Integration, Error> {
             let mut c = get_db_conn()?;
-            let i: Integration = application_integration::dsl::application_integration
+            let mut i: Integration = application_integration::dsl::application_integration
                 .filter(
                     application_integration::dsl::application_id
                         .eq(application_id)
@@ -474,6 +475,19 @@ pub async fn get_integration(
                 )
                 .first(&mut c)
                 .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
+
+            // For backwards compatibiliy
+            if let IntegrationConfiguration::LoraCloud(conf) = &mut i.configuration {
+                if conf.modem_geolocation_services.forward_f_ports.is_empty() {
+                    conf.modem_geolocation_services.forward_f_ports = vec![
+                        conf.modem_geolocation_services.modem_port,
+                        conf.modem_geolocation_services.gnss_port,
+                        197,
+                        192,
+                    ];
+                }
+            }
+
             Ok(i)
         }
     })

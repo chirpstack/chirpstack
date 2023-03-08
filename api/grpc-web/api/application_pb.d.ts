@@ -866,11 +866,10 @@ export class LoraCloudModemGeolocationServices extends jspb.Message {
   getModemEnabled(): boolean;
   setModemEnabled(value: boolean): LoraCloudModemGeolocationServices;
 
-  getModemPort(): number;
-  setModemPort(value: number): LoraCloudModemGeolocationServices;
-
-  getGnssPort(): number;
-  setGnssPort(value: number): LoraCloudModemGeolocationServices;
+  getForwardFPortsList(): Array<number>;
+  setForwardFPortsList(value: Array<number>): LoraCloudModemGeolocationServices;
+  clearForwardFPortsList(): LoraCloudModemGeolocationServices;
+  addForwardFPorts(value: number, index?: number): LoraCloudModemGeolocationServices;
 
   getGnssUseRxTime(): boolean;
   setGnssUseRxTime(value: boolean): LoraCloudModemGeolocationServices;
@@ -917,8 +916,7 @@ export namespace LoraCloudModemGeolocationServices {
   export type AsObject = {
     token: string,
     modemEnabled: boolean,
-    modemPort: number,
-    gnssPort: number,
+    forwardFPortsList: Array<number>,
     gnssUseRxTime: boolean,
     parseTlv: boolean,
     geolocationBufferTtl: number,

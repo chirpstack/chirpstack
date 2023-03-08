@@ -907,7 +907,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.api.LoraCloudModemGeolocationServices = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.api.LoraCloudModemGeolocationServices.repeatedFields_, null);
 };
 goog.inherits(proto.api.LoraCloudModemGeolocationServices, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -8074,6 +8074,13 @@ proto.api.LoraCloudIntegration.prototype.hasModemGeolocationServices = function(
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.api.LoraCloudModemGeolocationServices.repeatedFields_ = [16];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -8107,8 +8114,7 @@ proto.api.LoraCloudModemGeolocationServices.toObject = function(includeInstance,
   var f, obj = {
     token: jspb.Message.getFieldWithDefault(msg, 1, ""),
     modemEnabled: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-    modemPort: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    gnssPort: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    forwardFPortsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
     gnssUseRxTime: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
     parseTlv: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
     geolocationBufferTtl: jspb.Message.getFieldWithDefault(msg, 7, 0),
@@ -8164,13 +8170,9 @@ proto.api.LoraCloudModemGeolocationServices.deserializeBinaryFromReader = functi
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setModemEnabled(value);
       break;
-    case 3:
-      var value = /** @type {number} */ (reader.readUint32());
-      msg.setModemPort(value);
-      break;
-    case 4:
-      var value = /** @type {number} */ (reader.readUint32());
-      msg.setGnssPort(value);
+    case 16:
+      var value = /** @type {!Array<number>} */ (reader.readPackedUint32());
+      msg.setForwardFPortsList(value);
       break;
     case 5:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -8259,17 +8261,10 @@ proto.api.LoraCloudModemGeolocationServices.serializeBinaryToWriter = function(m
       f
     );
   }
-  f = message.getModemPort();
-  if (f !== 0) {
-    writer.writeUint32(
-      3,
-      f
-    );
-  }
-  f = message.getGnssPort();
-  if (f !== 0) {
-    writer.writeUint32(
-      4,
+  f = message.getForwardFPortsList();
+  if (f.length > 0) {
+    writer.writePackedUint32(
+      16,
       f
     );
   }
@@ -8390,38 +8385,39 @@ proto.api.LoraCloudModemGeolocationServices.prototype.setModemEnabled = function
 
 
 /**
- * optional uint32 modem_port = 3;
- * @return {number}
+ * repeated uint32 forward_f_ports = 16;
+ * @return {!Array<number>}
  */
-proto.api.LoraCloudModemGeolocationServices.prototype.getModemPort = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+proto.api.LoraCloudModemGeolocationServices.prototype.getForwardFPortsList = function() {
+  return /** @type {!Array<number>} */ (jspb.Message.getRepeatedField(this, 16));
+};
+
+
+/**
+ * @param {!Array<number>} value
+ * @return {!proto.api.LoraCloudModemGeolocationServices} returns this
+ */
+proto.api.LoraCloudModemGeolocationServices.prototype.setForwardFPortsList = function(value) {
+  return jspb.Message.setField(this, 16, value || []);
 };
 
 
 /**
  * @param {number} value
+ * @param {number=} opt_index
  * @return {!proto.api.LoraCloudModemGeolocationServices} returns this
  */
-proto.api.LoraCloudModemGeolocationServices.prototype.setModemPort = function(value) {
-  return jspb.Message.setProto3IntField(this, 3, value);
+proto.api.LoraCloudModemGeolocationServices.prototype.addForwardFPorts = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 16, value, opt_index);
 };
 
 
 /**
- * optional uint32 gnss_port = 4;
- * @return {number}
- */
-proto.api.LoraCloudModemGeolocationServices.prototype.getGnssPort = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
-};
-
-
-/**
- * @param {number} value
+ * Clears the list making it empty but non-null.
  * @return {!proto.api.LoraCloudModemGeolocationServices} returns this
  */
-proto.api.LoraCloudModemGeolocationServices.prototype.setGnssPort = function(value) {
-  return jspb.Message.setProto3IntField(this, 4, value);
+proto.api.LoraCloudModemGeolocationServices.prototype.clearForwardFPortsList = function() {
+  return this.setForwardFPortsList([]);
 };
 
 

@@ -489,7 +489,6 @@ pub struct AntennaLocation {
 #[derive(Clone)]
 pub enum UplinkMsg {
     UpDf(UplinkMsgUpDf),
-    Modem(UplinkMsgModem),
     Gnss(UplinkMsgGnss),
     Wifi(UplinkMsgWifi),
     Joining(UplinkMsgJoining),
@@ -502,7 +501,6 @@ impl Serialize for UplinkMsg {
     {
         match self {
             UplinkMsg::UpDf(v) => v.serialize(serializer),
-            UplinkMsg::Modem(v) => v.serialize(serializer),
             UplinkMsg::Gnss(v) => v.serialize(serializer),
             UplinkMsg::Wifi(v) => v.serialize(serializer),
             UplinkMsg::Joining(v) => v.serialize(serializer),
@@ -563,8 +561,7 @@ impl<'de> Visitor<'de> for Eui64WrapperVisitor {
 }
 
 // UplinkMsgUpDf implements the LoRa Cloud UplinkMsg object.
-// The purpose of this message is to create a downlink opportunity for LoRa Cloud.
-#[derive(Serialize, Clone)]
+#[derive(Default, Serialize, Clone)]
 pub struct UplinkMsgUpDf {
     #[serde(rename = "msgtype")]
     pub msg_type: String, // must be set to "updf"
@@ -573,21 +570,16 @@ pub struct UplinkMsgUpDf {
     pub port: u8,
     pub dr: u8,
     pub freq: u32,
-    pub timestamp: f64,  // senconds since UTC
-    pub payload: String, // leave this blank
-}
-
-// UplinkMsgModem implements the LoRa Cloud UplinkMsg object containing a modem payload.
-#[derive(Serialize, Clone)]
-pub struct UplinkMsgModem {
-    #[serde(rename = "msgtype")]
-    pub msg_type: String, // must be set to "modem"
-    pub payload: String, // HEX format
-    #[serde(rename = "fcnt")]
-    pub f_cnt: u32,
-    pub timestamp: f64, // seconds since UTC
-    pub dr: u8,
-    pub freq: u32,
+    pub timestamp: f64, // senconds since UTC
+    pub payload: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gnss_capture_time: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gnss_capture_time_accuracy: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gnss_assist_position: Option<Vec<f64>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gnss_assist_altitude: Option<f64>,
 }
 
 // UplinkMsgGnss implements the LoRa Cloud UplinkMsg object containing a gnss payload.
@@ -696,6 +688,7 @@ pub mod test {
                 freq: 868100000,
                 timestamp: 12345.0,
                 payload: "".into(),
+                ..Default::default()
             }),
         };
         let json_s = serde_json::to_string(&updf).unwrap();
