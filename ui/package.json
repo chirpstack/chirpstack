@@ -1,6 +1,6 @@
 {
   "name": "chirpstack-ui",
-  "version": "4.3.0-test.3",
+  "version": "4.3.0",
   "private": true,
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
