@@ -120,7 +120,6 @@ impl<'a> MqttBackend<'a> {
 
         // create client
         let create_opts = mqtt::CreateOptionsBuilder::new()
-            .server_uri(&conf.server)
             .client_id(&client_id)
             .user_data(Box::new(MqttContext {
                 region_config_id: region_config_id.to_string(),
@@ -159,6 +158,7 @@ impl<'a> MqttBackend<'a> {
         conn_opts_b.keep_alive_interval(conf.keep_alive_interval);
         conn_opts_b.user_name(&conf.username);
         conn_opts_b.password(&conf.password);
+        conn_opts_b.server_uris(&conf.servers);
         if !conf.ca_cert.is_empty() || !conf.tls_cert.is_empty() || !conf.tls_key.is_empty() {
             info!(
                 ca_cert = conf.ca_cert.as_str(),
@@ -202,7 +202,7 @@ impl<'a> MqttBackend<'a> {
         };
 
         // connect
-        info!(region_config_id = %region_config_id, server_uri = %conf.server, clean_session = conf.clean_session, client_id = %client_id, "Connecting to MQTT broker");
+        info!(region_config_id = %region_config_id, server_uris = ?conf.servers, clean_session = conf.clean_session, client_id = %client_id, "Connecting to MQTT broker");
         b.client
             .connect(conn_opts)
             .await

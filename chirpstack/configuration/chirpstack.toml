@@ -99,5 +99,6 @@
   enabled=["mqtt"]
 
   [integration.mqtt]
-    server="tcp://$MQTT_BROKER_HOST:1883/"
+    # Servers is used to configure extra connections to the same MQTT cluster. Leave empty if unneeded.
+    servers=["tcp://$MQTT_BROKER_HOST:1883/"]
     json=true

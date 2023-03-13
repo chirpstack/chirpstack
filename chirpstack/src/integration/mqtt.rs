@@ -80,7 +80,6 @@ impl<'a> Integration<'a> {
 
         // create client
         let create_opts = mqtt::CreateOptionsBuilder::new()
-            .server_uri(&conf.server)
             .client_id(&client_id)
             .persistence(mqtt::create_options::PersistenceType::FilePath(temp_dir()))
             .finalize();
@@ -102,6 +101,7 @@ impl<'a> Integration<'a> {
         conn_opts_b.keep_alive_interval(conf.keep_alive_interval);
         conn_opts_b.user_name(&conf.username);
         conn_opts_b.password(&conf.password);
+        conn_opts_b.server_uris(&conf.servers);
         if !conf.ca_cert.is_empty() || !conf.tls_cert.is_empty() || !conf.tls_key.is_empty() {
             info!(
                 ca_cert = %conf.ca_cert,
@@ -153,7 +153,7 @@ impl<'a> Integration<'a> {
         };
 
         // connect
-        info!(server_uri = %conf.server, client_id = %client_id, clean_session = conf.clean_session, "Connecting to MQTT broker");
+        info!(server_uris = ?conf.servers, client_id = %client_id, clean_session = conf.clean_session, "Connecting to MQTT broker");
         i.client
             .connect(conn_opts)
             .await
@@ -487,18 +487,17 @@ pub mod test {
         let conf = MqttIntegration {
             event_topic: "application/{{application_id}}/device/{{dev_eui}}/event/{{event}}".into(),
             json: true,
-            server: "tcp://mosquitto:1883/".into(),
+            servers: vec!["tcp://mosquitto:1883/".into()],
             clean_session: true,
             ..Default::default()
         };
         let i = Integration::new(&conf).await.unwrap();
 
-        let create_opts = mqtt::CreateOptionsBuilder::new()
-            .server_uri(&conf.server)
-            .finalize();
+        let create_opts = mqtt::CreateOptionsBuilder::new().finalize();
         let mut client = mqtt::AsyncClient::new(create_opts).unwrap();
         let conn_opts = mqtt::ConnectOptionsBuilder::new()
             .clean_session(true)
+            .server_uris(&conf.servers)
             .finalize();
         let mut stream = client.get_stream(10);
         client.connect(conn_opts).await.unwrap();

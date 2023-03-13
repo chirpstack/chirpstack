@@ -38,7 +38,9 @@
         topic_prefix="as923_3"
 
         # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-        server="tcp://$MQTT_BROKER_HOST:1883"
+        servers=[
+		"tcp://$MQTT_BROKER_HOST:1883"
+	]
 
         # Connect with the given username (optional)
         username=""

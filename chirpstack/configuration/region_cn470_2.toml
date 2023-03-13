@@ -37,8 +37,10 @@
         # '/' is automatically added to the prefix if it is configured.
         topic_prefix="cn470_2"
 
-        # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-        server="tcp://$MQTT_BROKER_HOST:1883"
+        # MQTT servers (e.g. scheme://host:port where scheme is tcp, ssl or ws)
+        servers=[
+		"tcp://$MQTT_BROKER_HOST:1883"
+	]
 
         # Connect with the given username (optional)
         username=""
