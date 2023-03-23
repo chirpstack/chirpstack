@@ -201,6 +201,7 @@ pub struct LoraCloudConfiguration {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct LoraCloudModemGeolocationServices {
     pub token: String,
     pub modem_enabled: bool,
