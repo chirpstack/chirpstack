@@ -162,9 +162,9 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
             )}
             {this.state.modemEnabled && (
               <Form.Item
-                label="My device adheres to the LoRa Edge&trade; Tracker Reference Design protocol"
+                label="My device adheres to the LoRa Edge&trade; Tracker Modem-E Version Reference Design protocol"
                 name={["modemGeolocationServices", "parseTlv"]}
-                tooltip="If enabled, ChirpStack Application Server will try to resolve the location of the device if a geolocation payload is detected."
+                tooltip="If enabled, ChirpStack will try to resolve the location of the device if a geolocation payload is detected."
                 valuePropName="checked"
               >
                 <Switch />
