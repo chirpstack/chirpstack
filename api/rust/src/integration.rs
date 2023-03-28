@@ -1,4 +1,5 @@
-tonic::include_proto!("integration/integration");
+include!(concat!(env!("OUT_DIR"), "/integration/integration.rs"));
+#[cfg(feature = "json")]
 include!(concat!(
     env!("OUT_DIR"),
     "/integration/integration.serde.rs"

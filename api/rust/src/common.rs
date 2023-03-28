@@ -2,7 +2,8 @@ use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 
-tonic::include_proto!("common/common");
+include!(concat!(env!("OUT_DIR"), "/common/common.rs"));
+#[cfg(feature = "json")]
 include!(concat!(env!("OUT_DIR"), "/common/common.serde.rs"));
 
 #[allow(clippy::from_over_into)]

@@ -2,7 +2,8 @@ use rand::Rng;
 use std::error::Error;
 use std::str::FromStr;
 
-tonic::include_proto!("gw/gw");
+include!(concat!(env!("OUT_DIR"), "/gw/gw.rs"));
+#[cfg(feature = "json")]
 include!(concat!(env!("OUT_DIR"), "/gw/gw.serde.rs"));
 
 #[allow(clippy::from_over_into)]

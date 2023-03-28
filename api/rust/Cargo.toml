@@ -9,21 +9,22 @@ repository = "https://github.com/chirpstack/chirpstack"
 edition = "2021"
 
 [features]
-default = ["api"]
+default = ["api", "json"]
 api = ["tonic/transport", "tonic-build/transport", "tokio"]
+json = ["pbjson", "pbjson-types", "serde"]
 internal = []
 
 [dependencies]
 prost = "0.11"
 prost-types = "0.11"
-pbjson = "0.5"
-pbjson-types = "0.5"
 hex = "0.4"
 rand = "0.8"
 
-tonic = { version = "0.8", features = ["codegen", "prost"], default-features = false }
+tonic = { version = "0.8", features = ["codegen", "prost"], default-features = false, optional = true }
 tokio = { version = "1.25", features = ["macros"], optional = true }
-serde = { version = "1.0" }
+pbjson = { version = "0.5", optional = true }
+pbjson-types = { version = "0.5", optional = true }
+serde = { version = "1.0", optional = true }
 
 [build-dependencies]
 tonic-build = { version = "0.8", features = ["prost"], default-features = false }

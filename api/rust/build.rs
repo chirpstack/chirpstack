@@ -16,12 +16,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(out_dir.join("meta")).unwrap();
     std::fs::create_dir_all(out_dir.join("api")).unwrap();
 
+    #[cfg(feature = "json")]
+    let well_known_types_path = "::pbjson_types";
+
+    #[cfg(not(feature = "json"))]
+    let well_known_types_path = "::prost_types";
+
     // common
     tonic_build::configure()
         .out_dir(out_dir.join("common"))
         .file_descriptor_set_path(out_dir.join("common").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
-        .extern_path(".google.protobuf", "::pbjson_types")
+        .extern_path(".google.protobuf", well_known_types_path)
         .compile(
             &[cs_dir.join("common").join("common.proto").to_str().unwrap()],
             &[
@@ -30,18 +36,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ],
         )?;
 
-    let descriptor_set = std::fs::read(out_dir.join("common").join("proto_descriptor.bin"))?;
-    pbjson_build::Builder::new()
-        .register_descriptors(&descriptor_set)?
-        .out_dir(out_dir.join("common"))
-        .build(&[".common"])?;
+    #[cfg(feature = "json")]
+    {
+        let descriptor_set = std::fs::read(out_dir.join("common").join("proto_descriptor.bin"))?;
+        pbjson_build::Builder::new()
+            .register_descriptors(&descriptor_set)?
+            .out_dir(out_dir.join("common"))
+            .build(&[".common"])?;
+    }
 
     // gw
     tonic_build::configure()
         .out_dir(out_dir.join("gw"))
         .file_descriptor_set_path(out_dir.join("gw").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
-        .extern_path(".google.protobuf", "::pbjson_types")
+        .extern_path(".google.protobuf", well_known_types_path)
         .extern_path(".common", "crate::common")
         .compile(
             &[cs_dir.join("gw").join("gw.proto").to_str().unwrap()],
@@ -51,19 +60,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ],
         )?;
 
-    let descriptor_set = std::fs::read(out_dir.join("gw").join("proto_descriptor.bin"))?;
-    pbjson_build::Builder::new()
-        .register_descriptors(&descriptor_set)?
-        .out_dir(out_dir.join("gw"))
-        .extern_path(".common", "crate::common")
-        .build(&[".gw"])?;
+    #[cfg(feature = "json")]
+    {
+        let descriptor_set = std::fs::read(out_dir.join("gw").join("proto_descriptor.bin"))?;
+        pbjson_build::Builder::new()
+            .register_descriptors(&descriptor_set)?
+            .out_dir(out_dir.join("gw"))
+            .extern_path(".common", "crate::common")
+            .build(&[".gw"])?;
+    }
 
     // internal
     tonic_build::configure()
         .out_dir(out_dir.join("internal"))
         .file_descriptor_set_path(out_dir.join("internal").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
-        .extern_path(".google.protobuf", "::pbjson_types")
+        .extern_path(".google.protobuf", well_known_types_path)
         .extern_path(".common", "crate::common")
         .compile(
             &[cs_dir
@@ -77,19 +89,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ],
         )?;
 
-    let descriptor_set = std::fs::read(out_dir.join("internal").join("proto_descriptor.bin"))?;
-    pbjson_build::Builder::new()
-        .register_descriptors(&descriptor_set)?
-        .out_dir(out_dir.join("internal"))
-        .extern_path(".common", "crate::common")
-        .build(&[".internal"])?;
+    #[cfg(feature = "json")]
+    {
+        let descriptor_set = std::fs::read(out_dir.join("internal").join("proto_descriptor.bin"))?;
+        pbjson_build::Builder::new()
+            .register_descriptors(&descriptor_set)?
+            .out_dir(out_dir.join("internal"))
+            .extern_path(".common", "crate::common")
+            .build(&[".internal"])?;
+    }
 
     // integration
     tonic_build::configure()
         .out_dir(out_dir.join("integration"))
         .file_descriptor_set_path(out_dir.join("integration").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
-        .extern_path(".google.protobuf", "::pbjson_types")
+        .extern_path(".google.protobuf", well_known_types_path)
         .extern_path(".common", "crate::common")
         .extern_path(".gw", "crate::gw")
         .compile(
@@ -104,14 +119,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ],
         )?;
 
-    let descriptor_set = std::fs::read(out_dir.join("integration").join("proto_descriptor.bin"))?;
-    pbjson_build::Builder::new()
-        .emit_fields()
-        .register_descriptors(&descriptor_set)?
-        .out_dir(out_dir.join("integration"))
-        .extern_path(".common", "crate::common")
-        .extern_path(".gw", "crate::gw")
-        .build(&[".integration"])?;
+    #[cfg(feature = "json")]
+    {
+        let descriptor_set =
+            std::fs::read(out_dir.join("integration").join("proto_descriptor.bin"))?;
+        pbjson_build::Builder::new()
+            .emit_fields()
+            .register_descriptors(&descriptor_set)?
+            .out_dir(out_dir.join("integration"))
+            .extern_path(".common", "crate::common")
+            .extern_path(".gw", "crate::gw")
+            .build(&[".integration"])?;
+    }
 
     // meta
     tonic_build::configure()
@@ -125,13 +144,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &[proto_dir.join("chirpstack").to_str().unwrap()],
         )?;
 
-    let descriptor_set = std::fs::read(out_dir.join("meta").join("proto_descriptor.bin"))?;
-    pbjson_build::Builder::new()
-        .register_descriptors(&descriptor_set)?
-        .out_dir(out_dir.join("meta"))
-        .extern_path(".common", "crate::common")
-        .extern_path(".gw", "crate::gw")
-        .build(&[".meta"])?;
+    #[cfg(feature = "json")]
+    {
+        let descriptor_set = std::fs::read(out_dir.join("meta").join("proto_descriptor.bin"))?;
+        pbjson_build::Builder::new()
+            .register_descriptors(&descriptor_set)?
+            .out_dir(out_dir.join("meta"))
+            .extern_path(".common", "crate::common")
+            .extern_path(".gw", "crate::gw")
+            .build(&[".meta"])?;
+    }
 
     // api
     tonic_build::configure()
