@@ -40,11 +40,11 @@ lrwn = { path = "../lrwn" }
 backend = { path = "../backend" }
 
 # HTTP
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 
 # Integrations
 aws-types = "0.49"
-aws-config = "0.49"
+aws-config = { version = "0.49", default-features = false }
 aws-sdk-sns = "0.19"
 hmac = "0.12"
 sha2 = "0.10"
@@ -67,7 +67,7 @@ prost = "0.11"
 pbjson-types = "0.5"
 
 # gRPC and HTTP multiplexing
-warp = { version = "0.3", features = ["tls"] }
+warp = { version = "0.3", features = ["tls"], default-features = false }
 hyper = "0.14"
 tower = "0.4"
 futures = "0.3"
