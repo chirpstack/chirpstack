@@ -499,7 +499,7 @@ message ListIntegrationsResponse {
 }
 
 message HttpIntegration {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 
     // HTTP headers to set when making requests.
@@ -521,7 +521,7 @@ message CreateHttpIntegrationRequest {
 }
 
 message GetHttpIntegrationRequest {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 }
 
@@ -536,7 +536,7 @@ message UpdateHttpIntegrationRequest {
 }
 
 message DeleteHttpIntegrationRequest {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 }
 
@@ -555,7 +555,7 @@ enum InfluxDbVersion {
 }
 
 message InfluxDbIntegration {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 
 	// InfluxDb API write endpoint (e.g. http://localhost:8086/write).
@@ -595,7 +595,7 @@ message CreateInfluxDbIntegrationRequest {
 }
 
 message GetInfluxDbIntegrationRequest {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 }
 
@@ -610,12 +610,12 @@ message UpdateInfluxDbIntegrationRequest {
 }
 
 message DeleteInfluxDbIntegrationRequest {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 }
 
 message ThingsBoardIntegration {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 
     // ThingsBoard server endpoint, e.g. https://example.com
@@ -628,7 +628,7 @@ message CreateThingsBoardIntegrationRequest {
 }
 
 message GetThingsBoardIntegrationRequest {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 }
 
@@ -643,12 +643,12 @@ message UpdateThingsBoardIntegrationRequest {
 }
 
 message DeleteThingsBoardIntegrationRequest {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 }
 
 message MyDevicesIntegration {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 
     // myDevices API endpoint.
@@ -661,7 +661,7 @@ message CreateMyDevicesIntegrationRequest {
 }
 
 message GetMyDevicesIntegrationRequest {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 }
 
@@ -676,7 +676,7 @@ message UpdateMyDevicesIntegrationRequest {
 }
 
 message DeleteMyDevicesIntegrationRequest {
-    // Application ID (UUIO).
+    // Application ID (UUID).
     string application_id = 1;
 }
 
@@ -703,6 +703,14 @@ message LoraCloudModemGeolocationServices {
     // In case this is set to true, the MGS resolver will use the RX time of the
     // network instead of the timestamp included in the LR1110 payload.
     bool gnss_use_rx_time = 5;
+
+    // Use gateway location for GNSS resolving.
+    // In the case this is set to true, ChirpStack will provide the location of
+    // one of the gateways to the MGS resolver to aid the resolving process.
+    // Disable this in case the gateway location is not accurate / incorrectly
+    // configured as an incorrect location will cause the resolver to return an
+    // error.
+    bool gnss_use_gateway_location = 17;
 
     // Parse TLV records.
     // If enabled, stream records (expected in TLV format) are scanned for GNSS

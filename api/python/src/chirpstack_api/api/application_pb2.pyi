@@ -496,7 +496,7 @@ class LoraCloudIntegration(_message.Message):
     def __init__(self, application_id: _Optional[str] = ..., modem_geolocation_services: _Optional[_Union[LoraCloudModemGeolocationServices, _Mapping]] = ...) -> None: ...
 
 class LoraCloudModemGeolocationServices(_message.Message):
-    __slots__ = ["forward_f_ports", "geolocation_buffer_ttl", "geolocation_gnss", "geolocation_gnss_payload_field", "geolocation_gnss_use_rx_time", "geolocation_min_buffer_size", "geolocation_rssi", "geolocation_tdoa", "geolocation_wifi", "geolocation_wifi_payload_field", "gnss_use_rx_time", "modem_enabled", "parse_tlv", "token"]
+    __slots__ = ["forward_f_ports", "geolocation_buffer_ttl", "geolocation_gnss", "geolocation_gnss_payload_field", "geolocation_gnss_use_rx_time", "geolocation_min_buffer_size", "geolocation_rssi", "geolocation_tdoa", "geolocation_wifi", "geolocation_wifi_payload_field", "gnss_use_gateway_location", "gnss_use_rx_time", "modem_enabled", "parse_tlv", "token"]
     FORWARD_F_PORTS_FIELD_NUMBER: _ClassVar[int]
     GEOLOCATION_BUFFER_TTL_FIELD_NUMBER: _ClassVar[int]
     GEOLOCATION_GNSS_FIELD_NUMBER: _ClassVar[int]
@@ -507,6 +507,7 @@ class LoraCloudModemGeolocationServices(_message.Message):
     GEOLOCATION_TDOA_FIELD_NUMBER: _ClassVar[int]
     GEOLOCATION_WIFI_FIELD_NUMBER: _ClassVar[int]
     GEOLOCATION_WIFI_PAYLOAD_FIELD_FIELD_NUMBER: _ClassVar[int]
+    GNSS_USE_GATEWAY_LOCATION_FIELD_NUMBER: _ClassVar[int]
     GNSS_USE_RX_TIME_FIELD_NUMBER: _ClassVar[int]
     MODEM_ENABLED_FIELD_NUMBER: _ClassVar[int]
     PARSE_TLV_FIELD_NUMBER: _ClassVar[int]
@@ -521,11 +522,12 @@ class LoraCloudModemGeolocationServices(_message.Message):
     geolocation_tdoa: bool
     geolocation_wifi: bool
     geolocation_wifi_payload_field: str
+    gnss_use_gateway_location: bool
     gnss_use_rx_time: bool
     modem_enabled: bool
     parse_tlv: bool
     token: str
-    def __init__(self, token: _Optional[str] = ..., modem_enabled: bool = ..., forward_f_ports: _Optional[_Iterable[int]] = ..., gnss_use_rx_time: bool = ..., parse_tlv: bool = ..., geolocation_buffer_ttl: _Optional[int] = ..., geolocation_min_buffer_size: _Optional[int] = ..., geolocation_tdoa: bool = ..., geolocation_rssi: bool = ..., geolocation_gnss: bool = ..., geolocation_gnss_payload_field: _Optional[str] = ..., geolocation_gnss_use_rx_time: bool = ..., geolocation_wifi: bool = ..., geolocation_wifi_payload_field: _Optional[str] = ...) -> None: ...
+    def __init__(self, token: _Optional[str] = ..., modem_enabled: bool = ..., forward_f_ports: _Optional[_Iterable[int]] = ..., gnss_use_rx_time: bool = ..., gnss_use_gateway_location: bool = ..., parse_tlv: bool = ..., geolocation_buffer_ttl: _Optional[int] = ..., geolocation_min_buffer_size: _Optional[int] = ..., geolocation_tdoa: bool = ..., geolocation_rssi: bool = ..., geolocation_gnss: bool = ..., geolocation_gnss_payload_field: _Optional[str] = ..., geolocation_gnss_use_rx_time: bool = ..., geolocation_wifi: bool = ..., geolocation_wifi_payload_field: _Optional[str] = ...) -> None: ...
 
 class MyDevicesIntegration(_message.Message):
     __slots__ = ["application_id", "endpoint"]

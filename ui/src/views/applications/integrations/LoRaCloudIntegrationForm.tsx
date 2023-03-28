@@ -59,6 +59,7 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
       mgs.setModemEnabled(mgsv.modemEnabled);
       mgs.setForwardFPortsList(mgsv.forwardFPortsList);
       mgs.setGnssUseRxTime(mgsv.gnssUseRxTime);
+      mgs.setGnssUseGatewayLocation(mgsv.gnssUseGatewayLocation);
       mgs.setParseTlv(mgsv.parseTlv);
       mgs.setGeolocationBufferTtl(mgsv.geolocationBufferTtl);
       mgs.setGeolocationMinBufferSize(mgsv.geolocationMinBufferSize);
@@ -155,6 +156,16 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
                 label="Use receive timestamp for GNSS geolocation"
                 name={["modemGeolocationServices", "gnssUseRxTime"]}
                 tooltip="If enabled, the receive timestamp of the gateway will be used as reference instead of the timestamp included in the GNSS payload."
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            )}
+            {this.state.modemEnabled && (
+              <Form.Item
+                label="Use location of receiving gateways for assistance"
+                name={["modemGeolocationServices", "gnssUseGatewayLocation"]}
+                tooltip="If enabled, the gateway location will be provided to the geolocation resolver to aid the resolving process."
                 valuePropName="checked"
               >
                 <Switch />

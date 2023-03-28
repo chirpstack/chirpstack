@@ -580,7 +580,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -610,7 +610,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -640,7 +640,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -670,7 +670,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -860,7 +860,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -920,7 +920,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -980,7 +980,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -1040,7 +1040,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 
 
 
@@ -1070,7 +1070,7 @@
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 | headers | [HttpIntegration.HeadersEntry](#api-HttpIntegration-HeadersEntry) | repeated | HTTP headers to set when making requests. |
 | encoding | [Encoding](#api-Encoding) |  | Payload encoding. |
 | event_endpoint_url | [string](#string) |  | Event endpoint URL. The HTTP integration will POST all events to this enpoint. The request will contain a query parameters &#34;event&#34; containing the type of the event. |
@@ -1123,7 +1123,7 @@ Note: The first value is always used for the DevEUI. |
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 | endpoint | [string](#string) |  | InfluxDb API write endpoint (e.g. http://localhost:8086/write). |
 | db | [string](#string) |  | InfluxDb database name. (InfluxDb v1) |
 | username | [string](#string) |  | InfluxDb username. (InfluxDb v1) |
@@ -1248,6 +1248,7 @@ Note: The first value is always used for the DevEUI. |
 | modem_enabled | [bool](#bool) |  | Device implements Modem / Modem-E stack. |
 | forward_f_ports | [uint32](#uint32) | repeated | Forward FPorts. Forward uplink messages matching the given FPorts to the MGS. |
 | gnss_use_rx_time | [bool](#bool) |  | Use rx time for GNSS resolving. In case this is set to true, the MGS resolver will use the RX time of the network instead of the timestamp included in the LR1110 payload. |
+| gnss_use_gateway_location | [bool](#bool) |  | Use gateway location for GNSS resolving. In the case this is set to true, ChirpStack will provide the location of one of the gateways to the MGS resolver to aid the resolving process. Disable this in case the gateway location is not accurate / incorrectly configured as an incorrect location will cause the resolver to return an error. |
 | parse_tlv | [bool](#bool) |  | Parse TLV records. If enabled, stream records (expected in TLV format) are scanned for GNSS data (0x06 or 0x07). If found, ChirpStack will make an additional geolocation call to the MGS API for resolving the location of the detected payload. |
 | geolocation_buffer_ttl | [uint32](#uint32) |  | Geolocation buffer TTL (in seconds). If &gt; 0, uplink RX meta-data will be stored in a buffer so that the meta-data of multiple uplinks can be used for geolocation. |
 | geolocation_min_buffer_size | [uint32](#uint32) |  | Geolocation minimum buffer size. If &gt; 0, geolocation will only be performed when the buffer has at least the given size. |
@@ -1272,7 +1273,7 @@ Note: The first value is always used for the DevEUI. |
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 | endpoint | [string](#string) |  | myDevices API endpoint. |
 
 
@@ -1305,7 +1306,7 @@ Note: The first value is always used for the DevEUI. |
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| application_id | [string](#string) |  | Application ID (UUIO). |
+| application_id | [string](#string) |  | Application ID (UUID). |
 | server | [string](#string) |  | ThingsBoard server endpoint, e.g. https://example.com |
 
 

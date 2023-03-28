@@ -704,6 +704,14 @@ message LoraCloudModemGeolocationServices {
     // network instead of the timestamp included in the LR1110 payload.
     bool gnss_use_rx_time = 5;
 
+    // Use gateway location for GNSS resolving.
+    // In the case this is set to true, ChirpStack will provide the location of
+    // one of the gateways to the MGS resolver to aid the resolving process.
+    // Disable this in case the gateway location is not accurate / incorrectly
+    // configured as an incorrect location will cause the resolver to return an
+    // error.
+    bool gnss_use_gateway_location = 17;
+
     // Parse TLV records.
     // If enabled, stream records (expected in TLV format) are scanned for GNSS
     // data (0x06 or 0x07). If found, ChirpStack will make an additional

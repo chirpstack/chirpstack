@@ -8116,6 +8116,7 @@ proto.api.LoraCloudModemGeolocationServices.toObject = function(includeInstance,
     modemEnabled: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
     forwardFPortsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
     gnssUseRxTime: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
+    gnssUseGatewayLocation: jspb.Message.getBooleanFieldWithDefault(msg, 17, false),
     parseTlv: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
     geolocationBufferTtl: jspb.Message.getFieldWithDefault(msg, 7, 0),
     geolocationMinBufferSize: jspb.Message.getFieldWithDefault(msg, 8, 0),
@@ -8177,6 +8178,10 @@ proto.api.LoraCloudModemGeolocationServices.deserializeBinaryFromReader = functi
     case 5:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setGnssUseRxTime(value);
+      break;
+    case 17:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setGnssUseGatewayLocation(value);
       break;
     case 6:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -8272,6 +8277,13 @@ proto.api.LoraCloudModemGeolocationServices.serializeBinaryToWriter = function(m
   if (f) {
     writer.writeBool(
       5,
+      f
+    );
+  }
+  f = message.getGnssUseGatewayLocation();
+  if (f) {
+    writer.writeBool(
+      17,
       f
     );
   }
@@ -8436,6 +8448,24 @@ proto.api.LoraCloudModemGeolocationServices.prototype.getGnssUseRxTime = functio
  */
 proto.api.LoraCloudModemGeolocationServices.prototype.setGnssUseRxTime = function(value) {
   return jspb.Message.setProto3BooleanField(this, 5, value);
+};
+
+
+/**
+ * optional bool gnss_use_gateway_location = 17;
+ * @return {boolean}
+ */
+proto.api.LoraCloudModemGeolocationServices.prototype.getGnssUseGatewayLocation = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 17, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.LoraCloudModemGeolocationServices} returns this
+ */
+proto.api.LoraCloudModemGeolocationServices.prototype.setGnssUseGatewayLocation = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 17, value);
 };
 
 

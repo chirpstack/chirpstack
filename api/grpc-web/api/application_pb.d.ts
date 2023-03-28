@@ -874,6 +874,9 @@ export class LoraCloudModemGeolocationServices extends jspb.Message {
   getGnssUseRxTime(): boolean;
   setGnssUseRxTime(value: boolean): LoraCloudModemGeolocationServices;
 
+  getGnssUseGatewayLocation(): boolean;
+  setGnssUseGatewayLocation(value: boolean): LoraCloudModemGeolocationServices;
+
   getParseTlv(): boolean;
   setParseTlv(value: boolean): LoraCloudModemGeolocationServices;
 
@@ -918,6 +921,7 @@ export namespace LoraCloudModemGeolocationServices {
     modemEnabled: boolean,
     forwardFPortsList: Array<number>,
     gnssUseRxTime: boolean,
+    gnssUseGatewayLocation: boolean,
     parseTlv: boolean,
     geolocationBufferTtl: number,
     geolocationMinBufferSize: number,
