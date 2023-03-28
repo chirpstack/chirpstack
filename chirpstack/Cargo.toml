@@ -43,7 +43,7 @@ backend = { path = "../backend" }
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 
 # Integrations
-aws-types = "0.49"
+aws-types = "0.54"
 aws-config = { version = "0.49", default-features = false }
 aws-sdk-sns = "0.19"
 hmac = "0.12"
