@@ -11,12 +11,12 @@ pub async fn run() -> Result<()> {
         "Starting ChirpStack LoRaWAN Network Server"
     );
 
+    storage::setup().await?;
     region::setup()?;
     backend::setup()?;
     adr::setup().await?;
     integration::setup().await?;
     gateway::backend::setup().await?;
-    storage::setup().await?;
     downlink::setup().await;
     api::setup().await?;
 

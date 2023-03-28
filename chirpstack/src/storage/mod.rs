@@ -219,20 +219,25 @@ pub async fn setup() -> Result<()> {
     Ok(())
 }
 
-pub fn get_db_pool() -> PgPool {
+pub fn get_db_pool() -> Result<PgPool> {
     let pool_r = PG_POOL.read().unwrap();
-    let pool = pool_r.as_ref().unwrap().clone();
-    pool
+    let pool = pool_r
+        .as_ref()
+        .ok_or_else(|| anyhow!("PostgreSQL connection pool is not initialized (yet)"))?
+        .clone();
+    Ok(pool)
 }
 
 pub fn get_db_conn() -> Result<PgPoolConnection> {
-    let pool = get_db_pool();
-    pool.get().context("Get connection from pool error")
+    let pool = get_db_pool()?;
+    Ok(pool.get()?)
 }
 
 pub fn get_redis_conn() -> Result<RedisPoolConnection> {
     let pool_r = REDIS_POOL.read().unwrap();
-    let pool = pool_r.as_ref().unwrap();
+    let pool = pool_r
+        .as_ref()
+        .ok_or_else(|| anyhow!("Redis connection pool is not initialized (yet)"))?;
     Ok(match pool {
         RedisPool::Client(v) => RedisPoolConnection::Client(v.get()?),
         RedisPool::ClusterClient(v) => RedisPoolConnection::ClusterClient(v.get()?),
