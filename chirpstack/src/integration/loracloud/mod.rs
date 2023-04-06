@@ -174,9 +174,15 @@ impl Integration {
                     gnss_assist_altitude: None,
                 };
 
-                if let Some(loc) = get_start_location(&pl.rx_info) {
-                    msg_gnss.gnss_assist_position = Some(vec![loc.latitude, loc.longitude]);
-                    msg_gnss.gnss_assist_altitude = Some(loc.altitude);
+                if self
+                    .config
+                    .modem_geolocation_services
+                    .gnss_use_gateway_location
+                {
+                    if let Some(loc) = get_start_location(&pl.rx_info) {
+                        msg_gnss.gnss_assist_position = Some(vec![loc.latitude, loc.longitude]);
+                        msg_gnss.gnss_assist_altitude = Some(loc.altitude);
+                    }
                 }
 
                 msg_gnss
