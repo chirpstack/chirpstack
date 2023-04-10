@@ -11,7 +11,7 @@ license = "MIT"
 
 [dependencies]
 # CLI interface
-clap = { version = "4.1", features = ["derive"] }
+clap = { version = "4.2", features = ["derive"] }
 
 # Configuration
 serde = { version = "1.0", features = ["derive", "rc"] }
@@ -27,8 +27,8 @@ diesel = { version = "2.0", features = [ "chrono", "postgres", "r2d2", "uuid", "
 diesel_migrations = { version = "2.0" }
 r2d2 = "0.8"
 bigdecimal = "0.3"
-redis = { version = "0.22", features = ["r2d2", "cluster"] }
-pq-sys = { version = "0.4.7", features = ["pkg-config"] }
+redis = { version = "0.23", features = ["r2d2", "cluster"] }
+pq-sys = { version = "0.4", features = ["pkg-config"] }
 
 # Logging
 tracing = "0.1"
@@ -57,10 +57,10 @@ tokio-reactor-trait = "1.1"
 rdkafka = { version = "0.29", features = ["cmake-build"]}
 
 # gRPC and Protobuf
-tonic = "0.8"
-tonic-web = "0.5"
-tonic-reflection = "0.6"
-tokio = { version = "1.25", features = ["macros", "rt-multi-thread"] }
+tonic = "0.9"
+tonic-web = "0.9"
+tonic-reflection = "0.9"
+tokio = { version = "1.27", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1"
 prost-types = "0.11"
 prost = "0.11"
@@ -73,7 +73,7 @@ tower = "0.4"
 futures = "0.3"
 http = "0.2"
 http-body = "0.4"
-rust-embed = "6.4"
+rust-embed = "6.6"
 mime_guess = "2.0"
 tower-http = { version = "0.4", features = ["trace", "auth"] }
 
@@ -106,7 +106,7 @@ base64 = "0.21"
 async-recursion = "1.0"
 regex = "1.7"
 petgraph = "0.6"
-prometheus-client = "0.19"
+prometheus-client = "0.20"
 pin-project = "1.0"
 
 # Development and testing
