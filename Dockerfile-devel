@@ -1,4 +1,4 @@
-FROM rust:1.65.0-buster
+FROM rust:1.68.2-buster
 
 ENV PROJECT_PATH=/chirpstack
 RUN mkdir -p $PROJECT_PATH
