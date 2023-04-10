@@ -941,11 +941,11 @@ dependencies = [
  "tokio-reactor-trait",
  "tokio-stream",
  "toml 0.7.3",
- "tonic",
+ "tonic 0.8.3",
  "tonic-reflection",
  "tonic-web",
  "tower",
- "tower-http 0.4.0",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
  "urlencoding",
@@ -967,7 +967,7 @@ dependencies = [
  "rand",
  "serde",
  "tokio",
- "tonic",
+ "tonic 0.8.3",
  "tonic-build",
 ]
 
@@ -4276,6 +4276,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "tonic"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38bd8e87955eb13c1986671838177d6792cdc52af9bffced0d2c8a9a7f741ab3"
+dependencies = [
+ "base64 0.21.0",
+ "bytes",
+ "futures-core",
+ "futures-util",
+ "http",
+ "http-body",
+ "percent-encoding",
+ "pin-project",
+ "tokio-stream",
+ "tower-layer",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
 name = "tonic-build"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4299,24 +4319,24 @@ dependencies = [
  "prost-types",
  "tokio",
  "tokio-stream",
- "tonic",
+ "tonic 0.8.3",
 ]
 
 [[package]]
 name = "tonic-web"
-version = "0.5.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9213351ad53b0dcf1c9cf7c372a47533446b1114928a9177bedc6c551e14b7cf"
+checksum = "1ea5a992300fc324dd8c529868ec7b07ac85510431f982e6f716c2cac56701d9"
 dependencies = [
- "base64 0.13.1",
+ "base64 0.21.0",
  "bytes",
  "futures-core",
  "http",
  "http-body",
  "hyper",
  "pin-project",
- "tonic",
- "tower-http 0.3.5",
+ "tonic 0.9.1",
+ "tower-http",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -4340,24 +4360,6 @@ dependencies = [
  "tower-layer",
  "tower-service",
  "tracing",
-]
-
-[[package]]
-name = "tower-http"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f873044bf02dd1e8239e9c1293ea39dad76dc594ec16185d0a1bf31d8dc8d858"
-dependencies = [
- "bitflags",
- "bytes",
- "futures-core",
- "futures-util",
- "http",
- "http-body",
- "http-range-header",
- "pin-project-lite",
- "tower-layer",
- "tower-service",
 ]
 
 [[package]]
