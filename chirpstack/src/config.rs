@@ -637,6 +637,7 @@ pub struct GatewayBackendMqtt {
     pub tls_key: String,
     #[serde(with = "humantime_serde")]
     pub keep_alive_interval: Duration,
+    pub v4_migrate: bool,
 }
 
 impl Default for GatewayBackendMqtt {
@@ -655,6 +656,7 @@ impl Default for GatewayBackendMqtt {
             tls_cert: "".into(),
             tls_key: "".into(),
             keep_alive_interval: Duration::from_secs(30),
+            v4_migrate: false,
         }
     }
 }

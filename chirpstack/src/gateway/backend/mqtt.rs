@@ -69,6 +69,7 @@ pub struct MqttBackend<'a> {
     client: mqtt::AsyncClient,
     templates: handlebars::Handlebars<'a>,
     qos: usize,
+    v4_migrate: bool,
 }
 
 #[derive(Serialize)]
@@ -197,6 +198,7 @@ impl<'a> MqttBackend<'a> {
             client,
             templates,
             qos: conf.qos,
+            v4_migrate: conf.v4_migrate,
         };
 
         // connect
@@ -209,12 +211,14 @@ impl<'a> MqttBackend<'a> {
         // Consumer loop.
         tokio::spawn({
             let region_config_id = region_config_id.to_string();
+            let v4_migrate = conf.v4_migrate;
 
             async move {
                 info!("Starting MQTT consumer loop");
                 while let Some(msg_opt) = stream.next().await {
                     if let Some(msg) = msg_opt {
-                        message_callback(&region_config_id, region_common_name, msg).await;
+                        message_callback(v4_migrate, &region_config_id, region_common_name, msg)
+                            .await;
                     }
                 }
             }
@@ -271,7 +275,10 @@ impl GatewayBackend for MqttBackend<'_> {
             .inc();
         let topic = self.get_command_topic(&df.gateway_id, "down")?;
         let mut df = df.clone();
-        df.v4_migrate();
+
+        if self.v4_migrate {
+            df.v4_migrate();
+        }
 
         let json = gateway_is_json(&df.gateway_id);
         let b = match json {
@@ -313,6 +320,7 @@ impl GatewayBackend for MqttBackend<'_> {
 }
 
 async fn message_callback(
+    v4_migrate: bool,
     region_config_id: &str,
     region_common_name: CommonName,
     msg: mqtt::Message,
@@ -357,7 +365,10 @@ async fn message_callback(
                 true => serde_json::from_slice(b)?,
                 false => chirpstack_api::gw::UplinkFrame::decode(&mut Cursor::new(b))?,
             };
-            event.v4_migrate();
+
+            if v4_migrate {
+                event.v4_migrate();
+            }
 
             if let Some(rx_info) = &mut event.rx_info {
                 set_gateway_json(&rx_info.gateway_id, json);
@@ -381,7 +392,11 @@ async fn message_callback(
                 true => serde_json::from_slice(b)?,
                 false => chirpstack_api::gw::GatewayStats::decode(&mut Cursor::new(b))?,
             };
-            event.v4_migrate();
+
+            if v4_migrate {
+                event.v4_migrate();
+            }
+
             event
                 .metadata
                 .insert("region_config_id".to_string(), region_config_id.to_string());
@@ -401,7 +416,11 @@ async fn message_callback(
                 true => serde_json::from_slice(b)?,
                 false => chirpstack_api::gw::DownlinkTxAck::decode(&mut Cursor::new(b))?,
             };
-            event.v4_migrate();
+
+            if v4_migrate {
+                event.v4_migrate();
+            }
+
             set_gateway_json(&event.gateway_id, json);
             tokio::spawn(downlink::tx_ack::TxAck::handle(event));
         } else {
