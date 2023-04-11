@@ -57,10 +57,15 @@ impl Integration {
                 .query(&[("event", event)])
                 .headers(headers.clone())
                 .send()
-                .await?;
+                .await;
 
-            match res.error_for_status() {
-                Ok(_) => {}
+            match res {
+                Ok(res) => match res.error_for_status() {
+                    Ok(_) => {}
+                    Err(e) => {
+                        error!(event = %event, url = %url, error = %e, "Posting event failed");
+                    }
+                },
                 Err(e) => {
                     error!(event = %event, url = %url, error = %e, "Posting event failed");
                 }
