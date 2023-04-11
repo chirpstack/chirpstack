@@ -2,11 +2,10 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use aws_sdk_sns::model::MessageAttributeValue;
-use aws_types::credentials::future;
-use aws_types::credentials::ProvideCredentials;
+use aws_credential_types::provider::{future, ProvideCredentials, Result as CredentialsResult};
+use aws_credential_types::Credentials;
+use aws_sdk_sns::types::MessageAttributeValue;
 use aws_types::region::Region;
-use aws_types::{credentials, Credentials};
 use base64::{engine::general_purpose, Engine as _};
 use prost::Message;
 use tracing::{info, trace};
@@ -30,7 +29,7 @@ impl StaticCredentials {
         }
     }
 
-    fn credentials(&self) -> credentials::Result {
+    fn credentials(&self) -> CredentialsResult {
         Ok(Credentials::new(
             self.aws_access_key_id.clone(),
             self.aws_secret_access_key.clone(),
