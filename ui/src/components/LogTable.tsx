@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import moment from "moment";
 import JSONTreeOriginal from "react-json-tree";
+import fileDownload from "js-file-download";
 
-import { Tag, Drawer, Button, Table, Spin } from "antd";
+import { Tag, Drawer, Button, Table, Spin, Space } from "antd";
 import { ZoomInOutlined } from "@ant-design/icons";
 
 import { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -14,6 +15,7 @@ interface IProps {
 interface IState {
   drawerOpen: boolean;
   body: any;
+  drawerTitle: any;
 }
 
 class LogTable extends Component<IProps, IState> {
@@ -23,6 +25,7 @@ class LogTable extends Component<IProps, IState> {
     this.state = {
       drawerOpen: false,
       body: null,
+      drawerTitle: null,
     };
   }
 
@@ -32,13 +35,27 @@ class LogTable extends Component<IProps, IState> {
     });
   };
 
-  onDrawerOpen = (body: any) => {
+  onDrawerOpen = (time: any, body: any) => {
+    let ts = new Date(0);
+    ts.setUTCSeconds(time.seconds);
+    let drawerTitle = moment(ts).format("YYYY-MM-DD HH:mm:ss");
+
     return () => {
       this.setState({
         body: body,
+        drawerTitle: drawerTitle,
         drawerOpen: true,
       });
     };
+  };
+
+  downloadSingleFrame = () => {
+    fileDownload(JSON.stringify(JSON.parse(this.state.body), null, 4), "single-log.json", "application/json");
+  };
+
+  downloadFrames = () => {
+    let items = this.props.logs.map((l, i) => JSON.parse(l.getBody()));
+    fileDownload(JSON.stringify(items, null, 4), "log.json");
   };
 
   render() {
@@ -67,13 +84,14 @@ class LogTable extends Component<IProps, IState> {
     };
 
     return (
-      <div>
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
         <Drawer
-          title="Details"
+          title={`Details: ${this.state.drawerTitle}`}
           placement="right"
           width={650}
           onClose={this.onDrawerClose}
           visible={this.state.drawerOpen}
+          extra={<Button onClick={this.downloadSingleFrame}>Download</Button>}
         >
           <JSONTreeOriginal
             data={body}
@@ -85,9 +103,10 @@ class LogTable extends Component<IProps, IState> {
           />
         </Drawer>
         {items.length !== 0 && (
-          <div className="spinner">
-            <Spin />
-          </div>
+          <Space direction="horizontal" style={{ float: "right" }} size="large">
+            <Spin size="small" />
+            <Button onClick={this.downloadFrames}>Download</Button>
+          </Space>
         )}
         <Table
           showHeader={false}
@@ -117,7 +136,7 @@ class LogTable extends Component<IProps, IState> {
                   type="primary"
                   shape="round"
                   size="small"
-                  onClick={this.onDrawerOpen(obj.body)}
+                  onClick={this.onDrawerOpen(obj.time, obj.body)}
                 >
                   {text}
                 </Button>
@@ -144,7 +163,7 @@ class LogTable extends Component<IProps, IState> {
             },
           ]}
         />
-      </div>
+      </Space>
     );
   }
 }

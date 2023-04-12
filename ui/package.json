@@ -28,6 +28,7 @@
     "codemirror": "^5.65.3",
     "google-protobuf": "^3.21.2",
     "grpc-web": "^1.4.2",
+    "js-file-download": "^0.4.12",
     "leaflet": "^1.7.1",
     "leaflet.awesome-markers": "^2.0.5",
     "react": "^17.0.2",

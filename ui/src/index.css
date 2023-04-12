@@ -111,3 +111,11 @@ pre {
 .CodeMirror {
   height: 600px;
 }
+
+.ant-drawer {
+  padding-top: 64px;
+}
+
+.ant-drawer-body {
+  padding-bottom: 88px; /* 64 + 24 */
+}
