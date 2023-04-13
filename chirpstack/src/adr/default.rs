@@ -37,11 +37,10 @@ impl Algorithm {
             }
             nb_step -= 1;
         } else {
-            if tx_power_index > 0 {
-                // Increase the tx-power.
-                // (note that a decrease in index increases the tx-power)
-                tx_power_index -= 1;
-            }
+            // Increase the tx-power.
+            // (note that a decrease in index increases the tx-power)
+            // Subtract only if > 0
+            tx_power_index = tx_power_index.saturating_sub(1);
             nb_step += 1;
         }
 

@@ -375,13 +375,13 @@ fn filter_rx_info_by_tenant_id(tenant_id: Uuid, uplink: &mut UplinkFrameSet) -> 
             .gateway_private_up_map
             .get(&gateway_id)
             .cloned()
-            .unwrap_or_else(|| true)
+            .unwrap_or(true)
             || force_gws_private)
             || uplink
                 .gateway_tenant_id_map
                 .get(&gateway_id)
                 .cloned()
-                .unwrap_or_else(|| Uuid::new_v4())
+                .unwrap_or_else(Uuid::new_v4)
                 == tenant_id
         {
             rx_info_set.push(rx_info.clone());

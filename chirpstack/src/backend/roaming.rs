@@ -223,7 +223,7 @@ pub fn ul_meta_data_to_rx_info(ul_meta_data: &ULMetaData) -> Result<Vec<gw::Upli
             gateway_id: hex::encode(&gw_info.id),
             context: gw_info.ul_token.clone(),
             rssi: gw_info.rssi.unwrap_or_default() as i32,
-            snr: gw_info.snr.unwrap_or_default() as f32,
+            snr: gw_info.snr.unwrap_or_default(),
             location: if gw_info.lat.is_some() && gw_info.lon.is_some() {
                 Some(common::Location {
                     latitude: gw_info.lat.unwrap(),

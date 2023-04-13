@@ -50,7 +50,7 @@ pub async fn global_search(
         let search = search.to_string();
         let (query, tags) = parse_search_query(&search);
         let query = format!("%{}%", query);
-        let tags = serde_json::to_value(&tags).context("To serde_json value")?;
+        let tags = serde_json::to_value(tags).context("To serde_json value")?;
 
         move || -> Result<Vec<SearchResult>, Error> {
             let mut c = get_db_conn()?;

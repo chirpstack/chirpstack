@@ -129,7 +129,7 @@ impl serialize::ToSql<Text, Pg> for IntegrationKind
 where
     str: serialize::ToSql<Text, Pg>,
 {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         <str as serialize::ToSql<Text, Pg>>::to_sql(&self.to_string(), &mut out.reborrow())
     }
 }
@@ -158,7 +158,7 @@ impl deserialize::FromSql<Jsonb, Pg> for IntegrationConfiguration {
 }
 
 impl serialize::ToSql<Jsonb, Pg> for IntegrationConfiguration {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }

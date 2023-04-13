@@ -44,7 +44,7 @@ impl serialize::ToSql<Text, Pg> for Codec
 where
     str: serialize::ToSql<Text, Pg>,
 {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         <str as serialize::ToSql<Text, Pg>>::to_sql(&self.to_string(), &mut out.reborrow())
     }
 }

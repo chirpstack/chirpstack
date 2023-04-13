@@ -844,7 +844,7 @@ impl InternalService for Internal {
                 out.rx1_delay = region_conf.network.rx1_delay as u32;
                 out.rx1_dr_offset = region_conf.network.rx1_dr_offset as u32;
                 out.rx2_dr = region_conf.network.rx2_dr as u32;
-                out.rx2_frequency = region_conf.network.rx2_frequency as u32;
+                out.rx2_frequency = region_conf.network.rx2_frequency;
                 out.class_b_ping_slot_dr = region_conf.network.class_b.ping_slot_dr as u32;
                 out.class_b_ping_slot_frequency = region_conf.network.class_b.ping_slot_frequency;
             }

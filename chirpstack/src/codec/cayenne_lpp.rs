@@ -287,7 +287,7 @@ impl CayenneLpp {
                 val.fields.insert(
                     format!("{}", k),
                     pbjson_types::Value {
-                        kind: Some(pbjson_types::value::Kind::NumberValue(*v as f64)),
+                        kind: Some(pbjson_types::value::Kind::NumberValue(*v)),
                     },
                 );
             }
@@ -305,7 +305,7 @@ impl CayenneLpp {
                 val.fields.insert(
                     format!("{}", k),
                     pbjson_types::Value {
-                        kind: Some(pbjson_types::value::Kind::NumberValue(*v as f64)),
+                        kind: Some(pbjson_types::value::Kind::NumberValue(*v)),
                     },
                 );
             }
@@ -359,7 +359,7 @@ impl CayenneLpp {
                 val.fields.insert(
                     format!("{}", k),
                     pbjson_types::Value {
-                        kind: Some(pbjson_types::value::Kind::NumberValue(*v as f64)),
+                        kind: Some(pbjson_types::value::Kind::NumberValue(*v)),
                     },
                 );
             }
@@ -377,7 +377,7 @@ impl CayenneLpp {
                 val.fields.insert(
                     format!("{}", k),
                     pbjson_types::Value {
-                        kind: Some(pbjson_types::value::Kind::NumberValue(*v as f64)),
+                        kind: Some(pbjson_types::value::Kind::NumberValue(*v)),
                     },
                 );
             }

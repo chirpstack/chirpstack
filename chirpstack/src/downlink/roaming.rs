@@ -92,7 +92,7 @@ impl PassiveRoamingDownlink {
                             .gateway_tenant_id_map
                             .get(&gw_id)
                             .map(|v| v.into_bytes().to_vec())
-                            .unwrap_or_else(|| Vec::new()),
+                            .unwrap_or_else(Vec::new),
                     }
                 })
                 .collect(),
@@ -127,7 +127,7 @@ impl PassiveRoamingDownlink {
                         let dl_freq_1 = self.dl_meta_data.dl_freq_1.unwrap();
                         let dl_freq_1 = (dl_freq_1 * 1_000_000.0) as u32;
                         let data_rate_1 = self.dl_meta_data.data_rate_1.unwrap();
-                        let data_rate_1 = self.region_conf.get_data_rate(data_rate_1 as u8)?;
+                        let data_rate_1 = self.region_conf.get_data_rate(data_rate_1)?;
                         let rx_delay_1 = self.dl_meta_data.rx_delay_1.unwrap();
 
                         let mut tx_info = gw::DownlinkTxInfo {
@@ -169,7 +169,7 @@ impl PassiveRoamingDownlink {
                         let dl_freq_2 = self.dl_meta_data.dl_freq_2.unwrap();
                         let dl_freq_2 = (dl_freq_2 * 1_000_000.0) as u32;
                         let data_rate_2 = self.dl_meta_data.data_rate_2.unwrap();
-                        let data_rate_2 = self.region_conf.get_data_rate(data_rate_2 as u8)?;
+                        let data_rate_2 = self.region_conf.get_data_rate(data_rate_2)?;
                         let rx_delay_1 = self.dl_meta_data.rx_delay_1.unwrap();
 
                         let mut tx_info = gw::DownlinkTxInfo {

@@ -91,7 +91,7 @@ impl deserialize::FromSql<Jsonb, Pg> for Measurements {
 }
 
 impl serialize::ToSql<Jsonb, Pg> for Measurements {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(&self.0)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }

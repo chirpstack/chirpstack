@@ -13,7 +13,7 @@ lazy_static! {
     static ref CONFIG: Mutex<Arc<Configuration>> = Mutex::new(Arc::new(Default::default()));
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Default, Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct Configuration {
     pub logging: Logging,
@@ -33,27 +33,6 @@ pub struct Configuration {
     pub regions: Vec<Region>,
 }
 
-impl Default for Configuration {
-    fn default() -> Self {
-        Configuration {
-            logging: Default::default(),
-            postgresql: Default::default(),
-            redis: Default::default(),
-            api: Default::default(),
-            gateway: Default::default(),
-            network: Default::default(),
-            monitoring: Default::default(),
-            integration: Default::default(),
-            codec: Default::default(),
-            user_authentication: Default::default(),
-            join_server: Default::default(),
-            backend_interfaces: Default::default(),
-            roaming: Default::default(),
-            keks: Vec::new(),
-            regions: vec![],
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]

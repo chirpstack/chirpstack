@@ -554,7 +554,7 @@ impl<'de> Visitor<'de> for Eui64WrapperVisitor {
         E: de::Error,
     {
         let s = value.to_string().replace('-', "");
-        let b = hex::decode(&s).map_err(|e| E::custom(format!("{}", e)))?;
+        let b = hex::decode(s).map_err(|e| E::custom(format!("{}", e)))?;
         let eui64 = EUI64::from_slice(&b).map_err(|e| E::custom(format!("{}", e)))?;
         Ok(Eui64Wrapper(eui64))
     }

@@ -23,27 +23,22 @@ pub fn select_downlink_gateway(
     min_snr_margin: f32,
     rx_info: &mut internal::DeviceGatewayRxInfo,
 ) -> Result<internal::DeviceGatewayRxInfoItem> {
-    rx_info.items = rx_info
-        .items
-        .iter()
-        .filter(|rx_info| {
-            if let Some(tenant_id) = &tenant_id {
-                if tenant_id.as_bytes().to_vec() == rx_info.tenant_id {
-                    // The tenant is the same as the gateway tenant.
-                    true
-                } else {
-                    // If tenant_id is different, filter out rx_info elements that have
-                    // is_private_down=true.
-                    !rx_info.is_private_down
-                }
+    rx_info.items.retain(|rx_info| {
+        if let Some(tenant_id) = &tenant_id {
+            if tenant_id.as_bytes().to_vec() == rx_info.tenant_id {
+                // The tenant is the same as the gateway tenant.
+                true
             } else {
-                // If tenant_id is None, filter out rx_info elements that have
+                // If tenant_id is different, filter out rx_info elements that have
                 // is_private_down=true.
                 !rx_info.is_private_down
             }
-        })
-        .cloned()
-        .collect();
+        } else {
+            // If tenant_id is None, filter out rx_info elements that have
+            // is_private_down=true.
+            !rx_info.is_private_down
+        }
+    });
 
     if rx_info.items.is_empty() {
         return Err(anyhow!(
