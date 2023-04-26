@@ -34,7 +34,7 @@ diesel = { version = "2.0", features = [
 diesel_migrations = { version = "2.0" }
 r2d2 = "0.8"
 bigdecimal = "0.3"
-redis = { version = "0.23", features = ["r2d2", "cluster"] }
+redis = { version = "0.23", features = ["r2d2", "cluster", "tls-rustls"] }
 pq-sys = { version = "0.4", features = ["pkg-config"] }
 
 # Logging
