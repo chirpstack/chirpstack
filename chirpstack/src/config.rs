@@ -33,7 +33,6 @@ pub struct Configuration {
     pub regions: Vec<Region>,
 }
 
-
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct Logging {
