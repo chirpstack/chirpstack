@@ -1,17 +1,27 @@
-use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt};
-use aes::{Aes128, Block};
+#[cfg(feature = "crypto")]
+use aes::{
+    cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt},
+    Aes128, Block,
+};
 use anyhow::Result;
+#[cfg(feature = "crypto")]
 use cmac::{Cmac, Mac};
+#[cfg(feature = "serde")]
 use serde::Serialize;
 
-use super::aes128::AES128Key;
-use super::devaddr::DevAddr;
-use super::eui64::EUI64;
 use super::maccommand::{MACCommand, MACCommandSet};
 use super::mhdr::{MType, MHDR};
-use super::payload::{FRMPayload, JoinAcceptPayload, JoinType, Payload};
+use super::payload::{FRMPayload, Payload};
+#[cfg(feature = "crypto")]
+use super::{
+    aes128::AES128Key,
+    devaddr::DevAddr,
+    eui64::EUI64,
+    payload::{JoinAcceptPayload, JoinType},
+};
 
-#[derive(PartialEq, Eq, Clone, Copy, Serialize)]
+#[derive(PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum MACVersion {
     LoRaWAN1_0,
     LoRaWAN1_1,
@@ -310,7 +320,8 @@ pub enum MACVersion {
 /// let phy_decoded = PhyPayload::from_slice(&bytes).unwrap();
 /// assert_eq!(phy, phy_decoded);
 /// ```
-#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct PhyPayload {
     pub mhdr: MHDR,
     pub payload: Payload,
@@ -374,6 +385,7 @@ impl PhyPayload {
     /// Calculate and set the MIC field for uplink data frames.
     /// The conf_f_cnt, tx_dr, tx_ch and s_nwk_s_int_key are only required for LoRaWAN 1.1 and can
     /// be left blank for LoRaWAN 1.0.
+    #[cfg(feature = "crypto")]
     pub fn set_uplink_data_mic(
         &mut self,
         mac_version: MACVersion,
@@ -399,6 +411,7 @@ impl PhyPayload {
     /// frame-counter value, as only the 16 lsb are transmitted over the air.
     /// The conf_f_cnt, tx_dr, tx_ch and s_nwk_s_int_key are only required for LoRaWAN 1.1 and can
     /// be left blank for LoRaWAN 1.0.
+    #[cfg(feature = "crypto")]
     pub fn validate_uplink_data_mic(
         &self,
         mac_version: MACVersion,
@@ -425,6 +438,7 @@ impl PhyPayload {
 
     /// Set the MIC for downlink data frames.
     /// The conf_f_cnt is only required for LoRaWAN 1.1 and can be left blank for LoRaWAN 1.0.
+    #[cfg(feature = "crypto")]
     pub fn set_downlink_data_mic(
         &mut self,
         mac_version: MACVersion,
@@ -436,6 +450,7 @@ impl PhyPayload {
         Ok(())
     }
 
+    #[cfg(feature = "crypto")]
     pub fn validate_downlink_data_mic(
         &mut self,
         mac_version: MACVersion,
@@ -453,6 +468,7 @@ impl PhyPayload {
     /// Validate the cmacF part of the uplink data MIC (LoRaWAN 1.1 only).
     /// In order to validate the MIC, the f_cnt value must be first set to the full 32 bit
     /// frame-counter value, as only the 16 lsb are transmitted over the air.
+    #[cfg(feature = "crypto")]
     pub fn validate_uplink_data_micf(&self, f_nwk_s_int_key: &AES128Key) -> Result<bool> {
         // We are only interested in mic[2:] (cmacF bytes), therefore there is no
         // need to pass the correct confFCnt, txDR, txCh and sNwkSIntKey parameters.
@@ -473,12 +489,14 @@ impl PhyPayload {
     }
 
     /// Set the join-request MIC.
+    #[cfg(feature = "crypto")]
     pub fn set_join_request_mic(&mut self, key: &AES128Key) -> Result<()> {
         self.mic = Some(self.calculate_upink_join_mic(key)?);
         Ok(())
     }
 
     /// Validate the join-request MIC.
+    #[cfg(feature = "crypto")]
     pub fn validate_join_request_mic(&self, key: &AES128Key) -> Result<bool> {
         if let Some(v) = self.mic {
             let mic = self.calculate_upink_join_mic(key)?;
@@ -489,6 +507,7 @@ impl PhyPayload {
     }
 
     /// Set the the downlink join-accept MIC.
+    #[cfg(feature = "crypto")]
     pub fn set_join_accept_mic(
         &mut self,
         join_req_type: JoinType,
@@ -502,6 +521,7 @@ impl PhyPayload {
     }
 
     /// Validate the downlink join-accept MIC.
+    #[cfg(feature = "crypto")]
     pub fn validate_join_accept_mic(
         &self,
         join_req_type: JoinType,
@@ -522,6 +542,7 @@ impl PhyPayload {
     /// the encrypted payload.
     /// For encrypting a join-request response, use the nwk_key, for rejoin-request 0, 1 and 3
     /// response, use the js_enc_key.
+    #[cfg(feature = "crypto")]
     pub fn encrypt_join_accept_payload(&mut self, key: &AES128Key) -> Result<()> {
         use aes::cipher::KeyInit;
 
@@ -566,6 +587,7 @@ impl PhyPayload {
     /// of the encrypted payload.
     /// For decrypting a join-request response, use the nwk_key, for rejoin-request 0, 1 and 3
     /// response, use the js_enc_key.
+    #[cfg(feature = "crypto")]
     pub fn decrypt_join_accept_payload(&mut self, key: &AES128Key) -> Result<()> {
         use aes::cipher::KeyInit;
 
@@ -608,6 +630,7 @@ impl PhyPayload {
     }
 
     /// Encrypt the f_opts with the given key.
+    #[cfg(feature = "crypto")]
     pub fn encrypt_f_opts(&mut self, nwk_s_enc_key: &AES128Key) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
             let f_opts_bytes = pl.fhdr.f_opts.to_vec()?;
@@ -638,6 +661,7 @@ impl PhyPayload {
 
     /// Decrypt the f_opts with the given key.
     /// This automatically calls decode_f_opts_to_mac_commands.
+    #[cfg(feature = "crypto")]
     pub fn decrypt_f_opts(&mut self, nwk_s_enc_key: &AES128Key) -> Result<()> {
         self.encrypt_f_opts(nwk_s_enc_key)?;
         self.decode_f_opts_to_mac_commands()?;
@@ -674,6 +698,7 @@ impl PhyPayload {
     }
 
     /// Encrypt the frm_payload with the given key.
+    #[cfg(feature = "crypto")]
     pub fn encrypt_frm_payload(&mut self, key: &AES128Key) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
             // nothing to do
@@ -693,6 +718,7 @@ impl PhyPayload {
     }
 
     /// Decrypt the frm_payload with the given key.
+    #[cfg(feature = "crypto")]
     pub fn decrypt_frm_payload(&mut self, key: &AES128Key) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
             // nothing to do
@@ -718,6 +744,7 @@ impl PhyPayload {
         Err(anyhow!("payload must be of type MACPayload"))
     }
 
+    #[cfg(feature = "crypto")]
     fn calculate_uplink_data_mic(
         &self,
         mac_version: MACVersion,
@@ -797,6 +824,7 @@ impl PhyPayload {
         Err(anyhow!("payload must be of type MACPayload"))
     }
 
+    #[cfg(feature = "crypto")]
     fn calculate_downlink_data_mic(
         &self,
         mac_version: MACVersion,
@@ -844,6 +872,7 @@ impl PhyPayload {
         Err(anyhow!("payload must be of type MACPayload"))
     }
 
+    #[cfg(feature = "crypto")]
     fn calculate_upink_join_mic(&self, key: &AES128Key) -> Result<[u8; 4]> {
         // mic bytes
         let mut mic_bytes = Vec::new();
@@ -864,6 +893,7 @@ impl PhyPayload {
         Ok(mic)
     }
 
+    #[cfg(feature = "crypto")]
     fn calculate_downlink_join_mic(
         &self,
         join_req_type: JoinType,
@@ -916,6 +946,7 @@ impl PhyPayload {
 ///   Set the a_fcnt_down to false and use the n_fcnt_down as f_cnt.
 /// For downlink if f_port > 0:
 ///   Set the a_fcnt_down to true and use the a_f_cnt_down as f_cnt.
+#[cfg(feature = "crypto")]
 pub fn encrypt_f_opts(
     nwk_s_enc_key: &AES128Key,
     a_fcnt_down: bool,
@@ -963,6 +994,7 @@ pub fn encrypt_f_opts(
 
 /// Encrypt (and decrypt) the frm_payload.
 /// Note that the same function is used for encryption and decryption.
+#[cfg(feature = "crypto")]
 pub fn encrypt_frm_payload(
     key: &AES128Key,
     uplink: bool,

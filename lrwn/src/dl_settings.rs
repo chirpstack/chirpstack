@@ -1,7 +1,9 @@
 use anyhow::Result;
+#[cfg(feature = "serde")]
 use serde::Serialize;
 
-#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DLSettings {
     pub opt_neg: bool,
     pub rx2_dr: u8,

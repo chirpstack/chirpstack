@@ -4,4 +4,4 @@
 test:
 	cargo fmt --check
 	cargo clippy
-	cargo test
+	cargo test --all-features

@@ -8,12 +8,15 @@ authors = ["Orne Brocaar <info@brocaar.com>"]
 edition = "2018"
 repository = "https://github.com/chirpstack/chirpstack"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [dependencies]
 hex = "0.4"
-cmac = "0.7"
-aes = "0.8"
-serde = { version = "1.0", features = ["derive"] }
-diesel = { version = "2.0", features = [ "postgres" ] }
+cmac = { version = "0.7", optional = true }
+aes = { version = "0.8", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+diesel = { version = "2.0", features = ["postgres"], optional = true }
 
 # Error handling
 thiserror = "1.0"
@@ -21,3 +24,10 @@ anyhow = "1.0"
 
 # Misc
 lazy_static = "1.4"
+
+[features]
+default = []
+diesel = ["dep:diesel", "serde"]
+serde = ["dep:serde"]
+crypto = ["dep:cmac", "dep:aes"]
+regions = []

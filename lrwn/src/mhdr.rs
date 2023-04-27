@@ -1,9 +1,11 @@
 use std::fmt;
 
 use anyhow::Result;
+#[cfg(feature = "serde")]
 use serde::Serialize;
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum MType {
     JoinRequest,
     JoinAccept,
@@ -21,12 +23,14 @@ impl fmt::Display for MType {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum Major {
     LoRaWANR1,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct MHDR {
     pub m_type: MType,
     pub major: Major,

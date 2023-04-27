@@ -2,13 +2,23 @@ use std::fmt;
 use std::str::FromStr;
 
 use anyhow::Result;
-use serde::de::{self, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "diesel")]
+use diesel::{
+    backend::{self, Backend},
+    deserialize, serialize,
+    sql_types::Binary,
+};
+#[cfg(feature = "serde")]
+use serde::{
+    de::{self, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
+};
 
 use crate::Error;
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash, AsExpression, FromSqlRow, Default)]
-#[diesel(sql_type = diesel::sql_types::Binary)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Default)]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
+#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Binary))]
 pub struct EUI64([u8; 8]);
 
 impl EUI64 {
@@ -69,6 +79,7 @@ impl FromStr for EUI64 {
     }
 }
 
+#[cfg(feature = "serde")]
 impl Serialize for EUI64 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -78,6 +89,7 @@ impl Serialize for EUI64 {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for EUI64 {
     fn deserialize<D>(deserialize: D) -> Result<EUI64, D::Error>
     where
@@ -87,8 +99,10 @@ impl<'de> Deserialize<'de> for EUI64 {
     }
 }
 
+#[cfg(feature = "serde")]
 struct Eui64Visitor;
 
+#[cfg(feature = "serde")]
 impl<'de> Visitor<'de> for Eui64Visitor {
     type Value = EUI64;
 
@@ -104,10 +118,7 @@ impl<'de> Visitor<'de> for Eui64Visitor {
     }
 }
 
-use diesel::backend::{self, Backend};
-use diesel::sql_types::Binary;
-use diesel::{deserialize, serialize};
-
+#[cfg(feature = "diesel")]
 impl<DB> deserialize::FromSql<Binary, DB> for EUI64
 where
     DB: Backend,
@@ -126,6 +137,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl serialize::ToSql<Binary, diesel::pg::Pg> for EUI64
 where
     [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
@@ -138,6 +150,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl diesel::sql_types::SqlType for EUI64 {
     type IsNull = diesel::sql_types::is_nullable::NotNull;
 }

@@ -1,3 +1,4 @@
+#[cfg(feature = "diesel")]
 #[macro_use]
 extern crate diesel;
 #[macro_use]
@@ -25,12 +26,14 @@ mod dl_settings;
 mod error;
 mod eui64;
 mod fhdr;
+#[cfg(feature = "crypto")]
 pub mod keys;
 mod maccommand;
 mod mhdr;
 mod netid;
 mod payload;
 mod phy_payload;
+#[cfg(feature = "regions")]
 pub mod region;
 
 lazy_static! {

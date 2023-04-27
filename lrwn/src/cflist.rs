@@ -1,7 +1,9 @@
 use anyhow::Result;
+#[cfg(feature = "serde")]
 use serde::Serialize;
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum CFList {
     Channels(CFListChannels),
     ChannelMask(CFListChannelMasks),
@@ -38,7 +40,8 @@ impl CFList {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct CFListChannels([u32; 5]);
 
 impl CFListChannels {
@@ -98,7 +101,8 @@ impl CFListChannels {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct CFListChannelMasks(Vec<ChMask>);
 
 impl CFListChannelMasks {
@@ -141,7 +145,8 @@ impl CFListChannelMasks {
 
 /// ChMask encodes the channels usable for uplink access. 0 = channel 1,
 /// 15 = channel 16.
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ChMask([bool; 16]);
 
 impl ChMask {

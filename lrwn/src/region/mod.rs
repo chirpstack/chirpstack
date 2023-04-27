@@ -4,9 +4,13 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
-use diesel::backend::{self, Backend};
-use diesel::sql_types::Text;
-use diesel::{deserialize, serialize};
+#[cfg(feature = "diesel")]
+use diesel::{
+    backend::{self, Backend},
+    sql_types::Text,
+    {deserialize, serialize},
+};
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -25,9 +29,11 @@ pub mod kr920;
 pub mod ru864;
 pub mod us915;
 
-#[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq, AsExpression, FromSqlRow)]
 #[allow(non_camel_case_types)]
-#[diesel(sql_type = diesel::sql_types::Text)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
+#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Text))]
 pub enum CommonName {
     EU868,
     US915,
@@ -51,6 +57,7 @@ impl fmt::Display for CommonName {
     }
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> deserialize::FromSql<Text, DB> for CommonName
 where
     DB: Backend,
@@ -62,6 +69,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl serialize::ToSql<Text, diesel::pg::Pg> for CommonName
 where
     str: serialize::ToSql<Text, diesel::pg::Pg>,
@@ -104,8 +112,9 @@ impl FromStr for CommonName {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy, PartialEq, Eq, Hash, AsExpression, FromSqlRow)]
-#[diesel(sql_type = diesel::sql_types::Text)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
+#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Text))]
 pub enum Revision {
     Latest,
     A,
@@ -159,6 +168,7 @@ impl FromStr for Revision {
     }
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> deserialize::FromSql<Text, DB> for Revision
 where
     DB: Backend,
@@ -170,6 +180,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl serialize::ToSql<Text, diesel::pg::Pg> for Revision
 where
     str: serialize::ToSql<Text, diesel::pg::Pg>,
@@ -186,8 +197,9 @@ where
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Copy, Clone, PartialEq, Eq, Hash, AsExpression, FromSqlRow)]
-#[diesel(sql_type = diesel::sql_types::Text)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
+#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Text))]
 pub enum MacVersion {
     Latest,
     LORAWAN_1_0_0,
@@ -241,6 +253,7 @@ impl FromStr for MacVersion {
     }
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> deserialize::FromSql<Text, DB> for MacVersion
 where
     DB: Backend,
@@ -252,6 +265,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl serialize::ToSql<Text, diesel::pg::Pg> for MacVersion
 where
     str: serialize::ToSql<Text, diesel::pg::Pg>,

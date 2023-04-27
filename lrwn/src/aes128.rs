@@ -2,16 +2,23 @@ use std::fmt;
 use std::str::FromStr;
 
 use anyhow::Result;
-use diesel::backend::{self, Backend};
-use diesel::sql_types::Binary;
-use diesel::{deserialize, serialize};
-use serde::de::{self, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "diesel")]
+use diesel::{
+    backend::{self, Backend},
+    deserialize, serialize,
+    sql_types::Binary,
+};
+#[cfg(feature = "serde")]
+use serde::{
+    de::{self, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
+};
 
 use crate::Error;
 
-#[derive(Copy, Clone, PartialEq, Eq, AsExpression, FromSqlRow, Default)]
-#[diesel(sql_type = diesel::sql_types::Binary)]
+#[derive(Copy, Clone, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
+#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Binary))]
 pub struct AES128Key([u8; 16]);
 
 impl AES128Key {
@@ -64,6 +71,7 @@ impl FromStr for AES128Key {
     }
 }
 
+#[cfg(feature = "serde")]
 impl Serialize for AES128Key {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -73,6 +81,7 @@ impl Serialize for AES128Key {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for AES128Key {
     fn deserialize<D>(deserialize: D) -> Result<AES128Key, D::Error>
     where
@@ -82,8 +91,10 @@ impl<'de> Deserialize<'de> for AES128Key {
     }
 }
 
+#[cfg(feature = "serde")]
 struct Aes128KeyVisitor;
 
+#[cfg(feature = "serde")]
 impl<'de> Visitor<'de> for Aes128KeyVisitor {
     type Value = AES128Key;
 
@@ -99,6 +110,7 @@ impl<'de> Visitor<'de> for Aes128KeyVisitor {
     }
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> deserialize::FromSql<Binary, DB> for AES128Key
 where
     DB: Backend,
@@ -117,6 +129,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl serialize::ToSql<Binary, diesel::pg::Pg> for AES128Key
 where
     [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,

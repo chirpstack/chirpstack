@@ -2,8 +2,11 @@ use std::fmt;
 use std::str::FromStr;
 
 use anyhow::Result;
-use serde::de::{self, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "serde")]
+use serde::{
+    de::{self, Visitor},
+    {Deserialize, Deserializer, Serialize, Serializer},
+};
 
 use crate::devaddr::DevAddrPrefix;
 use crate::Error;
@@ -132,6 +135,7 @@ impl FromStr for NetID {
     }
 }
 
+#[cfg(feature = "serde")]
 impl Serialize for NetID {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -141,6 +145,7 @@ impl Serialize for NetID {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for NetID {
     fn deserialize<D>(deserialize: D) -> Result<NetID, D::Error>
     where
@@ -150,8 +155,10 @@ impl<'de> Deserialize<'de> for NetID {
     }
 }
 
+#[cfg(feature = "serde")]
 struct NetIdVisitor;
 
+#[cfg(feature = "serde")]
 impl<'de> Visitor<'de> for NetIdVisitor {
     type Value = NetID;
 
