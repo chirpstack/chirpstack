@@ -146,6 +146,10 @@ impl FromStr for DevAddrPrefix {
             .parse()
             .map_err(|_| error::Error::DevAddrPrefixFormat)?;
 
+        if size > 32 {
+            return Err(error::Error::DevAddrPrefixSize);
+        }
+
         Ok(DevAddrPrefix(mask, size))
     }
 }
@@ -236,6 +240,10 @@ impl FromStr for EuiPrefix {
         let size: u32 = parts[1]
             .parse()
             .map_err(|_| error::Error::EuiPrefixFormat)?;
+
+        if size > 64 {
+            return Err(error::Error::EuiPrefixSize);
+        }
 
         Ok(EuiPrefix(mask, size))
     }
