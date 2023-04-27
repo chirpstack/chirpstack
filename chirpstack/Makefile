@@ -111,6 +111,9 @@ test:
 test-lrwn:
 	cd ../lrwn && make test
 
+test-lrwn-filters:
+	cd ../lrwn-filters && make test
+
 test-server: debug-amd64
 	../target/debug/chirpstack -c ./configuration
 

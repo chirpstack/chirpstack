@@ -10,6 +10,7 @@ version:
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./chirpstack/Cargo.toml
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./backend/Cargo.toml
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./lrwn/Cargo.toml
+	sed -i 's/^version.*/version = "$(VERSION)"/g' ./lrwn-filters/Cargo.toml
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./ui/package.json
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/grpc-web/package.json
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/js/package.json
@@ -45,6 +46,7 @@ devshell-ui:
 test:
 	docker-compose run --rm chirpstack make test
 	docker-compose run --rm chirpstack make test-lrwn
+	docker-compose run --rm chirpstack make test-lrwn-filters
 
 # Starts the ChirpStack server (for testing only).
 test-server: build-ui

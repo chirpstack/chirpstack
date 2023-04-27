@@ -2426,6 +2426,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "lrwn_filters"
+version = "4.3.2"
+dependencies = [
+ "hex",
+ "lrwn",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "matches"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"

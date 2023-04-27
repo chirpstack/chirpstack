@@ -1,0 +1,24 @@
+[package]
+name = "lrwn_filters"
+description = "Library for filtering LoRaWAN payloads on DevAddr and JoinEUIs prefixes"
+homepage = "https://www.chirpstack.io/"
+license = "MIT"
+version = "4.3.2"
+authors = ["Orne Brocaar <info@brocaar.com>"]
+edition = "2021"
+repository = "https://github.com/chirpstack/chirpstack"
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dependencies]
+hex = "0.4"
+thiserror = "1.0"
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[dev-dependencies]
+lrwn = { path = "../lrwn" }
+
+[features]
+default = []
+serde = ["dep:serde"]

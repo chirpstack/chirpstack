@@ -2,6 +2,7 @@
 members = [
 	"chirpstack",
 	"lrwn",
+	"lrwn-filters",
 	"backend",
 	"api/rust",
 ]
