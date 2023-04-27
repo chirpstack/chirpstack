@@ -10,6 +10,7 @@ use serde::{
 pub mod error;
 
 /// Configuration.
+#[derive(Default, Clone)]
 pub struct Filters {
     /// DevAddr prefixes.
     pub dev_addr_prefixes: Vec<DevAddrPrefix>,
@@ -99,6 +100,7 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
 }
 
 /// DevAddr prefix.
+#[derive(Clone, Copy)]
 pub struct DevAddrPrefix([u8; 4], u32);
 
 impl DevAddrPrefix {
@@ -194,6 +196,7 @@ impl<'de> Visitor<'de> for DevAddrPrefixVisitor {
 }
 
 /// JoinEUI prefix.
+#[derive(Clone, Copy)]
 pub struct EuiPrefix([u8; 8], u32);
 
 impl EuiPrefix {
