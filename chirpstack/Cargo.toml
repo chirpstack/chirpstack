@@ -100,7 +100,7 @@ pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "8.2"
 openssl = { version = "0.10", features = ["vendored"] }
-openidconnect = { version = "2.5", features = ["accept-rfc3339-timestamps"] }
+openidconnect = { version = "3.0", features = ["accept-rfc3339-timestamps"] }
 
 # MQTT
 paho-mqtt = { version = "0.12", features = ["vendored-ssl"] }
