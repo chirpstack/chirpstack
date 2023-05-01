@@ -59,7 +59,7 @@ reqwest = { version = "0.11", features = [
 aws-types = "0.55"
 aws-credential-types = "0.55"
 aws-config = { version = "0.55", default-features = false }
-aws-sdk-sns = "0.25"
+aws-sdk-sns = "0.26"
 hmac = "0.12"
 sha2 = "0.10"
 urlencoding = "2.1"
