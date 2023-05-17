@@ -40,9 +40,6 @@ RUN apt-get update && \
 	zlib1g-dev:armhf \
 	zlib1g-dev:arm64
 
-RUN rustup target add armv7-unknown-linux-gnueabihf
-RUN rustup target add aarch64-unknown-linux-gnu
-
 ARG TARGETPLATFORM
 RUN mkdir -p /release/$TARGETPLATFORM
 

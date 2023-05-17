@@ -30,10 +30,6 @@ RUN apt-get update && \
 	zlib1g-dev:armhf \
 	zlib1g-dev:arm64
 
-RUN rustup component add rustfmt clippy
-RUN rustup target add armv7-unknown-linux-gnueabihf
-RUN rustup target add aarch64-unknown-linux-gnu
-
 RUN cargo install diesel_cli --version 2.0.0 --no-default-features --features postgres
 RUN cargo install cargo-deb
 RUN cargo install cargo-rpm
