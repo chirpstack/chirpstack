@@ -159,18 +159,18 @@ impl DevAddr {
         *self == dev_addr
     }
 
-    pub fn netid_type(&self) -> u8 {
+    pub fn netid_type(&self) -> Result<u8> {
         for i in (0..=7).rev() {
             if self.0[0] & (1 << i) == 0 {
-                return 7 - i;
+                return Ok(7 - i);
             }
         }
 
-        panic!("netid_type bug");
+        Err(anyhow!("Invalid type prefix value"))
     }
 
-    pub fn nwkid(&self) -> Vec<u8> {
-        match self.netid_type() {
+    pub fn nwkid(&self) -> Result<Vec<u8>> {
+        Ok(match self.netid_type()? {
             0 => self.get_nwkid(1, 6),
             1 => self.get_nwkid(2, 6),
             2 => self.get_nwkid(3, 9),
@@ -180,7 +180,7 @@ impl DevAddr {
             6 => self.get_nwkid(7, 15),
             7 => self.get_nwkid(8, 17),
             _ => vec![],
-        }
+        })
     }
 
     pub fn set_dev_addr_prefix(&mut self, prefix: DevAddrPrefix) {
@@ -334,14 +334,14 @@ mod tests {
     #[test]
     fn test_dev_addr_netid_type() {
         for tst in tests() {
-            assert_eq!(tst.netid_type, tst.devaddr.netid_type());
+            assert_eq!(tst.netid_type, tst.devaddr.netid_type().unwrap());
         }
     }
 
     #[test]
     fn test_dev_addr_nwkid() {
         for tst in tests() {
-            assert_eq!(tst.nwkid, tst.devaddr.nwkid());
+            assert_eq!(tst.nwkid, tst.devaddr.nwkid().unwrap());
         }
     }
 
