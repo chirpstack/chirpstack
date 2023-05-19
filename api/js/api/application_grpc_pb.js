@@ -701,7 +701,8 @@ function deserialize_google_protobuf_Empty(buffer_arg) {
 }
 
 
-// ApplicationService is the service providing API methods for managing applications.
+// ApplicationService is the service providing API methods for managing
+// applications.
 var ApplicationServiceService = exports.ApplicationServiceService = {
   // Create creates the given application.
 create: {

@@ -9,7 +9,8 @@ using grpc = global::Grpc.Core;
 
 namespace Chirpstack.Api {
   /// <summary>
-  /// ApplicationService is the service providing API methods for managing applications.
+  /// ApplicationService is the service providing API methods for managing
+  /// applications.
   /// </summary>
   public static partial class ApplicationService
   {

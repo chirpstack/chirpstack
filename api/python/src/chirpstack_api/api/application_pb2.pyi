@@ -412,14 +412,18 @@ class HttpIntegration(_message.Message):
     def __init__(self, application_id: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ..., encoding: _Optional[_Union[Encoding, str]] = ..., event_endpoint_url: _Optional[str] = ...) -> None: ...
 
 class IftttIntegration(_message.Message):
-    __slots__ = ["application_id", "key", "uplink_values"]
+    __slots__ = ["application_id", "arbitrary_json", "event_prefix", "key", "uplink_values"]
     APPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
+    ARBITRARY_JSON_FIELD_NUMBER: _ClassVar[int]
+    EVENT_PREFIX_FIELD_NUMBER: _ClassVar[int]
     KEY_FIELD_NUMBER: _ClassVar[int]
     UPLINK_VALUES_FIELD_NUMBER: _ClassVar[int]
     application_id: str
+    arbitrary_json: bool
+    event_prefix: str
     key: str
     uplink_values: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, application_id: _Optional[str] = ..., key: _Optional[str] = ..., uplink_values: _Optional[_Iterable[str]] = ...) -> None: ...
+    def __init__(self, application_id: _Optional[str] = ..., key: _Optional[str] = ..., uplink_values: _Optional[_Iterable[str]] = ..., arbitrary_json: bool = ..., event_prefix: _Optional[str] = ...) -> None: ...
 
 class InfluxDbIntegration(_message.Message):
     __slots__ = ["application_id", "bucket", "db", "endpoint", "organization", "password", "precision", "retention_policy_name", "token", "username", "version"]

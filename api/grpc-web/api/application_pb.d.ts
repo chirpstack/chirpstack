@@ -1555,6 +1555,12 @@ export class IftttIntegration extends jspb.Message {
   clearUplinkValuesList(): IftttIntegration;
   addUplinkValues(value: string, index?: number): IftttIntegration;
 
+  getArbitraryJson(): boolean;
+  setArbitraryJson(value: boolean): IftttIntegration;
+
+  getEventPrefix(): string;
+  setEventPrefix(value: string): IftttIntegration;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): IftttIntegration.AsObject;
   static toObject(includeInstance: boolean, msg: IftttIntegration): IftttIntegration.AsObject;
@@ -1568,6 +1574,8 @@ export namespace IftttIntegration {
     applicationId: string,
     key: string,
     uplinkValuesList: Array<string>,
+    arbitraryJson: boolean,
+    eventPrefix: string,
   }
 }
 

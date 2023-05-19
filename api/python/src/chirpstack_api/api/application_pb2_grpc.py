@@ -7,7 +7,8 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 class ApplicationServiceStub(object):
-    """ApplicationService is the service providing API methods for managing applications.
+    """ApplicationService is the service providing API methods for managing
+    applications.
     """
 
     def __init__(self, channel):
@@ -254,7 +255,8 @@ class ApplicationServiceStub(object):
 
 
 class ApplicationServiceServicer(object):
-    """ApplicationService is the service providing API methods for managing applications.
+    """ApplicationService is the service providing API methods for managing
+    applications.
     """
 
     def Create(self, request, context):
@@ -832,7 +834,8 @@ def add_ApplicationServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class ApplicationService(object):
-    """ApplicationService is the service providing API methods for managing applications.
+    """ApplicationService is the service providing API methods for managing
+    applications.
     """
 
     @staticmethod

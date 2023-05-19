@@ -13195,7 +13195,9 @@ proto.api.IftttIntegration.toObject = function(includeInstance, msg) {
   var f, obj = {
     applicationId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     key: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    uplinkValuesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+    uplinkValuesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    arbitraryJson: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+    eventPrefix: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -13244,6 +13246,14 @@ proto.api.IftttIntegration.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.addUplinkValues(value);
       break;
+    case 4:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setArbitraryJson(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setEventPrefix(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -13291,6 +13301,20 @@ proto.api.IftttIntegration.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeRepeatedString(
       3,
+      f
+    );
+  }
+  f = message.getArbitraryJson();
+  if (f) {
+    writer.writeBool(
+      4,
+      f
+    );
+  }
+  f = message.getEventPrefix();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -13367,6 +13391,42 @@ proto.api.IftttIntegration.prototype.addUplinkValues = function(value, opt_index
  */
 proto.api.IftttIntegration.prototype.clearUplinkValuesList = function() {
   return this.setUplinkValuesList([]);
+};
+
+
+/**
+ * optional bool arbitrary_json = 4;
+ * @return {boolean}
+ */
+proto.api.IftttIntegration.prototype.getArbitraryJson = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 4, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.IftttIntegration} returns this
+ */
+proto.api.IftttIntegration.prototype.setArbitraryJson = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 4, value);
+};
+
+
+/**
+ * optional string event_prefix = 5;
+ * @return {string}
+ */
+proto.api.IftttIntegration.prototype.getEventPrefix = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.IftttIntegration} returns this
+ */
+proto.api.IftttIntegration.prototype.setEventPrefix = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 

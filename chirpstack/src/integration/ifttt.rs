@@ -27,6 +27,8 @@ pub struct Integration {
     key: String,
     uplink_values: [String; 2],
     server: String,
+    arbitrary_json: bool,
+    event_prefix: String,
 }
 
 impl Integration {
@@ -37,11 +39,30 @@ impl Integration {
             key: conf.key.clone(),
             uplink_values: conf.uplink_values.clone(),
             server: "https://maker.ifttt.com".to_string(),
+            arbitrary_json: conf.arbitrary_json,
+            event_prefix: conf.event_prefix.clone(),
         }
     }
 
-    async fn post(&self, event: &str, v: Values) -> Result<()> {
-        let url = format!("{}/trigger/{}/with/key/{}", self.server, event, self.key);
+    async fn post<T>(&self, event: &str, v: &T) -> Result<()>
+    where
+        T: Serialize,
+    {
+        let event = if self.event_prefix.is_empty() {
+            event.to_string()
+        } else {
+            format!("{}_{}", self.event_prefix, event)
+        };
+
+        let url = if self.arbitrary_json {
+            format!(
+                "{}/trigger/{}/json/with/key/{}",
+                self.server, event, self.key
+            )
+        } else {
+            format!("{}/trigger/{}/with/key/{}", self.server, event, self.key)
+        };
+
         let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
@@ -65,6 +86,10 @@ impl IntegrationTrait for Integration {
         _vars: &HashMap<String, String>,
         pl: &integration::UplinkEvent,
     ) -> Result<()> {
+        if self.arbitrary_json {
+            return self.post("up", pl).await;
+        }
+
         let data_measurements: HashMap<String, pbjson_types::value::Kind> = match &pl.object {
             None => {
                 trace!("object is None, nothing to send");
@@ -91,7 +116,7 @@ impl IntegrationTrait for Integration {
             return Ok(());
         }
 
-        self.post("up", v).await
+        self.post("up", &v).await
     }
 
     async fn join_event(
@@ -170,13 +195,15 @@ pub mod test {
     use httpmock::prelude::*;
 
     #[tokio::test]
-    async fn test_ifttt() {
+    async fn test_ifttt_no_prefix() {
         let server = MockServer::start();
 
         let i = Integration {
             key: "verysecret".into(),
             uplink_values: ["temp".to_string(), "door_open".to_string()],
             server: server.url(""),
+            arbitrary_json: false,
+            event_prefix: "".into(),
         };
 
         // uplink event
@@ -220,6 +247,123 @@ pub mod test {
                     })
                     .unwrap(),
                 );
+
+            then.status(200);
+        });
+
+        i.uplink_event(&HashMap::new(), &pl).await.unwrap();
+        mock.assert();
+        mock.delete();
+    }
+
+    #[tokio::test]
+    async fn test_ifttt_prefix() {
+        let server = MockServer::start();
+
+        let i = Integration {
+            key: "verysecret".into(),
+            uplink_values: ["temp".to_string(), "door_open".to_string()],
+            server: server.url(""),
+            arbitrary_json: false,
+            event_prefix: "weatherstation".into(),
+        };
+
+        // uplink event
+        let pl = integration::UplinkEvent {
+            device_info: Some(integration::DeviceInfo {
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            object: Some(pbjson_types::Struct {
+                fields: [
+                    (
+                        "temp".to_string(),
+                        pbjson_types::Value {
+                            kind: Some(pbjson_types::value::Kind::NumberValue(23.5)),
+                        },
+                    ),
+                    (
+                        "door_open".to_string(),
+                        pbjson_types::Value {
+                            kind: Some(pbjson_types::value::Kind::StringValue(
+                                "closed".to_string(),
+                            )),
+                        },
+                    ),
+                ]
+                .iter()
+                .cloned()
+                .collect(),
+            }),
+            ..Default::default()
+        };
+        let mut mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/trigger/weatherstation_up/with/key/verysecret")
+                .header("Content-Type", "application/json")
+                .body(
+                    serde_json::to_string(&Values {
+                        value1: "0102030405060708".to_string(),
+                        value2: "23.5".to_string(),
+                        value3: "closed".to_string(),
+                    })
+                    .unwrap(),
+                );
+
+            then.status(200);
+        });
+
+        i.uplink_event(&HashMap::new(), &pl).await.unwrap();
+        mock.assert();
+        mock.delete();
+    }
+
+    #[tokio::test]
+    async fn test_ifttt_arbitrary_json() {
+        let server = MockServer::start();
+
+        let i = Integration {
+            key: "verysecret".into(),
+            uplink_values: ["temp".to_string(), "door_open".to_string()],
+            server: server.url(""),
+            arbitrary_json: true,
+            event_prefix: "".into(),
+        };
+
+        // uplink event
+        let pl = integration::UplinkEvent {
+            device_info: Some(integration::DeviceInfo {
+                dev_eui: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            object: Some(pbjson_types::Struct {
+                fields: [
+                    (
+                        "temp".to_string(),
+                        pbjson_types::Value {
+                            kind: Some(pbjson_types::value::Kind::NumberValue(23.5)),
+                        },
+                    ),
+                    (
+                        "door_open".to_string(),
+                        pbjson_types::Value {
+                            kind: Some(pbjson_types::value::Kind::StringValue(
+                                "closed".to_string(),
+                            )),
+                        },
+                    ),
+                ]
+                .iter()
+                .cloned()
+                .collect(),
+            }),
+            ..Default::default()
+        };
+        let mut mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/trigger/up/json/with/key/verysecret")
+                .header("Content-Type", "application/json")
+                .body(serde_json::to_string(&pl).unwrap());
 
             then.status(200);
         });

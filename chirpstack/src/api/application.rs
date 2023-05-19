@@ -1716,6 +1716,16 @@ impl ApplicationService for Application {
             )
             .await?;
 
+        if !req_int.event_prefix.is_empty()
+            && !regex::Regex::new(r"^[a-zA-Z0-9]+$")
+                .unwrap()
+                .is_match(&req_int.event_prefix)
+        {
+            return Err(Status::invalid_argument(
+                "event_prefix may only contain A-Z, a-z and 0-9 characters",
+            ));
+        }
+
         let _ = application::create_integration(application::Integration {
             application_id: app_id,
             kind: application::IntegrationKind::Ifttt,
@@ -1726,6 +1736,8 @@ impl ApplicationService for Application {
                         req_int.uplink_values.get(0).cloned().unwrap_or_default(),
                         req_int.uplink_values.get(1).cloned().unwrap_or_default(),
                     ],
+                    arbitrary_json: req_int.arbitrary_json,
+                    event_prefix: req_int.event_prefix.clone(),
                 },
             ),
             ..Default::default()
@@ -1766,6 +1778,8 @@ impl ApplicationService for Application {
                     application_id: app_id.to_string(),
                     key: conf.key.clone(),
                     uplink_values: conf.uplink_values.to_vec(),
+                    arbitrary_json: conf.arbitrary_json,
+                    event_prefix: conf.event_prefix.clone(),
                 }),
             });
             resp.metadata_mut()
@@ -1806,6 +1820,8 @@ impl ApplicationService for Application {
                         req_int.uplink_values.get(0).cloned().unwrap_or_default(),
                         req_int.uplink_values.get(1).cloned().unwrap_or_default(),
                     ],
+                    arbitrary_json: req_int.arbitrary_json,
+                    event_prefix: req_int.event_prefix.clone(),
                 },
             ),
             ..Default::default()
@@ -3353,6 +3369,8 @@ pub mod test {
                     application_id: app.id.to_string(),
                     key: "verysecret".into(),
                     uplink_values: vec!["value_1".into(), "value_2".into()],
+                    arbitrary_json: false,
+                    event_prefix: "foo".to_string(),
                 }),
             },
         );
@@ -3372,6 +3390,8 @@ pub mod test {
                 application_id: app.id.to_string(),
                 key: "verysecret".into(),
                 uplink_values: vec!["value_1".into(), "value_2".into()],
+                arbitrary_json: false,
+                event_prefix: "foo".to_string(),
             }),
             get_resp.integration
         );
@@ -3384,6 +3404,8 @@ pub mod test {
                     application_id: app.id.to_string(),
                     key: "verysecrettoo".into(),
                     uplink_values: vec!["value_4".into(), "value_5".into()],
+                    arbitrary_json: true,
+                    event_prefix: "bar".to_string(),
                 }),
             },
         );
@@ -3403,6 +3425,8 @@ pub mod test {
                 application_id: app.id.to_string(),
                 key: "verysecrettoo".into(),
                 uplink_values: vec!["value_4".into(), "value_5".into()],
+                arbitrary_json: true,
+                event_prefix: "bar".to_string(),
             }),
             get_resp.integration
         );

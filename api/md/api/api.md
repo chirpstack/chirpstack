@@ -1108,7 +1108,9 @@
 | key | [string](#string) |  | Key. This key can be obtained from the IFTTT Webhooks documentation page. |
 | uplink_values | [string](#string) | repeated | Values. Up to 2 values can be forwarded to IFTTT. These values must map to the decoded payload keys. For example: { &#34;batteryLevel&#34;: 75.3, &#34;buttons&#34;: [{&#34;pressed&#34;: false}, {&#34;pressed&#34;: true}] } You would specify the following fields: uplink_values = [&#34;batteryLevel&#34;, &#34;buttons_0_pressed&#34;]
 
-Note: The first value is always used for the DevEUI. |
+Notes: The first value is always used for the DevEUI. Ignored if arbitrary_json is set to true. |
+| arbitrary_json | [bool](#bool) |  | Arbitrary JSON. If set to true, ChirpStack events will be sent as-is as arbitrary JSON payload. If set to false (default), the 3 JSON values format will be used. |
+| event_prefix | [string](#string) |  | Event prefix. If set, the event name will be PREFIX_EVENT. For example if event_prefix is set to weatherstation, and uplink event will be sent as weatherstation_up to the IFTTT webhook. Note: Only characters in the A-Z, a-z and 0-9 range are allowed. |
 
 
 
@@ -1549,7 +1551,8 @@ Note: The first value is always used for the DevEUI. |
 <a name="api-ApplicationService"></a>
 
 ### ApplicationService
-ApplicationService is the service providing API methods for managing applications.
+ApplicationService is the service providing API methods for managing
+applications.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
