@@ -60,12 +60,12 @@ reqwest = { version = "0.11", features = [
 aws-types = "0.55"
 aws-credential-types = "0.55"
 aws-config = { version = "0.55", default-features = false }
-aws-sdk-sns = "0.25"
+aws-sdk-sns = "0.26"
 hmac = "0.12"
 sha2 = "0.10"
 urlencoding = "2.1"
 geohash = "0.13"
-gcp_auth = "0.7"
+gcp_auth = "0.8"
 lapin = "2.1"
 tokio-executor-trait = "2.1"
 tokio-reactor-trait = "1.1"
@@ -101,7 +101,7 @@ pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "8.2"
 openssl = { version = "0.10", features = ["vendored"] }
-openidconnect = { version = "2.5", features = ["accept-rfc3339-timestamps"] }
+openidconnect = { version = "3.0", features = ["accept-rfc3339-timestamps"] }
 
 # MQTT
 paho-mqtt = { version = "0.12", features = ["vendored-ssl"] }
