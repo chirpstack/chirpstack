@@ -38,6 +38,7 @@ class DeviceForm extends Component<IProps> {
     d.setDeviceProfileId(v.deviceProfileId);
     d.setIsDisabled(v.isDisabled);
     d.setSkipFcntCheck(v.skipFcntCheck);
+    d.setJoinEui(v.joinEui);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -94,14 +95,27 @@ class DeviceForm extends Component<IProps> {
             <Form.Item label="Description" name="description">
               <Input.TextArea />
             </Form.Item>
-            <EuiInput
-              label="Device EUI (EUI64)"
-              name="devEui"
-              value={this.props.initialValues.getDevEui()}
-              formRef={this.formRef}
-              disabled={this.props.update}
-              required
-            />
+            <Row gutter={24}>
+              <Col span={12}>
+                <EuiInput
+                  label="Device EUI (EUI64)"
+                  name="devEui"
+                  value={this.props.initialValues.getDevEui()}
+                  formRef={this.formRef}
+                  disabled={this.props.update}
+                  required
+                />
+              </Col>
+              <Col span={12}>
+                <EuiInput
+                  label="Join EUI (EUI64)"
+                  name="joinEui"
+                  value={this.props.initialValues.getJoinEui()}
+                  formRef={this.formRef}
+                  tooltip="The Join EUI will be automatically set / updated on OTAA. However, in some cases this field must be configured before OTAA (e.g. OTAA using a Relay)."
+                />
+              </Col>
+            </Row>
             <AutocompleteInput
               label="Device profile"
               name="deviceProfileId"

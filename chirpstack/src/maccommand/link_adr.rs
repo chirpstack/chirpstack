@@ -57,7 +57,7 @@ pub fn handle(
 
         // reset the error counter
         ds.mac_command_error_count
-            .remove(&(lrwn::CID::LinkADRReq.byte() as u32));
+            .remove(&(lrwn::CID::LinkADRReq.to_u8() as u32));
 
         let chans = region_conf
             .get_enabled_uplink_channel_indices_for_link_adr_payloads(
@@ -82,7 +82,7 @@ pub fn handle(
 
         // reset the error counter
         ds.mac_command_error_count
-            .remove(&(lrwn::CID::LinkADRReq.byte() as u32));
+            .remove(&(lrwn::CID::LinkADRReq.to_u8() as u32));
 
         let chans = region_conf
             .get_enabled_uplink_channel_indices_for_link_adr_payloads(
@@ -110,7 +110,7 @@ pub fn handle(
         // increase the error counter
         let count = ds
             .mac_command_error_count
-            .entry(lrwn::CID::LinkADRReq.byte() as u32)
+            .entry(lrwn::CID::LinkADRReq.to_u8() as u32)
             .or_insert(0);
         *count += 1;
 
@@ -170,7 +170,7 @@ pub mod test {
             device_session: internal::DeviceSession {
                 adr: true,
                 enabled_uplink_channel_indices: vec![0, 1],
-                mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 1)]
+                mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 1)]
                     .iter()
                     .cloned()
                     .collect(),
@@ -225,7 +225,7 @@ pub mod test {
                 adr: true,
                 enabled_uplink_channel_indices: vec![0, 1],
                 max_supported_tx_power_index: 2,
-                mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 1)]
+                mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 1)]
                     .iter()
                     .cloned()
                     .collect(),
@@ -258,7 +258,7 @@ pub mod test {
                 enabled_uplink_channel_indices: vec![0, 1],
                 tx_power_index: 1,
                 min_supported_tx_power_index: 1,
-                mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 1)]
+                mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 1)]
                     .iter()
                     .cloned()
                     .collect(),

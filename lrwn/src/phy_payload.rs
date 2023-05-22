@@ -11,7 +11,7 @@ use serde::Serialize;
 
 use super::maccommand::{MACCommand, MACCommandSet};
 use super::mhdr::{MType, MHDR};
-use super::payload::{FRMPayload, Payload};
+use super::payload::{FRMPayload, MACPayload, Payload};
 #[cfg(feature = "crypto")]
 use super::{
     aes128::AES128Key,
@@ -19,8 +19,10 @@ use super::{
     eui64::EUI64,
     payload::{JoinAcceptPayload, JoinType},
 };
+use crate::relay::{ForwardDownlinkReq, ForwardUplinkReq};
+use crate::LA_FPORT_RELAY;
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum MACVersion {
     LoRaWAN1_0,
@@ -319,6 +321,174 @@ pub enum MACVersion {
 ///
 /// let phy_decoded = PhyPayload::from_slice(&bytes).unwrap();
 /// assert_eq!(phy, phy_decoded);
+/// ```
+///
+/// LoRaWAN 1.0.x Relay ForwardUplinkReq example:
+/// ```rust
+/// use std::str::FromStr;
+/// use lrwn::*;
+///
+/// // Payload from the end-device.
+/// let ed_app_key = AES128Key::from_str("01020304050607080102030405060708").unwrap();
+/// let mut ed_phy = PhyPayload {
+///     mhdr: MHDR {
+///         m_type: MType::JoinRequest,
+///         major: Major::LoRaWANR1,
+///     },
+///     payload: Payload::JoinRequest(JoinRequestPayload {
+///         join_eui: EUI64::from_str("0101010101010101").unwrap(),
+///         dev_eui: EUI64::from_str("0202020202020202").unwrap(),
+///         dev_nonce: 771,
+///     }),
+///     mic: None,
+/// };
+///
+/// ed_phy.set_join_request_mic(&ed_app_key).unwrap();
+///
+/// // Relay ForwardUplinkReq (which will forward the end-device payload).
+/// let relay_nwk_s_key = AES128Key::from_str("08070605040302010807060504030201").unwrap();
+/// let mut relay_phy = PhyPayload {
+///     mhdr: MHDR {
+///         m_type: MType::UnconfirmedDataUp,
+///         major: Major::LoRaWANR1,
+///     },
+///     payload: Payload::MACPayload(MACPayload {
+///         fhdr: FHDR {
+///             devaddr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
+///             f_cnt: 10,
+///             ..Default::default()
+///         },
+///         f_port: Some(226),
+///         frm_payload: Some(FRMPayload::ForwardUplinkReq(ForwardUplinkReq {
+///             metadata: UplinkMetadata {
+///                 dr: 5,
+///                 snr: 7,
+///                 rssi: -80,
+///                 wor_channel: 1,
+///             },
+///             frequency: 868100000,
+///             payload: Box::new(ed_phy.clone()),
+///         })),
+///     }),
+///     mic: None,
+/// };
+/// relay_phy.encrypt_frm_payload(&relay_nwk_s_key).unwrap();
+/// relay_phy.set_uplink_data_mic(MACVersion::LoRaWAN1_0, 0, 0, 0, &relay_nwk_s_key, &relay_nwk_s_key);
+///
+/// let bytes = relay_phy.to_vec().unwrap();
+/// assert_eq!(vec![0x40, 0x04, 0x03, 0x02, 0x01, 0x00, 0x0a, 0x00, 0xe2, 0x2f, 0x68, 0xf4, 0xa5, 0x0a, 0xdf, 0xfb, 0x64, 0xef, 0x37, 0x91, 0x0f, 0x14, 0x6a, 0x6c, 0x2b, 0xda, 0x4f, 0x7e, 0x2d, 0xb9, 0x6a, 0xc8, 0x99, 0xa8, 0xa4, 0x72, 0x7d, 0x0a, 0xbd, 0xc9, 0xae, 0x51], bytes);
+///
+/// let mut relay_phy_decoded = PhyPayload::from_slice(&bytes).unwrap();
+/// assert_eq!(relay_phy, relay_phy_decoded);
+///
+/// relay_phy_decoded.decrypt_frm_payload(&relay_nwk_s_key).unwrap();
+/// assert_eq!(PhyPayload{
+///     mhdr: MHDR {
+///         m_type: MType::UnconfirmedDataUp,
+///         major: Major::LoRaWANR1,
+///     },
+///     payload: Payload::MACPayload(MACPayload {
+///         fhdr: FHDR {
+///             devaddr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
+///             f_cnt: 10,
+///             ..Default::default()
+///         },
+///         f_port: Some(226),
+///         frm_payload: Some(FRMPayload::ForwardUplinkReq(ForwardUplinkReq {
+///             metadata: UplinkMetadata {
+///                 dr: 5,
+///                 snr: 7,
+///                 rssi: -80,
+///                 wor_channel: 1,
+///             },
+///             frequency: 868100000,
+///             payload: Box::new(ed_phy),
+///         })),
+///     }),
+///     mic: Some([0xbd, 0xc9, 0xae, 0x51]),
+/// }, relay_phy_decoded);
+/// ```
+///
+/// LoRaWAN 1.0.x Relay ForwardDownlinkReq example:
+/// ```rust
+/// use std::str::FromStr;
+/// use lrwn::*;
+///
+/// // Payload for the end-device.
+/// let ed_app_key = AES128Key::from_str("0102030405060708090a0b0c0d0e0f10").unwrap();
+/// let ed_join_eui = EUI64::from_str("0807060504030201").unwrap();
+/// let ed_dev_nonce = 258;
+/// let mut ed_phy = PhyPayload {
+///     mhdr: MHDR {
+///         m_type: MType::JoinAccept,
+///         major: Major::LoRaWANR1,
+///     },
+///     payload: Payload::JoinAccept(JoinAcceptPayload {
+///         join_nonce: 65793,
+///         home_netid: NetID::from_str("020202").unwrap(),
+///         devaddr: DevAddr::from_str("01020304").unwrap(),
+///         dl_settings: DLSettings {
+///             opt_neg: false,
+///             rx2_dr: 0,
+///             rx1_dr_offset: 0,
+///         },
+///         cflist: None,
+///         rx_delay: 0,
+///     }),
+///     mic: None,
+/// };
+///
+/// ed_phy.set_join_accept_mic(JoinType::Join, &ed_join_eui, ed_dev_nonce, &ed_app_key).unwrap();
+/// ed_phy.encrypt_join_accept_payload(&ed_app_key).unwrap();
+///
+/// // Payload for the Relay containing the ForwardDownlinkReq.
+/// let relay_nwk_s_key = AES128Key::from_str("08070605040302010807060504030201").unwrap();
+/// let mut relay_phy = PhyPayload {
+///     mhdr: MHDR {
+///         m_type: MType::UnconfirmedDataDown,
+///         major: Major::LoRaWANR1,
+///     },
+///     payload: Payload::MACPayload(MACPayload {
+///         fhdr: FHDR {
+///             devaddr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
+///             f_cnt: 10,
+///             ..Default::default()
+///         },
+///         f_port: Some(226),
+///         frm_payload: Some(FRMPayload::ForwardDownlinkReq(ForwardDownlinkReq {
+///             payload: Box::new(ed_phy.clone()),
+///         })),
+///     }),
+///     mic: None,
+/// };
+/// relay_phy.encrypt_frm_payload(&relay_nwk_s_key).unwrap();
+/// relay_phy.set_downlink_data_mic(MACVersion::LoRaWAN1_0, 0, &relay_nwk_s_key).unwrap();
+///
+/// let bytes = relay_phy.to_vec().unwrap();
+/// assert_eq!(vec![0x60, 0x04, 0x03, 0x02, 0x01, 0x00, 0x0a, 0x00, 0xe2, 0xc9, 0x60, 0x41, 0x64, 0xc9, 0x7d, 0x76, 0xf9, 0xea, 0x8e, 0x1a, 0x79, 0x2b, 0xa0, 0x87, 0x9b, 0x85, 0x24, 0x3e, 0x5a, 0xf5], bytes);
+///
+/// let mut relay_phy_decoded = PhyPayload::from_slice(&bytes).unwrap();
+/// assert_eq!(relay_phy, relay_phy_decoded);
+///
+/// relay_phy_decoded.decrypt_frm_payload(&relay_nwk_s_key).unwrap();
+/// assert_eq!(PhyPayload {
+///     mhdr: MHDR {
+///         m_type: MType::UnconfirmedDataDown,
+///         major: Major::LoRaWANR1,
+///     },
+///     payload: Payload::MACPayload(MACPayload {
+///         fhdr: FHDR {
+///             devaddr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
+///             f_cnt: 10,
+///             ..Default::default()
+///         },
+///         f_port: Some(226),
+///         frm_payload: Some(FRMPayload::ForwardDownlinkReq(ForwardDownlinkReq {
+///             payload: Box::new(ed_phy),
+///         })),
+///     }),
+///     mic: Some([0x24, 0x3e, 0x5a, 0xf5]),
+/// }, relay_phy_decoded);
 /// ```
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
@@ -678,20 +848,27 @@ impl PhyPayload {
         Ok(())
     }
 
-    /// Decode frm_payload to mac-commands.
-    pub fn decode_frm_payload_to_mac_commands(&mut self) -> Result<()> {
+    /// Decode frm_payload payload.
+    ///
+    /// This will decode as follow based on f_port:
+    /// 0:   MACCommandSet
+    /// 226: ForwardDownlinkReq / ForwardDownlinkReq
+    ///
+    /// For other f_port values, it will not try to decode the payload.
+    /// Note that this requires a decrypted frm_payload.
+    pub fn decode_frm_payload(&mut self) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
             let uplink = is_uplink(self.mhdr.m_type);
-            if pl.f_port.unwrap_or(0) == 0 {
-                let b = match &pl.frm_payload {
-                    Some(FRMPayload::Raw(v)) => v.clone(),
-                    _ => vec![],
-                };
+            let f_port = pl.f_port.unwrap_or(0);
+            let b = match &pl.frm_payload {
+                Some(FRMPayload::Raw(v)) => v.clone(),
+                _ => {
+                    // Nothing to do.
+                    return Ok(());
+                }
+            };
 
-                let mut macs = MACCommandSet::new(vec![MACCommand::Raw(b)]);
-                macs.decode_from_raw(uplink)?;
-                pl.frm_payload = Some(FRMPayload::MACCommandSet(macs));
-            }
+            return decode_frm_payload(pl, uplink, f_port, b);
         }
 
         Ok(())
@@ -718,6 +895,8 @@ impl PhyPayload {
     }
 
     /// Decrypt the frm_payload with the given key.
+    ///
+    /// This will automatically call decode_frm_payload.
     #[cfg(feature = "crypto")]
     pub fn decrypt_frm_payload(&mut self, key: &AES128Key) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
@@ -730,15 +909,7 @@ impl PhyPayload {
             let data = pl.frm_payload.as_ref().unwrap().to_vec()?;
             let data = encrypt_frm_payload(key, uplink, &pl.fhdr.devaddr, pl.fhdr.f_cnt, &data)?;
 
-            if pl.f_port.is_some() && pl.f_port.unwrap() == 0 {
-                let mut macs = MACCommandSet::new(vec![MACCommand::Raw(data)]);
-                macs.decode_from_raw(uplink)?;
-                pl.frm_payload = Some(FRMPayload::MACCommandSet(macs));
-            } else {
-                pl.frm_payload = Some(FRMPayload::Raw(data));
-            }
-
-            return Ok(());
+            return decode_frm_payload(pl, uplink, pl.f_port.unwrap_or(0), data);
         }
 
         Err(anyhow!("payload must be of type MACPayload"))
@@ -1048,6 +1219,26 @@ fn is_uplink(m_type: MType) -> bool {
         MType::JoinAccept | MType::UnconfirmedDataDown | MType::ConfirmedDataDown => false,
         MType::Proprietary => false,
     }
+}
+
+fn decode_frm_payload(pl: &mut MACPayload, uplink: bool, f_port: u8, b: Vec<u8>) -> Result<()> {
+    if f_port == 0 {
+        let mut macs = MACCommandSet::new(vec![MACCommand::Raw(b)]);
+        macs.decode_from_raw(uplink)?;
+        pl.frm_payload = Some(FRMPayload::MACCommandSet(macs));
+    } else if f_port == LA_FPORT_RELAY && uplink {
+        pl.frm_payload = Some(FRMPayload::ForwardUplinkReq(ForwardUplinkReq::from_slice(
+            &b,
+        )?));
+    } else if f_port == LA_FPORT_RELAY && !uplink {
+        pl.frm_payload = Some(FRMPayload::ForwardDownlinkReq(
+            ForwardDownlinkReq::from_slice(&b)?,
+        ));
+    } else {
+        pl.frm_payload = Some(FRMPayload::Raw(b));
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

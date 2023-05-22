@@ -26,25 +26,26 @@ namespace Chirpstack.Api {
           string.Concat(
             "ChNhcGkvZnJhbWVfbG9nLnByb3RvEgNhcGkaH2dvb2dsZS9wcm90b2J1Zi90",
             "aW1lc3RhbXAucHJvdG8aE2NvbW1vbi9jb21tb24ucHJvdG8aC2d3L2d3LnBy",
-            "b3RvIvcBCg5VcGxpbmtGcmFtZUxvZxITCgtwaHlfcGF5bG9hZBgBIAEoDBIh",
+            "b3RvIpACCg5VcGxpbmtGcmFtZUxvZxITCgtwaHlfcGF5bG9hZBgBIAEoDBIh",
             "Cgd0eF9pbmZvGAIgASgLMhAuZ3cuVXBsaW5rVHhJbmZvEiEKB3J4X2luZm8Y",
             "AyADKAsyEC5ndy5VcGxpbmtSeEluZm8SHQoGbV90eXBlGAQgASgOMg0uY29t",
             "bW9uLk1UeXBlEhAKCGRldl9hZGRyGAUgASgJEg8KB2Rldl9ldWkYBiABKAkS",
-            "KAoEdGltZRgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASHgoW",
-            "cGxhaW50ZXh0X21hY19jb21tYW5kcxgIIAEoCCKBAgoQRG93bmxpbmtGcmFt",
-            "ZUxvZxIoCgR0aW1lGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFt",
-            "cBITCgtwaHlfcGF5bG9hZBgCIAEoDBIjCgd0eF9pbmZvGAMgASgLMhIuZ3cu",
-            "RG93bmxpbmtUeEluZm8SEwoLZG93bmxpbmtfaWQYBCABKA0SEgoKZ2F0ZXdh",
-            "eV9pZBgFIAEoCRIdCgZtX3R5cGUYBiABKA4yDS5jb21tb24uTVR5cGUSEAoI",
-            "ZGV2X2FkZHIYByABKAkSDwoHZGV2X2V1aRgIIAEoCRIeChZwbGFpbnRleHRf",
-            "bWFjX2NvbW1hbmRzGAkgASgIQmUKEWlvLmNoaXJwc3RhY2suYXBpQg1GcmFt",
-            "ZUxvZ1Byb3RvUAFaLmdpdGh1Yi5jb20vY2hpcnBzdGFjay9jaGlycHN0YWNr",
-            "L2FwaS9nby92NC9hcGmqAg5DaGlycHN0YWNrLkFwaWIGcHJvdG8z"));
+            "KAoEdGltZRgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGAoQ",
+            "cGxhaW50ZXh0X2Zfb3B0cxgIIAEoCBIdChVwbGFpbnRleHRfZnJtX3BheWxv",
+            "YWQYCSABKAgimgIKEERvd25saW5rRnJhbWVMb2cSKAoEdGltZRgBIAEoCzIa",
+            "Lmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGh5X3BheWxvYWQYAiAB",
+            "KAwSIwoHdHhfaW5mbxgDIAEoCzISLmd3LkRvd25saW5rVHhJbmZvEhMKC2Rv",
+            "d25saW5rX2lkGAQgASgNEhIKCmdhdGV3YXlfaWQYBSABKAkSHQoGbV90eXBl",
+            "GAYgASgOMg0uY29tbW9uLk1UeXBlEhAKCGRldl9hZGRyGAcgASgJEg8KB2Rl",
+            "dl9ldWkYCCABKAkSGAoQcGxhaW50ZXh0X2Zfb3B0cxgJIAEoCBIdChVwbGFp",
+            "bnRleHRfZnJtX3BheWxvYWQYCiABKAhCZQoRaW8uY2hpcnBzdGFjay5hcGlC",
+            "DUZyYW1lTG9nUHJvdG9QAVouZ2l0aHViLmNvbS9jaGlycHN0YWNrL2NoaXJw",
+            "c3RhY2svYXBpL2dvL3Y0L2FwaaoCDkNoaXJwc3RhY2suQXBpYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Chirpstack.Common.CommonReflection.Descriptor, global::Chirpstack.Gateway.GwReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.UplinkFrameLog), global::Chirpstack.Api.UplinkFrameLog.Parser, new[]{ "PhyPayload", "TxInfo", "RxInfo", "MType", "DevAddr", "DevEui", "Time", "PlaintextMacCommands" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DownlinkFrameLog), global::Chirpstack.Api.DownlinkFrameLog.Parser, new[]{ "Time", "PhyPayload", "TxInfo", "DownlinkId", "GatewayId", "MType", "DevAddr", "DevEui", "PlaintextMacCommands" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.UplinkFrameLog), global::Chirpstack.Api.UplinkFrameLog.Parser, new[]{ "PhyPayload", "TxInfo", "RxInfo", "MType", "DevAddr", "DevEui", "Time", "PlaintextFOpts", "PlaintextFrmPayload" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DownlinkFrameLog), global::Chirpstack.Api.DownlinkFrameLog.Parser, new[]{ "Time", "PhyPayload", "TxInfo", "DownlinkId", "GatewayId", "MType", "DevAddr", "DevEui", "PlaintextFOpts", "PlaintextFrmPayload" }, null, null, null, null)
           }));
     }
     #endregion
@@ -92,7 +93,8 @@ namespace Chirpstack.Api {
       devAddr_ = other.devAddr_;
       devEui_ = other.devEui_;
       time_ = other.time_ != null ? other.time_.Clone() : null;
-      plaintextMacCommands_ = other.plaintextMacCommands_;
+      plaintextFOpts_ = other.plaintextFOpts_;
+      plaintextFrmPayload_ = other.plaintextFrmPayload_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -206,18 +208,33 @@ namespace Chirpstack.Api {
       }
     }
 
-    /// <summary>Field number for the "plaintext_mac_commands" field.</summary>
-    public const int PlaintextMacCommandsFieldNumber = 8;
-    private bool plaintextMacCommands_;
+    /// <summary>Field number for the "plaintext_f_opts" field.</summary>
+    public const int PlaintextFOptsFieldNumber = 8;
+    private bool plaintextFOpts_;
     /// <summary>
-    /// Plaintext mac-commands.
+    /// Plaintext f_opts mac-commands.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool PlaintextMacCommands {
-      get { return plaintextMacCommands_; }
+    public bool PlaintextFOpts {
+      get { return plaintextFOpts_; }
       set {
-        plaintextMacCommands_ = value;
+        plaintextFOpts_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "plaintext_frm_payload" field.</summary>
+    public const int PlaintextFrmPayloadFieldNumber = 9;
+    private bool plaintextFrmPayload_;
+    /// <summary>
+    /// Plaintext frm_payload.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool PlaintextFrmPayload {
+      get { return plaintextFrmPayload_; }
+      set {
+        plaintextFrmPayload_ = value;
       }
     }
 
@@ -243,7 +260,8 @@ namespace Chirpstack.Api {
       if (DevAddr != other.DevAddr) return false;
       if (DevEui != other.DevEui) return false;
       if (!object.Equals(Time, other.Time)) return false;
-      if (PlaintextMacCommands != other.PlaintextMacCommands) return false;
+      if (PlaintextFOpts != other.PlaintextFOpts) return false;
+      if (PlaintextFrmPayload != other.PlaintextFrmPayload) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -258,7 +276,8 @@ namespace Chirpstack.Api {
       if (DevAddr.Length != 0) hash ^= DevAddr.GetHashCode();
       if (DevEui.Length != 0) hash ^= DevEui.GetHashCode();
       if (time_ != null) hash ^= Time.GetHashCode();
-      if (PlaintextMacCommands != false) hash ^= PlaintextMacCommands.GetHashCode();
+      if (PlaintextFOpts != false) hash ^= PlaintextFOpts.GetHashCode();
+      if (PlaintextFrmPayload != false) hash ^= PlaintextFrmPayload.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -302,9 +321,13 @@ namespace Chirpstack.Api {
         output.WriteRawTag(58);
         output.WriteMessage(Time);
       }
-      if (PlaintextMacCommands != false) {
+      if (PlaintextFOpts != false) {
         output.WriteRawTag(64);
-        output.WriteBool(PlaintextMacCommands);
+        output.WriteBool(PlaintextFOpts);
+      }
+      if (PlaintextFrmPayload != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(PlaintextFrmPayload);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -341,9 +364,13 @@ namespace Chirpstack.Api {
         output.WriteRawTag(58);
         output.WriteMessage(Time);
       }
-      if (PlaintextMacCommands != false) {
+      if (PlaintextFOpts != false) {
         output.WriteRawTag(64);
-        output.WriteBool(PlaintextMacCommands);
+        output.WriteBool(PlaintextFOpts);
+      }
+      if (PlaintextFrmPayload != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(PlaintextFrmPayload);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -374,7 +401,10 @@ namespace Chirpstack.Api {
       if (time_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Time);
       }
-      if (PlaintextMacCommands != false) {
+      if (PlaintextFOpts != false) {
+        size += 1 + 1;
+      }
+      if (PlaintextFrmPayload != false) {
         size += 1 + 1;
       }
       if (_unknownFields != null) {
@@ -414,8 +444,11 @@ namespace Chirpstack.Api {
         }
         Time.MergeFrom(other.Time);
       }
-      if (other.PlaintextMacCommands != false) {
-        PlaintextMacCommands = other.PlaintextMacCommands;
+      if (other.PlaintextFOpts != false) {
+        PlaintextFOpts = other.PlaintextFOpts;
+      }
+      if (other.PlaintextFrmPayload != false) {
+        PlaintextFrmPayload = other.PlaintextFrmPayload;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -467,7 +500,11 @@ namespace Chirpstack.Api {
             break;
           }
           case 64: {
-            PlaintextMacCommands = input.ReadBool();
+            PlaintextFOpts = input.ReadBool();
+            break;
+          }
+          case 72: {
+            PlaintextFrmPayload = input.ReadBool();
             break;
           }
         }
@@ -520,7 +557,11 @@ namespace Chirpstack.Api {
             break;
           }
           case 64: {
-            PlaintextMacCommands = input.ReadBool();
+            PlaintextFOpts = input.ReadBool();
+            break;
+          }
+          case 72: {
+            PlaintextFrmPayload = input.ReadBool();
             break;
           }
         }
@@ -572,7 +613,8 @@ namespace Chirpstack.Api {
       mType_ = other.mType_;
       devAddr_ = other.devAddr_;
       devEui_ = other.devEui_;
-      plaintextMacCommands_ = other.plaintextMacCommands_;
+      plaintextFOpts_ = other.plaintextFOpts_;
+      plaintextFrmPayload_ = other.plaintextFrmPayload_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -702,18 +744,33 @@ namespace Chirpstack.Api {
       }
     }
 
-    /// <summary>Field number for the "plaintext_mac_commands" field.</summary>
-    public const int PlaintextMacCommandsFieldNumber = 9;
-    private bool plaintextMacCommands_;
+    /// <summary>Field number for the "plaintext_f_opts" field.</summary>
+    public const int PlaintextFOptsFieldNumber = 9;
+    private bool plaintextFOpts_;
     /// <summary>
-    /// Plaintext mac-commands.
+    /// Plaintext f_opts mac-commands.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool PlaintextMacCommands {
-      get { return plaintextMacCommands_; }
+    public bool PlaintextFOpts {
+      get { return plaintextFOpts_; }
       set {
-        plaintextMacCommands_ = value;
+        plaintextFOpts_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "plaintext_frm_payload" field.</summary>
+    public const int PlaintextFrmPayloadFieldNumber = 10;
+    private bool plaintextFrmPayload_;
+    /// <summary>
+    /// Plaintext frm_payload.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool PlaintextFrmPayload {
+      get { return plaintextFrmPayload_; }
+      set {
+        plaintextFrmPayload_ = value;
       }
     }
 
@@ -740,7 +797,8 @@ namespace Chirpstack.Api {
       if (MType != other.MType) return false;
       if (DevAddr != other.DevAddr) return false;
       if (DevEui != other.DevEui) return false;
-      if (PlaintextMacCommands != other.PlaintextMacCommands) return false;
+      if (PlaintextFOpts != other.PlaintextFOpts) return false;
+      if (PlaintextFrmPayload != other.PlaintextFrmPayload) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -756,7 +814,8 @@ namespace Chirpstack.Api {
       if (MType != global::Chirpstack.Common.MType.JoinRequest) hash ^= MType.GetHashCode();
       if (DevAddr.Length != 0) hash ^= DevAddr.GetHashCode();
       if (DevEui.Length != 0) hash ^= DevEui.GetHashCode();
-      if (PlaintextMacCommands != false) hash ^= PlaintextMacCommands.GetHashCode();
+      if (PlaintextFOpts != false) hash ^= PlaintextFOpts.GetHashCode();
+      if (PlaintextFrmPayload != false) hash ^= PlaintextFrmPayload.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -807,9 +866,13 @@ namespace Chirpstack.Api {
         output.WriteRawTag(66);
         output.WriteString(DevEui);
       }
-      if (PlaintextMacCommands != false) {
+      if (PlaintextFOpts != false) {
         output.WriteRawTag(72);
-        output.WriteBool(PlaintextMacCommands);
+        output.WriteBool(PlaintextFOpts);
+      }
+      if (PlaintextFrmPayload != false) {
+        output.WriteRawTag(80);
+        output.WriteBool(PlaintextFrmPayload);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -853,9 +916,13 @@ namespace Chirpstack.Api {
         output.WriteRawTag(66);
         output.WriteString(DevEui);
       }
-      if (PlaintextMacCommands != false) {
+      if (PlaintextFOpts != false) {
         output.WriteRawTag(72);
-        output.WriteBool(PlaintextMacCommands);
+        output.WriteBool(PlaintextFOpts);
+      }
+      if (PlaintextFrmPayload != false) {
+        output.WriteRawTag(80);
+        output.WriteBool(PlaintextFrmPayload);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -891,7 +958,10 @@ namespace Chirpstack.Api {
       if (DevEui.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(DevEui);
       }
-      if (PlaintextMacCommands != false) {
+      if (PlaintextFOpts != false) {
+        size += 1 + 1;
+      }
+      if (PlaintextFrmPayload != false) {
         size += 1 + 1;
       }
       if (_unknownFields != null) {
@@ -936,8 +1006,11 @@ namespace Chirpstack.Api {
       if (other.DevEui.Length != 0) {
         DevEui = other.DevEui;
       }
-      if (other.PlaintextMacCommands != false) {
-        PlaintextMacCommands = other.PlaintextMacCommands;
+      if (other.PlaintextFOpts != false) {
+        PlaintextFOpts = other.PlaintextFOpts;
+      }
+      if (other.PlaintextFrmPayload != false) {
+        PlaintextFrmPayload = other.PlaintextFrmPayload;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -993,7 +1066,11 @@ namespace Chirpstack.Api {
             break;
           }
           case 72: {
-            PlaintextMacCommands = input.ReadBool();
+            PlaintextFOpts = input.ReadBool();
+            break;
+          }
+          case 80: {
+            PlaintextFrmPayload = input.ReadBool();
             break;
           }
         }
@@ -1050,7 +1127,11 @@ namespace Chirpstack.Api {
             break;
           }
           case 72: {
-            PlaintextMacCommands = input.ReadBool();
+            PlaintextFOpts = input.ReadBool();
+            break;
+          }
+          case 80: {
+            PlaintextFrmPayload = input.ReadBool();
             break;
           }
         }

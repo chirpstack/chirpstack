@@ -30,6 +30,7 @@ impl Into<String> for LogCode {
             LogCode::UplinkMic => "UPLINK_MIC",
             LogCode::UplinkFCntRetransmission => "UPLINK_F_CNT_RETRANSMISSION",
             LogCode::DownlinkGateway => "DOWNLINK_GATEWAY",
+            LogCode::RelayNewEndDevice => "RELAY_NEW_END_DEVICE",
         }
         .to_string()
     }

@@ -27,6 +27,7 @@ pub mod mac_command;
 pub mod metrics;
 pub mod multicast;
 pub mod passive_roaming;
+pub mod relay;
 pub mod schema;
 pub mod search;
 pub mod tenant;
@@ -273,7 +274,7 @@ pub fn reset_db() -> Result<()> {
 #[cfg(test)]
 pub async fn reset_redis() -> Result<()> {
     let mut c = get_redis_conn()?;
-    redis::cmd("FLUSHALL").query(&mut *c)?;
+    redis::cmd("FLUSHDB").query(&mut *c)?;
     Ok(())
 }
 

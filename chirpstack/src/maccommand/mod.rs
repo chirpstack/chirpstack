@@ -9,20 +9,27 @@ use crate::uplink::UplinkFrameSet;
 use chirpstack_api::internal;
 use lrwn::EUI64;
 
+pub mod configure_fwd_limit;
+pub mod ctrl_uplink_list;
 pub mod dev_status;
 pub mod device_mode_ind;
 pub mod device_time;
+pub mod end_device_conf;
+pub mod filter_list;
 pub mod link_adr;
 pub mod link_check;
 pub mod new_channel;
+pub mod notify_new_end_device;
 pub mod ping_slot_channel;
 pub mod ping_slot_info;
 pub mod rejoin_param_setup;
 pub mod rekey;
+pub mod relay_conf;
 pub mod reset;
 pub mod rx_param_setup;
 pub mod rx_timing_setup;
 pub mod tx_param_setup;
+pub mod update_uplink_list;
 
 // This returns the mac-commands which must be sent back to the device as response and a bool
 // indicating if a downlink must be sent. For some mac-commands, no mac-command answer is required,
@@ -147,6 +154,19 @@ async fn handle(
         lrwn::CID::RxParamSetupAns => rx_param_setup::handle(dev, ds, block, pending_block),
         lrwn::CID::RxTimingSetupAns => rx_timing_setup::handle(dev, ds, block, pending_block),
         lrwn::CID::TxParamSetupAns => tx_param_setup::handle(dev, ds, block, pending_block),
+        lrwn::CID::RelayConfAns => relay_conf::handle(dev, ds, block, pending_block),
+        lrwn::CID::EndDeviceConfAns => end_device_conf::handle(dev, ds, block, pending_block),
+        lrwn::CID::FilterListAns => filter_list::handle(dev, ds, block, pending_block),
+        lrwn::CID::UpdateUplinkListAns => update_uplink_list::handle(dev, ds, block, pending_block),
+        lrwn::CID::ConfigureFwdLimitAns => {
+            configure_fwd_limit::handle(dev, ds, block, pending_block)
+        }
+        lrwn::CID::NotifyNewEndDeviceReq => {
+            notify_new_end_device::handle(tenant, dp, app, dev, block).await
+        }
+        lrwn::CID::CtrlUplinkListAns => {
+            ctrl_uplink_list::handle(dev, ds, block, pending_block).await
+        }
         _ => {
             error!(cid = %cid, "Unexpected CID");
             // Return OK, we don't want to break out of the uplink handling.

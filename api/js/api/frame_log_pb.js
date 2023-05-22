@@ -109,7 +109,8 @@ proto.api.UplinkFrameLog.toObject = function(includeInstance, msg) {
     devAddr: jspb.Message.getFieldWithDefault(msg, 5, ""),
     devEui: jspb.Message.getFieldWithDefault(msg, 6, ""),
     time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    plaintextMacCommands: jspb.Message.getBooleanFieldWithDefault(msg, 8, false)
+    plaintextFOpts: jspb.Message.getBooleanFieldWithDefault(msg, 8, false),
+    plaintextFrmPayload: jspb.Message.getBooleanFieldWithDefault(msg, 9, false)
   };
 
   if (includeInstance) {
@@ -179,7 +180,11 @@ proto.api.UplinkFrameLog.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 8:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setPlaintextMacCommands(value);
+      msg.setPlaintextFOpts(value);
+      break;
+    case 9:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setPlaintextFrmPayload(value);
       break;
     default:
       reader.skipField();
@@ -262,10 +267,17 @@ proto.api.UplinkFrameLog.serializeBinaryToWriter = function(message, writer) {
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
-  f = message.getPlaintextMacCommands();
+  f = message.getPlaintextFOpts();
   if (f) {
     writer.writeBool(
       8,
+      f
+    );
+  }
+  f = message.getPlaintextFrmPayload();
+  if (f) {
+    writer.writeBool(
+      9,
       f
     );
   }
@@ -481,10 +493,10 @@ proto.api.UplinkFrameLog.prototype.hasTime = function() {
 
 
 /**
- * optional bool plaintext_mac_commands = 8;
+ * optional bool plaintext_f_opts = 8;
  * @return {boolean}
  */
-proto.api.UplinkFrameLog.prototype.getPlaintextMacCommands = function() {
+proto.api.UplinkFrameLog.prototype.getPlaintextFOpts = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 8, false));
 };
 
@@ -493,8 +505,26 @@ proto.api.UplinkFrameLog.prototype.getPlaintextMacCommands = function() {
  * @param {boolean} value
  * @return {!proto.api.UplinkFrameLog} returns this
  */
-proto.api.UplinkFrameLog.prototype.setPlaintextMacCommands = function(value) {
+proto.api.UplinkFrameLog.prototype.setPlaintextFOpts = function(value) {
   return jspb.Message.setProto3BooleanField(this, 8, value);
+};
+
+
+/**
+ * optional bool plaintext_frm_payload = 9;
+ * @return {boolean}
+ */
+proto.api.UplinkFrameLog.prototype.getPlaintextFrmPayload = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 9, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.UplinkFrameLog} returns this
+ */
+proto.api.UplinkFrameLog.prototype.setPlaintextFrmPayload = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 9, value);
 };
 
 
@@ -538,7 +568,8 @@ proto.api.DownlinkFrameLog.toObject = function(includeInstance, msg) {
     mType: jspb.Message.getFieldWithDefault(msg, 6, 0),
     devAddr: jspb.Message.getFieldWithDefault(msg, 7, ""),
     devEui: jspb.Message.getFieldWithDefault(msg, 8, ""),
-    plaintextMacCommands: jspb.Message.getBooleanFieldWithDefault(msg, 9, false)
+    plaintextFOpts: jspb.Message.getBooleanFieldWithDefault(msg, 9, false),
+    plaintextFrmPayload: jspb.Message.getBooleanFieldWithDefault(msg, 10, false)
   };
 
   if (includeInstance) {
@@ -611,7 +642,11 @@ proto.api.DownlinkFrameLog.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 9:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setPlaintextMacCommands(value);
+      msg.setPlaintextFOpts(value);
+      break;
+    case 10:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setPlaintextFrmPayload(value);
       break;
     default:
       reader.skipField();
@@ -700,10 +735,17 @@ proto.api.DownlinkFrameLog.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getPlaintextMacCommands();
+  f = message.getPlaintextFOpts();
   if (f) {
     writer.writeBool(
       9,
+      f
+    );
+  }
+  f = message.getPlaintextFrmPayload();
+  if (f) {
+    writer.writeBool(
+      10,
       f
     );
   }
@@ -917,10 +959,10 @@ proto.api.DownlinkFrameLog.prototype.setDevEui = function(value) {
 
 
 /**
- * optional bool plaintext_mac_commands = 9;
+ * optional bool plaintext_f_opts = 9;
  * @return {boolean}
  */
-proto.api.DownlinkFrameLog.prototype.getPlaintextMacCommands = function() {
+proto.api.DownlinkFrameLog.prototype.getPlaintextFOpts = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 9, false));
 };
 
@@ -929,8 +971,26 @@ proto.api.DownlinkFrameLog.prototype.getPlaintextMacCommands = function() {
  * @param {boolean} value
  * @return {!proto.api.DownlinkFrameLog} returns this
  */
-proto.api.DownlinkFrameLog.prototype.setPlaintextMacCommands = function(value) {
+proto.api.DownlinkFrameLog.prototype.setPlaintextFOpts = function(value) {
   return jspb.Message.setProto3BooleanField(this, 9, value);
+};
+
+
+/**
+ * optional bool plaintext_frm_payload = 10;
+ * @return {boolean}
+ */
+proto.api.DownlinkFrameLog.prototype.getPlaintextFrmPayload = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 10, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.DownlinkFrameLog} returns this
+ */
+proto.api.DownlinkFrameLog.prototype.setPlaintextFrmPayload = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 10, value);
 };
 
 

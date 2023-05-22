@@ -33,65 +33,72 @@ namespace Chirpstack.Integration {
             "ASgJEhsKE2RldmljZV9wcm9maWxlX25hbWUYBiABKAkSEwoLZGV2aWNlX25h",
             "bWUYByABKAkSDwoHZGV2X2V1aRgIIAEoCRIvCgR0YWdzGAkgAygLMiEuaW50",
             "ZWdyYXRpb24uRGV2aWNlSW5mby5UYWdzRW50cnkaKwoJVGFnc0VudHJ5EgsK",
-            "A2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEi2QIKC1VwbGlua0V2ZW50",
-            "EhgKEGRlZHVwbGljYXRpb25faWQYASABKAkSKAoEdGltZRgCIAEoCzIaLmdv",
-            "b2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLAoLZGV2aWNlX2luZm8YAyABKAsy",
-            "Fy5pbnRlZ3JhdGlvbi5EZXZpY2VJbmZvEhAKCGRldl9hZGRyGAQgASgJEgsK",
-            "A2FkchgFIAEoCBIKCgJkchgGIAEoDRINCgVmX2NudBgHIAEoDRIOCgZmX3Bv",
-            "cnQYCCABKA0SEQoJY29uZmlybWVkGAkgASgIEgwKBGRhdGEYCiABKAwSJwoG",
-            "b2JqZWN0GAsgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIhCgdyeF9p",
-            "bmZvGAwgAygLMhAuZ3cuVXBsaW5rUnhJbmZvEiEKB3R4X2luZm8YDSABKAsy",
-            "EC5ndy5VcGxpbmtUeEluZm8ijwEKCUpvaW5FdmVudBIYChBkZWR1cGxpY2F0",
-            "aW9uX2lkGAEgASgJEigKBHRpbWUYAiABKAsyGi5nb29nbGUucHJvdG9idWYu",
-            "VGltZXN0YW1wEiwKC2RldmljZV9pbmZvGAMgASgLMhcuaW50ZWdyYXRpb24u",
-            "RGV2aWNlSW5mbxIQCghkZXZfYWRkchgEIAEoCSK9AQoIQWNrRXZlbnQSGAoQ",
-            "ZGVkdXBsaWNhdGlvbl9pZBgBIAEoCRIoCgR0aW1lGAIgASgLMhouZ29vZ2xl",
-            "LnByb3RvYnVmLlRpbWVzdGFtcBIsCgtkZXZpY2VfaW5mbxgDIAEoCzIXLmlu",
-            "dGVncmF0aW9uLkRldmljZUluZm8SFQoNcXVldWVfaXRlbV9pZBgEIAEoCRIU",
-            "CgxhY2tub3dsZWRnZWQYBSABKAgSEgoKZl9jbnRfZG93bhgGIAEoDSLdAQoK",
-            "VHhBY2tFdmVudBITCgtkb3dubGlua19pZBgBIAEoDRIoCgR0aW1lGAIgASgL",
-            "MhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgtkZXZpY2VfaW5mbxgD",
-            "IAEoCzIXLmludGVncmF0aW9uLkRldmljZUluZm8SFQoNcXVldWVfaXRlbV9p",
-            "ZBgEIAEoCRISCgpmX2NudF9kb3duGAUgASgNEhIKCmdhdGV3YXlfaWQYBiAB",
-            "KAkSIwoHdHhfaW5mbxgHIAEoCzISLmd3LkRvd25saW5rVHhJbmZvIqYCCghM",
-            "b2dFdmVudBIoCgR0aW1lGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVz",
-            "dGFtcBIsCgtkZXZpY2VfaW5mbxgCIAEoCzIXLmludGVncmF0aW9uLkRldmlj",
-            "ZUluZm8SJAoFbGV2ZWwYAyABKA4yFS5pbnRlZ3JhdGlvbi5Mb2dMZXZlbBIi",
-            "CgRjb2RlGAQgASgOMhQuaW50ZWdyYXRpb24uTG9nQ29kZRITCgtkZXNjcmlw",
-            "dGlvbhgFIAEoCRIzCgdjb250ZXh0GAYgAygLMiIuaW50ZWdyYXRpb24uTG9n",
-            "RXZlbnQuQ29udGV4dEVudHJ5Gi4KDENvbnRleHRFbnRyeRILCgNrZXkYASAB",
-            "KAkSDQoFdmFsdWUYAiABKAk6AjgBIugBCgtTdGF0dXNFdmVudBIYChBkZWR1",
-            "cGxpY2F0aW9uX2lkGAEgASgJEigKBHRpbWUYAiABKAsyGi5nb29nbGUucHJv",
-            "dG9idWYuVGltZXN0YW1wEiwKC2RldmljZV9pbmZvGAMgASgLMhcuaW50ZWdy",
-            "YXRpb24uRGV2aWNlSW5mbxIOCgZtYXJnaW4YBSABKAUSHQoVZXh0ZXJuYWxf",
-            "cG93ZXJfc291cmNlGAYgASgIEiEKGWJhdHRlcnlfbGV2ZWxfdW5hdmFpbGFi",
-            "bGUYByABKAgSFQoNYmF0dGVyeV9sZXZlbBgIIAEoAiKlAQoNTG9jYXRpb25F",
-            "dmVudBIYChBkZWR1cGxpY2F0aW9uX2lkGAEgASgJEigKBHRpbWUYAiABKAsy",
-            "Gi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKC2RldmljZV9pbmZvGAMg",
-            "ASgLMhcuaW50ZWdyYXRpb24uRGV2aWNlSW5mbxIiCghsb2NhdGlvbhgEIAEo",
-            "CzIQLmNvbW1vbi5Mb2NhdGlvbiLbAQoQSW50ZWdyYXRpb25FdmVudBIYChBk",
-            "ZWR1cGxpY2F0aW9uX2lkGAEgASgJEigKBHRpbWUYAiABKAsyGi5nb29nbGUu",
-            "cHJvdG9idWYuVGltZXN0YW1wEiwKC2RldmljZV9pbmZvGAMgASgLMhcuaW50",
-            "ZWdyYXRpb24uRGV2aWNlSW5mbxIYChBpbnRlZ3JhdGlvbl9uYW1lGAQgASgJ",
-            "EhIKCmV2ZW50X3R5cGUYBSABKAkSJwoGb2JqZWN0GAYgASgLMhcuZ29vZ2xl",
-            "LnByb3RvYnVmLlN0cnVjdCKIAQoPRG93bmxpbmtDb21tYW5kEgoKAmlkGAEg",
-            "ASgJEg8KB2Rldl9ldWkYAiABKAkSEQoJY29uZmlybWVkGAMgASgIEg4KBmZf",
-            "cG9ydBgEIAEoDRIMCgRkYXRhGAUgASgMEicKBm9iamVjdBgGIAEoCzIXLmdv",
-            "b2dsZS5wcm90b2J1Zi5TdHJ1Y3QqLAoITG9nTGV2ZWwSCAoESU5GTxAAEgsK",
-            "B1dBUk5JTkcQARIJCgVFUlJPUhACKsABCgdMb2dDb2RlEgsKB1VOS05PV04Q",
-            "ABIZChVET1dOTElOS19QQVlMT0FEX1NJWkUQARIQCgxVUExJTktfQ09ERUMQ",
-            "AhISCg5ET1dOTElOS19DT0RFQxADEggKBE9UQUEQBBIWChJVUExJTktfRl9D",
-            "TlRfUkVTRVQQBRIOCgpVUExJTktfTUlDEAYSHwobVVBMSU5LX0ZfQ05UX1JF",
-            "VFJBTlNNSVNTSU9OEAcSFAoQRE9XTkxJTktfR0FURVdBWRAIQoEBCh1pby5j",
-            "aGlycHN0YWNrLmFwaS5pbnRlZ3JhdGlvbkIQSW50ZWdyYXRpb25Qcm90b1AB",
-            "WjNnaXRodWIuY29tL2Jyb2NhYXIvY2hpcnBzdGFjay9hcGkvZ28vdjQvaW50",
-            "ZWdyYXRpb26qAhZDaGlycHN0YWNrLkludGVncmF0aW9uYgZwcm90bzM="));
+            "A2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEicwoRVXBsaW5rUmVsYXlS",
+            "eEluZm8SDwoHZGV2X2V1aRgBIAEoCRIRCglmcmVxdWVuY3kYAiABKA0SCgoC",
+            "ZHIYAyABKA0SCwoDc25yGAQgASgFEgwKBHJzc2kYBSABKAUSEwoLd29yX2No",
+            "YW5uZWwYBiABKA0ikAMKC1VwbGlua0V2ZW50EhgKEGRlZHVwbGljYXRpb25f",
+            "aWQYASABKAkSKAoEdGltZRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
+            "c3RhbXASLAoLZGV2aWNlX2luZm8YAyABKAsyFy5pbnRlZ3JhdGlvbi5EZXZp",
+            "Y2VJbmZvEhAKCGRldl9hZGRyGAQgASgJEgsKA2FkchgFIAEoCBIKCgJkchgG",
+            "IAEoDRINCgVmX2NudBgHIAEoDRIOCgZmX3BvcnQYCCABKA0SEQoJY29uZmly",
+            "bWVkGAkgASgIEgwKBGRhdGEYCiABKAwSJwoGb2JqZWN0GAsgASgLMhcuZ29v",
+            "Z2xlLnByb3RvYnVmLlN0cnVjdBIhCgdyeF9pbmZvGAwgAygLMhAuZ3cuVXBs",
+            "aW5rUnhJbmZvEiEKB3R4X2luZm8YDSABKAsyEC5ndy5VcGxpbmtUeEluZm8S",
+            "NQoNcmVsYXlfcnhfaW5mbxgOIAEoCzIeLmludGVncmF0aW9uLlVwbGlua1Jl",
+            "bGF5UnhJbmZvIsYBCglKb2luRXZlbnQSGAoQZGVkdXBsaWNhdGlvbl9pZBgB",
+            "IAEoCRIoCgR0aW1lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFt",
+            "cBIsCgtkZXZpY2VfaW5mbxgDIAEoCzIXLmludGVncmF0aW9uLkRldmljZUlu",
+            "Zm8SEAoIZGV2X2FkZHIYBCABKAkSNQoNcmVsYXlfcnhfaW5mbxgFIAEoCzIe",
+            "LmludGVncmF0aW9uLlVwbGlua1JlbGF5UnhJbmZvIr0BCghBY2tFdmVudBIY",
+            "ChBkZWR1cGxpY2F0aW9uX2lkGAEgASgJEigKBHRpbWUYAiABKAsyGi5nb29n",
+            "bGUucHJvdG9idWYuVGltZXN0YW1wEiwKC2RldmljZV9pbmZvGAMgASgLMhcu",
+            "aW50ZWdyYXRpb24uRGV2aWNlSW5mbxIVCg1xdWV1ZV9pdGVtX2lkGAQgASgJ",
+            "EhQKDGFja25vd2xlZGdlZBgFIAEoCBISCgpmX2NudF9kb3duGAYgASgNIt0B",
+            "CgpUeEFja0V2ZW50EhMKC2Rvd25saW5rX2lkGAEgASgNEigKBHRpbWUYAiAB",
+            "KAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKC2RldmljZV9pbmZv",
+            "GAMgASgLMhcuaW50ZWdyYXRpb24uRGV2aWNlSW5mbxIVCg1xdWV1ZV9pdGVt",
+            "X2lkGAQgASgJEhIKCmZfY250X2Rvd24YBSABKA0SEgoKZ2F0ZXdheV9pZBgG",
+            "IAEoCRIjCgd0eF9pbmZvGAcgASgLMhIuZ3cuRG93bmxpbmtUeEluZm8ipgIK",
+            "CExvZ0V2ZW50EigKBHRpbWUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGlt",
+            "ZXN0YW1wEiwKC2RldmljZV9pbmZvGAIgASgLMhcuaW50ZWdyYXRpb24uRGV2",
+            "aWNlSW5mbxIkCgVsZXZlbBgDIAEoDjIVLmludGVncmF0aW9uLkxvZ0xldmVs",
+            "EiIKBGNvZGUYBCABKA4yFC5pbnRlZ3JhdGlvbi5Mb2dDb2RlEhMKC2Rlc2Ny",
+            "aXB0aW9uGAUgASgJEjMKB2NvbnRleHQYBiADKAsyIi5pbnRlZ3JhdGlvbi5M",
+            "b2dFdmVudC5Db250ZXh0RW50cnkaLgoMQ29udGV4dEVudHJ5EgsKA2tleRgB",
+            "IAEoCRINCgV2YWx1ZRgCIAEoCToCOAEi6AEKC1N0YXR1c0V2ZW50EhgKEGRl",
+            "ZHVwbGljYXRpb25faWQYASABKAkSKAoEdGltZRgCIAEoCzIaLmdvb2dsZS5w",
+            "cm90b2J1Zi5UaW1lc3RhbXASLAoLZGV2aWNlX2luZm8YAyABKAsyFy5pbnRl",
+            "Z3JhdGlvbi5EZXZpY2VJbmZvEg4KBm1hcmdpbhgFIAEoBRIdChVleHRlcm5h",
+            "bF9wb3dlcl9zb3VyY2UYBiABKAgSIQoZYmF0dGVyeV9sZXZlbF91bmF2YWls",
+            "YWJsZRgHIAEoCBIVCg1iYXR0ZXJ5X2xldmVsGAggASgCIqUBCg1Mb2NhdGlv",
+            "bkV2ZW50EhgKEGRlZHVwbGljYXRpb25faWQYASABKAkSKAoEdGltZRgCIAEo",
+            "CzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLAoLZGV2aWNlX2luZm8Y",
+            "AyABKAsyFy5pbnRlZ3JhdGlvbi5EZXZpY2VJbmZvEiIKCGxvY2F0aW9uGAQg",
+            "ASgLMhAuY29tbW9uLkxvY2F0aW9uItsBChBJbnRlZ3JhdGlvbkV2ZW50EhgK",
+            "EGRlZHVwbGljYXRpb25faWQYASABKAkSKAoEdGltZRgCIAEoCzIaLmdvb2ds",
+            "ZS5wcm90b2J1Zi5UaW1lc3RhbXASLAoLZGV2aWNlX2luZm8YAyABKAsyFy5p",
+            "bnRlZ3JhdGlvbi5EZXZpY2VJbmZvEhgKEGludGVncmF0aW9uX25hbWUYBCAB",
+            "KAkSEgoKZXZlbnRfdHlwZRgFIAEoCRInCgZvYmplY3QYBiABKAsyFy5nb29n",
+            "bGUucHJvdG9idWYuU3RydWN0IogBCg9Eb3dubGlua0NvbW1hbmQSCgoCaWQY",
+            "ASABKAkSDwoHZGV2X2V1aRgCIAEoCRIRCgljb25maXJtZWQYAyABKAgSDgoG",
+            "Zl9wb3J0GAQgASgNEgwKBGRhdGEYBSABKAwSJwoGb2JqZWN0GAYgASgLMhcu",
+            "Z29vZ2xlLnByb3RvYnVmLlN0cnVjdCosCghMb2dMZXZlbBIICgRJTkZPEAAS",
+            "CwoHV0FSTklORxABEgkKBUVSUk9SEAIq2gEKB0xvZ0NvZGUSCwoHVU5LTk9X",
+            "ThAAEhkKFURPV05MSU5LX1BBWUxPQURfU0laRRABEhAKDFVQTElOS19DT0RF",
+            "QxACEhIKDkRPV05MSU5LX0NPREVDEAMSCAoET1RBQRAEEhYKElVQTElOS19G",
+            "X0NOVF9SRVNFVBAFEg4KClVQTElOS19NSUMQBhIfChtVUExJTktfRl9DTlRf",
+            "UkVUUkFOU01JU1NJT04QBxIUChBET1dOTElOS19HQVRFV0FZEAgSGAoUUkVM",
+            "QVlfTkVXX0VORF9ERVZJQ0UQCUKBAQodaW8uY2hpcnBzdGFjay5hcGkuaW50",
+            "ZWdyYXRpb25CEEludGVncmF0aW9uUHJvdG9QAVozZ2l0aHViLmNvbS9icm9j",
+            "YWFyL2NoaXJwc3RhY2svYXBpL2dvL3Y0L2ludGVncmF0aW9uqgIWQ2hpcnBz",
+            "dGFjay5JbnRlZ3JhdGlvbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Chirpstack.Common.CommonReflection.Descriptor, global::Chirpstack.Gateway.GwReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Integration.LogLevel), typeof(global::Chirpstack.Integration.LogCode), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.DeviceInfo), global::Chirpstack.Integration.DeviceInfo.Parser, new[]{ "TenantId", "TenantName", "ApplicationId", "ApplicationName", "DeviceProfileId", "DeviceProfileName", "DeviceName", "DevEui", "Tags" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.UplinkEvent), global::Chirpstack.Integration.UplinkEvent.Parser, new[]{ "DeduplicationId", "Time", "DeviceInfo", "DevAddr", "Adr", "Dr", "FCnt", "FPort", "Confirmed", "Data", "Object", "RxInfo", "TxInfo" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.JoinEvent), global::Chirpstack.Integration.JoinEvent.Parser, new[]{ "DeduplicationId", "Time", "DeviceInfo", "DevAddr" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.UplinkRelayRxInfo), global::Chirpstack.Integration.UplinkRelayRxInfo.Parser, new[]{ "DevEui", "Frequency", "Dr", "Snr", "Rssi", "WorChannel" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.UplinkEvent), global::Chirpstack.Integration.UplinkEvent.Parser, new[]{ "DeduplicationId", "Time", "DeviceInfo", "DevAddr", "Adr", "Dr", "FCnt", "FPort", "Confirmed", "Data", "Object", "RxInfo", "TxInfo", "RelayRxInfo" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.JoinEvent), global::Chirpstack.Integration.JoinEvent.Parser, new[]{ "DeduplicationId", "Time", "DeviceInfo", "DevAddr", "RelayRxInfo" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.AckEvent), global::Chirpstack.Integration.AckEvent.Parser, new[]{ "DeduplicationId", "Time", "DeviceInfo", "QueueItemId", "Acknowledged", "FCntDown" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.TxAckEvent), global::Chirpstack.Integration.TxAckEvent.Parser, new[]{ "DownlinkId", "Time", "DeviceInfo", "QueueItemId", "FCntDown", "GatewayId", "TxInfo" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Integration.LogEvent), global::Chirpstack.Integration.LogEvent.Parser, new[]{ "Time", "DeviceInfo", "Level", "Code", "Description", "Context" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
@@ -158,6 +165,10 @@ namespace Chirpstack.Integration {
     /// Downlink gateway error.
     /// </summary>
     [pbr::OriginalName("DOWNLINK_GATEWAY")] DownlinkGateway = 8,
+    /// <summary>
+    /// Relay new end-device.
+    /// </summary>
+    [pbr::OriginalName("RELAY_NEW_END_DEVICE")] RelayNewEndDevice = 9,
   }
 
   #endregion
@@ -668,6 +679,401 @@ namespace Chirpstack.Integration {
   }
 
   /// <summary>
+  /// Uplink relay RX information.
+  /// </summary>
+  public sealed partial class UplinkRelayRxInfo : pb::IMessage<UplinkRelayRxInfo>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<UplinkRelayRxInfo> _parser = new pb::MessageParser<UplinkRelayRxInfo>(() => new UplinkRelayRxInfo());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<UplinkRelayRxInfo> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public UplinkRelayRxInfo() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public UplinkRelayRxInfo(UplinkRelayRxInfo other) : this() {
+      devEui_ = other.devEui_;
+      frequency_ = other.frequency_;
+      dr_ = other.dr_;
+      snr_ = other.snr_;
+      rssi_ = other.rssi_;
+      worChannel_ = other.worChannel_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public UplinkRelayRxInfo Clone() {
+      return new UplinkRelayRxInfo(this);
+    }
+
+    /// <summary>Field number for the "dev_eui" field.</summary>
+    public const int DevEuiFieldNumber = 1;
+    private string devEui_ = "";
+    /// <summary>
+    /// Relay DevEUI.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string DevEui {
+      get { return devEui_; }
+      set {
+        devEui_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "frequency" field.</summary>
+    public const int FrequencyFieldNumber = 2;
+    private uint frequency_;
+    /// <summary>
+    /// Frequency.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Frequency {
+      get { return frequency_; }
+      set {
+        frequency_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "dr" field.</summary>
+    public const int DrFieldNumber = 3;
+    private uint dr_;
+    /// <summary>
+    /// Data-rate.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint Dr {
+      get { return dr_; }
+      set {
+        dr_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "snr" field.</summary>
+    public const int SnrFieldNumber = 4;
+    private int snr_;
+    /// <summary>
+    /// SNR.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Snr {
+      get { return snr_; }
+      set {
+        snr_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "rssi" field.</summary>
+    public const int RssiFieldNumber = 5;
+    private int rssi_;
+    /// <summary>
+    /// RSSI.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Rssi {
+      get { return rssi_; }
+      set {
+        rssi_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "wor_channel" field.</summary>
+    public const int WorChannelFieldNumber = 6;
+    private uint worChannel_;
+    /// <summary>
+    /// WOR channel.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint WorChannel {
+      get { return worChannel_; }
+      set {
+        worChannel_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as UplinkRelayRxInfo);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(UplinkRelayRxInfo other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (DevEui != other.DevEui) return false;
+      if (Frequency != other.Frequency) return false;
+      if (Dr != other.Dr) return false;
+      if (Snr != other.Snr) return false;
+      if (Rssi != other.Rssi) return false;
+      if (WorChannel != other.WorChannel) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (DevEui.Length != 0) hash ^= DevEui.GetHashCode();
+      if (Frequency != 0) hash ^= Frequency.GetHashCode();
+      if (Dr != 0) hash ^= Dr.GetHashCode();
+      if (Snr != 0) hash ^= Snr.GetHashCode();
+      if (Rssi != 0) hash ^= Rssi.GetHashCode();
+      if (WorChannel != 0) hash ^= WorChannel.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (DevEui.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(DevEui);
+      }
+      if (Frequency != 0) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Frequency);
+      }
+      if (Dr != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Dr);
+      }
+      if (Snr != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Snr);
+      }
+      if (Rssi != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Rssi);
+      }
+      if (WorChannel != 0) {
+        output.WriteRawTag(48);
+        output.WriteUInt32(WorChannel);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (DevEui.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(DevEui);
+      }
+      if (Frequency != 0) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(Frequency);
+      }
+      if (Dr != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(Dr);
+      }
+      if (Snr != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Snr);
+      }
+      if (Rssi != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Rssi);
+      }
+      if (WorChannel != 0) {
+        output.WriteRawTag(48);
+        output.WriteUInt32(WorChannel);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (DevEui.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(DevEui);
+      }
+      if (Frequency != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Frequency);
+      }
+      if (Dr != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Dr);
+      }
+      if (Snr != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Snr);
+      }
+      if (Rssi != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Rssi);
+      }
+      if (WorChannel != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(WorChannel);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(UplinkRelayRxInfo other) {
+      if (other == null) {
+        return;
+      }
+      if (other.DevEui.Length != 0) {
+        DevEui = other.DevEui;
+      }
+      if (other.Frequency != 0) {
+        Frequency = other.Frequency;
+      }
+      if (other.Dr != 0) {
+        Dr = other.Dr;
+      }
+      if (other.Snr != 0) {
+        Snr = other.Snr;
+      }
+      if (other.Rssi != 0) {
+        Rssi = other.Rssi;
+      }
+      if (other.WorChannel != 0) {
+        WorChannel = other.WorChannel;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            DevEui = input.ReadString();
+            break;
+          }
+          case 16: {
+            Frequency = input.ReadUInt32();
+            break;
+          }
+          case 24: {
+            Dr = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            Snr = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            Rssi = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            WorChannel = input.ReadUInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            DevEui = input.ReadString();
+            break;
+          }
+          case 16: {
+            Frequency = input.ReadUInt32();
+            break;
+          }
+          case 24: {
+            Dr = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            Snr = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            Rssi = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            WorChannel = input.ReadUInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
   /// UplinkEvent is the message sent when an uplink payload has been received.
   /// </summary>
   public sealed partial class UplinkEvent : pb::IMessage<UplinkEvent>
@@ -684,7 +1090,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -717,6 +1123,7 @@ namespace Chirpstack.Integration {
       object_ = other.object_ != null ? other.object_.Clone() : null;
       rxInfo_ = other.rxInfo_.Clone();
       txInfo_ = other.txInfo_ != null ? other.txInfo_.Clone() : null;
+      relayRxInfo_ = other.relayRxInfo_ != null ? other.relayRxInfo_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -880,7 +1287,8 @@ namespace Chirpstack.Integration {
     public const int ObjectFieldNumber = 11;
     private global::Google.Protobuf.WellKnownTypes.Struct object_;
     /// <summary>
-    /// Note that this is only set when a codec is configured in the Device Profile.
+    /// Note that this is only set when a codec is configured in the Device
+    /// Profile.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -920,6 +1328,21 @@ namespace Chirpstack.Integration {
       }
     }
 
+    /// <summary>Field number for the "relay_rx_info" field.</summary>
+    public const int RelayRxInfoFieldNumber = 14;
+    private global::Chirpstack.Integration.UplinkRelayRxInfo relayRxInfo_;
+    /// <summary>
+    /// Relay info.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Chirpstack.Integration.UplinkRelayRxInfo RelayRxInfo {
+      get { return relayRxInfo_; }
+      set {
+        relayRxInfo_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -948,6 +1371,7 @@ namespace Chirpstack.Integration {
       if (!object.Equals(Object, other.Object)) return false;
       if(!rxInfo_.Equals(other.rxInfo_)) return false;
       if (!object.Equals(TxInfo, other.TxInfo)) return false;
+      if (!object.Equals(RelayRxInfo, other.RelayRxInfo)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -968,6 +1392,7 @@ namespace Chirpstack.Integration {
       if (object_ != null) hash ^= Object.GetHashCode();
       hash ^= rxInfo_.GetHashCode();
       if (txInfo_ != null) hash ^= TxInfo.GetHashCode();
+      if (relayRxInfo_ != null) hash ^= RelayRxInfo.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1035,6 +1460,10 @@ namespace Chirpstack.Integration {
         output.WriteRawTag(106);
         output.WriteMessage(TxInfo);
       }
+      if (relayRxInfo_ != null) {
+        output.WriteRawTag(114);
+        output.WriteMessage(RelayRxInfo);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1094,6 +1523,10 @@ namespace Chirpstack.Integration {
         output.WriteRawTag(106);
         output.WriteMessage(TxInfo);
       }
+      if (relayRxInfo_ != null) {
+        output.WriteRawTag(114);
+        output.WriteMessage(RelayRxInfo);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1140,6 +1573,9 @@ namespace Chirpstack.Integration {
       size += rxInfo_.CalculateSize(_repeated_rxInfo_codec);
       if (txInfo_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(TxInfo);
+      }
+      if (relayRxInfo_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(RelayRxInfo);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1201,6 +1637,12 @@ namespace Chirpstack.Integration {
           TxInfo = new global::Chirpstack.Gateway.UplinkTxInfo();
         }
         TxInfo.MergeFrom(other.TxInfo);
+      }
+      if (other.relayRxInfo_ != null) {
+        if (relayRxInfo_ == null) {
+          RelayRxInfo = new global::Chirpstack.Integration.UplinkRelayRxInfo();
+        }
+        RelayRxInfo.MergeFrom(other.RelayRxInfo);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1279,6 +1721,13 @@ namespace Chirpstack.Integration {
               TxInfo = new global::Chirpstack.Gateway.UplinkTxInfo();
             }
             input.ReadMessage(TxInfo);
+            break;
+          }
+          case 114: {
+            if (relayRxInfo_ == null) {
+              RelayRxInfo = new global::Chirpstack.Integration.UplinkRelayRxInfo();
+            }
+            input.ReadMessage(RelayRxInfo);
             break;
           }
         }
@@ -1360,6 +1809,13 @@ namespace Chirpstack.Integration {
             input.ReadMessage(TxInfo);
             break;
           }
+          case 114: {
+            if (relayRxInfo_ == null) {
+              RelayRxInfo = new global::Chirpstack.Integration.UplinkRelayRxInfo();
+            }
+            input.ReadMessage(RelayRxInfo);
+            break;
+          }
         }
       }
     }
@@ -1385,7 +1841,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1409,6 +1865,7 @@ namespace Chirpstack.Integration {
       time_ = other.time_ != null ? other.time_.Clone() : null;
       deviceInfo_ = other.deviceInfo_ != null ? other.deviceInfo_.Clone() : null;
       devAddr_ = other.devAddr_;
+      relayRxInfo_ = other.relayRxInfo_ != null ? other.relayRxInfo_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1478,6 +1935,21 @@ namespace Chirpstack.Integration {
       }
     }
 
+    /// <summary>Field number for the "relay_rx_info" field.</summary>
+    public const int RelayRxInfoFieldNumber = 5;
+    private global::Chirpstack.Integration.UplinkRelayRxInfo relayRxInfo_;
+    /// <summary>
+    /// Relay info.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Chirpstack.Integration.UplinkRelayRxInfo RelayRxInfo {
+      get { return relayRxInfo_; }
+      set {
+        relayRxInfo_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -1497,6 +1969,7 @@ namespace Chirpstack.Integration {
       if (!object.Equals(Time, other.Time)) return false;
       if (!object.Equals(DeviceInfo, other.DeviceInfo)) return false;
       if (DevAddr != other.DevAddr) return false;
+      if (!object.Equals(RelayRxInfo, other.RelayRxInfo)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1508,6 +1981,7 @@ namespace Chirpstack.Integration {
       if (time_ != null) hash ^= Time.GetHashCode();
       if (deviceInfo_ != null) hash ^= DeviceInfo.GetHashCode();
       if (DevAddr.Length != 0) hash ^= DevAddr.GetHashCode();
+      if (relayRxInfo_ != null) hash ^= RelayRxInfo.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1542,6 +2016,10 @@ namespace Chirpstack.Integration {
         output.WriteRawTag(34);
         output.WriteString(DevAddr);
       }
+      if (relayRxInfo_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(RelayRxInfo);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1568,6 +2046,10 @@ namespace Chirpstack.Integration {
         output.WriteRawTag(34);
         output.WriteString(DevAddr);
       }
+      if (relayRxInfo_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(RelayRxInfo);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1589,6 +2071,9 @@ namespace Chirpstack.Integration {
       }
       if (DevAddr.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(DevAddr);
+      }
+      if (relayRxInfo_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(RelayRxInfo);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1619,6 +2104,12 @@ namespace Chirpstack.Integration {
       }
       if (other.DevAddr.Length != 0) {
         DevAddr = other.DevAddr;
+      }
+      if (other.relayRxInfo_ != null) {
+        if (relayRxInfo_ == null) {
+          RelayRxInfo = new global::Chirpstack.Integration.UplinkRelayRxInfo();
+        }
+        RelayRxInfo.MergeFrom(other.RelayRxInfo);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1655,6 +2146,13 @@ namespace Chirpstack.Integration {
           }
           case 34: {
             DevAddr = input.ReadString();
+            break;
+          }
+          case 42: {
+            if (relayRxInfo_ == null) {
+              RelayRxInfo = new global::Chirpstack.Integration.UplinkRelayRxInfo();
+            }
+            input.ReadMessage(RelayRxInfo);
             break;
           }
         }
@@ -1694,6 +2192,13 @@ namespace Chirpstack.Integration {
             DevAddr = input.ReadString();
             break;
           }
+          case 42: {
+            if (relayRxInfo_ == null) {
+              RelayRxInfo = new global::Chirpstack.Integration.UplinkRelayRxInfo();
+            }
+            input.ReadMessage(RelayRxInfo);
+            break;
+          }
         }
       }
     }
@@ -1719,7 +2224,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[3]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2116,9 +2621,9 @@ namespace Chirpstack.Integration {
   }
 
   /// <summary>
-  /// TxAckEvent is the message sent when a downlink was acknowledged by the gateway
-  /// for transmission. As a downlink can be scheduled in the future, this event
-  /// does not confirm that the message has already been transmitted.
+  /// TxAckEvent is the message sent when a downlink was acknowledged by the
+  /// gateway for transmission. As a downlink can be scheduled in the future, this
+  /// event does not confirm that the message has already been transmitted.
   /// </summary>
   public sealed partial class TxAckEvent : pb::IMessage<TxAckEvent>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -2134,7 +2639,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[4]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2596,7 +3101,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[5]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2999,7 +3504,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[6]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[7]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3453,7 +3958,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[7]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[8]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3797,7 +4302,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[8]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[9]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4220,7 +4725,7 @@ namespace Chirpstack.Integration {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[9]; }
+      get { return global::Chirpstack.Integration.IntegrationReflection.Descriptor.MessageTypes[10]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

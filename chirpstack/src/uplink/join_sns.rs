@@ -5,7 +5,6 @@ use chrono::{DateTime, Local, Utc};
 use tracing::{span, trace, Instrument, Level};
 
 use super::{helpers, UplinkFrameSet};
-use crate::api::helpers::ToProto;
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::{
     application, device, device_keys, device_profile, device_queue, device_session,
@@ -99,6 +98,7 @@ impl JoinRequest {
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
+        ctx.set_join_eui().await?;
         ctx.send_join_event().await?;
         ctx.set_pr_start_ans_payload()?;
 
@@ -570,15 +570,10 @@ impl JoinRequest {
             dev_eui: device.dev_eui.to_be_bytes().to_vec(),
             dev_addr: self.dev_addr.unwrap().to_be_bytes().to_vec(),
             join_eui: join_request.join_eui.to_be_bytes().to_vec(),
-            mac_version: device_profile.mac_version.to_proto().into(),
             f_nwk_s_int_key: self.f_nwk_s_int_key.as_ref().unwrap().to_vec(),
             s_nwk_s_int_key: self.s_nwk_s_int_key.as_ref().unwrap().to_vec(),
             nwk_s_enc_key: self.nwk_s_enc_key.as_ref().unwrap().to_vec(),
             app_s_key: self.app_s_key.clone(),
-            f_cnt_up: 0,
-            n_f_cnt_down: 0,
-            a_f_cnt_down: 0,
-            conf_f_cnt: 0,
             rx1_delay: region_network.rx1_delay.into(),
             rx1_dr_offset: region_network.rx1_dr_offset.into(),
             rx2_dr: region_network.rx2_dr.into(),
@@ -588,13 +583,11 @@ impl JoinRequest {
                 .iter()
                 .map(|i| *i as u32)
                 .collect(),
-            class_b_ping_slot_dr: device_profile.class_b_ping_slot_dr as u32,
-            class_b_ping_slot_freq: device_profile.class_b_ping_slot_freq as u32,
-            class_b_ping_slot_nb: 1 << device_profile.class_b_ping_slot_nb_k as u32,
-            nb_trans: 1,
             skip_f_cnt_check: device.skip_fcnt_check,
             ..Default::default()
         };
+
+        device_profile.reset_session_to_boot_params(&mut ds);
 
         if let Some(lrwn::CFList::Channels(channels)) =
             region_conf.get_cf_list(device_profile.mac_version)
@@ -661,6 +654,16 @@ impl JoinRequest {
         Ok(())
     }
 
+    async fn set_join_eui(&mut self) -> Result<()> {
+        trace!("Setting JoinEUI");
+        let dev = self.device.as_mut().unwrap();
+        let req = self.join_request.as_ref().unwrap();
+
+        *dev = device::set_join_eui(dev.dev_eui, req.join_eui).await?;
+
+        Ok(())
+    }
+
     async fn send_join_event(&self) -> Result<()> {
         trace!("Sending join event");
 
@@ -674,6 +677,7 @@ impl JoinRequest {
             deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
             time: Some(ts.into()),
             device_info: self.device_info.clone(),
+            relay_rx_info: None,
             dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
         };
 

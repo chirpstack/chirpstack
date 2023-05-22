@@ -35,6 +35,9 @@ export class Device extends jspb.Message {
   getTagsMap(): jspb.Map<string, string>;
   clearTagsMap(): Device;
 
+  getJoinEui(): string;
+  setJoinEui(value: string): Device;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Device.AsObject;
   static toObject(includeInstance: boolean, msg: Device): Device.AsObject;
@@ -54,6 +57,7 @@ export namespace Device {
     isDisabled: boolean,
     variablesMap: Array<[string, string]>,
     tagsMap: Array<[string, string]>,
+    joinEui: string,
   }
 }
 

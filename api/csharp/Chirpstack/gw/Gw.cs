@@ -304,7 +304,8 @@ namespace Chirpstack.Gateway {
     /// </summary>
     [pbr::OriginalName("OK")] Ok = 1,
     /// <summary>
-    /// Rejected because it was already too late to program this packet for downlink.
+    /// Rejected because it was already too late to program this packet for
+    /// downlink.
     /// </summary>
     [pbr::OriginalName("TOO_LATE")] TooLate = 2,
     /// <summary>
@@ -312,7 +313,8 @@ namespace Chirpstack.Gateway {
     /// </summary>
     [pbr::OriginalName("TOO_EARLY")] TooEarly = 3,
     /// <summary>
-    /// Rejected because there was already a packet programmed in requested timeframe.
+    /// Rejected because there was already a packet programmed in requested
+    /// timeframe.
     /// </summary>
     [pbr::OriginalName("COLLISION_PACKET")] CollisionPacket = 4,
     /// <summary>
@@ -3958,7 +3960,8 @@ namespace Chirpstack.Gateway {
     private pb::ByteString uplinkId_ = pb::ByteString.Empty;
     /// <summary>
     /// Uplink ID (UUID bytes).
-    /// Unique and random ID which can be used to correlate the uplink across multiple logs.
+    /// Unique and random ID which can be used to correlate the uplink across
+    /// multiple logs.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -7174,7 +7177,8 @@ namespace Chirpstack.Gateway {
     private global::Google.Protobuf.WellKnownTypes.Duration delay_;
     /// <summary>
     /// Delay (duration).
-    /// The delay will be added to the gateway internal timing, provided by the context object.
+    /// The delay will be added to the gateway internal timing, provided by the
+    /// context object.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -10783,7 +10787,8 @@ namespace Chirpstack.Gateway {
     private string command_ = "";
     /// <summary>
     /// Command to execute.
-    /// This command must be pre-configured in the LoRa Gateway Bridge configuration.
+    /// This command must be pre-configured in the LoRa Gateway Bridge
+    /// configuration.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

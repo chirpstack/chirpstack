@@ -149,8 +149,11 @@
     - [Measurement](#api-Measurement)
     - [UpdateDeviceProfileRequest](#api-UpdateDeviceProfileRequest)
   
+    - [CadPeriodicity](#api-CadPeriodicity)
     - [CodecRuntime](#api-CodecRuntime)
     - [MeasurementKind](#api-MeasurementKind)
+    - [RelayModeActivation](#api-RelayModeActivation)
+    - [SecondChAckOffset](#api-SecondChAckOffset)
   
     - [DeviceProfileService](#api-DeviceProfileService)
   
@@ -1722,6 +1725,7 @@ applications.
 | is_disabled | [bool](#bool) |  | Device is disabled. |
 | variables | [Device.VariablesEntry](#api-Device-VariablesEntry) | repeated | Variables (user defined). These variables can be used together with integrations to store tokens / secrets that must be configured per device. These variables are not exposed in the event payloads. |
 | tags | [Device.TagsEntry](#api-Device-TagsEntry) | repeated | Tags (user defined). These tags are exposed in the event payloads or to integration. Tags are intended for aggregation and filtering. |
+| join_eui | [string](#string) |  | JoinEUI (optional, EUI64). This field will be automatically set / updated on OTAA. However, in some cases it must be pre-configured. For example to allow OTAA using a Relay. In this case the Relay needs to know the JoinEUI &#43; DevEUI combinations of the devices for which it needs to forward uplinks. |
 
 
 
@@ -2409,6 +2413,58 @@ The actual number of ping-slots per beacon period equals to 2^k. |
 | measurements | [DeviceProfile.MeasurementsEntry](#api-DeviceProfile-MeasurementsEntry) | repeated | Measurements. If defined, ChirpStack will visualize these metrics in the web-interface. |
 | auto_detect_measurements | [bool](#bool) |  | Auto-detect measurements. If set to true, measurements will be automatically added based on the keys of the decoded payload. In cases where the decoded payload contains random keys in the data, you want to set this to false. |
 | region_config_id | [string](#string) |  | Region configuration ID. If set, devices will only use the associated region. If let blank, then devices will use all regions matching the selected common-name. Note that multiple region configurations can exist for the same common-name, e.g. to provide an 8 channel and 16 channel configuration for the US915 band. |
+| is_relay | [bool](#bool) |  | Device is a Relay device. Enable this in case the device is a Relay. A Relay device implements TS011 and is able to relay data from relay capable devices. See for more information the TS011 specification. |
+| is_relay_ed | [bool](#bool) |  | Device is a Relay end-device. Enable this in case the device is an end-device that can operate under a Relay. Please refer to the TS011 specification for more information. |
+| relay_ed_relay_only | [bool](#bool) |  | End-device only accept data through relay. Only accept data for this device through a relay. This setting is useful for testing as in case of a test-setup, the end-device is usually within range of the gateway. |
+| relay_enabled | [bool](#bool) |  | Relay must be enabled. |
+| relay_cad_periodicity | [CadPeriodicity](#api-CadPeriodicity) |  | Relay CAD periodicity. |
+| relay_default_channel_index | [uint32](#uint32) |  | Relay default channel index. Valid values are 0 and 1, please refer to the RP002 specification for the meaning of these values. |
+| relay_second_channel_freq | [uint32](#uint32) |  | Relay second channel frequency (Hz). |
+| relay_second_channel_dr | [uint32](#uint32) |  | Relay second channel DR. |
+| relay_second_channel_ack_offset | [SecondChAckOffset](#api-SecondChAckOffset) |  | Relay second channel ACK offset. |
+| relay_ed_activation_mode | [RelayModeActivation](#api-RelayModeActivation) |  | Relay end-device activation mode. |
+| relay_ed_smart_enable_level | [uint32](#uint32) |  | Relay end-device smart-enable level. |
+| relay_ed_back_off | [uint32](#uint32) |  | Relay end-device back-off (in case it does not receive WOR ACK frame). 0 = Always send a LoRaWAN uplink 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK |
+| relay_ed_uplink_limit_bucket_size | [uint32](#uint32) |  | Relay end-device uplink limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
+| relay_ed_uplink_limit_reload_rate | [uint32](#uint32) |  | Relay end-device uplink limit reload rate.
+
+Valid values: * 0 - 62 = X tokens every hour * 63 = no limitation |
+| relay_join_req_limit_reload_rate | [uint32](#uint32) |  | Relay join-request limit reload rate.
+
+Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
+| relay_notify_limit_reload_rate | [uint32](#uint32) |  | Relay notify limit reload rate.
+
+Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
+| relay_global_uplink_limit_reload_rate | [uint32](#uint32) |  | Relay global uplink limit reload rate.
+
+Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
+| relay_overall_limit_reload_rate | [uint32](#uint32) |  | Relay overall limit reload rate.
+
+Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
+| relay_join_req_limit_bucket_size | [uint32](#uint32) |  | Relay join-request limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
+| relay_notify_limit_bucket_size | [uint32](#uint32) |  | Relay notify limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
+| relay_global_uplink_limit_bucket_size | [uint32](#uint32) |  | Relay globak uplink limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
+| relay_overall_limit_bucket_size | [uint32](#uint32) |  | Relay overall limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
 
 
 
@@ -2586,6 +2642,22 @@ The actual number of ping-slots per beacon period equals to 2^k. |
  
 
 
+<a name="api-CadPeriodicity"></a>
+
+### CadPeriodicity
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| SEC_1 | 0 | 1 second. |
+| MS_500 | 1 | 500 milliseconds |
+| MS_250 | 2 | 250 milliseconds |
+| MS_100 | 3 | 100 milliseconds |
+| MS_50 | 4 | 50 milliseconds |
+| MS_20 | 5 | 20 milliseconds |
+
+
+
 <a name="api-CodecRuntime"></a>
 
 ### CodecRuntime
@@ -2611,6 +2683,36 @@ The actual number of ping-slots per beacon period equals to 2^k. |
 | ABSOLUTE | 2 | Counters that do get reset upon reading. |
 | GAUGE | 3 | E.g. a temperature value. |
 | STRING | 4 | E.g. a firmware version, true / false value. |
+
+
+
+<a name="api-RelayModeActivation"></a>
+
+### RelayModeActivation
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| DISABLE_RELAY_MODE | 0 | Disable the relay mode. |
+| ENABLE_RELAY_MODE | 1 | Enable the relay model. |
+| DYNAMIC | 2 | Dynamic. |
+| END_DEVICE_CONTROLLED | 3 | End-device controlled. |
+
+
+
+<a name="api-SecondChAckOffset"></a>
+
+### SecondChAckOffset
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| KHZ_0 | 0 | 0 kHz. |
+| KHZ_200 | 1 | 200 kHz. |
+| KHZ_400 | 2 | 400 kHz. |
+| KHZ_800 | 3 | 800 kHz. |
+| KHZ_1600 | 4 | 1600 kHz. |
+| KHZ_3200 | 5 | 3200 kHz. |
 
 
  
@@ -2659,7 +2761,8 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | m_type | [common.MType](#common-MType) |  | Message type. |
 | dev_addr | [string](#string) |  | Device address (optional). |
 | dev_eui | [string](#string) |  | Device EUI (optional). |
-| plaintext_mac_commands | [bool](#bool) |  | Plaintext mac-commands. |
+| plaintext_f_opts | [bool](#bool) |  | Plaintext f_opts mac-commands. |
+| plaintext_frm_payload | [bool](#bool) |  | Plaintext frm_payload. |
 
 
 
@@ -2681,7 +2784,8 @@ DeviceProfileService is the service providing API methods for managing device-pr
 | dev_addr | [string](#string) |  | Device address (optional). |
 | dev_eui | [string](#string) |  | Device EUI (optional). |
 | time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Time. |
-| plaintext_mac_commands | [bool](#bool) |  | Plaintext mac-commands. |
+| plaintext_f_opts | [bool](#bool) |  | Plaintext f_opts mac-commands. |
+| plaintext_frm_payload | [bool](#bool) |  | Plaintext frm_payload. |
 
 
 

@@ -1,17 +1,31 @@
 use std::fmt;
+use std::io::{Cursor, Read};
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
 use anyhow::Result;
+#[cfg(feature = "diesel")]
+use diesel::{
+    backend::{self, Backend},
+    deserialize, serialize,
+    sql_types::SmallInt,
+};
 #[cfg(feature = "serde")]
 use serde::Serialize;
 
-use super::cflist::ChMask;
-use super::dl_settings::DLSettings;
+use crate::cflist::ChMask;
+use crate::dl_settings::DLSettings;
+use crate::helpers::{decode_freq, encode_freq};
+
+pub trait PayloadCodec<Struct = Self> {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Struct>;
+    fn encode(&self) -> Result<Vec<u8>>;
+}
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum CID {
+    // LoRaWAN
     ResetInd,
     ResetConf,
     LinkCheckReq,
@@ -49,6 +63,21 @@ pub enum CID {
     BeaconFreqAns,
     DeviceModeInd,
     DeviceModeConf,
+    // Relay
+    RelayConfReq,
+    RelayConfAns,
+    EndDeviceConfReq,
+    EndDeviceConfAns,
+    FilterListReq,
+    FilterListAns,
+    UpdateUplinkListReq,
+    UpdateUplinkListAns,
+    CtrlUplinkListReq,
+    CtrlUplinkListAns,
+    ConfigureFwdLimitReq,
+    ConfigureFwdLimitAns,
+    NotifyNewEndDeviceReq,
+    // Raw
     Raw,
 }
 
@@ -59,8 +88,9 @@ impl fmt::Display for CID {
 }
 
 impl CID {
-    pub fn byte(&self) -> u8 {
+    pub fn to_u8(&self) -> u8 {
         match self {
+            // LoRaWAN
             CID::ResetInd | CID::ResetConf => 0x01,
             CID::LinkCheckReq | CID::LinkCheckAns => 0x02,
             CID::LinkADRReq | CID::LinkADRAns => 0x03,
@@ -80,14 +110,90 @@ impl CID {
             CID::PingSlotChannelReq | CID::PingSlotChannelAns => 0x11,
             CID::BeaconFreqReq | CID::BeaconFreqAns => 0x13, // 0x12 is deprecated
             CID::DeviceModeInd | CID::DeviceModeConf => 0x20,
+            // Relay
+            CID::RelayConfReq | CID::RelayConfAns => 0x40,
+            CID::EndDeviceConfReq | CID::EndDeviceConfAns => 0x41,
+            CID::FilterListReq | CID::FilterListAns => 0x42,
+            CID::UpdateUplinkListReq | CID::UpdateUplinkListAns => 0x43,
+            CID::CtrlUplinkListReq | CID::CtrlUplinkListAns => 0x44,
+            CID::ConfigureFwdLimitReq | CID::ConfigureFwdLimitAns => 0x45,
+            CID::NotifyNewEndDeviceReq => 0x46,
+            // Raw
             CID::Raw => 0xff,
         }
+    }
+
+    pub fn from_u8(uplink: bool, v: u8) -> Result<Self> {
+        Ok(if uplink {
+            match v {
+                0x01 => CID::ResetInd,
+                0x02 => CID::LinkCheckReq,
+                0x03 => CID::LinkADRAns,
+                0x04 => CID::DutyCycleAns,
+                0x05 => CID::RxParamSetupAns,
+                0x06 => CID::DevStatusAns,
+                0x07 => CID::NewChannelAns,
+                0x08 => CID::RxTimingSetupAns,
+                0x09 => CID::TxParamSetupAns,
+                0x0a => CID::DlChannelAns,
+                0x0b => CID::RekeyInd,
+                0x0c => CID::ADRParamSetupAns,
+                0x0d => CID::DeviceTimeReq,
+                0x0f => CID::RejoinParamSetupAns,
+                0x10 => CID::PingSlotInfoReq,
+                0x11 => CID::PingSlotChannelAns,
+                0x13 => CID::BeaconFreqAns,
+                0x20 => CID::DeviceModeInd,
+                0x40 => CID::RelayConfAns,
+                0x41 => CID::EndDeviceConfAns,
+                0x42 => CID::FilterListAns,
+                0x43 => CID::UpdateUplinkListAns,
+                0x44 => CID::CtrlUplinkListAns,
+                0x45 => CID::ConfigureFwdLimitAns,
+                0x46 => CID::NotifyNewEndDeviceReq,
+                _ => {
+                    return Err(anyhow!("Invalid CID: {}", v));
+                }
+            }
+        } else {
+            match v {
+                0x01 => CID::ResetConf,
+                0x02 => CID::LinkCheckAns,
+                0x03 => CID::LinkADRReq,
+                0x04 => CID::DutyCycleReq,
+                0x05 => CID::RxParamSetupReq,
+                0x06 => CID::DevStatusReq,
+                0x07 => CID::NewChannelReq,
+                0x08 => CID::RxTimingSetupReq,
+                0x09 => CID::TxParamSetupReq,
+                0x0a => CID::DlChannelReq,
+                0x0b => CID::RekeyConf,
+                0x0c => CID::ADRParamSetupReq,
+                0x0d => CID::DeviceTimeAns,
+                0x0e => CID::ForceRejoinReq,
+                0x0f => CID::RejoinParamSetupReq,
+                0x10 => CID::PingSlotInfoAns,
+                0x11 => CID::PingSlotChannelReq,
+                0x13 => CID::BeaconFreqReq,
+                0x20 => CID::DeviceModeConf,
+                0x40 => CID::RelayConfReq,
+                0x41 => CID::EndDeviceConfReq,
+                0x42 => CID::FilterListReq,
+                0x43 => CID::UpdateUplinkListReq,
+                0x44 => CID::CtrlUplinkListReq,
+                0x45 => CID::ConfigureFwdLimitReq,
+                _ => {
+                    return Err(anyhow!("Invalid CID: {}", v));
+                }
+            }
+        })
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum MACCommand {
+    // LoRaWAN
     ResetInd(ResetIndPayload),
     ResetConf(ResetConfPayload),
     LinkCheckReq,
@@ -125,12 +231,28 @@ pub enum MACCommand {
     BeaconFreqAns(BeaconFreqAnsPayload),
     DeviceModeInd(DeviceModeIndPayload),
     DeviceModeConf(DeviceModeConfPayload),
+    // Relay
+    RelayConfReq(RelayConfReqPayload),
+    RelayConfAns(RelayConfAnsPayload),
+    EndDeviceConfReq(EndDeviceConfReqPayload),
+    EndDeviceConfAns(EndDeviceConfAnsPayload),
+    FilterListReq(FilterListReqPayload),
+    FilterListAns(FilterListAnsPayload),
+    UpdateUplinkListReq(UpdateUplinkListReqPayload),
+    UpdateUplinkListAns,
+    CtrlUplinkListReq(CtrlUplinkListReqPayload),
+    CtrlUplinkListAns(CtrlUplinkListAnsPayload),
+    ConfigureFwdLimitReq(ConfigureFwdLimitReqPayload),
+    ConfigureFwdLimitAns,
+    NotifyNewEndDeviceReq(NotifyNewEndDeviceReqPayload),
+    // Raw
     Raw(Vec<u8>),
 }
 
 impl MACCommand {
     pub fn cid(&self) -> CID {
         match self {
+            // LoRaWAN
             MACCommand::ResetInd(_) => CID::ResetInd,
             MACCommand::ResetConf(_) => CID::ResetConf,
             MACCommand::LinkCheckReq => CID::LinkCheckReq,
@@ -168,6 +290,21 @@ impl MACCommand {
             MACCommand::BeaconFreqAns(_) => CID::BeaconFreqAns, // 0x12 is deprecated
             MACCommand::DeviceModeInd(_) => CID::DeviceModeInd,
             MACCommand::DeviceModeConf(_) => CID::DeviceModeConf,
+            // Relay
+            MACCommand::RelayConfReq(_) => CID::RelayConfReq,
+            MACCommand::RelayConfAns(_) => CID::RelayConfAns,
+            MACCommand::EndDeviceConfReq(_) => CID::EndDeviceConfReq,
+            MACCommand::EndDeviceConfAns(_) => CID::EndDeviceConfAns,
+            MACCommand::FilterListReq(_) => CID::FilterListReq,
+            MACCommand::FilterListAns(_) => CID::FilterListAns,
+            MACCommand::UpdateUplinkListReq(_) => CID::UpdateUplinkListReq,
+            MACCommand::UpdateUplinkListAns => CID::UpdateUplinkListAns,
+            MACCommand::CtrlUplinkListReq(_) => CID::CtrlUplinkListReq,
+            MACCommand::CtrlUplinkListAns(_) => CID::CtrlUplinkListAns,
+            MACCommand::ConfigureFwdLimitReq(_) => CID::ConfigureFwdLimitReq,
+            MACCommand::ConfigureFwdLimitAns => CID::ConfigureFwdLimitAns,
+            MACCommand::NotifyNewEndDeviceReq(_) => CID::NotifyNewEndDeviceReq,
+            // Raw
             MACCommand::Raw(_) => CID::Raw,
         }
     }
@@ -291,146 +428,195 @@ impl MACCommandSet {
 
         for mac in &self.0 {
             match mac {
+                // LoRaWAN
                 MACCommand::ResetInd(pl) => {
-                    out.push(0x01);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::ResetConf(pl) => {
-                    out.push(0x01);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::LinkCheckReq => {
-                    out.push(0x02);
+                    out.push(mac.cid().to_u8());
                 }
                 MACCommand::LinkCheckAns(pl) => {
-                    out.push(0x02);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::LinkADRReq(pl) => {
-                    out.push(0x03);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::LinkADRAns(pl) => {
-                    out.push(0x03);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::DutyCycleReq(pl) => {
-                    out.push(0x04);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::DutyCycleAns => {
-                    out.push(0x04);
+                    out.push(mac.cid().to_u8());
                 }
                 MACCommand::RxParamSetupReq(pl) => {
-                    out.push(0x05);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::RxParamSetupAns(pl) => {
-                    out.push(0x05);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::DevStatusReq => {
-                    out.push(0x06);
+                    out.push(mac.cid().to_u8());
                 }
                 MACCommand::DevStatusAns(pl) => {
-                    out.push(0x06);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::NewChannelReq(pl) => {
-                    out.push(0x07);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::NewChannelAns(pl) => {
-                    out.push(0x07);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::RxTimingSetupReq(pl) => {
-                    out.push(0x08);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::RxTimingSetupAns => {
-                    out.push(0x08);
+                    out.push(mac.cid().to_u8());
                 }
                 MACCommand::TxParamSetupReq(pl) => {
-                    out.push(0x09);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::TxParamSetupAns => {
-                    out.push(0x09);
+                    out.push(mac.cid().to_u8());
                 }
                 MACCommand::DlChannelReq(pl) => {
-                    out.push(0x0a);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::DlChannelAns(pl) => {
-                    out.push(0x0a);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::RekeyConf(pl) => {
-                    out.push(0x0b);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::RekeyInd(pl) => {
-                    out.push(0x0b);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::ADRParamSetupReq(pl) => {
-                    out.push(0x0c);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::ADRParamSetupAns => {
-                    out.push(0x0c);
+                    out.push(mac.cid().to_u8());
                 }
                 MACCommand::DeviceTimeReq => {
-                    out.push(0x0d);
+                    out.push(mac.cid().to_u8());
                 }
                 MACCommand::DeviceTimeAns(pl) => {
-                    out.push(0x0d);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::ForceRejoinReq(pl) => {
-                    out.push(0x0e);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::RejoinParamSetupReq(pl) => {
-                    out.push(0x0f);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::RejoinParamSetupAns(pl) => {
-                    out.push(0x0f);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::PingSlotInfoReq(pl) => {
-                    out.push(0x10);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::PingSlotInfoAns => {
-                    out.push(0x10);
+                    out.push(mac.cid().to_u8());
                 }
                 MACCommand::PingSlotChannelReq(pl) => {
-                    out.push(0x11);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::PingSlotChannelAns(pl) => {
-                    out.push(0x11);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::BeaconFreqReq(pl) => {
-                    out.push(0x13);
-                    out.extend_from_slice(&pl.to_bytes()?);
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::BeaconFreqAns(pl) => {
-                    out.push(0x13);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::DeviceModeInd(pl) => {
-                    out.push(0x20);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::DeviceModeConf(pl) => {
-                    out.push(0x20);
-                    out.extend_from_slice(&pl.to_bytes());
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
                 }
+                // Relay
+                MACCommand::RelayConfReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::RelayConfAns(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::EndDeviceConfReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::EndDeviceConfAns(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::FilterListReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::FilterListAns(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::UpdateUplinkListReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::UpdateUplinkListAns => out.push(mac.cid().to_u8()),
+                MACCommand::CtrlUplinkListReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::CtrlUplinkListAns(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::ConfigureFwdLimitReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::ConfigureFwdLimitAns => out.push(mac.cid().to_u8()),
+                MACCommand::NotifyNewEndDeviceReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                // Raw
                 MACCommand::Raw(v) => out.extend_from_slice(v),
             };
         }
@@ -447,343 +633,169 @@ impl MACCommandSet {
         // in any other case there must be exactly one MACCommand::Raw.
         if self.0.len() == 1 {
             if let MACCommand::Raw(b) = &self.0[0] {
-                let mut index = 0;
+                let mut cur = Cursor::new(b.clone());
                 let mut commands = vec![];
-                let len = b.len();
+                let mut b = [0; 1];
 
                 loop {
-                    if index == len {
+                    // Try to read one byte to get the CID.
+                    if cur.read_exact(&mut b).is_err() {
                         break;
                     }
 
-                    let cid_index = index;
-                    let pl_index = cid_index + 1;
+                    let cid = match CID::from_u8(uplink, b[0]) {
+                        Ok(v) => v,
+                        Err(_) => {
+                            let mut b = b.to_vec();
+                            cur.read_to_end(&mut b)?;
+                            commands.push(MACCommand::Raw(b));
+                            break;
+                        }
+                    };
 
-                    match uplink {
-                        true => match b[cid_index] {
-                            0x01 => {
-                                index += ResetIndPayload::SIZE;
-                                commands.push(MACCommand::ResetInd(ResetIndPayload::from_slice(
-                                    try_slice(b, pl_index, index + 1)?,
-                                )?));
-                            }
-                            0x02 => {
-                                commands.push(MACCommand::LinkCheckReq);
-                            }
-                            0x03 => {
-                                index += LinkADRAnsPayload::SIZE;
-                                commands.push(MACCommand::LinkADRAns(
-                                    LinkADRAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x04 => {
-                                commands.push(MACCommand::DutyCycleAns);
-                            }
-                            0x05 => {
-                                index += RxParamSetupAnsPayload::SIZE;
-                                commands.push(MACCommand::RxParamSetupAns(
-                                    RxParamSetupAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x06 => {
-                                index += DevStatusAnsPayload::SIZE;
-                                commands.push(MACCommand::DevStatusAns(
-                                    DevStatusAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x07 => {
-                                index += NewChannelAnsPayload::SIZE;
-                                commands.push(MACCommand::NewChannelAns(
-                                    NewChannelAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x08 => {
-                                commands.push(MACCommand::RxTimingSetupAns);
-                            }
-                            0x09 => {
-                                commands.push(MACCommand::TxParamSetupAns);
-                            }
-                            0x0a => {
-                                index += DlChannelAnsPayload::SIZE;
-                                commands.push(MACCommand::DlChannelAns(
-                                    DlChannelAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x0b => {
-                                index += RekeyIndPayload::SIZE;
-                                commands.push(MACCommand::RekeyInd(RekeyIndPayload::from_slice(
-                                    try_slice(b, pl_index, index + 1)?,
-                                )?));
-                            }
-                            0x0c => {
-                                commands.push(MACCommand::ADRParamSetupAns);
-                            }
-                            0x0d => {
-                                commands.push(MACCommand::DeviceTimeReq);
-                            }
-                            0x0f => {
-                                index += RejoinParamSetupAnsPayload::SIZE;
-                                commands.push(MACCommand::RejoinParamSetupAns(
-                                    RejoinParamSetupAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x10 => {
-                                index += PingSlotInfoReqPayload::SIZE;
-                                commands.push(MACCommand::PingSlotInfoReq(
-                                    PingSlotInfoReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x11 => {
-                                index += PingSlotChannelAnsPayload::SIZE;
-                                commands.push(MACCommand::PingSlotChannelAns(
-                                    PingSlotChannelAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x13 => {
-                                index += BeaconFreqAnsPayload::SIZE;
-                                commands.push(MACCommand::BeaconFreqAns(
-                                    BeaconFreqAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x20 => {
-                                index += DeviceModeIndPayload::SIZE;
-                                commands.push(MACCommand::DeviceModeInd(
-                                    DeviceModeIndPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            _ => {
-                                index += b[index..].len() - 1;
-                                commands.push(MACCommand::Raw(b[index..].to_vec()));
-                            }
-                        },
-                        false => match b[index] {
-                            0x01 => {
-                                index += ResetConfPayload::SIZE;
-                                commands.push(MACCommand::ResetConf(ResetConfPayload::from_slice(
-                                    try_slice(b, pl_index, index + 1)?,
-                                )?));
-                            }
-                            0x02 => {
-                                index += LinkCheckAnsPayload::SIZE;
-                                commands.push(MACCommand::LinkCheckAns(
-                                    LinkCheckAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x03 => {
-                                index += LinkADRReqPayload::SIZE;
-                                commands.push(MACCommand::LinkADRReq(
-                                    LinkADRReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x04 => {
-                                index += DutyCycleReqPayload::SIZE;
-                                commands.push(MACCommand::DutyCycleReq(
-                                    DutyCycleReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x05 => {
-                                index += RxParamSetupReqPayload::SIZE;
-                                commands.push(MACCommand::RxParamSetupReq(
-                                    RxParamSetupReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x06 => {
-                                commands.push(MACCommand::DevStatusReq);
-                            }
-                            0x07 => {
-                                index += NewChannelReqPayload::SIZE;
-                                commands.push(MACCommand::NewChannelReq(
-                                    NewChannelReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x08 => {
-                                index += RxTimingSetupReqPayload::SIZE;
-                                commands.push(MACCommand::RxTimingSetupReq(
-                                    RxTimingSetupReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x09 => {
-                                index += TxParamSetupReqPayload::SIZE;
-                                commands.push(MACCommand::TxParamSetupReq(
-                                    TxParamSetupReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x0a => {
-                                index += DlChannelReqPayload::SIZE;
-                                commands.push(MACCommand::DlChannelReq(
-                                    DlChannelReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x0b => {
-                                index += RekeyConfPayload::SIZE;
-                                commands.push(MACCommand::RekeyConf(RekeyConfPayload::from_slice(
-                                    try_slice(b, pl_index, index + 1)?,
-                                )?));
-                            }
-                            0x0c => {
-                                index += ADRParamSetupReqPayload::SIZE;
-                                commands.push(MACCommand::ADRParamSetupReq(
-                                    ADRParamSetupReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x0d => {
-                                index += DeviceTimeAnsPayload::SIZE;
-                                commands.push(MACCommand::DeviceTimeAns(
-                                    DeviceTimeAnsPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x0e => {
-                                index += ForceRejoinReqPayload::SIZE;
-                                commands.push(MACCommand::ForceRejoinReq(
-                                    ForceRejoinReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x0f => {
-                                index += RejoinParamSetupReqPayload::SIZE;
-                                commands.push(MACCommand::RejoinParamSetupReq(
-                                    RejoinParamSetupReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x10 => {
-                                commands.push(MACCommand::PingSlotInfoAns);
-                            }
-                            0x11 => {
-                                index += PingSlotChannelReqPayload::SIZE;
-                                commands.push(MACCommand::PingSlotChannelReq(
-                                    PingSlotChannelReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x13 => {
-                                index += BeaconFreqReqPayload::SIZE;
-                                commands.push(MACCommand::BeaconFreqReq(
-                                    BeaconFreqReqPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            0x20 => {
-                                index += DeviceModeConfPayload::SIZE;
-                                commands.push(MACCommand::DeviceModeConf(
-                                    DeviceModeConfPayload::from_slice(try_slice(
-                                        b,
-                                        pl_index,
-                                        index + 1,
-                                    )?)?,
-                                ));
-                            }
-                            _ => {
-                                index += b[index..].len() - 1;
-                                commands.push(MACCommand::Raw(b[index..].to_vec()));
-                            }
-                        },
+                    match cid {
+                        CID::ResetInd => {
+                            commands.push(MACCommand::ResetInd(ResetIndPayload::decode(&mut cur)?))
+                        }
+                        CID::ResetConf => commands
+                            .push(MACCommand::ResetConf(ResetConfPayload::decode(&mut cur)?)),
+                        CID::LinkCheckReq => commands.push(MACCommand::LinkCheckReq),
+                        CID::LinkCheckAns => commands.push(MACCommand::LinkCheckAns(
+                            LinkCheckAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::LinkADRReq => commands
+                            .push(MACCommand::LinkADRReq(LinkADRReqPayload::decode(&mut cur)?)),
+                        CID::LinkADRAns => commands
+                            .push(MACCommand::LinkADRAns(LinkADRAnsPayload::decode(&mut cur)?)),
+                        CID::DutyCycleReq => commands.push(MACCommand::DutyCycleReq(
+                            DutyCycleReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::DutyCycleAns => commands.push(MACCommand::DutyCycleAns),
+                        CID::RxParamSetupReq => commands.push(MACCommand::RxParamSetupReq(
+                            RxParamSetupReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::RxParamSetupAns => commands.push(MACCommand::RxParamSetupAns(
+                            RxParamSetupAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::DevStatusReq => commands.push(MACCommand::DevStatusReq),
+                        CID::DevStatusAns => commands.push(MACCommand::DevStatusAns(
+                            DevStatusAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::NewChannelReq => commands.push(MACCommand::NewChannelReq(
+                            NewChannelReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::NewChannelAns => commands.push(MACCommand::NewChannelAns(
+                            NewChannelAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::RxTimingSetupReq => commands.push(MACCommand::RxTimingSetupReq(
+                            RxTimingSetupReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::RxTimingSetupAns => commands.push(MACCommand::RxTimingSetupAns),
+                        CID::TxParamSetupReq => commands.push(MACCommand::TxParamSetupReq(
+                            TxParamSetupReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::TxParamSetupAns => commands.push(MACCommand::TxParamSetupAns),
+                        CID::DlChannelReq => commands.push(MACCommand::DlChannelReq(
+                            DlChannelReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::DlChannelAns => commands.push(MACCommand::DlChannelAns(
+                            DlChannelAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::RekeyConf => commands
+                            .push(MACCommand::RekeyConf(RekeyConfPayload::decode(&mut cur)?)),
+                        CID::RekeyInd => {
+                            commands.push(MACCommand::RekeyInd(RekeyIndPayload::decode(&mut cur)?))
+                        }
+                        CID::ADRParamSetupReq => commands.push(MACCommand::ADRParamSetupReq(
+                            ADRParamSetupReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::ADRParamSetupAns => commands.push(MACCommand::ADRParamSetupAns),
+                        CID::DeviceTimeReq => commands.push(MACCommand::DeviceTimeReq),
+                        CID::DeviceTimeAns => commands.push(MACCommand::DeviceTimeAns(
+                            DeviceTimeAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::ForceRejoinReq => commands.push(MACCommand::ForceRejoinReq(
+                            ForceRejoinReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::RejoinParamSetupReq => commands.push(MACCommand::RejoinParamSetupReq(
+                            RejoinParamSetupReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::RejoinParamSetupAns => commands.push(MACCommand::RejoinParamSetupAns(
+                            RejoinParamSetupAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::PingSlotInfoReq => commands.push(MACCommand::PingSlotInfoReq(
+                            PingSlotInfoReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::PingSlotInfoAns => commands.push(MACCommand::PingSlotInfoAns),
+                        CID::PingSlotChannelReq => commands.push(MACCommand::PingSlotChannelReq(
+                            PingSlotChannelReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::PingSlotChannelAns => commands.push(MACCommand::PingSlotChannelAns(
+                            PingSlotChannelAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::BeaconFreqReq => commands.push(MACCommand::BeaconFreqReq(
+                            BeaconFreqReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::BeaconFreqAns => commands.push(MACCommand::BeaconFreqAns(
+                            BeaconFreqAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::DeviceModeInd => commands.push(MACCommand::DeviceModeInd(
+                            DeviceModeIndPayload::decode(&mut cur)?,
+                        )),
+                        CID::DeviceModeConf => commands.push(MACCommand::DeviceModeConf(
+                            DeviceModeConfPayload::decode(&mut cur)?,
+                        )),
+                        CID::RelayConfReq => commands.push(MACCommand::RelayConfReq(
+                            RelayConfReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::RelayConfAns => commands.push(MACCommand::RelayConfAns(
+                            RelayConfAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::EndDeviceConfReq => commands.push(MACCommand::EndDeviceConfReq(
+                            EndDeviceConfReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::EndDeviceConfAns => commands.push(MACCommand::EndDeviceConfAns(
+                            EndDeviceConfAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::FilterListReq => commands.push(MACCommand::FilterListReq(
+                            FilterListReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::FilterListAns => commands.push(MACCommand::FilterListAns(
+                            FilterListAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::UpdateUplinkListReq => commands.push(MACCommand::UpdateUplinkListReq(
+                            UpdateUplinkListReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::UpdateUplinkListAns => commands.push(MACCommand::UpdateUplinkListAns),
+                        CID::CtrlUplinkListReq => commands.push(MACCommand::CtrlUplinkListReq(
+                            CtrlUplinkListReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::CtrlUplinkListAns => commands.push(MACCommand::CtrlUplinkListAns(
+                            CtrlUplinkListAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::ConfigureFwdLimitReq => {
+                            commands.push(MACCommand::ConfigureFwdLimitReq(
+                                ConfigureFwdLimitReqPayload::decode(&mut cur)?,
+                            ))
+                        }
+                        CID::ConfigureFwdLimitAns => {
+                            commands.push(MACCommand::ConfigureFwdLimitAns)
+                        }
+                        CID::NotifyNewEndDeviceReq => {
+                            commands.push(MACCommand::NotifyNewEndDeviceReq(
+                                NotifyNewEndDeviceReqPayload::decode(&mut cur)?,
+                            ))
+                        }
+                        CID::Raw => {}
                     }
-
-                    // CID byte
-                    index += 1;
                 }
 
+                // Overwrite with decoded mac-commands.
                 self.0 = commands;
-                return Ok(());
             }
         }
 
-        Err(anyhow!(
-            "MACCommandSet must contain exactly 1 MACCommand::Raw for decoding"
-        ))
+        Ok(())
     }
 }
 
@@ -793,21 +805,18 @@ pub struct ResetIndPayload {
     pub dev_lorawan_version: Version,
 }
 
-impl ResetIndPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("ResetIndPayload expects 1 byte"));
-        }
+impl PayloadCodec for ResetIndPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(ResetIndPayload {
             dev_lorawan_version: Version::from_u8(b[0])?,
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        [self.dev_lorawan_version.to_u8()]
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.dev_lorawan_version.to_u8()])
     }
 }
 
@@ -817,21 +826,18 @@ pub struct ResetConfPayload {
     pub serv_lorawan_version: Version,
 }
 
-impl ResetConfPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("ResetConfPayload expects 1 byte"));
-        }
+impl PayloadCodec for ResetConfPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(ResetConfPayload {
             serv_lorawan_version: Version::from_u8(b[0])?,
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        [self.serv_lorawan_version.to_u8()]
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.serv_lorawan_version.to_u8()])
     }
 }
 
@@ -842,13 +848,10 @@ pub struct LinkCheckAnsPayload {
     pub gw_cnt: u8,
 }
 
-impl LinkCheckAnsPayload {
-    const SIZE: usize = 2;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("LinkCheckAnsPayload expects 2 bytes"));
-        }
+impl PayloadCodec for LinkCheckAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 2];
+        cur.read_exact(&mut b)?;
 
         Ok(LinkCheckAnsPayload {
             margin: b[0],
@@ -856,8 +859,8 @@ impl LinkCheckAnsPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        [self.margin, self.gw_cnt]
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.margin, self.gw_cnt])
     }
 }
 
@@ -870,24 +873,21 @@ pub struct LinkADRReqPayload {
     pub redundancy: Redundancy,
 }
 
-impl LinkADRReqPayload {
-    const SIZE: usize = 4;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("LinkADRReqPayload expects 4 bytes"));
-        }
+impl PayloadCodec for LinkADRReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 4];
+        cur.read_exact(&mut b)?;
 
         Ok(LinkADRReqPayload {
             dr: (b[0] & 0xf0) >> 4,
             tx_power: b[0] & 0x0f,
             ch_mask: ChMask::from_bytes([b[1], b[2]]),
-            redundancy: Redundancy::from_bytes([b[3]]),
+            redundancy: Redundancy::from_u8(b[3]),
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
-        let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 4];
 
         if self.dr > 15 {
             return Err(anyhow!("max value of dr is 15"));
@@ -899,7 +899,7 @@ impl LinkADRReqPayload {
 
         b[0] = self.tx_power | (self.dr << 4);
         b[1..3].clone_from_slice(&self.ch_mask.to_bytes());
-        b[3..].clone_from_slice(&self.redundancy.to_bytes()?);
+        b[3] = self.redundancy.to_u8()?;
 
         Ok(b)
     }
@@ -913,9 +913,7 @@ pub struct Redundancy {
 }
 
 impl Redundancy {
-    const SIZE: usize = 1;
-
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    pub fn to_u8(&self) -> Result<u8> {
         if self.nb_rep > 15 {
             return Err(anyhow!("max value of nb_rep is 15"));
         }
@@ -923,13 +921,13 @@ impl Redundancy {
             return Err(anyhow!("max value of ch_mask_cntl is 7"));
         }
 
-        Ok([self.nb_rep | (self.ch_mask_cntl << 4)])
+        Ok(self.nb_rep | (self.ch_mask_cntl << 4))
     }
 
-    pub fn from_bytes(b: [u8; Self::SIZE]) -> Self {
+    pub fn from_u8(b: u8) -> Self {
         Redundancy {
-            nb_rep: b[0] & 0x0f,
-            ch_mask_cntl: (b[0] & 0x70) >> 4,
+            nb_rep: b & 0x0f,
+            ch_mask_cntl: (b & 0x70) >> 4,
         }
     }
 }
@@ -942,13 +940,10 @@ pub struct LinkADRAnsPayload {
     pub tx_power_ack: bool,
 }
 
-impl LinkADRAnsPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("LinkADRAnsPayload expects 1 byte"));
-        }
+impl PayloadCodec for LinkADRAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(LinkADRAnsPayload {
             ch_mask_ack: b[0] & 0x01 != 0,
@@ -957,7 +952,7 @@ impl LinkADRAnsPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
+    fn encode(&self) -> Result<Vec<u8>> {
         let mut b: u8 = 0;
 
         if self.ch_mask_ack {
@@ -970,7 +965,7 @@ impl LinkADRAnsPayload {
             b |= 0x04;
         }
 
-        [b]
+        Ok(vec![b])
     }
 }
 
@@ -980,25 +975,22 @@ pub struct DutyCycleReqPayload {
     pub max_duty_cycle: u8,
 }
 
-impl DutyCycleReqPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("DutyCycleReqPayload expects 1 byte"));
-        }
+impl PayloadCodec for DutyCycleReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(DutyCycleReqPayload {
             max_duty_cycle: b[0],
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    fn encode(&self) -> Result<Vec<u8>> {
         if self.max_duty_cycle > 15 && self.max_duty_cycle != 255 {
             return Err(anyhow!("max_duty_cycle must have value 0 - 15 or 255"));
         }
 
-        Ok([self.max_duty_cycle])
+        Ok(vec![self.max_duty_cycle])
     }
 }
 
@@ -1009,37 +1001,21 @@ pub struct RxParamSetupReqPayload {
     pub dl_settings: DLSettings,
 }
 
-impl RxParamSetupReqPayload {
-    const SIZE: usize = 4;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("RxParamSetupReqPayload expects 4 bytes"));
-        }
+impl PayloadCodec for RxParamSetupReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 4];
+        cur.read_exact(&mut b)?;
 
         Ok(RxParamSetupReqPayload {
             dl_settings: DLSettings::from_le_bytes([b[0]]),
-            frequency: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[1..]);
-                u32::from_le_bytes(freq_b) * 100
-            },
+            frequency: decode_freq(&b[1..])?,
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
-        if self.frequency / 100 >= (1 << 24) {
-            return Err(anyhow!("max frequency value is 2^24-1"));
-        }
-        if self.frequency % 100 != 0 {
-            return Err(anyhow!("frequency must be a multiple of 100"));
-        }
-
-        let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 4];
         b[0..1].copy_from_slice(&self.dl_settings.to_le_bytes()?);
-
-        let freq_b = (self.frequency / 100).to_le_bytes();
-        b[1..4].copy_from_slice(&freq_b[0..3]);
+        b[1..4].copy_from_slice(&encode_freq(self.frequency)?);
         Ok(b)
     }
 }
@@ -1052,13 +1028,10 @@ pub struct RxParamSetupAnsPayload {
     pub rx1_dr_offset_ack: bool,
 }
 
-impl RxParamSetupAnsPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("RxParamSetupAnsPayload expects 1 byte"));
-        }
+impl PayloadCodec for RxParamSetupAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(RxParamSetupAnsPayload {
             channel_ack: b[0] & 0x01 != 0,
@@ -1067,7 +1040,7 @@ impl RxParamSetupAnsPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    fn encode(&self) -> Result<Vec<u8>> {
         let mut b: u8 = 0;
         if self.channel_ack {
             b |= 0x01;
@@ -1078,7 +1051,7 @@ impl RxParamSetupAnsPayload {
         if self.rx1_dr_offset_ack {
             b |= 0x04;
         }
-        Ok([b])
+        Ok(vec![b])
     }
 }
 
@@ -1089,13 +1062,10 @@ pub struct DevStatusAnsPayload {
     pub margin: i8,
 }
 
-impl DevStatusAnsPayload {
-    const SIZE: usize = 2;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("DevStatusAnsPayload expects 2 bytes"));
-        }
+impl PayloadCodec for DevStatusAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 2];
+        cur.read_exact(&mut b)?;
 
         Ok(DevStatusAnsPayload {
             battery: b[0],
@@ -1109,7 +1079,7 @@ impl DevStatusAnsPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    fn encode(&self) -> Result<Vec<u8>> {
         if self.margin < -32 {
             return Err(anyhow!("min margin value is -32"));
         }
@@ -1117,7 +1087,7 @@ impl DevStatusAnsPayload {
             return Err(anyhow!("max margin value is 31"));
         }
 
-        Ok([self.battery, {
+        Ok(vec![self.battery, {
             if self.margin < 0 {
                 (self.margin + 64) as u8
             } else {
@@ -1136,59 +1106,23 @@ pub struct NewChannelReqPayload {
     pub max_dr: u8,
 }
 
-impl NewChannelReqPayload {
-    const SIZE: usize = 5;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("NewChannelReqPayload expects 5 bytes"));
-        }
+impl PayloadCodec for NewChannelReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 5];
+        cur.read_exact(&mut b)?;
 
         Ok(NewChannelReqPayload {
             ch_index: b[0],
-            freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[1..4]);
-                let freq = u32::from_le_bytes(freq_b);
-
-                if freq >= 12000000 {
-                    // 2.4GHz frequency
-                    freq * 200
-                } else {
-                    freq * 100
-                }
-            },
+            freq: decode_freq(&b[1..4])?,
             min_dr: b[4] & 0x0f,
             max_dr: (b[4] & 0xf0) >> 4,
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
-        let mut freq = self.freq;
-
-        // Support LoRaWAN 2.4GHz, in which case the stepping is 200Hz:
-        // See Frequency Encoding in MAC Commands
-        // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
-        if freq >= 2400000000 {
-            freq /= 2;
-        }
-
-        if freq / 100 >= (1 << 24) {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if freq % 100 != 0 {
-            return Err(anyhow!("freq must be multiple of 100"));
-        }
-        if self.min_dr > 15 {
-            return Err(anyhow!("max min_dr value is 15"));
-        }
-        if self.max_dr > 15 {
-            return Err(anyhow!("max max_dr value is 15"));
-        }
-
-        let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 5];
         b[0] = self.ch_index;
-        b[1..5].copy_from_slice(&(freq / 100).to_le_bytes());
+        b[1..4].copy_from_slice(&encode_freq(self.freq)?);
         b[4] = self.min_dr | (self.max_dr << 4);
 
         Ok(b)
@@ -1202,13 +1136,10 @@ pub struct NewChannelAnsPayload {
     pub dr_range_ok: bool,
 }
 
-impl NewChannelAnsPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("NewChannelAnsPayload expects 1 byte"));
-        }
+impl PayloadCodec for NewChannelAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(NewChannelAnsPayload {
             channel_freq_ok: b[0] & 0x01 != 0,
@@ -1216,15 +1147,15 @@ impl NewChannelAnsPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        let mut b: [u8; Self::SIZE] = [0];
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b: u8 = 0;
         if self.channel_freq_ok {
-            b[0] = 0x01;
+            b = 0x01;
         }
         if self.dr_range_ok {
-            b[0] |= 0x02;
+            b |= 0x02;
         }
-        b
+        Ok(vec![b])
     }
 }
 
@@ -1234,23 +1165,19 @@ pub struct RxTimingSetupReqPayload {
     pub delay: u8,
 }
 
-impl RxTimingSetupReqPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("RxTimingSetupReqPayload expects 1 byte"));
-        }
-
+impl PayloadCodec for RxTimingSetupReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
         Ok(RxTimingSetupReqPayload { delay: b[0] })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    fn encode(&self) -> Result<Vec<u8>> {
         if self.delay > 15 {
             return Err(anyhow!("max delay value is 15"));
         }
 
-        Ok([self.delay])
+        Ok(vec![self.delay])
     }
 }
 
@@ -1262,13 +1189,10 @@ pub struct TxParamSetupReqPayload {
     pub max_eirp: u8,
 }
 
-impl TxParamSetupReqPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("TxParamSetupReqPayload expects 1 byte"));
-        }
+impl PayloadCodec for TxParamSetupReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(TxParamSetupReqPayload {
             uplink_dwell_time: {
@@ -1289,12 +1213,12 @@ impl TxParamSetupReqPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    fn encode(&self) -> Result<Vec<u8>> {
         if self.max_eirp > 15 {
             return Err(anyhow!("max max_eirp value is 15"));
         }
 
-        let mut b: [u8; Self::SIZE] = [self.max_eirp];
+        let mut b = vec![self.max_eirp];
         if self.uplink_dwell_time == DwellTime::Limit400ms {
             b[0] |= 0x10;
         }
@@ -1313,38 +1237,21 @@ pub struct DlChannelReqPayload {
     pub freq: u32,
 }
 
-impl DlChannelReqPayload {
-    const SIZE: usize = 4;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("DlChannelReqPayload expects 4 bytes"));
-        }
+impl PayloadCodec for DlChannelReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 4];
+        cur.read_exact(&mut b)?;
 
         Ok(DlChannelReqPayload {
             ch_index: b[0],
-            freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[1..4]);
-                u32::from_le_bytes(freq_b) * 100
-            },
+            freq: decode_freq(&b[1..4])?,
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
-        if self.freq / 100 >= 1 << 24 {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if self.freq % 100 != 0 {
-            return Err(anyhow!("freq must be a multiple of 100"));
-        }
-
-        let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 4];
         b[0] = self.ch_index;
-
-        let freq_b = (self.freq / 100).to_le_bytes();
-        b[1..4].copy_from_slice(&freq_b[0..3]);
-
+        b[1..4].copy_from_slice(&encode_freq(self.freq)?);
         Ok(b)
     }
 }
@@ -1356,13 +1263,10 @@ pub struct DlChannelAnsPayload {
     pub channel_freq_ok: bool,
 }
 
-impl DlChannelAnsPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("DlChannelReqPayload expects 1 byte"));
-        }
+impl PayloadCodec for DlChannelAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(DlChannelAnsPayload {
             channel_freq_ok: b[0] & 0x01 != 0,
@@ -1370,7 +1274,7 @@ impl DlChannelAnsPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
+    fn encode(&self) -> Result<Vec<u8>> {
         let mut b: u8 = 0;
 
         if self.channel_freq_ok {
@@ -1380,7 +1284,7 @@ impl DlChannelAnsPayload {
             b |= 0x02;
         }
 
-        [b]
+        Ok(vec![b])
     }
 }
 
@@ -1390,21 +1294,18 @@ pub struct RekeyConfPayload {
     pub serv_lorawan_version: Version,
 }
 
-impl RekeyConfPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("RekeyConfPayload expects 1 byte"));
-        }
+impl PayloadCodec for RekeyConfPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(RekeyConfPayload {
             serv_lorawan_version: Version::from_u8(b[0])?,
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        [self.serv_lorawan_version.to_u8()]
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.serv_lorawan_version.to_u8()])
     }
 }
 
@@ -1414,21 +1315,18 @@ pub struct RekeyIndPayload {
     pub dev_lorawan_version: Version,
 }
 
-impl RekeyIndPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("RekeyIndPayload expects 1 byte"));
-        }
+impl PayloadCodec for RekeyIndPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(RekeyIndPayload {
             dev_lorawan_version: Version::from_u8(b[0])?,
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        [self.dev_lorawan_version.to_u8()]
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.dev_lorawan_version.to_u8()])
     }
 }
 
@@ -1438,21 +1336,18 @@ pub struct ADRParamSetupReqPayload {
     pub adr_param: ADRParam,
 }
 
-impl ADRParamSetupReqPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("ADRParamSetupReqPayload expects 1 byte"));
-        }
+impl PayloadCodec for ADRParamSetupReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(ADRParamSetupReqPayload {
-            adr_param: ADRParam::from_slice(b)?,
+            adr_param: ADRParam::from_u8(b[0]),
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
-        self.adr_param.to_bytes()
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.adr_param.to_u8()?])
     }
 }
 
@@ -1464,20 +1359,14 @@ pub struct ADRParam {
 }
 
 impl ADRParam {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("ADRParam expects 1 byte"));
+    pub fn from_u8(b: u8) -> Self {
+        ADRParam {
+            delay_exp: b & 0x0f,
+            limit_exp: b >> 4,
         }
-
-        Ok(ADRParam {
-            delay_exp: b[0] & 0x0f,
-            limit_exp: b[0] >> 4,
-        })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    pub fn to_u8(&self) -> Result<u8> {
         if self.limit_exp > 15 {
             return Err(anyhow!("max limit_exp value is 15"));
         }
@@ -1485,7 +1374,7 @@ impl ADRParam {
             return Err(anyhow!("max delay_exp value is 15"));
         }
 
-        Ok([self.delay_exp | (self.limit_exp << 4)])
+        Ok(self.delay_exp | (self.limit_exp << 4))
     }
 }
 
@@ -1495,13 +1384,10 @@ pub struct DeviceTimeAnsPayload {
     pub time_since_gps_epoch: Duration,
 }
 
-impl DeviceTimeAnsPayload {
-    const SIZE: usize = 5;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("DeviceTimeAnsPayload expects 5 bytes"));
-        }
+impl PayloadCodec for DeviceTimeAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 5];
+        cur.read_exact(&mut b)?;
 
         let secs = {
             let mut secs_b: [u8; 4] = [0; 4];
@@ -1516,11 +1402,11 @@ impl DeviceTimeAnsPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 5];
         b[0..4].copy_from_slice(&(self.time_since_gps_epoch.as_secs() as u32).to_le_bytes());
         b[4] = ((self.time_since_gps_epoch.as_nanos() % 1_000_000_000) / 3906250) as u8;
-        b
+        Ok(b)
     }
 }
 
@@ -1533,13 +1419,10 @@ pub struct ForceRejoinReqPayload {
     pub dr: u8,
 }
 
-impl ForceRejoinReqPayload {
-    const SIZE: usize = 2;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("ForceRejoinReqPayload expects 2 bytes"));
-        }
+impl PayloadCodec for ForceRejoinReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 2];
+        cur.read_exact(&mut b)?;
 
         Ok(ForceRejoinReqPayload {
             dr: b[0] & 0x0f,
@@ -1549,7 +1432,7 @@ impl ForceRejoinReqPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    fn encode(&self) -> Result<Vec<u8>> {
         if self.period > 7 {
             return Err(anyhow!("max period value is 7"));
         }
@@ -1563,7 +1446,7 @@ impl ForceRejoinReqPayload {
             return Err(anyhow!("max dr value is 15"));
         }
 
-        Ok([
+        Ok(vec![
             self.dr | (self.rejoin_type << 4),
             self.max_retries | (self.period << 3),
         ])
@@ -1577,13 +1460,10 @@ pub struct RejoinParamSetupReqPayload {
     pub max_count_n: u8,
 }
 
-impl RejoinParamSetupReqPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("RejoinParamSetupReq expects 1 byte"));
-        }
+impl PayloadCodec for RejoinParamSetupReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(RejoinParamSetupReqPayload {
             max_count_n: b[0] & 0x0f,
@@ -1591,7 +1471,7 @@ impl RejoinParamSetupReqPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    fn encode(&self) -> Result<Vec<u8>> {
         if self.max_time_n > 15 {
             return Err(anyhow!("max max_time_n value is 15"));
         }
@@ -1599,7 +1479,7 @@ impl RejoinParamSetupReqPayload {
             return Err(anyhow!("max max_count_n value is 15"));
         }
 
-        Ok([self.max_count_n | (self.max_time_n << 4)])
+        Ok(vec![self.max_count_n | (self.max_time_n << 4)])
     }
 }
 
@@ -1609,25 +1489,22 @@ pub struct RejoinParamSetupAnsPayload {
     pub time_ok: bool,
 }
 
-impl RejoinParamSetupAnsPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("RejoinParamSetupAnsPayload expects 1 byte"));
-        }
+impl PayloadCodec for RejoinParamSetupAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(RejoinParamSetupAnsPayload {
             time_ok: b[0] & 0x01 != 0,
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
+    fn encode(&self) -> Result<Vec<u8>> {
         let mut b: u8 = 0;
         if self.time_ok {
             b = 0x01;
         }
-        [b]
+        Ok(vec![b])
     }
 }
 
@@ -1637,25 +1514,22 @@ pub struct PingSlotInfoReqPayload {
     pub periodicity: u8,
 }
 
-impl PingSlotInfoReqPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("PingSlotInfoReqPayload expects 1 byte"));
-        }
+impl PayloadCodec for PingSlotInfoReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(PingSlotInfoReqPayload {
             periodicity: b[0] & 0x07,
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    fn encode(&self) -> Result<Vec<u8>> {
         if self.periodicity > 7 {
             return Err(anyhow!("max periodicity value is 7"));
         }
 
-        Ok([self.periodicity])
+        Ok(vec![self.periodicity])
     }
 }
 
@@ -1666,38 +1540,21 @@ pub struct PingSlotChannelReqPayload {
     pub dr: u8,
 }
 
-impl PingSlotChannelReqPayload {
-    const SIZE: usize = 4;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("PingSlotChannelReqPayload expects 4 btes"));
-        }
+impl PayloadCodec for PingSlotChannelReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 4];
+        cur.read_exact(&mut b)?;
 
         Ok(PingSlotChannelReqPayload {
-            freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[0..3]);
-                u32::from_le_bytes(freq_b) * 100
-            },
+            freq: decode_freq(&b[0..3])?,
             dr: b[3] & 0x0f,
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
-        if self.freq / 100 >= 1 << 24 {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if self.freq % 100 != 0 {
-            return Err(anyhow!("freq must be a multiple of 100"));
-        }
-        if self.dr > 15 {
-            return Err(anyhow!("max dr value is 15"));
-        }
-
-        let mut b = (self.freq / 100).to_le_bytes();
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 4];
+        b[0..3].copy_from_slice(&encode_freq(self.freq)?);
         b[3] = self.dr;
-
         Ok(b)
     }
 }
@@ -1709,13 +1566,10 @@ pub struct PingSlotChannelAnsPayload {
     pub channel_freq_ok: bool,
 }
 
-impl PingSlotChannelAnsPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("PingSlotChannelAnsPayload expects 1 byte"));
-        }
+impl PayloadCodec for PingSlotChannelAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(PingSlotChannelAnsPayload {
             channel_freq_ok: b[0] & 0x01 != 0,
@@ -1723,18 +1577,15 @@ impl PingSlotChannelAnsPayload {
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
+    fn encode(&self) -> Result<Vec<u8>> {
         let mut b = 0;
-
         if self.channel_freq_ok {
             b = 0x01;
         }
-
         if self.dr_ok {
             b |= 0x02;
         }
-
-        [b]
+        Ok(vec![b])
     }
 }
 
@@ -1744,35 +1595,18 @@ pub struct BeaconFreqReqPayload {
     pub freq: u32,
 }
 
-impl BeaconFreqReqPayload {
-    const SIZE: usize = 3;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("BeaconFreqReqPayload expects 3 bytes"));
-        }
+impl PayloadCodec for BeaconFreqReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 3];
+        cur.read_exact(&mut b)?;
 
         Ok(BeaconFreqReqPayload {
-            freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(b);
-                u32::from_le_bytes(freq_b) * 100
-            },
+            freq: decode_freq(&b)?,
         })
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
-        if self.freq / 100 >= 1 << 24 {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if self.freq % 100 != 0 {
-            return Err(anyhow!("freq must be a multiple of 100"));
-        }
-
-        let freq_b = (self.freq / 100).to_le_bytes();
-        let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
-        b[0..3].copy_from_slice(&freq_b[0..3]);
-        Ok(b)
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(encode_freq(self.freq)?.to_vec())
     }
 }
 
@@ -1782,25 +1616,22 @@ pub struct BeaconFreqAnsPayload {
     beacon_freq_ok: bool,
 }
 
-impl BeaconFreqAnsPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("BeaconFreqAnsPayload expects 1 byte"));
-        }
+impl PayloadCodec for BeaconFreqAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(BeaconFreqAnsPayload {
             beacon_freq_ok: b[0] & 0x01 != 0,
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
+    fn encode(&self) -> Result<Vec<u8>> {
         let mut b: u8 = 0;
         if self.beacon_freq_ok {
             b = 0x01;
         }
-        [b]
+        Ok(vec![b])
     }
 }
 
@@ -1810,21 +1641,18 @@ pub struct DeviceModeIndPayload {
     pub class: DeviceModeClass,
 }
 
-impl DeviceModeIndPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("DeviceModeIndPayload expects 1 byte"));
-        }
+impl PayloadCodec for DeviceModeIndPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(DeviceModeIndPayload {
             class: DeviceModeClass::from_u8(b[0])?,
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        [self.class.to_u8()]
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.class.to_u8()])
     }
 }
 
@@ -1834,608 +1662,1484 @@ pub struct DeviceModeConfPayload {
     pub class: DeviceModeClass,
 }
 
-impl DeviceModeConfPayload {
-    const SIZE: usize = 1;
-
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("DeviceModeConfPayload expects 1 byte"));
-        }
+impl PayloadCodec for DeviceModeConfPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
 
         Ok(DeviceModeConfPayload {
             class: DeviceModeClass::from_u8(b[0])?,
         })
     }
 
-    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
-        [self.class.to_u8()]
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.class.to_u8()])
     }
 }
 
-fn try_slice(b: &[u8], start: usize, end: usize) -> Result<&[u8]> {
-    if end > b.len() {
-        return Err(anyhow!("not enough data"));
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct ChannelSettingsRelay {
+    pub start_stop: u8,
+    pub cad_periodicity: u8,
+    pub default_ch_idx: u8,
+    pub second_ch_idx: u8,
+    pub second_ch_dr: u8,
+    pub second_ch_ack_offset: u8,
+}
+
+impl ChannelSettingsRelay {
+    pub fn to_bytes(&self) -> Result<[u8; 2]> {
+        if self.start_stop > 1 {
+            return Err(anyhow!("max value of start_stop is 1"));
+        }
+        if self.cad_periodicity > 7 {
+            return Err(anyhow!("max value of cad_periodicity is 7"));
+        }
+        if self.default_ch_idx > 1 {
+            return Err(anyhow!("max value of default_ch_idx is 1"));
+        }
+        if self.second_ch_idx > 1 {
+            return Err(anyhow!("max value of second_ch_idx is 1"));
+        }
+        if self.second_ch_dr > 15 {
+            return Err(anyhow!("max value of second_ch_dr is 15"));
+        }
+        if self.second_ch_ack_offset > 7 {
+            return Err(anyhow!("max value of second_ch_ack_offset is 7"));
+        }
+
+        Ok([
+            self.second_ch_ack_offset | (self.second_ch_dr << 3) | (self.second_ch_idx << 7),
+            (self.second_ch_idx >> 1)
+                | (self.default_ch_idx << 1)
+                | (self.cad_periodicity << 2)
+                | (self.start_stop << 5),
+        ])
     }
 
-    Ok(&b[start..end])
+    pub fn from_bytes(b: [u8; 2]) -> Self {
+        ChannelSettingsRelay {
+            second_ch_ack_offset: b[0] & 0x07,
+            second_ch_dr: (b[0] & 0x78) >> 3,
+            second_ch_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x01) << 1),
+            default_ch_idx: (b[1] & 0x02) >> 1,
+            cad_periodicity: (b[1] & 0x1c) >> 2,
+            start_stop: (b[1] & 0x20) >> 5,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct RelayConfReqPayload {
+    pub channel_settings_relay: ChannelSettingsRelay,
+    pub second_ch_freq: u32,
+}
+
+impl PayloadCodec for RelayConfReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 5];
+        cur.read_exact(&mut b)?;
+
+        Ok(RelayConfReqPayload {
+            channel_settings_relay: ChannelSettingsRelay::from_bytes([b[0], b[1]]),
+            second_ch_freq: decode_freq(&b[2..5])?,
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 5];
+        b[0..2].copy_from_slice(&self.channel_settings_relay.to_bytes()?);
+        b[2..5].copy_from_slice(&encode_freq(self.second_ch_freq)?);
+        Ok(b)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct RelayConfAnsPayload {
+    pub second_ch_freq_ack: bool,
+    pub second_ch_ack_offset_ack: bool,
+    pub second_ch_dr_ack: bool,
+    pub second_ch_idx_ack: bool,
+    pub default_ch_idx_ack: bool,
+    pub cad_periodicity_ack: bool,
+}
+
+impl PayloadCodec for RelayConfAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
+
+        Ok(RelayConfAnsPayload {
+            second_ch_freq_ack: b[0] & 0x01 != 0,
+            second_ch_ack_offset_ack: b[0] & 0x02 != 0,
+            second_ch_dr_ack: b[0] & 0x04 != 0,
+            second_ch_idx_ack: b[0] & 0x08 != 0,
+            default_ch_idx_ack: b[0] & 0x10 != 0,
+            cad_periodicity_ack: b[0] & 0x20 != 0,
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b: u8 = 0;
+
+        if self.second_ch_freq_ack {
+            b |= 0x01;
+        }
+
+        if self.second_ch_ack_offset_ack {
+            b |= 0x02;
+        }
+
+        if self.second_ch_dr_ack {
+            b |= 0x04;
+        }
+
+        if self.second_ch_idx_ack {
+            b |= 0x08;
+        }
+
+        if self.default_ch_idx_ack {
+            b |= 0x10;
+        }
+
+        if self.cad_periodicity_ack {
+            b |= 0x20;
+        }
+
+        Ok(vec![b])
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow), diesel(sql_type = diesel::sql_types::SmallInt))]
+pub enum RelayModeActivation {
+    DisableRelayMode,
+    EnableRelayMode,
+    Dynamic,
+    EndDeviceControlled,
+}
+
+impl RelayModeActivation {
+    pub fn to_u8(&self) -> u8 {
+        match self {
+            RelayModeActivation::DisableRelayMode => 0x00,
+            RelayModeActivation::EnableRelayMode => 0x01,
+            RelayModeActivation::Dynamic => 0x02,
+            RelayModeActivation::EndDeviceControlled => 0x03,
+        }
+    }
+
+    pub fn from_u8(v: u8) -> Result<Self> {
+        Ok(match v {
+            0x00 => RelayModeActivation::DisableRelayMode,
+            0x01 => RelayModeActivation::EnableRelayMode,
+            0x02 => RelayModeActivation::Dynamic,
+            0x03 => RelayModeActivation::EndDeviceControlled,
+            _ => {
+                return Err(anyhow!("invalid RelayModeActivation: {}", v));
+            }
+        })
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum ResetLimitCounter {
+    TokenCounterToZero,
+    TokenCounterToReloadRate,
+    TokenCounterToMaxValue,
+    NoChange,
+}
+
+impl ResetLimitCounter {
+    pub fn to_u8(&self) -> u8 {
+        match self {
+            ResetLimitCounter::TokenCounterToZero => 0x00,
+            ResetLimitCounter::TokenCounterToReloadRate => 0x01,
+            ResetLimitCounter::TokenCounterToMaxValue => 0x02,
+            ResetLimitCounter::NoChange => 0x03,
+        }
+    }
+
+    pub fn from_u8(v: u8) -> Result<Self> {
+        Ok(match v {
+            0x00 => ResetLimitCounter::TokenCounterToZero,
+            0x01 => ResetLimitCounter::TokenCounterToReloadRate,
+            0x02 => ResetLimitCounter::TokenCounterToMaxValue,
+            0x03 => ResetLimitCounter::NoChange,
+            _ => {
+                return Err(anyhow!("Invalid ResetLimitCounter value: {}", v));
+            }
+        })
+    }
+}
+
+#[cfg(feature = "diesel")]
+impl<DB> deserialize::FromSql<SmallInt, DB> for RelayModeActivation
+where
+    DB: Backend,
+    i16: deserialize::FromSql<SmallInt, DB>,
+{
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let i = i16::from_sql(value)?;
+        Ok(RelayModeActivation::from_u8(i as u8)?)
+    }
+}
+
+#[cfg(feature = "diesel")]
+impl serialize::ToSql<SmallInt, diesel::pg::Pg> for RelayModeActivation
+where
+    i16: serialize::ToSql<SmallInt, diesel::pg::Pg>,
+{
+    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
+        let i = self.to_u8() as i16;
+        <i16 as serialize::ToSql<SmallInt, diesel::pg::Pg>>::to_sql(&i, &mut out.reborrow())
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct ActivationRelayMode {
+    pub relay_mode_activation: RelayModeActivation,
+    pub smart_enable_level: u8,
+}
+
+impl ActivationRelayMode {
+    pub fn from_u8(b: u8) -> Result<Self> {
+        Ok(ActivationRelayMode {
+            relay_mode_activation: RelayModeActivation::from_u8((b & 0x0c) >> 2)?,
+            smart_enable_level: b & 0x03,
+        })
+    }
+
+    pub fn to_u8(&self) -> Result<u8> {
+        if self.smart_enable_level > 3 {
+            return Err(anyhow!("max value of smart_enable_level is 3"));
+        }
+
+        Ok((self.relay_mode_activation.to_u8() << 2) | self.smart_enable_level)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct ChannelSettingsED {
+    pub second_ch_ack_offset: u8,
+    pub second_ch_dr: u8,
+    pub second_ch_idx: u8,
+    pub backoff: u8,
+}
+
+impl ChannelSettingsED {
+    pub fn from_bytes(b: [u8; 2]) -> Self {
+        ChannelSettingsED {
+            second_ch_ack_offset: b[0] & 0x07,
+            second_ch_dr: (b[0] & 0x78) >> 3,
+            second_ch_idx: (b[0] & 0x80) >> 7 | (b[1] & 0x01) << 1,
+            backoff: (b[1] & 0x7e) >> 1,
+        }
+    }
+
+    pub fn to_bytes(&self) -> Result<[u8; 2]> {
+        if self.second_ch_ack_offset > 7 {
+            return Err(anyhow!("max value of second_ch_ack_offset is 7"));
+        }
+        if self.second_ch_dr > 15 {
+            return Err(anyhow!("max value of second_ch_dr is 15"));
+        }
+        if self.second_ch_idx > 3 {
+            return Err(anyhow!("max value of second_ch_idx is 3"));
+        }
+        if self.backoff > 63 {
+            return Err(anyhow!("max value of backoff is 63"));
+        }
+
+        Ok([
+            self.second_ch_ack_offset | (self.second_ch_dr << 3) | (self.second_ch_idx << 7),
+            (self.second_ch_idx >> 1) | (self.backoff << 1),
+        ])
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct EndDeviceConfReqPayload {
+    pub activation_relay_mode: ActivationRelayMode,
+    pub channel_settings_ed: ChannelSettingsED,
+    pub second_ch_freq: u32,
+}
+
+impl PayloadCodec for EndDeviceConfReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 6];
+        cur.read_exact(&mut b)?;
+
+        Ok(EndDeviceConfReqPayload {
+            activation_relay_mode: ActivationRelayMode::from_u8(b[0])?,
+            channel_settings_ed: ChannelSettingsED::from_bytes([b[1], b[2]]),
+            second_ch_freq: decode_freq(&b[3..6])?,
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 6];
+        b[0] = self.activation_relay_mode.to_u8()?;
+        b[1..3].copy_from_slice(&self.channel_settings_ed.to_bytes()?);
+        b[3..6].copy_from_slice(&encode_freq(self.second_ch_freq)?);
+        Ok(b)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct EndDeviceConfAnsPayload {
+    pub second_ch_freq_ack: bool,
+    pub second_ch_dr_ack: bool,
+    pub second_ch_idx_ack: bool,
+    pub backoff_ack: bool,
+}
+
+impl PayloadCodec for EndDeviceConfAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
+
+        Ok(EndDeviceConfAnsPayload {
+            second_ch_freq_ack: b[0] & 0x01 != 0,
+            second_ch_dr_ack: b[0] & 0x02 != 0,
+            second_ch_idx_ack: b[0] & 0x04 != 0,
+            backoff_ack: b[0] & 0x08 != 0,
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b: u8 = 0;
+
+        if self.second_ch_freq_ack {
+            b |= 0x01;
+        }
+        if self.second_ch_dr_ack {
+            b |= 0x02;
+        }
+        if self.second_ch_idx_ack {
+            b |= 0x04;
+        }
+        if self.backoff_ack {
+            b |= 0x08;
+        }
+
+        Ok(vec![b])
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum FilterListAction {
+    NoRule,
+    Forward,
+    Filter,
+}
+
+impl FilterListAction {
+    pub fn to_u8(&self) -> u8 {
+        match self {
+            FilterListAction::NoRule => 0x00,
+            FilterListAction::Forward => 0x01,
+            FilterListAction::Filter => 0x02,
+        }
+    }
+
+    pub fn from_u8(v: u8) -> Result<Self> {
+        Ok(match v {
+            0x00 => FilterListAction::NoRule,
+            0x01 => FilterListAction::Forward,
+            0x02 => FilterListAction::Filter,
+            _ => {
+                return Err(anyhow!("invalid FilterListAction: {}", v));
+            }
+        })
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct FilterListReqPayload {
+    pub filter_list_idx: u8,
+    pub filter_list_action: FilterListAction,
+    pub filter_list_eui: Vec<u8>,
+}
+
+impl PayloadCodec for FilterListReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = vec![0; 2];
+        cur.read_exact(&mut b)?;
+
+        let len = b[0] & 0x17;
+        let mut eui = vec![0; len as usize];
+        cur.read_exact(&mut eui)?;
+
+        // decode from little-endian
+        eui.reverse();
+
+        Ok(FilterListReqPayload {
+            filter_list_action: FilterListAction::from_u8((b[0] & 0x60) >> 5)?,
+            filter_list_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x07) << 1),
+            filter_list_eui: eui,
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        if self.filter_list_idx > 15 {
+            return Err(anyhow!("max filter_list_idx value is 15"));
+        }
+        if self.filter_list_eui.len() > 16 {
+            return Err(anyhow!("max filter_list_eui length is 16"));
+        }
+
+        let mut b = vec![
+            self.filter_list_eui.len() as u8
+                | (self.filter_list_action.to_u8() << 5)
+                | (self.filter_list_idx << 7),
+            (self.filter_list_idx >> 1),
+        ];
+
+        // encode as little-endian
+        let mut filter_list_eui = self.filter_list_eui.clone();
+        filter_list_eui.reverse();
+
+        b.extend_from_slice(&filter_list_eui);
+        Ok(b)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct FilterListAnsPayload {
+    pub filter_list_action_ack: bool,
+    pub filter_list_len_ack: bool,
+    pub combined_rules_ack: bool,
+}
+
+impl PayloadCodec for FilterListAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
+
+        Ok(FilterListAnsPayload {
+            filter_list_action_ack: b[0] & 0x01 != 0,
+            filter_list_len_ack: b[0] & 0x02 != 0,
+            combined_rules_ack: b[0] & 0x04 != 0,
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b: u8 = 0;
+
+        if self.filter_list_action_ack {
+            b |= 0x01;
+        }
+        if self.filter_list_len_ack {
+            b |= 0x02;
+        }
+        if self.combined_rules_ack {
+            b |= 0x04;
+        }
+
+        Ok(vec![b])
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct UplinkLimitPL {
+    pub reload_rate: u8,
+    pub bucket_size: u8,
+}
+
+impl UplinkLimitPL {
+    pub fn from_u8(v: u8) -> Self {
+        UplinkLimitPL {
+            reload_rate: v & 0x3f,
+            bucket_size: (v & 0xc0) >> 6,
+        }
+    }
+
+    pub fn to_u8(&self) -> Result<u8> {
+        if self.reload_rate > 63 {
+            return Err(anyhow!("max reload_rate value is 63"));
+        }
+        if self.bucket_size > 3 {
+            return Err(anyhow!("max bucket_size value is 3"));
+        }
+
+        Ok(self.reload_rate | (self.bucket_size << 6))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct UpdateUplinkListReqPayload {
+    pub uplink_list_idx: u8,
+    pub uplink_limit: UplinkLimitPL,
+    pub dev_addr: crate::DevAddr,
+    pub w_fcnt: u32,
+    pub root_wor_s_key: crate::AES128Key,
+}
+
+impl PayloadCodec for UpdateUplinkListReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 26];
+        cur.read_exact(&mut b)?;
+
+        return Ok(UpdateUplinkListReqPayload {
+            uplink_list_idx: b[0] & 0x0f,
+            uplink_limit: UplinkLimitPL::from_u8(b[1]),
+            dev_addr: crate::DevAddr::from_le_bytes({
+                let mut bb = [0; 4];
+                bb.copy_from_slice(&b[2..6]);
+                bb
+            }),
+            w_fcnt: u32::from_le_bytes({
+                let mut bb = [0; 4];
+                bb.copy_from_slice(&b[6..10]);
+                bb
+            }),
+            root_wor_s_key: crate::AES128Key::from_bytes({
+                let mut bb = [0; 16];
+                bb.copy_from_slice(&b[10..26]);
+                bb
+            }),
+        });
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        if self.uplink_list_idx > 15 {
+            return Err(anyhow!("max uplink_list_idx value is 15"));
+        }
+
+        let mut b = vec![0; 26];
+        b[0] = self.uplink_list_idx;
+        b[1] = self.uplink_limit.to_u8()?;
+        b[2..6].copy_from_slice(&self.dev_addr.to_le_bytes());
+        b[6..10].copy_from_slice(&self.w_fcnt.to_le_bytes());
+        b[10..26].copy_from_slice(&self.root_wor_s_key.to_bytes());
+        Ok(b)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct CtrlUplinkActionPL {
+    pub uplink_list_idx: u8,
+    pub ctrl_uplink_action: u8,
+}
+
+impl CtrlUplinkActionPL {
+    pub fn to_u8(&self) -> Result<u8> {
+        if self.uplink_list_idx > 15 {
+            return Err(anyhow!("max uplink_list_idx value is 15"));
+        }
+        if self.ctrl_uplink_action > 1 {
+            return Err(anyhow!("max ctrl_uplink_action is 1"));
+        }
+
+        Ok(self.uplink_list_idx | (self.ctrl_uplink_action << 4))
+    }
+
+    pub fn from_u8(v: u8) -> Self {
+        CtrlUplinkActionPL {
+            uplink_list_idx: v & 0x0f,
+            ctrl_uplink_action: (v & 0x10) >> 4,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct CtrlUplinkListReqPayload {
+    pub ctrl_uplink_action: CtrlUplinkActionPL,
+}
+
+impl PayloadCodec for CtrlUplinkListReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
+
+        Ok(CtrlUplinkListReqPayload {
+            ctrl_uplink_action: CtrlUplinkActionPL::from_u8(b[0]),
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.ctrl_uplink_action.to_u8()?])
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct CtrlUplinkListAnsPayload {
+    pub uplink_list_idx_ack: bool,
+    pub w_fcnt: u32,
+}
+
+impl PayloadCodec for CtrlUplinkListAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 5];
+        cur.read_exact(&mut b)?;
+
+        Ok(CtrlUplinkListAnsPayload {
+            uplink_list_idx_ack: b[0] & 0x01 > 0,
+            w_fcnt: u32::from_le_bytes({
+                let mut bb = [0; 4];
+                bb.copy_from_slice(&b[1..5]);
+                bb
+            }),
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 5];
+        if self.uplink_list_idx_ack {
+            b[0] |= 0x01;
+        }
+        b[1..5].copy_from_slice(&self.w_fcnt.to_le_bytes());
+        Ok(b)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct FwdLimitReloadRatePL {
+    pub overall_reload_rate: u8,
+    pub global_uplink_reload_rate: u8,
+    pub notify_reload_rate: u8,
+    pub join_req_reload_rate: u8,
+    pub reset_limit_counter: ResetLimitCounter,
+}
+
+impl FwdLimitReloadRatePL {
+    pub fn from_bytes(b: [u8; 4]) -> Result<Self> {
+        Ok(FwdLimitReloadRatePL {
+            overall_reload_rate: b[0] & 0x7f,
+            global_uplink_reload_rate: (b[0] >> 7) | ((b[1] & 0x3f) << 1),
+            notify_reload_rate: (b[1] >> 6) | ((b[2] & 0x1f) << 2),
+            join_req_reload_rate: (b[2] >> 5) | ((b[3] & 0x0f) << 3),
+            reset_limit_counter: ResetLimitCounter::from_u8((b[3] & 0x30) >> 4)?,
+        })
+    }
+
+    pub fn to_bytes(&self) -> Result<[u8; 4]> {
+        if self.join_req_reload_rate > 127 {
+            return Err(anyhow!("max join_req_reload_rate is 127"));
+        }
+        if self.notify_reload_rate > 127 {
+            return Err(anyhow!("max notify_reload_rate is 127"));
+        }
+        if self.global_uplink_reload_rate > 127 {
+            return Err(anyhow!("max global_uplink_reload_rate is 127"));
+        }
+        if self.overall_reload_rate > 127 {
+            return Err(anyhow!("max overall_reload_rate is 127"));
+        }
+
+        Ok([
+            self.overall_reload_rate | (self.global_uplink_reload_rate << 7),
+            (self.global_uplink_reload_rate >> 1) | (self.notify_reload_rate << 6),
+            (self.notify_reload_rate >> 2) | (self.join_req_reload_rate << 5),
+            (self.join_req_reload_rate >> 3) | (self.reset_limit_counter.to_u8() << 4),
+        ])
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct FwdLimitLoadCapacityPL {
+    pub overall_limit_size: u8,
+    pub global_uplink_limit_size: u8,
+    pub notify_limit_size: u8,
+    pub join_req_limit_size: u8,
+}
+
+impl FwdLimitLoadCapacityPL {
+    pub fn from_u8(v: u8) -> Self {
+        FwdLimitLoadCapacityPL {
+            overall_limit_size: v & 0x03,
+            global_uplink_limit_size: (v & 0x0c) >> 2,
+            notify_limit_size: (v & 0x30) >> 4,
+            join_req_limit_size: (v & 0xc0) >> 6,
+        }
+    }
+
+    pub fn to_u8(&self) -> Result<u8> {
+        if self.overall_limit_size > 3 {
+            return Err(anyhow!("max overall_limit_size is 3"));
+        }
+        if self.global_uplink_limit_size > 3 {
+            return Err(anyhow!("max global_uplink_limit_size is 3"));
+        }
+        if self.notify_limit_size > 3 {
+            return Err(anyhow!("max notify_limit_size is 3"));
+        }
+        if self.join_req_limit_size > 3 {
+            return Err(anyhow!("max join_req_limit_size is 3"));
+        }
+
+        Ok(self.overall_limit_size
+            | (self.global_uplink_limit_size << 2)
+            | (self.notify_limit_size << 4)
+            | (self.join_req_limit_size << 6))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct ConfigureFwdLimitReqPayload {
+    pub reload_rate: FwdLimitReloadRatePL,
+    pub load_capacity: FwdLimitLoadCapacityPL,
+}
+
+impl PayloadCodec for ConfigureFwdLimitReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 5];
+        cur.read_exact(&mut b)?;
+
+        Ok(ConfigureFwdLimitReqPayload {
+            reload_rate: FwdLimitReloadRatePL::from_bytes({
+                let mut bb = [0; 4];
+                bb.copy_from_slice(&b[0..4]);
+                bb
+            })?,
+            load_capacity: FwdLimitLoadCapacityPL::from_u8(b[4]),
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 5];
+        b[0..4].copy_from_slice(&self.reload_rate.to_bytes()?);
+        b[4] = self.load_capacity.to_u8()?;
+        Ok(b)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct PowerLevel {
+    pub wor_snr: isize,
+    pub wor_rssi: isize,
+}
+
+impl PowerLevel {
+    pub fn from_bytes(b: [u8; 2]) -> Self {
+        PowerLevel {
+            wor_snr: (b[0] & 0x1f) as isize - 20,
+            wor_rssi: -1 * ((b[0] >> 5) | ((b[1] & 0x0f) << 3)) as isize - 15,
+        }
+    }
+
+    pub fn to_bytes(&self) -> [u8; 2] {
+        let mut wor_snr = self.wor_snr;
+        let mut wor_rssi = self.wor_rssi;
+
+        // Set to closest possible value.
+        if wor_snr < -20 {
+            wor_snr = -20;
+        }
+        if wor_snr > 11 {
+            wor_snr = 11;
+        }
+        if wor_rssi > -15 {
+            wor_rssi = -15;
+        }
+        if wor_rssi < -142 {
+            wor_rssi = -142;
+        }
+
+        // Encode values
+        let wor_snr = (wor_snr + 20) as u8;
+        let wor_rssi = ((wor_rssi as isize + 15) * -1) as u8;
+
+        [wor_snr | wor_rssi << 5, wor_rssi >> 3]
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub struct NotifyNewEndDeviceReqPayload {
+    pub dev_addr: crate::DevAddr,
+    pub power_level: PowerLevel,
+}
+
+impl PayloadCodec for NotifyNewEndDeviceReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 6];
+        cur.read_exact(&mut b)?;
+
+        Ok(NotifyNewEndDeviceReqPayload {
+            dev_addr: crate::DevAddr::from_le_bytes([b[0], b[1], b[2], b[3]]),
+            power_level: PowerLevel::from_bytes([b[4], b[5]]),
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 6];
+        b[0..4].copy_from_slice(&self.dev_addr.to_le_bytes());
+        b[4..6].copy_from_slice(&self.power_level.to_bytes());
+        Ok(b)
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
 
-    struct MACTest {
+    struct MacTest {
         uplink: bool,
-        maccommand_set: MACCommandSet,
+        command: MACCommand,
         bytes: Vec<u8>,
     }
 
     #[test]
-    fn test_maccommand_set() {
+    fn test_command() {
         let tests = vec![
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ResetInd(ResetIndPayload {
+                command: MACCommand::ResetInd(ResetIndPayload {
                     dev_lorawan_version: Version::LoRaWAN1_1,
-                })]),
+                }),
                 bytes: vec![0x01, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ResetConf(ResetConfPayload {
+                command: MACCommand::ResetConf(ResetConfPayload {
                     serv_lorawan_version: Version::LoRaWAN1_1,
-                })]),
+                }),
                 bytes: vec![0x01, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkCheckReq]),
+                command: MACCommand::LinkCheckReq,
                 bytes: vec![0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkCheckAns(
-                    LinkCheckAnsPayload {
-                        margin: 10,
-                        gw_cnt: 15,
-                    },
-                )]),
+                command: MACCommand::LinkCheckAns(LinkCheckAnsPayload {
+                    margin: 10,
+                    gw_cnt: 15,
+                }),
                 bytes: vec![0x02, 0x0a, 0x0f],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRReq(
-                    LinkADRReqPayload {
-                        dr: 1,
-                        tx_power: 2,
-                        ch_mask: ChMask::new({
-                            let mut mask: [bool; 16] = [false; 16];
-                            mask[2] = true;
-                            mask
-                        }),
-                        redundancy: Redundancy {
-                            ch_mask_cntl: 4,
-                            nb_rep: 5,
-                        },
+                command: MACCommand::LinkADRReq(LinkADRReqPayload {
+                    dr: 1,
+                    tx_power: 2,
+                    ch_mask: ChMask::new({
+                        let mut mask: [bool; 16] = [false; 16];
+                        mask[2] = true;
+                        mask
+                    }),
+                    redundancy: Redundancy {
+                        ch_mask_cntl: 4,
+                        nb_rep: 5,
                     },
-                )]),
+                }),
                 bytes: vec![0x03, 0x12, 0x04, 0x00, 0x45],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRAns(
-                    LinkADRAnsPayload {
-                        ch_mask_ack: true,
-                        dr_ack: false,
-                        tx_power_ack: false,
-                    },
-                )]),
+                command: MACCommand::LinkADRAns(LinkADRAnsPayload {
+                    ch_mask_ack: true,
+                    dr_ack: false,
+                    tx_power_ack: false,
+                }),
                 bytes: vec![0x03, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRAns(
-                    LinkADRAnsPayload {
-                        ch_mask_ack: false,
-                        dr_ack: true,
-                        tx_power_ack: false,
-                    },
-                )]),
+                command: MACCommand::LinkADRAns(LinkADRAnsPayload {
+                    ch_mask_ack: false,
+                    dr_ack: true,
+                    tx_power_ack: false,
+                }),
                 bytes: vec![0x03, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRAns(
-                    LinkADRAnsPayload {
-                        ch_mask_ack: false,
-                        dr_ack: false,
-                        tx_power_ack: true,
-                    },
-                )]),
+                command: MACCommand::LinkADRAns(LinkADRAnsPayload {
+                    ch_mask_ack: false,
+                    dr_ack: false,
+                    tx_power_ack: true,
+                }),
                 bytes: vec![0x03, 0x04],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRAns(
-                    LinkADRAnsPayload {
-                        ch_mask_ack: true,
-                        dr_ack: true,
-                        tx_power_ack: true,
-                    },
-                )]),
+                command: MACCommand::LinkADRAns(LinkADRAnsPayload {
+                    ch_mask_ack: true,
+                    dr_ack: true,
+                    tx_power_ack: true,
+                }),
                 bytes: vec![0x03, 0x07],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DutyCycleReq(
-                    DutyCycleReqPayload { max_duty_cycle: 13 },
-                )]),
+                command: MACCommand::DutyCycleReq(DutyCycleReqPayload { max_duty_cycle: 13 }),
                 bytes: vec![0x04, 0x0d],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DutyCycleAns]),
+                command: MACCommand::DutyCycleAns,
                 bytes: vec![0x04],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RxParamSetupReq(
-                    RxParamSetupReqPayload {
-                        frequency: 26265700,
-                        dl_settings: DLSettings {
-                            rx2_dr: 11,
-                            rx1_dr_offset: 3,
-                            opt_neg: false,
-                        },
+                command: MACCommand::RxParamSetupReq(RxParamSetupReqPayload {
+                    frequency: 26265700,
+                    dl_settings: DLSettings {
+                        rx2_dr: 11,
+                        rx1_dr_offset: 3,
+                        opt_neg: false,
                     },
-                )]),
+                }),
                 bytes: vec![0x05, 0x3b, 0x01, 0x02, 0x04],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RxParamSetupAns(
-                    RxParamSetupAnsPayload {
-                        channel_ack: true,
-                        rx2_dr_ack: false,
-                        rx1_dr_offset_ack: true,
-                    },
-                )]),
+                command: MACCommand::RxParamSetupAns(RxParamSetupAnsPayload {
+                    channel_ack: true,
+                    rx2_dr_ack: false,
+                    rx1_dr_offset_ack: true,
+                }),
                 bytes: vec![0x05, 0x05],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusReq]),
+                command: MACCommand::DevStatusReq,
                 bytes: vec![0x06],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusAns(
-                    DevStatusAnsPayload {
-                        battery: 0,
-                        margin: -30,
-                    },
-                )]),
+                command: MACCommand::DevStatusAns(DevStatusAnsPayload {
+                    battery: 0,
+                    margin: -30,
+                }),
                 bytes: vec![0x06, 0x00, 0x22],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusAns(
-                    DevStatusAnsPayload {
-                        battery: 255,
-                        margin: 30,
-                    },
-                )]),
+                command: MACCommand::DevStatusAns(DevStatusAnsPayload {
+                    battery: 255,
+                    margin: 30,
+                }),
                 bytes: vec![0x06, 0xff, 0x1e],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusAns(
-                    DevStatusAnsPayload {
-                        battery: 127,
-                        margin: -1,
-                    },
-                )]),
+                command: MACCommand::DevStatusAns(DevStatusAnsPayload {
+                    battery: 127,
+                    margin: -1,
+                }),
                 bytes: vec![0x06, 0x7f, 0x3f],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusAns(
-                    DevStatusAnsPayload {
-                        battery: 127,
-                        margin: 0,
-                    },
-                )]),
+                command: MACCommand::DevStatusAns(DevStatusAnsPayload {
+                    battery: 127,
+                    margin: 0,
+                }),
                 bytes: vec![0x06, 0x7f, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelReq(
-                    NewChannelReqPayload {
-                        ch_index: 3,
-                        freq: 26265700,
-                        max_dr: 5,
-                        min_dr: 10,
-                    },
-                )]),
+                command: MACCommand::NewChannelReq(NewChannelReqPayload {
+                    ch_index: 3,
+                    freq: 26265700,
+                    max_dr: 5,
+                    min_dr: 10,
+                }),
                 bytes: vec![0x07, 0x03, 0x01, 0x02, 0x04, 0x5a],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelReq(
-                    NewChannelReqPayload {
-                        ch_index: 3,
-                        freq: 2410_000_000,
-                        max_dr: 5,
-                        min_dr: 0,
-                    },
-                )]),
+                command: MACCommand::NewChannelReq(NewChannelReqPayload {
+                    ch_index: 3,
+                    freq: 2410_000_000,
+                    max_dr: 5,
+                    min_dr: 0,
+                }),
                 bytes: vec![7, 3, 80, 222, 183, 80],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelAns(
-                    NewChannelAnsPayload {
-                        channel_freq_ok: false,
-                        dr_range_ok: false,
-                    },
-                )]),
+                command: MACCommand::NewChannelAns(NewChannelAnsPayload {
+                    channel_freq_ok: false,
+                    dr_range_ok: false,
+                }),
                 bytes: vec![0x07, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelAns(
-                    NewChannelAnsPayload {
-                        channel_freq_ok: true,
-                        dr_range_ok: false,
-                    },
-                )]),
+                command: MACCommand::NewChannelAns(NewChannelAnsPayload {
+                    channel_freq_ok: true,
+                    dr_range_ok: false,
+                }),
                 bytes: vec![0x07, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelAns(
-                    NewChannelAnsPayload {
-                        channel_freq_ok: false,
-                        dr_range_ok: true,
-                    },
-                )]),
+                command: MACCommand::NewChannelAns(NewChannelAnsPayload {
+                    channel_freq_ok: false,
+                    dr_range_ok: true,
+                }),
                 bytes: vec![0x07, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelAns(
-                    NewChannelAnsPayload {
-                        channel_freq_ok: true,
-                        dr_range_ok: true,
-                    },
-                )]),
+                command: MACCommand::NewChannelAns(NewChannelAnsPayload {
+                    channel_freq_ok: true,
+                    dr_range_ok: true,
+                }),
                 bytes: vec![0x07, 0x03],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RxTimingSetupReq(
-                    RxTimingSetupReqPayload { delay: 15 },
-                )]),
+                command: MACCommand::RxTimingSetupReq(RxTimingSetupReqPayload { delay: 15 }),
                 bytes: vec![0x08, 0x0f],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RxTimingSetupAns]),
+                command: MACCommand::RxTimingSetupAns,
                 bytes: vec![0x08],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::TxParamSetupReq(
-                    TxParamSetupReqPayload {
-                        uplink_dwell_time: DwellTime::NoLimit,
-                        downlink_dwell_time: DwellTime::NoLimit,
-                        max_eirp: 15,
-                    },
-                )]),
+                command: MACCommand::TxParamSetupReq(TxParamSetupReqPayload {
+                    uplink_dwell_time: DwellTime::NoLimit,
+                    downlink_dwell_time: DwellTime::NoLimit,
+                    max_eirp: 15,
+                }),
                 bytes: vec![0x09, 0x0f],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::TxParamSetupReq(
-                    TxParamSetupReqPayload {
-                        uplink_dwell_time: DwellTime::Limit400ms,
-                        downlink_dwell_time: DwellTime::NoLimit,
-                        max_eirp: 15,
-                    },
-                )]),
+                command: MACCommand::TxParamSetupReq(TxParamSetupReqPayload {
+                    uplink_dwell_time: DwellTime::Limit400ms,
+                    downlink_dwell_time: DwellTime::NoLimit,
+                    max_eirp: 15,
+                }),
                 bytes: vec![0x09, 0x1f],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::TxParamSetupReq(
-                    TxParamSetupReqPayload {
-                        uplink_dwell_time: DwellTime::NoLimit,
-                        downlink_dwell_time: DwellTime::Limit400ms,
-                        max_eirp: 15,
-                    },
-                )]),
+                command: MACCommand::TxParamSetupReq(TxParamSetupReqPayload {
+                    uplink_dwell_time: DwellTime::NoLimit,
+                    downlink_dwell_time: DwellTime::Limit400ms,
+                    max_eirp: 15,
+                }),
                 bytes: vec![0x09, 0x2f],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::TxParamSetupAns]),
+                command: MACCommand::TxParamSetupAns,
                 bytes: vec![0x09],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelReq(
-                    DlChannelReqPayload {
-                        ch_index: 0,
-                        freq: 868100000,
-                    },
-                )]),
+                command: MACCommand::DlChannelReq(DlChannelReqPayload {
+                    ch_index: 0,
+                    freq: 868100000,
+                }),
                 bytes: vec![0x0a, 0x00, 0x28, 0x76, 0x84],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelReq(
-                    DlChannelReqPayload {
-                        ch_index: 1,
-                        freq: 868200000,
-                    },
-                )]),
+                command: MACCommand::DlChannelReq(DlChannelReqPayload {
+                    ch_index: 1,
+                    freq: 868200000,
+                }),
                 bytes: vec![0x0a, 0x01, 0x10, 0x7a, 0x84],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelAns(
-                    DlChannelAnsPayload {
-                        uplink_freq_exists: false,
-                        channel_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::DlChannelAns(DlChannelAnsPayload {
+                    uplink_freq_exists: false,
+                    channel_freq_ok: false,
+                }),
                 bytes: vec![0x0a, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelAns(
-                    DlChannelAnsPayload {
-                        uplink_freq_exists: false,
-                        channel_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::DlChannelAns(DlChannelAnsPayload {
+                    uplink_freq_exists: false,
+                    channel_freq_ok: true,
+                }),
                 bytes: vec![0x0a, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelAns(
-                    DlChannelAnsPayload {
-                        uplink_freq_exists: true,
-                        channel_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::DlChannelAns(DlChannelAnsPayload {
+                    uplink_freq_exists: true,
+                    channel_freq_ok: false,
+                }),
                 bytes: vec![0x0a, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelAns(
-                    DlChannelAnsPayload {
-                        uplink_freq_exists: true,
-                        channel_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::DlChannelAns(DlChannelAnsPayload {
+                    uplink_freq_exists: true,
+                    channel_freq_ok: true,
+                }),
                 bytes: vec![0x0a, 0x03],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RekeyConf(RekeyConfPayload {
+                command: MACCommand::RekeyConf(RekeyConfPayload {
                     serv_lorawan_version: Version::LoRaWAN1_1,
-                })]),
+                }),
                 bytes: vec![0x0b, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RekeyInd(RekeyIndPayload {
+                command: MACCommand::RekeyInd(RekeyIndPayload {
                     dev_lorawan_version: Version::LoRaWAN1_1,
-                })]),
+                }),
                 bytes: vec![0x0b, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ADRParamSetupReq(
-                    ADRParamSetupReqPayload {
-                        adr_param: ADRParam {
-                            limit_exp: 10,
-                            delay_exp: 15,
-                        },
+                command: MACCommand::ADRParamSetupReq(ADRParamSetupReqPayload {
+                    adr_param: ADRParam {
+                        limit_exp: 10,
+                        delay_exp: 15,
                     },
-                )]),
+                }),
                 bytes: vec![0x0c, 0xaf],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ADRParamSetupAns]),
+                command: MACCommand::ADRParamSetupAns,
                 bytes: vec![0x0c],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceTimeReq]),
+                command: MACCommand::DeviceTimeReq,
                 bytes: vec![0x0d],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceTimeAns(
-                    DeviceTimeAnsPayload {
-                        time_since_gps_epoch: Duration::from_secs(1),
-                    },
-                )]),
+                command: MACCommand::DeviceTimeAns(DeviceTimeAnsPayload {
+                    time_since_gps_epoch: Duration::from_secs(1),
+                }),
                 bytes: vec![0x0d, 0x01, 0x00, 0x00, 0x00, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceTimeAns(
-                    DeviceTimeAnsPayload {
-                        time_since_gps_epoch: Duration::new(1, 2 * 3906250),
-                    },
-                )]),
+                command: MACCommand::DeviceTimeAns(DeviceTimeAnsPayload {
+                    time_since_gps_epoch: Duration::new(1, 2 * 3906250),
+                }),
                 bytes: vec![0x0d, 0x01, 0x00, 0x00, 0x00, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ForceRejoinReq(
-                    ForceRejoinReqPayload {
-                        period: 3,
-                        max_retries: 4,
-                        rejoin_type: 2,
-                        dr: 5,
-                    },
-                )]),
+                command: MACCommand::ForceRejoinReq(ForceRejoinReqPayload {
+                    period: 3,
+                    max_retries: 4,
+                    rejoin_type: 2,
+                    dr: 5,
+                }),
                 bytes: vec![0x0e, 0x25, 0x1c],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RejoinParamSetupReq(
-                    RejoinParamSetupReqPayload {
-                        max_time_n: 14,
-                        max_count_n: 15,
-                    },
-                )]),
+                command: MACCommand::RejoinParamSetupReq(RejoinParamSetupReqPayload {
+                    max_time_n: 14,
+                    max_count_n: 15,
+                }),
                 bytes: vec![0x0f, 0xef],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RejoinParamSetupAns(
-                    RejoinParamSetupAnsPayload { time_ok: true },
-                )]),
+                command: MACCommand::RejoinParamSetupAns(RejoinParamSetupAnsPayload {
+                    time_ok: true,
+                }),
                 bytes: vec![0x0f, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotInfoReq(
-                    PingSlotInfoReqPayload { periodicity: 3 },
-                )]),
+                command: MACCommand::PingSlotInfoReq(PingSlotInfoReqPayload { periodicity: 3 }),
                 bytes: vec![0x10, 0x03],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotInfoAns]),
+                command: MACCommand::PingSlotInfoAns,
                 bytes: vec![0x10],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelReq(
-                    PingSlotChannelReqPayload {
-                        freq: 868100000,
-                        dr: 5,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelReq(PingSlotChannelReqPayload {
+                    freq: 868100000,
+                    dr: 5,
+                }),
                 bytes: vec![0x11, 0x28, 0x76, 0x84, 0x05],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelAns(
-                    PingSlotChannelAnsPayload {
-                        dr_ok: false,
-                        channel_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelAns(PingSlotChannelAnsPayload {
+                    dr_ok: false,
+                    channel_freq_ok: false,
+                }),
                 bytes: vec![0x011, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelAns(
-                    PingSlotChannelAnsPayload {
-                        dr_ok: false,
-                        channel_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelAns(PingSlotChannelAnsPayload {
+                    dr_ok: false,
+                    channel_freq_ok: true,
+                }),
                 bytes: vec![0x011, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelAns(
-                    PingSlotChannelAnsPayload {
-                        dr_ok: true,
-                        channel_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelAns(PingSlotChannelAnsPayload {
+                    dr_ok: true,
+                    channel_freq_ok: false,
+                }),
                 bytes: vec![0x011, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelAns(
-                    PingSlotChannelAnsPayload {
-                        dr_ok: true,
-                        channel_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelAns(PingSlotChannelAnsPayload {
+                    dr_ok: true,
+                    channel_freq_ok: true,
+                }),
                 bytes: vec![0x11, 0x03],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::BeaconFreqReq(
-                    BeaconFreqReqPayload { freq: 868100000 },
-                )]),
+                command: MACCommand::BeaconFreqReq(BeaconFreqReqPayload { freq: 868100000 }),
                 bytes: vec![0x13, 0x28, 0x76, 0x84],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::BeaconFreqAns(
-                    BeaconFreqAnsPayload {
-                        beacon_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::BeaconFreqAns(BeaconFreqAnsPayload {
+                    beacon_freq_ok: false,
+                }),
                 bytes: vec![0x13, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::BeaconFreqAns(
-                    BeaconFreqAnsPayload {
-                        beacon_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::BeaconFreqAns(BeaconFreqAnsPayload {
+                    beacon_freq_ok: true,
+                }),
                 bytes: vec![0x13, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceModeInd(
-                    DeviceModeIndPayload {
-                        class: DeviceModeClass::ClassA,
-                    },
-                )]),
+                command: MACCommand::DeviceModeInd(DeviceModeIndPayload {
+                    class: DeviceModeClass::ClassA,
+                }),
                 bytes: vec![0x20, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceModeInd(
-                    DeviceModeIndPayload {
-                        class: DeviceModeClass::ClassC,
-                    },
-                )]),
+                command: MACCommand::DeviceModeInd(DeviceModeIndPayload {
+                    class: DeviceModeClass::ClassC,
+                }),
                 bytes: vec![0x20, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceModeConf(
-                    DeviceModeConfPayload {
-                        class: DeviceModeClass::ClassA,
-                    },
-                )]),
+                command: MACCommand::DeviceModeConf(DeviceModeConfPayload {
+                    class: DeviceModeClass::ClassA,
+                }),
                 bytes: vec![0x20, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceModeConf(
-                    DeviceModeConfPayload {
-                        class: DeviceModeClass::ClassC,
-                    },
-                )]),
+                command: MACCommand::DeviceModeConf(DeviceModeConfPayload {
+                    class: DeviceModeClass::ClassC,
+                }),
                 bytes: vec![0x20, 0x02],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::RelayConfReq(RelayConfReqPayload {
+                    channel_settings_relay: ChannelSettingsRelay {
+                        start_stop: 1,
+                        cad_periodicity: 3,
+                        default_ch_idx: 0,
+                        second_ch_idx: 1,
+                        second_ch_dr: 4,
+                        second_ch_ack_offset: 5,
+                    },
+                    second_ch_freq: 868100000,
+                }),
+                bytes: vec![64, 165, 44, 40, 118, 132],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::RelayConfAns(RelayConfAnsPayload {
+                    second_ch_freq_ack: true,
+                    second_ch_ack_offset_ack: true,
+                    second_ch_dr_ack: true,
+                    second_ch_idx_ack: true,
+                    default_ch_idx_ack: true,
+                    cad_periodicity_ack: true,
+                }),
+                bytes: vec![64, 63],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::RelayConfAns(RelayConfAnsPayload {
+                    second_ch_freq_ack: true,
+                    second_ch_ack_offset_ack: false,
+                    second_ch_dr_ack: true,
+                    second_ch_idx_ack: false,
+                    default_ch_idx_ack: true,
+                    cad_periodicity_ack: false,
+                }),
+                bytes: vec![64, 21],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::EndDeviceConfReq(EndDeviceConfReqPayload {
+                    second_ch_freq: 868100000,
+                    channel_settings_ed: ChannelSettingsED {
+                        second_ch_ack_offset: 5,
+                        second_ch_dr: 4,
+                        second_ch_idx: 1,
+                        backoff: 63,
+                    },
+                    activation_relay_mode: ActivationRelayMode {
+                        relay_mode_activation: RelayModeActivation::Dynamic,
+                        smart_enable_level: 3,
+                    },
+                }),
+                bytes: vec![65, 11, 165, 126, 40, 118, 132],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::EndDeviceConfAns(EndDeviceConfAnsPayload {
+                    second_ch_freq_ack: true,
+                    second_ch_dr_ack: false,
+                    second_ch_idx_ack: true,
+                    backoff_ack: true,
+                }),
+                bytes: vec![65, 13],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::FilterListReq(FilterListReqPayload {
+                    filter_list_idx: 3,
+                    filter_list_action: FilterListAction::Forward,
+                    filter_list_eui: vec![1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 2],
+                }),
+                bytes: vec![66, 176, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::FilterListAns(FilterListAnsPayload {
+                    filter_list_action_ack: false,
+                    filter_list_len_ack: true,
+                    combined_rules_ack: false,
+                }),
+                bytes: vec![66, 2],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::UpdateUplinkListReq(UpdateUplinkListReqPayload {
+                    uplink_list_idx: 3,
+                    uplink_limit: UplinkLimitPL {
+                        reload_rate: 60,
+                        bucket_size: 2,
+                    },
+                    dev_addr: crate::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                    w_fcnt: 128,
+                    root_wor_s_key: crate::AES128Key::from_bytes([
+                        1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
+                    ]),
+                }),
+                bytes: vec![
+                    67, 3, 188, 4, 3, 2, 1, 128, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6,
+                    7, 8,
+                ],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::UpdateUplinkListAns,
+                bytes: vec![67],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::CtrlUplinkListReq(CtrlUplinkListReqPayload {
+                    ctrl_uplink_action: CtrlUplinkActionPL {
+                        uplink_list_idx: 3,
+                        ctrl_uplink_action: 1,
+                    },
+                }),
+                bytes: vec![68, 19],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::CtrlUplinkListAns(CtrlUplinkListAnsPayload {
+                    uplink_list_idx_ack: true,
+                    w_fcnt: 128,
+                }),
+                bytes: vec![68, 1, 128, 0, 0, 0],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::ConfigureFwdLimitReq(ConfigureFwdLimitReqPayload {
+                    reload_rate: FwdLimitReloadRatePL {
+                        overall_reload_rate: 100,
+                        global_uplink_reload_rate: 90,
+                        notify_reload_rate: 80,
+                        join_req_reload_rate: 70,
+                        reset_limit_counter: ResetLimitCounter::NoChange,
+                    },
+                    load_capacity: FwdLimitLoadCapacityPL {
+                        overall_limit_size: 2,
+                        global_uplink_limit_size: 2,
+                        notify_limit_size: 1,
+                        join_req_limit_size: 3,
+                    },
+                }),
+                bytes: vec![69, 100, 45, 212, 56, 218],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::ConfigureFwdLimitAns,
+                bytes: vec![69],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::NotifyNewEndDeviceReq(NotifyNewEndDeviceReqPayload {
+                    dev_addr: crate::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                    power_level: PowerLevel {
+                        wor_snr: -10,
+                        wor_rssi: -120,
+                    },
+                }),
+                bytes: vec![70, 4, 3, 2, 1, 42, 13],
             },
         ];
 
         for tst in tests {
-            assert_eq!(tst.bytes, tst.maccommand_set.to_vec().unwrap());
+            assert_eq!(
+                tst.bytes,
+                MACCommandSet::new(vec![tst.command.clone()])
+                    .to_vec()
+                    .unwrap()
+            );
 
-            let mut maccommand_set = MACCommandSet::from_slice(&tst.bytes);
-            maccommand_set.decode_from_raw(tst.uplink).unwrap();
+            let mut command = MACCommandSet::from_slice(&tst.bytes);
+            command.decode_from_raw(tst.uplink).unwrap();
 
-            assert_eq!(tst.maccommand_set, maccommand_set);
+            assert_eq!(MACCommandSet::new(vec![tst.command.clone()]), command);
         }
     }
 }

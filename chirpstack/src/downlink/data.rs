@@ -5,7 +5,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use rand::Rng;
-use tracing::{span, trace, warn, Instrument, Level};
+use tracing::{error, span, trace, warn, Instrument, Level};
 
 use crate::api::backend::get_async_receiver;
 use crate::api::helpers::FromProto;
@@ -15,12 +15,12 @@ use crate::gpstime::{ToDateTime, ToGpsTime};
 use crate::storage;
 use crate::storage::{
     application, device, device_gateway, device_profile, device_queue, device_session,
-    downlink_frame, mac_command, tenant,
+    downlink_frame, mac_command, relay, tenant,
 };
-use crate::uplink::UplinkFrameSet;
+use crate::uplink::{RelayContext, UplinkFrameSet};
 use crate::{adr, config, gateway, integration, maccommand, region, sensitivity};
 use chirpstack_api::{gw, integration as integration_pb, internal};
-use lrwn::{DevAddr, NetID};
+use lrwn::{keys, AES128Key, DevAddr, NetID};
 
 struct DownlinkFrameItem {
     downlink_frame_item: gw::DownlinkFrameItem,
@@ -28,6 +28,7 @@ struct DownlinkFrameItem {
 }
 
 pub struct Data {
+    relay_context: Option<RelayContext>,
     uplink_frame_set: Option<UplinkFrameSet>,
     tenant: tenant::Tenant,
     application: application::Application,
@@ -80,6 +81,39 @@ impl Data {
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub async fn handle_response_relayed(
+        relay_ctx: RelayContext,
+        ufs: UplinkFrameSet,
+        dev_gw_rx_info: internal::DeviceGatewayRxInfo,
+        tenant: tenant::Tenant,
+        application: application::Application,
+        device_profile: device_profile::DeviceProfile,
+        device: device::Device,
+        device_session: internal::DeviceSession,
+        must_send: bool,
+        must_ack: bool,
+        mac_commands: Vec<lrwn::MACCommandSet>,
+    ) -> Result<()> {
+        let span = span!(Level::TRACE, "data_down", downlink_id = %ufs.uplink_set_id);
+
+        Data::_handle_response_relayed(
+            relay_ctx,
+            ufs,
+            dev_gw_rx_info,
+            tenant,
+            application,
+            device_profile,
+            device,
+            device_session,
+            must_send,
+            must_ack,
+            mac_commands,
+        )
+        .instrument(span)
+        .await
+    }
+
     pub async fn handle_schedule_next_queue_item(device: device::Device) -> Result<()> {
         let span = span!(Level::TRACE, "schedule", dev_eui = %device.dev_eui);
 
@@ -109,6 +143,7 @@ impl Data {
             .context("Get region config for region")?;
 
         let mut ctx = Data {
+            relay_context: None,
             uplink_frame_set: Some(ufs),
             tenant,
             application,
@@ -155,6 +190,67 @@ impl Data {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
+    async fn _handle_response_relayed(
+        relay_ctx: RelayContext,
+        ufs: UplinkFrameSet,
+        dev_gw_rx_info: internal::DeviceGatewayRxInfo,
+        tenant: tenant::Tenant,
+        application: application::Application,
+        device_profile: device_profile::DeviceProfile,
+        device: device::Device,
+        device_session: internal::DeviceSession,
+        must_send: bool,
+        must_ack: bool,
+        mac_commands: Vec<lrwn::MACCommandSet>,
+    ) -> Result<()> {
+        trace!("Downlink relayed response flow");
+
+        let network_conf = config::get_region_network(&device_session.region_config_id)
+            .context("Get network config for region")?;
+        let region_conf = region::get(&device_session.region_config_id)
+            .context("Get region config for region")?;
+
+        let mut ctx = Data {
+            relay_context: Some(relay_ctx),
+            uplink_frame_set: Some(ufs),
+            tenant,
+            application,
+            device_profile,
+            device,
+            device_session,
+            network_conf,
+            region_conf,
+            must_send,
+            must_ack,
+            mac_commands,
+            device_gateway_rx_info: Some(dev_gw_rx_info),
+            downlink_gateway: None,
+            downlink_frame: gw::DownlinkFrame {
+                downlink_id: rand::thread_rng().gen(),
+                ..Default::default()
+            },
+            downlink_frame_items: Vec::new(),
+            immediately: false,
+            device_queue_item: None,
+            more_device_queue_items: false,
+        };
+
+        ctx.select_downlink_gateway()?;
+        ctx.set_tx_info_relayed()?;
+        ctx.get_next_device_queue_item().await?;
+        ctx.set_mac_commands().await?;
+        if ctx._something_to_send() {
+            ctx.set_phy_payloads()?;
+            ctx.wrap_phy_payloads_in_forward_downlink_req()?;
+            ctx.save_downlink_frame_relayed().await?;
+            ctx.save_device_session().await?;
+            ctx.send_downlink_frame().await?;
+        }
+
+        Ok(())
+    }
+
     async fn _handle_schedule_next_queue_item(dev: device::Device) -> Result<()> {
         trace!("Handle schedule next-queue item flow");
 
@@ -167,6 +263,7 @@ impl Data {
         let dev_gw = device_gateway::get_rx_info(&dev.dev_eui).await?;
 
         let mut ctx = Data {
+            relay_context: None,
             uplink_frame_set: None,
             tenant: ten,
             application: app,
@@ -241,16 +338,44 @@ impl Data {
             self.set_tx_info_for_rx2()?;
 
             // RX1
-            self._set_tx_info_for_rx1()?;
+            self.set_tx_info_for_rx1()?;
         } else {
             // RX1
             if [0, 1].contains(&self.network_conf.rx_window) {
-                self._set_tx_info_for_rx1()?;
+                self.set_tx_info_for_rx1()?;
             }
 
             // RX2
             if [0, 2].contains(&self.network_conf.rx_window) {
                 self.set_tx_info_for_rx2()?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn set_tx_info_relayed(&mut self) -> Result<()> {
+        let mut prefer_rx2_over_rx1 = self._prefer_rx2_dr()?;
+        if self.network_conf.rx2_prefer_on_link_budget {
+            prefer_rx2_over_rx1 = prefer_rx2_over_rx1 || self._prefer_rx2_link_budget()?;
+        }
+
+        // RX2 is prefered and the RX window is set to automatic.
+        if prefer_rx2_over_rx1 && self.network_conf.rx_window == 0 {
+            // RX2
+            self.set_tx_info_for_rx2_relayed()?;
+
+            // RX1
+            self.set_tx_info_for_rx1_relayed()?;
+        } else {
+            // RX1
+            if [0, 1].contains(&self.network_conf.rx_window) {
+                self.set_tx_info_for_rx1_relayed()?;
+            }
+
+            // RX2
+            if [0, 2].contains(&self.network_conf.rx_window) {
+                self.set_tx_info_for_rx2_relayed()?;
             }
         }
 
@@ -390,6 +515,18 @@ impl Data {
         self._set_rx_parameters().await?;
         self._set_tx_parameters().await?;
 
+        if self.device_profile.is_relay {
+            self._update_relay_conf().await?;
+            self._update_filter_list().await?;
+            self._update_uplink_list().await?;
+            self._request_ctrl_uplink_list().await?;
+            self._configure_fwd_limit_req().await?;
+        }
+
+        if self.device_profile.is_relay_ed {
+            self._update_end_device_conf().await?;
+        }
+
         self.mac_commands = filter_mac_commands(&self.device_session, &self.mac_commands);
 
         Ok(())
@@ -509,16 +646,7 @@ impl Data {
                     if qi.data.len() <= item.remaining_payload_size {
                         // Set the device-queue item.
                         mac_pl.f_port = Some(qi.f_port as u8);
-                        mac_pl.fhdr.f_cnt = if self
-                            .device_session
-                            .mac_version()
-                            .to_string()
-                            .starts_with("1.0")
-                        {
-                            self.device_session.n_f_cnt_down
-                        } else {
-                            self.device_session.a_f_cnt_down
-                        };
+                        mac_pl.fhdr.f_cnt = self.device_session.get_a_f_cnt_down();
                         mac_pl.frm_payload = Some(lrwn::FRMPayload::Raw(qi.data.clone()));
 
                         if qi.confirmed {
@@ -590,6 +718,54 @@ impl Data {
         Ok(())
     }
 
+    fn wrap_phy_payloads_in_forward_downlink_req(&mut self) -> Result<()> {
+        trace!("Wrap PhyPayloads in ForwardDownlinkReq");
+
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        for item in self.downlink_frame.items.iter_mut() {
+            let mut relay_phy = lrwn::PhyPayload {
+                mhdr: lrwn::MHDR {
+                    m_type: lrwn::MType::UnconfirmedDataDown,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: lrwn::FHDR {
+                        devaddr: lrwn::DevAddr::from_slice(&relay_ctx.device_session.dev_addr)?,
+                        f_cnt: relay_ctx.device_session.get_a_f_cnt_down(),
+                        f_ctrl: lrwn::FCtrl {
+                            adr: !self.network_conf.adr_disabled,
+                            ack: relay_ctx.must_ack,
+                            ..Default::default()
+                        },
+                        f_opts: lrwn::MACCommandSet::new(vec![]),
+                    },
+                    f_port: Some(lrwn::LA_FPORT_RELAY),
+                    frm_payload: Some(lrwn::FRMPayload::Raw(item.phy_payload.clone())),
+                }),
+                mic: None,
+            };
+
+            relay_phy.encrypt_frm_payload(&lrwn::AES128Key::from_slice(
+                &relay_ctx.device_session.nwk_s_enc_key,
+            )?)?;
+
+            // Set MIC.
+            // If this is an ACK, then FCntUp has already been incremented by one. If
+            // this is not an ACK, then DownlinkDataMIC will zero out ConfFCnt.
+            relay_phy.set_downlink_data_mic(
+                relay_ctx.device_session.mac_version().from_proto(),
+                relay_ctx.device_session.f_cnt_up - 1,
+                &lrwn::AES128Key::from_slice(&relay_ctx.device_session.s_nwk_s_int_key)?,
+            )?;
+
+            let relay_phy_b = relay_phy.to_vec()?;
+            item.phy_payload = relay_phy_b;
+        }
+
+        Ok(())
+    }
+
     async fn update_device_queue_item(&mut self) -> Result<()> {
         trace!("Updating device queue-item");
         if let Some(qi) = &mut self.device_queue_item {
@@ -636,10 +812,35 @@ impl Data {
             nwk_s_enc_key: self.device_session.nwk_s_enc_key.clone(),
             downlink_frame: Some(self.downlink_frame.clone()),
             n_f_cnt_down: self.device_session.n_f_cnt_down,
+            a_f_cnt_down: self.device_session.get_a_f_cnt_down(),
             ..Default::default()
         })
         .await
         .context("Save downlink frame")?;
+
+        Ok(())
+    }
+
+    async fn save_downlink_frame_relayed(&self) -> Result<()> {
+        trace!("Saving ForwardDownlinkReq frame");
+
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        downlink_frame::save(&internal::DownlinkFrame {
+            downlink_id: self.downlink_frame.downlink_id,
+            dev_eui: relay_ctx.device.dev_eui.to_vec(),
+            dev_eui_relayed: self.device.dev_eui.to_vec(),
+            device_queue_item_id: match &self.device_queue_item {
+                Some(qi) => qi.id.as_bytes().to_vec(),
+                None => vec![],
+            },
+            nwk_s_enc_key: relay_ctx.device_session.nwk_s_enc_key.clone(),
+            downlink_frame: Some(self.downlink_frame.clone()),
+            n_f_cnt_down: relay_ctx.device_session.n_f_cnt_down,
+            a_f_cnt_down: relay_ctx.device_session.get_a_f_cnt_down(),
+            ..Default::default()
+        })
+        .await?;
 
         Ok(())
     }
@@ -1128,7 +1329,565 @@ impl Data {
         Ok(())
     }
 
-    fn _set_tx_info_for_rx1(&mut self) -> Result<()> {
+    async fn _update_uplink_list(&mut self) -> Result<()> {
+        trace!("Updating Relay uplink list");
+
+        // Get the current relay state.
+        let mut relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        // Get devices that must be configured on the relay.
+        let relay_devices = relay::list_devices(
+            15,
+            0,
+            &relay::DeviceFilters {
+                relay_dev_eui: Some(self.device.dev_eui.clone()),
+            },
+        )
+        .await?;
+
+        // We filter out the devices that are no longer configured on the relay.
+        // This way we can combine the delete + add by just overwriting an old slot.
+        let relay_devices_dev_euis: Vec<Vec<u8>> =
+            relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
+        relay.devices = relay
+            .devices
+            .into_iter()
+            .filter(|rd| relay_devices_dev_euis.contains(&rd.dev_eui))
+            .collect();
+
+        // Calculate free slots.
+        // If we need to add a device, we can use the first slot available.
+        // Note that there can be gaps in the indicex if devices have been removed.
+        let used_slots: Vec<u32> = relay.devices.iter().map(|d| d.index).collect();
+        let free_slots: Vec<u32> = (0..15).filter(|x| !used_slots.contains(x)).collect();
+
+        // Update device-session.
+        self.device_session.relay = Some(relay);
+
+        // Iterate over the list of devices under this relay.
+        for device in &relay_devices {
+            // We need a dev_addr for the filter. Ignore devices that do not have a DevAddr (e.g.
+            // they have never been activated).
+            if let Some(dev_addr) = device.dev_addr {
+                let mut found = false;
+
+                for rd in &mut self.device_session.relay.as_mut().unwrap().devices {
+                    if rd.dev_eui == device.dev_eui.to_vec() {
+                        found = true;
+
+                        // The device has not yet been provisioned, or
+                        // the settings must be updated
+                        if !rd.provisioned
+                            || rd.dev_addr != dev_addr.to_vec()
+                            || rd.uplink_limit_bucket_size
+                                != device.relay_ed_uplink_limit_bucket_size as u32
+                            || rd.uplink_limit_reload_rate
+                                != device.relay_ed_uplink_limit_reload_rate as u32
+                        {
+                            let ds = match device_session::get(&device.dev_eui).await {
+                                Ok(v) => v,
+                                Err(_) => {
+                                    // It is valid that the device is no longer activated.
+                                    continue;
+                                }
+                            };
+                            let root_wor_s_key = keys::get_root_wor_s_key(&AES128Key::from_slice(
+                                &ds.nwk_s_enc_key,
+                            )?)?;
+
+                            let set = lrwn::MACCommandSet::new(vec![
+                                lrwn::MACCommand::UpdateUplinkListReq(
+                                    lrwn::UpdateUplinkListReqPayload {
+                                        uplink_list_idx: rd.index as u8,
+                                        uplink_limit: lrwn::UplinkLimitPL {
+                                            bucket_size: device.relay_ed_uplink_limit_bucket_size
+                                                as u8,
+                                            reload_rate: device.relay_ed_uplink_limit_reload_rate
+                                                as u8,
+                                        },
+                                        dev_addr: dev_addr,
+                                        w_fcnt: ds.relay.map(|v| v.w_f_cnt).unwrap_or(0),
+                                        root_wor_s_key: root_wor_s_key,
+                                    },
+                                ),
+                            ]);
+                            mac_command::set_pending(
+                                &self.device.dev_eui,
+                                lrwn::CID::UpdateUplinkListReq,
+                                &set,
+                            )
+                            .await?;
+                            self.mac_commands.push(set);
+
+                            rd.dev_addr = dev_addr.to_vec();
+                            rd.root_wor_s_key = root_wor_s_key.to_vec();
+                            rd.uplink_limit_bucket_size =
+                                device.relay_ed_uplink_limit_bucket_size as u32;
+                            rd.uplink_limit_reload_rate =
+                                device.relay_ed_uplink_limit_reload_rate as u32;
+                            rd.provisioned = false;
+
+                            // Return because we can't add multiple sets and if we would combine
+                            // multiple commands as a single set, it might not fit in a single
+                            // downlink.
+                            return Ok(());
+                        }
+                    }
+                }
+
+                // The device was not found in the list. This means we must add it (using the first
+                // available slot).
+                if !found {
+                    if free_slots.is_empty() {
+                        error!(relay_dev_eui = %self.device.dev_eui, "Relay does not have any free UpdateUplinkListReq slots");
+                        continue;
+                    }
+
+                    let ds = match device_session::get(&device.dev_eui).await {
+                        Ok(v) => v,
+                        Err(_) => {
+                            // It is valid that the device is no longer activated.
+                            continue;
+                        }
+                    };
+                    let root_wor_s_key =
+                        keys::get_root_wor_s_key(&AES128Key::from_slice(&ds.nwk_s_enc_key)?)?;
+
+                    let set =
+                        lrwn::MACCommandSet::new(vec![lrwn::MACCommand::UpdateUplinkListReq(
+                            lrwn::UpdateUplinkListReqPayload {
+                                uplink_list_idx: free_slots[0] as u8,
+                                uplink_limit: lrwn::UplinkLimitPL {
+                                    bucket_size: device.relay_ed_uplink_limit_bucket_size as u8,
+                                    reload_rate: device.relay_ed_uplink_limit_reload_rate as u8,
+                                },
+                                dev_addr: dev_addr,
+                                w_fcnt: ds.relay.map(|v| v.w_f_cnt).unwrap_or(0),
+                                root_wor_s_key: root_wor_s_key,
+                            },
+                        )]);
+                    mac_command::set_pending(
+                        &self.device.dev_eui,
+                        lrwn::CID::UpdateUplinkListReq,
+                        &set,
+                    )
+                    .await?;
+                    self.mac_commands.push(set);
+
+                    self.device_session.relay.as_mut().unwrap().devices.push(
+                        internal::RelayDevice {
+                            index: free_slots[0],
+                            join_eui: vec![],
+                            dev_eui: device.dev_eui.to_vec(),
+                            dev_addr: dev_addr.to_vec(),
+                            root_wor_s_key: root_wor_s_key.to_vec(),
+                            uplink_limit_bucket_size: device.relay_ed_uplink_limit_bucket_size
+                                as u32,
+                            uplink_limit_reload_rate: device.relay_ed_uplink_limit_reload_rate
+                                as u32,
+                            provisioned: false,
+                            w_f_cnt_last_request: Some(Utc::now().into()),
+                        },
+                    );
+
+                    // Return because we can't add multiple sets and if we would combine
+                    // multiple commands as a single set, it might not fit in a single
+                    // downlink.
+                    return Ok(());
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn _request_ctrl_uplink_list(&mut self) -> Result<()> {
+        trace!("Requesting CtrlUplinkList to sync WFCnt");
+
+        let max_count = 3;
+        let mut counter = 0;
+        let mut commands: Vec<lrwn::MACCommand> = vec![];
+
+        // Get the current relay state.
+        let mut relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        for rd in &mut relay.devices {
+            match &rd.w_f_cnt_last_request {
+                Some(v) => {
+                    let last_req: DateTime<Utc> = v.clone().try_into()?;
+                    if last_req
+                        < Utc::now()
+                            .checked_sub_signed(chrono::Duration::hours(24))
+                            .unwrap()
+                    {
+                        if counter < max_count {
+                            counter += 1;
+                            commands.push(lrwn::MACCommand::CtrlUplinkListReq(
+                                lrwn::CtrlUplinkListReqPayload {
+                                    ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                                        uplink_list_idx: rd.index as u8,
+                                        ctrl_uplink_action: 0,
+                                    },
+                                },
+                            ));
+
+                            rd.w_f_cnt_last_request = Some(Utc::now().into());
+                        }
+                    }
+                }
+                None => {
+                    if counter < max_count {
+                        counter += 1;
+                        commands.push(lrwn::MACCommand::CtrlUplinkListReq(
+                            lrwn::CtrlUplinkListReqPayload {
+                                ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                                    uplink_list_idx: rd.index as u8,
+                                    ctrl_uplink_action: 0,
+                                },
+                            },
+                        ));
+
+                        rd.w_f_cnt_last_request = Some(Utc::now().into());
+                    }
+                }
+            }
+        }
+
+        self.device_session.relay = Some(relay);
+
+        if !commands.is_empty() {
+            let set = lrwn::MACCommandSet::new(commands);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::CtrlUplinkListReq, &set)
+                .await?;
+            self.mac_commands.push(set);
+        }
+
+        Ok(())
+    }
+
+    async fn _configure_fwd_limit_req(&mut self) -> Result<()> {
+        trace!("Configuring Relay Fwd Limit");
+
+        // Get the current relay state.
+        let relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        if relay.join_req_limit_reload_rate
+            != self.device_profile.relay_join_req_limit_reload_rate as u32
+            || relay.notify_limit_reload_rate
+                != self.device_profile.relay_notify_limit_reload_rate as u32
+            || relay.global_uplink_limit_reload_rate
+                != self.device_profile.relay_global_uplink_limit_reload_rate as u32
+            || relay.overall_limit_reload_rate
+                != self.device_profile.relay_overall_limit_reload_rate as u32
+            || relay.join_req_limit_bucket_size
+                != self.device_profile.relay_join_req_limit_bucket_size as u32
+            || relay.notify_limit_bucket_size
+                != self.device_profile.relay_notify_limit_bucket_size as u32
+            || relay.global_uplink_limit_bucket_size
+                != self.device_profile.relay_global_uplink_limit_bucket_size as u32
+            || relay.overall_limit_bucket_size
+                != self.device_profile.relay_overall_limit_bucket_size as u32
+        {
+            let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::ConfigureFwdLimitReq(
+                lrwn::ConfigureFwdLimitReqPayload {
+                    reload_rate: lrwn::FwdLimitReloadRatePL {
+                        overall_reload_rate: self.device_profile.relay_overall_limit_reload_rate
+                            as u8,
+                        global_uplink_reload_rate: self
+                            .device_profile
+                            .relay_global_uplink_limit_reload_rate
+                            as u8,
+                        notify_reload_rate: self.device_profile.relay_notify_limit_reload_rate
+                            as u8,
+                        join_req_reload_rate: self.device_profile.relay_join_req_limit_reload_rate
+                            as u8,
+                        reset_limit_counter: lrwn::ResetLimitCounter::NoChange,
+                    },
+                    load_capacity: lrwn::FwdLimitLoadCapacityPL {
+                        overall_limit_size: self.device_profile.relay_overall_limit_bucket_size
+                            as u8,
+                        global_uplink_limit_size: self
+                            .device_profile
+                            .relay_global_uplink_limit_bucket_size
+                            as u8,
+                        notify_limit_size: self.device_profile.relay_notify_limit_bucket_size as u8,
+                        join_req_limit_size: self.device_profile.relay_join_req_limit_bucket_size
+                            as u8,
+                    },
+                },
+            )]);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::ConfigureFwdLimitReq, &set)
+                .await?;
+            self.mac_commands.push(set);
+        }
+
+        self.device_session.relay = Some(relay);
+
+        Ok(())
+    }
+
+    async fn _update_filter_list(&mut self) -> Result<()> {
+        trace!("Updating Relay filter list");
+
+        // Get the current relay state.
+        let mut relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        // Get devices that must be configured on the relay.
+        let relay_devices = relay::list_devices(
+            15,
+            0,
+            &relay::DeviceFilters {
+                relay_dev_eui: Some(self.device.dev_eui.clone()),
+            },
+        )
+        .await?;
+
+        // We filter out the devices that are no longer configured on the relay.
+        // This way we can combine the delete + add by just overwriting an old slot.
+        // Note that index 0 has a special meaning.
+        let relay_devices_dev_euis: Vec<Vec<u8>> =
+            relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
+        relay.filters = relay
+            .filters
+            .into_iter()
+            .filter(|f| f.index == 0 || relay_devices_dev_euis.contains(&f.dev_eui))
+            .collect();
+
+        // Calculate free slots.
+        // Note that the first slot is used as "catch-all" filter.
+        let used_slots: Vec<u32> = relay.filters.iter().map(|f| f.index).collect();
+        let free_slots: Vec<u32> = (1..15).filter(|x| !used_slots.contains(x)).collect();
+
+        // Update device-session.
+        self.device_session.relay = Some(relay);
+
+        // Make sure the first item contains the "catch-all" filter.
+        // This is needed to make sure that only the rest of the filter items are allowed to join
+        // through the Relay.
+        if let Some(relay) = self.device_session.relay.as_mut() {
+            if relay.filters.is_empty() {
+                relay.filters.push(internal::RelayFilter {
+                    index: 0,
+                    action: 2,
+                    provisioned: false,
+                    ..Default::default()
+                });
+            }
+
+            if let Some(filter) = relay.filters.first() {
+                if !filter.provisioned {
+                    let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
+                        lrwn::FilterListReqPayload {
+                            filter_list_idx: 0,
+                            filter_list_action: lrwn::FilterListAction::Filter,
+                            filter_list_eui: vec![],
+                        },
+                    )]);
+                    mac_command::set_pending(&self.device.dev_eui, lrwn::CID::FilterListReq, &set)
+                        .await?;
+                    self.mac_commands.push(set);
+
+                    // Return because we can't add multiple sets and if we would combine
+                    // multiple commands as a single set, it might not fit in a single
+                    // downlink.
+                    return Ok(());
+                }
+            }
+        }
+
+        // Iterate over the list of devices under this relay.
+        for device in &relay_devices {
+            let mut found = false;
+
+            for f in &mut self.device_session.relay.as_mut().unwrap().filters {
+                if f.dev_eui == device.dev_eui.to_vec() {
+                    found = true;
+
+                    // The device has not yet been provisioned, or
+                    // the device has a new JoinEUI, we must update it (same index).
+                    if !f.provisioned || f.join_eui != device.join_eui.to_vec() {
+                        let mut eui = device.join_eui.to_vec();
+                        eui.extend_from_slice(&device.dev_eui.to_vec());
+
+                        let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
+                            lrwn::FilterListReqPayload {
+                                filter_list_idx: f.index as u8,
+                                filter_list_action: lrwn::FilterListAction::Forward,
+                                filter_list_eui: eui,
+                            },
+                        )]);
+                        mac_command::set_pending(
+                            &self.device.dev_eui,
+                            lrwn::CID::FilterListReq,
+                            &set,
+                        )
+                        .await?;
+                        self.mac_commands.push(set);
+
+                        f.join_eui = device.join_eui.to_vec();
+                        f.provisioned = false;
+
+                        // Return because we can't add multiple sets and if we would combine
+                        // multiple commands as a single set, it might not fit in a single
+                        // downlink.
+                        return Ok(());
+                    }
+                }
+            }
+
+            // The device was not found in the list. This means we must add it (using the first
+            // available slot).
+            if !found {
+                if free_slots.is_empty() {
+                    error!(relay_dev_eui = %self.device.dev_eui, "Relay does have have any free FilterListReq slots");
+                    continue;
+                }
+
+                let mut eui = device.join_eui.to_vec();
+                eui.extend_from_slice(&device.dev_eui.to_vec());
+
+                let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
+                    lrwn::FilterListReqPayload {
+                        filter_list_idx: free_slots[0] as u8,
+                        filter_list_action: lrwn::FilterListAction::Forward,
+                        filter_list_eui: eui,
+                    },
+                )]);
+                mac_command::set_pending(&self.device.dev_eui, lrwn::CID::FilterListReq, &set)
+                    .await?;
+                self.mac_commands.push(set);
+
+                self.device_session
+                    .relay
+                    .as_mut()
+                    .unwrap()
+                    .filters
+                    .push(internal::RelayFilter {
+                        index: free_slots[0],
+                        action: 1,
+                        join_eui: device.join_eui.to_vec(),
+                        dev_eui: device.dev_eui.to_vec(),
+                        provisioned: false,
+                    });
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn _update_relay_conf(&mut self) -> Result<()> {
+        trace!("Updating Relay Conf");
+
+        // Get the current relay state.
+        let relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        if relay.enabled != self.device_profile.relay_enabled
+            || relay.cad_periodicity != self.device_profile.relay_cad_periodicity as u32
+            || relay.default_channel_index != self.device_profile.relay_default_channel_index as u32
+            || relay.second_channel_freq != self.device_profile.relay_second_channel_freq as u32
+            || relay.second_channel_dr != self.device_profile.relay_second_channel_dr as u32
+            || relay.second_channel_ack_offset
+                != self.device_profile.relay_second_channel_ack_offset as u32
+        {
+            let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::RelayConfReq(
+                lrwn::RelayConfReqPayload {
+                    channel_settings_relay: lrwn::ChannelSettingsRelay {
+                        start_stop: match self.device_profile.relay_enabled {
+                            true => 1,
+                            false => 0,
+                        },
+                        cad_periodicity: self.device_profile.relay_cad_periodicity as u8,
+                        default_ch_idx: self.device_profile.relay_default_channel_index as u8,
+                        second_ch_idx: if self.device_profile.relay_second_channel_freq > 0 {
+                            1
+                        } else {
+                            0
+                        },
+                        second_ch_dr: self.device_profile.relay_second_channel_dr as u8,
+                        second_ch_ack_offset: self.device_profile.relay_second_channel_ack_offset
+                            as u8,
+                    },
+                    second_ch_freq: self.device_profile.relay_second_channel_freq as u32,
+                },
+            )]);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::RelayConfReq, &set).await?;
+            self.mac_commands.push(set);
+        }
+
+        self.device_session.relay = Some(relay);
+
+        Ok(())
+    }
+
+    async fn _update_end_device_conf(&mut self) -> Result<()> {
+        trace!("Updating End Device Conf");
+
+        // Get the current relay state.
+        let relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        if relay.ed_activation_mode != self.device_profile.relay_ed_activation_mode.to_u8() as u32
+            || relay.ed_smart_enable_level != self.device_profile.relay_ed_smart_enable_level as u32
+            || relay.ed_back_off != self.device_profile.relay_ed_back_off as u32
+            || relay.second_channel_freq != self.device_profile.relay_second_channel_freq as u32
+            || relay.second_channel_dr != self.device_profile.relay_second_channel_dr as u32
+            || relay.second_channel_ack_offset
+                != self.device_profile.relay_second_channel_ack_offset as u32
+        {
+            let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::EndDeviceConfReq(
+                lrwn::EndDeviceConfReqPayload {
+                    activation_relay_mode: lrwn::ActivationRelayMode {
+                        relay_mode_activation: self.device_profile.relay_ed_activation_mode,
+                        smart_enable_level: self.device_profile.relay_ed_smart_enable_level as u8,
+                    },
+                    channel_settings_ed: lrwn::ChannelSettingsED {
+                        second_ch_ack_offset: self.device_profile.relay_second_channel_ack_offset
+                            as u8,
+                        second_ch_dr: self.device_profile.relay_second_channel_dr as u8,
+                        second_ch_idx: if self.device_profile.relay_second_channel_freq > 0 {
+                            1
+                        } else {
+                            0
+                        },
+                        backoff: self.device_profile.relay_ed_back_off as u8,
+                    },
+                    second_ch_freq: self.device_profile.relay_second_channel_freq as u32,
+                },
+            )]);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::EndDeviceConfReq, &set)
+                .await?;
+            self.mac_commands.push(set);
+        }
+
+        self.device_session.relay = Some(relay);
+
+        Ok(())
+    }
+
+    fn set_tx_info_for_rx1(&mut self) -> Result<()> {
         trace!("Setting tx-info for RX1");
 
         let gw_down = self.downlink_gateway.as_ref().unwrap();
@@ -1179,6 +1938,90 @@ impl Data {
             self.device_profile.reg_params_revision,
             rx1_dr_index,
         )?;
+
+        self.downlink_frame_items.push(DownlinkFrameItem {
+            downlink_frame_item: gw::DownlinkFrameItem {
+                tx_info: Some(tx_info),
+                ..Default::default()
+            },
+            remaining_payload_size: max_pl_size.n,
+        });
+
+        Ok(())
+    }
+
+    fn set_tx_info_for_rx1_relayed(&mut self) -> Result<()> {
+        trace!("Setting tx-info for relayed RX1");
+
+        let gw_down = self.downlink_gateway.as_ref().unwrap();
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        let mut tx_info = gw::DownlinkTxInfo {
+            board: gw_down.board,
+            antenna: gw_down.antenna,
+            context: gw_down.context.clone(),
+            ..Default::default()
+        };
+
+        // get RX1 DR.
+        let rx1_dr_index_relay = self.region_conf.get_rx1_data_rate_index(
+            self.uplink_frame_set.as_ref().unwrap().dr,
+            relay_ctx.device_session.rx1_dr_offset as usize,
+        )?;
+        let rx1_dr_relay = self.region_conf.get_data_rate(rx1_dr_index_relay)?;
+
+        // set DR to tx_info.
+        helpers::set_tx_info_data_rate(&mut tx_info, &rx1_dr_relay)?;
+
+        // set frequency
+        tx_info.frequency = self.region_conf.get_rx1_frequency_for_uplink_frequency(
+            self.uplink_frame_set.as_ref().unwrap().tx_info.frequency,
+        )?;
+
+        // set tx power
+        if self.network_conf.downlink_tx_power != -1 {
+            tx_info.power = self.network_conf.downlink_tx_power;
+        } else {
+            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+        }
+
+        // set timestamp
+        let delay = if relay_ctx.device_session.rx1_delay > 0 {
+            Duration::from_secs(relay_ctx.device_session.rx1_delay as u64)
+        } else {
+            self.region_conf.get_defaults().rx1_delay
+        };
+        tx_info.timing = Some(gw::Timing {
+            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                delay: Some(pbjson_types::Duration::from(delay)),
+            })),
+        });
+
+        // get remaining payload size (relay)
+        let max_pl_size_relay = self.region_conf.get_max_payload_size(
+            relay_ctx.device_session.mac_version().from_proto(),
+            relay_ctx.device_profile.reg_params_revision,
+            rx1_dr_index_relay,
+        )?;
+
+        // Get remaining payload size (end-device)
+        let rx1_dr_index_ed = self.region_conf.get_rx1_data_rate_index(
+            relay_ctx.req.metadata.dr,
+            self.device_session.rx1_dr_offset as usize,
+        )?;
+        let max_pl_size_ed = self.region_conf.get_max_payload_size(
+            self.device_session.mac_version().from_proto(),
+            self.device_profile.reg_params_revision,
+            rx1_dr_index_ed,
+        )?;
+
+        // Take the smallest payload size to make sure it can be sent using the relay downlink DR
+        // and the end-device downlink DR (repeated by the relay).
+        let max_pl_size = if max_pl_size_relay.n < max_pl_size_ed.n {
+            max_pl_size_relay
+        } else {
+            max_pl_size_ed
+        };
 
         self.downlink_frame_items.push(DownlinkFrameItem {
             downlink_frame_item: gw::DownlinkFrameItem {
@@ -1245,6 +2088,89 @@ impl Data {
             self.device_profile.reg_params_revision,
             self.device_session.rx2_dr as u8,
         )?;
+
+        self.downlink_frame_items.push(DownlinkFrameItem {
+            downlink_frame_item: gw::DownlinkFrameItem {
+                tx_info: Some(tx_info),
+                ..Default::default()
+            },
+            remaining_payload_size: max_pl_size.n,
+        });
+
+        Ok(())
+    }
+
+    fn set_tx_info_for_rx2_relayed(&mut self) -> Result<()> {
+        trace!("Setting tx-info for relayed RX2");
+
+        let gw_down = self.downlink_gateway.as_ref().unwrap();
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        let mut tx_info = gw::DownlinkTxInfo {
+            board: gw_down.board,
+            antenna: gw_down.antenna,
+            frequency: relay_ctx.device_session.rx2_frequency,
+            context: gw_down.context.clone(),
+            ..Default::default()
+        };
+
+        // Set DR to tx-info.
+        let rx2_dr_relay = self
+            .region_conf
+            .get_data_rate(relay_ctx.device_session.rx2_dr as u8)?;
+        helpers::set_tx_info_data_rate(&mut tx_info, &rx2_dr_relay)?;
+
+        // set tx power
+        if self.network_conf.downlink_tx_power != -1 {
+            tx_info.power = self.network_conf.downlink_tx_power;
+        } else {
+            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+        }
+
+        // set timestamp
+        if !self.immediately {
+            let delay = if relay_ctx.device_session.rx1_delay > 0 {
+                Duration::from_secs(relay_ctx.device_session.rx1_delay as u64 + 1)
+            } else {
+                self.region_conf.get_defaults().rx2_delay
+            };
+
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                    delay: Some(pbjson_types::Duration::from(delay)),
+                })),
+            });
+        }
+
+        if self.immediately {
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Immediately(
+                    gw::ImmediatelyTimingInfo {},
+                )),
+            });
+        }
+
+        // get remaining payload size (relay).
+        let max_pl_size_relay = self.region_conf.get_max_payload_size(
+            relay_ctx.device_session.mac_version().from_proto(),
+            relay_ctx.device_profile.reg_params_revision,
+            relay_ctx.device_session.rx2_dr as u8,
+        )?;
+
+        // get remaining payload size (end-device).
+        let max_pl_size_ed = self.region_conf.get_max_payload_size(
+            self.device_session.mac_version().from_proto(),
+            self.device_profile.reg_params_revision,
+            self.device_session.rx2_dr as u8,
+        )?;
+
+        // Take the smallest payload size to make sure it can be sent using the relay downlink DR
+        // and the end-device downlink DR (repeated by the relay).
+        let max_pl_size = if max_pl_size_relay.n < max_pl_size_ed.n {
+            max_pl_size_relay
+        } else {
+            max_pl_size_ed
+        };
 
         self.downlink_frame_items.push(DownlinkFrameItem {
             downlink_frame_item: gw::DownlinkFrameItem {
@@ -1445,7 +2371,7 @@ fn filter_mac_commands(
             // Check if it doesn't exceed the max error error count.
             if device_session
                 .mac_command_error_count
-                .get(&(mac_command.cid().byte() as u32))
+                .get(&(mac_command.cid().to_u8() as u32))
                 .cloned()
                 .unwrap_or_default()
                 > 1
@@ -1474,15 +2400,17 @@ fn filter_mac_commands(
 #[cfg(test)]
 mod test {
     use super::*;
-
-    struct Test {
-        device_session: internal::DeviceSession,
-        mac_commands: Vec<lrwn::MACCommandSet>,
-        expected_mac_commands: Vec<lrwn::MACCommandSet>,
-    }
+    use crate::test;
+    use lrwn::EUI64;
 
     #[test]
     fn test_filter_mac_commands() {
+        struct Test {
+            device_session: internal::DeviceSession,
+            mac_commands: Vec<lrwn::MACCommandSet>,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
         let tests = vec![
             // No mac-commands set.
             Test {
@@ -1495,7 +2423,7 @@ mod test {
             // One LinkADRReq, no errors.
             Test {
                 device_session: internal::DeviceSession {
-                    mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 0)]
+                    mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 0)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -1527,7 +2455,7 @@ mod test {
             // One LinkADRReq, 0 errors (HashMap contains the CID, but count = 0).
             Test {
                 device_session: internal::DeviceSession {
-                    mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 0)]
+                    mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 0)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -1559,7 +2487,7 @@ mod test {
             // One LinkADRReq, exceeding error count.
             Test {
                 device_session: internal::DeviceSession {
-                    mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 2)]
+                    mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 2)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -1652,6 +2580,1235 @@ mod test {
         for test in &tests {
             let out = filter_mac_commands(&test.device_session, &test.mac_commands);
             assert_eq!(test.expected_mac_commands, out);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_update_uplink_list() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            relay_devices: Vec<(EUI64, DevAddr)>,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+            expected_device_session: internal::DeviceSession,
+        }
+
+        let tests = vec![
+            Test {
+                name: "no devices".into(),
+                device_session: internal::DeviceSession {
+                    ..Default::default()
+                },
+                relay_devices: vec![],
+                expected_mac_commands: vec![],
+                expected_device_session: internal::DeviceSession {
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "already in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![1, 2, 3, 4],
+                            root_wor_s_key: vec![],
+                            provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                    DevAddr::from_be_bytes([1, 2, 3, 4]),
+                )],
+                expected_mac_commands: vec![],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![1, 2, 3, 4],
+                            root_wor_s_key: vec![],
+                            provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "add device".into(),
+                device_session: internal::DeviceSession {
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                    DevAddr::from_be_bytes([1, 2, 3, 4]),
+                )],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
+                        uplink_list_idx: 0,
+                        uplink_limit: lrwn::UplinkLimitPL {
+                            reload_rate: 1,
+                            bucket_size: 2,
+                        },
+                        dev_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
+                        w_fcnt: 0,
+                        root_wor_s_key: AES128Key::from_bytes([
+                            0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
+                            0xf5, 0x8e, 0x0f, 0xd3,
+                        ]),
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 0,
+                            dev_addr: vec![1, 2, 3, 4],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            join_eui: vec![],
+                            root_wor_s_key: vec![
+                                0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf,
+                                0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
+                            ],
+                            provisioned: false,
+                            uplink_limit_reload_rate: 1,
+                            uplink_limit_bucket_size: 2,
+                            w_f_cnt_last_request: None,
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "update device".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![1, 2, 3, 4],
+                            root_wor_s_key: vec![],
+                            provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                    DevAddr::from_be_bytes([2, 2, 3, 4]),
+                )],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
+                        uplink_list_idx: 1,
+                        uplink_limit: lrwn::UplinkLimitPL {
+                            reload_rate: 1,
+                            bucket_size: 2,
+                        },
+                        dev_addr: DevAddr::from_be_bytes([2, 2, 3, 4]),
+                        w_fcnt: 0,
+                        root_wor_s_key: AES128Key::from_bytes([
+                            0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
+                            0xf5, 0x8e, 0x0f, 0xd3,
+                        ]),
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![2, 2, 3, 4],
+                            root_wor_s_key: vec![
+                                0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf,
+                                0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
+                            ],
+                            provisioned: false,
+                            uplink_limit_reload_rate: 1,
+                            uplink_limit_bucket_size: 2,
+                            w_f_cnt_last_request: None,
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "add second device".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![1, 2, 3, 4],
+                            root_wor_s_key: vec![],
+                            provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![
+                    (
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                        DevAddr::from_be_bytes([1, 2, 3, 4]),
+                    ),
+                    (
+                        EUI64::from_be_bytes([3, 3, 3, 3, 3, 3, 3, 3]),
+                        DevAddr::from_be_bytes([2, 2, 3, 4]),
+                    ),
+                ],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
+                        uplink_list_idx: 0,
+                        uplink_limit: lrwn::UplinkLimitPL {
+                            reload_rate: 1,
+                            bucket_size: 2,
+                        },
+                        dev_addr: DevAddr::from_be_bytes([2, 2, 3, 4]),
+                        w_fcnt: 0,
+                        root_wor_s_key: AES128Key::from_bytes([
+                            0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
+                            0xf5, 0x8e, 0x0f, 0xd3,
+                        ]),
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![
+                            internal::RelayDevice {
+                                index: 1,
+                                join_eui: vec![],
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                                dev_addr: vec![1, 2, 3, 4],
+                                root_wor_s_key: vec![],
+                                provisioned: true,
+                                uplink_limit_reload_rate: 1,
+                                uplink_limit_bucket_size: 2,
+                                w_f_cnt_last_request: None,
+                            },
+                            internal::RelayDevice {
+                                index: 0,
+                                join_eui: vec![],
+                                dev_eui: vec![3, 3, 3, 3, 3, 3, 3, 3],
+                                dev_addr: vec![2, 2, 3, 4],
+                                root_wor_s_key: vec![
+                                    0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb,
+                                    0xbf, 0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
+                                ],
+                                provisioned: false,
+                                uplink_limit_reload_rate: 1,
+                                uplink_limit_bucket_size: 2,
+                                w_f_cnt_last_request: None,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_relay = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-relay".into(),
+            tenant_id: t.id,
+            is_relay: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_ed = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-ed".into(),
+            tenant_id: t.id,
+            is_relay_ed: true,
+            relay_ed_uplink_limit_bucket_size: 2,
+            relay_ed_uplink_limit_reload_rate: 1,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d_relay = device::create(device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+            name: "relay".into(),
+            application_id: app.id,
+            device_profile_id: dp_relay.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            // create devices + add to relay
+            for (dev_eui, dev_addr) in &test.relay_devices {
+                let d = device::create(device::Device {
+                    name: dev_eui.to_string(),
+                    dev_eui: *dev_eui,
+                    dev_addr: Some(*dev_addr),
+                    application_id: app.id,
+                    device_profile_id: dp_ed.id,
+                    ..Default::default()
+                })
+                .await
+                .unwrap();
+
+                let _ = device_session::save(&internal::DeviceSession {
+                    dev_addr: dev_addr.to_vec(),
+                    dev_eui: dev_eui.to_vec(),
+                    nwk_s_enc_key: vec![0; 16],
+                    ..Default::default()
+                })
+                .await
+                .unwrap();
+
+                relay::add_device(d_relay.dev_eui, d.dev_eui).await.unwrap();
+            }
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: t.clone(),
+                application: app.clone(),
+                device_profile: dp_relay.clone(),
+                device: d_relay.clone(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._update_uplink_list().await.unwrap();
+
+            // cleanup devices
+            for (dev_eui, _) in &test.relay_devices {
+                device::delete(dev_eui).await.unwrap();
+            }
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_update_filter_list() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            relay_devices: Vec<(EUI64, EUI64)>, // DevEUI + JoinEUI
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+            expected_device_session: internal::DeviceSession,
+        }
+
+        let tests = vec![
+            Test {
+                name: "no devices + empty ds".into(),
+                device_session: internal::DeviceSession::default(),
+                relay_devices: vec![],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        filter_list_idx: 0,
+                        filter_list_action: lrwn::FilterListAction::Filter,
+                        filter_list_eui: vec![],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: false,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "no devices + unprovisioned filter".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: false,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        filter_list_idx: 0,
+                        filter_list_action: lrwn::FilterListAction::Filter,
+                        filter_list_eui: vec![],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: false,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "no devices + provisioned filter".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: true,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![],
+                expected_mac_commands: vec![],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: true,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "device in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 0]),
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 1]),
+                )],
+                expected_mac_commands: vec![],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "update device".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 0]),
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 3]),
+                )],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        filter_list_idx: 1,
+                        filter_list_action: lrwn::FilterListAction::Forward,
+                        filter_list_eui: vec![2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 0],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 3],
+                                provisioned: false,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "add device".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![
+                    (
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 0]),
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 1]),
+                    ),
+                    (
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 3]),
+                    ),
+                ],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        filter_list_idx: 2,
+                        filter_list_action: lrwn::FilterListAction::Forward,
+                        filter_list_eui: vec![2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                            internal::RelayFilter {
+                                index: 2,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 3],
+                                provisioned: false,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+
+                    ..Default::default()
+                },
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_relay = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-relay".into(),
+            tenant_id: t.id,
+            is_relay: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_ed = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-ed".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d_relay = device::create(device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+            name: "relay".into(),
+            application_id: app.id,
+            device_profile_id: dp_relay.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            // create devices + add to relay
+            for (dev_eui, join_eui) in &test.relay_devices {
+                let d = device::create(device::Device {
+                    name: dev_eui.to_string(),
+                    dev_eui: *dev_eui,
+                    join_eui: *join_eui,
+                    application_id: app.id,
+                    device_profile_id: dp_ed.id,
+                    ..Default::default()
+                })
+                .await
+                .unwrap();
+
+                relay::add_device(d_relay.dev_eui, d.dev_eui).await.unwrap();
+            }
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: t.clone(),
+                application: app.clone(),
+                device_profile: dp_relay.clone(),
+                device: d_relay.clone(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._update_filter_list().await.unwrap();
+
+            // cleanup devices
+            for (dev_eui, _) in &test.relay_devices {
+                device::delete(dev_eui).await.unwrap();
+            }
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+            assert_eq!(test.expected_device_session, ctx.device_session);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_update_relay_conf() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            device_profile: device_profile::DeviceProfile,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
+        let tests = vec![
+            Test {
+                name: "relay in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        enabled: true,
+                        cad_periodicity: 1,
+                        default_channel_index: 0,
+                        second_channel_freq: 868300000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 2,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    is_relay: true,
+                    relay_enabled: true,
+                    relay_cad_periodicity: 1,
+                    relay_default_channel_index: 0,
+                    relay_second_channel_freq: 868300000,
+                    relay_second_channel_dr: 3,
+                    relay_second_channel_ack_offset: 2,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "relay out of sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        enabled: true,
+                        cad_periodicity: 1,
+                        default_channel_index: 0,
+                        second_channel_freq: 868300000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 2,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    is_relay: true,
+                    relay_enabled: true,
+                    relay_cad_periodicity: 1,
+                    relay_default_channel_index: 0,
+                    relay_second_channel_freq: 868500000,
+                    relay_second_channel_dr: 3,
+                    relay_second_channel_ack_offset: 2,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::RelayConfReq(lrwn::RelayConfReqPayload {
+                        channel_settings_relay: lrwn::ChannelSettingsRelay {
+                            start_stop: 1,
+                            cad_periodicity: 1,
+                            default_ch_idx: 0,
+                            second_ch_idx: 1,
+                            second_ch_dr: 3,
+                            second_ch_ack_offset: 2,
+                        },
+                        second_ch_freq: 868500000,
+                    }),
+                ])],
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: tenant::Tenant::default(),
+                application: application::Application::default(),
+                device_profile: test.device_profile.clone(),
+                device: device::Device::default(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._update_relay_conf().await.unwrap();
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_update_end_device_conf() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            device_profile: device_profile::DeviceProfile,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
+        let tests = vec![
+            Test {
+                name: "device is in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        ed_activation_mode: 1,
+                        ed_smart_enable_level: 1,
+                        ed_back_off: 16,
+                        second_channel_freq: 868100000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 4,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    relay_ed_activation_mode: lrwn::RelayModeActivation::EnableRelayMode,
+                    relay_ed_smart_enable_level: 1,
+                    relay_ed_back_off: 16,
+                    relay_second_channel_freq: 868100000,
+                    relay_second_channel_dr: 3,
+                    relay_second_channel_ack_offset: 4,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "device is not in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        ed_activation_mode: 0,
+                        ed_smart_enable_level: 1,
+                        ed_back_off: 16,
+                        second_channel_freq: 868100000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 4,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    relay_ed_activation_mode: lrwn::RelayModeActivation::EnableRelayMode,
+                    relay_ed_smart_enable_level: 1,
+                    relay_ed_back_off: 16,
+                    relay_second_channel_freq: 868100000,
+                    relay_second_channel_dr: 3,
+                    relay_second_channel_ack_offset: 4,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::EndDeviceConfReq(lrwn::EndDeviceConfReqPayload {
+                        activation_relay_mode: lrwn::ActivationRelayMode {
+                            relay_mode_activation: lrwn::RelayModeActivation::EnableRelayMode,
+                            smart_enable_level: 1,
+                        },
+                        channel_settings_ed: lrwn::ChannelSettingsED {
+                            second_ch_ack_offset: 4,
+                            second_ch_dr: 3,
+                            second_ch_idx: 1,
+                            backoff: 16,
+                        },
+                        second_ch_freq: 868100000,
+                    }),
+                ])],
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: tenant::Tenant::default(),
+                application: application::Application::default(),
+                device_profile: test.device_profile.clone(),
+                device: device::Device::default(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._update_end_device_conf().await.unwrap();
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_configure_fwd_limit_req() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            device_profile: device_profile::DeviceProfile,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
+        let tests = vec![
+            Test {
+                name: "relay is in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        join_req_limit_reload_rate: 10,
+                        join_req_limit_bucket_size: 0,
+                        notify_limit_reload_rate: 15,
+                        notify_limit_bucket_size: 1,
+                        global_uplink_limit_reload_rate: 20,
+                        global_uplink_limit_bucket_size: 2,
+                        overall_limit_reload_rate: 25,
+                        overall_limit_bucket_size: 3,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    relay_join_req_limit_reload_rate: 10,
+                    relay_join_req_limit_bucket_size: 0,
+                    relay_notify_limit_reload_rate: 15,
+                    relay_notify_limit_bucket_size: 1,
+                    relay_global_uplink_limit_reload_rate: 20,
+                    relay_global_uplink_limit_bucket_size: 2,
+                    relay_overall_limit_reload_rate: 25,
+                    relay_overall_limit_bucket_size: 3,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "relay is not in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        join_req_limit_reload_rate: 5,
+                        join_req_limit_bucket_size: 0,
+                        notify_limit_reload_rate: 15,
+                        notify_limit_bucket_size: 1,
+                        global_uplink_limit_reload_rate: 20,
+                        global_uplink_limit_bucket_size: 2,
+                        overall_limit_reload_rate: 25,
+                        overall_limit_bucket_size: 3,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    relay_join_req_limit_reload_rate: 10,
+                    relay_join_req_limit_bucket_size: 0,
+                    relay_notify_limit_reload_rate: 15,
+                    relay_notify_limit_bucket_size: 1,
+                    relay_global_uplink_limit_reload_rate: 20,
+                    relay_global_uplink_limit_bucket_size: 2,
+                    relay_overall_limit_reload_rate: 25,
+                    relay_overall_limit_bucket_size: 3,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::ConfigureFwdLimitReq(lrwn::ConfigureFwdLimitReqPayload {
+                        reload_rate: lrwn::FwdLimitReloadRatePL {
+                            join_req_reload_rate: 10,
+                            notify_reload_rate: 15,
+                            global_uplink_reload_rate: 20,
+                            overall_reload_rate: 25,
+                            reset_limit_counter: lrwn::ResetLimitCounter::NoChange,
+                        },
+                        load_capacity: lrwn::FwdLimitLoadCapacityPL {
+                            join_req_limit_size: 0,
+                            notify_limit_size: 1,
+                            global_uplink_limit_size: 2,
+                            overall_limit_size: 3,
+                        },
+                    }),
+                ])],
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: tenant::Tenant::default(),
+                application: application::Application::default(),
+                device_profile: test.device_profile.clone(),
+                device: device::Device::default(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._configure_fwd_limit_req().await.unwrap();
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_request_ctrl_uplink_list() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
+        let tests = vec![
+            Test {
+                name: "w_f_cnt has been recently requested".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            w_f_cnt_last_request: Some(Utc::now().into()),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "w_f_cnt has never been requested".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            w_f_cnt_last_request: None,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 1,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                ])],
+            },
+            Test {
+                name: "w_f_cnt has been requested two days ago".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            w_f_cnt_last_request: Some(
+                                Utc::now()
+                                    .checked_sub_signed(chrono::Duration::hours(48))
+                                    .unwrap()
+                                    .into(),
+                            ),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 1,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                ])],
+            },
+            Test {
+                name: "more than three devices have outdated w_f_cnt".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![
+                            internal::RelayDevice {
+                                index: 1,
+                                w_f_cnt_last_request: None,
+                                ..Default::default()
+                            },
+                            internal::RelayDevice {
+                                index: 2,
+                                w_f_cnt_last_request: None,
+                                ..Default::default()
+                            },
+                            internal::RelayDevice {
+                                index: 3,
+                                w_f_cnt_last_request: None,
+                                ..Default::default()
+                            },
+                            internal::RelayDevice {
+                                index: 4,
+                                w_f_cnt_last_request: None,
+                                ..Default::default()
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 1,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 2,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 3,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                    // The 4th is truncated
+                ])],
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: tenant::Tenant::default(),
+                application: application::Application::default(),
+                device_profile: device_profile::DeviceProfile::default(),
+                device: device::Device::default(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._request_ctrl_uplink_list().await.unwrap();
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
         }
     }
 }

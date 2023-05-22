@@ -93,6 +93,72 @@ export class DeviceProfile extends jspb.Message {
   getRegionConfigId(): string;
   setRegionConfigId(value: string): void;
 
+  getIsRelay(): boolean;
+  setIsRelay(value: boolean): void;
+
+  getIsRelayEd(): boolean;
+  setIsRelayEd(value: boolean): void;
+
+  getRelayEdRelayOnly(): boolean;
+  setRelayEdRelayOnly(value: boolean): void;
+
+  getRelayEnabled(): boolean;
+  setRelayEnabled(value: boolean): void;
+
+  getRelayCadPeriodicity(): CadPeriodicityMap[keyof CadPeriodicityMap];
+  setRelayCadPeriodicity(value: CadPeriodicityMap[keyof CadPeriodicityMap]): void;
+
+  getRelayDefaultChannelIndex(): number;
+  setRelayDefaultChannelIndex(value: number): void;
+
+  getRelaySecondChannelFreq(): number;
+  setRelaySecondChannelFreq(value: number): void;
+
+  getRelaySecondChannelDr(): number;
+  setRelaySecondChannelDr(value: number): void;
+
+  getRelaySecondChannelAckOffset(): SecondChAckOffsetMap[keyof SecondChAckOffsetMap];
+  setRelaySecondChannelAckOffset(value: SecondChAckOffsetMap[keyof SecondChAckOffsetMap]): void;
+
+  getRelayEdActivationMode(): RelayModeActivationMap[keyof RelayModeActivationMap];
+  setRelayEdActivationMode(value: RelayModeActivationMap[keyof RelayModeActivationMap]): void;
+
+  getRelayEdSmartEnableLevel(): number;
+  setRelayEdSmartEnableLevel(value: number): void;
+
+  getRelayEdBackOff(): number;
+  setRelayEdBackOff(value: number): void;
+
+  getRelayEdUplinkLimitBucketSize(): number;
+  setRelayEdUplinkLimitBucketSize(value: number): void;
+
+  getRelayEdUplinkLimitReloadRate(): number;
+  setRelayEdUplinkLimitReloadRate(value: number): void;
+
+  getRelayJoinReqLimitReloadRate(): number;
+  setRelayJoinReqLimitReloadRate(value: number): void;
+
+  getRelayNotifyLimitReloadRate(): number;
+  setRelayNotifyLimitReloadRate(value: number): void;
+
+  getRelayGlobalUplinkLimitReloadRate(): number;
+  setRelayGlobalUplinkLimitReloadRate(value: number): void;
+
+  getRelayOverallLimitReloadRate(): number;
+  setRelayOverallLimitReloadRate(value: number): void;
+
+  getRelayJoinReqLimitBucketSize(): number;
+  setRelayJoinReqLimitBucketSize(value: number): void;
+
+  getRelayNotifyLimitBucketSize(): number;
+  setRelayNotifyLimitBucketSize(value: number): void;
+
+  getRelayGlobalUplinkLimitBucketSize(): number;
+  setRelayGlobalUplinkLimitBucketSize(value: number): void;
+
+  getRelayOverallLimitBucketSize(): number;
+  setRelayOverallLimitBucketSize(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -134,6 +200,28 @@ export namespace DeviceProfile {
     measurementsMap: Array<[string, Measurement.AsObject]>,
     autoDetectMeasurements: boolean,
     regionConfigId: string,
+    isRelay: boolean,
+    isRelayEd: boolean,
+    relayEdRelayOnly: boolean,
+    relayEnabled: boolean,
+    relayCadPeriodicity: CadPeriodicityMap[keyof CadPeriodicityMap],
+    relayDefaultChannelIndex: number,
+    relaySecondChannelFreq: number,
+    relaySecondChannelDr: number,
+    relaySecondChannelAckOffset: SecondChAckOffsetMap[keyof SecondChAckOffsetMap],
+    relayEdActivationMode: RelayModeActivationMap[keyof RelayModeActivationMap],
+    relayEdSmartEnableLevel: number,
+    relayEdBackOff: number,
+    relayEdUplinkLimitBucketSize: number,
+    relayEdUplinkLimitReloadRate: number,
+    relayJoinReqLimitReloadRate: number,
+    relayNotifyLimitReloadRate: number,
+    relayGlobalUplinkLimitReloadRate: number,
+    relayOverallLimitReloadRate: number,
+    relayJoinReqLimitBucketSize: number,
+    relayNotifyLimitBucketSize: number,
+    relayGlobalUplinkLimitBucketSize: number,
+    relayOverallLimitBucketSize: number,
   }
 }
 
@@ -484,4 +572,35 @@ export interface MeasurementKindMap {
 }
 
 export const MeasurementKind: MeasurementKindMap;
+
+export interface CadPeriodicityMap {
+  SEC_1: 0;
+  MS_500: 1;
+  MS_250: 2;
+  MS_100: 3;
+  MS_50: 4;
+  MS_20: 5;
+}
+
+export const CadPeriodicity: CadPeriodicityMap;
+
+export interface SecondChAckOffsetMap {
+  KHZ_0: 0;
+  KHZ_200: 1;
+  KHZ_400: 2;
+  KHZ_800: 3;
+  KHZ_1600: 4;
+  KHZ_3200: 5;
+}
+
+export const SecondChAckOffset: SecondChAckOffsetMap;
+
+export interface RelayModeActivationMap {
+  DISABLE_RELAY_MODE: 0;
+  ENABLE_RELAY_MODE: 1;
+  DYNAMIC: 2;
+  END_DEVICE_CONTROLLED: 3;
+}
+
+export const RelayModeActivation: RelayModeActivationMap;
 

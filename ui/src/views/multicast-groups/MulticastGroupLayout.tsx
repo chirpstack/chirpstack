@@ -112,7 +112,7 @@ class MulticastGroupLayout extends Component<IProps, IState> {
               <Breadcrumb.Item>{mg.getName()}</Breadcrumb.Item>
             </Breadcrumb>
           )}
-          title={app.getName()}
+          title={mg.getName()}
           subTitle={`multicast-group id: ${mg.getId()}`}
           extra={[
             <Admin tenantId={tenant.getId()} isDeviceAdmin>

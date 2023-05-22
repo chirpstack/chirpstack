@@ -397,6 +397,10 @@ async fn test_lorawan_10() {
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: vec![],
             assert: vec![
+                assert::device_join_eui(
+                    dev.dev_eui,
+                    EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+                ),
                 assert::device_session(
                     dev.dev_eui.clone(),
                     internal::DeviceSession {

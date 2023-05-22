@@ -2,15 +2,16 @@ use anyhow::Result;
 #[cfg(feature = "serde")]
 use serde::{Serialize, Serializer};
 
-use super::cflist::CFList;
-use super::devaddr::DevAddr;
-use super::dl_settings::DLSettings;
-use super::eui64::EUI64;
-use super::fhdr::FCtrl;
-use super::fhdr::FHDR;
-use super::maccommand::MACCommandSet;
-use super::mhdr::MType;
-use super::netid::NetID;
+use crate::cflist::CFList;
+use crate::devaddr::DevAddr;
+use crate::dl_settings::DLSettings;
+use crate::eui64::EUI64;
+use crate::fhdr::FCtrl;
+use crate::fhdr::FHDR;
+use crate::maccommand::MACCommandSet;
+use crate::mhdr::MType;
+use crate::netid::NetID;
+use crate::relay::{ForwardDownlinkReq, ForwardUplinkReq};
 
 #[derive(PartialEq, Eq, Debug, Clone)]
 pub enum Payload {
@@ -194,6 +195,8 @@ impl JoinAcceptPayload {
 pub enum FRMPayload {
     Raw(Vec<u8>),
     MACCommandSet(MACCommandSet),
+    ForwardUplinkReq(ForwardUplinkReq),
+    ForwardDownlinkReq(ForwardDownlinkReq),
 }
 
 #[cfg(feature = "serde")]
@@ -205,6 +208,12 @@ impl Serialize for FRMPayload {
         match self {
             FRMPayload::Raw(v) => serializer.serialize_str(&hex::encode(v)),
             FRMPayload::MACCommandSet(v) => v.serialize(serializer),
+            FRMPayload::ForwardUplinkReq(v) => {
+                serializer.serialize_newtype_variant("FRMPayload", 2, "ForwardUplinkReq", v)
+            }
+            FRMPayload::ForwardDownlinkReq(v) => {
+                serializer.serialize_newtype_variant("FRMPayload", 3, "ForwardDownlinkReq", v)
+            }
         }
     }
 }
@@ -214,6 +223,8 @@ impl FRMPayload {
         Ok(match self {
             FRMPayload::Raw(v) => v.clone(),
             FRMPayload::MACCommandSet(v) => v.to_vec()?,
+            FRMPayload::ForwardUplinkReq(v) => v.to_vec()?,
+            FRMPayload::ForwardDownlinkReq(v) => v.to_vec()?,
         })
     }
 }

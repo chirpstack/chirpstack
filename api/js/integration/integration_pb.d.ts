@@ -58,6 +58,46 @@ export namespace DeviceInfo {
   }
 }
 
+export class UplinkRelayRxInfo extends jspb.Message {
+  getDevEui(): string;
+  setDevEui(value: string): void;
+
+  getFrequency(): number;
+  setFrequency(value: number): void;
+
+  getDr(): number;
+  setDr(value: number): void;
+
+  getSnr(): number;
+  setSnr(value: number): void;
+
+  getRssi(): number;
+  setRssi(value: number): void;
+
+  getWorChannel(): number;
+  setWorChannel(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UplinkRelayRxInfo.AsObject;
+  static toObject(includeInstance: boolean, msg: UplinkRelayRxInfo): UplinkRelayRxInfo.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: UplinkRelayRxInfo, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UplinkRelayRxInfo;
+  static deserializeBinaryFromReader(message: UplinkRelayRxInfo, reader: jspb.BinaryReader): UplinkRelayRxInfo;
+}
+
+export namespace UplinkRelayRxInfo {
+  export type AsObject = {
+    devEui: string,
+    frequency: number,
+    dr: number,
+    snr: number,
+    rssi: number,
+    worChannel: number,
+  }
+}
+
 export class UplinkEvent extends jspb.Message {
   getDeduplicationId(): string;
   setDeduplicationId(value: string): void;
@@ -110,6 +150,11 @@ export class UplinkEvent extends jspb.Message {
   getTxInfo(): gw_gw_pb.UplinkTxInfo | undefined;
   setTxInfo(value?: gw_gw_pb.UplinkTxInfo): void;
 
+  hasRelayRxInfo(): boolean;
+  clearRelayRxInfo(): void;
+  getRelayRxInfo(): UplinkRelayRxInfo | undefined;
+  setRelayRxInfo(value?: UplinkRelayRxInfo): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UplinkEvent.AsObject;
   static toObject(includeInstance: boolean, msg: UplinkEvent): UplinkEvent.AsObject;
@@ -135,6 +180,7 @@ export namespace UplinkEvent {
     object?: google_protobuf_struct_pb.Struct.AsObject,
     rxInfoList: Array<gw_gw_pb.UplinkRxInfo.AsObject>,
     txInfo?: gw_gw_pb.UplinkTxInfo.AsObject,
+    relayRxInfo?: UplinkRelayRxInfo.AsObject,
   }
 }
 
@@ -155,6 +201,11 @@ export class JoinEvent extends jspb.Message {
   getDevAddr(): string;
   setDevAddr(value: string): void;
 
+  hasRelayRxInfo(): boolean;
+  clearRelayRxInfo(): void;
+  getRelayRxInfo(): UplinkRelayRxInfo | undefined;
+  setRelayRxInfo(value?: UplinkRelayRxInfo): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): JoinEvent.AsObject;
   static toObject(includeInstance: boolean, msg: JoinEvent): JoinEvent.AsObject;
@@ -171,6 +222,7 @@ export namespace JoinEvent {
     time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     deviceInfo?: DeviceInfo.AsObject,
     devAddr: string,
+    relayRxInfo?: UplinkRelayRxInfo.AsObject,
   }
 }
 
@@ -505,6 +557,7 @@ export interface LogCodeMap {
   UPLINK_MIC: 6;
   UPLINK_F_CNT_RETRANSMISSION: 7;
   DOWNLINK_GATEWAY: 8;
+  RELAY_NEW_END_DEVICE: 9;
 }
 
 export const LogCode: LogCodeMap;

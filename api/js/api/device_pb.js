@@ -832,7 +832,8 @@ proto.api.Device.toObject = function(includeInstance, msg) {
     skipFcntCheck: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
     isDisabled: jspb.Message.getBooleanFieldWithDefault(msg, 7, false),
     variablesMap: (f = msg.getVariablesMap()) ? f.toObject(includeInstance, undefined) : [],
-    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : []
+    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : [],
+    joinEui: jspb.Message.getFieldWithDefault(msg, 10, "")
   };
 
   if (includeInstance) {
@@ -908,6 +909,10 @@ proto.api.Device.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
          });
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setJoinEui(value);
       break;
     default:
       reader.skipField();
@@ -994,6 +999,13 @@ proto.api.Device.serializeBinaryToWriter = function(message, writer) {
   f = message.getTagsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(9, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getJoinEui();
+  if (f.length > 0) {
+    writer.writeString(
+      10,
+      f
+    );
   }
 };
 
@@ -1166,6 +1178,24 @@ proto.api.Device.prototype.getTagsMap = function(opt_noLazyCreate) {
 proto.api.Device.prototype.clearTagsMap = function() {
   this.getTagsMap().clear();
   return this;};
+
+
+/**
+ * optional string join_eui = 10;
+ * @return {string}
+ */
+proto.api.Device.prototype.getJoinEui = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.api.Device} returns this
+ */
+proto.api.Device.prototype.setJoinEui = function(value) {
+  return jspb.Message.setProto3StringField(this, 10, value);
+};
 
 
 

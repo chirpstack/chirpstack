@@ -29,6 +29,7 @@ api:
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/frame_log.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/multicast_group.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/request_log.proto
+	protoc ${PROTOC_GRPC_ARGS} ../proto/api/relay.proto
 
 integration:
 	protoc ${PROTOC_ARGS} ../proto/integration/integration.proto

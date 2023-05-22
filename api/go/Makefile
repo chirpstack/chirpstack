@@ -27,6 +27,7 @@ api:
 	protoc ${PROTOC_ARGS} api/frame_log.proto
 	protoc ${PROTOC_ARGS} api/multicast_group.proto
 	protoc ${PROTOC_ARGS} api/request_log.proto
+	protoc ${PROTOC_ARGS} api/relay.proto
 
 integration:
 	protoc ${PROTOC_ARGS} integration/integration.proto

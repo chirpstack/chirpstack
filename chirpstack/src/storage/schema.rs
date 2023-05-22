@@ -56,6 +56,7 @@ diesel::table! {
         is_disabled -> Bool,
         tags -> Jsonb,
         variables -> Jsonb,
+        join_eui -> Bytea,
     }
 }
 
@@ -104,6 +105,28 @@ diesel::table! {
         measurements -> Jsonb,
         auto_detect_measurements -> Bool,
         region_config_id -> Nullable<Varchar>,
+        is_relay -> Bool,
+        is_relay_ed -> Bool,
+        relay_ed_relay_only -> Bool,
+        relay_enabled -> Bool,
+        relay_cad_periodicity -> Int2,
+        relay_default_channel_index -> Int2,
+        relay_second_channel_freq -> Int8,
+        relay_second_channel_dr -> Int2,
+        relay_second_channel_ack_offset -> Int2,
+        relay_ed_activation_mode -> Int2,
+        relay_ed_smart_enable_level -> Int2,
+        relay_ed_back_off -> Int2,
+        relay_ed_uplink_limit_bucket_size -> Int2,
+        relay_ed_uplink_limit_reload_rate -> Int2,
+        relay_join_req_limit_reload_rate -> Int2,
+        relay_notify_limit_reload_rate -> Int2,
+        relay_global_uplink_limit_reload_rate -> Int2,
+        relay_overall_limit_reload_rate -> Int2,
+        relay_join_req_limit_bucket_size -> Int2,
+        relay_notify_limit_bucket_size -> Int2,
+        relay_global_uplink_limit_bucket_size -> Int2,
+        relay_overall_limit_bucket_size -> Int2,
     }
 }
 
@@ -227,6 +250,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    relay_device (relay_dev_eui, dev_eui) {
+        relay_dev_eui -> Bytea,
+        dev_eui -> Bytea,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     tenant (id) {
         id -> Uuid,
         created_at -> Timestamptz,
@@ -301,6 +332,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     multicast_group_device,
     multicast_group_gateway,
     multicast_group_queue_item,
+    relay_device,
     tenant,
     tenant_user,
     user,

@@ -219,6 +219,36 @@ impl FromProto<MulticastGroupSchedulingType> for api::MulticastGroupSchedulingTy
     }
 }
 
+impl ToProto<api::RelayModeActivation> for lrwn::RelayModeActivation {
+    fn to_proto(self) -> api::RelayModeActivation {
+        match self {
+            lrwn::RelayModeActivation::DisableRelayMode => {
+                api::RelayModeActivation::DisableRelayMode
+            }
+            lrwn::RelayModeActivation::EnableRelayMode => api::RelayModeActivation::EnableRelayMode,
+            lrwn::RelayModeActivation::Dynamic => api::RelayModeActivation::Dynamic,
+            lrwn::RelayModeActivation::EndDeviceControlled => {
+                api::RelayModeActivation::EndDeviceControlled
+            }
+        }
+    }
+}
+
+impl FromProto<lrwn::RelayModeActivation> for api::RelayModeActivation {
+    fn from_proto(self) -> lrwn::RelayModeActivation {
+        match self {
+            api::RelayModeActivation::DisableRelayMode => {
+                lrwn::RelayModeActivation::DisableRelayMode
+            }
+            api::RelayModeActivation::EnableRelayMode => lrwn::RelayModeActivation::EnableRelayMode,
+            api::RelayModeActivation::Dynamic => lrwn::RelayModeActivation::Dynamic,
+            api::RelayModeActivation::EndDeviceControlled => {
+                lrwn::RelayModeActivation::EndDeviceControlled
+            }
+        }
+    }
+}
+
 pub fn datetime_to_prost_timestamp(dt: &DateTime<Utc>) -> prost_types::Timestamp {
     let ts = dt.timestamp_nanos();
 

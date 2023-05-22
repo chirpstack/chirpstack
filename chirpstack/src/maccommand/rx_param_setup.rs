@@ -48,7 +48,7 @@ pub fn handle(
     if ans_pl.channel_ack && ans_pl.rx1_dr_offset_ack && ans_pl.rx2_dr_ack {
         // Reset the error-counter.
         ds.mac_command_error_count
-            .remove(&(lrwn::CID::RxParamSetupReq.byte() as u32));
+            .remove(&(lrwn::CID::RxParamSetupReq.to_u8() as u32));
 
         ds.rx2_frequency = req_pl.frequency;
         ds.rx2_dr = req_pl.dl_settings.rx2_dr as u32;
@@ -58,7 +58,7 @@ pub fn handle(
     } else {
         let count = ds
             .mac_command_error_count
-            .entry(lrwn::CID::RxParamSetupReq.byte() as u32)
+            .entry(lrwn::CID::RxParamSetupReq.to_u8() as u32)
             .or_insert(0);
         *count += 1;
         warn!(dev_eui = %dev.dev_eui, rx2_freq = req_pl.frequency, rx2_dr = req_pl.dl_settings.rx2_dr, rx1_dr_offset = req_pl.dl_settings.rx1_dr_offset, "RxParamSetupReq not acknowledged");
@@ -107,7 +107,7 @@ pub mod test {
                     rx2_frequency: 868100000,
                     rx2_dr: 0,
                     rx1_dr_offset: 1,
-                    mac_command_error_count: [(lrwn::CID::RxParamSetupReq.byte() as u32, 1)]
+                    mac_command_error_count: [(lrwn::CID::RxParamSetupReq.to_u8() as u32, 1)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -144,7 +144,7 @@ pub mod test {
                     rx2_frequency: 868100000,
                     rx2_dr: 0,
                     rx1_dr_offset: 1,
-                    mac_command_error_count: [(lrwn::CID::RxParamSetupReq.byte() as u32, 1)]
+                    mac_command_error_count: [(lrwn::CID::RxParamSetupReq.to_u8() as u32, 1)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -171,7 +171,7 @@ pub mod test {
                     rx2_frequency: 868100000,
                     rx2_dr: 0,
                     rx1_dr_offset: 1,
-                    mac_command_error_count: [(lrwn::CID::RxParamSetupReq.byte() as u32, 2)]
+                    mac_command_error_count: [(lrwn::CID::RxParamSetupReq.to_u8() as u32, 2)]
                         .iter()
                         .cloned()
                         .collect(),

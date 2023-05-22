@@ -10,6 +10,8 @@ mod class_c_test;
 mod multicast_test;
 mod otaa_pr_test;
 mod otaa_test;
+mod relay_class_a_test;
+mod relay_otaa_test;
 
 static TRACING_INIT: Once = Once::new();
 
@@ -33,7 +35,7 @@ pub async fn prepare<'a>() -> std::sync::MutexGuard<'a, ()> {
     conf.postgresql.dsn =
         "postgres://chirpstack_test:chirpstack_test@postgres/chirpstack_test?sslmode=disable"
             .to_string();
-    conf.redis.servers = vec!["redis://redis/".to_string()];
+    conf.redis.servers = vec!["redis://redis/1".to_string()];
     conf.network.enabled_regions = vec!["eu868".to_string()];
     conf.regions = vec![config::Region {
         id: "eu868".to_string(),

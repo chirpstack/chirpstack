@@ -33,6 +33,7 @@ use chirpstack_api::api::device_service_server::DeviceServiceServer;
 use chirpstack_api::api::gateway_service_server::GatewayServiceServer;
 use chirpstack_api::api::internal_service_server::InternalServiceServer;
 use chirpstack_api::api::multicast_group_service_server::MulticastGroupServiceServer;
+use chirpstack_api::api::relay_service_server::RelayServiceServer;
 use chirpstack_api::api::tenant_service_server::TenantServiceServer;
 use chirpstack_api::api::user_service_server::UserServiceServer;
 
@@ -54,6 +55,7 @@ pub mod internal;
 pub mod monitoring;
 pub mod multicast;
 pub mod oidc;
+pub mod relay;
 pub mod tenant;
 pub mod user;
 
@@ -149,6 +151,10 @@ pub async fn setup() -> Result<()> {
             ))
             .add_service(MulticastGroupServiceServer::with_interceptor(
                 multicast::MulticastGroup::new(validator::RequestValidator::new()),
+                auth::auth_interceptor,
+            ))
+            .add_service(RelayServiceServer::with_interceptor(
+                relay::Relay::new(validator::RequestValidator::new()),
                 auth::auth_interceptor,
             ))
             .into_service();

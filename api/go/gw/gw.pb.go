@@ -266,11 +266,13 @@ const (
 	TxAckStatus_IGNORED TxAckStatus = 0
 	// Packet has been programmed for downlink.
 	TxAckStatus_OK TxAckStatus = 1
-	// Rejected because it was already too late to program this packet for downlink.
+	// Rejected because it was already too late to program this packet for
+	// downlink.
 	TxAckStatus_TOO_LATE TxAckStatus = 2
 	// Rejected because downlink packet timestamp is too much in advance.
 	TxAckStatus_TOO_EARLY TxAckStatus = 3
-	// Rejected because there was already a packet programmed in requested timeframe.
+	// Rejected because there was already a packet programmed in requested
+	// timeframe.
 	TxAckStatus_COLLISION_PACKET TxAckStatus = 4
 	// Rejected because there was already a beacon planned in requested timeframe.
 	TxAckStatus_COLLISION_BEACON TxAckStatus = 5
@@ -1261,7 +1263,8 @@ type UplinkRxInfoLegacy struct {
 	// Gateway specific context.
 	Context []byte `protobuf:"bytes,15,opt,name=context,proto3" json:"context,omitempty"`
 	// Uplink ID (UUID bytes).
-	// Unique and random ID which can be used to correlate the uplink across multiple logs.
+	// Unique and random ID which can be used to correlate the uplink across
+	// multiple logs.
 	UplinkId []byte `protobuf:"bytes,16,opt,name=uplink_id,json=uplinkId,proto3" json:"uplink_id,omitempty"`
 	// CRC status.
 	CrcStatus CRCStatus `protobuf:"varint,17,opt,name=crc_status,json=crcStatus,proto3,enum=gw.CRCStatus" json:"crc_status,omitempty"`
@@ -2083,7 +2086,8 @@ type DelayTimingInfo struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Delay (duration).
-	// The delay will be added to the gateway internal timing, provided by the context object.
+	// The delay will be added to the gateway internal timing, provided by the
+	// context object.
 	Delay *durationpb.Duration `protobuf:"bytes,1,opt,name=delay,proto3" json:"delay,omitempty"`
 }
 
@@ -2964,7 +2968,8 @@ type GatewayCommandExecRequest struct {
 	// Gateway ID.
 	GatewayId string `protobuf:"bytes,6,opt,name=gateway_id,json=gatewayId,proto3" json:"gateway_id,omitempty"`
 	// Command to execute.
-	// This command must be pre-configured in the LoRa Gateway Bridge configuration.
+	// This command must be pre-configured in the LoRa Gateway Bridge
+	// configuration.
 	Command string `protobuf:"bytes,2,opt,name=command,proto3" json:"command,omitempty"`
 	// Execution request ID.
 	// The same will be returned when the execution of the command has

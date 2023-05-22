@@ -108,8 +108,18 @@ impl IntegrationTrait for Integration {
     }
 }
 
-pub async fn get_uplink_events() -> Vec<integration::UplinkEvent> {
-    UPLINK_EVENTS.write().await.drain(..).collect()
+pub async fn get_uplink_event() -> Option<integration::UplinkEvent> {
+    if UPLINK_EVENTS.read().await.is_empty() {
+        return None;
+    }
+
+    UPLINK_EVENTS
+        .write()
+        .await
+        .drain(0..1)
+        .collect::<Vec<integration::UplinkEvent>>()
+        .first()
+        .cloned()
 }
 
 pub async fn get_join_events() -> Vec<integration::JoinEvent> {

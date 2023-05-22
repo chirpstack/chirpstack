@@ -44,7 +44,7 @@ pub fn handle(
     if ans_pl.channel_freq_ok && ans_pl.dr_ok {
         // Reset the error-counter.
         ds.mac_command_error_count
-            .remove(&(lrwn::CID::PingSlotChannelReq.byte() as u32));
+            .remove(&(lrwn::CID::PingSlotChannelReq.to_u8() as u32));
 
         ds.class_b_ping_slot_dr = req_pl.dr as u32;
         ds.class_b_ping_slot_freq = req_pl.freq;
@@ -53,7 +53,7 @@ pub fn handle(
     } else {
         let count = ds
             .mac_command_error_count
-            .entry(lrwn::CID::PingSlotChannelReq.byte() as u32)
+            .entry(lrwn::CID::PingSlotChannelReq.to_u8() as u32)
             .or_insert(0);
         *count += 1;
 
@@ -98,7 +98,7 @@ pub mod test {
                 device_session: internal::DeviceSession {
                     class_b_ping_slot_freq: 868100000,
                     class_b_ping_slot_dr: 3,
-                    mac_command_error_count: [(lrwn::CID::PingSlotChannelReq.byte() as u32, 1)]
+                    mac_command_error_count: [(lrwn::CID::PingSlotChannelReq.to_u8() as u32, 1)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -128,7 +128,7 @@ pub mod test {
                 device_session: internal::DeviceSession {
                     class_b_ping_slot_freq: 868100000,
                     class_b_ping_slot_dr: 3,
-                    mac_command_error_count: [(lrwn::CID::PingSlotChannelReq.byte() as u32, 1)]
+                    mac_command_error_count: [(lrwn::CID::PingSlotChannelReq.to_u8() as u32, 1)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -149,7 +149,7 @@ pub mod test {
                 expected_device_session: internal::DeviceSession {
                     class_b_ping_slot_freq: 868100000,
                     class_b_ping_slot_dr: 3,
-                    mac_command_error_count: [(lrwn::CID::PingSlotChannelReq.byte() as u32, 2)]
+                    mac_command_error_count: [(lrwn::CID::PingSlotChannelReq.to_u8() as u32, 2)]
                         .iter()
                         .cloned()
                         .collect(),

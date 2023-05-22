@@ -25,10 +25,17 @@ import {
   MulticastGroupListItem,
   AddDeviceToMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import {
+  ListRelaysRequest,
+  ListRelaysResponse,
+  RelayListItem,
+  AddRelayDeviceRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
 
 import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
+import RelayStore from "../../stores/RelayStore";
 import Admin from "../../components/Admin";
 
 interface IProps {
@@ -38,8 +45,11 @@ interface IProps {
 interface IState {
   selectedRowIds: string[];
   multicastGroups: MulticastGroupListItem[];
+  relays: RelayListItem[];
   mgModalVisible: boolean;
+  relayModalVisible: boolean;
   mgSelected: string;
+  relaySelected: string;
 }
 
 class ListDevices extends Component<IProps, IState> {
@@ -48,19 +58,32 @@ class ListDevices extends Component<IProps, IState> {
     this.state = {
       selectedRowIds: [],
       multicastGroups: [],
+      relays: [],
       mgModalVisible: false,
+      relayModalVisible: false,
       mgSelected: "",
+      relaySelected: "",
     };
   }
 
   componentDidMount() {
-    let req = new ListMulticastGroupsRequest();
-    req.setLimit(999);
-    req.setApplicationId(this.props.application.getId());
+    let mgReq = new ListMulticastGroupsRequest();
+    mgReq.setLimit(999);
+    mgReq.setApplicationId(this.props.application.getId());
 
-    MulticastGroupStore.list(req, (resp: ListMulticastGroupsResponse) => {
+    MulticastGroupStore.list(mgReq, (resp: ListMulticastGroupsResponse) => {
       this.setState({
         multicastGroups: resp.getResultList(),
+      });
+    });
+
+    let relayReq = new ListRelaysRequest();
+    relayReq.setLimit(999);
+    relayReq.setApplicationId(this.props.application.getId());
+
+    RelayStore.list(relayReq, (resp: ListRelaysResponse) => {
+      this.setState({
+        relays: resp.getResultList(),
       });
     });
   }
@@ -160,15 +183,33 @@ class ListDevices extends Component<IProps, IState> {
     });
   };
 
+  showRelayModal = () => {
+    this.setState({
+      relayModalVisible: true,
+    });
+  }
+
   hideMgModal = () => {
     this.setState({
       mgModalVisible: false,
     });
   };
 
+  hideRelayModal = () => {
+    this.setState({
+      relayModalVisible: false,
+    });
+  }
+
   onMgSelected = (value: string) => {
     this.setState({
       mgSelected: value,
+    });
+  };
+
+  onRelaySelected = (value: string) => {
+    this.setState({
+      relaySelected: value,
     });
   };
 
@@ -186,15 +227,34 @@ class ListDevices extends Component<IProps, IState> {
     });
   };
 
+  handleRelayModalOk = () => {
+    for (let devEui of this.state.selectedRowIds) {
+      let req = new AddRelayDeviceRequest();
+      req.setRelayDevEui(this.state.relaySelected);
+      req.setDeviceDevEui(devEui);
+
+      RelayStore.addDevice(req, () => {});
+    }
+
+    this.setState({
+      relayModalVisible: false,
+    });
+  };
+
   render() {
     const menu = (
       <Menu>
         <Menu.Item onClick={this.showMgModal}>Add to multicast-group</Menu.Item>
+        <Menu.Item onClick={this.showRelayModal}>Add to relay</Menu.Item>
       </Menu>
     );
 
     const mgOptions = this.state.multicastGroups.map((mg, i) => (
       <Select.Option value={mg.getId()}>{mg.getName()}</Select.Option>
+    ));
+
+    const relayOptions = this.state.relays.map((r, i) => (
+      <Select.Option value={r.getDevEui()}>{r.getName()}</Select.Option>
     ));
 
     return (
@@ -209,6 +269,19 @@ class ListDevices extends Component<IProps, IState> {
           <Space direction="vertical" size="large" style={{ width: "100%" }}>
             <Select style={{ width: "100%" }} onChange={this.onMgSelected} placeholder="Select Multicast-group">
               {mgOptions}
+            </Select>
+          </Space>
+        </Modal>
+        <Modal
+          title="Add selected devices to relay"
+          visible={this.state.relayModalVisible}
+          onOk={this.handleRelayModalOk}
+          onCancel={this.hideRelayModal}
+          okButtonProps={{ disabled: this.state.relaySelected === "" }}
+        >
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            <Select style={{ width: "100%" }} onChange={this.onRelaySelected} placeholder="Select Relay">
+              {relayOptions}
             </Select>
           </Space>
         </Modal>

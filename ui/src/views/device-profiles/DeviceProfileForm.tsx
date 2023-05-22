@@ -8,6 +8,9 @@ import {
   CodecRuntime,
   Measurement,
   MeasurementKind,
+  CadPeriodicity,
+  SecondChAckOffset,
+  RelayModeActivation,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -196,6 +199,8 @@ interface IState {
   supportsOtaa: boolean;
   supportsClassB: boolean;
   supportsClassC: boolean;
+  isRelay: boolean;
+  isRelayEd: boolean,
   payloadCodecRuntime: CodecRuntime;
   adrAlgorithms: [string, string][];
   regionConfigurations: RegionListItem[];
@@ -213,6 +218,8 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsOtaa: false,
       supportsClassB: false,
       supportsClassC: false,
+      isRelay: false,
+      isRelayEd: false,
       payloadCodecRuntime: CodecRuntime.NONE,
       adrAlgorithms: [],
       regionConfigurations: [],
@@ -230,6 +237,8 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsClassB: v.getSupportsClassB(),
       supportsClassC: v.getSupportsClassC(),
       payloadCodecRuntime: v.getPayloadCodecRuntime(),
+      isRelay: v.getIsRelay(),
+      isRelayEd: v.getIsRelayEd(),
     });
 
     InternalStore.listRegions((resp: ListRegionsResponse) => {
@@ -309,6 +318,30 @@ class DeviceProfileForm extends Component<IProps, IState> {
     dp.setPayloadCodecRuntime(v.payloadCodecRuntime);
     dp.setPayloadCodecScript(v.payloadCodecScript);
 
+    // relay
+    dp.setIsRelay(v.isRelay);
+    dp.setIsRelayEd(v.isRelayEd);
+    dp.setRelayEdRelayOnly(v.relayEdRelayOnly);
+    dp.setRelayEnabled(v.relayEnabled);
+    dp.setRelayCadPeriodicity(v.relayCadPeriodicity);
+    dp.setRelayDefaultChannelIndex(v.relayDefaultChannelIndex);
+    dp.setRelaySecondChannelFreq(v.relaySecondChannelFreq);
+    dp.setRelaySecondChannelDr(v.relaySecondChannelDr);
+    dp.setRelaySecondChannelAckOffset(v.relaySecondChannelAckOffset);
+    dp.setRelayEdActivationMode(v.relayEdActivationMode);
+    dp.setRelayEdSmartEnableLevel(v.relayEdSmartEnableLevel);
+    dp.setRelayEdBackOff(v.relayEdBackOff);
+    dp.setRelayEdUplinkLimitReloadRate(v.relayEdUplinkLimitReloadRate);
+    dp.setRelayEdUplinkLimitBucketSize(v.relayEdUplinkLimitBucketSize);
+    dp.setRelayJoinReqLimitReloadRate(v.relayJoinReqLimitReloadRate);
+    dp.setRelayNotifyLimitReloadRate(v.relayNotifyLimitReloadRate);
+    dp.setRelayGlobalUplinkLimitReloadRate(v.relayGlobalUplinkLimitReloadRate);
+    dp.setRelayOverallLimitReloadRate(v.relayOverallLimitReloadRate);
+    dp.setRelayJoinReqLimitBucketSize(v.relayJoinReqLimitBucketSize);
+    dp.setRelayNotifyLimitBucketSize(v.relayNotifyLimitBucketSize);
+    dp.setRelayGlobalUplinkLimitBucketSize(v.relayGlobalUplinkLimitBucketSize);
+    dp.setRelayOverallLimitBucketSize(v.relayOverallLimitBucketSize);
+
     // tags
     for (const elm of v.tagsMap) {
       dp.getTagsMap().set(elm[0], elm[1]);
@@ -349,6 +382,18 @@ class DeviceProfileForm extends Component<IProps, IState> {
       payloadCodecRuntime: value,
     });
   };
+
+  onIsRelayChange = (checked: boolean) => {
+    this.setState({
+      isRelay: checked,
+    });
+  }
+
+  onIsRelayEdChange = (checked: boolean) => {
+    this.setState({
+      isRelayEd: checked,
+    });
+  }
 
   showTemplateModal = () => {
     this.setState({
@@ -440,9 +485,16 @@ class DeviceProfileForm extends Component<IProps, IState> {
                                     tabActive: "7",
                                   },
                                   () => {
-                                    this.setState({
-                                      tabActive: tabActive,
-                                    });
+                                    this.setState(
+                                      {
+                                        tabActive: "8",
+                                      },
+                                      () => {
+                                        this.setState({
+                                          tabActive: tabActive,
+                                        });
+                                      },
+                                    );
                                   },
                                 );
                               },
@@ -751,7 +803,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
             <Form.Item
               label="Payload codec"
               name="payloadCodecRuntime"
-              tooltip="By defining a payload codec, ChirpStack Application Server can encode and decode the binary device payload for you."
+              tooltip="By defining a payload codec, ChirpStack can encode and decode the binary device payload for you."
             >
               <Select onChange={this.onPayloadCodecRuntimeChange} disabled={this.props.disabled}>
                 <Select.Option value={CodecRuntime.NONE}>None</Select.Option>
@@ -769,7 +821,297 @@ class DeviceProfileForm extends Component<IProps, IState> {
               />
             )}
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Tags" key="6">
+          <Tabs.TabPane tab="Relay" key="6">
+            <Row gutter={24}>
+              <Col span={12}>
+                <Form.Item
+                  label="Device is a Relay"
+                  name="isRelay"
+                  valuePropName="checked"
+                  tooltip="Enable this if the device(s) under this profile implement the Relay specification (please refer to the TS011 specification for more information)"
+                >
+                  <Switch onChange={this.onIsRelayChange} disabled={this.props.disabled} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                {this.state.isRelay && (
+                  <Form.Item
+                    label="Relay enabled"
+                    name="relayEnabled"
+                    valuePropName="checked"
+                    tooltip="This will configure the Relay to be enabled / disabled through mac-commands."
+                  >
+                    <Switch disabled={this.props.disabled} />
+                  </Form.Item>
+                )}
+              </Col>
+            </Row>
+            <Row gutter={24}>
+              <Col span={12}>
+                <Form.Item
+                  label="Device is a Relay capable end-device"
+                  name="isRelayEd" 
+                  valuePropName="checked"
+                  tooltip="Enable this of the device(s) under this profile are able to operate under a Relay as specified by the TS011 specification."
+                >
+                  <Switch onChange={this.onIsRelayEdChange} disabled={this.props.disabled} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                { this.state.isRelayEd && (
+                  <Form.Item
+                    label="Only use Relay (end-device)"
+                    name="relayEdRelayOnly"
+                    valuePropName="checked"
+                    tooltip="If enabled, device(s) under this profile will only be able to communicate through a Relay device. Uplink messages received directly by ChirpStack will be discarded. Enabling this feature can be helpful for testing the Relay communication."
+                  >
+                    <Switch disabled={this.props.disabled} />
+                  </Form.Item>
+                )}
+              </Col>
+            </Row>
+            {(this.state.isRelay || this.state.isRelayEd ) && (
+              <Row gutter={24}>
+                <Col span={8}>
+                  <Form.Item
+                    label="Default channel index"
+                    name="relayDefaultChannelIndex"
+                    tooltip="Please refer to the RP002 specification for the meaning of index 0 and 1."
+                    rules={[{ required: true, message: "Please enter a channel number!" }]}
+                  >
+                    <InputNumber min={0} max={1} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Second channel frequency (Hz)"
+                    name="relaySecondChannelFreq"
+                    tooltip="To disable the second channel, set this value to 0."
+                    rules={[{ required: true, message: "Please enter a frequency!" }]}
+                  >
+                    <InputNumber min={0} style={{width: "200px"}} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Second channel data-rate"
+                    name="relaySecondChannelDr"
+                    rules={[{ required: true, message: "Please enter a data-rate!" }]}
+                  >
+                    <InputNumber min={0} max={15} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )} 
+            {(this.state.isRelay || this.state.isRelayEd) && (
+              <Row gutter={24}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Second channel ACK offset"
+                    name="relaySecondChannelAckOffset"
+                    rules={[{ required: true, message: "Please select an ACK offset!" }]}
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={SecondChAckOffset.KHZ_0}>0 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_200}>200 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_400}>400 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_800}>800 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_1600}>1600 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_3200}>3200 kHz</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  {this.state.isRelay && (
+                    <Form.Item
+                      label="CAD periodicity"
+                      name="relayCadPeriodicity"
+                      rules={[{ required: true, message: "Please select a CAD periodicity!" }]}
+                    >
+                      <Select disabled={this.props.disabled}>
+                        <Select.Option value={CadPeriodicity.SEC_1}>1 second</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_500}>500 milliseconds</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_250}>250 milliseconds</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_100}>100 milliseconds</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_50}>50 milliseconds</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_20}>20 milliseconds</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  )}
+                </Col>
+              </Row>
+            )}
+            {this.state.isRelayEd && (
+              <Row gutter={24}>
+                <Col span={8}>
+                  <Form.Item
+                    label="End-device activation mode"
+                    name="relayEdActivationMode"
+                    rules={[{ required: true, message: "Please select an activation mode!" }]}
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={RelayModeActivation.DISABLE_RELAY_MODE}>Disable relay mode</Select.Option>
+                      <Select.Option value={RelayModeActivation.ENABLE_RELAY_MODE}>Enable relay mode</Select.Option>
+                      <Select.Option value={RelayModeActivation.DYNAMIC}>Dynamic</Select.Option>
+                      <Select.Option value={RelayModeActivation.END_DEVICE_CONTROLLED}>End-device controlled</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Smart enable level"
+                    name="relayEdSmartEnableLevel"
+                    tooltip="This indicates that the relay mode shall be enabled if the end-device does not receive a valid downlink after X consecutive uplinks." 
+                    rules={[{ required: true, message: "Please select an enable level!" }]}
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>8</Select.Option>
+                      <Select.Option value={1}>16</Select.Option>
+                      <Select.Option value={2}>32</Select.Option>
+                      <Select.Option value={3}>64</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Back-off"
+                    name="relayEdBackOff"
+                    tooltip="This indicates how the end-device SHALL behave when it does not receive a WOR ACK frame. 0 = Always send a LoRaWAN uplink. 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK."
+                  >
+                    <InputNumber min={0} max={63} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+            {this.state.isRelayEd && (
+              <Row gutter={24}>
+                <Col span={12}>
+                  <Form.Item
+                    label="End-device uplink limit bucket size"
+                    name="relayEdUplinkLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="End-device uplink limit reload rate"
+                    name="relayEdUplinkLimitReloadRate"
+                    tooltip="0..62 = X tokens every hour, 63 = no limitation (forward all valid uplinks)"
+                  >
+                    <InputNumber min={0} max={63} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+            {this.state.isRelay && (
+              <Row gutter={24}>
+                <Col span={6}>
+                  <Form.Item
+                    label="Join-request limit bucket size"
+                    name="relayJoinReqLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Join-request limit reload rate"
+                    name="relayJoinReqLimitReloadRate"
+                    tooltip="0..126 = X tokens every hour, 127 = no limitation"
+                  >
+                    <InputNumber min={0} max={127} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Notify limit bucket size"
+                    name="relayNotifyLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Notify limit reload rate"
+                    name="relayNotifyLimitReloadRate"
+                    tooltip="0..126 = X tokens every hour, 127 = no limitation"
+                  >
+                    <InputNumber min={0} max={127} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+            {this.state.isRelay && (
+              <Row gutter={24}>
+                <Col span={6}>
+                  <Form.Item
+                    label="Global uplink limit bucket size"
+                    name="relayGlobalUplinkLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Global uplink limit reload rate"
+                    name="relayGlobalUplinkLimitReloadRate"
+                    tooltip="0..126 = X tokens every hour, 127 = no limitation"
+                  >
+                    <InputNumber min={0} max={127} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Overall limit bucket size"
+                    name="relayOverallLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Overall limit reload rate"
+                    name="relayOverallLimitReloadRate"
+                    tooltip="0..126 = X tokens every hour, 127 = no limitation"
+                  >
+                    <InputNumber min={0} max={127} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Tags" key="7">
             <Form.List name="tagsMap">
               {(fields, { add, remove }) => (
                 <>
@@ -815,7 +1157,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
               )}
             </Form.List>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Measurements" key="7">
+          <Tabs.TabPane tab="Measurements" key="8">
             <Card bordered={false}>
               <p>
                 ChirpStack can aggregate and visualize decoded device measurements in the device dashboard. To setup the

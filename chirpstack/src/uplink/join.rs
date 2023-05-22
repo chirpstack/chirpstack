@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
-use tracing::{error, info, span, trace, Instrument, Level};
+use tracing::{error, info, span, trace, warn, Instrument, Level};
 
 use lrwn::{
     keys, AES128Key, CFList, DLSettings, DevAddr, JoinAcceptPayload, JoinRequestPayload, JoinType,
@@ -13,10 +13,10 @@ use lrwn::{
 use super::error::Error;
 use super::join_fns;
 use super::{
-    filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers, UplinkFrameSet,
+    filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers, RelayContext,
+    UplinkFrameSet,
 };
 use crate::api::backend::get_async_receiver;
-use crate::api::helpers::ToProto;
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::device_session;
 use crate::storage::{
@@ -30,6 +30,7 @@ use chirpstack_api::{api, common, integration as integration_pb, internal, meta}
 
 pub struct JoinRequest {
     uplink_frame_set: UplinkFrameSet,
+    relay_context: Option<RelayContext>,
 
     js_client: Option<Arc<backend::Client>>,
     join_request: Option<JoinRequestPayload>,
@@ -42,6 +43,7 @@ pub struct JoinRequest {
     device_keys: Option<device_keys::DeviceKeys>,
     dev_addr: Option<DevAddr>,
     device_info: Option<integration_pb::DeviceInfo>,
+    relay_rx_info: Option<integration_pb::UplinkRelayRxInfo>,
     f_nwk_s_int_key: Option<AES128Key>,
     s_nwk_s_int_key: Option<AES128Key>,
     nwk_s_enc_key: Option<AES128Key>,
@@ -64,9 +66,28 @@ impl JoinRequest {
         }
     }
 
+    pub async fn handle_relayed(relay_ctx: RelayContext, ufs: UplinkFrameSet) {
+        let span = span!(Level::INFO, "join_request_relayed");
+
+        if let Err(e) = JoinRequest::_handle_relayed(relay_ctx, ufs)
+            .instrument(span)
+            .await
+        {
+            match e.downcast_ref::<Error>() {
+                Some(Error::Abort) => {
+                    // nothing to do
+                }
+                Some(_) | None => {
+                    error!(error = %e, "Handle relayed join-request error");
+                }
+            }
+        }
+    }
+
     async fn _handle(ufs: UplinkFrameSet) -> Result<()> {
         let mut ctx = JoinRequest {
             uplink_frame_set: ufs,
+            relay_context: None,
             js_client: None,
             join_request: None,
             device: None,
@@ -78,6 +99,7 @@ impl JoinRequest {
             dev_addr: None,
             join_accept: None,
             device_info: None,
+            relay_rx_info: None,
             f_nwk_s_int_key: None,
             s_nwk_s_int_key: None,
             nwk_s_enc_key: None,
@@ -93,8 +115,9 @@ impl JoinRequest {
         ctx.set_device_info()?;
         ctx.filter_rx_info_by_tenant()?;
         ctx.filter_rx_info_by_region_config_id()?;
-        ctx.log_uplink_frame_set().await?;
         ctx.abort_on_device_is_disabled()?;
+        ctx.abort_on_relay_only_comm()?;
+        ctx.log_uplink_frame_set().await?;
         ctx.abort_on_otaa_is_disabled()?;
         ctx.get_random_dev_addr()?;
         if ctx.js_client.is_some() {
@@ -111,7 +134,64 @@ impl JoinRequest {
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
+        ctx.set_dev_addr().await?;
+        ctx.set_join_eui().await?;
         ctx.start_downlink_join_accept_flow().await?;
+        ctx.send_join_event().await?;
+
+        Ok(())
+    }
+
+    async fn _handle_relayed(relay_ctx: RelayContext, ufs: UplinkFrameSet) -> Result<()> {
+        let mut ctx = JoinRequest {
+            uplink_frame_set: ufs,
+            relay_context: Some(relay_ctx),
+            js_client: None,
+            join_request: None,
+            device: None,
+            device_session: None,
+            application: None,
+            tenant: None,
+            device_profile: None,
+            device_keys: None,
+            dev_addr: None,
+            join_accept: None,
+            device_info: None,
+            relay_rx_info: None,
+            f_nwk_s_int_key: None,
+            s_nwk_s_int_key: None,
+            nwk_s_enc_key: None,
+            app_s_key: None,
+        };
+
+        ctx.get_join_request_payload_relayed()?;
+        ctx.get_device().await?;
+        ctx.get_js_client()?;
+        ctx.get_application().await?;
+        ctx.get_tenant().await?;
+        ctx.get_device_profile().await?;
+        ctx.set_device_info()?;
+        ctx.set_relay_rx_info()?;
+        ctx.abort_on_device_is_disabled()?;
+        ctx.abort_on_otaa_is_disabled()?;
+        ctx.abort_on_relay_only_comm()?;
+        ctx.get_random_dev_addr()?;
+        if ctx.js_client.is_some() {
+            // Using join-server
+            ctx.get_join_accept_from_js().await?;
+        } else {
+            // Using internal keys
+            ctx.validate_dev_nonce_and_get_device_keys().await?;
+            ctx.validate_mic().await?;
+            ctx.construct_join_accept_and_set_keys()?;
+            ctx.save_device_keys().await?;
+        }
+        ctx.create_device_session().await?;
+        ctx.flush_device_queue().await?;
+        ctx.set_device_mode().await?;
+        ctx.set_dev_addr().await?;
+        ctx.set_join_eui().await?;
+        ctx.start_downlink_join_accept_flow_relayed().await?;
         ctx.send_join_event().await?;
 
         Ok(())
@@ -119,10 +199,27 @@ impl JoinRequest {
 
     fn get_join_request_payload(&mut self) -> Result<()> {
         trace!("Getting JoinRequestPayload");
+
         self.join_request = Some(match self.uplink_frame_set.phy_payload.payload {
             Payload::JoinRequest(pl) => pl,
             _ => {
                 return Err(anyhow!("PhyPayload does not contain JoinRequest payload"));
+            }
+        });
+
+        Ok(())
+    }
+
+    fn get_join_request_payload_relayed(&mut self) -> Result<()> {
+        trace!("Getting JoinRequestPayload from relayed");
+
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+        self.join_request = Some(match relay_ctx.req.payload.payload {
+            Payload::JoinRequest(pl) => pl,
+            _ => {
+                return Err(anyhow!(
+                    "Relay PhyPayload does not contain JoinRequest payload"
+                ));
             }
         });
         Ok(())
@@ -139,6 +236,14 @@ impl JoinRequest {
             trace!("Join Server client does not exist");
         }
 
+        Ok(())
+    }
+
+    async fn get_device(&mut self) -> Result<()> {
+        trace!("Getting device");
+        let jr = self.join_request.as_ref().unwrap();
+        let dev = device::get(&jr.dev_eui).await?;
+        self.device = Some(dev);
         Ok(())
     }
 
@@ -214,6 +319,21 @@ impl JoinRequest {
         Ok(())
     }
 
+    fn set_relay_rx_info(&mut self) -> Result<()> {
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        self.relay_rx_info = Some(integration_pb::UplinkRelayRxInfo {
+            dev_eui: relay_ctx.device.dev_eui.to_string(),
+            frequency: relay_ctx.req.frequency,
+            dr: relay_ctx.req.metadata.dr as u32,
+            snr: relay_ctx.req.metadata.snr as i32,
+            rssi: relay_ctx.req.metadata.rssi as i32,
+            wor_channel: relay_ctx.req.metadata.wor_channel as u32,
+        });
+
+        Ok(())
+    }
+
     fn filter_rx_info_by_tenant(&mut self) -> Result<()> {
         trace!("Filtering rx_info by tenant_id");
 
@@ -252,6 +372,17 @@ impl JoinRequest {
     fn abort_on_otaa_is_disabled(&self) -> Result<()> {
         if !self.device_profile.as_ref().unwrap().supports_otaa {
             return Err(anyhow!("OTAA is disabled in device-profile"));
+        }
+        Ok(())
+    }
+
+    fn abort_on_relay_only_comm(&self) -> Result<(), Error> {
+        // In case the relay context is not set and relay_ed_relay_only is set, abort.
+        if !self.relay_context.is_some()
+            && self.device_profile.as_ref().unwrap().relay_ed_relay_only
+        {
+            warn!(dev_eui = %self.device.as_ref().unwrap().dev_eui, "Only communication through relay is allowed");
+            return Err(Error::Abort);
         }
         Ok(())
     }
@@ -316,7 +447,16 @@ impl JoinRequest {
 
     async fn validate_mic(&self) -> Result<()> {
         let device_keys = self.device_keys.as_ref().unwrap();
-        if self
+
+        if let Some(relay_ctx) = self.relay_context.as_ref() {
+            if relay_ctx
+                .req
+                .payload
+                .validate_join_request_mic(&device_keys.nwk_key)?
+            {
+                return Ok(());
+            }
+        } else if self
             .uplink_frame_set
             .phy_payload
             .validate_join_request_mic(&device_keys.nwk_key)?
@@ -626,15 +766,10 @@ impl JoinRequest {
             dev_eui: device.dev_eui.to_be_bytes().to_vec(),
             dev_addr: self.dev_addr.unwrap().to_be_bytes().to_vec(),
             join_eui: join_request.join_eui.to_be_bytes().to_vec(),
-            mac_version: device_profile.mac_version.to_proto().into(),
             f_nwk_s_int_key: self.f_nwk_s_int_key.as_ref().unwrap().to_vec(),
             s_nwk_s_int_key: self.s_nwk_s_int_key.as_ref().unwrap().to_vec(),
             nwk_s_enc_key: self.nwk_s_enc_key.as_ref().unwrap().to_vec(),
             app_s_key: self.app_s_key.clone(),
-            f_cnt_up: 0,
-            n_f_cnt_down: 0,
-            a_f_cnt_down: 0,
-            conf_f_cnt: 0,
             rx1_delay: region_network.rx1_delay.into(),
             rx1_dr_offset: region_network.rx1_dr_offset.into(),
             rx2_dr: region_network.rx2_dr.into(),
@@ -644,13 +779,11 @@ impl JoinRequest {
                 .iter()
                 .map(|i| *i as u32)
                 .collect(),
-            class_b_ping_slot_dr: device_profile.class_b_ping_slot_dr as u32,
-            class_b_ping_slot_freq: device_profile.class_b_ping_slot_freq as u32,
-            class_b_ping_slot_nb: 1 << device_profile.class_b_ping_slot_nb_k as u32,
-            nb_trans: 1,
             skip_f_cnt_check: device.skip_fcnt_check,
             ..Default::default()
         };
+
+        device_profile.reset_session_to_boot_params(&mut ds);
 
         if let Some(CFList::Channels(channels)) =
             region_conf.get_cf_list(device_profile.mac_version)
@@ -717,6 +850,23 @@ impl JoinRequest {
         Ok(())
     }
 
+    async fn set_dev_addr(&mut self) -> Result<()> {
+        trace!("Setting DevAddr");
+        let dev = self.device.as_mut().unwrap();
+        *dev = device::set_dev_addr(dev.dev_eui, self.dev_addr.unwrap()).await?;
+        Ok(())
+    }
+
+    async fn set_join_eui(&mut self) -> Result<()> {
+        trace!("Setting JoinEUI");
+        let dev = self.device.as_mut().unwrap();
+        let req = self.join_request.as_ref().unwrap();
+
+        *dev = device::set_join_eui(dev.dev_eui, req.join_eui).await?;
+
+        Ok(())
+    }
+
     async fn save_device_keys(&mut self) -> Result<()> {
         trace!("Updating device-keys");
         let mut dk = self.device_keys.as_mut().unwrap();
@@ -729,6 +879,20 @@ impl JoinRequest {
     async fn start_downlink_join_accept_flow(&self) -> Result<()> {
         trace!("Starting downlink join-accept flow");
         downlink::join::JoinAccept::handle(
+            &self.uplink_frame_set,
+            self.tenant.as_ref().unwrap(),
+            self.device.as_ref().unwrap(),
+            self.device_session.as_ref().unwrap(),
+            self.join_accept.as_ref().unwrap(),
+        )
+        .await?;
+        Ok(())
+    }
+
+    async fn start_downlink_join_accept_flow_relayed(&self) -> Result<()> {
+        trace!("Starting relayed downlink join-accept flow");
+        downlink::join::JoinAccept::handle_relayed(
+            self.relay_context.as_ref().unwrap(),
             &self.uplink_frame_set,
             self.tenant.as_ref().unwrap(),
             self.device.as_ref().unwrap(),
@@ -752,6 +916,7 @@ impl JoinRequest {
             deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
             time: Some(ts.into()),
             device_info: self.device_info.clone(),
+            relay_rx_info: self.relay_rx_info.clone(),
             dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
         };
 

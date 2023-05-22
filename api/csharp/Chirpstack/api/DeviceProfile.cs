@@ -27,7 +27,7 @@ namespace Chirpstack.Api {
             "ChhhcGkvZGV2aWNlX3Byb2ZpbGUucHJvdG8SA2FwaRocZ29vZ2xlL2FwaS9h",
             "bm5vdGF0aW9ucy5wcm90bxofZ29vZ2xlL3Byb3RvYnVmL3RpbWVzdGFtcC5w",
             "cm90bxobZ29vZ2xlL3Byb3RvYnVmL2VtcHR5LnByb3RvGhNjb21tb24vY29t",
-            "bW9uLnByb3RvIukHCg1EZXZpY2VQcm9maWxlEgoKAmlkGAEgASgJEhEKCXRl",
+            "bW9uLnByb3RvIsgOCg1EZXZpY2VQcm9maWxlEgoKAmlkGAEgASgJEhEKCXRl",
             "bmFudF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhMKC2Rlc2NyaXB0aW9uGBog",
             "ASgJEh4KBnJlZ2lvbhgEIAEoDjIOLmNvbW1vbi5SZWdpb24SJwoLbWFjX3Zl",
             "cnNpb24YBSABKA4yEi5jb21tb24uTWFjVmVyc2lvbhI2ChNyZWdfcGFyYW1z",
@@ -46,62 +46,88 @@ namespace Chirpstack.Api {
             "eDJfZnJlcRgYIAEoDRIqCgR0YWdzGBkgAygLMhwuYXBpLkRldmljZVByb2Zp",
             "bGUuVGFnc0VudHJ5EjoKDG1lYXN1cmVtZW50cxgbIAMoCzIkLmFwaS5EZXZp",
             "Y2VQcm9maWxlLk1lYXN1cmVtZW50c0VudHJ5EiAKGGF1dG9fZGV0ZWN0X21l",
-            "YXN1cmVtZW50cxgcIAEoCBIYChByZWdpb25fY29uZmlnX2lkGB0gASgJGisK",
-            "CVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBGkUK",
-            "EU1lYXN1cmVtZW50c0VudHJ5EgsKA2tleRgBIAEoCRIfCgV2YWx1ZRgCIAEo",
-            "CzIQLmFwaS5NZWFzdXJlbWVudDoCOAEiPwoLTWVhc3VyZW1lbnQSDAoEbmFt",
-            "ZRgCIAEoCRIiCgRraW5kGAMgASgOMhQuYXBpLk1lYXN1cmVtZW50S2luZCLd",
-            "AgoVRGV2aWNlUHJvZmlsZUxpc3RJdGVtEgoKAmlkGAEgASgJEi4KCmNyZWF0",
-            "ZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVw",
-            "ZGF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEgwK",
-            "BG5hbWUYBCABKAkSHgoGcmVnaW9uGAUgASgOMg4uY29tbW9uLlJlZ2lvbhIn",
-            "CgttYWNfdmVyc2lvbhgGIAEoDjISLmNvbW1vbi5NYWNWZXJzaW9uEjYKE3Jl",
-            "Z19wYXJhbXNfcmV2aXNpb24YByABKA4yGS5jb21tb24uUmVnUGFyYW1zUmV2",
-            "aXNpb24SFQoNc3VwcG9ydHNfb3RhYRgIIAEoCBIYChBzdXBwb3J0c19jbGFz",
-            "c19iGAkgASgIEhgKEHN1cHBvcnRzX2NsYXNzX2MYCiABKAgiSAoaQ3JlYXRl",
-            "RGV2aWNlUHJvZmlsZVJlcXVlc3QSKgoOZGV2aWNlX3Byb2ZpbGUYASABKAsy",
-            "Ei5hcGkuRGV2aWNlUHJvZmlsZSIpChtDcmVhdGVEZXZpY2VQcm9maWxlUmVz",
-            "cG9uc2USCgoCaWQYASABKAkiJQoXR2V0RGV2aWNlUHJvZmlsZVJlcXVlc3QS",
-            "CgoCaWQYASABKAkipgEKGEdldERldmljZVByb2ZpbGVSZXNwb25zZRIqCg5k",
-            "ZXZpY2VfcHJvZmlsZRgBIAEoCzISLmFwaS5EZXZpY2VQcm9maWxlEi4KCmNy",
-            "ZWF0ZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4K",
-            "CnVwZGF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1w",
-            "IkgKGlVwZGF0ZURldmljZVByb2ZpbGVSZXF1ZXN0EioKDmRldmljZV9wcm9m",
-            "aWxlGAEgASgLMhIuYXBpLkRldmljZVByb2ZpbGUiKAoaRGVsZXRlRGV2aWNl",
-            "UHJvZmlsZVJlcXVlc3QSCgoCaWQYASABKAkiXQoZTGlzdERldmljZVByb2Zp",
-            "bGVzUmVxdWVzdBINCgVsaW1pdBgBIAEoDRIOCgZvZmZzZXQYAiABKA0SDgoG",
-            "c2VhcmNoGAMgASgJEhEKCXRlbmFudF9pZBgEIAEoCSJdChpMaXN0RGV2aWNl",
-            "UHJvZmlsZXNSZXNwb25zZRITCgt0b3RhbF9jb3VudBgBIAEoDRIqCgZyZXN1",
-            "bHQYAiADKAsyGi5hcGkuRGV2aWNlUHJvZmlsZUxpc3RJdGVtImgKJkxpc3RE",
-            "ZXZpY2VQcm9maWxlQWRyQWxnb3JpdGhtc1Jlc3BvbnNlEhMKC3RvdGFsX2Nv",
-            "dW50GAEgASgNEikKBnJlc3VsdBgCIAMoCzIZLmFwaS5BZHJBbGdvcml0aG1M",
-            "aXN0SXRlbSIwChRBZHJBbGdvcml0aG1MaXN0SXRlbRIKCgJpZBgBIAEoCRIM",
-            "CgRuYW1lGAIgASgJKjEKDENvZGVjUnVudGltZRIICgROT05FEAASDwoLQ0FZ",
-            "RU5ORV9MUFAQARIGCgJKUxACKlAKD01lYXN1cmVtZW50S2luZBILCgdVTktO",
-            "T1dOEAASCwoHQ09VTlRFUhABEgwKCEFCU09MVVRFEAISCQoFR0FVR0UQAxIK",
-            "CgZTVFJJTkcQBDK4BQoURGV2aWNlUHJvZmlsZVNlcnZpY2USbAoGQ3JlYXRl",
-            "Eh8uYXBpLkNyZWF0ZURldmljZVByb2ZpbGVSZXF1ZXN0GiAuYXBpLkNyZWF0",
-            "ZURldmljZVByb2ZpbGVSZXNwb25zZSIfgtPkkwIZIhQvYXBpL2RldmljZS1w",
-            "cm9maWxlczoBKhJlCgNHZXQSHC5hcGkuR2V0RGV2aWNlUHJvZmlsZVJlcXVl",
-            "c3QaHS5hcGkuR2V0RGV2aWNlUHJvZmlsZVJlc3BvbnNlIiGC0+STAhsSGS9h",
-            "cGkvZGV2aWNlLXByb2ZpbGVzL3tpZH0SdgoGVXBkYXRlEh8uYXBpLlVwZGF0",
-            "ZURldmljZVByb2ZpbGVSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5",
-            "IjOC0+STAi0aKC9hcGkvZGV2aWNlLXByb2ZpbGVzL3tkZXZpY2VfcHJvZmls",
-            "ZS5pZH06ASoSZAoGRGVsZXRlEh8uYXBpLkRlbGV0ZURldmljZVByb2ZpbGVS",
-            "ZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5IiGC0+STAhsqGS9hcGkv",
-            "ZGV2aWNlLXByb2ZpbGVzL3tpZH0SZQoETGlzdBIeLmFwaS5MaXN0RGV2aWNl",
-            "UHJvZmlsZXNSZXF1ZXN0Gh8uYXBpLkxpc3REZXZpY2VQcm9maWxlc1Jlc3Bv",
-            "bnNlIhyC0+STAhYSFC9hcGkvZGV2aWNlLXByb2ZpbGVzEoUBChFMaXN0QWRy",
-            "QWxnb3JpdGhtcxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRorLmFwaS5MaXN0",
-            "RGV2aWNlUHJvZmlsZUFkckFsZ29yaXRobXNSZXNwb25zZSIrgtPkkwIlEiMv",
-            "YXBpL2RldmljZS1wcm9maWxlcy9hZHItYWxnb3JpdGhtc0JqChFpby5jaGly",
-            "cHN0YWNrLmFwaUISRGV2aWNlUHJvZmlsZVByb3RvUAFaLmdpdGh1Yi5jb20v",
-            "Y2hpcnBzdGFjay9jaGlycHN0YWNrL2FwaS9nby92NC9hcGmqAg5DaGlycHN0",
-            "YWNrLkFwaWIGcHJvdG8z"));
+            "YXN1cmVtZW50cxgcIAEoCBIYChByZWdpb25fY29uZmlnX2lkGB0gASgJEhAK",
+            "CGlzX3JlbGF5GB4gASgIEhMKC2lzX3JlbGF5X2VkGB8gASgIEhsKE3JlbGF5",
+            "X2VkX3JlbGF5X29ubHkYICABKAgSFQoNcmVsYXlfZW5hYmxlZBghIAEoCBIy",
+            "ChVyZWxheV9jYWRfcGVyaW9kaWNpdHkYIiABKA4yEy5hcGkuQ2FkUGVyaW9k",
+            "aWNpdHkSIwobcmVsYXlfZGVmYXVsdF9jaGFubmVsX2luZGV4GCMgASgNEiEK",
+            "GXJlbGF5X3NlY29uZF9jaGFubmVsX2ZyZXEYJCABKA0SHwoXcmVsYXlfc2Vj",
+            "b25kX2NoYW5uZWxfZHIYJSABKA0SPwofcmVsYXlfc2Vjb25kX2NoYW5uZWxf",
+            "YWNrX29mZnNldBgmIAEoDjIWLmFwaS5TZWNvbmRDaEFja09mZnNldBI6Chhy",
+            "ZWxheV9lZF9hY3RpdmF0aW9uX21vZGUYJyABKA4yGC5hcGkuUmVsYXlNb2Rl",
+            "QWN0aXZhdGlvbhIjChtyZWxheV9lZF9zbWFydF9lbmFibGVfbGV2ZWwYKCAB",
+            "KA0SGQoRcmVsYXlfZWRfYmFja19vZmYYKSABKA0SKQohcmVsYXlfZWRfdXBs",
+            "aW5rX2xpbWl0X2J1Y2tldF9zaXplGCogASgNEikKIXJlbGF5X2VkX3VwbGlu",
+            "a19saW1pdF9yZWxvYWRfcmF0ZRgrIAEoDRIoCiByZWxheV9qb2luX3JlcV9s",
+            "aW1pdF9yZWxvYWRfcmF0ZRgsIAEoDRImCh5yZWxheV9ub3RpZnlfbGltaXRf",
+            "cmVsb2FkX3JhdGUYLSABKA0SLQolcmVsYXlfZ2xvYmFsX3VwbGlua19saW1p",
+            "dF9yZWxvYWRfcmF0ZRguIAEoDRInCh9yZWxheV9vdmVyYWxsX2xpbWl0X3Jl",
+            "bG9hZF9yYXRlGC8gASgNEigKIHJlbGF5X2pvaW5fcmVxX2xpbWl0X2J1Y2tl",
+            "dF9zaXplGDAgASgNEiYKHnJlbGF5X25vdGlmeV9saW1pdF9idWNrZXRfc2l6",
+            "ZRgxIAEoDRItCiVyZWxheV9nbG9iYWxfdXBsaW5rX2xpbWl0X2J1Y2tldF9z",
+            "aXplGDIgASgNEicKH3JlbGF5X292ZXJhbGxfbGltaXRfYnVja2V0X3NpemUY",
+            "MyABKA0aKwoJVGFnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEo",
+            "CToCOAEaRQoRTWVhc3VyZW1lbnRzRW50cnkSCwoDa2V5GAEgASgJEh8KBXZh",
+            "bHVlGAIgASgLMhAuYXBpLk1lYXN1cmVtZW50OgI4ASI/CgtNZWFzdXJlbWVu",
+            "dBIMCgRuYW1lGAIgASgJEiIKBGtpbmQYAyABKA4yFC5hcGkuTWVhc3VyZW1l",
+            "bnRLaW5kIt0CChVEZXZpY2VQcm9maWxlTGlzdEl0ZW0SCgoCaWQYASABKAkS",
+            "LgoKY3JlYXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3Rh",
+            "bXASLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
+            "c3RhbXASDAoEbmFtZRgEIAEoCRIeCgZyZWdpb24YBSABKA4yDi5jb21tb24u",
+            "UmVnaW9uEicKC21hY192ZXJzaW9uGAYgASgOMhIuY29tbW9uLk1hY1ZlcnNp",
+            "b24SNgoTcmVnX3BhcmFtc19yZXZpc2lvbhgHIAEoDjIZLmNvbW1vbi5SZWdQ",
+            "YXJhbXNSZXZpc2lvbhIVCg1zdXBwb3J0c19vdGFhGAggASgIEhgKEHN1cHBv",
+            "cnRzX2NsYXNzX2IYCSABKAgSGAoQc3VwcG9ydHNfY2xhc3NfYxgKIAEoCCJI",
+            "ChpDcmVhdGVEZXZpY2VQcm9maWxlUmVxdWVzdBIqCg5kZXZpY2VfcHJvZmls",
+            "ZRgBIAEoCzISLmFwaS5EZXZpY2VQcm9maWxlIikKG0NyZWF0ZURldmljZVBy",
+            "b2ZpbGVSZXNwb25zZRIKCgJpZBgBIAEoCSIlChdHZXREZXZpY2VQcm9maWxl",
+            "UmVxdWVzdBIKCgJpZBgBIAEoCSKmAQoYR2V0RGV2aWNlUHJvZmlsZVJlc3Bv",
+            "bnNlEioKDmRldmljZV9wcm9maWxlGAEgASgLMhIuYXBpLkRldmljZVByb2Zp",
+            "bGUSLgoKY3JlYXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
+            "c3RhbXASLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
+            "aW1lc3RhbXAiSAoaVXBkYXRlRGV2aWNlUHJvZmlsZVJlcXVlc3QSKgoOZGV2",
+            "aWNlX3Byb2ZpbGUYASABKAsyEi5hcGkuRGV2aWNlUHJvZmlsZSIoChpEZWxl",
+            "dGVEZXZpY2VQcm9maWxlUmVxdWVzdBIKCgJpZBgBIAEoCSJdChlMaXN0RGV2",
+            "aWNlUHJvZmlsZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgNEg4KBm9mZnNldBgC",
+            "IAEoDRIOCgZzZWFyY2gYAyABKAkSEQoJdGVuYW50X2lkGAQgASgJIl0KGkxp",
+            "c3REZXZpY2VQcm9maWxlc1Jlc3BvbnNlEhMKC3RvdGFsX2NvdW50GAEgASgN",
+            "EioKBnJlc3VsdBgCIAMoCzIaLmFwaS5EZXZpY2VQcm9maWxlTGlzdEl0ZW0i",
+            "aAomTGlzdERldmljZVByb2ZpbGVBZHJBbGdvcml0aG1zUmVzcG9uc2USEwoL",
+            "dG90YWxfY291bnQYASABKA0SKQoGcmVzdWx0GAIgAygLMhkuYXBpLkFkckFs",
+            "Z29yaXRobUxpc3RJdGVtIjAKFEFkckFsZ29yaXRobUxpc3RJdGVtEgoKAmlk",
+            "GAEgASgJEgwKBG5hbWUYAiABKAkqMQoMQ29kZWNSdW50aW1lEggKBE5PTkUQ",
+            "ABIPCgtDQVlFTk5FX0xQUBABEgYKAkpTEAIqUAoPTWVhc3VyZW1lbnRLaW5k",
+            "EgsKB1VOS05PV04QABILCgdDT1VOVEVSEAESDAoIQUJTT0xVVEUQAhIJCgVH",
+            "QVVHRRADEgoKBlNUUklORxAEKlUKDkNhZFBlcmlvZGljaXR5EgkKBVNFQ18x",
+            "EAASCgoGTVNfNTAwEAESCgoGTVNfMjUwEAISCgoGTVNfMTAwEAMSCQoFTVNf",
+            "NTAQBBIJCgVNU18yMBAFKmEKEVNlY29uZENoQWNrT2Zmc2V0EgkKBUtIWl8w",
+            "EAASCwoHS0haXzIwMBABEgsKB0tIWl80MDAQAhILCgdLSFpfODAwEAMSDAoI",
+            "S0haXzE2MDAQBBIMCghLSFpfMzIwMBAFKmwKE1JlbGF5TW9kZUFjdGl2YXRp",
+            "b24SFgoSRElTQUJMRV9SRUxBWV9NT0RFEAASFQoRRU5BQkxFX1JFTEFZX01P",
+            "REUQARILCgdEWU5BTUlDEAISGQoVRU5EX0RFVklDRV9DT05UUk9MTEVEEAMy",
+            "uAUKFERldmljZVByb2ZpbGVTZXJ2aWNlEmwKBkNyZWF0ZRIfLmFwaS5DcmVh",
+            "dGVEZXZpY2VQcm9maWxlUmVxdWVzdBogLmFwaS5DcmVhdGVEZXZpY2VQcm9m",
+            "aWxlUmVzcG9uc2UiH4LT5JMCGSIUL2FwaS9kZXZpY2UtcHJvZmlsZXM6ASoS",
+            "ZQoDR2V0EhwuYXBpLkdldERldmljZVByb2ZpbGVSZXF1ZXN0Gh0uYXBpLkdl",
+            "dERldmljZVByb2ZpbGVSZXNwb25zZSIhgtPkkwIbEhkvYXBpL2RldmljZS1w",
+            "cm9maWxlcy97aWR9EnYKBlVwZGF0ZRIfLmFwaS5VcGRhdGVEZXZpY2VQcm9m",
+            "aWxlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIzgtPkkwItGigv",
+            "YXBpL2RldmljZS1wcm9maWxlcy97ZGV2aWNlX3Byb2ZpbGUuaWR9OgEqEmQK",
+            "BkRlbGV0ZRIfLmFwaS5EZWxldGVEZXZpY2VQcm9maWxlUmVxdWVzdBoWLmdv",
+            "b2dsZS5wcm90b2J1Zi5FbXB0eSIhgtPkkwIbKhkvYXBpL2RldmljZS1wcm9m",
+            "aWxlcy97aWR9EmUKBExpc3QSHi5hcGkuTGlzdERldmljZVByb2ZpbGVzUmVx",
+            "dWVzdBofLmFwaS5MaXN0RGV2aWNlUHJvZmlsZXNSZXNwb25zZSIcgtPkkwIW",
+            "EhQvYXBpL2RldmljZS1wcm9maWxlcxKFAQoRTGlzdEFkckFsZ29yaXRobXMS",
+            "Fi5nb29nbGUucHJvdG9idWYuRW1wdHkaKy5hcGkuTGlzdERldmljZVByb2Zp",
+            "bGVBZHJBbGdvcml0aG1zUmVzcG9uc2UiK4LT5JMCJRIjL2FwaS9kZXZpY2Ut",
+            "cHJvZmlsZXMvYWRyLWFsZ29yaXRobXNCagoRaW8uY2hpcnBzdGFjay5hcGlC",
+            "EkRldmljZVByb2ZpbGVQcm90b1ABWi5naXRodWIuY29tL2NoaXJwc3RhY2sv",
+            "Y2hpcnBzdGFjay9hcGkvZ28vdjQvYXBpqgIOQ2hpcnBzdGFjay5BcGliBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Api.AnnotationsReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Chirpstack.Common.CommonReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Api.CodecRuntime), typeof(global::Chirpstack.Api.MeasurementKind), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfile), global::Chirpstack.Api.DeviceProfile.Parser, new[]{ "Id", "TenantId", "Name", "Description", "Region", "MacVersion", "RegParamsRevision", "AdrAlgorithmId", "PayloadCodecRuntime", "PayloadCodecScript", "FlushQueueOnActivate", "UplinkInterval", "DeviceStatusReqInterval", "SupportsOtaa", "SupportsClassB", "SupportsClassC", "ClassBTimeout", "ClassBPingSlotNbK", "ClassBPingSlotDr", "ClassBPingSlotFreq", "ClassCTimeout", "AbpRx1Delay", "AbpRx1DrOffset", "AbpRx2Dr", "AbpRx2Freq", "Tags", "Measurements", "AutoDetectMeasurements", "RegionConfigId" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Api.CodecRuntime), typeof(global::Chirpstack.Api.MeasurementKind), typeof(global::Chirpstack.Api.CadPeriodicity), typeof(global::Chirpstack.Api.SecondChAckOffset), typeof(global::Chirpstack.Api.RelayModeActivation), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfile), global::Chirpstack.Api.DeviceProfile.Parser, new[]{ "Id", "TenantId", "Name", "Description", "Region", "MacVersion", "RegParamsRevision", "AdrAlgorithmId", "PayloadCodecRuntime", "PayloadCodecScript", "FlushQueueOnActivate", "UplinkInterval", "DeviceStatusReqInterval", "SupportsOtaa", "SupportsClassB", "SupportsClassC", "ClassBTimeout", "ClassBPingSlotNbK", "ClassBPingSlotDr", "ClassBPingSlotFreq", "ClassCTimeout", "AbpRx1Delay", "AbpRx1DrOffset", "AbpRx2Dr", "AbpRx2Freq", "Tags", "Measurements", "AutoDetectMeasurements", "RegionConfigId", "IsRelay", "IsRelayEd", "RelayEdRelayOnly", "RelayEnabled", "RelayCadPeriodicity", "RelayDefaultChannelIndex", "RelaySecondChannelFreq", "RelaySecondChannelDr", "RelaySecondChannelAckOffset", "RelayEdActivationMode", "RelayEdSmartEnableLevel", "RelayEdBackOff", "RelayEdUplinkLimitBucketSize", "RelayEdUplinkLimitReloadRate", "RelayJoinReqLimitReloadRate", "RelayNotifyLimitReloadRate", "RelayGlobalUplinkLimitReloadRate", "RelayOverallLimitReloadRate", "RelayJoinReqLimitBucketSize", "RelayNotifyLimitBucketSize", "RelayGlobalUplinkLimitBucketSize", "RelayOverallLimitBucketSize" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.Measurement), global::Chirpstack.Api.Measurement.Parser, new[]{ "Name", "Kind" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfileListItem), global::Chirpstack.Api.DeviceProfileListItem.Parser, new[]{ "Id", "CreatedAt", "UpdatedAt", "Name", "Region", "MacVersion", "RegParamsRevision", "SupportsOtaa", "SupportsClassB", "SupportsClassC" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.CreateDeviceProfileRequest), global::Chirpstack.Api.CreateDeviceProfileRequest.Parser, new[]{ "DeviceProfile" }, null, null, null, null),
@@ -156,6 +182,79 @@ namespace Chirpstack.Api {
     /// E.g. a firmware version, true / false value.
     /// </summary>
     [pbr::OriginalName("STRING")] String = 4,
+  }
+
+  public enum CadPeriodicity {
+    /// <summary>
+    /// 1 second.
+    /// </summary>
+    [pbr::OriginalName("SEC_1")] Sec1 = 0,
+    /// <summary>
+    /// 500 milliseconds
+    /// </summary>
+    [pbr::OriginalName("MS_500")] Ms500 = 1,
+    /// <summary>
+    /// 250 milliseconds
+    /// </summary>
+    [pbr::OriginalName("MS_250")] Ms250 = 2,
+    /// <summary>
+    /// 100 milliseconds
+    /// </summary>
+    [pbr::OriginalName("MS_100")] Ms100 = 3,
+    /// <summary>
+    /// 50 milliseconds
+    /// </summary>
+    [pbr::OriginalName("MS_50")] Ms50 = 4,
+    /// <summary>
+    /// 20 milliseconds
+    /// </summary>
+    [pbr::OriginalName("MS_20")] Ms20 = 5,
+  }
+
+  public enum SecondChAckOffset {
+    /// <summary>
+    /// 0 kHz.
+    /// </summary>
+    [pbr::OriginalName("KHZ_0")] Khz0 = 0,
+    /// <summary>
+    /// 200 kHz.
+    /// </summary>
+    [pbr::OriginalName("KHZ_200")] Khz200 = 1,
+    /// <summary>
+    /// 400 kHz.
+    /// </summary>
+    [pbr::OriginalName("KHZ_400")] Khz400 = 2,
+    /// <summary>
+    /// 800 kHz.
+    /// </summary>
+    [pbr::OriginalName("KHZ_800")] Khz800 = 3,
+    /// <summary>
+    /// 1600 kHz.
+    /// </summary>
+    [pbr::OriginalName("KHZ_1600")] Khz1600 = 4,
+    /// <summary>
+    /// 3200 kHz.
+    /// </summary>
+    [pbr::OriginalName("KHZ_3200")] Khz3200 = 5,
+  }
+
+  public enum RelayModeActivation {
+    /// <summary>
+    /// Disable the relay mode.
+    /// </summary>
+    [pbr::OriginalName("DISABLE_RELAY_MODE")] DisableRelayMode = 0,
+    /// <summary>
+    /// Enable the relay model.
+    /// </summary>
+    [pbr::OriginalName("ENABLE_RELAY_MODE")] EnableRelayMode = 1,
+    /// <summary>
+    /// Dynamic.
+    /// </summary>
+    [pbr::OriginalName("DYNAMIC")] Dynamic = 2,
+    /// <summary>
+    /// End-device controlled.
+    /// </summary>
+    [pbr::OriginalName("END_DEVICE_CONTROLLED")] EndDeviceControlled = 3,
   }
 
   #endregion
@@ -224,6 +323,28 @@ namespace Chirpstack.Api {
       measurements_ = other.measurements_.Clone();
       autoDetectMeasurements_ = other.autoDetectMeasurements_;
       regionConfigId_ = other.regionConfigId_;
+      isRelay_ = other.isRelay_;
+      isRelayEd_ = other.isRelayEd_;
+      relayEdRelayOnly_ = other.relayEdRelayOnly_;
+      relayEnabled_ = other.relayEnabled_;
+      relayCadPeriodicity_ = other.relayCadPeriodicity_;
+      relayDefaultChannelIndex_ = other.relayDefaultChannelIndex_;
+      relaySecondChannelFreq_ = other.relaySecondChannelFreq_;
+      relaySecondChannelDr_ = other.relaySecondChannelDr_;
+      relaySecondChannelAckOffset_ = other.relaySecondChannelAckOffset_;
+      relayEdActivationMode_ = other.relayEdActivationMode_;
+      relayEdSmartEnableLevel_ = other.relayEdSmartEnableLevel_;
+      relayEdBackOff_ = other.relayEdBackOff_;
+      relayEdUplinkLimitBucketSize_ = other.relayEdUplinkLimitBucketSize_;
+      relayEdUplinkLimitReloadRate_ = other.relayEdUplinkLimitReloadRate_;
+      relayJoinReqLimitReloadRate_ = other.relayJoinReqLimitReloadRate_;
+      relayNotifyLimitReloadRate_ = other.relayNotifyLimitReloadRate_;
+      relayGlobalUplinkLimitReloadRate_ = other.relayGlobalUplinkLimitReloadRate_;
+      relayOverallLimitReloadRate_ = other.relayOverallLimitReloadRate_;
+      relayJoinReqLimitBucketSize_ = other.relayJoinReqLimitBucketSize_;
+      relayNotifyLimitBucketSize_ = other.relayNotifyLimitBucketSize_;
+      relayGlobalUplinkLimitBucketSize_ = other.relayGlobalUplinkLimitBucketSize_;
+      relayOverallLimitBucketSize_ = other.relayOverallLimitBucketSize_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -686,6 +807,418 @@ namespace Chirpstack.Api {
       }
     }
 
+    /// <summary>Field number for the "is_relay" field.</summary>
+    public const int IsRelayFieldNumber = 30;
+    private bool isRelay_;
+    /// <summary>
+    /// Device is a Relay device.
+    /// Enable this in case the device is a Relay. A Relay device implements TS011
+    /// and is able to relay data from relay capable devices.
+    /// See for more information the TS011 specification.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool IsRelay {
+      get { return isRelay_; }
+      set {
+        isRelay_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "is_relay_ed" field.</summary>
+    public const int IsRelayEdFieldNumber = 31;
+    private bool isRelayEd_;
+    /// <summary>
+    /// Device is a Relay end-device.
+    /// Enable this in case the device is an end-device that can operate under a
+    /// Relay. Please refer to the TS011 specification for more information.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool IsRelayEd {
+      get { return isRelayEd_; }
+      set {
+        isRelayEd_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_ed_relay_only" field.</summary>
+    public const int RelayEdRelayOnlyFieldNumber = 32;
+    private bool relayEdRelayOnly_;
+    /// <summary>
+    /// End-device only accept data through relay.
+    /// Only accept data for this device through a relay. This setting is useful
+    /// for testing as in case of a test-setup, the end-device is usually within
+    /// range of the gateway.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool RelayEdRelayOnly {
+      get { return relayEdRelayOnly_; }
+      set {
+        relayEdRelayOnly_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_enabled" field.</summary>
+    public const int RelayEnabledFieldNumber = 33;
+    private bool relayEnabled_;
+    /// <summary>
+    /// Relay must be enabled.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool RelayEnabled {
+      get { return relayEnabled_; }
+      set {
+        relayEnabled_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_cad_periodicity" field.</summary>
+    public const int RelayCadPeriodicityFieldNumber = 34;
+    private global::Chirpstack.Api.CadPeriodicity relayCadPeriodicity_ = global::Chirpstack.Api.CadPeriodicity.Sec1;
+    /// <summary>
+    /// Relay CAD periodicity.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Chirpstack.Api.CadPeriodicity RelayCadPeriodicity {
+      get { return relayCadPeriodicity_; }
+      set {
+        relayCadPeriodicity_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_default_channel_index" field.</summary>
+    public const int RelayDefaultChannelIndexFieldNumber = 35;
+    private uint relayDefaultChannelIndex_;
+    /// <summary>
+    /// Relay default channel index.
+    /// Valid values are 0 and 1, please refer to the RP002 specification for
+    /// the meaning of these values.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayDefaultChannelIndex {
+      get { return relayDefaultChannelIndex_; }
+      set {
+        relayDefaultChannelIndex_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_second_channel_freq" field.</summary>
+    public const int RelaySecondChannelFreqFieldNumber = 36;
+    private uint relaySecondChannelFreq_;
+    /// <summary>
+    /// Relay second channel frequency (Hz).
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelaySecondChannelFreq {
+      get { return relaySecondChannelFreq_; }
+      set {
+        relaySecondChannelFreq_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_second_channel_dr" field.</summary>
+    public const int RelaySecondChannelDrFieldNumber = 37;
+    private uint relaySecondChannelDr_;
+    /// <summary>
+    /// Relay second channel DR.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelaySecondChannelDr {
+      get { return relaySecondChannelDr_; }
+      set {
+        relaySecondChannelDr_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_second_channel_ack_offset" field.</summary>
+    public const int RelaySecondChannelAckOffsetFieldNumber = 38;
+    private global::Chirpstack.Api.SecondChAckOffset relaySecondChannelAckOffset_ = global::Chirpstack.Api.SecondChAckOffset.Khz0;
+    /// <summary>
+    /// Relay second channel ACK offset.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Chirpstack.Api.SecondChAckOffset RelaySecondChannelAckOffset {
+      get { return relaySecondChannelAckOffset_; }
+      set {
+        relaySecondChannelAckOffset_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_ed_activation_mode" field.</summary>
+    public const int RelayEdActivationModeFieldNumber = 39;
+    private global::Chirpstack.Api.RelayModeActivation relayEdActivationMode_ = global::Chirpstack.Api.RelayModeActivation.DisableRelayMode;
+    /// <summary>
+    /// Relay end-device activation mode.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Chirpstack.Api.RelayModeActivation RelayEdActivationMode {
+      get { return relayEdActivationMode_; }
+      set {
+        relayEdActivationMode_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_ed_smart_enable_level" field.</summary>
+    public const int RelayEdSmartEnableLevelFieldNumber = 40;
+    private uint relayEdSmartEnableLevel_;
+    /// <summary>
+    /// Relay end-device smart-enable level.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayEdSmartEnableLevel {
+      get { return relayEdSmartEnableLevel_; }
+      set {
+        relayEdSmartEnableLevel_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_ed_back_off" field.</summary>
+    public const int RelayEdBackOffFieldNumber = 41;
+    private uint relayEdBackOff_;
+    /// <summary>
+    /// Relay end-device back-off (in case it does not receive WOR ACK frame).
+    /// 0 = Always send a LoRaWAN uplink
+    /// 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayEdBackOff {
+      get { return relayEdBackOff_; }
+      set {
+        relayEdBackOff_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_ed_uplink_limit_bucket_size" field.</summary>
+    public const int RelayEdUplinkLimitBucketSizeFieldNumber = 42;
+    private uint relayEdUplinkLimitBucketSize_;
+    /// <summary>
+    /// Relay end-device uplink limit bucket size.
+    ///
+    /// This field indicates the multiplier to determine the bucket size
+    /// according to the following formula:
+    /// BucketSize TOKEN = _reload_rate x _bucket_size
+    ///
+    /// Valid values (0 - 3):
+    ///   0 = 1
+    ///   1 = 2
+    ///   2 = 4
+    ///   3 = 12
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayEdUplinkLimitBucketSize {
+      get { return relayEdUplinkLimitBucketSize_; }
+      set {
+        relayEdUplinkLimitBucketSize_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_ed_uplink_limit_reload_rate" field.</summary>
+    public const int RelayEdUplinkLimitReloadRateFieldNumber = 43;
+    private uint relayEdUplinkLimitReloadRate_;
+    /// <summary>
+    /// Relay end-device uplink limit reload rate.
+    ///
+    /// Valid values:
+    ///   * 0 - 62 = X tokens every hour
+    ///   * 63     = no limitation
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayEdUplinkLimitReloadRate {
+      get { return relayEdUplinkLimitReloadRate_; }
+      set {
+        relayEdUplinkLimitReloadRate_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_join_req_limit_reload_rate" field.</summary>
+    public const int RelayJoinReqLimitReloadRateFieldNumber = 44;
+    private uint relayJoinReqLimitReloadRate_;
+    /// <summary>
+    /// Relay join-request limit reload rate.
+    ///
+    /// Valid values:
+    ///   * 0 - 126 = X tokens every hour
+    ///   * 127     = no limitation
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayJoinReqLimitReloadRate {
+      get { return relayJoinReqLimitReloadRate_; }
+      set {
+        relayJoinReqLimitReloadRate_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_notify_limit_reload_rate" field.</summary>
+    public const int RelayNotifyLimitReloadRateFieldNumber = 45;
+    private uint relayNotifyLimitReloadRate_;
+    /// <summary>
+    /// Relay notify limit reload rate.
+    ///
+    /// Valid values:
+    ///   * 0 - 126 = X tokens every hour
+    ///   * 127     = no limitation
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayNotifyLimitReloadRate {
+      get { return relayNotifyLimitReloadRate_; }
+      set {
+        relayNotifyLimitReloadRate_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_global_uplink_limit_reload_rate" field.</summary>
+    public const int RelayGlobalUplinkLimitReloadRateFieldNumber = 46;
+    private uint relayGlobalUplinkLimitReloadRate_;
+    /// <summary>
+    /// Relay global uplink limit reload rate.
+    ///
+    /// Valid values:
+    ///   * 0 - 126 = X tokens every hour
+    ///   * 127     = no limitation
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayGlobalUplinkLimitReloadRate {
+      get { return relayGlobalUplinkLimitReloadRate_; }
+      set {
+        relayGlobalUplinkLimitReloadRate_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_overall_limit_reload_rate" field.</summary>
+    public const int RelayOverallLimitReloadRateFieldNumber = 47;
+    private uint relayOverallLimitReloadRate_;
+    /// <summary>
+    /// Relay overall limit reload rate.
+    ///
+    /// Valid values:
+    ///   * 0 - 126 = X tokens every hour
+    ///   * 127     = no limitation
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayOverallLimitReloadRate {
+      get { return relayOverallLimitReloadRate_; }
+      set {
+        relayOverallLimitReloadRate_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_join_req_limit_bucket_size" field.</summary>
+    public const int RelayJoinReqLimitBucketSizeFieldNumber = 48;
+    private uint relayJoinReqLimitBucketSize_;
+    /// <summary>
+    /// Relay join-request limit bucket size.
+    ///
+    /// This field indicates the multiplier to determine the bucket size
+    /// according to the following formula:
+    /// BucketSize TOKEN = _reload_rate x _bucket_size
+    ///
+    /// Valid values (0 - 3):
+    ///   0 = 1
+    ///   1 = 2
+    ///   2 = 4
+    ///   3 = 12
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayJoinReqLimitBucketSize {
+      get { return relayJoinReqLimitBucketSize_; }
+      set {
+        relayJoinReqLimitBucketSize_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_notify_limit_bucket_size" field.</summary>
+    public const int RelayNotifyLimitBucketSizeFieldNumber = 49;
+    private uint relayNotifyLimitBucketSize_;
+    /// <summary>
+    /// Relay notify limit bucket size.
+    ///
+    /// This field indicates the multiplier to determine the bucket size
+    /// according to the following formula:
+    /// BucketSize TOKEN = _reload_rate x _bucket_size
+    ///
+    /// Valid values (0 - 3):
+    ///   0 = 1
+    ///   1 = 2
+    ///   2 = 4
+    ///   3 = 12
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayNotifyLimitBucketSize {
+      get { return relayNotifyLimitBucketSize_; }
+      set {
+        relayNotifyLimitBucketSize_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_global_uplink_limit_bucket_size" field.</summary>
+    public const int RelayGlobalUplinkLimitBucketSizeFieldNumber = 50;
+    private uint relayGlobalUplinkLimitBucketSize_;
+    /// <summary>
+    /// Relay globak uplink limit bucket size.
+    ///
+    /// This field indicates the multiplier to determine the bucket size
+    /// according to the following formula:
+    /// BucketSize TOKEN = _reload_rate x _bucket_size
+    ///
+    /// Valid values (0 - 3):
+    ///   0 = 1
+    ///   1 = 2
+    ///   2 = 4
+    ///   3 = 12
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayGlobalUplinkLimitBucketSize {
+      get { return relayGlobalUplinkLimitBucketSize_; }
+      set {
+        relayGlobalUplinkLimitBucketSize_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "relay_overall_limit_bucket_size" field.</summary>
+    public const int RelayOverallLimitBucketSizeFieldNumber = 51;
+    private uint relayOverallLimitBucketSize_;
+    /// <summary>
+    /// Relay overall limit bucket size.
+    ///
+    /// This field indicates the multiplier to determine the bucket size
+    /// according to the following formula:
+    /// BucketSize TOKEN = _reload_rate x _bucket_size
+    ///
+    /// Valid values (0 - 3):
+    ///   0 = 1
+    ///   1 = 2
+    ///   2 = 4
+    ///   3 = 12
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public uint RelayOverallLimitBucketSize {
+      get { return relayOverallLimitBucketSize_; }
+      set {
+        relayOverallLimitBucketSize_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -730,6 +1263,28 @@ namespace Chirpstack.Api {
       if (!Measurements.Equals(other.Measurements)) return false;
       if (AutoDetectMeasurements != other.AutoDetectMeasurements) return false;
       if (RegionConfigId != other.RegionConfigId) return false;
+      if (IsRelay != other.IsRelay) return false;
+      if (IsRelayEd != other.IsRelayEd) return false;
+      if (RelayEdRelayOnly != other.RelayEdRelayOnly) return false;
+      if (RelayEnabled != other.RelayEnabled) return false;
+      if (RelayCadPeriodicity != other.RelayCadPeriodicity) return false;
+      if (RelayDefaultChannelIndex != other.RelayDefaultChannelIndex) return false;
+      if (RelaySecondChannelFreq != other.RelaySecondChannelFreq) return false;
+      if (RelaySecondChannelDr != other.RelaySecondChannelDr) return false;
+      if (RelaySecondChannelAckOffset != other.RelaySecondChannelAckOffset) return false;
+      if (RelayEdActivationMode != other.RelayEdActivationMode) return false;
+      if (RelayEdSmartEnableLevel != other.RelayEdSmartEnableLevel) return false;
+      if (RelayEdBackOff != other.RelayEdBackOff) return false;
+      if (RelayEdUplinkLimitBucketSize != other.RelayEdUplinkLimitBucketSize) return false;
+      if (RelayEdUplinkLimitReloadRate != other.RelayEdUplinkLimitReloadRate) return false;
+      if (RelayJoinReqLimitReloadRate != other.RelayJoinReqLimitReloadRate) return false;
+      if (RelayNotifyLimitReloadRate != other.RelayNotifyLimitReloadRate) return false;
+      if (RelayGlobalUplinkLimitReloadRate != other.RelayGlobalUplinkLimitReloadRate) return false;
+      if (RelayOverallLimitReloadRate != other.RelayOverallLimitReloadRate) return false;
+      if (RelayJoinReqLimitBucketSize != other.RelayJoinReqLimitBucketSize) return false;
+      if (RelayNotifyLimitBucketSize != other.RelayNotifyLimitBucketSize) return false;
+      if (RelayGlobalUplinkLimitBucketSize != other.RelayGlobalUplinkLimitBucketSize) return false;
+      if (RelayOverallLimitBucketSize != other.RelayOverallLimitBucketSize) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -766,6 +1321,28 @@ namespace Chirpstack.Api {
       hash ^= Measurements.GetHashCode();
       if (AutoDetectMeasurements != false) hash ^= AutoDetectMeasurements.GetHashCode();
       if (RegionConfigId.Length != 0) hash ^= RegionConfigId.GetHashCode();
+      if (IsRelay != false) hash ^= IsRelay.GetHashCode();
+      if (IsRelayEd != false) hash ^= IsRelayEd.GetHashCode();
+      if (RelayEdRelayOnly != false) hash ^= RelayEdRelayOnly.GetHashCode();
+      if (RelayEnabled != false) hash ^= RelayEnabled.GetHashCode();
+      if (RelayCadPeriodicity != global::Chirpstack.Api.CadPeriodicity.Sec1) hash ^= RelayCadPeriodicity.GetHashCode();
+      if (RelayDefaultChannelIndex != 0) hash ^= RelayDefaultChannelIndex.GetHashCode();
+      if (RelaySecondChannelFreq != 0) hash ^= RelaySecondChannelFreq.GetHashCode();
+      if (RelaySecondChannelDr != 0) hash ^= RelaySecondChannelDr.GetHashCode();
+      if (RelaySecondChannelAckOffset != global::Chirpstack.Api.SecondChAckOffset.Khz0) hash ^= RelaySecondChannelAckOffset.GetHashCode();
+      if (RelayEdActivationMode != global::Chirpstack.Api.RelayModeActivation.DisableRelayMode) hash ^= RelayEdActivationMode.GetHashCode();
+      if (RelayEdSmartEnableLevel != 0) hash ^= RelayEdSmartEnableLevel.GetHashCode();
+      if (RelayEdBackOff != 0) hash ^= RelayEdBackOff.GetHashCode();
+      if (RelayEdUplinkLimitBucketSize != 0) hash ^= RelayEdUplinkLimitBucketSize.GetHashCode();
+      if (RelayEdUplinkLimitReloadRate != 0) hash ^= RelayEdUplinkLimitReloadRate.GetHashCode();
+      if (RelayJoinReqLimitReloadRate != 0) hash ^= RelayJoinReqLimitReloadRate.GetHashCode();
+      if (RelayNotifyLimitReloadRate != 0) hash ^= RelayNotifyLimitReloadRate.GetHashCode();
+      if (RelayGlobalUplinkLimitReloadRate != 0) hash ^= RelayGlobalUplinkLimitReloadRate.GetHashCode();
+      if (RelayOverallLimitReloadRate != 0) hash ^= RelayOverallLimitReloadRate.GetHashCode();
+      if (RelayJoinReqLimitBucketSize != 0) hash ^= RelayJoinReqLimitBucketSize.GetHashCode();
+      if (RelayNotifyLimitBucketSize != 0) hash ^= RelayNotifyLimitBucketSize.GetHashCode();
+      if (RelayGlobalUplinkLimitBucketSize != 0) hash ^= RelayGlobalUplinkLimitBucketSize.GetHashCode();
+      if (RelayOverallLimitBucketSize != 0) hash ^= RelayOverallLimitBucketSize.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -894,6 +1471,94 @@ namespace Chirpstack.Api {
         output.WriteRawTag(234, 1);
         output.WriteString(RegionConfigId);
       }
+      if (IsRelay != false) {
+        output.WriteRawTag(240, 1);
+        output.WriteBool(IsRelay);
+      }
+      if (IsRelayEd != false) {
+        output.WriteRawTag(248, 1);
+        output.WriteBool(IsRelayEd);
+      }
+      if (RelayEdRelayOnly != false) {
+        output.WriteRawTag(128, 2);
+        output.WriteBool(RelayEdRelayOnly);
+      }
+      if (RelayEnabled != false) {
+        output.WriteRawTag(136, 2);
+        output.WriteBool(RelayEnabled);
+      }
+      if (RelayCadPeriodicity != global::Chirpstack.Api.CadPeriodicity.Sec1) {
+        output.WriteRawTag(144, 2);
+        output.WriteEnum((int) RelayCadPeriodicity);
+      }
+      if (RelayDefaultChannelIndex != 0) {
+        output.WriteRawTag(152, 2);
+        output.WriteUInt32(RelayDefaultChannelIndex);
+      }
+      if (RelaySecondChannelFreq != 0) {
+        output.WriteRawTag(160, 2);
+        output.WriteUInt32(RelaySecondChannelFreq);
+      }
+      if (RelaySecondChannelDr != 0) {
+        output.WriteRawTag(168, 2);
+        output.WriteUInt32(RelaySecondChannelDr);
+      }
+      if (RelaySecondChannelAckOffset != global::Chirpstack.Api.SecondChAckOffset.Khz0) {
+        output.WriteRawTag(176, 2);
+        output.WriteEnum((int) RelaySecondChannelAckOffset);
+      }
+      if (RelayEdActivationMode != global::Chirpstack.Api.RelayModeActivation.DisableRelayMode) {
+        output.WriteRawTag(184, 2);
+        output.WriteEnum((int) RelayEdActivationMode);
+      }
+      if (RelayEdSmartEnableLevel != 0) {
+        output.WriteRawTag(192, 2);
+        output.WriteUInt32(RelayEdSmartEnableLevel);
+      }
+      if (RelayEdBackOff != 0) {
+        output.WriteRawTag(200, 2);
+        output.WriteUInt32(RelayEdBackOff);
+      }
+      if (RelayEdUplinkLimitBucketSize != 0) {
+        output.WriteRawTag(208, 2);
+        output.WriteUInt32(RelayEdUplinkLimitBucketSize);
+      }
+      if (RelayEdUplinkLimitReloadRate != 0) {
+        output.WriteRawTag(216, 2);
+        output.WriteUInt32(RelayEdUplinkLimitReloadRate);
+      }
+      if (RelayJoinReqLimitReloadRate != 0) {
+        output.WriteRawTag(224, 2);
+        output.WriteUInt32(RelayJoinReqLimitReloadRate);
+      }
+      if (RelayNotifyLimitReloadRate != 0) {
+        output.WriteRawTag(232, 2);
+        output.WriteUInt32(RelayNotifyLimitReloadRate);
+      }
+      if (RelayGlobalUplinkLimitReloadRate != 0) {
+        output.WriteRawTag(240, 2);
+        output.WriteUInt32(RelayGlobalUplinkLimitReloadRate);
+      }
+      if (RelayOverallLimitReloadRate != 0) {
+        output.WriteRawTag(248, 2);
+        output.WriteUInt32(RelayOverallLimitReloadRate);
+      }
+      if (RelayJoinReqLimitBucketSize != 0) {
+        output.WriteRawTag(128, 3);
+        output.WriteUInt32(RelayJoinReqLimitBucketSize);
+      }
+      if (RelayNotifyLimitBucketSize != 0) {
+        output.WriteRawTag(136, 3);
+        output.WriteUInt32(RelayNotifyLimitBucketSize);
+      }
+      if (RelayGlobalUplinkLimitBucketSize != 0) {
+        output.WriteRawTag(144, 3);
+        output.WriteUInt32(RelayGlobalUplinkLimitBucketSize);
+      }
+      if (RelayOverallLimitBucketSize != 0) {
+        output.WriteRawTag(152, 3);
+        output.WriteUInt32(RelayOverallLimitBucketSize);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1014,6 +1679,94 @@ namespace Chirpstack.Api {
         output.WriteRawTag(234, 1);
         output.WriteString(RegionConfigId);
       }
+      if (IsRelay != false) {
+        output.WriteRawTag(240, 1);
+        output.WriteBool(IsRelay);
+      }
+      if (IsRelayEd != false) {
+        output.WriteRawTag(248, 1);
+        output.WriteBool(IsRelayEd);
+      }
+      if (RelayEdRelayOnly != false) {
+        output.WriteRawTag(128, 2);
+        output.WriteBool(RelayEdRelayOnly);
+      }
+      if (RelayEnabled != false) {
+        output.WriteRawTag(136, 2);
+        output.WriteBool(RelayEnabled);
+      }
+      if (RelayCadPeriodicity != global::Chirpstack.Api.CadPeriodicity.Sec1) {
+        output.WriteRawTag(144, 2);
+        output.WriteEnum((int) RelayCadPeriodicity);
+      }
+      if (RelayDefaultChannelIndex != 0) {
+        output.WriteRawTag(152, 2);
+        output.WriteUInt32(RelayDefaultChannelIndex);
+      }
+      if (RelaySecondChannelFreq != 0) {
+        output.WriteRawTag(160, 2);
+        output.WriteUInt32(RelaySecondChannelFreq);
+      }
+      if (RelaySecondChannelDr != 0) {
+        output.WriteRawTag(168, 2);
+        output.WriteUInt32(RelaySecondChannelDr);
+      }
+      if (RelaySecondChannelAckOffset != global::Chirpstack.Api.SecondChAckOffset.Khz0) {
+        output.WriteRawTag(176, 2);
+        output.WriteEnum((int) RelaySecondChannelAckOffset);
+      }
+      if (RelayEdActivationMode != global::Chirpstack.Api.RelayModeActivation.DisableRelayMode) {
+        output.WriteRawTag(184, 2);
+        output.WriteEnum((int) RelayEdActivationMode);
+      }
+      if (RelayEdSmartEnableLevel != 0) {
+        output.WriteRawTag(192, 2);
+        output.WriteUInt32(RelayEdSmartEnableLevel);
+      }
+      if (RelayEdBackOff != 0) {
+        output.WriteRawTag(200, 2);
+        output.WriteUInt32(RelayEdBackOff);
+      }
+      if (RelayEdUplinkLimitBucketSize != 0) {
+        output.WriteRawTag(208, 2);
+        output.WriteUInt32(RelayEdUplinkLimitBucketSize);
+      }
+      if (RelayEdUplinkLimitReloadRate != 0) {
+        output.WriteRawTag(216, 2);
+        output.WriteUInt32(RelayEdUplinkLimitReloadRate);
+      }
+      if (RelayJoinReqLimitReloadRate != 0) {
+        output.WriteRawTag(224, 2);
+        output.WriteUInt32(RelayJoinReqLimitReloadRate);
+      }
+      if (RelayNotifyLimitReloadRate != 0) {
+        output.WriteRawTag(232, 2);
+        output.WriteUInt32(RelayNotifyLimitReloadRate);
+      }
+      if (RelayGlobalUplinkLimitReloadRate != 0) {
+        output.WriteRawTag(240, 2);
+        output.WriteUInt32(RelayGlobalUplinkLimitReloadRate);
+      }
+      if (RelayOverallLimitReloadRate != 0) {
+        output.WriteRawTag(248, 2);
+        output.WriteUInt32(RelayOverallLimitReloadRate);
+      }
+      if (RelayJoinReqLimitBucketSize != 0) {
+        output.WriteRawTag(128, 3);
+        output.WriteUInt32(RelayJoinReqLimitBucketSize);
+      }
+      if (RelayNotifyLimitBucketSize != 0) {
+        output.WriteRawTag(136, 3);
+        output.WriteUInt32(RelayNotifyLimitBucketSize);
+      }
+      if (RelayGlobalUplinkLimitBucketSize != 0) {
+        output.WriteRawTag(144, 3);
+        output.WriteUInt32(RelayGlobalUplinkLimitBucketSize);
+      }
+      if (RelayOverallLimitBucketSize != 0) {
+        output.WriteRawTag(152, 3);
+        output.WriteUInt32(RelayOverallLimitBucketSize);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1106,6 +1859,72 @@ namespace Chirpstack.Api {
       }
       if (RegionConfigId.Length != 0) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(RegionConfigId);
+      }
+      if (IsRelay != false) {
+        size += 2 + 1;
+      }
+      if (IsRelayEd != false) {
+        size += 2 + 1;
+      }
+      if (RelayEdRelayOnly != false) {
+        size += 2 + 1;
+      }
+      if (RelayEnabled != false) {
+        size += 2 + 1;
+      }
+      if (RelayCadPeriodicity != global::Chirpstack.Api.CadPeriodicity.Sec1) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) RelayCadPeriodicity);
+      }
+      if (RelayDefaultChannelIndex != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayDefaultChannelIndex);
+      }
+      if (RelaySecondChannelFreq != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelaySecondChannelFreq);
+      }
+      if (RelaySecondChannelDr != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelaySecondChannelDr);
+      }
+      if (RelaySecondChannelAckOffset != global::Chirpstack.Api.SecondChAckOffset.Khz0) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) RelaySecondChannelAckOffset);
+      }
+      if (RelayEdActivationMode != global::Chirpstack.Api.RelayModeActivation.DisableRelayMode) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) RelayEdActivationMode);
+      }
+      if (RelayEdSmartEnableLevel != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayEdSmartEnableLevel);
+      }
+      if (RelayEdBackOff != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayEdBackOff);
+      }
+      if (RelayEdUplinkLimitBucketSize != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayEdUplinkLimitBucketSize);
+      }
+      if (RelayEdUplinkLimitReloadRate != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayEdUplinkLimitReloadRate);
+      }
+      if (RelayJoinReqLimitReloadRate != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayJoinReqLimitReloadRate);
+      }
+      if (RelayNotifyLimitReloadRate != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayNotifyLimitReloadRate);
+      }
+      if (RelayGlobalUplinkLimitReloadRate != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayGlobalUplinkLimitReloadRate);
+      }
+      if (RelayOverallLimitReloadRate != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayOverallLimitReloadRate);
+      }
+      if (RelayJoinReqLimitBucketSize != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayJoinReqLimitBucketSize);
+      }
+      if (RelayNotifyLimitBucketSize != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayNotifyLimitBucketSize);
+      }
+      if (RelayGlobalUplinkLimitBucketSize != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayGlobalUplinkLimitBucketSize);
+      }
+      if (RelayOverallLimitBucketSize != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayOverallLimitBucketSize);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1201,6 +2020,72 @@ namespace Chirpstack.Api {
       }
       if (other.RegionConfigId.Length != 0) {
         RegionConfigId = other.RegionConfigId;
+      }
+      if (other.IsRelay != false) {
+        IsRelay = other.IsRelay;
+      }
+      if (other.IsRelayEd != false) {
+        IsRelayEd = other.IsRelayEd;
+      }
+      if (other.RelayEdRelayOnly != false) {
+        RelayEdRelayOnly = other.RelayEdRelayOnly;
+      }
+      if (other.RelayEnabled != false) {
+        RelayEnabled = other.RelayEnabled;
+      }
+      if (other.RelayCadPeriodicity != global::Chirpstack.Api.CadPeriodicity.Sec1) {
+        RelayCadPeriodicity = other.RelayCadPeriodicity;
+      }
+      if (other.RelayDefaultChannelIndex != 0) {
+        RelayDefaultChannelIndex = other.RelayDefaultChannelIndex;
+      }
+      if (other.RelaySecondChannelFreq != 0) {
+        RelaySecondChannelFreq = other.RelaySecondChannelFreq;
+      }
+      if (other.RelaySecondChannelDr != 0) {
+        RelaySecondChannelDr = other.RelaySecondChannelDr;
+      }
+      if (other.RelaySecondChannelAckOffset != global::Chirpstack.Api.SecondChAckOffset.Khz0) {
+        RelaySecondChannelAckOffset = other.RelaySecondChannelAckOffset;
+      }
+      if (other.RelayEdActivationMode != global::Chirpstack.Api.RelayModeActivation.DisableRelayMode) {
+        RelayEdActivationMode = other.RelayEdActivationMode;
+      }
+      if (other.RelayEdSmartEnableLevel != 0) {
+        RelayEdSmartEnableLevel = other.RelayEdSmartEnableLevel;
+      }
+      if (other.RelayEdBackOff != 0) {
+        RelayEdBackOff = other.RelayEdBackOff;
+      }
+      if (other.RelayEdUplinkLimitBucketSize != 0) {
+        RelayEdUplinkLimitBucketSize = other.RelayEdUplinkLimitBucketSize;
+      }
+      if (other.RelayEdUplinkLimitReloadRate != 0) {
+        RelayEdUplinkLimitReloadRate = other.RelayEdUplinkLimitReloadRate;
+      }
+      if (other.RelayJoinReqLimitReloadRate != 0) {
+        RelayJoinReqLimitReloadRate = other.RelayJoinReqLimitReloadRate;
+      }
+      if (other.RelayNotifyLimitReloadRate != 0) {
+        RelayNotifyLimitReloadRate = other.RelayNotifyLimitReloadRate;
+      }
+      if (other.RelayGlobalUplinkLimitReloadRate != 0) {
+        RelayGlobalUplinkLimitReloadRate = other.RelayGlobalUplinkLimitReloadRate;
+      }
+      if (other.RelayOverallLimitReloadRate != 0) {
+        RelayOverallLimitReloadRate = other.RelayOverallLimitReloadRate;
+      }
+      if (other.RelayJoinReqLimitBucketSize != 0) {
+        RelayJoinReqLimitBucketSize = other.RelayJoinReqLimitBucketSize;
+      }
+      if (other.RelayNotifyLimitBucketSize != 0) {
+        RelayNotifyLimitBucketSize = other.RelayNotifyLimitBucketSize;
+      }
+      if (other.RelayGlobalUplinkLimitBucketSize != 0) {
+        RelayGlobalUplinkLimitBucketSize = other.RelayGlobalUplinkLimitBucketSize;
+      }
+      if (other.RelayOverallLimitBucketSize != 0) {
+        RelayOverallLimitBucketSize = other.RelayOverallLimitBucketSize;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1333,6 +2218,94 @@ namespace Chirpstack.Api {
             RegionConfigId = input.ReadString();
             break;
           }
+          case 240: {
+            IsRelay = input.ReadBool();
+            break;
+          }
+          case 248: {
+            IsRelayEd = input.ReadBool();
+            break;
+          }
+          case 256: {
+            RelayEdRelayOnly = input.ReadBool();
+            break;
+          }
+          case 264: {
+            RelayEnabled = input.ReadBool();
+            break;
+          }
+          case 272: {
+            RelayCadPeriodicity = (global::Chirpstack.Api.CadPeriodicity) input.ReadEnum();
+            break;
+          }
+          case 280: {
+            RelayDefaultChannelIndex = input.ReadUInt32();
+            break;
+          }
+          case 288: {
+            RelaySecondChannelFreq = input.ReadUInt32();
+            break;
+          }
+          case 296: {
+            RelaySecondChannelDr = input.ReadUInt32();
+            break;
+          }
+          case 304: {
+            RelaySecondChannelAckOffset = (global::Chirpstack.Api.SecondChAckOffset) input.ReadEnum();
+            break;
+          }
+          case 312: {
+            RelayEdActivationMode = (global::Chirpstack.Api.RelayModeActivation) input.ReadEnum();
+            break;
+          }
+          case 320: {
+            RelayEdSmartEnableLevel = input.ReadUInt32();
+            break;
+          }
+          case 328: {
+            RelayEdBackOff = input.ReadUInt32();
+            break;
+          }
+          case 336: {
+            RelayEdUplinkLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 344: {
+            RelayEdUplinkLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 352: {
+            RelayJoinReqLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 360: {
+            RelayNotifyLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 368: {
+            RelayGlobalUplinkLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 376: {
+            RelayOverallLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 384: {
+            RelayJoinReqLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 392: {
+            RelayNotifyLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 400: {
+            RelayGlobalUplinkLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 408: {
+            RelayOverallLimitBucketSize = input.ReadUInt32();
+            break;
+          }
         }
       }
     #endif
@@ -1462,6 +2435,94 @@ namespace Chirpstack.Api {
           }
           case 234: {
             RegionConfigId = input.ReadString();
+            break;
+          }
+          case 240: {
+            IsRelay = input.ReadBool();
+            break;
+          }
+          case 248: {
+            IsRelayEd = input.ReadBool();
+            break;
+          }
+          case 256: {
+            RelayEdRelayOnly = input.ReadBool();
+            break;
+          }
+          case 264: {
+            RelayEnabled = input.ReadBool();
+            break;
+          }
+          case 272: {
+            RelayCadPeriodicity = (global::Chirpstack.Api.CadPeriodicity) input.ReadEnum();
+            break;
+          }
+          case 280: {
+            RelayDefaultChannelIndex = input.ReadUInt32();
+            break;
+          }
+          case 288: {
+            RelaySecondChannelFreq = input.ReadUInt32();
+            break;
+          }
+          case 296: {
+            RelaySecondChannelDr = input.ReadUInt32();
+            break;
+          }
+          case 304: {
+            RelaySecondChannelAckOffset = (global::Chirpstack.Api.SecondChAckOffset) input.ReadEnum();
+            break;
+          }
+          case 312: {
+            RelayEdActivationMode = (global::Chirpstack.Api.RelayModeActivation) input.ReadEnum();
+            break;
+          }
+          case 320: {
+            RelayEdSmartEnableLevel = input.ReadUInt32();
+            break;
+          }
+          case 328: {
+            RelayEdBackOff = input.ReadUInt32();
+            break;
+          }
+          case 336: {
+            RelayEdUplinkLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 344: {
+            RelayEdUplinkLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 352: {
+            RelayJoinReqLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 360: {
+            RelayNotifyLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 368: {
+            RelayGlobalUplinkLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 376: {
+            RelayOverallLimitReloadRate = input.ReadUInt32();
+            break;
+          }
+          case 384: {
+            RelayJoinReqLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 392: {
+            RelayNotifyLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 400: {
+            RelayGlobalUplinkLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 408: {
+            RelayOverallLimitBucketSize = input.ReadUInt32();
             break;
           }
         }

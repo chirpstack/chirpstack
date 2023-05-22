@@ -40,7 +40,8 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
                     dev_addr: ufl.dev_addr.clone(),
                     dev_eui: ufl.dev_eui.clone(),
                     time: ufl.time.clone(),
-                    plaintext_mac_commands: ufl.plaintext_mac_commands,
+                    plaintext_f_opts: ufl.plaintext_f_opts,
+                    plaintext_frm_payload: ufl.plaintext_frm_payload,
                 };
 
                 let b = ufl_copy.encode_to_vec();
@@ -281,9 +282,11 @@ pub async fn get_frame_logs(
                                         if let redis::Value::Data(b) = v {
                                             let pl = api::UplinkFrameLog::decode(&mut Cursor::new(b))?;
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
-                                            if pl.plaintext_mac_commands {
+                                            if pl.plaintext_f_opts {
                                                 phy.decode_f_opts_to_mac_commands()?;
-                                                phy.decode_frm_payload_to_mac_commands()?;
+                                            }
+                                            if pl.plaintext_frm_payload {
+                                                phy.decode_frm_payload()?;
                                             }
 
                                             let pl = api::LogItem {
@@ -313,9 +316,11 @@ pub async fn get_frame_logs(
                                         if let redis::Value::Data(b) = v {
                                             let pl = api::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
-                                            if pl.plaintext_mac_commands {
+                                            if pl.plaintext_f_opts {
                                                 phy.decode_f_opts_to_mac_commands()?;
-                                                phy.decode_frm_payload_to_mac_commands()?;
+                                            }
+                                            if pl.plaintext_frm_payload {
+                                                phy.decode_frm_payload()?;
                                             }
 
                                             let pl = api::LogItem {

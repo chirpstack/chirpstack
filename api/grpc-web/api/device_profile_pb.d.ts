@@ -94,6 +94,72 @@ export class DeviceProfile extends jspb.Message {
   getRegionConfigId(): string;
   setRegionConfigId(value: string): DeviceProfile;
 
+  getIsRelay(): boolean;
+  setIsRelay(value: boolean): DeviceProfile;
+
+  getIsRelayEd(): boolean;
+  setIsRelayEd(value: boolean): DeviceProfile;
+
+  getRelayEdRelayOnly(): boolean;
+  setRelayEdRelayOnly(value: boolean): DeviceProfile;
+
+  getRelayEnabled(): boolean;
+  setRelayEnabled(value: boolean): DeviceProfile;
+
+  getRelayCadPeriodicity(): CadPeriodicity;
+  setRelayCadPeriodicity(value: CadPeriodicity): DeviceProfile;
+
+  getRelayDefaultChannelIndex(): number;
+  setRelayDefaultChannelIndex(value: number): DeviceProfile;
+
+  getRelaySecondChannelFreq(): number;
+  setRelaySecondChannelFreq(value: number): DeviceProfile;
+
+  getRelaySecondChannelDr(): number;
+  setRelaySecondChannelDr(value: number): DeviceProfile;
+
+  getRelaySecondChannelAckOffset(): SecondChAckOffset;
+  setRelaySecondChannelAckOffset(value: SecondChAckOffset): DeviceProfile;
+
+  getRelayEdActivationMode(): RelayModeActivation;
+  setRelayEdActivationMode(value: RelayModeActivation): DeviceProfile;
+
+  getRelayEdSmartEnableLevel(): number;
+  setRelayEdSmartEnableLevel(value: number): DeviceProfile;
+
+  getRelayEdBackOff(): number;
+  setRelayEdBackOff(value: number): DeviceProfile;
+
+  getRelayEdUplinkLimitBucketSize(): number;
+  setRelayEdUplinkLimitBucketSize(value: number): DeviceProfile;
+
+  getRelayEdUplinkLimitReloadRate(): number;
+  setRelayEdUplinkLimitReloadRate(value: number): DeviceProfile;
+
+  getRelayJoinReqLimitReloadRate(): number;
+  setRelayJoinReqLimitReloadRate(value: number): DeviceProfile;
+
+  getRelayNotifyLimitReloadRate(): number;
+  setRelayNotifyLimitReloadRate(value: number): DeviceProfile;
+
+  getRelayGlobalUplinkLimitReloadRate(): number;
+  setRelayGlobalUplinkLimitReloadRate(value: number): DeviceProfile;
+
+  getRelayOverallLimitReloadRate(): number;
+  setRelayOverallLimitReloadRate(value: number): DeviceProfile;
+
+  getRelayJoinReqLimitBucketSize(): number;
+  setRelayJoinReqLimitBucketSize(value: number): DeviceProfile;
+
+  getRelayNotifyLimitBucketSize(): number;
+  setRelayNotifyLimitBucketSize(value: number): DeviceProfile;
+
+  getRelayGlobalUplinkLimitBucketSize(): number;
+  setRelayGlobalUplinkLimitBucketSize(value: number): DeviceProfile;
+
+  getRelayOverallLimitBucketSize(): number;
+  setRelayOverallLimitBucketSize(value: number): DeviceProfile;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -133,6 +199,28 @@ export namespace DeviceProfile {
     measurementsMap: Array<[string, Measurement.AsObject]>,
     autoDetectMeasurements: boolean,
     regionConfigId: string,
+    isRelay: boolean,
+    isRelayEd: boolean,
+    relayEdRelayOnly: boolean,
+    relayEnabled: boolean,
+    relayCadPeriodicity: CadPeriodicity,
+    relayDefaultChannelIndex: number,
+    relaySecondChannelFreq: number,
+    relaySecondChannelDr: number,
+    relaySecondChannelAckOffset: SecondChAckOffset,
+    relayEdActivationMode: RelayModeActivation,
+    relayEdSmartEnableLevel: number,
+    relayEdBackOff: number,
+    relayEdUplinkLimitBucketSize: number,
+    relayEdUplinkLimitReloadRate: number,
+    relayJoinReqLimitReloadRate: number,
+    relayNotifyLimitReloadRate: number,
+    relayGlobalUplinkLimitReloadRate: number,
+    relayOverallLimitReloadRate: number,
+    relayJoinReqLimitBucketSize: number,
+    relayNotifyLimitBucketSize: number,
+    relayGlobalUplinkLimitBucketSize: number,
+    relayOverallLimitBucketSize: number,
   }
 }
 
@@ -453,4 +541,26 @@ export enum MeasurementKind {
   ABSOLUTE = 2,
   GAUGE = 3,
   STRING = 4,
+}
+export enum CadPeriodicity { 
+  SEC_1 = 0,
+  MS_500 = 1,
+  MS_250 = 2,
+  MS_100 = 3,
+  MS_50 = 4,
+  MS_20 = 5,
+}
+export enum SecondChAckOffset { 
+  KHZ_0 = 0,
+  KHZ_200 = 1,
+  KHZ_400 = 2,
+  KHZ_800 = 3,
+  KHZ_1600 = 4,
+  KHZ_3200 = 5,
+}
+export enum RelayModeActivation { 
+  DISABLE_RELAY_MODE = 0,
+  ENABLE_RELAY_MODE = 1,
+  DYNAMIC = 2,
+  END_DEVICE_CONTROLLED = 3,
 }

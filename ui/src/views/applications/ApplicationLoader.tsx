@@ -14,6 +14,7 @@ import CreateDevice from "../devices/CreateDevice";
 import DeviceLayout from "../devices/DeviceLayout";
 import MulticastGroupLayout from "../multicast-groups/MulticastGroupLayout";
 import CreateMulticastGroup from "../multicast-groups/CreateMulticastGroup";
+import RelayLayout from "../relays/RelayLayout";
 
 interface MatchParams {
   applicationId: string;
@@ -80,6 +81,10 @@ class ApplicationLoader extends Component<IProps, IState> {
         <Route
           path={`${path}/devices/:devEui([0-9a-f]{16})`}
           component={(props: any) => <DeviceLayout tenant={tenant} application={app} {...props} />}
+        />
+        <Route
+          path={`${path}/relays/:relayDevEui([0-9a-f]{16})`}
+          component={(props: any) => <RelayLayout tenant={tenant} application={app} {...props} />}
         />
         <Route
           path={path}

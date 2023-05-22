@@ -13,10 +13,12 @@ use uuid::Uuid;
 
 use crate::config;
 use crate::framelog;
-use crate::storage::{error::Error as StorageError, gateway, get_redis_conn, redis_key};
-use chirpstack_api::{api, common, gw};
+use crate::storage::{
+    device, device_profile, error::Error as StorageError, gateway, get_redis_conn, redis_key,
+};
+use chirpstack_api::{api, common, gw, internal};
 use lrwn::region::CommonName;
-use lrwn::{MType, PhyPayload, EUI64};
+use lrwn::{ForwardUplinkReq, MType, PhyPayload, EUI64};
 
 mod data;
 mod data_fns;
@@ -27,6 +29,15 @@ pub mod join;
 pub mod join_fns;
 pub mod join_sns;
 pub mod stats;
+
+#[derive(Clone)]
+pub struct RelayContext {
+    pub req: ForwardUplinkReq,
+    pub device: device::Device,
+    pub device_profile: device_profile::DeviceProfile,
+    pub device_session: internal::DeviceSession,
+    pub must_ack: bool,
+}
 
 #[derive(Clone)]
 pub struct UplinkFrameSet {
@@ -75,7 +86,8 @@ impl TryFrom<&UplinkFrameSet> for api::UplinkFrameLog {
                 _ => "".to_string(),
             },
             time: None, // is set below
-            plaintext_mac_commands: false,
+            plaintext_f_opts: false,
+            plaintext_frm_payload: false,
         };
 
         for rx_info in &ufl.rx_info {

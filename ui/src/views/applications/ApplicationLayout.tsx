@@ -10,6 +10,7 @@ import ApplicationStore from "../../stores/ApplicationStore";
 import SessionStore from "../../stores/SessionStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import ListDevices from "../devices/ListDevices";
+import ListRelays from "../relays/ListRelays";
 import EditApplication from "./EditApplication";
 import ListIntegrations from "./ListIntegrations";
 import ListMulticastGroups from "../multicast-groups/ListMulticastGroups";
@@ -66,6 +67,9 @@ class ApplicationLayout extends Component<IProps> {
 
     if (path.endsWith("/multicast-groups")) {
       tab = "mg";
+    }
+    if (path.endsWith("/relays")) {
+      tab = "relay";
     }
     if (path.endsWith("/edit")) {
       tab = "edit";
@@ -124,6 +128,11 @@ class ApplicationLayout extends Component<IProps> {
                 Multicast groups
               </Link>
             </Menu.Item>
+            <Menu.Item key="relay">
+              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/relays`}>
+                Relays
+              </Link>
+            </Menu.Item>
             <Menu.Item key="edit">
               <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/edit`}>Application configuration</Link>
             </Menu.Item>
@@ -149,6 +158,11 @@ class ApplicationLayout extends Component<IProps> {
               exact
               path={`${this.props.match.path}/multicast-groups`}
               render={props => <ListMulticastGroups application={app} {...props} />}
+            />
+            <Route
+              exact
+              path={`${this.props.match.path}/relays`}
+              render={props => <ListRelays application={app} {...props} />}
             />
 
             <Route

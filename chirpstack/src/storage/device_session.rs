@@ -4,7 +4,7 @@ use std::io::Cursor;
 use anyhow::{Context, Result};
 use prost::Message;
 use tokio::task;
-use tracing::{error, info, trace};
+use tracing::{error, info, trace, warn};
 
 use super::error::Error;
 use super::{get_redis_conn, redis_key};
@@ -125,6 +125,7 @@ pub async fn delete(dev_eui: &EUI64) -> Result<()> {
 // On Ok response, the PhyPayload f_cnt will be set to the full 32bit frame-counter based on the
 // device-session context.
 pub async fn get_for_phypayload_and_incr_f_cnt_up(
+    relayed: bool,
     phy: &mut PhyPayload,
     tx_dr: u8,
     tx_ch: u8,
@@ -187,6 +188,16 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
             } else {
                 0
             };
+
+            if let Some(relay) = &ds.relay {
+                if !relayed && relay.ed_relay_only {
+                    warn!(
+                        dev_eui = hex::encode(ds.dev_eui),
+                        "Only communication through relay is allowed"
+                    );
+                    return Err(Error::NotFound(_dev_addr.to_string()));
+                }
+            }
 
             if full_f_cnt >= ds.f_cnt_up {
                 // Make sure that in case of concurrent calls for the same uplink only one will
@@ -695,7 +706,7 @@ pub mod test {
                 pl.fhdr.f_cnt = tst.f_cnt % (1 << 16);
             }
 
-            let ds_res = get_for_phypayload_and_incr_f_cnt_up(&mut phy, 0, 0).await;
+            let ds_res = get_for_phypayload_and_incr_f_cnt_up(false, &mut phy, 0, 0).await;
             if tst.expected_error.is_some() {
                 assert_eq!(true, ds_res.is_err());
                 assert_eq!(

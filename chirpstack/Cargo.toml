@@ -30,6 +30,7 @@ diesel = { version = "2.0", features = [
 	"uuid",
 	"serde_json",
 	"numeric",
+	"64-column-tables",
 ] }
 diesel_migrations = { version = "2.0" }
 r2d2 = "0.8"

@@ -1,4 +1,8 @@
+// Required by rust::table macro.
+#![recursion_limit = "256"]
+// TODO: remove this + all dead code.
 #![allow(dead_code)]
+
 #[macro_use]
 extern crate lazy_static;
 extern crate diesel_migrations;

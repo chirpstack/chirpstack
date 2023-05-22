@@ -96,7 +96,7 @@ pub fn handle(
         if ans_pl.channel_freq_ok && ans_pl.dr_range_ok {
             // Reset the error-counter.
             ds.mac_command_error_count
-                .remove(&(lrwn::CID::NewChannelReq.byte() as u32));
+                .remove(&(lrwn::CID::NewChannelReq.to_u8() as u32));
 
             ds.extra_uplink_channels.insert(
                 req_pl.ch_index as u32,
@@ -119,7 +119,7 @@ pub fn handle(
         } else {
             let count = ds
                 .mac_command_error_count
-                .entry(lrwn::CID::NewChannelReq.byte() as u32)
+                .entry(lrwn::CID::NewChannelReq.to_u8() as u32)
                 .or_insert(0);
             *count += 1;
 
@@ -342,7 +342,7 @@ pub mod test {
                 name: "add new channels (ack)".into(),
                 device_session: internal::DeviceSession {
                     enabled_uplink_channel_indices: vec![0, 1, 2],
-                    mac_command_error_count: [(lrwn::CID::NewChannelReq.byte() as u32, 1)]
+                    mac_command_error_count: [(lrwn::CID::NewChannelReq.to_u8() as u32, 1)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -401,7 +401,7 @@ pub mod test {
                 ])),
                 expected_device_session: internal::DeviceSession {
                     enabled_uplink_channel_indices: vec![0, 1, 2],
-                    mac_command_error_count: [(lrwn::CID::NewChannelReq.byte() as u32, 1)]
+                    mac_command_error_count: [(lrwn::CID::NewChannelReq.to_u8() as u32, 1)]
                         .iter()
                         .cloned()
                         .collect(),

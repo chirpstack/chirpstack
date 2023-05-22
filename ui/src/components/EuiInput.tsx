@@ -11,6 +11,7 @@ interface IProps {
   required?: boolean;
   value?: string;
   disabled?: boolean;
+  tooltip?: string;
 }
 
 interface IState {
@@ -204,6 +205,7 @@ class EuiInput extends Component<IProps, IState> {
         ]}
         label={this.props.label}
         name={this.props.name}
+        tooltip={this.props.tooltip}
       >
         <Input hidden />
         <Input

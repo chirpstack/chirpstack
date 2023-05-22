@@ -190,6 +190,13 @@ message Device {
     // These tags are exposed in the event payloads or to integration. Tags are
     // intended for aggregation and filtering.
     map<string, string> tags = 9;
+
+    // JoinEUI (optional, EUI64).
+    // This field will be automatically set / updated on OTAA. However, in some
+    // cases it must be pre-configured. For example to allow OTAA using a Relay.
+    // In this case the Relay needs to know the JoinEUI + DevEUI combinations
+    // of the devices for which it needs to forward uplinks.
+    string join_eui = 10;
 }
 
 message DeviceStatus {

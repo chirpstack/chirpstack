@@ -40,6 +40,7 @@ pub struct Device {
     pub is_disabled: bool,
     pub tags: fields::KeyValue,
     pub variables: fields::KeyValue,
+    pub join_eui: EUI64,
 }
 
 impl Device {
@@ -56,7 +57,7 @@ impl Default for Device {
         let now = Utc::now();
 
         Device {
-            dev_eui: EUI64::from_be_bytes([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+            dev_eui: EUI64::default(),
             application_id: Uuid::nil(),
             device_profile_id: Uuid::nil(),
             created_at: now,
@@ -78,6 +79,7 @@ impl Default for Device {
             is_disabled: false,
             tags: fields::KeyValue::new(HashMap::new()),
             variables: fields::KeyValue::new(HashMap::new()),
+            join_eui: EUI64::default(),
         }
     }
 }
@@ -199,6 +201,7 @@ pub async fn update(d: Device) -> Result<Device, Error> {
                     device::is_disabled.eq(&d.is_disabled),
                     device::tags.eq(&d.tags),
                     device::variables.eq(&d.variables),
+                    device::join_eui.eq(&d.join_eui),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))
@@ -223,6 +226,36 @@ pub async fn set_enabled_class(dev_eui: &EUI64, mode: &str) -> Result<Device, Er
     })
     .await??;
     info!(dev_eui = %dev_eui, enabled_class = %mode, "Enabled class updated");
+    Ok(d)
+}
+
+pub async fn set_join_eui(dev_eui: EUI64, join_eui: EUI64) -> Result<Device, Error> {
+    let d = task::spawn_blocking({
+        move || -> Result<Device, Error> {
+            let mut c = get_db_conn()?;
+            diesel::update(device::dsl::device.find(&dev_eui))
+                .set(device::join_eui.eq(&join_eui))
+                .get_result(&mut c)
+                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
+        }
+    })
+    .await??;
+    info!(dev_eui = %dev_eui, join_eui = %join_eui, "Updated JoinEUI");
+    Ok(d)
+}
+
+pub async fn set_dev_addr(dev_eui: EUI64, dev_addr: DevAddr) -> Result<Device, Error> {
+    let d = task::spawn_blocking({
+        move || -> Result<Device, Error> {
+            let mut c = get_db_conn()?;
+            diesel::update(device::dsl::device.find(&dev_eui))
+                .set(device::dev_addr.eq(&dev_addr))
+                .get_result(&mut c)
+                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
+        }
+    })
+    .await??;
+    info!(dev_eui = %dev_eui, dev_addr = %dev_addr, "Updated DevAddr");
     Ok(d)
 }
 

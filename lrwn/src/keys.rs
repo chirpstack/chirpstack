@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use crate::{AES128Key, NetID, EUI64};
 
-// For LoRaWAN 1.0: SNwkSIntKey = NwkSEncKey = FNwkSIntKey = NwkSKey
+/// For LoRaWAN 1.0: SNwkSIntKey = NwkSEncKey = FNwkSIntKey = NwkSKey
 pub fn get_f_nwk_s_int_key(
     opt_neg: bool,
     nwk_key: &AES128Key,
@@ -63,6 +63,20 @@ pub fn get_js_enc_key(dev_eui: &EUI64, nwk_key: &AES128Key) -> Result<AES128Key>
 
 pub fn get_js_int_key(dev_eui: &EUI64, nwk_key: &AES128Key) -> Result<AES128Key> {
     get_js_key(0x06, dev_eui, nwk_key)
+}
+
+/// Note: For LoRaWAN 1.0.x, use the NwkSKey as nwk_s_enc_key.
+pub fn get_root_wor_s_key(nwk_s_enc_key: &AES128Key) -> Result<AES128Key> {
+    let key_bytes = nwk_s_enc_key.to_bytes();
+    let key = GenericArray::from_slice(&key_bytes);
+    let cipher = Aes128::new(key);
+
+    let mut b: [u8; 16] = [0; 16];
+    b[0] = 0x01;
+
+    let block = Block::from_mut_slice(&mut b);
+    cipher.encrypt_block(block);
+    Ok(AES128Key::from_slice(block)?)
 }
 
 fn get_s_key(
@@ -168,6 +182,8 @@ pub mod test {
         )
         .unwrap();
 
+        let root_wor_s_key = get_root_wor_s_key(&nwk_s_key).unwrap();
+
         assert_eq!(
             AES128Key::from_bytes([
                 223, 83, 195, 95, 48, 52, 204, 206, 208, 255, 53, 76, 112, 222, 4, 223,
@@ -180,7 +196,15 @@ pub mod test {
                 146, 123, 156, 145, 17, 131, 207, 254, 76, 178, 255, 75, 117, 84, 95, 109
             ]),
             app_s_key
-        )
+        );
+
+        assert_eq!(
+            AES128Key::from_bytes([
+                0x60, 0xf8, 0xac, 0xd9, 0xde, 0x2c, 0xc5, 0x06, 0xfb, 0x06, 0x63, 0x94, 0x08, 0xfe,
+                0x57, 0x4a
+            ]),
+            root_wor_s_key
+        );
     }
 
     #[test]

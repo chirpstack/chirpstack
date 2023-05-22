@@ -28,6 +28,7 @@ api:
 	protoc $(PROTOC_ARGS) ../proto/api/frame_log.proto
 	protoc $(PROTOC_ARGS) ../proto/api/multicast_group.proto
 	protoc $(PROTOC_ARGS) ../proto/api/request_log.proto
+	protoc $(PROTOC_ARGS) ../proto/api/relay.proto
 
 integration:
 	mkdir -p integration
