@@ -172,11 +172,11 @@ class SideMenu extends Component<RouteComponentProps, IState> {
           { key: "ns-dashboard", icon: <DashboardOutlined />, label: <Link to="/dashboard">Dashboard</Link> },
           { key: "ns-tenants", icon: <HomeOutlined />, label: <Link to="/tenants">Tenants</Link> },
           { key: "ns-users", icon: <UserOutlined />, label: <Link to="/users">Users</Link> },
-          { key: "ns-api-keys", icon: <KeyOutlined />, label: <Link to="/api-keys">API keys</Link> },
+          { key: "ns-api-keys", icon: <KeyOutlined />, label: <Link to="/api-keys">API Keys</Link> },
           {
             key: "ns-device-profile-templates",
             icon: <ControlOutlined />,
-            label: <Link to="/device-profile-templates">Device-profile templates</Link>,
+            label: <Link to="/device-profile-templates">Device Profile Templates</Link>,
           },
           { key: "ns-regions", icon: <CompassOutlined />, label: <Link to="/regions">Regions</Link> },
         ],
@@ -205,12 +205,12 @@ class SideMenu extends Component<RouteComponentProps, IState> {
           {
             key: "tenant-api-keys",
             icon: <KeyOutlined />,
-            label: <Link to={`/tenants/${tenantId}/api-keys`}>API keys</Link>,
+            label: <Link to={`/tenants/${tenantId}/api-keys`}>API Keys</Link>,
           },
           {
             key: "tenant-device-profiles",
             icon: <ControlOutlined />,
-            label: <Link to={`/tenants/${tenantId}/device-profiles`}>Device profiles</Link>,
+            label: <Link to={`/tenants/${tenantId}/device-profiles`}>Device Profiles</Link>,
           },
           {
             key: "tenant-gateways",
