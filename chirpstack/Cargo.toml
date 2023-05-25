@@ -36,7 +36,6 @@ diesel_migrations = { version = "2.0" }
 r2d2 = "0.8"
 bigdecimal = "0.3"
 redis = { version = "0.23", features = ["r2d2", "cluster", "tls-rustls"] }
-pq-sys = { version = "0.4", features = ["pkg-config"] }
 
 # Logging
 tracing = "0.1"
@@ -69,7 +68,7 @@ gcp_auth = "0.8"
 lapin = "2.1"
 tokio-executor-trait = "2.1"
 tokio-reactor-trait = "1.1"
-rdkafka = { version = "0.29", features = ["cmake-build"] }
+rdkafka = { version = "0.29", default-features = false, features = ["tokio", "cmake-build"] }
 
 # gRPC and Protobuf
 tonic = "0.9"
@@ -100,11 +99,11 @@ anyhow = "1.0"
 pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "8.2"
-openssl = { version = "0.10", features = ["vendored"] }
+openssl = { version = "0.10" }
 openidconnect = { version = "3.0", features = ["accept-rfc3339-timestamps"] }
 
 # MQTT
-paho-mqtt = { version = "0.12", features = ["vendored-ssl"] }
+paho-mqtt = { version = "0.12", features = ["ssl"] }
 hex = "0.4"
 
 # Codecs

@@ -1,6 +1,9 @@
 .git
 .cargo
 .rust
-**/target
+api/rust/target
+backend/target
+lrwn/target
+lrwn/filters/target
 **/node_modules
 Dockerfile
