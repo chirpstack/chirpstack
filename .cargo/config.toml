@@ -1,3 +1,5 @@
+
+
 [target.armv7-unknown-linux-gnueabihf]
 linker = "arm-linux-gnueabihf-gcc"
 
@@ -5,4 +7,7 @@ linker = "arm-linux-gnueabihf-gcc"
 linker = "aarch64-linux-gnu-gcc"
 
 [target.x86_64-unknown-linux-musl]
+rustflags = ["-C", "target-feature=+crt-static", "-C", "link-arg=-s", "-C", "link-arg=-lc", "-C", "link-arg=-lgcc"]
+
+[target.aarch64-unknown-linux-musl]
 rustflags = ["-C", "target-feature=+crt-static", "-C", "link-arg=-s", "-C", "link-arg=-lc", "-C", "link-arg=-lgcc"]
