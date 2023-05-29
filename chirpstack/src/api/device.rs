@@ -266,6 +266,11 @@ impl DeviceService for Device {
         let filters = device::Filters {
             application_id: Some(app_id),
             multicast_group_id: mg_id,
+            search: if req.search.is_empty() {
+                None
+            } else {
+                Some(req.search.to_string())
+            },
             ..Default::default()
         };
 
