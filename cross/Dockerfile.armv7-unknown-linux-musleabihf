@@ -1,17 +1,17 @@
-FROM ghcr.io/cross-rs/aarch64-unknown-linux-musl:latest
+FROM ghcr.io/cross-rs/armv7-unknown-linux-musleabihf:latest
 
 ENV ZLIB_VERSION=1.2.13
 ENV POSTGRESQL_VERSION=11.20
 ENV OPENSSL_VERSION=1.1.1t
-ENV OPENSSL_TARGET=linux-aarch64
-ENV MUSL_PREFIX=aarch64-linux-musl
-ENV POSTGRESQL_HOST=aarch64-unknown-linux-musl
+ENV OPENSSL_TARGET=linux-generic32
+ENV MUSL_PREFIX=arm-linux-musleabihf
+ENV POSTGRESQL_HOST=armv7-unknown-linux-musleabihf
 
 RUN apt-get update && \
     apt-get --assume-yes install \
     protobuf-compiler \
     libprotobuf-dev \
-    binutils-aarch64-linux-gnu 
+    binutils-arm-linux-gnueabihf 
 
 RUN echo "Building OpenSSL" && \
     cd /tmp && \
@@ -31,7 +31,6 @@ RUN echo "Building zlib" && \
     make && make install && \
     rm -r /tmp/*
 
-
 RUN echo "Building libpq" && \
     cd /tmp && \
     curl -fLO "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/postgresql-$POSTGRESQL_VERSION.tar.gz" && \
@@ -41,7 +40,7 @@ RUN echo "Building libpq" && \
     rm -r /tmp/*
 
 # Workaround for re-defined unicode_to_utf8 which also exists in quickjs library.
-RUN /usr/aarch64-linux-gnu/bin/objcopy --redefine-sym unicode_to_utf8=unicode_to_utf8_rename /usr/local/$MUSL_PREFIX-target/lib/libpq.a
+RUN /usr/bin/arm-linux-gnueabihf-objcopy --redefine-sym unicode_to_utf8=unicode_to_utf8_rename /usr/local/$MUSL_PREFIX-target/lib/libpq.a
 
 
 ENV PKG_CONFIG_PATH=/usr/local/$MUSL_PREFIX-target/lib/pkgconfig

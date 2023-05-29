@@ -6,3 +6,6 @@ dockerfile="cross/Dockerfile.x86_64-unknown-linux-musl"
 
 [target.aarch64-unknown-linux-musl]
 dockerfile="cross/Dockerfile.aarch64-unknown-linux-musl"
+
+[target.armv7-unknown-linux-musleabihf]
+dockerfile="cross/Dockerfile.armv7-unknown-linux-musleabihf"
