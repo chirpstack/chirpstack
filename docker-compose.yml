@@ -35,6 +35,8 @@ services:
       - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
 
   redis:
     image: redis:6-alpine
@@ -66,3 +68,5 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
       - zookeeper
+    ports:
+      - "9092:9092"

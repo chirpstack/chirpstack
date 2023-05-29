@@ -14,22 +14,31 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
+      - 
+        name: Install Nix
+        uses: cachix/install-nix-action@v20
+        with:
+          nix_path: nixpkgs=channel:nixos-22.11
       -
         name: Cargo cache
         uses: actions/cache@v3
         with:
-          path: .rust/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+      -
+        name: Start dependency services
+        run: docker-compose up -d
       -
         name: Build UI
         run: make build-ui
       -
         name: Run tests
-        run: make test
-      -
-        name: Make cache accessible to caching action
-        run: |
-          sudo chown $(whoami):$(whoami) -R .rust
+        run: nix-shell --command "make test"
 
   dist:
     needs: tests
