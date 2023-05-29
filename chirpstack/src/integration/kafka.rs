@@ -223,6 +223,8 @@ impl<'a> IntegrationTrait for Integration<'a> {
 
 #[cfg(test)]
 pub mod test {
+    use std::env;
+
     use super::*;
     use crate::test;
     use rdkafka::consumer::stream_consumer::StreamConsumer;
@@ -239,8 +241,11 @@ pub mod test {
     async fn test_kafka() {
         let _guard = test::prepare().await;
 
+        dotenv::dotenv().ok();
+        dotenv::from_filename(".env.local").ok();
+
         let conf = Config {
-            brokers: vec!["kafka:9092".to_string()],
+            brokers: vec![env::var("TEST_KAFKA_BROKER").unwrap()],
             topic: "chirpstack".to_string(),
             json: true,
             ..Default::default()
@@ -249,7 +254,7 @@ pub mod test {
         let consumer: StreamConsumer = loop {
             match ClientConfig::new()
                 .set("group.id", "testgroup")
-                .set("bootstrap.servers", "kafka:9092")
+                .set("bootstrap.servers", env::var("TEST_KAFKA_BROKER").unwrap())
                 .set("allow.auto.create.topics", "true")
                 .set("auto.offset.reset", "beginning")
                 .create()

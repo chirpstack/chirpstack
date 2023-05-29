@@ -19,4 +19,5 @@ pkgs.mkShell {
   BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.llvmPackages.libclang.lib}/lib/clang/${pkgs.llvmPackages.libclang.version}/include";
   DOCKER_BUILDKIT = "1";
   NIX_STORE = "/nix/store";
+  TZ="UTC";
 }

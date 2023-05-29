@@ -132,6 +132,7 @@ pin-project = "1.0"
 [dev-dependencies]
 httpmock = "0.6"
 bytes = "1.4"
+dotenv = "0.15"
 
 # Debian packaging.
 [package.metadata.deb]

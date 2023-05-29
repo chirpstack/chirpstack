@@ -437,6 +437,7 @@ async fn message_callback(
 
 #[cfg(test)]
 pub mod test {
+    use std::env;
 
     use super::*;
     use crate::config::MqttIntegration;
@@ -487,7 +488,7 @@ pub mod test {
         let conf = MqttIntegration {
             event_topic: "application/{{application_id}}/device/{{dev_eui}}/event/{{event}}".into(),
             json: true,
-            server: "tcp://mosquitto:1883/".into(),
+            server: env::var("TEST_MOSQUITTO_SERVER").unwrap(),
             clean_session: true,
             ..Default::default()
         };

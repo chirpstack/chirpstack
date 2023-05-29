@@ -2,6 +2,7 @@
 .*
 !/chirpstack/.rpm
 !/.cargo
+!/.env
 
 # Log files
 *.log

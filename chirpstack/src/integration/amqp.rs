@@ -244,6 +244,8 @@ impl<'a> IntegrationTrait for Integration<'a> {
 
 #[cfg(test)]
 pub mod test {
+    use std::env;
+
     use super::*;
     use futures::stream::StreamExt;
     use lapin::options::{
@@ -256,8 +258,11 @@ pub mod test {
 
     #[tokio::test]
     async fn test_amqp() {
+        dotenv::dotenv().ok();
+        dotenv::from_filename(".env.local").ok();
+
         let conf = Config {
-            url: "amqp://guest:guest@rabbitmq:5672".to_string(),
+            url: env::var("TEST_AMQP_URL").unwrap(),
             json: true,
             event_routing_key: "application.{{application_id}}.device.{{dev_eui}}.event.{{event}}"
                 .to_string(),
