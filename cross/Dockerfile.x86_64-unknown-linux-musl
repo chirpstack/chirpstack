@@ -29,7 +29,6 @@ RUN echo "Building zlib" && \
     make && make install && \
     rm -r /tmp/*
 
-
 RUN echo "Building libpq" && \
     cd /tmp && \
     curl -fLO "https://ftp.postgresql.org/pub/source/v$POSTGRESQL_VERSION/postgresql-$POSTGRESQL_VERSION.tar.gz" && \

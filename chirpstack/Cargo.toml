@@ -181,15 +181,26 @@ suggests = "postgresql, mosquitto, redis"
 maintainer-scripts = "debian/"
 systemd-units = { enable = true }
 
-[package.metadata.rpm]
-package = "chirpstack"
+[package.metadata.generate-rpm]
+pre_install_script = '''
+id chirpstack &>/dev/null
+if [[ $? -ne 0 ]]; then
+	useradd --system -U -M chirpstack -s /bin/false -d /etc/chirpstack
+fi
+'''
 
-[package.metadata.rpm.files]
-"configuration/" = { path = "/etc/chirpstack/" }
-"chirpstack.service" = { path = "/lib/systemd/system/chirpstack.service" }
+post_install_script = '''
+chown -R chirpstack:chirpstack /etc/chirpstack
+chmod 750 /etc/chirpstack
+chmod 640 /etc/chirpstack/*.toml
 
-[package.metadata.rpm.cargo]
-buildflags = ["--release"]
+sed -i "s/\$MQTT_BROKER_HOST/localhost/" /etc/chirpstack/*.toml
+sed -i "s/\$POSTGRESQL_HOST/localhost/" /etc/chirpstack/*.toml
+sed -i "s/\$REDIS_HOST/localhost/" /etc/chirpstack/*.toml
+'''
 
-[package.metadata.rpm.targets]
-chirpstack = { path = "/usr/bin/chirpstack" }
+assets = [
+	{ source = "target/release/chirpstack", dest = "/usr/bin/chirpstack", mode = "755" },
+	{ source = "configuration/*", dest = "/etc/chirpstack"},
+	{ source = "rpm/chirpstack.service", dest = "/lib/systemd/system/chirpstack.service"},
+]

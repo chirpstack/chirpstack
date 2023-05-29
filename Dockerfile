@@ -1,79 +1,30 @@
-# UI build stage
-FROM --platform=$BUILDPLATFORM alpine:3.17.3 AS ui-build
-
-ENV PROJECT_PATH=/chirpstack
-
-RUN apk add --no-cache make git bash build-base nodejs npm yarn
-
-RUN mkdir -p $PROJECT_PATH
-COPY ./api/grpc-web $PROJECT_PATH/api/grpc-web
-COPY ./ui $PROJECT_PATH/ui
-
-RUN cd $PROJECT_PATH/ui && \
-	yarn install --network-timeout 600000 && \
-	yarn build
-
-
-# ChirpStack build stage
-FROM --platform=$BUILDPLATFORM rust:1.68.2-buster AS rust-build
-
-ENV PROJECT_PATH=/chirpstack
-RUN mkdir -p $PROJECT_PATH
-
-RUN dpkg --add-architecture armhf
-RUN dpkg --add-architecture arm64
-
-RUN apt-get update && \
-	apt-get install -y \
-	make \
-	cmake \
-	git \
-	libpq-dev \
-	clang \
-	libclang-dev \
-	jq \
-	protobuf-compiler \
-	gcc-arm-linux-gnueabihf \
-	g++-arm-linux-gnueabihf \
-	gcc-aarch64-linux-gnu \
-	g++-aarch64-linux-gnu \
-	zlib1g-dev:armhf \
-	zlib1g-dev:arm64
+# Copy binary stage
+FROM --platform=$BUILDPLATFORM alpine:3.18.0 as binary
 
 ARG TARGETPLATFORM
-RUN mkdir -p /release/$TARGETPLATFORM
 
-COPY . $PROJECT_PATH
-COPY --from=ui-build $PROJECT_PATH/ui/build $PROJECT_PATH/ui/build
+COPY target/x86_64-unknown-linux-musl/release/chirpstack /usr/bin/chirpstack-x86_64
+COPY target/armv7-unknown-linux-musleabihf/release/chirpstack /usr/bin/chirpstack-armv7hf
+COPY target/aarch64-unknown-linux-musl/release/chirpstack /usr/bin/chirpstack-aarch64
 
 RUN case "$TARGETPLATFORM" in \
 	"linux/amd64") \
-		cd $PROJECT_PATH/chirpstack && make release-amd64; \
-		cp $PROJECT_PATH/target/release/chirpstack /release/$TARGETPLATFORM; \
+		cp /usr/bin/chirpstack-x86_64 /usr/bin/chirpstack; \
 		;; \
 	"linux/arm/v7") \
-		cd $PROJECT_PATH/chirpstack && make release-armv7hf; \
-		cp $PROJECT_PATH/target/armv7-unknown-linux-gnueabihf/release/chirpstack /release/$TARGETPLATFORM; \
+		cp /usr/bin/chirpstack-armv7hf /usr/bin/chirpstack; \
 		;; \
 	"linux/arm64") \
-		cd $PROJECT_PATH/chirpstack && make release-arm64; \
-		cp $PROJECT_PATH/target/aarch64-unknown-linux-gnu/release/chirpstack /release/$TARGETPLATFORM; \
+		cp /usr/bin/chirpstack-aarch64 /usr/bin/chirpstack; \
 		;; \
 	esac;
 
-
 # Final stage
-FROM debian:buster-slim as production
+FROM alpine:3.18.0
 
-RUN apt-get update && \
-		apt-get install -y \
-		ca-certificates \
-		libpq5 \
-		&& rm -rf /var/lib/apt/lists/*
+RUN apk --no-cache add \
+    ca-certificates
 
-ARG TARGETPLATFORM
-
-COPY --from=rust-build /release/$TARGETPLATFORM/chirpstack /usr/bin/chirpstack
-COPY --from=rust-build /chirpstack/chirpstack/configuration/* /etc/chirpstack/
+COPY --from=binary /usr/bin/chirpstack /usr/bin/chirpstack
 USER nobody:nogroup
 ENTRYPOINT ["/usr/bin/chirpstack"]

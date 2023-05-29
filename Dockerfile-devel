@@ -1,38 +1,6 @@
-FROM rust:1.68.2-buster
+FROM nixos/nix
 
 ENV PROJECT_PATH=/chirpstack
-RUN mkdir -p $PROJECT_PATH
+WORKDIR $PROJECT_PATH
 
-RUN dpkg --add-architecture armhf
-RUN dpkg --add-architecture arm64
-
-RUN apt-get update && \
-	apt-get install -y \
-	make \
-	cmake \
-	git \
-	bash \
-	screen \
-	postgresql-client \
-	libpq-dev \
-	mosquitto-clients \
-	redis-tools \
-	rpm \
-	clang \
-	libclang-dev \
-	golang-cfssl \
-	jq \
-	protobuf-compiler \
-	gcc-arm-linux-gnueabihf \
-	g++-arm-linux-gnueabihf \
-	gcc-aarch64-linux-gnu \
-	g++-aarch64-linux-gnu \
-	zlib1g-dev:armhf \
-	zlib1g-dev:arm64
-
-RUN cargo install diesel_cli --version 2.0.0 --no-default-features --features postgres
-RUN cargo install cargo-deb
-RUN cargo install cargo-rpm
-RUN cargo install cargo-bitbake
-
-WORKDIR $PROJECT_PATH/chirpstack
+ENTRYPOINT ["nix-shell"]

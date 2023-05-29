@@ -1,121 +1,47 @@
 .PHONY: dist
 
-TARGET_ARCH := $(shell rustc --print cfg |grep target_arch |sed 's/target_arch="\(.*\)"/\1/')
 PKG_VERSION := $(shell cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
 
 debug-amd64:
-	apt-get install -y libpq-dev:amd64
-	cargo build
+	cross build --target x86_64-unknown-linux-musl
 
-debug-armv7hf:
-	# We can not install this by default, as only one libpq-dev version can be
-	# installed at a time.
-	apt-get install -y libpq-dev:armhf
-	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/arm-linux-gnueabihf" \
-	PKG_CONFIG_SYSROOT_DIR="/usr/arm-linux-gnueabihf" \
-		cargo build --target armv7-unknown-linux-gnueabihf
+dist:
+	# Keep these in this order, as aarch64 is based on Debian Buster (older),
+	# the others on Bullseye. For some build scripts we want to build against
+	# least recent LIBC.
+	cross build --target aarch64-unknown-linux-musl --release
+	cross build --target x86_64-unknown-linux-musl --release
+	cross build --target armv7-unknown-linux-musleabihf --release
 
-debug-arm64:
-	apt-get install -y libpq-dev:arm64
-	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/aarch64-linux-gnu" \
-	PKG_CONFIG_SYSROOT_DIR="/usr/aarch64-linux-gnu" \
-		cargo build --target aarch64-unknown-linux-gnu
+	cargo deb --target x86_64-unknown-linux-musl --no-build --no-strip
+	cargo deb --target armv7-unknown-linux-musleabihf --no-build --no-strip
+	cargo deb --target aarch64-unknown-linux-musl --no-build --no-strip
 
-release-amd64:
-	apt-get install -y libpq-dev:amd64
-	cargo build --release
+	cargo generate-rpm --target x86_64-unknown-linux-musl --target-dir ../target
+	cargo generate-rpm --target armv7-unknown-linux-musleabihf --target-dir ../target
+	cargo generate-rpm --target aarch64-unknown-linux-musl --target-dir ../target
 
-release-armv7hf:
-	apt-get install -y libpq-dev:armhf
-	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/arm-linux-gnueabihf" \
-	PKG_CONFIG_SYSROOT_DIR="/usr/arm-linux-gnueabihf" \
-		cargo build --target armv7-unknown-linux-gnueabihf --release
+	mkdir -p ../dist
 
-release-arm64:
-	apt-get install -y libpq-dev:arm64
-	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/aarch64-linux-gnu" \
-	PKG_CONFIG_SYSROOT_DIR="/usr/aarch64-linux-gnu" \
-		cargo build --target aarch64-unknown-linux-gnu --release
+	cp ../target/x86_64-unknown-linux-musl/debian/*.deb ../dist
+	cp ../target/armv7-unknown-linux-musleabihf/debian/*.deb ../dist
+	cp ../target/aarch64-unknown-linux-musl/debian/*.deb ../dist
 
-dist: release-deb-amd64 \
-	release-deb-armv7hf \
-	release-deb-arm64 \
-	release-rpm-amd64 \
-	release-rpm-armv7hf \
-	release-rpm-arm64 \
-	release-targz-amd64 \
-	release-targz-armv7hf \
-	release-targz-arm64 \
+	cp ../target/x86_64-unknown-linux-musl/generate-rpm/*.rpm ../dist
+	cp ../target/armv7-unknown-linux-musleabihf/generate-rpm/*.rpm ../dist
+	cp ../target/aarch64-unknown-linux-musl/generate-rpm/*.rpm ../dist
 
-release-deb-amd64:
-	apt-get install -y libpq-dev:amd64
-	mkdir -p /chirpstack/dist
-	cargo deb
-	cp ../target/debian/*.deb /chirpstack/dist
-
-release-deb-armv7hf:
-	apt-get install -y libpq-dev:armhf
-	mkdir -p /chirpstack/dist
-	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/arm-linux-gnueabihf" \
-	PKG_CONFIG_SYSROOT_DIR="/usr/arm-linux-gnueabihf" \
-		cargo deb --target armv7-unknown-linux-gnueabihf
-	cp ../target/armv7-unknown-linux-gnueabihf/debian/*.deb /chirpstack/dist
-
-release-deb-arm64:
-	apt-get install -y libpq-dev:arm64
-	mkdir -p /chirpstack/dist
-	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/aarch64-linux-gnu" \
-	PKG_CONFIG_SYSROOT_DIR="/usr/aarch64-linux-gnu" \
-		cargo deb --target aarch64-unknown-linux-gnu
-	cp ../target/aarch64-unknown-linux-gnu/debian/*.deb /chirpstack/dist
-
-release-rpm-amd64:
-	apt-get install -y libpq-dev:amd64
-	mkdir -p /chirpstack/dist
-	cargo rpm build
-	find ../target/release/rpmbuild/RPMS -type f -exec cp {} /chirpstack/dist \;
-
-release-rpm-armv7hf:
-	apt-get install -y libpq-dev:armhf
-	mkdir -p /chirpstack/dist
-	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/arm-linux-gnueabihf" \
-	PKG_CONFIG_SYSROOT_DIR="/usr/arm-linux-gnueabihf" \
-		cargo rpm build --target armv7-unknown-linux-gnueabihf
-	find ../target/armv7-unknown-linux-gnueabihf/release/rpmbuild/RPMS -type f -exec cp {} /chirpstack/dist \;
-
-release-rpm-arm64:
-	apt-get install -y libpq-dev:arm64
-	mkdir -p /chirpstack/dist
-	BINDGEN_EXTRA_CLANG_ARGS="--sysroot=/usr/aarch64-linux-gnu" \
-	PKG_CONFIG_SYSROOT_DIR="/usr/aarch64-linux-gnu" \
-		cargo rpm build --target aarch64-unknown-linux-gnu
-	find ../target/aarch64-unknown-linux-gnu/release/rpmbuild/RPMS -type f -exec cp {} /chirpstack/dist \;
-
-release-targz-amd64: release-amd64
-	mkdir -p /chirpstack/dist
-	tar -czvf /chirpstack/dist/chirpstack_$(PKG_VERSION)_amd64.tar.gz -C ../target/release chirpstack
-
-release-targz-armv7hf: release-armv7hf
-	mkdir -p /chirpstack/dist
-	tar -czvf /chirpstack/dist/chirpstack_$(PKG_VERSION)_armv7hf.tar.gz -C ../target/armv7-unknown-linux-gnueabihf/release chirpstack
-
-release-targz-arm64: release-arm64
-	mkdir -p /chirpstack/dist
-	tar -czvf /chirpstack/dist/chirpstack_$(PKG_VERSION)_arm64.tar.gz -C ../target/aarch64-unknown-linux-gnu/release chirpstack
+	tar -czvf ../dist/chirpstack_$(PKG_VERSION)_amd64.tar.gz -C ../target/x86_64-unknown-linux-musl/release chirpstack
+	tar -czvf ../dist/chirpstack_$(PKG_VERSION)_armv7hf.tar.gz -C ../target/armv7-unknown-linux-musleabihf/release chirpstack
+	tar -czvf ../dist/chirpstack_$(PKG_VERSION)_arm64.tar.gz -C ../target/aarch64-unknown-linux-musl/release chirpstack
 
 test:
 	cargo fmt --check
 	cargo clippy --no-deps
 	cargo test
 
-test-lrwn:
-	cd ../lrwn && make test
-
-test-lrwn-filters:
-	cd ../lrwn-filters && make test
-
 test-server: debug-amd64
-	../target/debug/chirpstack -c ./configuration
+	../target/x86_64-unknown-linux-musl/debug/chirpstack -c ./configuration
 
 dbshell:
 	psql -h postgres -U chirpstack chirpstack
