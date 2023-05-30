@@ -3,11 +3,7 @@ use std::str::FromStr;
 
 use anyhow::Result;
 #[cfg(feature = "diesel")]
-use diesel::{
-    backend::{self, Backend},
-    deserialize, serialize,
-    sql_types::Binary,
-};
+use diesel::{backend::Backend, deserialize, serialize, sql_types::Binary};
 #[cfg(feature = "serde")]
 use serde::{
     de::{self, Visitor},
@@ -111,13 +107,13 @@ impl<'de> Visitor<'de> for Aes128KeyVisitor {
 }
 
 #[cfg(feature = "diesel")]
-impl<DB> deserialize::FromSql<Binary, DB> for AES128Key
+impl<ST, DB> deserialize::FromSql<ST, DB> for AES128Key
 where
     DB: Backend,
-    *const [u8]: deserialize::FromSql<Binary, DB>,
+    *const [u8]: deserialize::FromSql<ST, DB>,
 {
-    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
-        let bytes = Vec::<u8>::from_sql(value)?;
+    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let bytes = <Vec<u8> as deserialize::FromSql<ST, DB>>::from_sql(value)?;
         if bytes.len() != 16 {
             return Err("AES128Key type expects exactly 16 bytes".into());
         }

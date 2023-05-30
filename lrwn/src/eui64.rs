@@ -3,11 +3,7 @@ use std::str::FromStr;
 
 use anyhow::Result;
 #[cfg(feature = "diesel")]
-use diesel::{
-    backend::{self, Backend},
-    deserialize, serialize,
-    sql_types::Binary,
-};
+use diesel::{backend::Backend, deserialize, serialize, sql_types::Binary};
 #[cfg(feature = "serde")]
 use serde::{
     de::{self, Visitor},
@@ -119,13 +115,13 @@ impl<'de> Visitor<'de> for Eui64Visitor {
 }
 
 #[cfg(feature = "diesel")]
-impl<DB> deserialize::FromSql<Binary, DB> for EUI64
+impl<ST, DB> deserialize::FromSql<ST, DB> for EUI64
 where
     DB: Backend,
-    *const [u8]: deserialize::FromSql<Binary, DB>,
+    *const [u8]: deserialize::FromSql<ST, DB>,
 {
-    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
-        let bytes = Vec::<u8>::from_sql(value)?;
+    fn from_sql(value: DB::RawValue<'_>) -> deserialize::Result<Self> {
+        let bytes = <Vec<u8> as deserialize::FromSql<ST, DB>>::from_sql(value)?;
         if bytes.len() != 8 {
             return Err("EUI64 type expects exactly 8 bytes".into());
         }

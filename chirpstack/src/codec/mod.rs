@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
-use diesel::backend::{self, Backend};
+use diesel::backend::Backend;
 use diesel::pg::Pg;
 use diesel::sql_types::Text;
 use diesel::{deserialize, serialize};
@@ -34,7 +34,7 @@ where
     DB: Backend,
     *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let string = String::from_sql(value)?;
         Ok(Codec::from_str(&string)?)
     }

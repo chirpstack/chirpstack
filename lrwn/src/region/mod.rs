@@ -6,7 +6,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 #[cfg(feature = "diesel")]
 use diesel::{
-    backend::{self, Backend},
+    backend::Backend,
     sql_types::Text,
     {deserialize, serialize},
 };
@@ -63,7 +63,7 @@ where
     DB: Backend,
     *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let string = String::from_sql(value)?;
         Ok(CommonName::from_str(&string)?)
     }
@@ -174,7 +174,7 @@ where
     DB: Backend,
     *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let string = String::from_sql(value)?;
         Ok(Revision::from_str(&string)?)
     }
@@ -259,7 +259,7 @@ where
     DB: Backend,
     *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let string = String::from_sql(value)?;
         Ok(MacVersion::from_str(&string)?)
     }

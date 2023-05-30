@@ -23,7 +23,7 @@ handlebars = "4.3"
 
 # Database
 validator = "0.16"
-diesel = { version = "2.0", features = [
+diesel = { version = "2.1", features = [
 	"chrono",
 	"postgres",
 	"r2d2",
@@ -32,7 +32,7 @@ diesel = { version = "2.0", features = [
 	"numeric",
 	"64-column-tables",
 ] }
-diesel_migrations = { version = "2.0" }
+diesel_migrations = { version = "2.1" }
 r2d2 = "0.8"
 bigdecimal = "0.3"
 redis = { version = "0.23", features = ["r2d2", "cluster", "tls-rustls"] }
@@ -100,7 +100,7 @@ pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "8.2"
 openssl = { version = "0.10" }
-openidconnect = { version = "3.0", features = ["accept-rfc3339-timestamps"] }
+openidconnect = { version = "3.1", features = ["accept-rfc3339-timestamps"] }
 
 # MQTT
 paho-mqtt = { version = "0.12", features = ["ssl"] }

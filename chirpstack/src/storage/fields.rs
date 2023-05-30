@@ -3,7 +3,7 @@ use std::fmt;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
-use diesel::backend::{self, Backend};
+use diesel::backend::Backend;
 use diesel::pg::Pg;
 use diesel::sql_types::{Jsonb, Text};
 use diesel::{deserialize, serialize};
@@ -39,7 +39,7 @@ impl DerefMut for KeyValue {
 }
 
 impl deserialize::FromSql<Jsonb, Pg> for KeyValue {
-    fn from_sql(value: backend::RawValue<Pg>) -> deserialize::Result<Self> {
+    fn from_sql(value: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
         let kv: HashMap<String, String> = serde_json::from_value(value)?;
         Ok(KeyValue(kv))
@@ -83,7 +83,7 @@ impl DerefMut for Measurements {
 }
 
 impl deserialize::FromSql<Jsonb, Pg> for Measurements {
-    fn from_sql(value: backend::RawValue<Pg>) -> deserialize::Result<Self> {
+    fn from_sql(value: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
         let kv: HashMap<String, Measurement> = serde_json::from_value(value)?;
         Ok(Measurements::new(kv))
@@ -141,7 +141,7 @@ where
     DB: Backend,
     *const str: deserialize::FromSql<Text, DB>,
 {
-    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let string = String::from_sql(value)?;
         Ok(MulticastGroupSchedulingType::from_str(&string)?)
     }

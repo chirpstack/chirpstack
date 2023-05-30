@@ -5,11 +5,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 #[cfg(feature = "diesel")]
-use diesel::{
-    backend::{self, Backend},
-    deserialize, serialize,
-    sql_types::SmallInt,
-};
+use diesel::{backend::Backend, deserialize, serialize, sql_types::SmallInt};
 #[cfg(feature = "serde")]
 use serde::Serialize;
 
@@ -1884,7 +1880,7 @@ where
     DB: Backend,
     i16: deserialize::FromSql<SmallInt, DB>,
 {
-    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let i = i16::from_sql(value)?;
         Ok(RelayModeActivation::from_u8(i as u8)?)
     }
