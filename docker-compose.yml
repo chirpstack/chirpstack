@@ -16,6 +16,11 @@ services:
       - REDIS_HOST=redis
       - POSTGRESQL_HOST=postgres
       - MQTT_BROKER_HOST=mosquitto
+      - TEST_POSTGRESQL_DSN=postgres://chirpstack_test:chirpstack_test@postgres/chirpstack_test?sslmode=disable
+      - TEST_REDIS_URL=redis://redis/1
+      - TEST_MOSQUITTO_SERVER=tcp://mosquitto:1883/
+      - TEST_KAFKA_BROKER=kafka:9092
+      - TEST_AMQP_URL=amqp://guest:guest@rabbitmq:5672
     ports:
       - "8080:8080"
 

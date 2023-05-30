@@ -43,11 +43,11 @@ build-ui:
 	docker-compose run --rm --no-deps chirpstack-ui make build
 
 # Enters the devshell for ChirpStack development.
-devshell:
+docker-devshell:
 	docker-compose run --rm --service-ports --name chirpstack chirpstack
 
 # Enters the devshell for ChirpStack UI development.
-devshell-ui:
+docker-devshell-ui:
 	docker-compose run --rm --service-ports --name chirpstack-ui chirpstack-ui bash
 
 # Runs the tests
@@ -56,7 +56,3 @@ test:
 	cd chirpstack && make test
 	cd lrwn && make test
 	cd lrwn-filters && make test
-
-# Starts the ChirpStack server (for testing only).
-test-server: build-ui
-	docker-compose run --rm --service-ports chirpstack make test-server
