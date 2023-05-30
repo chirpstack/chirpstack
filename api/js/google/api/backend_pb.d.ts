@@ -57,6 +57,8 @@ export class BackendRule extends jspb.Message {
   getProtocol(): string;
   setProtocol(value: string): void;
 
+  getOverridesByRequestProtocolMap(): jspb.Map<string, BackendRule>;
+  clearOverridesByRequestProtocolMap(): void;
   getAuthenticationCase(): BackendRule.AuthenticationCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): BackendRule.AsObject;
@@ -79,6 +81,7 @@ export namespace BackendRule {
     jwtAudience: string,
     disableAuth: boolean,
     protocol: string,
+    overridesByRequestProtocolMap: Array<[string, BackendRule.AsObject]>,
   }
 
   export interface PathTranslationMap {

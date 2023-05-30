@@ -215,7 +215,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.google.api.DotnetSettings = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.google.api.DotnetSettings.repeatedFields_, null);
 };
 goog.inherits(proto.google.api.DotnetSettings, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -1142,7 +1142,8 @@ proto.google.api.Publishing.toObject = function(includeInstance, msg) {
     docTagPrefix: jspb.Message.getFieldWithDefault(msg, 106, ""),
     organization: jspb.Message.getFieldWithDefault(msg, 107, 0),
     librarySettingsList: jspb.Message.toObjectList(msg.getLibrarySettingsList(),
-    proto.google.api.ClientLibrarySettings.toObject, includeInstance)
+    proto.google.api.ClientLibrarySettings.toObject, includeInstance),
+    protoReferenceDocumentationUri: jspb.Message.getFieldWithDefault(msg, 110, "")
   };
 
   if (includeInstance) {
@@ -1216,6 +1217,10 @@ proto.google.api.Publishing.deserializeBinaryFromReader = function(msg, reader) 
       var value = new proto.google.api.ClientLibrarySettings;
       reader.readMessage(value,proto.google.api.ClientLibrarySettings.deserializeBinaryFromReader);
       msg.addLibrarySettings(value);
+      break;
+    case 110:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProtoReferenceDocumentationUri(value);
       break;
     default:
       reader.skipField();
@@ -1309,6 +1314,13 @@ proto.google.api.Publishing.serializeBinaryToWriter = function(message, writer) 
       109,
       f,
       proto.google.api.ClientLibrarySettings.serializeBinaryToWriter
+    );
+  }
+  f = message.getProtoReferenceDocumentationUri();
+  if (f.length > 0) {
+    writer.writeString(
+      110,
+      f
     );
   }
 };
@@ -1532,6 +1544,24 @@ proto.google.api.Publishing.prototype.addLibrarySettings = function(opt_value, o
  */
 proto.google.api.Publishing.prototype.clearLibrarySettingsList = function() {
   return this.setLibrarySettingsList([]);
+};
+
+
+/**
+ * optional string proto_reference_documentation_uri = 110;
+ * @return {string}
+ */
+proto.google.api.Publishing.prototype.getProtoReferenceDocumentationUri = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 110, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.google.api.Publishing} returns this
+ */
+proto.google.api.Publishing.prototype.setProtoReferenceDocumentationUri = function(value) {
+  return jspb.Message.setProto3StringField(this, 110, value);
 };
 
 
@@ -2354,6 +2384,13 @@ proto.google.api.NodeSettings.prototype.hasCommon = function() {
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.google.api.DotnetSettings.repeatedFields_ = [4,5,6];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -2385,7 +2422,12 @@ proto.google.api.DotnetSettings.prototype.toObject = function(opt_includeInstanc
  */
 proto.google.api.DotnetSettings.toObject = function(includeInstance, msg) {
   var f, obj = {
-    common: (f = msg.getCommon()) && proto.google.api.CommonLanguageSettings.toObject(includeInstance, f)
+    common: (f = msg.getCommon()) && proto.google.api.CommonLanguageSettings.toObject(includeInstance, f),
+    renamedServicesMap: (f = msg.getRenamedServicesMap()) ? f.toObject(includeInstance, undefined) : [],
+    renamedResourcesMap: (f = msg.getRenamedResourcesMap()) ? f.toObject(includeInstance, undefined) : [],
+    ignoredResourcesList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+    forcedNamespaceAliasesList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f,
+    handwrittenSignaturesList: (f = jspb.Message.getRepeatedField(msg, 6)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -2427,6 +2469,30 @@ proto.google.api.DotnetSettings.deserializeBinaryFromReader = function(msg, read
       reader.readMessage(value,proto.google.api.CommonLanguageSettings.deserializeBinaryFromReader);
       msg.setCommon(value);
       break;
+    case 2:
+      var value = msg.getRenamedServicesMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
+    case 3:
+      var value = msg.getRenamedResourcesMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addIgnoredResources(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addForcedNamespaceAliases(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addHandwrittenSignatures(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2462,6 +2528,35 @@ proto.google.api.DotnetSettings.serializeBinaryToWriter = function(message, writ
       1,
       f,
       proto.google.api.CommonLanguageSettings.serializeBinaryToWriter
+    );
+  }
+  f = message.getRenamedServicesMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getRenamedResourcesMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getIgnoredResourcesList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
+      f
+    );
+  }
+  f = message.getForcedNamespaceAliasesList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      5,
+      f
+    );
+  }
+  f = message.getHandwrittenSignaturesList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      6,
+      f
     );
   }
 };
@@ -2501,6 +2596,161 @@ proto.google.api.DotnetSettings.prototype.clearCommon = function() {
  */
 proto.google.api.DotnetSettings.prototype.hasCommon = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * map<string, string> renamed_services = 2;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.google.api.DotnetSettings.prototype.getRenamedServicesMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.clearRenamedServicesMap = function() {
+  this.getRenamedServicesMap().clear();
+  return this;};
+
+
+/**
+ * map<string, string> renamed_resources = 3;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.google.api.DotnetSettings.prototype.getRenamedResourcesMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.clearRenamedResourcesMap = function() {
+  this.getRenamedResourcesMap().clear();
+  return this;};
+
+
+/**
+ * repeated string ignored_resources = 4;
+ * @return {!Array<string>}
+ */
+proto.google.api.DotnetSettings.prototype.getIgnoredResourcesList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.setIgnoredResourcesList = function(value) {
+  return jspb.Message.setField(this, 4, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.addIgnoredResources = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.clearIgnoredResourcesList = function() {
+  return this.setIgnoredResourcesList([]);
+};
+
+
+/**
+ * repeated string forced_namespace_aliases = 5;
+ * @return {!Array<string>}
+ */
+proto.google.api.DotnetSettings.prototype.getForcedNamespaceAliasesList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 5));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.setForcedNamespaceAliasesList = function(value) {
+  return jspb.Message.setField(this, 5, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.addForcedNamespaceAliases = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 5, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.clearForcedNamespaceAliasesList = function() {
+  return this.setForcedNamespaceAliasesList([]);
+};
+
+
+/**
+ * repeated string handwritten_signatures = 6;
+ * @return {!Array<string>}
+ */
+proto.google.api.DotnetSettings.prototype.getHandwrittenSignaturesList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 6));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.setHandwrittenSignaturesList = function(value) {
+  return jspb.Message.setField(this, 6, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.addHandwrittenSignatures = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 6, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.google.api.DotnetSettings} returns this
+ */
+proto.google.api.DotnetSettings.prototype.clearHandwrittenSignaturesList = function() {
+  return this.setHandwrittenSignaturesList([]);
 };
 
 
@@ -3278,7 +3528,10 @@ proto.google.api.ClientLibraryOrganization = {
   CLOUD: 1,
   ADS: 2,
   PHOTOS: 3,
-  STREET_VIEW: 4
+  STREET_VIEW: 4,
+  SHOPPING: 5,
+  GEO: 6,
+  GENERATIVE_AI: 7
 };
 
 /**

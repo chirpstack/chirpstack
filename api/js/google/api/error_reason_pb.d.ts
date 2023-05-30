@@ -32,6 +32,8 @@ export interface ErrorReasonMap {
   SYSTEM_PARAMETER_UNSUPPORTED: 26;
   ORG_RESTRICTION_VIOLATION: 27;
   ORG_RESTRICTION_HEADER_INVALID: 28;
+  SERVICE_NOT_VISIBLE: 29;
+  GCP_SUSPENDED: 30;
 }
 
 export const ErrorReason: ErrorReasonMap;

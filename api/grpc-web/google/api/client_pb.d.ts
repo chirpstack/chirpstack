@@ -137,6 +137,9 @@ export class Publishing extends jspb.Message {
   clearLibrarySettingsList(): Publishing;
   addLibrarySettings(value?: ClientLibrarySettings, index?: number): ClientLibrarySettings;
 
+  getProtoReferenceDocumentationUri(): string;
+  setProtoReferenceDocumentationUri(value: string): Publishing;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Publishing.AsObject;
   static toObject(includeInstance: boolean, msg: Publishing): Publishing.AsObject;
@@ -156,6 +159,7 @@ export namespace Publishing {
     docTagPrefix: string,
     organization: ClientLibraryOrganization,
     librarySettingsList: Array<ClientLibrarySettings.AsObject>,
+    protoReferenceDocumentationUri: string,
   }
 }
 
@@ -273,6 +277,27 @@ export class DotnetSettings extends jspb.Message {
   hasCommon(): boolean;
   clearCommon(): DotnetSettings;
 
+  getRenamedServicesMap(): jspb.Map<string, string>;
+  clearRenamedServicesMap(): DotnetSettings;
+
+  getRenamedResourcesMap(): jspb.Map<string, string>;
+  clearRenamedResourcesMap(): DotnetSettings;
+
+  getIgnoredResourcesList(): Array<string>;
+  setIgnoredResourcesList(value: Array<string>): DotnetSettings;
+  clearIgnoredResourcesList(): DotnetSettings;
+  addIgnoredResources(value: string, index?: number): DotnetSettings;
+
+  getForcedNamespaceAliasesList(): Array<string>;
+  setForcedNamespaceAliasesList(value: Array<string>): DotnetSettings;
+  clearForcedNamespaceAliasesList(): DotnetSettings;
+  addForcedNamespaceAliases(value: string, index?: number): DotnetSettings;
+
+  getHandwrittenSignaturesList(): Array<string>;
+  setHandwrittenSignaturesList(value: Array<string>): DotnetSettings;
+  clearHandwrittenSignaturesList(): DotnetSettings;
+  addHandwrittenSignatures(value: string, index?: number): DotnetSettings;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DotnetSettings.AsObject;
   static toObject(includeInstance: boolean, msg: DotnetSettings): DotnetSettings.AsObject;
@@ -284,6 +309,11 @@ export class DotnetSettings extends jspb.Message {
 export namespace DotnetSettings {
   export type AsObject = {
     common?: CommonLanguageSettings.AsObject,
+    renamedServicesMap: Array<[string, string]>,
+    renamedResourcesMap: Array<[string, string]>,
+    ignoredResourcesList: Array<string>,
+    forcedNamespaceAliasesList: Array<string>,
+    handwrittenSignaturesList: Array<string>,
   }
 }
 
@@ -394,6 +424,9 @@ export enum ClientLibraryOrganization {
   ADS = 2,
   PHOTOS = 3,
   STREET_VIEW = 4,
+  SHOPPING = 5,
+  GEO = 6,
+  GENERATIVE_AI = 7,
 }
 export enum ClientLibraryDestination { 
   CLIENT_LIBRARY_DESTINATION_UNSPECIFIED = 0,

@@ -284,7 +284,8 @@ proto.google.api.BackendRule.toObject = function(includeInstance, msg) {
     pathTranslation: jspb.Message.getFieldWithDefault(msg, 6, 0),
     jwtAudience: jspb.Message.getFieldWithDefault(msg, 7, ""),
     disableAuth: jspb.Message.getBooleanFieldWithDefault(msg, 8, false),
-    protocol: jspb.Message.getFieldWithDefault(msg, 9, "")
+    protocol: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    overridesByRequestProtocolMap: (f = msg.getOverridesByRequestProtocolMap()) ? f.toObject(includeInstance, proto.google.api.BackendRule.toObject) : []
   };
 
   if (includeInstance) {
@@ -356,6 +357,12 @@ proto.google.api.BackendRule.deserializeBinaryFromReader = function(msg, reader)
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setProtocol(value);
+      break;
+    case 10:
+      var value = msg.getOverridesByRequestProtocolMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.api.BackendRule.deserializeBinaryFromReader, "", new proto.google.api.BackendRule());
+         });
       break;
     default:
       reader.skipField();
@@ -448,6 +455,10 @@ proto.google.api.BackendRule.serializeBinaryToWriter = function(message, writer)
       9,
       f
     );
+  }
+  f = message.getOverridesByRequestProtocolMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(10, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.api.BackendRule.serializeBinaryToWriter);
   }
 };
 
@@ -657,6 +668,28 @@ proto.google.api.BackendRule.prototype.getProtocol = function() {
 proto.google.api.BackendRule.prototype.setProtocol = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
 };
+
+
+/**
+ * map<string, BackendRule> overrides_by_request_protocol = 10;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.google.api.BackendRule>}
+ */
+proto.google.api.BackendRule.prototype.getOverridesByRequestProtocolMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.google.api.BackendRule>} */ (
+      jspb.Message.getMapField(this, 10, opt_noLazyCreate,
+      proto.google.api.BackendRule));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.google.api.BackendRule} returns this
+ */
+proto.google.api.BackendRule.prototype.clearOverridesByRequestProtocolMap = function() {
+  this.getOverridesByRequestProtocolMap().clear();
+  return this;};
 
 
 goog.object.extend(exports, proto.google.api);
