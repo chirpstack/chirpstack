@@ -25,18 +25,25 @@ Building ChirpStack requires:
 
 #### Nix
 
-Nix is used for defining the development environment which is used for local
-development and for creating the final binaries.
+Nix is used for setting up the development environment which is used for local
+development and for creating the binaries.
 
-If you do not have Nix installed and do not want to, then you could also look at
-the dependencies specified in the `shell.nix` file and install these manually.
-Alternatively use [Vagrant](https://www.vagrantup.com/) to setup a VM with Nix and Docker
-installed. See also the provided `Vagrantfile`.
+If you do not have Nix installed and do not wish to install it, then you can
+use the provided Docker Compose based Nix environment. To start this environment
+execute the following command:
+
+```bash
+make docker-devshell
+```
+
+**Note:** You will be able to run the test commands and run `cargo build`, but
+cross-compiling will not work within this environment (because it would try start
+Docker within Docker).
 
 #### Docker
 
 Docker is used by [cross-rs](https://github.com/cross-rs/cross) for cross-compiling,
- as well as some of the `make` commands you will find in the ChirpStack project.
+ as well as some of the `make` commands.
 
 ### Starting the development shell
 
@@ -44,6 +51,12 @@ Run the following command to start the development shell:
 
 ```bash
 nix-shell
+```
+
+Or if you do not have Nix installed, execute the following command:
+
+```bash
+make docker-devshell
 ```
 
 ### Building the UI
@@ -54,16 +67,13 @@ To build the ChirpStack UI, execute the following command:
 make build-ui
 ```
 
-Note that the ChirpStack UI is built using 
-
 ### Running ChirpStack tests
 
 #### Start required services
 
 ChirpStack requires several services like PostgresQL, Redis, Mosquitto, ...
-to be running before you can run the tests.
-
-Execute the following command to start these:
+to be running before you can run the tests. You need to start these services
+manually if you started the development shell using `nix-shell`:
 
 ```bash
 docker-compose up -d
@@ -77,7 +87,7 @@ Run the following command to run the ChirpStack tests:
 make test
 ```
 
-### Building ChirpStack
+### Building ChirpStack binaries
 
 Before compiling the binaries, you need to install some additional development
 tools (for cross-compiling, packaging, e.d.). Execute the following command:

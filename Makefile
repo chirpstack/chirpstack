@@ -42,7 +42,11 @@ api: version
 build-ui:
 	docker-compose run --rm --no-deps chirpstack-ui make build
 
-# Enters the devshell for ChirpStack development.
+# Enter the devshell.
+devshell:
+	nix-shell
+
+# Enters the Docker devshell for ChirpStack development.
 docker-devshell:
 	docker-compose run --rm --service-ports --name chirpstack chirpstack
 
