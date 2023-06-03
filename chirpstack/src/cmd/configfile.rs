@@ -607,7 +607,9 @@ pub fn run() {
   #
   # Note: this interface is used both for passive-roaming and when
   # integrating with Join Servers that implement the async interface.
-  bind="{{ api.bind }}"
+  # Leaving this option blank will disable the Backend Interfaces API,
+  # which is fine in most cases.
+  bind="{{ backend_interfaces.bind }}"
 
   # CA certificate (path).
   ca_cert="{{ backend_interfaces.ca_cert }}"
