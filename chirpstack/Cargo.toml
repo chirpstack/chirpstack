@@ -68,7 +68,7 @@ gcp_auth = "0.8"
 lapin = "2.1"
 tokio-executor-trait = "2.1"
 tokio-reactor-trait = "1.1"
-rdkafka = { version = "0.29", default-features = false, features = ["tokio", "cmake-build"] }
+rdkafka = { version = "0.31", default-features = false, features = ["tokio", "cmake-build"] }
 
 # gRPC and Protobuf
 tonic = "0.9"
