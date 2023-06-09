@@ -987,6 +987,8 @@ impl Region for Configuration {
         let down_channel = (u32::from_be_bytes(dev_addr.to_be_bytes()) as usize
             + (beacon_time.as_secs() / 128) as usize)
             % 8;
+
+        // Beaconing is performed on the same channel that normal downstream traffic as defined in the Class A specification.
         Ok(self.base.downlink_channels[down_channel].frequency)
     }
 

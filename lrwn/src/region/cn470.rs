@@ -454,7 +454,12 @@ impl Region for Configuration {
         let down_channel = (u32::from_be_bytes(dev_addr.to_be_bytes()) as usize
             + (beacon_time.as_secs() / 128) as usize)
             % 8;
-        Ok(self.base.downlink_channels[down_channel].frequency)
+
+        let beacon_freqs: Vec<u32> = vec![
+            508300000, 508500000, 508700000, 508900000, 509100000, 509300000, 509500000, 509700000,
+        ];
+
+        Ok(beacon_freqs[down_channel])
     }
 
     fn get_downlink_tx_power(&self, _freq: u32) -> isize {
@@ -594,7 +599,7 @@ mod tests {
         let beacon_time = Duration::from_secs((334382 * 60 * 60) + (52 * 60) + 44);
 
         let freq = c.get_ping_slot_frequency(dev_addr, beacon_time).unwrap();
-        assert_eq!(501100000, freq);
+        assert_eq!(509100000, freq);
     }
 
     #[test]
