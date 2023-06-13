@@ -52,7 +52,7 @@ backend = { path = "../backend" }
 # HTTP
 reqwest = { version = "0.11", features = [
 	"json",
-	"rustls-tls",
+	"rustls-tls-native-roots",
 ], default-features = false }
 
 # Integrations
