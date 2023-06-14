@@ -290,8 +290,8 @@ message GetDeviceResponse {
   // Device status.
   DeviceStatus device_status = 5;
 
-  // Enabled class.
-  common.DeviceClass enabled_class = 6;
+  // Enabled device class.
+  common.DeviceClass class_enabled = 6;
 }
 
 message UpdateDeviceRequest {

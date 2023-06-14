@@ -33,7 +33,7 @@ pub async fn handle(
         device_profile_id: dp.id.to_string(),
         device_profile_name: dp.name.clone(),
         device_name: dev.name.clone(),
-        device_enabled_class: dev.enabled_class.to_proto().into(),
+        device_class_enabled: dev.enabled_class.to_proto().into(),
         dev_eui: dev.dev_eui.to_string(),
         tags: {
             let mut tags = (*dp.tags).clone();
@@ -152,7 +152,7 @@ mod test {
                     device_profile_id: dp.id.to_string(),
                     device_profile_name: "dp".to_string(),
                     device_name: "dev".to_string(),
-                    device_enabled_class: common::DeviceClass::ClassA.into(),
+                    device_class_enabled: common::DeviceClass::ClassA.into(),
                     dev_eui: dev.dev_eui.to_string(),
                     tags: [
                         ("dp_tag".to_string(), "dp_value".to_string()),

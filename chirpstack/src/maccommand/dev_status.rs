@@ -63,7 +63,7 @@ pub async fn handle(
                     device_profile_id: dp.id.to_string(),
                     device_profile_name: dp.name.clone(),
                     device_name: dev.name.clone(),
-                    device_enabled_class: dev.enabled_class.to_proto().into(),
+                    device_class_enabled: dev.enabled_class.to_proto().into(),
                     dev_eui: dev.dev_eui.to_string(),
                     tags,
                 }),

@@ -431,7 +431,7 @@ impl Data {
                 device_profile_id: self.device_profile.id.to_string(),
                 device_profile_name: self.device_profile.name.clone(),
                 device_name: self.device.name.clone(),
-                device_enabled_class: self.device.enabled_class.to_proto().into(),
+                device_class_enabled: self.device.enabled_class.to_proto().into(),
                 dev_eui: self.device.dev_eui.to_string(),
                 tags: {
                     let mut tags = (*self.device_profile.tags).clone();
