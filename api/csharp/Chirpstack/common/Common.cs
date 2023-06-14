@@ -53,12 +53,13 @@ namespace Chirpstack.Common {
             "X1JFU09MVkVSX0dOU1MQBRIVChFHRU9fUkVTT0xWRVJfV0lGSRAGKisKC0Fn",
             "Z3JlZ2F0aW9uEggKBEhPVVIQABIHCgNEQVkQARIJCgVNT05USBACKjIKCk1l",
             "dHJpY0tpbmQSCwoHQ09VTlRFUhAAEgwKCEFCU09MVVRFEAESCQoFR0FVR0UQ",
-            "AkJpChFpby5jaGlycHN0YWNrLmFwaUILQ29tbW9uUHJvdG9QAVoxZ2l0aHVi",
-            "LmNvbS9jaGlycHN0YWNrL2NoaXJwc3RhY2svYXBpL2dvL3Y0L2NvbW1vbqoC",
-            "EUNoaXJwc3RhY2suQ29tbW9uYgZwcm90bzM="));
+            "Aio0CgtEZXZpY2VDbGFzcxILCgdDTEFTU19BEAASCwoHQ0xBU1NfQhABEgsK",
+            "B0NMQVNTX0MQAkJpChFpby5jaGlycHN0YWNrLmFwaUILQ29tbW9uUHJvdG9Q",
+            "AVoxZ2l0aHViLmNvbS9jaGlycHN0YWNrL2NoaXJwc3RhY2svYXBpL2dvL3Y0",
+            "L2NvbW1vbqoCEUNoaXJwc3RhY2suQ29tbW9uYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Common.Modulation), typeof(global::Chirpstack.Common.Region), typeof(global::Chirpstack.Common.MType), typeof(global::Chirpstack.Common.MacVersion), typeof(global::Chirpstack.Common.RegParamsRevision), typeof(global::Chirpstack.Common.LocationSource), typeof(global::Chirpstack.Common.Aggregation), typeof(global::Chirpstack.Common.MetricKind), }, null, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Common.Modulation), typeof(global::Chirpstack.Common.Region), typeof(global::Chirpstack.Common.MType), typeof(global::Chirpstack.Common.MacVersion), typeof(global::Chirpstack.Common.RegParamsRevision), typeof(global::Chirpstack.Common.LocationSource), typeof(global::Chirpstack.Common.Aggregation), typeof(global::Chirpstack.Common.MetricKind), typeof(global::Chirpstack.Common.DeviceClass), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.Location), global::Chirpstack.Common.Location.Parser, new[]{ "Latitude", "Longitude", "Altitude", "Source", "Accuracy" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.KeyEnvelope), global::Chirpstack.Common.KeyEnvelope.Parser, new[]{ "KekLabel", "AesKey" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.Metric), global::Chirpstack.Common.Metric.Parser, new[]{ "Name", "Timestamps", "Datasets", "Kind" }, null, null, null, null),
@@ -244,7 +245,8 @@ namespace Chirpstack.Common {
 
   public enum MetricKind {
     /// <summary>
-    /// Incrementing counters that never decrease (these are not reset on each reading).
+    /// Incrementing counters that never decrease (these are not reset on each
+    /// reading).
     /// </summary>
     [pbr::OriginalName("COUNTER")] Counter = 0,
     /// <summary>
@@ -255,6 +257,21 @@ namespace Chirpstack.Common {
     /// E.g. a temperature value.
     /// </summary>
     [pbr::OriginalName("GAUGE")] Gauge = 2,
+  }
+
+  public enum DeviceClass {
+    /// <summary>
+    /// Class-A.
+    /// </summary>
+    [pbr::OriginalName("CLASS_A")] ClassA = 0,
+    /// <summary>
+    /// Class-B.
+    /// </summary>
+    [pbr::OriginalName("CLASS_B")] ClassB = 1,
+    /// <summary>
+    /// Class-C.
+    /// </summary>
+    [pbr::OriginalName("CLASS_C")] ClassC = 2,
   }
 
   #endregion

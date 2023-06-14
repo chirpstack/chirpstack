@@ -43,16 +43,20 @@ type DeviceServiceClient interface {
 	DeleteKeys(ctx context.Context, in *DeleteDeviceKeysRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// FlushDevNonces flushes the OTAA device nonces.
 	FlushDevNonces(ctx context.Context, in *FlushDevNoncesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+	// Activate (re)activates the device with the given parameters (for ABP or for
+	// importing OTAA activations).
 	Activate(ctx context.Context, in *ActivateDeviceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Deactivate de-activates the device.
 	Deactivate(ctx context.Context, in *DeactivateDeviceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// GetActivation returns the current activation details of the device (OTAA or ABP).
+	// GetActivation returns the current activation details of the device (OTAA or
+	// ABP).
 	GetActivation(ctx context.Context, in *GetDeviceActivationRequest, opts ...grpc.CallOption) (*GetDeviceActivationResponse, error)
-	// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+	// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+	// account.
 	GetRandomDevAddr(ctx context.Context, in *GetRandomDevAddrRequest, opts ...grpc.CallOption) (*GetRandomDevAddrResponse, error)
 	// GetMetrics returns the device metrics.
-	// Note that this requires a device-profile with codec and measurements configured.
+	// Note that this requires a device-profile with codec and measurements
+	// configured.
 	GetMetrics(ctx context.Context, in *GetDeviceMetricsRequest, opts ...grpc.CallOption) (*GetDeviceMetricsResponse, error)
 	// GetLinkMetrics returns the device link metrics.
 	// This includes uplinks, downlinks, RSSI, SNR, etc...
@@ -268,16 +272,20 @@ type DeviceServiceServer interface {
 	DeleteKeys(context.Context, *DeleteDeviceKeysRequest) (*emptypb.Empty, error)
 	// FlushDevNonces flushes the OTAA device nonces.
 	FlushDevNonces(context.Context, *FlushDevNoncesRequest) (*emptypb.Empty, error)
-	// Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+	// Activate (re)activates the device with the given parameters (for ABP or for
+	// importing OTAA activations).
 	Activate(context.Context, *ActivateDeviceRequest) (*emptypb.Empty, error)
 	// Deactivate de-activates the device.
 	Deactivate(context.Context, *DeactivateDeviceRequest) (*emptypb.Empty, error)
-	// GetActivation returns the current activation details of the device (OTAA or ABP).
+	// GetActivation returns the current activation details of the device (OTAA or
+	// ABP).
 	GetActivation(context.Context, *GetDeviceActivationRequest) (*GetDeviceActivationResponse, error)
-	// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+	// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+	// account.
 	GetRandomDevAddr(context.Context, *GetRandomDevAddrRequest) (*GetRandomDevAddrResponse, error)
 	// GetMetrics returns the device metrics.
-	// Note that this requires a device-profile with codec and measurements configured.
+	// Note that this requires a device-profile with codec and measurements
+	// configured.
 	GetMetrics(context.Context, *GetDeviceMetricsRequest) (*GetDeviceMetricsResponse, error)
 	// GetLinkMetrics returns the device link metrics.
 	// This includes uplinks, downlinks, RSSI, SNR, etc...

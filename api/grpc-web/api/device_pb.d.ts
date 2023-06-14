@@ -235,6 +235,9 @@ export class GetDeviceResponse extends jspb.Message {
   hasDeviceStatus(): boolean;
   clearDeviceStatus(): GetDeviceResponse;
 
+  getClassEnabled(): common_common_pb.DeviceClass;
+  setClassEnabled(value: common_common_pb.DeviceClass): GetDeviceResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDeviceResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetDeviceResponse): GetDeviceResponse.AsObject;
@@ -250,6 +253,7 @@ export namespace GetDeviceResponse {
     updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     lastSeenAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     deviceStatus?: DeviceStatus.AsObject,
+    classEnabled: common_common_pb.DeviceClass,
   }
 }
 

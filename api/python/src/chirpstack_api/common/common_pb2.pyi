@@ -13,6 +13,9 @@ AS923_3: Region
 AS923_4: Region
 AU915: Region
 B: RegParamsRevision
+CLASS_A: DeviceClass
+CLASS_B: DeviceClass
+CLASS_C: DeviceClass
 CN470: Region
 CN779: Region
 CONFIG: LocationSource
@@ -121,4 +124,7 @@ class Aggregation(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []
 
 class MetricKind(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = []
+
+class DeviceClass(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []

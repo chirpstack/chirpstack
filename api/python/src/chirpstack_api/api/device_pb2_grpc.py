@@ -188,7 +188,8 @@ class DeviceServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def Activate(self, request, context):
-        """Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+        """Activate (re)activates the device with the given parameters (for ABP or for
+        importing OTAA activations).
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -202,14 +203,16 @@ class DeviceServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetActivation(self, request, context):
-        """GetActivation returns the current activation details of the device (OTAA or ABP).
+        """GetActivation returns the current activation details of the device (OTAA or
+        ABP).
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetRandomDevAddr(self, request, context):
-        """GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+        """GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+        account.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -217,7 +220,8 @@ class DeviceServiceServicer(object):
 
     def GetMetrics(self, request, context):
         """GetMetrics returns the device metrics.
-        Note that this requires a device-profile with codec and measurements configured.
+        Note that this requires a device-profile with codec and measurements
+        configured.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')

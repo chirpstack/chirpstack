@@ -451,7 +451,8 @@ flushDevNonces: {
     responseSerialize: serialize_google_protobuf_Empty,
     responseDeserialize: deserialize_google_protobuf_Empty,
   },
-  // Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+  // Activate (re)activates the device with the given parameters (for ABP or for
+// importing OTAA activations).
 activate: {
     path: '/api.DeviceService/Activate',
     requestStream: false,
@@ -475,7 +476,8 @@ deactivate: {
     responseSerialize: serialize_google_protobuf_Empty,
     responseDeserialize: deserialize_google_protobuf_Empty,
   },
-  // GetActivation returns the current activation details of the device (OTAA or ABP).
+  // GetActivation returns the current activation details of the device (OTAA or
+// ABP).
 getActivation: {
     path: '/api.DeviceService/GetActivation',
     requestStream: false,
@@ -487,7 +489,8 @@ getActivation: {
     responseSerialize: serialize_api_GetDeviceActivationResponse,
     responseDeserialize: deserialize_api_GetDeviceActivationResponse,
   },
-  // GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+  // GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+// account.
 getRandomDevAddr: {
     path: '/api.DeviceService/GetRandomDevAddr',
     requestStream: false,
@@ -500,7 +503,8 @@ getRandomDevAddr: {
     responseDeserialize: deserialize_api_GetRandomDevAddrResponse,
   },
   // GetMetrics returns the device metrics.
-// Note that this requires a device-profile with codec and measurements configured.
+// Note that this requires a device-profile with codec and measurements
+// configured.
 getMetrics: {
     path: '/api.DeviceService/GetMetrics',
     requestStream: false,

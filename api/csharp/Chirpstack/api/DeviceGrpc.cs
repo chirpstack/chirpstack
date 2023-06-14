@@ -390,7 +390,8 @@ namespace Chirpstack.Api {
       }
 
       /// <summary>
-      /// Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+      /// Activate (re)activates the device with the given parameters (for ABP or for
+      /// importing OTAA activations).
       /// </summary>
       /// <param name="request">The request received from the client.</param>
       /// <param name="context">The context of the server-side call handler being invoked.</param>
@@ -414,7 +415,8 @@ namespace Chirpstack.Api {
       }
 
       /// <summary>
-      /// GetActivation returns the current activation details of the device (OTAA or ABP).
+      /// GetActivation returns the current activation details of the device (OTAA or
+      /// ABP).
       /// </summary>
       /// <param name="request">The request received from the client.</param>
       /// <param name="context">The context of the server-side call handler being invoked.</param>
@@ -426,7 +428,8 @@ namespace Chirpstack.Api {
       }
 
       /// <summary>
-      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+      /// account.
       /// </summary>
       /// <param name="request">The request received from the client.</param>
       /// <param name="context">The context of the server-side call handler being invoked.</param>
@@ -439,7 +442,8 @@ namespace Chirpstack.Api {
 
       /// <summary>
       /// GetMetrics returns the device metrics.
-      /// Note that this requires a device-profile with codec and measurements configured.
+      /// Note that this requires a device-profile with codec and measurements
+      /// configured.
       /// </summary>
       /// <param name="request">The request received from the client.</param>
       /// <param name="context">The context of the server-side call handler being invoked.</param>
@@ -1009,7 +1013,8 @@ namespace Chirpstack.Api {
         return CallInvoker.AsyncUnaryCall(__Method_FlushDevNonces, null, options, request);
       }
       /// <summary>
-      /// Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+      /// Activate (re)activates the device with the given parameters (for ABP or for
+      /// importing OTAA activations).
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -1022,7 +1027,8 @@ namespace Chirpstack.Api {
         return Activate(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+      /// Activate (re)activates the device with the given parameters (for ABP or for
+      /// importing OTAA activations).
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -1033,7 +1039,8 @@ namespace Chirpstack.Api {
         return CallInvoker.BlockingUnaryCall(__Method_Activate, null, options, request);
       }
       /// <summary>
-      /// Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+      /// Activate (re)activates the device with the given parameters (for ABP or for
+      /// importing OTAA activations).
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -1046,7 +1053,8 @@ namespace Chirpstack.Api {
         return ActivateAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// Activate (re)activates the device with the given parameters (for ABP or for importing OTAA activations).
+      /// Activate (re)activates the device with the given parameters (for ABP or for
+      /// importing OTAA activations).
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -1105,7 +1113,8 @@ namespace Chirpstack.Api {
         return CallInvoker.AsyncUnaryCall(__Method_Deactivate, null, options, request);
       }
       /// <summary>
-      /// GetActivation returns the current activation details of the device (OTAA or ABP).
+      /// GetActivation returns the current activation details of the device (OTAA or
+      /// ABP).
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -1118,7 +1127,8 @@ namespace Chirpstack.Api {
         return GetActivation(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// GetActivation returns the current activation details of the device (OTAA or ABP).
+      /// GetActivation returns the current activation details of the device (OTAA or
+      /// ABP).
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -1129,7 +1139,8 @@ namespace Chirpstack.Api {
         return CallInvoker.BlockingUnaryCall(__Method_GetActivation, null, options, request);
       }
       /// <summary>
-      /// GetActivation returns the current activation details of the device (OTAA or ABP).
+      /// GetActivation returns the current activation details of the device (OTAA or
+      /// ABP).
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -1142,7 +1153,8 @@ namespace Chirpstack.Api {
         return GetActivationAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// GetActivation returns the current activation details of the device (OTAA or ABP).
+      /// GetActivation returns the current activation details of the device (OTAA or
+      /// ABP).
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -1153,7 +1165,8 @@ namespace Chirpstack.Api {
         return CallInvoker.AsyncUnaryCall(__Method_GetActivation, null, options, request);
       }
       /// <summary>
-      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+      /// account.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -1166,7 +1179,8 @@ namespace Chirpstack.Api {
         return GetRandomDevAddr(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+      /// account.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -1177,7 +1191,8 @@ namespace Chirpstack.Api {
         return CallInvoker.BlockingUnaryCall(__Method_GetRandomDevAddr, null, options, request);
       }
       /// <summary>
-      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+      /// account.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -1190,7 +1205,8 @@ namespace Chirpstack.Api {
         return GetRandomDevAddrAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
       }
       /// <summary>
-      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
+      /// GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
+      /// account.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -1202,7 +1218,8 @@ namespace Chirpstack.Api {
       }
       /// <summary>
       /// GetMetrics returns the device metrics.
-      /// Note that this requires a device-profile with codec and measurements configured.
+      /// Note that this requires a device-profile with codec and measurements
+      /// configured.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -1216,7 +1233,8 @@ namespace Chirpstack.Api {
       }
       /// <summary>
       /// GetMetrics returns the device metrics.
-      /// Note that this requires a device-profile with codec and measurements configured.
+      /// Note that this requires a device-profile with codec and measurements
+      /// configured.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>
@@ -1228,7 +1246,8 @@ namespace Chirpstack.Api {
       }
       /// <summary>
       /// GetMetrics returns the device metrics.
-      /// Note that this requires a device-profile with codec and measurements configured.
+      /// Note that this requires a device-profile with codec and measurements
+      /// configured.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
@@ -1242,7 +1261,8 @@ namespace Chirpstack.Api {
       }
       /// <summary>
       /// GetMetrics returns the device metrics.
-      /// Note that this requires a device-profile with codec and measurements configured.
+      /// Note that this requires a device-profile with codec and measurements
+      /// configured.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
       /// <param name="options">The options for the call.</param>

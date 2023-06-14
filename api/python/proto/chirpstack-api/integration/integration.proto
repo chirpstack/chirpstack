@@ -83,6 +83,9 @@ message DeviceInfo {
   // Device EUI.
   string dev_eui = 8;
 
+  // Device class.
+  common.DeviceClass device_class_enabled = 10;
+
   // Device-profile and device tags.
   map<string, string> tags = 9;
 }

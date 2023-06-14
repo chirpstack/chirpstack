@@ -32,6 +32,9 @@ export class DeviceInfo extends jspb.Message {
   getDevEui(): string;
   setDevEui(value: string): void;
 
+  getDeviceClassEnabled(): common_common_pb.DeviceClassMap[keyof common_common_pb.DeviceClassMap];
+  setDeviceClassEnabled(value: common_common_pb.DeviceClassMap[keyof common_common_pb.DeviceClassMap]): void;
+
   getTagsMap(): jspb.Map<string, string>;
   clearTagsMap(): void;
   serializeBinary(): Uint8Array;
@@ -54,6 +57,7 @@ export namespace DeviceInfo {
     deviceProfileName: string,
     deviceName: string,
     devEui: string,
+    deviceClassEnabled: common_common_pb.DeviceClassMap[keyof common_common_pb.DeviceClassMap],
     tagsMap: Array<[string, string]>,
   }
 }

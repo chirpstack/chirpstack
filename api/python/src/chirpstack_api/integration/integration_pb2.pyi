@@ -40,7 +40,7 @@ class AckEvent(_message.Message):
     def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., queue_item_id: _Optional[str] = ..., acknowledged: bool = ..., f_cnt_down: _Optional[int] = ...) -> None: ...
 
 class DeviceInfo(_message.Message):
-    __slots__ = ["application_id", "application_name", "dev_eui", "device_name", "device_profile_id", "device_profile_name", "tags", "tenant_id", "tenant_name"]
+    __slots__ = ["application_id", "application_name", "dev_eui", "device_class_enabled", "device_name", "device_profile_id", "device_profile_name", "tags", "tenant_id", "tenant_name"]
     class TagsEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -50,6 +50,7 @@ class DeviceInfo(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     APPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
     APPLICATION_NAME_FIELD_NUMBER: _ClassVar[int]
+    DEVICE_CLASS_ENABLED_FIELD_NUMBER: _ClassVar[int]
     DEVICE_NAME_FIELD_NUMBER: _ClassVar[int]
     DEVICE_PROFILE_ID_FIELD_NUMBER: _ClassVar[int]
     DEVICE_PROFILE_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -60,13 +61,14 @@ class DeviceInfo(_message.Message):
     application_id: str
     application_name: str
     dev_eui: str
+    device_class_enabled: _common_pb2.DeviceClass
     device_name: str
     device_profile_id: str
     device_profile_name: str
     tags: _containers.ScalarMap[str, str]
     tenant_id: str
     tenant_name: str
-    def __init__(self, tenant_id: _Optional[str] = ..., tenant_name: _Optional[str] = ..., application_id: _Optional[str] = ..., application_name: _Optional[str] = ..., device_profile_id: _Optional[str] = ..., device_profile_name: _Optional[str] = ..., device_name: _Optional[str] = ..., dev_eui: _Optional[str] = ..., tags: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    def __init__(self, tenant_id: _Optional[str] = ..., tenant_name: _Optional[str] = ..., application_id: _Optional[str] = ..., application_name: _Optional[str] = ..., device_profile_id: _Optional[str] = ..., device_profile_name: _Optional[str] = ..., device_name: _Optional[str] = ..., dev_eui: _Optional[str] = ..., device_class_enabled: _Optional[_Union[_common_pb2.DeviceClass, str]] = ..., tags: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class DownlinkCommand(_message.Message):
     __slots__ = ["confirmed", "data", "dev_eui", "f_port", "id", "object"]

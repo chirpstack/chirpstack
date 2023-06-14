@@ -2168,6 +2168,7 @@ applications.
 | updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last update timestamp. |
 | last_seen_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last seen at timestamp. |
 | device_status | [DeviceStatus](#api-DeviceStatus) |  | Device status. |
+| class_enabled | [common.DeviceClass](#common-DeviceClass) |  | Enabled device class. |
 
 
 

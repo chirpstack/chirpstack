@@ -304,6 +304,7 @@ proto.integration.DeviceInfo.toObject = function(includeInstance, msg) {
     deviceProfileName: jspb.Message.getFieldWithDefault(msg, 6, ""),
     deviceName: jspb.Message.getFieldWithDefault(msg, 7, ""),
     devEui: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    deviceClassEnabled: jspb.Message.getFieldWithDefault(msg, 10, 0),
     tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
@@ -372,6 +373,10 @@ proto.integration.DeviceInfo.deserializeBinaryFromReader = function(msg, reader)
     case 8:
       var value = /** @type {string} */ (reader.readString());
       msg.setDevEui(value);
+      break;
+    case 10:
+      var value = /** @type {!proto.common.DeviceClass} */ (reader.readEnum());
+      msg.setDeviceClassEnabled(value);
       break;
     case 9:
       var value = msg.getTagsMap();
@@ -461,6 +466,13 @@ proto.integration.DeviceInfo.serializeBinaryToWriter = function(message, writer)
   if (f.length > 0) {
     writer.writeString(
       8,
+      f
+    );
+  }
+  f = message.getDeviceClassEnabled();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      10,
       f
     );
   }
@@ -612,6 +624,24 @@ proto.integration.DeviceInfo.prototype.getDevEui = function() {
  */
 proto.integration.DeviceInfo.prototype.setDevEui = function(value) {
   return jspb.Message.setProto3StringField(this, 8, value);
+};
+
+
+/**
+ * optional common.DeviceClass device_class_enabled = 10;
+ * @return {!proto.common.DeviceClass}
+ */
+proto.integration.DeviceInfo.prototype.getDeviceClassEnabled = function() {
+  return /** @type {!proto.common.DeviceClass} */ (jspb.Message.getFieldWithDefault(this, 10, 0));
+};
+
+
+/**
+ * @param {!proto.common.DeviceClass} value
+ * @return {!proto.integration.DeviceInfo} returns this
+ */
+proto.integration.DeviceInfo.prototype.setDeviceClassEnabled = function(value) {
+  return jspb.Message.setProto3EnumField(this, 10, value);
 };
 
 

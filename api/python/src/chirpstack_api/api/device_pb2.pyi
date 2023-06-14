@@ -313,18 +313,20 @@ class GetDeviceRequest(_message.Message):
     def __init__(self, dev_eui: _Optional[str] = ...) -> None: ...
 
 class GetDeviceResponse(_message.Message):
-    __slots__ = ["created_at", "device", "device_status", "last_seen_at", "updated_at"]
+    __slots__ = ["class_enabled", "created_at", "device", "device_status", "last_seen_at", "updated_at"]
+    CLASS_ENABLED_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     DEVICE_FIELD_NUMBER: _ClassVar[int]
     DEVICE_STATUS_FIELD_NUMBER: _ClassVar[int]
     LAST_SEEN_AT_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
+    class_enabled: _common_pb2.DeviceClass
     created_at: _timestamp_pb2.Timestamp
     device: Device
     device_status: DeviceStatus
     last_seen_at: _timestamp_pb2.Timestamp
     updated_at: _timestamp_pb2.Timestamp
-    def __init__(self, device: _Optional[_Union[Device, _Mapping]] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., last_seen_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_status: _Optional[_Union[DeviceStatus, _Mapping]] = ...) -> None: ...
+    def __init__(self, device: _Optional[_Union[Device, _Mapping]] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., last_seen_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_status: _Optional[_Union[DeviceStatus, _Mapping]] = ..., class_enabled: _Optional[_Union[_common_pb2.DeviceClass, str]] = ...) -> None: ...
 
 class GetRandomDevAddrRequest(_message.Message):
     __slots__ = ["dev_eui"]

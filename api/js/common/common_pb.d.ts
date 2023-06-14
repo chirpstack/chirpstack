@@ -218,3 +218,11 @@ export interface MetricKindMap {
 
 export const MetricKind: MetricKindMap;
 
+export interface DeviceClassMap {
+  CLASS_A: 0;
+  CLASS_B: 1;
+  CLASS_C: 2;
+}
+
+export const DeviceClass: DeviceClassMap;
+

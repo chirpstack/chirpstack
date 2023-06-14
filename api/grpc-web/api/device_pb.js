@@ -2349,7 +2349,8 @@ proto.api.GetDeviceResponse.toObject = function(includeInstance, msg) {
     createdAt: (f = msg.getCreatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     updatedAt: (f = msg.getUpdatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     lastSeenAt: (f = msg.getLastSeenAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    deviceStatus: (f = msg.getDeviceStatus()) && proto.api.DeviceStatus.toObject(includeInstance, f)
+    deviceStatus: (f = msg.getDeviceStatus()) && proto.api.DeviceStatus.toObject(includeInstance, f),
+    classEnabled: jspb.Message.getFieldWithDefault(msg, 6, 0)
   };
 
   if (includeInstance) {
@@ -2410,6 +2411,10 @@ proto.api.GetDeviceResponse.deserializeBinaryFromReader = function(msg, reader) 
       var value = new proto.api.DeviceStatus;
       reader.readMessage(value,proto.api.DeviceStatus.deserializeBinaryFromReader);
       msg.setDeviceStatus(value);
+      break;
+    case 6:
+      var value = /** @type {!proto.common.DeviceClass} */ (reader.readEnum());
+      msg.setClassEnabled(value);
       break;
     default:
       reader.skipField();
@@ -2478,6 +2483,13 @@ proto.api.GetDeviceResponse.serializeBinaryToWriter = function(message, writer) 
       5,
       f,
       proto.api.DeviceStatus.serializeBinaryToWriter
+    );
+  }
+  f = message.getClassEnabled();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      6,
+      f
     );
   }
 };
@@ -2665,6 +2677,24 @@ proto.api.GetDeviceResponse.prototype.clearDeviceStatus = function() {
  */
 proto.api.GetDeviceResponse.prototype.hasDeviceStatus = function() {
   return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional common.DeviceClass class_enabled = 6;
+ * @return {!proto.common.DeviceClass}
+ */
+proto.api.GetDeviceResponse.prototype.getClassEnabled = function() {
+  return /** @type {!proto.common.DeviceClass} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {!proto.common.DeviceClass} value
+ * @return {!proto.api.GetDeviceResponse} returns this
+ */
+proto.api.GetDeviceResponse.prototype.setClassEnabled = function(value) {
+  return jspb.Message.setProto3EnumField(this, 6, value);
 };
 
 

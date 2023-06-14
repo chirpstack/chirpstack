@@ -185,3 +185,8 @@ export enum MetricKind {
   ABSOLUTE = 1,
   GAUGE = 2,
 }
+export enum DeviceClass { 
+  CLASS_A = 0,
+  CLASS_B = 1,
+  CLASS_C = 2,
+}

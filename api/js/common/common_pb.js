@@ -15,6 +15,7 @@ var global = Function('return this')();
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 goog.object.extend(proto, google_protobuf_timestamp_pb);
 goog.exportSymbol('proto.common.Aggregation', null, global);
+goog.exportSymbol('proto.common.DeviceClass', null, global);
 goog.exportSymbol('proto.common.KeyEnvelope', null, global);
 goog.exportSymbol('proto.common.Location', null, global);
 goog.exportSymbol('proto.common.LocationSource', null, global);
@@ -1099,6 +1100,15 @@ proto.common.MetricKind = {
   COUNTER: 0,
   ABSOLUTE: 1,
   GAUGE: 2
+};
+
+/**
+ * @enum {number}
+ */
+proto.common.DeviceClass = {
+  CLASS_A: 0,
+  CLASS_B: 1,
+  CLASS_C: 2
 };
 
 goog.object.extend(exports, proto.common);
