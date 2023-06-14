@@ -14,8 +14,10 @@ use crate::downlink::{classb, helpers, tx_ack};
 use crate::gpstime::{ToDateTime, ToGpsTime};
 use crate::storage;
 use crate::storage::{
-    application, device, device_gateway, device_profile, device_queue, device_session,
-    downlink_frame, mac_command, relay, tenant,
+    application,
+    device::{self, DeviceClass},
+    device_gateway, device_profile, device_queue, device_session, downlink_frame, mac_command,
+    relay, tenant,
 };
 use crate::uplink::{RelayContext, UplinkFrameSet};
 use crate::{adr, config, gateway, integration, maccommand, region, sensitivity};
@@ -548,15 +550,15 @@ impl Data {
     }
 
     fn _is_class_a(&self) -> bool {
-        &self.device.enabled_class == "A"
+        self.device.enabled_class == DeviceClass::A
     }
 
     fn _is_class_b(&self) -> bool {
-        &self.device.enabled_class == "B"
+        self.device.enabled_class == DeviceClass::B
     }
 
     fn _is_class_c(&self) -> bool {
-        &self.device.enabled_class == "C"
+        self.device.enabled_class == DeviceClass::C
     }
 
     fn _is_roaming(&self) -> bool {

@@ -2,8 +2,9 @@ use uuid::Uuid;
 
 use super::assert;
 use crate::storage::{
-    application, device, device_gateway, device_profile, device_queue, device_session, gateway,
-    reset_redis, tenant,
+    application,
+    device::{self, DeviceClass},
+    device_gateway, device_profile, device_queue, device_session, gateway, reset_redis, tenant,
 };
 use crate::{downlink, gateway::backend as gateway_backend, integration, test};
 use chirpstack_api::{common, gw, internal};
@@ -69,7 +70,7 @@ async fn test_downlink_scheduler() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "C".into(),
+        enabled_class: DeviceClass::C,
         ..Default::default()
     })
     .await

@@ -10,7 +10,11 @@ use super::assert;
 use crate::api::backend as backend_api;
 use crate::backend::{joinserver, roaming};
 use crate::gateway::backend as gateway_backend;
-use crate::storage::{application, device, device_keys, device_profile, gateway, tenant};
+use crate::storage::{
+    application,
+    device::{self, DeviceClass},
+    device_keys, device_profile, gateway, tenant,
+};
 use crate::{config, test, uplink};
 use chirpstack_api::gw;
 use lrwn::{AES128Key, NetID, EUI64};
@@ -298,7 +302,7 @@ async fn test_sns() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "B".into(),
+        enabled_class: DeviceClass::B,
         ..Default::default()
     })
     .await

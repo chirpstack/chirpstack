@@ -4,7 +4,9 @@ use uuid::Uuid;
 
 use super::assert;
 use crate::storage::{
-    application, device, device_profile, device_queue, device_session, gateway, reset_redis, tenant,
+    application,
+    device::{self, DeviceClass},
+    device_profile, device_queue, device_session, gateway, reset_redis, tenant,
 };
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, integration as integration_pb, internal};
@@ -82,7 +84,7 @@ async fn test_lorawan_10() {
         application_id: app.id,
         device_profile_id: dp_relay.id,
         dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -93,7 +95,7 @@ async fn test_lorawan_10() {
         application_id: app.id,
         device_profile_id: dp_relay_ed.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await

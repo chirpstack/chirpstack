@@ -8,8 +8,9 @@ use lrwn::{AES128Key, MType, Payload, PhyPayload, EUI64};
 
 use crate::api::helpers::ToProto;
 use crate::storage::{
-    application, device, device_profile, device_queue, device_session, downlink_frame, multicast,
-    tenant,
+    application,
+    device::{self, DeviceClass},
+    device_profile, device_queue, device_session, downlink_frame, multicast, tenant,
 };
 use crate::{framelog, integration, metalog};
 use chirpstack_api::{api, common, gw, integration as integration_pb, internal, meta};
@@ -340,7 +341,7 @@ impl TxAck {
 
         qi.is_pending = true;
 
-        if &dev.enabled_class == "C" {
+        if dev.enabled_class == DeviceClass::C {
             let timeout = Utc::now() + Duration::seconds(dp.class_c_timeout as i64);
             qi.timeout_after = Some(timeout);
         }

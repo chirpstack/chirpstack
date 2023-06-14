@@ -11,7 +11,8 @@ use tokio::time::sleep;
 use crate::gateway::backend::mock as gateway_mock;
 use crate::integration::mock;
 use crate::storage::{
-    device, device_queue, device_session, downlink_frame, get_redis_conn, redis_key,
+    device::{self, DeviceClass},
+    device_queue, device_session, downlink_frame, get_redis_conn, redis_key,
 };
 use chirpstack_api::{api, gw, integration as integration_pb, internal, meta};
 use lrwn::EUI64;
@@ -362,7 +363,7 @@ pub fn device_queue_items(dev_eui: EUI64, items: Vec<device_queue::DeviceQueueIt
     })
 }
 
-pub fn enabled_class(dev_eui: EUI64, c: String) -> Validator {
+pub fn enabled_class(dev_eui: EUI64, c: DeviceClass) -> Validator {
     Box::new(move || {
         let c = c.clone();
         let dev_eui = dev_eui.clone();

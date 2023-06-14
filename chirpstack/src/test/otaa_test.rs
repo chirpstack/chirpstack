@@ -6,7 +6,9 @@ use uuid::Uuid;
 
 use super::assert;
 use crate::storage::{
-    application, device, device_keys, device_profile, gateway, reset_redis, tenant,
+    application,
+    device::{self, DeviceClass},
+    device_keys, device_profile, gateway, reset_redis, tenant,
 };
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
 use chirpstack_api::{common, gw, internal, meta};
@@ -89,7 +91,7 @@ async fn test_gateway_filtering() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "B".into(),
+        enabled_class: DeviceClass::B,
         ..Default::default()
     })
     .await
@@ -261,7 +263,7 @@ async fn test_lorawan_10() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "B".into(),
+        enabled_class: DeviceClass::B,
         ..Default::default()
     })
     .await
@@ -560,7 +562,7 @@ async fn test_lorawan_10() {
                     }),
                     ..Default::default()
                 }),
-                assert::enabled_class(dev.dev_eui.clone(), "A".into()),
+                assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A),
                 assert::device_queue_items(dev.dev_eui.clone(), vec![]),
                 assert::uplink_meta_log(meta::UplinkMeta {
                     dev_eui: dev.dev_eui.to_string(),
@@ -807,7 +809,7 @@ async fn test_lorawan_10() {
             tx_info: tx_info.clone(),
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: Vec::new(),
-            assert: vec![assert::enabled_class(dev.dev_eui.clone(), "A".to_string())],
+            assert: vec![assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A)],
         },
         Test {
             name: "join-request accepted + class-c supported".into(),
@@ -834,7 +836,7 @@ async fn test_lorawan_10() {
             tx_info: tx_info.clone(),
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: Vec::new(),
-            assert: vec![assert::enabled_class(dev.dev_eui.clone(), "C".to_string())],
+            assert: vec![assert::enabled_class(dev.dev_eui.clone(), DeviceClass::C)],
         },
         Test {
             name: "device disabled".into(),
@@ -915,7 +917,7 @@ async fn test_lorawan_11() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "B".into(),
+        enabled_class: DeviceClass::B,
         ..Default::default()
     })
     .await
@@ -1181,7 +1183,7 @@ async fn test_lorawan_11() {
                     }),
                     ..Default::default()
                 }),
-                assert::enabled_class(dev.dev_eui.clone(), "A".into()),
+                assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A),
                 assert::device_queue_items(dev.dev_eui.clone(), vec![]),
             ],
         },
@@ -1210,7 +1212,7 @@ async fn test_lorawan_11() {
             tx_info: tx_info.clone(),
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: Vec::new(),
-            assert: vec![assert::enabled_class(dev.dev_eui.clone(), "A".to_string())],
+            assert: vec![assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A)],
         },
     ];
 

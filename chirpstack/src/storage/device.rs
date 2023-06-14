@@ -1,10 +1,11 @@
 use std::collections::HashMap;
+use std::fmt;
+use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Duration, Utc};
-use diesel::dsl;
-use diesel::prelude::*;
+use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
 use tokio::task;
 use tracing::info;
 use uuid::Uuid;
@@ -14,6 +15,59 @@ use lrwn::{DevAddr, EUI64};
 use super::schema::{application, device, device_profile, multicast_group_device, tenant};
 use super::{error::Error, fields, get_db_conn, get_redis_conn, redis_key};
 use crate::config;
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, AsExpression, FromSqlRow)]
+#[diesel(sql_type = Text)]
+pub enum DeviceClass {
+    A,
+    B,
+    C,
+}
+
+impl fmt::Display for DeviceClass {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl FromStr for DeviceClass {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(match s {
+            "A" => DeviceClass::A,
+            "B" => DeviceClass::B,
+            "C" => DeviceClass::C,
+            _ => return Err(anyhow!("Unexpected DeviceClass: {}", s)),
+        })
+    }
+}
+
+impl<DB> deserialize::FromSql<Text, DB> for DeviceClass
+where
+    DB: Backend,
+    *const str: deserialize::FromSql<Text, DB>,
+{
+    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let string = String::from_sql(value)?;
+        Ok(DeviceClass::from_str(&string)?)
+    }
+}
+
+impl serialize::ToSql<Text, diesel::pg::Pg> for DeviceClass
+where
+    str: serialize::ToSql<Text, diesel::pg::Pg>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut serialize::Output<'b, '_, diesel::pg::Pg>,
+    ) -> serialize::Result {
+        <str as serialize::ToSql<Text, diesel::pg::Pg>>::to_sql(
+            &self.to_string(),
+            &mut out.reborrow(),
+        )
+    }
+}
 
 #[derive(Queryable, QueryableByName, Insertable, PartialEq, Debug, Clone)]
 #[diesel(table_name = device)]
@@ -35,7 +89,7 @@ pub struct Device {
     pub longitude: Option<f64>,
     pub altitude: Option<f32>,
     pub dev_addr: Option<DevAddr>,
-    pub enabled_class: String,
+    pub enabled_class: DeviceClass,
     pub skip_fcnt_check: bool,
     pub is_disabled: bool,
     pub tags: fields::KeyValue,
@@ -74,7 +128,7 @@ impl Default for Device {
             longitude: None,
             altitude: None,
             dev_addr: None,
-            enabled_class: "A".into(),
+            enabled_class: DeviceClass::A,
             skip_fcnt_check: false,
             is_disabled: false,
             tags: fields::KeyValue::new(HashMap::new()),
@@ -212,10 +266,10 @@ pub async fn update(d: Device) -> Result<Device, Error> {
     Ok(d)
 }
 
-pub async fn set_enabled_class(dev_eui: &EUI64, mode: &str) -> Result<Device, Error> {
+pub async fn set_enabled_class(dev_eui: &EUI64, mode: DeviceClass) -> Result<Device, Error> {
     let d = task::spawn_blocking({
         let dev_eui = *dev_eui;
-        let mode = mode.to_string();
+
         move || -> Result<Device, Error> {
             let mut c = get_db_conn()?;
             diesel::update(device::dsl::device.find(&dev_eui))
@@ -746,13 +800,13 @@ pub mod test {
         assert_eq!(0, res.len());
 
         // device in Class-B.
-        let d = set_enabled_class(&d.dev_eui, "B").await.unwrap();
+        let d = set_enabled_class(&d.dev_eui, DeviceClass::B).await.unwrap();
         let res = get_with_class_b_c_queue_items(10).await.unwrap();
         let d = set_scheduler_run_after(&d.dev_eui, None).await.unwrap();
         assert_eq!(1, res.len());
 
         // device in Class-C
-        let d = set_enabled_class(&d.dev_eui, "C").await.unwrap();
+        let d = set_enabled_class(&d.dev_eui, DeviceClass::C).await.unwrap();
         let res = get_with_class_b_c_queue_items(10).await.unwrap();
         assert_eq!(1, res.len());
 

@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 
 use crate::codec::Codec;
 use crate::storage::fields::{MeasurementKind, MulticastGroupSchedulingType};
-use crate::storage::metrics::Aggregation;
+use crate::storage::{device::DeviceClass, metrics::Aggregation};
 use chirpstack_api::{api, common};
 use lrwn::region::{CommonName, MacVersion, Revision};
 
@@ -245,6 +245,16 @@ impl FromProto<lrwn::RelayModeActivation> for api::RelayModeActivation {
             api::RelayModeActivation::EndDeviceControlled => {
                 lrwn::RelayModeActivation::EndDeviceControlled
             }
+        }
+    }
+}
+
+impl ToProto<api::DeviceClass> for DeviceClass {
+    fn to_proto(self) -> api::DeviceClass {
+        match self {
+            DeviceClass::A => api::DeviceClass::A,
+            DeviceClass::B => api::DeviceClass::B,
+            DeviceClass::C => api::DeviceClass::C,
         }
     }
 }

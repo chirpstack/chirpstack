@@ -132,6 +132,7 @@ impl DeviceService for Device {
                 }),
                 false => None,
             },
+            enabled_class: d.enabled_class.to_proto().into(),
         });
         resp.metadata_mut()
             .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());

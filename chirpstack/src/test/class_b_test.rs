@@ -3,8 +3,9 @@ use uuid::Uuid;
 use super::assert;
 use crate::gpstime::ToGpsTime;
 use crate::storage::{
-    application, device, device_gateway, device_profile, device_queue, device_session, gateway,
-    reset_redis, tenant,
+    application,
+    device::{self, DeviceClass},
+    device_gateway, device_profile, device_queue, device_session, gateway, reset_redis, tenant,
 };
 use crate::{
     config, downlink, downlink::classb, gateway::backend as gateway_backend, integration, test,
@@ -78,7 +79,7 @@ async fn test_uplink() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -155,7 +156,7 @@ async fn test_uplink() {
         },
         assert: vec![
             assert::f_cnt_up(dev.dev_eui.clone(), 9),
-            assert::enabled_class(dev.dev_eui.clone(), "B".into()),
+            assert::enabled_class(dev.dev_eui.clone(), DeviceClass::B),
         ],
     })
     .await;
@@ -189,7 +190,7 @@ async fn test_uplink() {
         },
         assert: vec![
             assert::f_cnt_up(dev.dev_eui.clone(), 9),
-            assert::enabled_class(dev.dev_eui.clone(), "A".into()),
+            assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A),
         ],
     })
     .await;
@@ -242,7 +243,7 @@ async fn test_downlink_scheduler() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "B".into(),
+        enabled_class: DeviceClass::B,
         ..Default::default()
     })
     .await

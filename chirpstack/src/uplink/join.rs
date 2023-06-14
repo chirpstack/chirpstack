@@ -20,7 +20,10 @@ use crate::api::backend::get_async_receiver;
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::device_session;
 use crate::storage::{
-    application, device, device_keys, device_profile, device_queue, error::Error as StorageError,
+    application,
+    device::{self, DeviceClass},
+    device_keys, device_profile, device_queue,
+    error::Error as StorageError,
     metrics, tenant,
 };
 use crate::{
@@ -843,9 +846,9 @@ impl JoinRequest {
 
         // LoRaWAN 1.1 devices send a mac-command when changing to Class-C.
         if dp.supports_class_c && dp.mac_version.to_string().starts_with("1.0") {
-            *device = device::set_enabled_class(&device.dev_eui, "C").await?;
+            *device = device::set_enabled_class(&device.dev_eui, DeviceClass::C).await?;
         } else {
-            *device = device::set_enabled_class(&device.dev_eui, "A").await?;
+            *device = device::set_enabled_class(&device.dev_eui, DeviceClass::A).await?;
         }
         Ok(())
     }

@@ -6,8 +6,9 @@ use uuid::Uuid;
 
 use super::assert;
 use crate::storage::{
-    application, device, device_profile, device_queue, device_session, gateway, mac_command,
-    reset_redis, tenant,
+    application,
+    device::{self, DeviceClass},
+    device_profile, device_queue, device_session, gateway, mac_command, reset_redis, tenant,
 };
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
 use chirpstack_api::{api, common, gw, integration as integration_pb, internal};
@@ -91,7 +92,7 @@ async fn test_gateway_filtering() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "B".into(),
+        enabled_class: DeviceClass::B,
         ..Default::default()
     })
     .await
@@ -255,7 +256,7 @@ async fn test_region_config_id_filtering() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -414,7 +415,7 @@ async fn test_lorawan_10_errors() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -609,7 +610,7 @@ async fn test_lorawan_11_errors() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -762,7 +763,7 @@ async fn test_lorawan_10_skip_f_cnt() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         skip_fcnt_check: true,
         ..Default::default()
     })
@@ -955,7 +956,7 @@ async fn test_lorawan_10_device_disabled() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         is_disabled: true,
         ..Default::default()
     })
@@ -1079,7 +1080,7 @@ async fn test_lorawan_10_uplink() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -1698,7 +1699,7 @@ async fn test_lorawan_11_uplink() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -1936,7 +1937,7 @@ async fn test_lorawan_10_rx_delay() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -2149,7 +2150,7 @@ async fn test_lorawan_10_mac_commands() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -2518,7 +2519,7 @@ async fn test_lorawan_11_mac_commands() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -2712,7 +2713,7 @@ async fn test_lorawan_10_device_queue() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -3185,7 +3186,7 @@ async fn test_lorawan_11_device_queue() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -3662,7 +3663,7 @@ async fn test_lorawan_10_adr() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -4505,7 +4506,7 @@ async fn test_lorawan_10_device_status_request() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await
@@ -4768,7 +4769,7 @@ async fn test_lorawan_11_receive_window_selection() {
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-        enabled_class: "A".into(),
+        enabled_class: DeviceClass::A,
         ..Default::default()
     })
     .await

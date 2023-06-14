@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::storage::device;
+use crate::storage::device::{self, DeviceClass};
 
 pub async fn handle(
     dev: &device::Device,
@@ -10,7 +10,14 @@ pub async fn handle(
         .first()
         .ok_or_else(|| anyhow!("Expected DeviceModeInd"))?;
     if let lrwn::MACCommand::DeviceModeInd(pl) = mac {
-        device::set_enabled_class(&dev.dev_eui, &pl.class.to_string()).await?;
+        device::set_enabled_class(
+            &dev.dev_eui,
+            match pl.class {
+                lrwn::DeviceModeClass::ClassA => DeviceClass::A,
+                lrwn::DeviceModeClass::ClassC => DeviceClass::C,
+            },
+        )
+        .await?;
 
         return Ok(Some(lrwn::MACCommandSet::new(vec![
             lrwn::MACCommand::DeviceModeConf(lrwn::DeviceModeConfPayload { class: pl.class }),
@@ -81,6 +88,6 @@ pub mod test {
         );
 
         let d = device::get(&dev.dev_eui).await.unwrap();
-        assert_eq!("C".to_string(), d.enabled_class);
+        assert_eq!(DeviceClass::C, d.enabled_class);
     }
 }

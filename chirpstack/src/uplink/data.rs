@@ -14,8 +14,9 @@ use crate::api::helpers::ToProto;
 use crate::backend::roaming;
 use crate::storage::error::Error as StorageError;
 use crate::storage::{
-    application, device, device_gateway, device_profile, device_queue, device_session, fields,
-    metrics, tenant,
+    application,
+    device::{self, DeviceClass},
+    device_gateway, device_profile, device_queue, device_session, fields, metrics, tenant,
 };
 use crate::{codec, config, downlink, framelog, integration, maccommand, metalog, region};
 use chirpstack_api::{api, integration as integration_pb, internal, meta};
@@ -555,7 +556,7 @@ impl Data {
         let dev = self.device.as_mut().unwrap();
         let conf = config::get();
 
-        if &dev.enabled_class == "B" || &dev.enabled_class == "C" {
+        if dev.enabled_class == DeviceClass::B || dev.enabled_class == DeviceClass::C {
             trace!("Setting scheduler_run_after for device");
             let scheduler_run_after =
                 Utc::now() + Duration::from_std(conf.network.scheduler.class_a_lock_duration)?;
@@ -708,22 +709,21 @@ impl Data {
         let dp = self.device_profile.as_ref().unwrap();
 
         let mut mode = match dp.supports_class_c {
-            true => "C",
-            false => "A",
-        }
-        .to_string();
+            true => DeviceClass::C,
+            false => DeviceClass::A,
+        };
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             let locked = pl.fhdr.f_ctrl.class_b;
             mode = match locked {
-                true => "B".to_string(),
+                true => DeviceClass::B,
                 false => mode,
             };
         }
 
         // Update if the enabled class has changed.
         if dev.enabled_class != mode {
-            *dev = device::set_enabled_class(&dev.dev_eui, &mode).await?;
+            *dev = device::set_enabled_class(&dev.dev_eui, mode).await?;
         }
 
         Ok(())
