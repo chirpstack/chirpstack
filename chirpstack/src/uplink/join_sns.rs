@@ -5,6 +5,7 @@ use chrono::{DateTime, Local, Utc};
 use tracing::{span, trace, Instrument, Level};
 
 use super::{helpers, UplinkFrameSet};
+use crate::api::helpers::ToProto;
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::{
     application,
@@ -184,6 +185,7 @@ impl JoinRequest {
             device_profile_id: dp.id.to_string(),
             device_profile_name: dp.name.clone(),
             device_name: dev.name.clone(),
+            device_enabled_class: dev.enabled_class.to_proto().into(),
             dev_eui: dev.dev_eui.to_string(),
             tags,
         });

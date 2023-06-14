@@ -249,12 +249,12 @@ impl FromProto<lrwn::RelayModeActivation> for api::RelayModeActivation {
     }
 }
 
-impl ToProto<api::DeviceClass> for DeviceClass {
-    fn to_proto(self) -> api::DeviceClass {
+impl ToProto<common::DeviceClass> for DeviceClass {
+    fn to_proto(self) -> common::DeviceClass {
         match self {
-            DeviceClass::A => api::DeviceClass::A,
-            DeviceClass::B => api::DeviceClass::B,
-            DeviceClass::C => api::DeviceClass::C,
+            DeviceClass::A => common::DeviceClass::ClassA,
+            DeviceClass::B => common::DeviceClass::ClassB,
+            DeviceClass::C => common::DeviceClass::ClassC,
         }
     }
 }

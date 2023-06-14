@@ -16,7 +16,8 @@ use super::{
     filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers, RelayContext,
     UplinkFrameSet,
 };
-use crate::api::backend::get_async_receiver;
+
+use crate::api::{backend::get_async_receiver, helpers::ToProto};
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::device_session;
 use crate::storage::{
@@ -316,6 +317,7 @@ impl JoinRequest {
             device_profile_id: dp.id.to_string(),
             device_profile_name: dp.name.clone(),
             device_name: dev.name.clone(),
+            device_enabled_class: dev.enabled_class.to_proto().into(),
             dev_eui: dev.dev_eui.to_string(),
             tags,
         });

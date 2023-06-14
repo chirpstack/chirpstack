@@ -167,17 +167,6 @@ service DeviceService {
   }
 }
 
-enum DeviceClass {
-  // Class-A.
-  A = 0;
-
-  // Class-B.
-  B = 1;
-
-  // Class-C.
-  C = 2;
-}
-
 message Device {
   // DevEUI (EUI64).
   string dev_eui = 1;
@@ -302,7 +291,7 @@ message GetDeviceResponse {
   DeviceStatus device_status = 5;
 
   // Enabled class.
-  DeviceClass enabled_class = 6;
+  common.DeviceClass enabled_class = 6;
 }
 
 message UpdateDeviceRequest {
