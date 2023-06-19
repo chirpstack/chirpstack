@@ -107,7 +107,7 @@ paho-mqtt = { version = "0.12", features = ["ssl"] }
 hex = "0.4"
 
 # Codecs
-rquickjs = { version = "0.1", features = [
+rquickjs = { version = "0.3", features = [
 	"bindgen",
 	"loader",
 	"array-buffer",
