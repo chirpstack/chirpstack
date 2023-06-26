@@ -435,7 +435,7 @@ async fn message_callback(
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "test-integration-mqtt"))]
 pub mod test {
     use std::env;
 

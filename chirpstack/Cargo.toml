@@ -134,6 +134,12 @@ httpmock = "0.6"
 bytes = "1.4"
 dotenv = "0.15"
 
+[features]
+test-all-integrations = ["test-integration-amqp", "test-integration-kafka", "test-integration-mqtt"]
+test-integration-amqp = []
+test-integration-kafka = []
+test-integration-mqtt = []
+
 # Debian packaging.
 [package.metadata.deb]
 assets = [

@@ -221,7 +221,7 @@ impl<'a> IntegrationTrait for Integration<'a> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "test-integration-kafka"))]
 pub mod test {
     use std::env;
 

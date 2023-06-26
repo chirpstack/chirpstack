@@ -242,7 +242,7 @@ impl<'a> IntegrationTrait for Integration<'a> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "test-integration-amqp"))]
 pub mod test {
     use std::env;
 

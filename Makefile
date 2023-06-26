@@ -60,3 +60,10 @@ test:
 	cd chirpstack && make test
 	cd lrwn && make test
 	cd lrwn-filters && make test
+
+# Runs all the tests (including some that normally are ignored)
+test-all:
+	cd backend && cargo test
+	cd chirpstack && make test-all
+	cd lrwn && make test
+	cd lrwn-filters && make test
