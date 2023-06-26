@@ -358,17 +358,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1181e1e0d1fce796a03db1ae795d67167da795f9cf4a39c37589e85ef57f26d3"
 
 [[package]]
-name = "atty"
-version = "0.2.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
-dependencies = [
- "hermit-abi 0.1.19",
- "libc",
- "winapi",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -791,24 +780,24 @@ dependencies = [
 
 [[package]]
 name = "bindgen"
-version = "0.60.1"
+version = "0.65.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "062dddbc1ba4aca46de6338e2bf87771414c335f7b2f2036e8f3e9befebf88e6"
+checksum = "cfdf7b466f9a4903edc73f95d6d2bcd5baf8ae620638762244d3f60143643cc5"
 dependencies = [
  "bitflags 1.3.2",
  "cexpr",
  "clang-sys",
- "clap 3.2.25",
- "env_logger",
  "lazy_static",
  "lazycell",
  "log",
  "peeking_take_while",
+ "prettyplease 0.2.9",
  "proc-macro2",
  "quote",
  "regex",
  "rustc-hash",
  "shlex",
+ "syn 2.0.22",
  "which",
 ]
 
@@ -954,7 +943,7 @@ dependencies = [
  "bytes",
  "chirpstack_api",
  "chrono",
- "clap 4.3.8",
+ "clap",
  "diesel",
  "diesel_migrations",
  "dotenv",
@@ -1072,21 +1061,6 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "3.2.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ea181bf566f71cb9a5d17a59e1871af638180a18fb0035c92ae62b705207123"
-dependencies = [
- "atty",
- "bitflags 1.3.2",
- "clap_lex 0.2.4",
- "indexmap 1.9.3",
- "strsim",
- "termcolor",
- "textwrap",
-]
-
-[[package]]
-name = "clap"
 version = "4.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9394150f5b4273a1763355bd1c2ec54cc5a2593f790587bcd6b2c947cfa9211"
@@ -1105,7 +1079,7 @@ dependencies = [
  "anstream",
  "anstyle",
  "bitflags 1.3.2",
- "clap_lex 0.5.0",
+ "clap_lex",
  "strsim",
 ]
 
@@ -1119,15 +1093,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.22",
-]
-
-[[package]]
-name = "clap_lex"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
-dependencies = [
- "os_str_bytes",
 ]
 
 [[package]]
@@ -1541,19 +1506,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "env_logger"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
-dependencies = [
- "atty",
- "humantime",
- "log",
- "regex",
- "termcolor",
-]
-
-[[package]]
 name = "equivalent"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1945,15 +1897,6 @@ name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
-
-[[package]]
-name = "hermit-abi"
-version = "0.1.19"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62b467343b94ba476dcb2500d242dadbb39557df889310ac77c5d99100aaac33"
-dependencies = [
- "libc",
-]
 
 [[package]]
 name = "hermit-abi"
@@ -2790,12 +2733,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "os_str_bytes"
-version = "6.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d5d9eb14b174ee9aa2ef96dc2b94637a2d4b6e7cb873c7e171f0c20c6cf3eac"
-
-[[package]]
 name = "outref"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3174,6 +3111,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "prettyplease"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9825a04601d60621feed79c4e6b56d65db77cdca55cef43b46b0de1096d1c282"
+dependencies = [
+ "proc-macro2",
+ "syn 2.0.22",
+]
+
+[[package]]
 name = "proc-macro-crate"
 version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3238,7 +3185,7 @@ dependencies = [
  "log",
  "multimap",
  "petgraph",
- "prettyplease",
+ "prettyplease 0.1.25",
  "prost",
  "prost-types",
  "regex",
@@ -3514,18 +3461,18 @@ dependencies = [
 
 [[package]]
 name = "rquickjs"
-version = "0.1.7"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc022cc82b5de6f38b2f4ddb8ed9c49cdbd7ce112e650b181598e102157257de"
+checksum = "6db7788c2818f4546daabe9ae2d1ee2f4db61ab1998d4b483494c4193cc38dab"
 dependencies = [
  "rquickjs-core",
 ]
 
 [[package]]
 name = "rquickjs-core"
-version = "0.1.7"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74fa1ecc1c84b31da87e5b26ce2b5218d36ffeb5c322141c78b79fa86a6ee3b9"
+checksum = "b12cf8646fe0af5bcff2822ccd162990f0679a1f9287c7257f4f4193a9d31ea9"
 dependencies = [
  "chrono",
  "relative-path",
@@ -3534,9 +3481,9 @@ dependencies = [
 
 [[package]]
 name = "rquickjs-sys"
-version = "0.1.7"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24311952af42d8252e399cf48e7d470cb413b1a11a1a5b7fab648cd2edec76c5"
+checksum = "b747058afd4d988d056e4972ec8516a5a86fdfc103c1c1485bfee8966a0743ae"
 dependencies = [
  "bindgen",
  "cc",
@@ -4170,21 +4117,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "termcolor"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be55cf8942feac5c765c2c993422806843c9a9a45d4d5c407ad6dd2ea95eb9b6"
-dependencies = [
- "winapi-util",
-]
-
-[[package]]
-name = "textwrap"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "222a222a5bfe1bba4a77b45ec488a741b3cb8872e5e499451fd7d0129c9c7c3d"
-
-[[package]]
 name = "thiserror"
 version = "1.0.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4454,7 +4386,7 @@ version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6fdaae4c2c638bb70fe42803a26fbd6fc6ac8c72f5c59f67ecc2a2dcabf4b07"
 dependencies = [
- "prettyplease",
+ "prettyplease 0.1.25",
  "proc-macro2",
  "prost-build",
  "quote",
