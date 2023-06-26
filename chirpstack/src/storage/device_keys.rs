@@ -158,7 +158,7 @@ pub async fn reset_nonces(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
     Ok(dk)
 }
 
-pub async fn validate_and_store_dev_nonce(
+pub async fn validate_incr_join_and_store_dev_nonce(
     dev_eui: &EUI64,
     dev_nonce: i32,
 ) -> Result<DeviceKeys, Error> {
@@ -178,11 +178,13 @@ pub async fn validate_and_store_dev_nonce(
                 }
 
                 dk.dev_nonces.push(Some(dev_nonce));
+                dk.join_nonce += 1;
 
                 diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
                     .set((
                         device_keys::updated_at.eq(Utc::now()),
                         device_keys::dev_nonces.eq(&dk.dev_nonces),
+                        device_keys::join_nonce.eq(&dk.join_nonce),
                     ))
                     .get_result(c)
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
@@ -191,7 +193,7 @@ pub async fn validate_and_store_dev_nonce(
     })
     .await??;
 
-    info!(dev_eui = %dev_eui, dev_nonce = dev_nonce, "Device-nonce validated and stored");
+    info!(dev_eui = %dev_eui, dev_nonce = dev_nonce, "Device-nonce validated, join-nonce incremented and stored");
     Ok(dk)
 }
 

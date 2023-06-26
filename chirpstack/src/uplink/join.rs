@@ -129,10 +129,9 @@ impl JoinRequest {
             ctx.get_join_accept_from_js().await?;
         } else {
             // Using internal keys
-            ctx.validate_dev_nonce_and_get_device_keys().await?;
             ctx.validate_mic().await?;
+            ctx.validate_dev_nonce_and_get_device_keys().await?;
             ctx.construct_join_accept_and_set_keys()?;
-            ctx.save_device_keys().await?;
         }
         ctx.log_uplink_meta().await?;
         ctx.create_device_session().await?;
@@ -185,10 +184,9 @@ impl JoinRequest {
             ctx.get_join_accept_from_js().await?;
         } else {
             // Using internal keys
-            ctx.validate_dev_nonce_and_get_device_keys().await?;
             ctx.validate_mic().await?;
+            ctx.validate_dev_nonce_and_get_device_keys().await?;
             ctx.construct_join_accept_and_set_keys()?;
-            ctx.save_device_keys().await?;
         }
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
@@ -392,66 +390,9 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn validate_dev_nonce_and_get_device_keys(&mut self) -> Result<()> {
-        trace!("Validate dev-nonce and get device-keys");
-        let dev = self.device.as_ref().unwrap();
-        let app = self.application.as_ref().unwrap();
-        let join_request = self.join_request.as_ref().unwrap();
-
-        self.device_keys = Some(
-            match device_keys::validate_and_store_dev_nonce(
-                &dev.dev_eui,
-                join_request.dev_nonce as i32,
-            )
-            .await
-            {
-                Ok(v) => v,
-                Err(v) => match v {
-                    StorageError::InvalidDevNonce => {
-                        integration::log_event(
-                            app.id,
-                            &dev.variables,
-                            &integration_pb::LogEvent {
-                                time: Some(Utc::now().into()),
-                                device_info: self.device_info.clone(),
-                                level: integration_pb::LogLevel::Error.into(),
-                                code: integration_pb::LogCode::Otaa.into(),
-                                description: "DevNonce has already been used".into(),
-                                context: [(
-                                    "deduplication_id".to_string(),
-                                    self.uplink_frame_set.uplink_set_id.to_string(),
-                                )]
-                                .iter()
-                                .cloned()
-                                .collect(),
-                            },
-                        )
-                        .await;
-
-                        metrics::save(
-                            &format!("device:{}", dev.dev_eui),
-                            &metrics::Record {
-                                time: Local::now(),
-                                kind: metrics::Kind::ABSOLUTE,
-                                metrics: [("error_OTAA".into(), 1f64)].iter().cloned().collect(),
-                            },
-                        )
-                        .await?;
-
-                        return Err(v.into());
-                    }
-                    _ => {
-                        return Err(v.into());
-                    }
-                },
-            },
-        );
-
-        Ok(())
-    }
-
     async fn validate_mic(&self) -> Result<()> {
-        let device_keys = self.device_keys.as_ref().unwrap();
+        let join_request = self.join_request.as_ref().unwrap();
+        let device_keys = device_keys::get(&join_request.dev_eui).await?;
 
         if let Some(relay_ctx) = self.relay_context.as_ref() {
             if relay_ctx
@@ -506,6 +447,64 @@ impl JoinRequest {
         .await?;
 
         Err(anyhow!("Invalid MIC"))
+    }
+
+    async fn validate_dev_nonce_and_get_device_keys(&mut self) -> Result<()> {
+        trace!("Validate dev-nonce and get device-keys");
+        let dev = self.device.as_ref().unwrap();
+        let app = self.application.as_ref().unwrap();
+        let join_request = self.join_request.as_ref().unwrap();
+
+        self.device_keys = Some(
+            match device_keys::validate_incr_join_and_store_dev_nonce(
+                &dev.dev_eui,
+                join_request.dev_nonce as i32,
+            )
+            .await
+            {
+                Ok(v) => v,
+                Err(v) => match v {
+                    StorageError::InvalidDevNonce => {
+                        integration::log_event(
+                            app.id,
+                            &dev.variables,
+                            &integration_pb::LogEvent {
+                                time: Some(Utc::now().into()),
+                                device_info: self.device_info.clone(),
+                                level: integration_pb::LogLevel::Error.into(),
+                                code: integration_pb::LogCode::Otaa.into(),
+                                description: "DevNonce has already been used".into(),
+                                context: [(
+                                    "deduplication_id".to_string(),
+                                    self.uplink_frame_set.uplink_set_id.to_string(),
+                                )]
+                                .iter()
+                                .cloned()
+                                .collect(),
+                            },
+                        )
+                        .await;
+
+                        metrics::save(
+                            &format!("device:{}", dev.dev_eui),
+                            &metrics::Record {
+                                time: Local::now(),
+                                kind: metrics::Kind::ABSOLUTE,
+                                metrics: [("error_OTAA".into(), 1f64)].iter().cloned().collect(),
+                            },
+                        )
+                        .await?;
+
+                        return Err(v.into());
+                    }
+                    _ => {
+                        return Err(v.into());
+                    }
+                },
+            },
+        );
+
+        Ok(())
     }
 
     fn get_random_dev_addr(&mut self) -> Result<()> {
@@ -610,7 +609,9 @@ impl JoinRequest {
         let join_request = self.join_request.as_ref().unwrap();
 
         let dk = self.device_keys.as_mut().unwrap();
-        if dk.join_nonce == (1 << 24) - 1 {
+
+        let join_nonce = dk.join_nonce - 1; // this was incremented on validation
+        if join_nonce == (1 << 24) - 1 {
             return Err(anyhow!("Join-nonce overflow"));
         }
 
@@ -629,7 +630,7 @@ impl JoinRequest {
                 major: Major::LoRaWANR1,
             },
             payload: Payload::JoinAccept(JoinAcceptPayload {
-                join_nonce: dk.join_nonce as u32,
+                join_nonce: join_nonce as u32,
                 home_netid: conf.network.net_id,
                 devaddr: self.dev_addr.unwrap(),
                 dl_settings: DLSettings {
@@ -671,7 +672,7 @@ impl JoinRequest {
             &device_keys.nwk_key,
             &conf.network.net_id,
             &join_request.join_eui,
-            device_keys.join_nonce as u32,
+            join_nonce as u32,
             join_request.dev_nonce,
         )?);
 
@@ -681,7 +682,7 @@ impl JoinRequest {
                 &device_keys.nwk_key,
                 &conf.network.net_id,
                 &join_request.join_eui,
-                device_keys.join_nonce as u32,
+                join_nonce as u32,
                 join_request.dev_nonce,
             )?,
             false => keys::get_f_nwk_s_int_key(
@@ -689,7 +690,7 @@ impl JoinRequest {
                 &device_keys.nwk_key,
                 &conf.network.net_id,
                 &join_request.join_eui,
-                device_keys.join_nonce as u32,
+                join_nonce as u32,
                 join_request.dev_nonce,
             )?,
         });
@@ -700,7 +701,7 @@ impl JoinRequest {
                 &device_keys.nwk_key,
                 &conf.network.net_id,
                 &join_request.join_eui,
-                device_keys.join_nonce as u32,
+                join_nonce as u32,
                 join_request.dev_nonce,
             )?,
             false => keys::get_f_nwk_s_int_key(
@@ -708,7 +709,7 @@ impl JoinRequest {
                 &device_keys.nwk_key,
                 &conf.network.net_id,
                 &join_request.join_eui,
-                device_keys.join_nonce as u32,
+                join_nonce as u32,
                 join_request.dev_nonce,
             )?,
         });
@@ -721,7 +722,7 @@ impl JoinRequest {
                     &device_keys.app_key,
                     &conf.network.net_id,
                     &join_request.join_eui,
-                    device_keys.join_nonce as u32,
+                    join_nonce as u32,
                     join_request.dev_nonce,
                 )?,
                 false => keys::get_app_s_key(
@@ -729,7 +730,7 @@ impl JoinRequest {
                     &device_keys.nwk_key,
                     &conf.network.net_id,
                     &join_request.join_eui,
-                    device_keys.join_nonce as u32,
+                    join_nonce as u32,
                     join_request.dev_nonce,
                 )?,
             }
@@ -869,15 +870,6 @@ impl JoinRequest {
 
         *dev = device::set_join_eui(dev.dev_eui, req.join_eui).await?;
 
-        Ok(())
-    }
-
-    async fn save_device_keys(&mut self) -> Result<()> {
-        trace!("Updating device-keys");
-        let mut dk = self.device_keys.as_mut().unwrap();
-        dk.join_nonce += 1;
-
-        *dk = device_keys::update(dk.clone()).await?;
         Ok(())
     }
 
