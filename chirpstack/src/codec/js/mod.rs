@@ -22,11 +22,11 @@ pub async fn decode(
     let conf = config::get();
     let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
 
-    let resolver = rquickjs::BuiltinResolver::default()
+    let resolver = rquickjs::loader::BuiltinResolver::default()
         .with_module("base64-js")
         .with_module("ieee754")
         .with_module("buffer");
-    let loader = rquickjs::BuiltinLoader::default()
+    let loader = rquickjs::loader::BuiltinLoader::default()
         .with_module("base64-js", vendor_base64_js::SCRIPT)
         .with_module("ieee754", vendor_ieee754::SCRIPT)
         .with_module("buffer", vendor_buffer::SCRIPT);
@@ -71,7 +71,7 @@ pub async fn decode(
 
         let res: rquickjs::Object = ctx.eval_with_options(
             script,
-            rquickjs::EvalOptions {
+            rquickjs::context::EvalOptions {
                 strict: false,
                 ..Default::default()
             },
@@ -107,11 +107,11 @@ pub async fn encode(
     let conf = config::get();
     let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
 
-    let resolver = rquickjs::BuiltinResolver::default()
+    let resolver = rquickjs::loader::BuiltinResolver::default()
         .with_module("base64-js")
         .with_module("ieee754")
         .with_module("buffer");
-    let loader = rquickjs::BuiltinLoader::default()
+    let loader = rquickjs::loader::BuiltinLoader::default()
         .with_module("base64-js", vendor_base64_js::SCRIPT)
         .with_module("ieee754", vendor_ieee754::SCRIPT)
         .with_module("buffer", vendor_buffer::SCRIPT);
@@ -154,7 +154,7 @@ pub async fn encode(
 
         let res: rquickjs::Object = ctx.eval_with_options(
             script,
-            rquickjs::EvalOptions {
+            rquickjs::context::EvalOptions {
                 strict: false,
                 ..Default::default()
             },
