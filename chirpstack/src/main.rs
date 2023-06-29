@@ -92,10 +92,17 @@ async fn main() -> Result<()> {
         ("lrwn", Level::from_str(&conf.logging.level).unwrap()),
     ]);
 
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
-        .with(filter)
-        .init();
+    if conf.logging.json {
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::fmt::layer().json())
+            .with(filter)
+            .init();
+    } else {
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::fmt::layer())
+            .with(filter)
+            .init();
+    }
 
     if let Some(Commands::Configfile {}) = &cli.command {
         cmd::configfile::run();

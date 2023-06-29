@@ -37,12 +37,14 @@ pub struct Configuration {
 #[serde(default)]
 pub struct Logging {
     pub level: String,
+    pub json: bool,
 }
 
 impl Default for Logging {
     fn default() -> Self {
         Logging {
             level: "info".into(),
+            json: false,
         }
     }
 }

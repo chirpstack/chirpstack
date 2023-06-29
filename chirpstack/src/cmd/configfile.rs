@@ -4,6 +4,23 @@ use super::super::config;
 
 pub fn run() {
     let template = r#"
+# Logging configuration
+[logging]
+
+  # Log level.
+  #
+  # Valid options are:
+  #   * TRACE
+  #   * DEBUG
+  #   * INFO
+  #   * WARN
+  #   * ERROR
+  #   * OFF
+  level="{{ logging.level }}"
+
+  # Log as JSON.
+  json={{ logging.json }}
+
 # PostgreSQL configuration.
 [postgresql]
 

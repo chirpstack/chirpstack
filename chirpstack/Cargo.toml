@@ -42,6 +42,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = [
 	"fmt",
 	"ansi",
+	"json",
 ], default-features = true }
 
 # ChirpStack API definitions
