@@ -141,6 +141,10 @@ impl CFListChannelMasks {
 
         Ok(b)
     }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, ChMask> {
+        self.0.iter()
+    }
 }
 
 /// ChMask encodes the channels usable for uplink access. 0 = channel 1,

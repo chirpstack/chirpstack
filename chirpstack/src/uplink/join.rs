@@ -791,35 +791,48 @@ impl JoinRequest {
 
         device_profile.reset_session_to_boot_params(&mut ds);
 
-        if let Some(CFList::Channels(channels)) =
-            region_conf.get_cf_list(device_profile.mac_version)
-        {
-            for f in channels.iter().cloned() {
-                if f == 0 {
-                    continue;
+        match region_conf.get_cf_list(device_profile.mac_version) {
+            Some(CFList::Channels(channels)) => {
+                for f in channels.iter().cloned() {
+                    if f == 0 {
+                        continue;
+                    }
+
+                    let i = region_conf
+                        .get_uplink_channel_index(f, true)
+                        .context("Unknown cf_list frequency")?;
+
+                    ds.enabled_uplink_channel_indices.push(i as u32);
+
+                    // add extra channel to extra uplink channels, so that we can
+                    // keep track on frequency and data-rate changes
+                    let c = region_conf
+                        .get_uplink_channel(i)
+                        .context("Get uplink channel error")?;
+
+                    ds.extra_uplink_channels.insert(
+                        i as u32,
+                        internal::DeviceSessionChannel {
+                            frequency: c.frequency,
+                            min_dr: c.min_dr as u32,
+                            max_dr: c.max_dr as u32,
+                        },
+                    );
                 }
-
-                let i = region_conf
-                    .get_uplink_channel_index(f, true)
-                    .context("Unknown cf_list frequency")?;
-
-                ds.enabled_uplink_channel_indices.push(i as u32);
-
-                // add extra channel to extra uplink channels, so that we can
-                // keep track on frequency and data-rate changes
-                let c = region_conf
-                    .get_uplink_channel(i)
-                    .context("Get uplink channel error")?;
-
-                ds.extra_uplink_channels.insert(
-                    i as u32,
-                    internal::DeviceSessionChannel {
-                        frequency: c.frequency,
-                        min_dr: c.min_dr as u32,
-                        max_dr: c.max_dr as u32,
-                    },
-                );
             }
+            Some(CFList::ChannelMask(masks)) => {
+                ds.enabled_uplink_channel_indices = vec![];
+
+                for (block_i, block) in masks.iter().enumerate() {
+                    for (channel_i, enabled) in block.into_iter().enumerate() {
+                        if enabled {
+                            ds.enabled_uplink_channel_indices
+                                .push((channel_i + (block_i * 16)) as u32);
+                        }
+                    }
+                }
+            }
+            None => {}
         }
 
         device_session::save(&ds)
