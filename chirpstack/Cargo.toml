@@ -127,7 +127,7 @@ async-recursion = "1.0"
 regex = "1.7"
 petgraph = "0.6"
 prometheus-client = "0.21"
-pin-project = "1.0"
+pin-project = "1.1"
 
 # Development and testing
 [dev-dependencies]
