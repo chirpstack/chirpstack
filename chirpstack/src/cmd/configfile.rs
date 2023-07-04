@@ -197,6 +197,17 @@ pub fn run() {
   # Mac-commands disabled.
   mac_commands_disabled={{ network.mac_commands_disabled }}
 
+  # Custom ADR plugins.
+  #
+  # The custom ADR plugin must be implemented in JavaScript. For an example
+  # skeleton, please see:
+  # https://github.com/chirpstack/chirpstack/blob/master/examples/adr_plugins/plugin_skeleton.js
+  adr_plugins=[
+    {{#each network.adr_plugins}}
+    "{{this}}",
+    {{/each}}
+  ]
+
 
   # Scheduler settings.
   [network.scheduler]
