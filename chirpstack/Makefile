@@ -41,9 +41,9 @@ dist:
 test:
 	cargo fmt --check
 	cargo clippy --no-deps
-	cargo test
+	TZ=UTC cargo test
 
 test-all:
 	cargo fmt --check
 	cargo clippy --no-deps
-	cargo test --features test-all-integrations
+	TZ=UTC cargo test --features test-all-integrations
