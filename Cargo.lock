@@ -809,6 +809,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "bigdecimal"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5274a6b6e0ee020148397245b973e30163b7bffbc6d473613f850cb99888581e"
+dependencies = [
+ "libm",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "bindgen"
 version = "0.65.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -969,7 +981,7 @@ dependencies = [
  "aws-types",
  "backend",
  "base64 0.21.2",
- "bigdecimal",
+ "bigdecimal 0.4.0",
  "bytes",
  "chirpstack_api",
  "chrono",
@@ -1366,7 +1378,7 @@ version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7a532c1f99a0f596f6960a60d1e119e91582b24b39e2d83a190e61262c3ef0c"
 dependencies = [
- "bigdecimal",
+ "bigdecimal 0.3.1",
  "bitflags 2.3.3",
  "byteorder",
  "chrono",
