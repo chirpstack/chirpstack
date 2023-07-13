@@ -1788,6 +1788,11 @@ impl Data {
                         dev_eui: device.dev_eui.to_vec(),
                         provisioned: false,
                     });
+
+                // Return because we can't add multiple sets and if we would combine
+                // multiple commands as a single set, it might not fit in a single
+                // downlink.
+                return Ok(());
             }
         }
 
