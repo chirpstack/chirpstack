@@ -14,7 +14,6 @@ extern crate diesel;
 extern crate anyhow;
 
 use std::path::Path;
-use std::process;
 use std::str::FromStr;
 
 use anyhow::Result;
@@ -78,6 +77,13 @@ enum Commands {
         #[arg(short, long, value_name = "DIR")]
         dir: String,
     },
+
+    /// Create global API key.
+    CreateApiKey {
+        /// Name.
+        #[arg(short, long, value_name = "NAME")]
+        name: String,
+    },
 }
 
 #[tokio::main]
@@ -104,25 +110,20 @@ async fn main() -> Result<()> {
             .init();
     }
 
-    if let Some(Commands::Configfile {}) = &cli.command {
-        cmd::configfile::run();
-        process::exit(0);
+    match &cli.command {
+        Some(Commands::Configfile {}) => cmd::configfile::run(),
+        Some(Commands::PrintDs { dev_eui }) => {
+            let dev_eui = EUI64::from_str(dev_eui).unwrap();
+            cmd::print_ds::run(&dev_eui).await.unwrap();
+        }
+        Some(Commands::ImportLegacyLorawanDevicesRepository { dir }) => {
+            cmd::import_legacy_lorawan_devices_repository::run(Path::new(&dir))
+                .await
+                .unwrap()
+        }
+        Some(Commands::CreateApiKey { name }) => cmd::create_api_key::run(&name).await?,
+        None => cmd::root::run().await?,
     }
-
-    if let Some(Commands::PrintDs { dev_eui }) = &cli.command {
-        let dev_eui = EUI64::from_str(dev_eui).unwrap();
-        cmd::print_ds::run(&dev_eui).await.unwrap();
-        process::exit(0);
-    }
-
-    if let Some(Commands::ImportLegacyLorawanDevicesRepository { dir }) = &cli.command {
-        cmd::import_legacy_lorawan_devices_repository::run(Path::new(&dir))
-            .await
-            .unwrap();
-        process::exit(0);
-    }
-
-    cmd::root::run().await?;
 
     Ok(())
 }
