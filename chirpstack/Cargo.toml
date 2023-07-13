@@ -101,7 +101,7 @@ pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "8.2"
 openssl = { version = "0.10" }
-openidconnect = { version = "3.1", features = ["accept-rfc3339-timestamps"] }
+openidconnect = { version = "3.3", features = ["accept-rfc3339-timestamps"] }
 
 # MQTT
 paho-mqtt = { version = "0.12", features = ["ssl"] }
@@ -124,7 +124,7 @@ aes = "0.8"
 rand = "0.8"
 base64 = "0.21"
 async-recursion = "1.0"
-regex = "1.7"
+regex = "1.9"
 petgraph = "0.6"
 prometheus-client = "0.21"
 pin-project = "1.0"
