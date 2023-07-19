@@ -105,6 +105,31 @@ async fn test_downlink_scheduler() {
         ..Default::default()
     };
 
+    let ds_no_uplink = internal::DeviceSession {
+        f_cnt_up: 0,
+        ..ds.clone()
+    };
+
+    run_scheduler_test(&DownlinkTest {
+        name: "device has not yet sent an uplink".into(),
+        device_queue_items: vec![device_queue::DeviceQueueItem {
+            id: Uuid::nil(),
+            dev_eui: dev.dev_eui.clone(),
+            f_port: 10,
+            data: vec![1, 2, 3],
+            ..Default::default()
+        }],
+        device_session: Some(ds_no_uplink.clone()),
+        device_gateway_rx_info: Some(device_gateway_rx_info.clone()),
+        assert: vec![assert::no_downlink_frame()],
+    })
+    .await;
+
+    // remove the schedule run after
+    device::set_scheduler_run_after(&dev.dev_eui.clone(), None)
+        .await
+        .unwrap();
+
     run_scheduler_test(&DownlinkTest {
         name: "unconfirmed data".into(),
         device_queue_items: vec![device_queue::DeviceQueueItem {
@@ -172,7 +197,7 @@ async fn test_downlink_scheduler() {
         .unwrap();
 
     run_scheduler_test(&DownlinkTest {
-        name: "cunconfirmed data".into(),
+        name: "unconfirmed data".into(),
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -226,7 +251,7 @@ async fn test_downlink_scheduler() {
         .unwrap();
 
     run_scheduler_test(&DownlinkTest {
-        name: "cunconfirmed data".into(),
+        name: "unconfirmed data".into(),
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),

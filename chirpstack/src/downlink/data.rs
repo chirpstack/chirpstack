@@ -291,6 +291,7 @@ impl Data {
 
         ctx.select_downlink_gateway()?;
         if ctx._is_class_c() {
+            ctx.check_for_first_uplink()?;
             ctx.get_class_c_device_lock().await?;
             ctx.set_immediately()?;
             ctx.set_tx_info_for_rx2()?;
@@ -705,7 +706,7 @@ impl Data {
             // this is not an ACK, then DownlinkDataMIC will zero out ConfFCnt.
             phy.set_downlink_data_mic(
                 self.device_session.mac_version().from_proto(),
-                self.device_session.f_cnt_up - 1,
+                self.device_session.f_cnt_up.overflowing_sub(1).0,
                 &lrwn::AES128Key::from_slice(&self.device_session.s_nwk_s_int_key)?,
             )
             .context("Set downlink data MIC")?;
@@ -857,6 +858,16 @@ impl Data {
         )
         .await
         .context("Send downlink frame")?;
+
+        Ok(())
+    }
+
+    fn check_for_first_uplink(&self) -> Result<()> {
+        trace!("Checking if device has sent its first uplink already");
+
+        if self.device_session.f_cnt_up == 0 {
+            return Err(anyhow!("Device must send its first uplink first"));
+        }
 
         Ok(())
     }
