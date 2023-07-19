@@ -59,7 +59,6 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           value={this.props.initialValues.getDevAddr()}
           devEui={this.props.device.getDevEui()}
           formRef={this.formRef}
-          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -67,7 +66,6 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           name="nwkSEncKey"
           value={this.props.initialValues.getNwkSEncKey()}
           formRef={this.formRef}
-          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -75,18 +73,17 @@ class LW10DeviceActivationForm extends Component<FormProps> {
           name="appSKey"
           value={this.props.initialValues.getAppSKey()}
           formRef={this.formRef}
-          disabled={this.props.disabled}
           required
         />
         <Row gutter={24}>
           <Col span={6}>
             <Form.Item label="Uplink frame-counter" name="fCntUp">
-              <InputNumber min={0} disabled={this.props.disabled} />
+              <InputNumber min={0} />
             </Form.Item>
           </Col>
           <Col span={6}>
             <Form.Item label="Downlink frame-counter" name="nFCntDown">
-              <InputNumber min={0} disabled={this.props.disabled} />
+              <InputNumber min={0} />
             </Form.Item>
           </Col>
         </Row>
@@ -133,7 +130,6 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           value={this.props.initialValues.getDevAddr()}
           devEui={this.props.device.getDevEui()}
           formRef={this.formRef}
-          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -141,7 +137,6 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           name="nwkSEncKey"
           value={this.props.initialValues.getNwkSEncKey()}
           formRef={this.formRef}
-          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -149,7 +144,6 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           name="sNwkSIntKey"
           value={this.props.initialValues.getSNwkSIntKey()}
           formRef={this.formRef}
-          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -157,7 +151,6 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           name="fNwkSIntKey"
           value={this.props.initialValues.getFNwkSIntKey()}
           formRef={this.formRef}
-          disabled={this.props.disabled}
           required
         />
         <AesKeyInput
@@ -165,23 +158,22 @@ class LW11DeviceActivationForm extends Component<FormProps> {
           name="appSKey"
           value={this.props.initialValues.getAppSKey()}
           formRef={this.formRef}
-          disabled={this.props.disabled}
           required
         />
         <Row gutter={24}>
           <Col span={6}>
             <Form.Item label="Uplink frame-counter" name="fCntUp">
-              <InputNumber min={0} disabled={this.props.disabled} />
+              <InputNumber min={0} />
             </Form.Item>
           </Col>
           <Col span={6}>
             <Form.Item label="Downlink frame-counter (network)" name="nFCntDown">
-              <InputNumber min={0} disabled={this.props.disabled} />
+              <InputNumber min={0} />
             </Form.Item>
           </Col>
           <Col span={6}>
             <Form.Item label="Downlink frame-counter (application)" name="aFCntDown">
-              <InputNumber min={0} disabled={this.props.disabled} />
+              <InputNumber min={0} />
             </Form.Item>
           </Col>
         </Row>
