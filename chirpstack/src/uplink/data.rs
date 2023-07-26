@@ -131,7 +131,7 @@ impl Data {
         ctx.log_uplink_frame_set().await?;
         ctx.set_adr()?;
         ctx.set_uplink_data_rate().await?;
-        ctx.set_enabled_class().await?;
+        ctx.handle_class_b_beacon_locked().await?;
         ctx.log_uplink_meta().await?;
         ctx.reset_channels_on_adr_ack_req()?;
         ctx.handle_mac_commands().await?;
@@ -195,7 +195,7 @@ impl Data {
         ctx.decrypt_frm_payload()?;
         ctx.set_adr()?;
         ctx.set_uplink_data_rate_relayed().await?;
-        ctx.set_enabled_class().await?;
+        ctx.handle_class_b_beacon_locked().await?;
         ctx.reset_channels_on_adr_ack_req()?;
         ctx.handle_mac_commands().await?;
         ctx.append_meta_data_to_uplink_history_relayed()?;
@@ -704,27 +704,26 @@ impl Data {
         Ok(())
     }
 
-    async fn set_enabled_class(&mut self) -> Result<()> {
-        trace!("Set enabled class");
+    async fn handle_class_b_beacon_locked(&mut self) -> Result<()> {
+        trace!("Handle Class-B beacon locked");
         let dev = self.device.as_mut().unwrap();
         let dp = self.device_profile.as_ref().unwrap();
 
-        let mut mode = match dp.supports_class_c {
-            true => DeviceClass::C,
-            false => DeviceClass::A,
-        };
+        let mut enabled_class = dev.enabled_class;
 
-        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
-            let locked = pl.fhdr.f_ctrl.class_b;
-            mode = match locked {
-                true => DeviceClass::B,
-                false => mode,
-            };
+        if dp.supports_class_b {
+            if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
+                let locked = pl.fhdr.f_ctrl.class_b;
+                enabled_class = match locked {
+                    true => DeviceClass::B,
+                    false => DeviceClass::A,
+                };
+            }
         }
 
         // Update if the enabled class has changed.
-        if dev.enabled_class != mode {
-            *dev = device::set_enabled_class(&dev.dev_eui, mode).await?;
+        if dev.enabled_class != enabled_class {
+            *dev = device::set_enabled_class(&dev.dev_eui, enabled_class).await?;
         }
 
         Ok(())
