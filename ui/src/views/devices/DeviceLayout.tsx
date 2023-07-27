@@ -1,7 +1,8 @@
-import React, { Component } from "react";
-import { Route, Switch, RouteComponentProps, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Route, Routes, useParams, Link, useNavigate, useLocation } from "react-router-dom";
 
-import { Space, Breadcrumb, Card, Button, PageHeader, Menu } from "antd";
+import { Space, Breadcrumb, Card, Button, Menu } from "antd";
+import { PageHeader } from "@ant-design/pro-layout";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -30,239 +31,183 @@ import DeviceEvents from "./DeviceEvents";
 import DeviceQueue from "./DeviceQueue";
 import DeviceActivation from "./DeviceActivation";
 
-interface MatchParams {
-  devEui: string;
-}
-
-interface IProps extends RouteComponentProps<MatchParams> {
+interface IProps {
   tenant: Tenant;
   application: Application;
 }
 
-interface IState {
-  device?: Device;
-  deviceProfile?: DeviceProfile;
-  lastSeenAt?: Date;
-}
+function DeviceLayout(props: IProps) {
+  const { devEui } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-class DeviceLayout extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
+  const [device, setDevice] = useState<Device | undefined>(undefined);
+  const [deviceProfile, setDeviceProfile] = useState<DeviceProfile | undefined>(undefined);
+  const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
 
-  componentDidMount() {
-    this.getDevice(this.getDeviceProfile);
-  }
-
-  getDevice = (cb: () => void) => {
+  useEffect(() => {
     let req = new GetDeviceRequest();
-    req.setDevEui(this.props.match.params.devEui);
+    req.setDevEui(devEui!);
 
     DeviceStore.get(req, (resp: GetDeviceResponse) => {
-      this.setState(
-        {
-          device: resp.getDevice(),
-        },
-        cb,
-      );
+      setDevice(resp.getDevice());
 
       if (resp.getLastSeenAt() !== undefined) {
-        this.setState({
-          lastSeenAt: resp.getLastSeenAt()!.toDate(),
-        });
+        setLastSeenAt(resp.getLastSeenAt()!.toDate());
       }
-    });
-  };
 
-  getDeviceProfile = () => {
-    let req = new GetDeviceProfileRequest();
-    req.setId(this.state.device!.getDeviceProfileId());
-
-    DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
-      this.setState({
-        deviceProfile: resp.getDeviceProfile(),
+      let req = new GetDeviceProfileRequest();
+      req.setId(resp.getDevice()!.getDeviceProfileId());
+      DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
+        setDeviceProfile(resp.getDeviceProfile());
       });
     });
-  };
+  }, [devEui]);
 
-  deleteDevice = () => {
+  const deleteDevice = () => {
     let req = new DeleteDeviceRequest();
-    req.setDevEui(this.props.match.params.devEui);
+    req.setDevEui(devEui!);
 
     DeviceStore.delete(req, () => {
-      this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}`);
+      navigate(`/tenants/${props.tenant.getId()}/applications/${props.application.getId()}`);
     });
   };
 
-  render() {
-    const device = this.state.device;
-    const dp = this.state.deviceProfile;
-    if (!device || !dp) {
-      return null;
-    }
-
-    const tenant = this.props.tenant;
-    const app = this.props.application;
-
-    const path = this.props.history.location.pathname;
-    let tab = "dashboard";
-
-    if (path.endsWith("edit")) {
-      tab = "edit";
-    }
-    if (path.endsWith("queue")) {
-      tab = "queue";
-    }
-    if (path.endsWith("keys")) {
-      tab = "keys";
-    }
-    if (path.endsWith("activation")) {
-      tab = "activation";
-    }
-    if (path.endsWith("events")) {
-      tab = "events";
-    }
-    if (path.endsWith("frames")) {
-      tab = "frames";
-    }
-
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        <PageHeader
-          breadcrumbRender={() => (
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <span>Tenants</span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}/applications`}>Applications</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}`}>
-                    {this.props.application.getName()}
-                  </Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}`}>
-                    Devices
-                  </Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>{device.getName()}</span>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          )}
-          title={device.getName()}
-          subTitle={`device eui: ${device.getDevEui()}`}
-          extra={[
-            <Admin tenantId={this.props.tenant.getId()} isDeviceAdmin>
-              <DeleteConfirm typ="device" confirm={device.getName()} onConfirm={this.deleteDevice}>
-                <Button danger type="primary">
-                  Delete device
-                </Button>
-              </DeleteConfirm>
-            </Admin>,
-          ]}
-        />
-        <Card>
-          <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-            <Menu.Item key="dashboard">
-              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}`}>
-                Dashboard
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="edit">
-              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/edit`}>
-                Configuration
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="keys" disabled={!dp.getSupportsOtaa()}>
-              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/keys`}>
-                OTAA keys
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="activation">
-              <Link
-                to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/activation`}
-              >
-                Activation
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="queue">
-              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/queue`}>
-                Queue
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="events">
-              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/events`}>
-                Events
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="frames">
-              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/frames`}>
-                LoRaWAN frames
-              </Link>
-            </Menu.Item>
-          </Menu>
-          <Switch>
-            <Route
-              exact
-              path={this.props.match.path}
-              render={props => (
-                <DeviceDashboard device={device} lastSeenAt={this.state.lastSeenAt} deviceProfile={dp} {...props} />
-              )}
-            />
-            <Route
-              exact
-              path={`${this.props.match.path}/edit`}
-              render={props => <EditDevice device={device} application={app} tenant={tenant} {...props} />}
-            />
-            <Route
-              exact
-              path={`${this.props.match.path}/keys`}
-              render={props => (
-                <SetDeviceKeys device={device} application={app} tenant={tenant} deviceProfile={dp} {...props} />
-              )}
-            />
-            <Route
-              exact
-              path={`${this.props.match.path}/frames`}
-              render={props => <DeviceFrames device={device} {...props} />}
-            />
-            <Route
-              exact
-              path={`${this.props.match.path}/events`}
-              render={props => <DeviceEvents device={device} {...props} />}
-            />
-            <Route
-              exact
-              path={`${this.props.match.path}/queue`}
-              render={props => <DeviceQueue device={device} {...props} />}
-            />
-            <Route
-              exact
-              path={`${this.props.match.path}/activation`}
-              render={props => (
-                <DeviceActivation device={device} deviceProfile={dp} tenant={tenant} application={app} {...props} />
-              )}
-            />
-          </Switch>
-        </Card>
-      </Space>
-    );
+  const dp = deviceProfile;
+  if (!device || !dp) {
+    return null;
   }
+
+  const tenant = props.tenant;
+  const app = props.application;
+
+  const path = location.pathname;
+  let tab = "dashboard";
+
+  if (path.endsWith("edit")) {
+    tab = "edit";
+  }
+  if (path.endsWith("queue")) {
+    tab = "queue";
+  }
+  if (path.endsWith("keys")) {
+    tab = "keys";
+  }
+  if (path.endsWith("activation")) {
+    tab = "activation";
+  }
+  if (path.endsWith("events")) {
+    tab = "events";
+  }
+  if (path.endsWith("frames")) {
+    tab = "frames";
+  }
+
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      <PageHeader
+        breadcrumbRender={() => (
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <span>Tenants</span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}/applications/${props.application.getId()}`}>
+                  {props.application.getName()}
+                </Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}/applications/${props.application.getId()}`}>Devices</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>{device.getName()}</span>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        )}
+        title={device.getName()}
+        subTitle={`device eui: ${device.getDevEui()}`}
+        extra={[
+          <Admin tenantId={props.tenant.getId()} isDeviceAdmin>
+            <DeleteConfirm typ="device" confirm={device.getName()} onConfirm={deleteDevice}>
+              <Button danger type="primary">
+                Delete device
+              </Button>
+            </DeleteConfirm>
+          </Admin>,
+        ]}
+      />
+      <Card>
+        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
+          <Menu.Item key="dashboard">
+            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}`}>
+              Dashboard
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="edit">
+            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/edit`}>
+              Configuration
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="keys" disabled={!dp.getSupportsOtaa()}>
+            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/keys`}>
+              OTAA keys
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="activation">
+            <Link
+              to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/activation`}
+            >
+              Activation
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="queue">
+            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/queue`}>
+              Queue
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="events">
+            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/events`}>
+              Events
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="frames">
+            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/frames`}>
+              LoRaWAN frames
+            </Link>
+          </Menu.Item>
+        </Menu>
+        <Routes>
+          <Route path="/" element={<DeviceDashboard device={device} lastSeenAt={lastSeenAt} deviceProfile={dp} />} />
+          <Route path="/edit" element={<EditDevice device={device} application={app} tenant={tenant} />} />
+          <Route
+            path="/keys"
+            element={<SetDeviceKeys device={device} application={app} tenant={tenant} deviceProfile={dp} />}
+          />
+          <Route path="/frames" element={<DeviceFrames device={device} />} />
+          <Route path="/events" element={<DeviceEvents device={device} />} />
+          <Route path="/queue" element={<DeviceQueue device={device} />} />
+          <Route
+            path="/activation"
+            element={<DeviceActivation device={device} deviceProfile={dp} tenant={tenant} application={app} />}
+          />
+        </Routes>
+      </Card>
+    </Space>
+  );
 }
 
 export default DeviceLayout;

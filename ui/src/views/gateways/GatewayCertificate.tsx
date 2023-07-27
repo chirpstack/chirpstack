@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 
 import moment from "moment";
 import { Card, Button, Form, Input } from "antd";
@@ -14,36 +14,22 @@ interface IProps {
   gateway: Gateway;
 }
 
-interface IState {
-  certificate?: GenerateGatewayClientCertificateResponse;
-  buttonDisabled: boolean;
-}
+function GatewayCertificate(props: IProps) {
+  const [certificate, setCertificate] = useState<GenerateGatewayClientCertificateResponse | undefined>(undefined);
+  const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
 
-class GatewayCertificate extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      certificate: undefined,
-      buttonDisabled: false,
-    };
-  }
-
-  requestCertificate = () => {
-    this.setState({
-      buttonDisabled: true,
-    });
+  const requestCertificate = () => {
+    setButtonDisabled(true);
 
     let req = new GenerateGatewayClientCertificateRequest();
-    req.setGatewayId(this.props.gateway.getGatewayId());
+    req.setGatewayId(props.gateway.getGatewayId());
 
     GatewayStore.generateClientCertificate(req, (resp: GenerateGatewayClientCertificateResponse) => {
-      this.setState({
-        certificate: resp,
-      });
+      setCertificate(resp);
     });
   };
 
-  renderRequest = () => {
+  const renderRequest = () => {
     return (
       <Card>
         <p>
@@ -57,7 +43,7 @@ class GatewayCertificate extends Component<IProps, IState> {
           </strong>
         </p>
         <p>
-          <Button onClick={this.requestCertificate} disabled={this.state.buttonDisabled}>
+          <Button onClick={requestCertificate} disabled={buttonDisabled}>
             Generate certificate
           </Button>
         </p>
@@ -65,14 +51,14 @@ class GatewayCertificate extends Component<IProps, IState> {
     );
   };
 
-  renderResponse = () => {
-    const certificate = this.state.certificate!;
+  const renderResponse = () => {
+    const cert = certificate!;
 
     const initial = {
-      expiresAt: moment(certificate.getExpiresAt()!.toDate()!).format("YYYY-MM-DD HH:mm:ss"),
-      caCert: certificate.getCaCert(),
-      tlsCert: certificate.getTlsCert(),
-      tlsKey: certificate.getTlsKey(),
+      expiresAt: moment(cert.getExpiresAt()!.toDate()!).format("YYYY-MM-DD HH:mm:ss"),
+      caCert: cert.getCaCert(),
+      tlsCert: cert.getTlsCert(),
+      tlsKey: cert.getTlsKey(),
     };
 
     return (
@@ -109,13 +95,11 @@ class GatewayCertificate extends Component<IProps, IState> {
     );
   };
 
-  render() {
-    if (this.state.certificate !== undefined) {
-      return this.renderResponse();
-    }
-
-    return this.renderRequest();
+  if (certificate !== undefined) {
+    return renderResponse();
   }
+
+  return renderRequest();
 }
 
 export default GatewayCertificate;

@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -14,53 +14,41 @@ import {
 import HttpIntegrationForm from "./HttpIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-interface IState {
-  integration?: HttpIntegration;
-}
+function EditHttpIntegration(props: IProps) {
+  const navigate = useNavigate();
+  const [integration, setIntegration] = useState<HttpIntegration | undefined>(undefined);
 
-class EditHttpIntegration extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     let req = new GetHttpIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.getHttpIntegration(req, (resp: GetHttpIntegrationResponse) => {
-      this.setState({
-        integration: resp.getIntegration(),
-      });
+      setIntegration(resp.getIntegration());
     });
-  }
+  }, [props]);
 
-  onFinish = (obj: HttpIntegration) => {
+  const onFinish = (obj: HttpIntegration) => {
     let req = new UpdateHttpIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateHttpIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    if (this.state.integration === undefined) {
-      return null;
-    }
-
-    return (
-      <Card title="Update HTTP integration">
-        <HttpIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
-      </Card>
-    );
+  if (integration === undefined) {
+    return null;
   }
+
+  return (
+    <Card title="Update HTTP integration">
+      <HttpIntegrationForm initialValues={integration} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default EditHttpIntegration;

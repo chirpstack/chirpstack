@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -14,53 +14,41 @@ import {
 import LoRaCloudIntegrationForm from "./LoRaCloudIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-interface IState {
-  integration?: LoraCloudIntegration;
-}
+function EditLoRaCloudIntegration(props: IProps) {
+  const navigate = useNavigate();
+  const [integration, setIntegration] = useState<LoraCloudIntegration | undefined>(undefined);
 
-class EditLoRaCloudIntegration extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     let req = new GetLoraCloudIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.getLoraCloudIntegration(req, (resp: GetLoraCloudIntegrationResponse) => {
-      this.setState({
-        integration: resp.getIntegration(),
-      });
+      setIntegration(resp.getIntegration());
     });
-  }
+  }, [props]);
 
-  onFinish = (obj: LoraCloudIntegration) => {
+  const onFinish = (obj: LoraCloudIntegration) => {
     let req = new UpdateLoraCloudIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateLoraCloudIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    if (this.state.integration === undefined) {
-      return null;
-    }
-
-    return (
-      <Card title="Update Semtech LoRa Cloud&trade; integration">
-        <LoRaCloudIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
-      </Card>
-    );
+  if (integration === undefined) {
+    return null;
   }
+
+  return (
+    <Card title="Update Semtech LoRa Cloud&trade; integration">
+      <LoRaCloudIntegrationForm initialValues={integration} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default EditLoRaCloudIntegration;

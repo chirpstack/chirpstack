@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { Link, withRouter, RouteComponentProps } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Menu, Dropdown, Input, AutoComplete } from "antd";
 import { UserOutlined, DownOutlined, QuestionOutlined } from "@ant-design/icons";
@@ -14,15 +14,6 @@ import {
 import InternalStore from "../stores/InternalStore";
 import SessionStore from "../stores/SessionStore";
 
-interface IProps extends RouteComponentProps {
-  user: User;
-}
-
-interface IState {
-  searchResult?: GlobalSearchResponse;
-  settings?: SettingsResponse;
-}
-
 const renderTitle = (title: string) => <span>{title}</span>;
 
 const renderItem = (title: string, url: string) => ({
@@ -30,22 +21,19 @@ const renderItem = (title: string, url: string) => ({
   label: <Link to={url}>{title}</Link>,
 });
 
-class Header extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
+function Header({ user }: { user: User }) {
+  const navigate = useNavigate();
 
-    this.state = {};
-  }
+  const [settings, setSettings] = useState<SettingsResponse | undefined>(undefined);
+  const [searchResult, setSearchResult] = useState<GlobalSearchResponse | undefined>(undefined);
 
-  componentDidMount() {
+  useEffect(() => {
     InternalStore.settings((resp: SettingsResponse) => {
-      this.setState({
-        settings: resp,
-      });
+      setSettings(resp);
     });
-  }
+  }, [user]);
 
-  onSearch = (search: string) => {
+  const onSearch = (search: string) => {
     if (search.length < 3) {
       return;
     }
@@ -55,14 +43,11 @@ class Header extends Component<IProps, IState> {
     req.setSearch(search);
 
     InternalStore.globalSearch(req, (resp: GlobalSearchResponse) => {
-      this.setState({
-        searchResult: resp,
-      });
+      setSearchResult(resp);
     });
   };
 
-  onLogout = () => {
-    let settings = this.state.settings;
+  const onLogout = () => {
     if (settings === undefined) {
       return;
     }
@@ -71,117 +56,112 @@ class Header extends Component<IProps, IState> {
 
     if (!oidc.getEnabled() || oidc.getLogoutUrl() === "") {
       SessionStore.logout(true, () => {
-        this.props.history.push("/login");
+        navigate("/login");
       });
     } else {
       SessionStore.logout(false, () => {
-        window.location.assign(oidc.getLogoutUrl());
+        navigate(oidc.getLogoutUrl());
       });
     }
   };
 
-  render() {
-    if (this.state.settings === undefined) {
-      return null;
-    }
+  if (settings === undefined) {
+    return null;
+  }
 
-    let oidcEnabled = this.state.settings!.getOpenidConnect()!.getEnabled();
+  let oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
 
-    const menu = (
-      <Menu>
-        {!oidcEnabled && (
-          <Menu.Item>
-            <Link to={`/users/${this.props.user.getId()}/password`}>Change password</Link>
-          </Menu.Item>
-        )}
-        <Menu.Item onClick={this.onLogout}>Logout</Menu.Item>
-      </Menu>
-    );
+  const menu = (
+    <Menu>
+      {!oidcEnabled && (
+        <Menu.Item>
+          <Link to={`/users/${user.getId()}/password`}>Change password</Link>
+        </Menu.Item>
+      )}
+      <Menu.Item onClick={onLogout}>Logout</Menu.Item>
+    </Menu>
+  );
 
-    let options: {
-      label: any;
-      options: any[];
-    }[] = [
-      {
-        label: renderTitle("Tenants"),
-        options: [],
-      },
-      {
-        label: renderTitle("Gateways"),
-        options: [],
-      },
-      {
-        label: renderTitle("Applications"),
-        options: [],
-      },
-      {
-        label: renderTitle("Devices"),
-        options: [],
-      },
-    ];
+  let options: {
+    label: any;
+    options: any[];
+  }[] = [
+    {
+      label: renderTitle("Tenants"),
+      options: [],
+    },
+    {
+      label: renderTitle("Gateways"),
+      options: [],
+    },
+    {
+      label: renderTitle("Applications"),
+      options: [],
+    },
+    {
+      label: renderTitle("Devices"),
+      options: [],
+    },
+  ];
 
-    if (this.state.searchResult !== undefined) {
-      for (const res of this.state.searchResult.getResultList()) {
-        if (res.getKind() === "tenant") {
-          options[0].options.push(renderItem(res.getTenantName(), `/tenants/${res.getTenantId()}`));
-        }
+  if (searchResult !== undefined) {
+    for (const res of searchResult.getResultList()) {
+      if (res.getKind() === "tenant") {
+        options[0].options.push(renderItem(res.getTenantName(), `/tenants/${res.getTenantId()}`));
+      }
 
-        if (res.getKind() === "gateway") {
-          options[1].options.push(
-            renderItem(res.getGatewayName(), `/tenants/${res.getTenantId()}/gateways/${res.getGatewayId()}`),
-          );
-        }
+      if (res.getKind() === "gateway") {
+        options[1].options.push(
+          renderItem(res.getGatewayName(), `/tenants/${res.getTenantId()}/gateways/${res.getGatewayId()}`),
+        );
+      }
 
-        if (res.getKind() === "application") {
-          options[2].options.push(
-            renderItem(
-              res.getApplicationName(),
-              `/tenants/${res.getTenantId()}/applications/${res.getApplicationId()}`,
-            ),
-          );
-        }
+      if (res.getKind() === "application") {
+        options[2].options.push(
+          renderItem(res.getApplicationName(), `/tenants/${res.getTenantId()}/applications/${res.getApplicationId()}`),
+        );
+      }
 
-        if (res.getKind() === "device") {
-          options[3].options.push(
-            renderItem(
-              res.getDeviceName(),
-              `/tenants/${res.getTenantId()}/applications/${res.getApplicationId()}/devices/${res.getDeviceDevEui()}`,
-            ),
-          );
-        }
+      if (res.getKind() === "device") {
+        options[3].options.push(
+          renderItem(
+            res.getDeviceName(),
+            `/tenants/${res.getTenantId()}/applications/${res.getApplicationId()}/devices/${res.getDeviceDevEui()}`,
+          ),
+        );
       }
     }
+  }
 
-    return (
-      <div>
-        <img className="logo" alt="ChirpStack" src="/logo.png" />
-        <div className="actions">
-          <div className="search">
-            <AutoComplete
-              dropdownClassName="search-dropdown"
-              dropdownMatchSelectWidth={500}
-              options={options}
-              onSearch={this.onSearch}
-            >
-              <Input.Search placeholder="Search..." style={{ width: 500, marginTop: -5 }} />
-            </AutoComplete>
-          </div>
-          <div className="help">
-            <a href="https://www.chirpstack.io" target="_blank" rel="noreferrer">
-              <Button icon={<QuestionOutlined />} />
-            </a>
-          </div>
-          <div className="user">
-            <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
-              <Button type="primary" icon={<UserOutlined />}>
-                {this.props.user.getEmail()} <DownOutlined />
-              </Button>
-            </Dropdown>
-          </div>
+  return (
+    <div>
+      <img className="logo" alt="ChirpStack" src="/logo.png" />
+      <div className="actions">
+        <div className="search">
+          <AutoComplete
+            dropdownClassName="search-dropdown"
+            dropdownMatchSelectWidth={500}
+            options={options}
+            onSearch={onSearch}
+          >
+            <Input.Search placeholder="Search..." style={{ width: 500, marginTop: -5 }} />
+          </AutoComplete>
+        </div>
+        <div className="help">
+          <a href="https://www.chirpstack.io" target="_blank" rel="noreferrer">
+            <Button icon={<QuestionOutlined />} />
+          </a>
+        </div>
+        <div className="user">
+          <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
+            <Button type="primary" icon={<UserOutlined />}>
+              {user.getEmail()} <DownOutlined />
+            </Button>
+          </Dropdown>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
-export default withRouter(Header);
+export default Header;

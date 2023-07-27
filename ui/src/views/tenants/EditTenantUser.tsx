@@ -1,7 +1,8 @@
-import React, { Component } from "react";
-import { RouteComponentProps, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
-import { Space, Breadcrumb, Card, Button, PageHeader } from "antd";
+import { Space, Breadcrumb, Card, Button } from "antd";
+import { PageHeader } from "@ant-design/pro-layout";
 
 import {
   Tenant,
@@ -18,110 +19,88 @@ import SessionStore from "../../stores/SessionStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
 
-interface IState {
-  tenantUser?: TenantUser;
-}
+function EditTenantUser({ tenant }: { tenant: Tenant }) {
+  const [tenantUser, setTenantUser] = useState<TenantUser | undefined>(undefined);
+  const { userId } = useParams();
+  const navigate = useNavigate();
 
-interface MatchParams {
-  userId: string;
-}
-
-interface IProps extends RouteComponentProps<MatchParams> {
-  tenant: Tenant;
-}
-
-class EditTenantUser extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
-    this.getTenantUser();
-  }
-
-  getTenantUser = () => {
-    const id = this.props.match.params.userId;
+  useEffect(() => {
     let req = new GetTenantUserRequest();
-    req.setTenantId(this.props.tenant.getId());
-    req.setUserId(id);
+    req.setTenantId(tenant.getId());
+    req.setUserId(userId!);
 
     TenantStore.getUser(req, (resp: GetTenantUserResponse) => {
-      this.setState({
-        tenantUser: resp.getTenantUser(),
-      });
+      setTenantUser(resp.getTenantUser());
     });
-  };
+  }, [userId, tenant]);
 
-  onFinish = (obj: TenantUser) => {
+  const onFinish = (obj: TenantUser) => {
     let req = new UpdateTenantUserRequest();
     req.setTenantUser(obj);
 
     TenantStore.updateUser(req, () => {
-      this.props.history.push(`/tenants/${this.props.tenant.getId()}/users`);
+      navigate(`/tenants/${tenant.getId()}/users`);
     });
   };
 
-  deleteTenantUser = () => {
+  const deleteTenantUser = () => {
     let req = new DeleteTenantUserRequest();
-    req.setTenantId(this.props.tenant.getId());
-    req.setUserId(this.props.match.params.userId);
+    req.setTenantId(tenant.getId());
+    req.setUserId(userId!);
 
     TenantStore.deleteUser(req, () => {
-      this.props.history.push(`/tenants/${this.props.tenant.getId()}/users`);
+      navigate(`/tenants/${tenant.getId()}/users`);
     });
   };
 
-  render() {
-    const tu = this.state.tenantUser;
+  const tu = tenantUser;
 
-    if (!tu) {
-      return null;
-    }
-
-    const disabled = !(SessionStore.isAdmin() || SessionStore.isTenantAdmin(this.props.tenant.getId()));
-
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        <PageHeader
-          breadcrumbRender={() => (
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <span>Tenants</span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}/users`}>Tenant users</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>{tu.getEmail()}</span>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          )}
-          title={tu.getEmail()}
-          subTitle={`user id: ${tu.getUserId()}`}
-          extra={[
-            <Admin tenantId={this.props.tenant.getId()} isTenantAdmin>
-              <DeleteConfirm typ="tenant user" confirm={tu.getEmail()} onConfirm={this.deleteTenantUser}>
-                <Button danger type="primary">
-                  Delete tenant user
-                </Button>
-              </DeleteConfirm>
-            </Admin>,
-          ]}
-        />
-        <Card>
-          <TenantUserForm initialValues={tu} onFinish={this.onFinish} disabled={disabled} disableEmail />
-        </Card>
-      </Space>
-    );
+  if (!tu) {
+    return null;
   }
+
+  const disabled = !(SessionStore.isAdmin() || SessionStore.isTenantAdmin(tenant.getId()));
+
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      <PageHeader
+        breadcrumbRender={() => (
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <span>Tenants</span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${tenant.getId()}`}>{tenant.getName()}</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${tenant.getId()}/users`}>Tenant users</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>{tu.getEmail()}</span>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        )}
+        title={tu.getEmail()}
+        subTitle={`user id: ${tu.getUserId()}`}
+        extra={[
+          <Admin tenantId={tenant.getId()} isTenantAdmin>
+            <DeleteConfirm typ="tenant user" confirm={tu.getEmail()} onConfirm={deleteTenantUser}>
+              <Button danger type="primary">
+                Delete tenant user
+              </Button>
+            </DeleteConfirm>
+          </Admin>,
+        ]}
+      />
+      <Card>
+        <TenantUserForm initialValues={tu} onFinish={onFinish} disabled={disabled} disableEmail />
+      </Card>
+    </Space>
+  );
 }
 
 export default EditTenantUser;

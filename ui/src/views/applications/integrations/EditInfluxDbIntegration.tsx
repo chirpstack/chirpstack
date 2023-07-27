@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -14,53 +14,41 @@ import {
 import InfluxDbIntegrationForm from "./InfluxDbIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-interface IState {
-  integration?: InfluxDbIntegration;
-}
+function EditInfluxDbIntegration(props: IProps) {
+  const navigate = useNavigate();
+  const [integration, setIntegration] = useState<InfluxDbIntegration | undefined>(undefined);
 
-class EditInfluxDbIntegration extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     let req = new GetInfluxDbIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.getInfluxDbIntegration(req, (resp: GetInfluxDbIntegrationResponse) => {
-      this.setState({
-        integration: resp.getIntegration(),
-      });
+      setIntegration(resp.getIntegration());
     });
-  }
+  }, [props]);
 
-  onFinish = (obj: InfluxDbIntegration) => {
+  const onFinish = (obj: InfluxDbIntegration) => {
     let req = new UpdateInfluxDbIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateInfluxDbIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    if (this.state.integration === undefined) {
-      return null;
-    }
-
-    return (
-      <Card title="Update InfluxDB integration">
-        <InfluxDbIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
-      </Card>
-    );
+  if (integration === undefined) {
+    return null;
   }
+
+  return (
+    <Card title="Update InfluxDB integration">
+      <InfluxDbIntegrationForm initialValues={integration} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default EditInfluxDbIntegration;

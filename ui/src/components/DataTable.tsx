@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Table } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -16,113 +16,81 @@ interface IProps {
   noPagination?: boolean;
 }
 
-interface IState {
-  totalCount: number;
-  pageSize: number;
-  currentPage: number;
-  rows: object[];
-  loading: boolean;
-}
+function DataTable(props: IProps) {
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(SessionStore.getRowsPerPage());
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rows, setRows] = useState<object[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-class DataTable extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
+  const onChangePage = (page: number, pz?: number | void) => {
+    setLoading(true);
 
-    this.state = {
-      totalCount: 0,
-      pageSize: SessionStore.getRowsPerPage(),
-      currentPage: 1,
-      rows: [],
-      loading: true,
-    };
-  }
-
-  componentDidMount() {
-    this.onChangePage(this.state.currentPage, this.state.pageSize);
-  }
-
-  componentDidUpdate(prevProps: IProps) {
-    if (this.props === prevProps) {
-      return;
+    if (!pz) {
+      pz = pageSize;
     }
 
-    this.onChangePage(this.state.currentPage, this.state.pageSize);
-  }
-
-  onChangePage = (page: number, pageSize?: number | void) => {
-    this.setState(
-      {
-        loading: true,
-      },
-      () => {
-        let pz = pageSize;
-        if (!pz) {
-          pz = this.state.pageSize;
-        }
-
-        this.props.getPage(pz, (page - 1) * pz, (totalCount: number, rows: object[]) => {
-          this.setState({
-            currentPage: page,
-            totalCount: totalCount,
-            rows: rows,
-            pageSize: pz || 0,
-            loading: false,
-          });
-        });
-      },
-    );
+    props.getPage(pz, (page - 1) * pz, (totalCount: number, rows: object[]) => {
+      setCurrentPage(page);
+      setTotalCount(totalCount);
+      setRows(rows);
+      setPageSize(pz || 0);
+      setLoading(false);
+    });
   };
 
-  onShowSizeChange = (page: number, pageSize: number) => {
-    this.onChangePage(page, pageSize);
+  const onShowSizeChange = (page: number, pageSize: number) => {
+    onChangePage(page, pageSize);
     SessionStore.setRowsPerPage(pageSize);
   };
 
-  onRowsSelectChange = (ids: React.Key[]) => {
+  const onRowsSelectChange = (ids: React.Key[]) => {
     const idss = ids as string[];
-    if (this.props.onRowsSelectChange) {
-      this.props.onRowsSelectChange(idss);
+    if (props.onRowsSelectChange) {
+      props.onRowsSelectChange(idss);
     }
   };
 
-  render() {
-    const { getPage, refreshKey, ...otherProps } = this.props;
-    let loadingProps = undefined;
-    if (this.state.loading) {
-      loadingProps = {
-        delay: 300,
-      };
-    }
+  useEffect(() => {
+    onChangePage(currentPage, pageSize);
+  }, [props, currentPage, pageSize]);
 
-    let pagination = undefined;
-    if (this.props.noPagination === undefined || this.props.noPagination === false) {
-      pagination = {
-        current: this.state.currentPage,
-        total: this.state.totalCount,
-        pageSize: this.state.pageSize,
-        onChange: this.onChangePage,
-        showSizeChanger: true,
-        onShowSizeChange: this.onShowSizeChange,
-      };
-    }
-
-    let rowSelection = undefined;
-    if (this.props.onRowsSelectChange) {
-      rowSelection = {
-        onChange: this.onRowsSelectChange,
-      };
-    }
-
-    return (
-      <Table
-        loading={loadingProps}
-        dataSource={this.state.rows}
-        pagination={pagination || false}
-        rowSelection={rowSelection}
-        {...otherProps}
-      />
-    );
+  const { getPage, refreshKey, ...otherProps } = props;
+  let loadingProps = undefined;
+  if (loading) {
+    loadingProps = {
+      delay: 300,
+    };
   }
+
+  let pagination = undefined;
+  if (props.noPagination === undefined || props.noPagination === false) {
+    pagination = {
+      current: currentPage,
+      total: totalCount,
+      pageSize: pageSize,
+      onChange: onChangePage,
+      showSizeChanger: true,
+      onShowSizeChange: onShowSizeChange,
+    };
+  }
+
+  let rowSelection = undefined;
+  if (props.onRowsSelectChange) {
+    rowSelection = {
+      onChange: onRowsSelectChange,
+    };
+  }
+
+  return (
+    <Table
+      loading={loadingProps}
+      dataSource={rows}
+      pagination={pagination || false}
+      rowSelection={rowSelection}
+      {...otherProps}
+    />
+  );
 }
 
 export default DataTable;

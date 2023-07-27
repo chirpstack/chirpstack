@@ -31,7 +31,7 @@ class RelayStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 
   addDevice = (req: AddRelayDeviceRequest, callbackFunc: () => void) => {
     this.client.addDevice(req, SessionStore.getMetadata(), err => {
@@ -47,7 +47,7 @@ class RelayStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   removeDevice = (req: RemoveRelayDeviceRequest, callbackFunc: () => void) => {
     this.client.removeDevice(req, SessionStore.getMetadata(), err => {
@@ -63,7 +63,7 @@ class RelayStore extends EventEmitter {
 
       callbackFunc();
     });
-  }
+  };
 
   listDevices = (req: ListRelayDevicesRequest, callbackFunc: (resp: ListRelayDevicesResponse) => void) => {
     this.client.listDevices(req, SessionStore.getMetadata(), (err, resp) => {
@@ -74,7 +74,7 @@ class RelayStore extends EventEmitter {
 
       callbackFunc(resp);
     });
-  }
+  };
 }
 
 const relayStore = new RelayStore();

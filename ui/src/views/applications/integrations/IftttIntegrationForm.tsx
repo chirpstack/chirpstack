@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Form, Input, AutoComplete, Button, Row, Col, Switch } from "antd";
 
@@ -10,29 +10,15 @@ interface IProps {
   onFinish: (obj: IftttIntegration) => void;
 }
 
-interface IState {
-  arbitraryJson: boolean;
-}
+function IftttIntegrationForm(props: IProps) {
+  const [arbitraryJson, setArbitraryJson] = useState<Boolean>(false);
 
-class IftttIntegrationForm extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
+  useEffect(() => {
+    setArbitraryJson(props.initialValues.getArbitraryJson());
+  }, [props]);
 
-    this.state = {
-      arbitraryJson: false,
-    };
-  }
-
-  componentDidMount() {
-    const v = this.props.initialValues;
-
-    this.setState({
-      arbitraryJson: v.getArbitraryJson(),
-    });
-  }
-
-  onFinish = (values: IftttIntegration.AsObject) => {
-    const v = Object.assign(this.props.initialValues.toObject(), values);
+  const onFinish = (values: IftttIntegration.AsObject) => {
+    const v = Object.assign(props.initialValues.toObject(), values);
     let i = new IftttIntegration();
 
     i.setApplicationId(v.applicationId);
@@ -41,55 +27,58 @@ class IftttIntegrationForm extends Component<IProps, IState> {
     i.setArbitraryJson(v.arbitraryJson);
     i.setUplinkValuesList(v.uplinkValuesList);
 
-    this.props.onFinish(i);
+    props.onFinish(i);
   };
 
-  onArbitraryJsonChange = (checked: boolean) => {
-    this.setState({
-      arbitraryJson: checked,
-    });
-  }
+  const onArbitraryJsonChange = (checked: boolean) => {
+    setArbitraryJson(checked);
+  };
 
-  render() {
-    const options: {
-      value: string;
-    }[] = this.props.measurementKeys.map(v => {
-      return { value: v };
-    });
+  const options: {
+    value: string;
+  }[] = props.measurementKeys.map(v => {
+    return { value: v };
+  });
 
-    return (
-      <Form layout="vertical" initialValues={this.props.initialValues.toObject()} onFinish={this.onFinish}>
-        <Form.Item
-          label="Key"
-          name="key"
-          rules={[{ required: true, message: "Please enter a key!" }]}
-          tooltip="This key can be obtained from the IFTTT Webhooks integrations documentation"
-        >
-          <Input.Password />
-        </Form.Item>
-        <Row gutter={24}>
-          <Col span={12}>
-            <Form.Item
-              label="Event prefix"
-              name="eventPrefix"
-              rules={[{ pattern: /[A-Za-z0-9]+/, message: "Only use A-Z, a-z and 0-9 characters" }]}
-              tooltip="The prefix will be added to the Webhook event, e.g. if set an uplink will be published as PREFIX_up instead of up."
-            >
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label="Publish as arbitrary JSON"
-              name="arbitraryJson"
-              valuePropName="checked"
-              tooltip="If enabled, the event payload will be published as-is (arbitrary JSON payload instead of 3 JSON values format)."
-            >
-              <Switch onChange={this.onArbitraryJsonChange} />
-            </Form.Item>
-          </Col>
-        </Row>
-        {!this.state.arbitraryJson && <Form.List name="uplinkValuesList">
+  return (
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+      <Form.Item
+        label="Key"
+        name="key"
+        rules={[{ required: true, message: "Please enter a key!" }]}
+        tooltip="This key can be obtained from the IFTTT Webhooks integrations documentation"
+      >
+        <Input.Password />
+      </Form.Item>
+      <Row gutter={24}>
+        <Col span={12}>
+          <Form.Item
+            label="Event prefix"
+            name="eventPrefix"
+            rules={[
+              {
+                pattern: /[A-Za-z0-9]+/,
+                message: "Only use A-Z, a-z and 0-9 characters",
+              },
+            ]}
+            tooltip="The prefix will be added to the Webhook event, e.g. if set an uplink will be published as PREFIX_up instead of up."
+          >
+            <Input />
+          </Form.Item>
+        </Col>
+        <Col span={12}>
+          <Form.Item
+            label="Publish as arbitrary JSON"
+            name="arbitraryJson"
+            valuePropName="checked"
+            tooltip="If enabled, the event payload will be published as-is (arbitrary JSON payload instead of 3 JSON values format)."
+          >
+            <Switch onChange={onArbitraryJsonChange} />
+          </Form.Item>
+        </Col>
+      </Row>
+      {!arbitraryJson && (
+        <Form.List name="uplinkValuesList">
           {fields => (
             <Row gutter={24}>
               {fields.map((field, i) => (
@@ -105,15 +94,15 @@ class IftttIntegrationForm extends Component<IProps, IState> {
               ))}
             </Row>
           )}
-        </Form.List>}
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-        </Form.Item>
-      </Form>
-    );
-  }
+        </Form.List>
+      )}
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          Submit
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 }
 
 export default IftttIntegrationForm;

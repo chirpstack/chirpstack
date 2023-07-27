@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Form, Input, InputNumber, Row, Col, Button, Tabs, Space, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
@@ -17,57 +17,37 @@ interface IProps {
   disabled?: boolean;
 }
 
-interface IState {
-  latValue: number;
-  lonValue: number;
-  locationPending: boolean;
-}
+function GatewayForm(props: IProps) {
+  const [form] = Form.useForm();
+  const [latValue, setLatValue] = useState<number>(0);
+  const [lonValue, setLonValue] = useState<number>(0);
+  const [locationPending, setLocationPending] = useState<boolean>(false);
 
-class GatewayForm extends Component<IProps, IState> {
-  formRef = React.createRef<any>();
-
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      latValue: 0,
-      lonValue: 0,
-      locationPending: false,
-    };
-  }
-
-  componentDidMount() {
-    if (!this.props.update) {
-      this.getCurrentLocation();
+  useEffect(() => {
+    if (!props.update) {
+      getCurrentLocation();
     } else {
-      const loc = this.props.initialValues.getLocation();
+      const loc = props.initialValues.getLocation();
       if (loc) {
-        this.setState({
-          latValue: loc.getLatitude(),
-          lonValue: loc.getLongitude(),
-        });
+        setLatValue(loc.getLatitude());
+        setLonValue(loc.getLongitude());
       }
     }
-  }
+  }, [props]);
 
-  getCurrentLocation = () => {
-    this.setState({
-      locationPending: true,
-    });
+  const getCurrentLocation = () => {
+    setLocationPending(true);
 
     LocationStore.getLocation((loc: [number, number]) => {
-      this.setState(
-        {
-          latValue: loc[0],
-          lonValue: loc[1],
-          locationPending: false,
-        },
-        this.setLocationFields,
-      );
+      setLatValue(loc[0]);
+      setLonValue(loc[1]);
+      setLocationPending(false);
+      setLocationFields(loc[0], loc[1]);
     });
   };
 
-  onFinish = (values: Gateway.AsObject) => {
-    const v = Object.assign(this.props.initialValues.toObject(), values);
+  const onFinish = (values: Gateway.AsObject) => {
+    const v = Object.assign(props.initialValues.toObject(), values);
     let gw = new Gateway();
     let loc = new Location();
 
@@ -88,181 +68,157 @@ class GatewayForm extends Component<IProps, IState> {
       gw.getTagsMap().set(elm[0], elm[1]);
     }
 
-    this.props.onFinish(gw);
+    props.onFinish(gw);
   };
 
-  updateLocation = (e: any) => {
+  const updateLocation = (e: any) => {
     const loc = e.target.getLatLng();
-
-    this.setState(
-      {
-        latValue: loc.lat,
-        lonValue: loc.lng,
-      },
-      this.setLocationFields,
-    );
+    setLatValue(loc.lat);
+    setLonValue(loc.lng);
+    setLocationFields(loc.lat, loc.lng);
   };
 
-  setLocationFields = () => {
-    this.formRef.current.setFieldsValue({
+  const setLocationFields = (lat: number, lon: number) => {
+    form.setFieldsValue({
       location: {
-        latitude: this.state.latValue,
-        longitude: this.state.lonValue,
+        latitude: lat,
+        longitude: lon,
       },
     });
   };
 
-  render() {
-    const location: [number, number] = [this.state.latValue, this.state.lonValue];
+  const location: [number, number] = [latValue, lonValue];
 
-    return (
-      <Form
-        layout="vertical"
-        initialValues={this.props.initialValues.toObject()}
-        onFinish={this.onFinish}
-        ref={this.formRef}
-      >
-        <Tabs>
-          <Tabs.TabPane tab="General" key="1">
-            <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
-              <Input disabled={this.props.disabled} />
+  return (
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+      <Tabs>
+        <Tabs.TabPane tab="General" key="1">
+          <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
+            <Input disabled={props.disabled} />
+          </Form.Item>
+          <Form.Item label="Description" name="description">
+            <Input.TextArea disabled={props.disabled} />
+          </Form.Item>
+          <Row gutter={24}>
+            <Col span={12}>
+              <EuiInput
+                label="Gateway ID (EUI64)"
+                name="gatewayId"
+                value={props.initialValues.getGatewayId()}
+                disabled={props.update || props.disabled}
+                required
+              />
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Stats interval (secs)"
+                tooltip="The expected interval in seconds in which the gateway sends its statistics"
+                name="statsInterval"
+                rules={[{ required: true, message: "Please enter a stats interval!" }]}
+              >
+                <InputNumber min={0} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item label="Location">
+            <Form.Item name={["location", "latitude"]} noStyle>
+              <Input hidden />
             </Form.Item>
-            <Form.Item label="Description" name="description">
-              <Input.TextArea disabled={this.props.disabled} />
+            <Form.Item name={["location", "longitude"]} noStyle>
+              <Input hidden />
             </Form.Item>
-            <Row gutter={24}>
-              <Col span={12}>
-                <EuiInput
-                  label="Gateway ID (EUI64)"
-                  name="gatewayId"
-                  value={this.props.initialValues.getGatewayId()}
-                  formRef={this.formRef}
-                  disabled={this.props.update || this.props.disabled}
-                  required
+            <Space direction="vertical" style={{ width: "100%" }}>
+              <Map height={500} center={location}>
+                <Marker
+                  position={location}
+                  faIcon="wifi"
+                  color="blue"
+                  draggable={!props.disabled}
+                  eventHandlers={{ dragend: updateLocation }}
                 />
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Stats interval (secs)"
-                  tooltip="The expected interval in seconds in which the gateway sends its statistics"
-                  name="statsInterval"
-                  rules={[{ required: true, message: "Please enter a stats interval!" }]}
-                >
-                  <InputNumber min={0} disabled={this.props.disabled} />
+              </Map>
+              <Button onClick={getCurrentLocation} disabled={locationPending} type="link" style={{ float: "right" }}>
+                Set to current location
+              </Button>
+            </Space>
+          </Form.Item>
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Tags" key="2">
+          <Form.List name="tagsMap">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Row gutter={24}>
+                    <Col span={6}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 0]}
+                        fieldKey={[name, 0]}
+                        rules={[{ required: true, message: "Please enter a key!" }]}
+                      >
+                        <Input placeholder="Key" disabled={props.disabled} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={16}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 1]}
+                        fieldKey={[name, 1]}
+                        rules={[{ required: true, message: "Please enter a value!" }]}
+                      >
+                        <Input placeholder="Value" disabled={props.disabled} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={2}>
+                      <MinusCircleOutlined onClick={() => remove(name)} disabled={props.disabled} />
+                    </Col>
+                  </Row>
+                ))}
+                <Form.Item>
+                  <Button type="dashed" disabled={props.disabled} onClick={() => add()} block icon={<PlusOutlined />}>
+                    Add tag
+                  </Button>
                 </Form.Item>
-              </Col>
-            </Row>
-            <Form.Item label="Location">
-              <Form.Item name={["location", "latitude"]} noStyle>
-                <Input hidden />
-              </Form.Item>
-              <Form.Item name={["location", "longitude"]} noStyle>
-                <Input hidden />
-              </Form.Item>
-              <Space direction="vertical" style={{ width: "100%" }}>
-                <Map height={500} center={location}>
-                  <Marker
-                    position={location}
-                    faIcon="wifi"
-                    color="blue"
-                    draggable={!this.props.disabled}
-                    eventHandlers={{ dragend: this.updateLocation }}
-                  />
-                </Map>
-                <Button
-                  onClick={this.getCurrentLocation}
-                  disabled={this.state.locationPending}
-                  type="link"
-                  style={{ float: "right" }}
-                >
-                  Set to current location
-                </Button>
-              </Space>
-            </Form.Item>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="Tags" key="2">
-            <Form.List name="tagsMap">
-              {(fields, { add, remove }) => (
-                <>
-                  {fields.map(({ key, name, ...restField }) => (
-                    <Row gutter={24}>
-                      <Col span={6}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 0]}
-                          fieldKey={[name, 0]}
-                          rules={[{ required: true, message: "Please enter a key!" }]}
-                        >
-                          <Input placeholder="Key" disabled={this.props.disabled} />
-                        </Form.Item>
-                      </Col>
-                      <Col span={16}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 1]}
-                          fieldKey={[name, 1]}
-                          rules={[{ required: true, message: "Please enter a value!" }]}
-                        >
-                          <Input placeholder="Value" disabled={this.props.disabled} />
-                        </Form.Item>
-                      </Col>
-                      <Col span={2}>
-                        <MinusCircleOutlined onClick={() => remove(name)} disabled={this.props.disabled} />
-                      </Col>
-                    </Row>
-                  ))}
-                  <Form.Item>
-                    <Button
-                      type="dashed"
-                      disabled={this.props.disabled}
-                      onClick={() => add()}
-                      block
-                      icon={<PlusOutlined />}
-                    >
-                      Add tag
-                    </Button>
-                  </Form.Item>
-                </>
-              )}
-            </Form.List>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="Metadata" key="3">
-            <Card bordered={false}>
-              <p>
-                Metadata is pushed by the gateway on every stats update and can be used to expose information about the
-                gateway like ip / hostname, serial number, HAL version.
-              </p>
-            </Card>
-            <Form.List name="metadataMap">
-              {(fields, { add, remove }) => (
-                <>
-                  {fields.map(({ key, name, ...restField }) => (
-                    <Row gutter={24}>
-                      <Col span={6}>
-                        <Form.Item {...restField} name={[name, 0]} fieldKey={[name, 0]}>
-                          <Input placeholder="Key" disabled />
-                        </Form.Item>
-                      </Col>
-                      <Col span={18}>
-                        <Form.Item {...restField} name={[name, 1]} fieldKey={[name, 1]}>
-                          <Input placeholder="Value" disabled />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  ))}
-                </>
-              )}
-            </Form.List>
-          </Tabs.TabPane>
-        </Tabs>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
-            Submit
-          </Button>
-        </Form.Item>
-      </Form>
-    );
-  }
+              </>
+            )}
+          </Form.List>
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Metadata" key="3">
+          <Card bordered={false}>
+            <p>
+              Metadata is pushed by the gateway on every stats update and can be used to expose information about the
+              gateway like ip / hostname, serial number, HAL version.
+            </p>
+          </Card>
+          <Form.List name="metadataMap">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Row gutter={24}>
+                    <Col span={6}>
+                      <Form.Item {...restField} name={[name, 0]} fieldKey={[name, 0]}>
+                        <Input placeholder="Key" disabled />
+                      </Form.Item>
+                    </Col>
+                    <Col span={18}>
+                      <Form.Item {...restField} name={[name, 1]} fieldKey={[name, 1]}>
+                        <Input placeholder="Value" disabled />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                ))}
+              </>
+            )}
+          </Form.List>
+        </Tabs.TabPane>
+      </Tabs>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" disabled={props.disabled}>
+          Submit
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 }
 
 export default GatewayForm;

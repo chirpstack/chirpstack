@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -14,53 +14,41 @@ import {
 import AwsSnsIntegrationForm from "./AwsSnsIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-interface IState {
-  integration?: AwsSnsIntegration;
-}
+function EditAwsSnsIntegration(props: IProps) {
+  const navigate = useNavigate();
+  const [integration, setIntegration] = useState<AwsSnsIntegration | undefined>(undefined);
 
-class EditAwsSnsIntegration extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     let req = new GetAwsSnsIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.getAwsSnsIntegration(req, (resp: GetAwsSnsIntegrationResponse) => {
-      this.setState({
-        integration: resp.getIntegration(),
-      });
+      setIntegration(resp.getIntegration());
     });
-  }
+  }, [props]);
 
-  onFinish = (obj: AwsSnsIntegration) => {
+  const onFinish = (obj: AwsSnsIntegration) => {
     let req = new UpdateAwsSnsIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateAwsSnsIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    if (this.state.integration === undefined) {
-      return null;
-    }
-
-    return (
-      <Card title="Update AWS SNS integration">
-        <AwsSnsIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
-      </Card>
-    );
+  if (integration === undefined) {
+    return null;
   }
+
+  return (
+    <Card title="Update AWS SNS integration">
+      <AwsSnsIntegrationForm initialValues={integration} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default EditAwsSnsIntegration;

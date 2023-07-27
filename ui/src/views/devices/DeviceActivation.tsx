@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Space, Form, Button, Row, Col, InputNumber, Alert } from "antd";
 
@@ -26,11 +26,11 @@ interface FormProps {
   onFinish: (obj: DeviceActivationPb) => void;
 }
 
-class LW10DeviceActivationForm extends Component<FormProps> {
-  formRef = React.createRef<any>();
+function LW10DeviceActivationForm(props: FormProps) {
+  const [form] = Form.useForm();
 
-  onFinish = (values: DeviceActivationPb.AsObject) => {
-    const v = Object.assign(this.props.initialValues.toObject(), values);
+  const onFinish = (values: DeviceActivationPb.AsObject) => {
+    const v = Object.assign(props.initialValues.toObject(), values);
     let da = new DeviceActivationPb();
 
     da.setDevAddr(v.devAddr);
@@ -42,66 +42,56 @@ class LW10DeviceActivationForm extends Component<FormProps> {
     da.setAFCntDown(v.nFCntDown);
     da.setNFCntDown(v.nFCntDown);
 
-    this.props.onFinish(da);
+    props.onFinish(da);
   };
 
-  render() {
-    return (
-      <Form
-        layout="vertical"
-        initialValues={this.props.initialValues.toObject()}
-        onFinish={this.onFinish}
-        ref={this.formRef}
-      >
-        <DevAddrInput
-          label="Device address"
-          name="devAddr"
-          value={this.props.initialValues.getDevAddr()}
-          devEui={this.props.device.getDevEui()}
-          formRef={this.formRef}
-          required
-        />
-        <AesKeyInput
-          label="Network session key (LoRaWAN 1.0)"
-          name="nwkSEncKey"
-          value={this.props.initialValues.getNwkSEncKey()}
-          formRef={this.formRef}
-          required
-        />
-        <AesKeyInput
-          label="Application session key (LoRaWAN 1.0)"
-          name="appSKey"
-          value={this.props.initialValues.getAppSKey()}
-          formRef={this.formRef}
-          required
-        />
-        <Row gutter={24}>
-          <Col span={6}>
-            <Form.Item label="Uplink frame-counter" name="fCntUp">
-              <InputNumber min={0} />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item label="Downlink frame-counter" name="nFCntDown">
-              <InputNumber min={0} />
-            </Form.Item>
-          </Col>
-        </Row>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
-            (Re)activate device
-          </Button>
-        </Form.Item>
-      </Form>
-    );
-  }
+  return (
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+      <DevAddrInput
+        label="Device address"
+        name="devAddr"
+        value={props.initialValues.getDevAddr()}
+        devEui={props.device.getDevEui()}
+        required
+      />
+      <AesKeyInput
+        label="Network session key (LoRaWAN 1.0)"
+        name="nwkSEncKey"
+        value={props.initialValues.getNwkSEncKey()}
+        required
+      />
+      <AesKeyInput
+        label="Application session key (LoRaWAN 1.0)"
+        name="appSKey"
+        value={props.initialValues.getAppSKey()}
+        required
+      />
+      <Row gutter={24}>
+        <Col span={6}>
+          <Form.Item label="Uplink frame-counter" name="fCntUp">
+            <InputNumber min={0} />
+          </Form.Item>
+        </Col>
+        <Col span={6}>
+          <Form.Item label="Downlink frame-counter" name="nFCntDown">
+            <InputNumber min={0} />
+          </Form.Item>
+        </Col>
+      </Row>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" disabled={props.disabled}>
+          (Re)activate device
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 }
 
-class LW11DeviceActivationForm extends Component<FormProps> {
-  formRef = React.createRef<any>();
+function LW11DeviceActivationForm(props: FormProps) {
+  const [form] = Form.useForm();
 
-  onFinish = (values: DeviceActivationPb.AsObject) => {
-    const v = Object.assign(this.props.initialValues.toObject(), values);
+  const onFinish = (values: DeviceActivationPb.AsObject) => {
+    const v = Object.assign(props.initialValues.toObject(), values);
     let da = new DeviceActivationPb();
 
     da.setDevAddr(v.devAddr);
@@ -113,162 +103,133 @@ class LW11DeviceActivationForm extends Component<FormProps> {
     da.setAFCntDown(v.aFCntDown);
     da.setNFCntDown(v.nFCntDown);
 
-    this.props.onFinish(da);
+    props.onFinish(da);
   };
 
-  render() {
-    return (
-      <Form
-        layout="vertical"
-        initialValues={this.props.initialValues.toObject()}
-        onFinish={this.onFinish}
-        ref={this.formRef}
-      >
-        <DevAddrInput
-          label="Device address"
-          name="devAddr"
-          value={this.props.initialValues.getDevAddr()}
-          devEui={this.props.device.getDevEui()}
-          formRef={this.formRef}
-          required
-        />
-        <AesKeyInput
-          label="Network session encryption key"
-          name="nwkSEncKey"
-          value={this.props.initialValues.getNwkSEncKey()}
-          formRef={this.formRef}
-          required
-        />
-        <AesKeyInput
-          label="Serving network session integrity key"
-          name="sNwkSIntKey"
-          value={this.props.initialValues.getSNwkSIntKey()}
-          formRef={this.formRef}
-          required
-        />
-        <AesKeyInput
-          label="Forwarding network session integrity key"
-          name="fNwkSIntKey"
-          value={this.props.initialValues.getFNwkSIntKey()}
-          formRef={this.formRef}
-          required
-        />
-        <AesKeyInput
-          label="Application session key"
-          name="appSKey"
-          value={this.props.initialValues.getAppSKey()}
-          formRef={this.formRef}
-          required
-        />
-        <Row gutter={24}>
-          <Col span={6}>
-            <Form.Item label="Uplink frame-counter" name="fCntUp">
-              <InputNumber min={0} />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item label="Downlink frame-counter (network)" name="nFCntDown">
-              <InputNumber min={0} />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item label="Downlink frame-counter (application)" name="aFCntDown">
-              <InputNumber min={0} />
-            </Form.Item>
-          </Col>
-        </Row>
-        <Form.Item>
-          <Button type="primary" htmlType="submit" disabled={this.props.disabled}>
-            (Re)activate device
-          </Button>
-        </Form.Item>
-      </Form>
-    );
-  }
+  return (
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+      <DevAddrInput
+        label="Device address"
+        name="devAddr"
+        value={props.initialValues.getDevAddr()}
+        devEui={props.device.getDevEui()}
+        required
+      />
+      <AesKeyInput
+        label="Network session encryption key"
+        name="nwkSEncKey"
+        value={props.initialValues.getNwkSEncKey()}
+        required
+      />
+      <AesKeyInput
+        label="Serving network session integrity key"
+        name="sNwkSIntKey"
+        value={props.initialValues.getSNwkSIntKey()}
+        required
+      />
+      <AesKeyInput
+        label="Forwarding network session integrity key"
+        name="fNwkSIntKey"
+        value={props.initialValues.getFNwkSIntKey()}
+        required
+      />
+      <AesKeyInput label="Application session key" name="appSKey" value={props.initialValues.getAppSKey()} required />
+      <Row gutter={24}>
+        <Col span={6}>
+          <Form.Item label="Uplink frame-counter" name="fCntUp">
+            <InputNumber min={0} />
+          </Form.Item>
+        </Col>
+        <Col span={6}>
+          <Form.Item label="Downlink frame-counter (network)" name="nFCntDown">
+            <InputNumber min={0} />
+          </Form.Item>
+        </Col>
+        <Col span={6}>
+          <Form.Item label="Downlink frame-counter (application)" name="aFCntDown">
+            <InputNumber min={0} />
+          </Form.Item>
+        </Col>
+      </Row>
+      <Form.Item>
+        <Button type="primary" htmlType="submit" disabled={props.disabled}>
+          (Re)activate device
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 }
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   tenant: Tenant;
   application: Application;
   device: Device;
   deviceProfile: DeviceProfile;
 }
 
-interface IState {
-  deviceActivation?: DeviceActivationPb;
-  deviceActivationRequested: boolean;
-}
+function DeviceActivation(props: IProps) {
+  const navigate = useNavigate();
+  const [deviceActivation, setDeviceActivation] = useState<DeviceActivationPb | undefined>(undefined);
+  const [deviceActivationRequested, setDeviceActivationRequested] = useState<boolean>(false);
 
-class DeviceActivation extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      deviceActivationRequested: false,
-    };
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     let req = new GetDeviceActivationRequest();
-    req.setDevEui(this.props.device.getDevEui());
+    req.setDevEui(props.device.getDevEui());
 
     DeviceStore.getActivation(req, (resp: GetDeviceActivationResponse) => {
-      this.setState({
-        deviceActivation: resp.getDeviceActivation(),
-        deviceActivationRequested: true,
-      });
+      setDeviceActivation(resp.getDeviceActivation());
+      setDeviceActivationRequested(true);
     });
-  }
+  }, [props]);
 
-  onFinish = (obj: DeviceActivationPb) => {
+  const onFinish = (obj: DeviceActivationPb) => {
     let req = new ActivateDeviceRequest();
-    obj.setDevEui(this.props.device.getDevEui());
+    obj.setDevEui(props.device.getDevEui());
     req.setDeviceActivation(obj);
 
     DeviceStore.activate(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`,
+      navigate(
+        `/tenants/${props.tenant.getId()}/applications/${props.application.getId()}/devices/${props.device.getDevEui()}`,
       );
     });
   };
 
-  render() {
-    if (!this.state.deviceActivationRequested) {
-      return null;
-    }
-
-    if (!this.state.deviceActivation && this.props.deviceProfile.getSupportsOtaa()) {
-      return <Alert type="info" showIcon message="This device has not (yet) been activated." />;
-    }
-
-    let macVersion = this.props.deviceProfile.getMacVersion();
-    const lw11 = macVersion === MacVersion.LORAWAN_1_1_0;
-
-    let initialValues = new DeviceActivationPb();
-    if (this.state.deviceActivation) {
-      initialValues = this.state.deviceActivation;
-    }
-
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        {!lw11 && (
-          <LW10DeviceActivationForm
-            initialValues={initialValues}
-            device={this.props.device}
-            onFinish={this.onFinish}
-            disabled={this.props.deviceProfile.getSupportsOtaa()}
-          />
-        )}
-        {lw11 && (
-          <LW11DeviceActivationForm
-            initialValues={initialValues}
-            device={this.props.device}
-            onFinish={this.onFinish}
-            disabled={this.props.deviceProfile.getSupportsOtaa()}
-          />
-        )}
-      </Space>
-    );
+  if (!deviceActivationRequested) {
+    return null;
   }
+
+  if (!deviceActivation && props.deviceProfile.getSupportsOtaa()) {
+    return <Alert type="info" showIcon message="This device has not (yet) been activated." />;
+  }
+
+  let macVersion = props.deviceProfile.getMacVersion();
+  const lw11 = macVersion === MacVersion.LORAWAN_1_1_0;
+
+  let initialValues = new DeviceActivationPb();
+  if (deviceActivation) {
+    initialValues = deviceActivation;
+  }
+
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      {!lw11 && (
+        <LW10DeviceActivationForm
+          initialValues={initialValues}
+          device={props.device}
+          onFinish={onFinish}
+          disabled={props.deviceProfile.getSupportsOtaa()}
+        />
+      )}
+      {lw11 && (
+        <LW11DeviceActivationForm
+          initialValues={initialValues}
+          device={props.device}
+          onFinish={onFinish}
+          disabled={props.deviceProfile.getSupportsOtaa()}
+        />
+      )}
+    </Space>
+  );
 }
 
 export default DeviceActivation;

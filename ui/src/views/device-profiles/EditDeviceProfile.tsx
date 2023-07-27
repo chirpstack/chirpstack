@@ -1,7 +1,8 @@
-import React, { Component } from "react";
-import { RouteComponentProps, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link, useParams } from "react-router-dom";
 
-import { Space, Breadcrumb, Card, Button, PageHeader } from "antd";
+import { Space, Breadcrumb, Card, Button } from "antd";
+import { PageHeader } from "@ant-design/pro-layout";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import {
@@ -18,112 +19,95 @@ import SessionStore from "../../stores/SessionStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
 
-interface IState {
-  deviceProfile?: DeviceProfile;
-}
-
-interface MatchParams {
-  deviceProfileId: string;
-}
-
-interface IProps extends RouteComponentProps<MatchParams> {
+interface IProps {
   tenant: Tenant;
 }
 
-class EditDeviceProfile extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
+function EditDeviceProfile(props: IProps) {
+  const navigate = useNavigate();
+  const [deviceProfile, setDeviceProfile] = useState<DeviceProfile | undefined>(undefined);
+  const { deviceProfileId } = useParams();
 
-  componentDidMount() {
-    this.getDeviceProfile();
-  }
-
-  getDeviceProfile = () => {
-    const id = this.props.match.params.deviceProfileId;
+  useEffect(() => {
+    const id = deviceProfileId!;
     let req = new GetDeviceProfileRequest();
     req.setId(id);
 
     DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
-      this.setState({
-        deviceProfile: resp.getDeviceProfile(),
-      });
+      setDeviceProfile(resp.getDeviceProfile());
     });
-  };
+  }, [deviceProfileId]);
 
-  onFinish = (obj: DeviceProfile) => {
+  const onFinish = (obj: DeviceProfile) => {
     let req = new UpdateDeviceProfileRequest();
     req.setDeviceProfile(obj);
 
     DeviceProfileStore.update(req, () => {
-      this.props.history.push(`/tenants/${this.props.tenant.getId()}/device-profiles`);
+      navigate(`/tenants/${props.tenant.getId()}/device-profiles`);
     });
   };
 
-  deleteDeviceProfile = () => {
+  const deleteDeviceProfile = () => {
     let req = new DeleteDeviceProfileRequest();
-    req.setId(this.props.match.params.deviceProfileId);
+    req.setId(deviceProfileId!);
 
     DeviceProfileStore.delete(req, () => {
-      this.props.history.push(`/tenants/${this.props.tenant.getId()}/device-profiles`);
+      navigate(`/tenants/${props.tenant.getId()}/device-profiles`);
     });
   };
 
-  render() {
-    const dp = this.state.deviceProfile;
+  const dp = deviceProfile;
 
-    if (!dp) {
-      return null;
-    }
-
-    const disabled = !(
-      SessionStore.isAdmin() ||
-      SessionStore.isTenantAdmin(this.props.tenant.getId()) ||
-      SessionStore.isTenantDeviceAdmin(this.props.tenant.getId())
-    );
-
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        <PageHeader
-          breadcrumbRender={() => (
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <span>Tenants</span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}/device-profiles`}>Device profiles</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>{dp.getName()}</span>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          )}
-          title={dp.getName()}
-          subTitle={`device profile id: ${dp.getId()}`}
-          extra={[
-            <Admin tenantId={this.props.tenant.getId()} isDeviceAdmin>
-              <DeleteConfirm typ="device profile" confirm={dp.getName()} onConfirm={this.deleteDeviceProfile}>
-                <Button danger type="primary">
-                  Delete device profile
-                </Button>
-              </DeleteConfirm>
-            </Admin>,
-          ]}
-        />
-        <Card>
-          <DeviceProfileForm initialValues={dp} disabled={disabled} onFinish={this.onFinish} />
-        </Card>
-      </Space>
-    );
+  if (!dp) {
+    return null;
   }
+
+  const disabled = !(
+    SessionStore.isAdmin() ||
+    SessionStore.isTenantAdmin(props.tenant.getId()) ||
+    SessionStore.isTenantDeviceAdmin(props.tenant.getId())
+  );
+
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      <PageHeader
+        breadcrumbRender={() => (
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <span>Tenants</span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}/device-profiles`}>Device profiles</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>{dp.getName()}</span>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        )}
+        title={dp.getName()}
+        subTitle={`device profile id: ${dp.getId()}`}
+        extra={[
+          <Admin tenantId={props.tenant.getId()} isDeviceAdmin>
+            <DeleteConfirm typ="device profile" confirm={dp.getName()} onConfirm={deleteDeviceProfile}>
+              <Button danger type="primary">
+                Delete device profile
+              </Button>
+            </DeleteConfirm>
+          </Admin>,
+        ]}
+      />
+      <Card>
+        <DeviceProfileForm initialValues={dp} disabled={disabled} onFinish={onFinish} />
+      </Card>
+    </Space>
+  );
 }
 
 export default EditDeviceProfile;

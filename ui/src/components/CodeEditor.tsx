@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { Controlled as CodeMirror } from "react-codemirror2";
 
 import { Form } from "antd";
@@ -6,88 +6,49 @@ import { Form } from "antd";
 import "codemirror/mode/javascript/javascript";
 
 interface IProps {
-  formRef: React.RefObject<any>;
   label?: string;
   name: string;
   required?: boolean;
-  value?: string;
   disabled?: boolean;
   tooltip?: string;
 }
 
-interface IState {
-  value: string;
-  reloadKey: number;
-}
+function CodeEditor(props: IProps) {
+  const form = Form.useFormInstance();
+  const [value, setValue] = useState<string>("");
+  const [reloadKey, setReloadKey] = useState<number>(1);
 
-class CodeEditor extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      value: "",
-      reloadKey: 0,
-    };
-  }
+  useEffect(() => {
+    setValue(form.getFieldValue(props.name));
+    setReloadKey(k => k + 1);
+  }, [form, props]);
 
-  componentDidMount() {
-    if (this.props.value) {
-      this.setState({
-        value: this.props.value,
-      });
-    }
-  }
-
-  componentDidUpdate(oldProps: IProps) {
-    if (this.props === oldProps) {
-      return;
-    }
-
-    if (this.props.value) {
-      this.setState({
-        value: this.props.value,
-        reloadKey: this.state.reloadKey + 1,
-      });
-    }
-  }
-
-  updateField = () => {
-    let value = this.state.value;
-
-    this.props.formRef.current.setFieldsValue({
-      [this.props.name]: value,
+  const handleChange = (editor: any, data: any, newCode: string) => {
+    setValue(newCode);
+    form.setFieldsValue({
+      [props.name]: newCode,
     });
   };
 
-  handleChange = (editor: any, data: any, newCode: string) => {
-    this.setState(
-      {
-        value: newCode,
-      },
-      this.updateField,
-    );
+  const codeMirrorOptions = {
+    lineNumbers: true,
+    mode: "javascript",
+    theme: "base16-light",
+    readOnly: props.disabled,
   };
 
-  render() {
-    const codeMirrorOptions = {
-      lineNumbers: true,
-      mode: "javascript",
-      theme: "base16-light",
-      readOnly: this.props.disabled,
-    };
-
-    return (
-      <Form.Item label={this.props.label} name={this.props.name} tooltip={this.props.tooltip}>
-        <div style={{ border: "1px solid #cccccc" }}>
-          <CodeMirror
-            key={`code-editor-refresh-${this.state.reloadKey}`}
-            value={this.state.value}
-            options={codeMirrorOptions}
-            onBeforeChange={this.handleChange}
-          />
-        </div>
-      </Form.Item>
-    );
-  }
+  return (
+    <Form.Item label={props.label} name={props.name} tooltip={props.tooltip}>
+      <div style={{ border: "1px solid #cccccc" }}>
+        <CodeMirror
+          key={`code-editor-refresh-${reloadKey}`}
+          value={value}
+          options={codeMirrorOptions}
+          onBeforeChange={handleChange}
+        />
+      </div>
+    </Form.Item>
+  );
 }
 
 export default CodeEditor;

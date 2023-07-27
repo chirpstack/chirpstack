@@ -1,8 +1,9 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { presetPalettes } from "@ant-design/colors";
-import { Space, Breadcrumb, Card, Row, Col, PageHeader, Empty } from "antd";
+import { Space, Breadcrumb, Card, Row, Col, Empty } from "antd";
+import { PageHeader } from "@ant-design/pro-layout";
 
 import moment from "moment";
 import { LatLngTuple, PointTuple } from "leaflet";
@@ -27,167 +28,125 @@ import InternalStore from "../../stores/InternalStore";
 import GatewayStore from "../../stores/GatewayStore";
 import Map, { Marker, MarkerColor } from "../../components/Map";
 
-interface GatewaysMapState {
-  items: GatewayListItem[];
-}
+function GatewaysMap() {
+  const [items, setItems] = useState<GatewayListItem[]>([]);
 
-class GatewaysMap extends Component<{}, GatewaysMapState> {
-  constructor(props: {}) {
-    super(props);
-
-    this.state = {
-      items: [],
-    };
-  }
-
-  componentDidMount() {
-    this.loadData();
-  }
-
-  loadData = () => {
+  useEffect(() => {
     let req = new ListGatewaysRequest();
     req.setLimit(9999);
     GatewayStore.list(req, (resp: ListGatewaysResponse) => {
-      this.setState({
-        items: resp.getResultList(),
-      });
+      setItems(resp.getResultList());
     });
+  }, []);
+
+  if (items.length === 0) {
+    return <Empty />;
+  }
+
+  const boundsOptions: {
+    padding: PointTuple;
+  } = {
+    padding: [50, 50],
   };
 
-  render() {
-    if (this.state.items.length === 0) {
-      return <Empty />;
+  let bounds: LatLngTuple[] = [];
+  let markers: any[] = [];
+
+  for (const item of items) {
+    const pos: LatLngTuple = [item.getLocation()!.getLatitude(), item.getLocation()!.getLongitude()];
+    bounds.push(pos);
+
+    let color: MarkerColor = "orange";
+    let lastSeen: string = "Never seen online";
+
+    if (item.getState() === GatewayState.OFFLINE) {
+      color = "red";
+    } else if (item.getState() === GatewayState.ONLINE) {
+      color = "green";
     }
 
-    const boundsOptions: {
-      padding: PointTuple;
-    } = {
-      padding: [50, 50],
-    };
-
-    let bounds: LatLngTuple[] = [];
-    let markers: any[] = [];
-
-    for (const item of this.state.items) {
-      const pos: LatLngTuple = [item.getLocation()!.getLatitude(), item.getLocation()!.getLongitude()];
-      bounds.push(pos);
-
-      let color: MarkerColor = "orange";
-      let lastSeen: string = "Never seen online";
-
-      if (item.getState() === GatewayState.OFFLINE) {
-        color = "red";
-      } else if (item.getState() === GatewayState.ONLINE) {
-        color = "green";
-      }
-
-      if (item.getLastSeenAt() !== undefined) {
-        let ts = moment(item.getLastSeenAt()!.toDate());
-        lastSeen = ts.fromNow();
-      }
-
-      markers.push(
-        <Marker position={pos} faIcon="wifi" color={color}>
-          <Popup>
-            <Link to={`/tenants/${item.getTenantId()}/gateways/${item.getGatewayId()}`}>{item.getName()}</Link>
-            <br />
-            {item.getGatewayId()}
-            <br />
-            <br />
-            {lastSeen}
-          </Popup>
-        </Marker>,
-      );
+    if (item.getLastSeenAt() !== undefined) {
+      let ts = moment(item.getLastSeenAt()!.toDate());
+      lastSeen = ts.fromNow();
     }
 
-    return (
-      <Map height={500} bounds={bounds} boundsOptions={boundsOptions}>
-        {markers}
-      </Map>
+    markers.push(
+      <Marker position={pos} faIcon="wifi" color={color}>
+        <Popup>
+          <Link to={`/tenants/${item.getTenantId()}/gateways/${item.getGatewayId()}`}>{item.getName()}</Link>
+          <br />
+          {item.getGatewayId()}
+          <br />
+          <br />
+          {lastSeen}
+        </Popup>
+      </Marker>,
     );
   }
+
+  return (
+    <Map height={500} bounds={bounds} boundsOptions={boundsOptions}>
+      {markers}
+    </Map>
+  );
 }
 
-interface GatewayProps {
-  summary?: GetGatewaysSummaryResponse;
-}
-
-class GatewaysActiveInactive extends Component<GatewayProps> {
-  render() {
-    if (
-      this.props.summary === undefined ||
-      (this.props.summary.getNeverSeenCount() === 0 &&
-        this.props.summary.getOfflineCount() === 0 &&
-        this.props.summary.getOnlineCount() === 0)
-    ) {
-      return <Empty />;
-    }
-
-    const data = {
-      labels: ["Never seen", "Offline", "Online"],
-      datasets: [
-        {
-          data: [
-            this.props.summary.getNeverSeenCount(),
-            this.props.summary.getOfflineCount(),
-            this.props.summary.getOnlineCount(),
-          ],
-          backgroundColor: [presetPalettes.orange.primary, presetPalettes.red.primary, presetPalettes.green.primary],
-        },
-      ],
-    };
-
-    const options: {
-      animation: false;
-    } = {
-      animation: false,
-    };
-
-    return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+function DevicesActiveInactive({ summary }: { summary?: GetDevicesSummaryResponse }) {
+  if (
+    summary === undefined ||
+    (summary.getNeverSeenCount() === 0 && summary.getInactiveCount() === 0 && summary.getActiveCount() === 0)
+  ) {
+    return <Empty />;
   }
+
+  const data = {
+    labels: ["Never seen", "Inactive", "Active"],
+    datasets: [
+      {
+        data: [summary.getNeverSeenCount(), summary.getInactiveCount(), summary.getActiveCount()],
+        backgroundColor: [presetPalettes.orange.primary, presetPalettes.red.primary, presetPalettes.green.primary],
+      },
+    ],
+  };
+
+  const options: {
+    animation: false;
+  } = {
+    animation: false,
+  };
+
+  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
 }
 
-interface DeviceProps {
-  summary?: GetDevicesSummaryResponse;
-}
-
-class DevicesActiveInactive extends Component<DeviceProps> {
-  render() {
-    if (
-      this.props.summary === undefined ||
-      (this.props.summary.getNeverSeenCount() === 0 &&
-        this.props.summary.getInactiveCount() === 0 &&
-        this.props.summary.getActiveCount() === 0)
-    ) {
-      return <Empty />;
-    }
-
-    const data = {
-      labels: ["Never seen", "Inactive", "Active"],
-      datasets: [
-        {
-          data: [
-            this.props.summary.getNeverSeenCount(),
-            this.props.summary.getInactiveCount(),
-            this.props.summary.getActiveCount(),
-          ],
-          backgroundColor: [presetPalettes.orange.primary, presetPalettes.red.primary, presetPalettes.green.primary],
-        },
-      ],
-    };
-
-    const options: {
-      animation: false;
-    } = {
-      animation: false,
-    };
-
-    return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+function GatewaysActiveInactive({ summary }: { summary?: GetGatewaysSummaryResponse }) {
+  if (
+    summary === undefined ||
+    (summary.getNeverSeenCount() === 0 && summary.getOfflineCount() === 0 && summary.getOnlineCount() === 0)
+  ) {
+    return <Empty />;
   }
+
+  const data = {
+    labels: ["Never seen", "Offline", "Online"],
+    datasets: [
+      {
+        data: [summary.getNeverSeenCount(), summary.getOfflineCount(), summary.getOnlineCount()],
+        backgroundColor: [presetPalettes.orange.primary, presetPalettes.red.primary, presetPalettes.green.primary],
+      },
+    ],
+  };
+
+  const options: {
+    animation: false;
+  } = {
+    animation: false,
+  };
+
+  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
 }
 
-class DevicesDataRates extends Component<DeviceProps> {
-  getColor = (dr: number) => {
+function DevicesDataRates({ summary }: { summary?: GetDevicesSummaryResponse }) {
+  const getColor = (dr: number) => {
     return [
       "#ff5722",
       "#ff9800",
@@ -207,109 +166,92 @@ class DevicesDataRates extends Component<DeviceProps> {
     ][dr];
   };
 
-  render() {
-    if (this.props.summary === undefined || this.props.summary.getDrCountMap().toArray().length === 0) {
-      return <Empty />;
-    }
-
-    let data: {
-      labels: string[];
-      datasets: {
-        data: number[];
-        backgroundColor: string[];
-      }[];
-    } = {
-      labels: [],
-      datasets: [
-        {
-          data: [],
-          backgroundColor: [],
-        },
-      ],
-    };
-
-    for (const elm of this.props.summary.getDrCountMap().toArray()) {
-      data.labels.push(`DR${elm[0]}`);
-      data.datasets[0].data.push(elm[1]);
-      data.datasets[0].backgroundColor.push(this.getColor(elm[0]));
-    }
-
-    const options: {
-      animation: false;
-    } = {
-      animation: false,
-    };
-
-    return <Doughnut data={data} options={options} className="chart-doughtnut" />;
-  }
-}
-
-interface IProps {}
-
-interface IState {
-  gatewaysSummary?: GetGatewaysSummaryResponse;
-  devicesSummary?: GetDevicesSummaryResponse;
-}
-
-class Dashboard extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
+  if (summary === undefined || summary.getDrCountMap().toArray().length === 0) {
+    return <Empty />;
   }
 
-  componentDidMount() {
+  let data: {
+    labels: string[];
+    datasets: {
+      data: number[];
+      backgroundColor: string[];
+    }[];
+  } = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        backgroundColor: [],
+      },
+    ],
+  };
+
+  for (const elm of summary.getDrCountMap().toArray()) {
+    data.labels.push(`DR${elm[0]}`);
+    data.datasets[0].data.push(elm[1]);
+    data.datasets[0].backgroundColor.push(getColor(elm[0]));
+  }
+
+  const options: {
+    animation: false;
+  } = {
+    animation: false,
+  };
+
+  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+}
+
+function Dashboard() {
+  const [gatewaysSummary, setGatewaysSummary] = useState<GetGatewaysSummaryResponse | undefined>(undefined);
+  const [devicesSummary, setDevicesSummary] = useState<GetDevicesSummaryResponse | undefined>(undefined);
+
+  useEffect(() => {
     InternalStore.getGatewaysSummary(new GetGatewaysSummaryRequest(), (resp: GetGatewaysSummaryResponse) => {
-      this.setState({
-        gatewaysSummary: resp,
-      });
+      setGatewaysSummary(resp);
     });
 
     InternalStore.getDevicesSummary(new GetDevicesSummaryRequest(), (resp: GetDevicesSummaryResponse) => {
-      this.setState({
-        devicesSummary: resp,
-      });
+      setDevicesSummary(resp);
     });
-  }
+  }, []);
 
-  render() {
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        <PageHeader
-          breadcrumbRender={() => (
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <span>Network Server</span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>Dashboard</span>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          )}
-          title="Dashboard"
-        />
-        <Row gutter={24}>
-          <Col span={8}>
-            <Card title="Active devices">
-              <DevicesActiveInactive summary={this.state.devicesSummary} />
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card title="Active gateways">
-              <GatewaysActiveInactive summary={this.state.gatewaysSummary} />
-            </Card>
-          </Col>
-          <Col span={8}>
-            <Card title="Device data-rate usage">
-              <DevicesDataRates summary={this.state.devicesSummary} />
-            </Card>
-          </Col>
-        </Row>
-        <Card title="Gateway map">
-          <GatewaysMap />
-        </Card>
-      </Space>
-    );
-  }
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      <PageHeader
+        breadcrumbRender={() => (
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <span>Network Server</span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>Dashboard</span>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        )}
+        title="Dashboard"
+      />
+      <Row gutter={24}>
+        <Col span={8}>
+          <Card title="Active devices">
+            <DevicesActiveInactive summary={devicesSummary} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title="Active gateways">
+            <GatewaysActiveInactive summary={gatewaysSummary} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title="Device data-rate usage">
+            <DevicesDataRates summary={devicesSummary} />
+          </Card>
+        </Col>
+      </Row>
+      <Card title="Gateway map">
+        <GatewaysMap />
+      </Card>
+    </Space>
+  );
 }
 
 export default Dashboard;

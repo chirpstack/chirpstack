@@ -1,5 +1,3 @@
-import React, { Component } from "react";
-
 import { Form, Input, Row, Col, Button, Tabs, Switch } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
@@ -24,11 +22,11 @@ interface IProps {
   update?: boolean;
 }
 
-class DeviceForm extends Component<IProps> {
-  formRef = React.createRef<any>();
+function DeviceForm(props: IProps) {
+  const [form] = Form.useForm();
 
-  onFinish = (values: Device.AsObject) => {
-    const v = Object.assign(this.props.initialValues.toObject(), values);
+  const onFinish = (values: Device.AsObject) => {
+    const v = Object.assign(props.initialValues.toObject(), values);
     let d = new Device();
 
     d.setApplicationId(v.applicationId);
@@ -50,12 +48,12 @@ class DeviceForm extends Component<IProps> {
       d.getVariablesMap().set(elm[0], elm[1]);
     }
 
-    this.props.onFinish(d);
+    props.onFinish(d);
   };
 
-  getDeviceProfileOptions = (search: string, fn: OptionsCallbackFunc) => {
+  const getDeviceProfileOptions = (search: string, fn: OptionsCallbackFunc) => {
     let req = new ListDeviceProfilesRequest();
-    req.setTenantId(this.props.tenant.getId());
+    req.setTenantId(props.tenant.getId());
     req.setSearch(search);
     req.setLimit(10);
 
@@ -63,11 +61,12 @@ class DeviceForm extends Component<IProps> {
       const options = resp.getResultList().map((o, i) => {
         return { label: o.getName(), value: o.getId() };
       });
+
       fn(options);
     });
   };
 
-  getDeviceProfileOption = (id: string, fn: OptionCallbackFunc) => {
+  const getDeviceProfileOption = (id: string, fn: OptionCallbackFunc) => {
     let req = new GetDeviceProfileRequest();
     req.setId(id);
 
@@ -79,163 +78,153 @@ class DeviceForm extends Component<IProps> {
     });
   };
 
-  render() {
-    return (
-      <Form
-        layout="vertical"
-        initialValues={this.props.initialValues.toObject()}
-        onFinish={this.onFinish}
-        ref={this.formRef}
-      >
-        <Tabs>
-          <Tabs.TabPane tab="Device" key="1">
-            <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Description" name="description">
-              <Input.TextArea />
-            </Form.Item>
-            <Row gutter={24}>
-              <Col span={12}>
-                <EuiInput
-                  label="Device EUI (EUI64)"
-                  name="devEui"
-                  value={this.props.initialValues.getDevEui()}
-                  formRef={this.formRef}
-                  disabled={this.props.update}
-                  required
-                />
-              </Col>
-              <Col span={12}>
-                <EuiInput
-                  label="Join EUI (EUI64)"
-                  name="joinEui"
-                  value={this.props.initialValues.getJoinEui()}
-                  formRef={this.formRef}
-                  tooltip="The Join EUI will be automatically set / updated on OTAA. However, in some cases this field must be configured before OTAA (e.g. OTAA using a Relay)."
-                />
-              </Col>
-            </Row>
-            <AutocompleteInput
-              label="Device profile"
-              name="deviceProfileId"
-              formRef={this.formRef}
-              getOption={this.getDeviceProfileOption}
-              getOptions={this.getDeviceProfileOptions}
-              required
-            />
-            <Row gutter={24}>
-              <Col span={12}>
-                <Form.Item
-                  label="Device is disabled"
-                  name="isDisabled"
-                  valuePropName="checked"
-                  tooltip="Received uplink frames and join-requests will be ignored."
-                >
-                  <Switch />
+  return (
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+      <Tabs>
+        <Tabs.TabPane tab="Device" key="1">
+          <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Description" name="description">
+            <Input.TextArea />
+          </Form.Item>
+          <Row gutter={24}>
+            <Col span={12}>
+              <EuiInput
+                label="Device EUI (EUI64)"
+                name="devEui"
+                value={props.initialValues.getDevEui()}
+                disabled={props.update}
+                required
+              />
+            </Col>
+            <Col span={12}>
+              <EuiInput
+                label="Join EUI (EUI64)"
+                name="joinEui"
+                value={props.initialValues.getJoinEui()}
+                tooltip="The Join EUI will be automatically set / updated on OTAA. However, in some cases this field must be configured before OTAA (e.g. OTAA using a Relay)."
+              />
+            </Col>
+          </Row>
+          <AutocompleteInput
+            label="Device profile"
+            name="deviceProfileId"
+            getOption={getDeviceProfileOption}
+            getOptions={getDeviceProfileOptions}
+            required
+          />
+          <Row gutter={24}>
+            <Col span={12}>
+              <Form.Item
+                label="Device is disabled"
+                name="isDisabled"
+                valuePropName="checked"
+                tooltip="Received uplink frames and join-requests will be ignored."
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Disable frame-counter validation"
+                name="skipFcntCheck"
+                valuePropName="checked"
+                tooltip="You must re-activate your device before this setting becomes effective. Note that disabling the frame-counter validation will compromise security as it allows replay-attacks."
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Tags" key="2">
+          <Form.List name="tagsMap">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Row gutter={24}>
+                    <Col span={6}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 0]}
+                        fieldKey={[name, 0]}
+                        rules={[{ required: true, message: "Please enter a key!" }]}
+                      >
+                        <Input placeholder="Key" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={16}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 1]}
+                        fieldKey={[name, 1]}
+                        rules={[{ required: true, message: "Please enter a value!" }]}
+                      >
+                        <Input placeholder="Value" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={2}>
+                      <MinusCircleOutlined onClick={() => remove(name)} />
+                    </Col>
+                  </Row>
+                ))}
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                    Add tag
+                  </Button>
                 </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Disable frame-counter validation"
-                  name="skipFcntCheck"
-                  valuePropName="checked"
-                  tooltip="You must re-activate your device before this setting becomes effective. Note that disabling the frame-counter validation will compromise security as it allows replay-attacks."
-                >
-                  <Switch />
+              </>
+            )}
+          </Form.List>
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Variables" key="3">
+          <Form.List name="variablesMap">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Row gutter={24}>
+                    <Col span={6}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 0]}
+                        fieldKey={[name, 0]}
+                        rules={[{ required: true, message: "Please enter a key!" }]}
+                      >
+                        <Input placeholder="Key" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={16}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 1]}
+                        fieldKey={[name, 1]}
+                        rules={[{ required: true, message: "Please enter a value!" }]}
+                      >
+                        <Input placeholder="Value" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={2}>
+                      <MinusCircleOutlined onClick={() => remove(name)} />
+                    </Col>
+                  </Row>
+                ))}
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                    Add variable
+                  </Button>
                 </Form.Item>
-              </Col>
-            </Row>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="Tags" key="2">
-            <Form.List name="tagsMap">
-              {(fields, { add, remove }) => (
-                <>
-                  {fields.map(({ key, name, ...restField }) => (
-                    <Row gutter={24}>
-                      <Col span={6}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 0]}
-                          fieldKey={[name, 0]}
-                          rules={[{ required: true, message: "Please enter a key!" }]}
-                        >
-                          <Input placeholder="Key" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={16}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 1]}
-                          fieldKey={[name, 1]}
-                          rules={[{ required: true, message: "Please enter a value!" }]}
-                        >
-                          <Input placeholder="Value" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={2}>
-                        <MinusCircleOutlined onClick={() => remove(name)} />
-                      </Col>
-                    </Row>
-                  ))}
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                      Add tag
-                    </Button>
-                  </Form.Item>
-                </>
-              )}
-            </Form.List>
-          </Tabs.TabPane>
-          <Tabs.TabPane tab="Variables" key="3">
-            <Form.List name="variablesMap">
-              {(fields, { add, remove }) => (
-                <>
-                  {fields.map(({ key, name, ...restField }) => (
-                    <Row gutter={24}>
-                      <Col span={6}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 0]}
-                          fieldKey={[name, 0]}
-                          rules={[{ required: true, message: "Please enter a key!" }]}
-                        >
-                          <Input placeholder="Key" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={16}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 1]}
-                          fieldKey={[name, 1]}
-                          rules={[{ required: true, message: "Please enter a value!" }]}
-                        >
-                          <Input placeholder="Value" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={2}>
-                        <MinusCircleOutlined onClick={() => remove(name)} />
-                      </Col>
-                    </Row>
-                  ))}
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                      Add variable
-                    </Button>
-                  </Form.Item>
-                </>
-              )}
-            </Form.List>
-          </Tabs.TabPane>
-        </Tabs>
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-        </Form.Item>
-      </Form>
-    );
-  }
+              </>
+            )}
+          </Form.List>
+        </Tabs.TabPane>
+      </Tabs>
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          Submit
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 }
 
 export default DeviceForm;

@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { Space, Button } from "antd";
@@ -22,47 +21,45 @@ interface IProps {
   application: Application;
 }
 
-class ListMulticastGroups extends Component<IProps> {
-  columns = (): ColumnsType<MulticastGroupListItem.AsObject> => {
-    return [
-      {
-        title: "Name",
-        dataIndex: "name",
-        key: "name",
-        render: (text, record) => (
-          <Link
-            to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/multicast-groups/${
-              record.id
-            }`}
-          >
-            {text}
-          </Link>
-        ),
+function ListMulticastGroups(props: IProps) {
+  const columns: ColumnsType<MulticastGroupListItem.AsObject> = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      render: (text, record) => (
+        <Link
+          to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/multicast-groups/${
+            record.id
+          }`}
+        >
+          {text}
+        </Link>
+      ),
+    },
+    {
+      title: "Region",
+      dataIndex: "region",
+      key: "region",
+      width: 150,
+      render: (text, record) => {
+        return getEnumName(Region, record.region);
       },
-      {
-        title: "Region",
-        dataIndex: "region",
-        key: "region",
-        width: 150,
-        render: (text, record) => {
-          return getEnumName(Region, record.region);
-        },
+    },
+    {
+      title: "Group type",
+      dataIndex: "groupType",
+      key: "groupType",
+      width: 150,
+      render: (text, record) => {
+        return getEnumName(MulticastGroupType, record.groupType);
       },
-      {
-        title: "Group type",
-        dataIndex: "groupType",
-        key: "groupType",
-        width: 150,
-        render: (text, record) => {
-          return getEnumName(MulticastGroupType, record.groupType);
-        },
-      },
-    ];
-  };
+    },
+  ];
 
-  getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new ListMulticastGroupsRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
     req.setLimit(limit);
     req.setOffset(offset);
 
@@ -72,22 +69,20 @@ class ListMulticastGroups extends Component<IProps> {
     });
   };
 
-  render() {
-    return (
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Admin tenantId={this.props.application.getTenantId()} isDeviceAdmin>
-          <Button type="primary" style={{ float: "right" }}>
-            <Link
-              to={`/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/multicast-groups/create`}
-            >
-              Add multicast-group
-            </Link>
-          </Button>
-        </Admin>
-        <DataTable columns={this.columns()} getPage={this.getPage} rowKey="id" />
-      </Space>
-    );
-  }
+  return (
+    <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <Admin tenantId={props.application.getTenantId()} isDeviceAdmin>
+        <Button type="primary" style={{ float: "right" }}>
+          <Link
+            to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/multicast-groups/create`}
+          >
+            Add multicast-group
+          </Link>
+        </Button>
+      </Admin>
+      <DataTable columns={columns} getPage={getPage} rowKey="id" />
+    </Space>
+  );
 }
 
 export default ListMulticastGroups;

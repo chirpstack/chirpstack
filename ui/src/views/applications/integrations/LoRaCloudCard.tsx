@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { Col, Card, Popconfirm } from "antd";
@@ -13,46 +12,44 @@ interface IProps {
   add?: boolean;
 }
 
-class LoRaCloudCard extends Component<IProps> {
-  onDelete = () => {
+function LoRaCloudCard(props: IProps) {
+  const onDelete = () => {
     let req = new DeleteLoraCloudIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
     ApplicationStore.deleteLoraCloudIntegration(req, () => {});
   };
 
-  render() {
-    let actions: any[] = [];
+  let actions: any[] = [];
 
-    if (!!this.props.add) {
-      actions = [
-        <Link to="integrations/loracloud/create">
-          <PlusOutlined />
-        </Link>,
-      ];
-    } else {
-      actions = [
-        <Link to="integrations/loracloud/edit">
-          <EditOutlined />
-        </Link>,
-        <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={this.onDelete}>
-          <DeleteOutlined />
-        </Popconfirm>,
-      ];
-    }
-
-    return (
-      <Col span={8}>
-        <Card
-          title="Semtech LoRa Cloud&trade;"
-          className="integration-card"
-          cover={<img alt="Semtech LoRa Cloud" src="/integrations/loracloud.png" style={{ padding: 1 }} />}
-          actions={actions}
-        >
-          <Card.Meta description="The Semtech LoRa Cloud integration provides Modem & Geolocation Services." />
-        </Card>
-      </Col>
-    );
+  if (!!props.add) {
+    actions = [
+      <Link to="loracloud/create">
+        <PlusOutlined />
+      </Link>,
+    ];
+  } else {
+    actions = [
+      <Link to="loracloud/edit">
+        <EditOutlined />
+      </Link>,
+      <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={onDelete}>
+        <DeleteOutlined />
+      </Popconfirm>,
+    ];
   }
+
+  return (
+    <Col span={8}>
+      <Card
+        title="Semtech LoRa Cloud&trade;"
+        className="integration-card"
+        cover={<img alt="Semtech LoRa Cloud" src="/integrations/loracloud.png" style={{ padding: 1 }} />}
+        actions={actions}
+      >
+        <Card.Meta description="The Semtech LoRa Cloud integration provides Modem & Geolocation Services." />
+      </Card>
+    </Col>
+  );
 }
 
 export default LoRaCloudCard;

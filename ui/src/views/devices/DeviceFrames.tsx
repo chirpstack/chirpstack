@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { StreamDeviceFramesRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -10,55 +10,31 @@ interface IProps {
   device: Device;
 }
 
-interface IState {
-  frames: LogItem[];
-  cancelFunc?: () => void;
-}
+function DeviceFrames(props: IProps) {
+  const [frames, setFrames] = useState<LogItem[]>([]);
 
-class DeviceFrames extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
+  useEffect(() => {
+    const onMessage = (l: LogItem) => {
+      setFrames(f => {
+        if (f.length === 0 || parseInt(l.getId().replace("-", "")) > parseInt(f[0].getId().replace("-", ""))) {
+          f.unshift(l);
+        }
 
-    this.state = {
-      frames: [],
-      cancelFunc: undefined,
-    };
-  }
-
-  componentDidMount() {
-    this.connectStream();
-  }
-
-  componentWillUnmount() {
-    if (this.state.cancelFunc !== undefined) {
-      this.state.cancelFunc();
-    }
-  }
-
-  connectStream = () => {
-    let req = new StreamDeviceFramesRequest();
-    req.setDevEui(this.props.device.getDevEui());
-
-    let cancelFunc = InternalStore.streamDeviceFrames(req, this.onMessage);
-    this.setState({
-      cancelFunc: cancelFunc,
-    });
-  };
-
-  onMessage = (l: LogItem) => {
-    let frames = this.state.frames;
-
-    if (frames.length === 0 || parseInt(l.getId().replace("-", "")) > parseInt(frames[0].getId().replace("-", ""))) {
-      frames.unshift(l);
-      this.setState({
-        frames: frames,
+        return f;
       });
-    }
-  };
+    };
 
-  render() {
-    return <LogTable logs={this.state.frames} />;
-  }
+    let req = new StreamDeviceFramesRequest();
+    req.setDevEui(props.device.getDevEui());
+
+    let cancelFunc = InternalStore.streamDeviceFrames(req, onMessage);
+
+    return () => {
+      cancelFunc();
+    };
+  }, [props]);
+
+  return <LogTable logs={frames} />;
 }
 
 export default DeviceFrames;

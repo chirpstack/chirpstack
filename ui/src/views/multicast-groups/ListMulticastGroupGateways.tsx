@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 
 import { Space, Button } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -25,47 +25,32 @@ interface IProps {
   multicastGroup: MulticastGroup;
 }
 
-interface IState {
-  selectedRowIds: string[];
-  refreshKey: number;
-}
+function ListMulticastGroupGateways(props: IProps) {
+  const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
 
-class ListMulticastGroupGateways extends Component<IProps, IState> {
-  columns = (): ColumnsType<GatewayListItem.AsObject> => {
-    return [
-      {
-        title: "Name",
-        dataIndex: "name",
-        key: "name",
-      },
-      {
-        title: "Gateway ID",
-        dataIndex: "gatewayId",
-        key: "gatewayId",
-        width: 250,
-      },
-    ];
+  const columns: ColumnsType<GatewayListItem.AsObject> = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Gateway ID",
+      dataIndex: "gatewayId",
+      key: "gatewayId",
+      width: 250,
+    },
+  ];
+
+  const onRowsSelectChange = (ids: string[]) => {
+    setSelectedRowIds(ids);
   };
 
-  constructor(props: IProps) {
-    super(props);
-
-    this.state = {
-      selectedRowIds: [],
-      refreshKey: 1,
-    };
-  }
-
-  onRowsSelectChange = (ids: string[]) => {
-    this.setState({
-      selectedRowIds: ids,
-    });
-  };
-
-  getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
     let req = new ListGatewaysRequest();
-    req.setTenantId(this.props.application.getTenantId());
-    req.setMulticastGroupId(this.props.multicastGroup.getId());
+    req.setTenantId(props.application.getTenantId());
+    req.setMulticastGroupId(props.multicastGroup.getId());
     req.setLimit(limit);
     req.setOffset(offset);
 
@@ -75,27 +60,24 @@ class ListMulticastGroupGateways extends Component<IProps, IState> {
     });
   };
 
-  removeGatewaysFromMulticastGroup = () => {
+  const removeGatewaysFromMulticastGroup = () => {
     if (!window.confirm("Are you sure you want to remove the selected gateways from the multicast-group?")) {
       return;
     }
 
     let count = 0;
-    let self = this;
 
-    for (let gatewayId of this.state.selectedRowIds) {
+    for (let gatewayId of selectedRowIds) {
       count++;
 
       let req = new RemoveGatewayFromMulticastGroupRequest();
-      req.setMulticastGroupId(this.props.multicastGroup.getId());
+      req.setMulticastGroupId(props.multicastGroup.getId());
       req.setGatewayId(gatewayId);
 
       let cbFunc = (cnt: number) => {
         return () => {
-          if (cnt === self.state.selectedRowIds.length) {
-            self.setState({
-              refreshKey: self.state.refreshKey + 1,
-            });
+          if (cnt === selectedRowIds.length) {
+            setRefreshKey(refreshKey + 1);
           }
         };
       };
@@ -104,24 +86,22 @@ class ListMulticastGroupGateways extends Component<IProps, IState> {
     }
   };
 
-  render() {
-    return (
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Space direction="horizontal" style={{ float: "right" }}>
-          <Button onClick={this.removeGatewaysFromMulticastGroup} disabled={this.state.selectedRowIds.length === 0}>
-            Remove from multicast-group
-          </Button>
-        </Space>
-        <DataTable
-          columns={this.columns()}
-          getPage={this.getPage}
-          onRowsSelectChange={this.onRowsSelectChange}
-          rowKey="gatewayId"
-          refreshKey={this.state.refreshKey}
-        />
+  return (
+    <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <Space direction="horizontal" style={{ float: "right" }}>
+        <Button onClick={removeGatewaysFromMulticastGroup} disabled={selectedRowIds.length === 0}>
+          Remove from multicast-group
+        </Button>
       </Space>
-    );
-  }
+      <DataTable
+        columns={columns}
+        getPage={getPage}
+        onRowsSelectChange={onRowsSelectChange}
+        rowKey="gatewayId"
+        refreshKey={refreshKey}
+      />
+    </Space>
+  );
 }
 
 export default ListMulticastGroupGateways;

@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { Col, Card } from "antd";
@@ -9,23 +8,21 @@ interface IProps {
   application: Application;
 }
 
-class HttpCard extends Component<IProps> {
-  render() {
-    let actions: any[] = [<Link to="integrations/mqtt/certificate">Get certificate</Link>];
+function MqttCard(props: IProps) {
+  let actions: any[] = [<Link to="mqtt/certificate">Get certificate</Link>];
 
-    return (
-      <Col span={8}>
-        <Card
-          title="MQTT"
-          className="integration-card"
-          cover={<img alt="MQTT" src="/integrations/mqtt.png" style={{ padding: 1 }} />}
-          actions={actions}
-        >
-          <Card.Meta description="The MQTT integration forwards events to a MQTT broker." />
-        </Card>
-      </Col>
-    );
-  }
+  return (
+    <Col span={8}>
+      <Card
+        title="MQTT"
+        className="integration-card"
+        cover={<img alt="MQTT" src="/integrations/mqtt.png" style={{ padding: 1 }} />}
+        actions={actions}
+      >
+        <Card.Meta description="The MQTT integration forwards events to a MQTT broker." />
+      </Card>
+    </Col>
+  );
 }
 
-export default HttpCard;
+export default MqttCard;

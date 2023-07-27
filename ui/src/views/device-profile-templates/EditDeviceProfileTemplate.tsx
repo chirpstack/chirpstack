@@ -1,7 +1,9 @@
-import React, { Component } from "react";
-import { RouteComponentProps, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 
-import { Space, Breadcrumb, Card, Button, PageHeader } from "antd";
+import { useParams, Link, useNavigate } from "react-router-dom";
+
+import { Space, Breadcrumb, Card, Button } from "antd";
+import { PageHeader } from "@ant-design/pro-layout";
 
 import {
   DeviceProfileTemplate,
@@ -15,101 +17,78 @@ import DeviceProfileTemplateForm from "./DeviceProfileTemplateForm";
 import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 
-interface IState {
-  deviceProfileTemplate?: DeviceProfileTemplate;
-}
+function EditDeviceProfileTemplate() {
+  const navigate = useNavigate();
+  const [deviceProfileTemplate, setDeviceProfileTemplate] = useState<DeviceProfileTemplate | undefined>(undefined);
+  const { deviceProfileTemplateId } = useParams();
 
-interface MatchParams {
-  deviceProfileTemplateId: string;
-}
-
-interface IProps extends RouteComponentProps<MatchParams> {}
-
-class EditDeviceProfileTemplate extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
-    this.getDeviceProfileTemplate();
-  }
-
-  getDeviceProfileTemplate = () => {
-    const id = this.props.match.params.deviceProfileTemplateId;
+  useEffect(() => {
+    const id = deviceProfileTemplateId!;
     let req = new GetDeviceProfileTemplateRequest();
     req.setId(id);
 
     DeviceProfileTemplateStore.get(req, (resp: GetDeviceProfileTemplateResponse) => {
-      this.setState({
-        deviceProfileTemplate: resp.getDeviceProfileTemplate(),
-      });
+      setDeviceProfileTemplate(resp.getDeviceProfileTemplate());
     });
-  };
+  }, [deviceProfileTemplateId]);
 
-  onFinish = (obj: DeviceProfileTemplate) => {
+  const onFinish = (obj: DeviceProfileTemplate) => {
     let req = new UpdateDeviceProfileTemplateRequest();
     req.setDeviceProfileTemplate(obj);
 
     DeviceProfileTemplateStore.update(req, () => {
-      this.props.history.push(`/device-profile-templates`);
+      navigate(`/device-profile-templates`);
     });
   };
 
-  deleteDeviceProfileTemplate = () => {
+  const deleteDeviceProfileTemplate = () => {
     let req = new DeleteDeviceProfileTemplateRequest();
-    req.setId(this.props.match.params.deviceProfileTemplateId);
+    req.setId(deviceProfileTemplateId!);
 
     DeviceProfileTemplateStore.delete(req, () => {
-      this.props.history.push(`/device-profile-templates`);
+      navigate(`/device-profile-templates`);
     });
   };
 
-  render() {
-    const dp = this.state.deviceProfileTemplate;
+  const dp = deviceProfileTemplate;
 
-    if (!dp) {
-      return null;
-    }
-
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        <PageHeader
-          breadcrumbRender={() => (
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <span>Network Server</span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/device-profile-templates`}>Device-profile templates</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>{dp.getName()}</span>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          )}
-          title={dp.getName()}
-          subTitle={`device-profile template id: ${dp.getId()}`}
-          extra={[
-            <DeleteConfirm
-              typ="device-profile template"
-              confirm={dp.getName()}
-              onConfirm={this.deleteDeviceProfileTemplate}
-            >
-              <Button danger type="primary">
-                Delete device-profile template
-              </Button>
-            </DeleteConfirm>,
-          ]}
-        />
-        <Card>
-          <DeviceProfileTemplateForm initialValues={dp} update={true} onFinish={this.onFinish} />
-        </Card>
-      </Space>
-    );
+  if (!dp) {
+    return null;
   }
+
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      <PageHeader
+        breadcrumbRender={() => (
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <span>Network Server</span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/device-profile-templates`}>Device-profile templates</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>{dp.getName()}</span>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        )}
+        title={dp.getName()}
+        subTitle={`device-profile template id: ${dp.getId()}`}
+        extra={[
+          <DeleteConfirm typ="device-profile template" confirm={dp.getName()} onConfirm={deleteDeviceProfileTemplate}>
+            <Button danger type="primary">
+              Delete device-profile template
+            </Button>
+          </DeleteConfirm>,
+        ]}
+      />
+      <Card>
+        <DeviceProfileTemplateForm initialValues={dp} update={true} onFinish={onFinish} />
+      </Card>
+    </Space>
+  );
 }
 
 export default EditDeviceProfileTemplate;

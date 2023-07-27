@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { Col, Card, Popconfirm } from "antd";
@@ -13,46 +12,44 @@ interface IProps {
   add?: boolean;
 }
 
-class IftttCard extends Component<IProps> {
-  onDelete = () => {
+function IftttCard(props: IProps) {
+  const onDelete = () => {
     let req = new DeleteIftttIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
     ApplicationStore.deleteIftttIntegration(req, () => {});
   };
 
-  render() {
-    let actions: any[] = [];
+  let actions: any[] = [];
 
-    if (!!this.props.add) {
-      actions = [
-        <Link to="integrations/ifttt/create">
-          <PlusOutlined />
-        </Link>,
-      ];
-    } else {
-      actions = [
-        <Link to="integrations/ifttt/edit">
-          <EditOutlined />
-        </Link>,
-        <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={this.onDelete}>
-          <DeleteOutlined />
-        </Popconfirm>,
-      ];
-    }
-
-    return (
-      <Col span={8}>
-        <Card
-          title="IFTTT"
-          className="integration-card"
-          cover={<img alt="IFTTT" src="/integrations/ifttt.png" style={{ padding: 1 }} />}
-          actions={actions}
-        >
-          <Card.Meta description="The IFTTT integration forwards events to the IFTTT Webhooks integration." />
-        </Card>
-      </Col>
-    );
+  if (!!props.add) {
+    actions = [
+      <Link to="ifttt/create">
+        <PlusOutlined />
+      </Link>,
+    ];
+  } else {
+    actions = [
+      <Link to="ifttt/edit">
+        <EditOutlined />
+      </Link>,
+      <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={onDelete}>
+        <DeleteOutlined />
+      </Popconfirm>,
+    ];
   }
+
+  return (
+    <Col span={8}>
+      <Card
+        title="IFTTT"
+        className="integration-card"
+        cover={<img alt="IFTTT" src="/integrations/ifttt.png" style={{ padding: 1 }} />}
+        actions={actions}
+      >
+        <Card.Meta description="The IFTTT integration forwards events to the IFTTT Webhooks integration." />
+      </Card>
+    </Col>
+  );
 }
 
 export default IftttCard;

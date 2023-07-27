@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Gateway, UpdateGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
@@ -7,30 +6,28 @@ import GatewayForm from "./GatewayForm";
 import GatewayStore from "../../stores/GatewayStore";
 import SessionStore from "../../stores/SessionStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   gateway: Gateway;
 }
 
-interface IState {}
+function EditGateway(props: IProps) {
+  const navigate = useNavigate();
 
-class EditGateway extends Component<IProps, IState> {
-  onFinish = (obj: Gateway) => {
+  const onFinish = (obj: Gateway) => {
     let req = new UpdateGatewayRequest();
     req.setGateway(obj);
 
     GatewayStore.update(req, () => {
-      this.props.history.push(`/tenants/${obj.getTenantId()}/gateways/${obj.getGatewayId()}`);
+      navigate(`/tenants/${obj.getTenantId()}/gateways/${obj.getGatewayId()}`);
     });
   };
 
-  render() {
-    const disabled = !(
-      SessionStore.isAdmin() ||
-      SessionStore.isTenantAdmin(this.props.gateway.getTenantId()) ||
-      SessionStore.isTenantGatewayAdmin(this.props.gateway.getTenantId())
-    );
-    return <GatewayForm initialValues={this.props.gateway} onFinish={this.onFinish} disabled={disabled} update />;
-  }
+  const disabled = !(
+    SessionStore.isAdmin() ||
+    SessionStore.isTenantAdmin(props.gateway.getTenantId()) ||
+    SessionStore.isTenantGatewayAdmin(props.gateway.getTenantId())
+  );
+  return <GatewayForm initialValues={props.gateway} onFinish={onFinish} disabled={disabled} update />;
 }
 
 export default EditGateway;

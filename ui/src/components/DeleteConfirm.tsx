@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-
+import { useState, PropsWithChildren } from "react";
 import { Popover, Button, Typography, Space, Input } from "antd";
 
 interface IProps {
@@ -8,51 +7,32 @@ interface IProps {
   onConfirm: () => void;
 }
 
-interface ConfirmState {
-  confirm: string;
-}
+function DeleteConfirmContent(props: IProps) {
+  const [confirm, setConfirm] = useState<string>("");
 
-class DeleteConfirmContent extends Component<IProps, ConfirmState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      confirm: "",
-    };
-  }
-
-  onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({
-      confirm: e.target.value,
-    });
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirm(e.target.value);
   };
 
-  render() {
-    return (
-      <Space direction="vertical">
-        <Typography.Text>
-          Enter '{this.props.confirm}' to confirm you want to delete this {this.props.typ}:
-        </Typography.Text>
-        <Input placeholder={this.props.confirm} onChange={this.onChange} />
-        <Button
-          onClick={this.props.onConfirm}
-          disabled={this.state.confirm !== this.props.confirm}
-          style={{ float: "right" }}
-        >
-          Delete
-        </Button>
-      </Space>
-    );
-  }
+  return (
+    <Space direction="vertical">
+      <Typography.Text>
+        Enter '{props.confirm}' to confirm you want to delete this {props.typ}:
+      </Typography.Text>
+      <Input placeholder={props.confirm} onChange={onChange} />
+      <Button onClick={props.onConfirm} disabled={confirm !== props.confirm} style={{ float: "right" }}>
+        Delete
+      </Button>
+    </Space>
+  );
 }
 
-class DeleteConfirm extends Component<IProps> {
-  render() {
-    return (
-      <Popover content={<DeleteConfirmContent {...this.props} />} trigger="click" placement="left">
-        {this.props.children}
-      </Popover>
-    );
-  }
+function DeleteConfirm(props: PropsWithChildren<IProps>) {
+  return (
+    <Popover content={<DeleteConfirmContent {...props} />} trigger="click" placement="left">
+      {props.children}
+    </Popover>
+  );
 }
 
 export default DeleteConfirm;

@@ -111,6 +111,8 @@ class ApplicationStore extends EventEmitter {
         return;
       }
 
+      this.emit("change");
+
       notification.success({
         message: "Application updated",
         duration: 3,

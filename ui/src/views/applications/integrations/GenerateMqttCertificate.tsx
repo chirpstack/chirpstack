@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 
 import moment from "moment";
 import { Card, Button, Form, Input } from "antd";
@@ -15,39 +15,27 @@ interface IProps {
   application: Application;
 }
 
-interface IState {
-  certificate?: GenerateMqttIntegrationClientCertificateResponse;
-  buttonDisabled: boolean;
-}
+function GenerateMqttCertificate(props: IProps) {
+  const [certificate, setCertificate] = useState<GenerateMqttIntegrationClientCertificateResponse | undefined>(
+    undefined,
+  );
+  const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
 
-class GenerateMqttCertificate extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      certificate: undefined,
-      buttonDisabled: false,
-    };
-  }
-
-  requestCertificate = () => {
-    this.setState({
-      buttonDisabled: true,
-    });
+  const requestCertificate = () => {
+    setButtonDisabled(true);
 
     let req = new GenerateMqttIntegrationClientCertificateRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.generateMqttIntegrationClientCertificate(
       req,
       (resp: GenerateMqttIntegrationClientCertificateResponse) => {
-        this.setState({
-          certificate: resp,
-        });
+        setCertificate(resp);
       },
     );
   };
 
-  renderRequest = () => {
+  const renderRequest = () => {
     return (
       <Card>
         <p>
@@ -59,7 +47,7 @@ class GenerateMqttCertificate extends Component<IProps, IState> {
           </strong>
         </p>
         <p>
-          <Button onClick={this.requestCertificate} disabled={this.state.buttonDisabled}>
+          <Button onClick={requestCertificate} disabled={buttonDisabled}>
             Generate certificate
           </Button>
         </p>
@@ -67,14 +55,14 @@ class GenerateMqttCertificate extends Component<IProps, IState> {
     );
   };
 
-  renderResponse = () => {
-    const certificate = this.state.certificate!;
+  const renderResponse = () => {
+    const cert = certificate!;
 
     const initial = {
-      expiresAt: moment(certificate.getExpiresAt()!.toDate()!).format("YYYY-MM-DD HH:mm:ss"),
-      caCert: certificate.getCaCert(),
-      tlsCert: certificate.getTlsCert(),
-      tlsKey: certificate.getTlsKey(),
+      expiresAt: moment(cert.getExpiresAt()!.toDate()!).format("YYYY-MM-DD HH:mm:ss"),
+      caCert: cert.getCaCert(),
+      tlsCert: cert.getTlsCert(),
+      tlsKey: cert.getTlsKey(),
     };
 
     return (
@@ -103,15 +91,13 @@ class GenerateMqttCertificate extends Component<IProps, IState> {
     );
   };
 
-  render() {
-    let content = this.renderRequest();
+  let content = renderRequest();
 
-    if (this.state.certificate !== undefined) {
-      content = this.renderResponse();
-    }
-
-    return <Card title="Generate MQTT certificate">{content}</Card>;
+  if (certificate !== undefined) {
+    content = renderResponse();
   }
+
+  return <Card title="Generate MQTT certificate">{content}</Card>;
 }
 
 export default GenerateMqttCertificate;

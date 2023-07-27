@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { Col, Card, Popconfirm } from "antd";
@@ -16,46 +15,44 @@ interface IProps {
   add?: boolean;
 }
 
-class ThingsBoardCard extends Component<IProps> {
-  onDelete = () => {
+function ThingsBoardCard(props: IProps) {
+  const onDelete = () => {
     let req = new DeleteThingsBoardIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
     ApplicationStore.deleteThingsBoardIntegration(req, () => {});
   };
 
-  render() {
-    let actions: any[] = [];
+  let actions: any[] = [];
 
-    if (!!this.props.add) {
-      actions = [
-        <Link to="integrations/thingsboard/create">
-          <PlusOutlined />
-        </Link>,
-      ];
-    } else {
-      actions = [
-        <Link to="integrations/thingsboard/edit">
-          <EditOutlined />
-        </Link>,
-        <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={this.onDelete}>
-          <DeleteOutlined />
-        </Popconfirm>,
-      ];
-    }
-
-    return (
-      <Col span={8}>
-        <Card
-          title="ThingsBoard"
-          className="integration-card"
-          cover={<img alt="ThingsBoard" src="/integrations/thingsboard.png" style={{ padding: 1 }} />}
-          actions={actions}
-        >
-          <Card.Meta description="The ThingsBoard integration forwards events to a ThingsBoard instance." />
-        </Card>
-      </Col>
-    );
+  if (!!props.add) {
+    actions = [
+      <Link to="thingsboard/create">
+        <PlusOutlined />
+      </Link>,
+    ];
+  } else {
+    actions = [
+      <Link to="thingsboard/edit">
+        <EditOutlined />
+      </Link>,
+      <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={onDelete}>
+        <DeleteOutlined />
+      </Popconfirm>,
+    ];
   }
+
+  return (
+    <Col span={8}>
+      <Card
+        title="ThingsBoard"
+        className="integration-card"
+        cover={<img alt="ThingsBoard" src="/integrations/thingsboard.png" style={{ padding: 1 }} />}
+        actions={actions}
+      >
+        <Card.Meta description="The ThingsBoard integration forwards events to a ThingsBoard instance." />
+      </Card>
+    </Col>
+  );
 }
 
 export default ThingsBoardCard;

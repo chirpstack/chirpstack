@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { StreamDeviceEventsRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -10,55 +10,31 @@ interface IProps {
   device: Device;
 }
 
-interface IState {
-  events: LogItem[];
-  cancelFunc?: () => void;
-}
+function DeviceEvents(props: IProps) {
+  const [events, setEvents] = useState<LogItem[]>([]);
 
-class DeviceEvents extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
+  useEffect(() => {
+    const onMessage = (l: LogItem) => {
+      setEvents(e => {
+        if (e.length === 0 || parseInt(l.getId().replace("-", "")) > parseInt(e[0].getId().replace("-", ""))) {
+          e.unshift(l);
+        }
 
-    this.state = {
-      events: [],
-      cancelFunc: undefined,
-    };
-  }
-
-  componentDidMount() {
-    this.connectStream();
-  }
-
-  componentWillUnmount() {
-    if (this.state.cancelFunc !== undefined) {
-      this.state.cancelFunc();
-    }
-  }
-
-  connectStream = () => {
-    let req = new StreamDeviceEventsRequest();
-    req.setDevEui(this.props.device.getDevEui());
-
-    let cancelFunc = InternalStore.streamDeviceEvents(req, this.onMessage);
-    this.setState({
-      cancelFunc: cancelFunc,
-    });
-  };
-
-  onMessage = (l: LogItem) => {
-    let events = this.state.events;
-
-    if (events.length === 0 || parseInt(l.getId().replace("-", "")) > parseInt(events[0].getId().replace("-", ""))) {
-      events.unshift(l);
-      this.setState({
-        events: events,
+        return e;
       });
-    }
-  };
+    };
 
-  render() {
-    return <LogTable logs={this.state.events} />;
-  }
+    let req = new StreamDeviceEventsRequest();
+    req.setDevEui(props.device.getDevEui());
+
+    let cancelFunc = InternalStore.streamDeviceEvents(req, onMessage);
+
+    return () => {
+      cancelFunc();
+    };
+  }, [props]);
+
+  return <LogTable logs={events} />;
 }
 
 export default DeviceEvents;

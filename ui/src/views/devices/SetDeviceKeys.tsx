@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Form, Button, Space, Popconfirm } from "antd";
 
@@ -25,11 +25,11 @@ interface FormProps {
   onFinish: (obj: DeviceKeys) => void;
 }
 
-class LW10DeviceKeysForm extends Component<FormProps> {
-  formRef = React.createRef<any>();
+function LW10DeviceKeysForm(props: FormProps) {
+  const [form] = Form.useForm();
 
-  onFinish = (values: DeviceKeys.AsObject) => {
-    const v = Object.assign(this.props.initialValues.toObject(), values);
+  const onFinish = (values: DeviceKeys.AsObject) => {
+    const v = Object.assign(props.initialValues.toObject(), values);
     let dk = new DeviceKeys();
 
     dk.setDevEui(v.devEui);
@@ -37,187 +37,152 @@ class LW10DeviceKeysForm extends Component<FormProps> {
     // the AppKey has been renamed to the NwkKey and a new value AppKey was added.
     dk.setNwkKey(v.nwkKey);
 
-    this.props.onFinish(dk);
+    props.onFinish(dk);
   };
 
-  render() {
-    return (
-      <Form
-        layout="vertical"
-        initialValues={this.props.initialValues.toObject()}
-        onFinish={this.onFinish}
-        ref={this.formRef}
-      >
-        <AesKeyInput
-          label="Application key"
-          name="nwkKey"
-          tooltip="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
-          value={this.props.initialValues.getNwkKey()}
-          formRef={this.formRef}
-          required
-        />
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-        </Form.Item>
-      </Form>
-    );
-  }
+  return (
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+      <AesKeyInput
+        label="Application key"
+        name="nwkKey"
+        tooltip="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
+        value={props.initialValues.getNwkKey()}
+        required
+      />
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          Submit
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 }
 
-class LW11DeviceKeysForm extends Component<FormProps> {
-  formRef = React.createRef<any>();
+function LW11DeviceKeysForm(props: FormProps) {
+  const [form] = Form.useForm();
 
-  onFinish = (values: DeviceKeys.AsObject) => {
-    const v = Object.assign(this.props.initialValues.toObject(), values);
+  const onFinish = (values: DeviceKeys.AsObject) => {
+    const v = Object.assign(props.initialValues.toObject(), values);
     let dk = new DeviceKeys();
 
     dk.setDevEui(v.devEui);
     dk.setAppKey(v.appKey);
     dk.setNwkKey(v.nwkKey);
 
-    this.props.onFinish(dk);
+    props.onFinish(dk);
   };
 
-  render() {
-    return (
-      <Form
-        layout="vertical"
-        initialValues={this.props.initialValues.toObject()}
-        onFinish={this.onFinish}
-        ref={this.formRef}
-      >
-        <AesKeyInput
-          label="Application key"
-          tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
-          name="appKey"
-          value={this.props.initialValues.getAppKey()}
-          formRef={this.formRef}
-          required
-        />
-        <AesKeyInput
-          label="Network key"
-          tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
-          name="nwkKey"
-          value={this.props.initialValues.getNwkKey()}
-          formRef={this.formRef}
-          required
-        />
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-        </Form.Item>
-      </Form>
-    );
-  }
+  return (
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+      <AesKeyInput
+        label="Application key"
+        tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
+        name="appKey"
+        value={props.initialValues.getAppKey()}
+        required
+      />
+      <AesKeyInput
+        label="Network key"
+        tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
+        name="nwkKey"
+        value={props.initialValues.getNwkKey()}
+        required
+      />
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          Submit
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 }
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   tenant: Tenant;
   application: Application;
   device: Device;
   deviceProfile: DeviceProfile;
 }
 
-interface IState {
-  deviceKeys?: DeviceKeys;
-  deviceKeysRequested: boolean;
-}
+function SetDeviceKeys(props: IProps) {
+  const navigate = useNavigate();
+  const [deviceKeys, setDeviceKeys] = useState<DeviceKeys | undefined>(undefined);
+  const [deviceKeysRequested, setDeviceKeysRequested] = useState<boolean>(false);
 
-class SetDeviceKeys extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      deviceKeysRequested: false,
-    };
-  }
-
-  componentDidMount() {
-    this.getDeviceKeys();
-  }
-
-  getDeviceKeys = () => {
+  useEffect(() => {
     let req = new GetDeviceKeysRequest();
-    req.setDevEui(this.props.device.getDevEui());
+    req.setDevEui(props.device.getDevEui());
 
     DeviceStore.getKeys(req, (resp?: GetDeviceKeysResponse) => {
       if (resp) {
-        this.setState({
-          deviceKeys: resp.getDeviceKeys(),
-          deviceKeysRequested: true,
-        });
+        setDeviceKeys(resp.getDeviceKeys());
+        setDeviceKeysRequested(true);
       } else {
-        this.setState({
-          deviceKeysRequested: true,
-        });
+        setDeviceKeysRequested(true);
       }
     });
-  };
+  }, [props]);
 
-  onFinish = (obj: DeviceKeys) => {
-    if (this.state.deviceKeys) {
+  const onFinish = (obj: DeviceKeys) => {
+    if (deviceKeys) {
       // this is an update
       let req = new UpdateDeviceKeysRequest();
       req.setDeviceKeys(obj);
 
       DeviceStore.updateKeys(req, () => {
-        this.props.history.push(
-          `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`,
+        navigate(
+          `/tenants/${props.tenant.getId()}/applications/${props.application.getId()}/devices/${props.device.getDevEui()}`,
         );
       });
     } else {
       // this is a create
       let req = new CreateDeviceKeysRequest();
-      obj.setDevEui(this.props.device.getDevEui());
+      obj.setDevEui(props.device.getDevEui());
       req.setDeviceKeys(obj);
 
       DeviceStore.createKeys(req, () => {
-        this.props.history.push(
-          `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${this.props.device.getDevEui()}`,
+        navigate(
+          `/tenants/${props.tenant.getId()}/applications/${props.application.getId()}/devices/${props.device.getDevEui()}`,
         );
       });
     }
   };
 
-  flushDevNonces = () => {
+  const flushDevNonces = () => {
     let req = new FlushDevNoncesRequest();
-    req.setDevEui(this.props.device.getDevEui());
+    req.setDevEui(props.device.getDevEui());
     DeviceStore.flushDevNonces(req, () => {});
   };
 
-  render() {
-    if (!this.state.deviceKeysRequested) {
-      return null;
-    }
-
-    const macVersion = this.props.deviceProfile.getMacVersion();
-    const lw11 = macVersion === MacVersion.LORAWAN_1_1_0;
-
-    let initialValues = new DeviceKeys();
-    if (this.state.deviceKeys) {
-      initialValues = this.state.deviceKeys;
-    }
-
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        {this.state.deviceKeys && (
-          <div style={{ float: "right" }}>
-            <Popconfirm
-              placement="left"
-              title="Are you sure you want to flush all device-nonces that have been used during previous OTAA activations?"
-              onConfirm={this.flushDevNonces}
-            >
-              <Button>Flush OTAA device nonces</Button>
-            </Popconfirm>
-          </div>
-        )}
-        {!lw11 && <LW10DeviceKeysForm initialValues={initialValues} onFinish={this.onFinish} />}
-        {lw11 && <LW11DeviceKeysForm initialValues={initialValues} onFinish={this.onFinish} />}
-      </Space>
-    );
+  if (!deviceKeysRequested) {
+    return null;
   }
+
+  const macVersion = props.deviceProfile.getMacVersion();
+  const lw11 = macVersion === MacVersion.LORAWAN_1_1_0;
+
+  let initialValues = new DeviceKeys();
+  if (deviceKeys) {
+    initialValues = deviceKeys;
+  }
+
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      {deviceKeys && (
+        <div style={{ float: "right" }}>
+          <Popconfirm
+            placement="left"
+            title="Are you sure you want to flush all device-nonces that have been used during previous OTAA activations?"
+            onConfirm={flushDevNonces}
+          >
+            <Button>Flush OTAA device nonces</Button>
+          </Popconfirm>
+        </div>
+      )}
+      {!lw11 && <LW10DeviceKeysForm initialValues={initialValues} onFinish={onFinish} />}
+      {lw11 && <LW11DeviceKeysForm initialValues={initialValues} onFinish={onFinish} />}
+    </Space>
+  );
 }
 
 export default SetDeviceKeys;

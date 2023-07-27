@@ -1,7 +1,7 @@
-import React, { Component } from "react";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-import { Space, Breadcrumb, Card, PageHeader } from "antd";
+import { Space, Breadcrumb, Card } from "antd";
+import { PageHeader } from "@ant-design/pro-layout";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import {
@@ -13,56 +13,56 @@ import {
 import ApplicationForm from "./ApplicationForm";
 import ApplicationStore from "../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   tenant: Tenant;
 }
 
-class CreateApplication extends Component<IProps> {
-  onFinish = (obj: Application) => {
-    obj.setTenantId(this.props.tenant.getId());
+function CreateApplication(props: IProps) {
+  const navigate = useNavigate();
+
+  const onFinish = (obj: Application) => {
+    obj.setTenantId(props.tenant.getId());
 
     let req = new CreateApplicationRequest();
     req.setApplication(obj);
 
     ApplicationStore.create(req, (resp: CreateApplicationResponse) => {
-      this.props.history.push(`/tenants/${this.props.tenant.getId()}/applications/${resp.getId()}`);
+      navigate(`/tenants/${props.tenant.getId()}/applications/${resp.getId()}`);
     });
   };
 
-  render() {
-    const app = new Application();
+  const app = new Application();
 
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        <PageHeader
-          breadcrumbRender={() => (
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <span>Tenants</span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}/applications`}>Applications</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>Add</span>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          )}
-          title="Add application"
-        />
-        <Card>
-          <ApplicationForm initialValues={app} onFinish={this.onFinish} />
-        </Card>
-      </Space>
-    );
-  }
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      <PageHeader
+        breadcrumbRender={() => (
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <span>Tenants</span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>Add</span>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        )}
+        title="Add application"
+      />
+      <Card>
+        <ApplicationForm initialValues={app} onFinish={onFinish} />
+      </Card>
+    </Space>
+  );
 }
 
 export default CreateApplication;

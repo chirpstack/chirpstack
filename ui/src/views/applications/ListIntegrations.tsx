@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Row } from "antd";
 
@@ -27,32 +27,22 @@ interface IProps {
   application: Application;
 }
 
-interface IState {
-  configured: any[];
-  available: any[];
-}
+function ListIntegrations(props: IProps) {
+  const [configured, setConfigured] = useState<any[]>([]);
+  const [available, setAvailable] = useState<any[]>([]);
 
-class ListIntegrations extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      configured: [],
-      available: [],
+  useEffect(() => {
+    ApplicationStore.on("integration.delete", loadIntegrations);
+    loadIntegrations();
+
+    return () => {
+      ApplicationStore.removeAllListeners("integration.delete");
     };
-  }
+  }, []);
 
-  componentDidMount() {
-    ApplicationStore.on("integration.delete", this.loadIntegrations);
-    this.loadIntegrations();
-  }
-
-  componentWillUnmount() {
-    ApplicationStore.removeAllListeners("integration.delete");
-  }
-
-  loadIntegrations = () => {
+  const loadIntegrations = () => {
     let req = new ListIntegrationsRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.listIntegrations(req, (resp: ListIntegrationsResponse) => {
       let configured: any[] = [];
@@ -70,94 +60,90 @@ class ListIntegrations extends Component<IProps, IState> {
 
       // AWS SNS
       if (includes(resp.getResultList(), IntegrationKind.AWS_SNS)) {
-        configured.push(<AwsSnsCard application={this.props.application} />);
+        configured.push(<AwsSnsCard application={props.application} />);
       } else {
-        available.push(<AwsSnsCard application={this.props.application} add />);
+        available.push(<AwsSnsCard application={props.application} add />);
       }
 
       // Azure Service-Bus
       if (includes(resp.getResultList(), IntegrationKind.AZURE_SERVICE_BUS)) {
-        configured.push(<AzureServiceBusCard application={this.props.application} />);
+        configured.push(<AzureServiceBusCard application={props.application} />);
       } else {
-        available.push(<AzureServiceBusCard application={this.props.application} add />);
+        available.push(<AzureServiceBusCard application={props.application} add />);
       }
 
       // GCP Pub/Sub
       if (includes(resp.getResultList(), IntegrationKind.GCP_PUB_SUB)) {
-        configured.push(<GcpPubSubCard application={this.props.application} />);
+        configured.push(<GcpPubSubCard application={props.application} />);
       } else {
-        available.push(<GcpPubSubCard application={this.props.application} add />);
+        available.push(<GcpPubSubCard application={props.application} add />);
       }
 
       // HTTP
       if (includes(resp.getResultList(), IntegrationKind.HTTP)) {
-        configured.push(<HttpCard application={this.props.application} />);
+        configured.push(<HttpCard application={props.application} />);
       } else {
-        available.push(<HttpCard application={this.props.application} add />);
+        available.push(<HttpCard application={props.application} add />);
       }
 
       // IFTTT
       if (includes(resp.getResultList(), IntegrationKind.IFTTT)) {
-        configured.push(<IftttCard application={this.props.application} />);
+        configured.push(<IftttCard application={props.application} />);
       } else {
-        available.push(<IftttCard application={this.props.application} add />);
+        available.push(<IftttCard application={props.application} add />);
       }
 
       // InfluxDB
       if (includes(resp.getResultList(), IntegrationKind.INFLUX_DB)) {
-        configured.push(<InfluxdbCard application={this.props.application} />);
+        configured.push(<InfluxdbCard application={props.application} />);
       } else {
-        available.push(<InfluxdbCard application={this.props.application} add />);
+        available.push(<InfluxdbCard application={props.application} add />);
       }
 
       // MQTT
       if (includes(resp.getResultList(), IntegrationKind.MQTT_GLOBAL)) {
-        configured.push(<MqttCard application={this.props.application} />);
+        configured.push(<MqttCard application={props.application} />);
       }
 
       // myDevices
       if (includes(resp.getResultList(), IntegrationKind.MY_DEVICES)) {
-        configured.push(<MyDevicesCard application={this.props.application} />);
+        configured.push(<MyDevicesCard application={props.application} />);
       } else {
-        available.push(<MyDevicesCard application={this.props.application} add />);
+        available.push(<MyDevicesCard application={props.application} add />);
       }
 
       // Pilot Things
       if (includes(resp.getResultList(), IntegrationKind.PILOT_THINGS)) {
-        configured.push(<PilotThingsCard application={this.props.application} />);
+        configured.push(<PilotThingsCard application={props.application} />);
       } else {
-        available.push(<PilotThingsCard application={this.props.application} add />);
+        available.push(<PilotThingsCard application={props.application} add />);
       }
 
       // Semtech LoRa Cloud
       if (includes(resp.getResultList(), IntegrationKind.LORA_CLOUD)) {
-        configured.push(<LoRaCloudCard application={this.props.application} />);
+        configured.push(<LoRaCloudCard application={props.application} />);
       } else {
-        available.push(<LoRaCloudCard application={this.props.application} add />);
+        available.push(<LoRaCloudCard application={props.application} add />);
       }
 
       // ThingsBoard
       if (includes(resp.getResultList(), IntegrationKind.THINGS_BOARD)) {
-        configured.push(<ThingsBoardCard application={this.props.application} />);
+        configured.push(<ThingsBoardCard application={props.application} />);
       } else {
-        available.push(<ThingsBoardCard application={this.props.application} add />);
+        available.push(<ThingsBoardCard application={props.application} add />);
       }
 
-      this.setState({
-        configured: configured,
-        available: available,
-      });
+      setConfigured(configured);
+      setAvailable(available);
     });
   };
 
-  render() {
-    return (
-      <Row gutter={24}>
-        {this.state.configured}
-        {this.state.available}
-      </Row>
-    );
-  }
+  return (
+    <Row gutter={24}>
+      {configured}
+      {available}
+    </Row>
+  );
 }
 
 export default ListIntegrations;

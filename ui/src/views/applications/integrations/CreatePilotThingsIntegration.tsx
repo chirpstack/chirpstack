@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -12,33 +11,31 @@ import {
 import PilotThingsIntegrationForm from "./PilotThingsIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-class CreatePilotThingsIntegration extends Component<IProps> {
-  onFinish = (obj: PilotThingsIntegration) => {
-    obj.setApplicationId(this.props.application.getId());
+function CreatePilotThingsIntegration(props: IProps) {
+  const navigate = useNavigate();
+
+  const onFinish = (obj: PilotThingsIntegration) => {
+    obj.setApplicationId(props.application.getId());
 
     let req = new CreatePilotThingsIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createPilotThingsIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    const i = new PilotThingsIntegration();
+  const i = new PilotThingsIntegration();
 
-    return (
-      <Card title="Add Pilot Things integration">
-        <PilotThingsIntegrationForm initialValues={i} onFinish={this.onFinish} />
-      </Card>
-    );
-  }
+  return (
+    <Card title="Add Pilot Things integration">
+      <PilotThingsIntegrationForm initialValues={i} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default CreatePilotThingsIntegration;

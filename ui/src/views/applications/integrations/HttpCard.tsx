@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { Col, Card, Popconfirm } from "antd";
@@ -13,46 +12,44 @@ interface IProps {
   add?: boolean;
 }
 
-class HttpCard extends Component<IProps> {
-  onDelete = () => {
+function HttpCard(props: IProps) {
+  const onDelete = () => {
     let req = new DeleteHttpIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
     ApplicationStore.deleteHttpIntegration(req, () => {});
   };
 
-  render() {
-    let actions: any[] = [];
+  let actions: any[] = [];
 
-    if (!!this.props.add) {
-      actions = [
-        <Link to="integrations/http/create">
-          <PlusOutlined />
-        </Link>,
-      ];
-    } else {
-      actions = [
-        <Link to="integrations/http/edit">
-          <EditOutlined />
-        </Link>,
-        <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={this.onDelete}>
-          <DeleteOutlined />
-        </Popconfirm>,
-      ];
-    }
-
-    return (
-      <Col span={8}>
-        <Card
-          title="HTTP"
-          className="integration-card"
-          cover={<img alt="HTTP" src="/integrations/http.png" style={{ padding: 1 }} />}
-          actions={actions}
-        >
-          <Card.Meta description="The HTTP integration forwards events to a user-configurable endpoint as POST requests." />
-        </Card>
-      </Col>
-    );
+  if (!!props.add) {
+    actions = [
+      <Link to="http/create">
+        <PlusOutlined />
+      </Link>,
+    ];
+  } else {
+    actions = [
+      <Link to="http/edit">
+        <EditOutlined />
+      </Link>,
+      <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={onDelete}>
+        <DeleteOutlined />
+      </Popconfirm>,
+    ];
   }
+
+  return (
+    <Col span={8}>
+      <Card
+        title="HTTP"
+        className="integration-card"
+        cover={<img alt="HTTP" src="/integrations/http.png" style={{ padding: 1 }} />}
+        actions={actions}
+      >
+        <Card.Meta description="The HTTP integration forwards events to a user-configurable endpoint as POST requests." />
+      </Card>
+    </Col>
+  );
 }
 
 export default HttpCard;

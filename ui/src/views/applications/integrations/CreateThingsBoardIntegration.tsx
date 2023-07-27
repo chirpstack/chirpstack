@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -12,33 +11,31 @@ import {
 import ThingsBoardIntegrationForm from "./ThingsBoardIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-class CreateThingsBoardIntegration extends Component<IProps> {
-  onFinish = (obj: ThingsBoardIntegration) => {
-    obj.setApplicationId(this.props.application.getId());
+function CreateThingsBoardIntegration(props: IProps) {
+  const navigate = useNavigate();
+
+  const onFinish = (obj: ThingsBoardIntegration) => {
+    obj.setApplicationId(props.application.getId());
 
     let req = new CreateThingsBoardIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createThingsBoardIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    const i = new ThingsBoardIntegration();
+  const i = new ThingsBoardIntegration();
 
-    return (
-      <Card title="Add ThingsBoard integration">
-        <ThingsBoardIntegrationForm initialValues={i} onFinish={this.onFinish} />
-      </Card>
-    );
-  }
+  return (
+    <Card title="Add ThingsBoard integration">
+      <ThingsBoardIntegrationForm initialValues={i} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default CreateThingsBoardIntegration;

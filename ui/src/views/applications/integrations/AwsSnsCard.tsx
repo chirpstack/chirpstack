@@ -1,4 +1,3 @@
-import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { Col, Card, Popconfirm } from "antd";
@@ -13,47 +12,45 @@ interface IProps {
   add?: boolean;
 }
 
-class AwsSns extends Component<IProps> {
-  onDelete = () => {
+function AwsSns(props: IProps) {
+  const onDelete = () => {
     let req = new DeleteAwsSnsIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.deleteAwsSnsIntegration(req, () => {});
   };
 
-  render() {
-    let actions: any[] = [];
+  let actions: any[] = [];
 
-    if (!!this.props.add) {
-      actions = [
-        <Link to="integrations/aws-sns/create">
-          <PlusOutlined />
-        </Link>,
-      ];
-    } else {
-      actions = [
-        <Link to="integrations/aws-sns/edit">
-          <EditOutlined />
-        </Link>,
-        <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={this.onDelete}>
-          <DeleteOutlined />
-        </Popconfirm>,
-      ];
-    }
-
-    return (
-      <Col span={8}>
-        <Card
-          title="AWS SNS"
-          className="integration-card"
-          cover={<img alt="AWS SNS" src="/integrations/aws_sns.png" style={{ padding: 1 }} />}
-          actions={actions}
-        >
-          <Card.Meta description="The AWS SNS integration forwards events to an AWS SNS topic." />
-        </Card>
-      </Col>
-    );
+  if (!!props.add) {
+    actions = [
+      <Link to="aws-sns/create">
+        <PlusOutlined />
+      </Link>,
+    ];
+  } else {
+    actions = [
+      <Link to="aws-sns/edit">
+        <EditOutlined />
+      </Link>,
+      <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={onDelete}>
+        <DeleteOutlined />
+      </Popconfirm>,
+    ];
   }
+
+  return (
+    <Col span={8}>
+      <Card
+        title="AWS SNS"
+        className="integration-card"
+        cover={<img alt="AWS SNS" src="/integrations/aws_sns.png" style={{ padding: 1 }} />}
+        actions={actions}
+      >
+        <Card.Meta description="The AWS SNS integration forwards events to an AWS SNS topic." />
+      </Card>
+    </Col>
+  );
 }
 
 export default AwsSns;

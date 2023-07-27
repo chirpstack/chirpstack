@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 
 import moment from "moment";
 import { Descriptions, Space, Card, Row, Col } from "antd";
@@ -22,26 +22,12 @@ interface IProps {
   lastSeenAt?: Date;
 }
 
-interface IState {
-  metricsAggregation: Aggregation;
-  gatewayMetrics?: GetGatewayMetricsResponse;
-}
+function GatewayDashboard(props: IProps) {
+  const [metricsAggregation, setMetricsAggregation] = useState<Aggregation>(Aggregation.DAY);
+  const [gatewayMetrics, setGatewayMetrics] = useState<GetGatewayMetricsResponse | undefined>(undefined);
 
-class GatewayDashboard extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-
-    this.state = {
-      metricsAggregation: Aggregation.DAY,
-    };
-  }
-
-  componentDidMount() {
-    this.loadMetrics();
-  }
-
-  loadMetrics = () => {
-    const agg = this.state.metricsAggregation;
+  useEffect(() => {
+    const agg = metricsAggregation;
     const end = moment();
     let start = moment();
 
@@ -60,111 +46,98 @@ class GatewayDashboard extends Component<IProps, IState> {
     endPb.fromDate(end.toDate());
 
     let req = new GetGatewayMetricsRequest();
-    req.setGatewayId(this.props.gateway.getGatewayId());
+    req.setGatewayId(props.gateway.getGatewayId());
     req.setStart(startPb);
     req.setEnd(endPb);
     req.setAggregation(agg);
 
     GatewayStore.getMetrics(req, (resp: GetGatewayMetricsResponse) => {
-      this.setState({
-        gatewayMetrics: resp,
-      });
+      setGatewayMetrics(resp);
     });
-  };
+  }, [props, metricsAggregation]);
 
-  render() {
-    const loc = this.props.gateway.getLocation()!;
-    const location: [number, number] = [loc.getLatitude(), loc.getLongitude()];
+  const loc = props.gateway.getLocation()!;
+  const location: [number, number] = [loc.getLatitude(), loc.getLongitude()];
 
-    if (this.state.gatewayMetrics === undefined) {
-      return null;
-    }
-
-    let lastSeenAt: string = "Never";
-    if (this.props.lastSeenAt !== undefined) {
-      lastSeenAt = moment(this.props.lastSeenAt).format("YYYY-MM-DD HH:mm:ss");
-    }
-
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        <Card>
-          <Descriptions>
-            <Descriptions.Item label="Last seen">{lastSeenAt}</Descriptions.Item>
-            <Descriptions.Item label="Region ID">
-              {this.props.gateway.getMetadataMap().get("region_config_id")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Region common-name">
-              {this.props.gateway.getMetadataMap().get("region_common_name")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Description">{this.props.gateway.getDescription()}</Descriptions.Item>
-          </Descriptions>
-        </Card>
-        <Row gutter={24}>
-          <Col span={24}>
-            <Map height={500} center={location}>
-              <Marker position={location} faIcon="wifi" color="blue" />
-            </Map>
-          </Col>
-        </Row>
-        <Row gutter={24}>
-          <Col span={8}>
-            <MetricChart
-              metric={this.state.gatewayMetrics.getRxPackets()!}
-              aggregation={this.state.metricsAggregation}
-            />
-          </Col>
-          <Col span={8}>
-            <MetricChart
-              metric={this.state.gatewayMetrics.getTxPackets()!}
-              aggregation={this.state.metricsAggregation}
-            />
-          </Col>
-          <Col span={8}>
-            <MetricHeatmap
-              metric={this.state.gatewayMetrics.getRxPacketsPerFreq()!}
-              aggregation={this.state.metricsAggregation}
-              fromColor="rgb(227, 242, 253)"
-              toColor="rgb(33, 150, 243, 1)"
-            />
-          </Col>
-        </Row>
-        <Row gutter={24}>
-          <Col span={8}>
-            <MetricHeatmap
-              metric={this.state.gatewayMetrics.getTxPacketsPerFreq()!}
-              aggregation={this.state.metricsAggregation}
-              fromColor="rgb(227, 242, 253)"
-              toColor="rgb(33, 150, 243, 1)"
-            />
-          </Col>
-          <Col span={8}>
-            <MetricHeatmap
-              metric={this.state.gatewayMetrics.getRxPacketsPerDr()!}
-              aggregation={this.state.metricsAggregation}
-              fromColor="rgb(227, 242, 253)"
-              toColor="rgb(33, 150, 243, 1)"
-            />
-          </Col>
-          <Col span={8}>
-            <MetricHeatmap
-              metric={this.state.gatewayMetrics.getTxPacketsPerDr()!}
-              aggregation={this.state.metricsAggregation}
-              fromColor="rgb(227, 242, 253)"
-              toColor="rgb(33, 150, 243, 1)"
-            />
-          </Col>
-        </Row>
-        <Row gutter={24}>
-          <Col span={8}>
-            <MetricBar
-              metric={this.state.gatewayMetrics.getTxPacketsPerStatus()!}
-              aggregation={this.state.metricsAggregation}
-            />
-          </Col>
-        </Row>
-      </Space>
-    );
+  if (gatewayMetrics === undefined) {
+    return null;
   }
+
+  let lastSeenAt: string = "Never";
+  if (props.lastSeenAt !== undefined) {
+    lastSeenAt = moment(props.lastSeenAt).format("YYYY-MM-DD HH:mm:ss");
+  }
+
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      <Card>
+        <Descriptions>
+          <Descriptions.Item label="Last seen">{lastSeenAt}</Descriptions.Item>
+          <Descriptions.Item label="Region ID">
+            {props.gateway.getMetadataMap().get("region_config_id")}
+          </Descriptions.Item>
+          <Descriptions.Item label="Region common-name">
+            {props.gateway.getMetadataMap().get("region_common_name")}
+          </Descriptions.Item>
+          <Descriptions.Item label="Description">{props.gateway.getDescription()}</Descriptions.Item>
+        </Descriptions>
+      </Card>
+      <Row gutter={24}>
+        <Col span={24}>
+          <Map height={500} center={location}>
+            <Marker position={location} faIcon="wifi" color="blue" />
+          </Map>
+        </Col>
+      </Row>
+      <Row gutter={24}>
+        <Col span={8}>
+          <MetricChart metric={gatewayMetrics.getRxPackets()!} aggregation={metricsAggregation} />
+        </Col>
+        <Col span={8}>
+          <MetricChart metric={gatewayMetrics.getTxPackets()!} aggregation={metricsAggregation} />
+        </Col>
+        <Col span={8}>
+          <MetricHeatmap
+            metric={gatewayMetrics.getRxPacketsPerFreq()!}
+            aggregation={metricsAggregation}
+            fromColor="rgb(227, 242, 253)"
+            toColor="rgb(33, 150, 243, 1)"
+          />
+        </Col>
+      </Row>
+      <Row gutter={24}>
+        <Col span={8}>
+          <MetricHeatmap
+            metric={gatewayMetrics.getTxPacketsPerFreq()!}
+            aggregation={metricsAggregation}
+            fromColor="rgb(227, 242, 253)"
+            toColor="rgb(33, 150, 243, 1)"
+          />
+        </Col>
+        <Col span={8}>
+          <MetricHeatmap
+            metric={gatewayMetrics.getRxPacketsPerDr()!}
+            aggregation={metricsAggregation}
+            fromColor="rgb(227, 242, 253)"
+            toColor="rgb(33, 150, 243, 1)"
+          />
+        </Col>
+        <Col span={8}>
+          <MetricHeatmap
+            metric={gatewayMetrics.getTxPacketsPerDr()!}
+            aggregation={metricsAggregation}
+            fromColor="rgb(227, 242, 253)"
+            toColor="rgb(33, 150, 243, 1)"
+          />
+        </Col>
+      </Row>
+      <Row gutter={24}>
+        <Col span={8}>
+          <MetricBar metric={gatewayMetrics.getTxPacketsPerStatus()!} aggregation={metricsAggregation} />
+        </Col>
+      </Row>
+    </Space>
+  );
 }
 
 export default GatewayDashboard;

@@ -1,7 +1,7 @@
-import React, { Component } from "react";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-import { Space, Breadcrumb, Card, PageHeader } from "antd";
+import { Space, Breadcrumb, Card } from "antd";
+import { PageHeader } from "@ant-design/pro-layout";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -15,14 +15,16 @@ import DeviceForm from "./DeviceForm";
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   tenant: Tenant;
   application: Application;
 }
 
-class CreateDevice extends Component<IProps> {
-  onFinish = (obj: Device) => {
-    obj.setApplicationId(this.props.application.getId());
+function CreateDevice(props: IProps) {
+  const navigate = useNavigate();
+
+  const onFinish = (obj: Device) => {
+    obj.setApplicationId(props.application.getId());
 
     let req = new CreateDeviceRequest();
     req.setDevice(obj);
@@ -34,60 +36,58 @@ class CreateDevice extends Component<IProps> {
       DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
         let dp = resp.getDeviceProfile()!;
         if (dp.getSupportsOtaa()) {
-          this.props.history.push(
-            `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${obj.getDevEui()}/keys`,
+          navigate(
+            `/tenants/${props.tenant.getId()}/applications/${props.application.getId()}/devices/${obj.getDevEui()}/keys`,
           );
         } else {
-          this.props.history.push(
-            `/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}/devices/${obj.getDevEui()}`,
+          navigate(
+            `/tenants/${props.tenant.getId()}/applications/${props.application.getId()}/devices/${obj.getDevEui()}`,
           );
         }
       });
     });
   };
 
-  render() {
-    let device = new Device();
-    device.setApplicationId(this.props.application.getId());
+  let device = new Device();
+  device.setApplicationId(props.application.getId());
 
-    return (
-      <Space direction="vertical" style={{ width: "100%" }} size="large">
-        <PageHeader
-          breadcrumbRender={() => (
-            <Breadcrumb>
-              <Breadcrumb.Item>
-                <span>Tenants</span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}`}>{this.props.tenant.getName()}</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}/applications`}>Applications</Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>
-                  <Link to={`/tenants/${this.props.tenant.getId()}/applications/${this.props.application.getId()}`}>
-                    {this.props.application.getName()}
-                  </Link>
-                </span>
-              </Breadcrumb.Item>
-              <Breadcrumb.Item>
-                <span>Add device</span>
-              </Breadcrumb.Item>
-            </Breadcrumb>
-          )}
-          title="Add device"
-        />
-        <Card>
-          <DeviceForm tenant={this.props.tenant} initialValues={device} onFinish={this.onFinish} />
-        </Card>
-      </Space>
-    );
-  }
+  return (
+    <Space direction="vertical" style={{ width: "100%" }} size="large">
+      <PageHeader
+        breadcrumbRender={() => (
+          <Breadcrumb>
+            <Breadcrumb.Item>
+              <span>Tenants</span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>
+                <Link to={`/tenants/${props.tenant.getId()}/applications/${props.application.getId()}`}>
+                  {props.application.getName()}
+                </Link>
+              </span>
+            </Breadcrumb.Item>
+            <Breadcrumb.Item>
+              <span>Add device</span>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+        )}
+        title="Add device"
+      />
+      <Card>
+        <DeviceForm tenant={props.tenant} initialValues={device} onFinish={onFinish} />
+      </Card>
+    </Space>
+  );
 }
 
 export default CreateDevice;

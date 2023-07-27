@@ -12,3 +12,6 @@ dependencies:
 
 clean:
 	rm -rf build
+
+format:
+	./node_modules/.bin/prettier --write .

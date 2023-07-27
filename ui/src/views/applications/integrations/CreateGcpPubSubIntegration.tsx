@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -12,33 +11,31 @@ import {
 import GcpPubSubIntegrationForm from "./GcpPubSubIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-class CreateGcpPubSubIntegration extends Component<IProps> {
-  onFinish = (obj: GcpPubSubIntegration) => {
-    obj.setApplicationId(this.props.application.getId());
+function CreateGcpPubSubIntegration(props: IProps) {
+  const navigate = useNavigate();
+
+  const onFinish = (obj: GcpPubSubIntegration) => {
+    obj.setApplicationId(props.application.getId());
 
     let req = new CreateGcpPubSubIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createGcpPubSubIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    const i = new GcpPubSubIntegration();
+  const i = new GcpPubSubIntegration();
 
-    return (
-      <Card title="Add GCP Pub/Sub integration">
-        <GcpPubSubIntegrationForm initialValues={i} onFinish={this.onFinish} />
-      </Card>
-    );
-  }
+  return (
+    <Card title="Add GCP Pub/Sub integration">
+      <GcpPubSubIntegrationForm initialValues={i} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default CreateGcpPubSubIntegration;

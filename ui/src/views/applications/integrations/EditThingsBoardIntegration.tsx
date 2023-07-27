@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -14,53 +14,41 @@ import {
 import ThingsBoardIntegrationForm from "./ThingsBoardIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-interface IState {
-  integration?: ThingsBoardIntegration;
-}
+function EditThingsBoardIntegration(props: IProps) {
+  const navigate = useNavigate();
+  const [integration, setIntegration] = useState<ThingsBoardIntegration | undefined>(undefined);
 
-class EditThingsBoardIntegration extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     let req = new GetThingsBoardIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.getThingsBoardIntegration(req, (resp: GetThingsBoardIntegrationResponse) => {
-      this.setState({
-        integration: resp.getIntegration(),
-      });
+      setIntegration(resp.getIntegration());
     });
-  }
+  }, [props]);
 
-  onFinish = (obj: ThingsBoardIntegration) => {
+  const onFinish = (obj: ThingsBoardIntegration) => {
     let req = new UpdateThingsBoardIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateThingsBoardIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    if (this.state.integration === undefined) {
-      return null;
-    }
-
-    return (
-      <Card title="Update ThingsBoard integration">
-        <ThingsBoardIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
-      </Card>
-    );
+  if (integration === undefined) {
+    return null;
   }
+
+  return (
+    <Card title="Update ThingsBoard integration">
+      <ThingsBoardIntegrationForm initialValues={integration} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default EditThingsBoardIntegration;

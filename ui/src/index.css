@@ -31,7 +31,7 @@
   padding-top: 85px;
 
   overflow: auto;
-  position: fixed;
+  position: fixed !important;
   height: 100vh;
   left: 0;
 }
@@ -117,5 +117,10 @@ pre {
 }
 
 .ant-drawer-body {
-  padding-bottom: 88px; /* 64 + 24 */
+  padding-bottom: 88px;
+  /* 64 + 24 */
+}
+
+.input-code input {
+  font-family: monospace !important;
 }

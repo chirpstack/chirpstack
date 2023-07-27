@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
@@ -14,53 +14,41 @@ import {
 import GcpPubSubIntegrationForm from "./GcpPubSubIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
 
-interface IProps extends RouteComponentProps {
+interface IProps {
   application: Application;
 }
 
-interface IState {
-  integration?: GcpPubSubIntegration;
-}
+function EditGcpPubSubIntegration(props: IProps) {
+  const navigate = useNavigate();
+  const [integration, setIntegration] = useState<GcpPubSubIntegration | undefined>(undefined);
 
-class EditGcpPubSubIntegration extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {};
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     let req = new GetGcpPubSubIntegrationRequest();
-    req.setApplicationId(this.props.application.getId());
+    req.setApplicationId(props.application.getId());
 
     ApplicationStore.getGcpPubSubIntegration(req, (resp: GetGcpPubSubIntegrationResponse) => {
-      this.setState({
-        integration: resp.getIntegration(),
-      });
+      setIntegration(resp.getIntegration());
     });
-  }
+  }, [props]);
 
-  onFinish = (obj: GcpPubSubIntegration) => {
+  const onFinish = (obj: GcpPubSubIntegration) => {
     let req = new UpdateGcpPubSubIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateGcpPubSubIntegration(req, () => {
-      this.props.history.push(
-        `/tenants/${this.props.application.getTenantId()}/applications/${this.props.application.getId()}/integrations`,
-      );
+      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
     });
   };
 
-  render() {
-    if (this.state.integration === undefined) {
-      return null;
-    }
-
-    return (
-      <Card title="Update GCP Pub/Sub integration">
-        <GcpPubSubIntegrationForm initialValues={this.state.integration} onFinish={this.onFinish} />
-      </Card>
-    );
+  if (integration === undefined) {
+    return null;
   }
+
+  return (
+    <Card title="Update GCP Pub/Sub integration">
+      <GcpPubSubIntegrationForm initialValues={integration} onFinish={onFinish} />
+    </Card>
+  );
 }
 
 export default EditGcpPubSubIntegration;

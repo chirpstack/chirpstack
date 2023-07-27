@@ -1,7 +1,6 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import ReactDOM from "react-dom/client";
 
-// import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, Title } from "chart.js";
 import { Chart, registerables } from "chart.js";
 import { MatrixElement, MatrixController } from "chartjs-chart-matrix";
 import "chartjs-adapter-moment";
@@ -9,7 +8,7 @@ import "chartjs-adapter-moment";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
-import "antd/dist/antd.min.css";
+import "antd/dist/reset.css";
 import "leaflet/dist/leaflet.css";
 import "leaflet.awesome-markers/dist/leaflet.awesome-markers.css";
 import "@fortawesome/fontawesome-free/css/all.css";
@@ -19,12 +18,8 @@ import "./index.css";
 
 Chart.register(MatrixController, MatrixElement, ...registerables);
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById("root"),
-);
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+root.render(<App />);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
