@@ -101,6 +101,7 @@ class InternalStore extends EventEmitter {
 
     return () => {
       if (stream) {
+        console.log("Cancelling gRPC stream");
         stream.cancel();
       }
     };

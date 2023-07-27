@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import { Gateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { StreamGatewayFramesRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -13,25 +13,20 @@ interface IProps {
 function GatewayFrames(props: IProps) {
   const [frames, setFrames] = useState<LogItem[]>([]);
 
-  useEffect(() => {
-    const onMessage = (l: LogItem) => {
-      setFrames(f => {
-        if (f.length === 0 || parseInt(l.getId().replace("-", "")) > parseInt(f[0].getId().replace("-", ""))) {
-          f.unshift(l);
-        }
-        return f;
-      });
-    };
+  const onMessage = useCallback((l: LogItem) => {
+    setFrames(f => {
+      if (f.length === 0 || parseInt(l.getId().replace("-", "")) > parseInt(f[0].getId().replace("-", ""))) {
+        return [l, ...f];
+      }
+      return f;
+    });
+  }, []);
 
+  useEffect(() => {
     let req = new StreamGatewayFramesRequest();
     req.setGatewayId(props.gateway.getGatewayId());
-
-    let cancelFunc = InternalStore.streamGatewayFrames(req, onMessage);
-
-    return () => {
-      cancelFunc();
-    };
-  }, [props]);
+    return InternalStore.streamGatewayFrames(req, onMessage);
+  }, [props, onMessage]);
 
   return <LogTable logs={frames} />;
 }
