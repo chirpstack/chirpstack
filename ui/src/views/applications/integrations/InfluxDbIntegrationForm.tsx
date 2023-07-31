@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Form, Input, Button, Select } from "antd";
 
@@ -15,6 +15,10 @@ interface IProps {
 
 function InfluxDbIntegrationForm(props: IProps) {
   const [selectedVersion, setSelectedVersion] = useState<InfluxDbVersion>(InfluxDbVersion.INFLUXDB_1);
+
+  useEffect(() => {
+    setSelectedVersion(props.initialValues.getVersion());
+  }, [props]);
 
   const onFinish = (values: InfluxDbIntegration.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
