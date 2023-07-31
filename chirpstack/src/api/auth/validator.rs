@@ -1079,16 +1079,11 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
 
 pub struct ValidateDeviceProfileTemplateAccess {
     flag: Flag,
-    device_profile_template_id: String,
 }
 
 impl ValidateDeviceProfileTemplateAccess {
-    pub fn new(flag: Flag, device_profile_template_id: &str) -> Self {
-        let device_profile_template_id = device_profile_template_id.to_string();
-        ValidateDeviceProfileTemplateAccess {
-            flag,
-            device_profile_template_id,
-        }
+    pub fn new(flag: Flag) -> Self {
+        ValidateDeviceProfileTemplateAccess { flag }
     }
 }
 
@@ -2238,8 +2233,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
 pub mod test {
     use super::*;
     use crate::storage::{
-        api_key, application, device, device_profile, device_profile_template, gateway, multicast,
-        tenant, user,
+        api_key, application, device, device_profile, gateway, multicast, tenant, user,
     };
     use crate::test;
     use std::str::FromStr;
@@ -3233,16 +3227,6 @@ pub mod test {
         let api_key_admin = api_key::test::create_api_key(true, false).await;
         let api_key_tenant = api_key::test::create_api_key(false, true).await;
 
-        let dp = device_profile_template::create(device_profile_template::DeviceProfileTemplate {
-            id: "test-dp".to_string(),
-            name: "test-dp".to_string(),
-            vendor: "Test Vendor".to_string(),
-            firmware: "1.2.3".to_string(),
-            ..Default::default()
-        })
-        .await
-        .unwrap();
-
         // device-profile templates with user
         let tests = vec![
             // admin user can create and list
@@ -3300,24 +3284,24 @@ pub mod test {
             // admin user can read, update and delete
             ValidatorTest {
                 validators: vec![
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Read, &dp.id),
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Update, &dp.id),
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Read),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Update),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete),
                 ],
                 id: AuthID::User(user_admin.id),
                 ok: true,
             },
             // user can read
             ValidatorTest {
-                validators: vec![ValidateDeviceProfileTemplateAccess::new(Flag::Read, &dp.id)],
+                validators: vec![ValidateDeviceProfileTemplateAccess::new(Flag::Read)],
                 id: AuthID::User(user_active.id),
                 ok: true,
             },
             // user can not update or delete
             ValidatorTest {
                 validators: vec![
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Update, &dp.id),
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Update),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete),
                 ],
                 id: AuthID::User(user_active.id),
                 ok: false,
@@ -3330,24 +3314,24 @@ pub mod test {
             // admin api key can read, update and delete
             ValidatorTest {
                 validators: vec![
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Read, &dp.id),
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Update, &dp.id),
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Read),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Update),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete),
                 ],
                 id: AuthID::Key(api_key_admin.id),
                 ok: true,
             },
             // tenant api key can read
             ValidatorTest {
-                validators: vec![ValidateDeviceProfileTemplateAccess::new(Flag::Read, &dp.id)],
+                validators: vec![ValidateDeviceProfileTemplateAccess::new(Flag::Read)],
                 id: AuthID::Key(api_key_tenant.id),
                 ok: true,
             },
             // tenant api key can not update or delete
             ValidatorTest {
                 validators: vec![
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Update, &dp.id),
-                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete, &dp.id),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Update),
+                    ValidateDeviceProfileTemplateAccess::new(Flag::Delete),
                 ],
                 id: AuthID::Key(api_key_tenant.id),
                 ok: false,

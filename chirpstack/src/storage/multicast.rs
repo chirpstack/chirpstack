@@ -616,20 +616,6 @@ pub async fn enqueue(
     Ok((ids, f_cnt))
 }
 
-pub async fn get_queue_item(id: &Uuid) -> Result<MulticastGroupQueueItem, Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<MulticastGroupQueueItem, Error> {
-            let mut c = get_db_conn()?;
-            multicast_group_queue_item::dsl::multicast_group_queue_item
-                .find(&id)
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))
-        }
-    })
-    .await?
-}
-
 pub async fn delete_queue_item(id: &Uuid) -> Result<(), Error> {
     task::spawn_blocking({
         let id = *id;
@@ -730,6 +716,20 @@ pub mod test {
     use super::*;
     use crate::storage::{application, device, device_profile, gateway, tenant};
     use crate::test;
+
+    pub async fn get_queue_item(id: &Uuid) -> Result<MulticastGroupQueueItem, Error> {
+        task::spawn_blocking({
+            let id = *id;
+            move || -> Result<MulticastGroupQueueItem, Error> {
+                let mut c = get_db_conn()?;
+                multicast_group_queue_item::dsl::multicast_group_queue_item
+                    .find(&id)
+                    .first(&mut c)
+                    .map_err(|e| Error::from_diesel(e, id.to_string()))
+            }
+        })
+        .await?
+    }
 
     struct FilterTest<'a> {
         filters: Filters,

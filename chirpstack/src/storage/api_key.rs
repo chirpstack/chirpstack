@@ -63,21 +63,6 @@ pub async fn create(ak: ApiKey) -> Result<ApiKey, Error> {
     Ok(ak)
 }
 
-pub async fn get(id: &Uuid) -> Result<ApiKey, Error> {
-    task::spawn_blocking({
-        let id = *id;
-
-        move || -> Result<ApiKey, Error> {
-            let mut c = get_db_conn()?;
-            api_key::dsl::api_key
-                .find(&id)
-                .first(&mut c)
-                .map_err(|e| error::Error::from_diesel(e, id.to_string()))
-        }
-    })
-    .await?
-}
-
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
     task::spawn_blocking({
         let id = *id;
@@ -155,6 +140,21 @@ pub mod test {
         count: usize,
         limit: i64,
         offset: i64,
+    }
+
+    pub async fn get(id: &Uuid) -> Result<ApiKey, Error> {
+        task::spawn_blocking({
+            let id = *id;
+
+            move || -> Result<ApiKey, Error> {
+                let mut c = get_db_conn()?;
+                api_key::dsl::api_key
+                    .find(&id)
+                    .first(&mut c)
+                    .map_err(|e| error::Error::from_diesel(e, id.to_string()))
+            }
+        })
+        .await?
     }
 
     pub async fn create_api_key(is_admin: bool, is_tenant: bool) -> ApiKey {

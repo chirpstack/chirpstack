@@ -419,6 +419,7 @@ mod test {
         ];
 
         for tst in &tests {
+            println!("> {}", tst.name);
             let (tx_power_index, dr) = Algorithm::get_ideal_tx_power_index_and_dr(
                 tst.n_step,
                 tst.tx_power_index,
@@ -571,6 +572,7 @@ mod test {
         ];
 
         for tst in &tests {
+            println!("> {}", tst.name);
             let resp = a.handle(&tst.request).await.unwrap();
             assert_eq!(tst.response, resp);
         }

@@ -156,7 +156,7 @@ async fn test_gateway_filtering() {
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
             })),
             after_func: None,
@@ -201,7 +201,7 @@ async fn test_gateway_filtering() {
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
             })),
             after_func: None,
@@ -390,7 +390,7 @@ async fn test_lorawan_10() {
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
             })),
             after_func: None,
@@ -579,7 +579,7 @@ async fn test_lorawan_10() {
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
                     let mut dev = device::get(&dev_eui).await.unwrap();
                     dev.skip_fcnt_check = true;
@@ -636,7 +636,7 @@ async fn test_lorawan_10() {
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
             })),
             after_func: None,
@@ -790,7 +790,7 @@ async fn test_lorawan_10() {
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.supports_class_b = true;
@@ -817,7 +817,7 @@ async fn test_lorawan_10() {
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.supports_class_c = true;
@@ -843,7 +843,7 @@ async fn test_lorawan_10() {
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
                     let mut dev = device::get(&dev_eui).await.unwrap();
                     dev.is_disabled = true;
@@ -1012,7 +1012,7 @@ async fn test_lorawan_11() {
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
             })),
             after_func: None,
@@ -1193,7 +1193,7 @@ async fn test_lorawan_11() {
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
                 Box::pin(async move {
-                    device_keys::reset_nonces(&dev_eui).await.unwrap();
+                    device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.supports_class_c = true;

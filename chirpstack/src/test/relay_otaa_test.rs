@@ -12,14 +12,6 @@ use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, internal};
 use lrwn::{AES128Key, EUI64};
 
-struct Test {
-    name: String,
-    tx_info: gw::UplinkTxInfo,
-    rx_info: gw::UplinkRxInfo,
-    phy_payload: lrwn::PhyPayload,
-    assert: Vec<assert::Validator>,
-}
-
 #[tokio::test]
 async fn test_lorawan_10() {
     let _guard = test::prepare().await;

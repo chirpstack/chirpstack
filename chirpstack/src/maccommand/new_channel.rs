@@ -330,6 +330,7 @@ pub mod test {
         ];
 
         for tst in &tests {
+            println!("> {}", tst.name);
             let resp = request(3, &tst.current_channels, &tst.wanted_channels);
             assert_eq!(tst.expected_mac_commands, resp);
         }

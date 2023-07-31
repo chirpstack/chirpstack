@@ -17,11 +17,6 @@ use crate::config;
 use crate::storage::{get_redis_conn, redis_key};
 use chirpstack_api::api;
 
-pub enum Entry {
-    Uplink(api::UplinkFrameLog),
-    Downlink(api::DownlinkFrameLog),
-}
-
 pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
     task::spawn_blocking({
         let ufl = ufl.clone();

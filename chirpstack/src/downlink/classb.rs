@@ -2,10 +2,9 @@ use aes::cipher::generic_array::GenericArray;
 use aes::cipher::{BlockEncrypt, KeyInit};
 use aes::{Aes128, Block};
 use anyhow::Result;
-use chrono::{DateTime, Duration, Utc};
+use chrono::Duration;
 use tracing::info;
 
-use crate::gpstime::ToGpsTime;
 use lrwn::DevAddr;
 
 lazy_static! {
@@ -15,11 +14,6 @@ lazy_static! {
     static ref BEACON_WINDOW: Duration = Duration::milliseconds(122880);
     static ref PING_PERIOD_BASE: usize = 1 << 12;
     static ref SLOT_LEN: Duration = Duration::milliseconds(30);
-}
-
-pub fn get_beacon_start_for_time(ts: DateTime<Utc>) -> Duration {
-    let gps_time = ts.to_gps_time();
-    get_beacon_start(gps_time)
 }
 
 pub fn get_beacon_start(ts: Duration) -> Duration {
@@ -89,19 +83,19 @@ pub fn get_next_ping_slot_after(
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::gpstime::ToDateTime;
-    use chrono::TimeZone;
+    use crate::gpstime::{ToDateTime, ToGpsTime};
+    use chrono::{DateTime, TimeZone, Utc};
 
     #[test]
-    fn test_get_beacon_start_for_time() {
+    fn test_get_beacon_start() {
         let gps_epoch_time: DateTime<Utc> = Utc.with_ymd_and_hms(1980, 1, 6, 0, 0, 0).unwrap();
 
         // For GPS epoch time
-        let start_ts = get_beacon_start_for_time(gps_epoch_time);
+        let start_ts = get_beacon_start(gps_epoch_time.to_gps_time());
         assert_eq!(start_ts, Duration::zero());
 
         // For now
-        let start_ts = get_beacon_start_for_time(Utc::now());
+        let start_ts = get_beacon_start(Utc::now().to_gps_time());
 
         // > 0
         assert!(start_ts > Duration::zero());

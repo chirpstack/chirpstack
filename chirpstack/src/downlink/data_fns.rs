@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anyhow::{Context, Result};
 use rand::Rng;
 use tracing::{span, trace, Instrument, Level};
@@ -9,11 +7,9 @@ use crate::backend::roaming;
 use crate::storage::downlink_frame;
 use crate::{gateway, region};
 use chirpstack_api::{gw, internal};
-use lrwn::region::CommonName;
 
 pub struct Data {
     region_config_id: String,
-    region_common_name: CommonName,
     xmit_data_req: backend::XmitDataReqPayload,
     dl_meta_data: backend::DLMetaData,
     uplink_rx_info: Vec<gw::UplinkRxInfo>,
@@ -48,16 +44,8 @@ impl Data {
             .cloned()
             .unwrap_or_default();
 
-        let region_common_name = uplink_rx_info[0]
-            .metadata
-            .get("region_common_name")
-            .cloned()
-            .unwrap_or_default();
-        let region_common_name = CommonName::from_str(&region_common_name)?;
-
         let mut ctx = Data {
             region_config_id,
-            region_common_name,
             uplink_rx_info,
             xmit_data_req: pl,
             dl_meta_data: dl_meta,

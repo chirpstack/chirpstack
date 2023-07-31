@@ -19,7 +19,6 @@ use chirpstack_api::integration;
 pub struct Integration {
     timeout: Duration,
     json: bool,
-    publish_name: String,
     uri: String,
     key_name: String,
     key: String,
@@ -39,7 +38,6 @@ impl Integration {
                 Encoding::Json => true,
                 Encoding::Protobuf => false,
             },
-            publish_name: conf.publish_name.clone(),
             uri: format!(
                 "https://{}{}",
                 kv.get("Endpoint")
@@ -311,7 +309,6 @@ pub mod test {
         let i = Integration {
             timeout: Duration::from_secs(5),
             json: true,
-            publish_name: "test-bus".to_string(),
             uri: server.url(""),
             key_name: "key-name".to_string(),
             key: "foo-key".to_string(),

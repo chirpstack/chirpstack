@@ -62,7 +62,6 @@ lazy_static! {
 
 struct MqttContext {
     region_config_id: String,
-    region_common_name: CommonName,
 }
 
 pub struct MqttBackend<'a> {
@@ -124,7 +123,6 @@ impl<'a> MqttBackend<'a> {
             .client_id(&client_id)
             .user_data(Box::new(MqttContext {
                 region_config_id: region_config_id.to_string(),
-                region_common_name,
             }))
             .persistence(mqtt::create_options::PersistenceType::FilePath(temp_dir()))
             .finalize();

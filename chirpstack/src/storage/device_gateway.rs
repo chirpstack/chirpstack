@@ -95,23 +95,6 @@ pub async fn get_rx_info_for_dev_euis(
     .await?
 }
 
-pub async fn delete_rx_info(dev_eui: &EUI64) -> Result<()> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<()> {
-            let key = redis_key(format!("device:{{{}}}:gwrx", dev_eui));
-            let mut c = get_redis_conn()?;
-            redis::cmd("DEL").arg(key).query(&mut *c)?;
-
-            Ok(())
-        }
-    })
-    .await??;
-
-    info!(dev_eui = %dev_eui, "Gateway rx-info deleted");
-    Ok(())
-}
-
 #[cfg(test)]
 pub mod test {
     use super::*;
@@ -132,10 +115,5 @@ pub mod test {
         // get
         let res = get_rx_info(&dev_eui).await.unwrap();
         assert_eq!(rx_info, res);
-
-        // delete
-        delete_rx_info(&dev_eui).await.unwrap();
-        let res = get_rx_info(&dev_eui).await;
-        assert_eq!(true, res.is_err());
     }
 }

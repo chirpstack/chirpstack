@@ -674,6 +674,7 @@ pub mod test {
         ];
 
         for tst in &tests {
+            println!("> {}", tst.name);
             let mut phy = lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
                     m_type: lrwn::MType::UnconfirmedDataUp,

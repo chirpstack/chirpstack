@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::r2d2::{ConnectionManager, Pool};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use tokio::task;
 use tracing::info;
@@ -26,7 +26,6 @@ pub const MIGRATIONS: EmbeddedMigrations =
     embed_migrations!("./src/integration/postgresql/migrations");
 
 type PgPool = Pool<ConnectionManager<PgConnection>>;
-type PgPoolConnection = PooledConnection<ConnectionManager<PgConnection>>;
 
 #[derive(Insertable)]
 #[diesel(table_name = event_up)]

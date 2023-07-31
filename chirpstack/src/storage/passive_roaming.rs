@@ -196,21 +196,6 @@ async fn get_sessions_for_dev_addr(
     Ok(out)
 }
 
-async fn get_sessions_for_dev_eui(
-    dev_eui: EUI64,
-) -> Result<Vec<internal::PassiveRoamingDeviceSession>> {
-    let mut out: Vec<internal::PassiveRoamingDeviceSession> = Vec::new();
-    let ids = get_session_ids_for_dev_eui(dev_eui).await?;
-
-    for id in ids {
-        if let Ok(v) = get(id).await {
-            out.push(v);
-        }
-    }
-
-    Ok(out)
-}
-
 async fn get_session_ids_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<Uuid>> {
     task::spawn_blocking({
         move || -> Result<Vec<Uuid>> {

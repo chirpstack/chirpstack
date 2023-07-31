@@ -1,3 +1,4 @@
+#[cfg(test)]
 use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
@@ -45,49 +46,6 @@ pub fn get_uplink_dr(
     };
 
     region_conf.get_data_rate_index(true, &dr_modulation)
-}
-
-pub fn set_uplink_modulation(
-    region_config_id: &str,
-    tx_info: &mut chirpstack_api::gw::UplinkTxInfo,
-    dr: u8,
-) -> Result<()> {
-    let region_conf = region::get(region_config_id)?;
-    let params = region_conf.get_data_rate(dr)?;
-
-    tx_info.modulation = Some(gw::Modulation {
-        parameters: Some(match params {
-            lrwn::region::DataRateModulation::Lora(v) => {
-                gw::modulation::Parameters::Lora(gw::LoraModulationInfo {
-                    bandwidth: v.bandwidth,
-                    spreading_factor: v.spreading_factor as u32,
-                    code_rate: gw::CodeRate::from_str(&v.coding_rate)
-                        .map_err(|e| anyhow!("{}", e))?
-                        .into(),
-                    code_rate_legacy: "".into(),
-                    polarization_inversion: true,
-                })
-            }
-            lrwn::region::DataRateModulation::Fsk(v) => {
-                gw::modulation::Parameters::Fsk(gw::FskModulationInfo {
-                    datarate: v.bitrate,
-                    ..Default::default()
-                })
-            }
-            lrwn::region::DataRateModulation::LrFhss(v) => {
-                gw::modulation::Parameters::LrFhss(gw::LrFhssModulationInfo {
-                    operating_channel_width: v.occupied_channel_width,
-                    code_rate: gw::CodeRate::from_str(&v.coding_rate)
-                        .map_err(|e| anyhow!("{}", e))?
-                        .into(),
-                    // GridSteps: this value can't be derived from a DR?
-                    ..Default::default()
-                })
-            }
-        }),
-    });
-
-    Ok(())
 }
 
 pub fn get_uplink_ch(region_config_id: &str, frequency: u32, dr: u8) -> Result<usize> {
@@ -187,4 +145,48 @@ pub fn get_start_location(rx_info: &[gw::UplinkRxInfo]) -> Option<common::Locati
     with_loc
         .first()
         .map(|i| i.location.as_ref().unwrap().clone())
+}
+
+#[cfg(test)]
+pub fn set_uplink_modulation(
+    region_config_id: &str,
+    tx_info: &mut chirpstack_api::gw::UplinkTxInfo,
+    dr: u8,
+) -> Result<()> {
+    let region_conf = region::get(region_config_id)?;
+    let params = region_conf.get_data_rate(dr)?;
+
+    tx_info.modulation = Some(gw::Modulation {
+        parameters: Some(match params {
+            lrwn::region::DataRateModulation::Lora(v) => {
+                gw::modulation::Parameters::Lora(gw::LoraModulationInfo {
+                    bandwidth: v.bandwidth,
+                    spreading_factor: v.spreading_factor as u32,
+                    code_rate: gw::CodeRate::from_str(&v.coding_rate)
+                        .map_err(|e| anyhow!("{}", e))?
+                        .into(),
+                    code_rate_legacy: "".into(),
+                    polarization_inversion: true,
+                })
+            }
+            lrwn::region::DataRateModulation::Fsk(v) => {
+                gw::modulation::Parameters::Fsk(gw::FskModulationInfo {
+                    datarate: v.bitrate,
+                    ..Default::default()
+                })
+            }
+            lrwn::region::DataRateModulation::LrFhss(v) => {
+                gw::modulation::Parameters::LrFhss(gw::LrFhssModulationInfo {
+                    operating_channel_width: v.occupied_channel_width,
+                    code_rate: gw::CodeRate::from_str(&v.coding_rate)
+                        .map_err(|e| anyhow!("{}", e))?
+                        .into(),
+                    // GridSteps: this value can't be derived from a DR?
+                    ..Default::default()
+                })
+            }
+        }),
+    });
+
+    Ok(())
 }

@@ -104,7 +104,7 @@ impl DeviceProfileTemplateService for DeviceProfileTemplate {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateDeviceProfileTemplateAccess::new(validator::Flag::Read, &req.id),
+                validator::ValidateDeviceProfileTemplateAccess::new(validator::Flag::Read),
             )
             .await?;
 
@@ -178,10 +178,7 @@ impl DeviceProfileTemplateService for DeviceProfileTemplate {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateDeviceProfileTemplateAccess::new(
-                    validator::Flag::Update,
-                    &req_dp.id,
-                ),
+                validator::ValidateDeviceProfileTemplateAccess::new(validator::Flag::Update),
             )
             .await?;
 
@@ -246,10 +243,7 @@ impl DeviceProfileTemplateService for DeviceProfileTemplate {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateDeviceProfileTemplateAccess::new(
-                    validator::Flag::Delete,
-                    &req.id,
-                ),
+                validator::ValidateDeviceProfileTemplateAccess::new(validator::Flag::Delete),
             )
             .await?;
 

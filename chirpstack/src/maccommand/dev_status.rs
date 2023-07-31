@@ -7,14 +7,7 @@ use crate::api::helpers::ToProto;
 use crate::integration;
 use crate::storage::{application, device, device_profile, tenant};
 use crate::uplink::{helpers, UplinkFrameSet};
-use chirpstack_api::{integration as integration_pb, internal};
-
-pub fn request(dev: &device::Device, ds: &mut internal::DeviceSession) -> lrwn::MACCommandSet {
-    ds.last_device_status_request = Some(Utc::now().into());
-    info!(dev_eui = %dev.dev_eui, "Requesting device-status");
-
-    lrwn::MACCommandSet::new(vec![lrwn::MACCommand::DevStatusReq])
-}
+use chirpstack_api::integration as integration_pb;
 
 pub async fn handle(
     uplink_frame_set: &UplinkFrameSet,
@@ -96,22 +89,6 @@ pub mod test {
     use std::time::Duration;
     use tokio::time::sleep;
     use uuid::Uuid;
-
-    #[test]
-    fn test_request() {
-        let dev: device::Device = Default::default();
-        let mut ds: internal::DeviceSession = Default::default();
-
-        assert_eq!(true, ds.last_device_status_request.is_none());
-
-        let resp = request(&dev, &mut ds);
-
-        assert_eq!(true, ds.last_device_status_request.is_some());
-        assert_eq!(
-            lrwn::MACCommandSet::new(vec![lrwn::MACCommand::DevStatusReq]),
-            resp
-        );
-    }
 
     #[tokio::test]
     async fn test_handle() {
