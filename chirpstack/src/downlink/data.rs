@@ -1652,12 +1652,12 @@ impl Data {
     async fn _update_filter_list(&mut self) -> Result<()> {
         trace!("Updating Relay filter list");
 
-        // Get the current relay state.
-        let mut relay = if let Some(r) = &self.device_session.relay {
-            r.clone()
-        } else {
-            internal::Relay::default()
-        };
+        if self.device_session.relay.is_none() {
+            self.device_session.relay = Some(internal::Relay::default());
+        }
+
+        // Get a copy of the current relay state.
+        let relay = self.device_session.relay.as_ref().unwrap().clone();
 
         // Get devices that must be configured on the relay.
         let relay_devices = relay::list_devices(
@@ -1669,22 +1669,52 @@ impl Data {
         )
         .await?;
 
-        // We filter out the devices that are no longer configured on the relay.
-        // This way we can combine the delete + add by just overwriting an old slot.
-        // Note that index 0 has a special meaning.
+        // Get DevEUIs of Relay EDs.
         let relay_devices_dev_euis: Vec<Vec<u8>> =
             relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
-        relay
+
+        // Calculate removed slots.
+        let removed_slots: Vec<u32> = relay
             .filters
-            .retain(|f| f.index == 0 || relay_devices_dev_euis.contains(&f.dev_eui));
+            .iter()
+            .filter(|f| f.index != 0 && !relay_devices_dev_euis.contains(&f.dev_eui))
+            .map(|f| f.index)
+            .collect();
 
         // Calculate free slots.
         // Note that the first slot is used as "catch-all" filter.
-        let used_slots: Vec<u32> = relay.filters.iter().map(|f| f.index).collect();
+        let used_slots: Vec<u32> = relay
+            .filters
+            .iter()
+            .filter(|f| f.index == 0 || relay_devices_dev_euis.contains(&f.dev_eui))
+            .map(|f| f.index)
+            .collect();
         let free_slots: Vec<u32> = (1..15).filter(|x| !used_slots.contains(x)).collect();
 
-        // Update device-session.
-        self.device_session.relay = Some(relay);
+        // Unset slots of devices that are no longer configured.
+        if !removed_slots.is_empty() {
+            let mut commands: Vec<lrwn::MACCommand> = Vec::new();
+            for slot in removed_slots {
+                commands.push(lrwn::MACCommand::FilterListReq(
+                    lrwn::FilterListReqPayload {
+                        filter_list_idx: slot as u8,
+                        filter_list_action: lrwn::FilterListAction::NoRule,
+                        filter_list_eui: vec![],
+                    },
+                ));
+
+                if commands.len() > 5 {
+                    commands.drain(5..);
+                }
+            }
+
+            let set = lrwn::MACCommandSet::new(commands);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::FilterListReq, &set).await?;
+            self.mac_commands.push(set);
+
+            // The deletes needs to be processed before we can add new entries.
+            return Ok(());
+        }
 
         // Make sure the first item contains the "catch-all" filter.
         // This is needed to make sure that only the rest of the filter items are allowed to join
@@ -3227,6 +3257,59 @@ mod test {
                         ..Default::default()
                     }),
 
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "remove filter".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        filter_list_idx: 1,
+                        filter_list_action: lrwn::FilterListAction::NoRule,
+                        filter_list_eui: vec![],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 },
             },

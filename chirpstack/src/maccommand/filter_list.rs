@@ -44,6 +44,13 @@ pub fn handle(
                     f.provisioned = true;
                 }
             }
+
+            // If the action was NoRule, we remove the filter from the relay filters.
+            if req_pl.filter_list_action == lrwn::FilterListAction::NoRule {
+                relay
+                    .filters
+                    .retain(|f| f.index != req_pl.filter_list_idx as u32);
+            }
         }
     } else {
         error!(
@@ -162,6 +169,42 @@ mod test {
                             provisioned: true,
                             ..Default::default()
                         }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_error: None,
+            },
+            Test {
+                name: "acked removing filter".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 1,
+                            provisioned: true,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                filter_list_req: Some(lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        filter_list_idx: 1,
+                        filter_list_action: lrwn::FilterListAction::NoRule,
+                        filter_list_eui: vec![],
+                    }),
+                ])),
+                filter_list_ans: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListAns(
+                    lrwn::FilterListAnsPayload {
+                        filter_list_action_ack: true,
+                        filter_list_len_ack: true,
+                        combined_rules_ack: true,
+                    },
+                )]),
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![],
                         ..Default::default()
                     }),
                     ..Default::default()
