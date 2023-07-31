@@ -272,7 +272,6 @@ impl DeviceService for Device {
             } else {
                 Some(req.search.to_string())
             },
-            ..Default::default()
         };
 
         let count = device::get_count(&filters).await.map_err(|e| e.status())?;

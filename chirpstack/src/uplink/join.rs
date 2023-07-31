@@ -381,8 +381,7 @@ impl JoinRequest {
 
     fn abort_on_relay_only_comm(&self) -> Result<(), Error> {
         // In case the relay context is not set and relay_ed_relay_only is set, abort.
-        if !self.relay_context.is_some()
-            && self.device_profile.as_ref().unwrap().relay_ed_relay_only
+        if self.relay_context.is_none() && self.device_profile.as_ref().unwrap().relay_ed_relay_only
         {
             warn!(dev_eui = %self.device.as_ref().unwrap().dev_eui, "Only communication through relay is allowed");
             return Err(Error::Abort);

@@ -119,7 +119,7 @@ async fn main() -> Result<()> {
                 .await
                 .unwrap()
         }
-        Some(Commands::CreateApiKey { name }) => cmd::create_api_key::run(&name).await?,
+        Some(Commands::CreateApiKey { name }) => cmd::create_api_key::run(name).await?,
         None => cmd::root::run().await?,
     }
 

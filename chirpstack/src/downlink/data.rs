@@ -1358,7 +1358,7 @@ impl Data {
             15,
             0,
             &relay::DeviceFilters {
-                relay_dev_eui: Some(self.device.dev_eui.clone()),
+                relay_dev_eui: Some(self.device.dev_eui),
             },
         )
         .await?;
@@ -1367,11 +1367,9 @@ impl Data {
         // This way we can combine the delete + add by just overwriting an old slot.
         let relay_devices_dev_euis: Vec<Vec<u8>> =
             relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
-        relay.devices = relay
+        relay
             .devices
-            .into_iter()
-            .filter(|rd| relay_devices_dev_euis.contains(&rd.dev_eui))
-            .collect();
+            .retain(|rd| relay_devices_dev_euis.contains(&rd.dev_eui));
 
         // Calculate free slots.
         // If we need to add a device, we can use the first slot available.
@@ -1423,9 +1421,9 @@ impl Data {
                                             reload_rate: device.relay_ed_uplink_limit_reload_rate
                                                 as u8,
                                         },
-                                        dev_addr: dev_addr,
+                                        dev_addr,
                                         w_fcnt: ds.relay.map(|v| v.w_f_cnt).unwrap_or(0),
-                                        root_wor_s_key: root_wor_s_key,
+                                        root_wor_s_key,
                                     },
                                 ),
                             ]);
@@ -1479,9 +1477,9 @@ impl Data {
                                     bucket_size: device.relay_ed_uplink_limit_bucket_size as u8,
                                     reload_rate: device.relay_ed_uplink_limit_reload_rate as u8,
                                 },
-                                dev_addr: dev_addr,
+                                dev_addr,
                                 w_fcnt: ds.relay.map(|v| v.w_f_cnt).unwrap_or(0),
-                                root_wor_s_key: root_wor_s_key,
+                                root_wor_s_key,
                             },
                         )]);
                     mac_command::set_pending(
@@ -1541,20 +1539,19 @@ impl Data {
                         < Utc::now()
                             .checked_sub_signed(chrono::Duration::hours(24))
                             .unwrap()
+                        && counter < max_count
                     {
-                        if counter < max_count {
-                            counter += 1;
-                            commands.push(lrwn::MACCommand::CtrlUplinkListReq(
-                                lrwn::CtrlUplinkListReqPayload {
-                                    ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
-                                        uplink_list_idx: rd.index as u8,
-                                        ctrl_uplink_action: 0,
-                                    },
+                        counter += 1;
+                        commands.push(lrwn::MACCommand::CtrlUplinkListReq(
+                            lrwn::CtrlUplinkListReqPayload {
+                                ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                                    uplink_list_idx: rd.index as u8,
+                                    ctrl_uplink_action: 0,
                                 },
-                            ));
+                            },
+                        ));
 
-                            rd.w_f_cnt_last_request = Some(Utc::now().into());
-                        }
+                        rd.w_f_cnt_last_request = Some(Utc::now().into());
                     }
                 }
                 None => {
@@ -1667,7 +1664,7 @@ impl Data {
             15,
             0,
             &relay::DeviceFilters {
-                relay_dev_eui: Some(self.device.dev_eui.clone()),
+                relay_dev_eui: Some(self.device.dev_eui),
             },
         )
         .await?;
@@ -1677,11 +1674,9 @@ impl Data {
         // Note that index 0 has a special meaning.
         let relay_devices_dev_euis: Vec<Vec<u8>> =
             relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
-        relay.filters = relay
+        relay
             .filters
-            .into_iter()
-            .filter(|f| f.index == 0 || relay_devices_dev_euis.contains(&f.dev_eui))
-            .collect();
+            .retain(|f| f.index == 0 || relay_devices_dev_euis.contains(&f.dev_eui));
 
         // Calculate free slots.
         // Note that the first slot is used as "catch-all" filter.
