@@ -43,27 +43,34 @@ pub async fn handle(
         return Err(anyhow!("CtrlUplinkListAns mac-command count does not equal CtrlUplinkListReq mac-command count"));
     }
 
-    let relay = match &ds.relay {
-        Some(v) => v.clone(),
-        None => Default::default(),
-    };
-
     for (req_pl, ans_pl) in zip(req_pls, ans_pls) {
-        if ans_pl.uplink_list_idx_ack {
-            info!(
-                dev_eui = %dev.dev_eui,
-                uplink_list_idx = req_pl.ctrl_uplink_action.uplink_list_idx,
-                w_f_cnt = ans_pl.w_fcnt,
-                "CtrlUplinkListReq acknowledged",
-            );
+        let action = req_pl.ctrl_uplink_action.ctrl_uplink_action;
 
-            for rd in &relay.devices {
-                if req_pl.ctrl_uplink_action.uplink_list_idx as u32 == rd.index {
-                    let mut ds = device_session::get(&EUI64::from_slice(&rd.dev_eui)?).await?;
-                    if let Some(relay) = &mut ds.relay {
-                        relay.w_f_cnt = ans_pl.w_fcnt;
-                    };
-                    device_session::save(&ds).await?;
+        if ans_pl.uplink_list_idx_ack {
+            if let Some(relay) = &mut ds.relay {
+                info!(
+                    dev_eui = %dev.dev_eui,
+                    uplink_list_idx = req_pl.ctrl_uplink_action.uplink_list_idx,
+                    ctrl_uplink_action = action,
+                    w_f_cnt = ans_pl.w_fcnt,
+                    "CtrlUplinkListReq acknowledged",
+                );
+
+                if action == 0 {
+                    for rd in &relay.devices {
+                        if req_pl.ctrl_uplink_action.uplink_list_idx as u32 == rd.index {
+                            let mut ds =
+                                device_session::get(&EUI64::from_slice(&rd.dev_eui)?).await?;
+                            if let Some(relay) = &mut ds.relay {
+                                relay.w_f_cnt = ans_pl.w_fcnt;
+                            };
+                            device_session::save(&ds).await?;
+                        }
+                    }
+                } else if action == 1 {
+                    relay
+                        .devices
+                        .retain(|d| d.index != req_pl.ctrl_uplink_action.uplink_list_idx as u32);
                 }
             }
         } else {
@@ -74,8 +81,6 @@ pub async fn handle(
             );
         }
     }
-
-    ds.relay = Some(relay);
 
     Ok(None)
 }
@@ -141,7 +146,7 @@ mod test {
                 expected_error: Some("Expected pending CtrlUplinkListReq mac-command".to_string()),
             },
             Test {
-                name: "acked".into(),
+                name: "acked WFCnt sync".into(),
                 device_session: internal::DeviceSession {
                     relay: Some(internal::Relay {
                         devices: vec![internal::RelayDevice {
@@ -183,6 +188,45 @@ mod test {
                         w_f_cnt: 10,
                         ..Default::default()
                     }),
+                    ..Default::default()
+                },
+                expected_error: None,
+            },
+            Test {
+                name: "acked delete".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_session_ed: internal::DeviceSession {
+                    dev_addr: vec![1, 2, 3, 4],
+                    dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                    ..Default::default()
+                },
+                ctrl_uplink_list_req: Some(lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 1,
+                            ctrl_uplink_action: 1,
+                        },
+                    }),
+                ])),
+                ctrl_uplink_list_ans: lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListAns(lrwn::CtrlUplinkListAnsPayload {
+                        uplink_list_idx_ack: true,
+                        w_fcnt: 10,
+                    }),
+                ]),
+                expected_device_session_ed: internal::DeviceSession {
+                    dev_addr: vec![1, 2, 3, 4],
+                    dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     ..Default::default()
                 },
                 expected_error: None,

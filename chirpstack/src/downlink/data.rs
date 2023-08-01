@@ -1346,12 +1346,12 @@ impl Data {
     async fn _update_uplink_list(&mut self) -> Result<()> {
         trace!("Updating Relay uplink list");
 
-        // Get the current relay state.
-        let mut relay = if let Some(r) = &self.device_session.relay {
-            r.clone()
-        } else {
-            internal::Relay::default()
-        };
+        if self.device_session.relay.is_none() {
+            self.device_session.relay = Some(internal::Relay::default());
+        }
+
+        // Get a copy of the current relay state.
+        let relay = self.device_session.relay.as_ref().unwrap().clone();
 
         // Get devices that must be configured on the relay.
         let relay_devices = relay::list_devices(
@@ -1363,22 +1363,9 @@ impl Data {
         )
         .await?;
 
-        // We filter out the devices that are no longer configured on the relay.
-        // This way we can combine the delete + add by just overwriting an old slot.
-        let relay_devices_dev_euis: Vec<Vec<u8>> =
-            relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
-        relay
-            .devices
-            .retain(|rd| relay_devices_dev_euis.contains(&rd.dev_eui));
-
-        // Calculate free slots.
-        // If we need to add a device, we can use the first slot available.
-        // Note that there can be gaps in the indicex if devices have been removed.
+        //  Calculate unused slots.
         let used_slots: Vec<u32> = relay.devices.iter().map(|d| d.index).collect();
         let free_slots: Vec<u32> = (0..15).filter(|x| !used_slots.contains(x)).collect();
-
-        // Update device-session.
-        self.device_session.relay = Some(relay);
 
         // Iterate over the list of devices under this relay.
         for device in &relay_devices {
@@ -1520,18 +1507,60 @@ impl Data {
     async fn _request_ctrl_uplink_list(&mut self) -> Result<()> {
         trace!("Requesting CtrlUplinkList to sync WFCnt");
 
+        if self.device_session.relay.is_none() {
+            self.device_session.relay = Some(internal::Relay::default());
+        }
+
+        // Get a copy of the current relay state.
+        let mut relay = self.device_session.relay.as_ref().unwrap().clone();
+
+        // Get devices that must be configured on the relay.
+        let relay_devices = relay::list_devices(
+            15,
+            0,
+            &relay::DeviceFilters {
+                relay_dev_eui: Some(self.device.dev_eui),
+            },
+        )
+        .await?;
+
+        // Get DevEUIs of Relay EDs.
+        let relay_devices_dev_euis: Vec<Vec<u8>> =
+            relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
+
+        // Calculate removed slots.
+        let removed_slots: Vec<u32> = relay
+            .devices
+            .iter()
+            .filter(|d| !relay_devices_dev_euis.contains(&d.dev_eui))
+            .map(|f| f.index)
+            .collect();
+
         let max_count = 3;
         let mut counter = 0;
         let mut commands: Vec<lrwn::MACCommand> = vec![];
 
-        // Get the current relay state.
-        let mut relay = if let Some(r) = &self.device_session.relay {
-            r.clone()
-        } else {
-            internal::Relay::default()
-        };
+        // Delete end-device from trusted list.
+        for slot in &removed_slots {
+            if counter < max_count {
+                counter += 1;
+                commands.push(lrwn::MACCommand::CtrlUplinkListReq(
+                    lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: *slot as u8,
+                            ctrl_uplink_action: 1,
+                        },
+                    },
+                ));
+            }
+        }
 
+        // Sync WFCnt.
         for rd in &mut relay.devices {
+            if removed_slots.contains(&rd.index) {
+                continue;
+            }
+
             match &rd.w_f_cnt_last_request {
                 Some(v) => {
                     let last_req: DateTime<Utc> = v.clone().try_into()?;
@@ -2646,6 +2675,7 @@ mod test {
                 relay_devices: vec![],
                 expected_mac_commands: vec![],
                 expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay::default()),
                     ..Default::default()
                 },
             },
@@ -2979,7 +3009,15 @@ mod test {
                 device::delete(dev_eui).await.unwrap();
             }
 
+            // We can not predict the w_f_cnt_last_request timestamp.
+            if let Some(relay) = &mut ctx.device_session.relay {
+                for rd in &mut relay.devices {
+                    rd.w_f_cnt_last_request = None;
+                }
+            }
+
             assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+            assert_eq!(test.expected_device_session, ctx.device_session);
         }
     }
 
@@ -3753,6 +3791,7 @@ mod test {
     async fn test_request_ctrl_uplink_list() {
         struct Test {
             name: String,
+            relay_devices: Vec<EUI64>,
             device_session: internal::DeviceSession,
             expected_mac_commands: Vec<lrwn::MACCommandSet>,
         }
@@ -3760,11 +3799,14 @@ mod test {
         let tests = vec![
             Test {
                 name: "w_f_cnt has been recently requested".into(),
+                relay_devices: vec![EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2])],
                 device_session: internal::DeviceSession {
+                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![internal::RelayDevice {
                             index: 1,
                             w_f_cnt_last_request: Some(Utc::now().into()),
+                            dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
                             ..Default::default()
                         }],
                         ..Default::default()
@@ -3775,11 +3817,14 @@ mod test {
             },
             Test {
                 name: "w_f_cnt has never been requested".into(),
+                relay_devices: vec![EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2])],
                 device_session: internal::DeviceSession {
+                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![internal::RelayDevice {
                             index: 1,
                             w_f_cnt_last_request: None,
+                            dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
                             ..Default::default()
                         }],
                         ..Default::default()
@@ -3797,7 +3842,9 @@ mod test {
             },
             Test {
                 name: "w_f_cnt has been requested two days ago".into(),
+                relay_devices: vec![EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2])],
                 device_session: internal::DeviceSession {
+                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![internal::RelayDevice {
                             index: 1,
@@ -3807,6 +3854,7 @@ mod test {
                                     .unwrap()
                                     .into(),
                             ),
+                            dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
                             ..Default::default()
                         }],
                         ..Default::default()
@@ -3824,27 +3872,38 @@ mod test {
             },
             Test {
                 name: "more than three devices have outdated w_f_cnt".into(),
+                relay_devices: vec![
+                    EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
+                    EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 3]),
+                    EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 4]),
+                    EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 5]),
+                ],
                 device_session: internal::DeviceSession {
+                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![
                             internal::RelayDevice {
                                 index: 1,
                                 w_f_cnt_last_request: None,
+                                dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
                                 ..Default::default()
                             },
                             internal::RelayDevice {
                                 index: 2,
                                 w_f_cnt_last_request: None,
+                                dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 3],
                                 ..Default::default()
                             },
                             internal::RelayDevice {
                                 index: 3,
                                 w_f_cnt_last_request: None,
+                                dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 4],
                                 ..Default::default()
                             },
                             internal::RelayDevice {
                                 index: 4,
                                 w_f_cnt_last_request: None,
+                                dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 5],
                                 ..Default::default()
                             },
                         ],
@@ -3874,12 +3933,94 @@ mod test {
                     // The 4th is truncated
                 ])],
             },
+            Test {
+                name: "device has been removed".into(),
+                relay_devices: vec![],
+                device_session: internal::DeviceSession {
+                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            w_f_cnt_last_request: None,
+                            dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 1,
+                            ctrl_uplink_action: 1,
+                        },
+                    }),
+                ])],
+            },
         ];
 
         let _guard = test::prepare().await;
 
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_relay = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-relay".into(),
+            tenant_id: t.id,
+            is_relay: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_ed = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-ed".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d_relay = device::create(device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+            name: "relay".into(),
+            application_id: app.id,
+            device_profile_id: dp_relay.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
         for test in &tests {
             println!("> {}", test.name);
+
+            // create devices + add to relay
+            for dev_eui in &test.relay_devices {
+                let d = device::create(device::Device {
+                    name: dev_eui.to_string(),
+                    dev_eui: *dev_eui,
+                    application_id: app.id,
+                    device_profile_id: dp_ed.id,
+                    ..Default::default()
+                })
+                .await
+                .unwrap();
+
+                relay::add_device(d_relay.dev_eui, d.dev_eui).await.unwrap();
+            }
 
             let mut ctx = Data {
                 relay_context: None,
@@ -3887,7 +4028,7 @@ mod test {
                 tenant: tenant::Tenant::default(),
                 application: application::Application::default(),
                 device_profile: device_profile::DeviceProfile::default(),
-                device: device::Device::default(),
+                device: d_relay.clone(),
                 device_session: test.device_session.clone(),
                 network_conf: config::get_region_network("eu868").unwrap(),
                 region_conf: region::get("eu868").unwrap(),
@@ -3904,6 +4045,11 @@ mod test {
             };
 
             ctx._request_ctrl_uplink_list().await.unwrap();
+
+            // cleanup devices
+            for dev_eui in &test.relay_devices {
+                device::delete(dev_eui).await.unwrap();
+            }
 
             assert_eq!(test.expected_mac_commands, ctx.mac_commands);
         }
