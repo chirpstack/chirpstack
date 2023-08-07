@@ -70,7 +70,7 @@ impl Handler for Plugin {
             input.set("requiredSnrForDr", req.required_snr_for_dr)?;
             input.set("installationMargin", req.installation_margin)?;
             input.set("minDr", req.min_dr)?;
-            input.set("maxRr", req.max_dr)?;
+            input.set("maxDr", req.max_dr)?;
 
             let mut uplink_history: Vec<rquickjs::Object> = Vec::new();
 
