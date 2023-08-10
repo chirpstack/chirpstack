@@ -100,8 +100,12 @@ impl<'a> Integration<'a> {
         conn_opts_b.automatic_reconnect(Duration::from_secs(1), Duration::from_secs(30));
         conn_opts_b.clean_session(conf.clean_session);
         conn_opts_b.keep_alive_interval(conf.keep_alive_interval);
-        conn_opts_b.user_name(&conf.username);
-        conn_opts_b.password(&conf.password);
+        if !conf.username.is_empty() {
+            conn_opts_b.user_name(&conf.username);
+        }
+        if !conf.password.is_empty() {
+            conn_opts_b.password(&conf.password);
+        }
         if !conf.ca_cert.is_empty() || !conf.tls_cert.is_empty() || !conf.tls_key.is_empty() {
             info!(
                 ca_cert = %conf.ca_cert,
