@@ -21,7 +21,7 @@ hex = "0.4"
 rand = "0.8"
 
 tonic = { version = "0.9", features = ["codegen", "prost"], default-features = false, optional = true }
-tokio = { version = "1.27", features = ["macros"], optional = true }
+tokio = { version = "1.31", features = ["macros"], optional = true }
 pbjson = { version = "0.5", optional = true }
 pbjson-types = { version = "0.5", optional = true }
 serde = { version = "1.0", optional = true }
