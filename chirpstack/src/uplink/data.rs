@@ -662,7 +662,7 @@ impl Data {
 
     fn set_adr(&mut self) -> Result<()> {
         trace!("Set ADR flag in device-session");
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             ds.adr = pl.fhdr.f_ctrl.adr;
         }
@@ -674,7 +674,7 @@ impl Data {
         let device = self.device.as_mut().unwrap();
         *device = device::set_last_seen_dr(&device.dev_eui, self.uplink_frame_set.dr).await?;
 
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
         // The node changed its data-rate. Possibly the node did also reset its
         // tx-power to max power. Because of this, we need to reset the tx-power
         // and the uplink history at the network-server side too.
@@ -692,7 +692,7 @@ impl Data {
         let relay_ctx = self.relay_context.as_ref().unwrap();
         *device = device::set_last_seen_dr(&device.dev_eui, self.uplink_frame_set.dr).await?;
 
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
         // The node changed its data-rate. Possibly the node did also reset its
         // tx-power to max power. Because of this, we need to reset the tx-power
         // and the uplink history at the network-server side too.
@@ -780,7 +780,7 @@ impl Data {
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             if pl.fhdr.f_ctrl.adr_ack_req {
                 let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
-                let mut ds = self.device_session.as_mut().unwrap();
+                let ds = self.device_session.as_mut().unwrap();
 
                 // We reset the device-session enabled_uplink_channel_indices and
                 // extra_uplink_channels. On the downlink path, the mac-command handling will
@@ -853,7 +853,7 @@ impl Data {
     }
 
     fn append_meta_data_to_uplink_history(&mut self) -> Result<()> {
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
 
         // ignore re-transmissions we don't know the source of the
         // re-transmission (it might be a replay-attack)
@@ -898,7 +898,7 @@ impl Data {
     fn append_meta_data_to_uplink_history_relayed(&mut self) -> Result<()> {
         trace!("Apping meta-data of relayed uplink to upink history");
 
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
         let relay_ctx = self.relay_context.as_ref().unwrap();
 
         // ignore re-transmissions we don't know the source of the
@@ -1083,7 +1083,7 @@ impl Data {
     // required.
     fn sync_uplink_f_cnt(&mut self) -> Result<()> {
         trace!("Syncing uplink frame-counter");
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
         ds.f_cnt_up = self.f_cnt_up_full + 1;
         Ok(())
     }
@@ -1093,7 +1093,7 @@ impl Data {
     // value is not set initially.
     fn set_region_config_id(&mut self) -> Result<()> {
         trace!("Setting region_config_id to device-session");
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
         ds.region_config_id = self.uplink_frame_set.region_config_id.clone();
         Ok(())
     }

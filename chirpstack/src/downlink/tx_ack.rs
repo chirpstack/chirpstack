@@ -337,7 +337,7 @@ impl TxAck {
 
         let dev = self.device.as_ref().unwrap();
         let dp = self.device_profile.as_ref().unwrap();
-        let mut qi = self.device_queue_item.as_mut().unwrap();
+        let qi = self.device_queue_item.as_mut().unwrap();
 
         qi.is_pending = true;
 
@@ -354,7 +354,7 @@ impl TxAck {
     fn set_device_session_conf_f_cnt(&mut self) -> Result<()> {
         trace!("Setting device-session conf_f_cnt");
 
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
         let qi = self.device_queue_item.as_ref().unwrap();
 
         ds.conf_f_cnt = match qi.f_cnt_down {
@@ -371,7 +371,7 @@ impl TxAck {
     fn set_device_session_conf_f_cnt_relayed(&mut self) -> Result<()> {
         trace!("Setting relayed device-session conf_f_cnt");
 
-        let mut ds = self.device_session_relayed.as_mut().unwrap();
+        let ds = self.device_session_relayed.as_mut().unwrap();
         let qi = self.device_queue_item.as_ref().unwrap();
 
         ds.conf_f_cnt = match qi.f_cnt_down {
@@ -406,7 +406,7 @@ impl TxAck {
     fn increment_n_f_cnt_down(&mut self) -> Result<()> {
         trace!("Incrementing n_f_cnt_down");
 
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
         ds.n_f_cnt_down += 1;
 
         Ok(())
@@ -415,7 +415,7 @@ impl TxAck {
     fn increment_n_f_cnt_down_relayed(&mut self) -> Result<()> {
         trace!("Incrementing relayed n_f_cnt_down");
 
-        let mut ds = self.device_session_relayed.as_mut().unwrap();
+        let ds = self.device_session_relayed.as_mut().unwrap();
         ds.n_f_cnt_down += 1;
 
         Ok(())
