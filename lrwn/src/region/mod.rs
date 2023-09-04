@@ -612,7 +612,7 @@ impl RegionBaseConfig {
     }
 
     fn disable_uplink_channel_index(&mut self, channel: usize) -> Result<()> {
-        let mut channel = self
+        let channel = self
             .uplink_channels
             .get_mut(channel)
             .ok_or_else(|| anyhow!("Invalid channel"))?;
@@ -621,7 +621,7 @@ impl RegionBaseConfig {
     }
 
     fn enable_uplink_channel_index(&mut self, channel: usize) -> Result<()> {
-        let mut channel = self
+        let channel = self
             .uplink_channels
             .get_mut(channel)
             .ok_or_else(|| anyhow!("Invalid channel"))?;
