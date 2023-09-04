@@ -53,8 +53,11 @@ pub fn run() {
 
   # Server address or addresses.
   #
+  # Use rediss:// in case of a TLS secured connection.
+  #
   # Example formats:
   #   redis://127.0.0.1:6379
+  #   rediss://127.0.0.1:6379
   #   redis://:password@127.0.0.1:6379
   #   redis://username:password@127.0.0.1:6379
   #
