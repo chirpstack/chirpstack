@@ -9,7 +9,7 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class RequestLog(_message.Message):
-    __slots__ = ["metadata", "method", "service"]
+    __slots__ = ["service", "method", "metadata"]
     class MetadataEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -17,10 +17,10 @@ class RequestLog(_message.Message):
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
-    METADATA_FIELD_NUMBER: _ClassVar[int]
-    METHOD_FIELD_NUMBER: _ClassVar[int]
     SERVICE_FIELD_NUMBER: _ClassVar[int]
-    metadata: _containers.ScalarMap[str, str]
-    method: str
+    METHOD_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
     service: str
+    method: str
+    metadata: _containers.ScalarMap[str, str]
     def __init__(self, service: _Optional[str] = ..., method: _Optional[str] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
