@@ -4,18 +4,20 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::{
-    backend::Backend,
-    deserialize, dsl,
-    pg::Pg,
-    prelude::*,
-    serialize,
-    sql_types::{Jsonb, Text},
-};
+#[cfg(feature = "sqlite")]
+use diesel::sqlite::Sqlite;
+use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
+#[cfg(feature = "postgres")]
+use diesel::{pg::Pg, sql_types::Jsonb};
 use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 use uuid::Uuid;
+
+#[cfg(feature = "postgres")]
+type DbJsonT = Jsonb;
+#[cfg(feature = "sqlite")]
+type DbJsonT = Text;
 
 use super::error::Error;
 use super::schema::{application, application_integration};
@@ -129,6 +131,7 @@ where
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Text, Pg> for IntegrationKind
 where
     str: serialize::ToSql<Text, Pg>,
@@ -138,8 +141,16 @@ where
     }
 }
 
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for IntegrationKind {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Sqlite>) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize)]
-#[diesel(sql_type = Jsonb)]
+#[diesel(sql_type = DbJsonT)]
 pub enum IntegrationConfiguration {
     None,
     Http(HttpConfiguration),
@@ -154,6 +165,7 @@ pub enum IntegrationConfiguration {
     Ifttt(IftttConfiguration),
 }
 
+#[cfg(feature = "postgres")]
 impl deserialize::FromSql<Jsonb, Pg> for IntegrationConfiguration {
     fn from_sql(value: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
@@ -161,10 +173,27 @@ impl deserialize::FromSql<Jsonb, Pg> for IntegrationConfiguration {
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for IntegrationConfiguration {
     fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl deserialize::FromSql<Text, Sqlite> for IntegrationConfiguration {
+    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let s = <*const str>::from_sql(value)?;
+        Ok(serde_json::from_str(unsafe { &*s })?)
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for IntegrationConfiguration {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Sqlite>) -> serialize::Result {
+        out.set_value(serde_json::to_string(self)?);
+        Ok(serialize::IsNull::No)
     }
 }
 
