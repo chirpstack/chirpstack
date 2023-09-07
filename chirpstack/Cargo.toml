@@ -190,6 +190,8 @@ maintainer-scripts = "debian/"
 systemd-units = { enable = true }
 
 [package.metadata.generate-rpm]
+auto-req = "no"
+
 pre_install_script = '''
 id chirpstack &>/dev/null
 if [[ $? -ne 0 ]]; then
