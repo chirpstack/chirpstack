@@ -38,6 +38,10 @@ pub mod multicast;
 pub mod passive_roaming;
 pub mod relay;
 pub mod schema;
+#[cfg(feature = "postgres")]
+mod schema_postgres;
+#[cfg(feature = "sqlite")]
+mod schema_sqlite;
 pub mod search;
 pub mod tenant;
 pub mod user;
