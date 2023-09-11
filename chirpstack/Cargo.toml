@@ -73,7 +73,7 @@ rdkafka = { version = "0.34", default-features = false, features = ["tokio", "cm
 
 # gRPC and Protobuf
 tonic = "0.9"
-tonic-web = "0.9"
+tonic-web = "0.10"
 tonic-reflection = "0.9"
 tokio = { version = "1.32", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1"
