@@ -13,6 +13,7 @@ use uuid::Uuid;
 use chirpstack_api::internal;
 use lrwn::{DevAddr, EUI64};
 
+use super::db_adapter::DbTimestamptz;
 use super::schema::{application, device, device_profile, multicast_group_device, tenant};
 use super::{error::Error, fields, get_async_db_conn};
 use crate::api::helpers::FromProto;
@@ -747,8 +748,8 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                 "#,
                 )
                 .bind::<diesel::sql_types::Integer, _>(limit as i32)
-                .bind::<diesel::sql_types::Timestamptz, _>(Utc::now())
-                .bind::<diesel::sql_types::Timestamptz, _>(
+                .bind::<DbTimestamptz, _>(Utc::now())
+                .bind::<DbTimestamptz, _>(
                     Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
                 )
                 .load(c)

@@ -8,6 +8,7 @@ use uuid::Uuid;
 use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddr, EUI64};
 
+use super::db_adapter::DbTimestamptz;
 use super::error::Error;
 use super::schema::{
     application, device, gateway, multicast_group, multicast_group_device, multicast_group_gateway,
@@ -641,8 +642,8 @@ pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGr
                     "#,
                 )
                 .bind::<diesel::sql_types::Integer, _>(limit as i32)
-                .bind::<diesel::sql_types::Timestamptz, _>(Utc::now())
-                .bind::<diesel::sql_types::Timestamptz, _>(
+                .bind::<DbTimestamptz, _>(Utc::now())
+                .bind::<DbTimestamptz, _>(
                     Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
                 )
                 .load(c)
