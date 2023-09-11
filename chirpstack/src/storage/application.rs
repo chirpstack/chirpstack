@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
-use super::db_adapter::DbJsonT;
+use super::db_adapter::{DbJsonT, DbUuid};
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 #[cfg(feature = "sqlite")]
@@ -564,7 +564,7 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                     key
                 "#,
     )
-    .bind::<diesel::sql_types::Uuid, _>(application_id)
+    .bind::<DbUuid, _>(application_id)
     .load(&mut get_async_db_conn().await?)
     .await
     .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;

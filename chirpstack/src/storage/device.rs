@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
+use super::db_adapter::DbUuid;
 use anyhow::{Context, Result};
 use bigdecimal::BigDecimal;
 use chrono::{DateTime, Duration, Utc};
@@ -664,7 +665,7 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
         from
             device_active_inactive
     "#)
-    .bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id)
+            .bind::<diesel::sql_types::Nullable<DbUuid>, _>(tenant_id)
     .get_result(&mut get_async_db_conn().await?).await
     .map_err(|e| Error::from_diesel(e, "".into()))
 }
