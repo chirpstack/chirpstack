@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
+use super::db_adapter::DbJsonT;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 #[cfg(feature = "sqlite")]
@@ -13,11 +14,6 @@ use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 use uuid::Uuid;
-
-#[cfg(feature = "postgres")]
-type DbJsonT = Jsonb;
-#[cfg(feature = "sqlite")]
-type DbJsonT = Text;
 
 use super::error::Error;
 use super::schema::{application, application_integration};
