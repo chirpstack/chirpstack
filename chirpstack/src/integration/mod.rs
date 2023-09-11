@@ -28,6 +28,7 @@ pub mod mock;
 mod mqtt;
 mod mydevices;
 mod pilot_things;
+#[cfg(feature = "postgres")]
 mod postgresql;
 mod redis;
 mod thingsboard;
@@ -54,6 +55,7 @@ pub async fn setup() -> Result<()> {
                         .context("Setup MQTT integration")?,
                 ));
             }
+            #[cfg(feature = "postgres")]
             "postgresql" => integrations.push(Box::new(
                 postgresql::Integration::new(&conf.integration.postgresql)
                     .await
