@@ -1,11 +1,10 @@
 use anyhow::Result;
-use bigdecimal::BigDecimal;
 use chrono::{DateTime, Utc};
 use tracing::info;
 
 use crate::api::helpers::ToProto;
 use crate::integration;
-use crate::storage::{application, device, device_profile, tenant};
+use crate::storage::{application, device, device_profile, tenant, BigDecimal};
 use crate::uplink::{helpers, UplinkFrameSet};
 use chirpstack_api::integration as integration_pb;
 
@@ -30,7 +29,7 @@ pub async fn handle(
                 external_power_source: Some(pl.battery == 0),
                 battery_level: Some(if pl.battery > 0 && pl.battery < 255 {
                     let v: BigDecimal = ((pl.battery as f32) / 254.0 * 100.0).try_into()?;
-                    Some(v.with_scale(2))
+                    Some(v.with_scale(2).into())
                 } else {
                     None
                 }),
@@ -203,7 +202,7 @@ pub mod test {
         assert_eq!(Some(10), d.margin);
         assert_eq!(false, d.external_power_source);
         assert_eq!(
-            Some(BigDecimal::from_str("100.00").unwrap()),
+            Some(bigdecimal::BigDecimal::from_str("100.00").unwrap().into()),
             d.battery_level
         );
     }

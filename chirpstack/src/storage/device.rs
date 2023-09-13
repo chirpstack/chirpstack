@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
+use super::db_adapter::BigDecimal;
 use super::db_adapter::DbUuid;
 use anyhow::{Context, Result};
-use bigdecimal::BigDecimal;
 use chrono::{DateTime, Duration, Utc};
 use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
 use diesel_async::RunQueryDsl;
