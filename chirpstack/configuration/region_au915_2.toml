@@ -5,7 +5,7 @@
   id="au915_2"
 
   # Description is a short description for this region.
-  description="AU915 (channels 16-23 + 65)"
+  description="AU915 (channels 16-23 + 66)"
 
   # Common-name refers to the common-name of this region as defined by
   # the LoRa Alliance.
@@ -219,7 +219,7 @@
     # Use this when ony a sub-set of the by default enabled channels are being
     # used. For example when only using the first 8 channels of the US band.
     # Note: when left blank / empty array, all channels will be enabled.
-    enabled_uplink_channels=[16, 17, 18, 19, 20, 21, 22, 23, 65]
+    enabled_uplink_channels=[16, 17, 18, 19, 20, 21, 22, 23, 66]
 
 
     # Rejoin-request configuration (LoRaWAN 1.1)
