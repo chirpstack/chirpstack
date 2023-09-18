@@ -11,6 +11,7 @@ use rand_core::OsRng;
 use tracing::info;
 use uuid::Uuid;
 
+use super::db_adapter::Uuid as UuidNT;
 use super::error::Error;
 use super::get_async_db_conn;
 use super::schema::user;
@@ -18,7 +19,7 @@ use super::schema::user;
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = user)]
 pub struct User {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub external_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -35,7 +36,7 @@ impl Default for User {
         let now = Utc::now();
 
         User {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             external_id: None,
             created_at: now,
             updated_at: now,

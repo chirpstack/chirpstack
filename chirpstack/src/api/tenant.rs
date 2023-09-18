@@ -190,7 +190,7 @@ impl TenantService for Tenant {
                 let u = user::get(id).await.map_err(|e| e.status())?;
 
                 if !u.is_admin {
-                    filters.user_id = Some(u.id);
+                    filters.user_id = Some(u.id.into());
                 }
             }
             AuthID::Key(_) => {
@@ -259,7 +259,7 @@ impl TenantService for Tenant {
 
         let _ = tenant::add_user(tenant::TenantUser {
             tenant_id,
-            user_id,
+            user_id: user_id.into(),
             is_admin: req_user.is_admin,
             is_device_admin: req_user.is_device_admin,
             is_gateway_admin: req_user.is_gateway_admin,
@@ -484,7 +484,7 @@ pub mod test {
         let mut create_req = Request::new(create_req);
         create_req
             .extensions_mut()
-            .insert(AuthID::User(u.id.clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let create_resp = service.create(create_req).await.unwrap();
 
         // get
@@ -492,7 +492,9 @@ pub mod test {
             id: create_resp.get_ref().id.clone(),
         };
         let mut get_req = Request::new(get_req);
-        get_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        get_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Tenant {
@@ -520,7 +522,9 @@ pub mod test {
             }),
         };
         let mut up_req = Request::new(up_req);
-        up_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        up_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let _ = service.update(up_req).await.unwrap();
 
         // get
@@ -528,7 +532,9 @@ pub mod test {
             id: create_resp.get_ref().id.clone(),
         };
         let mut get_req = Request::new(get_req);
-        get_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        get_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Tenant {
@@ -551,7 +557,9 @@ pub mod test {
             user_id: "".into(),
         };
         let mut list_req = Request::new(list_req);
-        list_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        list_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let list_resp = service.list(list_req).await.unwrap();
         assert_eq!(1, list_resp.get_ref().total_count);
         assert_eq!(1, list_resp.get_ref().result.len());
@@ -561,14 +569,18 @@ pub mod test {
             id: create_resp.get_ref().id.clone(),
         };
         let mut del_req = Request::new(del_req);
-        del_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        del_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let _ = service.delete(del_req).await.unwrap();
 
         let del_req = api::DeleteTenantRequest {
             id: create_resp.get_ref().id.clone(),
         };
         let mut del_req = Request::new(del_req);
-        del_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        del_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let del_resp = service.delete(del_req).await;
         assert!(del_resp.is_err());
     }

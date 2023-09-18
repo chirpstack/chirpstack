@@ -842,7 +842,7 @@ pub mod test {
         let mut create_req = Request::new(create_req);
         create_req
             .extensions_mut()
-            .insert(AuthID::User(u.id.clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let _ = service.create(create_req).await.unwrap();
 
         // get
@@ -850,7 +850,9 @@ pub mod test {
             gateway_id: "0102030405060708".into(),
         };
         let mut get_req = Request::new(get_req);
-        get_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        get_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Gateway {
@@ -884,7 +886,9 @@ pub mod test {
             }),
         };
         let mut up_req = Request::new(up_req);
-        up_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        up_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let _ = service.update(up_req).await.unwrap();
 
         // get
@@ -892,7 +896,9 @@ pub mod test {
             gateway_id: "0102030405060708".into(),
         };
         let mut get_req = Request::new(get_req);
-        get_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        get_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Gateway {
@@ -919,7 +925,9 @@ pub mod test {
             ..Default::default()
         };
         let mut list_req = Request::new(list_req);
-        list_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        list_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let list_resp = service.list(list_req).await.unwrap();
         assert_eq!(1, list_resp.get_ref().total_count);
         assert_eq!(1, list_resp.get_ref().result.len());
@@ -929,14 +937,18 @@ pub mod test {
             gateway_id: "0102030405060708".into(),
         };
         let mut del_req = Request::new(del_req);
-        del_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        del_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let _ = service.delete(del_req).await.unwrap();
 
         let del_req = api::DeleteGatewayRequest {
             gateway_id: "0102030405060708".into(),
         };
         let mut del_req = Request::new(del_req);
-        del_req.extensions_mut().insert(AuthID::User(u.id.clone()));
+        del_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let del_resp = service.delete(del_req).await;
         assert!(del_resp.is_err());
     }
@@ -1014,7 +1026,7 @@ pub mod test {
         let mut stats_req = Request::new(stats_req);
         stats_req
             .extensions_mut()
-            .insert(AuthID::User(u.id.clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let stats_resp = service.get_metrics(stats_req).await.unwrap();
         let stats_resp = stats_resp.get_ref();
         assert_eq!(
