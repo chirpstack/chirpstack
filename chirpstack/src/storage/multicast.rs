@@ -8,7 +8,7 @@ use uuid::Uuid;
 use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddr, EUI64};
 
-use super::db_adapter::DbTimestamptz;
+use super::db_adapter::{DbTimestamptz, Uuid as UuidNT};
 use super::error::Error;
 use super::schema::{
     application, device, gateway, multicast_group, multicast_group_device, multicast_group_gateway,
@@ -73,7 +73,7 @@ impl Default for MulticastGroup {
 
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct MulticastGroupListItem {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
