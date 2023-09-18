@@ -398,7 +398,7 @@ pub mod test {
         .await
         .unwrap();
 
-        storage::multicast::add_gateway(&mg.id, &gw.gateway_id)
+        storage::multicast::add_gateway(&mg.id.into(), &gw.gateway_id)
             .await
             .unwrap();
 
@@ -472,7 +472,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     tenant_id: None,
-                    multicast_group_id: Some(mg.id),
+                    multicast_group_id: Some(mg.id.into()),
                     search: None,
                 },
                 gws: vec![&gw],

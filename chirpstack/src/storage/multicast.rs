@@ -21,7 +21,7 @@ use crate::{config, gpstime::ToDateTime, gpstime::ToGpsTime};
 #[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
 #[diesel(table_name = multicast_group)]
 pub struct MulticastGroup {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub application_id: Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -52,7 +52,7 @@ impl Default for MulticastGroup {
         let now = Utc::now();
 
         MulticastGroup {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             application_id: Uuid::nil(),
             created_at: now,
             updated_at: now,
@@ -93,7 +93,7 @@ pub struct MulticastGroupQueueItem {
     pub id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub scheduler_run_after: DateTime<Utc>,
-    pub multicast_group_id: Uuid,
+    pub multicast_group_id: UuidNT,
     pub gateway_id: EUI64,
     pub f_cnt: i64,
     pub f_port: i16,
@@ -121,7 +121,7 @@ impl Default for MulticastGroupQueueItem {
             id: Uuid::new_v4().into(),
             created_at: now,
             scheduler_run_after: now,
-            multicast_group_id: Uuid::nil(),
+            multicast_group_id: Uuid::nil().into(),
             gateway_id: Default::default(),
             f_cnt: 0,
             f_port: 0,
@@ -468,7 +468,7 @@ pub async fn enqueue(
                         for gateway_id in gateway_ids {
                             let qi = MulticastGroupQueueItem {
                                 scheduler_run_after: scheduler_run_after_ts,
-                                multicast_group_id: mg.id,
+                                multicast_group_id: mg.id.into(),
                                 gateway_id: *gateway_id,
                                 f_cnt: mg.f_cnt,
                                 f_port: qi.f_port,
@@ -528,7 +528,7 @@ pub async fn enqueue(
                         for gateway_id in gateway_ids {
                             let qi = MulticastGroupQueueItem {
                                 scheduler_run_after: scheduler_run_after_ts,
-                                multicast_group_id: mg.id,
+                                multicast_group_id: mg.id.into(),
                                 gateway_id: *gateway_id,
                                 f_cnt: mg.f_cnt,
                                 f_port: qi.f_port,
@@ -715,7 +715,7 @@ pub mod test {
         .unwrap();
 
         // get
-        let mg_get = get(&mg.id).await.unwrap();
+        let mg_get = get(&mg.id.into()).await.unwrap();
         assert_eq!(mg, mg_get);
 
         // update
@@ -723,7 +723,7 @@ pub mod test {
         mg.group_type = "B".into();
         mg.class_b_ping_slot_nb_k = 4;
         mg = update(mg).await.unwrap();
-        let mg_get = get(&mg.id).await.unwrap();
+        let mg_get = get(&mg.id.into()).await.unwrap();
         assert_eq!(mg, mg_get);
 
         // get count and list
@@ -795,8 +795,8 @@ pub mod test {
         }
 
         // delete
-        delete(&mg.id).await.unwrap();
-        assert!(delete(&mg.id).await.is_err());
+        delete(&mg.id.into()).await.unwrap();
+        assert!(delete(&mg.id.into()).await.is_err());
     }
 
     #[tokio::test]
@@ -853,15 +853,15 @@ pub mod test {
         .unwrap();
 
         // add device
-        add_device(&mg.id, &d.dev_eui).await.unwrap();
+        add_device(&mg.id.into(), &d.dev_eui).await.unwrap();
 
         // get group deveuis
-        let dev_euis = get_dev_euis(&mg.id).await.unwrap();
+        let dev_euis = get_dev_euis(&mg.id.into()).await.unwrap();
         assert_eq!(vec![d.dev_eui], dev_euis);
 
         // remove device
-        remove_device(&mg.id, &d.dev_eui).await.unwrap();
-        let dev_euis = get_dev_euis(&mg.id).await.unwrap();
+        remove_device(&mg.id.into(), &d.dev_eui).await.unwrap();
+        let dev_euis = get_dev_euis(&mg.id.into()).await.unwrap();
         assert!(dev_euis.is_empty());
     }
 
@@ -911,15 +911,15 @@ pub mod test {
         .unwrap();
 
         // add gateway
-        add_gateway(&mg.id, &gw.gateway_id).await.unwrap();
+        add_gateway(&mg.id.into(), &gw.gateway_id).await.unwrap();
 
         // get gateway ids
-        let gw_ids = get_gateway_ids(&mg.id).await.unwrap();
+        let gw_ids = get_gateway_ids(&mg.id.into()).await.unwrap();
         assert_eq!(vec![gw.gateway_id], gw_ids);
 
         // remove gateway
-        remove_gateway(&mg.id, &gw.gateway_id).await.unwrap();
-        let gw_ids = get_gateway_ids(&mg.id).await.unwrap();
+        remove_gateway(&mg.id.into(), &gw.gateway_id).await.unwrap();
+        let gw_ids = get_gateway_ids(&mg.id.into()).await.unwrap();
         assert!(gw_ids.is_empty());
     }
 
@@ -974,7 +974,7 @@ pub mod test {
         // invalid f_port
         assert!(enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id,
+                multicast_group_id: mg.id.into(),
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 0,
@@ -988,7 +988,7 @@ pub mod test {
 
         assert!(enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id,
+                multicast_group_id: mg.id.into(),
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 256,
@@ -1003,7 +1003,7 @@ pub mod test {
         // Enqueue (Class-C) (delay)
         let (ids, f_cnt) = enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id,
+                multicast_group_id: mg.id.into(),
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 2,
@@ -1033,7 +1033,7 @@ pub mod test {
         let mut mg = update(mg).await.unwrap();
         let (ids, f_cnt) = enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id,
+                multicast_group_id: mg.id.into(),
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 2,
@@ -1060,7 +1060,7 @@ pub mod test {
         let mg = update(mg).await.unwrap();
         let (ids, f_cnt) = enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id,
+                multicast_group_id: mg.id.into(),
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 2,
@@ -1082,7 +1082,7 @@ pub mod test {
         assert_eq!(vec![3, 2, 1], qi_get.data);
 
         // flush queue
-        flush_queue(&mg.id).await.unwrap();
+        flush_queue(&mg.id.into()).await.unwrap();
         assert!(delete_queue_item(&ids[0]).await.is_err());
     }
 }

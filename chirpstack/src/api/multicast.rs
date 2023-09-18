@@ -154,7 +154,7 @@ impl MulticastGroupService for MulticastGroup {
             .await?;
 
         let _ = multicast::update(multicast::MulticastGroup {
-            id: mg_id,
+            id: mg_id.into(),
             name: req_mg.name.clone(),
             region: req_mg.region().from_proto(),
             mc_addr: DevAddr::from_str(&req_mg.mc_addr).map_err(|e| e.status())?,
@@ -408,7 +408,7 @@ impl MulticastGroupService for MulticastGroup {
             .await?;
 
         let f_cnt = downlink::multicast::enqueue(multicast::MulticastGroupQueueItem {
-            multicast_group_id: mg_id,
+            multicast_group_id: mg_id.into(),
             f_port: req_enq.f_port as i16,
             data: req_enq.data.clone(),
             ..Default::default()
