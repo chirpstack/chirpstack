@@ -69,8 +69,7 @@ pub fn get_rx_timestamp(rx_info: &[gw::UplinkRxInfo]) -> SystemTime {
     // Then search for time.
     for rxi in rx_info {
         if let Some(ts) = &rxi.time {
-            let ts: core::result::Result<DateTime<Utc>, core::num::TryFromIntError> =
-                ts.clone().try_into();
+            let ts: Result<DateTime<Utc>> = ts.clone().try_into().map_err(anyhow::Error::msg);
             if let Ok(ts) = ts {
                 return ts.into();
             }
@@ -97,8 +96,7 @@ pub fn get_rx_timestamp_chrono(rx_info: &[gw::UplinkRxInfo]) -> DateTime<Utc> {
     // Then search for time.
     for rxi in rx_info {
         if let Some(ts) = &rxi.time {
-            let ts: core::result::Result<DateTime<Utc>, core::num::TryFromIntError> =
-                ts.clone().try_into();
+            let ts: Result<DateTime<Utc>> = ts.clone().try_into().map_err(anyhow::Error::msg);
             if let Ok(ts) = ts {
                 return ts;
             }

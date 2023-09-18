@@ -1027,7 +1027,8 @@ impl Data {
                         let record = metrics::Record {
                             time: DateTime::<Utc>::try_from(
                                 up_event.time.as_ref().unwrap().clone(),
-                            )?
+                            )
+                            .map_err(anyhow::Error::msg)?
                             .with_timezone(&Local),
                             kind: match dp_m.kind {
                                 fields::MeasurementKind::COUNTER => metrics::Kind::COUNTER,

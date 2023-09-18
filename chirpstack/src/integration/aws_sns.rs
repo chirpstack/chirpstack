@@ -68,8 +68,8 @@ impl Integration {
         let client = aws_sdk_sns::Client::new(&config);
 
         Ok(Integration {
-            json: match Encoding::from_i32(conf.encoding)
-                .ok_or_else(|| anyhow!("Invalid encoding"))?
+            json: match Encoding::try_from(conf.encoding)
+                .map_err(|_| anyhow!("Invalid encoding"))?
             {
                 Encoding::Json => true,
                 Encoding::Protobuf => false,

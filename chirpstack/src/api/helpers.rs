@@ -260,7 +260,7 @@ impl ToProto<common::DeviceClass> for DeviceClass {
 }
 
 pub fn datetime_to_prost_timestamp(dt: &DateTime<Utc>) -> prost_types::Timestamp {
-    let ts = dt.timestamp_nanos();
+    let ts = dt.timestamp_nanos_opt().unwrap_or_default();
 
     prost_types::Timestamp {
         seconds: ts / 1_000_000_000,

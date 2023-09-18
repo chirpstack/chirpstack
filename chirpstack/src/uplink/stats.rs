@@ -98,7 +98,9 @@ impl Stats {
 
         let mut m = metrics::Record {
             time: match &self.stats.time {
-                Some(v) => DateTime::try_from(v.clone())?.into(),
+                Some(v) => DateTime::try_from(v.clone())
+                    .map_err(anyhow::Error::msg)?
+                    .into(),
                 None => Local::now(),
             },
             kind: metrics::Kind::ABSOLUTE,

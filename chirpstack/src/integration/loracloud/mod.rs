@@ -43,7 +43,13 @@ impl Integration {
         let di = pl.device_info.as_ref().unwrap();
 
         info!(dev_eui = %di.dev_eui, "Forwarding join notification");
-        let ts: DateTime<Utc> = pl.time.as_ref().unwrap().clone().try_into()?;
+        let ts: DateTime<Utc> = pl
+            .time
+            .as_ref()
+            .unwrap()
+            .clone()
+            .try_into()
+            .map_err(anyhow::Error::msg)?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
 
         let pl = client::UplinkRequest {
@@ -67,7 +73,13 @@ impl Integration {
         let di = pl.device_info.as_ref().unwrap();
 
         info!(dev_eui = %di.dev_eui, "Forwarding updf message");
-        let ts: DateTime<Utc> = pl.time.as_ref().unwrap().clone().try_into()?;
+        let ts: DateTime<Utc> = pl
+            .time
+            .as_ref()
+            .unwrap()
+            .clone()
+            .try_into()
+            .map_err(anyhow::Error::msg)?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
 
         let req = client::UplinkRequest {
@@ -137,7 +149,13 @@ impl Integration {
     ) -> Result<()> {
         let di = pl.device_info.as_ref().unwrap();
         info!(dev_eui = %di.dev_eui, "Forwarding uplink meta-data");
-        let ts: DateTime<Utc> = pl.time.as_ref().unwrap().clone().try_into()?;
+        let ts: DateTime<Utc> = pl
+            .time
+            .as_ref()
+            .unwrap()
+            .clone()
+            .try_into()
+            .map_err(anyhow::Error::msg)?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
 
         let req = client::UplinkRequest {
@@ -223,7 +241,13 @@ impl Integration {
         }
 
         let di = pl.device_info.as_ref().unwrap();
-        let ts: DateTime<Utc> = pl.time.as_ref().unwrap().clone().try_into()?;
+        let ts: DateTime<Utc> = pl
+            .time
+            .as_ref()
+            .unwrap()
+            .clone()
+            .try_into()
+            .map_err(anyhow::Error::msg)?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
 
         for p in &payloads {

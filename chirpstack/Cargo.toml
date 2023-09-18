@@ -34,7 +34,7 @@ diesel = { version = "2.1", features = [
 ] }
 diesel_migrations = { version = "2.1" }
 r2d2 = "0.8"
-bigdecimal = "0.3"
+bigdecimal = "0.4"
 redis = { version = "0.23", features = ["r2d2", "cluster", "tls-rustls"] }
 
 # Logging
@@ -72,14 +72,14 @@ tokio-reactor-trait = "1.1"
 rdkafka = { version = "0.34", default-features = false, features = ["tokio", "cmake-build"] }
 
 # gRPC and Protobuf
-tonic = "0.9"
-tonic-web = "0.9"
-tonic-reflection = "0.9"
+tonic = "0.10"
+tonic-web = "0.10"
+tonic-reflection = "0.10"
 tokio = { version = "1.32", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1"
-prost-types = "0.11"
-prost = "0.11"
-pbjson-types = "0.5"
+prost-types = "0.12"
+prost = "0.12"
+pbjson-types = "0.6"
 
 # gRPC and HTTP multiplexing
 warp = { version = "0.3", features = ["tls"], default-features = false }

@@ -24,7 +24,7 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
     };
 
     let lifetime: DateTime<Utc> = match ds.lifetime.clone() {
-        Some(v) => v.try_into()?,
+        Some(v) => v.try_into().map_err(anyhow::Error::msg)?,
         None => {
             debug!("Not saving passive-roaming device-session, no passive-roaming lifetime set");
             return Ok(());
