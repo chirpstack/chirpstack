@@ -95,7 +95,7 @@ impl serialize::ToSql<Text, diesel::sqlite::Sqlite> for DeviceClass {
 #[diesel(table_name = device)]
 pub struct Device {
     pub dev_eui: EUI64,
-    pub application_id: Uuid,
+    pub application_id: UuidNT,
     pub device_profile_id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -169,7 +169,7 @@ impl Default for Device {
 
         Device {
             dev_eui: EUI64::default(),
-            application_id: Uuid::nil(),
+            application_id: Uuid::nil().into(),
             device_profile_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
@@ -814,7 +814,7 @@ pub mod test {
         };
 
         let application_id = match application_id {
-            Some(v) => v,
+            Some(v) => v.into(),
             None => {
                 let a =
                     storage::application::test::create_application(Some(tenant_id.into())).await;
@@ -891,7 +891,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
-                    application_id: Some(d.application_id),
+                    application_id: Some(d.application_id.into()),
                     multicast_group_id: None,
                     search: None,
                 },

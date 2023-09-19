@@ -46,7 +46,7 @@ pub async fn handle(
             helpers::get_rx_timestamp(&uplink_frame_set.rx_info_set).into();
 
         integration::status_event(
-            app.id,
+            app.id.into(),
             &dev.variables,
             &integration_pb::StatusEvent {
                 deduplication_id: uplink_frame_set.uplink_set_id.to_string(),

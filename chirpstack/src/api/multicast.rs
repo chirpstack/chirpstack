@@ -47,7 +47,7 @@ impl MulticastGroupService for MulticastGroup {
             .await?;
 
         let mg = multicast::MulticastGroup {
-            application_id: app_id,
+            application_id: app_id.into(),
             name: req_mg.name.clone(),
             region: req_mg.region().from_proto(),
             mc_addr: DevAddr::from_str(&req_mg.mc_addr).map_err(|e| e.status())?,

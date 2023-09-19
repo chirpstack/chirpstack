@@ -519,7 +519,8 @@ impl Data {
                     },
                 };
 
-                integration::ack_event(self.application.id, &self.device.variables, &pl).await;
+                integration::ack_event(self.application.id.into(), &self.device.variables, &pl)
+                    .await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of timeout");
 
                 continue;
@@ -549,7 +550,8 @@ impl Data {
                     .collect(),
                 };
 
-                integration::log_event(self.application.id, &self.device.variables, &pl).await;
+                integration::log_event(self.application.id.into(), &self.device.variables, &pl)
+                    .await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of max. payload size");
 
                 continue;
@@ -585,7 +587,8 @@ impl Data {
                     .collect(),
                 };
 
-                integration::log_event(self.application.id, &self.device.variables, &pl).await;
+                integration::log_event(self.application.id.into(), &self.device.variables, &pl)
+                    .await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of invalid frame-counter");
 
                 continue;

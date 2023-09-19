@@ -119,7 +119,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update(application::Application {
-            id: app_id,
+            id: app_id.into(),
             name: req_app.name.to_string(),
             description: req_app.description.to_string(),
             tags: fields::KeyValue::new(req_app.tags.clone()),
@@ -279,7 +279,7 @@ impl ApplicationService for Application {
             .await?;
 
         let i = application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::Http,
             configuration: application::IntegrationConfiguration::Http(
                 application::HttpConfiguration {
@@ -367,7 +367,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::Http,
             configuration: application::IntegrationConfiguration::Http(
                 application::HttpConfiguration {
@@ -438,7 +438,7 @@ impl ApplicationService for Application {
             .await?;
 
         let i = application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::InfluxDb,
             configuration: application::IntegrationConfiguration::InfluxDb(
                 application::InfluxDbConfiguration {
@@ -535,7 +535,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::InfluxDb,
             configuration: application::IntegrationConfiguration::InfluxDb(
                 application::InfluxDbConfiguration {
@@ -610,7 +610,7 @@ impl ApplicationService for Application {
             .await?;
 
         let i = application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::ThingsBoard,
             configuration: application::IntegrationConfiguration::ThingsBoard(
                 application::ThingsBoardConfiguration {
@@ -689,7 +689,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::ThingsBoard,
             configuration: application::IntegrationConfiguration::ThingsBoard(
                 application::ThingsBoardConfiguration {
@@ -755,7 +755,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::MyDevices,
             configuration: application::IntegrationConfiguration::MyDevices(
                 application::MyDevicesConfiguration {
@@ -832,7 +832,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::MyDevices,
             configuration: application::IntegrationConfiguration::MyDevices(
                 application::MyDevicesConfiguration {
@@ -907,7 +907,7 @@ impl ApplicationService for Application {
         };
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::LoraCloud,
             configuration: application::IntegrationConfiguration::LoraCloud(
                 application::LoraCloudConfiguration {
@@ -1032,7 +1032,7 @@ impl ApplicationService for Application {
         };
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::LoraCloud,
             configuration: application::IntegrationConfiguration::LoraCloud(
                 application::LoraCloudConfiguration {
@@ -1119,7 +1119,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::GcpPubSub,
             configuration: application::IntegrationConfiguration::GcpPubSub(
                 application::GcpPubSubConfiguration {
@@ -1202,7 +1202,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::GcpPubSub,
             configuration: application::IntegrationConfiguration::GcpPubSub(
                 application::GcpPubSubConfiguration {
@@ -1271,7 +1271,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::AwsSns,
             configuration: application::IntegrationConfiguration::AwsSns(
                 application::AwsSnsConfiguration {
@@ -1354,7 +1354,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::AwsSns,
             configuration: application::IntegrationConfiguration::AwsSns(
                 application::AwsSnsConfiguration {
@@ -1424,7 +1424,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::AzureServiceBus,
             configuration: application::IntegrationConfiguration::AzureServiceBus(
                 application::AzureServiceBusConfiguration {
@@ -1506,7 +1506,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::AzureServiceBus,
             configuration: application::IntegrationConfiguration::AzureServiceBus(
                 application::AzureServiceBusConfiguration {
@@ -1574,7 +1574,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::PilotThings,
             configuration: application::IntegrationConfiguration::PilotThings(
                 application::PilotThingsConfiguration {
@@ -1653,7 +1653,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::PilotThings,
             configuration: application::IntegrationConfiguration::PilotThings(
                 application::PilotThingsConfiguration {
@@ -1730,7 +1730,7 @@ impl ApplicationService for Application {
         }
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::Ifttt,
             configuration: application::IntegrationConfiguration::Ifttt(
                 application::IftttConfiguration {
@@ -1814,7 +1814,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::Ifttt,
             configuration: application::IntegrationConfiguration::Ifttt(
                 application::IftttConfiguration {

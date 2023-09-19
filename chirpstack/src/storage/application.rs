@@ -23,7 +23,7 @@ use super::{fields, get_async_db_conn};
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application)]
 pub struct Application {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub tenant_id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -47,7 +47,7 @@ impl Default for Application {
         let now = Utc::now();
 
         Application {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             tenant_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
@@ -294,7 +294,7 @@ pub struct IftttConfiguration {
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application_integration)]
 pub struct Integration {
-    pub application_id: Uuid,
+    pub application_id: UuidNT,
     pub kind: IntegrationKind,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -306,7 +306,7 @@ impl Default for Integration {
         let now = Utc::now();
 
         Integration {
-            application_id: Uuid::nil(),
+            application_id: Uuid::nil().into(),
             kind: IntegrationKind::Http,
             created_at: now,
             updated_at: now,

@@ -535,7 +535,7 @@ async fn handle_down_command(application_id: String, pl: integration::DownlinkCo
         // Validate that the application_id from the topic is indeed the application ID to which
         // the device belongs.
         let dev = device::get(&dev_eui).await?;
-        if dev.application_id != app_id {
+        if Into::<Uuid>::into(dev.application_id) != app_id {
             return Err(anyhow!(
                 "Application ID from topic does not match application ID from device"
             ));

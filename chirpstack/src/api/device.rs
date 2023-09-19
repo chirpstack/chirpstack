@@ -64,7 +64,7 @@ impl DeviceService for Device {
 
         let d = device::Device {
             dev_eui,
-            application_id: app_id,
+            application_id: app_id.into(),
             device_profile_id: dp_id.into(),
             name: req_d.name.clone(),
             description: req_d.description.clone(),
@@ -191,7 +191,7 @@ impl DeviceService for Device {
         // update
         let _ = device::update(device::Device {
             dev_eui,
-            application_id: app_id,
+            application_id: app_id.into(),
             device_profile_id: dp_id.into(),
             name: req_d.name.clone(),
             description: req_d.description.clone(),

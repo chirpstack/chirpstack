@@ -65,7 +65,7 @@ pub async fn handle(
         .collect(),
     };
 
-    integration::log_event(app.id, &dev.variables, &log_event).await;
+    integration::log_event(app.id.into(), &dev.variables, &log_event).await;
 
     Ok(None)
 }
@@ -94,7 +94,7 @@ mod test {
         };
 
         let app = application::Application {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             name: "app".to_string(),
             ..Default::default()
         };

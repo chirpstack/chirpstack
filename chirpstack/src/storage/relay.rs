@@ -265,7 +265,7 @@ pub mod test {
         let d_relay = storage::device::test::create_device(
             EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
             dp_relay.id.into(),
-            Some(d.application_id),
+            Some(d.application_id.into()),
         )
         .await;
 
@@ -279,13 +279,13 @@ pub mod test {
         let d_other_same_app = storage::device::test::create_device(
             EUI64::from_be_bytes([4, 2, 3, 4, 5, 6, 7, 8]),
             dp.id.into(),
-            Some(d.application_id),
+            Some(d.application_id.into()),
         )
         .await;
 
         // relay count
         let relay_count = get_relay_count(&RelayFilters {
-            application_id: Some(d_relay.application_id),
+            application_id: Some(d_relay.application_id.into()),
         })
         .await
         .unwrap();
@@ -296,7 +296,7 @@ pub mod test {
             10,
             0,
             &RelayFilters {
-                application_id: Some(d_relay.application_id),
+                application_id: Some(d_relay.application_id.into()),
             },
         )
         .await
