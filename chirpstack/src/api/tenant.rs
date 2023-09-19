@@ -122,7 +122,7 @@ impl TenantService for Tenant {
 
         // update
         let _ = tenant::update(tenant::Tenant {
-            id: tenant_id,
+            id: tenant_id.into(),
             name: req_tenant.name.clone(),
             description: req_tenant.description.clone(),
             can_have_gateways: req_tenant.can_have_gateways,
@@ -258,7 +258,7 @@ impl TenantService for Tenant {
             .await?;
 
         let _ = tenant::add_user(tenant::TenantUser {
-            tenant_id,
+            tenant_id: tenant_id.into(),
             user_id: user_id.into(),
             is_admin: req_user.is_admin,
             is_device_admin: req_user.is_device_admin,
@@ -342,7 +342,7 @@ impl TenantService for Tenant {
             .await?;
 
         tenant::update_user(tenant::TenantUser {
-            tenant_id,
+            tenant_id: tenant_id.into(),
             user_id: user_id.into(),
             is_admin: req_user.is_admin,
             is_device_admin: req_user.is_device_admin,

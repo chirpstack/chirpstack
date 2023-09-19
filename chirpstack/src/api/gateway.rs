@@ -54,7 +54,7 @@ impl GatewayService for Gateway {
 
         let gw = gateway::Gateway {
             gateway_id: EUI64::from_str(&req_gw.gateway_id).map_err(|e| e.status())?,
-            tenant_id,
+            tenant_id: tenant_id.into(),
             name: req_gw.name.clone(),
             description: req_gw.description.clone(),
             latitude: lat,

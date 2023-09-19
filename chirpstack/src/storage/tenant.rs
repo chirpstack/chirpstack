@@ -15,7 +15,7 @@ use super::{fields, get_async_db_conn};
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = tenant)]
 pub struct Tenant {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -42,7 +42,7 @@ impl Default for Tenant {
         let now = Utc::now();
 
         Tenant {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             created_at: now,
             updated_at: now,
             name: "".into(),
@@ -60,7 +60,7 @@ impl Default for Tenant {
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Eq, Debug)]
 #[diesel(table_name = tenant_user)]
 pub struct TenantUser {
-    pub tenant_id: Uuid,
+    pub tenant_id: UuidNT,
     pub user_id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -74,7 +74,7 @@ impl Default for TenantUser {
         let now = Utc::now();
 
         TenantUser {
-            tenant_id: Uuid::nil(),
+            tenant_id: Uuid::nil().into(),
             user_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
@@ -87,7 +87,7 @@ impl Default for TenantUser {
 
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct TenantUserListItem {
-    pub tenant_id: Uuid,
+    pub tenant_id: UuidNT,
     pub user_id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -339,7 +339,7 @@ pub mod test {
 
     pub async fn create_tenant() -> Tenant {
         let t = Tenant {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             created_at: Utc::now().round_subsecs(1),
             updated_at: Utc::now().round_subsecs(1),
             name: "test t".into(),

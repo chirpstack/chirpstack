@@ -6,6 +6,7 @@ use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
+use super::db_adapter::Uuid as UuidNT;
 use super::error::Error;
 use super::schema::api_key;
 use super::{error, get_async_db_conn};
@@ -17,7 +18,7 @@ pub struct ApiKey {
     pub created_at: DateTime<Utc>,
     pub name: String,
     pub is_admin: bool,
-    pub tenant_id: Option<Uuid>,
+    pub tenant_id: Option<UuidNT>,
 }
 
 impl ApiKey {
@@ -162,7 +163,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
-                    tenant_id: ak_tenant.tenant_id,
+                    tenant_id: ak_tenant.tenant_id.map(|u| u.into()),
                     is_admin: false,
                 },
                 keys: vec![&ak_tenant],

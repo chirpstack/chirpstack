@@ -88,7 +88,7 @@ mod test {
         integration::set_mock().await;
 
         let t = tenant::Tenant {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             name: "tenant".to_string(),
             ..Default::default()
         };

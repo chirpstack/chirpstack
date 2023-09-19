@@ -9,6 +9,7 @@ use uuid::Uuid;
 
 use lrwn::region::{CommonName, MacVersion, Revision};
 
+use super::db_adapter::Uuid as UuidNT;
 use super::error::Error;
 use super::schema::device_profile;
 use super::{error, fields, get_async_db_conn};
@@ -20,7 +21,7 @@ use chirpstack_api::internal;
 #[diesel(table_name = device_profile)]
 pub struct DeviceProfile {
     pub id: Uuid,
-    pub tenant_id: Uuid,
+    pub tenant_id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -96,7 +97,7 @@ impl Default for DeviceProfile {
 
         DeviceProfile {
             id: Uuid::new_v4(),
-            tenant_id: Uuid::nil(),
+            tenant_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
             name: "".into(),
@@ -400,7 +401,7 @@ pub mod test {
 
     pub async fn create_device_profile(tenant_id: Option<Uuid>) -> DeviceProfile {
         let tenant_id = match tenant_id {
-            Some(v) => v,
+            Some(v) => v.into(),
             None => {
                 let t = storage::tenant::test::create_tenant().await;
                 t.id
@@ -411,7 +412,7 @@ pub mod test {
         kv.insert("foo".into(), "bar".into());
 
         let dp = DeviceProfile {
-            tenant_id: tenant_id,
+            tenant_id,
             name: "test device-profile".into(),
             region: CommonName::EU868,
             mac_version: MacVersion::LORAWAN_1_0_2,
@@ -476,7 +477,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
-                    tenant_id: Some(dp.tenant_id),
+                    tenant_id: Some(dp.tenant_id.into()),
                     search: None,
                 },
                 dps: vec![&dp],

@@ -64,7 +64,7 @@ impl UserService for User {
             let tenant_id = Uuid::from_str(&tu.tenant_id).map_err(|e| e.status())?;
 
             tenant::add_user(tenant::TenantUser {
-                tenant_id,
+                tenant_id: tenant_id.into(),
                 user_id: u.id.into(),
                 is_admin: tu.is_admin,
                 is_device_admin: tu.is_device_admin,

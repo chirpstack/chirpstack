@@ -44,7 +44,7 @@ impl ApplicationService for Application {
             .await?;
 
         let a = application::Application {
-            tenant_id,
+            tenant_id: tenant_id.into(),
             name: req_app.name.clone(),
             description: req_app.description.clone(),
             tags: fields::KeyValue::new(req_app.tags.clone()),
