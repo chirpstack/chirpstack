@@ -141,7 +141,7 @@ async fn test_downlink_scheduler() {
         name: "unconfirmed data".into(),
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
-            id: Uuid::nil(),
+            id: Uuid::nil().into(),
             dev_eui: dev.dev_eui.clone(),
             f_port: 10,
             data: vec![1, 2, 3],
@@ -188,7 +188,7 @@ async fn test_downlink_scheduler() {
         name: "scheduler_run_after has not yet expired".into(),
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
-            id: Uuid::nil(),
+            id: Uuid::nil().into(),
             dev_eui: dev.dev_eui.clone(),
             f_port: 10,
             data: vec![1, 2, 3],
@@ -215,7 +215,7 @@ async fn test_downlink_scheduler() {
         name: "unconfirmed data".into(),
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
-            id: Uuid::nil(),
+            id: Uuid::nil().into(),
             dev_eui: dev.dev_eui.clone(),
             f_port: 10,
             data: vec![1, 2, 3],
@@ -276,7 +276,7 @@ async fn test_downlink_scheduler() {
         name: "unconfirmed data".into(),
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
-            id: Uuid::nil(),
+            id: Uuid::nil().into(),
             dev_eui: dev.dev_eui.clone(),
             f_port: 10,
             data: vec![0; 300],

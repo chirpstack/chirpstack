@@ -1089,7 +1089,7 @@ impl DeviceService for Device {
         }
 
         let qi = device_queue::DeviceQueueItem {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             dev_eui,
             f_port: req_qi.f_port as i16,
             confirmed: req_qi.confirmed,

@@ -557,8 +557,8 @@ async fn handle_down_command(application_id: String, pl: integration::DownlinkCo
 
         let qi = device_queue::DeviceQueueItem {
             id: match pl.id.is_empty() {
-                true => Uuid::new_v4(),
-                false => Uuid::from_str(&pl.id)?,
+                true => Uuid::new_v4().into(),
+                false => Uuid::from_str(&pl.id)?.into(),
             },
             f_port: pl.f_port as i16,
             confirmed: pl.confirmed,
