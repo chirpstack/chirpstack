@@ -257,28 +257,28 @@ pub mod test {
 
         let d = storage::device::test::create_device(
             EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            dp.id,
+            dp.id.into(),
             None,
         )
         .await;
 
         let d_relay = storage::device::test::create_device(
             EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-            dp_relay.id,
+            dp_relay.id.into(),
             Some(d.application_id),
         )
         .await;
 
         let d_other_app = storage::device::test::create_device(
             EUI64::from_be_bytes([3, 2, 3, 4, 5, 6, 7, 8]),
-            dp.id,
+            dp.id.into(),
             None,
         )
         .await;
 
         let d_other_same_app = storage::device::test::create_device(
             EUI64::from_be_bytes([4, 2, 3, 4, 5, 6, 7, 8]),
-            dp.id,
+            dp.id.into(),
             Some(d.application_id),
         )
         .await;

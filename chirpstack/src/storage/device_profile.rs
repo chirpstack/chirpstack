@@ -20,7 +20,7 @@ use chirpstack_api::internal;
 #[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
 #[diesel(table_name = device_profile)]
 pub struct DeviceProfile {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub tenant_id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -96,7 +96,7 @@ impl Default for DeviceProfile {
         let now = Utc::now();
 
         DeviceProfile {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             tenant_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,

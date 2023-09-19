@@ -100,7 +100,7 @@ mod test {
         };
 
         let dp = device_profile::DeviceProfile {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             name: "dp".to_string(),
             tags: fields::KeyValue::new(
                 [("dp_tag".to_string(), "dp_value".to_string())]

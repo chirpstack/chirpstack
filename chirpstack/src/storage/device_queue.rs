@@ -193,7 +193,7 @@ pub mod test {
         let dp = storage::device_profile::test::create_device_profile(None).await;
         let d = storage::device::test::create_device(
             EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            dp.id,
+            dp.id.into(),
             None,
         )
         .await;
@@ -254,7 +254,7 @@ pub mod test {
         let dp = storage::device_profile::test::create_device_profile(None).await;
         let d = storage::device::test::create_device(
             EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            dp.id,
+            dp.id.into(),
             None,
         )
         .await;
