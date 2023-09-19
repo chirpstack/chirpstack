@@ -186,7 +186,7 @@ impl DeviceProfile {
 
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct DeviceProfileListItem {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
