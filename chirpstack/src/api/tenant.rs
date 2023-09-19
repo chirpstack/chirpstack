@@ -343,7 +343,7 @@ impl TenantService for Tenant {
 
         tenant::update_user(tenant::TenantUser {
             tenant_id,
-            user_id,
+            user_id: user_id.into(),
             is_admin: req_user.is_admin,
             is_device_admin: req_user.is_device_admin,
             is_gateway_admin: req_user.is_gateway_admin,
