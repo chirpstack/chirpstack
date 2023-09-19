@@ -14,7 +14,7 @@ use super::{error, get_async_db_conn};
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = api_key)]
 pub struct ApiKey {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub name: String,
     pub is_admin: bool,
@@ -34,7 +34,7 @@ impl ApiKey {
 impl Default for ApiKey {
     fn default() -> Self {
         ApiKey {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             created_at: Utc::now(),
             name: "".into(),
             is_admin: false,
