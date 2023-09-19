@@ -67,7 +67,7 @@ pub struct Filters {
 
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct ApplicationListItem {
-    pub id: Uuid,
+    pub id: UuidNT,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
