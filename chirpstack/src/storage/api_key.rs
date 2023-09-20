@@ -62,7 +62,7 @@ pub async fn create(ak: ApiKey) -> Result<ApiKey, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(api_key::dsl::api_key.find(&id))
+    let ra = diesel::delete(api_key::dsl::api_key.find(UuidNT::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
@@ -79,7 +79,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(api_key::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(api_key::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -91,7 +91,7 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<ApiK
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(api_key::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(api_key::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
     }
 
     let items = q
@@ -119,7 +119,7 @@ pub mod test {
 
     pub async fn get(id: &Uuid) -> Result<ApiKey, Error> {
         api_key::dsl::api_key
-            .find(&id)
+            .find(UuidNT::from(id))
             .first(&mut get_async_db_conn().await?)
             .await
             .map_err(|e| error::Error::from_diesel(e, id.to_string()))

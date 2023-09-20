@@ -5,6 +5,7 @@ use diesel_async::RunQueryDsl;
 use regex::Regex;
 use uuid::Uuid;
 
+use super::db_adapter::Uuid as UuidNT;
 use super::error::Error;
 use super::get_async_db_conn;
 use lrwn::EUI64;
@@ -155,7 +156,7 @@ pub async fn global_search(
             .bind::<diesel::sql_types::Text, _>(&search)
             .bind::<diesel::sql_types::Text, _>(&query)
             .bind::<diesel::sql_types::Bool, _>(global_admin)
-            .bind::<diesel::sql_types::Uuid, _>(&user_id)
+            .bind::<diesel::sql_types::Uuid, _>(&UuidNT::from(user_id))
             .bind::<diesel::sql_types::BigInt, _>(limit as i64)
             .bind::<diesel::sql_types::BigInt, _>(offset as i64)
             .bind::<diesel::sql_types::Jsonb, _>(tags)

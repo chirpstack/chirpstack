@@ -7,6 +7,7 @@ use uuid::Uuid;
 
 use lrwn::{DevAddr, EUI64};
 
+use super::db_adapter::Uuid as UuidNT;
 use super::schema::{device, device_profile, relay_device};
 use super::{device::Device, error::Error, get_async_db_conn};
 
@@ -50,7 +51,7 @@ pub async fn get_relay_count(filters: &RelayFilters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(application_id));
+        q = q.filter(device::dsl::application_id.eq(UuidNT::from(application_id)));
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -68,7 +69,7 @@ pub async fn list_relays(
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(application_id));
+        q = q.filter(device::dsl::application_id.eq(UuidNT::from(application_id)));
     }
 
     q.order_by(device::dsl::name)

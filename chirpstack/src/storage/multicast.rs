@@ -145,7 +145,7 @@ pub async fn create(mg: MulticastGroup) -> Result<MulticastGroup, Error> {
 
 pub async fn get(id: &Uuid) -> Result<MulticastGroup, Error> {
     multicast_group::dsl::multicast_group
-        .find(&id)
+        .find(&UuidNT::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))
@@ -177,7 +177,7 @@ pub async fn update(mg: MulticastGroup) -> Result<MulticastGroup, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(multicast_group::dsl::multicast_group.find(&id))
+    let ra = diesel::delete(multicast_group::dsl::multicast_group.find(&UuidNT::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
@@ -193,7 +193,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(multicast_group::dsl::application_id.eq(application_id));
+        q = q.filter(multicast_group::dsl::application_id.eq(UuidNT::from(application_id)));
     }
 
     if let Some(search) = &filters.search {
@@ -229,7 +229,7 @@ pub async fn list(
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(multicast_group::dsl::application_id.eq(application_id));
+        q = q.filter(multicast_group::dsl::application_id.eq(UuidNT::from(application_id)));
     }
 
     if let Some(search) = &filters.search {
@@ -299,7 +299,7 @@ pub async fn add_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
 pub async fn remove_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
     let ra = diesel::delete(
         multicast_group_device::dsl::multicast_group_device
-            .filter(multicast_group_device::multicast_group_id.eq(&group_id))
+            .filter(multicast_group_device::multicast_group_id.eq(&UuidNT::from(group_id)))
             .filter(multicast_group_device::dev_eui.eq(&dev_eui)),
     )
     .execute(&mut get_async_db_conn().await?)
@@ -370,7 +370,7 @@ pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Erro
 pub async fn remove_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Error> {
     let ra = diesel::delete(
         multicast_group_gateway::dsl::multicast_group_gateway
-            .filter(multicast_group_gateway::multicast_group_id.eq(&group_id))
+            .filter(multicast_group_gateway::multicast_group_id.eq(&UuidNT::from(group_id)))
             .filter(multicast_group_gateway::gateway_id.eq(&gateway_id)),
     )
     .execute(&mut get_async_db_conn().await?)
@@ -388,7 +388,7 @@ pub async fn remove_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), E
 pub async fn get_dev_euis(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
     multicast_group_device::dsl::multicast_group_device
         .select(multicast_group_device::dev_eui)
-        .filter(multicast_group_device::dsl::multicast_group_id.eq(&group_id))
+        .filter(multicast_group_device::dsl::multicast_group_id.eq(&UuidNT::from(group_id)))
         .load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, group_id.to_string()))
@@ -397,7 +397,7 @@ pub async fn get_dev_euis(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
 pub async fn get_gateway_ids(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
     multicast_group_gateway::dsl::multicast_group_gateway
         .select(multicast_group_gateway::gateway_id)
-        .filter(multicast_group_gateway::dsl::multicast_group_id.eq(&group_id))
+        .filter(multicast_group_gateway::dsl::multicast_group_id.eq(&UuidNT::from(group_id)))
         .load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, group_id.to_string()))
@@ -580,9 +580,11 @@ pub async fn enqueue(
 }
 
 pub async fn delete_queue_item(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(multicast_group_queue_item::dsl::multicast_group_queue_item.find(&id))
-        .execute(&mut get_async_db_conn().await?)
-        .await?;
+    let ra = diesel::delete(
+        multicast_group_queue_item::dsl::multicast_group_queue_item.find(&UuidNT::from(id)),
+    )
+    .execute(&mut get_async_db_conn().await?)
+    .await?;
     if ra == 0 {
         return Err(Error::NotFound(id.to_string()));
     }
@@ -592,8 +594,9 @@ pub async fn delete_queue_item(id: &Uuid) -> Result<(), Error> {
 
 pub async fn flush_queue(multicast_group_id: &Uuid) -> Result<(), Error> {
     let _ = diesel::delete(
-        multicast_group_queue_item::dsl::multicast_group_queue_item
-            .filter(multicast_group_queue_item::multicast_group_id.eq(&multicast_group_id)),
+        multicast_group_queue_item::dsl::multicast_group_queue_item.filter(
+            multicast_group_queue_item::multicast_group_id.eq(&UuidNT::from(multicast_group_id)),
+        ),
     )
     .execute(&mut get_async_db_conn().await?)
     .await
@@ -604,7 +607,10 @@ pub async fn flush_queue(multicast_group_id: &Uuid) -> Result<(), Error> {
 
 pub async fn get_queue(multicast_group_id: &Uuid) -> Result<Vec<MulticastGroupQueueItem>, Error> {
     multicast_group_queue_item::dsl::multicast_group_queue_item
-        .filter(multicast_group_queue_item::dsl::multicast_group_id.eq(&multicast_group_id))
+        .filter(
+            multicast_group_queue_item::dsl::multicast_group_id
+                .eq(&UuidNT::from(multicast_group_id)),
+        )
         .order_by(multicast_group_queue_item::created_at)
         .load(&mut get_async_db_conn().await?)
         .await
@@ -663,7 +669,7 @@ pub mod test {
 
     pub async fn get_queue_item(id: &Uuid) -> Result<MulticastGroupQueueItem, Error> {
         multicast_group_queue_item::dsl::multicast_group_queue_item
-            .find(&id)
+            .find(&UuidNT::from(id))
             .first(&mut get_async_db_conn().await?)
             .await
             .map_err(|e| Error::from_diesel(e, id.to_string()))

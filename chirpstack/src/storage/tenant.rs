@@ -117,7 +117,7 @@ pub async fn create(t: Tenant) -> Result<Tenant, Error> {
 
 pub async fn get(id: &Uuid) -> Result<Tenant, Error> {
     let t = tenant::dsl::tenant
-        .find(&id)
+        .find(&UuidNT::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -147,7 +147,7 @@ pub async fn update(t: Tenant) -> Result<Tenant, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(tenant::dsl::tenant.find(&id))
+    let ra = diesel::delete(tenant::dsl::tenant.find(&UuidNT::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -165,7 +165,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(user_id) = &filters.user_id {
-        q = q.filter(tenant_user::dsl::user_id.eq(user_id));
+        q = q.filter(tenant_user::dsl::user_id.eq(UuidNT::from(user_id)));
     }
 
     if let Some(search) = &filters.search {
@@ -197,7 +197,7 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<Tena
         .into_boxed();
 
     if let Some(user_id) = &filters.user_id {
-        q = q.filter(tenant_user::dsl::user_id.eq(user_id));
+        q = q.filter(tenant_user::dsl::user_id.eq(UuidNT::from(user_id)));
     }
 
     if let Some(search) = &filters.search {
@@ -249,8 +249,8 @@ pub async fn update_user(tu: TenantUser) -> Result<TenantUser, Error> {
 
 pub async fn get_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<TenantUser, Error> {
     let tu: TenantUser = tenant_user::dsl::tenant_user
-        .filter(tenant_user::dsl::tenant_id.eq(&tenant_id))
-        .filter(tenant_user::dsl::user_id.eq(&user_id))
+        .filter(tenant_user::dsl::tenant_id.eq(&UuidNT::from(tenant_id)))
+        .filter(tenant_user::dsl::user_id.eq(&UuidNT::from(user_id)))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, user_id.to_string()))?;
@@ -283,7 +283,7 @@ pub async fn get_users(
             tenant_user::dsl::is_device_admin,
             tenant_user::dsl::is_gateway_admin,
         ))
-        .filter(tenant_user::dsl::tenant_id.eq(&tenant_id))
+        .filter(tenant_user::dsl::tenant_id.eq(&UuidNT::from(tenant_id)))
         .order_by(user::dsl::email)
         .limit(limit)
         .offset(offset)
@@ -296,8 +296,8 @@ pub async fn get_users(
 pub async fn delete_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<(), Error> {
     let ra = diesel::delete(
         tenant_user::dsl::tenant_user
-            .filter(tenant_user::dsl::tenant_id.eq(&tenant_id))
-            .filter(tenant_user::dsl::user_id.eq(&user_id)),
+            .filter(tenant_user::dsl::tenant_id.eq(&UuidNT::from(tenant_id)))
+            .filter(tenant_user::dsl::user_id.eq(&UuidNT::from(user_id))),
     )
     .execute(&mut get_async_db_conn().await?)
     .await?;
@@ -314,7 +314,7 @@ pub async fn delete_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<(), Error> 
 
 pub async fn get_tenant_users_for_user(user_id: &Uuid) -> Result<Vec<TenantUser>, Error> {
     let items = tenant_user::dsl::tenant_user
-        .filter(tenant_user::dsl::user_id.eq(&user_id))
+        .filter(tenant_user::dsl::user_id.eq(&UuidNT::from(user_id)))
         .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)

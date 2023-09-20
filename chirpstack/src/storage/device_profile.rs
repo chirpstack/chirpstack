@@ -218,7 +218,7 @@ pub async fn create(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
 
 pub async fn get(id: &Uuid) -> Result<DeviceProfile, Error> {
     let dp = device_profile::dsl::device_profile
-        .find(&id)
+        .find(&UuidNT::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, id.to_string()))?;
@@ -298,17 +298,18 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
 }
 
 pub async fn set_measurements(id: Uuid, m: &fields::Measurements) -> Result<DeviceProfile, Error> {
-    let dp: DeviceProfile = diesel::update(device_profile::dsl::device_profile.find(&id))
-        .set(device_profile::measurements.eq(m))
-        .get_result(&mut get_async_db_conn().await?)
-        .await
-        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    let dp: DeviceProfile =
+        diesel::update(device_profile::dsl::device_profile.find(&UuidNT::from(id)))
+            .set(device_profile::measurements.eq(m))
+            .get_result(&mut get_async_db_conn().await?)
+            .await
+            .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     info!(id = %id, "Device-profile measurements updated");
     Ok(dp)
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(device_profile::dsl::device_profile.find(&id))
+    let ra = diesel::delete(device_profile::dsl::device_profile.find(&UuidNT::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
@@ -324,7 +325,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(device_profile::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
@@ -362,7 +363,7 @@ pub async fn list(
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(device_profile::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {

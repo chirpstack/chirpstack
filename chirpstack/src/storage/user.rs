@@ -79,7 +79,7 @@ pub async fn create(u: User) -> Result<User, Error> {
 
 pub async fn get(id: &Uuid) -> Result<User, Error> {
     let u = user::dsl::user
-        .find(&id)
+        .find(&UuidNT::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -148,7 +148,7 @@ pub async fn update(u: User) -> Result<User, Error> {
 }
 
 pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
-    let u: User = diesel::update(user::dsl::user.find(&id))
+    let u: User = diesel::update(user::dsl::user.find(&UuidNT::from(id)))
         .set(user::password_hash.eq(&hash))
         .get_result(&mut get_async_db_conn().await?)
         .await
@@ -158,7 +158,7 @@ pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(user::dsl::user.find(&id))
+    let ra = diesel::delete(user::dsl::user.find(&UuidNT::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;

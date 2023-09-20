@@ -126,6 +126,12 @@ impl std::convert::From<uuid::Uuid> for Uuid {
     }
 }
 
+impl std::convert::From<&uuid::Uuid> for Uuid {
+    fn from(u: &uuid::Uuid) -> Self {
+        Self::from(u.clone())
+    }
+}
+
 impl std::convert::Into<uuid::Uuid> for Uuid {
     fn into(self) -> uuid::Uuid {
         self.0
