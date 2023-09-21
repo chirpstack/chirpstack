@@ -168,7 +168,14 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(tenant::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(tenant::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(tenant::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     Ok(
@@ -193,7 +200,14 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<Tena
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(tenant::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(tenant::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(tenant::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     let items = q.load(&mut get_async_db_conn().await?).await?;

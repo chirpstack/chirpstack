@@ -375,7 +375,14 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(application::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -401,7 +408,14 @@ pub async fn list(
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(application::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     let items = q

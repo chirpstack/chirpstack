@@ -196,7 +196,14 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(multicast_group::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(multicast_group::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(multicast_group::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     q.first(&mut get_async_db_conn().await?)
@@ -225,7 +232,14 @@ pub async fn list(
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(multicast_group::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(multicast_group::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(multicast_group::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     q.order_by(multicast_group::dsl::name)
