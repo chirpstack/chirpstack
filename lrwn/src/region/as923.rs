@@ -301,7 +301,7 @@ impl Configuration {
                                     [
                                         (0, MaxPayloadSize { m: 59, n: 51 }),
                                         (1, MaxPayloadSize { m: 59, n: 51 }),
-                                        (2, MaxPayloadSize { m: 59, n: 51 }),
+                                        (2, MaxPayloadSize { m: 123, n: 115 }),
                                         (3, MaxPayloadSize { m: 123, n: 115 }),
                                         (4, MaxPayloadSize { m: 230, n: 222 }),
                                         (5, MaxPayloadSize { m: 230, n: 222 }),
@@ -491,7 +491,7 @@ impl Configuration {
                                     [
                                         (0, MaxPayloadSize { m: 59, n: 51 }),
                                         (1, MaxPayloadSize { m: 59, n: 51 }),
-                                        (2, MaxPayloadSize { m: 59, n: 51 }),
+                                        (2, MaxPayloadSize { m: 123, n: 115 }),
                                         (3, MaxPayloadSize { m: 123, n: 115 }),
                                         (4, MaxPayloadSize { m: 250, n: 242 }),
                                         (5, MaxPayloadSize { m: 250, n: 242 }),
