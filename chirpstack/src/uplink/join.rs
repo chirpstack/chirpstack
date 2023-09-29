@@ -257,7 +257,8 @@ impl JoinRequest {
             Err(e) => {
                 if let StorageError::NotFound(_) = e {
                     if !roaming::is_enabled() {
-                        return Err(anyhow::Error::new(e));
+                        warn!(dev_eui = %jr.dev_eui, "Unknown device");
+                        return Err(anyhow::Error::new(Error::Abort));
                     }
 
                     info!(dev_eui = %jr.dev_eui, join_eui = %jr.join_eui, "Unknown device, trying passive-roaming activation");
