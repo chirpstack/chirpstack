@@ -1,3 +1,4 @@
+pub use prost::Message;
 #[cfg(feature = "api")]
 pub mod api;
 pub mod common;
