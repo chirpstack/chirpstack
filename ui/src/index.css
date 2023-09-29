@@ -22,7 +22,7 @@
   float: right;
 }
 
-.layout-header .actions > div {
+.layout-header .actions>div {
   display: inline;
   padding-left: 24px;
 }
@@ -46,7 +46,7 @@
   margin-top: 65px;
 }
 
-.layout-content .content-header > * {
+.layout-content .content-header>* {
   float: right;
 }
 
@@ -67,14 +67,18 @@ pre {
   margin: 0px;
 }
 
-.chart-doughtnut {
-  max-width: 350;
+.chart-doughnut {
+  max-width: 350px;
   padding: 0;
   margin: auto;
   display: block;
 }
 
-.dashboard-chart > .ant-card-body {
+.chart-doughnut>canvas {
+  width: 100vh;
+}
+
+.dashboard-chart>.ant-card-body {
   height: 300px;
 }
 

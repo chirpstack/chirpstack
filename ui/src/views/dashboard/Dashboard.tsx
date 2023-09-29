@@ -110,12 +110,16 @@ function DevicesActiveInactive({ summary }: { summary?: GetDevicesSummaryRespons
   };
 
   const options: {
-    animation: false;
+    animation: boolean;
+    responsive: boolean;
+    maintainAspectRatio: boolean;
   } = {
     animation: false,
+    responsive: true,
+    maintainAspectRatio: false,
   };
 
-  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
 }
 
 function GatewaysActiveInactive({ summary }: { summary?: GetGatewaysSummaryResponse }) {
@@ -137,12 +141,16 @@ function GatewaysActiveInactive({ summary }: { summary?: GetGatewaysSummaryRespo
   };
 
   const options: {
-    animation: false;
+    animation: boolean;
+    responsive: boolean;
+    maintainAspectRatio: boolean;
   } = {
     animation: false,
+    responsive: true,
+    maintainAspectRatio: false,
   };
 
-  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
 }
 
 function DevicesDataRates({ summary }: { summary?: GetDevicesSummaryResponse }) {
@@ -193,12 +201,16 @@ function DevicesDataRates({ summary }: { summary?: GetDevicesSummaryResponse }) 
   }
 
   const options: {
-    animation: false;
+    animation: boolean;
+    responsive: boolean;
+    maintainAspectRatio: boolean;
   } = {
     animation: false,
+    responsive: true,
+    maintainAspectRatio: false,
   };
 
-  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
 }
 
 function Dashboard() {

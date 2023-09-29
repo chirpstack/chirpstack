@@ -115,12 +115,16 @@ function GatewaysActiveInactive(props: GatewayProps) {
   };
 
   const options: {
-    animation: false;
+    animation: boolean;
+    responsive: boolean;
+    maintainAspectRatio: boolean;
   } = {
     animation: false,
+    responsive: true,
+    maintainAspectRatio: false,
   };
 
-  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
 }
 
 interface DeviceProps {
@@ -148,12 +152,16 @@ function DevicesActiveInactive(props: DeviceProps) {
   };
 
   const options: {
-    animation: false;
+    animation: boolean;
+    responsive: boolean;
+    maintainAspectRatio: boolean;
   } = {
     animation: false,
+    responsive: true,
+    maintainAspectRatio: false,
   };
 
-  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
 }
 
 function DevicesDataRates(props: DeviceProps) {
@@ -204,12 +212,16 @@ function DevicesDataRates(props: DeviceProps) {
   }
 
   const options: {
-    animation: false;
+    animation: boolean;
+    responsive: boolean;
+    maintainAspectRatio: boolean;
   } = {
     animation: false,
+    responsive: true,
+    maintainAspectRatio: false,
   };
 
-  return <Doughnut data={data} options={options} className="chart-doughtnut" />;
+  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
 }
 
 function TenantDashboard({ tenant }: { tenant: Tenant }) {
