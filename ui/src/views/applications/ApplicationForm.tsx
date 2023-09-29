@@ -1,6 +1,8 @@
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import { Form, Input, Button } from "antd";
 
+import { onFinishFailed } from "../helpers";
+
 interface IProps {
   initialValues: Application;
   onFinish: (obj: Application) => void;
@@ -21,7 +23,7 @@ function ApplicationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
         <Input disabled={props.disabled} />
       </Form.Item>

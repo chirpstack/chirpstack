@@ -8,6 +8,7 @@ import { CodecRuntime, Measurement, MeasurementKind } from "@chirpstack/chirpsta
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
+import { onFinishFailed } from "../helpers";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import CodeEditor from "../../components/CodeEditor";
 
@@ -117,7 +118,7 @@ function DeviceProfileTemplateForm(props: IProps) {
   const adrOptions = adrAlgorithms.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
       <Tabs>
         <Tabs.TabPane tab="General" key="1">
           <Form.Item

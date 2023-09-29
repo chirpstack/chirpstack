@@ -2,6 +2,8 @@ import { Form, Input, Button, Typography } from "antd";
 
 import { ThingsBoardIntegration } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
+import { onFinishFailed } from "../../helpers";
+
 interface IProps {
   initialValues: ThingsBoardIntegration;
   onFinish: (obj: ThingsBoardIntegration) => void;
@@ -19,7 +21,7 @@ function ThingsBoardIntegrationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item
         label="ThingsBoard server"
         name="server"

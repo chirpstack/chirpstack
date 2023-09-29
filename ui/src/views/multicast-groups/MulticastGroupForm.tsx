@@ -10,7 +10,7 @@ import {
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
-import { getEnumName } from "../helpers";
+import { getEnumName, onFinishFailed } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
 import AesKeyInput from "../../components/AesKeyInput";
 import DevAddrInput from "../../components/DevAddrInput";
@@ -63,7 +63,7 @@ function MulticastGroupForm(props: IProps) {
     .map(v => <Select.Option value={v}>{getEnumName(Region, v).replace("_", "-")}</Select.Option>);
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
       <Form.Item label="Multicast-group name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
         <Input disabled={props.disabled} />
       </Form.Item>

@@ -3,6 +3,8 @@ import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { HttpIntegration, Encoding } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
+import { onFinishFailed } from "../../helpers";
+
 interface IProps {
   initialValues: HttpIntegration;
   onFinish: (obj: HttpIntegration) => void;
@@ -26,7 +28,7 @@ function HttpIntegrationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item
         label="Payload encoding"
         name="encoding"

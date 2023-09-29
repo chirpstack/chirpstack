@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card, notification } from "antd";
+import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import {
@@ -24,7 +24,7 @@ import {
   DeviceProfileTemplate,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
 
-import { getEnumName } from "../helpers";
+import { getEnumName, onFinishFailed } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
@@ -303,14 +303,6 @@ function DeviceProfileForm(props: IProps) {
     dp.setAutoDetectMeasurements(v.autoDetectMeasurements);
 
     props.onFinish(dp);
-  };
-
-  const onFinishFailed = () => {
-    notification.error({
-      message: "Validation errors",
-      description: "Please inspect input fields for errors",
-      duration: 30,
-    });
   };
 
   const onSupportsOtaaChange = (checked: boolean) => {

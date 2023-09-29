@@ -1,5 +1,7 @@
 import { Form, Input, Button, notification } from "antd";
 
+import { onFinishFailed } from "../helpers";
+
 interface FormValues {
   password: string;
   passwordConfirm: string;
@@ -22,7 +24,7 @@ function PasswordForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" onFinish={onFinish}>
+    <Form layout="vertical" onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item label="Password" name="password" rules={[{ required: true, message: "Please enter a password!" }]}>
         <Input type="password" />
       </Form.Item>

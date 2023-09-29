@@ -6,6 +6,7 @@ import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Location } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { Gateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
+import { onFinishFailed } from "../helpers";
 import EuiInput from "../../components/EuiInput";
 import Map, { Marker } from "../../components/Map";
 import LocationStore from "../../stores/LocationStore";
@@ -90,7 +91,7 @@ function GatewayForm(props: IProps) {
   const location: [number, number] = [latValue, lonValue];
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
       <Tabs>
         <Tabs.TabPane tab="General" key="1">
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>

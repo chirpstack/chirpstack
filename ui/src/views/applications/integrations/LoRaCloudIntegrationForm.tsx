@@ -8,6 +8,8 @@ import {
   LoraCloudModemGeolocationServices,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
+import { onFinishFailed } from "../../helpers";
+
 interface IProps {
   initialValues: LoraCloudIntegration;
   onFinish: (obj: LoraCloudIntegration) => void;
@@ -85,7 +87,7 @@ function LoRaCloudIntegrationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Tabs>
         <Tabs.TabPane tab="Modem & Geolocation Services" key="1">
           <Form.Item

@@ -2,6 +2,8 @@ import { Form, Input, Button } from "antd";
 
 import { PilotThingsIntegration } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
+import { onFinishFailed } from "../../helpers";
+
 interface IProps {
   initialValues: PilotThingsIntegration;
   onFinish: (obj: PilotThingsIntegration) => void;
@@ -20,7 +22,7 @@ function PilotThingsIntegrationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item
         label="Pilot Things server"
         name="server"

@@ -17,6 +17,7 @@ import {
   DeviceQueueItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
+import { onFinishFailed } from "../helpers";
 import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import CodeEditor from "../../components/CodeEditor";
@@ -157,7 +158,7 @@ function DeviceQueue(props: IProps) {
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Card title="Enqueue">
-        <Form layout="horizontal" onFinish={onEnqueue} form={form} initialValues={{ fPort: 1 }}>
+        <Form layout="horizontal" onFinish={onEnqueue} onFinishFailed={onFinishFailed} form={form} initialValues={{ fPort: 1 }}>
           <Row>
             <Space direction="horizontal" style={{ width: "100%" }} size="large">
               <Form.Item name="confirmed" label="Confirmed" valuePropName="checked">

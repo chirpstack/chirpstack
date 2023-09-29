@@ -4,6 +4,8 @@ import { Form, Input, AutoComplete, Button, Row, Col, Switch } from "antd";
 
 import { IftttIntegration } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
+import { onFinishFailed } from "../../helpers";
+
 interface IProps {
   measurementKeys: string[];
   initialValues: IftttIntegration;
@@ -41,7 +43,7 @@ function IftttIntegrationForm(props: IProps) {
   });
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item
         label="Key"
         name="key"

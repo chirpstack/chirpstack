@@ -19,6 +19,8 @@ import AesKeyInput from "../../components/AesKeyInput";
 import DevAddrInput from "../../components/DevAddrInput";
 import DeviceStore from "../../stores/DeviceStore";
 
+import { onFinishFailed } from "../helpers";
+
 interface FormProps {
   disabled: boolean;
   initialValues: DeviceActivationPb;
@@ -46,7 +48,7 @@ function LW10DeviceActivationForm(props: FormProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
       <DevAddrInput
         label="Device address"
         name="devAddr"
@@ -107,7 +109,7 @@ function LW11DeviceActivationForm(props: FormProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
       <DevAddrInput
         label="Device address"
         name="devAddr"

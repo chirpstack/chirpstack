@@ -2,6 +2,8 @@ import { Form, Input, Button, Select } from "antd";
 
 import { GcpPubSubIntegration, Encoding } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
+import { onFinishFailed } from "../../helpers";
+
 interface IProps {
   initialValues: GcpPubSubIntegration;
   onFinish: (obj: GcpPubSubIntegration) => void;
@@ -22,7 +24,7 @@ function GcpPubSubIntegrationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item
         label="Payload encoding"
         name="encoding"

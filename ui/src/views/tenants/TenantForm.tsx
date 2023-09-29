@@ -2,6 +2,8 @@ import { Form, Input, InputNumber, Switch, Row, Col, Button } from "antd";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
+import { onFinishFailed } from "../helpers";
+
 interface IProps {
   initialValues: Tenant;
   onFinish: (obj: Tenant) => void;
@@ -26,7 +28,7 @@ function TenantForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
         <Input disabled={props.disabled} />
       </Form.Item>

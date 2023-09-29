@@ -2,6 +2,8 @@ import { Form, Input, Button, Select } from "antd";
 
 import { AzureServiceBusIntegration, Encoding } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
+import { onFinishFailed } from "../../helpers";
+
 interface IProps {
   initialValues: AzureServiceBusIntegration;
   onFinish: (obj: AzureServiceBusIntegration) => void;
@@ -21,7 +23,7 @@ function AzureServiceBusIntegrationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item
         label="Payload encoding"
         name="encoding"

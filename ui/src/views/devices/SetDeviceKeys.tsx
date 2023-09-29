@@ -17,6 +17,7 @@ import {
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { MacVersion } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
+import { onFinishFailed } from "../helpers";
 import AesKeyInput from "../../components/AesKeyInput";
 import DeviceStore from "../../stores/DeviceStore";
 
@@ -41,7 +42,7 @@ function LW10DeviceKeysForm(props: FormProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
       <AesKeyInput
         label="Application key"
         name="nwkKey"
@@ -73,7 +74,7 @@ function LW11DeviceKeysForm(props: FormProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
       <AesKeyInput
         label="Application key"
         tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
@@ -151,7 +152,7 @@ function SetDeviceKeys(props: IProps) {
   const flushDevNonces = () => {
     let req = new FlushDevNoncesRequest();
     req.setDevEui(props.device.getDevEui());
-    DeviceStore.flushDevNonces(req, () => {});
+    DeviceStore.flushDevNonces(req, () => { });
   };
 
   if (!deviceKeysRequested) {

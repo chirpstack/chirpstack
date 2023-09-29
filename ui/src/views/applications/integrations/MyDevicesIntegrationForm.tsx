@@ -4,6 +4,8 @@ import { Form, Input, Button, Select } from "antd";
 
 import { MyDevicesIntegration } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
+import { onFinishFailed } from "../../helpers";
+
 interface IProps {
   initialValues: MyDevicesIntegration;
   onFinish: (obj: MyDevicesIntegration) => void;
@@ -36,7 +38,7 @@ function MyDevicesIntegrationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item
         label="Select myDevices endpoint"
         name="endpoint"

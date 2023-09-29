@@ -2,6 +2,8 @@ import { Form, Input, Switch, Row, Col, Button } from "antd";
 
 import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
+import { onFinishFailed } from "../helpers";
+
 interface IProps {
   initialValues: User;
   onFinish: (obj: User, password: string) => void;
@@ -27,7 +29,7 @@ function UserForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item label="Email" name="email" rules={[{ required: true, message: "Please enter an email address!" }]}>
         <Input />
       </Form.Item>

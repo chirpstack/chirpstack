@@ -3,6 +3,8 @@ import { Form, Input, Switch, Row, Col, Button } from "antd";
 
 import { TenantUser } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
+import { onFinishFailed } from "../helpers";
+
 interface IProps {
   initialValues: TenantUser;
   onFinish: (obj: TenantUser) => void;
@@ -36,7 +38,7 @@ function TenantUserForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <Form.Item
         label="Email (of existing user)"
         tooltip="An user without additional permissions will be able to see all resources under this tenant and will be able to send and receive device payloads."

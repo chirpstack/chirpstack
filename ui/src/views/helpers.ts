@@ -1,3 +1,4 @@
+import { notification } from "antd";
 import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
 export function formatMacVersion(m: MacVersion) {
@@ -50,3 +51,11 @@ export function getEnumName(enums: { [key: number]: string }, index: number) {
   }
   return "";
 }
+
+export function onFinishFailed() {
+  notification.error({
+    message: "Validation errors",
+    description: "Please inspect input fields for errors",
+    duration: 3,
+  });
+};
