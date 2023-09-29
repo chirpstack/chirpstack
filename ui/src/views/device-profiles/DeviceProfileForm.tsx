@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card } from "antd";
+import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card, notification } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import {
@@ -305,6 +305,14 @@ function DeviceProfileForm(props: IProps) {
     props.onFinish(dp);
   };
 
+  const onFinishFailed = () => {
+    notification.error({
+      message: "Validation errors",
+      description: "Please inspect input fields for errors",
+      duration: 30,
+    });
+  };
+
   const onSupportsOtaaChange = (checked: boolean) => {
     setSupportsOtaa(checked);
   };
@@ -401,7 +409,7 @@ function DeviceProfileForm(props: IProps) {
   );
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} form={form}>
+    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
       <TemplateModal visible={templateModalVisible} onOk={onTemplateModalOk} onCancel={onTemplateModalCancel} />
       <Tabs tabBarExtraContent={operations} activeKey={tabActive} onChange={onTabChange}>
         <Tabs.TabPane tab="General" key="1" forceRender>
