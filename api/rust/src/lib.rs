@@ -1,4 +1,4 @@
-pub use prost::Message;
+pub use prost;
 #[cfg(feature = "api")]
 pub mod api;
 pub mod common;
