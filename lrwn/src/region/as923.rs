@@ -203,7 +203,73 @@ impl Configuration {
                             (
                                 MacVersion::Latest,
                                 [(
-                                    Revision::Latest, // RP002-1.0.0, RP002-1.0.1, RP002-1.02
+                                    Revision::RP002_1_0_0, // RP002-1.0.0
+                                    [
+                                        (0, MaxPayloadSize { m: 0, n: 0 }),
+                                        (1, MaxPayloadSize { m: 0, n: 0 }),
+                                        (2, MaxPayloadSize { m: 19, n: 11 }),
+                                        (3, MaxPayloadSize { m: 61, n: 53 }),
+                                        (4, MaxPayloadSize { m: 133, n: 125 }),
+                                        (5, MaxPayloadSize { m: 230, n: 222 }),
+                                        (6, MaxPayloadSize { m: 230, n: 222 }),
+                                        (7, MaxPayloadSize { m: 230, n: 222 }),
+                                    ]
+                                    .iter()
+                                    .cloned()
+                                    .collect(),
+                                )]
+                                .iter()
+                                .cloned()
+                                .collect(),
+                            ),
+                            (
+                                MacVersion::Latest,
+                                [(
+                                    Revision::RP002_1_0_1, // RP002-1.0.1
+                                    [
+                                        (0, MaxPayloadSize { m: 0, n: 0 }),
+                                        (1, MaxPayloadSize { m: 0, n: 0 }),
+                                        (2, MaxPayloadSize { m: 19, n: 11 }),
+                                        (3, MaxPayloadSize { m: 61, n: 53 }),
+                                        (4, MaxPayloadSize { m: 133, n: 125 }),
+                                        (5, MaxPayloadSize { m: 230, n: 222 }),
+                                        (6, MaxPayloadSize { m: 230, n: 222 }),
+                                        (7, MaxPayloadSize { m: 230, n: 222 }),
+                                    ]
+                                    .iter()
+                                    .cloned()
+                                    .collect(),
+                                )]
+                                .iter()
+                                .cloned()
+                                .collect(),
+                            ),
+                            (
+                                MacVersion::Latest,
+                                [(
+                                    Revision::RP002_1_0_2, // RP002-1.0.2
+                                    [
+                                        (0, MaxPayloadSize { m: 0, n: 0 }),
+                                        (1, MaxPayloadSize { m: 0, n: 0 }),
+                                        (2, MaxPayloadSize { m: 19, n: 11 }),
+                                        (3, MaxPayloadSize { m: 61, n: 53 }),
+                                        (4, MaxPayloadSize { m: 133, n: 125 }),
+                                        (5, MaxPayloadSize { m: 230, n: 222 }),
+                                        (6, MaxPayloadSize { m: 230, n: 222 }),
+                                        (7, MaxPayloadSize { m: 230, n: 222 }),
+                                    ]
+                                    .iter()
+                                    .cloned()
+                                    .collect(),
+                                )]
+                                .iter()
+                                .cloned()
+                                .collect(),
+                            ),
+                            (
+                                MacVersion::Latest,
+                                [(
+                                    Revision::Latest, // RP002-1.0.3
                                     [
                                         (0, MaxPayloadSize { m: 0, n: 0 }),
                                         (1, MaxPayloadSize { m: 0, n: 0 }),
@@ -466,9 +532,9 @@ impl Configuration {
                                         (2, MaxPayloadSize { m: 19, n: 11 }),
                                         (3, MaxPayloadSize { m: 61, n: 53 }),
                                         (4, MaxPayloadSize { m: 133, n: 125 }),
-                                        (5, MaxPayloadSize { m: 230, n: 222 }),
-                                        (6, MaxPayloadSize { m: 230, n: 222 }),
-                                        (7, MaxPayloadSize { m: 230, n: 222 }),
+                                        (5, MaxPayloadSize { m: 250, n: 242 }),
+                                        (6, MaxPayloadSize { m: 250, n: 242 }),
+                                        (7, MaxPayloadSize { m: 250, n: 242 }),
                                     ]
                                     .iter()
                                     .cloned()
@@ -488,9 +554,9 @@ impl Configuration {
                                         (2, MaxPayloadSize { m: 19, n: 11 }),
                                         (3, MaxPayloadSize { m: 61, n: 53 }),
                                         (4, MaxPayloadSize { m: 133, n: 125 }),
-                                        (5, MaxPayloadSize { m: 230, n: 222 }),
-                                        (6, MaxPayloadSize { m: 230, n: 222 }),
-                                        (7, MaxPayloadSize { m: 230, n: 222 }),
+                                        (5, MaxPayloadSize { m: 250, n: 242 }),
+                                        (6, MaxPayloadSize { m: 250, n: 242 }),
+                                        (7, MaxPayloadSize { m: 250, n: 242 }),
                                     ]
                                     .iter()
                                     .cloned()
@@ -510,9 +576,9 @@ impl Configuration {
                                         (2, MaxPayloadSize { m: 19, n: 11 }),
                                         (3, MaxPayloadSize { m: 61, n: 53 }),
                                         (4, MaxPayloadSize { m: 133, n: 125 }),
-                                        (5, MaxPayloadSize { m: 230, n: 222 }),
-                                        (6, MaxPayloadSize { m: 230, n: 222 }),
-                                        (7, MaxPayloadSize { m: 230, n: 222 }),
+                                        (5, MaxPayloadSize { m: 250, n: 242 }),
+                                        (6, MaxPayloadSize { m: 250, n: 242 }),
+                                        (7, MaxPayloadSize { m: 250, n: 242 }),
                                     ]
                                     .iter()
                                     .cloned()
@@ -532,9 +598,9 @@ impl Configuration {
                                         (2, MaxPayloadSize { m: 19, n: 11 }),
                                         (3, MaxPayloadSize { m: 61, n: 53 }),
                                         (4, MaxPayloadSize { m: 133, n: 125 }),
-                                        (5, MaxPayloadSize { m: 230, n: 222 }),
-                                        (6, MaxPayloadSize { m: 230, n: 222 }),
-                                        (7, MaxPayloadSize { m: 230, n: 222 }),
+                                        (5, MaxPayloadSize { m: 250, n: 242 }),
+                                        (6, MaxPayloadSize { m: 250, n: 242 }),
+                                        (7, MaxPayloadSize { m: 250, n: 242 }),
                                     ]
                                     .iter()
                                     .cloned()
