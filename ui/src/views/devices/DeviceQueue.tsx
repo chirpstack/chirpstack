@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { Struct } from "google-protobuf/google/protobuf/struct_pb";
 
-import { notification } from "antd";
+import { Switch, notification } from "antd";
 import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Checkbox, Popconfirm } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
@@ -28,6 +28,7 @@ interface IProps {
 
 function DeviceQueue(props: IProps) {
   const [refreshCounter, setRefreshCounter] = useState<number>(0);
+  const [isEncrypted, setIsEncrypted] = useState<boolean>(false);
   const [form] = Form.useForm();
 
   const columns: ColumnsType<DeviceQueueItem.AsObject> = [
@@ -38,7 +39,7 @@ function DeviceQueue(props: IProps) {
       width: 350,
     },
     {
-      title: "Is pending",
+      title: "Pending",
       dataIndex: "isPending",
       key: "isPending",
       width: 100,
@@ -51,12 +52,25 @@ function DeviceQueue(props: IProps) {
       },
     },
     {
+      title: "Encrypted",
+      dataIndex: "isEncrypted",
+      key: "isEncrypted",
+      width: 100,
+      render: (text, record) => {
+        if (record.isEncrypted) {
+          return "yes";
+        } else {
+          return "no";
+        }
+      },
+    },
+    {
       title: "Frame-counter",
       dataIndex: "fCntDown",
       key: "fCntDown",
       width: 200,
       render: (text, record) => {
-        if (record.isPending === true) {
+        if (record.isPending === true || record.isEncrypted === true) {
           return record.fCntDown;
         } else {
           return "";
@@ -121,6 +135,8 @@ function DeviceQueue(props: IProps) {
     item.setDevEui(props.device.getDevEui());
     item.setFPort(values.fPort);
     item.setConfirmed(values.confirmed);
+    item.setIsEncrypted(values.isEncrypted);
+    item.setFCntDown(values.fCntDown);
 
     if (values.hex !== undefined) {
       item.setData(new Uint8Array(Buffer.from(values.hex, "hex")));
@@ -151,6 +167,7 @@ function DeviceQueue(props: IProps) {
 
     DeviceStore.enqueue(req, _ => {
       form.resetFields();
+      setIsEncrypted(false);
       refreshQueue();
     });
   };
@@ -162,11 +179,26 @@ function DeviceQueue(props: IProps) {
           <Row>
             <Space direction="horizontal" style={{ width: "100%" }} size="large">
               <Form.Item name="confirmed" label="Confirmed" valuePropName="checked">
-                <Checkbox />
+                <Switch />
               </Form.Item>
               <Form.Item name="fPort" label="FPort">
                 <InputNumber min={1} max={254} />
               </Form.Item>
+              <Form.Item
+                name="isEncrypted"
+                label="Is encrypted"
+                valuePropName="checked"
+                tooltip="Only enable this in case the payload that you would like to enqueue has already been encrypted. In this case you also must enter the downlink frame-counter which has been used for the encryption."
+              >
+                <Switch onChange={setIsEncrypted} />
+              </Form.Item>
+              {isEncrypted && (<Form.Item
+                name="fCntDown"
+                label="Downlink frame-counter used for encryption"
+                rules={[{ required: true, message: "Please enter a downlink frame-counter!" }]}
+              >
+                <InputNumber min={0} />
+              </Form.Item>)}
             </Space>
           </Row>
           <Tabs defaultActiveKey="1">

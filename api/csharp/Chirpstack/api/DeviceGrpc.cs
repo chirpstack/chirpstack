@@ -106,6 +106,10 @@ namespace Chirpstack.Api {
     static readonly grpc::Marshaller<global::Chirpstack.Api.GetDeviceQueueItemsRequest> __Marshaller_api_GetDeviceQueueItemsRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetDeviceQueueItemsRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::Chirpstack.Api.GetDeviceQueueItemsResponse> __Marshaller_api_GetDeviceQueueItemsResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetDeviceQueueItemsResponse.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::Chirpstack.Api.GetDeviceNextFCntDownRequest> __Marshaller_api_GetDeviceNextFCntDownRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetDeviceNextFCntDownRequest.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::Chirpstack.Api.GetDeviceNextFCntDownResponse> __Marshaller_api_GetDeviceNextFCntDownResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetDeviceNextFCntDownResponse.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Method<global::Chirpstack.Api.CreateDeviceRequest, global::Google.Protobuf.WellKnownTypes.Empty> __Method_Create = new grpc::Method<global::Chirpstack.Api.CreateDeviceRequest, global::Google.Protobuf.WellKnownTypes.Empty>(
@@ -258,6 +262,14 @@ namespace Chirpstack.Api {
         "GetQueue",
         __Marshaller_api_GetDeviceQueueItemsRequest,
         __Marshaller_api_GetDeviceQueueItemsResponse);
+
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::Chirpstack.Api.GetDeviceNextFCntDownRequest, global::Chirpstack.Api.GetDeviceNextFCntDownResponse> __Method_GetNextFCntDown = new grpc::Method<global::Chirpstack.Api.GetDeviceNextFCntDownRequest, global::Chirpstack.Api.GetDeviceNextFCntDownResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetNextFCntDown",
+        __Marshaller_api_GetDeviceNextFCntDownRequest,
+        __Marshaller_api_GetDeviceNextFCntDownResponse);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -499,6 +511,20 @@ namespace Chirpstack.Api {
       /// <returns>The response to send back to the client (wrapped by a task).</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
       public virtual global::System.Threading.Tasks.Task<global::Chirpstack.Api.GetDeviceQueueItemsResponse> GetQueue(global::Chirpstack.Api.GetDeviceQueueItemsRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      /// <summary>
+      /// GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+      /// downlinks. The difference with the DeviceActivation f_cont_down is that
+      /// this method takes potential existing queue-items into account.
+      /// </summary>
+      /// <param name="request">The request received from the client.</param>
+      /// <param name="context">The context of the server-side call handler being invoked.</param>
+      /// <returns>The response to send back to the client (wrapped by a task).</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::System.Threading.Tasks.Task<global::Chirpstack.Api.GetDeviceNextFCntDownResponse> GetNextFCntDown(global::Chirpstack.Api.GetDeviceNextFCntDownRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -1468,6 +1494,62 @@ namespace Chirpstack.Api {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetQueue, null, options, request);
       }
+      /// <summary>
+      /// GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+      /// downlinks. The difference with the DeviceActivation f_cont_down is that
+      /// this method takes potential existing queue-items into account.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::Chirpstack.Api.GetDeviceNextFCntDownResponse GetNextFCntDown(global::Chirpstack.Api.GetDeviceNextFCntDownRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetNextFCntDown(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+      /// downlinks. The difference with the DeviceActivation f_cont_down is that
+      /// this method takes potential existing queue-items into account.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::Chirpstack.Api.GetDeviceNextFCntDownResponse GetNextFCntDown(global::Chirpstack.Api.GetDeviceNextFCntDownRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetNextFCntDown, null, options, request);
+      }
+      /// <summary>
+      /// GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+      /// downlinks. The difference with the DeviceActivation f_cont_down is that
+      /// this method takes potential existing queue-items into account.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::Chirpstack.Api.GetDeviceNextFCntDownResponse> GetNextFCntDownAsync(global::Chirpstack.Api.GetDeviceNextFCntDownRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetNextFCntDownAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+      /// downlinks. The difference with the DeviceActivation f_cont_down is that
+      /// this method takes potential existing queue-items into account.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::Chirpstack.Api.GetDeviceNextFCntDownResponse> GetNextFCntDownAsync(global::Chirpstack.Api.GetDeviceNextFCntDownRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetNextFCntDown, null, options, request);
+      }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
       protected override DeviceServiceClient NewInstance(ClientBaseConfiguration configuration)
@@ -1500,7 +1582,8 @@ namespace Chirpstack.Api {
           .AddMethod(__Method_GetLinkMetrics, serviceImpl.GetLinkMetrics)
           .AddMethod(__Method_Enqueue, serviceImpl.Enqueue)
           .AddMethod(__Method_FlushQueue, serviceImpl.FlushQueue)
-          .AddMethod(__Method_GetQueue, serviceImpl.GetQueue).Build();
+          .AddMethod(__Method_GetQueue, serviceImpl.GetQueue)
+          .AddMethod(__Method_GetNextFCntDown, serviceImpl.GetNextFCntDown).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the service binding logic.
@@ -1529,6 +1612,7 @@ namespace Chirpstack.Api {
       serviceBinder.AddMethod(__Method_Enqueue, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.EnqueueDeviceQueueItemRequest, global::Chirpstack.Api.EnqueueDeviceQueueItemResponse>(serviceImpl.Enqueue));
       serviceBinder.AddMethod(__Method_FlushQueue, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.FlushDeviceQueueRequest, global::Google.Protobuf.WellKnownTypes.Empty>(serviceImpl.FlushQueue));
       serviceBinder.AddMethod(__Method_GetQueue, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.GetDeviceQueueItemsRequest, global::Chirpstack.Api.GetDeviceQueueItemsResponse>(serviceImpl.GetQueue));
+      serviceBinder.AddMethod(__Method_GetNextFCntDown, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.GetDeviceNextFCntDownRequest, global::Chirpstack.Api.GetDeviceNextFCntDownResponse>(serviceImpl.GetNextFCntDown));
     }
 
   }

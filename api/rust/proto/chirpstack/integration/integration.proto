@@ -55,6 +55,9 @@ enum LogCode {
 
   // Relay new end-device.
   RELAY_NEW_END_DEVICE = 9;
+
+  // Downlink frame-counter.
+  F_CNT_DOWN = 10;
 }
 
 // Device information.
@@ -111,6 +114,15 @@ message UplinkRelayRxInfo {
   uint32 wor_channel = 6;
 }
 
+// Join-Server context.
+message JoinServerContext {
+  // Session-key ID.
+  string session_key_id = 1;
+
+  // AppSKey envelope.
+  common.KeyEnvelope app_s_key = 2;
+}
+
 // UplinkEvent is the message sent when an uplink payload has been received.
 message UplinkEvent {
   // Deduplication ID (UUID).
@@ -155,6 +167,12 @@ message UplinkEvent {
 
   // Relay info.
   UplinkRelayRxInfo relay_rx_info = 14;
+
+  // Join-Server context.
+  // A non-empty value indicatest that ChirpStack does not have access to
+  // the AppSKey and that the encryption / decryption of the payloads is
+  // the responsibility of the end-application.
+  JoinServerContext join_server_context = 15;
 }
 
 // JoinEvent is the message sent when a device joined the network.
@@ -174,6 +192,12 @@ message JoinEvent {
 
   // Relay info.
   UplinkRelayRxInfo relay_rx_info = 5;
+
+  // Join-Server context.
+  // A non-empty value indicatest that ChirpStack does not have access to
+  // the AppSKey and that the encryption / decryption of the payloads is
+  // the responsibility of the end-application.
+  JoinServerContext join_server_context = 6;
 }
 
 // AckEvent is the message sent when a confirmation on a confirmed downlink

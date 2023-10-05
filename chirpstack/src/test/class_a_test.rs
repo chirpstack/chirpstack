@@ -1654,6 +1654,334 @@ async fn test_lorawan_10_uplink() {
 }
 
 #[tokio::test]
+async fn test_lorawan_10_end_to_end_enc() {
+    let _guard = test::prepare().await;
+
+    let t = tenant::create(tenant::Tenant {
+        name: "tenant".into(),
+        can_have_gateways: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let gw = gateway::create(gateway::Gateway {
+        name: "gateway".into(),
+        tenant_id: t.id.clone(),
+        gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let app = application::create(application::Application {
+        name: "app".into(),
+        tenant_id: t.id.clone(),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dp = device_profile::create(device_profile::DeviceProfile {
+        name: "dp".into(),
+        tenant_id: t.id.clone(),
+        region: lrwn::region::CommonName::EU868,
+        mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
+        reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
+        supports_otaa: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dev = device::create(device::Device {
+        name: "device".into(),
+        application_id: app.id.clone(),
+        device_profile_id: dp.id.clone(),
+        dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
+        enabled_class: DeviceClass::A,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let mut rx_info = gw::UplinkRxInfo {
+        gateway_id: gw.gateway_id.to_string(),
+        location: Some(Default::default()),
+        ..Default::default()
+    };
+    rx_info
+        .metadata
+        .insert("region_config_id".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
+
+    let mut tx_info = gw::UplinkTxInfo {
+        frequency: 868100000,
+        ..Default::default()
+    };
+    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+
+    let ds_sess_key_id = internal::DeviceSession {
+        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
+        mac_version: common::MacVersion::Lorawan104.into(),
+        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
+        dev_addr: vec![1, 2, 3, 4],
+        f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        app_s_key: None,
+        js_session_key_id: vec![1, 2, 3],
+        f_cnt_up: 8,
+        n_f_cnt_down: 5,
+        enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
+        rx2_frequency: 869525000,
+        region_config_id: "eu868".into(),
+        ..Default::default()
+    };
+
+    let ds_app_s_key = internal::DeviceSession {
+        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
+        mac_version: common::MacVersion::Lorawan104.into(),
+        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
+        dev_addr: vec![1, 2, 3, 4],
+        f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        app_s_key: Some(common::KeyEnvelope {
+            kek_label: "kek-label".into(),
+            aes_key: vec![1, 2, 3],
+        }),
+        f_cnt_up: 8,
+        n_f_cnt_down: 5,
+        enabled_uplink_channel_indices: vec![0, 1, 2],
+        rx1_delay: 1,
+        rx2_frequency: 869525000,
+        region_config_id: "eu868".into(),
+        ..Default::default()
+    };
+
+    let tests = vec![
+        Test {
+            name: "end-to-end encryption with session key id".into(),
+            device_queue_items: vec![],
+            before_func: None,
+            after_func: None,
+            device_session: Some(ds_sess_key_id.clone()),
+            tx_info: tx_info.clone(),
+            rx_info: rx_info.clone(),
+            phy_payload: lrwn::PhyPayload {
+                mhdr: lrwn::MHDR {
+                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: lrwn::FHDR {
+                        devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                        f_cnt: 10,
+                        ..Default::default()
+                    },
+                    f_port: Some(1),
+                    frm_payload: Some(lrwn::FRMPayload::Raw(vec![1, 2, 3, 4])),
+                }),
+                mic: Some([104, 147, 35, 121]),
+            },
+            assert: vec![assert::uplink_event(integration_pb::UplinkEvent {
+                device_info: Some(integration_pb::DeviceInfo {
+                    tenant_name: t.name.clone(),
+                    tenant_id: t.id.to_string(),
+                    application_name: app.name.clone(),
+                    application_id: app.id.to_string(),
+                    device_profile_name: dp.name.clone(),
+                    device_profile_id: dp.id.to_string(),
+                    device_name: dev.name.clone(),
+                    dev_eui: dev.dev_eui.to_string(),
+                    ..Default::default()
+                }),
+                dev_addr: "01020304".into(),
+                tx_info: Some(tx_info.clone()),
+                rx_info: vec![rx_info.clone()],
+                f_cnt: 10,
+                f_port: 1,
+                dr: 0,
+                data: vec![1, 2, 3, 4],
+                join_server_context: Some(integration_pb::JoinServerContext {
+                    session_key_id: "010203".into(),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            })],
+        },
+        Test {
+            name: "end-to-end encryption with AppSKey".into(),
+            device_queue_items: vec![],
+            before_func: None,
+            after_func: None,
+            device_session: Some(ds_app_s_key.clone()),
+            tx_info: tx_info.clone(),
+            rx_info: rx_info.clone(),
+            phy_payload: lrwn::PhyPayload {
+                mhdr: lrwn::MHDR {
+                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: lrwn::FHDR {
+                        devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                        f_cnt: 10,
+                        ..Default::default()
+                    },
+                    f_port: Some(1),
+                    frm_payload: Some(lrwn::FRMPayload::Raw(vec![1, 2, 3, 4])),
+                }),
+                mic: Some([104, 147, 35, 121]),
+            },
+            assert: vec![assert::uplink_event(integration_pb::UplinkEvent {
+                device_info: Some(integration_pb::DeviceInfo {
+                    tenant_name: t.name.clone(),
+                    tenant_id: t.id.to_string(),
+                    application_name: app.name.clone(),
+                    application_id: app.id.to_string(),
+                    device_profile_name: dp.name.clone(),
+                    device_profile_id: dp.id.to_string(),
+                    device_name: dev.name.clone(),
+                    dev_eui: dev.dev_eui.to_string(),
+                    ..Default::default()
+                }),
+                dev_addr: "01020304".into(),
+                tx_info: Some(tx_info.clone()),
+                rx_info: vec![rx_info.clone()],
+                f_cnt: 10,
+                f_port: 1,
+                dr: 0,
+                data: vec![1, 2, 3, 4],
+                join_server_context: Some(integration_pb::JoinServerContext {
+                    app_s_key: Some(common::KeyEnvelope {
+                        kek_label: "kek-label".into(),
+                        aes_key: vec![1, 2, 3],
+                    }),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            })],
+        },
+        Test {
+            name: "end-to-end encryption using AppSkey + encrypted downlink".into(),
+            device_queue_items: vec![device_queue::DeviceQueueItem {
+                id: Uuid::nil(),
+                dev_eui: dev.dev_eui.clone(),
+                f_port: 1,
+                data: vec![1, 2, 3, 4],
+                f_cnt_down: Some(10),
+                is_encrypted: true,
+                ..Default::default()
+            }],
+            before_func: None,
+            after_func: None,
+            device_session: Some(ds_app_s_key.clone()),
+            tx_info: tx_info.clone(),
+            rx_info: rx_info.clone(),
+            phy_payload: lrwn::PhyPayload {
+                mhdr: lrwn::MHDR {
+                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: lrwn::FHDR {
+                        devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                        f_cnt: 10,
+                        ..Default::default()
+                    },
+                    f_port: Some(1),
+                    frm_payload: Some(lrwn::FRMPayload::Raw(vec![1, 2, 3, 4])),
+                }),
+                mic: Some([104, 147, 35, 121]),
+            },
+            assert: vec![
+                assert::uplink_event(integration_pb::UplinkEvent {
+                    device_info: Some(integration_pb::DeviceInfo {
+                        tenant_name: t.name.clone(),
+                        tenant_id: t.id.to_string(),
+                        application_name: app.name.clone(),
+                        application_id: app.id.to_string(),
+                        device_profile_name: dp.name.clone(),
+                        device_profile_id: dp.id.to_string(),
+                        device_name: dev.name.clone(),
+                        dev_eui: dev.dev_eui.to_string(),
+                        ..Default::default()
+                    }),
+                    dev_addr: "01020304".into(),
+                    tx_info: Some(tx_info.clone()),
+                    rx_info: vec![rx_info.clone()],
+                    f_cnt: 10,
+                    f_port: 1,
+                    dr: 0,
+                    data: vec![1, 2, 3, 4],
+                    join_server_context: Some(integration_pb::JoinServerContext {
+                        app_s_key: Some(common::KeyEnvelope {
+                            kek_label: "kek-label".into(),
+                            aes_key: vec![1, 2, 3],
+                        }),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }),
+                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::downlink_phy_payloads(vec![
+                    lrwn::PhyPayload {
+                        mhdr: lrwn::MHDR {
+                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            major: lrwn::Major::LoRaWANR1,
+                        },
+                        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                            fhdr: lrwn::FHDR {
+                                devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                                f_cnt: 10,
+                                f_ctrl: lrwn::FCtrl {
+                                    adr: true,
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            },
+                            f_port: Some(1),
+                            frm_payload: Some(lrwn::FRMPayload::Raw(vec![1, 2, 3, 4])),
+                        }),
+                        mic: Some([8, 125, 131, 36]),
+                    },
+                    lrwn::PhyPayload {
+                        mhdr: lrwn::MHDR {
+                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            major: lrwn::Major::LoRaWANR1,
+                        },
+                        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                            fhdr: lrwn::FHDR {
+                                devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                                f_cnt: 10,
+                                f_ctrl: lrwn::FCtrl {
+                                    adr: true,
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            },
+                            f_port: Some(1),
+                            frm_payload: Some(lrwn::FRMPayload::Raw(vec![1, 2, 3, 4])),
+                        }),
+                        mic: Some([8, 125, 131, 36]),
+                    },
+                ]),
+            ],
+        },
+    ];
+
+    for tst in &tests {
+        run_test(tst).await;
+    }
+}
+
+#[tokio::test]
 async fn test_lorawan_11_uplink() {
     let _guard = test::prepare().await;
 

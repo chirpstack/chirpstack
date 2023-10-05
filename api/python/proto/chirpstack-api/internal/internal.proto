@@ -31,6 +31,9 @@ message DeviceSession {
   // AppSKey envelope.
   common.KeyEnvelope app_s_key = 8;
 
+  // JS Session Key ID.
+  bytes js_session_key_id = 42;
+
   // Uplink frame-counter.
   uint32 f_cnt_up = 9;
 

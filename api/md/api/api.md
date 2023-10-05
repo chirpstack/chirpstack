@@ -119,6 +119,8 @@
     - [GetDeviceMetricsResponse](#api-GetDeviceMetricsResponse)
     - [GetDeviceMetricsResponse.MetricsEntry](#api-GetDeviceMetricsResponse-MetricsEntry)
     - [GetDeviceMetricsResponse.StatesEntry](#api-GetDeviceMetricsResponse-StatesEntry)
+    - [GetDeviceNextFCntDownRequest](#api-GetDeviceNextFCntDownRequest)
+    - [GetDeviceNextFCntDownResponse](#api-GetDeviceNextFCntDownResponse)
     - [GetDeviceQueueItemsRequest](#api-GetDeviceQueueItemsRequest)
     - [GetDeviceQueueItemsResponse](#api-GetDeviceQueueItemsResponse)
     - [GetDeviceRequest](#api-GetDeviceRequest)
@@ -1841,8 +1843,9 @@ applications.
 | f_port | [uint32](#uint32) |  | FPort (must be &gt; 0). |
 | data | [bytes](#bytes) |  | Data. Or use the json_object field when a codec has been configured. |
 | object | [google.protobuf.Struct](#google-protobuf-Struct) |  | Only use this when a codec has been configured that can encode this object to bytes. |
-| is_pending | [bool](#bool) |  | Is pending. This is set to true when the downlink is pending. |
-| f_cnt_down | [uint32](#uint32) |  | Downlink frame-counter. This is set when the payload has been sent as downlink. |
+| is_pending | [bool](#bool) |  | Is pending. This is set by ChirpStack to true when the downlink is pending (e.g. it has been sent, but a confirmation is still pending). |
+| f_cnt_down | [uint32](#uint32) |  | Downlink frame-counter. Do not set this for plain-text data payloads. It will be automatically set by ChirpStack when the payload has been sent as downlink. |
+| is_encrypted | [bool](#bool) |  | Is encrypted. This must be set to true if the end-application has already encrypted the data payload. In this case, the f_cnt_down field must be set to the corresponding frame-counter which has been used during the encryption. |
 
 
 
@@ -2108,6 +2111,36 @@ applications.
 
 
 
+<a name="api-GetDeviceNextFCntDownRequest"></a>
+
+### GetDeviceNextFCntDownRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dev_eui | [string](#string) |  | Device EUI (EUI64). |
+
+
+
+
+
+
+<a name="api-GetDeviceNextFCntDownResponse"></a>
+
+### GetDeviceNextFCntDownResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| f_cnt_down | [uint32](#uint32) |  | FCntDown. |
+
+
+
+
+
+
 <a name="api-GetDeviceQueueItemsRequest"></a>
 
 ### GetDeviceQueueItemsRequest
@@ -2302,6 +2335,7 @@ DeviceService is the service providing API methods for managing devices.
 | Enqueue | [EnqueueDeviceQueueItemRequest](#api-EnqueueDeviceQueueItemRequest) | [EnqueueDeviceQueueItemResponse](#api-EnqueueDeviceQueueItemResponse) | Enqueue adds the given item to the downlink queue. |
 | FlushQueue | [FlushDeviceQueueRequest](#api-FlushDeviceQueueRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | FlushQueue flushes the downlink device-queue. |
 | GetQueue | [GetDeviceQueueItemsRequest](#api-GetDeviceQueueItemsRequest) | [GetDeviceQueueItemsResponse](#api-GetDeviceQueueItemsResponse) | GetQueue returns the downlink device-queue. |
+| GetNextFCntDown | [GetDeviceNextFCntDownRequest](#api-GetDeviceNextFCntDownRequest) | [GetDeviceNextFCntDownResponse](#api-GetDeviceNextFCntDownResponse) | GetNextFCntDown returns the next FCntDown to use for enqueing encrypted downlinks. The difference with the DeviceActivation f_cont_down is that this method takes potential existing queue-items into account. |
 
  
 

@@ -27,6 +27,7 @@ interface IDeviceServiceService extends grpc.ServiceDefinition<grpc.UntypedServi
   enqueue: grpc.MethodDefinition<api_device_pb.EnqueueDeviceQueueItemRequest, api_device_pb.EnqueueDeviceQueueItemResponse>;
   flushQueue: grpc.MethodDefinition<api_device_pb.FlushDeviceQueueRequest, google_protobuf_empty_pb.Empty>;
   getQueue: grpc.MethodDefinition<api_device_pb.GetDeviceQueueItemsRequest, api_device_pb.GetDeviceQueueItemsResponse>;
+  getNextFCntDown: grpc.MethodDefinition<api_device_pb.GetDeviceNextFCntDownRequest, api_device_pb.GetDeviceNextFCntDownResponse>;
 }
 
 export const DeviceServiceService: IDeviceServiceService;
@@ -51,6 +52,7 @@ export interface IDeviceServiceServer extends grpc.UntypedServiceImplementation 
   enqueue: grpc.handleUnaryCall<api_device_pb.EnqueueDeviceQueueItemRequest, api_device_pb.EnqueueDeviceQueueItemResponse>;
   flushQueue: grpc.handleUnaryCall<api_device_pb.FlushDeviceQueueRequest, google_protobuf_empty_pb.Empty>;
   getQueue: grpc.handleUnaryCall<api_device_pb.GetDeviceQueueItemsRequest, api_device_pb.GetDeviceQueueItemsResponse>;
+  getNextFCntDown: grpc.handleUnaryCall<api_device_pb.GetDeviceNextFCntDownRequest, api_device_pb.GetDeviceNextFCntDownResponse>;
 }
 
 export class DeviceServiceClient extends grpc.Client {
@@ -112,4 +114,7 @@ export class DeviceServiceClient extends grpc.Client {
   getQueue(argument: api_device_pb.GetDeviceQueueItemsRequest, callback: grpc.requestCallback<api_device_pb.GetDeviceQueueItemsResponse>): grpc.ClientUnaryCall;
   getQueue(argument: api_device_pb.GetDeviceQueueItemsRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_device_pb.GetDeviceQueueItemsResponse>): grpc.ClientUnaryCall;
   getQueue(argument: api_device_pb.GetDeviceQueueItemsRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_device_pb.GetDeviceQueueItemsResponse>): grpc.ClientUnaryCall;
+  getNextFCntDown(argument: api_device_pb.GetDeviceNextFCntDownRequest, callback: grpc.requestCallback<api_device_pb.GetDeviceNextFCntDownResponse>): grpc.ClientUnaryCall;
+  getNextFCntDown(argument: api_device_pb.GetDeviceNextFCntDownRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_device_pb.GetDeviceNextFCntDownResponse>): grpc.ClientUnaryCall;
+  getNextFCntDown(argument: api_device_pb.GetDeviceNextFCntDownRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_device_pb.GetDeviceNextFCntDownResponse>): grpc.ClientUnaryCall;
 }

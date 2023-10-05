@@ -149,6 +149,25 @@ pub fn no_uplink_event() -> Validator {
     })
 }
 
+pub fn join_event(join: integration_pb::JoinEvent) -> Validator {
+    Box::new(move || {
+        let join = join.clone();
+        Box::pin(async move {
+            // Integration events are handled async.
+            sleep(Duration::from_millis(100)).await;
+
+            let mut event = mock::get_join_event().await.unwrap();
+
+            assert_ne!("", event.deduplication_id);
+            assert_ne!(None, event.time);
+
+            event.deduplication_id = "".into();
+            event.time = None;
+            assert_eq!(join, event);
+        })
+    })
+}
+
 pub fn uplink_event(up: integration_pb::UplinkEvent) -> Validator {
     Box::new(move || {
         let up = up.clone();

@@ -867,6 +867,9 @@ export class DeviceQueueItem extends jspb.Message {
   getFCntDown(): number;
   setFCntDown(value: number): void;
 
+  getIsEncrypted(): boolean;
+  setIsEncrypted(value: boolean): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceQueueItem.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceQueueItem): DeviceQueueItem.AsObject;
@@ -887,6 +890,7 @@ export namespace DeviceQueueItem {
     object?: google_protobuf_struct_pb.Struct.AsObject,
     isPending: boolean,
     fCntDown: number,
+    isEncrypted: boolean,
   }
 }
 
@@ -1019,6 +1023,46 @@ export class FlushDevNoncesRequest extends jspb.Message {
 export namespace FlushDevNoncesRequest {
   export type AsObject = {
     devEui: string,
+  }
+}
+
+export class GetDeviceNextFCntDownRequest extends jspb.Message {
+  getDevEui(): string;
+  setDevEui(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetDeviceNextFCntDownRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDeviceNextFCntDownRequest): GetDeviceNextFCntDownRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: GetDeviceNextFCntDownRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDeviceNextFCntDownRequest;
+  static deserializeBinaryFromReader(message: GetDeviceNextFCntDownRequest, reader: jspb.BinaryReader): GetDeviceNextFCntDownRequest;
+}
+
+export namespace GetDeviceNextFCntDownRequest {
+  export type AsObject = {
+    devEui: string,
+  }
+}
+
+export class GetDeviceNextFCntDownResponse extends jspb.Message {
+  getFCntDown(): number;
+  setFCntDown(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetDeviceNextFCntDownResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetDeviceNextFCntDownResponse): GetDeviceNextFCntDownResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: GetDeviceNextFCntDownResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetDeviceNextFCntDownResponse;
+  static deserializeBinaryFromReader(message: GetDeviceNextFCntDownResponse, reader: jspb.BinaryReader): GetDeviceNextFCntDownResponse;
+}
+
+export namespace GetDeviceNextFCntDownResponse {
+  export type AsObject = {
+    fCntDown: number,
   }
 }
 

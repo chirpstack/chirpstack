@@ -111,6 +111,11 @@ class DeviceServiceStub(object):
                 request_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceQueueItemsRequest.SerializeToString,
                 response_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceQueueItemsResponse.FromString,
                 )
+        self.GetNextFCntDown = channel.unary_unary(
+                '/api.DeviceService/GetNextFCntDown',
+                request_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceNextFCntDownRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceNextFCntDownResponse.FromString,
+                )
 
 
 class DeviceServiceServicer(object):
@@ -256,6 +261,15 @@ class DeviceServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetNextFCntDown(self, request, context):
+        """GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+        downlinks. The difference with the DeviceActivation f_cont_down is that
+        this method takes potential existing queue-items into account.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DeviceServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -353,6 +367,11 @@ def add_DeviceServiceServicer_to_server(servicer, server):
                     servicer.GetQueue,
                     request_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceQueueItemsRequest.FromString,
                     response_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceQueueItemsResponse.SerializeToString,
+            ),
+            'GetNextFCntDown': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetNextFCntDown,
+                    request_deserializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceNextFCntDownRequest.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_device__pb2.GetDeviceNextFCntDownResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -685,5 +704,22 @@ class DeviceService(object):
         return grpc.experimental.unary_unary(request, target, '/api.DeviceService/GetQueue',
             chirpstack__api_dot_api_dot_device__pb2.GetDeviceQueueItemsRequest.SerializeToString,
             chirpstack__api_dot_api_dot_device__pb2.GetDeviceQueueItemsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetNextFCntDown(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.DeviceService/GetNextFCntDown',
+            chirpstack__api_dot_api_dot_device__pb2.GetDeviceNextFCntDownRequest.SerializeToString,
+            chirpstack__api_dot_api_dot_device__pb2.GetDeviceNextFCntDownResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

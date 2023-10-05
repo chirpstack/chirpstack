@@ -190,6 +190,7 @@ async fn test_fns() {
     });
 
     gateway_backend::set_backend(&"eu868", Box::new(gateway_backend::mock::Backend {})).await;
+    gateway_backend::mock::reset().await;
 
     // Simulate uplink
     uplink::handle_uplink(

@@ -1243,5 +1243,66 @@ proto.api.DeviceServicePromiseClient.prototype.getQueue =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.api.GetDeviceNextFCntDownRequest,
+ *   !proto.api.GetDeviceNextFCntDownResponse>}
+ */
+const methodDescriptor_DeviceService_GetNextFCntDown = new grpc.web.MethodDescriptor(
+  '/api.DeviceService/GetNextFCntDown',
+  grpc.web.MethodType.UNARY,
+  proto.api.GetDeviceNextFCntDownRequest,
+  proto.api.GetDeviceNextFCntDownResponse,
+  /**
+   * @param {!proto.api.GetDeviceNextFCntDownRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.GetDeviceNextFCntDownResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.api.GetDeviceNextFCntDownRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.api.GetDeviceNextFCntDownResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.api.GetDeviceNextFCntDownResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.DeviceServiceClient.prototype.getNextFCntDown =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.DeviceService/GetNextFCntDown',
+      request,
+      metadata || {},
+      methodDescriptor_DeviceService_GetNextFCntDown,
+      callback);
+};
+
+
+/**
+ * @param {!proto.api.GetDeviceNextFCntDownRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.api.GetDeviceNextFCntDownResponse>}
+ *     Promise that resolves to the response
+ */
+proto.api.DeviceServicePromiseClient.prototype.getNextFCntDown =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.DeviceService/GetNextFCntDown',
+      request,
+      metadata || {},
+      methodDescriptor_DeviceService_GetNextFCntDown);
+};
+
+
 module.exports = proto.api;
 

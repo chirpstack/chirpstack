@@ -207,6 +207,28 @@ function deserialize_api_GetDeviceMetricsResponse(buffer_arg) {
   return api_device_pb.GetDeviceMetricsResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_GetDeviceNextFCntDownRequest(arg) {
+  if (!(arg instanceof api_device_pb.GetDeviceNextFCntDownRequest)) {
+    throw new Error('Expected argument of type api.GetDeviceNextFCntDownRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetDeviceNextFCntDownRequest(buffer_arg) {
+  return api_device_pb.GetDeviceNextFCntDownRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_GetDeviceNextFCntDownResponse(arg) {
+  if (!(arg instanceof api_device_pb.GetDeviceNextFCntDownResponse)) {
+    throw new Error('Expected argument of type api.GetDeviceNextFCntDownResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetDeviceNextFCntDownResponse(buffer_arg) {
+  return api_device_pb.GetDeviceNextFCntDownResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_GetDeviceQueueItemsRequest(arg) {
   if (!(arg instanceof api_device_pb.GetDeviceQueueItemsRequest)) {
     throw new Error('Expected argument of type api.GetDeviceQueueItemsRequest');
@@ -564,6 +586,20 @@ getQueue: {
     requestDeserialize: deserialize_api_GetDeviceQueueItemsRequest,
     responseSerialize: serialize_api_GetDeviceQueueItemsResponse,
     responseDeserialize: deserialize_api_GetDeviceQueueItemsResponse,
+  },
+  // GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+// downlinks. The difference with the DeviceActivation f_cont_down is that
+// this method takes potential existing queue-items into account.
+getNextFCntDown: {
+    path: '/api.DeviceService/GetNextFCntDown',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_device_pb.GetDeviceNextFCntDownRequest,
+    responseType: api_device_pb.GetDeviceNextFCntDownResponse,
+    requestSerialize: serialize_api_GetDeviceNextFCntDownRequest,
+    requestDeserialize: deserialize_api_GetDeviceNextFCntDownRequest,
+    responseSerialize: serialize_api_GetDeviceNextFCntDownResponse,
+    responseDeserialize: deserialize_api_GetDeviceNextFCntDownResponse,
   },
 };
 

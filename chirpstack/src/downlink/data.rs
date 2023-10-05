@@ -413,9 +413,16 @@ impl Data {
                     },
                 };
 
-            // The queue item should fit within the max payload size and should not be pending
-            // already.
-            if qi.data.len() <= max_payload_size && !qi.is_pending {
+            // The queue item:
+            // * should fit within the max payload size
+            // * should not be pending
+            // * in case encrypted, should have a valid FCntDown
+            if qi.data.len() <= max_payload_size
+                && !qi.is_pending
+                && !(qi.is_encrypted
+                    && (qi.f_cnt_down.unwrap_or_default() as u32)
+                        < self.device_session.get_a_f_cnt_down())
+            {
                 trace!(id = %qi.id, more_in_queue = more_in_queue, "Found device queue-item for downlink");
                 self.device_queue_item = Some(qi);
                 self.more_device_queue_items = more_in_queue;
@@ -496,6 +503,44 @@ impl Data {
 
                 integration::log_event(self.application.id, &self.device.variables, &pl).await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of max. payload size");
+
+                continue;
+            }
+
+            // Handling encrypted payload with invalid FCntDown
+            if qi.is_encrypted
+                && (qi.f_cnt_down.unwrap_or_default() as u32)
+                    < self.device_session.get_a_f_cnt_down()
+            {
+                device_queue::delete_item(&qi.id)
+                    .await
+                    .context("Delete device queue-item")?;
+
+                let pl = integration_pb::LogEvent {
+                    time: Some(Utc::now().into()),
+                    device_info: Some(device_info.clone()),
+                    level: integration_pb::LogLevel::Error.into(),
+                    code: integration_pb::LogCode::FCntDown.into(),
+                    description: "Device queue-item discarded because the frame-counter is invalid"
+                        .to_string(),
+                    context: [
+                        (
+                            "device_f_cnt_down".to_string(),
+                            self.device_session.get_a_f_cnt_down().to_string(),
+                        ),
+                        (
+                            "queue_item_f_cnt_down".to_string(),
+                            qi.f_cnt_down.unwrap_or_default().to_string(),
+                        ),
+                        ("queue_item_id".to_string(), qi.id.to_string()),
+                    ]
+                    .iter()
+                    .cloned()
+                    .collect(),
+                };
+
+                integration::log_event(self.application.id, &self.device.variables, &pl).await;
+                warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of invalid frame-counter");
 
                 continue;
             }
@@ -650,7 +695,10 @@ impl Data {
                     if qi.data.len() <= item.remaining_payload_size {
                         // Set the device-queue item.
                         mac_pl.f_port = Some(qi.f_port as u8);
-                        mac_pl.fhdr.f_cnt = self.device_session.get_a_f_cnt_down();
+                        mac_pl.fhdr.f_cnt = match qi.is_encrypted {
+                            true => qi.f_cnt_down.unwrap_or_default() as u32,
+                            false => self.device_session.get_a_f_cnt_down(),
+                        };
                         mac_pl.frm_payload = Some(lrwn::FRMPayload::Raw(qi.data.clone()));
 
                         if qi.confirmed {
@@ -673,13 +721,18 @@ impl Data {
             };
 
             // Encrypt FRMPayload.
+            let qi_encrypted = match &self.device_queue_item {
+                Some(v) => v.is_encrypted,
+                None => false,
+            };
+
             if mac_size > 15 {
                 // Encrypt mac-commands.
                 phy.encrypt_frm_payload(&lrwn::AES128Key::from_slice(
                     &self.device_session.nwk_s_enc_key,
                 )?)
                 .context("Encrypt frm_payload mac-commands")?;
-            } else {
+            } else if self.device_queue_item.is_some() && !qi_encrypted {
                 // Encrypt application payload.
                 if let Some(key_env) = &self.device_session.app_s_key {
                     let app_s_key = lrwn::AES128Key::from_slice(&key_env.aes_key)?;
@@ -781,18 +834,12 @@ impl Data {
             // * get_next_device_queue_item is called on next downlink
             // * as is_pending was already set to true, a negative ack event is sent
             //   and item is popped from the queue
-            qi.f_cnt_down = Some(if self
-                .device_session
-                .mac_version()
-                .to_string()
-                .starts_with("1.0")
-            {
-                self.device_session.n_f_cnt_down
-            } else {
-                self.device_session.a_f_cnt_down
-            } as i64);
 
-            *qi = device_queue::update_item(qi.clone()).await?;
+            // Do not update the frame-counter in case the queue-item is encrypted.
+            if !qi.is_encrypted {
+                qi.f_cnt_down = Some(self.device_session.get_a_f_cnt_down() as i64);
+                *qi = device_queue::update_item(qi.clone()).await?;
+            }
         }
 
         Ok(())
@@ -816,7 +863,13 @@ impl Data {
             nwk_s_enc_key: self.device_session.nwk_s_enc_key.clone(),
             downlink_frame: Some(self.downlink_frame.clone()),
             n_f_cnt_down: self.device_session.n_f_cnt_down,
-            a_f_cnt_down: self.device_session.get_a_f_cnt_down(),
+            a_f_cnt_down: match &self.device_queue_item {
+                Some(v) => match v.is_encrypted {
+                    true => v.f_cnt_down.unwrap_or_default() as u32,
+                    false => self.device_session.get_a_f_cnt_down(),
+                },
+                None => self.device_session.get_a_f_cnt_down(),
+            },
             ..Default::default()
         })
         .await
@@ -2476,6 +2529,261 @@ mod test {
     use super::*;
     use crate::test;
     use lrwn::EUI64;
+    use tokio::time::sleep;
+    use uuid::Uuid;
+
+    #[tokio::test]
+    async fn test_get_next_device_queue_item() {
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            name: "dp".into(),
+            tenant_id: t.id,
+            is_relay: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d = device::create(device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+            name: "dev".into(),
+            application_id: app.id,
+            device_profile_id: dp.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let ds = internal::DeviceSession {
+            n_f_cnt_down: 10,
+            a_f_cnt_down: 10,
+            ..Default::default()
+        };
+
+        struct Test {
+            name: String,
+            max_payload_size: usize,
+            queue_items: Vec<device_queue::DeviceQueueItem>,
+            expected_queue_item: Option<device_queue::DeviceQueueItem>,
+            expected_ack_event: Option<integration_pb::AckEvent>,
+            expected_log_event: Option<integration_pb::LogEvent>,
+        }
+
+        let qi_id = Uuid::new_v4();
+
+        let tests = vec![
+            Test {
+                name: "max payload size error".into(),
+                max_payload_size: 10,
+                queue_items: vec![device_queue::DeviceQueueItem {
+                    id: qi_id,
+                    dev_eui: d.dev_eui,
+                    f_port: 1,
+                    data: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                    ..Default::default()
+                }],
+                expected_queue_item: None,
+                expected_ack_event: None,
+                expected_log_event: Some(integration_pb::LogEvent {
+                    device_info: Some(integration_pb::DeviceInfo {
+                        tenant_id: t.id.to_string(),
+                        tenant_name: t.name.clone(),
+                        application_id: app.id.to_string(),
+                        application_name: app.name.clone(),
+                        device_profile_id: dp.id.to_string(),
+                        device_profile_name: dp.name.clone(),
+                        device_name: d.name.clone(),
+                        dev_eui: d.dev_eui.to_string(),
+                        ..Default::default()
+                    }),
+                    level: integration_pb::LogLevel::Error.into(),
+                    code: integration_pb::LogCode::DownlinkPayloadSize.into(),
+                    description:
+                        "Device queue-item discarded because it exceeds the max. payload size"
+                            .into(),
+                    context: [
+                        ("item_size".to_string(), "11".to_string()),
+                        ("queue_item_id".to_string(), qi_id.to_string()),
+                        ("max_payload_size".to_string(), "10".to_string()),
+                    ]
+                    .iter()
+                    .cloned()
+                    .collect(),
+                    ..Default::default()
+                }),
+            },
+            Test {
+                name: "is pending".into(),
+                max_payload_size: 10,
+                queue_items: vec![device_queue::DeviceQueueItem {
+                    id: qi_id,
+                    dev_eui: d.dev_eui,
+                    f_port: 1,
+                    f_cnt_down: Some(10),
+                    data: vec![1, 2, 3],
+                    is_pending: true,
+                    ..Default::default()
+                }],
+                expected_queue_item: None,
+                expected_log_event: None,
+                expected_ack_event: Some(integration_pb::AckEvent {
+                    device_info: Some(integration_pb::DeviceInfo {
+                        tenant_id: t.id.to_string(),
+                        tenant_name: t.name.clone(),
+                        application_id: app.id.to_string(),
+                        application_name: app.name.clone(),
+                        device_profile_id: dp.id.to_string(),
+                        device_profile_name: dp.name.clone(),
+                        device_name: d.name.clone(),
+                        dev_eui: d.dev_eui.to_string(),
+                        ..Default::default()
+                    }),
+                    queue_item_id: qi_id.to_string(),
+                    acknowledged: false,
+                    f_cnt_down: 10,
+                    ..Default::default()
+                }),
+            },
+            Test {
+                name: "invalid frame-counter".into(),
+                max_payload_size: 10,
+                queue_items: vec![device_queue::DeviceQueueItem {
+                    id: qi_id,
+                    dev_eui: d.dev_eui,
+                    f_port: 1,
+                    data: vec![1, 2, 3],
+                    f_cnt_down: Some(5),
+                    is_encrypted: true,
+                    ..Default::default()
+                }],
+                expected_queue_item: None,
+                expected_ack_event: None,
+                expected_log_event: Some(integration_pb::LogEvent {
+                    device_info: Some(integration_pb::DeviceInfo {
+                        tenant_id: t.id.to_string(),
+                        tenant_name: t.name.clone(),
+                        application_id: app.id.to_string(),
+                        application_name: app.name.clone(),
+                        device_profile_id: dp.id.to_string(),
+                        device_profile_name: dp.name.clone(),
+                        device_name: d.name.clone(),
+                        dev_eui: d.dev_eui.to_string(),
+                        ..Default::default()
+                    }),
+                    level: integration_pb::LogLevel::Error.into(),
+                    code: integration_pb::LogCode::FCntDown.into(),
+                    description: "Device queue-item discarded because the frame-counter is invalid"
+                        .into(),
+                    context: [
+                        ("queue_item_id".to_string(), qi_id.to_string()),
+                        ("device_f_cnt_down".to_string(), "10".to_string()),
+                        ("queue_item_f_cnt_down".to_string(), "5".to_string()),
+                    ]
+                    .iter()
+                    .cloned()
+                    .collect(),
+                    ..Default::default()
+                }),
+            },
+            Test {
+                name: "valid payload".into(),
+                max_payload_size: 10,
+                queue_items: vec![device_queue::DeviceQueueItem {
+                    id: qi_id,
+                    dev_eui: d.dev_eui,
+                    f_port: 1,
+                    data: vec![1, 2, 3],
+                    ..Default::default()
+                }],
+                expected_queue_item: Some(device_queue::DeviceQueueItem {
+                    id: qi_id,
+                    dev_eui: d.dev_eui,
+                    f_port: 1,
+                    data: vec![1, 2, 3],
+                    ..Default::default()
+                }),
+                expected_log_event: None,
+                expected_ack_event: None,
+            },
+        ];
+
+        for tst in &tests {
+            println!("> {}", tst.name);
+
+            integration::set_mock().await;
+            integration::mock::reset().await;
+
+            device_queue::flush_for_dev_eui(&d.dev_eui).await.unwrap();
+            for qi in &tst.queue_items {
+                device_queue::enqueue_item(qi.clone()).await.unwrap();
+            }
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: t.clone(),
+                application: app.clone(),
+                device_profile: dp.clone(),
+                device: d.clone(),
+                device_session: ds.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![DownlinkFrameItem {
+                    downlink_frame_item: Default::default(),
+                    remaining_payload_size: tst.max_payload_size,
+                }],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx.get_next_device_queue_item().await.unwrap();
+
+            // Integrations are handled async.
+            sleep(Duration::from_millis(100)).await;
+
+            if let Some(log) = &tst.expected_log_event {
+                let mut event = integration::mock::get_log_event().await.unwrap();
+                assert_ne!(None, event.time);
+                event.time = None;
+                assert_eq!(log, &event);
+            }
+
+            if let Some(ack) = &tst.expected_ack_event {
+                let mut event = integration::mock::get_ack_event().await.unwrap();
+                assert_ne!(None, event.time);
+                event.time = None;
+                assert_eq!(ack, &event);
+            }
+
+            if let Some(qi) = &tst.expected_queue_item {
+                assert_ne!(None, ctx.device_queue_item);
+                assert_eq!(qi.id, ctx.device_queue_item.as_ref().unwrap().id);
+            }
+        }
+    }
 
     #[test]
     fn test_filter_mac_commands() {

@@ -108,6 +108,20 @@ impl IntegrationTrait for Integration {
     }
 }
 
+pub async fn get_join_event() -> Option<integration::JoinEvent> {
+    if JOIN_EVENTS.read().await.is_empty() {
+        return None;
+    }
+
+    JOIN_EVENTS
+        .write()
+        .await
+        .drain(0..1)
+        .collect::<Vec<integration::JoinEvent>>()
+        .first()
+        .cloned()
+}
+
 pub async fn get_uplink_event() -> Option<integration::UplinkEvent> {
     if UPLINK_EVENTS.read().await.is_empty() {
         return None;
@@ -118,6 +132,34 @@ pub async fn get_uplink_event() -> Option<integration::UplinkEvent> {
         .await
         .drain(0..1)
         .collect::<Vec<integration::UplinkEvent>>()
+        .first()
+        .cloned()
+}
+
+pub async fn get_ack_event() -> Option<integration::AckEvent> {
+    if ACK_EVENTS.read().await.is_empty() {
+        return None;
+    }
+
+    ACK_EVENTS
+        .write()
+        .await
+        .drain(0..1)
+        .collect::<Vec<integration::AckEvent>>()
+        .first()
+        .cloned()
+}
+
+pub async fn get_log_event() -> Option<integration::LogEvent> {
+    if LOG_EVENTS.read().await.is_empty() {
+        return None;
+    }
+
+    LOG_EVENTS
+        .write()
+        .await
+        .drain(0..1)
+        .collect::<Vec<integration::LogEvent>>()
         .first()
         .cloned()
 }

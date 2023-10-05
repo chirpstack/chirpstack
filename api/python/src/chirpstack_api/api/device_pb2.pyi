@@ -315,7 +315,7 @@ class GetDeviceLinkMetricsResponse(_message.Message):
     def __init__(self, rx_packets: _Optional[_Union[_common_pb2.Metric, _Mapping]] = ..., gw_rssi: _Optional[_Union[_common_pb2.Metric, _Mapping]] = ..., gw_snr: _Optional[_Union[_common_pb2.Metric, _Mapping]] = ..., rx_packets_per_freq: _Optional[_Union[_common_pb2.Metric, _Mapping]] = ..., rx_packets_per_dr: _Optional[_Union[_common_pb2.Metric, _Mapping]] = ..., errors: _Optional[_Union[_common_pb2.Metric, _Mapping]] = ...) -> None: ...
 
 class DeviceQueueItem(_message.Message):
-    __slots__ = ["id", "dev_eui", "confirmed", "f_port", "data", "object", "is_pending", "f_cnt_down"]
+    __slots__ = ["id", "dev_eui", "confirmed", "f_port", "data", "object", "is_pending", "f_cnt_down", "is_encrypted"]
     ID_FIELD_NUMBER: _ClassVar[int]
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     CONFIRMED_FIELD_NUMBER: _ClassVar[int]
@@ -324,6 +324,7 @@ class DeviceQueueItem(_message.Message):
     OBJECT_FIELD_NUMBER: _ClassVar[int]
     IS_PENDING_FIELD_NUMBER: _ClassVar[int]
     F_CNT_DOWN_FIELD_NUMBER: _ClassVar[int]
+    IS_ENCRYPTED_FIELD_NUMBER: _ClassVar[int]
     id: str
     dev_eui: str
     confirmed: bool
@@ -332,7 +333,8 @@ class DeviceQueueItem(_message.Message):
     object: _struct_pb2.Struct
     is_pending: bool
     f_cnt_down: int
-    def __init__(self, id: _Optional[str] = ..., dev_eui: _Optional[str] = ..., confirmed: bool = ..., f_port: _Optional[int] = ..., data: _Optional[bytes] = ..., object: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., is_pending: bool = ..., f_cnt_down: _Optional[int] = ...) -> None: ...
+    is_encrypted: bool
+    def __init__(self, id: _Optional[str] = ..., dev_eui: _Optional[str] = ..., confirmed: bool = ..., f_port: _Optional[int] = ..., data: _Optional[bytes] = ..., object: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., is_pending: bool = ..., f_cnt_down: _Optional[int] = ..., is_encrypted: bool = ...) -> None: ...
 
 class EnqueueDeviceQueueItemRequest(_message.Message):
     __slots__ = ["queue_item"]
@@ -373,3 +375,15 @@ class FlushDevNoncesRequest(_message.Message):
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     dev_eui: str
     def __init__(self, dev_eui: _Optional[str] = ...) -> None: ...
+
+class GetDeviceNextFCntDownRequest(_message.Message):
+    __slots__ = ["dev_eui"]
+    DEV_EUI_FIELD_NUMBER: _ClassVar[int]
+    dev_eui: str
+    def __init__(self, dev_eui: _Optional[str] = ...) -> None: ...
+
+class GetDeviceNextFCntDownResponse(_message.Message):
+    __slots__ = ["f_cnt_down"]
+    F_CNT_DOWN_FIELD_NUMBER: _ClassVar[int]
+    f_cnt_down: int
+    def __init__(self, f_cnt_down: _Optional[int] = ...) -> None: ...

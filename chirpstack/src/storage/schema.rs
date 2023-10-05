@@ -4,6 +4,7 @@ diesel::table! {
     api_key (id) {
         id -> Uuid,
         created_at -> Timestamptz,
+        #[max_length = 100]
         name -> Varchar,
         is_admin -> Bool,
         tenant_id -> Nullable<Uuid>,
@@ -16,6 +17,7 @@ diesel::table! {
         tenant_id -> Uuid,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+        #[max_length = 100]
         name -> Varchar,
         description -> Text,
         mqtt_tls_cert -> Nullable<Bytea>,
@@ -25,6 +27,7 @@ diesel::table! {
 diesel::table! {
     application_integration (application_id, kind) {
         application_id -> Uuid,
+        #[max_length = 20]
         kind -> Varchar,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
@@ -41,6 +44,7 @@ diesel::table! {
         updated_at -> Timestamptz,
         last_seen_at -> Nullable<Timestamptz>,
         scheduler_run_after -> Nullable<Timestamptz>,
+        #[max_length = 100]
         name -> Varchar,
         description -> Text,
         external_power_source -> Bool,
@@ -51,6 +55,7 @@ diesel::table! {
         longitude -> Nullable<Float8>,
         altitude -> Nullable<Float4>,
         dev_addr -> Nullable<Bytea>,
+        #[max_length = 1]
         enabled_class -> Bpchar,
         skip_fcnt_check -> Bool,
         is_disabled -> Bool,
@@ -78,11 +83,17 @@ diesel::table! {
         tenant_id -> Uuid,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+        #[max_length = 100]
         name -> Varchar,
+        #[max_length = 10]
         region -> Varchar,
+        #[max_length = 10]
         mac_version -> Varchar,
+        #[max_length = 20]
         reg_params_revision -> Varchar,
+        #[max_length = 100]
         adr_algorithm_id -> Varchar,
+        #[max_length = 20]
         payload_codec_runtime -> Varchar,
         uplink_interval -> Int4,
         device_status_req_interval -> Int4,
@@ -104,6 +115,7 @@ diesel::table! {
         description -> Text,
         measurements -> Jsonb,
         auto_detect_measurements -> Bool,
+        #[max_length = 100]
         region_config_id -> Nullable<Varchar>,
         is_relay -> Bool,
         is_relay_ed -> Bool,
@@ -135,14 +147,22 @@ diesel::table! {
         id -> Text,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+        #[max_length = 100]
         name -> Varchar,
         description -> Text,
+        #[max_length = 100]
         vendor -> Varchar,
+        #[max_length = 100]
         firmware -> Varchar,
+        #[max_length = 10]
         region -> Varchar,
+        #[max_length = 10]
         mac_version -> Varchar,
+        #[max_length = 20]
         reg_params_revision -> Varchar,
+        #[max_length = 100]
         adr_algorithm_id -> Varchar,
+        #[max_length = 20]
         payload_codec_runtime -> Varchar,
         payload_codec_script -> Text,
         uplink_interval -> Int4,
@@ -177,6 +197,7 @@ diesel::table! {
         is_pending -> Bool,
         f_cnt_down -> Nullable<Int8>,
         timeout_after -> Nullable<Timestamptz>,
+        is_encrypted -> Bool,
     }
 }
 
@@ -187,6 +208,7 @@ diesel::table! {
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         last_seen_at -> Nullable<Timestamptz>,
+        #[max_length = 100]
         name -> Varchar,
         description -> Text,
         latitude -> Float8,
@@ -205,16 +227,20 @@ diesel::table! {
         application_id -> Uuid,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+        #[max_length = 100]
         name -> Varchar,
+        #[max_length = 10]
         region -> Varchar,
         mc_addr -> Bytea,
         mc_nwk_s_key -> Bytea,
         mc_app_s_key -> Bytea,
         f_cnt -> Int8,
+        #[max_length = 1]
         group_type -> Bpchar,
         dr -> Int2,
         frequency -> Int8,
         class_b_ping_slot_period -> Int4,
+        #[max_length = 20]
         class_c_scheduling_type -> Varchar,
     }
 }
@@ -262,6 +288,7 @@ diesel::table! {
         id -> Uuid,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
+        #[max_length = 100]
         name -> Varchar,
         description -> Text,
         can_have_gateways -> Bool,
@@ -294,6 +321,7 @@ diesel::table! {
         is_active -> Bool,
         email -> Text,
         email_verified -> Bool,
+        #[max_length = 200]
         password_hash -> Varchar,
         note -> Text,
     }

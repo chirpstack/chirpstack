@@ -102,6 +102,32 @@ export namespace UplinkRelayRxInfo {
   }
 }
 
+export class JoinServerContext extends jspb.Message {
+  getSessionKeyId(): string;
+  setSessionKeyId(value: string): void;
+
+  hasAppSKey(): boolean;
+  clearAppSKey(): void;
+  getAppSKey(): common_common_pb.KeyEnvelope | undefined;
+  setAppSKey(value?: common_common_pb.KeyEnvelope): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): JoinServerContext.AsObject;
+  static toObject(includeInstance: boolean, msg: JoinServerContext): JoinServerContext.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: JoinServerContext, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): JoinServerContext;
+  static deserializeBinaryFromReader(message: JoinServerContext, reader: jspb.BinaryReader): JoinServerContext;
+}
+
+export namespace JoinServerContext {
+  export type AsObject = {
+    sessionKeyId: string,
+    appSKey?: common_common_pb.KeyEnvelope.AsObject,
+  }
+}
+
 export class UplinkEvent extends jspb.Message {
   getDeduplicationId(): string;
   setDeduplicationId(value: string): void;
@@ -159,6 +185,11 @@ export class UplinkEvent extends jspb.Message {
   getRelayRxInfo(): UplinkRelayRxInfo | undefined;
   setRelayRxInfo(value?: UplinkRelayRxInfo): void;
 
+  hasJoinServerContext(): boolean;
+  clearJoinServerContext(): void;
+  getJoinServerContext(): JoinServerContext | undefined;
+  setJoinServerContext(value?: JoinServerContext): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UplinkEvent.AsObject;
   static toObject(includeInstance: boolean, msg: UplinkEvent): UplinkEvent.AsObject;
@@ -185,6 +216,7 @@ export namespace UplinkEvent {
     rxInfoList: Array<gw_gw_pb.UplinkRxInfo.AsObject>,
     txInfo?: gw_gw_pb.UplinkTxInfo.AsObject,
     relayRxInfo?: UplinkRelayRxInfo.AsObject,
+    joinServerContext?: JoinServerContext.AsObject,
   }
 }
 
@@ -210,6 +242,11 @@ export class JoinEvent extends jspb.Message {
   getRelayRxInfo(): UplinkRelayRxInfo | undefined;
   setRelayRxInfo(value?: UplinkRelayRxInfo): void;
 
+  hasJoinServerContext(): boolean;
+  clearJoinServerContext(): void;
+  getJoinServerContext(): JoinServerContext | undefined;
+  setJoinServerContext(value?: JoinServerContext): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): JoinEvent.AsObject;
   static toObject(includeInstance: boolean, msg: JoinEvent): JoinEvent.AsObject;
@@ -227,6 +264,7 @@ export namespace JoinEvent {
     deviceInfo?: DeviceInfo.AsObject,
     devAddr: string,
     relayRxInfo?: UplinkRelayRxInfo.AsObject,
+    joinServerContext?: JoinServerContext.AsObject,
   }
 }
 
@@ -562,6 +600,7 @@ export interface LogCodeMap {
   UPLINK_F_CNT_RETRANSMISSION: 7;
   DOWNLINK_GATEWAY: 8;
   RELAY_NEW_END_DEVICE: 9;
+  F_CNT_DOWN: 10;
 }
 
 export const LogCode: LogCodeMap;

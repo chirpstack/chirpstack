@@ -637,10 +637,11 @@ impl Data {
         if f_port == 0 || f_port == lrwn::LA_FPORT_RELAY {
             let nwk_s_enc_key = AES128Key::from_slice(&ds.nwk_s_enc_key)?;
             self.phy_payload.decrypt_frm_payload(&nwk_s_enc_key)?;
-        } else if ds.app_s_key.is_some() {
-            let app_s_key = AES128Key::from_slice(&ds.app_s_key.as_ref().unwrap().aes_key)?;
-
-            self.phy_payload.decrypt_frm_payload(&app_s_key)?;
+        } else if !self._is_end_to_end_encrypted() {
+            if let Some(app_s_key) = &ds.app_s_key {
+                let app_s_key = AES128Key::from_slice(&app_s_key.aes_key)?;
+                self.phy_payload.decrypt_frm_payload(&app_s_key)?;
+            }
         }
 
         Ok(())
@@ -935,6 +936,7 @@ impl Data {
         let app = self.application.as_ref().unwrap();
         let dp = self.device_profile.as_ref().unwrap();
         let dev = self.device.as_ref().unwrap();
+        let ds = self.device_session.as_ref().unwrap();
         let mac = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             pl
         } else {
@@ -959,39 +961,52 @@ impl Data {
             object: None,
             rx_info: self.uplink_frame_set.rx_info_set.clone(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
+            join_server_context: if self._is_end_to_end_encrypted() {
+                Some(integration_pb::JoinServerContext {
+                    session_key_id: hex::encode(&ds.js_session_key_id),
+                    app_s_key: ds.app_s_key.clone(),
+                })
+            } else {
+                None
+            },
         };
 
-        pl.object = match codec::binary_to_struct(
-            dp.payload_codec_runtime,
-            ts,
-            mac.f_port.unwrap_or(0),
-            &dev.variables,
-            &dp.payload_codec_script,
-            &pl.data,
-        )
-        .await
-        {
-            Ok(v) => v,
-            Err(e) => {
-                integration::log_event(
-                    app.id,
-                    &dev.variables,
-                    &integration_pb::LogEvent {
-                        time: Some(Utc::now().into()),
-                        device_info: self.device_info.clone(),
-                        level: integration_pb::LogLevel::Error.into(),
-                        code: integration_pb::LogCode::UplinkCodec.into(),
-                        description: format!("{}", e),
-                        context: [("deduplication_id".to_string(), pl.deduplication_id.clone())]
+        if !self._is_end_to_end_encrypted() {
+            pl.object = match codec::binary_to_struct(
+                dp.payload_codec_runtime,
+                ts,
+                mac.f_port.unwrap_or(0),
+                &dev.variables,
+                &dp.payload_codec_script,
+                &pl.data,
+            )
+            .await
+            {
+                Ok(v) => v,
+                Err(e) => {
+                    integration::log_event(
+                        app.id,
+                        &dev.variables,
+                        &integration_pb::LogEvent {
+                            time: Some(Utc::now().into()),
+                            device_info: self.device_info.clone(),
+                            level: integration_pb::LogLevel::Error.into(),
+                            code: integration_pb::LogCode::UplinkCodec.into(),
+                            description: format!("{}", e),
+                            context: [(
+                                "deduplication_id".to_string(),
+                                pl.deduplication_id.clone(),
+                            )]
                             .iter()
                             .cloned()
                             .collect(),
-                    },
-                )
-                .await;
-                None
-            }
-        };
+                        },
+                    )
+                    .await;
+                    None
+                }
+            };
+        }
 
         integration::uplink_event(app.id, &dev.variables, &pl).await;
 
@@ -1350,6 +1365,22 @@ impl Data {
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             if dp.is_relay && pl.f_port.unwrap_or(0) == lrwn::LA_FPORT_RELAY {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn _is_end_to_end_encrypted(&self) -> bool {
+        let ds = self.device_session.as_ref().unwrap();
+
+        if !ds.js_session_key_id.is_empty() {
+            return true;
+        }
+
+        if let Some(app_s_key) = &ds.app_s_key {
+            if !app_s_key.kek_label.is_empty() {
                 return true;
             }
         }

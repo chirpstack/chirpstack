@@ -142,6 +142,13 @@ export class DeviceServiceClient {
                response: api_device_pb.GetDeviceQueueItemsResponse) => void
   ): grpcWeb.ClientReadableStream<api_device_pb.GetDeviceQueueItemsResponse>;
 
+  getNextFCntDown(
+    request: api_device_pb.GetDeviceNextFCntDownRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: api_device_pb.GetDeviceNextFCntDownResponse) => void
+  ): grpcWeb.ClientReadableStream<api_device_pb.GetDeviceNextFCntDownResponse>;
+
 }
 
 export class DeviceServicePromiseClient {
@@ -243,6 +250,11 @@ export class DeviceServicePromiseClient {
     request: api_device_pb.GetDeviceQueueItemsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<api_device_pb.GetDeviceQueueItemsResponse>;
+
+  getNextFCntDown(
+    request: api_device_pb.GetDeviceNextFCntDownRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<api_device_pb.GetDeviceNextFCntDownResponse>;
 
 }
 

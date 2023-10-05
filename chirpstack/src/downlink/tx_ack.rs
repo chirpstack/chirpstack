@@ -389,7 +389,7 @@ impl TxAck {
         trace!("Incrementing a_f_cnt_down");
 
         let ds = self.device_session.as_mut().unwrap();
-        ds.set_a_f_cnt_down(ds.get_a_f_cnt_down() + 1);
+        ds.set_a_f_cnt_down(self.downlink_frame.as_ref().unwrap().a_f_cnt_down + 1);
 
         Ok(())
     }

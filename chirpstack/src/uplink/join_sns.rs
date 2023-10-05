@@ -39,6 +39,7 @@ pub struct JoinRequest {
     s_nwk_s_int_key: Option<AES128Key>,
     nwk_s_enc_key: Option<AES128Key>,
     app_s_key: Option<common::KeyEnvelope>,
+    js_session_key_id: String,
 }
 
 impl JoinRequest {
@@ -76,11 +77,12 @@ impl JoinRequest {
             s_nwk_s_int_key: None,
             nwk_s_enc_key: None,
             app_s_key: None,
+            js_session_key_id: "".to_string(),
         };
 
         ctx.get_join_request_payload()?;
         ctx.get_device().await?;
-        ctx.get_js_client()?;
+        ctx.get_device_keys_or_js_client().await?;
         ctx.get_application().await?;
         ctx.get_tenant().await?;
         ctx.get_device_profile().await?;
@@ -128,15 +130,24 @@ impl JoinRequest {
         Ok(())
     }
 
-    fn get_js_client(&mut self) -> Result<()> {
+    // We need to get either the device-keys or a JS client. In any other case, this must return an error.
+    async fn get_device_keys_or_js_client(&mut self) -> Result<()> {
+        trace!("Getting device keys");
         let jr = self.join_request.as_ref().unwrap();
+        self.device_keys = match device_keys::get(&jr.dev_eui).await {
+            Ok(v) => Some(v),
+            Err(e) => {
+                if let StorageError::NotFound(_) = e {
+                    None
+                } else {
+                    return Err(anyhow::Error::new(e));
+                }
+            }
+        };
 
-        trace!(join_eui = %jr.join_eui, "Trying to get Join Server client");
-        if let Ok(v) = joinserver::get(&jr.join_eui) {
-            trace!("Found Join Server client");
-            self.js_client = Some(v);
-        } else {
-            trace!("Join Server client does not exist");
+        if !self.device_keys.is_some() {
+            trace!(join_eui = %jr.join_eui, "Getting Join Server client");
+            self.js_client = Some(joinserver::get(&jr.join_eui)?);
         }
 
         Ok(())
@@ -258,6 +269,7 @@ impl JoinRequest {
                 aes_key: v.aes_key.clone(),
             });
         }
+        self.js_session_key_id = hex::encode(join_ans_pl.session_key_id);
 
         if let Some(v) = &join_ans_pl.nwk_s_key {
             let key = keywrap::unwrap(v).context("Unwrap nwk_s_key")?;
@@ -289,8 +301,7 @@ impl JoinRequest {
     }
 
     async fn validate_mic(&self) -> Result<()> {
-        let join_request = self.join_request.as_ref().unwrap();
-        let device_keys = device_keys::get(&join_request.dev_eui).await?;
+        let device_keys = self.device_keys.as_ref().unwrap();
 
         if self
             .uplink_frame_set
@@ -678,6 +689,26 @@ impl JoinRequest {
             device_info: self.device_info.clone(),
             relay_rx_info: None,
             dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
+            join_server_context: if !self.js_session_key_id.is_empty() {
+                Some(integration_pb::JoinServerContext {
+                    app_s_key: None,
+                    session_key_id: self.js_session_key_id.clone(),
+                })
+            } else if let Some(app_s_key) = &self.app_s_key {
+                if app_s_key.kek_label.is_empty() {
+                    None
+                } else {
+                    Some(integration_pb::JoinServerContext {
+                        app_s_key: Some(common::KeyEnvelope {
+                            kek_label: app_s_key.kek_label.clone(),
+                            aes_key: app_s_key.aes_key.clone(),
+                        }),
+                        session_key_id: "".to_string(),
+                    })
+                }
+            } else {
+                None
+            },
         };
 
         integration::join_event(app.id, &dev.variables, &pl).await;

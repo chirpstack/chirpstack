@@ -165,6 +165,17 @@ service DeviceService {
       get : "/api/devices/{dev_eui}/queue"
     };
   }
+
+  // GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+  // downlinks. The difference with the DeviceActivation f_cont_down is that
+  // this method takes potential existing queue-items into account.
+  rpc GetNextFCntDown(GetDeviceNextFCntDownRequest)
+      returns (GetDeviceNextFCntDownResponse) {
+    option (google.api.http) = {
+      post : "/api/devices/{dev_eui}/get-next-f-cnt-down"
+      body : "*"
+    };
+  }
 }
 
 message Device {
@@ -504,12 +515,20 @@ message DeviceQueueItem {
   google.protobuf.Struct object = 6;
 
   // Is pending.
-  // This is set to true when the downlink is pending.
+  // This is set by ChirpStack to true when the downlink is pending (e.g. it
+  // has been sent, but a confirmation is still pending).
   bool is_pending = 7;
 
   // Downlink frame-counter.
-  // This is set when the payload has been sent as downlink.
+  // Do not set this for plain-text data payloads. It will be automatically set
+  // by ChirpStack when the payload has been sent as downlink.
   uint32 f_cnt_down = 8;
+
+  // Is encrypted.
+  // This must be set to true if the end-application has already encrypted
+  // the data payload. In this case, the f_cnt_down field must be set to
+  // the corresponding frame-counter which has been used during the encryption.
+  bool is_encrypted = 9;
 }
 
 message EnqueueDeviceQueueItemRequest { DeviceQueueItem queue_item = 1; }
@@ -543,4 +562,14 @@ message GetDeviceQueueItemsResponse {
 message FlushDevNoncesRequest {
   // Device EUI (EUI64).
   string dev_eui = 1;
+}
+
+message GetDeviceNextFCntDownRequest {
+  // Device EUI (EUI64).
+  string dev_eui = 1;
+}
+
+message GetDeviceNextFCntDownResponse {
+  // FCntDown.
+  uint32 f_cnt_down = 1;
 }
