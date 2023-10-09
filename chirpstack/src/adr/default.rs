@@ -237,6 +237,8 @@ mod test {
             min_dr: 0,
             max_dr: 0,
             uplink_history: vec![],
+            skip_f_cnt_check: false,
+            device_variables: Default::default(),
         };
 
         for i in 0..20 {
@@ -459,6 +461,8 @@ mod test {
             min_dr: 0,
             max_dr: 0,
             uplink_history: vec![],
+            skip_f_cnt_check: false,
+            device_variables: Default::default(),
         };
         req.uplink_history.push(internal::UplinkAdrHistory {
             max_snr: 3.0,
@@ -497,6 +501,8 @@ mod test {
             min_dr: 0,
             max_dr: 0,
             uplink_history: vec![],
+            skip_f_cnt_check: false,
+            device_variables: Default::default(),
         };
 
         struct Test {
@@ -516,7 +522,7 @@ mod test {
                     nb_trans: 1,
                     max_dr: 4,
                     max_tx_power_index: 5,
-                    ..req_template
+                    ..req_template.clone()
                 },
                 response: Response {
                     dr: 5,
@@ -538,7 +544,7 @@ mod test {
                         max_snr: 0.0,
                         ..Default::default()
                     }],
-                    ..req_template
+                    ..req_template.clone()
                 },
                 response: Response {
                     dr: 4,
@@ -561,7 +567,7 @@ mod test {
                         max_snr: -15.0,
                         ..Default::default()
                     }],
-                    ..req_template
+                    ..req_template.clone()
                 },
                 response: Response {
                     dr: 1,

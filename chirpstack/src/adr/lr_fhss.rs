@@ -207,6 +207,8 @@ pub mod test {
             min_dr: 0,
             max_dr: 0,
             uplink_history: vec![],
+            skip_f_cnt_check: false,
+            device_variables: Default::default(),
         };
 
         struct Test {
@@ -228,7 +230,7 @@ pub mod test {
                         max_rssi: -130,
                         ..Default::default()
                     }],
-                    ..req_template
+                    ..req_template.clone()
                 },
                 response: Response {
                     dr: 0,
@@ -248,7 +250,7 @@ pub mod test {
                         max_rssi: -130,
                         ..Default::default()
                     }],
-                    ..req_template
+                    ..req_template.clone()
                 },
                 response: Response {
                     dr: 0,
@@ -268,7 +270,7 @@ pub mod test {
                         max_rssi: -130,
                         ..Default::default()
                     }],
-                    ..req_template
+                    ..req_template.clone()
                 },
                 response: Response {
                     dr: 10,
@@ -290,7 +292,7 @@ pub mod test {
                             ..Default::default()
                         })
                         .collect(),
-                    ..req_template
+                    ..req_template.clone()
                 },
                 response: Response {
                     dr: 11,

@@ -56,6 +56,11 @@ impl Handler for Plugin {
                 .context("Compile script")?;
             let func: rquickjs::Function = m.get("handle").context("Get handle function")?;
 
+            let device_variables = rquickjs::Object::new(ctx)?;
+            for (k, v) in &req.device_variables {
+                device_variables.set(k, v)?;
+            }
+
             let input = rquickjs::Object::new(ctx)?;
             input.set("regionConfigId", req.region_config_id.clone())?;
             input.set("regionCommonName", req.region_common_name.to_string())?;
@@ -71,6 +76,7 @@ impl Handler for Plugin {
             input.set("installationMargin", req.installation_margin)?;
             input.set("minDr", req.min_dr)?;
             input.set("maxDr", req.max_dr)?;
+            input.set("deviceVariables", device_variables)?;
 
             let mut uplink_history: Vec<rquickjs::Object> = Vec::new();
 
@@ -127,6 +133,8 @@ pub mod test {
             min_dr: 0,
             max_dr: 5,
             uplink_history: vec![],
+            skip_f_cnt_check: false,
+            device_variables: Default::default(),
         };
 
         let resp = p.handle(&req).await.unwrap();

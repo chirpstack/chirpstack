@@ -92,6 +92,7 @@ pub trait Handler {
     async fn handle(&self, req: &Request) -> Result<Response>;
 }
 
+#[derive(Clone)]
 pub struct Request {
     pub region_config_id: String,
     pub region_common_name: lrwn::region::CommonName,
@@ -108,6 +109,8 @@ pub struct Request {
     pub min_dr: u8,
     pub max_dr: u8,
     pub uplink_history: Vec<internal::UplinkAdrHistory>,
+    pub skip_f_cnt_check: bool,
+    pub device_variables: HashMap<String, String>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

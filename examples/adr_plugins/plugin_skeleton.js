@@ -26,6 +26,11 @@ export function id() {
 //  installationMargin: 10,
 //  minDr: 0,
 //  maxDr: 5,
+//  skipFCntCheck: false,
+//  deviceVariables: {
+//    "varA": "value1",
+//    "varB": "value2",
+//  },
 //  uplinkHistory: [
 //    {
 //      "fCnt": 10,

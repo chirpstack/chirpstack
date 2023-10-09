@@ -1173,6 +1173,8 @@ impl Data {
             min_dr: self.network_conf.min_dr,
             max_dr: self.network_conf.max_dr,
             uplink_history: self.device_session.uplink_adr_history.clone(),
+            skip_f_cnt_check: self.device_session.skip_f_cnt_check,
+            device_variables: self.device.variables.into_hashmap(),
         };
 
         let resp = adr::handle(&self.device_profile.adr_algorithm_id, &req).await;
