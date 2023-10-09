@@ -149,8 +149,8 @@ pub fn get_passive_roaming_kek_label(net_id: NetID) -> Result<String> {
 }
 
 pub fn is_enabled() -> bool {
-    let clients_r = CLIENTS.read().unwrap();
-    !clients_r.is_empty()
+    let conf = config::get();
+    conf.roaming.default.enabled || !conf.roaming.servers.is_empty()
 }
 
 pub fn is_roaming_dev_addr(dev_addr: DevAddr) -> bool {
@@ -164,12 +164,18 @@ pub fn is_roaming_dev_addr(dev_addr: DevAddr) -> bool {
         // Configured NetID.
         conf.network.net_id,
         // Test NetIDs. For roaming it is expected that non-testing NetIDs will be used. These are
-        // included as non-roaming NetIDs as one might start with a test-NetID and then aquires an
+        // included as non-roaming NetIDs as one might start with a test-NetID and then acquires an
         // official NetID to setup roaming. Not including these would mean that all devices must
         // re-join to obtain a new DevAddr.
         NetID::from_be_bytes([0, 0, 0]),
         NetID::from_be_bytes([0, 0, 1]),
     ] {
+        if dev_addr.is_net_id(*net_id) {
+            return false;
+        }
+    }
+
+    for net_id in &conf.network.secondary_net_ids {
         if dev_addr.is_net_id(*net_id) {
             return false;
         }
@@ -319,4 +325,62 @@ pub fn dl_meta_data_to_uplink_rx_info(
 pub fn reset() {
     let mut clients_w = CLIENTS.write().unwrap();
     *clients_w = HashMap::new();
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_is_roaming_dev_addr() {
+        struct Test {
+            dev_addr: DevAddr,
+            net_id: NetID,
+            secondary_net_ids: Vec<NetID>,
+            is_roaming: bool,
+        }
+
+        let tests = vec![
+            Test {
+                dev_addr: {
+                    let mut dev_addr = DevAddr::from_be_bytes([1, 2, 3, 4]);
+                    dev_addr.set_dev_addr_prefix(NetID::from_be_bytes([1, 2, 3]).dev_addr_prefix());
+                    dev_addr
+                },
+                net_id: NetID::from_be_bytes([1, 2, 3]),
+                secondary_net_ids: vec![],
+                is_roaming: false,
+            },
+            Test {
+                dev_addr: {
+                    let mut dev_addr = DevAddr::from_be_bytes([1, 2, 3, 4]);
+                    dev_addr.set_dev_addr_prefix(NetID::from_be_bytes([1, 2, 3]).dev_addr_prefix());
+                    dev_addr
+                },
+                net_id: NetID::from_be_bytes([3, 2, 1]),
+                secondary_net_ids: vec![],
+                is_roaming: true,
+            },
+            Test {
+                dev_addr: {
+                    let mut dev_addr = DevAddr::from_be_bytes([1, 2, 3, 4]);
+                    dev_addr.set_dev_addr_prefix(NetID::from_be_bytes([1, 2, 3]).dev_addr_prefix());
+                    dev_addr
+                },
+                net_id: NetID::from_be_bytes([3, 2, 1]),
+                secondary_net_ids: vec![NetID::from_be_bytes([1, 2, 3])],
+                is_roaming: false,
+            },
+        ];
+
+        for tst in &tests {
+            let mut conf = config::Configuration::default();
+            conf.network.net_id = tst.net_id;
+            conf.network.secondary_net_ids = tst.secondary_net_ids.clone();
+            conf.roaming.default.enabled = true;
+            config::set(conf);
+
+            assert_eq!(tst.is_roaming, is_roaming_dev_addr(tst.dev_addr));
+        }
+    }
 }

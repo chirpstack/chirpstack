@@ -130,6 +130,7 @@ impl Default for Gateway {
 #[serde(default)]
 pub struct Network {
     pub net_id: NetID,
+    pub secondary_net_ids: Vec<NetID>,
     pub dev_addr_prefixes: Vec<DevAddrPrefix>,
     pub enabled_regions: Vec<String>,
     #[serde(with = "humantime_serde")]
@@ -147,6 +148,7 @@ impl Default for Network {
     fn default() -> Self {
         Network {
             net_id: NetID::from_be_bytes([0x00, 0x00, 0x00]),
+            secondary_net_ids: vec![],
             dev_addr_prefixes: vec![],
             enabled_regions: vec![],
             device_session_ttl: Duration::from_secs(60 * 60 * 24 * 31),

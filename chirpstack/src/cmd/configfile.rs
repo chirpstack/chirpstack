@@ -142,13 +142,25 @@ pub fn run() {
   # Network identifier (NetID, 3 bytes) encoded as HEX (e.g. 010203).
   net_id="{{ network.net_id }}"
 
+  # Secondary NetIDs.
+  #
+  # Additional NetIDs. At this moment, the additional NetIDs are only used to
+  # validate if an uplink belongs to the ChirpStack instance or if it is a
+  # roaming device (if roaming is enabled).
+  # If you would like to assign DevAddrs from multiple NetIDs, you must specify
+  # these in the dev_addr_prefixes configuration.
+  secondary_net_ids=[
+    {{#each network.secondary_net_ids}}
+    "{{this}}",
+    {{/each}}
+  ]
+
   # DevAddr prefix(es).
   #
-  # This makes it possible to configure one or multiple sub-ranges within
-  # the configured NetID. If left blank, then the complete DevAddr space
-  # provided by the configured NetID will be used.
-  # If multiple prefixes are configured, a random prefix will be chosen when
-  # generating a DevAddr.
+  # This makes it possible to configure one or multiple DevAddr (sub)ranges
+  # If left blank, then the complete DevAddr space provided by the configured
+  # net_id value will be used. If multiple prefixes are configured, a random
+  # prefix will be chosen when generating a DevAddr.
   #
   # Example configuration:
   # dev_addr_prefixes=["0000ff00/24"]
