@@ -53,7 +53,7 @@ pub fn handle(
     if ch_mask_ack && dr_ack && tx_power_ack {
         // The device acked all request (channel-mask, data-rate and power),
         // in this case we update the device-session with all the requested
-        // modifcations.
+        // modifications.
 
         // reset the error counter
         ds.mac_command_error_count
@@ -68,6 +68,14 @@ pub fn handle(
                 &link_adr_reqs,
             )
             .context("Get enabled uplink-channels for LinkADRReq payloads")?;
+
+        // Reset the uplink ADR history table in case one of the TxPower, DR or NbTrans parameters have changed.
+        if ds.tx_power_index != link_adr_req.tx_power as u32
+            || ds.dr != link_adr_req.dr as u32
+            || ds.nb_trans != link_adr_req.redundancy.nb_rep as u32
+        {
+            ds.uplink_adr_history = vec![];
+        }
 
         ds.tx_power_index = link_adr_req.tx_power as u32;
         ds.dr = link_adr_req.dr as u32;
@@ -174,6 +182,9 @@ pub mod test {
                     .iter()
                     .cloned()
                     .collect(),
+                    uplink_adr_history: vec![internal::UplinkAdrHistory {
+                        ..Default::default()
+                    }],
                 ..Default::default()
             },
             link_adr_req: Some(lrwn::LinkADRReqPayload {
@@ -197,6 +208,7 @@ pub mod test {
                 nb_trans: 2,
                 dr: 5,
                 mac_command_error_count: HashMap::new(),
+                uplink_adr_history: vec![],
                 ..Default::default()
             },
             expected_error: None,
