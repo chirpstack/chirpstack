@@ -611,14 +611,16 @@ impl Data {
         trace!("Decrypting mac-commands");
         let ds = self.device_session.as_ref().unwrap();
         if ds.mac_version().to_string().starts_with("1.0") {
-            self.phy_payload
-                .decode_f_opts_to_mac_commands()
-                .context("Decode mac-commands")?;
+            if let Err(e) = self.phy_payload.decode_f_opts_to_mac_commands() {
+                // This avoids failing in case of a corrupted mac-command in the frm_payload.
+                warn!(error = %e, "Decoding f_opts mac-commands failed");
+            }
         } else {
             let nwk_s_enc_key = AES128Key::from_slice(&ds.nwk_s_enc_key)?;
-            self.phy_payload
-                .decrypt_f_opts(&nwk_s_enc_key)
-                .context("Decrypt f_opts")?;
+            if let Err(e) = self.phy_payload.decrypt_f_opts(&nwk_s_enc_key) {
+                // This avoids failing in case of a corrupted mac-command in the frm_payload.
+                warn!(error = %e, "Decrypting f_opts mac-commands failed");
+            }
         }
 
         Ok(())
@@ -636,7 +638,10 @@ impl Data {
         // Mac-commands (f_port=0) or Relay payload (f_port=226).
         if f_port == 0 || f_port == lrwn::LA_FPORT_RELAY {
             let nwk_s_enc_key = AES128Key::from_slice(&ds.nwk_s_enc_key)?;
-            self.phy_payload.decrypt_frm_payload(&nwk_s_enc_key)?;
+            if let Err(e) = self.phy_payload.decrypt_frm_payload(&nwk_s_enc_key) {
+                // This avoids failing in case of a corrupted mac-command in the frm_payload.
+                warn!(error = %e, "Decrypting frm_payload failed");
+            }
         } else if !self._is_end_to_end_encrypted() {
             if let Some(app_s_key) = &ds.app_s_key {
                 let app_s_key = AES128Key::from_slice(&app_s_key.aes_key)?;

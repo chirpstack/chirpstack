@@ -9,7 +9,7 @@ use redis::streams::StreamReadReply;
 use serde_json::json;
 use tokio::sync::mpsc;
 use tokio::task;
-use tracing::{debug, error, trace};
+use tracing::{debug, error, trace, warn};
 
 use lrwn::EUI64;
 
@@ -278,10 +278,14 @@ pub async fn get_frame_logs(
                                             let pl = api::UplinkFrameLog::decode(&mut Cursor::new(b))?;
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                                             if pl.plaintext_f_opts {
-                                                phy.decode_f_opts_to_mac_commands()?;
+                                                if let Err(e) = phy.decode_f_opts_to_mac_commands() {
+                                                    warn!(error = %e, "Decode f_opts to mac-commands error");
+                                                }
                                             }
                                             if pl.plaintext_frm_payload {
-                                                phy.decode_frm_payload()?;
+                                                if let Err(e) = phy.decode_frm_payload() {
+                                                    warn!(error = %e, "Decode frm_payload error");
+                                                }
                                             }
 
                                             let pl = api::LogItem {
@@ -312,10 +316,14 @@ pub async fn get_frame_logs(
                                             let pl = api::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                                             if pl.plaintext_f_opts {
-                                                phy.decode_f_opts_to_mac_commands()?;
+                                                if let Err(e) = phy.decode_f_opts_to_mac_commands() {
+                                                    warn!(error = %e, "Decode f_opts to mac-commands error");
+                                                }
                                             }
                                             if pl.plaintext_frm_payload {
-                                                phy.decode_frm_payload()?;
+                                                if let Err(e) = phy.decode_frm_payload() {
+                                                    warn!(error = %e, "Decode frm_payload error");
+                                                }
                                             }
 
                                             let pl = api::LogItem {
