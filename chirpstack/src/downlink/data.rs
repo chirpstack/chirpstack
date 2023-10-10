@@ -2170,7 +2170,11 @@ impl Data {
         let mut tx_info = gw::DownlinkTxInfo {
             board: gw_down.board,
             antenna: gw_down.antenna,
-            frequency: self.device_session.rx2_frequency,
+            frequency: if self.device_session.rx2_frequency == 0 {
+                self.region_conf.get_defaults().rx2_frequency
+            } else {
+                self.device_session.rx2_frequency
+            },
             context: gw_down.context.clone(),
             ..Default::default()
         };
