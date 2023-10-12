@@ -1438,7 +1438,7 @@ async fn test_lorawan_10_uplink() {
                             tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 868100000,
-                                power: 14,
+                                power: 16,
                                 modulation: Some(gw::Modulation {
                                     parameters: Some(gw::modulation::Parameters::Lora(
                                         gw::LoraModulationInfo {
@@ -1465,7 +1465,7 @@ async fn test_lorawan_10_uplink() {
                             tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 869525000,
-                                power: 27,
+                                power: 29,
                                 modulation: Some(gw::Modulation {
                                     parameters: Some(gw::modulation::Parameters::Lora(
                                         gw::LoraModulationInfo {
@@ -1548,7 +1548,7 @@ async fn test_lorawan_10_uplink() {
                             tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 868100000,
-                                power: 14,
+                                power: 16,
                                 modulation: Some(gw::Modulation {
                                     parameters: Some(gw::modulation::Parameters::Lora(
                                         gw::LoraModulationInfo {
@@ -1575,7 +1575,7 @@ async fn test_lorawan_10_uplink() {
                             tx_info_legacy: None,
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 869525000,
-                                power: 27,
+                                power: 29,
                                 modulation: Some(gw::Modulation {
                                     parameters: Some(gw::modulation::Parameters::Lora(
                                         gw::LoraModulationInfo {
@@ -2372,7 +2372,7 @@ async fn test_lorawan_10_rx_delay() {
                         tx_info_legacy: None,
                         tx_info: Some(gw::DownlinkTxInfo {
                             frequency: 868100000,
-                            power: 14,
+                            power: 16,
                             modulation: Some(gw::Modulation {
                                 parameters: Some(gw::modulation::Parameters::Lora(
                                     gw::LoraModulationInfo {
@@ -2399,7 +2399,7 @@ async fn test_lorawan_10_rx_delay() {
                         tx_info_legacy: None,
                         tx_info: Some(gw::DownlinkTxInfo {
                             frequency: 869525000,
-                            power: 27,
+                            power: 29,
                             modulation: Some(gw::Modulation {
                                 parameters: Some(gw::modulation::Parameters::Lora(
                                     gw::LoraModulationInfo {
@@ -5192,7 +5192,7 @@ async fn test_lorawan_11_receive_window_selection() {
                     tx_info_legacy: None,
                     tx_info: Some(gw::DownlinkTxInfo {
                         frequency: 868100000,
-                        power: 14,
+                        power: 16,
                         modulation: Some(gw::Modulation {
                             parameters: Some(gw::modulation::Parameters::Lora(
                                 gw::LoraModulationInfo {
@@ -5261,7 +5261,7 @@ async fn test_lorawan_11_receive_window_selection() {
                     tx_info_legacy: None,
                     tx_info: Some(gw::DownlinkTxInfo {
                         frequency: 869525000,
-                        power: 27,
+                        power: 29,
                         modulation: Some(gw::Modulation {
                             parameters: Some(gw::modulation::Parameters::Lora(
                                 gw::LoraModulationInfo {
@@ -5331,7 +5331,7 @@ async fn test_lorawan_11_receive_window_selection() {
                         tx_info_legacy: None,
                         tx_info: Some(gw::DownlinkTxInfo {
                             frequency: 868100000,
-                            power: 14,
+                            power: 16,
                             modulation: Some(gw::Modulation {
                                 parameters: Some(gw::modulation::Parameters::Lora(
                                     gw::LoraModulationInfo {
@@ -5358,7 +5358,7 @@ async fn test_lorawan_11_receive_window_selection() {
                         tx_info_legacy: None,
                         tx_info: Some(gw::DownlinkTxInfo {
                             frequency: 869525000,
-                            power: 27,
+                            power: 29,
                             modulation: Some(gw::Modulation {
                                 parameters: Some(gw::modulation::Parameters::Lora(
                                     gw::LoraModulationInfo {
@@ -5438,7 +5438,7 @@ async fn test_lorawan_11_receive_window_selection() {
                         tx_info_legacy: None,
                         tx_info: Some(gw::DownlinkTxInfo {
                             frequency: 868100000,
-                            power: 14,
+                            power: 16,
                             modulation: Some(gw::Modulation {
                                 parameters: Some(gw::modulation::Parameters::Lora(
                                     gw::LoraModulationInfo {
@@ -5465,7 +5465,7 @@ async fn test_lorawan_11_receive_window_selection() {
                         tx_info_legacy: None,
                         tx_info: Some(gw::DownlinkTxInfo {
                             frequency: 869525000,
-                            power: 27,
+                            power: 29,
                             modulation: Some(gw::Modulation {
                                 parameters: Some(gw::modulation::Parameters::Lora(
                                     gw::LoraModulationInfo {

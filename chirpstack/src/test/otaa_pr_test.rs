@@ -216,7 +216,7 @@ async fn test_fns() {
             phy_payload: vec![1, 2, 3, 4],
             tx_info: Some(gw::DownlinkTxInfo {
                 frequency: 868100000,
-                power: 14,
+                power: 16,
                 modulation: Some(gw::Modulation {
                     parameters: Some(gw::modulation::Parameters::Lora(gw::LoraModulationInfo {
                         bandwidth: 125000,

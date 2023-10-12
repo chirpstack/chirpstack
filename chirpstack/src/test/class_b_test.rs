@@ -310,7 +310,7 @@ async fn test_downlink_scheduler() {
                     tx_info_legacy: None,
                     tx_info: Some(gw::DownlinkTxInfo {
                         frequency: 868300000,
-                        power: 14,
+                        power: 16,
                         modulation: Some(gw::Modulation {
                             parameters: Some(gw::modulation::Parameters::Lora(
                                 gw::LoraModulationInfo {
@@ -392,7 +392,7 @@ async fn test_downlink_scheduler() {
                     tx_info_legacy: None,
                     tx_info: Some(gw::DownlinkTxInfo {
                         frequency: 868300000,
-                        power: 14,
+                        power: 16,
                         modulation: Some(gw::Modulation {
                             parameters: Some(gw::modulation::Parameters::Lora(
                                 gw::LoraModulationInfo {
