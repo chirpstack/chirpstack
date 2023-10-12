@@ -148,7 +148,7 @@ impl PassiveRoamingDownlink {
                             power: if self.network_conf.downlink_tx_power != -1 {
                                 self.network_conf.downlink_tx_power
                             } else {
-                                self.region_conf.get_downlink_tx_power(dl_freq_1) as i32
+                                self.region_conf.get_downlink_tx_power_eirp(dl_freq_1) as i32
                             },
                             ..Default::default()
                         };
@@ -190,7 +190,7 @@ impl PassiveRoamingDownlink {
                             power: if self.network_conf.downlink_tx_power != -1 {
                                 self.network_conf.downlink_tx_power
                             } else {
-                                self.region_conf.get_downlink_tx_power(dl_freq_2) as i32
+                                self.region_conf.get_downlink_tx_power_eirp(dl_freq_2) as i32
                             },
                             ..Default::default()
                         };

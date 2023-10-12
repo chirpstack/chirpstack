@@ -368,7 +368,7 @@ message DownlinkTxInfoLegacy {
   // TX frequency (in Hz).
   uint32 frequency = 5;
 
-  // TX power (in dBm).
+  // TX power (in dBm EIRP).
   int32 power = 6;
 
   // Modulation.
@@ -411,7 +411,7 @@ message DownlinkTxInfo {
   // TX frequency (in Hz).
   uint32 frequency = 1;
 
-  // TX power (in dBm).
+  // TX power (in dBm EIRP).
   int32 power = 2;
 
   // Modulation.

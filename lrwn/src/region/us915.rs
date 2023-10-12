@@ -680,8 +680,8 @@ impl Region for Configuration {
         Ok(self.base.downlink_channels[down_channel].frequency)
     }
 
-    fn get_downlink_tx_power(&self, _freq: u32) -> isize {
-        20
+    fn get_downlink_tx_power_eirp(&self, _frequency: u32) -> isize {
+        21
     }
 
     fn get_defaults(&self) -> Defaults {

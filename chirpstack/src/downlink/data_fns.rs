@@ -93,7 +93,7 @@ impl Data {
                 ..Default::default()
             };
 
-            tx_info.power = region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = region_conf.get_downlink_tx_power_eirp(tx_info.frequency) as i32;
 
             let rx1_dr = region_conf.get_data_rate(self.dl_meta_data.data_rate_1.unwrap())?;
             helpers::set_tx_info_data_rate(&mut tx_info, &rx1_dr)?;
@@ -125,7 +125,7 @@ impl Data {
                 ..Default::default()
             };
 
-            tx_info.power = region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = region_conf.get_downlink_tx_power_eirp(tx_info.frequency) as i32;
 
             let rx2_dr = region_conf.get_data_rate(self.dl_meta_data.data_rate_2.unwrap())?;
             helpers::set_tx_info_data_rate(&mut tx_info, &rx2_dr)?;

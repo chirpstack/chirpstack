@@ -136,7 +136,7 @@ impl Multicast {
         if network_conf.downlink_tx_power != -1 {
             tx_info.power = network_conf.downlink_tx_power;
         } else {
-            tx_info.power = region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = region_conf.get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         match self.multicast_group_queue_item.emit_at_time_since_gps_epoch {

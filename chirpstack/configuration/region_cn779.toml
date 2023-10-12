@@ -159,7 +159,7 @@
     # try to schedule the downlink in RX2, failing that it will try RX1.
     rx2_prefer_on_link_budget=false
 
-    # Downlink TX Power (dBm)
+    # Downlink TX Power (in dBm EIRP)
     #
     # When set to -1, the downlink TX Power from the configured band will
     # be used.

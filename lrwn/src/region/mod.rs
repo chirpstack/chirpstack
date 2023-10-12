@@ -447,7 +447,7 @@ pub trait Region {
 
     /// Returns the TX power for downlink transmissions using the given frequency.
     /// Depending the band, it could return different values for different frequencies.
-    fn get_downlink_tx_power(&self, frequency: u32) -> isize;
+    fn get_downlink_tx_power_eirp(&self, frequency: u32) -> isize;
 
     /// Returns the defaults.
     fn get_defaults(&self) -> Defaults;

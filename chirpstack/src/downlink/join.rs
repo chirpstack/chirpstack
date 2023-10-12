@@ -256,7 +256,9 @@ impl JoinAccept<'_> {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // Set timestamp.
@@ -313,7 +315,9 @@ impl JoinAccept<'_> {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // Set timestamp.
@@ -365,7 +369,9 @@ impl JoinAccept<'_> {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // Set timestamp.
@@ -416,7 +422,9 @@ impl JoinAccept<'_> {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // Set timestamp.

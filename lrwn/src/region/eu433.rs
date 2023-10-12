@@ -484,8 +484,8 @@ impl Region for Configuration {
         Ok(434665000)
     }
 
-    fn get_downlink_tx_power(&self, _freq: u32) -> isize {
-        10
+    fn get_downlink_tx_power_eirp(&self, _frequency: u32) -> isize {
+        12
     }
 
     fn get_defaults(&self) -> Defaults {

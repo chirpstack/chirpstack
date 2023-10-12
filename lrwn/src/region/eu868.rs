@@ -601,15 +601,13 @@ impl Region for Configuration {
         Ok(869525000)
     }
 
-    fn get_downlink_tx_power(&self, freq: u32) -> isize {
-        // NOTE: as there are currently no further boundary checks on the frequency, this check is sufficient.
-        // TODO: However, there should be some mechanism, that checks the frequency for compliance to regulations.
+    fn get_downlink_tx_power_eirp(&self, freq: u32) -> isize {
         if (863000000..869200000).contains(&freq) {
-            14 //25mW
+            16
         } else if (869400000..869650000).contains(&freq) {
-            27 //500mW
+            29
         } else {
-            14 // Default case
+            16
         }
     }
 

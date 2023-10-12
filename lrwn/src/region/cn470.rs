@@ -462,8 +462,8 @@ impl Region for Configuration {
         Ok(beacon_freqs[down_channel])
     }
 
-    fn get_downlink_tx_power(&self, _freq: u32) -> isize {
-        14
+    fn get_downlink_tx_power_eirp(&self, _frequency: u32) -> isize {
+        19
     }
 
     fn get_defaults(&self) -> Defaults {

@@ -2046,7 +2046,9 @@ impl Data {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // set timestamp
@@ -2111,7 +2113,9 @@ impl Data {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // set timestamp
@@ -2189,7 +2193,9 @@ impl Data {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // set timestamp
@@ -2257,7 +2263,9 @@ impl Data {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // set timestamp
@@ -2338,7 +2346,9 @@ impl Data {
         if self.network_conf.downlink_tx_power != -1 {
             tx_info.power = self.network_conf.downlink_tx_power;
         } else {
-            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+            tx_info.power = self
+                .region_conf
+                .get_downlink_tx_power_eirp(tx_info.frequency) as i32;
         }
 
         // set timing
@@ -2448,7 +2458,7 @@ impl Data {
                 let tx_power_rx1 = if self.network_conf.downlink_tx_power != -1 {
                     self.network_conf.downlink_tx_power
                 } else {
-                    self.region_conf.get_downlink_tx_power(
+                    self.region_conf.get_downlink_tx_power_eirp(
                         self.region_conf.get_rx1_frequency_for_uplink_frequency(
                             self.uplink_frame_set.as_ref().unwrap().tx_info.frequency,
                         )?,
@@ -2459,7 +2469,7 @@ impl Data {
                     self.network_conf.downlink_tx_power
                 } else {
                     self.region_conf
-                        .get_downlink_tx_power(self.device_session.rx2_frequency)
+                        .get_downlink_tx_power_eirp(self.device_session.rx2_frequency)
                         as i32
                 };
 
