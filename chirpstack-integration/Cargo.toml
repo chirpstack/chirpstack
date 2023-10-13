@@ -1,0 +1,29 @@
+[package]
+  name = "chirpstack_integration"
+  description = "Library for building external ChirpStack integrations"
+  homepage = "https://www.chirpstack.io/"
+  license = "MIT"
+  version = "4.5.1"
+  authors = ["Orne Brocaar <info@brocaar.com>"]
+  edition = "2021"
+  repository = "https://github.com/chirpstack/chirpstack"
+
+[dependencies]
+  chirpstack_api = { path = "../api/rust", version = "4.5" }
+  redis = { version = "0.23", features = [
+    "cluster-async",
+    "tokio-rustls-comp",
+  ] }
+  anyhow = "1.0"
+  tracing = "0.1"
+  tracing-subscriber = { version = "0.3", features = [
+    "fmt",
+    "ansi",
+    "json",
+  ], default-features = true }
+  async-trait = "0.1.73"
+  serde = { version = "1.0", features = ["derive"] }
+  tokio = { version = "1.32", features = ["macros", "rt-multi-thread"] }
+  lazy_static = "1.4"
+  serde_json = "1.0"
+  toml = "0.7"

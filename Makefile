@@ -65,5 +65,6 @@ test:
 test-all:
 	cd backend && cargo test
 	cd chirpstack && make test-all
+	cd chirpstack-integration && cargo test
 	cd lrwn && make test
 	cd lrwn-filters && make test
