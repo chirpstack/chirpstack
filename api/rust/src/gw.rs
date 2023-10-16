@@ -117,7 +117,8 @@ impl UplinkFrame {
                 self.rx_info = Some(UplinkRxInfo {
                     gateway_id: hex::encode(&rx_info.gateway_id),
                     uplink_id: rng.gen::<u32>(),
-                    time: rx_info.time.clone(),
+                    gw_time: rx_info.time.clone(),
+                    ns_time: None,
                     time_since_gps_epoch: rx_info.time_since_gps_epoch.clone(),
                     fine_time_since_gps_epoch: None,
                     rssi: rx_info.rssi,

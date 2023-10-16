@@ -115,7 +115,7 @@ pub mod test {
             },
             tx_info: Default::default(),
             rx_info_set: vec![gw::UplinkRxInfo {
-                time: Some(rx_time.into()),
+                gw_time: Some(rx_time.into()),
                 ..Default::default()
             }],
             gateway_private_up_map: HashMap::new(),

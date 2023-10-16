@@ -61,7 +61,7 @@ async fn test_fns_uplink() {
 
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
-        time: Some(recv_time.into()),
+        gw_time: Some(recv_time.into()),
         location: Some(common::Location {
             latitude: 0.0,
             longitude: 0.0,
@@ -296,7 +296,7 @@ async fn test_sns_uplink() {
 
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: "0302030405060708".to_string(),
-        time: Some(recv_time.into()),
+        gw_time: Some(recv_time.into()),
         ..Default::default()
     };
     rx_info
@@ -464,7 +464,7 @@ async fn test_sns_dev_not_found() {
 
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: "0302030405060708".to_string(),
-        time: Some(recv_time.into()),
+        gw_time: Some(recv_time.into()),
         ..Default::default()
     };
     rx_info

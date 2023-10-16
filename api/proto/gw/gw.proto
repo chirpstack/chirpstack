@@ -317,10 +317,13 @@ message UplinkRxInfo {
   // Uplink ID.
   uint32 uplink_id = 2;
 
-  // RX time (only set when the gateway has a GPS module).
-  google.protobuf.Timestamp time = 3;
+  // Gateway RX time (set if the gateway has a GNSS module).
+  google.protobuf.Timestamp gw_time = 3;
 
-  // RX time since GPS epoch (only set when the gateway has a GPS module).
+  // Network Server RX time (set by the NS on receiving the uplink).
+  google.protobuf.Timestamp ns_time = 17;
+
+  // RX time as time since GPS epoch (set if the gateway has a GNSS module).
   google.protobuf.Duration time_since_gps_epoch = 4;
 
   // Fine-timestamp.

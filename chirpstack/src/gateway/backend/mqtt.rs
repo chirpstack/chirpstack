@@ -8,6 +8,7 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
+use chrono::Utc;
 use futures::stream::StreamExt;
 use handlebars::Handlebars;
 use paho_mqtt as mqtt;
@@ -374,6 +375,7 @@ async fn message_callback(
 
             if let Some(rx_info) = &mut event.rx_info {
                 set_gateway_json(&rx_info.gateway_id, json);
+                rx_info.ns_time = Some(Utc::now().into());
                 rx_info
                     .metadata
                     .insert("region_config_id".to_string(), region_config_id.to_string());

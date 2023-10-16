@@ -91,8 +91,8 @@ impl TryFrom<&UplinkFrameSet> for api::UplinkFrameLog {
         };
 
         for rx_info in &ufl.rx_info {
-            if rx_info.time.is_some() {
-                let time = rx_info.time.as_ref().unwrap();
+            if rx_info.gw_time.is_some() {
+                let time = rx_info.gw_time.as_ref().unwrap();
                 ufl.time = Some(prost_types::Timestamp {
                     seconds: time.seconds,
                     nanos: time.nanos,

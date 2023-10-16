@@ -46,7 +46,7 @@ pub async fn get_geoloc_buffer(
                     .iter()
                     .cloned()
                     .filter(|rx_info| {
-                        let ts: DateTime<Utc> = match &rx_info.time {
+                        let ts: DateTime<Utc> = match &rx_info.gw_time {
                             None => {
                                 return false;
                             }
