@@ -1234,6 +1234,68 @@ pub mod test {
     }
 
     #[tokio::test]
+    async fn test_async_request_204_status() {
+        let server = MockServer::start();
+
+        let c = Client::new(ClientConfig {
+            sender_id: "010203".into(),
+            receiver_id: "0102030405060708".into(),
+            server: server.url("/"),
+            async_timeout: Duration::from_secs(1),
+            ..Default::default()
+        })
+        .unwrap();
+
+        let mut req = HomeNSReqPayload {
+            base: BasePayload {
+                sender_id: "010203".into(),
+                receiver_id: "0102030405060708".into(),
+                message_type: MessageType::HomeNSReq,
+                transaction_id: 1234,
+                ..Default::default()
+            },
+            dev_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
+        };
+
+        let ans = HomeNSAnsPayload {
+            base: BasePayloadResult {
+                base: BasePayload {
+                    sender_id: "0102030405060708".into(),
+                    receiver_id: "010203".into(),
+                    message_type: MessageType::HomeNSAns,
+                    transaction_id: 1234,
+                    ..Default::default()
+                },
+                result: ResultPayload {
+                    result_code: ResultCode::Success,
+                    description: "".into(),
+                },
+            },
+            h_net_id: vec![3, 2, 1],
+        };
+
+        let mut mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/")
+                .body(serde_json::to_string(&req).unwrap());
+            then.status(204);
+        });
+
+        // OK
+        let (tx, rx) = oneshot::channel();
+        tx.send(serde_json::to_vec(&ans).unwrap()).unwrap();
+        let resp = c.home_ns_req(&mut req, Some(rx)).await.unwrap();
+        mock.assert();
+        mock.delete();
+        assert_eq!(resp, ans);
+
+        // Timeout
+        let (_tx, rx) = oneshot::channel();
+        let resp = c.home_ns_req(&mut req, Some(rx)).await;
+        assert!(resp.is_err());
+    }
+
+    #[tokio::test]
     async fn test_sync_request() {
         let server = MockServer::start();
 
