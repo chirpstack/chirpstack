@@ -492,10 +492,15 @@ export class UplinkRxInfo extends jspb.Message {
   getUplinkId(): number;
   setUplinkId(value: number): void;
 
-  hasTime(): boolean;
-  clearTime(): void;
-  getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+  hasGwTime(): boolean;
+  clearGwTime(): void;
+  getGwTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setGwTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
+
+  hasNsTime(): boolean;
+  clearNsTime(): void;
+  getNsTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setNsTime(value?: google_protobuf_timestamp_pb.Timestamp): void;
 
   hasTimeSinceGpsEpoch(): boolean;
   clearTimeSinceGpsEpoch(): void;
@@ -554,7 +559,8 @@ export namespace UplinkRxInfo {
   export type AsObject = {
     gatewayId: string,
     uplinkId: number,
-    time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    gwTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    nsTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     timeSinceGpsEpoch?: google_protobuf_duration_pb.Duration.AsObject,
     fineTimeSinceGpsEpoch?: google_protobuf_duration_pb.Duration.AsObject,
     rssi: number,

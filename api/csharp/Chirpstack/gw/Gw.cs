@@ -85,103 +85,104 @@ namespace Chirpstack.Gateway {
             "ZBgQIAEoDBIhCgpjcmNfc3RhdHVzGBEgASgOMg0uZ3cuQ1JDU3RhdHVzEjYK",
             "CG1ldGFkYXRhGBIgAygLMiQuZ3cuVXBsaW5rUnhJbmZvTGVnYWN5Lk1ldGFk",
             "YXRhRW50cnkaLwoNTWV0YWRhdGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFs",
-            "dWUYAiABKAk6AjgBQhAKDmZpbmVfdGltZXN0YW1wIu8DCgxVcGxpbmtSeElu",
-            "Zm8SEgoKZ2F0ZXdheV9pZBgBIAEoCRIRCgl1cGxpbmtfaWQYAiABKA0SKAoE",
-            "dGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASNwoUdGlt",
-            "ZV9zaW5jZV9ncHNfZXBvY2gYBCABKAsyGS5nb29nbGUucHJvdG9idWYuRHVy",
-            "YXRpb24SPAoZZmluZV90aW1lX3NpbmNlX2dwc19lcG9jaBgFIAEoCzIZLmdv",
-            "b2dsZS5wcm90b2J1Zi5EdXJhdGlvbhIMCgRyc3NpGAYgASgFEgsKA3NuchgH",
-            "IAEoAhIPCgdjaGFubmVsGAggASgNEhAKCHJmX2NoYWluGAkgASgNEg0KBWJv",
-            "YXJkGAogASgNEg8KB2FudGVubmEYCyABKA0SIgoIbG9jYXRpb24YDCABKAsy",
-            "EC5jb21tb24uTG9jYXRpb24SDwoHY29udGV4dBgNIAEoDBIwCghtZXRhZGF0",
-            "YRgPIAMoCzIeLmd3LlVwbGlua1J4SW5mby5NZXRhZGF0YUVudHJ5EiEKCmNy",
-            "Y19zdGF0dXMYECABKA4yDS5ndy5DUkNTdGF0dXMaLwoNTWV0YWRhdGFFbnRy",
-            "eRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIoIEChREb3dubGlu",
-            "a1R4SW5mb0xlZ2FjeRISCgpnYXRld2F5X2lkGAEgASgMEhEKCWZyZXF1ZW5j",
-            "eRgFIAEoDRINCgVwb3dlchgGIAEoBRImCgptb2R1bGF0aW9uGAcgASgOMhIu",
-            "Y29tbW9uLk1vZHVsYXRpb24SNgoUbG9yYV9tb2R1bGF0aW9uX2luZm8YCCAB",
-            "KAsyFi5ndy5Mb3JhTW9kdWxhdGlvbkluZm9IABI0ChNmc2tfbW9kdWxhdGlv",
-            "bl9pbmZvGAkgASgLMhUuZ3cuRnNrTW9kdWxhdGlvbkluZm9IABINCgVib2Fy",
-            "ZBgKIAEoDRIPCgdhbnRlbm5hGAsgASgNEiIKBnRpbWluZxgMIAEoDjISLmd3",
-            "LkRvd25saW5rVGltaW5nEjwKF2ltbWVkaWF0ZWx5X3RpbWluZ19pbmZvGA0g",
-            "ASgLMhkuZ3cuSW1tZWRpYXRlbHlUaW1pbmdJbmZvSAESMAoRZGVsYXlfdGlt",
-            "aW5nX2luZm8YDiABKAsyEy5ndy5EZWxheVRpbWluZ0luZm9IARI3ChVncHNf",
-            "ZXBvY2hfdGltaW5nX2luZm8YDyABKAsyFi5ndy5HUFNFcG9jaFRpbWluZ0lu",
-            "Zm9IARIPCgdjb250ZXh0GBAgASgMQhEKD21vZHVsYXRpb25faW5mb0INCgt0",
-            "aW1pbmdfaW5mbyKjAQoORG93bmxpbmtUeEluZm8SEQoJZnJlcXVlbmN5GAEg",
-            "ASgNEg0KBXBvd2VyGAIgASgFEiIKCm1vZHVsYXRpb24YAyABKAsyDi5ndy5N",
-            "b2R1bGF0aW9uEg0KBWJvYXJkGAQgASgNEg8KB2FudGVubmEYBSABKA0SGgoG",
-            "dGltaW5nGAYgASgLMgouZ3cuVGltaW5nEg8KB2NvbnRleHQYByABKAwimwEK",
-            "BlRpbWluZxIwCgtpbW1lZGlhdGVseRgBIAEoCzIZLmd3LkltbWVkaWF0ZWx5",
-            "VGltaW5nSW5mb0gAEiQKBWRlbGF5GAIgASgLMhMuZ3cuRGVsYXlUaW1pbmdJ",
-            "bmZvSAASKwoJZ3BzX2Vwb2NoGAMgASgLMhYuZ3cuR1BTRXBvY2hUaW1pbmdJ",
-            "bmZvSABCDAoKcGFyYW1ldGVycyIXChVJbW1lZGlhdGVseVRpbWluZ0luZm8i",
-            "OwoPRGVsYXlUaW1pbmdJbmZvEigKBWRlbGF5GAEgASgLMhkuZ29vZ2xlLnBy",
-            "b3RvYnVmLkR1cmF0aW9uIk0KEkdQU0Vwb2NoVGltaW5nSW5mbxI3ChR0aW1l",
-            "X3NpbmNlX2dwc19lcG9jaBgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5EdXJh",
-            "dGlvbiLIAQoLVXBsaW5rRnJhbWUSEwoLcGh5X3BheWxvYWQYASABKAwSLgoO",
-            "dHhfaW5mb19sZWdhY3kYAiABKAsyFi5ndy5VcGxpbmtUeEluZm9MZWdhY3kS",
-            "LgoOcnhfaW5mb19sZWdhY3kYAyABKAsyFi5ndy5VcGxpbmtSeEluZm9MZWdh",
-            "Y3kSIQoHdHhfaW5mbxgEIAEoCzIQLmd3LlVwbGlua1R4SW5mbxIhCgdyeF9p",
-            "bmZvGAUgASgLMhAuZ3cuVXBsaW5rUnhJbmZvImsKDlVwbGlua0ZyYW1lU2V0",
-            "EhMKC3BoeV9wYXlsb2FkGAEgASgMEiEKB3R4X2luZm8YAiABKAsyEC5ndy5V",
-            "cGxpbmtUeEluZm8SIQoHcnhfaW5mbxgDIAMoCzIQLmd3LlVwbGlua1J4SW5m",
-            "byKVAQoNRG93bmxpbmtGcmFtZRITCgtkb3dubGlua19pZBgDIAEoDRIaChJk",
-            "b3dubGlua19pZF9sZWdhY3kYBCABKAwSJAoFaXRlbXMYBSADKAsyFS5ndy5E",
-            "b3dubGlua0ZyYW1lSXRlbRIZChFnYXRld2F5X2lkX2xlZ2FjeRgGIAEoDBIS",
-            "CgpnYXRld2F5X2lkGAcgASgJIn8KEURvd25saW5rRnJhbWVJdGVtEhMKC3Bo",
-            "eV9wYXlsb2FkGAEgASgMEjAKDnR4X2luZm9fbGVnYWN5GAIgASgLMhguZ3cu",
-            "RG93bmxpbmtUeEluZm9MZWdhY3kSIwoHdHhfaW5mbxgDIAEoCzISLmd3LkRv",
-            "d25saW5rVHhJbmZvIpUBCg1Eb3dubGlua1R4QWNrEhkKEWdhdGV3YXlfaWRf",
-            "bGVnYWN5GAEgASgMEhIKCmdhdGV3YXlfaWQYBiABKAkSEwoLZG93bmxpbmtf",
-            "aWQYAiABKA0SGgoSZG93bmxpbmtfaWRfbGVnYWN5GAQgASgMEiQKBWl0ZW1z",
-            "GAUgAygLMhUuZ3cuRG93bmxpbmtUeEFja0l0ZW0iNAoRRG93bmxpbmtUeEFj",
-            "a0l0ZW0SHwoGc3RhdHVzGAEgASgOMg8uZ3cuVHhBY2tTdGF0dXMitQEKFEdh",
-            "dGV3YXlDb25maWd1cmF0aW9uEhkKEWdhdGV3YXlfaWRfbGVnYWN5GAEgASgM",
-            "EhIKCmdhdGV3YXlfaWQYBSABKAkSDwoHdmVyc2lvbhgCIAEoCRIqCghjaGFu",
-            "bmVscxgDIAMoCzIYLmd3LkNoYW5uZWxDb25maWd1cmF0aW9uEjEKDnN0YXRz",
-            "X2ludGVydmFsGAQgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uIocC",
-            "ChRDaGFubmVsQ29uZmlndXJhdGlvbhIRCglmcmVxdWVuY3kYASABKA0SLQoR",
-            "bW9kdWxhdGlvbl9sZWdhY3kYAiABKA4yEi5jb21tb24uTW9kdWxhdGlvbhI6",
-            "ChZsb3JhX21vZHVsYXRpb25fY29uZmlnGAMgASgLMhguZ3cuTG9yYU1vZHVs",
-            "YXRpb25Db25maWdIABI4ChVmc2tfbW9kdWxhdGlvbl9jb25maWcYBCABKAsy",
-            "Fy5ndy5Gc2tNb2R1bGF0aW9uQ29uZmlnSAASDQoFYm9hcmQYBSABKA0SEwoL",
-            "ZGVtb2R1bGF0b3IYBiABKA1CEwoRbW9kdWxhdGlvbl9jb25maWciXgoUTG9y",
-            "YU1vZHVsYXRpb25Db25maWcSGAoQYmFuZHdpZHRoX2xlZ2FjeRgBIAEoDRIR",
-            "CgliYW5kd2lkdGgYAyABKA0SGQoRc3ByZWFkaW5nX2ZhY3RvcnMYAiADKA0i",
-            "UwoTRnNrTW9kdWxhdGlvbkNvbmZpZxIYChBiYW5kd2lkdGhfbGVnYWN5GAEg",
-            "ASgNEhEKCWJhbmR3aWR0aBgDIAEoDRIPCgdiaXRyYXRlGAIgASgNIvQBChlH",
-            "YXRld2F5Q29tbWFuZEV4ZWNSZXF1ZXN0EhkKEWdhdGV3YXlfaWRfbGVnYWN5",
-            "GAEgASgMEhIKCmdhdGV3YXlfaWQYBiABKAkSDwoHY29tbWFuZBgCIAEoCRIP",
-            "CgdleGVjX2lkGAcgASgNEg0KBXN0ZGluGAQgASgMEkMKC2Vudmlyb25tZW50",
-            "GAUgAygLMi4uZ3cuR2F0ZXdheUNvbW1hbmRFeGVjUmVxdWVzdC5FbnZpcm9u",
-            "bWVudEVudHJ5GjIKEEVudmlyb25tZW50RW50cnkSCwoDa2V5GAEgASgJEg0K",
-            "BXZhbHVlGAIgASgJOgI4ASKLAQoaR2F0ZXdheUNvbW1hbmRFeGVjUmVzcG9u",
-            "c2USGQoRZ2F0ZXdheV9pZF9sZWdhY3kYASABKAwSEgoKZ2F0ZXdheV9pZBgG",
-            "IAEoCRIPCgdleGVjX2lkGAcgASgNEg4KBnN0ZG91dBgDIAEoDBIOCgZzdGRl",
-            "cnIYBCABKAwSDQoFZXJyb3IYBSABKAkiWQoXUmF3UGFja2V0Rm9yd2FyZGVy",
-            "RXZlbnQSGQoRZ2F0ZXdheV9pZF9sZWdhY3kYASABKAwSEgoKZ2F0ZXdheV9p",
-            "ZBgEIAEoCRIPCgdwYXlsb2FkGAMgASgMIlsKGVJhd1BhY2tldEZvcndhcmRl",
-            "ckNvbW1hbmQSGQoRZ2F0ZXdheV9pZF9sZWdhY3kYASABKAwSEgoKZ2F0ZXdh",
-            "eV9pZBgEIAEoCRIPCgdwYXlsb2FkGAMgASgMIoABCglDb25uU3RhdGUSGQoR",
-            "Z2F0ZXdheV9pZF9sZWdhY3kYASABKAwSEgoKZ2F0ZXdheV9pZBgDIAEoCRIi",
-            "CgVzdGF0ZRgCIAEoDjITLmd3LkNvbm5TdGF0ZS5TdGF0ZSIgCgVTdGF0ZRIL",
-            "CgdPRkZMSU5FEAASCgoGT05MSU5FEAEqtQEKCENvZGVSYXRlEhAKDENSX1VO",
-            "REVGSU5FRBAAEgoKBkNSXzRfNRABEgoKBkNSXzRfNhACEgoKBkNSXzRfNxAD",
-            "EgoKBkNSXzRfOBAEEgoKBkNSXzNfOBAFEgoKBkNSXzJfNhAGEgoKBkNSXzFf",
-            "NBAHEgoKBkNSXzFfNhAIEgoKBkNSXzVfNhAJEg0KCUNSX0xJXzRfNRAKEg0K",
-            "CUNSX0xJXzRfNhALEg0KCUNSX0xJXzRfOBAMKjsKDkRvd25saW5rVGltaW5n",
-            "Eg8KC0lNTUVESUFURUxZEAASCQoFREVMQVkQARINCglHUFNfRVBPQ0gQAio3",
-            "ChFGaW5lVGltZXN0YW1wVHlwZRIICgROT05FEAASDQoJRU5DUllQVEVEEAES",
-            "CQoFUExBSU4QAiowCglDUkNTdGF0dXMSCgoGTk9fQ1JDEAASCwoHQkFEX0NS",
-            "QxABEgoKBkNSQ19PSxACKrwBCgtUeEFja1N0YXR1cxILCgdJR05PUkVEEAAS",
-            "BgoCT0sQARIMCghUT09fTEFURRACEg0KCVRPT19FQVJMWRADEhQKEENPTExJ",
-            "U0lPTl9QQUNLRVQQBBIUChBDT0xMSVNJT05fQkVBQ09OEAUSCwoHVFhfRlJF",
-            "URAGEgwKCFRYX1BPV0VSEAcSEAoMR1BTX1VOTE9DS0VEEAgSDgoKUVVFVUVf",
-            "RlVMTBAJEhIKDklOVEVSTkFMX0VSUk9SEApCagoUaW8uY2hpcnBzdGFjay5h",
-            "cGkuZ3dCDEdhdGV3YXlQcm90b1ABWi1naXRodWIuY29tL2NoaXJwc3RhY2sv",
-            "Y2hpcnBzdGFjay9hcGkvZ28vdjQvZ3eqAhJDaGlycHN0YWNrLkdhdGV3YXli",
-            "BnByb3RvMw=="));
+            "dWUYAiABKAk6AjgBQhAKDmZpbmVfdGltZXN0YW1wIp8ECgxVcGxpbmtSeElu",
+            "Zm8SEgoKZ2F0ZXdheV9pZBgBIAEoCRIRCgl1cGxpbmtfaWQYAiABKA0SKwoH",
+            "Z3dfdGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASKwoH",
+            "bnNfdGltZRgRIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASNwoU",
+            "dGltZV9zaW5jZV9ncHNfZXBvY2gYBCABKAsyGS5nb29nbGUucHJvdG9idWYu",
+            "RHVyYXRpb24SPAoZZmluZV90aW1lX3NpbmNlX2dwc19lcG9jaBgFIAEoCzIZ",
+            "Lmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvbhIMCgRyc3NpGAYgASgFEgsKA3Nu",
+            "chgHIAEoAhIPCgdjaGFubmVsGAggASgNEhAKCHJmX2NoYWluGAkgASgNEg0K",
+            "BWJvYXJkGAogASgNEg8KB2FudGVubmEYCyABKA0SIgoIbG9jYXRpb24YDCAB",
+            "KAsyEC5jb21tb24uTG9jYXRpb24SDwoHY29udGV4dBgNIAEoDBIwCghtZXRh",
+            "ZGF0YRgPIAMoCzIeLmd3LlVwbGlua1J4SW5mby5NZXRhZGF0YUVudHJ5EiEK",
+            "CmNyY19zdGF0dXMYECABKA4yDS5ndy5DUkNTdGF0dXMaLwoNTWV0YWRhdGFF",
+            "bnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIoIEChREb3du",
+            "bGlua1R4SW5mb0xlZ2FjeRISCgpnYXRld2F5X2lkGAEgASgMEhEKCWZyZXF1",
+            "ZW5jeRgFIAEoDRINCgVwb3dlchgGIAEoBRImCgptb2R1bGF0aW9uGAcgASgO",
+            "MhIuY29tbW9uLk1vZHVsYXRpb24SNgoUbG9yYV9tb2R1bGF0aW9uX2luZm8Y",
+            "CCABKAsyFi5ndy5Mb3JhTW9kdWxhdGlvbkluZm9IABI0ChNmc2tfbW9kdWxh",
+            "dGlvbl9pbmZvGAkgASgLMhUuZ3cuRnNrTW9kdWxhdGlvbkluZm9IABINCgVi",
+            "b2FyZBgKIAEoDRIPCgdhbnRlbm5hGAsgASgNEiIKBnRpbWluZxgMIAEoDjIS",
+            "Lmd3LkRvd25saW5rVGltaW5nEjwKF2ltbWVkaWF0ZWx5X3RpbWluZ19pbmZv",
+            "GA0gASgLMhkuZ3cuSW1tZWRpYXRlbHlUaW1pbmdJbmZvSAESMAoRZGVsYXlf",
+            "dGltaW5nX2luZm8YDiABKAsyEy5ndy5EZWxheVRpbWluZ0luZm9IARI3ChVn",
+            "cHNfZXBvY2hfdGltaW5nX2luZm8YDyABKAsyFi5ndy5HUFNFcG9jaFRpbWlu",
+            "Z0luZm9IARIPCgdjb250ZXh0GBAgASgMQhEKD21vZHVsYXRpb25faW5mb0IN",
+            "Cgt0aW1pbmdfaW5mbyKjAQoORG93bmxpbmtUeEluZm8SEQoJZnJlcXVlbmN5",
+            "GAEgASgNEg0KBXBvd2VyGAIgASgFEiIKCm1vZHVsYXRpb24YAyABKAsyDi5n",
+            "dy5Nb2R1bGF0aW9uEg0KBWJvYXJkGAQgASgNEg8KB2FudGVubmEYBSABKA0S",
+            "GgoGdGltaW5nGAYgASgLMgouZ3cuVGltaW5nEg8KB2NvbnRleHQYByABKAwi",
+            "mwEKBlRpbWluZxIwCgtpbW1lZGlhdGVseRgBIAEoCzIZLmd3LkltbWVkaWF0",
+            "ZWx5VGltaW5nSW5mb0gAEiQKBWRlbGF5GAIgASgLMhMuZ3cuRGVsYXlUaW1p",
+            "bmdJbmZvSAASKwoJZ3BzX2Vwb2NoGAMgASgLMhYuZ3cuR1BTRXBvY2hUaW1p",
+            "bmdJbmZvSABCDAoKcGFyYW1ldGVycyIXChVJbW1lZGlhdGVseVRpbWluZ0lu",
+            "Zm8iOwoPRGVsYXlUaW1pbmdJbmZvEigKBWRlbGF5GAEgASgLMhkuZ29vZ2xl",
+            "LnByb3RvYnVmLkR1cmF0aW9uIk0KEkdQU0Vwb2NoVGltaW5nSW5mbxI3ChR0",
+            "aW1lX3NpbmNlX2dwc19lcG9jaBgBIAEoCzIZLmdvb2dsZS5wcm90b2J1Zi5E",
+            "dXJhdGlvbiLIAQoLVXBsaW5rRnJhbWUSEwoLcGh5X3BheWxvYWQYASABKAwS",
+            "LgoOdHhfaW5mb19sZWdhY3kYAiABKAsyFi5ndy5VcGxpbmtUeEluZm9MZWdh",
+            "Y3kSLgoOcnhfaW5mb19sZWdhY3kYAyABKAsyFi5ndy5VcGxpbmtSeEluZm9M",
+            "ZWdhY3kSIQoHdHhfaW5mbxgEIAEoCzIQLmd3LlVwbGlua1R4SW5mbxIhCgdy",
+            "eF9pbmZvGAUgASgLMhAuZ3cuVXBsaW5rUnhJbmZvImsKDlVwbGlua0ZyYW1l",
+            "U2V0EhMKC3BoeV9wYXlsb2FkGAEgASgMEiEKB3R4X2luZm8YAiABKAsyEC5n",
+            "dy5VcGxpbmtUeEluZm8SIQoHcnhfaW5mbxgDIAMoCzIQLmd3LlVwbGlua1J4",
+            "SW5mbyKVAQoNRG93bmxpbmtGcmFtZRITCgtkb3dubGlua19pZBgDIAEoDRIa",
+            "ChJkb3dubGlua19pZF9sZWdhY3kYBCABKAwSJAoFaXRlbXMYBSADKAsyFS5n",
+            "dy5Eb3dubGlua0ZyYW1lSXRlbRIZChFnYXRld2F5X2lkX2xlZ2FjeRgGIAEo",
+            "DBISCgpnYXRld2F5X2lkGAcgASgJIn8KEURvd25saW5rRnJhbWVJdGVtEhMK",
+            "C3BoeV9wYXlsb2FkGAEgASgMEjAKDnR4X2luZm9fbGVnYWN5GAIgASgLMhgu",
+            "Z3cuRG93bmxpbmtUeEluZm9MZWdhY3kSIwoHdHhfaW5mbxgDIAEoCzISLmd3",
+            "LkRvd25saW5rVHhJbmZvIpUBCg1Eb3dubGlua1R4QWNrEhkKEWdhdGV3YXlf",
+            "aWRfbGVnYWN5GAEgASgMEhIKCmdhdGV3YXlfaWQYBiABKAkSEwoLZG93bmxp",
+            "bmtfaWQYAiABKA0SGgoSZG93bmxpbmtfaWRfbGVnYWN5GAQgASgMEiQKBWl0",
+            "ZW1zGAUgAygLMhUuZ3cuRG93bmxpbmtUeEFja0l0ZW0iNAoRRG93bmxpbmtU",
+            "eEFja0l0ZW0SHwoGc3RhdHVzGAEgASgOMg8uZ3cuVHhBY2tTdGF0dXMitQEK",
+            "FEdhdGV3YXlDb25maWd1cmF0aW9uEhkKEWdhdGV3YXlfaWRfbGVnYWN5GAEg",
+            "ASgMEhIKCmdhdGV3YXlfaWQYBSABKAkSDwoHdmVyc2lvbhgCIAEoCRIqCghj",
+            "aGFubmVscxgDIAMoCzIYLmd3LkNoYW5uZWxDb25maWd1cmF0aW9uEjEKDnN0",
+            "YXRzX2ludGVydmFsGAQgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9u",
+            "IocCChRDaGFubmVsQ29uZmlndXJhdGlvbhIRCglmcmVxdWVuY3kYASABKA0S",
+            "LQoRbW9kdWxhdGlvbl9sZWdhY3kYAiABKA4yEi5jb21tb24uTW9kdWxhdGlv",
+            "bhI6ChZsb3JhX21vZHVsYXRpb25fY29uZmlnGAMgASgLMhguZ3cuTG9yYU1v",
+            "ZHVsYXRpb25Db25maWdIABI4ChVmc2tfbW9kdWxhdGlvbl9jb25maWcYBCAB",
+            "KAsyFy5ndy5Gc2tNb2R1bGF0aW9uQ29uZmlnSAASDQoFYm9hcmQYBSABKA0S",
+            "EwoLZGVtb2R1bGF0b3IYBiABKA1CEwoRbW9kdWxhdGlvbl9jb25maWciXgoU",
+            "TG9yYU1vZHVsYXRpb25Db25maWcSGAoQYmFuZHdpZHRoX2xlZ2FjeRgBIAEo",
+            "DRIRCgliYW5kd2lkdGgYAyABKA0SGQoRc3ByZWFkaW5nX2ZhY3RvcnMYAiAD",
+            "KA0iUwoTRnNrTW9kdWxhdGlvbkNvbmZpZxIYChBiYW5kd2lkdGhfbGVnYWN5",
+            "GAEgASgNEhEKCWJhbmR3aWR0aBgDIAEoDRIPCgdiaXRyYXRlGAIgASgNIvQB",
+            "ChlHYXRld2F5Q29tbWFuZEV4ZWNSZXF1ZXN0EhkKEWdhdGV3YXlfaWRfbGVn",
+            "YWN5GAEgASgMEhIKCmdhdGV3YXlfaWQYBiABKAkSDwoHY29tbWFuZBgCIAEo",
+            "CRIPCgdleGVjX2lkGAcgASgNEg0KBXN0ZGluGAQgASgMEkMKC2Vudmlyb25t",
+            "ZW50GAUgAygLMi4uZ3cuR2F0ZXdheUNvbW1hbmRFeGVjUmVxdWVzdC5FbnZp",
+            "cm9ubWVudEVudHJ5GjIKEEVudmlyb25tZW50RW50cnkSCwoDa2V5GAEgASgJ",
+            "Eg0KBXZhbHVlGAIgASgJOgI4ASKLAQoaR2F0ZXdheUNvbW1hbmRFeGVjUmVz",
+            "cG9uc2USGQoRZ2F0ZXdheV9pZF9sZWdhY3kYASABKAwSEgoKZ2F0ZXdheV9p",
+            "ZBgGIAEoCRIPCgdleGVjX2lkGAcgASgNEg4KBnN0ZG91dBgDIAEoDBIOCgZz",
+            "dGRlcnIYBCABKAwSDQoFZXJyb3IYBSABKAkiWQoXUmF3UGFja2V0Rm9yd2Fy",
+            "ZGVyRXZlbnQSGQoRZ2F0ZXdheV9pZF9sZWdhY3kYASABKAwSEgoKZ2F0ZXdh",
+            "eV9pZBgEIAEoCRIPCgdwYXlsb2FkGAMgASgMIlsKGVJhd1BhY2tldEZvcndh",
+            "cmRlckNvbW1hbmQSGQoRZ2F0ZXdheV9pZF9sZWdhY3kYASABKAwSEgoKZ2F0",
+            "ZXdheV9pZBgEIAEoCRIPCgdwYXlsb2FkGAMgASgMIoABCglDb25uU3RhdGUS",
+            "GQoRZ2F0ZXdheV9pZF9sZWdhY3kYASABKAwSEgoKZ2F0ZXdheV9pZBgDIAEo",
+            "CRIiCgVzdGF0ZRgCIAEoDjITLmd3LkNvbm5TdGF0ZS5TdGF0ZSIgCgVTdGF0",
+            "ZRILCgdPRkZMSU5FEAASCgoGT05MSU5FEAEqtQEKCENvZGVSYXRlEhAKDENS",
+            "X1VOREVGSU5FRBAAEgoKBkNSXzRfNRABEgoKBkNSXzRfNhACEgoKBkNSXzRf",
+            "NxADEgoKBkNSXzRfOBAEEgoKBkNSXzNfOBAFEgoKBkNSXzJfNhAGEgoKBkNS",
+            "XzFfNBAHEgoKBkNSXzFfNhAIEgoKBkNSXzVfNhAJEg0KCUNSX0xJXzRfNRAK",
+            "Eg0KCUNSX0xJXzRfNhALEg0KCUNSX0xJXzRfOBAMKjsKDkRvd25saW5rVGlt",
+            "aW5nEg8KC0lNTUVESUFURUxZEAASCQoFREVMQVkQARINCglHUFNfRVBPQ0gQ",
+            "Aio3ChFGaW5lVGltZXN0YW1wVHlwZRIICgROT05FEAASDQoJRU5DUllQVEVE",
+            "EAESCQoFUExBSU4QAiowCglDUkNTdGF0dXMSCgoGTk9fQ1JDEAASCwoHQkFE",
+            "X0NSQxABEgoKBkNSQ19PSxACKrwBCgtUeEFja1N0YXR1cxILCgdJR05PUkVE",
+            "EAASBgoCT0sQARIMCghUT09fTEFURRACEg0KCVRPT19FQVJMWRADEhQKEENP",
+            "TExJU0lPTl9QQUNLRVQQBBIUChBDT0xMSVNJT05fQkVBQ09OEAUSCwoHVFhf",
+            "RlJFURAGEgwKCFRYX1BPV0VSEAcSEAoMR1BTX1VOTE9DS0VEEAgSDgoKUVVF",
+            "VUVfRlVMTBAJEhIKDklOVEVSTkFMX0VSUk9SEApCagoUaW8uY2hpcnBzdGFj",
+            "ay5hcGkuZ3dCDEdhdGV3YXlQcm90b1ABWi1naXRodWIuY29tL2NoaXJwc3Rh",
+            "Y2svY2hpcnBzdGFjay9hcGkvZ28vdjQvZ3eqAhJDaGlycHN0YWNrLkdhdGV3",
+            "YXliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Chirpstack.Common.CommonReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Gateway.CodeRate), typeof(global::Chirpstack.Gateway.DownlinkTiming), typeof(global::Chirpstack.Gateway.FineTimestampType), typeof(global::Chirpstack.Gateway.CRCStatus), typeof(global::Chirpstack.Gateway.TxAckStatus), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -196,7 +197,7 @@ namespace Chirpstack.Gateway {
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Gateway.GatewayStats), global::Chirpstack.Gateway.GatewayStats.Parser, new[]{ "GatewayIdLegacy", "GatewayId", "Time", "Location", "ConfigVersion", "RxPacketsReceived", "RxPacketsReceivedOk", "TxPacketsReceived", "TxPacketsEmitted", "Metadata", "TxPacketsPerFrequency", "RxPacketsPerFrequency", "TxPacketsPerModulation", "RxPacketsPerModulation", "TxPacketsPerStatus" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Gateway.PerModulationCount), global::Chirpstack.Gateway.PerModulationCount.Parser, new[]{ "Modulation", "Count" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Gateway.UplinkRxInfoLegacy), global::Chirpstack.Gateway.UplinkRxInfoLegacy.Parser, new[]{ "GatewayId", "Time", "TimeSinceGpsEpoch", "Rssi", "LoraSnr", "Channel", "RfChain", "Board", "Antenna", "Location", "FineTimestampType", "EncryptedFineTimestamp", "PlainFineTimestamp", "Context", "UplinkId", "CrcStatus", "Metadata" }, new[]{ "FineTimestamp" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Gateway.UplinkRxInfo), global::Chirpstack.Gateway.UplinkRxInfo.Parser, new[]{ "GatewayId", "UplinkId", "Time", "TimeSinceGpsEpoch", "FineTimeSinceGpsEpoch", "Rssi", "Snr", "Channel", "RfChain", "Board", "Antenna", "Location", "Context", "Metadata", "CrcStatus" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Gateway.UplinkRxInfo), global::Chirpstack.Gateway.UplinkRxInfo.Parser, new[]{ "GatewayId", "UplinkId", "GwTime", "NsTime", "TimeSinceGpsEpoch", "FineTimeSinceGpsEpoch", "Rssi", "Snr", "Channel", "RfChain", "Board", "Antenna", "Location", "Context", "Metadata", "CrcStatus" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Gateway.DownlinkTxInfoLegacy), global::Chirpstack.Gateway.DownlinkTxInfoLegacy.Parser, new[]{ "GatewayId", "Frequency", "Power", "Modulation", "LoraModulationInfo", "FskModulationInfo", "Board", "Antenna", "Timing", "ImmediatelyTimingInfo", "DelayTimingInfo", "GpsEpochTimingInfo", "Context" }, new[]{ "ModulationInfo", "TimingInfo" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Gateway.DownlinkTxInfo), global::Chirpstack.Gateway.DownlinkTxInfo.Parser, new[]{ "Frequency", "Power", "Modulation", "Board", "Antenna", "Timing", "Context" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Gateway.Timing), global::Chirpstack.Gateway.Timing.Parser, new[]{ "Immediately", "Delay", "GpsEpoch" }, new[]{ "Parameters" }, null, null, null),
@@ -4623,7 +4624,8 @@ namespace Chirpstack.Gateway {
     public UplinkRxInfo(UplinkRxInfo other) : this() {
       gatewayId_ = other.gatewayId_;
       uplinkId_ = other.uplinkId_;
-      time_ = other.time_ != null ? other.time_.Clone() : null;
+      gwTime_ = other.gwTime_ != null ? other.gwTime_.Clone() : null;
+      nsTime_ = other.nsTime_ != null ? other.nsTime_.Clone() : null;
       timeSinceGpsEpoch_ = other.timeSinceGpsEpoch_ != null ? other.timeSinceGpsEpoch_.Clone() : null;
       fineTimeSinceGpsEpoch_ = other.fineTimeSinceGpsEpoch_ != null ? other.fineTimeSinceGpsEpoch_.Clone() : null;
       rssi_ = other.rssi_;
@@ -4675,18 +4677,33 @@ namespace Chirpstack.Gateway {
       }
     }
 
-    /// <summary>Field number for the "time" field.</summary>
-    public const int TimeFieldNumber = 3;
-    private global::Google.Protobuf.WellKnownTypes.Timestamp time_;
+    /// <summary>Field number for the "gw_time" field.</summary>
+    public const int GwTimeFieldNumber = 3;
+    private global::Google.Protobuf.WellKnownTypes.Timestamp gwTime_;
     /// <summary>
-    /// RX time (only set when the gateway has a GPS module).
+    /// Gateway RX time (set if the gateway has a GNSS module).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Timestamp Time {
-      get { return time_; }
+    public global::Google.Protobuf.WellKnownTypes.Timestamp GwTime {
+      get { return gwTime_; }
       set {
-        time_ = value;
+        gwTime_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "ns_time" field.</summary>
+    public const int NsTimeFieldNumber = 17;
+    private global::Google.Protobuf.WellKnownTypes.Timestamp nsTime_;
+    /// <summary>
+    /// Network Server RX time (set by the NS on receiving the uplink).
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Google.Protobuf.WellKnownTypes.Timestamp NsTime {
+      get { return nsTime_; }
+      set {
+        nsTime_ = value;
       }
     }
 
@@ -4694,7 +4711,7 @@ namespace Chirpstack.Gateway {
     public const int TimeSinceGpsEpochFieldNumber = 4;
     private global::Google.Protobuf.WellKnownTypes.Duration timeSinceGpsEpoch_;
     /// <summary>
-    /// RX time since GPS epoch (only set when the gateway has a GPS module).
+    /// RX time as time since GPS epoch (set if the gateway has a GNSS module).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -4889,7 +4906,8 @@ namespace Chirpstack.Gateway {
       }
       if (GatewayId != other.GatewayId) return false;
       if (UplinkId != other.UplinkId) return false;
-      if (!object.Equals(Time, other.Time)) return false;
+      if (!object.Equals(GwTime, other.GwTime)) return false;
+      if (!object.Equals(NsTime, other.NsTime)) return false;
       if (!object.Equals(TimeSinceGpsEpoch, other.TimeSinceGpsEpoch)) return false;
       if (!object.Equals(FineTimeSinceGpsEpoch, other.FineTimeSinceGpsEpoch)) return false;
       if (Rssi != other.Rssi) return false;
@@ -4911,7 +4929,8 @@ namespace Chirpstack.Gateway {
       int hash = 1;
       if (GatewayId.Length != 0) hash ^= GatewayId.GetHashCode();
       if (UplinkId != 0) hash ^= UplinkId.GetHashCode();
-      if (time_ != null) hash ^= Time.GetHashCode();
+      if (gwTime_ != null) hash ^= GwTime.GetHashCode();
+      if (nsTime_ != null) hash ^= NsTime.GetHashCode();
       if (timeSinceGpsEpoch_ != null) hash ^= TimeSinceGpsEpoch.GetHashCode();
       if (fineTimeSinceGpsEpoch_ != null) hash ^= FineTimeSinceGpsEpoch.GetHashCode();
       if (Rssi != 0) hash ^= Rssi.GetHashCode();
@@ -4950,9 +4969,9 @@ namespace Chirpstack.Gateway {
         output.WriteRawTag(16);
         output.WriteUInt32(UplinkId);
       }
-      if (time_ != null) {
+      if (gwTime_ != null) {
         output.WriteRawTag(26);
-        output.WriteMessage(Time);
+        output.WriteMessage(GwTime);
       }
       if (timeSinceGpsEpoch_ != null) {
         output.WriteRawTag(34);
@@ -4999,6 +5018,10 @@ namespace Chirpstack.Gateway {
         output.WriteRawTag(128, 1);
         output.WriteEnum((int) CrcStatus);
       }
+      if (nsTime_ != null) {
+        output.WriteRawTag(138, 1);
+        output.WriteMessage(NsTime);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -5017,9 +5040,9 @@ namespace Chirpstack.Gateway {
         output.WriteRawTag(16);
         output.WriteUInt32(UplinkId);
       }
-      if (time_ != null) {
+      if (gwTime_ != null) {
         output.WriteRawTag(26);
-        output.WriteMessage(Time);
+        output.WriteMessage(GwTime);
       }
       if (timeSinceGpsEpoch_ != null) {
         output.WriteRawTag(34);
@@ -5066,6 +5089,10 @@ namespace Chirpstack.Gateway {
         output.WriteRawTag(128, 1);
         output.WriteEnum((int) CrcStatus);
       }
+      if (nsTime_ != null) {
+        output.WriteRawTag(138, 1);
+        output.WriteMessage(NsTime);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -5082,8 +5109,11 @@ namespace Chirpstack.Gateway {
       if (UplinkId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeUInt32Size(UplinkId);
       }
-      if (time_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Time);
+      if (gwTime_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(GwTime);
+      }
+      if (nsTime_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(NsTime);
       }
       if (timeSinceGpsEpoch_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(TimeSinceGpsEpoch);
@@ -5137,11 +5167,17 @@ namespace Chirpstack.Gateway {
       if (other.UplinkId != 0) {
         UplinkId = other.UplinkId;
       }
-      if (other.time_ != null) {
-        if (time_ == null) {
-          Time = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+      if (other.gwTime_ != null) {
+        if (gwTime_ == null) {
+          GwTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
         }
-        Time.MergeFrom(other.Time);
+        GwTime.MergeFrom(other.GwTime);
+      }
+      if (other.nsTime_ != null) {
+        if (nsTime_ == null) {
+          NsTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+        }
+        NsTime.MergeFrom(other.NsTime);
       }
       if (other.timeSinceGpsEpoch_ != null) {
         if (timeSinceGpsEpoch_ == null) {
@@ -5210,10 +5246,10 @@ namespace Chirpstack.Gateway {
             break;
           }
           case 26: {
-            if (time_ == null) {
-              Time = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            if (gwTime_ == null) {
+              GwTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
             }
-            input.ReadMessage(Time);
+            input.ReadMessage(GwTime);
             break;
           }
           case 34: {
@@ -5273,6 +5309,13 @@ namespace Chirpstack.Gateway {
             CrcStatus = (global::Chirpstack.Gateway.CRCStatus) input.ReadEnum();
             break;
           }
+          case 138: {
+            if (nsTime_ == null) {
+              NsTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            }
+            input.ReadMessage(NsTime);
+            break;
+          }
         }
       }
     #endif
@@ -5297,10 +5340,10 @@ namespace Chirpstack.Gateway {
             break;
           }
           case 26: {
-            if (time_ == null) {
-              Time = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            if (gwTime_ == null) {
+              GwTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
             }
-            input.ReadMessage(Time);
+            input.ReadMessage(GwTime);
             break;
           }
           case 34: {
@@ -5358,6 +5401,13 @@ namespace Chirpstack.Gateway {
           }
           case 128: {
             CrcStatus = (global::Chirpstack.Gateway.CRCStatus) input.ReadEnum();
+            break;
+          }
+          case 138: {
+            if (nsTime_ == null) {
+              NsTime = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            }
+            input.ReadMessage(NsTime);
             break;
           }
         }
@@ -5474,7 +5524,7 @@ namespace Chirpstack.Gateway {
     public const int PowerFieldNumber = 6;
     private int power_;
     /// <summary>
-    /// TX power (in dBm).
+    /// TX power (in dBm EIRP).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -6244,7 +6294,7 @@ namespace Chirpstack.Gateway {
     public const int PowerFieldNumber = 2;
     private int power_;
     /// <summary>
-    /// TX power (in dBm).
+    /// TX power (in dBm EIRP).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

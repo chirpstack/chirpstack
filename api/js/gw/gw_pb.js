@@ -4291,7 +4291,8 @@ proto.gw.UplinkRxInfo.toObject = function(includeInstance, msg) {
   var f, obj = {
     gatewayId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     uplinkId: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    time: (f = msg.getTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    gwTime: (f = msg.getGwTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+    nsTime: (f = msg.getNsTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
     timeSinceGpsEpoch: (f = msg.getTimeSinceGpsEpoch()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f),
     fineTimeSinceGpsEpoch: (f = msg.getFineTimeSinceGpsEpoch()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f),
     rssi: jspb.Message.getFieldWithDefault(msg, 6, 0),
@@ -4351,7 +4352,12 @@ proto.gw.UplinkRxInfo.deserializeBinaryFromReader = function(msg, reader) {
     case 3:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setTime(value);
+      msg.setGwTime(value);
+      break;
+    case 17:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setNsTime(value);
       break;
     case 4:
       var value = new google_protobuf_duration_pb.Duration;
@@ -4449,10 +4455,18 @@ proto.gw.UplinkRxInfo.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getTime();
+  f = message.getGwTime();
   if (f != null) {
     writer.writeMessage(
       3,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getNsTime();
+  if (f != null) {
+    writer.writeMessage(
+      17,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
@@ -4581,10 +4595,10 @@ proto.gw.UplinkRxInfo.prototype.setUplinkId = function(value) {
 
 
 /**
- * optional google.protobuf.Timestamp time = 3;
+ * optional google.protobuf.Timestamp gw_time = 3;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.gw.UplinkRxInfo.prototype.getTime = function() {
+proto.gw.UplinkRxInfo.prototype.getGwTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 3));
 };
@@ -4594,7 +4608,7 @@ proto.gw.UplinkRxInfo.prototype.getTime = function() {
  * @param {?proto.google.protobuf.Timestamp|undefined} value
  * @return {!proto.gw.UplinkRxInfo} returns this
 */
-proto.gw.UplinkRxInfo.prototype.setTime = function(value) {
+proto.gw.UplinkRxInfo.prototype.setGwTime = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
@@ -4603,8 +4617,8 @@ proto.gw.UplinkRxInfo.prototype.setTime = function(value) {
  * Clears the message field making it undefined.
  * @return {!proto.gw.UplinkRxInfo} returns this
  */
-proto.gw.UplinkRxInfo.prototype.clearTime = function() {
-  return this.setTime(undefined);
+proto.gw.UplinkRxInfo.prototype.clearGwTime = function() {
+  return this.setGwTime(undefined);
 };
 
 
@@ -4612,8 +4626,45 @@ proto.gw.UplinkRxInfo.prototype.clearTime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.gw.UplinkRxInfo.prototype.hasTime = function() {
+proto.gw.UplinkRxInfo.prototype.hasGwTime = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp ns_time = 17;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.gw.UplinkRxInfo.prototype.getNsTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 17));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.gw.UplinkRxInfo} returns this
+*/
+proto.gw.UplinkRxInfo.prototype.setNsTime = function(value) {
+  return jspb.Message.setWrapperField(this, 17, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.gw.UplinkRxInfo} returns this
+ */
+proto.gw.UplinkRxInfo.prototype.clearNsTime = function() {
+  return this.setNsTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.gw.UplinkRxInfo.prototype.hasNsTime = function() {
+  return jspb.Message.getField(this, 17) != null;
 };
 
 

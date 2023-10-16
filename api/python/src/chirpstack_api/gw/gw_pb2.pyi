@@ -289,7 +289,7 @@ class UplinkRxInfoLegacy(_message.Message):
     def __init__(self, gateway_id: _Optional[bytes] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., time_since_gps_epoch: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., rssi: _Optional[int] = ..., lora_snr: _Optional[float] = ..., channel: _Optional[int] = ..., rf_chain: _Optional[int] = ..., board: _Optional[int] = ..., antenna: _Optional[int] = ..., location: _Optional[_Union[_common_pb2.Location, _Mapping]] = ..., fine_timestamp_type: _Optional[_Union[FineTimestampType, str]] = ..., encrypted_fine_timestamp: _Optional[_Union[EncryptedFineTimestamp, _Mapping]] = ..., plain_fine_timestamp: _Optional[_Union[PlainFineTimestamp, _Mapping]] = ..., context: _Optional[bytes] = ..., uplink_id: _Optional[bytes] = ..., crc_status: _Optional[_Union[CRCStatus, str]] = ..., metadata: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class UplinkRxInfo(_message.Message):
-    __slots__ = ["gateway_id", "uplink_id", "time", "time_since_gps_epoch", "fine_time_since_gps_epoch", "rssi", "snr", "channel", "rf_chain", "board", "antenna", "location", "context", "metadata", "crc_status"]
+    __slots__ = ["gateway_id", "uplink_id", "gw_time", "ns_time", "time_since_gps_epoch", "fine_time_since_gps_epoch", "rssi", "snr", "channel", "rf_chain", "board", "antenna", "location", "context", "metadata", "crc_status"]
     class MetadataEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -299,7 +299,8 @@ class UplinkRxInfo(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     GATEWAY_ID_FIELD_NUMBER: _ClassVar[int]
     UPLINK_ID_FIELD_NUMBER: _ClassVar[int]
-    TIME_FIELD_NUMBER: _ClassVar[int]
+    GW_TIME_FIELD_NUMBER: _ClassVar[int]
+    NS_TIME_FIELD_NUMBER: _ClassVar[int]
     TIME_SINCE_GPS_EPOCH_FIELD_NUMBER: _ClassVar[int]
     FINE_TIME_SINCE_GPS_EPOCH_FIELD_NUMBER: _ClassVar[int]
     RSSI_FIELD_NUMBER: _ClassVar[int]
@@ -314,7 +315,8 @@ class UplinkRxInfo(_message.Message):
     CRC_STATUS_FIELD_NUMBER: _ClassVar[int]
     gateway_id: str
     uplink_id: int
-    time: _timestamp_pb2.Timestamp
+    gw_time: _timestamp_pb2.Timestamp
+    ns_time: _timestamp_pb2.Timestamp
     time_since_gps_epoch: _duration_pb2.Duration
     fine_time_since_gps_epoch: _duration_pb2.Duration
     rssi: int
@@ -327,7 +329,7 @@ class UplinkRxInfo(_message.Message):
     context: bytes
     metadata: _containers.ScalarMap[str, str]
     crc_status: CRCStatus
-    def __init__(self, gateway_id: _Optional[str] = ..., uplink_id: _Optional[int] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., time_since_gps_epoch: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., fine_time_since_gps_epoch: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., rssi: _Optional[int] = ..., snr: _Optional[float] = ..., channel: _Optional[int] = ..., rf_chain: _Optional[int] = ..., board: _Optional[int] = ..., antenna: _Optional[int] = ..., location: _Optional[_Union[_common_pb2.Location, _Mapping]] = ..., context: _Optional[bytes] = ..., metadata: _Optional[_Mapping[str, str]] = ..., crc_status: _Optional[_Union[CRCStatus, str]] = ...) -> None: ...
+    def __init__(self, gateway_id: _Optional[str] = ..., uplink_id: _Optional[int] = ..., gw_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., ns_time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., time_since_gps_epoch: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., fine_time_since_gps_epoch: _Optional[_Union[_duration_pb2.Duration, _Mapping]] = ..., rssi: _Optional[int] = ..., snr: _Optional[float] = ..., channel: _Optional[int] = ..., rf_chain: _Optional[int] = ..., board: _Optional[int] = ..., antenna: _Optional[int] = ..., location: _Optional[_Union[_common_pb2.Location, _Mapping]] = ..., context: _Optional[bytes] = ..., metadata: _Optional[_Mapping[str, str]] = ..., crc_status: _Optional[_Union[CRCStatus, str]] = ...) -> None: ...
 
 class DownlinkTxInfoLegacy(_message.Message):
     __slots__ = ["gateway_id", "frequency", "power", "modulation", "lora_modulation_info", "fsk_modulation_info", "board", "antenna", "timing", "immediately_timing_info", "delay_timing_info", "gps_epoch_timing_info", "context"]
