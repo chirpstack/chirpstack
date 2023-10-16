@@ -291,13 +291,14 @@ impl Data {
 
         ctx.select_downlink_gateway()?;
         if ctx._is_class_c() {
+            ctx.class_c_update_scheduler_run_after().await?;
             ctx.check_for_first_uplink()?;
-            ctx.get_class_c_device_lock().await?;
             ctx.set_immediately()?;
             ctx.set_tx_info_for_rx2()?;
         }
         if ctx._is_class_b() {
-            ctx.set_tx_info_for_class_b_and_lock_device().await?;
+            ctx.set_tx_info_for_class_b_and_update_scheduler_run_after()
+                .await?;
         }
         if ctx._is_class_a() {
             return Err(anyhow!("Invalid device-class"));
@@ -921,20 +922,6 @@ impl Data {
         if self.device_session.f_cnt_up == 0 {
             return Err(anyhow!("Device must send its first uplink first"));
         }
-
-        Ok(())
-    }
-
-    async fn get_class_c_device_lock(&self) -> Result<()> {
-        trace!("Getting Class-C device lock");
-        let conf = config::get();
-
-        device::get_lock(
-            &self.device.dev_eui,
-            chrono::Duration::from_std(conf.network.scheduler.class_c_lock_duration)?,
-        )
-        .await
-        .context("Get device lock")?;
 
         Ok(())
     }
@@ -2324,7 +2311,22 @@ impl Data {
         Ok(())
     }
 
-    async fn set_tx_info_for_class_b_and_lock_device(&mut self) -> Result<()> {
+    async fn class_c_update_scheduler_run_after(&mut self) -> Result<()> {
+        trace!("Updating scheduler_run_after_ts for Class-C");
+
+        let conf = config::get();
+        let scheduler_run_after_ts = Utc::now() + conf.network.scheduler.class_c_lock_duration;
+
+        self.device =
+            device::set_scheduler_run_after(&self.device.dev_eui, Some(scheduler_run_after_ts))
+                .await?;
+
+        Ok(())
+    }
+
+    // The setting of tx_info and updating update_scheduler_run_after_ts is combined
+    // as we need to calculate the ping_slot_ts for the tx_info.
+    async fn set_tx_info_for_class_b_and_update_scheduler_run_after(&mut self) -> Result<()> {
         trace!("Setting tx-info for Class-B");
 
         let gw_down = self.downlink_gateway.as_ref().unwrap();
@@ -2365,13 +2367,8 @@ impl Data {
             })),
         });
 
-        let scheduler_run_after_ts = ping_slot_ts.to_date_time();
-        // Try to aquire the device lock.
-        device::get_lock(&self.device.dev_eui, scheduler_run_after_ts - Utc::now())
-            .await
-            .context("Get device lock")?;
-
         // Update the device next scheduler run.
+        let scheduler_run_after_ts = ping_slot_ts.to_date_time();
         trace!(scheduler_run_after = %scheduler_run_after_ts, "Setting scheduler_run_after for device");
         self.device =
             device::set_scheduler_run_after(&self.device.dev_eui, Some(scheduler_run_after_ts))

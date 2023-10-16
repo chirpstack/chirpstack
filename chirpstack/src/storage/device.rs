@@ -13,7 +13,7 @@ use uuid::Uuid;
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{application, device, device_profile, multicast_group_device, tenant};
-use super::{error::Error, fields, get_db_conn, get_redis_conn, redis_key};
+use super::{error::Error, fields, get_db_conn};
 use crate::config;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, AsExpression, FromSqlRow)]
@@ -539,6 +539,22 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
         let mut c = get_db_conn()?;
         c.transaction::<Vec<Device>, Error, _>(|c| {
             let conf = config::get();
+
+            // This query will:
+            //  * Select the devices for which a Class-B or Class-C downlink can be scheduled.
+            //  * Lock the device records for update with skip locked such that other
+            //    ChirpStack instances are able to do the same for the remaining devices.
+            //  * Update the scheduler_run_after for these devices to now() + 2 * scheduler
+            //    interval to avoid concurrency issues (other ChirpStack instance scheduling
+            //    the same queue items).
+            //
+            // This way, we do not have to keep the device records locked until the scheduler
+            // finishes its batch as the same set of devices will not be returned until after
+            // the updated scheduler_run_after. Only if the scheduler takes more time than 2x the
+            // interval (the scheduler is still working on processing the batch after 2 x interval)
+            // this might cause issues.
+            // The alternative would be to keep the transaction open for a long time + keep
+            // the device records locked during this time which could case issues as well.
             diesel::sql_query(
                 r#"
                     update
@@ -568,6 +584,7 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                                 )
                             order by d.dev_eui
                             limit $1
+                            for update skip locked
                         )
                     returning *
                 "#,
@@ -581,55 +598,6 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
             .map_err(|e| Error::from_diesel(e, "".into()))
         })
         .context("Get with Class B/C queue-items transaction")
-    })
-    .await?
-}
-
-// This sets the lock. In case a lock was already set, it will be overwritten with the new TTL
-// value.
-pub async fn set_lock(dev_eui: &EUI64, ttl: Duration) -> Result<()> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<()> {
-            info!(dev_eui = %dev_eui, "Setting device lock");
-            let key = redis_key(format!("device:{{{}}}:lock", dev_eui));
-            let mut c = get_redis_conn()?;
-
-            redis::cmd("PSETEX")
-                .arg(key)
-                .arg(ttl.num_milliseconds())
-                .arg("lock")
-                .query(&mut *c)?;
-
-            Ok(())
-        }
-    })
-    .await?
-}
-
-// This sets the lock. In case a lock was already set, this function will return an error.
-pub async fn get_lock(dev_eui: &EUI64, ttl: Duration) -> Result<(), Error> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<(), Error> {
-            info!(dev_eui = %dev_eui, "Aquiring device lock");
-            let key = redis_key(format!("device:{{{}}}:lock", dev_eui));
-            let mut c = get_redis_conn()?;
-
-            let set: bool = redis::cmd("SET")
-                .arg(&key)
-                .arg("lock")
-                .arg("PX")
-                .arg(ttl.num_milliseconds() as usize)
-                .arg("NX")
-                .query(&mut *c)?;
-
-            if !set {
-                return Err(Error::AlreadyExists(key));
-            }
-
-            Ok(())
-        }
     })
     .await?
 }
@@ -829,46 +797,5 @@ pub mod test {
         let _ = device_queue::update_item(qi).await.unwrap();
         let res = get_with_class_b_c_queue_items(10).await.unwrap();
         assert_eq!(1, res.len());
-    }
-
-    #[tokio::test]
-    async fn test_get_set_lock() {
-        let _guard = test::prepare().await;
-
-        // This is okay, as we are overwriting the lock
-        set_lock(
-            &EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
-            Duration::seconds(1),
-        )
-        .await
-        .unwrap();
-        set_lock(
-            &EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
-            Duration::seconds(1),
-        )
-        .await
-        .unwrap();
-
-        // This should fail as we are trying to aquire a lock,
-        // but there is already a lock set.
-        let res = get_lock(
-            &EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
-            Duration::seconds(1),
-        )
-        .await;
-        assert!(res.is_err());
-
-        get_lock(
-            &EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
-            Duration::seconds(1),
-        )
-        .await
-        .unwrap();
-        let res = get_lock(
-            &EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
-            Duration::seconds(1),
-        )
-        .await;
-        assert!(res.is_err());
     }
 }

@@ -464,13 +464,12 @@ pub fn device_uplink_frame_log(uf: api::UplinkFrameLog) -> Validator {
     })
 }
 
-pub fn downlink_device_lock(dev_eui: EUI64) -> Validator {
+pub fn scheduler_run_after_set(dev_eui: EUI64) -> Validator {
     Box::new(move || {
         let dev_eui = dev_eui.clone();
         Box::pin(async move {
-            let mut c = get_redis_conn().unwrap();
-            let key = redis_key(format!("device:{{{}}}:lock", dev_eui));
-            let _: String = redis::cmd("GET").arg(key).query(&mut *c).unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            assert!(d.scheduler_run_after.is_some());
         })
     })
 }

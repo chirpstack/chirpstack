@@ -1603,22 +1603,22 @@ async fn test_lorawan_10_uplink() {
             ],
         },
         Test {
-            name: "uplink of class-c device sets lock".into(),
+            name: "uplink of class-c device updates scheduler_run_after".into(),
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
-                    let mut dp = device_profile::get(&dp_id).await.unwrap();
-                    dp.supports_class_c = true;
-                    device_profile::update(dp.clone()).await.unwrap();
+                    device::set_enabled_class(&dev_eui, device::DeviceClass::C)
+                        .await
+                        .unwrap();
                 })
             })),
             after_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
-                    let mut dp = device_profile::get(&dp_id).await.unwrap();
-                    dp.supports_class_c = false;
-                    device_profile::update(dp).await.unwrap();
+                    device::set_enabled_class(&dev_eui, device::DeviceClass::A)
+                        .await
+                        .unwrap();
                 })
             })),
             device_session: Some(ds.clone()),
@@ -1643,7 +1643,7 @@ async fn test_lorawan_10_uplink() {
             assert: vec![
                 assert::f_cnt_up(dev.dev_eui.clone(), 11),
                 assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
-                assert::downlink_device_lock(dev.dev_eui.clone()),
+                assert::scheduler_run_after_set(dev.dev_eui.clone()),
             ],
         },
     ];

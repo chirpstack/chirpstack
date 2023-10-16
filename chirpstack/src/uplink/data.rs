@@ -118,7 +118,6 @@ impl Data {
         ctx.set_device_info()?;
         ctx.set_device_gateway_rx_info()?;
         ctx.handle_retransmission_reset().await?;
-        ctx.set_device_lock().await?;
         ctx.set_scheduler_run_after().await?;
         if !ctx._is_roaming() {
             // In case of roaming we do not know the gateways and therefore it must not be
@@ -190,7 +189,6 @@ impl Data {
         ctx.set_device_info()?;
         ctx.set_relay_rx_info()?;
         ctx.handle_retransmission_reset().await?;
-        ctx.set_device_lock().await?;
         ctx.decrypt_f_opts_mac_commands()?;
         ctx.decrypt_frm_payload()?;
         ctx.set_adr()?;
@@ -537,18 +535,6 @@ impl Data {
         }
 
         Err(Error::Abort)
-    }
-
-    async fn set_device_lock(&self) -> Result<()> {
-        trace!("Setting device lock");
-        let dev = self.device.as_ref().unwrap();
-        let conf = config::get();
-
-        device::set_lock(
-            &dev.dev_eui,
-            Duration::from_std(conf.network.scheduler.class_a_lock_duration)?,
-        )
-        .await
     }
 
     // For Class-B and Class-C devices, set the scheduler_run_after timestamp to avoid collisions with
