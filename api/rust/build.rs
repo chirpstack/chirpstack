@@ -41,6 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let descriptor_set = std::fs::read(out_dir.join("common").join("proto_descriptor.bin"))?;
         pbjson_build::Builder::new()
             .register_descriptors(&descriptor_set)?
+            .ignore_unknown_fields()
             .out_dir(out_dir.join("common"))
             .build(&[".common"])?;
     }
@@ -65,6 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let descriptor_set = std::fs::read(out_dir.join("gw").join("proto_descriptor.bin"))?;
         pbjson_build::Builder::new()
             .register_descriptors(&descriptor_set)?
+            .ignore_unknown_fields()
             .out_dir(out_dir.join("gw"))
             .extern_path(".common", "crate::common")
             .build(&[".gw"])?;
@@ -94,6 +96,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let descriptor_set = std::fs::read(out_dir.join("internal").join("proto_descriptor.bin"))?;
         pbjson_build::Builder::new()
             .register_descriptors(&descriptor_set)?
+            .ignore_unknown_fields()
             .out_dir(out_dir.join("internal"))
             .extern_path(".common", "crate::common")
             .build(&[".internal"])?;
@@ -126,6 +129,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         pbjson_build::Builder::new()
             .emit_fields()
             .register_descriptors(&descriptor_set)?
+            .ignore_unknown_fields()
             .out_dir(out_dir.join("integration"))
             .extern_path(".common", "crate::common")
             .extern_path(".gw", "crate::gw")
@@ -149,6 +153,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let descriptor_set = std::fs::read(out_dir.join("meta").join("proto_descriptor.bin"))?;
         pbjson_build::Builder::new()
             .register_descriptors(&descriptor_set)?
+            .ignore_unknown_fields()
             .out_dir(out_dir.join("meta"))
             .extern_path(".common", "crate::common")
             .extern_path(".gw", "crate::gw")
