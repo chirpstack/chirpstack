@@ -145,9 +145,9 @@ impl<'a> Integration<'a> {
             command_regex: Regex::new(&templates.render(
                 "command_topic",
                 &CommandTopicContext {
-                    application_id: r#"(?P<application_id>[\w-]+)"#.to_string(),
-                    dev_eui: r#"(?P<dev_eui>[\w]+)"#.to_string(),
-                    command: r#"(?P<command>[\w]+)"#.to_string(),
+                    application_id: r"(?P<application_id>[\w-]+)".to_string(),
+                    dev_eui: r"(?P<dev_eui>[\w]+)".to_string(),
+                    command: r"(?P<command>[\w]+)".to_string(),
                 },
             )?)?,
             qos: conf.qos,

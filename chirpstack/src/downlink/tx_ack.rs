@@ -667,7 +667,7 @@ impl TxAck {
         let mut plaintext_frm_payload = false;
         if let Payload::MACPayload(pl) = &phy.payload {
             // f_port must be either 0 or 226 (Relay).
-            if vec![0, lrwn::LA_FPORT_RELAY].contains(&pl.f_port.unwrap_or(0)) {
+            if [0, lrwn::LA_FPORT_RELAY].contains(&pl.f_port.unwrap_or(0)) {
                 phy.decrypt_frm_payload(&nwk_s_enc_key)?;
                 plaintext_frm_payload = true;
             }

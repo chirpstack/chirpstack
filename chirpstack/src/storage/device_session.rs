@@ -311,7 +311,6 @@ pub async fn get_for_phypayload(
 
 async fn get_dev_euis_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<EUI64>> {
     task::spawn_blocking({
-        let dev_addr = dev_addr;
         move || -> Result<Vec<EUI64>> {
             let key = redis_key(format!("devaddr:{{{}}}", dev_addr));
             let mut c = get_redis_conn()?;
@@ -333,8 +332,6 @@ async fn get_dev_euis_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<EUI64>> {
 
 async fn remove_dev_eui_from_dev_addr_set(dev_addr: DevAddr, dev_eui: EUI64) -> Result<()> {
     task::spawn_blocking({
-        let dev_addr = dev_addr;
-        let dev_eui = dev_eui;
         move || -> Result<()> {
             let key = redis_key(format!("devaddr:{{{}}}", dev_addr));
             let mut c = get_redis_conn()?;

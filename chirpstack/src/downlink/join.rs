@@ -174,7 +174,7 @@ impl JoinAccept<'_> {
                             .gateway_tenant_id_map
                             .get(&gw_id)
                             .map(|v| v.into_bytes().to_vec())
-                            .unwrap_or_else(Vec::new),
+                            .unwrap_or_default(),
                     }
                 })
                 .collect(),
