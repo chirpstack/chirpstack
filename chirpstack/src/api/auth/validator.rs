@@ -975,10 +975,6 @@ impl Validator for ValidateApplicationAccess {
                 let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
-                    .left_join(
-                        application::table
-                            .on(api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable())),
-                    )
                     .filter(api_key::dsl::id.eq(&id))
                     .into_boxed();
 
@@ -987,9 +983,14 @@ impl Validator for ValidateApplicationAccess {
                     // tenant api key
                     Flag::Read | Flag::Update | Flag::Delete => {
                         q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id.eq(&application_id)),
+                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application.filter(
+                                    application::dsl::id.eq(&application_id).and(
+                                        api_key::dsl::tenant_id
+                                            .eq(application::dsl::tenant_id.nullable()),
+                                    ),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -1329,23 +1330,24 @@ impl Validator for ValidateDeviceProfileAccess {
 
             move || -> Result<i64, Error> {
                 let mut c = get_db_conn()?;
-                let mut q =
-                    api_key::dsl::api_key
-                        .select(dsl::count_star())
-                        .left_join(device_profile::table.on(
-                            api_key::dsl::tenant_id.eq(device_profile::dsl::tenant_id.nullable()),
-                        ))
-                        .filter(api_key::dsl::id.eq(&id))
-                        .into_boxed();
+                let mut q = api_key::dsl::api_key
+                    .select(dsl::count_star())
+                    .filter(api_key::dsl::id.eq(&id))
+                    .into_boxed();
 
                 match flag {
                     // admin api key
                     // tenant api key
                     Flag::Read | Flag::Update | Flag::Delete => {
                         q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(device_profile::dsl::id.eq(&device_profile_id)),
+                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                                device_profile::dsl::device_profile.filter(
+                                    device_profile::dsl::id.eq(&device_profile_id).and(
+                                        api_key::dsl::tenant_id
+                                            .eq(device_profile::dsl::tenant_id.nullable()),
+                                    ),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -1441,10 +1443,6 @@ impl Validator for ValidateDevicesAccess {
                 let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
-                    .left_join(
-                        application::table
-                            .on(api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable())),
-                    )
                     .filter(api_key::dsl::id.eq(&id))
                     .into_boxed();
 
@@ -1453,9 +1451,14 @@ impl Validator for ValidateDevicesAccess {
                     // tenant api key
                     Flag::Create | Flag::List => {
                         q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id.eq(&application_id)),
+                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application.filter(
+                                    application::dsl::id.eq(&application_id).and(
+                                        api_key::dsl::tenant_id
+                                            .eq(application::dsl::tenant_id.nullable()),
+                                    ),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -1551,13 +1554,6 @@ impl Validator for ValidateDeviceAccess {
                 let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
-                    .left_join(
-                        application::table
-                            .on(api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable())),
-                    )
-                    .left_join(
-                        device::table.on(application::dsl::id.eq(device::dsl::application_id)),
-                    )
                     .filter(api_key::dsl::id.eq(&id))
                     .into_boxed();
 
@@ -1566,10 +1562,15 @@ impl Validator for ValidateDeviceAccess {
                     // tenant api key
                     Flag::Read | Flag::Update | Flag::Delete => {
                         q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(device::dsl::dev_eui.eq(&dev_eui)),
-                        );
+                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                                device::dsl::device.inner_join(application::table).filter(
+                                    device::dsl::dev_eui.eq(&dev_eui).and(
+                                        api_key::dsl::tenant_id
+                                            .eq(application::dsl::tenant_id.nullable()),
+                                    ),
+                                ),
+                            )),
+                        )
                     }
                     _ => {
                         return Ok(0);
@@ -1649,13 +1650,6 @@ impl Validator for ValidateDeviceQueueAccess {
                 let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
-                    .left_join(
-                        application::table
-                            .on(api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable())),
-                    )
-                    .left_join(
-                        device::table.on(application::dsl::id.eq(device::dsl::application_id)),
-                    )
                     .filter(api_key::dsl::id.eq(&id))
                     .into_boxed();
 
@@ -1664,10 +1658,15 @@ impl Validator for ValidateDeviceQueueAccess {
                     // tenant api key
                     Flag::Create | Flag::List | Flag::Delete => {
                         q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(device::dsl::dev_eui.eq(&dev_eui)),
-                        )
+                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                                device::dsl::device.inner_join(application::table).filter(
+                                    device::dsl::dev_eui.eq(&dev_eui).and(
+                                        api_key::dsl::tenant_id
+                                            .eq(application::dsl::tenant_id.nullable()),
+                                    ),
+                                ),
+                            )),
+                        );
                     }
                     _ => {
                         return Ok(0);
@@ -1854,10 +1853,6 @@ impl Validator for ValidateGatewayAccess {
                 let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
-                    .left_join(
-                        gateway::table
-                            .on(api_key::dsl::tenant_id.eq(gateway::dsl::tenant_id.nullable())),
-                    )
                     .filter(api_key::dsl::id.eq(&id))
                     .into_boxed();
 
@@ -1865,11 +1860,13 @@ impl Validator for ValidateGatewayAccess {
                     // admin api key
                     // tenant api key
                     Flag::Read | Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(gateway::dsl::gateway_id.eq(&gateway_id)),
-                        );
+                        q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                            gateway::dsl::gateway.filter(
+                                gateway::dsl::gateway_id.eq(&gateway_id).and(
+                                    api_key::dsl::tenant_id.eq(gateway::dsl::tenant_id.nullable()),
+                                ),
+                            ),
+                        )));
                     }
                     _ => {
                         return Ok(0);
@@ -1964,10 +1961,6 @@ impl Validator for ValidateMulticastGroupsAccess {
                 let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
-                    .left_join(
-                        application::table
-                            .on(api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable())),
-                    )
                     .filter(api_key::dsl::id.eq(&id))
                     .into_boxed();
 
@@ -1976,9 +1969,14 @@ impl Validator for ValidateMulticastGroupsAccess {
                     // tenant api key
                     Flag::Create | Flag::List => {
                         q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id.eq(&application_id)),
+                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application.filter(
+                                    application::dsl::id.eq(&application_id).and(
+                                        api_key::dsl::tenant_id
+                                            .eq(application::dsl::tenant_id.nullable()),
+                                    ),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -2078,14 +2076,6 @@ impl Validator for ValidateMulticastGroupAccess {
                 let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
-                    .left_join(
-                        application::table
-                            .on(api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable())),
-                    )
-                    .left_join(
-                        multicast_group::table
-                            .on(application::dsl::id.eq(multicast_group::dsl::application_id)),
-                    )
                     .filter(api_key::dsl::id.eq(&id))
                     .into_boxed();
 
@@ -2094,9 +2084,16 @@ impl Validator for ValidateMulticastGroupAccess {
                     // tenant api key
                     Flag::Read | Flag::Update | Flag::Delete => {
                         q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(multicast_group::dsl::id.eq(&multicast_group_id)),
+                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                                multicast_group::dsl::multicast_group
+                                    .inner_join(application::table)
+                                    .filter(
+                                        multicast_group::dsl::id.eq(&multicast_group_id).and(
+                                            api_key::dsl::tenant_id
+                                                .eq(application::dsl::tenant_id.nullable()),
+                                        ),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -2196,14 +2193,6 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                 let mut c = get_db_conn()?;
                 let mut q = api_key::dsl::api_key
                     .select(dsl::count_star())
-                    .left_join(
-                        application::table
-                            .on(api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable())),
-                    )
-                    .left_join(
-                        multicast_group::table
-                            .on(application::dsl::id.eq(multicast_group::dsl::application_id)),
-                    )
                     .filter(api_key::dsl::id.eq(&id))
                     .into_boxed();
 
@@ -2212,9 +2201,16 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                     // tenant api key
                     Flag::Create | Flag::List | Flag::Delete => {
                         q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(multicast_group::dsl::id.eq(&multicast_group_id)),
+                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                                multicast_group::dsl::multicast_group
+                                    .inner_join(application::table)
+                                    .filter(
+                                        multicast_group::dsl::id.eq(&multicast_group_id).and(
+                                            api_key::dsl::tenant_id
+                                                .eq(application::dsl::tenant_id.nullable()),
+                                        ),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
