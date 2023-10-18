@@ -12,8 +12,7 @@ use super::error::Error;
 use crate::api::auth::AuthID;
 use crate::storage::get_db_conn;
 use crate::storage::schema::{
-    api_key, application, device, device_profile, gateway, multicast_group, tenant, tenant_user,
-    user,
+    api_key, application, device, device_profile, gateway, multicast_group, tenant_user, user,
 };
 
 #[derive(Copy, Clone)]
@@ -344,7 +343,6 @@ impl Validator for ValidateApiKeysAccess {
 
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(tenant_user::table.left_join(tenant::table))
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -353,18 +351,27 @@ impl Validator for ValidateApiKeysAccess {
                     // tenant admin
                     Flag::Create => {
                         q = q.filter(
-                            user::dsl::is_admin.eq(true).or(tenant_user::dsl::is_admin
-                                .eq(true)
-                                .and(tenant::dsl::id.eq(&tenant_id))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::tenant_id
+                                        .eq(&tenant_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(tenant_user::dsl::is_admin.eq(true)),
+                                ),
+                            )),
                         );
                     }
                     // admin user
                     // tenant user (api_key filtered by tenant_id in api)
                     Flag::List => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant::dsl::id.eq(&tenant_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::tenant_id
+                                        .eq(&tenant_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -407,9 +414,6 @@ impl Validator for ValidateApiKeyAccess {
 
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(tenant::table.left_join(api_key::table)),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -418,9 +422,19 @@ impl Validator for ValidateApiKeyAccess {
                     // tenant admin
                     Flag::Delete => {
                         q = q.filter(
-                            user::dsl::is_admin.eq(true).or(tenant_user::dsl::is_admin
-                                .eq(true)
-                                .and(api_key::dsl::id.eq(&self_id))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user
+                                    .inner_join(
+                                        api_key::table.on(api_key::dsl::tenant_id
+                                            .eq(tenant_user::dsl::tenant_id.nullable())),
+                                    )
+                                    .filter(
+                                        tenant_user::dsl::user_id
+                                            .eq(user::dsl::id)
+                                            .and(tenant_user::dsl::is_admin.eq(true))
+                                            .and(api_key::dsl::id.eq(&self_id)),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -525,7 +539,6 @@ impl Validator for ValidateTenantAccess {
 
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(tenant_user::table.left_join(tenant::table))
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -533,7 +546,15 @@ impl Validator for ValidateTenantAccess {
                     // global admin
                     // tenant user
                     Flag::Read => {
-                        q = q.filter(user::is_admin.eq(true).or(tenant::dsl::id.eq(&tenant_id)));
+                        q = q.filter(
+                            user::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id)),
+                                ),
+                            )),
+                        );
                     }
 
                     // global admin
@@ -614,7 +635,6 @@ impl Validator for ValidateTenantUsersAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(tenant_user::table.left_join(tenant::table))
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -623,18 +643,27 @@ impl Validator for ValidateTenantUsersAccess {
                     // tenant admin
                     Flag::Create => {
                         q = q.filter(
-                            user::dsl::is_admin.eq(true).or(tenant::dsl::id
-                                .eq(&tenant_id)
-                                .and(tenant_user::dsl::is_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
+                                        .and(tenant_user::dsl::is_admin.eq(true)),
+                                ),
+                            )),
                         );
                     }
                     // global admin
                     // tenant user
                     Flag::List => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant::dsl::id.eq(&tenant_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id)),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -712,7 +741,6 @@ impl Validator for ValidateTenantUserAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(tenant_user::table.left_join(tenant::table))
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -722,23 +750,32 @@ impl Validator for ValidateTenantUserAccess {
                     // user itself
                     Flag::Read => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant::dsl::id
-                                    .eq(&tenant_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(tenant::dsl::id
-                                    .eq(&tenant_id)
-                                    .and(tenant_user::dsl::user_id.eq(&user_id))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::user_id.eq(&user_id)),
+                                        ),
+                                ),
+                            )),
                         );
                     }
                     // admin user
                     // tenant admin
                     Flag::Update | Flag::Delete => {
                         q = q.filter(
-                            user::dsl::is_admin.eq(true).or(tenant::dsl::id
-                                .eq(&tenant_id)
-                                .and(tenant_user::dsl::is_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
+                                        .and(tenant_user::dsl::is_admin.eq(true)),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -810,7 +847,6 @@ impl Validator for ValidateApplicationsAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(tenant_user::table.left_join(tenant::table))
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -820,23 +856,31 @@ impl Validator for ValidateApplicationsAccess {
                     // tenant device admin
                     Flag::Create => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant::dsl::id
-                                    .eq(&tenant_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(tenant::dsl::id
-                                    .eq(&tenant_id)
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                            )),
                         );
                     }
                     // global admin
                     // tenant user
                     Flag::List => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant::dsl::id.eq(&tenant_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id)),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -920,12 +964,6 @@ impl Validator for ValidateApplicationAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(
-                            application::table
-                                .on(tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id)),
-                        ),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -934,9 +972,17 @@ impl Validator for ValidateApplicationAccess {
                     // tenant user
                     Flag::Read => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id.eq(&application_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        application::dsl::id
+                                            .eq(&application_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     // global admin
@@ -944,14 +990,22 @@ impl Validator for ValidateApplicationAccess {
                     // tenant device admin
                     Flag::Update | Flag::Delete => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id
-                                    .eq(&application_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(application::dsl::id
-                                    .eq(&application_id)
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        application::dsl::id
+                                            .eq(&application_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                            .and(
+                                                tenant_user::dsl::is_admin
+                                                    .eq(true)
+                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                            ),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -1174,7 +1228,6 @@ impl Validator for ValidateDeviceProfilesAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(tenant_user::table)
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -1184,23 +1237,31 @@ impl Validator for ValidateDeviceProfilesAccess {
                     // tenant device admin
                     Flag::Create => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant_user::dsl::tenant_id
-                                    .eq(&tenant_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(tenant_user::dsl::tenant_id
-                                    .eq(&tenant_id)
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                            )),
                         );
                     }
                     // global admin
                     // tenant user
                     Flag::List => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant_user::dsl::tenant_id.eq(&tenant_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::user_id
+                                        .eq(user::dsl::id)
+                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id)),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -1275,12 +1336,6 @@ impl Validator for ValidateDeviceProfileAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table
-                            .left_join(device_profile::table.on(
-                                tenant_user::dsl::tenant_id.eq(device_profile::dsl::tenant_id),
-                            )),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -1289,27 +1344,42 @@ impl Validator for ValidateDeviceProfileAccess {
                     // tenant user
                     Flag::Read => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(device_profile::dsl::id.eq(&device_profile_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                device_profile::dsl::device_profile
+                                    .inner_join(
+                                        tenant_user::table.on(tenant_user::dsl::tenant_id
+                                            .eq(device_profile::dsl::tenant_id)),
+                                    )
+                                    .filter(
+                                        device_profile::dsl::id
+                                            .eq(&device_profile_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     // global admin
                     // tenant admin user
                     // tenant device admin
                     Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(device_profile::dsl::id
-                                    .eq(&device_profile_id)
-                                    .and(device_profile::dsl::tenant_id.is_not_null())
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(device_profile::dsl::id
-                                    .eq(&device_profile_id)
-                                    .and(device_profile::dsl::tenant_id.is_not_null())
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
-                        );
+                        q =
+                            q.filter(
+                                user::dsl::is_admin.eq(true).or(dsl::exists(
+                                    device_profile::dsl::device_profile
+                                        .inner_join(
+                                            tenant_user::table.on(tenant_user::dsl::tenant_id
+                                                .eq(device_profile::dsl::tenant_id)),
+                                        )
+                                        .filter(
+                                            device_profile::dsl::id
+                                                .eq(&device_profile_id)
+                                                .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                                .and(tenant_user::dsl::is_admin.eq(true).or(
+                                                    tenant_user::dsl::is_device_admin.eq(true),
+                                                )),
+                                        ),
+                                )),
+                            );
                     }
                     _ => {
                         return Ok(0);
@@ -1388,12 +1458,6 @@ impl Validator for ValidateDevicesAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(
-                            application::table
-                                .on(tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id)),
-                        ),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -1403,23 +1467,39 @@ impl Validator for ValidateDevicesAccess {
                     // tenant device admin
                     Flag::Create => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id
-                                    .eq(&application_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(application::dsl::id
-                                    .eq(&application_id)
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        application::dsl::id
+                                            .eq(&application_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                            .and(
+                                                tenant_user::dsl::is_admin
+                                                    .eq(true)
+                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                            ),
+                                    ),
+                            )),
                         );
                     }
                     // admin user
                     // tenant user
                     Flag::List => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id.eq(&application_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        application::dsl::id
+                                            .eq(&application_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -1496,15 +1576,6 @@ impl Validator for ValidateDeviceAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(
-                            application::table
-                                .on(tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id)),
-                        ),
-                    )
-                    .left_join(
-                        device::table.on(application::dsl::id.eq(device::dsl::application_id)),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -1513,9 +1584,18 @@ impl Validator for ValidateDeviceAccess {
                     // tenant user
                     Flag::Read => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(device::dsl::dev_eui.eq(&dev_eui)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                device::dsl::device
+                                    .inner_join(application::table)
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        device::dsl::dev_eui
+                                            .eq(&dev_eui)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     // admin user
@@ -1523,14 +1603,23 @@ impl Validator for ValidateDeviceAccess {
                     // tenant device admin
                     Flag::Update | Flag::Delete => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(device::dsl::dev_eui
-                                    .eq(&dev_eui)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(device::dsl::dev_eui
-                                    .eq(&dev_eui)
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                device::dsl::device
+                                    .inner_join(application::table)
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        device::dsl::dev_eui
+                                            .eq(&dev_eui)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                            .and(
+                                                tenant_user::dsl::is_admin
+                                                    .eq(true)
+                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                            ),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -1607,15 +1696,6 @@ impl Validator for ValidateDeviceQueueAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(
-                            application::table
-                                .on(tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id)),
-                        ),
-                    )
-                    .left_join(
-                        device::table.on(application::dsl::id.eq(device::dsl::application_id)),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -1624,9 +1704,18 @@ impl Validator for ValidateDeviceQueueAccess {
                     // tenant user
                     Flag::Create | Flag::List | Flag::Delete => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(device::dsl::dev_eui.eq(&dev_eui)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                device::dsl::device
+                                    .inner_join(application::table)
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        device::dsl::dev_eui
+                                            .eq(&dev_eui)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -1703,7 +1792,6 @@ impl Validator for ValidateGatewaysAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(tenant_user::table.left_join(tenant::table))
                     .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -1713,23 +1801,31 @@ impl Validator for ValidateGatewaysAccess {
                     // gateway admin
                     Flag::Create => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant::dsl::id
-                                    .eq(&tenant_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(tenant::dsl::id
-                                    .eq(&tenant_id)
-                                    .and(tenant_user::dsl::is_gateway_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::tenant_id
+                                        .eq(&tenant_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_gateway_admin.eq(true)),
+                                        ),
+                                ),
+                            )),
                         );
                     }
                     // global admin
                     // tenant user
                     Flag::List => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(tenant::dsl::id.eq(&tenant_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::dsl::tenant_user.filter(
+                                    tenant_user::dsl::tenant_id
+                                        .eq(&tenant_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                            )),
                         );
                     }
                     _ => {
@@ -1801,9 +1897,6 @@ impl Validator for ValidateGatewayAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(tenant::table.left_join(gateway::table)),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -1812,25 +1905,40 @@ impl Validator for ValidateGatewayAccess {
                     // tenant user
                     Flag::Read => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(gateway::dsl::gateway_id.eq(&gateway_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                gateway::dsl::gateway
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(gateway::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        gateway::dsl::gateway_id
+                                            .eq(&gateway_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     // admin user
                     // tenant admin
                     // gateway admin
                     Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(gateway::dsl::gateway_id
-                                    .eq(&gateway_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(gateway::dsl::gateway_id
-                                    .eq(&gateway_id)
-                                    .and(tenant_user::dsl::is_gateway_admin.eq(true))),
-                        );
+                        q =
+                            q.filter(
+                                user::dsl::is_admin.eq(true).or(dsl::exists(
+                                    gateway::dsl::gateway
+                                        .inner_join(tenant_user::table.on(
+                                            tenant_user::dsl::tenant_id.eq(gateway::dsl::tenant_id),
+                                        ))
+                                        .filter(
+                                            gateway::dsl::gateway_id
+                                                .eq(&gateway_id)
+                                                .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                                .and(tenant_user::dsl::is_admin.eq(true).or(
+                                                    tenant_user::dsl::is_gateway_admin.eq(true),
+                                                )),
+                                        ),
+                                )),
+                            );
                     }
                     _ => {
                         return Ok(0);
@@ -1906,12 +2014,6 @@ impl Validator for ValidateMulticastGroupsAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(
-                            application::table
-                                .on(tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id)),
-                        ),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -1921,23 +2023,39 @@ impl Validator for ValidateMulticastGroupsAccess {
                     // tenant device admin
                     Flag::Create => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id
-                                    .eq(&application_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(application::dsl::id
-                                    .eq(&application_id)
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        application::dsl::id
+                                            .eq(&application_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                            .and(
+                                                tenant_user::dsl::is_admin
+                                                    .eq(true)
+                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                            ),
+                                    ),
+                            )),
                         );
                     }
                     // admin user
                     // tenant user
                     Flag::List => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(application::dsl::id.eq(&application_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                application::dsl::application
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        application::dsl::id
+                                            .eq(&application_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -2017,16 +2135,6 @@ impl Validator for ValidateMulticastGroupAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(
-                            application::table
-                                .on(tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id)),
-                        ),
-                    )
-                    .left_join(
-                        multicast_group::table
-                            .on(application::dsl::id.eq(multicast_group::dsl::application_id)),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -2035,9 +2143,18 @@ impl Validator for ValidateMulticastGroupAccess {
                     // tenant user
                     Flag::Read => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(multicast_group::dsl::id.eq(&multicast_group_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                multicast_group::dsl::multicast_group
+                                    .inner_join(application::table)
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        multicast_group::dsl::id
+                                            .eq(&multicast_group_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     // admin user
@@ -2045,14 +2162,23 @@ impl Validator for ValidateMulticastGroupAccess {
                     // tenant device admin
                     Flag::Update | Flag::Delete => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(multicast_group::dsl::id
-                                    .eq(&multicast_group_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(multicast_group::dsl::id
-                                    .eq(&multicast_group_id)
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                multicast_group::dsl::multicast_group
+                                    .inner_join(application::table)
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        multicast_group::dsl::id
+                                            .eq(&multicast_group_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                            .and(
+                                                tenant_user::dsl::is_admin
+                                                    .eq(true)
+                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                            ),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -2134,16 +2260,6 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                 let mut c = get_db_conn()?;
                 let mut q = user::dsl::user
                     .select(dsl::count_star())
-                    .left_join(
-                        tenant_user::table.left_join(
-                            application::table
-                                .on(tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id)),
-                        ),
-                    )
-                    .left_join(
-                        multicast_group::table
-                            .on(application::dsl::id.eq(multicast_group::dsl::application_id)),
-                    )
                     .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
                     .into_boxed();
 
@@ -2153,23 +2269,41 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                     // tenant device admin
                     Flag::Create | Flag::Delete => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(multicast_group::dsl::id
-                                    .eq(&multicast_group_id)
-                                    .and(tenant_user::dsl::is_admin.eq(true)))
-                                .or(multicast_group::dsl::id
-                                    .eq(&multicast_group_id)
-                                    .and(tenant_user::dsl::is_device_admin.eq(true))),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                multicast_group::dsl::multicast_group
+                                    .inner_join(application::table)
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        multicast_group::dsl::id
+                                            .eq(&multicast_group_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                            .and(
+                                                tenant_user::dsl::is_admin
+                                                    .eq(true)
+                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                            ),
+                                    ),
+                            )),
                         );
                     }
                     // admin user
                     // tenant user
                     Flag::List => {
                         q = q.filter(
-                            user::dsl::is_admin
-                                .eq(true)
-                                .or(multicast_group::dsl::id.eq(&multicast_group_id)),
+                            user::dsl::is_admin.eq(true).or(dsl::exists(
+                                multicast_group::dsl::multicast_group
+                                    .inner_join(application::table)
+                                    .inner_join(tenant_user::table.on(
+                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                    ))
+                                    .filter(
+                                        multicast_group::dsl::id
+                                            .eq(&multicast_group_id)
+                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    ),
+                            )),
                         );
                     }
                     _ => {
@@ -2247,9 +2381,16 @@ pub mod test {
     where
         V: Validator + Sync,
     {
-        for tst in tests {
-            for v in tst.validators {
-                assert_eq!(tst.ok, v.validate(&tst.id).await.is_ok());
+        println!("Running tests");
+        for (i, tst) in tests.iter().enumerate() {
+            for (j, v) in tst.validators.iter().enumerate() {
+                assert_eq!(
+                    tst.ok,
+                    v.validate(&tst.id).await.is_ok(),
+                    "Test {}, assertion {}",
+                    i,
+                    j
+                );
             }
         }
     }
