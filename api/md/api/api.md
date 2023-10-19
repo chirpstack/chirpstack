@@ -5,6 +5,7 @@
 
 - [api/application.proto](#api_application-proto)
     - [Application](#api-Application)
+    - [Application.TagsEntry](#api-Application-TagsEntry)
     - [ApplicationListItem](#api-ApplicationListItem)
     - [AwsSnsIntegration](#api-AwsSnsIntegration)
     - [AzureServiceBusIntegration](#api-AzureServiceBusIntegration)
@@ -227,6 +228,7 @@
     - [ListTenantsRequest](#api-ListTenantsRequest)
     - [ListTenantsResponse](#api-ListTenantsResponse)
     - [Tenant](#api-Tenant)
+    - [Tenant.TagsEntry](#api-Tenant-TagsEntry)
     - [TenantListItem](#api-TenantListItem)
     - [TenantUser](#api-TenantUser)
     - [TenantUserListItem](#api-TenantUserListItem)
@@ -274,6 +276,23 @@
 | name | [string](#string) |  | Application name. |
 | description | [string](#string) |  | Application description. |
 | tenant_id | [string](#string) |  | Tenant ID (UUID). |
+| tags | [Application.TagsEntry](#api-Application-TagsEntry) | repeated | Tags (user defined). These tags can be used to add additional information to the application. These tags are exposed in all the integration events of devices under this application. |
+
+
+
+
+
+
+<a name="api-Application-TagsEntry"></a>
+
+### Application.TagsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
 
 
 
@@ -1726,7 +1745,7 @@ applications.
 | skip_fcnt_check | [bool](#bool) |  | Skip frame-counter checks (this is insecure, but could be helpful for debugging). |
 | is_disabled | [bool](#bool) |  | Device is disabled. |
 | variables | [Device.VariablesEntry](#api-Device-VariablesEntry) | repeated | Variables (user defined). These variables can be used together with integrations to store tokens / secrets that must be configured per device. These variables are not exposed in the event payloads. |
-| tags | [Device.TagsEntry](#api-Device-TagsEntry) | repeated | Tags (user defined). These tags are exposed in the event payloads or to integration. Tags are intended for aggregation and filtering. |
+| tags | [Device.TagsEntry](#api-Device-TagsEntry) | repeated | Tags (user defined). These tags can be used to add additional information to the device. These tags are exposed in all the integration events. |
 | join_eui | [string](#string) |  | JoinEUI (optional, EUI64). This field will be automatically set / updated on OTAA. However, in some cases it must be pre-configured. For example to allow OTAA using a Relay. In this case the Relay needs to know the JoinEUI &#43; DevEUI combinations of the devices for which it needs to forward uplinks. |
 
 
@@ -2444,7 +2463,7 @@ The actual number of ping-slots per beacon period equals to 2^k. |
 | abp_rx1_dr_offset | [uint32](#uint32) |  | RX1 DR offset (for ABP). |
 | abp_rx2_dr | [uint32](#uint32) |  | RX2 DR (for ABP). |
 | abp_rx2_freq | [uint32](#uint32) |  | RX2 frequency (for ABP, Hz). |
-| tags | [DeviceProfile.TagsEntry](#api-DeviceProfile-TagsEntry) | repeated | User defined tags. |
+| tags | [DeviceProfile.TagsEntry](#api-DeviceProfile-TagsEntry) | repeated | Tags (user defined). These tags can be used to add additional information the the device-profile. These tags are exposed in all the integration events of devices using this device-profile. |
 | measurements | [DeviceProfile.MeasurementsEntry](#api-DeviceProfile-MeasurementsEntry) | repeated | Measurements. If defined, ChirpStack will visualize these metrics in the web-interface. |
 | auto_detect_measurements | [bool](#bool) |  | Auto-detect measurements. If set to true, measurements will be automatically added based on the keys of the decoded payload. In cases where the decoded payload contains random keys in the data, you want to set this to false. |
 | region_config_id | [string](#string) |  | Region configuration ID. If set, devices will only use the associated region. If let blank, then devices will use all regions matching the selected common-name. Note that multiple region configurations can exist for the same common-name, e.g. to provide an 8 channel and 16 channel configuration for the US915 band. |
@@ -2758,7 +2777,8 @@ Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
 <a name="api-DeviceProfileService"></a>
 
 ### DeviceProfileService
-DeviceProfileService is the service providing API methods for managing device-profiles.
+DeviceProfileService is the service providing API methods for managing
+device-profiles.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
@@ -3782,6 +3802,23 @@ MulticastGroupService is the service managing multicast-groups.
 | max_device_count | [uint32](#uint32) |  | Max. device count for tenant. When set to 0, the tenant can have unlimited devices. |
 | private_gateways_up | [bool](#bool) |  | Private gateways (uplink). If enabled, then uplink messages will not be shared with other tenants. |
 | private_gateways_down | [bool](#bool) |  | Private gateways (downlink). If enabled, then other tenants will not be able to schedule downlink messages through the gateways of this tenant. For example, in case you do want to share uplinks with other tenants (private_gateways_up=false), but you want to prevent other tenants from using gateway airtime. |
+| tags | [Tenant.TagsEntry](#api-Tenant-TagsEntry) | repeated | Tags (user defined). These tags can be used to add additional information to the tenant. These tags are NOT exposed in the integration events. |
+
+
+
+
+
+
+<a name="api-Tenant-TagsEntry"></a>
+
+### Tenant.TagsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
 
 
 

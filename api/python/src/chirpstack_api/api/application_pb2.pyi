@@ -64,16 +64,25 @@ INFLUXDB_1: InfluxDbVersion
 INFLUXDB_2: InfluxDbVersion
 
 class Application(_message.Message):
-    __slots__ = ["id", "name", "description", "tenant_id"]
+    __slots__ = ["id", "name", "description", "tenant_id", "tags"]
+    class TagsEntry(_message.Message):
+        __slots__ = ["key", "value"]
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     TENANT_ID_FIELD_NUMBER: _ClassVar[int]
+    TAGS_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     description: str
     tenant_id: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., tenant_id: _Optional[str] = ...) -> None: ...
+    tags: _containers.ScalarMap[str, str]
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., tenant_id: _Optional[str] = ..., tags: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class ApplicationListItem(_message.Message):
     __slots__ = ["id", "created_at", "updated_at", "name", "description"]

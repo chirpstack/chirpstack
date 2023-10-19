@@ -51,8 +51,8 @@ type Device struct {
 	// exposed in the event payloads.
 	Variables map[string]string `protobuf:"bytes,8,rep,name=variables,proto3" json:"variables,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Tags (user defined).
-	// These tags are exposed in the event payloads or to integration. Tags are
-	// intended for aggregation and filtering.
+	// These tags can be used to add additional information to the device.
+	// These tags are exposed in all the integration events.
 	Tags map[string]string `protobuf:"bytes,9,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// JoinEUI (optional, EUI64).
 	// This field will be automatically set / updated on OTAA. However, in some

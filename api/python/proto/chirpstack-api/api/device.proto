@@ -208,8 +208,8 @@ message Device {
   map<string, string> variables = 8;
 
   // Tags (user defined).
-  // These tags are exposed in the event payloads or to integration. Tags are
-  // intended for aggregation and filtering.
+  // These tags can be used to add additional information to the device.
+  // These tags are exposed in all the integration events.
   map<string, string> tags = 9;
 
   // JoinEUI (optional, EUI64).

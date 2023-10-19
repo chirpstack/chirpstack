@@ -18,6 +18,9 @@ export class Application extends jspb.Message {
   getTenantId(): string;
   setTenantId(value: string): Application;
 
+  getTagsMap(): jspb.Map<string, string>;
+  clearTagsMap(): Application;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Application.AsObject;
   static toObject(includeInstance: boolean, msg: Application): Application.AsObject;
@@ -32,6 +35,7 @@ export namespace Application {
     name: string,
     description: string,
     tenantId: string,
+    tagsMap: Array<[string, string]>,
   }
 }
 

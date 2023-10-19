@@ -1729,7 +1729,8 @@ proto.api.Application.toObject = function(includeInstance, msg) {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     name: jspb.Message.getFieldWithDefault(msg, 2, ""),
     description: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    tenantId: jspb.Message.getFieldWithDefault(msg, 4, "")
+    tenantId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -1781,6 +1782,12 @@ proto.api.Application.deserializeBinaryFromReader = function(msg, reader) {
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setTenantId(value);
+      break;
+    case 5:
+      var value = msg.getTagsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     default:
       reader.skipField();
@@ -1838,6 +1845,10 @@ proto.api.Application.serializeBinaryToWriter = function(message, writer) {
       4,
       f
     );
+  }
+  f = message.getTagsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(5, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -1912,6 +1923,28 @@ proto.api.Application.prototype.getTenantId = function() {
 proto.api.Application.prototype.setTenantId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
+
+
+/**
+ * map<string, string> tags = 5;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.api.Application.prototype.getTagsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 5, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.api.Application} returns this
+ */
+proto.api.Application.prototype.clearTagsMap = function() {
+  this.getTagsMap().clear();
+  return this;};
 
 
 

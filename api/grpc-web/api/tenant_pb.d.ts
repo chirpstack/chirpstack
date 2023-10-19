@@ -30,6 +30,9 @@ export class Tenant extends jspb.Message {
   getPrivateGatewaysDown(): boolean;
   setPrivateGatewaysDown(value: boolean): Tenant;
 
+  getTagsMap(): jspb.Map<string, string>;
+  clearTagsMap(): Tenant;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Tenant.AsObject;
   static toObject(includeInstance: boolean, msg: Tenant): Tenant.AsObject;
@@ -48,6 +51,7 @@ export namespace Tenant {
     maxDeviceCount: number,
     privateGatewaysUp: boolean,
     privateGatewaysDown: boolean,
+    tagsMap: Array<[string, string]>,
   }
 }
 

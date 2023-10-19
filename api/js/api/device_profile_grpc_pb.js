@@ -119,7 +119,8 @@ function deserialize_google_protobuf_Empty(buffer_arg) {
 }
 
 
-// DeviceProfileService is the service providing API methods for managing device-profiles.
+// DeviceProfileService is the service providing API methods for managing
+// device-profiles.
 var DeviceProfileServiceService = exports.DeviceProfileServiceService = {
   // Create the given device-profile.
 create: {

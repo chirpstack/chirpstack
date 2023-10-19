@@ -399,8 +399,8 @@ namespace Chirpstack.Api {
     private readonly pbc::MapField<string, string> tags_ = new pbc::MapField<string, string>();
     /// <summary>
     /// Tags (user defined).
-    /// These tags are exposed in the event payloads or to integration. Tags are
-    /// intended for aggregation and filtering.
+    /// These tags can be used to add additional information to the device.
+    /// These tags are exposed in all the integration events.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

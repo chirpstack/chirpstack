@@ -167,7 +167,8 @@ namespace Chirpstack.Api {
     /// </summary>
     [pbr::OriginalName("UNKNOWN")] Unknown = 0,
     /// <summary>
-    /// Incrementing counters that never decrease (these are not reset on each reading).
+    /// Incrementing counters that never decrease (these are not reset on each
+    /// reading).
     /// </summary>
     [pbr::OriginalName("COUNTER")] Counter = 1,
     /// <summary>
@@ -543,8 +544,8 @@ namespace Chirpstack.Api {
     private uint deviceStatusReqInterval_;
     /// <summary>
     /// Device-status request interval (times / day).
-    /// This defines the times per day that ChirpStack will request the device-status
-    /// from the device.
+    /// This defines the times per day that ChirpStack will request the
+    /// device-status from the device.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -605,7 +606,8 @@ namespace Chirpstack.Api {
     private uint classBTimeout_;
     /// <summary>
     /// Class-B timeout (seconds).
-    /// This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested).
+    /// This is the maximum time ChirpStack will wait to receive an acknowledgement
+    /// from the device (if requested).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -669,7 +671,8 @@ namespace Chirpstack.Api {
     private uint classCTimeout_;
     /// <summary>
     /// Class-C timeout (seconds).
-    /// This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested).
+    /// This is the maximum time ChirpStack will wait to receive an acknowledgement
+    /// from the device (if requested).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -746,7 +749,10 @@ namespace Chirpstack.Api {
         = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForString(18, ""), 202);
     private readonly pbc::MapField<string, string> tags_ = new pbc::MapField<string, string>();
     /// <summary>
-    /// User defined tags.
+    /// Tags (user defined).
+    /// These tags can be used to add additional information the the
+    /// device-profile. These tags are exposed in all the integration events of
+    /// devices using this device-profile.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

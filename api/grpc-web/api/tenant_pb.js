@@ -475,7 +475,8 @@ proto.api.Tenant.toObject = function(includeInstance, msg) {
     maxGatewayCount: jspb.Message.getFieldWithDefault(msg, 5, 0),
     maxDeviceCount: jspb.Message.getFieldWithDefault(msg, 6, 0),
     privateGatewaysUp: jspb.Message.getBooleanFieldWithDefault(msg, 7, false),
-    privateGatewaysDown: jspb.Message.getBooleanFieldWithDefault(msg, 8, false)
+    privateGatewaysDown: jspb.Message.getBooleanFieldWithDefault(msg, 8, false),
+    tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -543,6 +544,12 @@ proto.api.Tenant.deserializeBinaryFromReader = function(msg, reader) {
     case 8:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setPrivateGatewaysDown(value);
+      break;
+    case 9:
+      var value = msg.getTagsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     default:
       reader.skipField();
@@ -628,6 +635,10 @@ proto.api.Tenant.serializeBinaryToWriter = function(message, writer) {
       8,
       f
     );
+  }
+  f = message.getTagsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(9, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -774,6 +785,28 @@ proto.api.Tenant.prototype.getPrivateGatewaysDown = function() {
 proto.api.Tenant.prototype.setPrivateGatewaysDown = function(value) {
   return jspb.Message.setProto3BooleanField(this, 8, value);
 };
+
+
+/**
+ * map<string, string> tags = 9;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.api.Tenant.prototype.getTagsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 9, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.api.Tenant} returns this
+ */
+proto.api.Tenant.prototype.clearTagsMap = function() {
+  this.getTagsMap().clear();
+  return this;};
 
 
 

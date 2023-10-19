@@ -81,7 +81,8 @@ type MeasurementKind int32
 const (
 	// Unknown (in which case it is not tracked).
 	MeasurementKind_UNKNOWN MeasurementKind = 0
-	// Incrementing counters that never decrease (these are not reset on each reading).
+	// Incrementing counters that never decrease (these are not reset on each
+	// reading).
 	MeasurementKind_COUNTER MeasurementKind = 1
 	// Counters that do get reset upon reading.
 	MeasurementKind_ABSOLUTE MeasurementKind = 2
@@ -354,8 +355,8 @@ type DeviceProfile struct {
 	// been received, the device is considered inactive.
 	UplinkInterval uint32 `protobuf:"varint,11,opt,name=uplink_interval,json=uplinkInterval,proto3" json:"uplink_interval,omitempty"`
 	// Device-status request interval (times / day).
-	// This defines the times per day that ChirpStack will request the device-status
-	// from the device.
+	// This defines the times per day that ChirpStack will request the
+	// device-status from the device.
 	DeviceStatusReqInterval uint32 `protobuf:"varint,12,opt,name=device_status_req_interval,json=deviceStatusReqInterval,proto3" json:"device_status_req_interval,omitempty"`
 	// Supports OTAA.
 	SupportsOtaa bool `protobuf:"varint,13,opt,name=supports_otaa,json=supportsOtaa,proto3" json:"supports_otaa,omitempty"`
@@ -364,7 +365,8 @@ type DeviceProfile struct {
 	// Supports Class-C.
 	SupportsClassC bool `protobuf:"varint,15,opt,name=supports_class_c,json=supportsClassC,proto3" json:"supports_class_c,omitempty"`
 	// Class-B timeout (seconds).
-	// This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested).
+	// This is the maximum time ChirpStack will wait to receive an acknowledgement
+	// from the device (if requested).
 	ClassBTimeout uint32 `protobuf:"varint,16,opt,name=class_b_timeout,json=classBTimeout,proto3" json:"class_b_timeout,omitempty"`
 	// Class-B ping-slots per beacon period.
 	// Valid options are: 0 - 7.
@@ -376,7 +378,8 @@ type DeviceProfile struct {
 	// Class-B ping-slot freq (Hz).
 	ClassBPingSlotFreq uint32 `protobuf:"varint,19,opt,name=class_b_ping_slot_freq,json=classBPingSlotFreq,proto3" json:"class_b_ping_slot_freq,omitempty"`
 	// Class-C timeout (seconds).
-	// This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested).
+	// This is the maximum time ChirpStack will wait to receive an acknowledgement
+	// from the device (if requested).
 	ClassCTimeout uint32 `protobuf:"varint,20,opt,name=class_c_timeout,json=classCTimeout,proto3" json:"class_c_timeout,omitempty"`
 	// RX1 delay (for ABP).
 	AbpRx1Delay uint32 `protobuf:"varint,21,opt,name=abp_rx1_delay,json=abpRx1Delay,proto3" json:"abp_rx1_delay,omitempty"`
@@ -386,7 +389,10 @@ type DeviceProfile struct {
 	AbpRx2Dr uint32 `protobuf:"varint,23,opt,name=abp_rx2_dr,json=abpRx2Dr,proto3" json:"abp_rx2_dr,omitempty"`
 	// RX2 frequency (for ABP, Hz).
 	AbpRx2Freq uint32 `protobuf:"varint,24,opt,name=abp_rx2_freq,json=abpRx2Freq,proto3" json:"abp_rx2_freq,omitempty"`
-	// User defined tags.
+	// Tags (user defined).
+	// These tags can be used to add additional information the the
+	// device-profile. These tags are exposed in all the integration events of
+	// devices using this device-profile.
 	Tags map[string]string `protobuf:"bytes,25,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Measurements.
 	// If defined, ChirpStack will visualize these metrics in the web-interface.

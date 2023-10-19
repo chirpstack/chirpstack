@@ -9,7 +9,8 @@ using grpc = global::Grpc.Core;
 
 namespace Chirpstack.Api {
   /// <summary>
-  /// DeviceProfileService is the service providing API methods for managing device-profiles.
+  /// DeviceProfileService is the service providing API methods for managing
+  /// device-profiles.
   /// </summary>
   public static partial class DeviceProfileService
   {

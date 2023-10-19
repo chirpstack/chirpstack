@@ -7,7 +7,8 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 class DeviceProfileServiceStub(object):
-    """DeviceProfileService is the service providing API methods for managing device-profiles.
+    """DeviceProfileService is the service providing API methods for managing
+    device-profiles.
     """
 
     def __init__(self, channel):
@@ -49,7 +50,8 @@ class DeviceProfileServiceStub(object):
 
 
 class DeviceProfileServiceServicer(object):
-    """DeviceProfileService is the service providing API methods for managing device-profiles.
+    """DeviceProfileService is the service providing API methods for managing
+    device-profiles.
     """
 
     def Create(self, request, context):
@@ -135,7 +137,8 @@ def add_DeviceProfileServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class DeviceProfileService(object):
-    """DeviceProfileService is the service providing API methods for managing device-profiles.
+    """DeviceProfileService is the service providing API methods for managing
+    device-profiles.
     """
 
     @staticmethod

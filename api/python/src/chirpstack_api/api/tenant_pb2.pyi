@@ -9,7 +9,14 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Tenant(_message.Message):
-    __slots__ = ["id", "name", "description", "can_have_gateways", "max_gateway_count", "max_device_count", "private_gateways_up", "private_gateways_down"]
+    __slots__ = ["id", "name", "description", "can_have_gateways", "max_gateway_count", "max_device_count", "private_gateways_up", "private_gateways_down", "tags"]
+    class TagsEntry(_message.Message):
+        __slots__ = ["key", "value"]
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -18,6 +25,7 @@ class Tenant(_message.Message):
     MAX_DEVICE_COUNT_FIELD_NUMBER: _ClassVar[int]
     PRIVATE_GATEWAYS_UP_FIELD_NUMBER: _ClassVar[int]
     PRIVATE_GATEWAYS_DOWN_FIELD_NUMBER: _ClassVar[int]
+    TAGS_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     description: str
@@ -26,7 +34,8 @@ class Tenant(_message.Message):
     max_device_count: int
     private_gateways_up: bool
     private_gateways_down: bool
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., can_have_gateways: bool = ..., max_gateway_count: _Optional[int] = ..., max_device_count: _Optional[int] = ..., private_gateways_up: bool = ..., private_gateways_down: bool = ...) -> None: ...
+    tags: _containers.ScalarMap[str, str]
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., can_have_gateways: bool = ..., max_gateway_count: _Optional[int] = ..., max_device_count: _Optional[int] = ..., private_gateways_up: bool = ..., private_gateways_down: bool = ..., tags: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class TenantListItem(_message.Message):
     __slots__ = ["id", "created_at", "updated_at", "name", "can_have_gateways", "private_gateways_up", "private_gateways_down", "max_gateway_count", "max_device_count"]
