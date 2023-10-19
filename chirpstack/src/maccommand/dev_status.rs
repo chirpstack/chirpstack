@@ -36,8 +36,9 @@ pub async fn handle(
         )
         .await?;
 
-        let mut tags = (*dp.tags).clone();
-        tags.clone_from(&*dev.tags);
+        let mut tags = (*app.tags).clone();
+        tags.extend((*dp.tags).clone());
+        tags.extend((*dev.tags).clone());
 
         let rx_time: DateTime<Utc> =
             helpers::get_rx_timestamp(&uplink_frame_set.rx_info_set).into();

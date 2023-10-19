@@ -459,6 +459,12 @@ message Application {
 
   // Tenant ID (UUID).
   string tenant_id = 4;
+
+  // Tags (user defined).
+  // These tags can be used to add additional information to the application.
+  // These tags are exposed in all the integration events of devices under
+  // this application.
+  map<string, string> tags = 5;
 }
 
 message ApplicationListItem {

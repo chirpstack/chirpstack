@@ -195,9 +195,11 @@ pub async fn create(d: Device) -> Result<Device, Error> {
                         tenant::dsl::max_gateway_count,
                         tenant::dsl::private_gateways_up,
                         tenant::dsl::private_gateways_down,
+                        tenant::dsl::tags,
                     ))
                     .inner_join(application::table)
                     .filter(application::dsl::id.eq(&d.application_id))
+                    .for_update()
                     .first(c)?;
 
                 let dev_count: i64 = device::dsl::device

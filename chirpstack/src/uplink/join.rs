@@ -317,7 +317,8 @@ impl JoinRequest {
         let dp = self.device_profile.as_ref().unwrap();
         let dev = self.device.as_ref().unwrap();
 
-        let mut tags = (*dp.tags).clone();
+        let mut tags = (*app.tags).clone();
+        tags.extend((*dp.tags).clone());
         tags.extend((*dev.tags).clone());
 
         self.device_info = Some(integration_pb::DeviceInfo {

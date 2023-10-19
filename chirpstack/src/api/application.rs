@@ -10,7 +10,7 @@ use super::auth::validator;
 use super::error::ToStatus;
 use super::helpers;
 use crate::certificate;
-use crate::storage::application;
+use crate::storage::{application, fields};
 
 pub struct Application {
     validator: validator::RequestValidator,
@@ -47,6 +47,7 @@ impl ApplicationService for Application {
             tenant_id,
             name: req_app.name.clone(),
             description: req_app.description.clone(),
+            tags: fields::KeyValue::new(req_app.tags.clone()),
             ..Default::default()
         };
 
@@ -86,6 +87,7 @@ impl ApplicationService for Application {
                 tenant_id: a.tenant_id.to_string(),
                 name: a.name,
                 description: a.description,
+                tags: a.tags.into_hashmap(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&a.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&a.updated_at)),
@@ -120,6 +122,7 @@ impl ApplicationService for Application {
             id: app_id,
             name: req_app.name.to_string(),
             description: req_app.description.to_string(),
+            tags: fields::KeyValue::new(req_app.tags.clone()),
             ..Default::default()
         })
         .await

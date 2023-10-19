@@ -443,7 +443,8 @@ impl Data {
                 device_class_enabled: self.device.enabled_class.to_proto().into(),
                 dev_eui: self.device.dev_eui.to_string(),
                 tags: {
-                    let mut tags = (*self.device_profile.tags).clone();
+                    let mut tags = (*self.application.tags).clone();
+                    tags.extend((*self.device_profile.tags).clone());
                     tags.extend((*self.device.tags).clone());
                     tags
                 },

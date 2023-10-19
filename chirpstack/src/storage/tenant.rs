@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::dsl;
@@ -7,8 +9,8 @@ use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
-use super::get_db_conn;
 use super::schema::{tenant, tenant_user, user};
+use super::{fields, get_db_conn};
 
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = tenant)]
@@ -23,6 +25,7 @@ pub struct Tenant {
     pub max_gateway_count: i32,
     pub private_gateways_up: bool,
     pub private_gateways_down: bool,
+    pub tags: fields::KeyValue,
 }
 
 impl Tenant {
@@ -49,6 +52,7 @@ impl Default for Tenant {
             max_gateway_count: 0,
             private_gateways_up: false,
             private_gateways_down: false,
+            tags: fields::KeyValue::new(HashMap::new()),
         }
     }
 }
@@ -145,6 +149,7 @@ pub async fn update(t: Tenant) -> Result<Tenant, Error> {
                     tenant::max_gateway_count.eq(&t.max_gateway_count),
                     tenant::private_gateways_up.eq(&t.private_gateways_up),
                     tenant::private_gateways_down.eq(&t.private_gateways_down),
+                    tenant::tags.eq(&t.tags),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, t.id.to_string()))
@@ -408,6 +413,7 @@ pub mod test {
             max_gateway_count: 10,
             private_gateways_up: true,
             private_gateways_down: true,
+            tags: fields::KeyValue::new(HashMap::new()),
         };
         create(t).await.unwrap()
     }

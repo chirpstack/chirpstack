@@ -9,7 +9,7 @@ use chirpstack_api::api::tenant_service_server::TenantService;
 use super::auth::{validator, AuthID};
 use super::error::ToStatus;
 use super::helpers;
-use crate::storage::{tenant, user};
+use crate::storage::{fields, tenant, user};
 
 pub struct Tenant {
     validator: validator::RequestValidator,
@@ -49,6 +49,7 @@ impl TenantService for Tenant {
             max_gateway_count: req_tenant.max_gateway_count as i32,
             private_gateways_up: req_tenant.private_gateways_up,
             private_gateways_down: req_tenant.private_gateways_down,
+            tags: fields::KeyValue::new(req_tenant.tags.clone()),
             ..Default::default()
         };
 
@@ -89,6 +90,7 @@ impl TenantService for Tenant {
                 max_device_count: t.max_device_count as u32,
                 private_gateways_up: t.private_gateways_up,
                 private_gateways_down: t.private_gateways_down,
+                tags: t.tags.into_hashmap(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&t.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&t.updated_at)),
@@ -128,6 +130,7 @@ impl TenantService for Tenant {
             max_gateway_count: req_tenant.max_gateway_count as i32,
             private_gateways_up: req_tenant.private_gateways_up,
             private_gateways_down: req_tenant.private_gateways_down,
+            tags: fields::KeyValue::new(req_tenant.tags.clone()),
             ..Default::default()
         })
         .await

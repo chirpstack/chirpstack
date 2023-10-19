@@ -21,6 +21,7 @@ diesel::table! {
         name -> Varchar,
         description -> Text,
         mqtt_tls_cert -> Nullable<Bytea>,
+        tags -> Jsonb,
     }
 }
 
@@ -296,6 +297,7 @@ diesel::table! {
         max_gateway_count -> Int4,
         private_gateways_up -> Bool,
         private_gateways_down -> Bool,
+        tags -> Jsonb,
     }
 }
 

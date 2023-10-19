@@ -16,8 +16,8 @@ use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
-use super::get_db_conn;
 use super::schema::{application, application_integration};
+use super::{fields, get_db_conn};
 
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application)]
@@ -29,6 +29,7 @@ pub struct Application {
     pub name: String,
     pub description: String,
     pub mqtt_tls_cert: Option<Vec<u8>>,
+    pub tags: fields::KeyValue,
 }
 
 impl Application {
@@ -52,6 +53,7 @@ impl Default for Application {
             name: "".into(),
             description: "".into(),
             mqtt_tls_cert: None,
+            tags: fields::KeyValue::new(HashMap::new()),
         }
     }
 }
@@ -328,6 +330,7 @@ pub async fn update(a: Application) -> Result<Application, Error> {
                     application::updated_at.eq(Utc::now()),
                     application::name.eq(&a.name),
                     application::description.eq(&a.description),
+                    application::tags.eq(&a.tags),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;

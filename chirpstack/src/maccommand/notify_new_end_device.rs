@@ -36,7 +36,8 @@ pub async fn handle(
         device_class_enabled: dev.enabled_class.to_proto().into(),
         dev_eui: dev.dev_eui.to_string(),
         tags: {
-            let mut tags = (*dp.tags).clone();
+            let mut tags = (*app.tags).clone();
+            tags.extend((*dp.tags).clone());
             tags.extend((*dev.tags).clone());
             tags
         },
