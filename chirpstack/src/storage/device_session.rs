@@ -4,12 +4,13 @@ use std::io::Cursor;
 use anyhow::{Context, Result};
 use prost::Message;
 use tokio::task;
-use tracing::{error, info, trace, warn};
+use tracing::{error, info, trace};
 
 use super::error::Error;
 use super::{get_redis_conn, redis_key};
 use crate::api::helpers::FromProto;
 use crate::config;
+use crate::helpers::errors::PrintFullError;
 use chirpstack_api::internal;
 use lrwn::{AES128Key, DevAddr, Payload, PhyPayload, EUI64};
 
@@ -191,7 +192,7 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
 
             if let Some(relay) = &ds.relay {
                 if !relayed && relay.ed_relay_only {
-                    warn!(
+                    info!(
                         dev_eui = hex::encode(ds.dev_eui),
                         "Only communication through relay is allowed"
                     );
@@ -357,10 +358,10 @@ async fn get_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<internal::DeviceSessi
             Err(e) => {
                 if let Error::NotFound(_) = e {
                     if let Err(e) = remove_dev_eui_from_dev_addr_set(dev_addr, dev_eui).await {
-                        error!(dev_addr = %dev_addr, dev_eui = %dev_eui, error = %e, "Remove DevEUI from DevAddr->DevEUI set error");
+                        error!(dev_addr = %dev_addr, dev_eui = %dev_eui, error = %e.full(), "Remove DevEUI from DevAddr->DevEUI set error");
                     }
                 } else {
-                    error!(dev_addr = %dev_addr, dev_eui = %dev_eui, error = %e, "Get device-session for DevEUI error");
+                    error!(dev_addr = %dev_addr, dev_eui = %dev_eui, error = %e.full(), "Get device-session for DevEUI error");
                 }
                 continue;
             }

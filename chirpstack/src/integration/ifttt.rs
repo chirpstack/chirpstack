@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use tracing::{error, info, trace};
+use tracing::{info, trace, warn};
 
 use super::Integration as IntegrationTrait;
 use crate::codec;
@@ -72,7 +72,7 @@ impl Integration {
         match res.error_for_status() {
             Ok(_) => Ok(()),
             Err(e) => {
-                error!(event = %event, error = %e, "Sending event to IFTTT failed");
+                warn!(event = %event, error = %e, "Sending event to IFTTT failed");
                 Err(anyhow::Error::new(e))
             }
         }

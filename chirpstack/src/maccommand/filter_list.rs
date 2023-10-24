@@ -1,5 +1,5 @@
 use anyhow::Result;
-use tracing::{error, info};
+use tracing::{info, warn};
 
 use crate::storage::device;
 use chirpstack_api::internal;
@@ -53,7 +53,7 @@ pub fn handle(
             }
         }
     } else {
-        error!(
+        warn!(
             dev_eui = %dev.dev_eui,
             filter_list_action_ack = ans_pl.filter_list_action_ack,
             filter_list_len_ack = ans_pl.filter_list_len_ack,

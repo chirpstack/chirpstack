@@ -138,7 +138,7 @@ impl<'a> MqttBackend<'a> {
             info!(region_config_id = %ctx.region_config_id, "Connected to MQTT broker");
 
             if let Err(e) = subscribe_tx.try_send(()) {
-                error!(region_config_id = %ctx.region_config_id, error = %e, "Send to subscribe channel error");
+                error!(region_id = %ctx.region_config_id, error = %e, "Send to subscribe channel error");
             }
         });
         client.set_connection_lost_callback(|client| {
@@ -148,7 +148,7 @@ impl<'a> MqttBackend<'a> {
                 .downcast_ref::<MqttContext>()
                 .unwrap();
 
-            info!(region_config_id = %ctx.region_config_id, "MQTT connection to broker lost");
+            info!(region_id = %ctx.region_config_id, "MQTT connection to broker lost");
         });
 
         // connection options
@@ -164,6 +164,7 @@ impl<'a> MqttBackend<'a> {
         }
         if !conf.ca_cert.is_empty() || !conf.tls_cert.is_empty() || !conf.tls_key.is_empty() {
             info!(
+                region_id = %region_config_id,
                 ca_cert = conf.ca_cert.as_str(),
                 tls_cert = conf.tls_cert.as_str(),
                 tls_key = conf.tls_key.as_str(),
@@ -205,7 +206,7 @@ impl<'a> MqttBackend<'a> {
         };
 
         // connect
-        info!(region_config_id = %region_config_id, server_uri = %conf.server, clean_session = conf.clean_session, client_id = %client_id, "Connecting to MQTT broker");
+        info!(region_id = %region_config_id, server_uri = %conf.server, clean_session = conf.clean_session, client_id = %client_id, "Connecting to MQTT broker");
         b.client
             .connect(conn_opts)
             .await
@@ -217,7 +218,7 @@ impl<'a> MqttBackend<'a> {
             let v4_migrate = conf.v4_migrate;
 
             async move {
-                info!("Starting MQTT consumer loop");
+                info!(region_id = %region_config_id, "Starting MQTT consumer loop");
                 while let Some(msg_opt) = stream.next().await {
                     if let Some(msg) = msg_opt {
                         message_callback(v4_migrate, &region_config_id, region_common_name, msg)
@@ -245,9 +246,9 @@ impl<'a> MqttBackend<'a> {
 
             async move {
                 while subscribe_rx.recv().await.is_some() {
-                    info!(region_config_id = %region_config_id, event_topic = %event_topic, "Subscribing to gateway event topic");
+                    info!(region_id = %region_config_id, event_topic = %event_topic, "Subscribing to gateway event topic");
                     if let Err(e) = client.subscribe(&event_topic, qos).await {
-                        error!(region_config_id = %region_config_id, event_topic = %event_topic, error = %e, "MQTT subscribe error");
+                        error!(region_id = %region_config_id, event_topic = %event_topic, error = %e, "MQTT subscribe error");
                     }
                 }
             }
@@ -271,6 +272,13 @@ impl<'a> MqttBackend<'a> {
 #[async_trait]
 impl GatewayBackend for MqttBackend<'_> {
     async fn send_downlink(&self, df: &chirpstack_api::gw::DownlinkFrame) -> Result<()> {
+        let ctx = self
+            .client
+            .user_data()
+            .unwrap()
+            .downcast_ref::<MqttContext>()
+            .unwrap();
+
         COMMAND_COUNTER
             .get_or_create(&CommandLabels {
                 command: "down".to_string(),
@@ -289,7 +297,7 @@ impl GatewayBackend for MqttBackend<'_> {
             false => df.encode_to_vec(),
         };
 
-        info!(gateway_id = %df.gateway_id, topic = %topic, json = json, "Sending downlink frame");
+        info!(region_id = %ctx.region_config_id, gateway_id = %df.gateway_id, topic = %topic, json = json, "Sending downlink frame");
         let msg = mqtt::Message::new(topic, b, self.qos as i32);
         self.client.publish(msg).await?;
         trace!("Message sent");
@@ -301,6 +309,13 @@ impl GatewayBackend for MqttBackend<'_> {
         &self,
         gw_conf: &chirpstack_api::gw::GatewayConfiguration,
     ) -> Result<()> {
+        let ctx = self
+            .client
+            .user_data()
+            .unwrap()
+            .downcast_ref::<MqttContext>()
+            .unwrap();
+
         COMMAND_COUNTER
             .get_or_create(&CommandLabels {
                 command: "config".to_string(),
@@ -313,7 +328,7 @@ impl GatewayBackend for MqttBackend<'_> {
             false => gw_conf.encode_to_vec(),
         };
 
-        info!(gateway_id = %gw_conf.gateway_id, topic = %topic, json = json, "Sending gateway configuration");
+        info!(region_id = %ctx.region_config_id, gateway_id = %gw_conf.gateway_id, topic = %topic, json = json, "Sending gateway configuration");
         let msg = mqtt::Message::new(topic, b, self.qos as i32);
         self.client.publish(msg).await?;
         trace!("Message sent");
@@ -340,7 +355,7 @@ async fn message_callback(
     let err = || -> Result<()> {
         if locked? {
             trace!(
-                region_config_id = region_config_id,
+                region_id = region_config_id,
                 topic = topic,
                 qos = qos,
                 "Message is already handled by different instance"
@@ -351,7 +366,7 @@ async fn message_callback(
         let json = payload_is_json(b);
 
         info!(
-            region_config_id = region_config_id,
+            region_id = region_config_id,
             topic = topic,
             qos = qos,
             json = json,
@@ -437,6 +452,7 @@ async fn message_callback(
 
     if err.is_some() {
         error!(
+            region_id = %region_config_id,
             topic = topic,
             qos = qos,
             "Processing gateway event error: {}",

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use tracing::{error, info};
+use tracing::{info, warn};
 
 use crate::storage::device;
 use chirpstack_api::internal;
@@ -56,7 +56,7 @@ pub fn handle(
             relay.second_channel_freq = req_pl.second_ch_freq;
         }
     } else {
-        error!(
+        warn!(
             dev_eui = %dev.dev_eui,
             second_ch_freq_ack = ans_pl.second_ch_freq_ack,
             second_ch_dr_ack = ans_pl.second_ch_dr_ack,

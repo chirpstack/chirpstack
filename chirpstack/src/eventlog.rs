@@ -10,6 +10,7 @@ use tokio::task;
 use tracing::{debug, error, trace};
 
 use crate::config;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{get_redis_conn, redis_key};
 use chirpstack_api::{api, integration};
 
@@ -298,7 +299,7 @@ pub async fn get_event_logs(
                                     return Err(e);
                                 }
 
-                                error!(key = %k, error = %e, "Parsing frame-log error");
+                                error!(key = %k, error = %e.full(), "Parsing frame-log error");
                             }
                         }
                     }

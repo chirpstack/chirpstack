@@ -18,6 +18,7 @@ use tracing::{error, trace};
 use warp::{Rejection, Reply};
 
 use crate::config;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{get_redis_conn, redis_key};
 
 pub type User = UserInfoClaims<EmptyAdditionalClaims, CoreGenderClaim>;
@@ -32,7 +33,7 @@ pub async fn login_handler() -> Result<impl Reply, Rejection> {
     let client = match get_client().await {
         Ok(v) => v,
         Err(e) => {
-            error!(error = %e, "Get OIDC client error");
+            error!(error = %e.full(), "Get OIDC client error");
             return Ok(warp::reply::with_status(
                 "Internal error",
                 warp::http::StatusCode::INTERNAL_SERVER_ERROR,
@@ -52,7 +53,7 @@ pub async fn login_handler() -> Result<impl Reply, Rejection> {
         .url();
 
     if let Err(e) = store_nonce(&csrf_state, &nonce).await {
-        error!(error = %e, "Store nonce error");
+        error!(error = %e.full(), "Store nonce error");
         return Ok(warp::reply::with_status(
             "Internal error",
             warp::http::StatusCode::INTERNAL_SERVER_ERROR,

@@ -19,6 +19,7 @@ use super::{
 
 use crate::api::{backend::get_async_receiver, helpers::ToProto};
 use crate::backend::{joinserver, keywrap, roaming};
+use crate::helpers::errors::PrintFullError;
 use crate::storage::device_session;
 use crate::storage::{
     application,
@@ -57,7 +58,7 @@ pub struct JoinRequest {
 
 impl JoinRequest {
     pub async fn handle(ufs: UplinkFrameSet) {
-        let span = span!(Level::INFO, "join_request");
+        let span = span!(Level::INFO, "join_request", dev_eui = tracing::field::Empty);
 
         if let Err(e) = JoinRequest::_handle(ufs).instrument(span).await {
             match e.downcast_ref::<Error>() {
@@ -65,7 +66,7 @@ impl JoinRequest {
                     // nothing to do
                 }
                 Some(_) | None => {
-                    error!(error = %e, "Handle join-request error");
+                    error!(error = %e.full(), "Handle join-request error");
                 }
             }
         }
@@ -83,7 +84,7 @@ impl JoinRequest {
                     // nothing to do
                 }
                 Some(_) | None => {
-                    error!(error = %e, "Handle relayed join-request error");
+                    error!(error = %e.full(), "Handle relayed join-request error");
                 }
             }
         }
@@ -113,6 +114,14 @@ impl JoinRequest {
         };
 
         ctx.get_join_request_payload()?;
+
+        // Add resolved DevEUI to the span
+        let span = tracing::Span::current();
+        span.record(
+            "dev_eui",
+            ctx.join_request.as_ref().unwrap().dev_eui.to_string(),
+        );
+
         ctx.get_device_or_try_pr_roaming().await?;
         ctx.get_device_keys_or_js_client().await?; // used to validate MIC + if we need external JS
         ctx.get_application().await?;
@@ -397,7 +406,7 @@ impl JoinRequest {
         // In case the relay context is not set and relay_ed_relay_only is set, abort.
         if self.relay_context.is_none() && self.device_profile.as_ref().unwrap().relay_ed_relay_only
         {
-            warn!(dev_eui = %self.device.as_ref().unwrap().dev_eui, "Only communication through relay is allowed");
+            info!(dev_eui = %self.device.as_ref().unwrap().dev_eui, "Only communication through relay is allowed");
             return Err(Error::Abort);
         }
         Ok(())

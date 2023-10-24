@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use crate::config;
 use crate::framelog;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{
     device, device_profile, error::Error as StorageError, gateway, get_redis_conn, redis_key,
 };
@@ -116,7 +117,7 @@ pub struct RoamingMetaData {
 
 pub async fn deduplicate_uplink(event: gw::UplinkFrame) {
     if let Err(e) = _deduplicate_uplink(event).await {
-        error!(error = %e, "Deduplication error");
+        error!(error = %e.full(), "Deduplication error");
     }
 }
 
@@ -189,7 +190,8 @@ async fn deduplicate_put(key: &str, ttl: Duration, event: &gw::UplinkFrame) -> R
                 .arg(&key)
                 .arg(ttl.as_millis() as usize)
                 .ignore()
-                .query(&mut c)?;
+                .query(&mut c)
+                .context("Deduplication put")?;
 
             Ok(())
         }
@@ -209,7 +211,8 @@ async fn deduplicate_locked(key: &str, ttl: Duration) -> Result<bool> {
                 .arg("PX")
                 .arg(ttl.as_millis() as usize)
                 .arg("NX")
-                .query(&mut *c)?;
+                .query(&mut *c)
+                .context("Deduplication locked")?;
 
             Ok(!set)
         }
@@ -222,7 +225,10 @@ async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
         let key = key.to_string();
         move || -> Result<gw::UplinkFrameSet> {
             let mut c = get_redis_conn()?;
-            let items_b: Vec<Vec<u8>> = redis::cmd("SMEMBERS").arg(&key).query(&mut *c)?;
+            let items_b: Vec<Vec<u8>> = redis::cmd("SMEMBERS")
+                .arg(&key)
+                .query(&mut *c)
+                .context("Deduplication collect")?;
 
             if items_b.is_empty() {
                 return Err(anyhow!("Zero items in collect set"));
@@ -233,7 +239,8 @@ async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
             };
 
             for b in items_b {
-                let event = gw::UplinkFrame::decode(&mut Cursor::new(b))?;
+                let event =
+                    gw::UplinkFrame::decode(&mut Cursor::new(b)).context("Decode UplinkFrame")?;
 
                 if event.tx_info.is_none() {
                     warn!("tx_info of uplink event is empty, skipping");
@@ -298,18 +305,20 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
     )?;
 
     info!(
-        m_type = uplink.phy_payload.mhdr.m_type.to_string().as_str(),
+        m_type = %uplink.phy_payload.mhdr.m_type,
         "Uplink received"
     );
 
     debug!("Updating gateway meta-data for uplink frame-set");
-    update_gateway_metadata(&mut uplink).await?;
+    update_gateway_metadata(&mut uplink)
+        .await
+        .context("Update gateway meta-data")?;
 
     debug!("Logging uplink frame to Redis Stream");
     let ufl: api::UplinkFrameLog = (&uplink).try_into()?;
     framelog::log_uplink_for_gateways(&ufl)
         .await
-        .context("log_uplink_for_gateways error")?;
+        .context("Log uplink for gateways")?;
 
     match uplink.phy_payload.mhdr.m_type {
         MType::JoinRequest => join::JoinRequest::handle(uplink).await,
@@ -328,7 +337,7 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
 async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
     let conf = config::get();
     for rx_info in &mut ufs.rx_info_set {
-        let gw_id = EUI64::from_str(&rx_info.gateway_id)?;
+        let gw_id = EUI64::from_str(&rx_info.gateway_id).context("Gateway ID")?;
         let gw_meta = match gateway::get_meta(&gw_id).await {
             Ok(v) => v,
             Err(e) => {
@@ -341,8 +350,8 @@ async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
                 }
 
                 error!(
-                    gateway_id = gw_id.to_string().as_str(),
-                    error = format!("{}", e).as_str(),
+                    gateway_id = %gw_id,
+                    error = %e.full(),
                     "Getting gateway meta-data failed"
                 );
                 continue;
@@ -375,7 +384,7 @@ fn filter_rx_info_by_tenant_id(tenant_id: Uuid, uplink: &mut UplinkFrameSet) -> 
     let mut rx_info_set: Vec<gw::UplinkRxInfo> = Vec::new();
 
     for rx_info in &uplink.rx_info_set {
-        let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
+        let gateway_id = EUI64::from_str(&rx_info.gateway_id).context("Gateway ID")?;
         let region_config_id = rx_info
             .metadata
             .get("region_config_id")
@@ -412,7 +421,7 @@ fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
     let mut rx_info_set: Vec<gw::UplinkRxInfo> = Vec::new();
 
     for rx_info in &uplink.rx_info_set {
-        let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
+        let gateway_id = EUI64::from_str(&rx_info.gateway_id).context("Gateway ID")?;
         if !(*uplink
             .gateway_private_up_map
             .get(&gateway_id)
@@ -424,7 +433,7 @@ fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
 
     uplink.rx_info_set = rx_info_set;
     if uplink.rx_info_set.is_empty() {
-        return Err(anyhow!("rx_info_set has no items"));
+        return Err(anyhow!("rx_info_set is empty"));
     }
 
     Ok(())
@@ -446,7 +455,7 @@ fn filter_rx_info_by_region_config_id(
 
     uplink.rx_info_set = rx_info_set;
     if uplink.rx_info_set.is_empty() {
-        return Err(anyhow!("rx_info_set has no items"));
+        return Err(anyhow!("rx_info_set is empty"));
     }
 
     Ok(())

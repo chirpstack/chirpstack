@@ -10,6 +10,7 @@ use uuid::Uuid;
 
 use super::Integration as IntegrationTrait;
 use crate::gpstime::ToGpsTime;
+use crate::helpers::errors::PrintFullError;
 use crate::integration::{integration_event, location_event};
 use crate::storage::application::LoraCloudConfiguration;
 use crate::storage::device_queue;
@@ -561,7 +562,7 @@ impl Integration {
         match resp {
             Ok(v) => Ok(Some(v)),
             Err(e) => {
-                warn!(error = %e, "GNSS geolocation failed");
+                warn!(error = %e.full(), "GNSS geolocation failed");
                 Ok(None)
             }
         }
@@ -643,7 +644,7 @@ impl Integration {
         match resp {
             Ok(v) => Ok(Some(v)),
             Err(e) => {
-                warn!(error = %e, "Wifi geolocation failed");
+                warn!(error = %e.full(), "Wifi geolocation failed");
                 Ok(None)
             }
         }
@@ -666,7 +667,7 @@ impl Integration {
         match resp {
             Ok(v) => Ok(Some(v)),
             Err(e) => {
-                warn!(error = %e, "TDOA geolocation failed");
+                warn!(error = %e.full(), "TDOA geolocation failed");
                 Ok(None)
             }
         }
@@ -689,7 +690,7 @@ impl Integration {
         match resp {
             Ok(v) => Ok(Some(v)),
             Err(e) => {
-                warn!(error = %e, "RSSI geolocation failed");
+                warn!(error = %e.full(), "RSSI geolocation failed");
                 Ok(None)
             }
         }

@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use prost::Message;
 use reqwest::header::{HeaderMap, HeaderName, CONTENT_TYPE};
 use reqwest::Client;
-use tracing::{error, info, trace};
+use tracing::{info, trace, warn};
 
 use super::Integration as IntegrationTrait;
 use crate::storage::application::HttpConfiguration;
@@ -59,15 +59,16 @@ impl Integration {
                 .send()
                 .await;
 
+            // We log the errors as warn as these endpoints are user-defined.
             match res {
                 Ok(res) => match res.error_for_status() {
                     Ok(_) => {}
                     Err(e) => {
-                        error!(event = %event, url = %url, error = %e, "Posting event failed");
+                        warn!(event = %event, url = %url, error = %e, "Posting event failed");
                     }
                 },
                 Err(e) => {
-                    error!(event = %event, url = %url, error = %e, "Posting event failed");
+                    warn!(event = %event, url = %url, error = %e, "Posting event failed");
                 }
             }
         }

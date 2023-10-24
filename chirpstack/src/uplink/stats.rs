@@ -5,9 +5,10 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local};
-use tracing::{error, info, span, trace, Instrument, Level};
+use tracing::{error, info, span, trace, warn, Instrument, Level};
 
 use crate::gateway::backend as gateway_backend;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{error::Error, gateway, metrics};
 use crate::{config, region};
 use chirpstack_api::{common, gw};
@@ -22,13 +23,13 @@ pub struct Stats {
 impl Stats {
     pub async fn handle(s: gw::GatewayStats) {
         let gateway_id = match if !s.gateway_id.is_empty() {
-            EUI64::from_str(&s.gateway_id)
+            EUI64::from_str(&s.gateway_id).context("Gateway ID")
         } else {
-            EUI64::from_slice(&s.gateway_id_legacy)
+            EUI64::from_slice(&s.gateway_id_legacy).context("Legacy Gateway ID")
         } {
             Ok(v) => v,
             Err(e) => {
-                error!(error = %e, "Decode stats gateway_id error");
+                warn!(error = %e.full(), "Decode stats gateway_id error");
                 return;
             }
         };
@@ -43,11 +44,11 @@ impl Stats {
                     // the database.
                     let conf = config::get();
                     if !conf.gateway.allow_unknown_gateways {
-                        error!(error = %e, "Handle gateway stats error");
+                        error!(error = %e.full(), "Handle gateway stats error");
                     }
                 }
                 Some(_) | None => {
-                    error!(error = %e, "Handle gateway stats error");
+                    error!(error = %e.full(), "Handle gateway stats error");
                 }
             }
         }
@@ -80,7 +81,7 @@ impl Stats {
                     &self.stats.metadata,
                 )
                 .await
-                .context("Update gateway state")?,
+                .context("Update gateway state and location")?,
             );
         } else {
             self.gateway = Some(
@@ -155,7 +156,8 @@ impl Stats {
             &format!("gw:{}", self.gateway.as_ref().unwrap().gateway_id),
             &m,
         )
-        .await?;
+        .await
+        .context("Save gateway stats")?;
 
         Ok(())
     }

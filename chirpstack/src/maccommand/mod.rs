@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use tracing::error;
+use tracing::{error, warn};
 
 use crate::config;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{application, device, device_profile, mac_command, tenant};
 use crate::uplink::UplinkFrameSet;
 use chirpstack_api::internal;
@@ -112,7 +113,7 @@ pub async fn handle_uplink<'a>(
         {
             Ok(v) => v,
             Err(e) => {
-                error!(dev_eui = %dev_eui, cid = %cid, error = %e, "Handle mac-command error");
+                warn!(dev_eui = %dev_eui, cid = %cid, error = %e.full(), "Handle mac-command error");
                 continue;
             }
         };
@@ -168,7 +169,7 @@ async fn handle(
             ctrl_uplink_list::handle(dev, ds, block, pending_block).await
         }
         _ => {
-            error!(cid = %cid, "Unexpected CID");
+            warn!(cid = %cid, "Unexpected CID");
             // Return OK, we don't want to break out of the uplink handling.
             Ok(None)
         }

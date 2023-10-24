@@ -1,5 +1,5 @@
 use anyhow::Result;
-use tracing::{error, info};
+use tracing::{info, warn};
 
 use crate::storage::device;
 use chirpstack_api::internal;
@@ -55,7 +55,7 @@ pub fn handle(
                 req_pl.channel_settings_relay.second_ch_ack_offset as u32;
         }
     } else {
-        error!(
+        warn!(
             dev_eui = %dev.dev_eui,
             second_ch_ack_offset_ack = ans_pl.second_ch_ack_offset_ack,
             second_ch_dr_ack = ans_pl.second_ch_dr_ack,

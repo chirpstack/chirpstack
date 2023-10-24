@@ -39,7 +39,7 @@ pub struct TxAck {
 
 impl TxAck {
     pub async fn handle(tx_ack: gw::DownlinkTxAck) {
-        let span = span!(Level::TRACE, "tx_ack", downlink_id = tx_ack.downlink_id);
+        let span = span!(Level::INFO, "tx_ack", downlink_id = tx_ack.downlink_id);
         if let Err(e) = TxAck::_handle(tx_ack).instrument(span).await {
             error!(error = %e, "Handling tx ack error");
         }

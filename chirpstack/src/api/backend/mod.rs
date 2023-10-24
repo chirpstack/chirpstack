@@ -8,12 +8,13 @@ use anyhow::Result;
 use redis::streams::StreamReadReply;
 use tokio::sync::oneshot;
 use tokio::task;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info, span, warn, Instrument, Level};
 use uuid::Uuid;
 use warp::{http::StatusCode, Filter, Reply};
 
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::downlink::data_fns;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{
     device_session, error::Error as StorageError, get_redis_conn, passive_roaming, redis_key,
 };
@@ -26,7 +27,7 @@ use lrwn::{AES128Key, NetID, EUI64};
 pub async fn setup() -> Result<()> {
     let conf = config::get();
     if conf.backend_interfaces.bind.is_empty() {
-        warn!("Backend interfaces API is disabled");
+        info!("Backend interfaces API interface is disabled");
         return Ok(());
     }
 
@@ -69,6 +70,7 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
         body.advance(cnt);
     }
 
+    // TODO: should this be improved?
     debug!("JSON: {}", String::from_utf8(b.clone()).unwrap_or_default());
 
     let bp: BasePayload = match serde_json::from_slice(&b) {
@@ -79,7 +81,12 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
         }
     };
 
-    info!(sender_id = %hex::encode(&bp.sender_id), transaction_id = %bp.transaction_id, message_type = ?bp.message_type, "Request received");
+    let span = span!(Level::INFO, "request", sender_id = %hex::encode(&bp.sender_id), receiver_id = %hex::encode(&bp.receiver_id), message_type = ?bp.message_type, transaction_id = bp.transaction_id);
+    _handle_request(bp, b).instrument(span).await
+}
+
+pub async fn _handle_request(bp: BasePayload, b: Vec<u8>) -> http::Response<hyper::Body> {
+    info!("Request received");
 
     let sender_client = {
         if bp.sender_id.len() == 8 {
@@ -87,7 +94,7 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
             let sender_id = match EUI64::from_slice(&bp.sender_id) {
                 Ok(v) => v,
                 Err(e) => {
-                    error!(error = %e, "Error decoding SenderID as EUI64");
+                    warn!(error = %e.full(), "Error decoding SenderID as EUI64");
                     let msg = format!("Error decoding SenderID: {}", e);
                     let pl = bp.to_base_payload_result(backend::ResultCode::MalformedRequest, &msg);
                     return warp::reply::json(&pl).into_response();
@@ -97,7 +104,7 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
             match joinserver::get(&sender_id) {
                 Ok(v) => v,
                 Err(_) => {
-                    error!(sender_id = %sender_id, "Unknown SenderID");
+                    warn!("Unknown SenderID");
                     let msg = format!("Unknown SenderID: {}", sender_id);
                     let pl = bp.to_base_payload_result(backend::ResultCode::UnknownSender, &msg);
                     return warp::reply::json(&pl).into_response();
@@ -108,7 +115,7 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
             let sender_id = match NetID::from_slice(&bp.sender_id) {
                 Ok(v) => v,
                 Err(e) => {
-                    error!(error = %e, "Error decoding SenderID as NetID");
+                    warn!(error = %e.full(), "Error decoding SenderID as NetID");
                     let msg = format!("Error decoding SenderID: {}", e);
                     let pl = bp.to_base_payload_result(backend::ResultCode::MalformedRequest, &msg);
                     return warp::reply::json(&pl).into_response();
@@ -118,7 +125,7 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
             match roaming::get(&sender_id) {
                 Ok(v) => v,
                 Err(_) => {
-                    error!(sender_id = %sender_id, "Unknown SenderID");
+                    warn!("Unknown SenderID");
                     let msg = format!("Unknown SenderID: {}", sender_id);
                     let pl = bp.to_base_payload_result(backend::ResultCode::UnknownSender, &msg);
                     return warp::reply::json(&pl).into_response();
@@ -126,7 +133,7 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
             }
         } else {
             // Unknown size
-            error!(sender_id = ?bp.sender_id, "Invalid SenderID length");
+            warn!("Invalid SenderID length");
             let pl = bp.to_base_payload_result(
                 backend::ResultCode::MalformedRequest,
                 "Invalid SenderID length",
@@ -139,7 +146,7 @@ pub async fn handle_request(mut body: impl warp::Buf) -> http::Response<hyper::B
     if bp.is_answer() {
         tokio::spawn(async move {
             if let Err(e) = handle_async_ans(&bp, &b).await {
-                error!(error = %e, "Handle async answer error");
+                error!(error = %e.full(), "Handle async answer error");
             }
         });
         return warp::reply::with_status("", StatusCode::OK).into_response();
@@ -197,7 +204,7 @@ async fn handle_pr_start_req(
             };
 
             if let Err(e) = sender_client.pr_start_ans(backend::Role::FNS, &ans).await {
-                error!(error = %e, "Send async PRStartAns error");
+                error!(error = %e.full(), "Send async PRStartAns error");
             }
         });
 
@@ -345,7 +352,7 @@ async fn handle_pr_stop_req(
             };
 
             if let Err(e) = sender_client.pr_stop_ans(backend::Role::SNS, &ans).await {
-                error!(error = %e, "Send async PRStopAns error");
+                error!(error = %e.full(), "Send async PRStopAns error");
             }
         });
 
@@ -373,7 +380,7 @@ async fn _handle_pr_stop_req(b: &[u8]) -> Result<backend::PRStopAnsPayload> {
 
     for sess_id in sess_ids {
         if let Err(e) = passive_roaming::delete(sess_id).await {
-            error!(error = %e, "Delete passive-roaming device-session error");
+            error!(error = %e.full(), "Delete passive-roaming device-session error");
         }
     }
 
@@ -415,7 +422,7 @@ async fn handle_xmit_data_req(
             };
 
             if let Err(e) = sender_client.xmit_data_ans(sender_role, &ans).await {
-                error!(error = %e, "Send async XmitDataAns error");
+                error!(error = %e.full(), "Send async XmitDataAns error");
             }
         });
 
@@ -534,7 +541,11 @@ pub async fn get_async_receiver(
                             }
                         }
                         _ => {
-                            error!(key = %k, "Unexpected key in async stream");
+                            error!(
+                                transaction_id = transaction_id,
+                                key = %key,
+                                "Unexpected key in async stream"
+                            );
                         }
                     }
                 }

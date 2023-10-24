@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use anyhow::Result;
-use tracing::{info, span, Level};
+use tracing::info;
 
 use crate::config;
 use backend::{Client, ClientConfig};
@@ -17,10 +17,7 @@ pub fn setup() -> Result<()> {
     let conf = config::get();
 
     for js in &conf.join_server.servers {
-        let span = span!(Level::INFO, "setup", join_eui = %js.join_eui);
-        let _guard = span.enter();
-
-        info!("Configuring Join Server");
+        info!(join_eui = %js.join_eui, "Configuring Join Server");
 
         let c = Client::new(ClientConfig {
             sender_id: conf.network.net_id.to_vec(),

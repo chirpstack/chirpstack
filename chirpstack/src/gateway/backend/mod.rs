@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use tokio::sync::RwLock;
-use tracing::{info, warn};
+use tracing::info;
 
 use crate::config;
 
@@ -31,7 +31,6 @@ pub async fn setup() -> Result<()> {
     info!("Setting up gateway backends for the different regions");
     for region in &conf.regions {
         if !conf.network.enabled_regions.contains(&region.id) {
-            warn!("Config exists, but region is not enabled. To enable it, add '{}' to 'network.enabled_regions'", region.id);
             continue;
         }
 

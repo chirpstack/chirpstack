@@ -30,7 +30,7 @@ pub struct Multicast {
 
 impl Multicast {
     pub async fn handle_schedule_queue_item(qi: multicast::MulticastGroupQueueItem) -> Result<()> {
-        let span = span!(Level::TRACE, "schedule", multicast_group_id = %qi.multicast_group_id, gateway_id = %qi.gateway_id);
+        let span = span!(Level::INFO, "multicast", multicast_group_id = %qi.multicast_group_id, gateway_id = %qi.gateway_id);
 
         Multicast::_handle_schedule_queue_item(qi)
             .instrument(span)

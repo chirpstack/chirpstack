@@ -14,6 +14,7 @@ use tracing::{debug, error, trace, warn};
 use lrwn::EUI64;
 
 use crate::config;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{get_redis_conn, redis_key};
 use chirpstack_api::api;
 
@@ -279,12 +280,12 @@ pub async fn get_frame_logs(
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                                             if pl.plaintext_f_opts {
                                                 if let Err(e) = phy.decode_f_opts_to_mac_commands() {
-                                                    warn!(error = %e, "Decode f_opts to mac-commands error");
+                                                    warn!(error = %e.full(), "Decode f_opts to mac-commands error");
                                                 }
                                             }
                                             if pl.plaintext_frm_payload {
                                                 if let Err(e) = phy.decode_frm_payload() {
-                                                    warn!(error = %e, "Decode frm_payload error");
+                                                    warn!(error = %e.full(), "Decode frm_payload error");
                                                 }
                                             }
 
@@ -317,12 +318,12 @@ pub async fn get_frame_logs(
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                                             if pl.plaintext_f_opts {
                                                 if let Err(e) = phy.decode_f_opts_to_mac_commands() {
-                                                    warn!(error = %e, "Decode f_opts to mac-commands error");
+                                                    warn!(error = %e.full(), "Decode f_opts to mac-commands error");
                                                 }
                                             }
                                             if pl.plaintext_frm_payload {
                                                 if let Err(e) = phy.decode_frm_payload() {
-                                                    warn!(error = %e, "Decode frm_payload error");
+                                                    warn!(error = %e.full(), "Decode frm_payload error");
                                                 }
                                             }
 
@@ -363,7 +364,7 @@ pub async fn get_frame_logs(
                                     return Err(e);
                                 }
 
-                                error!(key = %k, error = %e, "Parsing frame-log error");
+                                error!(key = %k, error = %e.full(), "Parsing frame-log error");
                             }
                         }
                     }

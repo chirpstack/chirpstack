@@ -1,3 +1,4 @@
+use anyhow::Result;
 use async_trait::async_trait;
 use diesel::dsl;
 use diesel::prelude::*;
@@ -10,6 +11,7 @@ use lrwn::EUI64;
 
 use super::error::Error;
 use crate::api::auth::AuthID;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::get_db_conn;
 use crate::storage::schema::{
     api_key, application, device, device_profile, gateway, multicast_group, tenant_user, user,
@@ -67,7 +69,7 @@ pub trait Validator {
             }
             Err(e) => {
                 error!(
-                    error = %e,
+                    error = %e.full(),
                     "Validator function error"
                 );
                 Err(Status::internal(""))

@@ -34,6 +34,7 @@ mod eventlog;
 mod framelog;
 mod gateway;
 mod gpstime;
+mod helpers;
 mod integration;
 mod maccommand;
 mod metalog;

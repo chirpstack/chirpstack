@@ -5,7 +5,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use rand::Rng;
-use tracing::{error, span, trace, warn, Instrument, Level};
+use tracing::{span, trace, warn, Instrument, Level};
 
 use crate::api::backend::get_async_receiver;
 use crate::api::helpers::{FromProto, ToProto};
@@ -65,9 +65,11 @@ impl Data {
         must_ack: bool,
         mac_commands: Vec<lrwn::MACCommandSet>,
     ) -> Result<()> {
-        let span = span!(Level::TRACE, "data_down", downlink_id = %ufs.uplink_set_id);
+        let downlink_id: u32 = rand::thread_rng().gen();
+        let span = span!(Level::INFO, "data_down", downlink_id = downlink_id);
 
         Data::_handle_response(
+            downlink_id,
             ufs,
             dev_gw_rx_info,
             tenant,
@@ -97,9 +99,11 @@ impl Data {
         must_ack: bool,
         mac_commands: Vec<lrwn::MACCommandSet>,
     ) -> Result<()> {
-        let span = span!(Level::TRACE, "data_down", downlink_id = %ufs.uplink_set_id);
+        let downlink_id: u32 = rand::thread_rng().gen();
+        let span = span!(Level::INFO, "data_down", downlink_id = downlink_id);
 
         Data::_handle_response_relayed(
+            downlink_id,
             relay_ctx,
             ufs,
             dev_gw_rx_info,
@@ -117,15 +121,18 @@ impl Data {
     }
 
     pub async fn handle_schedule_next_queue_item(device: device::Device) -> Result<()> {
-        let span = span!(Level::TRACE, "schedule", dev_eui = %device.dev_eui);
+        let downlink_id: u32 = rand::thread_rng().gen();
+        let span =
+            span!(Level::INFO, "schedule", dev_eui = %device.dev_eui, downlink_id = downlink_id);
 
-        Data::_handle_schedule_next_queue_item(device)
+        Data::_handle_schedule_next_queue_item(downlink_id, device)
             .instrument(span)
             .await
     }
 
     #[allow(clippy::too_many_arguments)]
     async fn _handle_response(
+        downlink_id: u32,
         ufs: UplinkFrameSet,
         dev_gw_rx_info: internal::DeviceGatewayRxInfo,
         tenant: tenant::Tenant,
@@ -160,7 +167,7 @@ impl Data {
             device_gateway_rx_info: Some(dev_gw_rx_info),
             downlink_gateway: None,
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: rand::thread_rng().gen(),
+                downlink_id,
                 ..Default::default()
             },
             downlink_frame_items: Vec::new(),
@@ -194,6 +201,7 @@ impl Data {
 
     #[allow(clippy::too_many_arguments)]
     async fn _handle_response_relayed(
+        downlink_id: u32,
         relay_ctx: RelayContext,
         ufs: UplinkFrameSet,
         dev_gw_rx_info: internal::DeviceGatewayRxInfo,
@@ -229,7 +237,7 @@ impl Data {
             device_gateway_rx_info: Some(dev_gw_rx_info),
             downlink_gateway: None,
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: rand::thread_rng().gen(),
+                downlink_id,
                 ..Default::default()
             },
             downlink_frame_items: Vec::new(),
@@ -253,7 +261,7 @@ impl Data {
         Ok(())
     }
 
-    async fn _handle_schedule_next_queue_item(dev: device::Device) -> Result<()> {
+    async fn _handle_schedule_next_queue_item(downlink_id: u32, dev: device::Device) -> Result<()> {
         trace!("Handle schedule next-queue item flow");
 
         let dp = device_profile::get(&dev.device_profile_id).await?;
@@ -280,7 +288,7 @@ impl Data {
             device_gateway_rx_info: Some(dev_gw),
             downlink_gateway: None,
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: rand::thread_rng().gen(),
+                downlink_id,
                 ..Default::default()
             },
             downlink_frame_items: vec![],
@@ -1485,7 +1493,7 @@ impl Data {
                 // available slot).
                 if !found {
                     if free_slots.is_empty() {
-                        error!(relay_dev_eui = %self.device.dev_eui, "Relay does not have any free UpdateUplinkListReq slots");
+                        warn!(relay_dev_eui = %self.device.dev_eui, "Relay does not have any free UpdateUplinkListReq slots");
                         continue;
                     }
 
@@ -1867,7 +1875,7 @@ impl Data {
             // available slot).
             if !found {
                 if free_slots.is_empty() {
-                    error!(relay_dev_eui = %self.device.dev_eui, "Relay does have have any free FilterListReq slots");
+                    warn!(relay_dev_eui = %self.device.dev_eui, "Relay does have have any free FilterListReq slots");
                     continue;
                 }
 

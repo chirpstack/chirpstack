@@ -3,7 +3,7 @@ use aes::cipher::{BlockEncrypt, KeyInit};
 use aes::{Aes128, Block};
 use anyhow::Result;
 use chrono::Duration;
-use tracing::info;
+use tracing::debug;
 
 use lrwn::DevAddr;
 
@@ -63,7 +63,7 @@ pub fn get_next_ping_slot_after(
                 + (*SLOT_LEN * ((ping_offset + n * ping_period) as i32));
 
             if ping_slot_ts > after_gps_epoch_ts {
-                info!(
+                debug!(
                     dev_addr = %dev_addr,
                     beacon_start_time_s = beacon_start_ts.num_seconds(),
                     after_beacon_start_time_ms = (ping_slot_ts - beacon_start_ts).num_milliseconds(),

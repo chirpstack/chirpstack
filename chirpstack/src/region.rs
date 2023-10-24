@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use anyhow::{Context, Result};
-use tracing::{info, span, trace, warn, Level};
+use tracing::{info, span, trace, Level};
 
 use crate::config;
 use lrwn::region;
@@ -23,7 +23,6 @@ pub fn setup() -> Result<()> {
         let _guard = span.enter();
 
         if !conf.network.enabled_regions.contains(&r.id) {
-            warn!("Config exists, but region is not enabled. To enable it, add '{}' to 'network.enabled_regions'", r.id);
             continue;
         }
 

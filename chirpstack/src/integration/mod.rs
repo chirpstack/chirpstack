@@ -5,9 +5,10 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use futures::future::join_all;
 use tokio::sync::RwLock;
-use tracing::{error, info};
+use tracing::{info, warn};
 use uuid::Uuid;
 
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{application, device, device_profile, device_queue};
 use crate::{codec, config};
 use chirpstack_api::integration;
@@ -197,7 +198,7 @@ pub async fn uplink_event(
 
         async move {
             if let Err(err) = _uplink_event(application_id, &vars, &pl).await {
-                error!(application_id = %application_id, error = %err, "Uplink event error");
+                warn!(application_id = %application_id, error = %err.full(), "Uplink event error");
             }
         }
     });
@@ -239,7 +240,7 @@ pub async fn join_event(
 
         async move {
             if let Err(err) = _join_event(application_id, &vars, &pl).await {
-                error!(application_id = %application_id, error = %err, "Join event error");
+                warn!(application_id = %application_id, error = %err.full(), "Join event error");
             }
         }
     });
@@ -281,7 +282,7 @@ pub async fn ack_event(
 
         async move {
             if let Err(err) = _ack_event(application_id, &vars, &pl).await {
-                error!(application_id = %application_id, error = %err, "Ack event error");
+                warn!(application_id = %application_id, error = %err.full(), "Ack event error");
             }
         }
     });
@@ -323,7 +324,7 @@ pub async fn txack_event(
 
         async move {
             if let Err(err) = _txack_event(application_id, &vars, &pl).await {
-                error!(application_id = %application_id, error = %err, "Txack event error");
+                warn!(application_id = %application_id, error = %err.full(), "Txack event error");
             }
         }
     });
@@ -365,7 +366,7 @@ pub async fn log_event(
 
         async move {
             if let Err(err) = _log_event(application_id, &vars, &pl).await {
-                error!(application_id = %application_id, error = %err, "Log event error");
+                warn!(application_id = %application_id, error = %err.full(), "Log event error");
             }
         }
     });
@@ -407,7 +408,7 @@ pub async fn status_event(
 
         async move {
             if let Err(err) = _status_event(application_id, &vars, &pl).await {
-                error!(application_id = %application_id, error = %err, "Status event error");
+                warn!(application_id = %application_id, error = %err.full(), "Status event error");
             }
         }
     });
@@ -449,7 +450,7 @@ pub async fn location_event(
 
         async move {
             if let Err(err) = _location_event(application_id, &vars, &pl).await {
-                error!(application_id = %application_id, error = %err, "Location event error");
+                warn!(application_id = %application_id, error = %err.full(), "Location event error");
             }
         }
     });
@@ -491,7 +492,7 @@ pub async fn integration_event(
 
         async move {
             if let Err(err) = _integration_event(application_id, &vars, &pl).await {
-                error!(application_id = %application_id, error = %err, "Location event error");
+                warn!(application_id = %application_id, error = %err.full(), "Location event error");
             }
         }
     });
@@ -571,6 +572,6 @@ async fn handle_down_command(application_id: String, pl: integration::DownlinkCo
     .err();
 
     if err.is_some() {
-        error!(dev_eui = %pl.dev_eui, error = %err.as_ref().unwrap(), "Handling downlink command error");
+        warn!(dev_eui = %pl.dev_eui, error = %err.as_ref().unwrap().full(), "Handling downlink command error");
     }
 }

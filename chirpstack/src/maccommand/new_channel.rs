@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use tracing::{error, info};
+use tracing::{info, warn};
 
 use crate::storage::device;
 use chirpstack_api::internal;
@@ -123,7 +123,15 @@ pub fn handle(
                 .or_insert(0);
             *count += 1;
 
-            error!(dev_eui = %dev.dev_eui, freq = req_pl.freq, channel = req_pl.ch_index, min_dr = req_pl.min_dr, max_dr = req_pl.max_dr, dr_range_ok = ans_pl.dr_range_ok, channel_freq_ok = ans_pl.channel_freq_ok, "NewChannelReq not acknowledged");
+            warn!(
+                dev_eui = %dev.dev_eui,
+                freq = req_pl.freq,
+                channel = req_pl.ch_index,
+                min_dr = req_pl.min_dr,
+                max_dr = req_pl.max_dr,
+                dr_range_ok = ans_pl.dr_range_ok,
+                channel_freq_ok = ans_pl.channel_freq_ok,
+                "NewChannelReq not acknowledged");
         }
     }
 

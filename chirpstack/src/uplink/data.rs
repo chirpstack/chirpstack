@@ -12,6 +12,7 @@ use super::{
 };
 use crate::api::helpers::ToProto;
 use crate::backend::roaming;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::error::Error as StorageError;
 use crate::storage::{
     application,
@@ -51,7 +52,7 @@ pub struct Data {
 
 impl Data {
     pub async fn handle(ufs: UplinkFrameSet) {
-        let span = span!(Level::INFO, "data_up");
+        let span = span!(Level::INFO, "data_up", dev_eui = tracing::field::Empty);
 
         if let Err(e) = Data::_handle(ufs).instrument(span).await {
             match e.downcast_ref::<Error>() {
@@ -59,7 +60,7 @@ impl Data {
                     // nothing to do
                 }
                 Some(_) | None => {
-                    error!(error = %e, "Handle uplink error");
+                    error!(error = %e.full(), "Handle uplink error");
                 }
             }
         }
@@ -81,7 +82,7 @@ impl Data {
                     // nothing to do
                 }
                 Some(_) | None => {
-                    error!(error = %e, "Handle relayed uplink error");
+                    error!(error = %e.full(), "Handle relayed uplink error");
                 }
             }
         }
@@ -110,7 +111,13 @@ impl Data {
 
         ctx.handle_passive_roaming_device().await?;
         ctx.get_device_session().await?;
+
         ctx.get_device().await?;
+
+        // Add dev_eui to span
+        let span = tracing::Span::current();
+        span.record("dev_eui", ctx.device.as_ref().unwrap().dev_eui.to_string());
+
         ctx.get_device_profile().await?;
         ctx.get_application().await?;
         ctx.get_tenant().await?;
@@ -262,11 +269,11 @@ impl Data {
             },
             Err(e) => match e {
                 StorageError::NotFound(s) => {
-                    warn!(dev_addr = %s, "No device-session exists for dev_addr");
+                    info!(dev_addr = %s, "No device-session exists for dev_addr");
                     return Err(Error::Abort);
                 }
                 StorageError::InvalidMIC => {
-                    warn!(dev_addr = %dev_addr, "None of the device-sessions for dev_addr resulted in valid MIC");
+                    info!(dev_addr = %dev_addr, "None of the device-sessions for dev_addr resulted in valid MIC");
 
                     // Log uplink for null DevEUI.
                     let mut ufl: api::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
@@ -330,11 +337,11 @@ impl Data {
             },
             Err(e) => match e {
                 StorageError::NotFound(s) => {
-                    warn!(dev_addr = %s, "No device-session exists for dev_addr");
+                    info!(dev_addr = %s, "No device-session exists for dev_addr");
                     return Err(Error::Abort);
                 }
                 StorageError::InvalidMIC => {
-                    warn!(dev_addr = %dev_addr, "None of the device-sessions for dev_addr resulted in valid MIC");
+                    info!(dev_addr = %dev_addr, "None of the device-sessions for dev_addr resulted in valid MIC");
                     return Err(Error::Abort);
                 }
                 _ => {
@@ -600,13 +607,13 @@ impl Data {
         if ds.mac_version().to_string().starts_with("1.0") {
             if let Err(e) = self.phy_payload.decode_f_opts_to_mac_commands() {
                 // This avoids failing in case of a corrupted mac-command in the frm_payload.
-                warn!(error = %e, "Decoding f_opts mac-commands failed");
+                warn!(error = %e.full(), "Decoding f_opts mac-commands failed");
             }
         } else {
             let nwk_s_enc_key = AES128Key::from_slice(&ds.nwk_s_enc_key)?;
             if let Err(e) = self.phy_payload.decrypt_f_opts(&nwk_s_enc_key) {
                 // This avoids failing in case of a corrupted mac-command in the frm_payload.
-                warn!(error = %e, "Decrypting f_opts mac-commands failed");
+                warn!(error = %e.full(), "Decrypting f_opts mac-commands failed");
             }
         }
 
@@ -627,7 +634,7 @@ impl Data {
             let nwk_s_enc_key = AES128Key::from_slice(&ds.nwk_s_enc_key)?;
             if let Err(e) = self.phy_payload.decrypt_frm_payload(&nwk_s_enc_key) {
                 // This avoids failing in case of a corrupted mac-command in the frm_payload.
-                warn!(error = %e, "Decrypting frm_payload failed");
+                warn!(error = %e.full(), "Decrypting frm_payload failed");
             }
         } else if !self._is_end_to_end_encrypted() {
             if let Some(app_s_key) = &ds.app_s_key {
@@ -1136,7 +1143,7 @@ impl Data {
         let qi = match device_queue::get_pending_for_dev_eui(&dev.dev_eui).await {
             Ok(v) => v,
             Err(e) => {
-                warn!(dev_eui = %dev.dev_eui, error = %e, "Get pending queue-item error");
+                warn!(dev_eui = %dev.dev_eui, error = %e.full(), "Get pending queue-item error");
                 return Ok(());
             }
         };

@@ -21,7 +21,11 @@ impl Data {
         pl: backend::XmitDataReqPayload,
         dl_meta: backend::DLMetaData,
     ) -> Result<()> {
-        let span = span!(Level::INFO, "xmit_data_req_pr");
+        let span = span!(
+            Level::INFO,
+            "xmit_data_req_pr",
+            transaction_id = pl.base.transaction_id
+        );
         Data::_handle(pl, dl_meta).instrument(span).await
     }
 

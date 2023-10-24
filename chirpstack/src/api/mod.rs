@@ -39,6 +39,7 @@ use chirpstack_api::api::user_service_server::UserServiceServer;
 
 use super::config;
 use crate::api::auth::validator;
+use crate::helpers::errors::PrintFullError;
 use crate::monitoring::prometheus;
 use crate::requestlog;
 
@@ -420,8 +421,8 @@ where
                     };
 
                     task::spawn(async move {
-                        if let Err(err) = requestlog::log_request(&req_log).await {
-                            error!("Log request error, error: {}", err);
+                        if let Err(e) = requestlog::log_request(&req_log).await {
+                            error!(error = %e.full(), "Log request error");
                         }
                     });
                 }

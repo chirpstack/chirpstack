@@ -5,6 +5,7 @@ use tracing::{error, trace};
 use super::data;
 use super::multicast as mcast;
 use crate::config;
+use crate::helpers::errors::PrintFullError;
 use crate::storage::{device, multicast};
 
 pub async fn class_b_c_scheduler_loop() {
@@ -79,7 +80,7 @@ pub async fn schedule_multicast_group_queue_batch(size: usize) -> Result<()> {
     for qi in items {
         let handle = tokio::spawn(async move {
             if let Err(e) = mcast::Multicast::handle_schedule_queue_item(qi).await {
-                error!(error = %e, "Schedule multicast-group queue item failed");
+                error!(error = %e.full(), "Schedule multicast-group queue item failed");
             }
         });
         handles.push(handle);

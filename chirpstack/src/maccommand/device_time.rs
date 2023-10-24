@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use tracing::{error, info};
+use tracing::{info, warn};
 
 use crate::gpstime::ToGpsTime;
 use crate::storage::device;
@@ -27,7 +27,7 @@ pub fn handle(
             time_since_gps_epoch: match gps_time.to_std() {
                 Ok(v) => v,
                 Err(e) => {
-                    error!(error = %e, "To GPS time error");
+                    warn!(error = %e, "To GPS time error");
                     Duration::from_secs(0)
                 }
             },

@@ -6,6 +6,7 @@ use uuid::Uuid;
 use super::{error::Error, filter_rx_info_by_public_only, UplinkFrameSet};
 use crate::api::backend::get_async_receiver;
 use crate::backend::{keywrap, roaming};
+use crate::helpers::errors::PrintFullError;
 use crate::storage::passive_roaming;
 use crate::uplink::helpers;
 use chirpstack_api::internal;
@@ -26,7 +27,7 @@ impl Data {
                     // nothing to do
                 }
                 Some(_) | None => {
-                    error!(error = %e, "Handle passive-roaming uplink error");
+                    error!(error = %e.full(), "Handle passive-roaming uplink error");
                 }
             }
         }
@@ -85,7 +86,7 @@ impl Data {
             let ds = match self.start_pr_session(net_id).await {
                 Ok(v) => v,
                 Err(e) => {
-                    error!(net_id = %net_id, error = %e, "Start passive-roaming error");
+                    error!(net_id = %net_id, error = %e.full(), "Start passive-roaming error");
                     continue;
                 }
             };
@@ -136,7 +137,7 @@ impl Data {
                 .xmit_data_req(backend::Role::SNS, &mut req, async_receiver)
                 .await
             {
-                error!(net_id = %net_id, error = %e, "XmitDataReq failed");
+                error!(net_id = %net_id, error = %e.full(), "XmitDataReq failed");
             }
         }
 

@@ -25,9 +25,11 @@ pub struct PassiveRoamingDownlink {
 
 impl PassiveRoamingDownlink {
     pub async fn handle(ufs: UplinkFrameSet, phy: Vec<u8>, dl_meta: DLMetaData) -> Result<()> {
-        let span = span!(Level::TRACE, "passive_roaming");
-        let fut = PassiveRoamingDownlink::_handle(ufs, phy, dl_meta);
-        fut.instrument(span).await
+        let span = span!(Level::INFO, "passive_roaming");
+
+        PassiveRoamingDownlink::_handle(ufs, phy, dl_meta)
+            .instrument(span)
+            .await
     }
 
     async fn _handle(ufs: UplinkFrameSet, phy: Vec<u8>, dl_meta: DLMetaData) -> Result<()> {
