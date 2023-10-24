@@ -991,7 +991,7 @@ impl Data {
                             device_info: self.device_info.clone(),
                             level: integration_pb::LogLevel::Error.into(),
                             code: integration_pb::LogCode::UplinkCodec.into(),
-                            description: format!("{}", e),
+                            description: format!("{:#}", e),
                             context: [(
                                 "deduplication_id".to_string(),
                                 pl.deduplication_id.clone(),
