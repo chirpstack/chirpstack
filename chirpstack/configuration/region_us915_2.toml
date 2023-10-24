@@ -20,7 +20,7 @@
     # If enabled, gateways can only be used by devices under the same tenant.
     force_gws_private=false
 
-    
+
     # Gateway backend configuration.
     [regions.gateway.backend]
 
@@ -93,7 +93,7 @@
     # Gateway channel configuration.
     #
     # Note: this configuration is only used in case the gateway is using the
-    # ChirpStack Concentratord daemon. In any other case, this configuration 
+    # ChirpStack Concentratord daemon. In any other case, this configuration
     # is ignored.
     [[regions.gateway.channels]]
       frequency=905500000
@@ -152,7 +152,7 @@
 
   # Region specific network configuration.
   [regions.network]
-    
+
     # Installation margin (dB) used by the ADR engine.
     #
     # A higher number means that the network-server will keep more margin,
@@ -238,12 +238,12 @@
       # 0  = roughly 17 minutes
       # 15 = about 1 year
       max_time_n=0
-    
+
 
     # Class-B configuration.
     [regions.network.class_b]
 
-      # Ping-slot data-rate. 
+      # Ping-slot data-rate.
       ping_slot_dr=8
 
       # Ping-slot frequency (Hz)
