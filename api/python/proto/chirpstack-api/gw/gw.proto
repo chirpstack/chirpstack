@@ -154,6 +154,13 @@ message LoraModulationInfo {
 
   // Polarization inversion.
   bool polarization_inversion = 4;
+
+  // Preamble length (for TX).
+  uint32 preamble = 6;
+
+  //  No CRC (for TX).
+  // If true, do not send a CRC in the packet.
+  bool no_crc = 7;
 }
 
 message FskModulationInfo {

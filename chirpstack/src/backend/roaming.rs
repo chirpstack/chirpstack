@@ -284,6 +284,8 @@ pub fn ul_meta_data_to_tx_info(ul_meta_data: &ULMetaData) -> Result<gw::UplinkTx
                         code_rate: gw::CodeRate::Cr45.into(),
                         code_rate_legacy: "".into(),
                         polarization_inversion: true,
+                        preamble: 0,
+                        no_crc: false,
                     })
                 }
                 lrwn::region::DataRateModulation::Fsk(v) => {

@@ -141,6 +141,12 @@ export class LoraModulationInfo extends jspb.Message {
   getPolarizationInversion(): boolean;
   setPolarizationInversion(value: boolean): void;
 
+  getPreamble(): number;
+  setPreamble(value: number): void;
+
+  getNoCrc(): boolean;
+  setNoCrc(value: boolean): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): LoraModulationInfo.AsObject;
   static toObject(includeInstance: boolean, msg: LoraModulationInfo): LoraModulationInfo.AsObject;
@@ -158,6 +164,8 @@ export namespace LoraModulationInfo {
     codeRateLegacy: string,
     codeRate: CodeRateMap[keyof CodeRateMap],
     polarizationInversion: boolean,
+    preamble: number,
+    noCrc: boolean,
   }
 }
 

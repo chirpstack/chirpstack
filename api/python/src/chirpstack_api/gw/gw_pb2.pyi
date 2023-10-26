@@ -124,18 +124,22 @@ class UplinkTxInfo(_message.Message):
     def __init__(self, frequency: _Optional[int] = ..., modulation: _Optional[_Union[Modulation, _Mapping]] = ...) -> None: ...
 
 class LoraModulationInfo(_message.Message):
-    __slots__ = ["bandwidth", "spreading_factor", "code_rate_legacy", "code_rate", "polarization_inversion"]
+    __slots__ = ["bandwidth", "spreading_factor", "code_rate_legacy", "code_rate", "polarization_inversion", "preamble", "no_crc"]
     BANDWIDTH_FIELD_NUMBER: _ClassVar[int]
     SPREADING_FACTOR_FIELD_NUMBER: _ClassVar[int]
     CODE_RATE_LEGACY_FIELD_NUMBER: _ClassVar[int]
     CODE_RATE_FIELD_NUMBER: _ClassVar[int]
     POLARIZATION_INVERSION_FIELD_NUMBER: _ClassVar[int]
+    PREAMBLE_FIELD_NUMBER: _ClassVar[int]
+    NO_CRC_FIELD_NUMBER: _ClassVar[int]
     bandwidth: int
     spreading_factor: int
     code_rate_legacy: str
     code_rate: CodeRate
     polarization_inversion: bool
-    def __init__(self, bandwidth: _Optional[int] = ..., spreading_factor: _Optional[int] = ..., code_rate_legacy: _Optional[str] = ..., code_rate: _Optional[_Union[CodeRate, str]] = ..., polarization_inversion: bool = ...) -> None: ...
+    preamble: int
+    no_crc: bool
+    def __init__(self, bandwidth: _Optional[int] = ..., spreading_factor: _Optional[int] = ..., code_rate_legacy: _Optional[str] = ..., code_rate: _Optional[_Union[CodeRate, str]] = ..., polarization_inversion: bool = ..., preamble: _Optional[int] = ..., no_crc: bool = ...) -> None: ...
 
 class FskModulationInfo(_message.Message):
     __slots__ = ["frequency_deviation", "datarate"]

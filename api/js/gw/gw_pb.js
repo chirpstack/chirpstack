@@ -1596,7 +1596,9 @@ proto.gw.LoraModulationInfo.toObject = function(includeInstance, msg) {
     spreadingFactor: jspb.Message.getFieldWithDefault(msg, 2, 0),
     codeRateLegacy: jspb.Message.getFieldWithDefault(msg, 3, ""),
     codeRate: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    polarizationInversion: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
+    polarizationInversion: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+    preamble: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    noCrc: jspb.Message.getBooleanFieldWithDefault(msg, 7, false)
   };
 
   if (includeInstance) {
@@ -1652,6 +1654,14 @@ proto.gw.LoraModulationInfo.deserializeBinaryFromReader = function(msg, reader) 
     case 4:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setPolarizationInversion(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setPreamble(value);
+      break;
+    case 7:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setNoCrc(value);
       break;
     default:
       reader.skipField();
@@ -1714,6 +1724,20 @@ proto.gw.LoraModulationInfo.serializeBinaryToWriter = function(message, writer) 
   if (f) {
     writer.writeBool(
       4,
+      f
+    );
+  }
+  f = message.getPreamble();
+  if (f !== 0) {
+    writer.writeUint32(
+      6,
+      f
+    );
+  }
+  f = message.getNoCrc();
+  if (f) {
+    writer.writeBool(
+      7,
       f
     );
   }
@@ -1807,6 +1831,42 @@ proto.gw.LoraModulationInfo.prototype.getPolarizationInversion = function() {
  */
 proto.gw.LoraModulationInfo.prototype.setPolarizationInversion = function(value) {
   return jspb.Message.setProto3BooleanField(this, 4, value);
+};
+
+
+/**
+ * optional uint32 preamble = 6;
+ * @return {number}
+ */
+proto.gw.LoraModulationInfo.prototype.getPreamble = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.gw.LoraModulationInfo} returns this
+ */
+proto.gw.LoraModulationInfo.prototype.setPreamble = function(value) {
+  return jspb.Message.setProto3IntField(this, 6, value);
+};
+
+
+/**
+ * optional bool no_crc = 7;
+ * @return {boolean}
+ */
+proto.gw.LoraModulationInfo.prototype.getNoCrc = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 7, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.gw.LoraModulationInfo} returns this
+ */
+proto.gw.LoraModulationInfo.prototype.setNoCrc = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 7, value);
 };
 
 

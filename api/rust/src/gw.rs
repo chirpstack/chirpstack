@@ -89,6 +89,8 @@ impl UplinkFrame {
                                         .into(),
                                     code_rate_legacy: "".into(),
                                     polarization_inversion: info.polarization_inversion,
+                                    preamble: 0,
+                                    no_crc: false,
                                 })
                             }
                             uplink_tx_info_legacy::ModulationInfo::FskModulationInfo(info) => {

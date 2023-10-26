@@ -95,6 +95,8 @@ pub fn set_tx_info_data_rate(
                         .into(),
                     polarization_inversion: true,
                     code_rate_legacy: "".into(),
+                    preamble: 0,
+                    no_crc: false,
                 })),
             });
         }
