@@ -165,6 +165,8 @@ pub fn set_uplink_modulation(
                         .into(),
                     code_rate_legacy: "".into(),
                     polarization_inversion: true,
+                    no_crc: false,
+                    preamble: 0,
                 })
             }
             lrwn::region::DataRateModulation::Fsk(v) => {

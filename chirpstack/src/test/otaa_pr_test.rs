@@ -224,6 +224,8 @@ async fn test_fns() {
                         code_rate: gw::CodeRate::Cr45.into(),
                         polarization_inversion: true,
                         code_rate_legacy: "".to_string(),
+                        no_crc: false,
+                        preamble: 0,
                     })),
                 }),
                 board: 0,
