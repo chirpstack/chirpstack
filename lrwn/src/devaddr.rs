@@ -46,8 +46,12 @@ impl FromStr for DevAddrPrefix {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.to_string();
+        let mut size: u32 = 32;
         let parts: Vec<&str> = s.split('/').collect();
-        if parts.len() != 2 {
+        if parts.len() == 2 {
+            size = parts[1].parse().map_err(|_| Error::DevAddrPrefixFormat)?;
+        }
+        if parts.len() > 2 {
             return Err(Error::DevAddrPrefixFormat);
         }
 
@@ -57,7 +61,6 @@ impl FromStr for DevAddrPrefix {
 
         let mut mask: [u8; 4] = [0; 4];
         hex::decode_to_slice(parts[0], &mut mask)?;
-        let size: u32 = parts[1].parse().map_err(|_| Error::DevAddrPrefixFormat)?;
 
         Ok(DevAddrPrefix(mask, size))
     }
@@ -311,6 +314,10 @@ mod tests {
         let p = DevAddrPrefix::from_str("01000000/8").unwrap();
         assert_eq!(DevAddrPrefix::new([1, 0, 0, 0], 8), p);
         assert_eq!("01000000/8", p.to_string());
+
+        let p = DevAddrPrefix::from_str("01020304").unwrap();
+        assert_eq!(DevAddrPrefix::new([1, 2, 3, 4], 32), p);
+        assert_eq!("01020304/32", p.to_string());
     }
 
     #[test]

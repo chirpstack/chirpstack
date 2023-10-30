@@ -101,7 +101,7 @@ pub async fn _handle_request(bp: BasePayload, b: Vec<u8>) -> http::Response<hype
                 }
             };
 
-            match joinserver::get(&sender_id) {
+            match joinserver::get(sender_id) {
                 Ok(v) => v,
                 Err(_) => {
                     warn!("Unknown SenderID");

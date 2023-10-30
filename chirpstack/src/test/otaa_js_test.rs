@@ -8,7 +8,7 @@ use crate::{
     uplink,
 };
 use chirpstack_api::{common, gw, integration as integration_pb, internal};
-use lrwn::{DevAddr, EUI64};
+use lrwn::{DevAddr, EUI64Prefix, EUI64};
 
 struct Test {
     name: String,
@@ -361,11 +361,11 @@ async fn run_test(t: &Test) {
     });
 
     let mut conf: config::Configuration = (*config::get()).clone();
-    conf.join_server.servers.push(config::JoinServerServer {
-        join_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+    conf.join_server.servers = vec![config::JoinServerServer {
+        join_eui_prefix: EUI64Prefix::new([1, 2, 3, 4, 5, 6, 7, 8], 64),
         server: server.url("/"),
         ..Default::default()
-    });
+    }];
     config::set(conf);
     region::setup().unwrap();
     joinserver::setup().unwrap();

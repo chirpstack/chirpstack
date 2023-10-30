@@ -17,6 +17,12 @@ pub enum Error {
     #[error("DevAddrPrefix must be in the form 00000000/0")]
     DevAddrPrefixFormat,
 
+    #[error("EUI64Prefix must be in the form 0000000000000000/0")]
+    EUI64PrefixFormat,
+
     #[error(transparent)]
     FromHexError(#[from] hex::FromHexError),
+
+    #[error(transparent)]
+    Anyhow(#[from] anyhow::Error),
 }

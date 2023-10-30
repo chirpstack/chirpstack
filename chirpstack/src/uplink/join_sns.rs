@@ -147,7 +147,7 @@ impl JoinRequest {
 
         if self.device_keys.is_none() {
             trace!(join_eui = %jr.join_eui, "Getting Join Server client");
-            self.js_client = Some(joinserver::get(&jr.join_eui)?);
+            self.js_client = Some(joinserver::get(jr.join_eui)?);
         }
 
         Ok(())
@@ -226,6 +226,7 @@ impl JoinRequest {
         trace!("Getting join-accept from Join Server");
 
         let js_client = self.js_client.as_ref().unwrap();
+        let jr = self.join_request.as_ref().unwrap();
         let region_network = config::get_region_network(&self.uplink_frame_set.region_config_id)?;
         let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
 
@@ -262,7 +263,9 @@ impl JoinRequest {
             ..Default::default()
         };
 
-        let join_ans_pl = js_client.join_req(&mut join_req_pl, None).await?;
+        let join_ans_pl = js_client
+            .join_req(jr.join_eui.to_vec(), &mut join_req_pl, None)
+            .await?;
 
         if let Some(v) = &join_ans_pl.app_s_key {
             self.app_s_key = Some(common::KeyEnvelope {

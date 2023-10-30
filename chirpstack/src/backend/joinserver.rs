@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use anyhow::Result;
@@ -6,22 +5,24 @@ use tracing::info;
 
 use crate::config;
 use backend::{Client, ClientConfig};
-use lrwn::EUI64;
+use lrwn::{EUI64Prefix, EUI64};
 
 lazy_static! {
-    static ref CLIENTS: RwLock<HashMap<EUI64, Arc<Client>>> = RwLock::new(HashMap::new());
+    static ref CLIENTS: RwLock<Vec<(EUI64Prefix, Arc<Client>)>> = RwLock::new(vec![]);
 }
 
 pub fn setup() -> Result<()> {
     info!("Setting up Join Server clients");
     let conf = config::get();
 
+    let mut clients_w = CLIENTS.write().unwrap();
+    *clients_w = vec![];
+
     for js in &conf.join_server.servers {
-        info!(join_eui = %js.join_eui, "Configuring Join Server");
+        info!(join_eui_prefix = %js.join_eui_prefix, "Configuring Join Server");
 
         let c = Client::new(ClientConfig {
             sender_id: conf.network.net_id.to_vec(),
-            receiver_id: js.join_eui.to_vec(),
             server: js.server.clone(),
             ca_cert: js.ca_cert.clone(),
             tls_cert: js.tls_cert.clone(),
@@ -30,32 +31,28 @@ pub fn setup() -> Result<()> {
             ..Default::default()
         })?;
 
-        set(&js.join_eui, c);
+        clients_w.push((js.join_eui_prefix, Arc::new(c)));
     }
 
     Ok(())
 }
 
-pub fn set(join_eui: &EUI64, c: Client) {
-    let mut clients_w = CLIENTS.write().unwrap();
-    clients_w.insert(*join_eui, Arc::new(c));
-}
-
-pub fn get(join_eui: &EUI64) -> Result<Arc<Client>> {
+pub fn get(join_eui: EUI64) -> Result<Arc<Client>> {
     let clients_r = CLIENTS.read().unwrap();
-    Ok(clients_r
-        .get(join_eui)
-        .ok_or_else(|| {
-            anyhow!(
-                "Join Server client for join_eui {} does not exist",
-                join_eui
-            )
-        })?
-        .clone())
+    for client in clients_r.iter() {
+        if client.0.matches(join_eui) {
+            return Ok(client.1.clone());
+        }
+    }
+
+    Err(anyhow!(
+        "Join Server client for join_eui {} does not exist",
+        join_eui
+    ))
 }
 
 #[cfg(test)]
 pub fn reset() {
     let mut clients_w = CLIENTS.write().unwrap();
-    *clients_w = HashMap::new();
+    *clients_w = vec![];
 }

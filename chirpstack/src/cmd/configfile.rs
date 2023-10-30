@@ -600,11 +600,24 @@ pub fn run() {
 [join_server]
 
     # Per Join Server configuration (this can be repeated).
+    #
+    # ChirpStack will try to match the Join-Request JoinEUI against each
+    # join_eui_prefix in the same order as they appear in the configuration.
+    #
+    # If you configure a 'catch-all' Join Server, then this entry must appear
+    # as the last item in the list.
+    #
     # Example:
     # [[join_server.servers]]
     #
-    #   # JoinEUI of the Join Server.
-    #   join_eui="0102030405060708"
+    #   # JoinEUI prefix that must be routed to the Join Server.
+    #   #
+    #   # Example '0102030405060700/56` means that the 56MSB of the
+    #   # join_eui_prefix will be used to match against the JoinEUI.
+    #   # Thus the following JoinEUI range will be forwarded to the
+    #   # configured Join Server:
+    #   #   0102030405060700 - 01020304050607ff
+    #   join_eui_prefix="0102030405060708/64"
     #
     #   # Server endpoint.
     #   server="https://example.com:1234/join/endpoint"
@@ -633,7 +646,7 @@ pub fn run() {
     {{#each join_server.servers}}
 
     [[join_server.servers]]
-      join_eui="{{ this.join_eui }}"
+      join_eui_prefix="{{ this.join_eui_prefix }}"
       server="{{ this.server }}"
       async_interface={{ this.async_interface }}
       async_interface_timeout="{{ this.async_interface_timeout }}"

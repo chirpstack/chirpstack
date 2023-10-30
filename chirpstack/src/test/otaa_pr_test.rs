@@ -17,7 +17,7 @@ use crate::storage::{
 };
 use crate::{config, test, uplink};
 use chirpstack_api::gw;
-use lrwn::{AES128Key, NetID, EUI64};
+use lrwn::{AES128Key, EUI64Prefix, NetID, EUI64};
 
 #[tokio::test]
 async fn test_fns() {
@@ -32,18 +32,18 @@ async fn test_fns() {
     conf.network.net_id = NetID::from_str("010203").unwrap();
 
     // Set Join Server.
-    conf.join_server.servers.push(config::JoinServerServer {
-        join_eui: EUI64::from_str("0102030405060708").unwrap(),
+    conf.join_server.servers = vec![config::JoinServerServer {
+        join_eui_prefix: EUI64Prefix::new([1, 2, 3, 4, 5, 6, 7, 8], 64),
         server: js_mock.url("/"),
         ..Default::default()
-    });
+    }];
 
     // Set roaming agreement.
-    conf.roaming.servers.push(config::RoamingServer {
+    conf.roaming.servers = vec![config::RoamingServer {
         net_id: NetID::from_str("030201").unwrap(),
         server: sns_mock.url("/"),
         ..Default::default()
-    });
+    }];
 
     config::set(conf);
     joinserver::setup().unwrap();

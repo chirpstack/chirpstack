@@ -149,11 +149,12 @@ impl Client {
 
     pub async fn join_req(
         &self,
+        receiver_id: Vec<u8>,
         pl: &mut JoinReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<JoinAnsPayload> {
         pl.base.sender_id = self.config.sender_id.clone();
-        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.receiver_id = receiver_id;
         pl.base.message_type = MessageType::JoinReq;
 
         let mut ans: JoinAnsPayload = Default::default();
@@ -231,11 +232,12 @@ impl Client {
 
     pub async fn home_ns_req(
         &self,
+        receiver_id: Vec<u8>,
         pl: &mut HomeNSReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<HomeNSAnsPayload> {
         pl.base.sender_id = self.config.sender_id.clone();
-        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.receiver_id = receiver_id;
         pl.base.message_type = MessageType::HomeNSReq;
 
         let mut ans: HomeNSAnsPayload = Default::default();
@@ -1176,8 +1178,7 @@ pub mod test {
         let server = MockServer::start();
 
         let c = Client::new(ClientConfig {
-            sender_id: "010203".into(),
-            receiver_id: "0102030405060708".into(),
+            sender_id: vec![1, 2, 3],
             server: server.url("/"),
             async_timeout: Duration::from_secs(1),
             ..Default::default()
@@ -1186,8 +1187,8 @@ pub mod test {
 
         let mut req = HomeNSReqPayload {
             base: BasePayload {
-                sender_id: "010203".into(),
-                receiver_id: "0102030405060708".into(),
+                sender_id: vec![1, 2, 3],
+                receiver_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
                 message_type: MessageType::HomeNSReq,
                 transaction_id: 1234,
                 ..Default::default()
@@ -1198,8 +1199,8 @@ pub mod test {
         let ans = HomeNSAnsPayload {
             base: BasePayloadResult {
                 base: BasePayload {
-                    sender_id: "0102030405060708".into(),
-                    receiver_id: "010203".into(),
+                    sender_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                    receiver_id: vec![1, 2, 3],
                     message_type: MessageType::HomeNSAns,
                     transaction_id: 1234,
                     ..Default::default()
@@ -1222,14 +1223,19 @@ pub mod test {
         // OK
         let (tx, rx) = oneshot::channel();
         tx.send(serde_json::to_vec(&ans).unwrap()).unwrap();
-        let resp = c.home_ns_req(&mut req, Some(rx)).await.unwrap();
+        let resp = c
+            .home_ns_req(vec![1, 2, 3, 4, 5, 6, 7, 8], &mut req, Some(rx))
+            .await
+            .unwrap();
         mock.assert();
         mock.delete();
         assert_eq!(resp, ans);
 
         // Timeout
         let (_tx, rx) = oneshot::channel();
-        let resp = c.home_ns_req(&mut req, Some(rx)).await;
+        let resp = c
+            .home_ns_req(vec![1, 2, 3, 4, 5, 6, 7, 8], &mut req, Some(rx))
+            .await;
         assert!(resp.is_err());
     }
 
@@ -1238,8 +1244,7 @@ pub mod test {
         let server = MockServer::start();
 
         let c = Client::new(ClientConfig {
-            sender_id: "010203".into(),
-            receiver_id: "0102030405060708".into(),
+            sender_id: vec![1, 2, 3],
             server: server.url("/"),
             async_timeout: Duration::from_secs(1),
             ..Default::default()
@@ -1248,8 +1253,8 @@ pub mod test {
 
         let mut req = HomeNSReqPayload {
             base: BasePayload {
-                sender_id: "010203".into(),
-                receiver_id: "0102030405060708".into(),
+                sender_id: vec![1, 2, 3],
+                receiver_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
                 message_type: MessageType::HomeNSReq,
                 transaction_id: 1234,
                 ..Default::default()
@@ -1260,8 +1265,8 @@ pub mod test {
         let ans = HomeNSAnsPayload {
             base: BasePayloadResult {
                 base: BasePayload {
-                    sender_id: "0102030405060708".into(),
-                    receiver_id: "010203".into(),
+                    sender_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                    receiver_id: vec![1, 2, 3],
                     message_type: MessageType::HomeNSAns,
                     transaction_id: 1234,
                     ..Default::default()
@@ -1284,14 +1289,19 @@ pub mod test {
         // OK
         let (tx, rx) = oneshot::channel();
         tx.send(serde_json::to_vec(&ans).unwrap()).unwrap();
-        let resp = c.home_ns_req(&mut req, Some(rx)).await.unwrap();
+        let resp = c
+            .home_ns_req(vec![1, 2, 3, 4, 5, 6, 7, 8], &mut req, Some(rx))
+            .await
+            .unwrap();
         mock.assert();
         mock.delete();
         assert_eq!(resp, ans);
 
         // Timeout
         let (_tx, rx) = oneshot::channel();
-        let resp = c.home_ns_req(&mut req, Some(rx)).await;
+        let resp = c
+            .home_ns_req(vec![1, 2, 3, 4, 5, 6, 7, 8], &mut req, Some(rx))
+            .await;
         assert!(resp.is_err());
     }
 
@@ -1300,8 +1310,7 @@ pub mod test {
         let server = MockServer::start();
 
         let c = Client::new(ClientConfig {
-            sender_id: "010203".into(),
-            receiver_id: "0102030405060708".into(),
+            sender_id: vec![1, 2, 3],
             server: server.url("/"),
             ..Default::default()
         })
@@ -1309,8 +1318,8 @@ pub mod test {
 
         let mut req = HomeNSReqPayload {
             base: BasePayload {
-                sender_id: "010203".into(),
-                receiver_id: "0102030405060708".into(),
+                sender_id: vec![1, 2, 3],
+                receiver_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
                 message_type: MessageType::HomeNSReq,
                 transaction_id: 1234,
                 ..Default::default()
@@ -1321,8 +1330,8 @@ pub mod test {
         let ans = HomeNSAnsPayload {
             base: BasePayloadResult {
                 base: BasePayload {
-                    sender_id: "0102030405060708".into(),
-                    receiver_id: "010203".into(),
+                    sender_id: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                    receiver_id: vec![1, 2, 3],
                     message_type: MessageType::HomeNSAns,
                     transaction_id: 1234,
                     ..Default::default()
@@ -1342,7 +1351,10 @@ pub mod test {
                 .body(serde_json::to_string(&req).unwrap());
             then.body(serde_json::to_vec(&ans).unwrap()).status(200);
         });
-        let resp = c.home_ns_req(&mut req, None).await.unwrap();
+        let resp = c
+            .home_ns_req(vec![1, 2, 3, 4, 5, 6, 7, 8], &mut req, None)
+            .await
+            .unwrap();
         mock.assert();
         mock.delete();
         assert_eq!(resp, ans);
@@ -1354,7 +1366,9 @@ pub mod test {
                 .body(serde_json::to_string(&req).unwrap());
             then.status(500);
         });
-        let resp = c.home_ns_req(&mut req, None).await;
+        let resp = c
+            .home_ns_req(vec![1, 2, 3, 4, 5, 6, 7, 8], &mut req, None)
+            .await;
         mock.assert();
         mock.delete();
         assert!(resp.is_err());

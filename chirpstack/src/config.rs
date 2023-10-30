@@ -7,7 +7,7 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 use lrwn::region::CommonName;
-use lrwn::{AES128Key, DevAddrPrefix, NetID, EUI64};
+use lrwn::{AES128Key, DevAddrPrefix, EUI64Prefix, NetID};
 
 lazy_static! {
     static ref CONFIG: Mutex<Arc<Configuration>> = Mutex::new(Arc::new(Default::default()));
@@ -416,7 +416,8 @@ pub struct JoinServer {
 #[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(default)]
 pub struct JoinServerServer {
-    pub join_eui: EUI64,
+    #[serde(alias = "join_eui")]
+    pub join_eui_prefix: EUI64Prefix,
     pub server: String,
     #[serde(with = "humantime_serde")]
     pub async_timeout: Duration,
