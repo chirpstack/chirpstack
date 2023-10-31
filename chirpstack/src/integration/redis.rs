@@ -6,7 +6,7 @@ use prost::Message;
 use tracing::info;
 
 use super::Integration as IntegrationTrait;
-use crate::eventlog;
+use crate::streams;
 use chirpstack_api::integration;
 
 pub struct Integration {}
@@ -30,7 +30,7 @@ impl IntegrationTrait for Integration {
             .as_ref()
             .ok_or_else(|| anyhow!("device_info is None"))?;
         let b = pl.encode_to_vec();
-        eventlog::log_event_for_device("up", &dev_info.dev_eui, &b).await
+        streams::events::log_event_for_device("up", &dev_info.dev_eui, &b).await
     }
 
     async fn join_event(
@@ -43,7 +43,7 @@ impl IntegrationTrait for Integration {
             .as_ref()
             .ok_or_else(|| anyhow!("device_info is None"))?;
         let b = pl.encode_to_vec();
-        eventlog::log_event_for_device("join", &dev_info.dev_eui, &b).await
+        streams::events::log_event_for_device("join", &dev_info.dev_eui, &b).await
     }
 
     async fn ack_event(
@@ -56,7 +56,7 @@ impl IntegrationTrait for Integration {
             .as_ref()
             .ok_or_else(|| anyhow!("device_info is None"))?;
         let b = pl.encode_to_vec();
-        eventlog::log_event_for_device("ack", &dev_info.dev_eui, &b).await
+        streams::events::log_event_for_device("ack", &dev_info.dev_eui, &b).await
     }
 
     async fn txack_event(
@@ -69,7 +69,7 @@ impl IntegrationTrait for Integration {
             .as_ref()
             .ok_or_else(|| anyhow!("device_info is None"))?;
         let b = pl.encode_to_vec();
-        eventlog::log_event_for_device("txack", &dev_info.dev_eui, &b).await
+        streams::events::log_event_for_device("txack", &dev_info.dev_eui, &b).await
     }
 
     async fn log_event(
@@ -82,7 +82,7 @@ impl IntegrationTrait for Integration {
             .as_ref()
             .ok_or_else(|| anyhow!("device_info is None"))?;
         let b = pl.encode_to_vec();
-        eventlog::log_event_for_device("log", &dev_info.dev_eui, &b).await
+        streams::events::log_event_for_device("log", &dev_info.dev_eui, &b).await
     }
 
     async fn status_event(
@@ -95,7 +95,7 @@ impl IntegrationTrait for Integration {
             .as_ref()
             .ok_or_else(|| anyhow!("device_info is None"))?;
         let b = pl.encode_to_vec();
-        eventlog::log_event_for_device("status", &dev_info.dev_eui, &b).await
+        streams::events::log_event_for_device("status", &dev_info.dev_eui, &b).await
     }
 
     async fn location_event(
@@ -108,7 +108,7 @@ impl IntegrationTrait for Integration {
             .as_ref()
             .ok_or_else(|| anyhow!("device_info is None"))?;
         let b = pl.encode_to_vec();
-        eventlog::log_event_for_device("location", &dev_info.dev_eui, &b).await
+        streams::events::log_event_for_device("location", &dev_info.dev_eui, &b).await
     }
 
     async fn integration_event(
@@ -121,7 +121,7 @@ impl IntegrationTrait for Integration {
             .as_ref()
             .ok_or_else(|| anyhow!("device_info is None"))?;
         let b = pl.encode_to_vec();
-        eventlog::log_event_for_device("integration", &dev_info.dev_eui, &b).await
+        streams::events::log_event_for_device("integration", &dev_info.dev_eui, &b).await
     }
 }
 

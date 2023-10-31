@@ -13,12 +13,12 @@ use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 use uuid::Uuid;
 
 use crate::config;
-use crate::framelog;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{
     device, device_profile, error::Error as StorageError, gateway, get_redis_conn, redis_key,
 };
-use chirpstack_api::{common, gw, internal, streams};
+use crate::streams;
+use chirpstack_api::{common, gw, internal, streams as streams_pb};
 use lrwn::region::CommonName;
 use lrwn::{ForwardUplinkReq, MType, PhyPayload, EUI64};
 
@@ -57,11 +57,13 @@ pub struct UplinkFrameSet {
     pub roaming_meta_data: Option<RoamingMetaData>,
 }
 
-impl TryFrom<&UplinkFrameSet> for streams::UplinkFrameLog {
+impl TryFrom<&UplinkFrameSet> for streams_pb::UplinkFrameLog {
     type Error = anyhow::Error;
 
-    fn try_from(ufs: &UplinkFrameSet) -> std::result::Result<streams::UplinkFrameLog, Self::Error> {
-        let mut ufl = streams::UplinkFrameLog {
+    fn try_from(
+        ufs: &UplinkFrameSet,
+    ) -> std::result::Result<streams_pb::UplinkFrameLog, Self::Error> {
+        let mut ufl = streams_pb::UplinkFrameLog {
             phy_payload: ufs.phy_payload.to_vec()?,
             tx_info: Some(ufs.tx_info.clone()),
             rx_info: ufs.rx_info_set.clone(),
@@ -315,8 +317,8 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
         .context("Update gateway meta-data")?;
 
     debug!("Logging uplink frame to Redis Stream");
-    let ufl: streams::UplinkFrameLog = (&uplink).try_into()?;
-    framelog::log_uplink_for_gateways(&ufl)
+    let ufl: streams_pb::UplinkFrameLog = (&uplink).try_into()?;
+    streams::frames::log_uplink_for_gateways(&ufl)
         .await
         .context("Log uplink for gateways")?;
 

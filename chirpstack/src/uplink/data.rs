@@ -19,8 +19,8 @@ use crate::storage::{
     device::{self, DeviceClass},
     device_gateway, device_profile, device_queue, device_session, fields, metrics, tenant,
 };
-use crate::{codec, config, downlink, framelog, integration, maccommand, metalog, region};
-use chirpstack_api::{integration as integration_pb, internal, streams};
+use crate::{codec, config, downlink, integration, maccommand, region, streams};
+use chirpstack_api::{integration as integration_pb, internal, streams as streams_pb};
 use lrwn::{AES128Key, EUI64};
 
 pub struct Data {
@@ -276,9 +276,10 @@ impl Data {
                     info!(dev_addr = %dev_addr, "None of the device-sessions for dev_addr resulted in valid MIC");
 
                     // Log uplink for null DevEUI.
-                    let mut ufl: streams::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
+                    let mut ufl: streams_pb::UplinkFrameLog =
+                        (&self.uplink_frame_set).try_into()?;
                     ufl.dev_eui = "0000000000000000".to_string();
-                    framelog::log_uplink_for_device(&ufl).await?;
+                    streams::frames::log_uplink_for_device(&ufl).await?;
 
                     return Err(Error::Abort);
                 }
@@ -648,7 +649,7 @@ impl Data {
 
     async fn log_uplink_frame_set(&self) -> Result<()> {
         trace!("Logging uplink frame-set");
-        let mut ufl: streams::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
+        let mut ufl: streams_pb::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
         ufl.dev_eui = self.device.as_ref().unwrap().dev_eui.to_string();
 
         // self.phy_payload holds the decrypted payload.
@@ -656,7 +657,7 @@ impl Data {
         ufl.plaintext_frm_payload = true;
         ufl.phy_payload = self.phy_payload.to_vec()?;
 
-        framelog::log_uplink_for_device(&ufl).await?;
+        streams::frames::log_uplink_for_device(&ufl).await?;
         Ok(())
     }
 
@@ -733,7 +734,7 @@ impl Data {
         trace!("Logging uplink meta");
 
         if let lrwn::Payload::MACPayload(mac_pl) = &self.phy_payload.payload {
-            let um = streams::UplinkMeta {
+            let um = streams_pb::UplinkMeta {
                 dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
                 tx_info: Some(self.uplink_frame_set.tx_info.clone()),
                 rx_info: self.uplink_frame_set.rx_info_set.clone(),
@@ -763,7 +764,7 @@ impl Data {
                 message_type: self.phy_payload.mhdr.m_type.to_proto().into(),
             };
 
-            metalog::log_uplink(&um).await?;
+            streams::meta::log_uplink(&um).await?;
         }
 
         Ok(())

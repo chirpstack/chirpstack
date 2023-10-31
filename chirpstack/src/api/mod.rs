@@ -41,7 +41,7 @@ use super::config;
 use crate::api::auth::validator;
 use crate::helpers::errors::PrintFullError;
 use crate::monitoring::prometheus;
-use crate::requestlog;
+use crate::streams::api_requests;
 
 pub mod application;
 pub mod auth;
@@ -421,7 +421,7 @@ where
                     };
 
                     task::spawn(async move {
-                        if let Err(e) = requestlog::log_request(&req_log).await {
+                        if let Err(e) = api_requests::log_request(&req_log).await {
                             error!(error = %e.full(), "Log request error");
                         }
                     });

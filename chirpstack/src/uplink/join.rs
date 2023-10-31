@@ -28,10 +28,8 @@ use crate::storage::{
     error::Error as StorageError,
     metrics, tenant,
 };
-use crate::{
-    config, devaddr::get_random_dev_addr, downlink, framelog, integration, metalog, region,
-};
-use chirpstack_api::{common, integration as integration_pb, internal, streams};
+use crate::{config, devaddr::get_random_dev_addr, downlink, integration, region, streams};
+use chirpstack_api::{common, integration as integration_pb, internal, streams as streams_pb};
 
 pub struct JoinRequest {
     uplink_frame_set: UplinkFrameSet,
@@ -383,8 +381,8 @@ impl JoinRequest {
 
     async fn log_uplink_frame_set(&self) -> Result<()> {
         trace!("Logging uplink frame-set");
-        let ufl: streams::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
-        framelog::log_uplink_for_device(&ufl).await?;
+        let ufl: streams_pb::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
+        streams::frames::log_uplink_for_device(&ufl).await?;
         Ok(())
     }
 
@@ -768,7 +766,7 @@ impl JoinRequest {
     async fn log_uplink_meta(&self) -> Result<()> {
         trace!("Logging uplink meta");
 
-        let um = streams::UplinkMeta {
+        let um = streams_pb::UplinkMeta {
             dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
             rx_info: self.uplink_frame_set.rx_info_set.clone(),
@@ -777,7 +775,7 @@ impl JoinRequest {
             ..Default::default()
         };
 
-        metalog::log_uplink(&um).await?;
+        streams::meta::log_uplink(&um).await?;
 
         Ok(())
     }
