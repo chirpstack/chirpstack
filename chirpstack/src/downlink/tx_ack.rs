@@ -11,8 +11,8 @@ use crate::storage::{
     device::{self, DeviceClass},
     device_profile, device_queue, device_session, downlink_frame, multicast, tenant,
 };
-use crate::{integration, streams};
-use chirpstack_api::{common, gw, integration as integration_pb, internal, streams as streams_pb};
+use crate::{integration, stream};
+use chirpstack_api::{common, gw, integration as integration_pb, internal, stream as stream_pb};
 
 pub struct TxAck {
     downlink_tx_ack: gw::DownlinkTxAck,
@@ -609,7 +609,7 @@ impl TxAck {
         let dfi = self.downlink_frame_item.as_ref().unwrap();
         let phy = self.phy_payload.as_mut().unwrap();
 
-        let dfl = streams_pb::DownlinkFrameLog {
+        let dfl = stream_pb::DownlinkFrameLog {
             time: Some(Utc::now().into()),
             phy_payload: dfi.phy_payload.clone(),
             tx_info: dfi.tx_info.clone(),
@@ -642,7 +642,7 @@ impl TxAck {
 
         // Log for gateway (with potentially encrypted mac-commands).
         info!(gateway_id = %dfl.gateway_id, "Log downlink-frame for gateway");
-        streams::frames::log_downlink_for_gateway(&dfl).await?;
+        stream::frame::log_downlink_for_gateway(&dfl).await?;
 
         // Downlink is not related to a device / DevEUI, e.g. it could be a multicast
         // or proprietary downlink. Therefore we can't log it for a specific DevEUI.
@@ -678,7 +678,7 @@ impl TxAck {
             phy.decrypt_f_opts(&nwk_s_enc_key)?;
         }
 
-        let dfl = streams_pb::DownlinkFrameLog {
+        let dfl = stream_pb::DownlinkFrameLog {
             time: dfl.time.clone(),
             phy_payload: phy.to_vec()?,
             tx_info: dfl.tx_info.clone(),
@@ -693,7 +693,7 @@ impl TxAck {
 
         // Log for device.
         info!(device_eui = %dfl.dev_eui, "Log downlink-frame for device");
-        streams::frames::log_downlink_for_device(&dfl).await?;
+        stream::frame::log_downlink_for_device(&dfl).await?;
 
         Ok(())
     }
@@ -705,7 +705,7 @@ impl TxAck {
         let dfi = self.downlink_frame_item.as_ref().unwrap();
         let phy = self.phy_payload.as_ref().unwrap();
 
-        let dm = streams_pb::DownlinkMeta {
+        let dm = stream_pb::DownlinkMeta {
             dev_eui: if !df.dev_eui.is_empty() {
                 EUI64::from_slice(&df.dev_eui)?.to_string()
             } else {
@@ -749,7 +749,7 @@ impl TxAck {
             gateway_id: df.downlink_frame.as_ref().unwrap().gateway_id.clone(),
         };
 
-        streams::meta::log_downlink(&dm).await
+        stream::meta::log_downlink(&dm).await
     }
 
     fn is_error(&self) -> bool {

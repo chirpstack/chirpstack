@@ -14,9 +14,9 @@ use crate::storage::{
     error::Error as StorageError,
     metrics, tenant,
 };
-use crate::{config, devaddr::get_random_dev_addr, integration, region, streams};
+use crate::{config, devaddr::get_random_dev_addr, integration, region, stream};
 use backend::{PRStartAnsPayload, PRStartReqPayload};
-use chirpstack_api::{common, integration as integration_pb, internal, streams as streams_pb};
+use chirpstack_api::{common, integration as integration_pb, internal, stream as stream_pb};
 use lrwn::{keys, AES128Key, DevAddr, NetID};
 
 pub struct JoinRequest {
@@ -555,7 +555,7 @@ impl JoinRequest {
     async fn log_uplink_meta(&self) -> Result<()> {
         trace!("Logging uplink meta");
 
-        let req = streams_pb::UplinkMeta {
+        let req = stream_pb::UplinkMeta {
             dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
             rx_info: self.uplink_frame_set.rx_info_set.clone(),
@@ -564,7 +564,7 @@ impl JoinRequest {
             ..Default::default()
         };
 
-        streams::meta::log_uplink(&req).await?;
+        stream::meta::log_uplink(&req).await?;
 
         Ok(())
     }

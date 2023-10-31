@@ -22,7 +22,7 @@ use super::error::ToStatus;
 use super::helpers::ToProto;
 use super::{helpers, oidc};
 use crate::storage::{api_key, device, error::Error, gateway, redis_key, search, tenant, user};
-use crate::{config, region, streams};
+use crate::{config, region, stream};
 use lrwn::EUI64;
 
 pub struct Internal {
@@ -599,7 +599,7 @@ impl InternalService for Internal {
         let (redis_tx, mut redis_rx) = mpsc::channel(1);
         let (stream_tx, stream_rx) = mpsc::channel(1);
 
-        let mut framelog_future = Box::pin(streams::frames::get_frame_logs(key, 10, redis_tx));
+        let mut framelog_future = Box::pin(stream::frame::get_frame_logs(key, 10, redis_tx));
         let (drop_receiver, mut close_rx) = DropReceiver::new(ReceiverStream::new(stream_rx));
 
         tokio::spawn(async move {
@@ -666,7 +666,7 @@ impl InternalService for Internal {
         let (redis_tx, mut redis_rx) = mpsc::channel(1);
         let (stream_tx, stream_rx) = mpsc::channel(1);
 
-        let mut framelog_future = Box::pin(streams::frames::get_frame_logs(key, 10, redis_tx));
+        let mut framelog_future = Box::pin(stream::frame::get_frame_logs(key, 10, redis_tx));
         let (drop_receiver, mut close_rx) = DropReceiver::new(ReceiverStream::new(stream_rx));
 
         tokio::spawn(async move {
@@ -734,7 +734,7 @@ impl InternalService for Internal {
         let (redis_tx, mut redis_rx) = mpsc::channel(1);
         let (stream_tx, stream_rx) = mpsc::channel(1);
 
-        let mut eventlog_future = Box::pin(streams::events::get_event_logs(key, 10, redis_tx));
+        let mut eventlog_future = Box::pin(stream::event::get_event_logs(key, 10, redis_tx));
         let (drop_receiver, mut close_rx) = DropReceiver::new(ReceiverStream::new(stream_rx));
 
         tokio::spawn(async move {

@@ -35,13 +35,13 @@ use chirpstack_api::api::multicast_group_service_server::MulticastGroupServiceSe
 use chirpstack_api::api::relay_service_server::RelayServiceServer;
 use chirpstack_api::api::tenant_service_server::TenantServiceServer;
 use chirpstack_api::api::user_service_server::UserServiceServer;
-use chirpstack_api::streams;
+use chirpstack_api::stream as stream_pb;
 
 use super::config;
 use crate::api::auth::validator;
 use crate::helpers::errors::PrintFullError;
 use crate::monitoring::prometheus;
-use crate::streams::api_requests;
+use crate::stream;
 
 pub mod application;
 pub mod auth;
@@ -401,7 +401,7 @@ where
                         .observe(this.start.elapsed().as_secs_f64());
 
                     // Log API request to Redis
-                    let req_log = streams::ApiRequestLog {
+                    let req_log = stream_pb::ApiRequestLog {
                         service: this.service.to_string(),
                         method: this.method.to_string(),
                         metadata: response
@@ -421,7 +421,7 @@ where
                     };
 
                     task::spawn(async move {
-                        if let Err(e) = api_requests::log_request(&req_log).await {
+                        if let Err(e) = stream::api_request::log_request(&req_log).await {
                             error!(error = %e.full(), "Log request error");
                         }
                     });

@@ -6,4 +6,4 @@ pub mod gw;
 pub mod integration;
 #[cfg(feature = "internal")]
 pub mod internal;
-pub mod streams;
+pub mod stream;

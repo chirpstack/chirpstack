@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(out_dir.join("gw")).unwrap();
     std::fs::create_dir_all(out_dir.join("internal")).unwrap();
     std::fs::create_dir_all(out_dir.join("integration")).unwrap();
-    std::fs::create_dir_all(out_dir.join("streams")).unwrap();
+    std::fs::create_dir_all(out_dir.join("stream")).unwrap();
     std::fs::create_dir_all(out_dir.join("api")).unwrap();
 
     #[cfg(feature = "json")]
@@ -138,23 +138,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // streams
     tonic_build::configure()
-        .out_dir(out_dir.join("streams"))
-        .file_descriptor_set_path(out_dir.join("streams").join("proto_descriptor.bin"))
+        .out_dir(out_dir.join("stream"))
+        .file_descriptor_set_path(out_dir.join("stream").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
         .extern_path(".google.protobuf", well_known_types_path)
         .extern_path(".common", "crate::common")
         .extern_path(".gw", "crate::gw")
         .compile(
             &[
-                cs_dir.join("streams").join("meta.proto").to_str().unwrap(),
+                cs_dir.join("stream").join("meta.proto").to_str().unwrap(),
+                cs_dir.join("stream").join("frame.proto").to_str().unwrap(),
                 cs_dir
-                    .join("streams")
-                    .join("frames.proto")
-                    .to_str()
-                    .unwrap(),
-                cs_dir
-                    .join("streams")
-                    .join("api_requests.proto")
+                    .join("stream")
+                    .join("api_request.proto")
                     .to_str()
                     .unwrap(),
             ],
@@ -166,14 +162,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     #[cfg(feature = "json")]
     {
-        let descriptor_set = std::fs::read(out_dir.join("streams").join("proto_descriptor.bin"))?;
+        let descriptor_set = std::fs::read(out_dir.join("stream").join("proto_descriptor.bin"))?;
         pbjson_build::Builder::new()
             .register_descriptors(&descriptor_set)?
             .ignore_unknown_fields()
-            .out_dir(out_dir.join("streams"))
+            .out_dir(out_dir.join("stream"))
             .extern_path(".common", "crate::common")
             .extern_path(".gw", "crate::gw")
-            .build(&[".streams"])?;
+            .build(&[".stream"])?;
     }
 
     // api

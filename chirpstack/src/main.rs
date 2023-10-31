@@ -39,7 +39,7 @@ mod monitoring;
 mod region;
 mod sensitivity;
 mod storage;
-mod streams;
+mod stream;
 #[cfg(test)]
 mod test;
 mod uplink;
