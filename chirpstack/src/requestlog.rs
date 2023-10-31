@@ -4,9 +4,9 @@ use tokio::task;
 
 use crate::config;
 use crate::storage::{get_redis_conn, redis_key};
-use chirpstack_api::api;
+use chirpstack_api::streams;
 
-pub async fn log_request(pl: &api::RequestLog) -> Result<()> {
+pub async fn log_request(pl: &streams::ApiRequestLog) -> Result<()> {
     task::spawn_blocking({
         let pl = pl.clone();
 
@@ -46,7 +46,7 @@ mod tests {
     async fn test_log_request() {
         let _guard = test::prepare().await;
 
-        let pl = api::RequestLog {
+        let pl = streams::ApiRequestLog {
             service: "ap.Foo".to_string(),
             method: "bar".to_string(),
             metadata: [("user_id".to_string(), "foo_user".to_string())]
@@ -71,7 +71,7 @@ mod tests {
         assert_eq!(1, srr.keys[0].ids.len());
 
         if let Some(redis::Value::Data(b)) = srr.keys[0].ids[0].map.get("request") {
-            let pl_recv = api::RequestLog::decode(&mut Cursor::new(b)).unwrap();
+            let pl_recv = streams::ApiRequestLog::decode(&mut Cursor::new(b)).unwrap();
             assert_eq!(pl, pl_recv);
         } else {
             panic!("No request log");

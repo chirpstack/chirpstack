@@ -8,7 +8,7 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class RequestLog(_message.Message):
+class ApiRequestLog(_message.Message):
     __slots__ = ["service", "method", "metadata"]
     class MetadataEntry(_message.Message):
         __slots__ = ["key", "value"]

@@ -25,7 +25,6 @@ use tower_http::trace::TraceLayer;
 use tracing::{error, info};
 use warp::{http::header::HeaderValue, path::Tail, reply::Response, Filter, Rejection, Reply};
 
-use chirpstack_api::api;
 use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
 use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateServiceServer;
@@ -36,6 +35,7 @@ use chirpstack_api::api::multicast_group_service_server::MulticastGroupServiceSe
 use chirpstack_api::api::relay_service_server::RelayServiceServer;
 use chirpstack_api::api::tenant_service_server::TenantServiceServer;
 use chirpstack_api::api::user_service_server::UserServiceServer;
+use chirpstack_api::streams;
 
 use super::config;
 use crate::api::auth::validator;
@@ -401,7 +401,7 @@ where
                         .observe(this.start.elapsed().as_secs_f64());
 
                     // Log API request to Redis
-                    let req_log = api::RequestLog {
+                    let req_log = streams::ApiRequestLog {
                         service: this.service.to_string(),
                         method: this.method.to_string(),
                         metadata: response

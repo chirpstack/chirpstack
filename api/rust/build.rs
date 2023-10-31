@@ -152,6 +152,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .join("frames.proto")
                     .to_str()
                     .unwrap(),
+                cs_dir
+                    .join("streams")
+                    .join("api_requests.proto")
+                    .to_str()
+                    .unwrap(),
             ],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),
@@ -168,7 +173,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .out_dir(out_dir.join("streams"))
             .extern_path(".common", "crate::common")
             .extern_path(".gw", "crate::gw")
-            .build(&[".meta", ".streams"])?;
+            .build(&[".streams"])?;
     }
 
     // api
@@ -202,11 +207,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 cs_dir
                     .join("api")
                     .join("multicast_group.proto")
-                    .to_str()
-                    .unwrap(),
-                cs_dir
-                    .join("api")
-                    .join("request_log.proto")
                     .to_str()
                     .unwrap(),
                 cs_dir.join("api").join("relay.proto").to_str().unwrap(),

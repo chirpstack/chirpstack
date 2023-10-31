@@ -36,7 +36,6 @@ api:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/device.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/gateway.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/multicast_group.proto
-	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/request_log.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/relay.proto
 
 integration:
@@ -45,3 +44,4 @@ integration:
 streams:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/streams/meta.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/streams/frames.proto
+	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/streams/api_requests.proto
