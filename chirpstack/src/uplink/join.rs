@@ -31,7 +31,7 @@ use crate::storage::{
 use crate::{
     config, devaddr::get_random_dev_addr, downlink, framelog, integration, metalog, region,
 };
-use chirpstack_api::{api, common, integration as integration_pb, internal, meta};
+use chirpstack_api::{api, common, integration as integration_pb, internal, streams};
 
 pub struct JoinRequest {
     uplink_frame_set: UplinkFrameSet,
@@ -768,7 +768,7 @@ impl JoinRequest {
     async fn log_uplink_meta(&self) -> Result<()> {
         trace!("Logging uplink meta");
 
-        let um = meta::UplinkMeta {
+        let um = streams::UplinkMeta {
             dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
             rx_info: self.uplink_frame_set.rx_info_set.clone(),

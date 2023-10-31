@@ -1,10 +1,10 @@
-.PHONY: requirements common gw api integration meta
+.PHONY: requirements common gw api integration streams
 
 PROTOC := python -m grpc_tools.protoc
 PROTOC_ARGS := -I=/googleapis -I=proto --python_out=src --grpc_python_out=src --pyi_out=src
 PACKAGE_NAME := import \"chirpstack-api/
 
-all: requirements pre-build common gw api integration meta
+all: requirements pre-build common gw api integration streams
 
 requirements:
 	pip install grpcio-tools
@@ -43,5 +43,5 @@ api:
 integration:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/integration/integration.proto
 
-meta:
-	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/meta/meta.proto
+streams:
+	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/streams/meta.proto

@@ -1,8 +1,8 @@
-.PHONY: requirements common gw api integration meta
+.PHONY: requirements common gw api integration streams
 
 PROTOC_ARGS := -I=/googleapis -I=../proto --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative
 
-all: requirements common gw api integration meta
+all: requirements common gw api integration streams
 
 requirements:
 	go mod download
@@ -32,5 +32,5 @@ api:
 integration:
 	protoc ${PROTOC_ARGS} integration/integration.proto
 
-meta:
-	protoc ${PROTOC_ARGS} meta/meta.proto
+streams:
+	protoc ${PROTOC_ARGS} streams/meta.proto

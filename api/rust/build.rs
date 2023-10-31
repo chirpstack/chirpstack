@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(out_dir.join("gw")).unwrap();
     std::fs::create_dir_all(out_dir.join("internal")).unwrap();
     std::fs::create_dir_all(out_dir.join("integration")).unwrap();
-    std::fs::create_dir_all(out_dir.join("meta")).unwrap();
+    std::fs::create_dir_all(out_dir.join("streams")).unwrap();
     std::fs::create_dir_all(out_dir.join("api")).unwrap();
 
     #[cfg(feature = "json")]
@@ -136,25 +136,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .build(&[".integration"])?;
     }
 
-    // meta
+    // streams
     tonic_build::configure()
-        .out_dir(out_dir.join("meta"))
-        .file_descriptor_set_path(out_dir.join("meta").join("proto_descriptor.bin"))
+        .out_dir(out_dir.join("streams"))
+        .file_descriptor_set_path(out_dir.join("streams").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
         .extern_path(".common", "crate::common")
         .extern_path(".gw", "crate::gw")
         .compile(
-            &[cs_dir.join("meta").join("meta.proto").to_str().unwrap()],
+            &[cs_dir.join("streams").join("meta.proto").to_str().unwrap()],
             &[proto_dir.join("chirpstack").to_str().unwrap()],
         )?;
 
     #[cfg(feature = "json")]
     {
-        let descriptor_set = std::fs::read(out_dir.join("meta").join("proto_descriptor.bin"))?;
+        let descriptor_set = std::fs::read(out_dir.join("streams").join("proto_descriptor.bin"))?;
         pbjson_build::Builder::new()
             .register_descriptors(&descriptor_set)?
             .ignore_unknown_fields()
-            .out_dir(out_dir.join("meta"))
+            .out_dir(out_dir.join("streams"))
             .extern_path(".common", "crate::common")
             .extern_path(".gw", "crate::gw")
             .build(&[".meta"])?;

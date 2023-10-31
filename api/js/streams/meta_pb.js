@@ -1,4 +1,4 @@
-// source: meta/meta.proto
+// source: streams/meta.proto
 /**
  * @fileoverview
  * @enhanceable

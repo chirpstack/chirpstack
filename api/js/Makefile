@@ -1,4 +1,4 @@
-.PHONY: requirements common gw api integration meta
+.PHONY: requirements common gw api integration streams
 
 PROTOC_PATH := ./node_modules/grpc-tools/bin/protoc
 PROTOC_GEN_TS_PATH := ./node_modules/.bin/protoc-gen-ts
@@ -6,7 +6,7 @@ PROTOC_GEN_GRPC_PATH := ./node_modules/.bin/grpc_tools_node_protoc_plugin
 PROTOC_ARGS := -I=/googleapis -I=../proto --plugin=protoc-gen-ts=$(PROTOC_GEN_TS_PATH) --plugin=protoc-gen-grpc=$(PROTOC_GEN_GRPC_PATH) --js_out=import_style=commonjs,binary:. --ts_out=service=grpc-node,mode=grpc-js:.
 PROTOC_GRPC_ARGS := $(PROTOC_ARGS) --grpc_out=grpc_js:.
 
-all: requirements common gw api integration meta google-api
+all: requirements common gw api integration streams google-api
 
 requirements:
 	yarn install
@@ -34,8 +34,8 @@ api:
 integration:
 	protoc ${PROTOC_ARGS} ../proto/integration/integration.proto
 
-meta:
-	protoc ${PROTOC_ARGS} ../proto/meta/meta.proto
+streams:
+	protoc ${PROTOC_ARGS} ../proto/streams/meta.proto
 
 google-api:
 	protoc $(PROTOC_ARGS) /googleapis/google/api/*.proto

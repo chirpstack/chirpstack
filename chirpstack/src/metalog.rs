@@ -4,9 +4,9 @@ use tokio::task;
 
 use crate::config;
 use crate::storage::{get_redis_conn, redis_key};
-use chirpstack_api::meta;
+use chirpstack_api::streams;
 
-pub async fn log_uplink(up: &meta::UplinkMeta) -> Result<()> {
+pub async fn log_uplink(up: &streams::UplinkMeta) -> Result<()> {
     task::spawn_blocking({
         let up = up.clone();
         move || -> Result<()> {
@@ -32,7 +32,7 @@ pub async fn log_uplink(up: &meta::UplinkMeta) -> Result<()> {
     .await?
 }
 
-pub async fn log_downlink(down: &meta::DownlinkMeta) -> Result<()> {
+pub async fn log_downlink(down: &streams::DownlinkMeta) -> Result<()> {
     task::spawn_blocking({
         let down = down.clone();
         move || -> Result<()> {

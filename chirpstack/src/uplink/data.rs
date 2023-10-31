@@ -20,7 +20,7 @@ use crate::storage::{
     device_gateway, device_profile, device_queue, device_session, fields, metrics, tenant,
 };
 use crate::{codec, config, downlink, framelog, integration, maccommand, metalog, region};
-use chirpstack_api::{api, integration as integration_pb, internal, meta};
+use chirpstack_api::{api, integration as integration_pb, internal, streams};
 use lrwn::{AES128Key, EUI64};
 
 pub struct Data {
@@ -733,7 +733,7 @@ impl Data {
         trace!("Logging uplink meta");
 
         if let lrwn::Payload::MACPayload(mac_pl) = &self.phy_payload.payload {
-            let um = meta::UplinkMeta {
+            let um = streams::UplinkMeta {
                 dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
                 tx_info: Some(self.uplink_frame_set.tx_info.clone()),
                 rx_info: self.uplink_frame_set.rx_info_set.clone(),

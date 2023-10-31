@@ -13,7 +13,7 @@ use crate::storage::{
     device_profile, device_queue, device_session, downlink_frame, multicast, tenant,
 };
 use crate::{framelog, integration, metalog};
-use chirpstack_api::{api, common, gw, integration as integration_pb, internal, meta};
+use chirpstack_api::{api, common, gw, integration as integration_pb, internal, streams};
 
 pub struct TxAck {
     downlink_tx_ack: gw::DownlinkTxAck,
@@ -706,7 +706,7 @@ impl TxAck {
         let dfi = self.downlink_frame_item.as_ref().unwrap();
         let phy = self.phy_payload.as_ref().unwrap();
 
-        let dm = meta::DownlinkMeta {
+        let dm = streams::DownlinkMeta {
             dev_eui: if !df.dev_eui.is_empty() {
                 EUI64::from_slice(&df.dev_eui)?.to_string()
             } else {
