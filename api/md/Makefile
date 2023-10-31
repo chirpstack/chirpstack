@@ -10,9 +10,9 @@ api:
 		api/application.proto \
 		api/device.proto \
 		api/device_profile.proto \
-		api/frame_log.proto \
+		api/device_profile_template.proto \
 		api/gateway.proto \
 		api/multicast_group.proto \
+		api/relay.proto \
 		api/tenant.proto \
 		api/user.proto 
-		

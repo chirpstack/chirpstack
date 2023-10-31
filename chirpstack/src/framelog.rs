@@ -16,9 +16,9 @@ use lrwn::EUI64;
 use crate::config;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{get_redis_conn, redis_key};
-use chirpstack_api::api;
+use chirpstack_api::{api, streams};
 
-pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
+pub async fn log_uplink_for_gateways(ufl: &streams::UplinkFrameLog) -> Result<()> {
     task::spawn_blocking({
         let ufl = ufl.clone();
         move || -> Result<()> {
@@ -28,7 +28,7 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
             for rx_info in &ufl.rx_info {
                 let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
 
-                let ufl_copy = api::UplinkFrameLog {
+                let ufl_copy = streams::UplinkFrameLog {
                     phy_payload: ufl.phy_payload.clone(),
                     tx_info: ufl.tx_info.clone(),
                     rx_info: vec![rx_info.clone()],
@@ -83,7 +83,7 @@ pub async fn log_uplink_for_gateways(ufl: &api::UplinkFrameLog) -> Result<()> {
     .await?
 }
 
-pub async fn log_downlink_for_gateway(dfl: &api::DownlinkFrameLog) -> Result<()> {
+pub async fn log_downlink_for_gateway(dfl: &streams::DownlinkFrameLog) -> Result<()> {
     if dfl.gateway_id.is_empty() {
         return Err(anyhow!("gateway_id must be set"));
     }
@@ -135,7 +135,7 @@ pub async fn log_downlink_for_gateway(dfl: &api::DownlinkFrameLog) -> Result<()>
     .await?
 }
 
-pub async fn log_uplink_for_device(ufl: &api::UplinkFrameLog) -> Result<()> {
+pub async fn log_uplink_for_device(ufl: &streams::UplinkFrameLog) -> Result<()> {
     if ufl.dev_eui.is_empty() {
         return Err(anyhow!("dev_eui must be set"));
     }
@@ -187,7 +187,7 @@ pub async fn log_uplink_for_device(ufl: &api::UplinkFrameLog) -> Result<()> {
     .await?
 }
 
-pub async fn log_downlink_for_device(dfl: &api::DownlinkFrameLog) -> Result<()> {
+pub async fn log_downlink_for_device(dfl: &streams::DownlinkFrameLog) -> Result<()> {
     if dfl.dev_eui.is_empty() {
         return Err(anyhow!("dev_eui must be set"));
     }
@@ -276,7 +276,7 @@ pub async fn get_frame_logs(
                                     "up" => {
                                         trace!(key = %k, id = %last_id, "Frame-log received from stream");
                                         if let redis::Value::Data(b) = v {
-                                            let pl = api::UplinkFrameLog::decode(&mut Cursor::new(b))?;
+                                            let pl = streams::UplinkFrameLog::decode(&mut Cursor::new(b))?;
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                                             if pl.plaintext_f_opts {
                                                 if let Err(e) = phy.decode_f_opts_to_mac_commands() {
@@ -291,7 +291,10 @@ pub async fn get_frame_logs(
 
                                             let pl = api::LogItem {
                                                 id: stream_id.id.clone(),
-                                                time: pl.time.clone(),
+                                                time: pl.time.as_ref().map(|t| prost_types::Timestamp {
+                                                    seconds: t.seconds,
+                                                    nanos: t.nanos,
+                                                }),
                                                 description: pl.m_type().into(),
                                                 body: json!({
                                                     "phy_payload": phy,
@@ -314,7 +317,7 @@ pub async fn get_frame_logs(
                                     "down" => {
                                         trace!(key = %k, id = %last_id, "frame-log received from stream");
                                         if let redis::Value::Data(b) = v {
-                                            let pl = api::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
+                                            let pl = streams::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
                                             let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                                             if pl.plaintext_f_opts {
                                                 if let Err(e) = phy.decode_f_opts_to_mac_commands() {
@@ -329,7 +332,10 @@ pub async fn get_frame_logs(
 
                                             let pl = api::LogItem {
                                                 id: stream_id.id.clone(),
-                                                time: pl.time.clone(),
+                                                time: pl.time.as_ref().map(|t| prost_types::Timestamp {
+                                                    seconds: t.seconds,
+                                                    nanos: t.nanos,
+                                                }),
                                                 description: pl.m_type().into(),
                                                 body: json!({
                                                     "phy_payload": phy,

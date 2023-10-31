@@ -26,7 +26,6 @@ api:
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/device_profile_template.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/device.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/gateway.proto
-	protoc ${PROTOC_GRPC_ARGS} ../proto/api/frame_log.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/multicast_group.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/request_log.proto
 	protoc ${PROTOC_GRPC_ARGS} ../proto/api/relay.proto
@@ -36,6 +35,7 @@ integration:
 
 streams:
 	protoc ${PROTOC_ARGS} ../proto/streams/meta.proto
+	protoc ${PROTOC_ARGS} ../proto/streams/frames.proto
 
 google-api:
 	protoc $(PROTOC_ARGS) /googleapis/google/api/*.proto

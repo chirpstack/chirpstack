@@ -141,11 +141,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .out_dir(out_dir.join("streams"))
         .file_descriptor_set_path(out_dir.join("streams").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
+        .extern_path(".google.protobuf", well_known_types_path)
         .extern_path(".common", "crate::common")
         .extern_path(".gw", "crate::gw")
         .compile(
-            &[cs_dir.join("streams").join("meta.proto").to_str().unwrap()],
-            &[proto_dir.join("chirpstack").to_str().unwrap()],
+            &[
+                cs_dir.join("streams").join("meta.proto").to_str().unwrap(),
+                cs_dir
+                    .join("streams")
+                    .join("frames.proto")
+                    .to_str()
+                    .unwrap(),
+            ],
+            &[
+                proto_dir.join("chirpstack").to_str().unwrap(),
+                proto_dir.join("google").to_str().unwrap(),
+            ],
         )?;
 
     #[cfg(feature = "json")]
@@ -157,7 +168,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .out_dir(out_dir.join("streams"))
             .extern_path(".common", "crate::common")
             .extern_path(".gw", "crate::gw")
-            .build(&[".meta"])?;
+            .build(&[".meta", ".streams"])?;
     }
 
     // api
@@ -188,7 +199,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .unwrap(),
                 cs_dir.join("api").join("device.proto").to_str().unwrap(),
                 cs_dir.join("api").join("gateway.proto").to_str().unwrap(),
-                cs_dir.join("api").join("frame_log.proto").to_str().unwrap(),
                 cs_dir
                     .join("api")
                     .join("multicast_group.proto")

@@ -2,9 +2,10 @@ use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::Cursor;
 use std::str::FromStr;
-use std::time::{Duration, SystemTime};
+use std::time::Duration;
 
 use anyhow::{Context, Result};
+use chrono::Utc;
 use prost::Message;
 use tokio::task;
 use tokio::time::sleep;
@@ -17,7 +18,7 @@ use crate::helpers::errors::PrintFullError;
 use crate::storage::{
     device, device_profile, error::Error as StorageError, gateway, get_redis_conn, redis_key,
 };
-use chirpstack_api::{api, common, gw, internal};
+use chirpstack_api::{common, gw, internal, streams};
 use lrwn::region::CommonName;
 use lrwn::{ForwardUplinkReq, MType, PhyPayload, EUI64};
 
@@ -56,11 +57,11 @@ pub struct UplinkFrameSet {
     pub roaming_meta_data: Option<RoamingMetaData>,
 }
 
-impl TryFrom<&UplinkFrameSet> for api::UplinkFrameLog {
+impl TryFrom<&UplinkFrameSet> for streams::UplinkFrameLog {
     type Error = anyhow::Error;
 
-    fn try_from(ufs: &UplinkFrameSet) -> std::result::Result<api::UplinkFrameLog, Self::Error> {
-        let mut ufl = api::UplinkFrameLog {
+    fn try_from(ufs: &UplinkFrameSet) -> std::result::Result<streams::UplinkFrameLog, Self::Error> {
+        let mut ufl = streams::UplinkFrameLog {
             phy_payload: ufs.phy_payload.to_vec()?,
             tx_info: Some(ufs.tx_info.clone()),
             rx_info: ufs.rx_info_set.clone(),
@@ -93,16 +94,15 @@ impl TryFrom<&UplinkFrameSet> for api::UplinkFrameLog {
 
         for rx_info in &ufl.rx_info {
             if rx_info.gw_time.is_some() {
-                let time = rx_info.gw_time.as_ref().unwrap();
-                ufl.time = Some(prost_types::Timestamp {
-                    seconds: time.seconds,
-                    nanos: time.nanos,
+                ufl.time = rx_info.gw_time.as_ref().map(|t| pbjson_types::Timestamp {
+                    seconds: t.seconds,
+                    nanos: t.nanos,
                 });
             }
         }
 
         if ufl.time.is_none() {
-            ufl.time = Some(SystemTime::now().into());
+            ufl.time = Some(Utc::now().into());
         }
 
         Ok(ufl)
@@ -315,7 +315,7 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
         .context("Update gateway meta-data")?;
 
     debug!("Logging uplink frame to Redis Stream");
-    let ufl: api::UplinkFrameLog = (&uplink).try_into()?;
+    let ufl: streams::UplinkFrameLog = (&uplink).try_into()?;
     framelog::log_uplink_for_gateways(&ufl)
         .await
         .context("Log uplink for gateways")?;

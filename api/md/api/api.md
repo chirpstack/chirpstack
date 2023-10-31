@@ -160,9 +160,20 @@
   
     - [DeviceProfileService](#api-DeviceProfileService)
   
-- [api/frame_log.proto](#api_frame_log-proto)
-    - [DownlinkFrameLog](#api-DownlinkFrameLog)
-    - [UplinkFrameLog](#api-UplinkFrameLog)
+- [api/device_profile_template.proto](#api_device_profile_template-proto)
+    - [CreateDeviceProfileTemplateRequest](#api-CreateDeviceProfileTemplateRequest)
+    - [DeleteDeviceProfileTemplateRequest](#api-DeleteDeviceProfileTemplateRequest)
+    - [DeviceProfileTemplate](#api-DeviceProfileTemplate)
+    - [DeviceProfileTemplate.MeasurementsEntry](#api-DeviceProfileTemplate-MeasurementsEntry)
+    - [DeviceProfileTemplate.TagsEntry](#api-DeviceProfileTemplate-TagsEntry)
+    - [DeviceProfileTemplateListItem](#api-DeviceProfileTemplateListItem)
+    - [GetDeviceProfileTemplateRequest](#api-GetDeviceProfileTemplateRequest)
+    - [GetDeviceProfileTemplateResponse](#api-GetDeviceProfileTemplateResponse)
+    - [ListDeviceProfileTemplatesRequest](#api-ListDeviceProfileTemplatesRequest)
+    - [ListDeviceProfileTemplatesResponse](#api-ListDeviceProfileTemplatesResponse)
+    - [UpdateDeviceProfileTemplateRequest](#api-UpdateDeviceProfileTemplateRequest)
+  
+    - [DeviceProfileTemplateService](#api-DeviceProfileTemplateService)
   
 - [api/gateway.proto](#api_gateway-proto)
     - [CreateGatewayRequest](#api-CreateGatewayRequest)
@@ -212,6 +223,18 @@
     - [MulticastGroupType](#api-MulticastGroupType)
   
     - [MulticastGroupService](#api-MulticastGroupService)
+  
+- [api/relay.proto](#api_relay-proto)
+    - [AddRelayDeviceRequest](#api-AddRelayDeviceRequest)
+    - [ListRelayDevicesRequest](#api-ListRelayDevicesRequest)
+    - [ListRelayDevicesResponse](#api-ListRelayDevicesResponse)
+    - [ListRelaysRequest](#api-ListRelaysRequest)
+    - [ListRelaysResponse](#api-ListRelaysResponse)
+    - [RelayDeviceListItem](#api-RelayDeviceListItem)
+    - [RelayListItem](#api-RelayListItem)
+    - [RemoveRelayDeviceRequest](#api-RemoveRelayDeviceRequest)
+  
+    - [RelayService](#api-RelayService)
   
 - [api/tenant.proto](#api_tenant-proto)
     - [AddTenantUserRequest](#api-AddTenantUserRequest)
@@ -2793,54 +2816,219 @@ device-profiles.
 
 
 
-<a name="api_frame_log-proto"></a>
+<a name="api_device_profile_template-proto"></a>
 <p align="right"><a href="#top">Top</a></p>
 
-## api/frame_log.proto
+## api/device_profile_template.proto
 
 
 
-<a name="api-DownlinkFrameLog"></a>
+<a name="api-CreateDeviceProfileTemplateRequest"></a>
 
-### DownlinkFrameLog
-
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Time. |
-| phy_payload | [bytes](#bytes) |  | PHYPayload. |
-| tx_info | [gw.DownlinkTxInfo](#gw-DownlinkTxInfo) |  | TX meta-data. |
-| downlink_id | [uint32](#uint32) |  | Downlink ID. |
-| gateway_id | [string](#string) |  | Gateway ID (EUI64). |
-| m_type | [common.MType](#common-MType) |  | Message type. |
-| dev_addr | [string](#string) |  | Device address (optional). |
-| dev_eui | [string](#string) |  | Device EUI (optional). |
-| plaintext_f_opts | [bool](#bool) |  | Plaintext f_opts mac-commands. |
-| plaintext_frm_payload | [bool](#bool) |  | Plaintext frm_payload. |
-
-
-
-
-
-
-<a name="api-UplinkFrameLog"></a>
-
-### UplinkFrameLog
+### CreateDeviceProfileTemplateRequest
 
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| phy_payload | [bytes](#bytes) |  | PHYPayload. |
-| tx_info | [gw.UplinkTxInfo](#gw-UplinkTxInfo) |  | TX meta-data. |
-| rx_info | [gw.UplinkRxInfo](#gw-UplinkRxInfo) | repeated | RX meta-data. |
-| m_type | [common.MType](#common-MType) |  | Message type. |
-| dev_addr | [string](#string) |  | Device address (optional). |
-| dev_eui | [string](#string) |  | Device EUI (optional). |
-| time | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Time. |
-| plaintext_f_opts | [bool](#bool) |  | Plaintext f_opts mac-commands. |
-| plaintext_frm_payload | [bool](#bool) |  | Plaintext frm_payload. |
+| device_profile_template | [DeviceProfileTemplate](#api-DeviceProfileTemplate) |  | Object to create. |
+
+
+
+
+
+
+<a name="api-DeleteDeviceProfileTemplateRequest"></a>
+
+### DeleteDeviceProfileTemplateRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  | ID. |
+
+
+
+
+
+
+<a name="api-DeviceProfileTemplate"></a>
+
+### DeviceProfileTemplate
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  | Device-profile template ID. |
+| name | [string](#string) |  | Name. |
+| description | [string](#string) |  | Description. |
+| vendor | [string](#string) |  | Vendor. |
+| firmware | [string](#string) |  | Firmware. |
+| region | [common.Region](#common-Region) |  | Region. |
+| mac_version | [common.MacVersion](#common-MacVersion) |  | LoRaWAN mac-version. |
+| reg_params_revision | [common.RegParamsRevision](#common-RegParamsRevision) |  | Regional parameters revision. |
+| adr_algorithm_id | [string](#string) |  | ADR algorithm ID. |
+| payload_codec_runtime | [CodecRuntime](#api-CodecRuntime) |  | Payload codec runtime. |
+| payload_codec_script | [string](#string) |  | Payload codec script. |
+| flush_queue_on_activate | [bool](#bool) |  | Flush queue on device activation. |
+| uplink_interval | [uint32](#uint32) |  | Uplink interval (seconds). This defines the expected uplink interval which the device uses for communication. When the uplink interval has expired and no uplink has been received, the device is considered inactive. |
+| device_status_req_interval | [uint32](#uint32) |  | Device-status request interval (times / day). This defines the times per day that ChirpStack will request the device-status from the device. |
+| supports_otaa | [bool](#bool) |  | Supports OTAA. |
+| supports_class_b | [bool](#bool) |  | Supports Class B. |
+| supports_class_c | [bool](#bool) |  | Supports Class-C. |
+| class_b_timeout | [uint32](#uint32) |  | Class-B timeout (seconds). This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested). |
+| class_b_ping_slot_nb_k | [uint32](#uint32) |  | Class-B ping-slots per beacon period. Valid options are: 0 - 7.
+
+The actual number of ping-slots per beacon period equals to 2^k. |
+| class_b_ping_slot_dr | [uint32](#uint32) |  | Class-B ping-slot DR. |
+| class_b_ping_slot_freq | [uint32](#uint32) |  | Class-B ping-slot freq (Hz). |
+| class_c_timeout | [uint32](#uint32) |  | Class-C timeout (seconds). This is the maximum time ChirpStack will wait to receive an acknowledgement from the device (if requested). |
+| abp_rx1_delay | [uint32](#uint32) |  | RX1 delay (for ABP). |
+| abp_rx1_dr_offset | [uint32](#uint32) |  | RX1 DR offset (for ABP). |
+| abp_rx2_dr | [uint32](#uint32) |  | RX2 DR (for ABP). |
+| abp_rx2_freq | [uint32](#uint32) |  | RX2 frequency (for ABP, Hz). |
+| tags | [DeviceProfileTemplate.TagsEntry](#api-DeviceProfileTemplate-TagsEntry) | repeated | User defined tags. |
+| measurements | [DeviceProfileTemplate.MeasurementsEntry](#api-DeviceProfileTemplate-MeasurementsEntry) | repeated | Measurements. If defined, ChirpStack will visualize these metrics in the web-interface. |
+| auto_detect_measurements | [bool](#bool) |  | Auto-detect measurements. If set to true, measurements will be automatically added based on the keys of the decoded payload. In cases where the decoded payload contains random keys in the data, you want to set this to false. |
+
+
+
+
+
+
+<a name="api-DeviceProfileTemplate-MeasurementsEntry"></a>
+
+### DeviceProfileTemplate.MeasurementsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [Measurement](#api-Measurement) |  |  |
+
+
+
+
+
+
+<a name="api-DeviceProfileTemplate-TagsEntry"></a>
+
+### DeviceProfileTemplate.TagsEntry
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| key | [string](#string) |  |  |
+| value | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="api-DeviceProfileTemplateListItem"></a>
+
+### DeviceProfileTemplateListItem
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  | Device-profile template ID. |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Created at timestamp. |
+| updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last update timestamp. |
+| name | [string](#string) |  | Name. |
+| vendor | [string](#string) |  | Vendor. |
+| firmware | [string](#string) |  | Firmware. |
+| region | [common.Region](#common-Region) |  | Region. |
+| mac_version | [common.MacVersion](#common-MacVersion) |  | LoRaWAN mac-version. |
+| reg_params_revision | [common.RegParamsRevision](#common-RegParamsRevision) |  | Regional parameters revision. |
+| supports_otaa | [bool](#bool) |  | Supports OTAA. |
+| supports_class_b | [bool](#bool) |  | Supports Class-B. |
+| supports_class_c | [bool](#bool) |  | Supports Class-C. |
+
+
+
+
+
+
+<a name="api-GetDeviceProfileTemplateRequest"></a>
+
+### GetDeviceProfileTemplateRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| id | [string](#string) |  | ID. |
+
+
+
+
+
+
+<a name="api-GetDeviceProfileTemplateResponse"></a>
+
+### GetDeviceProfileTemplateResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| device_profile_template | [DeviceProfileTemplate](#api-DeviceProfileTemplate) |  | Device-profile template object. |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Created at timestamp. |
+| updated_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Last update timestamp. |
+
+
+
+
+
+
+<a name="api-ListDeviceProfileTemplatesRequest"></a>
+
+### ListDeviceProfileTemplatesRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| limit | [uint32](#uint32) |  | Max number of device-profile templates to return in the result-set. |
+| offset | [uint32](#uint32) |  | Offset in the result-set (for pagination). |
+
+
+
+
+
+
+<a name="api-ListDeviceProfileTemplatesResponse"></a>
+
+### ListDeviceProfileTemplatesResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| total_count | [uint32](#uint32) |  | Total number of device-profile templates. |
+| result | [DeviceProfileTemplateListItem](#api-DeviceProfileTemplateListItem) | repeated | Result-set. |
+
+
+
+
+
+
+<a name="api-UpdateDeviceProfileTemplateRequest"></a>
+
+### UpdateDeviceProfileTemplateRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| device_profile_template | [DeviceProfileTemplate](#api-DeviceProfileTemplate) |  | Object to update. |
 
 
 
@@ -2851,6 +3039,20 @@ device-profiles.
  
 
  
+
+
+<a name="api-DeviceProfileTemplateService"></a>
+
+### DeviceProfileTemplateService
+DeviceProfileTemplateService is the service providing API methods for managing device-profile templates.
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| Create | [CreateDeviceProfileTemplateRequest](#api-CreateDeviceProfileTemplateRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Create the given device-profile template. |
+| Get | [GetDeviceProfileTemplateRequest](#api-GetDeviceProfileTemplateRequest) | [GetDeviceProfileTemplateResponse](#api-GetDeviceProfileTemplateResponse) | Get the device-profile template for the given ID. |
+| Update | [UpdateDeviceProfileTemplateRequest](#api-UpdateDeviceProfileTemplateRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Update the given device-profile template. |
+| Delete | [DeleteDeviceProfileTemplateRequest](#api-DeleteDeviceProfileTemplateRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Delete the device-profile template with the given ID. |
+| List | [ListDeviceProfileTemplatesRequest](#api-ListDeviceProfileTemplatesRequest) | [ListDeviceProfileTemplatesResponse](#api-ListDeviceProfileTemplatesResponse) | List the available device-profile templates. |
 
  
 
@@ -3566,6 +3768,166 @@ MulticastGroupService is the service managing multicast-groups.
 | Enqueue | [EnqueueMulticastGroupQueueItemRequest](#api-EnqueueMulticastGroupQueueItemRequest) | [EnqueueMulticastGroupQueueItemResponse](#api-EnqueueMulticastGroupQueueItemResponse) | Add the given item to the multicast group queue. |
 | FlushQueue | [FlushMulticastGroupQueueRequest](#api-FlushMulticastGroupQueueRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | Flush the queue for the given multicast group. |
 | ListQueue | [ListMulticastGroupQueueRequest](#api-ListMulticastGroupQueueRequest) | [ListMulticastGroupQueueResponse](#api-ListMulticastGroupQueueResponse) | List the items in the multicast group queue. |
+
+ 
+
+
+
+<a name="api_relay-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## api/relay.proto
+
+
+
+<a name="api-AddRelayDeviceRequest"></a>
+
+### AddRelayDeviceRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| relay_dev_eui | [string](#string) |  | Relay DevEUI (EUI64). |
+| device_dev_eui | [string](#string) |  | Device DevEUI (EUI64). |
+
+
+
+
+
+
+<a name="api-ListRelayDevicesRequest"></a>
+
+### ListRelayDevicesRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| limit | [uint32](#uint32) |  | Max number of multicast groups to return in the result-set. |
+| offset | [uint32](#uint32) |  | Offset in the result-set (for pagination). |
+| relay_dev_eui | [string](#string) |  | Relay DevEUI (EUI64). |
+
+
+
+
+
+
+<a name="api-ListRelayDevicesResponse"></a>
+
+### ListRelayDevicesResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| total_count | [uint32](#uint32) |  | Total number of devices. |
+| result | [RelayDeviceListItem](#api-RelayDeviceListItem) | repeated | Result-set. |
+
+
+
+
+
+
+<a name="api-ListRelaysRequest"></a>
+
+### ListRelaysRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| limit | [uint32](#uint32) |  | Max number of devices to return in the result-set. |
+| offset | [uint32](#uint32) |  | Offset in the result-set (for pagination). |
+| application_id | [string](#string) |  | Application ID (UUID). |
+
+
+
+
+
+
+<a name="api-ListRelaysResponse"></a>
+
+### ListRelaysResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| total_count | [uint32](#uint32) |  | Total number of relays. |
+| result | [RelayListItem](#api-RelayListItem) | repeated | Result-set. |
+
+
+
+
+
+
+<a name="api-RelayDeviceListItem"></a>
+
+### RelayDeviceListItem
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dev_eui | [string](#string) |  | DevEUI (EUI64). |
+| created_at | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | Created at timestamp. |
+| name | [string](#string) |  | Device name. |
+
+
+
+
+
+
+<a name="api-RelayListItem"></a>
+
+### RelayListItem
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| dev_eui | [string](#string) |  | DevEUI (EUI64). |
+| name | [string](#string) |  | Name. |
+
+
+
+
+
+
+<a name="api-RemoveRelayDeviceRequest"></a>
+
+### RemoveRelayDeviceRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| relay_dev_eui | [string](#string) |  | Relay DevEUI (EUI64). |
+| device_dev_eui | [string](#string) |  | Device DevEUI (EUI64). |
+
+
+
+
+
+ 
+
+ 
+
+ 
+
+
+<a name="api-RelayService"></a>
+
+### RelayService
+RelayService is the service providing API methos for managing relays.
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ------------|
+| List | [ListRelaysRequest](#api-ListRelaysRequest) | [ListRelaysResponse](#api-ListRelaysResponse) | List lists the relays for the given application id. |
+| AddDevice | [AddRelayDeviceRequest](#api-AddRelayDeviceRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | AddDevice adds the given device to the relay. |
+| RemoveDevice | [RemoveRelayDeviceRequest](#api-RemoveRelayDeviceRequest) | [.google.protobuf.Empty](#google-protobuf-Empty) | RemoveDevice removes the given device from the relay. |
+| ListDevices | [ListRelayDevicesRequest](#api-ListRelayDevicesRequest) | [ListRelayDevicesResponse](#api-ListRelayDevicesResponse) | ListDevices lists the devices for the given relay. |
 
  
 

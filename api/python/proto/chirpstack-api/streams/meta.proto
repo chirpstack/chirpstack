@@ -8,8 +8,8 @@ option java_multiple_files = true;
 option java_outer_classname = "MetaProto";
 option csharp_namespace = "Chirpstack.Streams";
 
-import "common/common.proto";
-import "gw/gw.proto";
+import "chirpstack-api/common/common.proto";
+import "chirpstack-api/gw/gw.proto";
 
 message UplinkMeta {
   // Device EUI (EUI64).

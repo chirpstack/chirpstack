@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package meta;
+package streams;
 
 option go_package = "github.com/chirpstack/chirpstack/api/go/v4/streams";
 option java_package = "io.chirpstack.api.streams";
 option java_multiple_files = true;
-option java_outer_classname = "StreamsProto";
+option java_outer_classname = "MetaProto";
 option csharp_namespace = "Chirpstack.Streams";
 
 import "common/common.proto";

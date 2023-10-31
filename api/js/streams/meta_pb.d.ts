@@ -1,4 +1,4 @@
-// package: meta
+// package: streams
 // file: streams/meta.proto
 
 import * as jspb from "google-protobuf";

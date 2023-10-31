@@ -31,7 +31,7 @@ use crate::storage::{
 use crate::{
     config, devaddr::get_random_dev_addr, downlink, framelog, integration, metalog, region,
 };
-use chirpstack_api::{api, common, integration as integration_pb, internal, streams};
+use chirpstack_api::{common, integration as integration_pb, internal, streams};
 
 pub struct JoinRequest {
     uplink_frame_set: UplinkFrameSet,
@@ -383,7 +383,7 @@ impl JoinRequest {
 
     async fn log_uplink_frame_set(&self) -> Result<()> {
         trace!("Logging uplink frame-set");
-        let ufl: api::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
+        let ufl: streams::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
         framelog::log_uplink_for_device(&ufl).await?;
         Ok(())
     }

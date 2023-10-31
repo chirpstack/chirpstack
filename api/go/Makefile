@@ -24,7 +24,6 @@ api:
 	protoc ${PROTOC_ARGS} api/device_profile_template.proto
 	protoc ${PROTOC_ARGS} api/device.proto
 	protoc ${PROTOC_ARGS} api/gateway.proto
-	protoc ${PROTOC_ARGS} api/frame_log.proto
 	protoc ${PROTOC_ARGS} api/multicast_group.proto
 	protoc ${PROTOC_ARGS} api/request_log.proto
 	protoc ${PROTOC_ARGS} api/relay.proto
@@ -34,3 +33,4 @@ integration:
 
 streams:
 	protoc ${PROTOC_ARGS} streams/meta.proto
+	protoc ${PROTOC_ARGS} streams/frames.proto

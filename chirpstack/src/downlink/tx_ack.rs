@@ -1,6 +1,5 @@
 use anyhow::Result;
 use chrono::{Duration, Utc};
-use std::time::SystemTime;
 use tracing::{error, info, span, trace, Instrument, Level};
 use uuid::Uuid;
 
@@ -13,7 +12,7 @@ use crate::storage::{
     device_profile, device_queue, device_session, downlink_frame, multicast, tenant,
 };
 use crate::{framelog, integration, metalog};
-use chirpstack_api::{api, common, gw, integration as integration_pb, internal, streams};
+use chirpstack_api::{common, gw, integration as integration_pb, internal, streams};
 
 pub struct TxAck {
     downlink_tx_ack: gw::DownlinkTxAck,
@@ -610,8 +609,8 @@ impl TxAck {
         let dfi = self.downlink_frame_item.as_ref().unwrap();
         let phy = self.phy_payload.as_mut().unwrap();
 
-        let dfl = api::DownlinkFrameLog {
-            time: Some(SystemTime::now().into()),
+        let dfl = streams::DownlinkFrameLog {
+            time: Some(Utc::now().into()),
             phy_payload: dfi.phy_payload.clone(),
             tx_info: dfi.tx_info.clone(),
             downlink_id: gw_df.downlink_id,
@@ -679,7 +678,7 @@ impl TxAck {
             phy.decrypt_f_opts(&nwk_s_enc_key)?;
         }
 
-        let dfl = api::DownlinkFrameLog {
+        let dfl = streams::DownlinkFrameLog {
             time: dfl.time.clone(),
             phy_payload: phy.to_vec()?,
             tx_info: dfl.tx_info.clone(),

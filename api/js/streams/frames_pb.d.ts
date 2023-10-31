@@ -1,5 +1,5 @@
-// package: api
-// file: api/frame_log.proto
+// package: streams
+// file: streams/frames.proto
 
 import * as jspb from "google-protobuf";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
