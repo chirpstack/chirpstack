@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use anyhow::Result;
 use tracing::info;
 
-use crate::config;
+use crate::{config, stream};
 use backend::{Client, ClientConfig};
 use lrwn::{EUI64Prefix, EUI64};
 
@@ -28,6 +28,9 @@ pub fn setup() -> Result<()> {
             tls_cert: js.tls_cert.clone(),
             tls_key: js.tls_key.clone(),
             async_timeout: js.async_timeout,
+            request_log_fn: Some(Box::new(move |log| {
+                Box::pin(async move { stream::backend_interfaces::log_request(log).await })
+            })),
             ..Default::default()
         })?;
 

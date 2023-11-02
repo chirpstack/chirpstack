@@ -8,8 +8,8 @@ use chrono::{Duration, DurationRound};
 use prost::Message;
 use tracing::{debug, info, span, Level};
 
-use crate::config;
 use crate::gpstime::ToGpsTime;
+use crate::{config, stream};
 use backend::{Client, ClientConfig, GWInfoElement, ULMetaData};
 use chirpstack_api::{common, gw};
 use lrwn::{region, DevAddr, NetID, EUI64};
@@ -56,6 +56,9 @@ pub fn setup() -> Result<()> {
                 Some(s.authorization_header.clone())
             },
             async_timeout: s.async_timeout,
+            request_log_fn: Some(Box::new(move |log| {
+                Box::pin(async move { stream::backend_interfaces::log_request(log).await })
+            })),
         })?;
 
         set(&s.net_id, c);
@@ -103,6 +106,9 @@ pub fn get(net_id: &NetID) -> Result<Arc<Client>> {
                 Some(conf.roaming.default.authorization_header.clone())
             },
             async_timeout: conf.roaming.default.async_timeout,
+            request_log_fn: Some(Box::new(move |log| {
+                Box::pin(async move { stream::backend_interfaces::log_request(log).await })
+            })),
         })?;
 
         return Ok(Arc::new(c));

@@ -273,7 +273,12 @@ pub fn run() {
   #
   # If not set, this endpoint will be disabled.
   bind="{{ monitoring.bind }}"
-  
+
+  # Backend Interfaces log max history.
+  #
+  # This defines the max number of Backend Interface request records that will be persisted
+  # in Redis Streams. Setting this value to 0 disables this features.
+  backend_interfaces_log_max_history={{ monitoring.backend_interfaces_log_max_history }}
 
   # Meta-log max history.
   #

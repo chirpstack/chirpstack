@@ -195,6 +195,7 @@ impl Default for Scheduler {
 pub struct Monitoring {
     pub bind: String,
     pub api_request_log_max_history: usize,
+    pub backend_interfaces_log_max_history: usize,
     pub meta_log_max_history: usize,
     pub gateway_frame_log_max_history: usize,
     pub device_frame_log_max_history: usize,
@@ -215,6 +216,7 @@ impl Default for Monitoring {
         Monitoring {
             bind: "".to_string(),
             api_request_log_max_history: 10,
+            backend_interfaces_log_max_history: 10,
             meta_log_max_history: 10,
             gateway_frame_log_max_history: 10,
             device_frame_log_max_history: 10,
