@@ -584,6 +584,12 @@ pub struct BasePayloadResult {
     pub result: ResultPayload,
 }
 
+impl BasePayloadResultProvider for BasePayloadResult {
+    fn base_payload(&self) -> &BasePayloadResult {
+        self
+    }
+}
+
 #[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq, Clone)]
 pub struct ResultPayload {
     #[serde(rename = "ResultCode")]
