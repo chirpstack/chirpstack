@@ -14,7 +14,7 @@ use crate::storage::{
     device::{self, DeviceClass},
     device_queue, device_session, downlink_frame, get_redis_conn, redis_key,
 };
-use chirpstack_api::{gw, integration as integration_pb, internal, streams};
+use chirpstack_api::{gw, integration as integration_pb, internal, stream};
 use lrwn::EUI64;
 
 lazy_static! {
@@ -393,7 +393,7 @@ pub fn enabled_class(dev_eui: EUI64, c: DeviceClass) -> Validator {
     })
 }
 
-pub fn uplink_meta_log(um: streams::UplinkMeta) -> Validator {
+pub fn uplink_meta_log(um: stream::UplinkMeta) -> Validator {
     Box::new(move || {
         let um = um.clone();
         Box::pin(async move {
@@ -413,7 +413,7 @@ pub fn uplink_meta_log(um: streams::UplinkMeta) -> Validator {
                     for (k, v) in &stream_id.map {
                         assert_eq!("up", k);
                         if let redis::Value::Data(b) = v {
-                            let pl = streams::UplinkMeta::decode(&mut Cursor::new(b)).unwrap();
+                            let pl = stream::UplinkMeta::decode(&mut Cursor::new(b)).unwrap();
                             assert_eq!(um, pl);
                         } else {
                             panic!("Invalid payload");
@@ -429,7 +429,7 @@ pub fn uplink_meta_log(um: streams::UplinkMeta) -> Validator {
     })
 }
 
-pub fn device_uplink_frame_log(uf: streams::UplinkFrameLog) -> Validator {
+pub fn device_uplink_frame_log(uf: stream::UplinkFrameLog) -> Validator {
     Box::new(move || {
         let uf = uf.clone();
         Box::pin(async move {
@@ -450,7 +450,7 @@ pub fn device_uplink_frame_log(uf: streams::UplinkFrameLog) -> Validator {
                         assert_eq!("up", k);
                         if let redis::Value::Data(b) = v {
                             let mut pl =
-                                streams::UplinkFrameLog::decode(&mut Cursor::new(b)).unwrap();
+                                stream::UplinkFrameLog::decode(&mut Cursor::new(b)).unwrap();
                             pl.time = None; // we don't have control over this value
                             assert_eq!(uf, pl);
                         } else {

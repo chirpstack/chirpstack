@@ -11,7 +11,7 @@ use crate::storage::{
     device_profile, device_queue, device_session, gateway, mac_command, reset_redis, tenant,
 };
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
-use chirpstack_api::{common, gw, integration as integration_pb, internal, streams};
+use chirpstack_api::{common, gw, integration as integration_pb, internal, stream};
 use lrwn::{AES128Key, EUI64};
 
 type Function = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;
@@ -546,7 +546,7 @@ async fn test_lorawan_10_errors() {
             },
             assert: vec![
                 assert::no_uplink_event(),
-                assert::device_uplink_frame_log(streams::UplinkFrameLog {
+                assert::device_uplink_frame_log(stream::UplinkFrameLog {
                     phy_payload: vec![64, 4, 3, 2, 1, 0, 8, 0, 1, 1, 2, 3, 4],
                     tx_info: Some(tx_info.clone()),
                     rx_info: vec![rx_info.clone()],

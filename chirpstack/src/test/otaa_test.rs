@@ -11,7 +11,7 @@ use crate::storage::{
     device_keys, device_profile, gateway, reset_redis, tenant,
 };
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
-use chirpstack_api::{common, gw, internal, streams};
+use chirpstack_api::{common, gw, internal, stream};
 use lrwn::keys::get_js_int_key;
 use lrwn::{AES128Key, EUI64};
 
@@ -564,7 +564,7 @@ async fn test_lorawan_10() {
                 }),
                 assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A),
                 assert::device_queue_items(dev.dev_eui.clone(), vec![]),
-                assert::uplink_meta_log(streams::UplinkMeta {
+                assert::uplink_meta_log(stream::UplinkMeta {
                     dev_eui: dev.dev_eui.to_string(),
                     tx_info: Some(tx_info.clone()),
                     rx_info: vec![rx_info.clone()],
