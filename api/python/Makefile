@@ -45,3 +45,4 @@ stream:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/stream/meta.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/stream/frame.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/stream/api_request.proto
+	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/stream/backend_interfaces.proto

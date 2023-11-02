@@ -23,6 +23,7 @@
     <Protobuf Include="../proto/stream/meta.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
     <Protobuf Include="../proto/stream/frame.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
     <Protobuf Include="../proto/stream/api_request.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
+    <Protobuf Include="../proto/stream/backend_interfaces.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
     <Protobuf Include="/googleproto/google/api/*.proto" ProtoRoot="/googleproto" OutputDir="Chirpstack/" CompileOutputs="false" />
   </ItemGroup>
 

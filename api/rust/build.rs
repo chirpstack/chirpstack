@@ -153,6 +153,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .join("api_request.proto")
                     .to_str()
                     .unwrap(),
+                cs_dir
+                    .join("stream")
+                    .join("backend_interfaces.proto")
+                    .to_str()
+                    .unwrap(),
             ],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),

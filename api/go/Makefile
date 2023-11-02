@@ -34,3 +34,4 @@ stream:
 	protoc ${PROTOC_ARGS} stream/meta.proto
 	protoc ${PROTOC_ARGS} stream/frame.proto
 	protoc ${PROTOC_ARGS} stream/api_request.proto
+	protoc ${PROTOC_ARGS} stream/backend_interfaces.proto

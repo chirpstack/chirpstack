@@ -36,6 +36,7 @@ stream:
 	protoc ${PROTOC_ARGS} ../proto/stream/meta.proto
 	protoc ${PROTOC_ARGS} ../proto/stream/frame.proto
 	protoc ${PROTOC_ARGS} ../proto/stream/api_request.proto
+	protoc ${PROTOC_ARGS} ../proto/stream/backend_interfaces.proto
 
 google-api:
 	protoc $(PROTOC_ARGS) /googleapis/google/api/*.proto
