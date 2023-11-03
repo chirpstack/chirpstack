@@ -678,17 +678,17 @@ pub struct JoinAnsPayload {
     pub base: BasePayloadResult,
     #[serde(rename = "PHYPayload", with = "hex_encode")]
     pub phy_payload: Vec<u8>,
-    #[serde(rename = "Lifetime")]
+    #[serde(rename = "Lifetime", skip_serializing_if = "Option::is_none")]
     pub lifetime: Option<usize>,
-    #[serde(rename = "SNwkSIntKey")]
+    #[serde(rename = "SNwkSIntKey", skip_serializing_if = "Option::is_none")]
     pub s_nwk_s_int_key: Option<KeyEnvelope>,
-    #[serde(rename = "FNwkSIntKey")]
+    #[serde(rename = "FNwkSIntKey", skip_serializing_if = "Option::is_none")]
     pub f_nwk_s_int_key: Option<KeyEnvelope>,
-    #[serde(rename = "NwkSEncKey")]
+    #[serde(rename = "NwkSEncKey", skip_serializing_if = "Option::is_none")]
     pub nwk_s_enc_key: Option<KeyEnvelope>,
-    #[serde(rename = "NwkSKey")]
+    #[serde(rename = "NwkSKey", skip_serializing_if = "Option::is_none")]
     pub nwk_s_key: Option<KeyEnvelope>,
-    #[serde(rename = "AppSKey")]
+    #[serde(rename = "AppSKey", skip_serializing_if = "Option::is_none")]
     pub app_s_key: Option<KeyEnvelope>,
     #[serde(
         default,
@@ -742,17 +742,17 @@ pub struct RejoinAnsPayload {
     pub base: BasePayloadResult,
     #[serde(rename = "PHYPayload", with = "hex_encode")]
     pub phy_payload: Vec<u8>,
-    #[serde(rename = "Lifetime")]
+    #[serde(rename = "Lifetime", skip_serializing_if = "Option::is_none")]
     pub lifetime: Option<usize>,
-    #[serde(rename = "SNwkSIntKey")]
+    #[serde(rename = "SNwkSIntKey", skip_serializing_if = "Option::is_none")]
     pub s_nwk_s_int_key: Option<KeyEnvelope>,
-    #[serde(rename = "FNwkSIntKey")]
+    #[serde(rename = "FNwkSIntKey", skip_serializing_if = "Option::is_none")]
     pub f_nwk_s_int_key: Option<KeyEnvelope>,
-    #[serde(rename = "NwkSEncKey")]
+    #[serde(rename = "NwkSEncKey", skip_serializing_if = "Option::is_none")]
     pub nwk_s_enc_key: Option<KeyEnvelope>,
-    #[serde(rename = "NwkSKey")]
+    #[serde(rename = "NwkSKey", skip_serializing_if = "Option::is_none")]
     pub nwk_s_key: Option<KeyEnvelope>,
-    #[serde(rename = "AppSKey")]
+    #[serde(rename = "AppSKey", skip_serializing_if = "Option::is_none")]
     pub app_s_key: Option<KeyEnvelope>,
     #[serde(
         default,
@@ -791,7 +791,7 @@ pub struct AppSKeyAnsPayload {
     pub base: BasePayloadResult,
     #[serde(rename = "DevEUI", with = "hex_encode")]
     pub dev_eui: Vec<u8>,
-    #[serde(rename = "AppSKey")]
+    #[serde(rename = "AppSKey", skip_serializing_if = "Option::is_none")]
     pub app_s_key: Option<KeyEnvelope>,
     #[serde(rename = "SessionKeyID", with = "hex_encode")]
     pub session_key_id: Vec<u8>,
@@ -837,17 +837,17 @@ pub struct PRStartAnsPayload {
         skip_serializing_if = "Vec::is_empty"
     )]
     pub dev_eui: Vec<u8>,
-    #[serde(rename = "Lifetime")]
+    #[serde(rename = "Lifetime", skip_serializing_if = "Option::is_none")]
     pub lifetime: Option<usize>,
-    #[serde(rename = "FNwkSIntKey")]
+    #[serde(rename = "FNwkSIntKey", skip_serializing_if = "Option::is_none")]
     pub f_nwk_s_int_key: Option<KeyEnvelope>,
-    #[serde(rename = "NwkSKey")]
+    #[serde(rename = "NwkSKey", skip_serializing_if = "Option::is_none")]
     pub nwk_s_key: Option<KeyEnvelope>,
-    #[serde(rename = "FCntUp")]
+    #[serde(rename = "FCntUp", skip_serializing_if = "Option::is_none")]
     pub f_cnt_up: Option<u32>,
-    #[serde(rename = "ServiceProfile")]
+    #[serde(rename = "ServiceProfile", skip_serializing_if = "Option::is_none")]
     pub service_profile: Option<ServiceProfile>,
-    #[serde(rename = "DLMetaData")]
+    #[serde(rename = "DLMetaData", skip_serializing_if = "Option::is_none")]
     pub dl_meta_data: Option<DLMetaData>,
     #[serde(
         default,
@@ -870,7 +870,7 @@ pub struct PRStopReqPayload {
     pub base: BasePayload,
     #[serde(rename = "DevEUI", with = "hex_encode")]
     pub dev_eui: Vec<u8>,
-    #[serde(rename = "Lifetime")]
+    #[serde(rename = "Lifetime", skip_serializing_if = "Option::is_none")]
     pub lifetime: Option<usize>,
 }
 
@@ -910,9 +910,9 @@ pub struct XmitDataReqPayload {
         skip_serializing_if = "Vec::is_empty"
     )]
     pub frm_payload: Vec<u8>,
-    #[serde(rename = "ULMetaData")]
+    #[serde(rename = "ULMetaData", skip_serializing_if = "Option::is_none")]
     pub ul_meta_data: Option<ULMetaData>,
-    #[serde(rename = "DLMetaData")]
+    #[serde(rename = "DLMetaData", skip_serializing_if = "Option::is_none")]
     pub dl_meta_data: Option<DLMetaData>,
 }
 
@@ -983,21 +983,21 @@ pub struct ULMetaData {
         skip_serializing_if = "Vec::is_empty"
     )]
     pub dev_addr: Vec<u8>,
-    #[serde(rename = "FPort")]
+    #[serde(rename = "FPort", skip_serializing_if = "Option::is_none")]
     pub f_port: Option<u8>,
-    #[serde(rename = "FCntDown")]
+    #[serde(rename = "FCntDown", skip_serializing_if = "Option::is_none")]
     pub f_cnt_down: Option<u32>,
-    #[serde(rename = "FCntUp")]
+    #[serde(rename = "FCntUp", skip_serializing_if = "Option::is_none")]
     pub f_cnt_up: Option<u32>,
-    #[serde(rename = "Confirmed")]
+    #[serde(rename = "Confirmed", skip_serializing_if = "Option::is_none")]
     pub confirmed: Option<bool>,
-    #[serde(rename = "DataRate")]
+    #[serde(rename = "DataRate", skip_serializing_if = "Option::is_none")]
     pub data_rate: Option<u8>,
-    #[serde(rename = "ULFreq")]
+    #[serde(rename = "ULFreq", skip_serializing_if = "Option::is_none")]
     pub ul_freq: Option<f64>,
-    #[serde(rename = "Margin")]
+    #[serde(rename = "Margin", skip_serializing_if = "Option::is_none")]
     pub margin: Option<isize>,
-    #[serde(rename = "Battery")]
+    #[serde(rename = "Battery", skip_serializing_if = "Option::is_none")]
     pub battery: Option<isize>,
     #[serde(
         default,
@@ -1015,7 +1015,7 @@ pub struct ULMetaData {
         skip_serializing_if = "String::is_empty"
     )]
     pub rf_region: String,
-    #[serde(rename = "GWCnt")]
+    #[serde(rename = "GWCnt", skip_serializing_if = "Option::is_none")]
     pub gw_cnt: Option<usize>,
     #[serde(rename = "GWInfo")]
     pub gw_info: Vec<GWInfoElement>,
@@ -1052,7 +1052,7 @@ pub struct GWInfoElement {
         skip_serializing_if = "Vec::is_empty"
     )]
     pub id: Vec<u8>,
-    #[serde(rename = "FineRecvTime")]
+    #[serde(rename = "FineRecvTime", skip_serializing_if = "Option::is_none")]
     pub fine_recv_time: Option<usize>,
     #[serde(
         default,
@@ -1061,13 +1061,13 @@ pub struct GWInfoElement {
         skip_serializing_if = "String::is_empty"
     )]
     pub rf_region: String,
-    #[serde(rename = "RSSI")]
+    #[serde(rename = "RSSI", skip_serializing_if = "Option::is_none")]
     pub rssi: Option<isize>,
-    #[serde(rename = "SNR")]
+    #[serde(rename = "SNR", skip_serializing_if = "Option::is_none")]
     pub snr: Option<f32>,
-    #[serde(rename = "Lat")]
+    #[serde(rename = "Lat", skip_serializing_if = "Option::is_none")]
     pub lat: Option<f64>,
-    #[serde(rename = "Lon")]
+    #[serde(rename = "Lon", skip_serializing_if = "Option::is_none")]
     pub lon: Option<f64>,
     #[serde(
         default,
@@ -1076,7 +1076,7 @@ pub struct GWInfoElement {
         skip_serializing_if = "Vec::is_empty"
     )]
     pub ul_token: Vec<u8>,
-    #[serde(rename = "DLAllowed")]
+    #[serde(rename = "DLAllowed", skip_serializing_if = "Option::is_none")]
     pub dl_allowed: Option<bool>,
 }
 
@@ -1133,23 +1133,23 @@ pub struct DLMetaData {
         skip_serializing_if = "Vec::is_empty"
     )]
     pub dev_eui: Vec<u8>,
-    #[serde(rename = "FPort")]
+    #[serde(rename = "FPort", skip_serializing_if = "Option::is_none")]
     pub f_port: Option<u8>,
-    #[serde(rename = "FCntDown")]
+    #[serde(rename = "FCntDown", skip_serializing_if = "Option::is_none")]
     pub f_cnt_down: Option<u32>,
     #[serde(default, rename = "Confirmed")]
     pub confirmed: bool,
-    #[serde(rename = "DLFreq1")]
+    #[serde(rename = "DLFreq1", skip_serializing_if = "Option::is_none")]
     pub dl_freq_1: Option<f64>,
-    #[serde(rename = "DLFreq2")]
+    #[serde(rename = "DLFreq2", skip_serializing_if = "Option::is_none")]
     pub dl_freq_2: Option<f64>,
-    #[serde(rename = "RXDelay1")]
+    #[serde(rename = "RXDelay1", skip_serializing_if = "Option::is_none")]
     pub rx_delay_1: Option<usize>,
-    #[serde(rename = "ClassMode")]
+    #[serde(rename = "ClassMode", skip_serializing_if = "Option::is_none")]
     pub class_mode: Option<String>,
-    #[serde(rename = "DataRate1")]
+    #[serde(rename = "DataRate1", skip_serializing_if = "Option::is_none")]
     pub data_rate_1: Option<u8>,
-    #[serde(rename = "DataRate2")]
+    #[serde(rename = "DataRate2", skip_serializing_if = "Option::is_none")]
     pub data_rate_2: Option<u8>,
     #[serde(
         default,
