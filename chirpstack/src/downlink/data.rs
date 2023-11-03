@@ -10,7 +10,7 @@ use tracing::{span, trace, warn, Instrument, Level};
 use crate::api::backend::get_async_receiver;
 use crate::api::helpers::{FromProto, ToProto};
 use crate::backend::roaming;
-use crate::downlink::{classb, helpers, tx_ack};
+use crate::downlink::{classb, error::Error, helpers, tx_ack};
 use crate::gpstime::{ToDateTime, ToGpsTime};
 use crate::storage;
 use crate::storage::{
@@ -68,7 +68,7 @@ impl Data {
         let downlink_id: u32 = rand::thread_rng().gen();
         let span = span!(Level::INFO, "data_down", downlink_id = downlink_id);
 
-        Data::_handle_response(
+        match Data::_handle_response(
             downlink_id,
             ufs,
             dev_gw_rx_info,
@@ -83,6 +83,16 @@ impl Data {
         )
         .instrument(span)
         .await
+        {
+            Ok(()) => Ok(()),
+            Err(e) => match e.downcast_ref::<Error>() {
+                Some(Error::Abort) => {
+                    // Nothing to do
+                    Ok(())
+                }
+                _ => Err(e),
+            },
+        }
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -102,7 +112,7 @@ impl Data {
         let downlink_id: u32 = rand::thread_rng().gen();
         let span = span!(Level::INFO, "data_down", downlink_id = downlink_id);
 
-        Data::_handle_response_relayed(
+        match Data::_handle_response_relayed(
             downlink_id,
             relay_ctx,
             ufs,
@@ -118,6 +128,16 @@ impl Data {
         )
         .instrument(span)
         .await
+        {
+            Ok(()) => Ok(()),
+            Err(e) => match e.downcast_ref::<Error>() {
+                Some(Error::Abort) => {
+                    // Nothing to do
+                    Ok(())
+                }
+                _ => Err(e),
+            },
+        }
     }
 
     pub async fn handle_schedule_next_queue_item(device: device::Device) -> Result<()> {
@@ -125,9 +145,19 @@ impl Data {
         let span =
             span!(Level::INFO, "schedule", dev_eui = %device.dev_eui, downlink_id = downlink_id);
 
-        Data::_handle_schedule_next_queue_item(downlink_id, device)
+        match Data::_handle_schedule_next_queue_item(downlink_id, device)
             .instrument(span)
             .await
+        {
+            Ok(()) => Ok(()),
+            Err(e) => match e.downcast_ref::<Error>() {
+                Some(Error::Abort) => {
+                    // Nothing to do
+                    Ok(())
+                }
+                _ => Err(e),
+            },
+        }
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -925,11 +955,12 @@ impl Data {
         Ok(())
     }
 
-    fn check_for_first_uplink(&self) -> Result<()> {
+    fn check_for_first_uplink(&self) -> Result<(), Error> {
         trace!("Checking if device has sent its first uplink already");
 
         if self.device_session.f_cnt_up == 0 {
-            return Err(anyhow!("Device must send its first uplink first"));
+            warn!("Device must send its first uplink first");
+            return Err(Error::Abort);
         }
 
         Ok(())
