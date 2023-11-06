@@ -12,18 +12,18 @@ interface IProps {
 }
 
 function TenantForm(props: IProps) {
-  const onFinish = (v: Tenant.AsObject) => {
-    const values = Object.assign(props.initialValues.toObject(), v);
+  const onFinish = (values: Tenant.AsObject) => {
+    const v = Object.assign(props.initialValues.toObject(), values);
 
     let tenant = new Tenant();
-    tenant.setId(values.id);
-    tenant.setName(values.name);
-    tenant.setDescription(values.description);
-    tenant.setCanHaveGateways(values.canHaveGateways);
-    tenant.setMaxGatewayCount(values.maxGatewayCount);
-    tenant.setMaxDeviceCount(values.maxDeviceCount);
-    tenant.setPrivateGatewaysUp(values.privateGatewaysUp);
-    tenant.setPrivateGatewaysDown(values.privateGatewaysDown);
+    tenant.setId(v.id);
+    tenant.setName(v.name);
+    tenant.setDescription(v.description);
+    tenant.setCanHaveGateways(v.canHaveGateways);
+    tenant.setMaxGatewayCount(v.maxGatewayCount);
+    tenant.setMaxDeviceCount(v.maxDeviceCount);
+    tenant.setPrivateGatewaysUp(v.privateGatewaysUp);
+    tenant.setPrivateGatewaysDown(v.privateGatewaysDown);
 
     // tags
     for (const elm of v.tagsMap) {
