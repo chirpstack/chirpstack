@@ -196,7 +196,7 @@ impl<'a> MqttBackend<'a> {
         let conn_opts = conn_opts_b.finalize();
 
         // get message stream
-        let mut stream = client.get_stream(25);
+        let mut stream = client.get_stream(None);
 
         let b = MqttBackend {
             client,

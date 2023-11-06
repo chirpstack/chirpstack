@@ -139,7 +139,7 @@ impl<'a> Integration<'a> {
         let conn_opts = conn_opts_b.finalize();
 
         // get message stream
-        let mut stream = client.get_stream(25);
+        let mut stream = client.get_stream(None);
 
         let i = Integration {
             command_regex: Regex::new(&templates.render(
@@ -505,7 +505,7 @@ pub mod test {
         let conn_opts = mqtt::ConnectOptionsBuilder::new()
             .clean_session(true)
             .finalize();
-        let mut stream = client.get_stream(10);
+        let mut stream = client.get_stream(None);
         client.connect(conn_opts).await.unwrap();
 
         client
