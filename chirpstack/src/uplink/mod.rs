@@ -6,6 +6,9 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use chrono::Utc;
+use prometheus_client::encoding::EncodeLabelSet;
+use prometheus_client::metrics::counter::Counter;
+use prometheus_client::metrics::family::Family;
 use prost::Message;
 use tokio::task;
 use tokio::time::sleep;
@@ -14,6 +17,7 @@ use uuid::Uuid;
 
 use crate::config;
 use crate::helpers::errors::PrintFullError;
+use crate::monitoring::prometheus;
 use crate::storage::{
     device, device_profile, error::Error as StorageError, gateway, get_redis_conn, redis_key,
 };
@@ -31,6 +35,41 @@ pub mod join;
 pub mod join_fns;
 pub mod join_sns;
 pub mod stats;
+
+#[derive(Clone, Hash, PartialEq, Eq, EncodeLabelSet, Debug)]
+struct UplinkLabels {
+    m_type: String,
+}
+
+lazy_static! {
+    static ref UPLINK_COUNTER: Family<UplinkLabels, Counter> = {
+        let counter = Family::<UplinkLabels, Counter>::default();
+        prometheus::register(
+            "uplink_count",
+            "Number of received uplinks (after deduplication)",
+            counter.clone(),
+        );
+        counter
+    };
+    static ref DEDUPLICATE_LOCKED_COUNTER: Family<(), Counter> = {
+        let counter = Family::<(), Counter>::default();
+        prometheus::register(
+            "deduplicate_locked_count",
+            "Number of times the deduplication function was called and the deduplication was already locked",
+            counter.clone(),
+        );
+        counter
+    };
+    static ref DEDUPLICATE_NO_LOCK_COUNTER: Family<(), Counter> = {
+        let counter = Family::<(), Counter>::default();
+        prometheus::register(
+            "deduplicate_no_lock_count",
+            "Number of times the deduplication function was called and it was not yet locked",
+            counter.clone(),
+        );
+        counter
+    };
+}
 
 #[derive(Clone)]
 pub struct RelayContext {
@@ -154,8 +193,13 @@ async fn _deduplicate_uplink(event: gw::UplinkFrame) -> Result<()> {
             lock_key = lock_key.as_str(),
             "Deduplication is already locked by an other process"
         );
+
+        DEDUPLICATE_LOCKED_COUNTER.get_or_create(&()).inc();
+
         return Ok(());
     }
+
+    DEDUPLICATE_NO_LOCK_COUNTER.get_or_create(&()).inc();
 
     trace!(
         key = key.as_str(),
@@ -298,6 +342,12 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
         gateway_tenant_id_map: HashMap::new(),
         roaming_meta_data: None,
     };
+
+    UPLINK_COUNTER
+        .get_or_create(&UplinkLabels {
+            m_type: uplink.phy_payload.mhdr.m_type.to_string(),
+        })
+        .inc();
 
     uplink.dr = helpers::get_uplink_dr(&uplink.region_config_id, &uplink.tx_info)?;
     uplink.ch = helpers::get_uplink_ch(
