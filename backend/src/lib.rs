@@ -14,7 +14,7 @@ use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Certificate, Identity};
 use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot::Receiver;
-use tracing::{debug, error, info, trace};
+use tracing::{debug, error, info, span, trace, Instrument, Level};
 
 use chirpstack_api::stream;
 
@@ -323,12 +323,22 @@ impl Client {
         S: ?Sized + serde::ser::Serialize + BasePayloadProvider,
         D: serde::de::DeserializeOwned + BasePayloadResultProvider,
     {
+        let bp = pl.base_payload().clone();
+
         let mut be_req_log = stream::BackendInterfacesRequest {
             time: Some(Utc::now().into()),
+            sender_id: hex::encode(&bp.sender_id),
+            receiver_id: hex::encode(&bp.receiver_id),
+            transaction_id: bp.transaction_id,
+            message_type: format!("{:?}", bp.message_type),
             ..Default::default()
         };
+
+        let span = span!(Level::INFO, "request", message_type = ?bp.message_type, receiver_id = %be_req_log.receiver_id, transaction_id = bp.transaction_id);
+
         let res = self
             ._request(target_role, pl, ans, async_resp, &mut be_req_log)
+            .instrument(span)
             .await;
 
         if let Err(e) = &res {
@@ -367,16 +377,10 @@ impl Client {
             self.config.server.clone()
         };
 
-        let bp = pl.base_payload().clone();
-        be_req_log.sender_id = hex::encode(&bp.sender_id);
-        be_req_log.receiver_id = hex::encode(&bp.receiver_id);
-        be_req_log.transaction_id = bp.transaction_id;
-        be_req_log.message_type = format!("{:?}", bp.message_type);
-
         let body = serde_json::to_string(&pl)?;
         be_req_log.request_body = body.clone();
 
-        info!(receiver_id = %hex::encode(&bp.receiver_id), transaction_id = bp.transaction_id, message_type = ?bp.message_type, server = %server, async_interface = %async_resp.is_some(), "Making request");
+        info!(server = %server, async_interface = %async_resp.is_some(), "Making request");
 
         let res = self
             .client
@@ -393,10 +397,11 @@ impl Client {
 
                 tokio::select! {
                     rx_ans = rx => {
+                        info!("Async response received");
                         String::from_utf8(rx_ans?)?
                     }
                     _ = sleep => {
-                        error!(receiver_id = %hex::encode(&bp.receiver_id), transaction_id = bp.transaction_id, message_type = ?bp.message_type, "Async request timeout");
+                        error!("Async response timeout");
                         return Err(anyhow!("Async timeout"));
                     }
                 }
@@ -410,7 +415,7 @@ impl Client {
         be_req_log.result_code = format!("{:?}", base.result.result_code);
 
         if base.result.result_code != ResultCode::Success {
-            error!(result_code = ?base.result.result_code, description = %base.result.description, receiver_id = %hex::encode(&bp.receiver_id), transaction_id = bp.transaction_id, message_type = ?bp.message_type, "Response error");
+            error!(result_code = ?base.result.result_code, description = %base.result.description, "Response error");
             return Err(anyhow!(
                 "Response error, code: {:?}, description: {:?}",
                 base.result.result_code,
