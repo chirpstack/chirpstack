@@ -334,7 +334,7 @@ impl Client {
             ..Default::default()
         };
 
-        let span = span!(Level::INFO, "request", message_type = ?bp.message_type, receiver_id = %be_req_log.receiver_id, transaction_id = bp.transaction_id);
+        let span = span!(Level::INFO, "request", message_type = ?bp.message_type, sender_id = %be_req_log.sender_id, receiver_id = %be_req_log.receiver_id, transaction_id = bp.transaction_id);
 
         let res = self
             ._request(target_role, pl, ans, async_resp, &mut be_req_log)
