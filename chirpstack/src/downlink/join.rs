@@ -39,9 +39,17 @@ impl JoinAccept<'_> {
         device_session: &internal::DeviceSession,
         join_accept: &PhyPayload,
     ) -> Result<()> {
-        let span = span!(Level::TRACE, "join_accept", downlink_id = %ufs.uplink_set_id);
+        let downlink_id: u32 = rand::thread_rng().gen();
+        let span = span!(Level::INFO, "join_accept", downlink_id = downlink_id);
 
-        let fut = JoinAccept::_handle(ufs, tenant, device, device_session, join_accept);
+        let fut = JoinAccept::_handle(
+            downlink_id,
+            ufs,
+            tenant,
+            device,
+            device_session,
+            join_accept,
+        );
         fut.instrument(span).await
     }
 
@@ -53,9 +61,15 @@ impl JoinAccept<'_> {
         device_session: &internal::DeviceSession,
         join_accept: &PhyPayload,
     ) -> Result<()> {
-        let span = span!(Level::TRACE, "join_accept_relayed", downlink_id = %ufs.uplink_set_id);
+        let downlink_id: u32 = rand::thread_rng().gen();
+        let span = span!(
+            Level::INFO,
+            "join_accept_relayed",
+            downlink_id = downlink_id
+        );
 
         let fut = JoinAccept::_handle_relayed(
+            downlink_id,
             relay_ctx,
             ufs,
             tenant,
@@ -67,6 +81,7 @@ impl JoinAccept<'_> {
     }
 
     async fn _handle(
+        downlink_id: u32,
         ufs: &UplinkFrameSet,
         tenant: &tenant::Tenant,
         device: &device::Device,
@@ -84,7 +99,7 @@ impl JoinAccept<'_> {
             region_conf: region::get(&ufs.region_config_id)?,
 
             downlink_frame: chirpstack_api::gw::DownlinkFrame {
-                downlink_id: rand::thread_rng().gen(),
+                downlink_id,
                 ..Default::default()
             },
             device_gateway_rx_info: None,
@@ -102,6 +117,7 @@ impl JoinAccept<'_> {
     }
 
     async fn _handle_relayed(
+        downlink_id: u32,
         relay_ctx: &RelayContext,
         ufs: &UplinkFrameSet,
         tenant: &tenant::Tenant,
@@ -120,7 +136,7 @@ impl JoinAccept<'_> {
             region_conf: region::get(&ufs.region_config_id)?,
 
             downlink_frame: chirpstack_api::gw::DownlinkFrame {
-                downlink_id: rand::thread_rng().gen(),
+                downlink_id,
                 ..Default::default()
             },
             device_gateway_rx_info: None,
