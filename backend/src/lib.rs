@@ -466,6 +466,7 @@ pub enum ResultCode {
     UnknownDevAddr,
     UnknownSender,
     UnknownReceiver,
+    UnkownReceiver,
     Deferred,
     XmitFailed,
     InvalidFPort,
