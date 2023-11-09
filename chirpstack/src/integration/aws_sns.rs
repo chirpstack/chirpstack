@@ -2,10 +2,6 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use aws_credential_types::provider::{future, ProvideCredentials, Result as CredentialsResult};
-use aws_credential_types::Credentials;
-use aws_sdk_sns::types::MessageAttributeValue;
-use aws_types::region::Region;
 use base64::{engine::general_purpose, Engine as _};
 use prost::Message;
 use tracing::{info, trace};
@@ -15,57 +11,18 @@ use crate::storage::application::AwsSnsConfiguration;
 use chirpstack_api::api::Encoding;
 use chirpstack_api::integration;
 
-#[derive(Debug)]
-struct StaticCredentials {
-    aws_access_key_id: String,
-    aws_secret_access_key: String,
-}
-
-impl StaticCredentials {
-    fn new(key: &str, secret: &str) -> Self {
-        StaticCredentials {
-            aws_access_key_id: key.to_string(),
-            aws_secret_access_key: secret.to_string(),
-        }
-    }
-
-    fn credentials(&self) -> CredentialsResult {
-        Ok(Credentials::new(
-            self.aws_access_key_id.clone(),
-            self.aws_secret_access_key.clone(),
-            None,
-            None,
-            "StaticProvider",
-        ))
-    }
-}
-
-impl ProvideCredentials for StaticCredentials {
-    fn provide_credentials<'a>(&'a self) -> future::ProvideCredentials<'a>
-    where
-        Self: 'a,
-    {
-        future::ProvideCredentials::ready(self.credentials())
-    }
-}
-
 pub struct Integration {
     json: bool,
-    client: aws_sdk_sns::Client,
+    access_key_id: String,
+    secret_access_key: String,
+    region: String,
     topic_arn: String,
+    client: reqwest::Client,
 }
 
 impl Integration {
     pub async fn new(conf: &AwsSnsConfiguration) -> Result<Integration> {
         trace!("Initializing AWS SNS integration");
-
-        let credentials = StaticCredentials::new(&conf.access_key_id, &conf.secret_access_key);
-        let config = aws_config::ConfigLoader::default()
-            .credentials_provider(credentials)
-            .region(Region::new(conf.region.clone()))
-            .load()
-            .await;
-        let client = aws_sdk_sns::Client::new(&config);
 
         Ok(Integration {
             json: match Encoding::try_from(conf.encoding)
@@ -75,7 +32,10 @@ impl Integration {
                 Encoding::Protobuf => false,
             },
             topic_arn: conf.topic_arn.clone(),
-            client,
+            access_key_id: conf.access_key_id.clone(),
+            secret_access_key: conf.secret_access_key.clone(),
+            region: conf.region.clone(),
+            client: reqwest::Client::new(),
         })
     }
 
@@ -87,33 +47,63 @@ impl Integration {
         pl: &str,
     ) -> Result<()> {
         info!(event = %event, dev_eui = %dev_eui, "Publishing event");
+
+        let hostname = format!("sns.{}.amazonaws.com", self.region);
+        let url = format!("https://{}/", hostname);
+        let ts = chrono::Utc::now();
+
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.insert("host", hostname.parse()?);
+        headers.insert(
+            "X-Amz-Date",
+            ts.format("%Y%m%dT%H%M%SZ").to_string().parse()?,
+        );
+        headers.insert(
+            reqwest::header::CONTENT_TYPE,
+            "application/x-www-form-urlencoded".parse()?,
+        );
+
+        let body = [
+            ("Action", "Publish"),
+            ("TopicArn", &self.topic_arn),
+            ("MessageAttributes.entry.1.Name", "event"),
+            ("MessageAttributes.entry.1.Value.DataType", "String"),
+            ("MessageAttributes.entry.1.Value.StringValue", event),
+            ("MessageAttributes.entry.2.Name", "dev_eui"),
+            ("MessageAttributes.entry.2.Value.DataType", "String"),
+            ("MessageAttributes.entry.2.Value.StringValue", dev_eui),
+            ("MessageAttributes.entry.3.Name", "application_id"),
+            ("MessageAttributes.entry.3.Value.DataType", "String"),
+            (
+                "MessageAttributes.entry.3.Value.StringValue",
+                application_id,
+            ),
+            ("Message", pl),
+        ];
+        let body = serde_urlencoded::to_string(body)?;
+
+        let s = aws_sign_v4::AwsSign::new(
+            "POST",
+            &url,
+            &ts,
+            &headers,
+            &self.region,
+            &self.access_key_id,
+            &self.secret_access_key,
+            "sns",
+            &body,
+        )
+        .sign();
+
+        headers.insert(reqwest::header::AUTHORIZATION, s.parse()?);
+
         self.client
-            .publish()
-            .topic_arn(self.topic_arn.clone())
-            .message_attributes(
-                "event",
-                MessageAttributeValue::builder()
-                    .data_type("String")
-                    .string_value(event)
-                    .build(),
-            )
-            .message_attributes(
-                "dev_eui",
-                MessageAttributeValue::builder()
-                    .data_type("String")
-                    .string_value(dev_eui)
-                    .build(),
-            )
-            .message_attributes(
-                "application_id",
-                MessageAttributeValue::builder()
-                    .data_type("String")
-                    .string_value(application_id)
-                    .build(),
-            )
-            .message(pl)
+            .post(url)
+            .headers(headers)
+            .body(body)
             .send()
-            .await?;
+            .await?
+            .error_for_status()?;
 
         Ok(())
     }
