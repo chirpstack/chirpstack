@@ -466,7 +466,7 @@ pub enum ResultCode {
     UnknownDevAddr,
     UnknownSender,
     UnknownReceiver,
-    UnkownReceiver,
+    UnkownReceiver, //Value in Backend Interfaces Spec 1.0/1.1 is misspelled
     Deferred,
     XmitFailed,
     InvalidFPort,
