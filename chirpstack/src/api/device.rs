@@ -714,7 +714,11 @@ impl DeviceService for Device {
                     out.metrics.insert(
                         k.to_string(),
                         common::Metric {
-                            name: v.name.to_string(),
+                            name: if v.name.is_empty() {
+                                k.to_string()
+                            } else {
+                                v.name.to_string()
+                            },
                             timestamps: m
                                 .iter()
                                 .map(|row| {

@@ -1125,7 +1125,6 @@ function DeviceProfileForm(props: IProps) {
                         {...restField}
                         name={[name, 1, "name"]}
                         fieldKey={[name, 1, "name"]}
-                        rules={[{ required: true, message: "Please enter a name!" }]}
                       >
                         <Input placeholder="Measurement name" disabled={props.disabled} />
                       </Form.Item>
