@@ -77,6 +77,8 @@ class DeviceStore extends EventEmitter {
         return;
       }
 
+      this.emit("change");
+
       notification.success({
         message: "Device updated",
         duration: 3,

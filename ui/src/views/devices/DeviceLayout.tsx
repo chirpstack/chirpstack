@@ -46,6 +46,15 @@ function DeviceLayout(props: IProps) {
   const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
+    DeviceStore.on("change", loadDevice);
+    loadDevice();
+
+    return () => {
+      DeviceStore.removeAllListeners("change");
+    };
+  }, [devEui]);
+
+  const loadDevice = () => {
     let req = new GetDeviceRequest();
     req.setDevEui(devEui!);
 
@@ -62,7 +71,7 @@ function DeviceLayout(props: IProps) {
         setDeviceProfile(resp.getDeviceProfile());
       });
     });
-  }, [devEui]);
+  }
 
   const deleteDevice = () => {
     let req = new DeleteDeviceRequest();
