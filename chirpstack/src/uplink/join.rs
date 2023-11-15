@@ -26,6 +26,7 @@ use crate::storage::{
     device::{self, DeviceClass},
     device_keys, device_profile, device_queue,
     error::Error as StorageError,
+    helpers::get_all_device_data,
     metrics, tenant,
 };
 use crate::{config, devaddr::get_random_dev_addr, downlink, integration, region, stream};
@@ -120,11 +121,8 @@ impl JoinRequest {
             ctx.join_request.as_ref().unwrap().dev_eui.to_string(),
         );
 
-        ctx.get_device_or_try_pr_roaming().await?;
+        ctx.get_device_data_or_try_pr_roaming().await?;
         ctx.get_device_keys_or_js_client().await?; // used to validate MIC + if we need external JS
-        ctx.get_application().await?;
-        ctx.get_tenant().await?;
-        ctx.get_device_profile().await?;
         ctx.set_device_info()?;
         ctx.filter_rx_info_by_tenant()?;
         ctx.filter_rx_info_by_region_config_id()?;
@@ -178,11 +176,8 @@ impl JoinRequest {
         };
 
         ctx.get_join_request_payload_relayed()?;
-        ctx.get_device().await?;
+        ctx.get_device_data().await?;
         ctx.get_device_keys_or_js_client().await?;
-        ctx.get_application().await?;
-        ctx.get_tenant().await?;
-        ctx.get_device_profile().await?;
         ctx.set_device_info()?;
         ctx.set_relay_rx_info()?;
         ctx.abort_on_device_is_disabled()?;
@@ -237,11 +232,21 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn get_device(&mut self) -> Result<()> {
-        trace!("Getting device");
+    async fn get_device_data(&mut self) -> Result<()> {
+        trace!("Getting device data");
         let jr = self.join_request.as_ref().unwrap();
-        let dev = device::get(&jr.dev_eui).await?;
+
+        let (dev, app, t, dp) = get_all_device_data(jr.dev_eui).await?;
+
+        if dp.region != self.uplink_frame_set.region_common_name {
+            return Err(anyhow!("Invalid device-profile region"));
+        }
+
+        self.tenant = Some(t);
+        self.application = Some(app);
+        self.device_profile = Some(dp);
         self.device = Some(dev);
+
         Ok(())
     }
 
@@ -268,10 +273,10 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn get_device_or_try_pr_roaming(&mut self) -> Result<()> {
+    async fn get_device_data_or_try_pr_roaming(&mut self) -> Result<()> {
         trace!("Getting device");
         let jr = self.join_request.as_ref().unwrap();
-        let dev = match device::get(&jr.dev_eui).await {
+        let (dev, app, t, dp) = match get_all_device_data(jr.dev_eui).await {
             Ok(v) => v,
             Err(e) => {
                 if let StorageError::NotFound(_) = e {
@@ -289,32 +294,15 @@ impl JoinRequest {
             }
         };
 
-        self.device = Some(dev);
-        Ok(())
-    }
-
-    async fn get_application(&mut self) -> Result<()> {
-        trace!("Getting application");
-        self.application =
-            Some(application::get(&self.device.as_ref().unwrap().application_id).await?);
-        Ok(())
-    }
-
-    async fn get_tenant(&mut self) -> Result<()> {
-        trace!("Getting tenant");
-        self.tenant = Some(tenant::get(&self.application.as_ref().unwrap().tenant_id).await?);
-        Ok(())
-    }
-
-    async fn get_device_profile(&mut self) -> Result<()> {
-        trace!("Getting device-profile");
-
-        let dp = device_profile::get(&self.device.as_ref().unwrap().device_profile_id).await?;
         if dp.region != self.uplink_frame_set.region_common_name {
             return Err(anyhow!("Invalid device-profile region"));
         }
 
+        self.tenant = Some(t);
+        self.application = Some(app);
         self.device_profile = Some(dp);
+        self.device = Some(dev);
+
         Ok(())
     }
 

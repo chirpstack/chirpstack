@@ -16,8 +16,9 @@ use crate::storage;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, device_session, downlink_frame, mac_command,
-    relay, tenant,
+    device_gateway, device_profile, device_queue, device_session, downlink_frame,
+    helpers::get_all_device_data,
+    mac_command, relay, tenant,
 };
 use crate::uplink::{RelayContext, UplinkFrameSet};
 use crate::{adr, config, gateway, integration, maccommand, region, sensitivity};
@@ -294,9 +295,7 @@ impl Data {
     async fn _handle_schedule_next_queue_item(downlink_id: u32, dev: device::Device) -> Result<()> {
         trace!("Handle schedule next-queue item flow");
 
-        let dp = device_profile::get(&dev.device_profile_id).await?;
-        let app = application::get(&dev.application_id).await?;
-        let ten = tenant::get(&app.tenant_id).await?;
+        let (_, app, ten, dp) = get_all_device_data(dev.dev_eui).await?;
         let ds = device_session::get(&dev.dev_eui).await?;
         let rc = region::get(&ds.region_config_id)?;
         let rn = config::get_region_network(&ds.region_config_id)?;

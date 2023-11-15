@@ -32,6 +32,7 @@ pub mod schema;
 pub mod search;
 pub mod tenant;
 pub mod user;
+pub mod helpers;
 
 pub type PgPool = Pool<ConnectionManager<PgConnection>>;
 pub type PgPoolConnection = PooledConnection<ConnectionManager<PgConnection>>;

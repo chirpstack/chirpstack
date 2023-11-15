@@ -17,7 +17,9 @@ use crate::storage::error::Error as StorageError;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, device_session, fields, metrics, tenant,
+    device_gateway, device_profile, device_queue, device_session, fields,
+    helpers::get_all_device_data,
+    metrics, tenant,
 };
 use crate::{codec, config, downlink, integration, maccommand, region, stream};
 use chirpstack_api::{integration as integration_pb, internal, stream as stream_pb};
@@ -111,16 +113,12 @@ impl Data {
 
         ctx.handle_passive_roaming_device().await?;
         ctx.get_device_session().await?;
-
-        ctx.get_device().await?;
+        ctx.get_device_data().await?;
 
         // Add dev_eui to span
         let span = tracing::Span::current();
         span.record("dev_eui", ctx.device.as_ref().unwrap().dev_eui.to_string());
 
-        ctx.get_device_profile().await?;
-        ctx.get_application().await?;
-        ctx.get_tenant().await?;
         ctx.abort_on_device_is_disabled().await?;
         ctx.set_device_info()?;
         ctx.set_device_gateway_rx_info()?;
@@ -188,10 +186,7 @@ impl Data {
         };
 
         ctx.get_device_session_relayed().await?;
-        ctx.get_device().await?;
-        ctx.get_device_profile().await?;
-        ctx.get_application().await?;
-        ctx.get_tenant().await?;
+        ctx.get_device_data().await?;
         ctx.abort_on_device_is_disabled().await?;
         ctx.set_device_info()?;
         ctx.set_relay_rx_info()?;
@@ -355,34 +350,20 @@ impl Data {
         Ok(())
     }
 
-    async fn get_device(&mut self) -> Result<()> {
-        trace!("Getting device");
+    async fn get_device_data(&mut self) -> Result<()> {
+        trace!("Getting device data");
         let dev_eui = lrwn::EUI64::from_slice(&self.device_session.as_ref().unwrap().dev_eui)?;
-        self.device = Some(device::get(&dev_eui).await?);
-        Ok(())
-    }
+        let (dev, app, t, dp) = get_all_device_data(dev_eui).await?;
 
-    async fn get_device_profile(&mut self) -> Result<()> {
-        trace!("Getting the device-profile");
-        let dp = device_profile::get(&self.device.as_ref().unwrap().device_profile_id).await?;
         if dp.region != self.uplink_frame_set.region_common_name {
             return Err(anyhow!("Invalid device-profile region"));
         }
+
+        self.tenant = Some(t);
+        self.application = Some(app);
         self.device_profile = Some(dp);
+        self.device = Some(dev);
 
-        Ok(())
-    }
-
-    async fn get_application(&mut self) -> Result<()> {
-        trace!("Getting application");
-        self.application =
-            Some(application::get(&self.device.as_ref().unwrap().application_id).await?);
-        Ok(())
-    }
-
-    async fn get_tenant(&mut self) -> Result<()> {
-        trace!("Getting tenant");
-        self.tenant = Some(tenant::get(&self.application.as_ref().unwrap().tenant_id).await?);
         Ok(())
     }
 
