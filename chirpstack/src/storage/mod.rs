@@ -23,6 +23,7 @@ pub mod downlink_frame;
 pub mod error;
 pub mod fields;
 pub mod gateway;
+pub mod helpers;
 pub mod mac_command;
 pub mod metrics;
 pub mod multicast;
@@ -32,7 +33,6 @@ pub mod schema;
 pub mod search;
 pub mod tenant;
 pub mod user;
-pub mod helpers;
 
 pub type PgPool = Pool<ConnectionManager<PgConnection>>;
 pub type PgPoolConnection = PooledConnection<ConnectionManager<PgConnection>>;
