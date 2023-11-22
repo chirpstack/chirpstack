@@ -38,7 +38,7 @@
         topic_prefix="cn470_9"
 
         # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-        server="tcp://$MQTT_BROKER_HOST:1883"
+        server="tcp://localhost:1883"
 
         # Connect with the given username (optional)
         username=""

@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
 
-# Only execute on first install
-if [[ -z $2 ]]; then
-    # Set config-file permissions
-    chown -R chirpstack:chirpstack /etc/chirpstack
-    chmod 750 /etc/chirpstack
-    chmod 640 /etc/chirpstack/*.toml
-
-    # Set environment variables to localhost
-    sed -i "s/\$MQTT_BROKER_HOST/localhost/" /etc/chirpstack/*.toml
-    sed -i "s/\$POSTGRESQL_HOST/localhost/" /etc/chirpstack/*.toml
-    sed -i "s/\$REDIS_HOST/localhost/" /etc/chirpstack/*.toml
-fi
+# Set config-file permissions
+chown -R chirpstack:chirpstack /etc/chirpstack
+chmod 750 /etc/chirpstack
+chmod 640 /etc/chirpstack/*.toml
 
 #DEBHELPER#

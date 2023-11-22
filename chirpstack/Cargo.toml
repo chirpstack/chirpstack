@@ -201,10 +201,6 @@ post_install_script = '''
 chown -R chirpstack:chirpstack /etc/chirpstack
 chmod 750 /etc/chirpstack
 chmod 640 /etc/chirpstack/*.toml
-
-sed -i "s/\$MQTT_BROKER_HOST/localhost/" /etc/chirpstack/*.toml
-sed -i "s/\$POSTGRESQL_HOST/localhost/" /etc/chirpstack/*.toml
-sed -i "s/\$REDIS_HOST/localhost/" /etc/chirpstack/*.toml
 '''
 
 assets = [
