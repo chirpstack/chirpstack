@@ -2542,6 +2542,9 @@ Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
 This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
 
 Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
+| allow_roaming | [bool](#bool) |  | Allow roaming.
+
+If set to true, it means that the device is allowed to use roaming. |
 
 
 

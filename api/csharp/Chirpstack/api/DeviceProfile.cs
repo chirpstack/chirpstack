@@ -27,7 +27,7 @@ namespace Chirpstack.Api {
             "ChhhcGkvZGV2aWNlX3Byb2ZpbGUucHJvdG8SA2FwaRocZ29vZ2xlL2FwaS9h",
             "bm5vdGF0aW9ucy5wcm90bxofZ29vZ2xlL3Byb3RvYnVmL3RpbWVzdGFtcC5w",
             "cm90bxobZ29vZ2xlL3Byb3RvYnVmL2VtcHR5LnByb3RvGhNjb21tb24vY29t",
-            "bW9uLnByb3RvIsgOCg1EZXZpY2VQcm9maWxlEgoKAmlkGAEgASgJEhEKCXRl",
+            "bW9uLnByb3RvIt8OCg1EZXZpY2VQcm9maWxlEgoKAmlkGAEgASgJEhEKCXRl",
             "bmFudF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhMKC2Rlc2NyaXB0aW9uGBog",
             "ASgJEh4KBnJlZ2lvbhgEIAEoDjIOLmNvbW1vbi5SZWdpb24SJwoLbWFjX3Zl",
             "cnNpb24YBSABKA4yEi5jb21tb24uTWFjVmVyc2lvbhI2ChNyZWdfcGFyYW1z",
@@ -66,68 +66,68 @@ namespace Chirpstack.Api {
             "dF9zaXplGDAgASgNEiYKHnJlbGF5X25vdGlmeV9saW1pdF9idWNrZXRfc2l6",
             "ZRgxIAEoDRItCiVyZWxheV9nbG9iYWxfdXBsaW5rX2xpbWl0X2J1Y2tldF9z",
             "aXplGDIgASgNEicKH3JlbGF5X292ZXJhbGxfbGltaXRfYnVja2V0X3NpemUY",
-            "MyABKA0aKwoJVGFnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEo",
-            "CToCOAEaRQoRTWVhc3VyZW1lbnRzRW50cnkSCwoDa2V5GAEgASgJEh8KBXZh",
-            "bHVlGAIgASgLMhAuYXBpLk1lYXN1cmVtZW50OgI4ASI/CgtNZWFzdXJlbWVu",
-            "dBIMCgRuYW1lGAIgASgJEiIKBGtpbmQYAyABKA4yFC5hcGkuTWVhc3VyZW1l",
-            "bnRLaW5kIt0CChVEZXZpY2VQcm9maWxlTGlzdEl0ZW0SCgoCaWQYASABKAkS",
-            "LgoKY3JlYXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3Rh",
-            "bXASLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
-            "c3RhbXASDAoEbmFtZRgEIAEoCRIeCgZyZWdpb24YBSABKA4yDi5jb21tb24u",
-            "UmVnaW9uEicKC21hY192ZXJzaW9uGAYgASgOMhIuY29tbW9uLk1hY1ZlcnNp",
-            "b24SNgoTcmVnX3BhcmFtc19yZXZpc2lvbhgHIAEoDjIZLmNvbW1vbi5SZWdQ",
-            "YXJhbXNSZXZpc2lvbhIVCg1zdXBwb3J0c19vdGFhGAggASgIEhgKEHN1cHBv",
-            "cnRzX2NsYXNzX2IYCSABKAgSGAoQc3VwcG9ydHNfY2xhc3NfYxgKIAEoCCJI",
-            "ChpDcmVhdGVEZXZpY2VQcm9maWxlUmVxdWVzdBIqCg5kZXZpY2VfcHJvZmls",
-            "ZRgBIAEoCzISLmFwaS5EZXZpY2VQcm9maWxlIikKG0NyZWF0ZURldmljZVBy",
-            "b2ZpbGVSZXNwb25zZRIKCgJpZBgBIAEoCSIlChdHZXREZXZpY2VQcm9maWxl",
-            "UmVxdWVzdBIKCgJpZBgBIAEoCSKmAQoYR2V0RGV2aWNlUHJvZmlsZVJlc3Bv",
-            "bnNlEioKDmRldmljZV9wcm9maWxlGAEgASgLMhIuYXBpLkRldmljZVByb2Zp",
-            "bGUSLgoKY3JlYXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
-            "c3RhbXASLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
-            "aW1lc3RhbXAiSAoaVXBkYXRlRGV2aWNlUHJvZmlsZVJlcXVlc3QSKgoOZGV2",
-            "aWNlX3Byb2ZpbGUYASABKAsyEi5hcGkuRGV2aWNlUHJvZmlsZSIoChpEZWxl",
-            "dGVEZXZpY2VQcm9maWxlUmVxdWVzdBIKCgJpZBgBIAEoCSJdChlMaXN0RGV2",
-            "aWNlUHJvZmlsZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgNEg4KBm9mZnNldBgC",
-            "IAEoDRIOCgZzZWFyY2gYAyABKAkSEQoJdGVuYW50X2lkGAQgASgJIl0KGkxp",
-            "c3REZXZpY2VQcm9maWxlc1Jlc3BvbnNlEhMKC3RvdGFsX2NvdW50GAEgASgN",
-            "EioKBnJlc3VsdBgCIAMoCzIaLmFwaS5EZXZpY2VQcm9maWxlTGlzdEl0ZW0i",
-            "aAomTGlzdERldmljZVByb2ZpbGVBZHJBbGdvcml0aG1zUmVzcG9uc2USEwoL",
-            "dG90YWxfY291bnQYASABKA0SKQoGcmVzdWx0GAIgAygLMhkuYXBpLkFkckFs",
-            "Z29yaXRobUxpc3RJdGVtIjAKFEFkckFsZ29yaXRobUxpc3RJdGVtEgoKAmlk",
-            "GAEgASgJEgwKBG5hbWUYAiABKAkqMQoMQ29kZWNSdW50aW1lEggKBE5PTkUQ",
-            "ABIPCgtDQVlFTk5FX0xQUBABEgYKAkpTEAIqUAoPTWVhc3VyZW1lbnRLaW5k",
-            "EgsKB1VOS05PV04QABILCgdDT1VOVEVSEAESDAoIQUJTT0xVVEUQAhIJCgVH",
-            "QVVHRRADEgoKBlNUUklORxAEKlUKDkNhZFBlcmlvZGljaXR5EgkKBVNFQ18x",
-            "EAASCgoGTVNfNTAwEAESCgoGTVNfMjUwEAISCgoGTVNfMTAwEAMSCQoFTVNf",
-            "NTAQBBIJCgVNU18yMBAFKmEKEVNlY29uZENoQWNrT2Zmc2V0EgkKBUtIWl8w",
-            "EAASCwoHS0haXzIwMBABEgsKB0tIWl80MDAQAhILCgdLSFpfODAwEAMSDAoI",
-            "S0haXzE2MDAQBBIMCghLSFpfMzIwMBAFKmwKE1JlbGF5TW9kZUFjdGl2YXRp",
-            "b24SFgoSRElTQUJMRV9SRUxBWV9NT0RFEAASFQoRRU5BQkxFX1JFTEFZX01P",
-            "REUQARILCgdEWU5BTUlDEAISGQoVRU5EX0RFVklDRV9DT05UUk9MTEVEEAMy",
-            "uAUKFERldmljZVByb2ZpbGVTZXJ2aWNlEmwKBkNyZWF0ZRIfLmFwaS5DcmVh",
-            "dGVEZXZpY2VQcm9maWxlUmVxdWVzdBogLmFwaS5DcmVhdGVEZXZpY2VQcm9m",
-            "aWxlUmVzcG9uc2UiH4LT5JMCGSIUL2FwaS9kZXZpY2UtcHJvZmlsZXM6ASoS",
-            "ZQoDR2V0EhwuYXBpLkdldERldmljZVByb2ZpbGVSZXF1ZXN0Gh0uYXBpLkdl",
-            "dERldmljZVByb2ZpbGVSZXNwb25zZSIhgtPkkwIbEhkvYXBpL2RldmljZS1w",
-            "cm9maWxlcy97aWR9EnYKBlVwZGF0ZRIfLmFwaS5VcGRhdGVEZXZpY2VQcm9m",
-            "aWxlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIzgtPkkwItGigv",
-            "YXBpL2RldmljZS1wcm9maWxlcy97ZGV2aWNlX3Byb2ZpbGUuaWR9OgEqEmQK",
-            "BkRlbGV0ZRIfLmFwaS5EZWxldGVEZXZpY2VQcm9maWxlUmVxdWVzdBoWLmdv",
-            "b2dsZS5wcm90b2J1Zi5FbXB0eSIhgtPkkwIbKhkvYXBpL2RldmljZS1wcm9m",
-            "aWxlcy97aWR9EmUKBExpc3QSHi5hcGkuTGlzdERldmljZVByb2ZpbGVzUmVx",
-            "dWVzdBofLmFwaS5MaXN0RGV2aWNlUHJvZmlsZXNSZXNwb25zZSIcgtPkkwIW",
-            "EhQvYXBpL2RldmljZS1wcm9maWxlcxKFAQoRTGlzdEFkckFsZ29yaXRobXMS",
-            "Fi5nb29nbGUucHJvdG9idWYuRW1wdHkaKy5hcGkuTGlzdERldmljZVByb2Zp",
-            "bGVBZHJBbGdvcml0aG1zUmVzcG9uc2UiK4LT5JMCJRIjL2FwaS9kZXZpY2Ut",
-            "cHJvZmlsZXMvYWRyLWFsZ29yaXRobXNCagoRaW8uY2hpcnBzdGFjay5hcGlC",
-            "EkRldmljZVByb2ZpbGVQcm90b1ABWi5naXRodWIuY29tL2NoaXJwc3RhY2sv",
-            "Y2hpcnBzdGFjay9hcGkvZ28vdjQvYXBpqgIOQ2hpcnBzdGFjay5BcGliBnBy",
-            "b3RvMw=="));
+            "MyABKA0SFQoNYWxsb3dfcm9hbWluZxg0IAEoCBorCglUYWdzRW50cnkSCwoD",
+            "a2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ARpFChFNZWFzdXJlbWVudHNF",
+            "bnRyeRILCgNrZXkYASABKAkSHwoFdmFsdWUYAiABKAsyEC5hcGkuTWVhc3Vy",
+            "ZW1lbnQ6AjgBIj8KC01lYXN1cmVtZW50EgwKBG5hbWUYAiABKAkSIgoEa2lu",
+            "ZBgDIAEoDjIULmFwaS5NZWFzdXJlbWVudEtpbmQi3QIKFURldmljZVByb2Zp",
+            "bGVMaXN0SXRlbRIKCgJpZBgBIAEoCRIuCgpjcmVhdGVkX2F0GAIgASgLMhou",
+            "Z29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAMgASgL",
+            "MhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIMCgRuYW1lGAQgASgJEh4K",
+            "BnJlZ2lvbhgFIAEoDjIOLmNvbW1vbi5SZWdpb24SJwoLbWFjX3ZlcnNpb24Y",
+            "BiABKA4yEi5jb21tb24uTWFjVmVyc2lvbhI2ChNyZWdfcGFyYW1zX3Jldmlz",
+            "aW9uGAcgASgOMhkuY29tbW9uLlJlZ1BhcmFtc1JldmlzaW9uEhUKDXN1cHBv",
+            "cnRzX290YWEYCCABKAgSGAoQc3VwcG9ydHNfY2xhc3NfYhgJIAEoCBIYChBz",
+            "dXBwb3J0c19jbGFzc19jGAogASgIIkgKGkNyZWF0ZURldmljZVByb2ZpbGVS",
+            "ZXF1ZXN0EioKDmRldmljZV9wcm9maWxlGAEgASgLMhIuYXBpLkRldmljZVBy",
+            "b2ZpbGUiKQobQ3JlYXRlRGV2aWNlUHJvZmlsZVJlc3BvbnNlEgoKAmlkGAEg",
+            "ASgJIiUKF0dldERldmljZVByb2ZpbGVSZXF1ZXN0EgoKAmlkGAEgASgJIqYB",
+            "ChhHZXREZXZpY2VQcm9maWxlUmVzcG9uc2USKgoOZGV2aWNlX3Byb2ZpbGUY",
+            "ASABKAsyEi5hcGkuRGV2aWNlUHJvZmlsZRIuCgpjcmVhdGVkX2F0GAIgASgL",
+            "MhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAMg",
+            "ASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJIChpVcGRhdGVEZXZp",
+            "Y2VQcm9maWxlUmVxdWVzdBIqCg5kZXZpY2VfcHJvZmlsZRgBIAEoCzISLmFw",
+            "aS5EZXZpY2VQcm9maWxlIigKGkRlbGV0ZURldmljZVByb2ZpbGVSZXF1ZXN0",
+            "EgoKAmlkGAEgASgJIl0KGUxpc3REZXZpY2VQcm9maWxlc1JlcXVlc3QSDQoF",
+            "bGltaXQYASABKA0SDgoGb2Zmc2V0GAIgASgNEg4KBnNlYXJjaBgDIAEoCRIR",
+            "Cgl0ZW5hbnRfaWQYBCABKAkiXQoaTGlzdERldmljZVByb2ZpbGVzUmVzcG9u",
+            "c2USEwoLdG90YWxfY291bnQYASABKA0SKgoGcmVzdWx0GAIgAygLMhouYXBp",
+            "LkRldmljZVByb2ZpbGVMaXN0SXRlbSJoCiZMaXN0RGV2aWNlUHJvZmlsZUFk",
+            "ckFsZ29yaXRobXNSZXNwb25zZRITCgt0b3RhbF9jb3VudBgBIAEoDRIpCgZy",
+            "ZXN1bHQYAiADKAsyGS5hcGkuQWRyQWxnb3JpdGhtTGlzdEl0ZW0iMAoUQWRy",
+            "QWxnb3JpdGhtTGlzdEl0ZW0SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCSox",
+            "CgxDb2RlY1J1bnRpbWUSCAoETk9ORRAAEg8KC0NBWUVOTkVfTFBQEAESBgoC",
+            "SlMQAipQCg9NZWFzdXJlbWVudEtpbmQSCwoHVU5LTk9XThAAEgsKB0NPVU5U",
+            "RVIQARIMCghBQlNPTFVURRACEgkKBUdBVUdFEAMSCgoGU1RSSU5HEAQqVQoO",
+            "Q2FkUGVyaW9kaWNpdHkSCQoFU0VDXzEQABIKCgZNU181MDAQARIKCgZNU18y",
+            "NTAQAhIKCgZNU18xMDAQAxIJCgVNU181MBAEEgkKBU1TXzIwEAUqYQoRU2Vj",
+            "b25kQ2hBY2tPZmZzZXQSCQoFS0haXzAQABILCgdLSFpfMjAwEAESCwoHS0ha",
+            "XzQwMBACEgsKB0tIWl84MDAQAxIMCghLSFpfMTYwMBAEEgwKCEtIWl8zMjAw",
+            "EAUqbAoTUmVsYXlNb2RlQWN0aXZhdGlvbhIWChJESVNBQkxFX1JFTEFZX01P",
+            "REUQABIVChFFTkFCTEVfUkVMQVlfTU9ERRABEgsKB0RZTkFNSUMQAhIZChVF",
+            "TkRfREVWSUNFX0NPTlRST0xMRUQQAzK4BQoURGV2aWNlUHJvZmlsZVNlcnZp",
+            "Y2USbAoGQ3JlYXRlEh8uYXBpLkNyZWF0ZURldmljZVByb2ZpbGVSZXF1ZXN0",
+            "GiAuYXBpLkNyZWF0ZURldmljZVByb2ZpbGVSZXNwb25zZSIfgtPkkwIZIhQv",
+            "YXBpL2RldmljZS1wcm9maWxlczoBKhJlCgNHZXQSHC5hcGkuR2V0RGV2aWNl",
+            "UHJvZmlsZVJlcXVlc3QaHS5hcGkuR2V0RGV2aWNlUHJvZmlsZVJlc3BvbnNl",
+            "IiGC0+STAhsSGS9hcGkvZGV2aWNlLXByb2ZpbGVzL3tpZH0SdgoGVXBkYXRl",
+            "Eh8uYXBpLlVwZGF0ZURldmljZVByb2ZpbGVSZXF1ZXN0GhYuZ29vZ2xlLnBy",
+            "b3RvYnVmLkVtcHR5IjOC0+STAi0aKC9hcGkvZGV2aWNlLXByb2ZpbGVzL3tk",
+            "ZXZpY2VfcHJvZmlsZS5pZH06ASoSZAoGRGVsZXRlEh8uYXBpLkRlbGV0ZURl",
+            "dmljZVByb2ZpbGVSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5IiGC",
+            "0+STAhsqGS9hcGkvZGV2aWNlLXByb2ZpbGVzL3tpZH0SZQoETGlzdBIeLmFw",
+            "aS5MaXN0RGV2aWNlUHJvZmlsZXNSZXF1ZXN0Gh8uYXBpLkxpc3REZXZpY2VQ",
+            "cm9maWxlc1Jlc3BvbnNlIhyC0+STAhYSFC9hcGkvZGV2aWNlLXByb2ZpbGVz",
+            "EoUBChFMaXN0QWRyQWxnb3JpdGhtcxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0",
+            "eRorLmFwaS5MaXN0RGV2aWNlUHJvZmlsZUFkckFsZ29yaXRobXNSZXNwb25z",
+            "ZSIrgtPkkwIlEiMvYXBpL2RldmljZS1wcm9maWxlcy9hZHItYWxnb3JpdGht",
+            "c0JqChFpby5jaGlycHN0YWNrLmFwaUISRGV2aWNlUHJvZmlsZVByb3RvUAFa",
+            "LmdpdGh1Yi5jb20vY2hpcnBzdGFjay9jaGlycHN0YWNrL2FwaS9nby92NC9h",
+            "cGmqAg5DaGlycHN0YWNrLkFwaWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Api.AnnotationsReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Chirpstack.Common.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Api.CodecRuntime), typeof(global::Chirpstack.Api.MeasurementKind), typeof(global::Chirpstack.Api.CadPeriodicity), typeof(global::Chirpstack.Api.SecondChAckOffset), typeof(global::Chirpstack.Api.RelayModeActivation), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfile), global::Chirpstack.Api.DeviceProfile.Parser, new[]{ "Id", "TenantId", "Name", "Description", "Region", "MacVersion", "RegParamsRevision", "AdrAlgorithmId", "PayloadCodecRuntime", "PayloadCodecScript", "FlushQueueOnActivate", "UplinkInterval", "DeviceStatusReqInterval", "SupportsOtaa", "SupportsClassB", "SupportsClassC", "ClassBTimeout", "ClassBPingSlotNbK", "ClassBPingSlotDr", "ClassBPingSlotFreq", "ClassCTimeout", "AbpRx1Delay", "AbpRx1DrOffset", "AbpRx2Dr", "AbpRx2Freq", "Tags", "Measurements", "AutoDetectMeasurements", "RegionConfigId", "IsRelay", "IsRelayEd", "RelayEdRelayOnly", "RelayEnabled", "RelayCadPeriodicity", "RelayDefaultChannelIndex", "RelaySecondChannelFreq", "RelaySecondChannelDr", "RelaySecondChannelAckOffset", "RelayEdActivationMode", "RelayEdSmartEnableLevel", "RelayEdBackOff", "RelayEdUplinkLimitBucketSize", "RelayEdUplinkLimitReloadRate", "RelayJoinReqLimitReloadRate", "RelayNotifyLimitReloadRate", "RelayGlobalUplinkLimitReloadRate", "RelayOverallLimitReloadRate", "RelayJoinReqLimitBucketSize", "RelayNotifyLimitBucketSize", "RelayGlobalUplinkLimitBucketSize", "RelayOverallLimitBucketSize" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfile), global::Chirpstack.Api.DeviceProfile.Parser, new[]{ "Id", "TenantId", "Name", "Description", "Region", "MacVersion", "RegParamsRevision", "AdrAlgorithmId", "PayloadCodecRuntime", "PayloadCodecScript", "FlushQueueOnActivate", "UplinkInterval", "DeviceStatusReqInterval", "SupportsOtaa", "SupportsClassB", "SupportsClassC", "ClassBTimeout", "ClassBPingSlotNbK", "ClassBPingSlotDr", "ClassBPingSlotFreq", "ClassCTimeout", "AbpRx1Delay", "AbpRx1DrOffset", "AbpRx2Dr", "AbpRx2Freq", "Tags", "Measurements", "AutoDetectMeasurements", "RegionConfigId", "IsRelay", "IsRelayEd", "RelayEdRelayOnly", "RelayEnabled", "RelayCadPeriodicity", "RelayDefaultChannelIndex", "RelaySecondChannelFreq", "RelaySecondChannelDr", "RelaySecondChannelAckOffset", "RelayEdActivationMode", "RelayEdSmartEnableLevel", "RelayEdBackOff", "RelayEdUplinkLimitBucketSize", "RelayEdUplinkLimitReloadRate", "RelayJoinReqLimitReloadRate", "RelayNotifyLimitReloadRate", "RelayGlobalUplinkLimitReloadRate", "RelayOverallLimitReloadRate", "RelayJoinReqLimitBucketSize", "RelayNotifyLimitBucketSize", "RelayGlobalUplinkLimitBucketSize", "RelayOverallLimitBucketSize", "AllowRoaming" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.Measurement), global::Chirpstack.Api.Measurement.Parser, new[]{ "Name", "Kind" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfileListItem), global::Chirpstack.Api.DeviceProfileListItem.Parser, new[]{ "Id", "CreatedAt", "UpdatedAt", "Name", "Region", "MacVersion", "RegParamsRevision", "SupportsOtaa", "SupportsClassB", "SupportsClassC" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.CreateDeviceProfileRequest), global::Chirpstack.Api.CreateDeviceProfileRequest.Parser, new[]{ "DeviceProfile" }, null, null, null, null),
@@ -346,6 +346,7 @@ namespace Chirpstack.Api {
       relayNotifyLimitBucketSize_ = other.relayNotifyLimitBucketSize_;
       relayGlobalUplinkLimitBucketSize_ = other.relayGlobalUplinkLimitBucketSize_;
       relayOverallLimitBucketSize_ = other.relayOverallLimitBucketSize_;
+      allowRoaming_ = other.allowRoaming_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1225,6 +1226,23 @@ namespace Chirpstack.Api {
       }
     }
 
+    /// <summary>Field number for the "allow_roaming" field.</summary>
+    public const int AllowRoamingFieldNumber = 52;
+    private bool allowRoaming_;
+    /// <summary>
+    /// Allow roaming.
+    ///
+    /// If set to true, it means that the device is allowed to use roaming.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool AllowRoaming {
+      get { return allowRoaming_; }
+      set {
+        allowRoaming_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -1291,6 +1309,7 @@ namespace Chirpstack.Api {
       if (RelayNotifyLimitBucketSize != other.RelayNotifyLimitBucketSize) return false;
       if (RelayGlobalUplinkLimitBucketSize != other.RelayGlobalUplinkLimitBucketSize) return false;
       if (RelayOverallLimitBucketSize != other.RelayOverallLimitBucketSize) return false;
+      if (AllowRoaming != other.AllowRoaming) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1349,6 +1368,7 @@ namespace Chirpstack.Api {
       if (RelayNotifyLimitBucketSize != 0) hash ^= RelayNotifyLimitBucketSize.GetHashCode();
       if (RelayGlobalUplinkLimitBucketSize != 0) hash ^= RelayGlobalUplinkLimitBucketSize.GetHashCode();
       if (RelayOverallLimitBucketSize != 0) hash ^= RelayOverallLimitBucketSize.GetHashCode();
+      if (AllowRoaming != false) hash ^= AllowRoaming.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1565,6 +1585,10 @@ namespace Chirpstack.Api {
         output.WriteRawTag(152, 3);
         output.WriteUInt32(RelayOverallLimitBucketSize);
       }
+      if (AllowRoaming != false) {
+        output.WriteRawTag(160, 3);
+        output.WriteBool(AllowRoaming);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1773,6 +1797,10 @@ namespace Chirpstack.Api {
         output.WriteRawTag(152, 3);
         output.WriteUInt32(RelayOverallLimitBucketSize);
       }
+      if (AllowRoaming != false) {
+        output.WriteRawTag(160, 3);
+        output.WriteBool(AllowRoaming);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1931,6 +1959,9 @@ namespace Chirpstack.Api {
       }
       if (RelayOverallLimitBucketSize != 0) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayOverallLimitBucketSize);
+      }
+      if (AllowRoaming != false) {
+        size += 2 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2092,6 +2123,9 @@ namespace Chirpstack.Api {
       }
       if (other.RelayOverallLimitBucketSize != 0) {
         RelayOverallLimitBucketSize = other.RelayOverallLimitBucketSize;
+      }
+      if (other.AllowRoaming != false) {
+        AllowRoaming = other.AllowRoaming;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2312,6 +2346,10 @@ namespace Chirpstack.Api {
             RelayOverallLimitBucketSize = input.ReadUInt32();
             break;
           }
+          case 416: {
+            AllowRoaming = input.ReadBool();
+            break;
+          }
         }
       }
     #endif
@@ -2529,6 +2567,10 @@ namespace Chirpstack.Api {
           }
           case 408: {
             RelayOverallLimitBucketSize = input.ReadUInt32();
+            break;
+          }
+          case 416: {
+            AllowRoaming = input.ReadBool();
             break;
           }
         }

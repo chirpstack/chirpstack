@@ -160,6 +160,9 @@ export class DeviceProfile extends jspb.Message {
   getRelayOverallLimitBucketSize(): number;
   setRelayOverallLimitBucketSize(value: number): DeviceProfile;
 
+  getAllowRoaming(): boolean;
+  setAllowRoaming(value: boolean): DeviceProfile;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -221,6 +224,7 @@ export namespace DeviceProfile {
     relayNotifyLimitBucketSize: number,
     relayGlobalUplinkLimitBucketSize: number,
     relayOverallLimitBucketSize: number,
+    allowRoaming: boolean,
   }
 }
 

@@ -20,7 +20,9 @@ use crate::helpers::errors::PrintFullError;
 use crate::storage::{
     device_session, error::Error as StorageError, get_redis_conn, passive_roaming, redis_key,
 };
-use crate::uplink::{data_sns, helpers, join_sns, RoamingMetaData, UplinkFrameSet};
+use crate::uplink::{
+    data_sns, error::Error as UplinkError, helpers, join_sns, RoamingMetaData, UplinkFrameSet,
+};
 use crate::{config, region, stream};
 use backend::{BasePayload, BasePayloadResultProvider, MessageType};
 use chirpstack_api::stream as stream_pb;
@@ -185,6 +187,12 @@ fn err_to_result_code(e: anyhow::Error) -> backend::ResultCode {
             _ => backend::ResultCode::Other,
         };
     }
+    if let Some(e) = e.downcast_ref::<UplinkError>() {
+        return match e {
+            UplinkError::RoamingIsNotAllowed => backend::ResultCode::DevRoamingDisallowed,
+            _ => backend::ResultCode::Other,
+        };
+    }
     backend::ResultCode::Other
 }
 
@@ -269,6 +277,8 @@ async fn _handle_pr_start_req_join(
         }),
     };
 
+    // This flow will return RoamingIsNotAllowed in case allow_roaming
+    // is not enabled in the device-profile.
     join_sns::JoinRequest::start_pr(ufs, pl).await
 }
 
@@ -326,7 +336,7 @@ async fn _handle_pr_start_req_data(
 
     // In case of stateless, the payload is directly handled
     if pr_lifetime.is_zero() {
-        data_sns::Data::handle(ufs).await;
+        data_sns::Data::handle(ufs).await?;
     }
 
     Ok(backend::PRStartAnsPayload {
@@ -498,7 +508,7 @@ async fn _handle_xmit_data_req(
             }),
         };
 
-        data_sns::Data::handle(ufs).await;
+        data_sns::Data::handle(ufs).await?;
     }
 
     if let Some(dl_meta_data) = &pl.dl_meta_data {

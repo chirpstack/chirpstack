@@ -29,7 +29,7 @@ use lrwn::{ForwardUplinkReq, MType, PhyPayload, EUI64};
 mod data;
 mod data_fns;
 pub mod data_sns;
-mod error;
+pub mod error;
 pub mod helpers;
 pub mod join;
 pub mod join_fns;

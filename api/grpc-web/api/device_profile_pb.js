@@ -393,7 +393,8 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     relayJoinReqLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 48, 0),
     relayNotifyLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 49, 0),
     relayGlobalUplinkLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 50, 0),
-    relayOverallLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 51, 0)
+    relayOverallLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 51, 0),
+    allowRoaming: jspb.Message.getBooleanFieldWithDefault(msg, 52, false)
   };
 
   if (includeInstance) {
@@ -637,6 +638,10 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
     case 51:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setRelayOverallLimitBucketSize(value);
+      break;
+    case 52:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setAllowRoaming(value);
       break;
     default:
       reader.skipField();
@@ -1015,6 +1020,13 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeUint32(
       51,
+      f
+    );
+  }
+  f = message.getAllowRoaming();
+  if (f) {
+    writer.writeBool(
+      52,
       f
     );
   }
@@ -1944,6 +1956,24 @@ proto.api.DeviceProfile.prototype.getRelayOverallLimitBucketSize = function() {
  */
 proto.api.DeviceProfile.prototype.setRelayOverallLimitBucketSize = function(value) {
   return jspb.Message.setProto3IntField(this, 51, value);
+};
+
+
+/**
+ * optional bool allow_roaming = 52;
+ * @return {boolean}
+ */
+proto.api.DeviceProfile.prototype.getAllowRoaming = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 52, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setAllowRoaming = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 52, value);
 };
 
 

@@ -90,7 +90,7 @@ impl Data {
         }
     }
 
-    async fn _handle(ufs: UplinkFrameSet) -> Result<()> {
+    pub async fn _handle(ufs: UplinkFrameSet) -> Result<()> {
         let mut ctx = Data {
             phy_payload: ufs.phy_payload.clone(),
             uplink_frame_set: ufs,
@@ -114,6 +114,7 @@ impl Data {
         ctx.handle_passive_roaming_device().await?;
         ctx.get_device_session().await?;
         ctx.get_device_data().await?;
+        ctx.check_roaming_allowed()?;
 
         // Add dev_eui to span
         let span = tracing::Span::current();
@@ -363,6 +364,18 @@ impl Data {
         self.application = Some(app);
         self.device_profile = Some(dp);
         self.device = Some(dev);
+
+        Ok(())
+    }
+
+    fn check_roaming_allowed(&self) -> Result<(), Error> {
+        trace!("Check if roaming is allowed for this device");
+        if self._is_roaming() {
+            let dp = self.device_profile.as_ref().unwrap();
+            if !dp.allow_roaming {
+                return Err(Error::RoamingIsNotAllowed);
+            }
+        }
 
         Ok(())
     }

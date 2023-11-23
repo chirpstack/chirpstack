@@ -295,6 +295,7 @@ async fn test_sns() {
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
         supports_otaa: true,
+        allow_roaming: true,
         ..Default::default()
     })
     .await
@@ -425,6 +426,165 @@ async fn test_sns() {
                 ..Default::default()
             }),
             dev_addr: vec![7, 2, 3, 4],
+            ..Default::default()
+        },
+        pr_start_ans
+    );
+
+    joinserver::reset();
+    roaming::reset();
+}
+
+#[tokio::test]
+async fn test_sns_roaming_not_allowed() {
+    let _guard = test::prepare().await;
+
+    let fns_mock = MockServer::start();
+
+    let mut conf = (*config::get()).clone();
+
+    // Set NetID.
+    conf.network.net_id = NetID::from_str("010203").unwrap();
+
+    // Set roaming agreement.
+    conf.roaming.servers.push(config::RoamingServer {
+        net_id: NetID::from_str("030201").unwrap(),
+        server: fns_mock.url("/"),
+        ..Default::default()
+    });
+
+    config::set(conf);
+    joinserver::setup().unwrap();
+    roaming::setup().unwrap();
+
+    let t = tenant::create(tenant::Tenant {
+        name: "tenant".into(),
+        can_have_gateways: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let app = application::create(application::Application {
+        name: "app".into(),
+        tenant_id: t.id.clone(),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dp = device_profile::create(device_profile::DeviceProfile {
+        name: "dp".into(),
+        tenant_id: t.id.clone(),
+        region: lrwn::region::CommonName::EU868,
+        mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
+        reg_params_revision: lrwn::region::Revision::A,
+        supports_otaa: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dev = device::create(device::Device {
+        name: "device".into(),
+        application_id: app.id.clone(),
+        device_profile_id: dp.id.clone(),
+        dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
+        enabled_class: DeviceClass::B,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dk = device_keys::create(device_keys::DeviceKeys {
+        dev_eui: dev.dev_eui.clone(),
+        nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
+        dev_nonces: vec![],
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let mut jr_phy = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            m_type: lrwn::MType::JoinRequest,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
+            join_eui: EUI64::from_str("0000000000000000").unwrap(),
+            dev_eui: dev.dev_eui,
+            dev_nonce: 1,
+        }),
+        mic: None,
+    };
+    jr_phy.set_join_request_mic(&dk.nwk_key).unwrap();
+
+    let recv_time = Utc::now();
+
+    let mut rx_info = gw::UplinkRxInfo {
+        gateway_id: "0302030405060708".to_string(),
+        gw_time: Some(recv_time.into()),
+        location: Some(Default::default()),
+        ..Default::default()
+    };
+    rx_info
+        .metadata
+        .insert("region_config_id".to_string(), "eu868".to_string());
+    rx_info
+        .metadata
+        .insert("region_common_name".to_string(), "EU868".to_string());
+
+    let mut tx_info = gw::UplinkTxInfo {
+        frequency: 868100000,
+        ..Default::default()
+    };
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
+
+    let pr_start_req = backend::PRStartReqPayload {
+        base: backend::BasePayload {
+            sender_id: vec![3, 2, 1],
+            receiver_id: vec![1, 2, 3],
+            message_type: backend::MessageType::PRStartReq,
+            transaction_id: 1234,
+            ..Default::default()
+        },
+        phy_payload: jr_phy.to_vec().unwrap(),
+        ul_meta_data: backend::ULMetaData {
+            dev_eui: dev.dev_eui.to_vec(),
+            ul_freq: Some(868.1),
+            data_rate: Some(0),
+            recv_time: recv_time,
+            rf_region: "EU868".to_string(),
+            gw_cnt: Some(1),
+            gw_info: roaming::rx_info_to_gw_info(&[rx_info.clone()]).unwrap(),
+            ..Default::default()
+        },
+    };
+
+    let resp =
+        backend_api::handle_request(Bytes::from(serde_json::to_string(&pr_start_req).unwrap()))
+            .await;
+    let resp_b = hyper::body::to_bytes(resp.into_body()).await.unwrap();
+
+    let pr_start_ans: backend::PRStartAnsPayload = serde_json::from_slice(&resp_b).unwrap();
+
+    assert_eq!(
+        backend::PRStartAnsPayload {
+            base: backend::BasePayloadResult {
+                base: backend::BasePayload {
+                    sender_id: vec![1, 2, 3],
+                    receiver_id: vec![3, 2, 1],
+                    message_type: backend::MessageType::PRStartAns,
+                    transaction_id: 1234,
+                    ..Default::default()
+                },
+                result: backend::ResultPayload {
+                    result_code: backend::ResultCode::DevRoamingDisallowed,
+                    description: "Roaming is not allowed for the device".into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
             ..Default::default()
         },
         pr_start_ans

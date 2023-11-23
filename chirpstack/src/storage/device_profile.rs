@@ -73,6 +73,7 @@ pub struct DeviceProfile {
     pub relay_notify_limit_bucket_size: i16,
     pub relay_global_uplink_limit_bucket_size: i16,
     pub relay_overall_limit_bucket_size: i16,
+    pub allow_roaming: bool,
 }
 
 impl DeviceProfile {
@@ -142,6 +143,7 @@ impl Default for DeviceProfile {
             relay_notify_limit_bucket_size: 0,
             relay_global_uplink_limit_bucket_size: 0,
             relay_overall_limit_bucket_size: 0,
+            allow_roaming: false,
         }
     }
 }
@@ -295,6 +297,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                         .eq(&dp.relay_global_uplink_limit_bucket_size),
                     device_profile::relay_overall_limit_bucket_size
                         .eq(&dp.relay_overall_limit_bucket_size),
+                    device_profile::allow_roaming.eq(&dp.allow_roaming),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))

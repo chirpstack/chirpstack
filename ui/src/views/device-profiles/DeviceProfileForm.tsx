@@ -288,6 +288,9 @@ function DeviceProfileForm(props: IProps) {
     dp.setRelayGlobalUplinkLimitBucketSize(v.relayGlobalUplinkLimitBucketSize);
     dp.setRelayOverallLimitBucketSize(v.relayOverallLimitBucketSize);
 
+    // roaming
+    dp.setAllowRoaming(v.allowRoaming);
+
     // tags
     for (const elm of v.tagsMap) {
       dp.getTagsMap().set(elm[0], elm[1]);
@@ -481,7 +484,7 @@ function DeviceProfileForm(props: IProps) {
             <Select disabled={props.disabled}>{adrOptions}</Select>
           </Form.Item>
           <Row gutter={24}>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label="Flush queue on activate"
                 name="flushQueueOnActivate"
@@ -491,7 +494,7 @@ function DeviceProfileForm(props: IProps) {
                 <Switch />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label="Expected uplink interval (secs)"
                 tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
@@ -506,7 +509,19 @@ function DeviceProfileForm(props: IProps) {
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+          </Row>
+          <Row>
+            <Col span={12}>
+              <Form.Item
+                label="Allow roaming"
+                name="allowRoaming"
+                valuePropName="checked"
+                tooltip="If enabled (and if roaming is configured on the server), this allows the device to use roaming."
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
               <Form.Item
                 label="Device-status request frequency (req/day)"
                 tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."

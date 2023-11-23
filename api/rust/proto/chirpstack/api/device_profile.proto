@@ -405,6 +405,11 @@ message DeviceProfile {
   //   2 = 4
   //   3 = 12
   uint32 relay_overall_limit_bucket_size = 51;
+
+  // Allow roaming.
+  //
+  // If set to true, it means that the device is allowed to use roaming.
+  bool allow_roaming = 52;
 }
 
 message Measurement {

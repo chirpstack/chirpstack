@@ -112,6 +112,7 @@ impl DeviceProfileService for DeviceProfile {
             relay_global_uplink_limit_bucket_size: req_dp.relay_global_uplink_limit_bucket_size
                 as i16,
             relay_overall_limit_bucket_size: req_dp.relay_overall_limit_bucket_size as i16,
+            allow_roaming: req_dp.allow_roaming,
             ..Default::default()
         };
 
@@ -212,6 +213,7 @@ impl DeviceProfileService for DeviceProfile {
                 relay_global_uplink_limit_bucket_size: dp.relay_global_uplink_limit_bucket_size
                     as u32,
                 relay_overall_limit_bucket_size: dp.relay_overall_limit_bucket_size as u32,
+                allow_roaming: dp.allow_roaming,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -310,6 +312,7 @@ impl DeviceProfileService for DeviceProfile {
             relay_global_uplink_limit_bucket_size: req_dp.relay_global_uplink_limit_bucket_size
                 as i16,
             relay_overall_limit_bucket_size: req_dp.relay_overall_limit_bucket_size as i16,
+            allow_roaming: req_dp.allow_roaming,
             ..Default::default()
         })
         .await

@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
 use tracing::{span, trace, Instrument, Level};
 
-use super::{helpers, UplinkFrameSet};
+use super::{error::Error, helpers, UplinkFrameSet};
 use crate::api::helpers::ToProto;
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::{
@@ -83,6 +83,7 @@ impl JoinRequest {
 
         ctx.get_join_request_payload()?;
         ctx.get_device_data().await?;
+        ctx.check_roaming_allowed()?;
         ctx.get_device_keys_or_js_client().await?;
         ctx.set_device_info()?;
         ctx.abort_on_device_is_disabled()?;
@@ -133,6 +134,16 @@ impl JoinRequest {
         self.application = Some(app);
         self.device_profile = Some(dp);
         self.device = Some(dev);
+
+        Ok(())
+    }
+
+    fn check_roaming_allowed(&self) -> Result<(), Error> {
+        trace!("Check if roaming is allowed");
+        let dp = self.device_profile.as_ref().unwrap();
+        if !dp.allow_roaming {
+            return Err(Error::RoamingIsNotAllowed);
+        }
 
         Ok(())
     }

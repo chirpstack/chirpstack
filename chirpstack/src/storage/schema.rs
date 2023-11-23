@@ -140,6 +140,7 @@ diesel::table! {
         relay_notify_limit_bucket_size -> Int2,
         relay_global_uplink_limit_bucket_size -> Int2,
         relay_overall_limit_bucket_size -> Int2,
+        allow_roaming -> Bool,
     }
 }
 
