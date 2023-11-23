@@ -32,13 +32,11 @@ impl Integration {
         vars: &HashMap<String, String>,
         attributes: &Payload,
     ) -> Result<()> {
-        let endpoint = format!(
-            "{}/api/v1/{}/attributes",
-            self.server,
-            vars.get("ThingsBoardAccessToken")
-                .cloned()
-                .unwrap_or_default()
-        );
+        let access_token = vars.get("ThingsBoardAccessToken").cloned().ok_or_else(|| {
+            anyhow!("Device does not have ThingsBoardAccessToken variable configured")
+        })?;
+
+        let endpoint = format!("{}/api/v1/{}/attributes", self.server, access_token);
         let b = serde_json::to_string(&attributes)?;
 
         let client = Client::builder().timeout(self.timeout).build()?;
@@ -60,15 +58,12 @@ impl Integration {
         vars: &HashMap<String, String>,
         telemetry: &Payload,
     ) -> Result<()> {
-        let endpoint = format!(
-            "{}/api/v1/{}/telemetry",
-            self.server,
-            vars.get("ThingsBoardAccessToken")
-                .cloned()
-                .unwrap_or_default()
-        );
+        let access_token = vars.get("ThingsBoardAccessToken").cloned().ok_or_else(|| {
+            anyhow!("Device does not have ThingsBoardAccessToken variable configured")
+        })?;
+
+        let endpoint = format!("{}/api/v1/{}/telemetry", self.server, access_token);
         let b = serde_json::to_string(&telemetry)?;
-        println!("{}", b);
 
         let client = Client::builder().timeout(self.timeout).build()?;
         let mut headers = HeaderMap::new();
