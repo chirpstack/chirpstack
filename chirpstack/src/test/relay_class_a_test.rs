@@ -243,7 +243,7 @@ async fn test_lorawan_10() {
                     wor_channel: 0,
                 },
                 frequency: 868100000,
-                payload: Box::new(phy_relay_ed_unconfirmed_up),
+                payload: Box::new(phy_relay_ed_unconfirmed_up.clone()),
             })),
         }),
         mic: None,
@@ -252,6 +252,49 @@ async fn test_lorawan_10() {
         .encrypt_frm_payload(&AES128Key::from_slice(&ds_relay.nwk_s_enc_key).unwrap())
         .unwrap();
     phy_relay_unconfirmed_up
+        .set_uplink_data_mic(
+            lrwn::MACVersion::LoRaWAN1_0,
+            0,
+            0,
+            0,
+            &AES128Key::from_slice(&ds_relay.f_nwk_s_int_key).unwrap(),
+            &AES128Key::from_slice(&ds_relay.s_nwk_s_int_key).unwrap(),
+        )
+        .unwrap();
+
+    let mut phy_relay_unconfirmed_up_adr_ack_req = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            m_type: lrwn::MType::UnconfirmedDataUp,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+            fhdr: lrwn::FHDR {
+                devaddr: lrwn::DevAddr::from_slice(&ds_relay.dev_addr).unwrap(),
+                f_cnt: 8,
+                f_ctrl: lrwn::FCtrl {
+                    adr_ack_req: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            f_port: Some(lrwn::LA_FPORT_RELAY),
+            frm_payload: Some(lrwn::FRMPayload::ForwardUplinkReq(lrwn::ForwardUplinkReq {
+                metadata: lrwn::UplinkMetadata {
+                    dr: 5,
+                    snr: 10,
+                    rssi: -100,
+                    wor_channel: 0,
+                },
+                frequency: 868100000,
+                payload: Box::new(phy_relay_ed_unconfirmed_up),
+            })),
+        }),
+        mic: None,
+    };
+    phy_relay_unconfirmed_up_adr_ack_req
+        .encrypt_frm_payload(&AES128Key::from_slice(&ds_relay.nwk_s_enc_key).unwrap())
+        .unwrap();
+    phy_relay_unconfirmed_up_adr_ack_req
         .set_uplink_data_mic(
             lrwn::MACVersion::LoRaWAN1_0,
             0,
@@ -358,6 +401,34 @@ async fn test_lorawan_10() {
         .encrypt_frm_payload(&AES128Key::from_slice(&ds_relay.nwk_s_enc_key).unwrap())
         .unwrap();
     phy_relay_unconfirmed_down_ack
+        .set_downlink_data_mic(
+            lrwn::MACVersion::LoRaWAN1_0,
+            0,
+            &AES128Key::from_slice(&ds_relay.s_nwk_s_int_key).unwrap(),
+        )
+        .unwrap();
+
+    let mut phy_relay_unconfirmed_down_empty = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            m_type: lrwn::MType::UnconfirmedDataDown,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+            fhdr: lrwn::FHDR {
+                devaddr: lrwn::DevAddr::from_slice(&ds_relay.dev_addr).unwrap(),
+                f_cnt: 5,
+                f_ctrl: lrwn::FCtrl {
+                    adr: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            f_port: None,
+            frm_payload: None,
+        }),
+        mic: None,
+    };
+    phy_relay_unconfirmed_down_empty
         .set_downlink_data_mic(
             lrwn::MACVersion::LoRaWAN1_0,
             0,
@@ -524,6 +595,129 @@ async fn test_lorawan_10() {
                         },
                         gw::DownlinkFrameItem {
                             phy_payload: phy_relay_unconfirmed_down_ack.to_vec().unwrap(),
+                            tx_info: Some(gw::DownlinkTxInfo {
+                                frequency: 869525000,
+                                power: 29,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
+                                            spreading_factor: 12,
+                                            code_rate: gw::CodeRate::Cr45.into(),
+                                            polarization_inversion: true,
+                                            ..Default::default()
+                                        },
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
+                                        gw::DelayTimingInfo {
+                                            delay: Some(Duration::from_secs(2).into()),
+                                        },
+                                    )),
+                                }),
+                                ..Default::default()
+                            }),
+                            ..Default::default()
+                        },
+                    ],
+                    ..Default::default()
+                }),
+            ],
+        },
+        Test {
+            name: "relayed unconfirmed uplink + adr_ack_req".into(),
+            device_queue_items_relay_ed: vec![],
+            device_session_relay: Some(ds_relay.clone()),
+            device_session_relay_ed: Some(ds_relay_ed.clone()),
+            tx_info: tx_info.clone(),
+            rx_info: rx_info.clone(),
+            phy_payload: phy_relay_unconfirmed_up_adr_ack_req,
+            assert: vec![
+                assert::f_cnt_up(dev_relay.dev_eui, 9),
+                assert::f_cnt_up(dev_relay_ed.dev_eui, 89),
+                assert::uplink_event(integration_pb::UplinkEvent {
+                    device_info: Some(integration_pb::DeviceInfo {
+                        tenant_id: t.id.to_string(),
+                        tenant_name: t.name.clone(),
+                        application_id: app.id.to_string(),
+                        application_name: app.name.clone(),
+                        device_profile_id: dp_relay.id.to_string(),
+                        device_profile_name: dp_relay.name.clone(),
+                        device_name: dev_relay.name.clone(),
+                        dev_eui: dev_relay.dev_eui.to_string(),
+                        ..Default::default()
+                    }),
+                    dev_addr: "01010101".to_string(),
+                    dr: 5,
+                    f_cnt: 8,
+                    f_port: 226,
+                    data: vec![],
+                    rx_info: vec![rx_info.clone()],
+                    tx_info: Some(tx_info.clone()),
+                    ..Default::default()
+                }),
+                assert::uplink_event(integration_pb::UplinkEvent {
+                    device_info: Some(integration_pb::DeviceInfo {
+                        tenant_id: t.id.to_string(),
+                        tenant_name: t.name.clone(),
+                        application_id: app.id.to_string(),
+                        application_name: app.name.clone(),
+                        device_profile_id: dp_relay_ed.id.to_string(),
+                        device_profile_name: dp_relay_ed.name.clone(),
+                        device_name: dev_relay_ed.name.clone(),
+                        dev_eui: dev_relay_ed.dev_eui.to_string(),
+                        ..Default::default()
+                    }),
+                    dev_addr: "02020202".to_string(),
+                    dr: 5,
+                    f_cnt: 88,
+                    f_port: 1,
+                    data: vec![1, 2, 3, 4],
+                    rx_info: vec![rx_info.clone()],
+                    tx_info: Some(tx_info.clone()),
+                    relay_rx_info: Some(integration_pb::UplinkRelayRxInfo {
+                        dev_eui: "0101010101010101".into(),
+                        frequency: 868100000,
+                        dr: 5,
+                        snr: 10,
+                        rssi: -100,
+                        wor_channel: 0,
+                    }),
+                    ..Default::default()
+                }),
+                assert::downlink_frame(gw::DownlinkFrame {
+                    gateway_id: gw.gateway_id.to_string(),
+                    items: vec![
+                        gw::DownlinkFrameItem {
+                            phy_payload: phy_relay_unconfirmed_down_empty.to_vec().unwrap(),
+                            tx_info: Some(gw::DownlinkTxInfo {
+                                frequency: 868100000,
+                                power: 16,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
+                                            spreading_factor: 7,
+                                            code_rate: gw::CodeRate::Cr45.into(),
+                                            polarization_inversion: true,
+                                            ..Default::default()
+                                        },
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
+                                        gw::DelayTimingInfo {
+                                            delay: Some(Duration::from_secs(1).into()),
+                                        },
+                                    )),
+                                }),
+                                ..Default::default()
+                            }),
+                            ..Default::default()
+                        },
+                        gw::DownlinkFrameItem {
+                            phy_payload: phy_relay_unconfirmed_down_empty.to_vec().unwrap(),
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 869525000,
                                 power: 29,

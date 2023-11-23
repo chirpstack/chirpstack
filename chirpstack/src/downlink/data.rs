@@ -287,6 +287,10 @@ impl Data {
             ctx.save_downlink_frame_relayed().await?;
             ctx.save_device_session().await?;
             ctx.send_downlink_frame().await?;
+        } else if ctx._must_respond_to_relay() {
+            ctx.set_phy_payloads_relay()?;
+            ctx.save_downlink_frame_relayed().await?;
+            ctx.send_downlink_frame().await?;
         }
 
         Ok(())
@@ -635,6 +639,11 @@ impl Data {
         true
     }
 
+    fn _must_respond_to_relay(&self) -> bool {
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+        relay_ctx.must_ack || relay_ctx.must_send_downlink
+    }
+
     fn _is_class_a(&self) -> bool {
         self.device.enabled_class == DeviceClass::A
     }
@@ -857,6 +866,53 @@ impl Data {
 
             let relay_phy_b = relay_phy.to_vec()?;
             item.phy_payload = relay_phy_b;
+        }
+
+        Ok(())
+    }
+
+    fn set_phy_payloads_relay(&mut self) -> Result<()> {
+        trace!("Set relay PhyPayloads");
+
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        for item in self.downlink_frame_items.iter_mut() {
+            let mut relay_phy = lrwn::PhyPayload {
+                mhdr: lrwn::MHDR {
+                    m_type: lrwn::MType::UnconfirmedDataDown,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: lrwn::FHDR {
+                        devaddr: lrwn::DevAddr::from_slice(&relay_ctx.device_session.dev_addr)?,
+                        f_cnt: relay_ctx.device_session.get_a_f_cnt_down(),
+                        f_ctrl: lrwn::FCtrl {
+                            adr: !self.network_conf.adr_disabled,
+                            ack: relay_ctx.must_ack,
+                            ..Default::default()
+                        },
+                        f_opts: lrwn::MACCommandSet::new(vec![]),
+                    },
+                    f_port: None,
+                    frm_payload: None,
+                }),
+                mic: None,
+            };
+
+            // Set MIC.
+            // If this is an ACK, then FCntUp has already been incremented by one. If
+            // this is not an ACK, then DownlinkDataMIC will zero out ConfFCnt.
+            relay_phy.set_downlink_data_mic(
+                relay_ctx.device_session.mac_version().from_proto(),
+                relay_ctx.device_session.f_cnt_up - 1,
+                &lrwn::AES128Key::from_slice(&relay_ctx.device_session.s_nwk_s_int_key)?,
+            )?;
+
+            let relay_phy_b = relay_phy.to_vec()?;
+            item.downlink_frame_item.phy_payload = relay_phy_b;
+            self.downlink_frame
+                .items
+                .push(item.downlink_frame_item.clone());
         }
 
         Ok(())

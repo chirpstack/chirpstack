@@ -1305,8 +1305,8 @@ impl Data {
     async fn handle_forward_uplink_req(&self) -> Result<()> {
         trace!("Handling ForwardUplinkReq");
 
-        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
-            if let Some(lrwn::FRMPayload::ForwardUplinkReq(pl)) = &pl.frm_payload {
+        if let lrwn::Payload::MACPayload(relay_pl) = &self.phy_payload.payload {
+            if let Some(lrwn::FRMPayload::ForwardUplinkReq(pl)) = &relay_pl.frm_payload {
                 match pl.payload.mhdr.m_type {
                     lrwn::MType::JoinRequest => {
                         super::join::JoinRequest::handle_relayed(
@@ -1317,6 +1317,7 @@ impl Data {
                                 device_session: self.device_session.as_ref().unwrap().clone(),
                                 must_ack: self.phy_payload.mhdr.m_type
                                     == lrwn::MType::ConfirmedDataUp,
+                                must_send_downlink: relay_pl.fhdr.f_ctrl.adr_ack_req,
                             },
                             self.uplink_frame_set.clone(),
                         )
@@ -1331,6 +1332,7 @@ impl Data {
                                 device_session: self.device_session.as_ref().unwrap().clone(),
                                 must_ack: self.phy_payload.mhdr.m_type
                                     == lrwn::MType::ConfirmedDataUp,
+                                must_send_downlink: relay_pl.fhdr.f_ctrl.adr_ack_req,
                             },
                             self.device_gateway_rx_info.as_ref().unwrap().clone(),
                             self.uplink_frame_set.clone(),

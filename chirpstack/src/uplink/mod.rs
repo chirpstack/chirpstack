@@ -78,6 +78,7 @@ pub struct RelayContext {
     pub device_profile: device_profile::DeviceProfile,
     pub device_session: internal::DeviceSession,
     pub must_ack: bool,
+    pub must_send_downlink: bool,
 }
 
 #[derive(Clone)]
