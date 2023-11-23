@@ -70,7 +70,7 @@ function GatewaysMap(props: GatewaysMapProps) {
     }
 
     markers.push(
-      <Marker position={pos} faIcon="wifi" color={color}>
+      <Marker position={[pos[0], pos[1]]} faIcon="wifi" color={color}>
         <Popup>
           <Link to={`/tenants/${item.getTenantId()}/gateways/${item.getGatewayId()}`}>{item.getName()}</Link>
           <br />
