@@ -429,7 +429,11 @@ impl InternalService for Internal {
                 return Err(Status::invalid_argument("email is missing"));
             }
         };
-        let email_verified = oidc_user.email_verified().unwrap_or_default();
+        let email_verified = oidc_user.email_verified().unwrap_or_default()
+            || conf
+                .user_authentication
+                .openid_connect
+                .assume_email_verified;
 
         if !email_verified {
             return Err(Status::failed_precondition(

@@ -407,6 +407,7 @@ pub struct OpenIdConnect {
     pub redirect_url: String,
     pub logout_url: String,
     pub login_label: String,
+    pub assume_email_verified: bool,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]

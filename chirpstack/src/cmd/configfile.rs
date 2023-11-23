@@ -600,6 +600,14 @@ pub fn run() {
     # The login label is used in the web-interface login form.
     login_label="{{ user_authentication.openid_connect.login_label }}"
 
+    # Assume e-mail verified.
+    #
+    # If set to true, then ChirpStack will ignore the email_verified received
+    # from the OpenID Connect provider, assuming it will be true. Some
+    # providers do not provide this field, in which case setting this value
+    # is needed.
+    assume_email_verified={{ user_authentication.openid_connect.assume_email_verified }}
+
 
 # Join Server configuration.
 [join_server]
