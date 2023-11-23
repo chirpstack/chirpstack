@@ -5,7 +5,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use rand::Rng;
-use tracing::{span, trace, warn, Instrument, Level};
+use tracing::{debug, span, trace, warn, Instrument, Level};
 
 use crate::api::backend::get_async_receiver;
 use crate::api::helpers::{FromProto, ToProto};
@@ -1014,7 +1014,7 @@ impl Data {
         trace!("Checking if device has sent its first uplink already");
 
         if self.device_session.f_cnt_up == 0 {
-            warn!("Device must send its first uplink first");
+            debug!("Device must send its first uplink first");
             return Err(Error::Abort);
         }
 
