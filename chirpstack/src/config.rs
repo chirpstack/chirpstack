@@ -642,7 +642,7 @@ impl Default for GatewayBackendMqtt {
             tls_cert: "".into(),
             tls_key: "".into(),
             keep_alive_interval: Duration::from_secs(30),
-            v4_migrate: true,
+            v4_migrate: false,
         }
     }
 }
