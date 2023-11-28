@@ -461,7 +461,7 @@ impl Integration {
         );
 
         let mut buf = vec![pl.rx_info.clone()];
-        buf.extend_from_slice(&buffer::get_geoloc_buffer(&dev_eui, &ttl).await?);
+        buf.extend_from_slice(&buffer::get_geoloc_buffer(&dev_eui, ttl).await?);
         buf.truncate(
             (self
                 .config

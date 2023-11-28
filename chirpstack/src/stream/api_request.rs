@@ -1,38 +1,31 @@
 use anyhow::Result;
 use prost::Message;
-use tokio::task;
 
 use crate::config;
-use crate::storage::{get_redis_conn, redis_key};
+use crate::storage::{get_async_redis_conn, redis_key};
 use chirpstack_api::stream;
 
 pub async fn log_request(pl: &stream::ApiRequestLog) -> Result<()> {
-    task::spawn_blocking({
-        let pl = pl.clone();
+    let conf = config::get();
+    let mut c = get_async_redis_conn().await?;
 
-        move || -> Result<()> {
-            let conf = config::get();
-            let mut c = get_redis_conn()?;
+    if conf.monitoring.api_request_log_max_history == 0 {
+        return Ok(());
+    }
 
-            if conf.monitoring.api_request_log_max_history == 0 {
-                return Ok(());
-            }
+    let key = redis_key("api:stream:request".to_string());
+    let b = pl.encode_to_vec();
+    redis::cmd("XADD")
+        .arg(&key)
+        .arg("MAXLEN")
+        .arg(conf.monitoring.api_request_log_max_history)
+        .arg("*")
+        .arg("request")
+        .arg(&b)
+        .query_async(&mut c)
+        .await?;
 
-            let key = redis_key("api:stream:request".to_string());
-            let b = pl.encode_to_vec();
-            redis::cmd("XADD")
-                .arg(&key)
-                .arg("MAXLEN")
-                .arg(conf.monitoring.api_request_log_max_history)
-                .arg("*")
-                .arg("request")
-                .arg(&b)
-                .query(&mut *c)?;
-
-            Ok(())
-        }
-    })
-    .await?
+    Ok(())
 }
 
 #[cfg(test)]
@@ -56,7 +49,7 @@ mod tests {
         };
         log_request(&pl).await.unwrap();
 
-        let mut c = get_redis_conn().unwrap();
+        let mut c = get_async_redis_conn().await.unwrap();
         let key = redis_key("api:stream:request".to_string());
         let srr: StreamReadReply = redis::cmd("XREAD")
             .arg("COUNT")
@@ -64,7 +57,8 @@ mod tests {
             .arg("STREAMS")
             .arg(&key)
             .arg("0")
-            .query(&mut *c)
+            .query_async(&mut c)
+            .await
             .unwrap();
 
         assert_eq!(1, srr.keys.len());

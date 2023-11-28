@@ -4,12 +4,11 @@ use std::str::FromStr;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use prost::Message;
-use tokio::task;
 use tracing::{debug, info};
 use uuid::Uuid;
 
 use super::error::Error;
-use super::{get_redis_conn, redis_key};
+use super::{get_async_redis_conn, redis_key};
 use crate::config;
 use chirpstack_api::internal;
 use lrwn::{AES128Key, DevAddr, EUI64};
@@ -37,59 +36,52 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
         return Ok(());
     }
 
-    task::spawn_blocking({
-        let ds = ds.clone();
-        move || -> Result<()> {
-            let conf = config::get();
+    let conf = config::get();
 
-            let dev_addr_key = redis_key(format!("pr:devaddr:{{{}}}", dev_addr));
-            let dev_eui_key = redis_key(format!("pr:dev:{{{}}}", dev_eui));
-            let sess_key = redis_key(format!("pr:sess:{{{}}}", sess_id));
-            let b = ds.encode_to_vec();
-            let ttl = conf.network.device_session_ttl.as_millis() as usize;
-            let pr_ttl = lifetime.num_milliseconds() as usize;
+    let dev_addr_key = redis_key(format!("pr:devaddr:{{{}}}", dev_addr));
+    let dev_eui_key = redis_key(format!("pr:dev:{{{}}}", dev_eui));
+    let sess_key = redis_key(format!("pr:sess:{{{}}}", sess_id));
+    let b = ds.encode_to_vec();
+    let ttl = conf.network.device_session_ttl.as_millis() as usize;
+    let pr_ttl = lifetime.num_milliseconds() as usize;
 
-            let mut c = get_redis_conn()?;
+    let mut c = get_async_redis_conn().await?;
 
-            // We need to store a pointer from both the DevAddr and DevEUI to the
-            // passive-roaming device-session ID. This is needed:
-            //  * Because the DevAddr is not guaranteed to be unique
-            //  * Because the DevEUI might not be given (thus is also not guaranteed
-            //    to be an unique identifier).
-            //
-            // But:
-            //  * We need to be able to lookup the session using the DevAddr (potentially
-            //    using the MIC validation).
-            //  * We need to be able to stop a passive-roaming session given a DevEUI.
-            c.new_pipeline()
-                .atomic()
-                .cmd("SADD")
-                .arg(&dev_addr_key)
-                .arg(&sess_id.to_string())
-                .ignore()
-                .cmd("SADD")
-                .arg(&dev_eui_key)
-                .arg(&sess_id.to_string())
-                .ignore()
-                .cmd("PEXPIRE")
-                .arg(&dev_addr_key)
-                .arg(ttl)
-                .ignore()
-                .cmd("PEXPIRE")
-                .arg(&dev_eui_key)
-                .arg(ttl)
-                .ignore()
-                .cmd("PSETEX")
-                .arg(&sess_key)
-                .arg(pr_ttl)
-                .arg(b)
-                .ignore()
-                .query(&mut c)?;
-
-            Ok(())
-        }
-    })
-    .await??;
+    // We need to store a pointer from both the DevAddr and DevEUI to the
+    // passive-roaming device-session ID. This is needed:
+    //  * Because the DevAddr is not guaranteed to be unique
+    //  * Because the DevEUI might not be given (thus is also not guaranteed
+    //    to be an unique identifier).
+    //
+    // But:
+    //  * We need to be able to lookup the session using the DevAddr (potentially
+    //    using the MIC validation).
+    //  * We need to be able to stop a passive-roaming session given a DevEUI.
+    redis::pipe()
+        .atomic()
+        .cmd("SADD")
+        .arg(&dev_addr_key)
+        .arg(&sess_id.to_string())
+        .ignore()
+        .cmd("SADD")
+        .arg(&dev_eui_key)
+        .arg(&sess_id.to_string())
+        .ignore()
+        .cmd("PEXPIRE")
+        .arg(&dev_addr_key)
+        .arg(ttl)
+        .ignore()
+        .cmd("PEXPIRE")
+        .arg(&dev_eui_key)
+        .arg(ttl)
+        .ignore()
+        .cmd("PSETEX")
+        .arg(&sess_key)
+        .arg(pr_ttl)
+        .arg(b)
+        .ignore()
+        .query_async(&mut c)
+        .await?;
 
     info!(id = %sess_id, "Passive-roaming device-session saved");
 
@@ -97,35 +89,26 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
 }
 
 pub async fn get(id: Uuid) -> Result<internal::PassiveRoamingDeviceSession, Error> {
-    task::spawn_blocking({
-        move || -> Result<internal::PassiveRoamingDeviceSession, Error> {
-            let key = redis_key(format!("pr:sess:{{{}}}", id));
-            let mut c = get_redis_conn()?;
-            let v: Vec<u8> = redis::cmd("GET")
-                .arg(key)
-                .query(&mut *c)
-                .context("Get passive-roaming device-session")?;
-            if v.is_empty() {
-                return Err(Error::NotFound(id.to_string()));
-            }
-            let ds = internal::PassiveRoamingDeviceSession::decode(&mut Cursor::new(v))
-                .context("Decode passive-roaming device-session")?;
-            Ok(ds)
-        }
-    })
-    .await?
+    let key = redis_key(format!("pr:sess:{{{}}}", id));
+    let mut c = get_async_redis_conn().await?;
+    let v: Vec<u8> = redis::cmd("GET")
+        .arg(key)
+        .query_async(&mut c)
+        .await
+        .context("Get passive-roaming device-session")?;
+    if v.is_empty() {
+        return Err(Error::NotFound(id.to_string()));
+    }
+    let ds = internal::PassiveRoamingDeviceSession::decode(&mut Cursor::new(v))
+        .context("Decode passive-roaming device-session")?;
+    Ok(ds)
 }
 
 pub async fn delete(id: Uuid) -> Result<()> {
-    task::spawn_blocking({
-        move || -> Result<()> {
-            let key = redis_key(format!("pr:sess:{{{}}}", id));
-            let mut c = get_redis_conn()?;
-            redis::cmd("DEL").arg(&key).query(&mut *c)?;
-            Ok(())
-        }
-    })
-    .await??;
+    let key = redis_key(format!("pr:sess:{{{}}}", id));
+    let mut c = get_async_redis_conn().await?;
+    redis::cmd("DEL").arg(&key).query_async(&mut c).await?;
+
     info!(id = %id, "Passive-roaming device-session deleted");
     Ok(())
 }
@@ -197,39 +180,29 @@ async fn get_sessions_for_dev_addr(
 }
 
 async fn get_session_ids_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<Uuid>> {
-    task::spawn_blocking({
-        move || -> Result<Vec<Uuid>> {
-            let key = redis_key(format!("pr:devaddr:{{{}}}", dev_addr));
-            let mut c = get_redis_conn()?;
-            let v: Vec<String> = redis::cmd("SMEMBERS").arg(key).query(&mut *c)?;
+    let key = redis_key(format!("pr:devaddr:{{{}}}", dev_addr));
+    let mut c = get_async_redis_conn().await?;
+    let v: Vec<String> = redis::cmd("SMEMBERS").arg(key).query_async(&mut c).await?;
 
-            let mut out: Vec<Uuid> = Vec::new();
-            for id in &v {
-                out.push(Uuid::from_str(id)?);
-            }
+    let mut out: Vec<Uuid> = Vec::new();
+    for id in &v {
+        out.push(Uuid::from_str(id)?);
+    }
 
-            Ok(out)
-        }
-    })
-    .await?
+    Ok(out)
 }
 
 pub async fn get_session_ids_for_dev_eui(dev_eui: EUI64) -> Result<Vec<Uuid>> {
-    task::spawn_blocking({
-        move || -> Result<Vec<Uuid>> {
-            let key = redis_key(format!("pr:dev:{{{}}}", dev_eui));
-            let mut c = get_redis_conn()?;
-            let v: Vec<String> = redis::cmd("SMEMBERS").arg(key).query(&mut *c)?;
+    let key = redis_key(format!("pr:dev:{{{}}}", dev_eui));
+    let mut c = get_async_redis_conn().await?;
+    let v: Vec<String> = redis::cmd("SMEMBERS").arg(key).query_async(&mut c).await?;
 
-            let mut out: Vec<Uuid> = Vec::new();
-            for id in &v {
-                out.push(Uuid::from_str(id)?);
-            }
+    let mut out: Vec<Uuid> = Vec::new();
+    for id in &v {
+        out.push(Uuid::from_str(id)?);
+    }
 
-            Ok(out)
-        }
-    })
-    .await?
+    Ok(out)
 }
 
 fn get_full_f_cnt_up(next_expected_full_fcnt: u32, truncated_f_cnt: u32) -> u32 {

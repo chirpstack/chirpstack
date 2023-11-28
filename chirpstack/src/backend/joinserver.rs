@@ -11,7 +11,7 @@ lazy_static! {
     static ref CLIENTS: RwLock<Vec<(EUI64Prefix, Arc<Client>)>> = RwLock::new(vec![]);
 }
 
-pub fn setup() -> Result<()> {
+pub async fn setup() -> Result<()> {
     info!("Setting up Join Server clients");
     let conf = config::get();
 
@@ -28,9 +28,7 @@ pub fn setup() -> Result<()> {
             tls_cert: js.tls_cert.clone(),
             tls_key: js.tls_key.clone(),
             async_timeout: js.async_timeout,
-            request_log_fn: Some(Box::new(move |log| {
-                Box::pin(async move { stream::backend_interfaces::log_request(log).await })
-            })),
+            request_log_sender: stream::backend_interfaces::get_log_sender().await,
             ..Default::default()
         })?;
 

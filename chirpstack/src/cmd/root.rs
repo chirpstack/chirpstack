@@ -13,7 +13,7 @@ pub async fn run() -> Result<()> {
 
     storage::setup().await?;
     region::setup()?;
-    backend::setup()?;
+    backend::setup().await?;
     adr::setup().await?;
     integration::setup().await?;
     gateway::backend::setup().await?;

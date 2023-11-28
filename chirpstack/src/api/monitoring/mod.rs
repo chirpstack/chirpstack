@@ -3,13 +3,12 @@ use std::net::SocketAddr;
 
 use anyhow::{Context, Result};
 use diesel_async::RunQueryDsl;
-use tokio::task;
 use tracing::info;
 use warp::{http::Response, http::StatusCode, Filter};
 
 use crate::config;
 use crate::monitoring::prometheus;
-use crate::storage::{get_async_db_conn, get_redis_conn};
+use crate::storage::{get_async_db_conn, get_async_redis_conn};
 
 pub async fn setup() {
     let conf = config::get();
@@ -56,12 +55,8 @@ async fn _health_handler() -> Result<()> {
         .await
         .context("PostgreSQL connection error")?;
 
-    task::spawn_blocking(move || -> Result<()> {
-        let mut r = get_redis_conn()?;
-        if !r.check_connection() {
-            return Err(anyhow!("Redis connection error"));
-        }
-        Ok(())
-    })
-    .await?
+    let mut r = get_async_redis_conn().await?;
+    let _: String = redis::cmd("PING").query_async(&mut r).await?;
+
+    Ok(())
 }

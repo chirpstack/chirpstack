@@ -12,7 +12,7 @@ use crate::gateway::backend::mock as gateway_mock;
 use crate::integration::mock;
 use crate::storage::{
     device::{self, DeviceClass},
-    device_queue, device_session, downlink_frame, get_redis_conn, redis_key,
+    device_queue, device_session, downlink_frame, get_async_redis_conn, redis_key,
 };
 use chirpstack_api::{gw, integration as integration_pb, internal, stream};
 use lrwn::EUI64;
@@ -397,7 +397,7 @@ pub fn uplink_meta_log(um: stream::UplinkMeta) -> Validator {
     Box::new(move || {
         let um = um.clone();
         Box::pin(async move {
-            let mut c = get_redis_conn().unwrap();
+            let mut c = get_async_redis_conn().await.unwrap();
             let key = redis_key("stream:meta".to_string());
             let srr: StreamReadReply = redis::cmd("XREAD")
                 .arg("COUNT")
@@ -405,7 +405,8 @@ pub fn uplink_meta_log(um: stream::UplinkMeta) -> Validator {
                 .arg("STREAMS")
                 .arg(&key)
                 .arg("0")
-                .query(&mut *c)
+                .query_async(&mut c)
+                .await
                 .unwrap();
 
             for stream_key in &srr.keys {
@@ -433,7 +434,7 @@ pub fn device_uplink_frame_log(uf: stream::UplinkFrameLog) -> Validator {
     Box::new(move || {
         let uf = uf.clone();
         Box::pin(async move {
-            let mut c = get_redis_conn().unwrap();
+            let mut c = get_async_redis_conn().await.unwrap();
             let key = redis_key(format!("device:{{{}}}:stream:frame", uf.dev_eui));
             let srr: StreamReadReply = redis::cmd("XREAD")
                 .arg("COUNT")
@@ -441,7 +442,8 @@ pub fn device_uplink_frame_log(uf: stream::UplinkFrameLog) -> Validator {
                 .arg("STREAMS")
                 .arg(&key)
                 .arg("0")
-                .query(&mut *c)
+                .query_async(&mut c)
+                .await
                 .unwrap();
 
             for stream_key in &srr.keys {

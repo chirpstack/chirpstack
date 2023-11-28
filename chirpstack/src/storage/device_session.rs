@@ -3,11 +3,10 @@ use std::io::Cursor;
 
 use anyhow::{Context, Result};
 use prost::Message;
-use tokio::task;
 use tracing::{error, info, trace};
 
 use super::error::Error;
-use super::{get_redis_conn, redis_key};
+use super::{get_async_redis_conn, redis_key};
 use crate::api::helpers::FromProto;
 use crate::config;
 use crate::helpers::errors::PrintFullError;
@@ -24,96 +23,79 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
     let eui = EUI64::from_slice(&ds.dev_eui)?;
     let addr = DevAddr::from_slice(&ds.dev_addr)?;
 
-    task::spawn_blocking({
-        let ds = ds.clone();
-        move || -> Result<()> {
-            let conf = config::get();
-            let addr_key = redis_key(format!("devaddr:{{{}}}", addr));
-            let ds_key = redis_key(format!("device:{{{}}}:ds", eui));
-            let b = ds.encode_to_vec();
-            let ttl = conf.network.device_session_ttl.as_millis() as usize;
-            let mut c = get_redis_conn()?;
+    let conf = config::get();
+    let addr_key = redis_key(format!("devaddr:{{{}}}", addr));
+    let ds_key = redis_key(format!("device:{{{}}}:ds", eui));
+    let b = ds.encode_to_vec();
+    let ttl = conf.network.device_session_ttl.as_millis() as usize;
+    let mut c = get_async_redis_conn().await?;
 
-            // Atomic add and pexpire.
-            c.new_pipeline()
-                .atomic()
-                .cmd("SADD")
-                .arg(&addr_key)
-                .arg(&eui.to_be_bytes())
-                .ignore()
-                .cmd("PEXPIRE")
-                .arg(&addr_key)
-                .arg(ttl)
-                .ignore()
-                .query(&mut c)?;
+    // Atomic add and pexpire.
+    redis::pipe()
+        .atomic()
+        .cmd("SADD")
+        .arg(&addr_key)
+        .arg(&eui.to_be_bytes())
+        .ignore()
+        .cmd("PEXPIRE")
+        .arg(&addr_key)
+        .arg(ttl)
+        .ignore()
+        .query_async(&mut c)
+        .await?;
 
-            // In case there is a pending rejoin session, make sure that the new
-            // DevAddr also resolves to the device-session.
-            if let Some(pending_ds) = &ds.pending_rejoin_device_session {
-                let pending_addr = DevAddr::from_slice(&pending_ds.dev_addr)?;
-                let pending_addr_key = redis_key(format!("devaddr:{{{}}}", pending_addr));
+    // In case there is a pending rejoin session, make sure that the new
+    // DevAddr also resolves to the device-session.
+    if let Some(pending_ds) = &ds.pending_rejoin_device_session {
+        let pending_addr = DevAddr::from_slice(&pending_ds.dev_addr)?;
+        let pending_addr_key = redis_key(format!("devaddr:{{{}}}", pending_addr));
 
-                c.new_pipeline()
-                    .atomic()
-                    .cmd("SADD")
-                    .arg(&pending_addr_key)
-                    .arg(&eui.to_be_bytes())
-                    .ignore()
-                    .cmd("PEXPIRE")
-                    .arg(&pending_addr_key)
-                    .arg(ttl)
-                    .ignore()
-                    .query(&mut c)?;
-            }
+        redis::pipe()
+            .atomic()
+            .cmd("SADD")
+            .arg(&pending_addr_key)
+            .arg(&eui.to_be_bytes())
+            .ignore()
+            .cmd("PEXPIRE")
+            .arg(&pending_addr_key)
+            .arg(ttl)
+            .ignore()
+            .query_async(&mut c)
+            .await?;
+    }
 
-            redis::cmd("PSETEX")
-                .arg(ds_key)
-                .arg(ttl)
-                .arg(b)
-                .query(&mut *c)?;
-
-            Ok(())
-        }
-    })
-    .await??;
+    redis::cmd("PSETEX")
+        .arg(ds_key)
+        .arg(ttl)
+        .arg(b)
+        .query_async(&mut c)
+        .await?;
 
     info!(dev_eui = %eui, dev_addr = %addr, "Device-session saved");
     Ok(())
 }
 
 pub async fn get(dev_eui: &EUI64) -> Result<chirpstack_api::internal::DeviceSession, Error> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<chirpstack_api::internal::DeviceSession, Error> {
-            let key = redis_key(format!("device:{{{}}}:ds", dev_eui));
-            let mut c = get_redis_conn()?;
-            let v: Vec<u8> = redis::cmd("GET")
-                .arg(key)
-                .query(&mut *c)
-                .context("Get device-session")?;
-            if v.is_empty() {
-                return Err(Error::NotFound(dev_eui.to_string()));
-            }
-            let ds = chirpstack_api::internal::DeviceSession::decode(&mut Cursor::new(v))
-                .context("Decode device-session")?;
-            Ok(ds)
-        }
-    })
-    .await?
+    let key = redis_key(format!("device:{{{}}}:ds", dev_eui));
+    let mut c = get_async_redis_conn().await?;
+    let v: Vec<u8> = redis::cmd("GET")
+        .arg(key)
+        .query_async(&mut c)
+        .await
+        .context("Get device-session")?;
+    if v.is_empty() {
+        return Err(Error::NotFound(dev_eui.to_string()));
+    }
+    let ds = chirpstack_api::internal::DeviceSession::decode(&mut Cursor::new(v))
+        .context("Decode device-session")?;
+    Ok(ds)
 }
 
 pub async fn delete(dev_eui: &EUI64) -> Result<()> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<()> {
-            let key = redis_key(format!("device:{{{}}}:ds", dev_eui));
-            let mut c = get_redis_conn()?;
-            redis::cmd("DEL").arg(&key).query(&mut *c)?;
+    let key = redis_key(format!("device:{{{}}}:ds", dev_eui));
+    let mut c = get_async_redis_conn().await?;
+    redis::cmd("DEL").arg(&key).query_async(&mut c).await?;
 
-            Ok(())
-        }
-    })
-    .await??;
     info!(dev_eui = %dev_eui, "Device-session deleted");
     Ok(())
 }
@@ -204,7 +186,7 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                 // Make sure that in case of concurrent calls for the same uplink only one will
                 // pass. Either the concurrent call would read the incremented uplink frame-counter
                 // or it is unable to aquire the lock.
-                let mut c = get_redis_conn()?;
+                let mut c = get_async_redis_conn().await?;
                 let lock_key = redis_key(format!(
                     "device:{{{}}}:ds:lock:{}",
                     hex::encode(&ds.dev_eui),
@@ -216,7 +198,8 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                     .arg("EX")
                     .arg(1_usize)
                     .arg("NX")
-                    .query(&mut *c)?;
+                    .query_async(&mut c)
+                    .await?;
 
                 if !set {
                     return Ok(ValidationStatus::Retransmission(full_f_cnt, ds));
@@ -311,40 +294,31 @@ pub async fn get_for_phypayload(
 }
 
 async fn get_dev_euis_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<EUI64>> {
-    task::spawn_blocking({
-        move || -> Result<Vec<EUI64>> {
-            let key = redis_key(format!("devaddr:{{{}}}", dev_addr));
-            let mut c = get_redis_conn()?;
-            let dev_euis: HashSet<Vec<u8>> = redis::cmd("SMEMBERS")
-                .arg(key)
-                .query(&mut *c)
-                .context("Get DevEUIs for DevAddr")?;
+    let key = redis_key(format!("devaddr:{{{}}}", dev_addr));
+    let mut c = get_async_redis_conn().await?;
+    let dev_euis: HashSet<Vec<u8>> = redis::cmd("SMEMBERS")
+        .arg(key)
+        .query_async(&mut c)
+        .await
+        .context("Get DevEUIs for DevAddr")?;
 
-            let mut out = Vec::new();
-            for dev_eui in &dev_euis {
-                out.push(EUI64::from_slice(dev_eui)?);
-            }
-
-            Ok(out)
-        }
-    })
-    .await?
+    let mut out = Vec::new();
+    for dev_eui in &dev_euis {
+        out.push(EUI64::from_slice(dev_eui)?);
+    }
+    Ok(out)
 }
 
 async fn remove_dev_eui_from_dev_addr_set(dev_addr: DevAddr, dev_eui: EUI64) -> Result<()> {
-    task::spawn_blocking({
-        move || -> Result<()> {
-            let key = redis_key(format!("devaddr:{{{}}}", dev_addr));
-            let mut c = get_redis_conn()?;
-            redis::cmd("SREM")
-                .arg(key)
-                .arg(&dev_eui.to_be_bytes())
-                .query(&mut *c)?;
+    let key = redis_key(format!("devaddr:{{{}}}", dev_addr));
+    let mut c = get_async_redis_conn().await?;
+    redis::cmd("SREM")
+        .arg(key)
+        .arg(&dev_eui.to_be_bytes())
+        .query_async(&mut c)
+        .await?;
 
-            Ok(())
-        }
-    })
-    .await?
+    Ok(())
 }
 
 async fn get_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<internal::DeviceSession>> {

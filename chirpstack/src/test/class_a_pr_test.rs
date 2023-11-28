@@ -37,8 +37,8 @@ async fn test_fns_uplink() {
     });
 
     config::set(conf);
-    joinserver::setup().unwrap();
-    roaming::setup().unwrap();
+    joinserver::setup().await.unwrap();
+    roaming::setup().await.unwrap();
 
     let t = tenant::create(tenant::Tenant {
         name: "tenant".into(),
@@ -168,7 +168,6 @@ async fn test_fns_uplink() {
     sns_pr_start_req_mock.delete();
 
     joinserver::reset();
-    roaming::reset();
 }
 
 #[tokio::test]
@@ -188,8 +187,8 @@ async fn test_sns_uplink() {
     });
 
     config::set(conf);
-    joinserver::setup().unwrap();
-    roaming::setup().unwrap();
+    joinserver::setup().await.unwrap();
+    roaming::setup().await.unwrap();
 
     let t = tenant::create(tenant::Tenant {
         name: "tenant".into(),
@@ -436,8 +435,8 @@ async fn test_sns_roaming_not_allowed() {
     });
 
     config::set(conf);
-    joinserver::setup().unwrap();
-    roaming::setup().unwrap();
+    joinserver::setup().await.unwrap();
+    roaming::setup().await.unwrap();
 
     let t = tenant::create(tenant::Tenant {
         name: "tenant".into(),
@@ -618,8 +617,8 @@ async fn test_sns_dev_not_found() {
     });
 
     config::set(conf);
-    joinserver::setup().unwrap();
-    roaming::setup().unwrap();
+    joinserver::setup().await.unwrap();
+    roaming::setup().await.unwrap();
 
     let mut dev_addr = lrwn::DevAddr::from_be_bytes([0, 0, 0, 0]);
     dev_addr.set_dev_addr_prefix(lrwn::NetID::from_str("000505").unwrap().dev_addr_prefix());

@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::str::FromStr;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use anyhow::Result;
 use chrono::{Duration, DurationRound};
 use prost::Message;
+use tokio::sync::RwLock;
 use tracing::{debug, info, span, Level};
 
 use crate::gpstime::ToGpsTime;
@@ -18,7 +19,7 @@ lazy_static! {
     static ref CLIENTS: RwLock<HashMap<NetID, Arc<Client>>> = RwLock::new(HashMap::new());
 }
 
-pub fn setup() -> Result<()> {
+pub async fn setup() -> Result<()> {
     info!("Setting up roaming clients");
     let conf = config::get();
 
@@ -56,26 +57,24 @@ pub fn setup() -> Result<()> {
                 Some(s.authorization_header.clone())
             },
             async_timeout: s.async_timeout,
-            request_log_fn: Some(Box::new(move |log| {
-                Box::pin(async move { stream::backend_interfaces::log_request(log).await })
-            })),
+            request_log_sender: stream::backend_interfaces::get_log_sender().await,
         })?;
 
-        set(&s.net_id, c);
+        set(&s.net_id, c).await;
     }
 
     Ok(())
 }
 
-pub fn set(net_id: &NetID, c: Client) {
-    let mut clients_w = CLIENTS.write().unwrap();
+pub async fn set(net_id: &NetID, c: Client) {
+    let mut clients_w = CLIENTS.write().await;
     clients_w.insert(*net_id, Arc::new(c));
 }
 
-pub fn get(net_id: &NetID) -> Result<Arc<Client>> {
-    let clients_r = CLIENTS.write().unwrap();
+pub async fn get(net_id: &NetID) -> Result<Arc<Client>> {
+    let mut clients_w = CLIENTS.write().await;
 
-    if let Some(client) = clients_r.get(net_id) {
+    if let Some(client) = clients_w.get(net_id) {
         return Ok(client.clone());
     }
 
@@ -106,12 +105,14 @@ pub fn get(net_id: &NetID) -> Result<Arc<Client>> {
                 Some(conf.roaming.default.authorization_header.clone())
             },
             async_timeout: conf.roaming.default.async_timeout,
-            request_log_fn: Some(Box::new(move |log| {
-                Box::pin(async move { stream::backend_interfaces::log_request(log).await })
-            })),
+            request_log_sender: stream::backend_interfaces::get_log_sender().await,
         })?;
 
-        return Ok(Arc::new(c));
+        let c = Arc::new(c);
+        let c_out = c.clone();
+        clients_w.insert(*net_id, c);
+
+        return Ok(c_out);
     }
 
     Err(anyhow!(
@@ -330,8 +331,8 @@ pub fn dl_meta_data_to_uplink_rx_info(
 }
 
 #[cfg(test)]
-pub fn reset() {
-    let mut clients_w = CLIENTS.write().unwrap();
+pub async fn reset() {
+    let mut clients_w = CLIENTS.write().await;
     *clients_w = HashMap::new();
 }
 

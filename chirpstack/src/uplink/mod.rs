@@ -10,7 +10,6 @@ use prometheus_client::encoding::EncodeLabelSet;
 use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prost::Message;
-use tokio::task;
 use tokio::time::sleep;
 use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 use uuid::Uuid;
@@ -19,7 +18,7 @@ use crate::config;
 use crate::helpers::errors::PrintFullError;
 use crate::monitoring::prometheus;
 use crate::storage::{
-    device, device_profile, error::Error as StorageError, gateway, get_redis_conn, redis_key,
+    device, device_profile, error::Error as StorageError, gateway, get_async_redis_conn, redis_key,
 };
 use crate::stream;
 use chirpstack_api::{common, gw, internal, stream as stream_pb};
@@ -221,92 +220,76 @@ async fn _deduplicate_uplink(event: gw::UplinkFrame) -> Result<()> {
 }
 
 async fn deduplicate_put(key: &str, ttl: Duration, event: &gw::UplinkFrame) -> Result<()> {
-    task::spawn_blocking({
-        let key = key.to_string();
-        let event_b = event.encode_to_vec();
-        move || -> Result<()> {
-            let mut c = get_redis_conn()?;
+    let event_b = event.encode_to_vec();
+    let mut c = get_async_redis_conn().await?;
 
-            c.new_pipeline()
-                .atomic()
-                .cmd("SADD")
-                .arg(&key)
-                .arg(event_b)
-                .ignore()
-                .cmd("PEXPIRE")
-                .arg(&key)
-                .arg(ttl.as_millis() as usize)
-                .ignore()
-                .query(&mut c)
-                .context("Deduplication put")?;
+    redis::pipe()
+        .atomic()
+        .cmd("SADD")
+        .arg(key)
+        .arg(event_b)
+        .ignore()
+        .cmd("PEXPIRE")
+        .arg(key)
+        .arg(ttl.as_millis() as usize)
+        .ignore()
+        .query_async(&mut c)
+        .await
+        .context("Deduplication put")?;
 
-            Ok(())
-        }
-    })
-    .await?
+    Ok(())
 }
 
 async fn deduplicate_locked(key: &str, ttl: Duration) -> Result<bool> {
-    task::spawn_blocking({
-        let key = key.to_string();
-        move || -> Result<bool> {
-            let mut c = get_redis_conn()?;
+    let mut c = get_async_redis_conn().await?;
 
-            let set: bool = redis::cmd("SET")
-                .arg(key)
-                .arg("lock")
-                .arg("PX")
-                .arg(ttl.as_millis() as usize)
-                .arg("NX")
-                .query(&mut *c)
-                .context("Deduplication locked")?;
+    let set: bool = redis::cmd("SET")
+        .arg(key)
+        .arg("lock")
+        .arg("PX")
+        .arg(ttl.as_millis() as usize)
+        .arg("NX")
+        .query_async(&mut c)
+        .await
+        .context("Deduplication locked")?;
 
-            Ok(!set)
-        }
-    })
-    .await?
+    Ok(!set)
 }
 
 async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
-    task::spawn_blocking({
-        let key = key.to_string();
-        move || -> Result<gw::UplinkFrameSet> {
-            let mut c = get_redis_conn()?;
-            let items_b: Vec<Vec<u8>> = redis::cmd("SMEMBERS")
-                .arg(&key)
-                .query(&mut *c)
-                .context("Deduplication collect")?;
+    let mut c = get_async_redis_conn().await?;
+    let items_b: Vec<Vec<u8>> = redis::cmd("SMEMBERS")
+        .arg(&key)
+        .query_async(&mut c)
+        .await
+        .context("Deduplication collect")?;
 
-            if items_b.is_empty() {
-                return Err(anyhow!("Zero items in collect set"));
-            }
+    if items_b.is_empty() {
+        return Err(anyhow!("Zero items in collect set"));
+    }
 
-            let mut pl = gw::UplinkFrameSet {
-                ..Default::default()
-            };
+    let mut pl = gw::UplinkFrameSet {
+        ..Default::default()
+    };
 
-            for b in items_b {
-                let event =
-                    gw::UplinkFrame::decode(&mut Cursor::new(b)).context("Decode UplinkFrame")?;
+    for b in items_b {
+        let event = gw::UplinkFrame::decode(&mut Cursor::new(b)).context("Decode UplinkFrame")?;
 
-                if event.tx_info.is_none() {
-                    warn!("tx_info of uplink event is empty, skipping");
-                    continue;
-                }
-                if event.rx_info.is_none() {
-                    warn!("rx_info of uplink event is empty, skipping");
-                    continue;
-                }
-
-                pl.tx_info = event.tx_info;
-                pl.rx_info.push(event.rx_info.unwrap());
-                pl.phy_payload = event.phy_payload;
-            }
-
-            Ok(pl)
+        if event.tx_info.is_none() {
+            warn!("tx_info of uplink event is empty, skipping");
+            continue;
         }
-    })
-    .await?
+        if event.rx_info.is_none() {
+            warn!("rx_info of uplink event is empty, skipping");
+            continue;
+        }
+
+        pl.tx_info = event.tx_info;
+        pl.rx_info.push(event.rx_info.unwrap());
+        pl.phy_payload = event.phy_payload;
+    }
+
+    Ok(pl)
 }
 
 pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -> Result<()> {

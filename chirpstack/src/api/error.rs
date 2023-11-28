@@ -63,12 +63,6 @@ impl ToStatus for uuid::Error {
     }
 }
 
-impl ToStatus for r2d2::Error {
-    fn status(&self) -> Status {
-        Status::new(Code::Internal, format!("{:#}", self))
-    }
-}
-
 impl ToStatus for lrwn::Error {
     fn status(&self) -> Status {
         Status::new(Code::Internal, format!("{:#}", self))

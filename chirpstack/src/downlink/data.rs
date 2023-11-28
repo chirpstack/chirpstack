@@ -1044,7 +1044,7 @@ impl Data {
         let roaming_meta = ufs.roaming_meta_data.as_ref().unwrap();
 
         let net_id = NetID::from_slice(&roaming_meta.base_payload.sender_id)?;
-        let client = roaming::get(&net_id)?;
+        let client = roaming::get(&net_id).await?;
 
         let mut req = backend::XmitDataReqPayload {
             phy_payload: self.downlink_frame.items[0].phy_payload.clone(),

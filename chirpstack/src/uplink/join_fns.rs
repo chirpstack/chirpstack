@@ -40,7 +40,7 @@ impl JoinRequest {
 
         ctx.filter_rx_info_by_public_only()?;
         ctx.get_home_net_id().await?;
-        ctx.get_client()?;
+        ctx.get_client().await?;
         ctx.start_roaming().await?;
         ctx.save_roaming_session().await?;
 
@@ -94,10 +94,10 @@ impl JoinRequest {
         Ok(())
     }
 
-    fn get_client(&mut self) -> Result<()> {
+    async fn get_client(&mut self) -> Result<()> {
         let net_id = self.home_net_id.as_ref().unwrap();
         trace!(net_id = %net_id, "Getting backend interfaces client");
-        self.client = Some(roaming::get(net_id)?);
+        self.client = Some(roaming::get(net_id).await?);
         Ok(())
     }
 

@@ -46,8 +46,8 @@ async fn test_fns() {
     }];
 
     config::set(conf);
-    joinserver::setup().unwrap();
-    roaming::setup().unwrap();
+    joinserver::setup().await.unwrap();
+    roaming::setup().await.unwrap();
 
     let t = tenant::create(tenant::Tenant {
         name: "tenant".into(),
@@ -247,7 +247,6 @@ async fn test_fns() {
     .await;
 
     joinserver::reset();
-    roaming::reset();
 }
 
 #[tokio::test]
@@ -269,8 +268,8 @@ async fn test_sns() {
     });
 
     config::set(conf);
-    joinserver::setup().unwrap();
-    roaming::setup().unwrap();
+    joinserver::setup().await.unwrap();
+    roaming::setup().await.unwrap();
 
     let t = tenant::create(tenant::Tenant {
         name: "tenant".into(),
@@ -432,7 +431,6 @@ async fn test_sns() {
     );
 
     joinserver::reset();
-    roaming::reset();
 }
 
 #[tokio::test]
@@ -454,8 +452,8 @@ async fn test_sns_roaming_not_allowed() {
     });
 
     config::set(conf);
-    joinserver::setup().unwrap();
-    roaming::setup().unwrap();
+    joinserver::setup().await.unwrap();
+    roaming::setup().await.unwrap();
 
     let t = tenant::create(tenant::Tenant {
         name: "tenant".into(),
@@ -591,5 +589,4 @@ async fn test_sns_roaming_not_allowed() {
     );
 
     joinserver::reset();
-    roaming::reset();
 }

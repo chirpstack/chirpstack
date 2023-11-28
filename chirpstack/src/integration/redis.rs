@@ -128,7 +128,7 @@ impl IntegrationTrait for Integration {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::storage::get_redis_conn;
+    use crate::storage::get_async_redis_conn;
     use crate::test;
     use chirpstack_api::integration;
     use redis::streams::StreamReadReply;
@@ -150,7 +150,7 @@ pub mod test {
             ..Default::default()
         };
         i.uplink_event(&HashMap::new(), &pl).await.unwrap();
-        last_id = assert_reply(&last_id, "up", &pl.encode_to_vec());
+        last_id = assert_reply(&last_id, "up", &pl.encode_to_vec()).await;
 
         // join
         let pl = integration::JoinEvent {
@@ -162,7 +162,7 @@ pub mod test {
             ..Default::default()
         };
         i.join_event(&HashMap::new(), &pl).await.unwrap();
-        last_id = assert_reply(&last_id, "join", &pl.encode_to_vec());
+        last_id = assert_reply(&last_id, "join", &pl.encode_to_vec()).await;
 
         // ack
         let pl = integration::AckEvent {
@@ -174,7 +174,7 @@ pub mod test {
             ..Default::default()
         };
         i.ack_event(&HashMap::new(), &pl).await.unwrap();
-        last_id = assert_reply(&last_id, "ack", &pl.encode_to_vec());
+        last_id = assert_reply(&last_id, "ack", &pl.encode_to_vec()).await;
 
         // txack
         let pl = integration::TxAckEvent {
@@ -186,7 +186,7 @@ pub mod test {
             ..Default::default()
         };
         i.txack_event(&HashMap::new(), &pl).await.unwrap();
-        last_id = assert_reply(&last_id, "txack", &pl.encode_to_vec());
+        last_id = assert_reply(&last_id, "txack", &pl.encode_to_vec()).await;
 
         // log
         let pl = integration::LogEvent {
@@ -198,7 +198,7 @@ pub mod test {
             ..Default::default()
         };
         i.log_event(&HashMap::new(), &pl).await.unwrap();
-        last_id = assert_reply(&last_id, "log", &pl.encode_to_vec());
+        last_id = assert_reply(&last_id, "log", &pl.encode_to_vec()).await;
 
         // status
         let pl = integration::StatusEvent {
@@ -210,7 +210,7 @@ pub mod test {
             ..Default::default()
         };
         i.status_event(&HashMap::new(), &pl).await.unwrap();
-        last_id = assert_reply(&last_id, "status", &pl.encode_to_vec());
+        last_id = assert_reply(&last_id, "status", &pl.encode_to_vec()).await;
 
         // location
         let pl = integration::LocationEvent {
@@ -222,7 +222,7 @@ pub mod test {
             ..Default::default()
         };
         i.location_event(&HashMap::new(), &pl).await.unwrap();
-        last_id = assert_reply(&last_id, "location", &pl.encode_to_vec());
+        last_id = assert_reply(&last_id, "location", &pl.encode_to_vec()).await;
 
         // integration
         let pl = integration::IntegrationEvent {
@@ -234,18 +234,19 @@ pub mod test {
             ..Default::default()
         };
         i.integration_event(&HashMap::new(), &pl).await.unwrap();
-        let _ = assert_reply(&last_id, "integration", &pl.encode_to_vec());
+        let _ = assert_reply(&last_id, "integration", &pl.encode_to_vec()).await;
     }
 
-    fn assert_reply(last_id: &str, event: &str, b: &[u8]) -> String {
-        let mut c = get_redis_conn().unwrap();
+    async fn assert_reply(last_id: &str, event: &str, b: &[u8]) -> String {
+        let mut c = get_async_redis_conn().await.unwrap();
         let srr: StreamReadReply = redis::cmd("XREAD")
             .arg("COUNT")
             .arg(1 as usize)
             .arg("STREAMS")
             .arg("device:stream:event")
             .arg(&last_id)
-            .query(&mut *c)
+            .query_async(&mut c)
+            .await
             .unwrap();
         assert_eq!(1, srr.keys.len());
 

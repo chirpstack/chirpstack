@@ -4,9 +4,9 @@ pub mod joinserver;
 pub mod keywrap;
 pub mod roaming;
 
-pub fn setup() -> Result<()> {
-    joinserver::setup()?;
-    roaming::setup()?;
+pub async fn setup() -> Result<()> {
+    joinserver::setup().await?;
+    roaming::setup().await?;
 
     Ok(())
 }

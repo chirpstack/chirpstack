@@ -125,7 +125,7 @@ impl Data {
             };
 
             let net_id = NetID::from_slice(&ds.net_id)?;
-            let client = roaming::get(&net_id)?;
+            let client = roaming::get(&net_id).await?;
             let async_receiver = match client.is_async() {
                 false => None,
                 true => Some(
@@ -183,7 +183,7 @@ impl Data {
             pr_req.base.transaction_id = 1234;
         }
 
-        let client = roaming::get(&net_id)?;
+        let client = roaming::get(&net_id).await?;
         let async_receiver = match client.is_async() {
             false => None,
             true => Some(

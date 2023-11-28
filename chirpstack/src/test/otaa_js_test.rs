@@ -368,7 +368,7 @@ async fn run_test(t: &Test) {
     }];
     config::set(conf);
     region::setup().unwrap();
-    joinserver::setup().unwrap();
+    joinserver::setup().await.unwrap();
 
     integration::set_mock().await;
     gateway_backend::set_backend(&"eu868", Box::new(gateway_backend::mock::Backend {})).await;

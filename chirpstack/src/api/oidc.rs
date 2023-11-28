@@ -13,13 +13,12 @@ use openidconnect::{
 };
 use openidconnect::{EmptyAdditionalClaims, UserInfoClaims};
 use serde::{Deserialize, Serialize};
-use tokio::task;
 use tracing::{error, trace};
 use warp::{Rejection, Reply};
 
 use crate::config;
 use crate::helpers::errors::PrintFullError;
-use crate::storage::{get_redis_conn, redis_key};
+use crate::storage::{get_async_redis_conn, redis_key};
 
 pub type User = UserInfoClaims<EmptyAdditionalClaims, CoreGenderClaim>;
 
@@ -133,41 +132,30 @@ async fn get_client() -> Result<CoreClient> {
 }
 
 async fn store_nonce(state: &CsrfToken, nonce: &Nonce) -> Result<()> {
-    task::spawn_blocking({
-        let state = state.clone();
-        let nonce = nonce.clone();
-        move || -> Result<()> {
-            trace!("Storing nonce");
-            let key = redis_key(format!("auth:oidc:{}", state.secret()));
-            let mut c = get_redis_conn()?;
+    trace!("Storing nonce");
+    let key = redis_key(format!("auth:oidc:{}", state.secret()));
+    let mut c = get_async_redis_conn().await?;
 
-            redis::cmd("PSETEX")
-                .arg(key)
-                .arg(Duration::minutes(5).num_milliseconds())
-                .arg(nonce.secret())
-                .query(&mut *c)?;
+    redis::cmd("PSETEX")
+        .arg(key)
+        .arg(Duration::minutes(5).num_milliseconds())
+        .arg(nonce.secret())
+        .query_async(&mut c)
+        .await?;
 
-            Ok(())
-        }
-    })
-    .await?
+    Ok(())
 }
 
 async fn get_nonce(state: &CsrfToken) -> Result<Nonce> {
-    task::spawn_blocking({
-        let state = state.clone();
-        move || -> Result<Nonce> {
-            trace!("Getting nonce");
-            let key = redis_key(format!("auth:oidc:{}", state.secret()));
-            let mut c = get_redis_conn()?;
+    trace!("Getting nonce");
+    let key = redis_key(format!("auth:oidc:{}", state.secret()));
+    let mut c = get_async_redis_conn().await?;
 
-            let v: String = redis::cmd("GET")
-                .arg(&key)
-                .query(&mut *c)
-                .context("Get nonce")?;
+    let v: String = redis::cmd("GET")
+        .arg(&key)
+        .query_async(&mut c)
+        .await
+        .context("Get nonce")?;
 
-            Ok(Nonce::new(v))
-        }
-    })
-    .await?
+    Ok(Nonce::new(v))
 }

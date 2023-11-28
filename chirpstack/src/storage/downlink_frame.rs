@@ -2,42 +2,35 @@ use std::io::Cursor;
 
 use anyhow::Result;
 use prost::Message;
-use tokio::task;
 use tracing::info;
 
-use super::{error::Error, get_redis_conn, redis_key};
+use super::{error::Error, get_async_redis_conn, redis_key};
 use chirpstack_api::internal;
 
 pub async fn save(df: &internal::DownlinkFrame) -> Result<()> {
-    task::spawn_blocking({
-        let df = df.clone();
-        move || -> Result<()> {
-            let b = df.encode_to_vec();
-            let key = redis_key(format!("frame:{}", df.downlink_id));
-            let mut c = get_redis_conn()?;
-            redis::cmd("SETEX").arg(key).arg(30).arg(b).query(&mut *c)?;
-            Ok(())
-        }
-    })
-    .await??;
+    let b = df.encode_to_vec();
+    let key = redis_key(format!("frame:{}", df.downlink_id));
+    let mut c = get_async_redis_conn().await?;
+    redis::cmd("SETEX")
+        .arg(key)
+        .arg(30)
+        .arg(b)
+        .query_async(&mut c)
+        .await?;
+
     info!(downlink_id = df.downlink_id, "Downlink-frame saved");
     Ok(())
 }
 
 pub async fn get(id: u32) -> Result<internal::DownlinkFrame, Error> {
-    task::spawn_blocking({
-        move || -> Result<internal::DownlinkFrame, Error> {
-            let mut c = get_redis_conn()?;
-            let key = redis_key(format!("frame:{}", id));
-            let v: Vec<u8> = redis::cmd("GET").arg(key).query(&mut *c)?;
-            if v.is_empty() {
-                return Err(Error::NotFound(format!("{}", id)));
-            }
-            let df = internal::DownlinkFrame::decode(&mut Cursor::new(v))?;
-            Ok(df)
-        }
-    })
-    .await?
+    let mut c = get_async_redis_conn().await?;
+    let key = redis_key(format!("frame:{}", id));
+    let v: Vec<u8> = redis::cmd("GET").arg(key).query_async(&mut c).await?;
+    if v.is_empty() {
+        return Err(Error::NotFound(format!("{}", id)));
+    }
+    let df = internal::DownlinkFrame::decode(&mut Cursor::new(v))?;
+    Ok(df)
 }
 
 #[cfg(test)]

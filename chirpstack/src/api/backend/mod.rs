@@ -18,7 +18,7 @@ use crate::backend::{joinserver, keywrap, roaming};
 use crate::downlink::data_fns;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{
-    device_session, error::Error as StorageError, get_redis_conn, passive_roaming, redis_key,
+    device_session, error::Error as StorageError, get_async_redis_conn, passive_roaming, redis_key,
 };
 use crate::uplink::{
     data_sns, error::Error as UplinkError, helpers, join_sns, RoamingMetaData, UplinkFrameSet,
@@ -127,7 +127,7 @@ pub async fn _handle_request(bp: BasePayload, b: Vec<u8>) -> http::Response<hype
                 }
             };
 
-            match roaming::get(&sender_id) {
+            match roaming::get(&sender_id).await {
                 Ok(v) => v,
                 Err(_) => {
                     warn!("Unknown SenderID");
@@ -523,33 +523,26 @@ async fn _handle_xmit_data_req(
 }
 
 async fn handle_async_ans(bp: &BasePayload, b: &[u8]) -> Result<http::Response<hyper::Body>> {
-    task::spawn_blocking({
-        let b = b.to_vec();
-        let transaction_id = bp.transaction_id;
-        move || -> Result<()> {
-            let mut c = get_redis_conn()?;
-            let key = redis_key(format!("backend:async:{}", transaction_id));
+    let transaction_id = bp.transaction_id;
+    let mut c = get_async_redis_conn().await?;
+    let key = redis_key(format!("backend:async:{}", transaction_id));
 
-            c.new_pipeline()
-                .atomic()
-                .cmd("XADD")
-                .arg(&key)
-                .arg("MAXLEN")
-                .arg(1_i64)
-                .arg("*")
-                .arg("pl")
-                .arg(&b)
-                .ignore()
-                .cmd("EXPIRE")
-                .arg(&key)
-                .arg(30_i64)
-                .ignore()
-                .query(&mut c)?;
-
-            Ok(())
-        }
-    })
-    .await??;
+    redis::pipe()
+        .atomic()
+        .cmd("XADD")
+        .arg(&key)
+        .arg("MAXLEN")
+        .arg(1_i64)
+        .arg("*")
+        .arg("pl")
+        .arg(b)
+        .ignore()
+        .cmd("EXPIRE")
+        .arg(&key)
+        .arg(30_i64)
+        .ignore()
+        .query_async(&mut c)
+        .await?;
 
     Ok(warp::reply().into_response())
 }
@@ -560,11 +553,17 @@ pub async fn get_async_receiver(
 ) -> Result<oneshot::Receiver<Vec<u8>>> {
     let (tx, rx) = oneshot::channel();
 
-    task::spawn_blocking(move || -> Result<()> {
-        let mut c = get_redis_conn()?;
+    task::spawn(async move {
+        let mut c = match get_async_redis_conn().await {
+            Ok(v) => v,
+            Err(e) => {
+                error!(error = %e, "Get Redis connection error");
+                return;
+            }
+        };
         let key = redis_key(format!("backend:async:{}", transaction_id));
 
-        let srr: StreamReadReply = redis::cmd("XREAD")
+        let srr: StreamReadReply = match redis::cmd("XREAD")
             .arg("BLOCK")
             .arg(timeout.as_millis() as u64)
             .arg("COUNT")
@@ -572,7 +571,15 @@ pub async fn get_async_receiver(
             .arg("STREAMS")
             .arg(&key)
             .arg("0")
-            .query(&mut *c)?;
+            .query_async(&mut c)
+            .await
+        {
+            Ok(v) => v,
+            Err(e) => {
+                error!(error = %e, "Read from Redis Stream error");
+                return;
+            }
+        };
 
         for stream_key in &srr.keys {
             for stream_id in &stream_key.ids {
@@ -581,7 +588,7 @@ pub async fn get_async_receiver(
                         "pl" => {
                             if let redis::Value::Data(b) = v {
                                 let _ = tx.send(b.to_vec());
-                                return Ok(());
+                                return;
                             }
                         }
                         _ => {
@@ -595,8 +602,6 @@ pub async fn get_async_receiver(
                 }
             }
         }
-
-        Ok(())
     });
 
     Ok(rx)

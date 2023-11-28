@@ -19,13 +19,12 @@ use prost::Message;
 use rand::Rng;
 use serde::Serialize;
 use tokio::sync::mpsc;
-use tokio::task;
 use tracing::{error, info, trace};
 
 use super::GatewayBackend;
 use crate::config::GatewayBackendMqtt;
 use crate::monitoring::prometheus;
-use crate::storage::{get_redis_conn, redis_key};
+use crate::storage::{get_async_redis_conn, redis_key};
 use crate::{downlink, uplink};
 use lrwn::region::CommonName;
 
@@ -462,22 +461,18 @@ async fn message_callback(
 }
 
 async fn is_locked(key: String) -> Result<bool> {
-    task::spawn_blocking({
-        move || -> Result<bool> {
-            let mut c = get_redis_conn()?;
+    let mut c = get_async_redis_conn().await?;
 
-            let set: bool = redis::cmd("SET")
-                .arg(key)
-                .arg("lock")
-                .arg("PX")
-                .arg(5000)
-                .arg("NX")
-                .query(&mut *c)?;
+    let set: bool = redis::cmd("SET")
+        .arg(key)
+        .arg("lock")
+        .arg("PX")
+        .arg(5000)
+        .arg("NX")
+        .query_async(&mut c)
+        .await?;
 
-            Ok(!set)
-        }
-    })
-    .await?
+    Ok(!set)
 }
 
 fn gateway_is_json(gateway_id: &str) -> bool {

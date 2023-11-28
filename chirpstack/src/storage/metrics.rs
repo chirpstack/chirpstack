@@ -5,10 +5,9 @@ use std::time::Duration;
 use anyhow::Result;
 use chrono::{DateTime, Datelike, Duration as ChronoDuration, Local, TimeZone, Timelike};
 use serde::{Deserialize, Serialize};
-use tokio::task;
 use tracing::info;
 
-use crate::storage::{get_redis_conn, redis_key};
+use crate::storage::{get_async_redis_conn, redis_key};
 
 #[allow(clippy::upper_case_acronyms)]
 #[allow(non_camel_case_types)]
@@ -69,23 +68,16 @@ fn get_key(name: &str, a: Aggregation, dt: DateTime<Local>) -> String {
 }
 
 pub async fn save_state(name: &str, state: &str) -> Result<()> {
-    task::spawn_blocking({
-        let key = redis_key(format!("metrics:{{{}}}", name));
-        let state = state.to_string();
-        let ttl = get_ttl(Aggregation::MONTH);
+    let key = redis_key(format!("metrics:{{{}}}", name));
+    let ttl = get_ttl(Aggregation::MONTH);
 
-        move || -> Result<()> {
-            let mut c = get_redis_conn()?;
-            redis::cmd("PSETEX")
-                .arg(key)
-                .arg(ttl.as_millis() as usize)
-                .arg(state)
-                .query(&mut *c)?;
-
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_redis_conn().await?;
+    redis::cmd("PSETEX")
+        .arg(key)
+        .arg(ttl.as_millis() as usize)
+        .arg(state)
+        .query_async(&mut c)
+        .await?;
 
     info!(state = %state, "State saved");
     Ok(())
@@ -104,90 +96,78 @@ async fn save_for_interval(a: Aggregation, name: &str, record: &Record) -> Resul
         return Ok(());
     }
 
-    task::spawn_blocking({
-        let name = name.to_string();
-        let record = record.clone();
-        let ttl = get_ttl(a);
+    let ttl = get_ttl(a);
 
-        let ts: DateTime<Local> = match a {
-            Aggregation::HOUR => Local
-                .with_ymd_and_hms(
-                    record.time.year(),
-                    record.time.month(),
-                    record.time.day(),
-                    record.time.hour(),
-                    0,
-                    0,
-                )
-                .unwrap(),
-            Aggregation::DAY => Local
-                .with_ymd_and_hms(
-                    record.time.year(),
-                    record.time.month(),
-                    record.time.day(),
-                    0,
-                    0,
-                    0,
-                )
-                .unwrap(),
-            Aggregation::MONTH => Local
-                .with_ymd_and_hms(record.time.year(), record.time.month(), 1, 0, 0, 0)
-                .unwrap(),
-        };
+    let ts: DateTime<Local> = match a {
+        Aggregation::HOUR => Local
+            .with_ymd_and_hms(
+                record.time.year(),
+                record.time.month(),
+                record.time.day(),
+                record.time.hour(),
+                0,
+                0,
+            )
+            .unwrap(),
+        Aggregation::DAY => Local
+            .with_ymd_and_hms(
+                record.time.year(),
+                record.time.month(),
+                record.time.day(),
+                0,
+                0,
+                0,
+            )
+            .unwrap(),
+        Aggregation::MONTH => Local
+            .with_ymd_and_hms(record.time.year(), record.time.month(), 1, 0, 0, 0)
+            .unwrap(),
+    };
 
-        move || -> Result<()> {
-            let mut c = get_redis_conn()?;
-            let key = get_key(&name, a, ts);
-            let mut pipe = c.new_pipeline();
-            pipe.atomic();
+    let mut c = get_async_redis_conn().await?;
+    let key = get_key(&name, a, ts);
+    let mut pipe = redis::pipe();
+    pipe.atomic();
 
-            for (k, v) in &record.metrics {
-                // Passing a reference to hincr will return a runtime error.
-                let k = k.clone();
-                let v = *v;
+    for (k, v) in &record.metrics {
+        // Passing a reference to hincr will return a runtime error.
+        let k = k.clone();
+        let v = *v;
 
-                match record.kind {
-                    Kind::COUNTER => {
-                        pipe.cmd("HSET").arg(&key).arg(k).arg(v).ignore();
-                    }
-                    Kind::ABSOLUTE => {
-                        pipe.cmd("HINCRBYFLOAT").arg(&key).arg(k).arg(v).ignore();
-                    }
-                    Kind::GAUGE => {
-                        pipe.cmd("HINCRBYFLOAT")
-                            .arg(&key)
-                            .arg(format!("_{}_count", k))
-                            .arg(1.0)
-                            .ignore();
-                        pipe.cmd("HINCRBYFLOAT").arg(&key).arg(k).arg(v).ignore();
-                    }
-                }
+        match record.kind {
+            Kind::COUNTER => {
+                pipe.cmd("HSET").arg(&key).arg(k).arg(v).ignore();
             }
-
-            pipe.cmd("PEXPIRE")
-                .arg(&key)
-                .arg(ttl.as_millis() as usize)
-                .ignore()
-                .query(&mut c)?;
-
-            Ok(())
+            Kind::ABSOLUTE => {
+                pipe.cmd("HINCRBYFLOAT").arg(&key).arg(k).arg(v).ignore();
+            }
+            Kind::GAUGE => {
+                pipe.cmd("HINCRBYFLOAT")
+                    .arg(&key)
+                    .arg(format!("_{}_count", k))
+                    .arg(1.0)
+                    .ignore();
+                pipe.cmd("HINCRBYFLOAT").arg(&key).arg(k).arg(v).ignore();
+            }
         }
-    })
-    .await??;
+    }
+
+    pipe.cmd("PEXPIRE")
+        .arg(&key)
+        .arg(ttl.as_millis() as usize)
+        .ignore()
+        .query_async(&mut c)
+        .await?;
+
     info!(name = %name, aggregation = %a, "Metrics saved");
     Ok(())
 }
 
 pub async fn get_state(name: &str) -> Result<String> {
-    task::spawn_blocking({
-        let key = redis_key(format!("metrics:{{{}}}", name));
-        move || -> Result<String> {
-            let mut c = get_redis_conn()?;
-            let v: Option<String> = redis::cmd("GET").arg(key).query(&mut *c)?;
-            Ok(v.unwrap_or_default())
-        }
-    })
-    .await?
+    let key = redis_key(format!("metrics:{{{}}}", name));
+    let mut c = get_async_redis_conn().await?;
+    let v: Option<String> = redis::cmd("GET").arg(key).query_async(&mut c).await?;
+    Ok(v.unwrap_or_default())
 }
 
 pub async fn get(
@@ -278,54 +258,48 @@ pub async fn get(
         return Ok(Vec::new());
     }
 
-    task::spawn_blocking({
-        let keys = keys.clone();
-        move || -> Result<Vec<Record>> {
-            let mut c = get_redis_conn()?;
-            let mut pipe = c.new_pipeline();
+    let mut c = get_async_redis_conn().await?;
+    let mut pipe = redis::pipe();
 
-            for k in &keys {
-                pipe.cmd("HGETALL").arg(k);
-            }
+    for k in &keys {
+        pipe.cmd("HGETALL").arg(k);
+    }
 
-            let res: Vec<HashMap<String, f64>> = pipe.query(&mut c)?;
-            let mut out: Vec<Record> = Vec::new();
+    let res: Vec<HashMap<String, f64>> = pipe.query_async(&mut c).await?;
+    let mut out: Vec<Record> = Vec::new();
 
-            for (i, r) in res.iter().enumerate() {
-                let mut metrics = r.clone();
+    for (i, r) in res.iter().enumerate() {
+        let mut metrics = r.clone();
 
-                // In case of GAUGE values, the total aggregated value must be divided by the
-                // number of measurements.
-                if kind == Kind::GAUGE {
-                    let counts: HashMap<String, f64> = r
-                        .iter()
-                        .filter(|(k, _)| k.starts_with('_') && k.ends_with("_count"))
-                        .map(|(k, v)| (k.to_string(), *v))
-                        .collect();
+        // In case of GAUGE values, the total aggregated value must be divided by the
+        // number of measurements.
+        if kind == Kind::GAUGE {
+            let counts: HashMap<String, f64> = r
+                .iter()
+                .filter(|(k, _)| k.starts_with('_') && k.ends_with("_count"))
+                .map(|(k, v)| (k.to_string(), *v))
+                .collect();
 
-                    for (k, count) in counts {
-                        let k = k.strip_prefix('_').unwrap().strip_suffix("_count").unwrap();
-                        if let Some(v) = metrics.get_mut(k) {
-                            *v /= count;
-                        }
-                    }
+            for (k, count) in counts {
+                let k = k.strip_prefix('_').unwrap().strip_suffix("_count").unwrap();
+                if let Some(v) = metrics.get_mut(k) {
+                    *v /= count;
                 }
-
-                out.push(Record {
-                    time: timestamps[i],
-                    kind,
-                    metrics: metrics
-                        .iter()
-                        .filter(|(k, _)| !k.starts_with('_'))
-                        .map(|(k, v)| (k.to_string(), *v))
-                        .collect(),
-                });
             }
-
-            Ok(out)
         }
-    })
-    .await?
+
+        out.push(Record {
+            time: timestamps[i],
+            kind,
+            metrics: metrics
+                .iter()
+                .filter(|(k, _)| !k.starts_with('_'))
+                .map(|(k, v)| (k.to_string(), *v))
+                .collect(),
+        });
+    }
+
+    Ok(out)
 }
 
 #[cfg(test)]

@@ -1,6 +1,5 @@
 use std::fs::File;
 use std::io::BufReader;
-use std::ops::{Deref, DerefMut};
 use std::sync::RwLock;
 
 use anyhow::Context;
@@ -13,7 +12,8 @@ use diesel_async::AsyncPgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
-use r2d2::{Pool, PooledConnection};
+use redis::aio::ConnectionLike;
+use tokio::sync::RwLock as TokioRwLock;
 use tokio::task;
 use tracing::{error, info};
 
@@ -48,129 +48,48 @@ pub type AsyncPgPoolConnection = DeadpoolObject<AsyncPgConnection>;
 
 lazy_static! {
     static ref ASYNC_PG_POOL: RwLock<Option<AsyncPgPool>> = RwLock::new(None);
-    static ref REDIS_POOL: RwLock<Option<RedisPool>> = RwLock::new(None);
+    static ref ASYNC_REDIS_POOL: TokioRwLock<Option<AsyncRedisPool>> = TokioRwLock::new(None);
     static ref REDIS_PREFIX: RwLock<String> = RwLock::new("".to_string());
 }
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 
-pub enum RedisPool {
-    Client(Pool<redis::Client>),
-    ClusterClient(Pool<redis::cluster::ClusterClient>),
+#[derive(Clone)]
+pub enum AsyncRedisPool {
+    Client(deadpool_redis::Pool),
+    ClusterClient(deadpool_redis_cluster::Pool),
 }
 
-pub enum RedisPoolConnection {
-    Client(PooledConnection<redis::Client>),
-    ClusterClient(PooledConnection<redis::cluster::ClusterClient>),
+pub enum AsyncRedisPoolConnection {
+    Client(deadpool_redis::Connection),
+    ClusterClient(deadpool_redis_cluster::Connection),
 }
 
-impl RedisPoolConnection {
-    pub fn new_pipeline(&self) -> RedisPipeline {
+impl ConnectionLike for AsyncRedisPoolConnection {
+    fn req_packed_command<'a>(
+        &'a mut self,
+        cmd: &'a redis::Cmd,
+    ) -> redis::RedisFuture<'a, redis::Value> {
         match self {
-            RedisPoolConnection::Client(_) => RedisPipeline::Pipeline(redis::pipe()),
-            RedisPoolConnection::ClusterClient(_) => {
-                RedisPipeline::ClusterPipeline(redis::cluster::cluster_pipe())
-            }
+            AsyncRedisPoolConnection::Client(v) => v.req_packed_command(cmd),
+            AsyncRedisPoolConnection::ClusterClient(v) => v.req_packed_command(cmd),
         }
     }
-}
-
-impl Deref for RedisPoolConnection {
-    type Target = dyn redis::ConnectionLike;
-
-    fn deref(&self) -> &Self::Target {
+    fn req_packed_commands<'a>(
+        &'a mut self,
+        cmd: &'a redis::Pipeline,
+        offset: usize,
+        count: usize,
+    ) -> redis::RedisFuture<'a, Vec<redis::Value>> {
         match self {
-            RedisPoolConnection::Client(v) => v.deref() as &dyn redis::ConnectionLike,
-            RedisPoolConnection::ClusterClient(v) => v.deref() as &dyn redis::ConnectionLike,
+            AsyncRedisPoolConnection::Client(v) => v.req_packed_commands(cmd, offset, count),
+            AsyncRedisPoolConnection::ClusterClient(v) => v.req_packed_commands(cmd, offset, count),
         }
     }
-}
-
-impl DerefMut for RedisPoolConnection {
-    fn deref_mut(&mut self) -> &mut Self::Target {
+    fn get_db(&self) -> i64 {
         match self {
-            RedisPoolConnection::Client(v) => v.deref_mut() as &mut dyn redis::ConnectionLike,
-            RedisPoolConnection::ClusterClient(v) => {
-                v.deref_mut() as &mut dyn redis::ConnectionLike
-            }
-        }
-    }
-}
-
-pub enum RedisPipeline {
-    Pipeline(redis::Pipeline),
-    ClusterPipeline(redis::cluster::ClusterPipeline),
-}
-
-impl RedisPipeline {
-    pub fn cmd(&mut self, name: &str) -> &mut Self {
-        match self {
-            RedisPipeline::Pipeline(p) => {
-                p.cmd(name);
-            }
-            RedisPipeline::ClusterPipeline(p) => {
-                p.cmd(name);
-            }
-        }
-        self
-    }
-
-    pub fn arg<T: redis::ToRedisArgs>(&mut self, arg: T) -> &mut Self {
-        match self {
-            RedisPipeline::Pipeline(p) => {
-                p.arg(arg);
-            }
-            RedisPipeline::ClusterPipeline(p) => {
-                p.arg(arg);
-            }
-        }
-        self
-    }
-
-    pub fn ignore(&mut self) -> &mut Self {
-        match self {
-            RedisPipeline::Pipeline(p) => {
-                p.ignore();
-            }
-            RedisPipeline::ClusterPipeline(p) => {
-                p.ignore();
-            }
-        }
-        self
-    }
-
-    pub fn atomic(&mut self) -> &mut Self {
-        match self {
-            RedisPipeline::Pipeline(p) => {
-                p.atomic();
-            }
-            RedisPipeline::ClusterPipeline(_) => {
-                // TODO: ClusterPipeline does not (yet?) provide .atomic() method.
-                // https://github.com/redis-rs/redis-rs/issues/731
-            }
-        }
-        self
-    }
-
-    pub fn query<T: redis::FromRedisValue>(
-        &mut self,
-        con: &mut RedisPoolConnection,
-    ) -> redis::RedisResult<T> {
-        match self {
-            RedisPipeline::Pipeline(p) => {
-                if let RedisPoolConnection::Client(c) = con {
-                    p.query(&mut **c)
-                } else {
-                    panic!("Mismatch between RedisPipeline and RedisPoolConnection")
-                }
-            }
-            RedisPipeline::ClusterPipeline(p) => {
-                if let RedisPoolConnection::ClusterClient(c) = con {
-                    p.query(c)
-                } else {
-                    panic!("Mismatch between RedisPipeline and RedisPoolConnection")
-                }
-            }
+            AsyncRedisPoolConnection::Client(v) => v.get_db(),
+            AsyncRedisPoolConnection::ClusterClient(v) => v.get_db(),
         }
     }
 }
@@ -194,29 +113,17 @@ pub async fn setup() -> Result<()> {
 
     info!("Setting up Redis client");
     if conf.redis.cluster {
-        let client = redis::cluster::ClusterClientBuilder::new(conf.redis.servers.clone())
-            .build()
-            .context("ClusterClient open")?;
-        let pool: r2d2::Pool<redis::cluster::ClusterClient> = r2d2::Pool::builder()
-            .max_size(conf.redis.max_open_connections)
-            .min_idle(match conf.redis.min_idle_connections {
-                0 => None,
-                _ => Some(conf.redis.min_idle_connections),
-            })
-            .build(client)
-            .context("Building Redis pool")?;
-        set_redis_pool(RedisPool::ClusterClient(pool));
+        let pool = deadpool_redis_cluster::Config::from_urls(conf.redis.servers.clone())
+            .builder()?
+            .max_size(conf.redis.max_open_connections as usize)
+            .build()?;
+        set_async_redis_pool(AsyncRedisPool::ClusterClient(pool)).await;
     } else {
-        let client = redis::Client::open(conf.redis.servers[0].clone()).context("Redis client")?;
-        let pool: r2d2::Pool<redis::Client> = r2d2::Pool::builder()
-            .max_size(conf.redis.max_open_connections)
-            .min_idle(match conf.redis.min_idle_connections {
-                0 => None,
-                _ => Some(conf.redis.min_idle_connections),
-            })
-            .build(client)
-            .context("Building Redis pool")?;
-        set_redis_pool(RedisPool::Client(pool));
+        let pool = deadpool_redis::Config::from_url(conf.redis.servers[0].clone())
+            .builder()?
+            .max_size(conf.redis.max_open_connections as usize)
+            .build()?;
+        set_async_redis_pool(AsyncRedisPool::Client(pool)).await;
     }
 
     if !conf.redis.key_prefix.is_empty() {
@@ -289,14 +196,23 @@ pub async fn get_async_db_conn() -> Result<AsyncPgPoolConnection> {
     Ok(pool.get().await?)
 }
 
-pub fn get_redis_conn() -> Result<RedisPoolConnection> {
-    let pool_r = REDIS_POOL.read().unwrap();
-    let pool = pool_r
+async fn get_async_redis_pool() -> Result<AsyncRedisPool> {
+    let pool_r = ASYNC_REDIS_POOL.read().await;
+    let pool: AsyncRedisPool = pool_r
         .as_ref()
-        .ok_or_else(|| anyhow!("Redis connection pool is not initialized (yet)"))?;
+        .ok_or_else(|| anyhow!("Redis connection pool is not initialized"))?
+        .clone();
+    Ok(pool)
+}
+
+pub async fn get_async_redis_conn() -> Result<AsyncRedisPoolConnection> {
+    let pool = get_async_redis_pool().await?;
+
     Ok(match pool {
-        RedisPool::Client(v) => RedisPoolConnection::Client(v.get()?),
-        RedisPool::ClusterClient(v) => RedisPoolConnection::ClusterClient(v.get()?),
+        AsyncRedisPool::Client(v) => AsyncRedisPoolConnection::Client(v.get().await?),
+        AsyncRedisPool::ClusterClient(v) => {
+            AsyncRedisPoolConnection::ClusterClient(v.clone().get().await?)
+        }
     })
 }
 
@@ -322,8 +238,8 @@ pub async fn run_db_migrations() -> Result<()> {
     .await?
 }
 
-pub fn set_redis_pool(p: RedisPool) {
-    let mut pool_w = REDIS_POOL.write().unwrap();
+async fn set_async_redis_pool(p: AsyncRedisPool) {
+    let mut pool_w = ASYNC_REDIS_POOL.write().await;
     *pool_w = Some(p);
 }
 
@@ -353,8 +269,8 @@ pub async fn reset_db() -> Result<()> {
 
 #[cfg(test)]
 pub async fn reset_redis() -> Result<()> {
-    let mut c = get_redis_conn()?;
-    redis::cmd("FLUSHDB").query(&mut *c)?;
+    let mut c = get_async_redis_conn().await?;
+    redis::cmd("FLUSHDB").query_async(&mut c).await?;
     Ok(())
 }
 

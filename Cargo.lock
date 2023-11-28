@@ -758,6 +758,8 @@ dependencies = [
  "chirpstack_api",
  "chrono",
  "clap",
+ "deadpool-redis",
+ "deadpool-redis-cluster",
  "diesel",
  "diesel-async",
  "diesel_migrations",
@@ -789,7 +791,6 @@ dependencies = [
  "prometheus-client",
  "prost",
  "prost-types",
- "r2d2",
  "rand",
  "rand_core",
  "rdkafka",
@@ -1192,10 +1193,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "deadpool-redis"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84930e585871d35b8e06d3e03d03e3a8a4c5dc71afa4376c7cd5f9223e1da1ea"
+dependencies = [
+ "deadpool",
+ "redis",
+]
+
+[[package]]
+name = "deadpool-redis-cluster"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "857c968579c82072dff24f48969d24fb1daab4970d94bb740d87ebb13bc8c2c4"
+dependencies = [
+ "deadpool",
+ "redis",
+ "redis_cluster_async",
+]
+
+[[package]]
 name = "deadpool-runtime"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63dfa964fe2a66f3fde91fc70b267fe193d822c7e603e2a675a49a7f46ad3f49"
+dependencies = [
+ "tokio",
+]
 
 [[package]]
 name = "der"
@@ -3355,17 +3380,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "r2d2"
-version = "0.8.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51de85fb3fb6524929c8a2eb85e6b6d363de4e8c48f9e2c2eac4944abc181c93"
-dependencies = [
- "log",
- "parking_lot",
- "scheduled-thread-pool",
-]
-
-[[package]]
 name = "rand"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3461,7 +3475,6 @@ dependencies = [
  "log",
  "percent-encoding",
  "pin-project-lite",
- "r2d2",
  "rand",
  "rustls",
  "rustls-native-certs",
@@ -3472,6 +3485,21 @@ dependencies = [
  "tokio-rustls",
  "tokio-util",
  "url",
+]
+
+[[package]]
+name = "redis_cluster_async"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "093073cc58cbe376f3308c530edcda1a49ef980de1c32f3fa63622fc5c6f0fb9"
+dependencies = [
+ "crc16",
+ "futures",
+ "log",
+ "pin-project-lite",
+ "rand",
+ "redis",
+ "tokio",
 ]
 
 [[package]]
@@ -3830,15 +3858,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c3733bf4cf7ea0880754e19cb5a462007c4a8c1914bff372ccc95b464f1df88"
 dependencies = [
  "windows-sys",
-]
-
-[[package]]
-name = "scheduled-thread-pool"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cbc66816425a074528352f5789333ecff06ca41b36b0b0efdfbb29edc391a19"
-dependencies = [
- "parking_lot",
 ]
 
 [[package]]

@@ -2,9 +2,7 @@
 extern crate anyhow;
 
 use std::fs::File;
-use std::future::Future;
 use std::io::Read;
-use std::pin::Pin;
 use std::time::Duration;
 
 use aes_kw::Kek;
@@ -13,6 +11,7 @@ use chrono::{DateTime, Utc};
 use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::{Certificate, Identity};
 use serde::{Deserialize, Serialize};
+use tokio::sync::mpsc::Sender;
 use tokio::sync::oneshot::Receiver;
 use tracing::{debug, error, info, span, trace, Instrument, Level};
 
@@ -35,14 +34,6 @@ pub trait BasePayloadResultProvider {
     fn base_payload(&self) -> &BasePayloadResult;
 }
 
-pub type RequestLogFn = Box<
-    dyn Fn(
-            stream::BackendInterfacesRequest,
-        ) -> Pin<Box<dyn Future<Output = Result<()>> + Sync + Send>>
-        + Sync
-        + Send,
->;
-
 pub struct ClientConfig {
     pub sender_id: Vec<u8>,
     pub receiver_id: Vec<u8>,
@@ -63,7 +54,7 @@ pub struct ClientConfig {
     pub use_target_role_suffix: bool,
 
     // Request log function.
-    pub request_log_fn: Option<RequestLogFn>,
+    pub request_log_sender: Option<Sender<stream::BackendInterfacesRequest>>,
 }
 
 impl Default for ClientConfig {
@@ -78,7 +69,7 @@ impl Default for ClientConfig {
             authorization: None,
             async_timeout: Duration::from_secs(0),
             use_target_role_suffix: false,
-            request_log_fn: None,
+            request_log_sender: None,
         }
     }
 }
@@ -345,9 +336,12 @@ impl Client {
             be_req_log.request_error = format!("{:#}", e);
         }
 
-        if let Some(log_fn) = &self.config.request_log_fn {
-            if let Err(e) = log_fn(be_req_log).await {
-                error!(error = %e, "Log request error");
+        if let Some(tx) = &self.config.request_log_sender {
+            // We use try_send here as we don't want to delay the response in case
+            // there is no channel capacity. This would also log an error, proving
+            // feedback that there is a channel capacity issue.
+            if let Err(e) = tx.try_send(be_req_log) {
+                error!(error = %e, "Sending request-log to stream error");
             }
         }
 
@@ -1452,10 +1446,7 @@ pub mod test {
         let c = Client::new(ClientConfig {
             sender_id: vec![1, 2, 3],
             server: server.url("/"),
-            request_log_fn: Some(Box::new(move |log| {
-                let tx = tx.clone();
-                Box::pin(async move { tx.send(log).await.map_err(|e| anyhow!("{}", e)) })
-            })),
+            request_log_sender: Some(tx),
             ..Default::default()
         })
         .unwrap();
@@ -1517,10 +1508,7 @@ pub mod test {
         let c = Client::new(ClientConfig {
             sender_id: vec![1, 2, 3],
             server: server.url("/"),
-            request_log_fn: Some(Box::new(move |log| {
-                let tx = tx.clone();
-                Box::pin(async move { tx.send(log).await.map_err(|e| anyhow!("{}", e)) })
-            })),
+            request_log_sender: Some(tx),
             ..Default::default()
         })
         .unwrap();
