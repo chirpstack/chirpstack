@@ -11,7 +11,6 @@ pkgs.mkShell {
     pkgs.perl
     pkgs.cmake
     pkgs.clang
-    pkgs.postgresql
     pkgs.openssl
   ];
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";

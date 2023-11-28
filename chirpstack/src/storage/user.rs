@@ -1,19 +1,18 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::dsl;
-use diesel::prelude::*;
+use diesel::{dsl, prelude::*};
+use diesel_async::RunQueryDsl;
 use pbkdf2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Algorithm, Pbkdf2,
 };
 use rand_core::OsRng;
-use tokio::task;
 use tracing::info;
 use uuid::Uuid;
 use validator::validate_email;
 
 use super::error::Error;
-use super::get_db_conn;
+use super::get_async_db_conn;
 use super::schema::user;
 
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
@@ -67,181 +66,134 @@ impl User {
 
 pub async fn create(u: User) -> Result<User, Error> {
     u.validate()?;
-    let u = task::spawn_blocking({
-        move || -> Result<User, Error> {
-            let mut c = get_db_conn()?;
+    let mut c = get_async_db_conn().await?;
 
-            diesel::insert_into(user::table)
-                .values(&u)
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, u.id.to_string()))
-        }
-    })
-    .await??;
+    let u: User = diesel::insert_into(user::table)
+        .values(&u)
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, u.id.to_string()))?;
     info!(id = %u.id, "User created");
     Ok(u)
 }
 
 pub async fn get(id: &Uuid) -> Result<User, Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<User, Error> {
-            let mut c = get_db_conn()?;
-            let u = user::dsl::user
-                .find(&id)
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-            Ok(u)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let u = user::dsl::user
+        .find(&id)
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    Ok(u)
 }
 
 pub async fn get_by_email(email: &str) -> Result<User, Error> {
-    task::spawn_blocking({
-        let email = email.to_string();
-        move || -> Result<User, Error> {
-            let mut c = get_db_conn()?;
-            let u = user::dsl::user
-                .filter(user::dsl::email.eq(&email))
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, email))?;
-            Ok(u)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let u = user::dsl::user
+        .filter(user::dsl::email.eq(email))
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, email.to_string()))?;
+    Ok(u)
 }
 
 pub async fn get_by_external_id(external_id: &str) -> Result<User, Error> {
-    task::spawn_blocking({
-        let external_id = external_id.to_string();
-        move || -> Result<User, Error> {
-            let mut c = get_db_conn()?;
-            let u = user::dsl::user
-                .filter(user::dsl::external_id.eq(&external_id))
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, external_id))?;
-            Ok(u)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let u = user::dsl::user
+        .filter(user::dsl::external_id.eq(external_id))
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, external_id.to_string()))?;
+    Ok(u)
 }
 
 pub async fn get_by_email_and_pw(email: &str, pw: &str) -> Result<User, Error> {
-    task::spawn_blocking({
-        let email = email.to_string();
-        let pw = pw.to_string();
-        move || -> Result<User, Error> {
-            let mut c = get_db_conn()?;
-            let u: User = match user::dsl::user
-                .filter(user::dsl::email.eq(&email))
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, email))
-            {
-                Ok(v) => v,
-                Err(Error::NotFound(_)) => {
-                    return Err(Error::InvalidUsernameOrPassword);
-                }
-                Err(v) => {
-                    return Err(v);
-                }
-            };
-
-            if verify_password(&pw, &u.password_hash) {
-                return Ok(u);
-            }
-
-            Err(Error::InvalidUsernameOrPassword)
+    let mut c = get_async_db_conn().await?;
+    let u: User = match user::dsl::user
+        .filter(user::dsl::email.eq(email))
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, email.to_string()))
+    {
+        Ok(v) => v,
+        Err(Error::NotFound(_)) => {
+            return Err(Error::InvalidUsernameOrPassword);
         }
-    })
-    .await?
+        Err(v) => {
+            return Err(v);
+        }
+    };
+
+    if verify_password(&pw, &u.password_hash) {
+        return Ok(u);
+    }
+
+    Err(Error::InvalidUsernameOrPassword)
 }
 
 pub async fn update(u: User) -> Result<User, Error> {
     u.validate()?;
-    let u = task::spawn_blocking({
-        move || -> Result<User, Error> {
-            let mut c = get_db_conn()?;
-            diesel::update(user::dsl::user.find(&u.id))
-                .set((
-                    user::updated_at.eq(Utc::now()),
-                    user::is_admin.eq(&u.is_admin),
-                    user::is_active.eq(&u.is_active),
-                    user::email.eq(&u.email),
-                    user::email_verified.eq(&u.email_verified),
-                    user::note.eq(&u.note),
-                    user::external_id.eq(&u.external_id),
-                ))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, u.id.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let u: User = diesel::update(user::dsl::user.find(&u.id))
+        .set((
+            user::updated_at.eq(Utc::now()),
+            user::is_admin.eq(&u.is_admin),
+            user::is_active.eq(&u.is_active),
+            user::email.eq(&u.email),
+            user::email_verified.eq(&u.email_verified),
+            user::note.eq(&u.note),
+            user::external_id.eq(&u.external_id),
+        ))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, u.id.to_string()))?;
     info!(user_id = %u.id, "User updated");
     Ok(u)
 }
 
 pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
-    let u = task::spawn_blocking({
-        let id = *id;
-        let hash = hash.to_string();
-        move || -> Result<User, Error> {
-            let mut c = get_db_conn()?;
-            diesel::update(user::dsl::user.find(&id))
-                .set(user::password_hash.eq(&hash))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let u: User = diesel::update(user::dsl::user.find(&id))
+        .set(user::password_hash.eq(&hash))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     info!(id = %id, "Password set");
     Ok(u)
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(user::dsl::user.find(&id))
-                .execute(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(user::dsl::user.find(&id))
+        .execute(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
-            if ra == 0 {
-                return Err(Error::NotFound(id.to_string()));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    if ra == 0 {
+        return Err(Error::NotFound(id.to_string()));
+    }
     info!(user_id = %id, "User deleted");
     Ok(())
 }
 
 pub async fn get_count() -> Result<i64, Error> {
-    task::spawn_blocking({
-        move || -> Result<i64, Error> {
-            let mut c = get_db_conn()?;
-            let count = user::dsl::user.select(dsl::count_star()).first(&mut c)?;
-            Ok(count)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let count = user::dsl::user
+        .select(dsl::count_star())
+        .first(&mut c)
+        .await?;
+    Ok(count)
 }
 
 pub async fn list(limit: i64, offset: i64) -> Result<Vec<User>, Error> {
-    task::spawn_blocking({
-        move || -> Result<Vec<User>, Error> {
-            let mut c = get_db_conn()?;
-            let items = user::dsl::user
-                .order_by(user::dsl::email)
-                .limit(limit)
-                .offset(offset)
-                .load(&mut c)?;
-            Ok(items)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let items = user::dsl::user
+        .order_by(user::dsl::email)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut c)
+        .await?;
+    Ok(items)
 }
 
 // The output format is documented here:

@@ -2,16 +2,15 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::dsl;
-use diesel::prelude::*;
-use tokio::task;
+use diesel::{dsl, prelude::*};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
 use lrwn::EUI64;
 
 use super::schema::{gateway, multicast_group_gateway, tenant};
-use super::{error::Error, fields, get_db_conn};
+use super::{error::Error, fields, get_async_db_conn};
 
 #[derive(Queryable, Insertable, PartialEq, Debug)]
 #[diesel(table_name = gateway)]
@@ -110,15 +109,17 @@ impl Default for Gateway {
 
 pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
     gw.validate()?;
-    let gw = task::spawn_blocking({
-        move || -> Result<Gateway, Error> {
-            let mut c = get_db_conn()?;
-            c.transaction::<Gateway, Error, _>(|c| {
+    let mut c = get_async_db_conn().await?;
+    let gw: Gateway = c
+        .build_transaction()
+        .run::<Gateway, Error, _>(|c| {
+            Box::pin(async move {
                 // use for_update to lock the tenant.
                 let t: super::tenant::Tenant = tenant::dsl::tenant
                     .find(&gw.tenant_id)
                     .for_update()
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, gw.tenant_id.to_string()))?;
 
                 if !t.can_have_gateways {
@@ -128,7 +129,8 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
                 let gw_count: i64 = gateway::dsl::gateway
                     .select(dsl::count_star())
                     .filter(gateway::dsl::tenant_id.eq(&gw.tenant_id))
-                    .first(c)?;
+                    .first(c)
+                    .await?;
 
                 if t.max_gateway_count != 0 && gw_count as i32 >= t.max_gateway_count {
                     return Err(Error::NotAllowed(
@@ -139,11 +141,11 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
                 diesel::insert_into(gateway::table)
                     .values(&gw)
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, gw.gateway_id.to_string()))
             })
-        }
-    })
-    .await??;
+        })
+        .await?;
     info!(
         gateway_id = %gw.gateway_id,
         "Gateway created"
@@ -152,41 +154,32 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
 }
 
 pub async fn get(gateway_id: &EUI64) -> Result<Gateway, Error> {
-    task::spawn_blocking({
-        let gateway_id = *gateway_id;
-        move || -> Result<Gateway, Error> {
-            let mut c = get_db_conn()?;
-            let gw = gateway::dsl::gateway
-                .find(&gateway_id)
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
-            Ok(gw)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let gw = gateway::dsl::gateway
+        .find(&gateway_id)
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
+    Ok(gw)
 }
 
 pub async fn update(gw: Gateway) -> Result<Gateway, Error> {
     gw.validate()?;
-    let gw = task::spawn_blocking({
-        move || -> Result<Gateway, Error> {
-            let mut c = get_db_conn()?;
-            diesel::update(gateway::dsl::gateway.find(&gw.gateway_id))
-                .set((
-                    gateway::updated_at.eq(Utc::now()),
-                    gateway::name.eq(&gw.name),
-                    gateway::description.eq(&gw.description),
-                    gateway::latitude.eq(&gw.latitude),
-                    gateway::longitude.eq(&gw.longitude),
-                    gateway::altitude.eq(&gw.altitude),
-                    gateway::stats_interval_secs.eq(&gw.stats_interval_secs),
-                    gateway::tags.eq(&gw.tags),
-                ))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, gw.gateway_id.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&gw.gateway_id))
+        .set((
+            gateway::updated_at.eq(Utc::now()),
+            gateway::name.eq(&gw.name),
+            gateway::description.eq(&gw.description),
+            gateway::latitude.eq(&gw.latitude),
+            gateway::longitude.eq(&gw.longitude),
+            gateway::altitude.eq(&gw.altitude),
+            gateway::stats_interval_secs.eq(&gw.stats_interval_secs),
+            gateway::tags.eq(&gw.tags),
+        ))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, gw.gateway_id.to_string()))?;
     info!(
         gateway_id = %gw.gateway_id,
         "Gateway updated"
@@ -195,23 +188,16 @@ pub async fn update(gw: Gateway) -> Result<Gateway, Error> {
 }
 
 pub async fn update_state(id: &EUI64, props: &HashMap<String, String>) -> Result<Gateway, Error> {
-    let gw = task::spawn_blocking({
-        let id = *id;
-        let props = fields::KeyValue::new(props.clone());
-        move || -> Result<Gateway, Error> {
-            let mut c = get_db_conn()?;
-            let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
-                .set((
-                    gateway::last_seen_at.eq(Some(Utc::now())),
-                    gateway::properties.eq(props),
-                ))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-
-            Ok(gw)
-        }
-    })
-    .await??;
+    let props = fields::KeyValue::new(props.clone());
+    let mut c = get_async_db_conn().await?;
+    let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
+        .set((
+            gateway::last_seen_at.eq(Some(Utc::now())),
+            gateway::properties.eq(props),
+        ))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
     info!(
         gateway_id = %id,
@@ -228,26 +214,19 @@ pub async fn update_state_and_loc(
     alt: f32,
     props: &HashMap<String, String>,
 ) -> Result<Gateway, Error> {
-    let gw = task::spawn_blocking({
-        let id = *id;
-        let props = fields::KeyValue::new(props.clone());
-        move || -> Result<Gateway, Error> {
-            let mut c = get_db_conn()?;
-            let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
-                .set((
-                    gateway::last_seen_at.eq(Some(Utc::now())),
-                    gateway::latitude.eq(lat),
-                    gateway::longitude.eq(lon),
-                    gateway::altitude.eq(alt),
-                    gateway::properties.eq(props),
-                ))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-
-            Ok(gw)
-        }
-    })
-    .await??;
+    let props = fields::KeyValue::new(props.clone());
+    let mut c = get_async_db_conn().await?;
+    let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
+        .set((
+            gateway::last_seen_at.eq(Some(Utc::now())),
+            gateway::latitude.eq(lat),
+            gateway::longitude.eq(lon),
+            gateway::altitude.eq(alt),
+            gateway::properties.eq(props),
+        ))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
     info!(
         gateway_id = %id,
@@ -258,20 +237,12 @@ pub async fn update_state_and_loc(
 }
 
 pub async fn update_tls_cert(id: &EUI64, cert: &[u8]) -> Result<Gateway, Error> {
-    let gw = task::spawn_blocking({
-        let id = *id;
-        let cert = cert.to_vec();
-        move || -> Result<Gateway, Error> {
-            let mut c = get_db_conn()?;
-            let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
-                .set(gateway::tls_certificate.eq(cert))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-            Ok(gw)
-        }
-    })
-    .await??;
-
+    let mut c = get_async_db_conn().await?;
+    let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
+        .set(gateway::tls_certificate.eq(cert))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     info!(
         gateway_id = %id,
         "Gateway tls certificate updated"
@@ -281,18 +252,13 @@ pub async fn update_tls_cert(id: &EUI64, cert: &[u8]) -> Result<Gateway, Error> 
 }
 
 pub async fn delete(gateway_id: &EUI64) -> Result<(), Error> {
-    task::spawn_blocking({
-        let gateway_id = *gateway_id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(gateway::dsl::gateway.find(&gateway_id)).execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(gateway_id.to_string()));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(gateway::dsl::gateway.find(&gateway_id))
+        .execute(&mut c)
+        .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(gateway_id.to_string()));
+    }
     info!(
         gateway_id = %gateway_id,
         "Gateway deleted"
@@ -301,34 +267,26 @@ pub async fn delete(gateway_id: &EUI64) -> Result<(), Error> {
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<i64, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = gateway::dsl::gateway
-                .select(dsl::count_star())
-                .distinct()
-                .left_join(multicast_group_gateway::table)
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = gateway::dsl::gateway
+        .select(dsl::count_star())
+        .distinct()
+        .left_join(multicast_group_gateway::table)
+        .into_boxed();
 
-            if let Some(tenant_id) = &filters.tenant_id {
-                q = q.filter(gateway::dsl::tenant_id.eq(tenant_id));
-            }
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(gateway::dsl::tenant_id.eq(tenant_id));
+    }
 
-            if let Some(multicast_group_id) = &filters.multicast_group_id {
-                q = q.filter(
-                    multicast_group_gateway::dsl::multicast_group_id.eq(multicast_group_id),
-                );
-            }
+    if let Some(multicast_group_id) = &filters.multicast_group_id {
+        q = q.filter(multicast_group_gateway::dsl::multicast_group_id.eq(multicast_group_id));
+    }
 
-            if let Some(search) = &filters.search {
-                q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
-            }
+    if let Some(search) = &filters.search {
+        q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
+    }
 
-            Ok(q.first(&mut c)?)
-        }
-    })
-    .await?
+    Ok(q.first(&mut c).await?)
 }
 
 pub async fn list(
@@ -336,98 +294,80 @@ pub async fn list(
     offset: i64,
     filters: &Filters,
 ) -> Result<Vec<GatewayListItem>, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<Vec<GatewayListItem>, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = gateway::dsl::gateway
-                .left_join(multicast_group_gateway::table)
-                .select((
-                    gateway::tenant_id,
-                    gateway::gateway_id,
-                    gateway::name,
-                    gateway::description,
-                    gateway::created_at,
-                    gateway::updated_at,
-                    gateway::last_seen_at,
-                    gateway::latitude,
-                    gateway::longitude,
-                    gateway::altitude,
-                    gateway::properties,
-                    gateway::stats_interval_secs,
-                ))
-                .distinct()
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = gateway::dsl::gateway
+        .left_join(multicast_group_gateway::table)
+        .select((
+            gateway::tenant_id,
+            gateway::gateway_id,
+            gateway::name,
+            gateway::description,
+            gateway::created_at,
+            gateway::updated_at,
+            gateway::last_seen_at,
+            gateway::latitude,
+            gateway::longitude,
+            gateway::altitude,
+            gateway::properties,
+            gateway::stats_interval_secs,
+        ))
+        .distinct()
+        .into_boxed();
 
-            if let Some(tenant_id) = &filters.tenant_id {
-                q = q.filter(gateway::dsl::tenant_id.eq(tenant_id));
-            }
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(gateway::dsl::tenant_id.eq(tenant_id));
+    }
 
-            if let Some(search) = &filters.search {
-                q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
-            }
+    if let Some(search) = &filters.search {
+        q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
+    }
 
-            if let Some(multicast_group_id) = &filters.multicast_group_id {
-                q = q.filter(
-                    multicast_group_gateway::dsl::multicast_group_id.eq(multicast_group_id),
-                );
-            }
+    if let Some(multicast_group_id) = &filters.multicast_group_id {
+        q = q.filter(multicast_group_gateway::dsl::multicast_group_id.eq(multicast_group_id));
+    }
 
-            let items = q
-                .order_by(gateway::dsl::name)
-                .limit(limit)
-                .offset(offset)
-                .load(&mut c)?;
-            Ok(items)
-        }
-    })
-    .await?
+    let items = q
+        .order_by(gateway::dsl::name)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut c)
+        .await?;
+    Ok(items)
 }
 
 pub async fn get_meta(gateway_id: &EUI64) -> Result<GatewayMeta, Error> {
-    task::spawn_blocking({
-        let gateway_id = *gateway_id;
-        move || -> Result<GatewayMeta, Error> {
-            let mut c = get_db_conn()?;
-            let meta = gateway::dsl::gateway
-                .inner_join(tenant::table)
-                .select((
-                    gateway::gateway_id,
-                    gateway::tenant_id,
-                    gateway::latitude,
-                    gateway::longitude,
-                    gateway::altitude,
-                    tenant::private_gateways_up,
-                    tenant::private_gateways_down,
-                ))
-                .filter(gateway::dsl::gateway_id.eq(&gateway_id))
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
-
-            Ok(meta)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let meta = gateway::dsl::gateway
+        .inner_join(tenant::table)
+        .select((
+            gateway::gateway_id,
+            gateway::tenant_id,
+            gateway::latitude,
+            gateway::longitude,
+            gateway::altitude,
+            tenant::private_gateways_up,
+            tenant::private_gateways_down,
+        ))
+        .filter(gateway::dsl::gateway_id.eq(&gateway_id))
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
+    Ok(meta)
 }
 
 pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCountsByState, Error> {
-    task::spawn_blocking({
-        let tenant_id = *tenant_id;
-        move || -> Result<GatewayCountsByState, Error> {
-            let mut c = get_db_conn()?;
-            let counts: GatewayCountsByState = diesel::sql_query(r#"
-                select
-                    coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
-                    coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) > last_seen_at then 1 end), 0) as offline_count,
-                    coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) <= last_seen_at then 1 end), 0) as online_count
-                from
-                    gateway
-                where
-                    $1 is null or tenant_id = $1
-            "#).bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id).get_result(&mut c)?;
-            Ok(counts)
-        }
-    }).await?
+    let mut c = get_async_db_conn().await?;
+    let counts: GatewayCountsByState = diesel::sql_query(r#"
+        select
+            coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
+            coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) > last_seen_at then 1 end), 0) as offline_count,
+            coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) <= last_seen_at then 1 end), 0) as online_count
+        from
+            gateway
+        where
+            $1 is null or tenant_id = $1
+    "#).bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id).get_result(&mut c).await?;
+    Ok(counts)
 }
 
 #[cfg(test)]

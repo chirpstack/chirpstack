@@ -1,15 +1,14 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::dsl;
-use diesel::prelude::*;
-use tokio::task;
+use diesel::{dsl, prelude::*};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{device, device_profile, relay_device};
-use super::{device::Device, error::Error, get_db_conn};
+use super::{device::Device, error::Error, get_async_db_conn};
 
 // This is set to 15, because the FilterList must contain a "catch-all" record to filter all
 // uplinks that do not match the remaining records. This means that we can use 16 - 1 FilterList
@@ -44,24 +43,18 @@ pub struct DeviceListItem {
 }
 
 pub async fn get_relay_count(filters: &RelayFilters) -> Result<i64, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<i64, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = device::dsl::device
-                .select(dsl::count_star())
-                .inner_join(device_profile::table)
-                .filter(device_profile::dsl::is_relay.eq(true))
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = device::dsl::device
+        .select(dsl::count_star())
+        .inner_join(device_profile::table)
+        .filter(device_profile::dsl::is_relay.eq(true))
+        .into_boxed();
 
-            if let Some(application_id) = &filters.application_id {
-                q = q.filter(device::dsl::application_id.eq(application_id));
-            }
+    if let Some(application_id) = &filters.application_id {
+        q = q.filter(device::dsl::application_id.eq(application_id));
+    }
 
-            Ok(q.first(&mut c)?)
-        }
-    })
-    .await?
+    Ok(q.first(&mut c).await?)
 }
 
 pub async fn list_relays(
@@ -69,48 +62,38 @@ pub async fn list_relays(
     offset: i64,
     filters: &RelayFilters,
 ) -> Result<Vec<RelayListItem>, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<Vec<RelayListItem>, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = device::dsl::device
-                .inner_join(device_profile::table)
-                .select((device::dev_eui, device::name))
-                .filter(device_profile::dsl::is_relay.eq(true))
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = device::dsl::device
+        .inner_join(device_profile::table)
+        .select((device::dev_eui, device::name))
+        .filter(device_profile::dsl::is_relay.eq(true))
+        .into_boxed();
 
-            if let Some(application_id) = &filters.application_id {
-                q = q.filter(device::dsl::application_id.eq(application_id));
-            }
+    if let Some(application_id) = &filters.application_id {
+        q = q.filter(device::dsl::application_id.eq(application_id));
+    }
 
-            q.order_by(device::dsl::name)
-                .limit(limit)
-                .offset(offset)
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, "".into()))
-        }
-    })
-    .await?
+    q.order_by(device::dsl::name)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
 pub async fn get_device_count(filters: &DeviceFilters) -> Result<i64, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<i64, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = relay_device::dsl::relay_device
-                .select(dsl::count_star())
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = relay_device::dsl::relay_device
+        .select(dsl::count_star())
+        .into_boxed();
 
-            if let Some(relay_dev_eui) = &filters.relay_dev_eui {
-                q = q.filter(relay_device::dsl::relay_dev_eui.eq(relay_dev_eui));
-            }
+    if let Some(relay_dev_eui) = &filters.relay_dev_eui {
+        q = q.filter(relay_device::dsl::relay_dev_eui.eq(relay_dev_eui));
+    }
 
-            q.first(&mut c)
-                .map_err(|e| Error::from_diesel(e, "".into()))
-        }
-    })
-    .await?
+    q.first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
 pub async fn list_devices(
@@ -118,57 +101,53 @@ pub async fn list_devices(
     offset: i64,
     filters: &DeviceFilters,
 ) -> Result<Vec<DeviceListItem>, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<Vec<DeviceListItem>, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = relay_device::dsl::relay_device
-                .inner_join(device::table.on(relay_device::dsl::dev_eui.eq(device::dsl::dev_eui)))
-                .inner_join(
-                    device_profile::table
-                        .on(device::dsl::device_profile_id.eq(device_profile::dsl::id)),
-                )
-                .select((
-                    relay_device::dev_eui,
-                    device::join_eui,
-                    device::dev_addr,
-                    relay_device::created_at,
-                    device::name,
-                    device_profile::relay_ed_uplink_limit_bucket_size,
-                    device_profile::relay_ed_uplink_limit_reload_rate,
-                ))
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = relay_device::dsl::relay_device
+        .inner_join(device::table.on(relay_device::dsl::dev_eui.eq(device::dsl::dev_eui)))
+        .inner_join(
+            device_profile::table.on(device::dsl::device_profile_id.eq(device_profile::dsl::id)),
+        )
+        .select((
+            relay_device::dev_eui,
+            device::join_eui,
+            device::dev_addr,
+            relay_device::created_at,
+            device::name,
+            device_profile::relay_ed_uplink_limit_bucket_size,
+            device_profile::relay_ed_uplink_limit_reload_rate,
+        ))
+        .into_boxed();
 
-            if let Some(relay_dev_eui) = &filters.relay_dev_eui {
-                q = q.filter(relay_device::dsl::relay_dev_eui.eq(relay_dev_eui));
-            }
+    if let Some(relay_dev_eui) = &filters.relay_dev_eui {
+        q = q.filter(relay_device::dsl::relay_dev_eui.eq(relay_dev_eui));
+    }
 
-            q.order_by(device::dsl::name)
-                .limit(limit)
-                .offset(offset)
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, "".into()))
-        }
-    })
-    .await?
+    q.order_by(device::dsl::name)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
 pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(), Error> {
-    task::spawn_blocking({
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            c.transaction::<(), Error, _>(|c| {
+    let mut c = get_async_db_conn().await?;
+    c.build_transaction()
+        .run::<(), Error, _>(|c| {
+            Box::pin(async move {
                 // We lock the relay device to avoid race-conditions in the validation.
                 let rd: Device = device::dsl::device
                     .find(&relay_dev_eui)
                     .for_update()
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, relay_dev_eui.to_string()))?;
 
                 // Is the given relay_dev_eui a Relay?
                 let rdp: super::device_profile::DeviceProfile = device_profile::dsl::device_profile
                     .find(&rd.device_profile_id)
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, rd.device_profile_id.to_string()))?;
                 if !rdp.is_relay {
                     return Err(Error::Validation("Device is not a relay".to_string()));
@@ -178,6 +157,7 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
                 let d: Device = device::dsl::device
                     .find(&device_dev_eui)
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, device_dev_eui.to_string()))?;
 
                 if rd.application_id != d.application_id {
@@ -190,6 +170,7 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
                 let dp: super::device_profile::DeviceProfile = device_profile::dsl::device_profile
                     .find(&d.device_profile_id)
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, d.device_profile_id.to_string()))?;
                 if rdp.region != dp.region {
                     return Err(Error::Validation(
@@ -207,6 +188,7 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
                     .select(dsl::count_star())
                     .filter(relay_device::dsl::relay_dev_eui.eq(&relay_dev_eui))
                     .first(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, "".into()))?;
 
                 if count > RELAY_MAX_DEVICES {
@@ -223,13 +205,13 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
                         relay_device::created_at.eq(Utc::now()),
                     ))
                     .execute(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, "".into()))?;
 
                 Ok(())
             })
-        }
-    })
-    .await??;
+        })
+        .await?;
 
     info!(relay_dev_eui = %relay_dev_eui, device_dev_eui = %device_dev_eui, "Device added to relay");
 
@@ -237,25 +219,20 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
 }
 
 pub async fn remove_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(), Error> {
-    task::spawn_blocking({
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(
-                relay_device::dsl::relay_device
-                    .filter(relay_device::relay_dev_eui.eq(&relay_dev_eui))
-                    .filter(relay_device::dev_eui.eq(&device_dev_eui)),
-            )
-            .execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(format!(
-                    "relay_dev_eui: {}, device_dev_eui: {}",
-                    relay_dev_eui, device_dev_eui
-                )));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(
+        relay_device::dsl::relay_device
+            .filter(relay_device::relay_dev_eui.eq(&relay_dev_eui))
+            .filter(relay_device::dev_eui.eq(&device_dev_eui)),
+    )
+    .execute(&mut c)
+    .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(format!(
+            "relay_dev_eui: {}, device_dev_eui: {}",
+            relay_dev_eui, device_dev_eui
+        )));
+    }
 
     info!(relay_dev_eui = %relay_dev_eui, device_dev_eui = %device_dev_eui, "Device removed from relay");
 

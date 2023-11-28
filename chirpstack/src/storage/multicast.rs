@@ -1,8 +1,7 @@
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
-use diesel::dsl;
-use diesel::prelude::*;
-use tokio::task;
+use diesel::{dsl, prelude::*};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
@@ -14,7 +13,7 @@ use super::schema::{
     application, device, gateway, multicast_group, multicast_group_device, multicast_group_gateway,
     multicast_group_queue_item,
 };
-use super::{fields, get_db_conn};
+use super::{fields, get_async_db_conn};
 use crate::downlink::classb;
 use crate::{config, gpstime::ToDateTime, gpstime::ToGpsTime};
 
@@ -133,104 +132,79 @@ impl Default for MulticastGroupQueueItem {
 
 pub async fn create(mg: MulticastGroup) -> Result<MulticastGroup, Error> {
     mg.validate()?;
-    let mg = task::spawn_blocking({
-        move || -> Result<MulticastGroup, Error> {
-            let mut c = get_db_conn()?;
-            diesel::insert_into(multicast_group::table)
-                .values(&mg)
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, mg.id.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let mg: MulticastGroup = diesel::insert_into(multicast_group::table)
+        .values(&mg)
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
     info!(id = %mg.id, "Multicast-group created");
     Ok(mg)
 }
 
 pub async fn get(id: &Uuid) -> Result<MulticastGroup, Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<MulticastGroup, Error> {
-            let mut c = get_db_conn()?;
-            multicast_group::dsl::multicast_group
-                .find(&id)
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    multicast_group::dsl::multicast_group
+        .find(&id)
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))
 }
 
 pub async fn update(mg: MulticastGroup) -> Result<MulticastGroup, Error> {
     mg.validate()?;
-    let mg = task::spawn_blocking({
-        move || -> Result<MulticastGroup, Error> {
-            let mut c = get_db_conn()?;
-
-            diesel::update(multicast_group::dsl::multicast_group.find(&mg.id))
-                .set((
-                    multicast_group::updated_at.eq(Utc::now()),
-                    multicast_group::name.eq(&mg.name),
-                    multicast_group::region.eq(&mg.region),
-                    multicast_group::mc_addr.eq(&mg.mc_addr),
-                    multicast_group::mc_nwk_s_key.eq(&mg.mc_nwk_s_key),
-                    multicast_group::mc_app_s_key.eq(&mg.mc_app_s_key),
-                    multicast_group::f_cnt.eq(&mg.f_cnt),
-                    multicast_group::group_type.eq(&mg.group_type),
-                    multicast_group::dr.eq(&mg.dr),
-                    multicast_group::frequency.eq(&mg.frequency),
-                    multicast_group::class_b_ping_slot_period.eq(&mg.class_b_ping_slot_period),
-                    multicast_group::class_c_scheduling_type.eq(&mg.class_c_scheduling_type),
-                ))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, mg.id.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let mg: MulticastGroup = diesel::update(multicast_group::dsl::multicast_group.find(&mg.id))
+        .set((
+            multicast_group::updated_at.eq(Utc::now()),
+            multicast_group::name.eq(&mg.name),
+            multicast_group::region.eq(&mg.region),
+            multicast_group::mc_addr.eq(&mg.mc_addr),
+            multicast_group::mc_nwk_s_key.eq(&mg.mc_nwk_s_key),
+            multicast_group::mc_app_s_key.eq(&mg.mc_app_s_key),
+            multicast_group::f_cnt.eq(&mg.f_cnt),
+            multicast_group::group_type.eq(&mg.group_type),
+            multicast_group::dr.eq(&mg.dr),
+            multicast_group::frequency.eq(&mg.frequency),
+            multicast_group::class_b_ping_slot_period.eq(&mg.class_b_ping_slot_period),
+            multicast_group::class_c_scheduling_type.eq(&mg.class_c_scheduling_type),
+        ))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
     info!(id = %mg.id, "Multicast-group updated");
     Ok(mg)
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra =
-                diesel::delete(multicast_group::dsl::multicast_group.find(&id)).execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(id.to_string()));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(multicast_group::dsl::multicast_group.find(&id))
+        .execute(&mut c)
+        .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(id.to_string()));
+    }
     info!(id = %id, "Multicast-group deleted");
     Ok(())
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<i64, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = multicast_group::dsl::multicast_group
-                .select(dsl::count_star())
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = multicast_group::dsl::multicast_group
+        .select(dsl::count_star())
+        .into_boxed();
 
-            if let Some(application_id) = &filters.application_id {
-                q = q.filter(multicast_group::dsl::application_id.eq(application_id));
-            }
+    if let Some(application_id) = &filters.application_id {
+        q = q.filter(multicast_group::dsl::application_id.eq(application_id));
+    }
 
-            if let Some(search) = &filters.search {
-                q = q.filter(multicast_group::dsl::name.ilike(format!("%{}%", search)));
-            }
+    if let Some(search) = &filters.search {
+        q = q.filter(multicast_group::dsl::name.ilike(format!("%{}%", search)));
+    }
 
-            q.first(&mut c)
-                .map_err(|e| Error::from_diesel(e, "".into()))
-        }
-    })
-    .await?
+    q.first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
 pub async fn list(
@@ -238,56 +212,51 @@ pub async fn list(
     offset: i64,
     filters: &Filters,
 ) -> Result<Vec<MulticastGroupListItem>, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<Vec<MulticastGroupListItem>, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = multicast_group::dsl::multicast_group
-                .select((
-                    multicast_group::id,
-                    multicast_group::created_at,
-                    multicast_group::updated_at,
-                    multicast_group::name,
-                    multicast_group::region,
-                    multicast_group::group_type,
-                ))
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = multicast_group::dsl::multicast_group
+        .select((
+            multicast_group::id,
+            multicast_group::created_at,
+            multicast_group::updated_at,
+            multicast_group::name,
+            multicast_group::region,
+            multicast_group::group_type,
+        ))
+        .into_boxed();
 
-            if let Some(application_id) = &filters.application_id {
-                q = q.filter(multicast_group::dsl::application_id.eq(application_id));
-            }
+    if let Some(application_id) = &filters.application_id {
+        q = q.filter(multicast_group::dsl::application_id.eq(application_id));
+    }
 
-            if let Some(search) = &filters.search {
-                q = q.filter(multicast_group::dsl::name.ilike(format!("%{}%", search)));
-            }
+    if let Some(search) = &filters.search {
+        q = q.filter(multicast_group::dsl::name.ilike(format!("%{}%", search)));
+    }
 
-            q.order_by(multicast_group::dsl::name)
-                .limit(limit)
-                .offset(offset)
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, "".into()))
-        }
-    })
-    .await?
+    q.order_by(multicast_group::dsl::name)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
 pub async fn add_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
-    task::spawn_blocking({
-        let group_id = *group_id;
-        let dev_eui = *dev_eui;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            c.transaction::<(), Error, _>(|c| {
+    let mut c = get_async_db_conn().await?;
+    c.build_transaction()
+        .run::<(), Error, _>(|c| {
+            Box::pin(async move {
                 let d: super::device::Device = device::dsl::device
                     .find(&dev_eui)
                     .for_update()
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
                 let mg: MulticastGroup = multicast_group::dsl::multicast_group
                     .find(&group_id)
                     .for_update()
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
 
                 if d.application_id != mg.application_id {
@@ -302,65 +271,59 @@ pub async fn add_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
                         multicast_group_device::created_at.eq(Utc::now()),
                     ))
                     .execute(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, "".into()))?;
                 Ok(())
             })
-        }
-    })
-    .await??;
+        })
+        .await?;
     info!(multicast_group_id = %group_id, dev_eui = %dev_eui, "Device added to multicast-group");
     Ok(())
 }
 
 pub async fn remove_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
-    task::spawn_blocking({
-        let group_id = *group_id;
-        let dev_eui = *dev_eui;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(
-                multicast_group_device::dsl::multicast_group_device
-                    .filter(multicast_group_device::multicast_group_id.eq(&group_id))
-                    .filter(multicast_group_device::dev_eui.eq(&dev_eui)),
-            )
-            .execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(format!(
-                    "multicast-group: {}, device: {}",
-                    group_id, dev_eui
-                )));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(
+        multicast_group_device::dsl::multicast_group_device
+            .filter(multicast_group_device::multicast_group_id.eq(&group_id))
+            .filter(multicast_group_device::dev_eui.eq(&dev_eui)),
+    )
+    .execute(&mut c)
+    .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(format!(
+            "multicast-group: {}, device: {}",
+            group_id, dev_eui
+        )));
+    }
     info!(multicast_group_id = %group_id, dev_eui = %dev_eui, "Device removed from multicast-group");
     Ok(())
 }
 
 pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Error> {
-    task::spawn_blocking({
-        let group_id = *group_id;
-        let gateway_id = *gateway_id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            c.transaction::<(), Error, _>(|c| {
+    let mut c = get_async_db_conn().await?;
+    c.build_transaction()
+        .run::<(), Error, _>(|c| {
+            Box::pin(async move {
                 let gw: super::gateway::Gateway = gateway::dsl::gateway
                     .find(&gateway_id)
                     .for_update()
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
 
                 let mg: MulticastGroup = multicast_group::dsl::multicast_group
                     .find(&group_id)
                     .for_update()
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
 
                 let a: super::application::Application = application::dsl::application
                     .find(&mg.application_id)
                     .for_update()
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, mg.application_id.to_string()))?;
 
                 if a.tenant_id != gw.tenant_id {
@@ -375,70 +338,53 @@ pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Erro
                         multicast_group_gateway::created_at.eq(Utc::now()),
                     ))
                     .execute(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, "".into()))?;
                 Ok(())
             })
-        }
-    })
-    .await??;
+        })
+        .await?;
     info!(multicast_group_id = %group_id, gateway_id = %gateway_id, "Gateway added to multicast-group");
     Ok(())
 }
 
 pub async fn remove_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Error> {
-    task::spawn_blocking({
-        let group_id = *group_id;
-        let gateway_id = *gateway_id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(
-                multicast_group_gateway::dsl::multicast_group_gateway
-                    .filter(multicast_group_gateway::multicast_group_id.eq(&group_id))
-                    .filter(multicast_group_gateway::gateway_id.eq(&gateway_id)),
-            )
-            .execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(format!(
-                    "multicast-group: {}, gateway: {}",
-                    group_id, gateway_id
-                )));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(
+        multicast_group_gateway::dsl::multicast_group_gateway
+            .filter(multicast_group_gateway::multicast_group_id.eq(&group_id))
+            .filter(multicast_group_gateway::gateway_id.eq(&gateway_id)),
+    )
+    .execute(&mut c)
+    .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(format!(
+            "multicast-group: {}, gateway: {}",
+            group_id, gateway_id
+        )));
+    }
     info!(multicast_group_id = %group_id, gateway_id = %gateway_id, "Gateway removed from multicast-group");
     Ok(())
 }
 
 pub async fn get_dev_euis(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
-    task::spawn_blocking({
-        let group_id = *group_id;
-        move || -> Result<Vec<EUI64>, Error> {
-            let mut c = get_db_conn()?;
-            multicast_group_device::dsl::multicast_group_device
-                .select(multicast_group_device::dev_eui)
-                .filter(multicast_group_device::dsl::multicast_group_id.eq(&group_id))
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, group_id.to_string()))
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    multicast_group_device::dsl::multicast_group_device
+        .select(multicast_group_device::dev_eui)
+        .filter(multicast_group_device::dsl::multicast_group_id.eq(&group_id))
+        .load(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, group_id.to_string()))
 }
 
 pub async fn get_gateway_ids(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
-    task::spawn_blocking({
-        let group_id = *group_id;
-        move || -> Result<Vec<EUI64>, Error> {
-            let mut c = get_db_conn()?;
-            multicast_group_gateway::dsl::multicast_group_gateway
-                .select(multicast_group_gateway::gateway_id)
-                .filter(multicast_group_gateway::dsl::multicast_group_id.eq(&group_id))
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, group_id.to_string()))
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    multicast_group_gateway::dsl::multicast_group_gateway
+        .select(multicast_group_gateway::gateway_id)
+        .filter(multicast_group_gateway::dsl::multicast_group_id.eq(&group_id))
+        .load(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, group_id.to_string()))
 }
 
 // This enqueues a multicast-group queue item for the given gateways and returns the frame-counter
@@ -451,17 +397,18 @@ pub async fn enqueue(
 ) -> Result<(Vec<Uuid>, u32), Error> {
     qi.validate()?;
 
-    let (ids, f_cnt) = task::spawn_blocking({
-        let gateway_ids = gateway_ids.to_vec();
-        move || -> Result<(Vec<Uuid>, u32), Error> {
-            let mut c = get_db_conn()?;
-            let conf = config::get();
-            c.transaction::<(Vec<Uuid>, u32), Error, _>(|c| {
+    let mut c = get_async_db_conn().await?;
+    let conf = config::get();
+    let (ids, f_cnt) = c
+        .build_transaction()
+        .run::<(Vec<Uuid>, u32), Error, _>(|c| {
+            Box::pin(async move {
                 let mut ids: Vec<Uuid> = Vec::new();
                 let mg: MulticastGroup = multicast_group::dsl::multicast_group
                     .find(&qi.multicast_group_id)
                     .for_update()
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, qi.multicast_group_id.to_string()))?;
 
                 match mg.group_type.as_ref() {
@@ -483,7 +430,8 @@ pub async fn enqueue(
                                     multicast_group_queue_item::dsl::multicast_group_id
                                         .eq(&qi.multicast_group_id),
                                 )
-                                .first(c)?;
+                                .first(c)
+                                .await?;
 
                         // Get timestamp after which we must generate the next ping-slot.
                         let ping_slot_after_gps_time = match res {
@@ -505,7 +453,7 @@ pub async fn enqueue(
                         let scheduler_run_after_ts = emit_at_time_since_gps_epoch.to_date_time()
                             - Duration::from_std(2 * conf.network.scheduler.interval).unwrap();
 
-                        for gateway_id in &gateway_ids {
+                        for gateway_id in gateway_ids {
                             let qi = MulticastGroupQueueItem {
                                 scheduler_run_after: scheduler_run_after_ts,
                                 multicast_group_id: mg.id,
@@ -523,6 +471,7 @@ pub async fn enqueue(
                                 diesel::insert_into(multicast_group_queue_item::table)
                                     .values(&qi)
                                     .get_result(c)
+                                    .await
                                     .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
                             ids.push(qi.id);
                         }
@@ -538,7 +487,8 @@ pub async fn enqueue(
                                     multicast_group_queue_item::dsl::multicast_group_id
                                         .eq(&qi.multicast_group_id),
                                 )
-                                .first(c)?;
+                                .first(c)
+                                .await?;
 
                         let mut scheduler_run_after_ts = match res {
                             Some(v) => {
@@ -563,7 +513,7 @@ pub async fn enqueue(
                             None
                         };
 
-                        for gateway_id in &gateway_ids {
+                        for gateway_id in gateway_ids {
                             let qi = MulticastGroupQueueItem {
                                 scheduler_run_after: scheduler_run_after_ts,
                                 multicast_group_id: mg.id,
@@ -579,6 +529,7 @@ pub async fn enqueue(
                                 diesel::insert_into(multicast_group_queue_item::table)
                                     .values(&qi)
                                     .get_result(c)
+                                    .await
                                     .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
                             ids.push(qi.id);
 
@@ -604,77 +555,58 @@ pub async fn enqueue(
                 diesel::update(multicast_group::dsl::multicast_group.find(&qi.multicast_group_id))
                     .set(multicast_group::f_cnt.eq(mg.f_cnt + 1))
                     .execute(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, qi.multicast_group_id.to_string()))?;
 
                 // Return value before it was incremented
                 Ok((ids, mg.f_cnt as u32))
             })
-        }
-    })
-    .await??;
+        })
+        .await?;
     info!(multicast_group_id = %qi.multicast_group_id, f_cnt = f_cnt, "Multicast-group queue item created");
     Ok((ids, f_cnt))
 }
 
 pub async fn delete_queue_item(id: &Uuid) -> Result<(), Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(
-                multicast_group_queue_item::dsl::multicast_group_queue_item.find(&id),
-            )
-            .execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(id.to_string()));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(multicast_group_queue_item::dsl::multicast_group_queue_item.find(&id))
+        .execute(&mut c)
+        .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(id.to_string()));
+    }
     info!(id = %id, "Multicast-group queue item deleted");
     Ok(())
 }
 
 pub async fn flush_queue(multicast_group_id: &Uuid) -> Result<(), Error> {
-    task::spawn_blocking({
-        let multicast_group_id = *multicast_group_id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let _ = diesel::delete(
-                multicast_group_queue_item::dsl::multicast_group_queue_item
-                    .filter(multicast_group_queue_item::multicast_group_id.eq(&multicast_group_id)),
-            )
-            .execute(&mut c)
-            .map_err(|e| Error::from_diesel(e, multicast_group_id.to_string()))?;
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let _ = diesel::delete(
+        multicast_group_queue_item::dsl::multicast_group_queue_item
+            .filter(multicast_group_queue_item::multicast_group_id.eq(&multicast_group_id)),
+    )
+    .execute(&mut c)
+    .await
+    .map_err(|e| Error::from_diesel(e, multicast_group_id.to_string()))?;
     info!(multicast_group_id = %multicast_group_id, "Multicast-group queue flushed");
     Ok(())
 }
 
 pub async fn get_queue(multicast_group_id: &Uuid) -> Result<Vec<MulticastGroupQueueItem>, Error> {
-    task::spawn_blocking({
-        let multicast_group_id = *multicast_group_id;
-        move || -> Result<Vec<MulticastGroupQueueItem>, Error> {
-            let mut c = get_db_conn()?;
-            multicast_group_queue_item::dsl::multicast_group_queue_item
-                .filter(multicast_group_queue_item::dsl::multicast_group_id.eq(&multicast_group_id))
-                .order_by(multicast_group_queue_item::created_at)
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, multicast_group_id.to_string()))
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    multicast_group_queue_item::dsl::multicast_group_queue_item
+        .filter(multicast_group_queue_item::dsl::multicast_group_id.eq(&multicast_group_id))
+        .order_by(multicast_group_queue_item::created_at)
+        .load(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, multicast_group_id.to_string()))
 }
 
 pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGroupQueueItem>> {
-    task::spawn_blocking({
-        move || -> Result<Vec<MulticastGroupQueueItem>> {
-            let mut c = get_db_conn()?;
-            c.transaction::<Vec<MulticastGroupQueueItem>, Error, _>(|c| {
+    let mut c = get_async_db_conn().await?;
+    c.build_transaction()
+        .run::<Vec<MulticastGroupQueueItem>, Error, _>(|c| {
+            Box::pin(async move {
                 let conf = config::get();
                 diesel::sql_query(
                     r#"
@@ -703,12 +635,12 @@ pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGr
                     Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
                 )
                 .load(c)
+                .await
                 .map_err(|e| Error::from_diesel(e, "".into()))
             })
-            .context("Get schedulable multicast-group queue items")
-        }
-    })
-    .await?
+        })
+        .await
+        .context("Get schedulable multicast-group queue items")
 }
 
 #[cfg(test)]
@@ -718,17 +650,12 @@ pub mod test {
     use crate::test;
 
     pub async fn get_queue_item(id: &Uuid) -> Result<MulticastGroupQueueItem, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            move || -> Result<MulticastGroupQueueItem, Error> {
-                let mut c = get_db_conn()?;
-                multicast_group_queue_item::dsl::multicast_group_queue_item
-                    .find(&id)
-                    .first(&mut c)
-                    .map_err(|e| Error::from_diesel(e, id.to_string()))
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        multicast_group_queue_item::dsl::multicast_group_queue_item
+            .find(&id)
+            .first(&mut c)
+            .await
+            .map_err(|e| Error::from_diesel(e, id.to_string()))
     }
 
     struct FilterTest<'a> {

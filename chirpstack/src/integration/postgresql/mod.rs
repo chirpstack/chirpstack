@@ -1,19 +1,24 @@
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use diesel::pg::PgConnection;
-use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::{ConnectionError, ConnectionResult};
+use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
+use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
+use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use tokio::task;
-use tracing::info;
+use futures_util::future::BoxFuture;
+use futures_util::FutureExt;
+use tracing::{error, info};
 use uuid::Uuid;
 
 use super::Integration as IntegrationTrait;
-use crate::config::PostgresqlIntegration as Config;
+use crate::config::{self, PostgresqlIntegration as Config};
 use chirpstack_api::integration;
 use schema::{
     event_ack, event_integration, event_join, event_location, event_log, event_status,
@@ -25,7 +30,8 @@ mod schema;
 pub const MIGRATIONS: EmbeddedMigrations =
     embed_migrations!("./src/integration/postgresql/migrations");
 
-type PgPool = Pool<ConnectionManager<PgConnection>>;
+pub type AsyncPgPool = DeadpoolPool<AsyncPgConnection>;
+pub type AsyncPgPoolConnection = DeadpoolObject<AsyncPgConnection>;
 
 #[derive(Insertable)]
 #[diesel(table_name = event_up)]
@@ -189,30 +195,85 @@ struct EventIntegration {
 }
 
 pub struct Integration {
-    pg_pool: PgPool,
+    pg_pool: AsyncPgPool,
 }
 
 impl Integration {
-    pub fn new(conf: &Config) -> Result<Integration> {
+    pub async fn new(conf: &Config) -> Result<Integration> {
         info!("Initializing PostgreSQL integration");
 
-        let pg_pool = PgPool::builder()
-            .max_size(conf.max_open_connections)
-            .min_idle(match conf.min_idle_connections {
-                0 => None,
-                _ => Some(conf.min_idle_connections),
-            })
-            .build(ConnectionManager::new(&conf.dsn))
-            .context("Setup PostgreSQL connection pool error")?;
-        let mut db_conn = pg_pool.get()?;
+        let mut config = ManagerConfig::default();
+        config.custom_setup = Box::new(pg_establish_connection);
+
+        let mgr =
+            AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_config(&conf.dsn, config);
+        let pg_pool = DeadpoolPool::builder(mgr)
+            .max_size(conf.max_open_connections as usize)
+            .build()?;
+
+        let c = pg_pool.get().await?;
+        let mut c_wrapped: AsyncConnectionWrapper<AsyncPgPoolConnection> =
+            AsyncConnectionWrapper::from(c);
 
         info!("Applying schema migrations");
-        db_conn
-            .run_pending_migrations(MIGRATIONS)
-            .map_err(|e| anyhow!("{}", e))?;
+        tokio::task::spawn_blocking(move || -> Result<()> {
+            c_wrapped
+                .run_pending_migrations(MIGRATIONS)
+                .map_err(|e| anyhow!("{}", e))?;
+            Ok(())
+        })
+        .await??;
 
         Ok(Integration { pg_pool })
     }
+}
+
+// Source:
+// https://github.com/weiznich/diesel_async/blob/main/examples/postgres/pooled-with-rustls/src/main.rs
+fn pg_establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
+    let fut = async {
+        let root_certs =
+            pg_root_certs().map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        let rustls_config = rustls::ClientConfig::builder()
+            .with_safe_defaults()
+            .with_root_certificates(root_certs)
+            .with_no_client_auth();
+        let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
+        let (client, conn) = tokio_postgres::connect(config, tls)
+            .await
+            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        tokio::spawn(async move {
+            if let Err(e) = conn.await {
+                error!(error = %e, "PostgreSQL connection error");
+            }
+        });
+        AsyncPgConnection::try_from(client).await
+    };
+    fut.boxed()
+}
+
+fn pg_root_certs() -> Result<rustls::RootCertStore> {
+    let conf = config::get();
+
+    let mut roots = rustls::RootCertStore::empty();
+    let certs = rustls_native_certs::load_native_certs()?;
+    let certs: Vec<_> = certs.into_iter().map(|cert| cert.0).collect();
+    roots.add_parsable_certificates(&certs);
+
+    if !conf.postgresql.ca_cert.is_empty() {
+        let f = File::open(&conf.integration.postgresql.ca_cert).context("Open ca certificate")?;
+        let mut reader = BufReader::new(f);
+        let certs = rustls_pemfile::certs(&mut reader)?;
+        for cert in certs
+            .into_iter()
+            .map(rustls::Certificate)
+            .collect::<Vec<_>>()
+        {
+            roots.add(&cert)?;
+        }
+    }
+
+    Ok(roots)
 }
 
 #[async_trait]
@@ -254,16 +315,12 @@ impl IntegrationTrait for Integration {
             rx_info: serde_json::to_value(&pl.rx_info)?,
             tx_info: serde_json::to_value(&pl.tx_info)?,
         };
-        let mut c = self.pg_pool.get()?;
+        let mut c = self.pg_pool.get().await?;
 
-        task::spawn_blocking(move || -> Result<()> {
-            diesel::insert_into(event_up::table)
-                .values(&e)
-                .execute(&mut c)?;
-            Ok(())
-        })
-        .await??;
-
+        diesel::insert_into(event_up::table)
+            .values(&e)
+            .execute(&mut c)
+            .await?;
         Ok(())
     }
 
@@ -295,16 +352,12 @@ impl IntegrationTrait for Integration {
             tags: serde_json::to_value(&di.tags)?,
             dev_addr: pl.dev_addr.clone(),
         };
-        let mut c = self.pg_pool.get()?;
+        let mut c = self.pg_pool.get().await?;
 
-        task::spawn_blocking(move || -> Result<()> {
-            diesel::insert_into(event_join::table)
-                .values(&e)
-                .execute(&mut c)?;
-            Ok(())
-        })
-        .await??;
-
+        diesel::insert_into(event_join::table)
+            .values(&e)
+            .execute(&mut c)
+            .await?;
         Ok(())
     }
 
@@ -338,16 +391,12 @@ impl IntegrationTrait for Integration {
             acknowledged: pl.acknowledged,
             f_cnt_down: pl.f_cnt_down as i64,
         };
-        let mut c = self.pg_pool.get()?;
+        let mut c = self.pg_pool.get().await?;
 
-        task::spawn_blocking(move || -> Result<()> {
-            diesel::insert_into(event_ack::table)
-                .values(&e)
-                .execute(&mut c)?;
-            Ok(())
-        })
-        .await??;
-
+        diesel::insert_into(event_ack::table)
+            .values(&e)
+            .execute(&mut c)
+            .await?;
         Ok(())
     }
 
@@ -382,16 +431,12 @@ impl IntegrationTrait for Integration {
             gateway_id: pl.gateway_id.clone(),
             tx_info: serde_json::to_value(&pl.tx_info)?,
         };
-        let mut c = self.pg_pool.get()?;
+        let mut c = self.pg_pool.get().await?;
 
-        task::spawn_blocking(move || -> Result<()> {
-            diesel::insert_into(event_tx_ack::table)
-                .values(&e)
-                .execute(&mut c)?;
-            Ok(())
-        })
-        .await??;
-
+        diesel::insert_into(event_tx_ack::table)
+            .values(&e)
+            .execute(&mut c)
+            .await?;
         Ok(())
     }
 
@@ -425,16 +470,12 @@ impl IntegrationTrait for Integration {
             description: pl.description.clone(),
             context: serde_json::to_value(&pl.context)?,
         };
-        let mut c = self.pg_pool.get()?;
+        let mut c = self.pg_pool.get().await?;
 
-        task::spawn_blocking(move || -> Result<()> {
-            diesel::insert_into(event_log::table)
-                .values(&e)
-                .execute(&mut c)?;
-            Ok(())
-        })
-        .await??;
-
+        diesel::insert_into(event_log::table)
+            .values(&e)
+            .execute(&mut c)
+            .await?;
         Ok(())
     }
 
@@ -469,15 +510,12 @@ impl IntegrationTrait for Integration {
             battery_level_unavailable: pl.battery_level_unavailable,
             battery_level: pl.battery_level,
         };
-        let mut c = self.pg_pool.get()?;
+        let mut c = self.pg_pool.get().await?;
 
-        task::spawn_blocking(move || -> Result<()> {
-            diesel::insert_into(event_status::table)
-                .values(&e)
-                .execute(&mut c)?;
-            Ok(())
-        })
-        .await??;
+        diesel::insert_into(event_status::table)
+            .values(&e)
+            .execute(&mut c)
+            .await?;
         Ok(())
     }
 
@@ -514,16 +552,12 @@ impl IntegrationTrait for Integration {
             source: loc.source.to_string(),
             accuracy: loc.accuracy,
         };
-        let mut c = self.pg_pool.get()?;
+        let mut c = self.pg_pool.get().await?;
 
-        task::spawn_blocking(move || -> Result<()> {
-            diesel::insert_into(event_location::table)
-                .values(&e)
-                .execute(&mut c)?;
-            Ok(())
-        })
-        .await??;
-
+        diesel::insert_into(event_location::table)
+            .values(&e)
+            .execute(&mut c)
+            .await?;
         Ok(())
     }
 
@@ -557,16 +591,12 @@ impl IntegrationTrait for Integration {
             event_type: pl.event_type.clone(),
             object: serde_json::to_value(&pl.object)?,
         };
-        let mut c = self.pg_pool.get()?;
+        let mut c = self.pg_pool.get().await?;
 
-        task::spawn_blocking(move || -> Result<()> {
-            diesel::insert_into(event_integration::table)
-                .values(&e)
-                .execute(&mut c)?;
-            Ok(())
-        })
-        .await??;
-
+        diesel::insert_into(event_integration::table)
+            .values(&e)
+            .execute(&mut c)
+            .await?;
         Ok(())
     }
 }

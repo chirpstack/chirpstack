@@ -1,13 +1,13 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
-use tokio::task;
+use diesel_async::RunQueryDsl;
 use tracing::info;
 
 use lrwn::{AES128Key, EUI64};
 
 use super::error::Error;
-use super::get_db_conn;
+use super::get_async_db_conn;
 use super::schema::device_keys;
 
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Eq, Debug, Clone)]
@@ -45,16 +45,12 @@ impl Default for DeviceKeys {
 }
 
 pub async fn create(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
-    let dk = task::spawn_blocking({
-        move || -> Result<DeviceKeys, Error> {
-            let mut c = get_db_conn()?;
-            diesel::insert_into(device_keys::table)
-                .values(&dk)
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, dk.dev_eui.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let dk: DeviceKeys = diesel::insert_into(device_keys::table)
+        .values(&dk)
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, dk.dev_eui.to_string()))?;
     info!(
         dev_eui = %dk.dev_eui,
         "Device-keys created"
@@ -63,31 +59,22 @@ pub async fn create(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
 }
 
 pub async fn get(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<DeviceKeys, Error> {
-            let mut c = get_db_conn()?;
-            let dk = device_keys::dsl::device_keys
-                .find(&dev_eui)
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
-            Ok(dk)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let dk = device_keys::dsl::device_keys
+        .find(&dev_eui)
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+    Ok(dk)
 }
 
 pub async fn update(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
-    let dk = task::spawn_blocking({
-        move || -> Result<DeviceKeys, Error> {
-            let mut c = get_db_conn()?;
-            diesel::update(device_keys::dsl::device_keys.find(&dk.dev_eui))
-                .set(&dk)
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, dk.dev_eui.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(&dk.dev_eui))
+        .set(&dk)
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, dk.dev_eui.to_string()))?;
     info!(
         dev_eui = %dk.dev_eui,
         "Device-keys updated"
@@ -96,19 +83,13 @@ pub async fn update(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
 }
 
 pub async fn delete(dev_eui: &EUI64) -> Result<(), Error> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra =
-                diesel::delete(device_keys::dsl::device_keys.find(&dev_eui)).execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(dev_eui.to_string()));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(device_keys::dsl::device_keys.find(&dev_eui))
+        .execute(&mut c)
+        .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(dev_eui.to_string()));
+    }
     info!(
         dev_eui = %dev_eui,
         "Device-keys deleted"
@@ -117,18 +98,12 @@ pub async fn delete(dev_eui: &EUI64) -> Result<(), Error> {
 }
 
 pub async fn set_dev_nonces(dev_eui: &EUI64, nonces: &[i32]) -> Result<DeviceKeys, Error> {
-    let dk = task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        let nonces = nonces.to_vec();
-        move || -> Result<DeviceKeys, Error> {
-            let mut c = get_db_conn()?;
-            diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
-                .set(device_keys::dev_nonces.eq(&nonces))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(dev_eui))
+        .set(device_keys::dev_nonces.eq(nonces))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
     info!(
         dev_eui = %dev_eui,
         "Dev-nonces updated"
@@ -140,15 +115,16 @@ pub async fn validate_incr_join_and_store_dev_nonce(
     dev_eui: &EUI64,
     dev_nonce: i32,
 ) -> Result<DeviceKeys, Error> {
-    let dk = task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<DeviceKeys, Error> {
-            let mut c = get_db_conn()?;
-            c.transaction::<DeviceKeys, Error, _>(|c| {
+    let mut c = get_async_db_conn().await?;
+    let dk: DeviceKeys = c
+        .build_transaction()
+        .run::<DeviceKeys, Error, _>(|c| {
+            Box::pin(async move {
                 let mut dk: DeviceKeys = device_keys::dsl::device_keys
                     .find(&dev_eui)
                     .for_update()
                     .first(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
                 if dk.dev_nonces.contains(&(Some(dev_nonce))) {
@@ -165,11 +141,11 @@ pub async fn validate_incr_join_and_store_dev_nonce(
                         device_keys::join_nonce.eq(&dk.join_nonce),
                     ))
                     .get_result(c)
+                    .await
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
             })
-        }
-    })
-    .await??;
+        })
+        .await?;
 
     info!(dev_eui = %dev_eui, dev_nonce = dev_nonce, "Device-nonce validated, join-nonce incremented and stored");
     Ok(dk)
@@ -182,20 +158,16 @@ pub mod test {
     use crate::test;
 
     pub async fn reset_nonces(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
-        let dk = task::spawn_blocking({
-            let dev_eui = *dev_eui;
-            move || -> Result<DeviceKeys, Error> {
-                let mut c = get_db_conn()?;
-                diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
-                    .set((
-                        device_keys::dev_nonces.eq::<Vec<i32>>(Vec::new()),
-                        device_keys::join_nonce.eq(0),
-                    ))
-                    .get_result(&mut c)
-                    .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
-            }
-        })
-        .await??;
+        let mut c = get_async_db_conn().await?;
+        let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
+            .set((
+                device_keys::dev_nonces.eq::<Vec<i32>>(Vec::new()),
+                device_keys::join_nonce.eq(0),
+            ))
+            .get_result(&mut c)
+            .await
+            .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+
         info!(
             dev_eui = %dev_eui,
             "Nonces reset"

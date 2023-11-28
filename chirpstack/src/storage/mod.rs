@@ -1,12 +1,21 @@
+use std::fs::File;
+use std::io::BufReader;
 use std::ops::{Deref, DerefMut};
 use std::sync::RwLock;
 
 use anyhow::Context;
 use anyhow::Result;
-use diesel::pg::PgConnection;
-use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::{ConnectionError, ConnectionResult};
+use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
+use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
+use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
+use diesel_async::AsyncPgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use tracing::info;
+use futures_util::future::BoxFuture;
+use futures_util::FutureExt;
+use r2d2::{Pool, PooledConnection};
+use tokio::task;
+use tracing::{error, info};
 
 use crate::config;
 
@@ -34,11 +43,11 @@ pub mod search;
 pub mod tenant;
 pub mod user;
 
-pub type PgPool = Pool<ConnectionManager<PgConnection>>;
-pub type PgPoolConnection = PooledConnection<ConnectionManager<PgConnection>>;
+pub type AsyncPgPool = DeadpoolPool<AsyncPgConnection>;
+pub type AsyncPgPoolConnection = DeadpoolObject<AsyncPgConnection>;
 
 lazy_static! {
-    static ref PG_POOL: RwLock<Option<PgPool>> = RwLock::new(None);
+    static ref ASYNC_PG_POOL: RwLock<Option<AsyncPgPool>> = RwLock::new(None);
     static ref REDIS_POOL: RwLock<Option<RedisPool>> = RwLock::new(None);
     static ref REDIS_PREFIX: RwLock<String> = RwLock::new("".to_string());
 }
@@ -170,21 +179,18 @@ pub async fn setup() -> Result<()> {
     let conf = config::get();
 
     info!("Setting up PostgreSQL connection pool");
-    let pg_pool = PgPool::builder()
-        .max_size(conf.postgresql.max_open_connections)
-        .min_idle(match conf.postgresql.min_idle_connections {
-            0 => None,
-            _ => Some(conf.postgresql.min_idle_connections),
-        })
-        .build(ConnectionManager::new(&conf.postgresql.dsn))
-        .context("Setup PostgreSQL connection pool error")?;
-    set_db_pool(pg_pool);
-    let mut pg_conn = get_db_conn()?;
+    let mut config = ManagerConfig::default();
+    config.custom_setup = Box::new(pg_establish_connection);
 
-    info!("Applying schema migrations");
-    pg_conn
-        .run_pending_migrations(MIGRATIONS)
-        .map_err(|e| anyhow!("{}", e))?;
+    let mgr = AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_config(
+        &conf.postgresql.dsn,
+        config,
+    );
+    let pool = DeadpoolPool::builder(mgr)
+        .max_size(conf.postgresql.max_open_connections as usize)
+        .build()?;
+    set_async_db_pool(pool);
+    run_db_migrations().await?;
 
     info!("Setting up Redis client");
     if conf.redis.cluster {
@@ -221,18 +227,66 @@ pub async fn setup() -> Result<()> {
     Ok(())
 }
 
-pub fn get_db_pool() -> Result<PgPool> {
-    let pool_r = PG_POOL.read().unwrap();
-    let pool = pool_r
+// Source:
+// https://github.com/weiznich/diesel_async/blob/main/examples/postgres/pooled-with-rustls/src/main.rs
+fn pg_establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
+    let fut = async {
+        let root_certs =
+            pg_root_certs().map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        let rustls_config = rustls::ClientConfig::builder()
+            .with_safe_defaults()
+            .with_root_certificates(root_certs)
+            .with_no_client_auth();
+        let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
+        let (client, conn) = tokio_postgres::connect(config, tls)
+            .await
+            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        tokio::spawn(async move {
+            if let Err(e) = conn.await {
+                error!(error = %e, "PostgreSQL connection error");
+            }
+        });
+        AsyncPgConnection::try_from(client).await
+    };
+    fut.boxed()
+}
+
+fn pg_root_certs() -> Result<rustls::RootCertStore> {
+    let conf = config::get();
+
+    let mut roots = rustls::RootCertStore::empty();
+    let certs = rustls_native_certs::load_native_certs()?;
+    let certs: Vec<_> = certs.into_iter().map(|cert| cert.0).collect();
+    roots.add_parsable_certificates(&certs);
+
+    if !conf.postgresql.ca_cert.is_empty() {
+        let f = File::open(&conf.postgresql.ca_cert).context("Open ca certificate")?;
+        let mut reader = BufReader::new(f);
+        let certs = rustls_pemfile::certs(&mut reader)?;
+        for cert in certs
+            .into_iter()
+            .map(rustls::Certificate)
+            .collect::<Vec<_>>()
+        {
+            roots.add(&cert)?;
+        }
+    }
+
+    Ok(roots)
+}
+
+pub fn get_async_db_pool() -> Result<AsyncPgPool> {
+    let pool_r = ASYNC_PG_POOL.read().unwrap();
+    let pool: AsyncPgPool = pool_r
         .as_ref()
-        .ok_or_else(|| anyhow!("PostgreSQL connection pool is not initialized (yet)"))?
+        .ok_or_else(|| anyhow!("PostgreSQL connection pool is not initialized"))?
         .clone();
     Ok(pool)
 }
 
-pub fn get_db_conn() -> Result<PgPoolConnection> {
-    let pool = get_db_pool()?;
-    Ok(pool.get()?)
+pub async fn get_async_db_conn() -> Result<AsyncPgPoolConnection> {
+    let pool = get_async_db_pool()?;
+    Ok(pool.get().await?)
 }
 
 pub fn get_redis_conn() -> Result<RedisPoolConnection> {
@@ -246,9 +300,26 @@ pub fn get_redis_conn() -> Result<RedisPoolConnection> {
     })
 }
 
-pub fn set_db_pool(p: PgPool) {
-    let mut pool_w = PG_POOL.write().unwrap();
+pub fn set_async_db_pool(p: AsyncPgPool) {
+    let mut pool_w = ASYNC_PG_POOL.write().unwrap();
     *pool_w = Some(p);
+}
+
+pub async fn run_db_migrations() -> Result<()> {
+    info!("Applying schema migrations");
+
+    let c = get_async_db_conn().await?;
+    let mut c_wrapped: AsyncConnectionWrapper<AsyncPgPoolConnection> =
+        AsyncConnectionWrapper::from(c);
+
+    task::spawn_blocking(move || -> Result<()> {
+        c_wrapped
+            .run_pending_migrations(MIGRATIONS)
+            .map_err(|e| anyhow!("{}", e))?;
+
+        Ok(())
+    })
+    .await?
 }
 
 pub fn set_redis_pool(p: RedisPool) {
@@ -262,14 +333,22 @@ pub fn redis_key(s: String) -> String {
 }
 
 #[cfg(test)]
-pub fn reset_db() -> Result<()> {
-    let mut conn = get_db_conn()?;
-    conn.revert_all_migrations(MIGRATIONS)
-        .map_err(|e| anyhow!("{}", e))?;
-    conn.run_pending_migrations(MIGRATIONS)
-        .map_err(|e| anyhow!("{}", e))?;
+pub async fn reset_db() -> Result<()> {
+    let c = get_async_db_conn().await?;
+    let mut c_wrapped: AsyncConnectionWrapper<AsyncPgPoolConnection> =
+        AsyncConnectionWrapper::from(c);
 
-    Ok(())
+    tokio::task::spawn_blocking(move || -> Result<()> {
+        c_wrapped
+            .revert_all_migrations(MIGRATIONS)
+            .map_err(|e| anyhow!("{}", e))?;
+        c_wrapped
+            .run_pending_migrations(MIGRATIONS)
+            .map_err(|e| anyhow!("{}", e))?;
+
+        Ok(())
+    })
+    .await?
 }
 
 #[cfg(test)]

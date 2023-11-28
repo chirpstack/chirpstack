@@ -56,6 +56,7 @@ pub async fn setup() -> Result<()> {
             }
             "postgresql" => integrations.push(Box::new(
                 postgresql::Integration::new(&conf.integration.postgresql)
+                    .await
                     .context("Setup PostgreSQL integration")?,
             )),
             "amqp" => integrations.push(Box::new(

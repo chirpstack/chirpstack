@@ -54,7 +54,7 @@ impl Default for Logging {
 pub struct Postgresql {
     pub dsn: String,
     pub max_open_connections: u32,
-    pub min_idle_connections: u32,
+    pub ca_cert: String,
 }
 
 impl Default for Postgresql {
@@ -62,7 +62,7 @@ impl Default for Postgresql {
         Postgresql {
             dsn: "postgresql://chirpstack:chirpstack@localhost/chirpstack?sslmode=disable".into(),
             max_open_connections: 10,
-            min_idle_connections: 0,
+            ca_cert: "".into(),
         }
     }
 }
@@ -307,7 +307,7 @@ impl Default for MqttIntegrationClient {
 pub struct PostgresqlIntegration {
     pub dsn: String,
     pub max_open_connections: u32,
-    pub min_idle_connections: u32,
+    pub ca_cert: String,
 }
 
 impl Default for PostgresqlIntegration {
@@ -315,7 +315,7 @@ impl Default for PostgresqlIntegration {
         PostgresqlIntegration {
             dsn: "postgresql://chirpstack_integration:chirpstack_integration@localhost/chirpstack_integration?sslmode=disable".into(),
             max_open_connections: 10,
-            min_idle_connections: 0,
+            ca_cert: "".into(),
         }
     }
 }

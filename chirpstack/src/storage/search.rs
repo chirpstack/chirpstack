@@ -1,13 +1,12 @@
 use std::collections::HashMap;
 
-use crate::diesel::RunQueryDsl;
 use anyhow::{Context, Result};
+use diesel_async::RunQueryDsl;
 use regex::Regex;
-use tokio::task;
 use uuid::Uuid;
 
 use super::error::Error;
-use super::get_db_conn;
+use super::get_async_db_conn;
 use lrwn::EUI64;
 
 lazy_static! {
@@ -45,117 +44,112 @@ pub async fn global_search(
     limit: usize,
     offset: usize,
 ) -> Result<Vec<SearchResult>, Error> {
-    task::spawn_blocking({
-        let user_id = *user_id;
-        let search = search.to_string();
-        let (query, tags) = parse_search_query(&search);
-        let query = format!("%{}%", query);
-        let tags = serde_json::to_value(tags).context("To serde_json value")?;
+    let (query, tags) = parse_search_query(search);
+    let query = format!("%{}%", query);
+    let tags = serde_json::to_value(tags).context("To serde_json value")?;
 
-        move || -> Result<Vec<SearchResult>, Error> {
-            let mut c = get_db_conn()?;
-            let res = diesel::sql_query(
-                r#"
-                    -- device
-                    select
-                        'device' as kind,
-                        greatest(similarity(d.name, $1), similarity(encode(d.dev_eui, 'hex'), $1), similarity(encode(d.dev_addr, 'hex'), $1)) as score,
-                        t.id as tenant_id,
-                        t.name as tenant_name,
-                        a.id as application_id,
-                        a.name as application_name,
-                        d.dev_eui as device_dev_eui,
-                        d.name as device_name,
-                        null as gateway_id,
-                        null as gateway_name
-                    from device d
-                    inner join application a
-                        on a.id = d.application_id
-                    inner join tenant t
-                        on t.id = a.tenant_id
-                    left join tenant_user tu
-                        on tu.tenant_id = t.id
-                    left join "user" u
-                        on u.id = tu.user_id
-                    where
-                        ($3 = true or u.id = $4)
-                         and (d.name ilike $2 or encode(d.dev_eui, 'hex') ilike $2 or encode(d.dev_addr, 'hex') ilike $2 or ($7 != '{}'::jsonb and d.tags @> $7))
-                    -- gateway
-                    union
-                    select
-                        'gateway' as kind,
-                        greatest(similarity(g.name, $1), similarity(encode(g.gateway_id, 'hex'), $1)) as score,
-                        t.id as tenant_id,
-                        t.name as tenant_name,
-                        null as application_id,
-                        null as application_name,
-                        null as device_dev_eui,
-                        null as device_name,
-                        g.gateway_id as gateway_id,
-                        g.name as gateway_name
-                    from
-                        gateway g
-                    inner join tenant t
-                        on t.id = g.tenant_id
-                    left join tenant_user tu
-                        on tu.tenant_id = t.id
-                    left join "user" u
-                        on u.id = tu.user_id
-                    where
-                        ($3 = true or u.id = $4)
-                        and (g.name ilike $2 or encode(g.gateway_id, 'hex') ilike $2 or ($7 != '{}'::jsonb and g.tags @> $7))
-                    -- tenant
-                    union
-                    select
-                        'tenant' as kind,
-                        similarity(t.name, $1) as score,
-                        t.id as tenant_id,
-                        t.name as tenant_name,
-                        null as application_id,
-                        null as application_name,
-                        null as device_dev_eui,
-                        null as device_name,
-                        null as gateway_id,
-                        null as gateway_name
-                    from
-                        tenant t
-                    left join tenant_user tu
-                        on tu.tenant_id = t.id
-                    left join "user" u
-                        on u.id = tu.user_id
-                    where
-                        ($3 = true or u.id = $4)
-                        and t.name ilike $2
-                    -- application
-                    union
-                    select
-                        'application' as kind,
-                        similarity(a.name, $1) as score,
-                        t.id as tenant_id,
-                        t.name as tenant_name,
-                        a.id as application_id,
-                        a.name as application_name,
-                        null as device_dev_eui,
-                        null as device_name,
-                        null as gateway_id,
-                        null as gateway_name
-                    from
-                        application a
-                    inner join tenant t
-                        on t.id = a.tenant_id
-                    left join tenant_user tu
-                        on tu.tenant_id = t.id
-                    left join "user" u
-                        on u.id = tu.user_id
-                    where
-                        ($3 = true or u.id = $4)
-                        and a.name ilike $2
-                    order by
-                        score desc
-                    limit $5
-                    offset $6
-                "#,
-            )
+    let mut c = get_async_db_conn().await?;
+    let res: Vec<SearchResult> = diesel::sql_query(
+        r#"
+            -- device
+            select
+                'device' as kind,
+                greatest(similarity(d.name, $1), similarity(encode(d.dev_eui, 'hex'), $1), similarity(encode(d.dev_addr, 'hex'), $1)) as score,
+                t.id as tenant_id,
+                t.name as tenant_name,
+                a.id as application_id,
+                a.name as application_name,
+                d.dev_eui as device_dev_eui,
+                d.name as device_name,
+                null as gateway_id,
+                null as gateway_name
+            from device d
+            inner join application a
+                on a.id = d.application_id
+            inner join tenant t
+                on t.id = a.tenant_id
+            left join tenant_user tu
+                on tu.tenant_id = t.id
+            left join "user" u
+                on u.id = tu.user_id
+            where
+                ($3 = true or u.id = $4)
+                    and (d.name ilike $2 or encode(d.dev_eui, 'hex') ilike $2 or encode(d.dev_addr, 'hex') ilike $2 or ($7 != '{}'::jsonb and d.tags @> $7))
+            -- gateway
+            union
+            select
+                'gateway' as kind,
+                greatest(similarity(g.name, $1), similarity(encode(g.gateway_id, 'hex'), $1)) as score,
+                t.id as tenant_id,
+                t.name as tenant_name,
+                null as application_id,
+                null as application_name,
+                null as device_dev_eui,
+                null as device_name,
+                g.gateway_id as gateway_id,
+                g.name as gateway_name
+            from
+                gateway g
+            inner join tenant t
+                on t.id = g.tenant_id
+            left join tenant_user tu
+                on tu.tenant_id = t.id
+            left join "user" u
+                on u.id = tu.user_id
+            where
+                ($3 = true or u.id = $4)
+                and (g.name ilike $2 or encode(g.gateway_id, 'hex') ilike $2 or ($7 != '{}'::jsonb and g.tags @> $7))
+            -- tenant
+            union
+            select
+                'tenant' as kind,
+                similarity(t.name, $1) as score,
+                t.id as tenant_id,
+                t.name as tenant_name,
+                null as application_id,
+                null as application_name,
+                null as device_dev_eui,
+                null as device_name,
+                null as gateway_id,
+                null as gateway_name
+            from
+                tenant t
+            left join tenant_user tu
+                on tu.tenant_id = t.id
+            left join "user" u
+                on u.id = tu.user_id
+            where
+                ($3 = true or u.id = $4)
+                and t.name ilike $2
+            -- application
+            union
+            select
+                'application' as kind,
+                similarity(a.name, $1) as score,
+                t.id as tenant_id,
+                t.name as tenant_name,
+                a.id as application_id,
+                a.name as application_name,
+                null as device_dev_eui,
+                null as device_name,
+                null as gateway_id,
+                null as gateway_name
+            from
+                application a
+            inner join tenant t
+                on t.id = a.tenant_id
+            left join tenant_user tu
+                on tu.tenant_id = t.id
+            left join "user" u
+                on u.id = tu.user_id
+            where
+                ($3 = true or u.id = $4)
+                and a.name ilike $2
+            order by
+                score desc
+            limit $5
+            offset $6
+        "#)
             .bind::<diesel::sql_types::Text, _>(&search)
             .bind::<diesel::sql_types::Text, _>(&query)
             .bind::<diesel::sql_types::Bool, _>(global_admin)
@@ -163,12 +157,9 @@ pub async fn global_search(
             .bind::<diesel::sql_types::BigInt, _>(limit as i64)
             .bind::<diesel::sql_types::BigInt, _>(offset as i64)
             .bind::<diesel::sql_types::Jsonb, _>(tags)
-            .load(&mut c)?;
+            .load(&mut c).await?;
 
-            Ok(res)
-        }
-    })
-    .await?
+    Ok(res)
 }
 
 fn parse_search_query(q: &str) -> (String, HashMap<String, String>) {

@@ -2,13 +2,13 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::dsl;
 use diesel::prelude::*;
-use tokio::task;
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
 use super::schema::api_key;
-use super::{error, get_db_conn};
+use super::{error, get_async_db_conn};
 
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = api_key)]
@@ -51,81 +51,61 @@ pub struct Filters {
 pub async fn create(ak: ApiKey) -> Result<ApiKey, Error> {
     ak.validate()?;
 
-    let ak = task::spawn_blocking(move || -> Result<ApiKey, Error> {
-        let mut c = get_db_conn()?;
-        diesel::insert_into(api_key::table)
-            .values(&ak)
-            .get_result(&mut c)
-            .map_err(|e| error::Error::from_diesel(e, ak.id.to_string()))
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ak: ApiKey = diesel::insert_into(api_key::table)
+        .values(&ak)
+        .get_result(&mut c)
+        .await
+        .map_err(|e| error::Error::from_diesel(e, ak.id.to_string()))?;
     info!(id = %ak.id, "Api-key created");
     Ok(ak)
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    task::spawn_blocking({
-        let id = *id;
-
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(api_key::dsl::api_key.find(&id)).execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(id.to_string()));
-            }
-            info!(id = %id, "Api-key deleted");
-            Ok(())
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(api_key::dsl::api_key.find(&id))
+        .execute(&mut c)
+        .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(id.to_string()));
+    }
+    info!(id = %id, "Api-key deleted");
+    Ok(())
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
+    let mut c = get_async_db_conn().await?;
 
-        move || -> Result<i64, Error> {
-            let mut c = get_db_conn()?;
+    let mut q = api_key::dsl::api_key
+        .select(dsl::count_star())
+        .filter(api_key::dsl::is_admin.eq(filters.is_admin))
+        .into_boxed();
 
-            let mut q = api_key::dsl::api_key
-                .select(dsl::count_star())
-                .filter(api_key::dsl::is_admin.eq(filters.is_admin))
-                .into_boxed();
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(api_key::dsl::tenant_id.eq(tenant_id));
+    }
 
-            if let Some(tenant_id) = &filters.tenant_id {
-                q = q.filter(api_key::dsl::tenant_id.eq(tenant_id));
-            }
-
-            Ok(q.first(&mut c)?)
-        }
-    })
-    .await?
+    Ok(q.first(&mut c).await?)
 }
 
 pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<ApiKey>, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
+    let mut c = get_async_db_conn().await?;
 
-        move || -> Result<Vec<ApiKey>, Error> {
-            let mut c = get_db_conn()?;
+    let mut q = api_key::dsl::api_key
+        .filter(api_key::dsl::is_admin.eq(filters.is_admin))
+        .into_boxed();
 
-            let mut q = api_key::dsl::api_key
-                .filter(api_key::dsl::is_admin.eq(filters.is_admin))
-                .into_boxed();
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(api_key::dsl::tenant_id.eq(tenant_id));
+    }
 
-            if let Some(tenant_id) = &filters.tenant_id {
-                q = q.filter(api_key::dsl::tenant_id.eq(tenant_id));
-            }
-
-            let items = q
-                .order_by(api_key::dsl::name)
-                .limit(limit)
-                .offset(offset)
-                .load(&mut c)?;
-            Ok(items)
-        }
-    })
-    .await?
+    let items = q
+        .order_by(api_key::dsl::name)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut c)
+        .await?;
+    Ok(items)
 }
 
 #[cfg(test)]
@@ -143,18 +123,12 @@ pub mod test {
     }
 
     pub async fn get(id: &Uuid) -> Result<ApiKey, Error> {
-        task::spawn_blocking({
-            let id = *id;
-
-            move || -> Result<ApiKey, Error> {
-                let mut c = get_db_conn()?;
-                api_key::dsl::api_key
-                    .find(&id)
-                    .first(&mut c)
-                    .map_err(|e| error::Error::from_diesel(e, id.to_string()))
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        api_key::dsl::api_key
+            .find(&id)
+            .first(&mut c)
+            .await
+            .map_err(|e| error::Error::from_diesel(e, id.to_string()))
     }
 
     pub async fn create_api_key(is_admin: bool, is_tenant: bool) -> ApiKey {

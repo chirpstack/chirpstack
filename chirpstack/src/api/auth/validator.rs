@@ -1,8 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use diesel::dsl;
-use diesel::prelude::*;
-use tokio::task;
+use diesel::{dsl, prelude::*};
+use diesel_async::RunQueryDsl;
 use tonic::{Extensions, Status};
 use tracing::error;
 use uuid::Uuid;
@@ -12,7 +11,7 @@ use lrwn::EUI64;
 use super::error::Error;
 use crate::api::auth::AuthID;
 use crate::helpers::errors::PrintFullError;
-use crate::storage::get_db_conn;
+use crate::storage::get_async_db_conn;
 use crate::storage::schema::{
     api_key, application, device, device_profile, gateway, multicast_group, tenant_user, user,
 };
@@ -93,20 +92,14 @@ impl Validator for ValidateActiveUser {
     }
 
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let count = user::dsl::user
-                    .select(dsl::count_star())
-                    .find(id)
-                    .filter(user::dsl::is_active.eq(true))
-                    .first(&mut c)?;
-                Ok(count)
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        let count = user::dsl::user
+            .select(dsl::count_star())
+            .find(id)
+            .filter(user::dsl::is_active.eq(true))
+            .first(&mut c)
+            .await?;
+        Ok(count)
     }
 }
 
@@ -125,24 +118,18 @@ impl Validator for ValidateIsAdmin {
     }
 
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let count = user::dsl::user
-                    .select(dsl::count_star())
-                    .find(id)
-                    .filter(
-                        user::dsl::is_active
-                            .eq(true)
-                            .and(user::dsl::is_admin.eq(true)),
-                    )
-                    .first(&mut c)?;
-                Ok(count)
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        let count = user::dsl::user
+            .select(dsl::count_star())
+            .find(id)
+            .filter(
+                user::dsl::is_active
+                    .eq(true)
+                    .and(user::dsl::is_admin.eq(true)),
+            )
+            .first(&mut c)
+            .await?;
+        Ok(count)
     }
 }
 
@@ -157,36 +144,24 @@ impl ValidateActiveUserOrKey {
 #[async_trait]
 impl Validator for ValidateActiveUserOrKey {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let count = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .first(&mut c)?;
-                Ok(count)
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        let count = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(&id)
+            .first(&mut c)
+            .await?;
+        Ok(count)
     }
 
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let count = user::dsl::user
-                    .select(dsl::count_star())
-                    .find(id)
-                    .filter(user::dsl::is_active.eq(true))
-                    .first(&mut c)?;
-                Ok(count)
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        let count = user::dsl::user
+            .select(dsl::count_star())
+            .find(id)
+            .filter(user::dsl::is_active.eq(true))
+            .first(&mut c)
+            .await?;
+        Ok(count)
     }
 }
 
@@ -203,49 +178,36 @@ impl ValidateUsersAccess {
 #[async_trait]
 impl Validator for ValidateUsersAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .find(&id)
+            .filter(user::dsl::is_active.eq(true))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .filter(user::dsl::is_active.eq(true))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    Flag::Create | Flag::List => {
-                        q = q.filter(user::dsl::is_admin.eq(true));
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            Flag::Create | Flag::List => {
+                q = q.filter(user::dsl::is_admin.eq(true));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                // admin api key
-                let count = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .filter(api_key::dsl::is_admin.eq(true))
-                    .first(&mut c)?;
-                Ok(count)
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        // admin api key
+        let count = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(&id)
+            .filter(api_key::dsl::is_admin.eq(true))
+            .first(&mut c)
+            .await?;
+        Ok(count)
     }
 }
 
@@ -263,55 +225,45 @@ impl ValidateUserAccess {
 #[async_trait]
 impl Validator for ValidateUserAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let user_id = self.user_id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .find(&id)
+            .filter(user::dsl::is_active.eq(true))
+            .into_boxed();
 
-            move || {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .filter(user::dsl::is_active.eq(true))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // user itself
-                    Flag::Read | Flag::UpdateProfile => {
-                        q = q.filter(user::dsl::is_admin.eq(true).or(user::dsl::id.eq(&user_id)));
-                    }
-                    // admin user
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(user::dsl::is_admin.eq(true));
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // user itself
+            Flag::Read | Flag::UpdateProfile => {
+                q = q.filter(
+                    user::dsl::is_admin
+                        .eq(true)
+                        .or(user::dsl::id.eq(&self.user_id)),
+                );
             }
-        })
-        .await?
+            // admin user
+            Flag::Update | Flag::Delete => {
+                q = q.filter(user::dsl::is_admin.eq(true));
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                // admin api key
-                let count = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .filter(api_key::dsl::is_admin.eq(true))
-                    .first(&mut c)?;
-                Ok(count)
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        // admin api key
+        let count = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(&id)
+            .filter(api_key::dsl::is_admin.eq(true))
+            .first(&mut c)
+            .await?;
+        Ok(count)
     }
 }
 
@@ -335,56 +287,47 @@ impl ValidateApiKeysAccess {
 #[async_trait]
 impl Validator for ValidateApiKeysAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let tenant_id = self.tenant_id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant admin
-                    Flag::Create => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::tenant_id
-                                        .eq(&tenant_id)
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                        .and(tenant_user::dsl::is_admin.eq(true)),
-                                ),
-                            )),
-                        );
-                    }
-                    // admin user
-                    // tenant user (api_key filtered by tenant_id in api)
-                    Flag::List => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::tenant_id
-                                        .eq(&tenant_id)
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant admin
+            Flag::Create => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::tenant_id
+                                .eq(&self.tenant_id)
+                                .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                .and(tenant_user::dsl::is_admin.eq(true)),
+                        ),
+                    )),
+                );
             }
-        })
-        .await?
+            // admin user
+            // tenant user (api_key filtered by tenant_id in api)
+            Flag::List => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::tenant_id
+                                .eq(&self.tenant_id)
+                                .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                        ),
+                    )),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, _id: &Uuid) -> Result<i64, Error> {
@@ -406,48 +349,38 @@ impl ValidateApiKeyAccess {
 #[async_trait]
 impl Validator for ValidateApiKeyAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let self_id = self.id;
-            let id = *id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant admin
-                    Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user
-                                    .inner_join(
-                                        api_key::table.on(api_key::dsl::tenant_id
-                                            .eq(tenant_user::dsl::tenant_id.nullable())),
-                                    )
-                                    .filter(
-                                        tenant_user::dsl::user_id
-                                            .eq(user::dsl::id)
-                                            .and(tenant_user::dsl::is_admin.eq(true))
-                                            .and(api_key::dsl::id.eq(&self_id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant admin
+            Flag::Delete => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user
+                            .inner_join(api_key::table.on(
+                                api_key::dsl::tenant_id.eq(tenant_user::dsl::tenant_id.nullable()),
+                            ))
+                            .filter(
+                                tenant_user::dsl::user_id
+                                    .eq(user::dsl::id)
+                                    .and(tenant_user::dsl::is_admin.eq(true))
+                                    .and(api_key::dsl::id.eq(&self.id)),
+                            ),
+                    )),
+                );
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, _id: &Uuid) -> Result<i64, Error> {
@@ -468,52 +401,39 @@ impl ValidateTenantsAccess {
 #[async_trait]
 impl Validator for ValidateTenantsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .find(&id)
+            .filter(user::dsl::is_active.eq(true))
+            .into_boxed();
 
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .filter(user::dsl::is_active.eq(true))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    Flag::Create => {
-                        q = q.filter(user::dsl::is_admin.eq(true));
-                    }
-                    // any active user (results are filtered by the storage function)
-                    Flag::List => {}
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            Flag::Create => {
+                q = q.filter(user::dsl::is_admin.eq(true));
             }
-        })
-        .await?
+            // any active user (results are filtered by the storage function)
+            Flag::List => {}
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                // admin api key
-                let count = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .filter(api_key::dsl::is_admin.eq(true))
-                    .first(&mut c)?;
-                Ok(count)
-            }
-        })
-        .await?
+        let mut c = get_async_db_conn().await?;
+        // admin api key
+        let count = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(&id)
+            .filter(api_key::dsl::is_admin.eq(true))
+            .first(&mut c)
+            .await?;
+        Ok(count)
     }
 }
 
@@ -531,86 +451,68 @@ impl ValidateTenantAccess {
 #[async_trait]
 impl Validator for ValidateTenantAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // global admin
-                    // tenant user
-                    Flag::Read => {
-                        q = q.filter(
-                            user::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id)),
-                                ),
-                            )),
-                        );
-                    }
-
-                    // global admin
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(user::is_admin.eq(true));
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // global admin
+            // tenant user
+            Flag::Read => {
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id)),
+                        ),
+                    )),
+                );
             }
-        })
-        .await?
+
+            // global admin
+            Flag::Update | Flag::Delete => {
+                q = q.filter(user::is_admin.eq(true));
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(id)
+            .into_boxed();
 
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Read => {
-                        q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(api_key::dsl::tenant_id.eq(&tenant_id)),
-                        );
-                    }
-                    // admin api key
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(api_key::dsl::is_admin.eq(true));
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Read => {
+                q = q.filter(
+                    api_key::dsl::is_admin
+                        .eq(true)
+                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                );
             }
-        })
-        .await?
+            // admin api key
+            Flag::Update | Flag::Delete => {
+                q = q.filter(api_key::dsl::is_admin.eq(true));
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -628,89 +530,71 @@ impl ValidateTenantUsersAccess {
 #[async_trait]
 impl Validator for ValidateTenantUsersAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // global admin
-                    // tenant admin
-                    Flag::Create => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
-                                        .and(tenant_user::dsl::is_admin.eq(true)),
-                                ),
-                            )),
-                        );
-                    }
-                    // global admin
-                    // tenant user
-                    Flag::List => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id)),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // global admin
+            // tenant admin
+            Flag::Create => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(tenant_user::dsl::is_admin.eq(true)),
+                        ),
+                    )),
+                );
             }
-        })
-        .await?
+            // global admin
+            // tenant user
+            Flag::List => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id)),
+                        ),
+                    )),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(id)
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Create | Flag::List => {
-                        q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(api_key::dsl::tenant_id.eq(&tenant_id)),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create | Flag::List => {
+                q = q.filter(
+                    api_key::dsl::is_admin
+                        .eq(true)
+                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                );
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -733,96 +617,77 @@ impl ValidateTenantUserAccess {
 #[async_trait]
 impl Validator for ValidateTenantUserAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
-            let user_id = self.user_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant admin
-                    // user itself
-                    Flag::Read => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::user_id.eq(&user_id)),
-                                        ),
+        match self.flag {
+            // admin user
+            // tenant admin
+            // user itself
+            Flag::Read => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(
+                                    tenant_user::dsl::is_admin
+                                        .eq(true)
+                                        .or(tenant_user::dsl::user_id.eq(&self.user_id)),
                                 ),
-                            )),
-                        );
-                    }
-                    // admin user
-                    // tenant admin
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
-                                        .and(tenant_user::dsl::is_admin.eq(true)),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+                        ),
+                    )),
+                );
             }
-        })
-        .await?
+            // admin user
+            // tenant admin
+            Flag::Update | Flag::Delete => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(tenant_user::dsl::is_admin.eq(true)),
+                        ),
+                    )),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(id)
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Read | Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(api_key::dsl::tenant_id.eq(&tenant_id)),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Read | Flag::Update | Flag::Delete => {
+                q = q.filter(
+                    api_key::dsl::is_admin
+                        .eq(true)
+                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                );
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -840,103 +705,85 @@ impl ValidateApplicationsAccess {
 #[async_trait]
 impl Validator for ValidateApplicationsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // global admin
-                    // tenant admin
-                    // tenant device admin
-                    Flag::Create => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                        ),
+        match self.flag {
+            // global admin
+            // tenant admin
+            // tenant device admin
+            Flag::Create => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(
+                                    tenant_user::dsl::is_admin
+                                        .eq(true)
+                                        .or(tenant_user::dsl::is_device_admin.eq(true)),
                                 ),
-                            )),
-                        );
-                    }
-                    // global admin
-                    // tenant user
-                    Flag::List => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id)),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+                        ),
+                    )),
+                );
             }
-        })
-        .await?
+            // global admin
+            // tenant user
+            Flag::List => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id)),
+                        ),
+                    )),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(id)
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Create => {
-                        q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(api_key::dsl::tenant_id.eq(&tenant_id)),
-                        );
-                    }
-                    // admin api key
-                    // tenant api key (api will do filtering)
-                    Flag::List => {
-                        q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(api_key::dsl::tenant_id.eq(&tenant_id)),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create => {
+                q = q.filter(
+                    api_key::dsl::is_admin
+                        .eq(true)
+                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                );
             }
-        })
-        .await?
+            // admin api key
+            // tenant api key (api will do filtering)
+            Flag::List => {
+                q = q.filter(
+                    api_key::dsl::is_admin
+                        .eq(true)
+                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -957,107 +804,88 @@ impl ValidateApplicationAccess {
 #[async_trait]
 impl Validator for ValidateApplicationAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let application_id = self.application_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // global admin
-                    // tenant user
-                    Flag::Read => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        application::dsl::id
-                                            .eq(&application_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    // global admin
-                    // tenant admin
-                    // tenant device admin
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        application::dsl::id
-                                            .eq(&application_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                            .and(
-                                                tenant_user::dsl::is_admin
-                                                    .eq(true)
-                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                            ),
-                                    ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // global admin
+            // tenant user
+            Flag::Read => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            application::dsl::application
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    application::dsl::id
+                                        .eq(&self.application_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
             }
-        })
-        .await?
+            // global admin
+            // tenant admin
+            // tenant device admin
+            Flag::Update | Flag::Delete => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            application::dsl::application
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    application::dsl::id
+                                        .eq(&self.application_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let application_id = self.application_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Read | Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application.filter(
-                                    application::dsl::id.eq(&application_id).and(
-                                        api_key::dsl::tenant_id
-                                            .eq(application::dsl::tenant_id.nullable()),
-                                    ),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Read | Flag::Update | Flag::Delete => {
+                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                    application::dsl::application.filter(
+                        application::dsl::id.eq(&self.application_id).and(
+                            api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
+                        ),
+                    ),
+                )));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1074,63 +902,47 @@ impl ValidateDeviceProfileTemplatesAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfileTemplatesAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // global admin
-                    Flag::Create => {
-                        q = q.filter(user::dsl::is_admin.eq(true));
-                    }
-                    // any active user
-                    Flag::List => {}
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // global admin
+            Flag::Create => {
+                q = q.filter(user::dsl::is_admin.eq(true));
             }
-        })
-        .await?
+            // any active user
+            Flag::List => {}
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(id)
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    Flag::Create => {
-                        q = q.filter(api_key::dsl::is_admin.eq(true));
-                    }
-                    // any api key
-                    Flag::List => {}
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            Flag::Create => {
+                q = q.filter(api_key::dsl::is_admin.eq(true));
             }
-        })
-        .await?
+            // any api key
+            Flag::List => {}
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1147,63 +959,47 @@ impl ValidateDeviceProfileTemplateAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfileTemplateAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // any active user
-                    Flag::Read => {}
-                    // global admin user
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(user::dsl::is_admin.eq(true));
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // any active user
+            Flag::Read => {}
+            // global admin user
+            Flag::Update | Flag::Delete => {
+                q = q.filter(user::dsl::is_admin.eq(true));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(id)
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .into_boxed();
-
-                match flag {
-                    // any api key
-                    Flag::Read => {}
-                    // admin api key
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(api_key::dsl::is_admin.eq(true));
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // any api key
+            Flag::Read => {}
+            // admin api key
+            Flag::Update | Flag::Delete => {
+                q = q.filter(api_key::dsl::is_admin.eq(true));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1221,94 +1017,76 @@ impl ValidateDeviceProfilesAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfilesAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // global admin
-                    // tenant admin
-                    // tenant device admin
-                    Flag::Create => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                        ),
+        match self.flag {
+            // global admin
+            // tenant admin
+            // tenant device admin
+            Flag::Create => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(
+                                    tenant_user::dsl::is_admin
+                                        .eq(true)
+                                        .or(tenant_user::dsl::is_device_admin.eq(true)),
                                 ),
-                            )),
-                        );
-                    }
-                    // global admin
-                    // tenant user
-                    Flag::List => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::user_id
-                                        .eq(user::dsl::id)
-                                        .and(tenant_user::dsl::tenant_id.eq(&tenant_id)),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+                        ),
+                    )),
+                );
             }
-        })
-        .await?
+            // global admin
+            // tenant user
+            Flag::List => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::user_id
+                                .eq(user::dsl::id)
+                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id)),
+                        ),
+                    )),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(id)
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Create | Flag::List => {
-                        q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(api_key::dsl::tenant_id.eq(&tenant_id)),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create | Flag::List => {
+                q = q.filter(
+                    api_key::dsl::is_admin
+                        .eq(true)
+                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                );
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1329,108 +1107,88 @@ impl ValidateDeviceProfileAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfileAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let device_profile_id = self.device_profile_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // global admin
-                    // tenant user
-                    Flag::Read => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                device_profile::dsl::device_profile
-                                    .inner_join(
-                                        tenant_user::table.on(tenant_user::dsl::tenant_id
-                                            .eq(device_profile::dsl::tenant_id)),
-                                    )
-                                    .filter(
-                                        device_profile::dsl::id
-                                            .eq(&device_profile_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    // global admin
-                    // tenant admin user
-                    // tenant device admin
-                    Flag::Update | Flag::Delete => {
-                        q =
-                            q.filter(
-                                user::dsl::is_admin.eq(true).or(dsl::exists(
-                                    device_profile::dsl::device_profile
-                                        .inner_join(
-                                            tenant_user::table.on(tenant_user::dsl::tenant_id
-                                                .eq(device_profile::dsl::tenant_id)),
-                                        )
-                                        .filter(
-                                            device_profile::dsl::id
-                                                .eq(&device_profile_id)
-                                                .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                                .and(tenant_user::dsl::is_admin.eq(true).or(
-                                                    tenant_user::dsl::is_device_admin.eq(true),
-                                                )),
-                                        ),
-                                )),
-                            );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // global admin
+            // tenant user
+            Flag::Read => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            device_profile::dsl::device_profile
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(device_profile::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    device_profile::dsl::id
+                                        .eq(&self.device_profile_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
             }
-        })
-        .await?
+            // global admin
+            // tenant admin user
+            // tenant device admin
+            Flag::Update | Flag::Delete => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            device_profile::dsl::device_profile
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(device_profile::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    device_profile::dsl::id
+                                        .eq(&self.device_profile_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
+            }
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let device_profile_id = self.device_profile_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Read | Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                                device_profile::dsl::device_profile.filter(
-                                    device_profile::dsl::id.eq(&device_profile_id).and(
-                                        api_key::dsl::tenant_id
-                                            .eq(device_profile::dsl::tenant_id.nullable()),
-                                    ),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                };
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Read | Flag::Update | Flag::Delete => {
+                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                    device_profile::dsl::device_profile.filter(
+                        device_profile::dsl::id.eq(&self.device_profile_id).and(
+                            api_key::dsl::tenant_id.eq(device_profile::dsl::tenant_id.nullable()),
+                        ),
+                    ),
+                )));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        };
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1451,107 +1209,88 @@ impl ValidateDevicesAccess {
 #[async_trait]
 impl Validator for ValidateDevicesAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let application_id = self.application_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant admin
-                    // tenant device admin
-                    Flag::Create => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        application::dsl::id
-                                            .eq(&application_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                            .and(
-                                                tenant_user::dsl::is_admin
-                                                    .eq(true)
-                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                            ),
-                                    ),
-                            )),
-                        );
-                    }
-                    // admin user
-                    // tenant user
-                    Flag::List => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        application::dsl::id
-                                            .eq(&application_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant admin
+            // tenant device admin
+            Flag::Create => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            application::dsl::application
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    application::dsl::id
+                                        .eq(&self.application_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
             }
-        })
-        .await?
+            // admin user
+            // tenant user
+            Flag::List => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            application::dsl::application
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    application::dsl::id
+                                        .eq(&self.application_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let application_id = self.application_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Create | Flag::List => {
-                        q = q.filter(
-                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application.filter(
-                                    application::dsl::id.eq(&application_id).and(
-                                        api_key::dsl::tenant_id
-                                            .eq(application::dsl::tenant_id.nullable()),
-                                    ),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create | Flag::List => {
+                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                    application::dsl::application.filter(
+                        application::dsl::id.eq(&self.application_id).and(
+                            api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
+                        ),
+                    ),
+                )));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1569,109 +1308,90 @@ impl ValidateDeviceAccess {
 #[async_trait]
 impl Validator for ValidateDeviceAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let dev_eui = self.dev_eui;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant user
-                    Flag::Read => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                device::dsl::device
-                                    .inner_join(application::table)
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        device::dsl::dev_eui
-                                            .eq(&dev_eui)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    // admin user
-                    // tenant admin
-                    // tenant device admin
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                device::dsl::device
-                                    .inner_join(application::table)
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        device::dsl::dev_eui
-                                            .eq(&dev_eui)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                            .and(
-                                                tenant_user::dsl::is_admin
-                                                    .eq(true)
-                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                            ),
-                                    ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant user
+            Flag::Read => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            device::dsl::device
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    device::dsl::dev_eui
+                                        .eq(&self.dev_eui)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
             }
-        })
-        .await?
+            // admin user
+            // tenant admin
+            // tenant device admin
+            Flag::Update | Flag::Delete => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            device::dsl::device
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    device::dsl::dev_eui
+                                        .eq(&self.dev_eui)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let dev_eui = self.dev_eui;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Read | Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                                device::dsl::device.inner_join(application::table).filter(
-                                    device::dsl::dev_eui.eq(&dev_eui).and(
-                                        api_key::dsl::tenant_id
-                                            .eq(application::dsl::tenant_id.nullable()),
-                                    ),
-                                ),
-                            )),
-                        )
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Read | Flag::Update | Flag::Delete => {
+                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                    device::dsl::device.inner_join(application::table).filter(
+                        device::dsl::dev_eui.eq(self.dev_eui).and(
+                            api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
+                        ),
+                    ),
+                )))
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1689,85 +1409,65 @@ impl ValidateDeviceQueueAccess {
 #[async_trait]
 impl Validator for ValidateDeviceQueueAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let dev_eui = self.dev_eui;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant user
-                    Flag::Create | Flag::List | Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                device::dsl::device
-                                    .inner_join(application::table)
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        device::dsl::dev_eui
-                                            .eq(&dev_eui)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant user
+            Flag::Create | Flag::List | Flag::Delete => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            device::dsl::device
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    device::dsl::dev_eui
+                                        .eq(&self.dev_eui)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let dev_eui = self.dev_eui;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Create | Flag::List | Flag::Delete => {
-                        q = q.filter(
-                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                                device::dsl::device.inner_join(application::table).filter(
-                                    device::dsl::dev_eui.eq(&dev_eui).and(
-                                        api_key::dsl::tenant_id
-                                            .eq(application::dsl::tenant_id.nullable()),
-                                    ),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create | Flag::List | Flag::Delete => {
+                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                    device::dsl::device.inner_join(application::table).filter(
+                        device::dsl::dev_eui.eq(&self.dev_eui).and(
+                            api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
+                        ),
+                    ),
+                )));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1785,94 +1485,76 @@ impl ValidateGatewaysAccess {
 #[async_trait]
 impl Validator for ValidateGatewaysAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // global admin
-                    // tenant admin
-                    // gateway admin
-                    Flag::Create => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::tenant_id
-                                        .eq(&tenant_id)
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_gateway_admin.eq(true)),
-                                        ),
+        match self.flag {
+            // global admin
+            // tenant admin
+            // gateway admin
+            Flag::Create => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::tenant_id
+                                .eq(&self.tenant_id)
+                                .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                .and(
+                                    tenant_user::dsl::is_admin
+                                        .eq(true)
+                                        .or(tenant_user::dsl::is_gateway_admin.eq(true)),
                                 ),
-                            )),
-                        );
-                    }
-                    // global admin
-                    // tenant user
-                    Flag::List => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                tenant_user::dsl::tenant_user.filter(
-                                    tenant_user::dsl::tenant_id
-                                        .eq(&tenant_id)
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+                        ),
+                    )),
+                );
             }
-        })
-        .await?
+            // global admin
+            // tenant user
+            Flag::List => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::dsl::tenant_user.filter(
+                            tenant_user::dsl::tenant_id
+                                .eq(&self.tenant_id)
+                                .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                        ),
+                    )),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let tenant_id = self.tenant_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .find(id)
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .find(&id)
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Create | Flag::List => {
-                        q = q.filter(
-                            api_key::dsl::is_admin
-                                .eq(true)
-                                .or(api_key::dsl::tenant_id.eq(&tenant_id)),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create | Flag::List => {
+                q = q.filter(
+                    api_key::dsl::is_admin
+                        .eq(true)
+                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                );
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -1890,103 +1572,89 @@ impl ValidateGatewayAccess {
 #[async_trait]
 impl Validator for ValidateGatewayAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let gateway_id = self.gateway_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant user
-                    Flag::Read => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                gateway::dsl::gateway
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(gateway::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        gateway::dsl::gateway_id
-                                            .eq(&gateway_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    // admin user
-                    // tenant admin
-                    // gateway admin
-                    Flag::Update | Flag::Delete => {
-                        q =
-                            q.filter(
-                                user::dsl::is_admin.eq(true).or(dsl::exists(
-                                    gateway::dsl::gateway
-                                        .inner_join(tenant_user::table.on(
-                                            tenant_user::dsl::tenant_id.eq(gateway::dsl::tenant_id),
-                                        ))
-                                        .filter(
-                                            gateway::dsl::gateway_id
-                                                .eq(&gateway_id)
-                                                .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                                .and(tenant_user::dsl::is_admin.eq(true).or(
-                                                    tenant_user::dsl::is_gateway_admin.eq(true),
-                                                )),
-                                        ),
-                                )),
-                            );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant user
+            Flag::Read => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        gateway::dsl::gateway
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::dsl::tenant_id.eq(gateway::dsl::tenant_id)),
+                            )
+                            .filter(
+                                gateway::dsl::gateway_id
+                                    .eq(&self.gateway_id)
+                                    .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                            ),
+                    )),
+                );
             }
-        })
-        .await?
+            // admin user
+            // tenant admin
+            // gateway admin
+            Flag::Update | Flag::Delete => {
+                q = q.filter(
+                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                        gateway::dsl::gateway
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::dsl::tenant_id.eq(gateway::dsl::tenant_id)),
+                            )
+                            .filter(
+                                gateway::dsl::gateway_id
+                                    .eq(&self.gateway_id)
+                                    .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                    .and(
+                                        tenant_user::dsl::is_admin
+                                            .eq(true)
+                                            .or(tenant_user::dsl::is_gateway_admin.eq(true)),
+                                    ),
+                            ),
+                    )),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let gateway_id = self.gateway_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Read | Flag::Update | Flag::Delete => {
-                        q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                            gateway::dsl::gateway.filter(
-                                gateway::dsl::gateway_id.eq(&gateway_id).and(
-                                    api_key::dsl::tenant_id.eq(gateway::dsl::tenant_id.nullable()),
-                                ),
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Read | Flag::Update | Flag::Delete => {
+                q =
+                    q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        gateway::dsl::gateway.filter(
+                            gateway::dsl::gateway_id.eq(&self.gateway_id).and(
+                                api_key::dsl::tenant_id.eq(gateway::dsl::tenant_id.nullable()),
                             ),
-                        )));
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+                        ),
+                    )));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -2007,107 +1675,88 @@ impl ValidateMulticastGroupsAccess {
 #[async_trait]
 impl Validator for ValidateMulticastGroupsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let application_id = self.application_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant admin
-                    // tenant device admin
-                    Flag::Create => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        application::dsl::id
-                                            .eq(&application_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                            .and(
-                                                tenant_user::dsl::is_admin
-                                                    .eq(true)
-                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                            ),
-                                    ),
-                            )),
-                        );
-                    }
-                    // admin user
-                    // tenant user
-                    Flag::List => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        application::dsl::id
-                                            .eq(&application_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant admin
+            // tenant device admin
+            Flag::Create => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            application::dsl::application
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    application::dsl::id
+                                        .eq(&self.application_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
             }
-        })
-        .await?
+            // admin user
+            // tenant user
+            Flag::List => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            application::dsl::application
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    application::dsl::id
+                                        .eq(&self.application_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let application_id = self.application_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Create | Flag::List => {
-                        q = q.filter(
-                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                                application::dsl::application.filter(
-                                    application::dsl::id.eq(&application_id).and(
-                                        api_key::dsl::tenant_id
-                                            .eq(application::dsl::tenant_id.nullable()),
-                                    ),
-                                ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create | Flag::List => {
+                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                    application::dsl::application.filter(
+                        application::dsl::id.eq(&self.application_id).and(
+                            api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
+                        ),
+                    ),
+                )));
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -2128,111 +1777,92 @@ impl ValidateMulticastGroupAccess {
 #[async_trait]
 impl Validator for ValidateMulticastGroupAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let multicast_group_id = self.multicast_group_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant user
-                    Flag::Read => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                multicast_group::dsl::multicast_group
-                                    .inner_join(application::table)
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        multicast_group::dsl::id
-                                            .eq(&multicast_group_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    // admin user
-                    // tenant admin
-                    // tenant device admin
-                    Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                multicast_group::dsl::multicast_group
-                                    .inner_join(application::table)
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        multicast_group::dsl::id
-                                            .eq(&multicast_group_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                            .and(
-                                                tenant_user::dsl::is_admin
-                                                    .eq(true)
-                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                            ),
-                                    ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant user
+            Flag::Read => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            multicast_group::dsl::multicast_group
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    multicast_group::dsl::id
+                                        .eq(&self.multicast_group_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
             }
-        })
-        .await?
+            // admin user
+            // tenant admin
+            // tenant device admin
+            Flag::Update | Flag::Delete => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            multicast_group::dsl::multicast_group
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    multicast_group::dsl::id
+                                        .eq(&self.multicast_group_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let multicast_group_id = self.multicast_group_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Read | Flag::Update | Flag::Delete => {
-                        q = q.filter(
-                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                                multicast_group::dsl::multicast_group
-                                    .inner_join(application::table)
-                                    .filter(
-                                        multicast_group::dsl::id.eq(&multicast_group_id).and(
-                                            api_key::dsl::tenant_id
-                                                .eq(application::dsl::tenant_id.nullable()),
-                                        ),
-                                    ),
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Read | Flag::Update | Flag::Delete => {
+                q = q.filter(
+                    api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        multicast_group::dsl::multicast_group
+                            .inner_join(application::table)
+                            .filter(multicast_group::dsl::id.eq(&self.multicast_group_id).and(
+                                api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
                             )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+                    )),
+                );
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 }
 
@@ -2253,111 +1883,92 @@ impl ValidateMulticastGroupQueueAccess {
 #[async_trait]
 impl Validator for ValidateMulticastGroupQueueAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let multicast_group_id = self.multicast_group_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = user::dsl::user
-                    .select(dsl::count_star())
-                    .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
-                    .into_boxed();
-
-                match flag {
-                    // admin user
-                    // tenant admin
-                    // tenant device admin
-                    Flag::Create | Flag::Delete => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                multicast_group::dsl::multicast_group
-                                    .inner_join(application::table)
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        multicast_group::dsl::id
-                                            .eq(&multicast_group_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                            .and(
-                                                tenant_user::dsl::is_admin
-                                                    .eq(true)
-                                                    .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                            ),
-                                    ),
-                            )),
-                        );
-                    }
-                    // admin user
-                    // tenant user
-                    Flag::List => {
-                        q = q.filter(
-                            user::dsl::is_admin.eq(true).or(dsl::exists(
-                                multicast_group::dsl::multicast_group
-                                    .inner_join(application::table)
-                                    .inner_join(tenant_user::table.on(
-                                        tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                    ))
-                                    .filter(
-                                        multicast_group::dsl::id
-                                            .eq(&multicast_group_id)
-                                            .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                    ),
-                            )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+        match self.flag {
+            // admin user
+            // tenant admin
+            // tenant device admin
+            Flag::Create | Flag::Delete => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            multicast_group::dsl::multicast_group
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    multicast_group::dsl::id
+                                        .eq(&self.multicast_group_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
             }
-        })
-        .await?
+            // admin user
+            // tenant user
+            Flag::List => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            multicast_group::dsl::multicast_group
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    multicast_group::dsl::id
+                                        .eq(&self.multicast_group_id)
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        task::spawn_blocking({
-            let id = *id;
-            let flag = self.flag;
-            let multicast_group_id = self.multicast_group_id;
+        let mut c = get_async_db_conn().await?;
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(id))
+            .into_boxed();
 
-            move || -> Result<i64, Error> {
-                let mut c = get_db_conn()?;
-                let mut q = api_key::dsl::api_key
-                    .select(dsl::count_star())
-                    .filter(api_key::dsl::id.eq(&id))
-                    .into_boxed();
-
-                match flag {
-                    // admin api key
-                    // tenant api key
-                    Flag::Create | Flag::List | Flag::Delete => {
-                        q = q.filter(
-                            api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                                multicast_group::dsl::multicast_group
-                                    .inner_join(application::table)
-                                    .filter(
-                                        multicast_group::dsl::id.eq(&multicast_group_id).and(
-                                            api_key::dsl::tenant_id
-                                                .eq(application::dsl::tenant_id.nullable()),
-                                        ),
-                                    ),
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create | Flag::List | Flag::Delete => {
+                q = q.filter(
+                    api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        multicast_group::dsl::multicast_group
+                            .inner_join(application::table)
+                            .filter(multicast_group::dsl::id.eq(&self.multicast_group_id).and(
+                                api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
                             )),
-                        );
-                    }
-                    _ => {
-                        return Ok(0);
-                    }
-                }
-
-                Ok(q.first(&mut c)?)
+                    )),
+                );
             }
-        })
-        .await?
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut c).await?)
     }
 }
 

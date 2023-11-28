@@ -80,7 +80,7 @@ pub async fn prepare<'a>() -> std::sync::MutexGuard<'a, ()> {
     storage::setup().await.unwrap();
 
     // reset db
-    storage::reset_db().unwrap();
+    storage::reset_db().await.unwrap();
 
     // flush redis db
     storage::reset_redis().await.unwrap();

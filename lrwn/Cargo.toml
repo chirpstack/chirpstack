@@ -16,7 +16,7 @@ hex = "0.4"
 cmac = { version = "0.7", optional = true }
 aes = { version = "0.8", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
-diesel = { version = "2.1", features = ["postgres"], optional = true }
+diesel = { version = "2.1", features = ["postgres_backend"], optional = true }
 
 # Error handling
 thiserror = "1.0"

@@ -41,11 +41,12 @@ pub fn run() {
   # PostgreSQL connection pool.
   max_open_connections={{ postgresql.max_open_connections }}
 
-  # Min idle connections.
+  # CA certificate (optional).
   #
-  # This sets the min. number of idle connections in the PostgreSQL connection
-  # pool (0 = equal to max_open_connections).
-  min_idle_connections={{ postgresql.min_idle_connections }}
+  # Set this to the path of the CA certificate in case you are using TLS and
+  # the server-certificate is not signed by a CA in the platform certificate
+  # store.
+  ca_cert="{{ postgresql.ca_cert }}"
 
 
 # Redis configuration.
@@ -459,11 +460,12 @@ pub fn run() {
     # PostgreSQL connection pool.
     max_open_connections={{ integration.postgresql.max_open_connections }}
 
-    # Min idle connections.
+    # CA certificate (optional).
     #
-    # This sets the min. number of idle connections in the PostgreSQL connection
-    # pool (0 = equal to max_open_connections).
-    min_idle_connections={{ integration.postgresql.min_idle_connections }}
+    # Set this to the path of the CA certificate in case you are using TLS and
+    # the server-certificate is not signed by a CA in the platform certificate
+    # store.
+    ca_cert="{{ integration.postgresql.ca_cert }}"
 
 
   # AMQP / RabbitMQ integration configuration.

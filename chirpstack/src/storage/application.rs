@@ -4,20 +4,22 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::backend::Backend;
-use diesel::dsl;
-use diesel::pg::Pg;
-use diesel::prelude::*;
-use diesel::sql_types::{Jsonb, Text};
-use diesel::{deserialize, serialize};
+use diesel::{
+    backend::Backend,
+    deserialize, dsl,
+    pg::Pg,
+    prelude::*,
+    serialize,
+    sql_types::{Jsonb, Text},
+};
+use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
-use tokio::task;
 use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
 use super::schema::{application, application_integration};
-use super::{fields, get_db_conn};
+use super::{fields, get_async_db_conn};
 
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application)]
@@ -289,77 +291,58 @@ impl Default for Integration {
 
 pub async fn create(a: Application) -> Result<Application, Error> {
     a.validate()?;
-    task::spawn_blocking({
-        move || -> Result<Application, Error> {
-            let mut c = get_db_conn()?;
-            let a: Application = diesel::insert_into(application::table)
-                .values(&a)
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;
 
-            info!(id = %a.id, "Application created");
+    let mut c = get_async_db_conn().await?;
+    let a: Application = diesel::insert_into(application::table)
+        .values(&a)
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;
 
-            Ok(a)
-        }
-    })
-    .await?
+    info!(id = %a.id, "Application created");
+
+    Ok(a)
 }
 
 pub async fn get(id: &Uuid) -> Result<Application, Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<Application, Error> {
-            let mut c = get_db_conn()?;
-            let a = application::dsl::application
-                .find(&id)
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-            Ok(a)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let a = application::dsl::application
+        .find(&id)
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    Ok(a)
 }
 
 pub async fn update(a: Application) -> Result<Application, Error> {
     a.validate()?;
-    task::spawn_blocking({
-        move || -> Result<Application, Error> {
-            let mut c = get_db_conn()?;
-            let a: Application = diesel::update(application::dsl::application.find(&a.id))
-                .set((
-                    application::updated_at.eq(Utc::now()),
-                    application::name.eq(&a.name),
-                    application::description.eq(&a.description),
-                    application::tags.eq(&a.tags),
-                ))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;
+    let mut c = get_async_db_conn().await?;
+    let a: Application = diesel::update(application::dsl::application.find(&a.id))
+        .set((
+            application::updated_at.eq(Utc::now()),
+            application::name.eq(&a.name),
+            application::description.eq(&a.description),
+            application::tags.eq(&a.tags),
+        ))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;
 
-            info!(
-                application_id = %a.id,
-                "Application updated"
-            );
+    info!(
+        application_id = %a.id,
+        "Application updated"
+    );
 
-            Ok(a)
-        }
-    })
-    .await?
+    Ok(a)
 }
 
 pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application, Error> {
-    let app = task::spawn_blocking({
-        let id = *id;
-        let cert = cert.to_vec();
-        move || -> Result<Application, Error> {
-            let mut c = get_db_conn()?;
-            let app: Application = diesel::update(application::dsl::application.find(&id))
-                .set(application::mqtt_tls_cert.eq(cert))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-            Ok(app)
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let app: Application = diesel::update(application::dsl::application.find(&id))
+        .set(application::mqtt_tls_cert.eq(cert))
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
     info!(
         application_id = %id,
@@ -370,47 +353,37 @@ pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application,
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(application::dsl::application.find(&id)).execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(id.to_string()));
-            }
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(application::dsl::application.find(&id))
+        .execute(&mut c)
+        .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(id.to_string()));
+    }
 
-            info!(
-                application_id = %id,
-                "Application deleted"
-            );
+    info!(
+        application_id = %id,
+        "Application deleted"
+    );
 
-            Ok(())
-        }
-    })
-    .await?
+    Ok(())
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<i64, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = application::dsl::application
-                .select(dsl::count_star())
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = application::dsl::application
+        .select(dsl::count_star())
+        .into_boxed();
 
-            if let Some(tenant_id) = &filters.tenant_id {
-                q = q.filter(application::dsl::tenant_id.eq(tenant_id));
-            }
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(application::dsl::tenant_id.eq(tenant_id));
+    }
 
-            if let Some(search) = &filters.search {
-                q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
-            }
+    if let Some(search) = &filters.search {
+        q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+    }
 
-            Ok(q.first(&mut c)?)
-        }
-    })
-    .await?
+    Ok(q.first(&mut c).await?)
 }
 
 pub async fn list(
@@ -418,156 +391,128 @@ pub async fn list(
     offset: i64,
     filters: &Filters,
 ) -> Result<Vec<ApplicationListItem>, Error> {
-    task::spawn_blocking({
-        let filters = filters.clone();
-        move || -> Result<Vec<ApplicationListItem>, Error> {
-            let mut c = get_db_conn()?;
-            let mut q = application::dsl::application
-                .select((
-                    application::id,
-                    application::created_at,
-                    application::updated_at,
-                    application::name,
-                    application::description,
-                ))
-                .into_boxed();
+    let mut c = get_async_db_conn().await?;
+    let mut q = application::dsl::application
+        .select((
+            application::id,
+            application::created_at,
+            application::updated_at,
+            application::name,
+            application::description,
+        ))
+        .into_boxed();
 
-            if let Some(tenant_id) = &filters.tenant_id {
-                q = q.filter(application::dsl::tenant_id.eq(tenant_id));
-            }
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(application::dsl::tenant_id.eq(tenant_id));
+    }
 
-            if let Some(search) = &filters.search {
-                q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
-            }
+    if let Some(search) = &filters.search {
+        q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+    }
 
-            let items = q
-                .order_by(application::dsl::name)
-                .limit(limit)
-                .offset(offset)
-                .load(&mut c)?;
-            Ok(items)
-        }
-    })
-    .await?
+    let items = q
+        .order_by(application::dsl::name)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut c)
+        .await?;
+    Ok(items)
 }
 
 pub async fn create_integration(i: Integration) -> Result<Integration, Error> {
-    task::spawn_blocking({
-        move || -> Result<Integration, Error> {
-            let mut c = get_db_conn()?;
-            let i: Integration = diesel::insert_into(application_integration::table)
-                .values(&i)
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, i.kind.to_string()))?;
+    let mut c = get_async_db_conn().await?;
+    let i: Integration = diesel::insert_into(application_integration::table)
+        .values(&i)
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, i.kind.to_string()))?;
 
-            info!(application_id = %i.application_id, kind = %i.kind, "Integration created");
-            Ok(i)
-        }
-    })
-    .await?
+    info!(application_id = %i.application_id, kind = %i.kind, "Integration created");
+    Ok(i)
 }
 
 pub async fn get_integration(
     application_id: &Uuid,
     kind: IntegrationKind,
 ) -> Result<Integration, Error> {
-    task::spawn_blocking({
-        let application_id = *application_id;
-        move || -> Result<Integration, Error> {
-            let mut c = get_db_conn()?;
-            let mut i: Integration = application_integration::dsl::application_integration
-                .filter(
-                    application_integration::dsl::application_id
-                        .eq(application_id)
-                        .and(application_integration::dsl::kind.eq(kind)),
-                )
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
+    let mut c = get_async_db_conn().await?;
+    let mut i: Integration = application_integration::dsl::application_integration
+        .filter(
+            application_integration::dsl::application_id
+                .eq(application_id)
+                .and(application_integration::dsl::kind.eq(kind)),
+        )
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
 
-            // For backwards compatibiliy
-            if let IntegrationConfiguration::LoraCloud(conf) = &mut i.configuration {
-                if conf.modem_geolocation_services.forward_f_ports.is_empty() {
-                    conf.modem_geolocation_services.forward_f_ports = vec![
-                        conf.modem_geolocation_services.modem_port,
-                        conf.modem_geolocation_services.gnss_port,
-                        197,
-                        192,
-                    ];
-                }
-            }
-
-            Ok(i)
+    // For backwards compatibiliy
+    if let IntegrationConfiguration::LoraCloud(conf) = &mut i.configuration {
+        if conf.modem_geolocation_services.forward_f_ports.is_empty() {
+            conf.modem_geolocation_services.forward_f_ports = vec![
+                conf.modem_geolocation_services.modem_port,
+                conf.modem_geolocation_services.gnss_port,
+                197,
+                192,
+            ];
         }
-    })
-    .await?
+    }
+
+    Ok(i)
 }
 
 pub async fn update_integration(i: Integration) -> Result<Integration, Error> {
-    task::spawn_blocking({
-        move || -> Result<Integration, Error> {
-            let mut c = get_db_conn()?;
-            let i: Integration = diesel::update(
-                application_integration::dsl::application_integration.filter(
-                    application_integration::dsl::application_id
-                        .eq(&i.application_id)
-                        .and(application_integration::dsl::kind.eq(&i.kind)),
-                ),
-            )
-            .set((
-                application_integration::updated_at.eq(Utc::now()),
-                application_integration::configuration.eq(&i.configuration),
-            ))
-            .get_result(&mut c)
-            .map_err(|e| Error::from_diesel(e, i.application_id.to_string()))?;
+    let mut c = get_async_db_conn().await?;
+    let i: Integration = diesel::update(
+        application_integration::dsl::application_integration.filter(
+            application_integration::dsl::application_id
+                .eq(&i.application_id)
+                .and(application_integration::dsl::kind.eq(&i.kind)),
+        ),
+    )
+    .set((
+        application_integration::updated_at.eq(Utc::now()),
+        application_integration::configuration.eq(&i.configuration),
+    ))
+    .get_result(&mut c)
+    .await
+    .map_err(|e| Error::from_diesel(e, i.application_id.to_string()))?;
 
-            info!(application_id = %i.application_id, kind = %i.kind, "Integration updated");
+    info!(application_id = %i.application_id, kind = %i.kind, "Integration updated");
 
-            Ok(i)
-        }
-    })
-    .await?
+    Ok(i)
 }
 
 pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) -> Result<(), Error> {
-    task::spawn_blocking({
-        let application_id = *application_id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(
-                application_integration::dsl::application_integration.filter(
-                    application_integration::dsl::application_id
-                        .eq(&application_id)
-                        .and(application_integration::dsl::kind.eq(&kind)),
-                ),
-            )
-            .execute(&mut c)?;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(
+        application_integration::dsl::application_integration.filter(
+            application_integration::dsl::application_id
+                .eq(&application_id)
+                .and(application_integration::dsl::kind.eq(&kind)),
+        ),
+    )
+    .execute(&mut c)
+    .await?;
 
-            if ra == 0 {
-                return Err(Error::NotFound(application_id.to_string()));
-            }
+    if ra == 0 {
+        return Err(Error::NotFound(application_id.to_string()));
+    }
 
-            info!(application_id = %application_id, kind = %kind, "Integration deleted");
-            Ok(())
-        }
-    })
-    .await?
+    info!(application_id = %application_id, kind = %kind, "Integration deleted");
+    Ok(())
 }
 
 pub async fn get_integrations_for_application(
     application_id: &Uuid,
 ) -> Result<Vec<Integration>, Error> {
-    task::spawn_blocking({
-        let application_id = *application_id;
-        move || -> Result<Vec<Integration>, Error> {
-            let mut c = get_db_conn()?;
-            let items: Vec<Integration> = application_integration::dsl::application_integration
-                .filter(application_integration::dsl::application_id.eq(&application_id))
-                .order_by(application_integration::dsl::kind)
-                .load(&mut c)?;
-            Ok(items)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let items: Vec<Integration> = application_integration::dsl::application_integration
+        .filter(application_integration::dsl::application_id.eq(&application_id))
+        .order_by(application_integration::dsl::kind)
+        .load(&mut c)
+        .await?;
+    Ok(items)
 }
 
 pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
@@ -577,12 +522,9 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
         pub key: String,
     }
 
-    task::spawn_blocking({
-        let application_id = *application_id;
-        move || -> Result<Vec<String>, Error> {
-            let mut c = get_db_conn()?;
-            let keys: Vec<Measurement> = diesel::sql_query(
-                r#"
+    let mut c = get_async_db_conn().await?;
+    let keys: Vec<Measurement> = diesel::sql_query(
+        r#"
                 select
                     distinct jsonb_object_keys(dp.measurements) as key
                 from
@@ -594,14 +536,12 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                 order by
                     key
                 "#,
-            )
-            .bind::<diesel::sql_types::Uuid, _>(application_id)
-            .load(&mut c)
-            .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
-            Ok(keys.iter().map(|k| k.key.clone()).collect())
-        }
-    })
-    .await?
+    )
+    .bind::<diesel::sql_types::Uuid, _>(application_id)
+    .load(&mut c)
+    .await
+    .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
+    Ok(keys.iter().map(|k| k.key.clone()).collect())
 }
 
 #[cfg(test)]

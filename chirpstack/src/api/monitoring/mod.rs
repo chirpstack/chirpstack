@@ -2,14 +2,14 @@ use std::convert::Infallible;
 use std::net::SocketAddr;
 
 use anyhow::{Context, Result};
-use diesel::RunQueryDsl;
+use diesel_async::RunQueryDsl;
 use tokio::task;
 use tracing::info;
 use warp::{http::Response, http::StatusCode, Filter};
 
 use crate::config;
 use crate::monitoring::prometheus;
-use crate::storage::{get_db_conn, get_redis_conn};
+use crate::storage::{get_async_db_conn, get_redis_conn};
 
 pub async fn setup() {
     let conf = config::get();
@@ -50,17 +50,17 @@ async fn health_handler() -> Result<impl warp::Reply, Infallible> {
 }
 
 async fn _health_handler() -> Result<()> {
+    let mut c = get_async_db_conn().await?;
+    diesel::sql_query("select 1")
+        .execute(&mut c)
+        .await
+        .context("PostgreSQL connection error")?;
+
     task::spawn_blocking(move || -> Result<()> {
         let mut r = get_redis_conn()?;
         if !r.check_connection() {
             return Err(anyhow!("Redis connection error"));
         }
-
-        let mut c = get_db_conn()?;
-        diesel::sql_query("select 1")
-            .execute(&mut c)
-            .context("PostgreSQL connection error")?;
-
         Ok(())
     })
     .await?

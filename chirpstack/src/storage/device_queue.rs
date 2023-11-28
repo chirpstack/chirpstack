@@ -1,12 +1,12 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
-use tokio::task;
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
-use super::get_db_conn;
+use super::get_async_db_conn;
 use super::schema::device_queue_item;
 use lrwn::EUI64;
 
@@ -64,172 +64,128 @@ impl Default for DeviceQueueItem {
 
 pub async fn enqueue_item(qi: DeviceQueueItem) -> Result<DeviceQueueItem, Error> {
     qi.validate()?;
-
-    let qi = task::spawn_blocking({
-        move || -> Result<DeviceQueueItem, Error> {
-            let mut c = get_db_conn()?;
-            diesel::insert_into(device_queue_item::table)
-                .values(&qi)
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, qi.id.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let qi: DeviceQueueItem = diesel::insert_into(device_queue_item::table)
+        .values(&qi)
+        .get_result(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, qi.id.to_string()))?;
     info!(id = %qi.id, dev_eui = %qi.dev_eui, "Device queue-item enqueued");
     Ok(qi)
 }
 
 pub async fn get_item(id: &Uuid) -> Result<DeviceQueueItem, Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<DeviceQueueItem, Error> {
-            let mut c = get_db_conn()?;
-            let qi = device_queue_item::dsl::device_queue_item
-                .find(&id)
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-            Ok(qi)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let qi = device_queue_item::dsl::device_queue_item
+        .find(id)
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    Ok(qi)
 }
 
 pub async fn update_item(qi: DeviceQueueItem) -> Result<DeviceQueueItem, Error> {
-    let qi = task::spawn_blocking({
-        move || -> Result<DeviceQueueItem, Error> {
-            let mut c = get_db_conn()?;
-            diesel::update(device_queue_item::dsl::device_queue_item.find(&qi.id))
-                .set((
-                    device_queue_item::is_pending.eq(&qi.is_pending),
-                    device_queue_item::f_cnt_down.eq(&qi.f_cnt_down),
-                    device_queue_item::timeout_after.eq(&qi.timeout_after),
-                ))
-                .get_result(&mut c)
-                .map_err(|e| Error::from_diesel(e, qi.id.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let qi: DeviceQueueItem =
+        diesel::update(device_queue_item::dsl::device_queue_item.find(&qi.id))
+            .set((
+                device_queue_item::is_pending.eq(&qi.is_pending),
+                device_queue_item::f_cnt_down.eq(&qi.f_cnt_down),
+                device_queue_item::timeout_after.eq(&qi.timeout_after),
+            ))
+            .get_result(&mut c)
+            .await
+            .map_err(|e| Error::from_diesel(e, qi.id.to_string()))?;
     info!(id = %qi.id, dev_eui = %qi.dev_eui, "Device queue-item updated");
     Ok(qi)
 }
 
 pub async fn delete_item(id: &Uuid) -> Result<(), Error> {
-    task::spawn_blocking({
-        let id = *id;
-        move || -> Result<(), Error> {
-            let mut c = get_db_conn()?;
-            let ra = diesel::delete(device_queue_item::dsl::device_queue_item.find(&id))
-                .execute(&mut c)?;
-            if ra == 0 {
-                return Err(Error::NotFound(id.to_string()));
-            }
-            Ok(())
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let ra = diesel::delete(device_queue_item::dsl::device_queue_item.find(&id))
+        .execute(&mut c)
+        .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(id.to_string()));
+    }
     info!(id = %id, "Device queue-item deleted");
     Ok(())
 }
 
 /// It returns the device queue-item and a bool indicating if there are more items in the queue.
 pub async fn get_next_for_dev_eui(dev_eui: &EUI64) -> Result<(DeviceQueueItem, bool), Error> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<(DeviceQueueItem, bool), Error> {
-            let mut c = get_db_conn()?;
-            let items: Vec<DeviceQueueItem> = device_queue_item::dsl::device_queue_item
-                .filter(device_queue_item::dev_eui.eq(&dev_eui))
-                .order_by(device_queue_item::created_at)
-                .limit(2)
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+    let mut c = get_async_db_conn().await?;
+    let items: Vec<DeviceQueueItem> = device_queue_item::dsl::device_queue_item
+        .filter(device_queue_item::dev_eui.eq(&dev_eui))
+        .order_by(device_queue_item::created_at)
+        .limit(2)
+        .load(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
-            // Return NotFound on empty Vec.
-            if items.is_empty() {
+    // Return NotFound on empty Vec.
+    if items.is_empty() {
+        return Err(Error::NotFound(dev_eui.to_string()));
+    }
+
+    // In case the transmission is pending and hasn't timed-out yet, do not
+    // return it.
+    if items[0].is_pending {
+        if let Some(timeout_after) = &items[0].timeout_after {
+            if timeout_after > &Utc::now() {
                 return Err(Error::NotFound(dev_eui.to_string()));
             }
-
-            // In case the transmission is pending and hasn't timed-out yet, do not
-            // return it.
-            if items[0].is_pending {
-                if let Some(timeout_after) = &items[0].timeout_after {
-                    if timeout_after > &Utc::now() {
-                        return Err(Error::NotFound(dev_eui.to_string()));
-                    }
-                }
-            }
-
-            // Return first item and bool indicating if there are more items in the queue.
-            Ok((items[0].clone(), items.len() > 1))
         }
-    })
-    .await?
+    }
+
+    // Return first item and bool indicating if there are more items in the queue.
+    Ok((items[0].clone(), items.len() > 1))
 }
 
 pub async fn get_for_dev_eui(dev_eui: &EUI64) -> Result<Vec<DeviceQueueItem>, Error> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<Vec<DeviceQueueItem>, Error> {
-            let mut c = get_db_conn()?;
-            let items = device_queue_item::dsl::device_queue_item
-                .filter(device_queue_item::dev_eui.eq(&dev_eui))
-                .order_by(device_queue_item::created_at)
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
-            Ok(items)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let items = device_queue_item::dsl::device_queue_item
+        .filter(device_queue_item::dev_eui.eq(&dev_eui))
+        .order_by(device_queue_item::created_at)
+        .load(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+    Ok(items)
 }
 
 pub async fn flush_for_dev_eui(dev_eui: &EUI64) -> Result<(), Error> {
-    let count = task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<usize, Error> {
-            let mut c = get_db_conn()?;
-            diesel::delete(
-                device_queue_item::dsl::device_queue_item
-                    .filter(device_queue_item::dev_eui.eq(&dev_eui)),
-            )
-            .execute(&mut c)
-            .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
-        }
-    })
-    .await??;
+    let mut c = get_async_db_conn().await?;
+    let count: usize = diesel::delete(
+        device_queue_item::dsl::device_queue_item.filter(device_queue_item::dev_eui.eq(&dev_eui)),
+    )
+    .execute(&mut c)
+    .await
+    .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
     info!(dev_eui = %dev_eui, count = count, "Device queue flushed");
     Ok(())
 }
 
 pub async fn get_pending_for_dev_eui(dev_eui: &EUI64) -> Result<DeviceQueueItem, Error> {
-    task::spawn_blocking({
-        let dev_eui = *dev_eui;
-        move || -> Result<DeviceQueueItem, Error> {
-            let mut c = get_db_conn()?;
-            let qi = device_queue_item::dsl::device_queue_item
-                .filter(
-                    device_queue_item::dev_eui
-                        .eq(&dev_eui)
-                        .and(device_queue_item::is_pending.eq(true)),
-                )
-                .first(&mut c)
-                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
-            Ok(qi)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    let qi = device_queue_item::dsl::device_queue_item
+        .filter(
+            device_queue_item::dev_eui
+                .eq(&dev_eui)
+                .and(device_queue_item::is_pending.eq(true)),
+        )
+        .first(&mut c)
+        .await
+        .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+    Ok(qi)
 }
 
 pub async fn get_max_f_cnt_down(dev_eui: EUI64) -> Result<Option<i64>, Error> {
-    task::spawn_blocking({
-        move || -> Result<Option<i64>, Error> {
-            let mut c = get_db_conn()?;
-            Ok(device_queue_item::dsl::device_queue_item
-                .select(dsl::max(device_queue_item::f_cnt_down))
-                .filter(device_queue_item::dsl::dev_eui.eq(dev_eui))
-                .first(&mut c)?)
-        }
-    })
-    .await?
+    let mut c = get_async_db_conn().await?;
+    Ok(device_queue_item::dsl::device_queue_item
+        .select(dsl::max(device_queue_item::f_cnt_down))
+        .filter(device_queue_item::dsl::dev_eui.eq(dev_eui))
+        .first(&mut c)
+        .await?)
 }
 
 #[cfg(test)]
@@ -281,7 +237,7 @@ pub mod test {
 
         // get for dev eui
         let queue = get_for_dev_eui(&d.dev_eui).await.unwrap();
-        assert_eq!(&qi, queue.first().unwrap());
+        assert_eq!(qi, queue[0]);
 
         // next next queue item for dev eui
         let resp = get_next_for_dev_eui(&d.dev_eui).await.unwrap();

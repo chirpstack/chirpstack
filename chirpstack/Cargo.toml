@@ -26,14 +26,16 @@ handlebars = "4.4"
 validator = "0.16"
 diesel = { version = "2.1", features = [
 	"chrono",
-	"postgres",
-	"r2d2",
 	"uuid",
 	"serde_json",
 	"numeric",
 	"64-column-tables",
+	"postgres_backend",
 ] }
 diesel_migrations = { version = "2.1" }
+diesel-async = { version = "0.4", features = ["deadpool", "postgres", "async-connection-wrapper"] }
+tokio-postgres = "0.7"
+tokio-postgres-rustls = "0.10.0"
 r2d2 = "0.8"
 bigdecimal = "0.4"
 redis = { version = "0.23", features = ["r2d2", "cluster", "tls-rustls"] }
@@ -84,6 +86,7 @@ warp = { version = "0.3", features = ["tls"], default-features = false }
 hyper = "0.14"
 tower = "0.4"
 futures = "0.3"
+futures-util = "0.3"
 http = "0.2"
 http-body = "0.4"
 rust-embed = "8.0"
@@ -98,6 +101,9 @@ anyhow = "1.0"
 pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "8.3"
+rustls = "0.21"
+rustls-native-certs = "0.6"
+rustls-pemfile = "1.0"
 openssl = { version = "0.10" }
 openidconnect = { version = "3.3", features = ["accept-rfc3339-timestamps"] }
 
