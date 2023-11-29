@@ -1,6 +1,4 @@
-use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
-use std::hash::Hasher;
 use std::io::Cursor;
 use std::sync::RwLock;
 use std::time::Duration;
@@ -27,7 +25,6 @@ use super::GatewayBackend;
 use crate::config::GatewayBackendMqtt;
 use crate::helpers::tls::{get_root_certs, load_cert, load_key};
 use crate::monitoring::prometheus;
-use crate::storage::{get_async_redis_conn, redis_key};
 use crate::{downlink, uplink};
 use lrwn::region::CommonName;
 
@@ -187,6 +184,7 @@ impl<'a> MqttBackend<'a> {
             } else {
                 conf.event_topic.clone()
             };
+            let event_topic = format!("$share/{}/{}", conf.share_name, event_topic);
 
             async move {
                 while connect_rx.recv().await.is_some() {
@@ -318,22 +316,7 @@ async fn message_callback(
 ) {
     let topic = String::from_utf8_lossy(&p.topic);
 
-    let mut hasher = DefaultHasher::new();
-    hasher.write(&p.payload);
-    let key = redis_key(format!("gw:mqtt:lock:{:x}", hasher.finish()));
-    let locked = is_locked(key).await;
-
     let err = || -> Result<()> {
-        if locked? {
-            trace!(
-                region_id = region_config_id,
-                topic = %topic,
-                qos = ?p.qos,
-                "Message is already handled by different instance"
-            );
-            return Ok(());
-        }
-
         let json = payload_is_json(&p.payload);
 
         info!(
@@ -430,21 +413,6 @@ async fn message_callback(
             err.as_ref().unwrap()
         );
     }
-}
-
-async fn is_locked(key: String) -> Result<bool> {
-    let mut c = get_async_redis_conn().await?;
-
-    let set: bool = redis::cmd("SET")
-        .arg(key)
-        .arg("lock")
-        .arg("PX")
-        .arg(5000)
-        .arg("NX")
-        .query_async(&mut c)
-        .await?;
-
-    Ok(!set)
 }
 
 fn gateway_is_json(gateway_id: &str) -> bool {

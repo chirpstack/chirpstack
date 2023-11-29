@@ -37,6 +37,16 @@
         # '/' is automatically added to the prefix if it is configured.
         topic_prefix="as923_4"
 
+        # Shared subscription name.
+        #
+        # In case there are multiple ChirpStack instances sharing the same
+        # subscription name, then the MQTT broker will deliver a gateway event
+        # only to one subscriber. In case you have a production and
+        # test-environment connected to the same MQTT broker, make sure that
+        # each environment has its own subscription name, for example:
+        # chirpstack_prod and chirpstack_tst.
+        share_name="chirpstack"
+
         # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
         server="tcp://localhost:1883"
 

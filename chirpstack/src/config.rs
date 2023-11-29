@@ -624,6 +624,7 @@ pub struct GatewayBackendMqtt {
     #[serde(with = "humantime_serde")]
     pub keep_alive_interval: Duration,
     pub v4_migrate: bool,
+    pub share_name: String,
 }
 
 impl Default for GatewayBackendMqtt {
@@ -643,6 +644,7 @@ impl Default for GatewayBackendMqtt {
             tls_key: "".into(),
             keep_alive_interval: Duration::from_secs(30),
             v4_migrate: false,
+            share_name: "chirpstack".into(),
         }
     }
 }
