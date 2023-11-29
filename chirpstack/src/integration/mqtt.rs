@@ -85,7 +85,7 @@ impl<'a> Integration<'a> {
         // We need to re-subscribe on (re)connect to be sure we have a subscription. Even
         // in case of a persistent MQTT session, there is no guarantee that the MQTT persisted the
         // session and that a re-connect would recover the subscription.
-        let (connect_tx, mut connect_rx) = mpsc::channel(1);
+        let (connect_tx, mut connect_rx) = mpsc::channel(10);
 
         // Create client
         let mut mqtt_opts =
