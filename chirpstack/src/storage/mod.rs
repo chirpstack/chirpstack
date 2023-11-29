@@ -1,8 +1,5 @@
-use std::fs::File;
-use std::io::BufReader;
 use std::sync::RwLock;
 
-use anyhow::Context;
 use anyhow::Result;
 use diesel::{ConnectionError, ConnectionResult};
 use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
@@ -42,6 +39,8 @@ pub mod schema;
 pub mod search;
 pub mod tenant;
 pub mod user;
+
+use crate::helpers::tls::get_root_certs;
 
 pub type AsyncPgPool = DeadpoolPool<AsyncPgConnection>;
 pub type AsyncPgPoolConnection = DeadpoolObject<AsyncPgConnection>;
@@ -138,8 +137,14 @@ pub async fn setup() -> Result<()> {
 // https://github.com/weiznich/diesel_async/blob/main/examples/postgres/pooled-with-rustls/src/main.rs
 fn pg_establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
     let fut = async {
-        let root_certs =
-            pg_root_certs().map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        let conf = config::get();
+
+        let root_certs = get_root_certs(if conf.postgresql.ca_cert.is_empty() {
+            None
+        } else {
+            Some(conf.postgresql.ca_cert.clone())
+        })
+        .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
         let rustls_config = rustls::ClientConfig::builder()
             .with_safe_defaults()
             .with_root_certificates(root_certs)
@@ -156,30 +161,6 @@ fn pg_establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgCo
         AsyncPgConnection::try_from(client).await
     };
     fut.boxed()
-}
-
-fn pg_root_certs() -> Result<rustls::RootCertStore> {
-    let conf = config::get();
-
-    let mut roots = rustls::RootCertStore::empty();
-    let certs = rustls_native_certs::load_native_certs()?;
-    let certs: Vec<_> = certs.into_iter().map(|cert| cert.0).collect();
-    roots.add_parsable_certificates(&certs);
-
-    if !conf.postgresql.ca_cert.is_empty() {
-        let f = File::open(&conf.postgresql.ca_cert).context("Open ca certificate")?;
-        let mut reader = BufReader::new(f);
-        let certs = rustls_pemfile::certs(&mut reader)?;
-        for cert in certs
-            .into_iter()
-            .map(rustls::Certificate)
-            .collect::<Vec<_>>()
-        {
-            roots.add(&cert)?;
-        }
-    }
-
-    Ok(roots)
 }
 
 pub fn get_async_db_pool() -> Result<AsyncPgPool> {

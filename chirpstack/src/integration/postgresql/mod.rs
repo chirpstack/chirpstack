@@ -1,9 +1,7 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::BufReader;
 use std::str::FromStr;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use diesel::{ConnectionError, ConnectionResult};
@@ -19,6 +17,7 @@ use uuid::Uuid;
 
 use super::Integration as IntegrationTrait;
 use crate::config::{self, PostgresqlIntegration as Config};
+use crate::helpers::tls::get_root_certs;
 use chirpstack_api::integration;
 use schema::{
     event_ack, event_integration, event_join, event_location, event_log, event_status,
@@ -232,8 +231,14 @@ impl Integration {
 // https://github.com/weiznich/diesel_async/blob/main/examples/postgres/pooled-with-rustls/src/main.rs
 fn pg_establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
     let fut = async {
-        let root_certs =
-            pg_root_certs().map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
+        let conf = config::get();
+
+        let root_certs = get_root_certs(if conf.integration.postgresql.ca_cert.is_empty() {
+            None
+        } else {
+            Some(conf.integration.postgresql.ca_cert.clone())
+        })
+        .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
         let rustls_config = rustls::ClientConfig::builder()
             .with_safe_defaults()
             .with_root_certificates(root_certs)
@@ -250,30 +255,6 @@ fn pg_establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgCo
         AsyncPgConnection::try_from(client).await
     };
     fut.boxed()
-}
-
-fn pg_root_certs() -> Result<rustls::RootCertStore> {
-    let conf = config::get();
-
-    let mut roots = rustls::RootCertStore::empty();
-    let certs = rustls_native_certs::load_native_certs()?;
-    let certs: Vec<_> = certs.into_iter().map(|cert| cert.0).collect();
-    roots.add_parsable_certificates(&certs);
-
-    if !conf.postgresql.ca_cert.is_empty() {
-        let f = File::open(&conf.integration.postgresql.ca_cert).context("Open ca certificate")?;
-        let mut reader = BufReader::new(f);
-        let certs = rustls_pemfile::certs(&mut reader)?;
-        for cert in certs
-            .into_iter()
-            .map(rustls::Certificate)
-            .collect::<Vec<_>>()
-        {
-            roots.add(&cert)?;
-        }
-    }
-
-    Ok(roots)
 }
 
 #[async_trait]
