@@ -466,7 +466,7 @@ async fn test_sns_roaming_not_allowed() {
     .await
     .unwrap();
 
-    let dev = device::create(device::Device {
+    let _dev = device::create(device::Device {
         name: "device".into(),
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
