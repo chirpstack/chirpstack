@@ -136,7 +136,7 @@ pin-project = "1.1"
 
 # Development and testing
 [dev-dependencies]
-httpmock = "0.6"
+httpmock = "0.7.0-rc.1"
 bytes = "1.4"
 dotenv = "0.15"
 
