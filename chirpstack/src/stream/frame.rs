@@ -1,6 +1,5 @@
 use std::io::Cursor;
 use std::str::FromStr;
-use std::thread::sleep;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
@@ -8,6 +7,7 @@ use prost::Message;
 use redis::streams::StreamReadReply;
 use serde_json::json;
 use tokio::sync::mpsc;
+use tokio::time::sleep;
 use tracing::{debug, error, trace, warn};
 
 use lrwn::EUI64;
@@ -249,97 +249,7 @@ pub async fn get_frame_logs(
             for stream_id in &stream_key.ids {
                 last_id = stream_id.id.clone();
                 for (k, v) in &stream_id.map {
-                    let res = || -> Result<()> {
-                        match k.as_ref() {
-                            "up" => {
-                                trace!(key = %k, id = %last_id, "Frame-log received from stream");
-                                if let redis::Value::Data(b) = v {
-                                    let pl = stream::UplinkFrameLog::decode(&mut Cursor::new(b))?;
-                                    let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
-                                    if pl.plaintext_f_opts {
-                                        if let Err(e) = phy.decode_f_opts_to_mac_commands() {
-                                            warn!(error = %e.full(), "Decode f_opts to mac-commands error");
-                                        }
-                                    }
-                                    if pl.plaintext_frm_payload {
-                                        if let Err(e) = phy.decode_frm_payload() {
-                                            warn!(error = %e.full(), "Decode frm_payload error");
-                                        }
-                                    }
-
-                                    let pl = api::LogItem {
-                                        id: stream_id.id.clone(),
-                                        time: pl.time.as_ref().map(|t| prost_types::Timestamp {
-                                            seconds: t.seconds,
-                                            nanos: t.nanos,
-                                        }),
-                                        description: pl.m_type().into(),
-                                        body: json!({
-                                            "phy_payload": phy,
-                                            "tx_info": pl.tx_info,
-                                            "rx_info": pl.rx_info,
-                                        })
-                                        .to_string(),
-                                        properties: [
-                                            ("DevAddr".to_string(), pl.dev_addr),
-                                            ("DevEUI".to_string(), pl.dev_eui),
-                                        ]
-                                        .iter()
-                                        .cloned()
-                                        .collect(),
-                                    };
-
-                                    channel.blocking_send(pl)?;
-                                }
-                            }
-                            "down" => {
-                                trace!(key = %k, id = %last_id, "frame-log received from stream");
-                                if let redis::Value::Data(b) = v {
-                                    let pl = stream::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
-                                    let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
-                                    if pl.plaintext_f_opts {
-                                        if let Err(e) = phy.decode_f_opts_to_mac_commands() {
-                                            warn!(error = %e.full(), "Decode f_opts to mac-commands error");
-                                        }
-                                    }
-                                    if pl.plaintext_frm_payload {
-                                        if let Err(e) = phy.decode_frm_payload() {
-                                            warn!(error = %e.full(), "Decode frm_payload error");
-                                        }
-                                    }
-
-                                    let pl = api::LogItem {
-                                        id: stream_id.id.clone(),
-                                        time: pl.time.as_ref().map(|t| prost_types::Timestamp {
-                                            seconds: t.seconds,
-                                            nanos: t.nanos,
-                                        }),
-                                        description: pl.m_type().into(),
-                                        body: json!({
-                                            "phy_payload": phy,
-                                            "tx_info": pl.tx_info,
-                                        })
-                                        .to_string(),
-                                        properties: [
-                                            ("DevAddr".to_string(), pl.dev_addr),
-                                            ("DevEUI".to_string(), pl.dev_eui),
-                                            ("Gateway ID".to_string(), pl.gateway_id),
-                                        ]
-                                        .iter()
-                                        .cloned()
-                                        .collect(),
-                                    };
-
-                                    channel.blocking_send(pl)?;
-                                }
-                            }
-                            _ => {
-                                error!(key = %k, "Unexpected key in frame-log stream");
-                            }
-                        }
-
-                        Ok(())
-                    }();
+                    let res = handle_stream(&last_id, &channel, k, v).await;
 
                     if let Err(e) = res {
                         // Return in case of channel error, in any other case we just log
@@ -358,6 +268,103 @@ pub async fn get_frame_logs(
 
         // If we use xread with block=0, the connection can't be used by other requests. Now we
         // check every 1 second if there are new messages, which should be sufficient.
-        sleep(Duration::from_secs(1));
+        sleep(Duration::from_secs(1)).await;
     }
+}
+
+async fn handle_stream(
+    stream_id: &str,
+    channel: &mpsc::Sender<api::LogItem>,
+    k: &str,
+    v: &redis::Value,
+) -> Result<()> {
+    match k.as_ref() {
+        "up" => {
+            trace!(key = %k, id = %stream_id, "Frame-log received from stream");
+            if let redis::Value::Data(b) = v {
+                let pl = stream::UplinkFrameLog::decode(&mut Cursor::new(b))?;
+                let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
+                if pl.plaintext_f_opts {
+                    if let Err(e) = phy.decode_f_opts_to_mac_commands() {
+                        warn!(error = %e.full(), "Decode f_opts to mac-commands error");
+                    }
+                }
+                if pl.plaintext_frm_payload {
+                    if let Err(e) = phy.decode_frm_payload() {
+                        warn!(error = %e.full(), "Decode frm_payload error");
+                    }
+                }
+
+                let pl = api::LogItem {
+                    id: stream_id.to_string(),
+                    time: pl.time.as_ref().map(|t| prost_types::Timestamp {
+                        seconds: t.seconds,
+                        nanos: t.nanos,
+                    }),
+                    description: pl.m_type().into(),
+                    body: json!({
+                        "phy_payload": phy,
+                        "tx_info": pl.tx_info,
+                        "rx_info": pl.rx_info,
+                    })
+                    .to_string(),
+                    properties: [
+                        ("DevAddr".to_string(), pl.dev_addr),
+                        ("DevEUI".to_string(), pl.dev_eui),
+                    ]
+                    .iter()
+                    .cloned()
+                    .collect(),
+                };
+
+                channel.send(pl).await?;
+            }
+        }
+        "down" => {
+            trace!(key = %k, id = %stream_id, "frame-log received from stream");
+            if let redis::Value::Data(b) = v {
+                let pl = stream::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
+                let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
+                if pl.plaintext_f_opts {
+                    if let Err(e) = phy.decode_f_opts_to_mac_commands() {
+                        warn!(error = %e.full(), "Decode f_opts to mac-commands error");
+                    }
+                }
+                if pl.plaintext_frm_payload {
+                    if let Err(e) = phy.decode_frm_payload() {
+                        warn!(error = %e.full(), "Decode frm_payload error");
+                    }
+                }
+
+                let pl = api::LogItem {
+                    id: stream_id.to_string(),
+                    time: pl.time.as_ref().map(|t| prost_types::Timestamp {
+                        seconds: t.seconds,
+                        nanos: t.nanos,
+                    }),
+                    description: pl.m_type().into(),
+                    body: json!({
+                        "phy_payload": phy,
+                        "tx_info": pl.tx_info,
+                    })
+                    .to_string(),
+                    properties: [
+                        ("DevAddr".to_string(), pl.dev_addr),
+                        ("DevEUI".to_string(), pl.dev_eui),
+                        ("Gateway ID".to_string(), pl.gateway_id),
+                    ]
+                    .iter()
+                    .cloned()
+                    .collect(),
+                };
+
+                channel.send(pl).await?;
+            }
+        }
+        _ => {
+            error!(key = %k, "Unexpected key in frame-log stream");
+        }
+    }
+
+    Ok(())
 }
