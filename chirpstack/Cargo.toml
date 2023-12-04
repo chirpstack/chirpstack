@@ -97,7 +97,7 @@ anyhow = "1.0"
 # Authentication
 pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
-jsonwebtoken = "8.3"
+jsonwebtoken = "9.2"
 openssl = { version = "0.10" }
 openidconnect = { version = "3.3", features = ["accept-rfc3339-timestamps"] }
 
