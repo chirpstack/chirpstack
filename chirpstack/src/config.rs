@@ -259,6 +259,7 @@ pub struct MqttIntegration {
     pub tls_key: String,
     #[serde(with = "humantime_serde")]
     pub keep_alive_interval: Duration,
+    pub share_name: String,
 }
 
 impl Default for MqttIntegration {
@@ -279,6 +280,7 @@ impl Default for MqttIntegration {
             tls_cert: "".into(),
             tls_key: "".into(),
             keep_alive_interval: Duration::from_secs(30),
+            share_name: "chirpstack".into(),
         }
     }
 }
