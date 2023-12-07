@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chirpstack/chirpstack/api/go/v4/api"
+	"github.com/chirpstack/chirpstack/api/go/v4/stream"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -48,7 +48,7 @@ func main() {
 			lastID = msg.ID
 
 			if b, ok := msg.Values["request"].(string); ok {
-				var pl api.RequestLog
+				var pl stream.ApiRequestLog
 				if err := proto.Unmarshal([]byte(b), &pl); err != nil {
 					log.Fatal(err)
 				}

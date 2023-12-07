@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chirpstack/chirpstack/api/go/v4/api"
+	"github.com/chirpstack/chirpstack/api/go/v4/stream"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -49,7 +49,7 @@ func main() {
 			lastID = msg.ID
 
 			if b, ok := msg.Values["up"].(string); ok {
-				var pl api.UplinkFrameLog
+				var pl stream.UplinkFrameLog
 				if err := proto.Unmarshal([]byte(b), &pl); err != nil {
 					log.Fatal(err)
 				}
@@ -60,7 +60,7 @@ func main() {
 			}
 
 			if b, ok := msg.Values["down"].(string); ok {
-				var pl api.DownlinkFrameLog
+				var pl stream.DownlinkFrameLog
 				if err := proto.Unmarshal([]byte(b), &pl); err != nil {
 					log.Fatal(err)
 				}
