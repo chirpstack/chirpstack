@@ -19,6 +19,7 @@ version:
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./backend/Cargo.toml
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./lrwn/Cargo.toml
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./lrwn-filters/Cargo.toml
+	sed -i 's/^version.*/version = "$(VERSION)"/g' ./chirpstack-integration/Cargo.toml
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./ui/package.json
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/grpc-web/package.json
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/js/package.json
