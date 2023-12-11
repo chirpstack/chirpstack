@@ -105,7 +105,8 @@ jsonwebtoken = "8.3"
 rustls = "0.21"
 rustls-native-certs = "0.6"
 rustls-pemfile = "1.0"
-openssl = { version = "0.10" }
+rsa = "0.9"
+rcgen = { version = "0.12", features = [ "x509-parser" ] }
 openidconnect = { version = "3.3", features = ["accept-rfc3339-timestamps"] }
 
 # MQTT

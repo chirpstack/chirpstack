@@ -11,7 +11,6 @@ pkgs.mkShell {
     pkgs.perl
     pkgs.cmake
     pkgs.clang
-    pkgs.openssl
   ];
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
   BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.llvmPackages.libclang.lib}/lib/clang/${pkgs.llvmPackages.libclang.version}/include";

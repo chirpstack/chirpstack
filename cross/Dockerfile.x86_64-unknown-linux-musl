@@ -1,22 +1,6 @@
 FROM ghcr.io/cross-rs/x86_64-unknown-linux-musl:latest
 
-ENV OPENSSL_VERSION=3.1.2
-ENV OPENSSL_TARGET=linux-x86_64
-ENV MUSL_PREFIX=x86_64-linux-musl
-
 RUN apt-get update && \
     apt-get --assume-yes install \
     protobuf-compiler \
     libprotobuf-dev
-
-RUN echo "Building OpenSSL" && \
-    cd /tmp && \
-    curl -fLO "https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz" && \
-    tar xvzf "openssl-$OPENSSL_VERSION.tar.gz" && cd "openssl-$OPENSSL_VERSION" && \
-    env CC=$MUSL_PREFIX-gcc ./Configure no-shared no-zlib -fPIC --prefix=/usr/local/$MUSL_PREFIX-target -DOPENSSL_NO_SECURE_MEMORY $OPENSSL_TARGET && \
-    env C_INCLUDE_PATH=/usr/local/$MUSL_PREFIX/include/ make depend && \
-    env C_INCLUDE_PATH=/usr/local/$MUSL_PREFIX/include/ make && \
-    make install_sw && \
-    rm -r /tmp/*
-
-ENV PKG_CONFIG_PATH=/usr/local/$MUSL_PREFIX-target/lib/pkgconfig:/usr/local/$MUSL_PREFIX-target/lib64/pkgconfig
