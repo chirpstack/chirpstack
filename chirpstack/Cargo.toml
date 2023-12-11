@@ -76,7 +76,7 @@ rdkafka = { version = "0.34", default-features = false, features = ["tokio", "cm
 tonic = "0.10"
 tonic-web = "0.10"
 tonic-reflection = "0.10"
-tokio = { version = "1.32", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.35", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1"
 prost-types = "0.12"
 prost = "0.12"
@@ -90,7 +90,7 @@ futures = "0.3"
 futures-util = "0.3"
 http = "0.2"
 http-body = "0.4"
-rust-embed = "8.0"
+rust-embed = "8.1"
 mime_guess = "2.0"
 tower-http = { version = "0.4", features = ["trace", "auth"] }
 
