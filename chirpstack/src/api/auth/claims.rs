@@ -55,6 +55,7 @@ impl AuthClaim {
 
     pub fn decode(token: &str, secret: &[u8]) -> Result<Self> {
         let mut val = Validation::new(Algorithm::HS256);
+        val.set_audience(&["chirpstack"]);
         val.required_spec_claims = HashSet::new(); // make the 'exp' optional
 
         let claim = decode::<AuthClaim>(token, &DecodingKey::from_secret(secret), &val)?;
