@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import moment from "moment";
-import JSONTreeOriginal from "react-json-tree";
+import { JSONTree as JSONTreeOriginal } from "react-json-tree";
 import fileDownload from "js-file-download";
 
 import { Tag, Drawer, Button, Table, Spin, Space } from "antd";
@@ -81,7 +81,7 @@ function LogTable(props: IProps) {
           data={bodyJson}
           theme={theme}
           hideRoot={true}
-          shouldExpandNode={() => {
+          shouldExpandNodeInitially={() => {
             return true;
           }}
         />
