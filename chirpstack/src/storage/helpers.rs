@@ -11,13 +11,12 @@ use lrwn::EUI64;
 pub async fn get_all_device_data(
     dev_eui: EUI64,
 ) -> Result<(Device, Application, Tenant, DeviceProfile), Error> {
-    let mut c = get_async_db_conn().await?;
     let res = device::table
         .inner_join(application::table)
         .inner_join(tenant::table.on(application::dsl::tenant_id.eq(tenant::dsl::id)))
         .inner_join(device_profile::table)
         .filter(device::dsl::dev_eui.eq(&dev_eui))
-        .first::<(Device, Application, Tenant, DeviceProfile)>(&mut c)
+        .first::<(Device, Application, Tenant, DeviceProfile)>(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
     Ok(res)

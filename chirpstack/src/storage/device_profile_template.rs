@@ -133,10 +133,10 @@ pub struct DeviceProfileTemplateListItem {
 
 pub async fn create(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, Error> {
     dp.validate()?;
-    let mut c = get_async_db_conn().await?;
+
     let dp: DeviceProfileTemplate = diesel::insert_into(device_profile_template::table)
         .values(&dp)
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))?;
     info!(id = %dp.id, "Device-profile template created");
@@ -145,7 +145,7 @@ pub async fn create(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
 
 pub async fn upsert(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, Error> {
     dp.validate()?;
-    let mut c = get_async_db_conn().await?;
+
     let dp: DeviceProfileTemplate = diesel::insert_into(device_profile_template::table)
         .values(&dp)
         .on_conflict(device_profile_template::id)
@@ -181,7 +181,7 @@ pub async fn upsert(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
             device_profile_template::measurements.eq(&dp.measurements),
             device_profile_template::auto_detect_measurements.eq(&dp.auto_detect_measurements),
         ))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))?;
     info!(id = %dp.id, "Device-profile template upserted");
@@ -190,10 +190,10 @@ pub async fn upsert(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
 
 pub async fn get(id: &str) -> Result<DeviceProfileTemplate, Error> {
     let id = id.to_string();
-    let mut c = get_async_db_conn().await?;
+
     let dp = device_profile_template::dsl::device_profile_template
         .find(&id)
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, id.clone()))?;
     Ok(dp)
@@ -201,7 +201,6 @@ pub async fn get(id: &str) -> Result<DeviceProfileTemplate, Error> {
 
 pub async fn update(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, Error> {
     dp.validate()?;
-    let mut c = get_async_db_conn().await?;
 
     let dp: DeviceProfileTemplate =
         diesel::update(device_profile_template::dsl::device_profile_template.find(&dp.id))
@@ -235,7 +234,7 @@ pub async fn update(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
                 device_profile_template::abp_rx2_freq.eq(&dp.abp_rx2_freq),
                 device_profile_template::tags.eq(&dp.tags),
             ))
-            .get_result(&mut c)
+            .get_result(&mut get_async_db_conn().await?)
             .await
             .map_err(|e| error::Error::from_diesel(e, dp.id.clone()))?;
     info!(id = %dp.id, "Device-profile template updated");
@@ -244,9 +243,9 @@ pub async fn update(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
 
 pub async fn delete(id: &str) -> Result<(), Error> {
     let id = id.to_string();
-    let mut c = get_async_db_conn().await?;
+
     let ra = diesel::delete(device_profile_template::dsl::device_profile_template.find(&id))
-        .execute(&mut c)
+        .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
         return Err(error::Error::NotFound(id));
@@ -256,15 +255,13 @@ pub async fn delete(id: &str) -> Result<(), Error> {
 }
 
 pub async fn get_count() -> Result<i64, Error> {
-    let mut c = get_async_db_conn().await?;
     Ok(device_profile_template::dsl::device_profile_template
         .select(dsl::count_star())
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await?)
 }
 
 pub async fn list(limit: i64, offset: i64) -> Result<Vec<DeviceProfileTemplateListItem>, Error> {
-    let mut c = get_async_db_conn().await?;
     let items = device_profile_template::dsl::device_profile_template
         .select((
             device_profile_template::id,
@@ -288,7 +285,7 @@ pub async fn list(limit: i64, offset: i64) -> Result<Vec<DeviceProfileTemplateLi
         ))
         .limit(limit)
         .offset(offset)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
 }

@@ -292,10 +292,9 @@ impl Default for Integration {
 pub async fn create(a: Application) -> Result<Application, Error> {
     a.validate()?;
 
-    let mut c = get_async_db_conn().await?;
     let a: Application = diesel::insert_into(application::table)
         .values(&a)
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;
 
@@ -305,10 +304,9 @@ pub async fn create(a: Application) -> Result<Application, Error> {
 }
 
 pub async fn get(id: &Uuid) -> Result<Application, Error> {
-    let mut c = get_async_db_conn().await?;
     let a = application::dsl::application
         .find(&id)
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     Ok(a)
@@ -316,7 +314,7 @@ pub async fn get(id: &Uuid) -> Result<Application, Error> {
 
 pub async fn update(a: Application) -> Result<Application, Error> {
     a.validate()?;
-    let mut c = get_async_db_conn().await?;
+
     let a: Application = diesel::update(application::dsl::application.find(&a.id))
         .set((
             application::updated_at.eq(Utc::now()),
@@ -324,7 +322,7 @@ pub async fn update(a: Application) -> Result<Application, Error> {
             application::description.eq(&a.description),
             application::tags.eq(&a.tags),
         ))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, a.id.to_string()))?;
 
@@ -337,10 +335,9 @@ pub async fn update(a: Application) -> Result<Application, Error> {
 }
 
 pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application, Error> {
-    let mut c = get_async_db_conn().await?;
     let app: Application = diesel::update(application::dsl::application.find(&id))
         .set(application::mqtt_tls_cert.eq(cert))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
@@ -353,9 +350,8 @@ pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application,
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let mut c = get_async_db_conn().await?;
     let ra = diesel::delete(application::dsl::application.find(&id))
-        .execute(&mut c)
+        .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
         return Err(Error::NotFound(id.to_string()));
@@ -370,7 +366,6 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = application::dsl::application
         .select(dsl::count_star())
         .into_boxed();
@@ -383,7 +378,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
     }
 
-    Ok(q.first(&mut c).await?)
+    Ok(q.first(&mut get_async_db_conn().await?).await?)
 }
 
 pub async fn list(
@@ -391,7 +386,6 @@ pub async fn list(
     offset: i64,
     filters: &Filters,
 ) -> Result<Vec<ApplicationListItem>, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = application::dsl::application
         .select((
             application::id,
@@ -414,16 +408,15 @@ pub async fn list(
         .order_by(application::dsl::name)
         .limit(limit)
         .offset(offset)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
 }
 
 pub async fn create_integration(i: Integration) -> Result<Integration, Error> {
-    let mut c = get_async_db_conn().await?;
     let i: Integration = diesel::insert_into(application_integration::table)
         .values(&i)
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, i.kind.to_string()))?;
 
@@ -435,14 +428,13 @@ pub async fn get_integration(
     application_id: &Uuid,
     kind: IntegrationKind,
 ) -> Result<Integration, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut i: Integration = application_integration::dsl::application_integration
         .filter(
             application_integration::dsl::application_id
                 .eq(application_id)
                 .and(application_integration::dsl::kind.eq(kind)),
         )
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
 
@@ -462,7 +454,6 @@ pub async fn get_integration(
 }
 
 pub async fn update_integration(i: Integration) -> Result<Integration, Error> {
-    let mut c = get_async_db_conn().await?;
     let i: Integration = diesel::update(
         application_integration::dsl::application_integration.filter(
             application_integration::dsl::application_id
@@ -474,7 +465,7 @@ pub async fn update_integration(i: Integration) -> Result<Integration, Error> {
         application_integration::updated_at.eq(Utc::now()),
         application_integration::configuration.eq(&i.configuration),
     ))
-    .get_result(&mut c)
+    .get_result(&mut get_async_db_conn().await?)
     .await
     .map_err(|e| Error::from_diesel(e, i.application_id.to_string()))?;
 
@@ -484,7 +475,6 @@ pub async fn update_integration(i: Integration) -> Result<Integration, Error> {
 }
 
 pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) -> Result<(), Error> {
-    let mut c = get_async_db_conn().await?;
     let ra = diesel::delete(
         application_integration::dsl::application_integration.filter(
             application_integration::dsl::application_id
@@ -492,7 +482,7 @@ pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) ->
                 .and(application_integration::dsl::kind.eq(&kind)),
         ),
     )
-    .execute(&mut c)
+    .execute(&mut get_async_db_conn().await?)
     .await?;
 
     if ra == 0 {
@@ -506,11 +496,10 @@ pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) ->
 pub async fn get_integrations_for_application(
     application_id: &Uuid,
 ) -> Result<Vec<Integration>, Error> {
-    let mut c = get_async_db_conn().await?;
     let items: Vec<Integration> = application_integration::dsl::application_integration
         .filter(application_integration::dsl::application_id.eq(&application_id))
         .order_by(application_integration::dsl::kind)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
 }
@@ -522,7 +511,6 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
         pub key: String,
     }
 
-    let mut c = get_async_db_conn().await?;
     let keys: Vec<Measurement> = diesel::sql_query(
         r#"
                 select
@@ -538,7 +526,7 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                 "#,
     )
     .bind::<diesel::sql_types::Uuid, _>(application_id)
-    .load(&mut c)
+    .load(&mut get_async_db_conn().await?)
     .await
     .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
     Ok(keys.iter().map(|k| k.key.clone()).collect())

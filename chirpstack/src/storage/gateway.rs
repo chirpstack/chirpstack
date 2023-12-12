@@ -154,10 +154,9 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
 }
 
 pub async fn get(gateway_id: &EUI64) -> Result<Gateway, Error> {
-    let mut c = get_async_db_conn().await?;
     let gw = gateway::dsl::gateway
         .find(&gateway_id)
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
     Ok(gw)
@@ -165,7 +164,7 @@ pub async fn get(gateway_id: &EUI64) -> Result<Gateway, Error> {
 
 pub async fn update(gw: Gateway) -> Result<Gateway, Error> {
     gw.validate()?;
-    let mut c = get_async_db_conn().await?;
+
     let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&gw.gateway_id))
         .set((
             gateway::updated_at.eq(Utc::now()),
@@ -177,7 +176,7 @@ pub async fn update(gw: Gateway) -> Result<Gateway, Error> {
             gateway::stats_interval_secs.eq(&gw.stats_interval_secs),
             gateway::tags.eq(&gw.tags),
         ))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, gw.gateway_id.to_string()))?;
     info!(
@@ -189,13 +188,13 @@ pub async fn update(gw: Gateway) -> Result<Gateway, Error> {
 
 pub async fn update_state(id: &EUI64, props: &HashMap<String, String>) -> Result<Gateway, Error> {
     let props = fields::KeyValue::new(props.clone());
-    let mut c = get_async_db_conn().await?;
+
     let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
         .set((
             gateway::last_seen_at.eq(Some(Utc::now())),
             gateway::properties.eq(props),
         ))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
@@ -215,7 +214,7 @@ pub async fn update_state_and_loc(
     props: &HashMap<String, String>,
 ) -> Result<Gateway, Error> {
     let props = fields::KeyValue::new(props.clone());
-    let mut c = get_async_db_conn().await?;
+
     let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
         .set((
             gateway::last_seen_at.eq(Some(Utc::now())),
@@ -224,7 +223,7 @@ pub async fn update_state_and_loc(
             gateway::altitude.eq(alt),
             gateway::properties.eq(props),
         ))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
@@ -237,10 +236,9 @@ pub async fn update_state_and_loc(
 }
 
 pub async fn update_tls_cert(id: &EUI64, cert: &[u8]) -> Result<Gateway, Error> {
-    let mut c = get_async_db_conn().await?;
     let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
         .set(gateway::tls_certificate.eq(cert))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     info!(
@@ -252,9 +250,8 @@ pub async fn update_tls_cert(id: &EUI64, cert: &[u8]) -> Result<Gateway, Error> 
 }
 
 pub async fn delete(gateway_id: &EUI64) -> Result<(), Error> {
-    let mut c = get_async_db_conn().await?;
     let ra = diesel::delete(gateway::dsl::gateway.find(&gateway_id))
-        .execute(&mut c)
+        .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
         return Err(Error::NotFound(gateway_id.to_string()));
@@ -267,7 +264,6 @@ pub async fn delete(gateway_id: &EUI64) -> Result<(), Error> {
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = gateway::dsl::gateway
         .select(dsl::count_star())
         .distinct()
@@ -286,7 +282,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
     }
 
-    Ok(q.first(&mut c).await?)
+    Ok(q.first(&mut get_async_db_conn().await?).await?)
 }
 
 pub async fn list(
@@ -294,7 +290,6 @@ pub async fn list(
     offset: i64,
     filters: &Filters,
 ) -> Result<Vec<GatewayListItem>, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = gateway::dsl::gateway
         .left_join(multicast_group_gateway::table)
         .select((
@@ -330,13 +325,12 @@ pub async fn list(
         .order_by(gateway::dsl::name)
         .limit(limit)
         .offset(offset)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
 }
 
 pub async fn get_meta(gateway_id: &EUI64) -> Result<GatewayMeta, Error> {
-    let mut c = get_async_db_conn().await?;
     let meta = gateway::dsl::gateway
         .inner_join(tenant::table)
         .select((
@@ -349,14 +343,13 @@ pub async fn get_meta(gateway_id: &EUI64) -> Result<GatewayMeta, Error> {
             tenant::private_gateways_down,
         ))
         .filter(gateway::dsl::gateway_id.eq(&gateway_id))
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
     Ok(meta)
 }
 
 pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCountsByState, Error> {
-    let mut c = get_async_db_conn().await?;
     let counts: GatewayCountsByState = diesel::sql_query(r#"
         select
             coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
@@ -366,7 +359,7 @@ pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCoun
             gateway
         where
             $1 is null or tenant_id = $1
-    "#).bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id).get_result(&mut c).await?;
+    "#).bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id).get_result(&mut get_async_db_conn().await?).await?;
     Ok(counts)
 }
 

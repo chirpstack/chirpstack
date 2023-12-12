@@ -51,10 +51,9 @@ pub struct Filters {
 pub async fn create(ak: ApiKey) -> Result<ApiKey, Error> {
     ak.validate()?;
 
-    let mut c = get_async_db_conn().await?;
     let ak: ApiKey = diesel::insert_into(api_key::table)
         .values(&ak)
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, ak.id.to_string()))?;
     info!(id = %ak.id, "Api-key created");
@@ -62,9 +61,8 @@ pub async fn create(ak: ApiKey) -> Result<ApiKey, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let mut c = get_async_db_conn().await?;
     let ra = diesel::delete(api_key::dsl::api_key.find(&id))
-        .execute(&mut c)
+        .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
         return Err(Error::NotFound(id.to_string()));
@@ -74,8 +72,6 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    let mut c = get_async_db_conn().await?;
-
     let mut q = api_key::dsl::api_key
         .select(dsl::count_star())
         .filter(api_key::dsl::is_admin.eq(filters.is_admin))
@@ -85,12 +81,10 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         q = q.filter(api_key::dsl::tenant_id.eq(tenant_id));
     }
 
-    Ok(q.first(&mut c).await?)
+    Ok(q.first(&mut get_async_db_conn().await?).await?)
 }
 
 pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<ApiKey>, Error> {
-    let mut c = get_async_db_conn().await?;
-
     let mut q = api_key::dsl::api_key
         .filter(api_key::dsl::is_admin.eq(filters.is_admin))
         .into_boxed();
@@ -103,7 +97,7 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<ApiK
         .order_by(api_key::dsl::name)
         .limit(limit)
         .offset(offset)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
 }
@@ -123,10 +117,9 @@ pub mod test {
     }
 
     pub async fn get(id: &Uuid) -> Result<ApiKey, Error> {
-        let mut c = get_async_db_conn().await?;
         api_key::dsl::api_key
             .find(&id)
-            .first(&mut c)
+            .first(&mut get_async_db_conn().await?)
             .await
             .map_err(|e| error::Error::from_diesel(e, id.to_string()))
     }

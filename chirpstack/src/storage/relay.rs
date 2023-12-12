@@ -43,7 +43,6 @@ pub struct DeviceListItem {
 }
 
 pub async fn get_relay_count(filters: &RelayFilters) -> Result<i64, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = device::dsl::device
         .select(dsl::count_star())
         .inner_join(device_profile::table)
@@ -54,7 +53,7 @@ pub async fn get_relay_count(filters: &RelayFilters) -> Result<i64, Error> {
         q = q.filter(device::dsl::application_id.eq(application_id));
     }
 
-    Ok(q.first(&mut c).await?)
+    Ok(q.first(&mut get_async_db_conn().await?).await?)
 }
 
 pub async fn list_relays(
@@ -62,7 +61,6 @@ pub async fn list_relays(
     offset: i64,
     filters: &RelayFilters,
 ) -> Result<Vec<RelayListItem>, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = device::dsl::device
         .inner_join(device_profile::table)
         .select((device::dev_eui, device::name))
@@ -76,13 +74,12 @@ pub async fn list_relays(
     q.order_by(device::dsl::name)
         .limit(limit)
         .offset(offset)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
 pub async fn get_device_count(filters: &DeviceFilters) -> Result<i64, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = relay_device::dsl::relay_device
         .select(dsl::count_star())
         .into_boxed();
@@ -91,7 +88,7 @@ pub async fn get_device_count(filters: &DeviceFilters) -> Result<i64, Error> {
         q = q.filter(relay_device::dsl::relay_dev_eui.eq(relay_dev_eui));
     }
 
-    q.first(&mut c)
+    q.first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
@@ -101,7 +98,6 @@ pub async fn list_devices(
     offset: i64,
     filters: &DeviceFilters,
 ) -> Result<Vec<DeviceListItem>, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = relay_device::dsl::relay_device
         .inner_join(device::table.on(relay_device::dsl::dev_eui.eq(device::dsl::dev_eui)))
         .inner_join(
@@ -125,7 +121,7 @@ pub async fn list_devices(
     q.order_by(device::dsl::name)
         .limit(limit)
         .offset(offset)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
@@ -219,13 +215,12 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
 }
 
 pub async fn remove_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(), Error> {
-    let mut c = get_async_db_conn().await?;
     let ra = diesel::delete(
         relay_device::dsl::relay_device
             .filter(relay_device::relay_dev_eui.eq(&relay_dev_eui))
             .filter(relay_device::dev_eui.eq(&device_dev_eui)),
     )
-    .execute(&mut c)
+    .execute(&mut get_async_db_conn().await?)
     .await?;
     if ra == 0 {
         return Err(Error::NotFound(format!(

@@ -48,7 +48,6 @@ pub async fn global_search(
     let query = format!("%{}%", query);
     let tags = serde_json::to_value(tags).context("To serde_json value")?;
 
-    let mut c = get_async_db_conn().await?;
     let res: Vec<SearchResult> = diesel::sql_query(
         r#"
             -- device
@@ -157,7 +156,7 @@ pub async fn global_search(
             .bind::<diesel::sql_types::BigInt, _>(limit as i64)
             .bind::<diesel::sql_types::BigInt, _>(offset as i64)
             .bind::<diesel::sql_types::Jsonb, _>(tags)
-            .load(&mut c).await?;
+            .load(&mut get_async_db_conn().await?).await?;
 
     Ok(res)
 }

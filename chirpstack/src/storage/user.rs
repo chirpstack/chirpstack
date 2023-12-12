@@ -66,11 +66,10 @@ impl User {
 
 pub async fn create(u: User) -> Result<User, Error> {
     u.validate()?;
-    let mut c = get_async_db_conn().await?;
 
     let u: User = diesel::insert_into(user::table)
         .values(&u)
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, u.id.to_string()))?;
     info!(id = %u.id, "User created");
@@ -78,40 +77,36 @@ pub async fn create(u: User) -> Result<User, Error> {
 }
 
 pub async fn get(id: &Uuid) -> Result<User, Error> {
-    let mut c = get_async_db_conn().await?;
     let u = user::dsl::user
         .find(&id)
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     Ok(u)
 }
 
 pub async fn get_by_email(email: &str) -> Result<User, Error> {
-    let mut c = get_async_db_conn().await?;
     let u = user::dsl::user
         .filter(user::dsl::email.eq(email))
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, email.to_string()))?;
     Ok(u)
 }
 
 pub async fn get_by_external_id(external_id: &str) -> Result<User, Error> {
-    let mut c = get_async_db_conn().await?;
     let u = user::dsl::user
         .filter(user::dsl::external_id.eq(external_id))
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, external_id.to_string()))?;
     Ok(u)
 }
 
 pub async fn get_by_email_and_pw(email: &str, pw: &str) -> Result<User, Error> {
-    let mut c = get_async_db_conn().await?;
     let u: User = match user::dsl::user
         .filter(user::dsl::email.eq(email))
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, email.to_string()))
     {
@@ -133,7 +128,7 @@ pub async fn get_by_email_and_pw(email: &str, pw: &str) -> Result<User, Error> {
 
 pub async fn update(u: User) -> Result<User, Error> {
     u.validate()?;
-    let mut c = get_async_db_conn().await?;
+
     let u: User = diesel::update(user::dsl::user.find(&u.id))
         .set((
             user::updated_at.eq(Utc::now()),
@@ -144,7 +139,7 @@ pub async fn update(u: User) -> Result<User, Error> {
             user::note.eq(&u.note),
             user::external_id.eq(&u.external_id),
         ))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, u.id.to_string()))?;
     info!(user_id = %u.id, "User updated");
@@ -152,10 +147,9 @@ pub async fn update(u: User) -> Result<User, Error> {
 }
 
 pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
-    let mut c = get_async_db_conn().await?;
     let u: User = diesel::update(user::dsl::user.find(&id))
         .set(user::password_hash.eq(&hash))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     info!(id = %id, "Password set");
@@ -163,9 +157,8 @@ pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let mut c = get_async_db_conn().await?;
     let ra = diesel::delete(user::dsl::user.find(&id))
-        .execute(&mut c)
+        .execute(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
@@ -177,21 +170,19 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
 }
 
 pub async fn get_count() -> Result<i64, Error> {
-    let mut c = get_async_db_conn().await?;
     let count = user::dsl::user
         .select(dsl::count_star())
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await?;
     Ok(count)
 }
 
 pub async fn list(limit: i64, offset: i64) -> Result<Vec<User>, Error> {
-    let mut c = get_async_db_conn().await?;
     let items = user::dsl::user
         .order_by(user::dsl::email)
         .limit(limit)
         .offset(offset)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
 }

@@ -92,12 +92,11 @@ impl Validator for ValidateActiveUser {
     }
 
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let count = user::dsl::user
             .select(dsl::count_star())
             .find(id)
             .filter(user::dsl::is_active.eq(true))
-            .first(&mut c)
+            .first(&mut get_async_db_conn().await?)
             .await?;
         Ok(count)
     }
@@ -118,7 +117,6 @@ impl Validator for ValidateIsAdmin {
     }
 
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let count = user::dsl::user
             .select(dsl::count_star())
             .find(id)
@@ -127,7 +125,7 @@ impl Validator for ValidateIsAdmin {
                     .eq(true)
                     .and(user::dsl::is_admin.eq(true)),
             )
-            .first(&mut c)
+            .first(&mut get_async_db_conn().await?)
             .await?;
         Ok(count)
     }
@@ -144,22 +142,20 @@ impl ValidateActiveUserOrKey {
 #[async_trait]
 impl Validator for ValidateActiveUserOrKey {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let count = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(&id)
-            .first(&mut c)
+            .first(&mut get_async_db_conn().await?)
             .await?;
         Ok(count)
     }
 
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let count = user::dsl::user
             .select(dsl::count_star())
             .find(id)
             .filter(user::dsl::is_active.eq(true))
-            .first(&mut c)
+            .first(&mut get_async_db_conn().await?)
             .await?;
         Ok(count)
     }
@@ -178,7 +174,6 @@ impl ValidateUsersAccess {
 #[async_trait]
 impl Validator for ValidateUsersAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .find(&id)
@@ -195,17 +190,16 @@ impl Validator for ValidateUsersAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         // admin api key
         let count = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(&id)
             .filter(api_key::dsl::is_admin.eq(true))
-            .first(&mut c)
+            .first(&mut get_async_db_conn().await?)
             .await?;
         Ok(count)
     }
@@ -225,7 +219,6 @@ impl ValidateUserAccess {
 #[async_trait]
 impl Validator for ValidateUserAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .find(&id)
@@ -251,17 +244,16 @@ impl Validator for ValidateUserAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         // admin api key
         let count = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(&id)
             .filter(api_key::dsl::is_admin.eq(true))
-            .first(&mut c)
+            .first(&mut get_async_db_conn().await?)
             .await?;
         Ok(count)
     }
@@ -287,8 +279,6 @@ impl ValidateApiKeysAccess {
 #[async_trait]
 impl Validator for ValidateApiKeysAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
-
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(&id).and(user::dsl::is_active.eq(true)))
@@ -327,7 +317,7 @@ impl Validator for ValidateApiKeysAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, _id: &Uuid) -> Result<i64, Error> {
@@ -349,8 +339,6 @@ impl ValidateApiKeyAccess {
 #[async_trait]
 impl Validator for ValidateApiKeyAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
-
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -380,7 +368,7 @@ impl Validator for ValidateApiKeyAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, _id: &Uuid) -> Result<i64, Error> {
@@ -401,8 +389,6 @@ impl ValidateTenantsAccess {
 #[async_trait]
 impl Validator for ValidateTenantsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
-
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .find(&id)
@@ -421,17 +407,16 @@ impl Validator for ValidateTenantsAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         // admin api key
         let count = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(&id)
             .filter(api_key::dsl::is_admin.eq(true))
-            .first(&mut c)
+            .first(&mut get_async_db_conn().await?)
             .await?;
         Ok(count)
     }
@@ -451,8 +436,6 @@ impl ValidateTenantAccess {
 #[async_trait]
 impl Validator for ValidateTenantAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
-
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -482,12 +465,10 @@ impl Validator for ValidateTenantAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
-
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(id)
@@ -512,7 +493,7 @@ impl Validator for ValidateTenantAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -530,7 +511,6 @@ impl ValidateTenantUsersAccess {
 #[async_trait]
 impl Validator for ValidateTenantUsersAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -569,11 +549,10 @@ impl Validator for ValidateTenantUsersAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(id)
@@ -594,7 +573,7 @@ impl Validator for ValidateTenantUsersAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -617,7 +596,6 @@ impl ValidateTenantUserAccess {
 #[async_trait]
 impl Validator for ValidateTenantUserAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -662,11 +640,10 @@ impl Validator for ValidateTenantUserAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(id)
@@ -687,7 +664,7 @@ impl Validator for ValidateTenantUserAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -705,7 +682,6 @@ impl ValidateApplicationsAccess {
 #[async_trait]
 impl Validator for ValidateApplicationsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -749,11 +725,10 @@ impl Validator for ValidateApplicationsAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(id)
@@ -783,7 +758,7 @@ impl Validator for ValidateApplicationsAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -804,7 +779,6 @@ impl ValidateApplicationAccess {
 #[async_trait]
 impl Validator for ValidateApplicationAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -858,11 +832,10 @@ impl Validator for ValidateApplicationAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -885,7 +858,7 @@ impl Validator for ValidateApplicationAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -902,7 +875,6 @@ impl ValidateDeviceProfileTemplatesAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfileTemplatesAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -920,11 +892,10 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(id)
@@ -942,7 +913,7 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -959,7 +930,6 @@ impl ValidateDeviceProfileTemplateAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfileTemplateAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -977,11 +947,10 @@ impl Validator for ValidateDeviceProfileTemplateAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(id)
@@ -999,7 +968,7 @@ impl Validator for ValidateDeviceProfileTemplateAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1017,7 +986,6 @@ impl ValidateDeviceProfilesAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfilesAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1061,11 +1029,10 @@ impl Validator for ValidateDeviceProfilesAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(id)
@@ -1086,7 +1053,7 @@ impl Validator for ValidateDeviceProfilesAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1107,7 +1074,6 @@ impl ValidateDeviceProfileAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfileAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1161,11 +1127,10 @@ impl Validator for ValidateDeviceProfileAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -1188,7 +1153,7 @@ impl Validator for ValidateDeviceProfileAccess {
             }
         };
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1209,7 +1174,6 @@ impl ValidateDevicesAccess {
 #[async_trait]
 impl Validator for ValidateDevicesAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1263,11 +1227,10 @@ impl Validator for ValidateDevicesAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -1290,7 +1253,7 @@ impl Validator for ValidateDevicesAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1308,7 +1271,6 @@ impl ValidateDeviceAccess {
 #[async_trait]
 impl Validator for ValidateDeviceAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1364,11 +1326,10 @@ impl Validator for ValidateDeviceAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -1391,7 +1352,7 @@ impl Validator for ValidateDeviceAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1409,7 +1370,6 @@ impl ValidateDeviceQueueAccess {
 #[async_trait]
 impl Validator for ValidateDeviceQueueAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1440,11 +1400,10 @@ impl Validator for ValidateDeviceQueueAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -1467,7 +1426,7 @@ impl Validator for ValidateDeviceQueueAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1485,7 +1444,6 @@ impl ValidateGatewaysAccess {
 #[async_trait]
 impl Validator for ValidateGatewaysAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1529,11 +1487,10 @@ impl Validator for ValidateGatewaysAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .find(id)
@@ -1554,7 +1511,7 @@ impl Validator for ValidateGatewaysAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1572,7 +1529,6 @@ impl ValidateGatewayAccess {
 #[async_trait]
 impl Validator for ValidateGatewayAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1626,11 +1582,10 @@ impl Validator for ValidateGatewayAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -1654,7 +1609,7 @@ impl Validator for ValidateGatewayAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1675,7 +1630,6 @@ impl ValidateMulticastGroupsAccess {
 #[async_trait]
 impl Validator for ValidateMulticastGroupsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1729,11 +1683,10 @@ impl Validator for ValidateMulticastGroupsAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -1756,7 +1709,7 @@ impl Validator for ValidateMulticastGroupsAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1777,7 +1730,6 @@ impl ValidateMulticastGroupAccess {
 #[async_trait]
 impl Validator for ValidateMulticastGroupAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1833,11 +1785,10 @@ impl Validator for ValidateMulticastGroupAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -1862,7 +1813,7 @@ impl Validator for ValidateMulticastGroupAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 
@@ -1883,7 +1834,6 @@ impl ValidateMulticastGroupQueueAccess {
 #[async_trait]
 impl Validator for ValidateMulticastGroupQueueAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = user::dsl::user
             .select(dsl::count_star())
             .filter(user::dsl::id.eq(id).and(user::dsl::is_active.eq(true)))
@@ -1939,11 +1889,10 @@ impl Validator for ValidateMulticastGroupQueueAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut c = get_async_db_conn().await?;
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
             .filter(api_key::dsl::id.eq(id))
@@ -1968,7 +1917,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
             }
         }
 
-        Ok(q.first(&mut c).await?)
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
     }
 }
 

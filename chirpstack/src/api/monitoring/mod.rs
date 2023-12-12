@@ -49,9 +49,8 @@ async fn health_handler() -> Result<impl warp::Reply, Infallible> {
 }
 
 async fn _health_handler() -> Result<()> {
-    let mut c = get_async_db_conn().await?;
     diesel::sql_query("select 1")
-        .execute(&mut c)
+        .execute(&mut get_async_db_conn().await?)
         .await
         .context("PostgreSQL connection error")?;
 

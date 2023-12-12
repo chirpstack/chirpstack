@@ -198,10 +198,10 @@ pub struct Filters {
 
 pub async fn create(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
     dp.validate()?;
-    let mut c = get_async_db_conn().await?;
+
     let dp: DeviceProfile = diesel::insert_into(device_profile::table)
         .values(&dp)
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))?;
     info!(id = %dp.id, "Device-profile created");
@@ -209,10 +209,9 @@ pub async fn create(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
 }
 
 pub async fn get(id: &Uuid) -> Result<DeviceProfile, Error> {
-    let mut c = get_async_db_conn().await?;
     let dp = device_profile::dsl::device_profile
         .find(&id)
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, id.to_string()))?;
     Ok(dp)
@@ -220,7 +219,6 @@ pub async fn get(id: &Uuid) -> Result<DeviceProfile, Error> {
 
 pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
     dp.validate()?;
-    let mut c = get_async_db_conn().await?;
 
     let dp: DeviceProfile = diesel::update(device_profile::dsl::device_profile.find(&dp.id))
         .set((
@@ -282,7 +280,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::relay_overall_limit_bucket_size.eq(&dp.relay_overall_limit_bucket_size),
             device_profile::allow_roaming.eq(&dp.allow_roaming),
         ))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))?;
 
@@ -291,10 +289,9 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
 }
 
 pub async fn set_measurements(id: Uuid, m: &fields::Measurements) -> Result<DeviceProfile, Error> {
-    let mut c = get_async_db_conn().await?;
     let dp: DeviceProfile = diesel::update(device_profile::dsl::device_profile.find(&id))
         .set(device_profile::measurements.eq(m))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     info!(id = %id, "Device-profile measurements updated");
@@ -302,9 +299,8 @@ pub async fn set_measurements(id: Uuid, m: &fields::Measurements) -> Result<Devi
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let mut c = get_async_db_conn().await?;
     let ra = diesel::delete(device_profile::dsl::device_profile.find(&id))
-        .execute(&mut c)
+        .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
         return Err(error::Error::NotFound(id.to_string()));
@@ -314,7 +310,6 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = device_profile::dsl::device_profile
         .select(dsl::count_star())
         .into_boxed();
@@ -327,7 +322,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         q = q.filter(device_profile::dsl::name.ilike(format!("%{}%", search)));
     }
 
-    Ok(q.first(&mut c).await?)
+    Ok(q.first(&mut get_async_db_conn().await?).await?)
 }
 
 pub async fn list(
@@ -335,7 +330,6 @@ pub async fn list(
     offset: i64,
     filters: &Filters,
 ) -> Result<Vec<DeviceProfileListItem>, Error> {
-    let mut c = get_async_db_conn().await?;
     let mut q = device_profile::dsl::device_profile
         .select((
             device_profile::id,
@@ -363,7 +357,7 @@ pub async fn list(
         .order_by(device_profile::dsl::name)
         .limit(limit)
         .offset(offset)
-        .load(&mut c)
+        .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
 }

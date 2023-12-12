@@ -45,10 +45,9 @@ impl Default for DeviceKeys {
 }
 
 pub async fn create(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
-    let mut c = get_async_db_conn().await?;
     let dk: DeviceKeys = diesel::insert_into(device_keys::table)
         .values(&dk)
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, dk.dev_eui.to_string()))?;
     info!(
@@ -59,20 +58,18 @@ pub async fn create(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
 }
 
 pub async fn get(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
-    let mut c = get_async_db_conn().await?;
     let dk = device_keys::dsl::device_keys
         .find(&dev_eui)
-        .first(&mut c)
+        .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
     Ok(dk)
 }
 
 pub async fn update(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
-    let mut c = get_async_db_conn().await?;
     let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(&dk.dev_eui))
         .set(&dk)
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, dk.dev_eui.to_string()))?;
     info!(
@@ -83,9 +80,8 @@ pub async fn update(dk: DeviceKeys) -> Result<DeviceKeys, Error> {
 }
 
 pub async fn delete(dev_eui: &EUI64) -> Result<(), Error> {
-    let mut c = get_async_db_conn().await?;
     let ra = diesel::delete(device_keys::dsl::device_keys.find(&dev_eui))
-        .execute(&mut c)
+        .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
         return Err(Error::NotFound(dev_eui.to_string()));
@@ -98,10 +94,9 @@ pub async fn delete(dev_eui: &EUI64) -> Result<(), Error> {
 }
 
 pub async fn set_dev_nonces(dev_eui: &EUI64, nonces: &[i32]) -> Result<DeviceKeys, Error> {
-    let mut c = get_async_db_conn().await?;
     let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(dev_eui))
         .set(device_keys::dev_nonces.eq(nonces))
-        .get_result(&mut c)
+        .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
     info!(
@@ -158,13 +153,12 @@ pub mod test {
     use crate::test;
 
     pub async fn reset_nonces(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
-        let mut c = get_async_db_conn().await?;
         let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
             .set((
                 device_keys::dev_nonces.eq::<Vec<i32>>(Vec::new()),
                 device_keys::join_nonce.eq(0),
             ))
-            .get_result(&mut c)
+            .get_result(&mut get_async_db_conn().await?)
             .await
             .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
