@@ -71,12 +71,11 @@ pub async fn save_state(name: &str, state: &str) -> Result<()> {
     let key = redis_key(format!("metrics:{{{}}}", name));
     let ttl = get_ttl(Aggregation::MONTH);
 
-    let mut c = get_async_redis_conn().await?;
     redis::cmd("PSETEX")
         .arg(key)
         .arg(ttl.as_millis() as usize)
         .arg(state)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     info!(state = %state, "State saved");
@@ -124,7 +123,6 @@ async fn save_for_interval(a: Aggregation, name: &str, record: &Record) -> Resul
             .unwrap(),
     };
 
-    let mut c = get_async_redis_conn().await?;
     let key = get_key(&name, a, ts);
     let mut pipe = redis::pipe();
     pipe.atomic();
@@ -156,7 +154,7 @@ async fn save_for_interval(a: Aggregation, name: &str, record: &Record) -> Resul
         .arg(&key)
         .arg(ttl.as_millis() as usize)
         .ignore()
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     info!(name = %name, aggregation = %a, "Metrics saved");
@@ -165,8 +163,11 @@ async fn save_for_interval(a: Aggregation, name: &str, record: &Record) -> Resul
 
 pub async fn get_state(name: &str) -> Result<String> {
     let key = redis_key(format!("metrics:{{{}}}", name));
-    let mut c = get_async_redis_conn().await?;
-    let v: Option<String> = redis::cmd("GET").arg(key).query_async(&mut c).await?;
+
+    let v: Option<String> = redis::cmd("GET")
+        .arg(key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
     Ok(v.unwrap_or_default())
 }
 
@@ -258,14 +259,14 @@ pub async fn get(
         return Ok(Vec::new());
     }
 
-    let mut c = get_async_redis_conn().await?;
     let mut pipe = redis::pipe();
 
     for k in &keys {
         pipe.cmd("HGETALL").arg(k);
     }
 
-    let res: Vec<HashMap<String, f64>> = pipe.query_async(&mut c).await?;
+    let res: Vec<HashMap<String, f64>> =
+        pipe.query_async(&mut get_async_redis_conn().await?).await?;
     let mut out: Vec<Record> = Vec::new();
 
     for (i, r) in res.iter().enumerate() {

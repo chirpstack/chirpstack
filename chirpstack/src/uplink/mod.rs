@@ -221,7 +221,6 @@ async fn _deduplicate_uplink(event: gw::UplinkFrame) -> Result<()> {
 
 async fn deduplicate_put(key: &str, ttl: Duration, event: &gw::UplinkFrame) -> Result<()> {
     let event_b = event.encode_to_vec();
-    let mut c = get_async_redis_conn().await?;
 
     redis::pipe()
         .atomic()
@@ -233,7 +232,7 @@ async fn deduplicate_put(key: &str, ttl: Duration, event: &gw::UplinkFrame) -> R
         .arg(key)
         .arg(ttl.as_millis() as usize)
         .ignore()
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("Deduplication put")?;
 
@@ -241,15 +240,13 @@ async fn deduplicate_put(key: &str, ttl: Duration, event: &gw::UplinkFrame) -> R
 }
 
 async fn deduplicate_locked(key: &str, ttl: Duration) -> Result<bool> {
-    let mut c = get_async_redis_conn().await?;
-
     let set: bool = redis::cmd("SET")
         .arg(key)
         .arg("lock")
         .arg("PX")
         .arg(ttl.as_millis() as usize)
         .arg("NX")
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("Deduplication locked")?;
 
@@ -257,12 +254,13 @@ async fn deduplicate_locked(key: &str, ttl: Duration) -> Result<bool> {
 }
 
 async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
-    let mut c = get_async_redis_conn().await?;
-    let items_b: Vec<Vec<u8>> = redis::cmd("SMEMBERS")
-        .arg(&key)
-        .query_async(&mut c)
-        .await
-        .context("Deduplication collect")?;
+    let items_b: Vec<Vec<u8>> = {
+        redis::cmd("SMEMBERS")
+            .arg(&key)
+            .query_async(&mut get_async_redis_conn().await?)
+            .await
+            .context("Deduplication collect")?
+    };
 
     if items_b.is_empty() {
         return Err(anyhow!("Zero items in collect set"));

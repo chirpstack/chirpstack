@@ -524,7 +524,7 @@ async fn _handle_xmit_data_req(
 
 async fn handle_async_ans(bp: &BasePayload, b: &[u8]) -> Result<http::Response<hyper::Body>> {
     let transaction_id = bp.transaction_id;
-    let mut c = get_async_redis_conn().await?;
+
     let key = redis_key(format!("backend:async:{}", transaction_id));
 
     redis::pipe()
@@ -541,7 +541,7 @@ async fn handle_async_ans(bp: &BasePayload, b: &[u8]) -> Result<http::Response<h
         .arg(&key)
         .arg(30_i64)
         .ignore()
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     Ok(warp::reply().into_response())

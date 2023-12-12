@@ -28,7 +28,6 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
     let ds_key = redis_key(format!("device:{{{}}}:ds", eui));
     let b = ds.encode_to_vec();
     let ttl = conf.network.device_session_ttl.as_millis() as usize;
-    let mut c = get_async_redis_conn().await?;
 
     // Atomic add and pexpire.
     redis::pipe()
@@ -41,7 +40,7 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
         .arg(&addr_key)
         .arg(ttl)
         .ignore()
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     // In case there is a pending rejoin session, make sure that the new
@@ -60,7 +59,7 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
             .arg(&pending_addr_key)
             .arg(ttl)
             .ignore()
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -68,7 +67,7 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
         .arg(ds_key)
         .arg(ttl)
         .arg(b)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     info!(dev_eui = %eui, dev_addr = %addr, "Device-session saved");
@@ -77,10 +76,10 @@ pub async fn save(ds: &internal::DeviceSession) -> Result<()> {
 
 pub async fn get(dev_eui: &EUI64) -> Result<chirpstack_api::internal::DeviceSession, Error> {
     let key = redis_key(format!("device:{{{}}}:ds", dev_eui));
-    let mut c = get_async_redis_conn().await?;
+
     let v: Vec<u8> = redis::cmd("GET")
         .arg(key)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("Get device-session")?;
     if v.is_empty() {
@@ -93,8 +92,11 @@ pub async fn get(dev_eui: &EUI64) -> Result<chirpstack_api::internal::DeviceSess
 
 pub async fn delete(dev_eui: &EUI64) -> Result<()> {
     let key = redis_key(format!("device:{{{}}}:ds", dev_eui));
-    let mut c = get_async_redis_conn().await?;
-    redis::cmd("DEL").arg(&key).query_async(&mut c).await?;
+
+    redis::cmd("DEL")
+        .arg(&key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
 
     info!(dev_eui = %dev_eui, "Device-session deleted");
     Ok(())
@@ -186,7 +188,7 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                 // Make sure that in case of concurrent calls for the same uplink only one will
                 // pass. Either the concurrent call would read the incremented uplink frame-counter
                 // or it is unable to aquire the lock.
-                let mut c = get_async_redis_conn().await?;
+
                 let lock_key = redis_key(format!(
                     "device:{{{}}}:ds:lock:{}",
                     hex::encode(&ds.dev_eui),
@@ -198,7 +200,7 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                     .arg("EX")
                     .arg(1_usize)
                     .arg("NX")
-                    .query_async(&mut c)
+                    .query_async(&mut get_async_redis_conn().await?)
                     .await?;
 
                 if !set {
@@ -295,10 +297,10 @@ pub async fn get_for_phypayload(
 
 async fn get_dev_euis_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<EUI64>> {
     let key = redis_key(format!("devaddr:{{{}}}", dev_addr));
-    let mut c = get_async_redis_conn().await?;
+
     let dev_euis: HashSet<Vec<u8>> = redis::cmd("SMEMBERS")
         .arg(key)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("Get DevEUIs for DevAddr")?;
 
@@ -311,11 +313,11 @@ async fn get_dev_euis_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<EUI64>> {
 
 async fn remove_dev_eui_from_dev_addr_set(dev_addr: DevAddr, dev_eui: EUI64) -> Result<()> {
     let key = redis_key(format!("devaddr:{{{}}}", dev_addr));
-    let mut c = get_async_redis_conn().await?;
+
     redis::cmd("SREM")
         .arg(key)
         .arg(&dev_eui.to_be_bytes())
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     Ok(())

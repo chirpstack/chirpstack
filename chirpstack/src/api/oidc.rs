@@ -134,13 +134,12 @@ async fn get_client() -> Result<CoreClient> {
 async fn store_nonce(state: &CsrfToken, nonce: &Nonce) -> Result<()> {
     trace!("Storing nonce");
     let key = redis_key(format!("auth:oidc:{}", state.secret()));
-    let mut c = get_async_redis_conn().await?;
 
     redis::cmd("PSETEX")
         .arg(key)
         .arg(Duration::minutes(5).num_milliseconds())
         .arg(nonce.secret())
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     Ok(())
@@ -149,11 +148,10 @@ async fn store_nonce(state: &CsrfToken, nonce: &Nonce) -> Result<()> {
 async fn get_nonce(state: &CsrfToken) -> Result<Nonce> {
     trace!("Getting nonce");
     let key = redis_key(format!("auth:oidc:{}", state.secret()));
-    let mut c = get_async_redis_conn().await?;
 
     let v: String = redis::cmd("GET")
         .arg(&key)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("Get nonce")?;
 

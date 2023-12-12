@@ -7,7 +7,6 @@ use chirpstack_api::stream;
 
 pub async fn log_uplink(up: &stream::UplinkMeta) -> Result<()> {
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
 
     if conf.monitoring.meta_log_max_history > 0 {
         let key = redis_key("stream:meta".to_string());
@@ -19,7 +18,7 @@ pub async fn log_uplink(up: &stream::UplinkMeta) -> Result<()> {
             .arg("*")
             .arg("up")
             .arg(&b)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -28,7 +27,6 @@ pub async fn log_uplink(up: &stream::UplinkMeta) -> Result<()> {
 
 pub async fn log_downlink(down: &stream::DownlinkMeta) -> Result<()> {
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
 
     if conf.monitoring.meta_log_max_history > 0 {
         let key = redis_key("stream:meta".to_string());
@@ -41,7 +39,7 @@ pub async fn log_downlink(down: &stream::DownlinkMeta) -> Result<()> {
             .arg("*")
             .arg("down")
             .arg(&b)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 

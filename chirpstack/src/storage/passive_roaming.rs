@@ -45,8 +45,6 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
     let ttl = conf.network.device_session_ttl.as_millis() as usize;
     let pr_ttl = lifetime.num_milliseconds() as usize;
 
-    let mut c = get_async_redis_conn().await?;
-
     // We need to store a pointer from both the DevAddr and DevEUI to the
     // passive-roaming device-session ID. This is needed:
     //  * Because the DevAddr is not guaranteed to be unique
@@ -80,7 +78,7 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
         .arg(pr_ttl)
         .arg(b)
         .ignore()
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     info!(id = %sess_id, "Passive-roaming device-session saved");
@@ -90,10 +88,10 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
 
 pub async fn get(id: Uuid) -> Result<internal::PassiveRoamingDeviceSession, Error> {
     let key = redis_key(format!("pr:sess:{{{}}}", id));
-    let mut c = get_async_redis_conn().await?;
+
     let v: Vec<u8> = redis::cmd("GET")
         .arg(key)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("Get passive-roaming device-session")?;
     if v.is_empty() {
@@ -106,8 +104,11 @@ pub async fn get(id: Uuid) -> Result<internal::PassiveRoamingDeviceSession, Erro
 
 pub async fn delete(id: Uuid) -> Result<()> {
     let key = redis_key(format!("pr:sess:{{{}}}", id));
-    let mut c = get_async_redis_conn().await?;
-    redis::cmd("DEL").arg(&key).query_async(&mut c).await?;
+
+    redis::cmd("DEL")
+        .arg(&key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
 
     info!(id = %id, "Passive-roaming device-session deleted");
     Ok(())
@@ -181,8 +182,11 @@ async fn get_sessions_for_dev_addr(
 
 async fn get_session_ids_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<Uuid>> {
     let key = redis_key(format!("pr:devaddr:{{{}}}", dev_addr));
-    let mut c = get_async_redis_conn().await?;
-    let v: Vec<String> = redis::cmd("SMEMBERS").arg(key).query_async(&mut c).await?;
+
+    let v: Vec<String> = redis::cmd("SMEMBERS")
+        .arg(key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
 
     let mut out: Vec<Uuid> = Vec::new();
     for id in &v {
@@ -194,8 +198,11 @@ async fn get_session_ids_for_dev_addr(dev_addr: DevAddr) -> Result<Vec<Uuid>> {
 
 pub async fn get_session_ids_for_dev_eui(dev_eui: EUI64) -> Result<Vec<Uuid>> {
     let key = redis_key(format!("pr:dev:{{{}}}", dev_eui));
-    let mut c = get_async_redis_conn().await?;
-    let v: Vec<String> = redis::cmd("SMEMBERS").arg(key).query_async(&mut c).await?;
+
+    let v: Vec<String> = redis::cmd("SMEMBERS")
+        .arg(key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
 
     let mut out: Vec<Uuid> = Vec::new();
     for id in &v {

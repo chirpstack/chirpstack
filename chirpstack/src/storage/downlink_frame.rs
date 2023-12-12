@@ -10,12 +10,12 @@ use chirpstack_api::internal;
 pub async fn save(df: &internal::DownlinkFrame) -> Result<()> {
     let b = df.encode_to_vec();
     let key = redis_key(format!("frame:{}", df.downlink_id));
-    let mut c = get_async_redis_conn().await?;
+
     redis::cmd("SETEX")
         .arg(key)
         .arg(30)
         .arg(b)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     info!(downlink_id = df.downlink_id, "Downlink-frame saved");
@@ -23,9 +23,11 @@ pub async fn save(df: &internal::DownlinkFrame) -> Result<()> {
 }
 
 pub async fn get(id: u32) -> Result<internal::DownlinkFrame, Error> {
-    let mut c = get_async_redis_conn().await?;
     let key = redis_key(format!("frame:{}", id));
-    let v: Vec<u8> = redis::cmd("GET").arg(key).query_async(&mut c).await?;
+    let v: Vec<u8> = redis::cmd("GET")
+        .arg(key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
     if v.is_empty() {
         return Err(Error::NotFound(format!("{}", id)));
     }

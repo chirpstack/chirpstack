@@ -238,14 +238,13 @@ pub mod test {
     }
 
     async fn assert_reply(last_id: &str, event: &str, b: &[u8]) -> String {
-        let mut c = get_async_redis_conn().await.unwrap();
         let srr: StreamReadReply = redis::cmd("XREAD")
             .arg("COUNT")
             .arg(1 as usize)
             .arg("STREAMS")
             .arg("device:stream:event")
             .arg(&last_id)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await.unwrap())
             .await
             .unwrap();
         assert_eq!(1, srr.keys.len());

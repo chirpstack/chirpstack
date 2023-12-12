@@ -19,7 +19,6 @@ use chirpstack_api::{api, stream};
 
 pub async fn log_uplink_for_gateways(ufl: &stream::UplinkFrameLog) -> Result<()> {
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
 
     for rx_info in &ufl.rx_info {
         let gateway_id = EUI64::from_str(&rx_info.gateway_id)?;
@@ -56,7 +55,7 @@ pub async fn log_uplink_for_gateways(ufl: &stream::UplinkFrameLog) -> Result<()>
                 .arg(&key)
                 .arg(conf.monitoring.per_gateway_frame_log_ttl.as_millis() as usize)
                 .ignore()
-                .query_async(&mut c)
+                .query_async(&mut get_async_redis_conn().await?)
                 .await?;
         }
 
@@ -70,7 +69,7 @@ pub async fn log_uplink_for_gateways(ufl: &stream::UplinkFrameLog) -> Result<()>
                 .arg("*")
                 .arg("up")
                 .arg(&b)
-                .query_async(&mut c)
+                .query_async(&mut get_async_redis_conn().await?)
                 .await?;
         }
     }
@@ -84,7 +83,7 @@ pub async fn log_downlink_for_gateway(dfl: &stream::DownlinkFrameLog) -> Result<
     }
 
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
+
     let b = dfl.encode_to_vec();
 
     // per gateway stream
@@ -104,7 +103,7 @@ pub async fn log_downlink_for_gateway(dfl: &stream::DownlinkFrameLog) -> Result<
             .arg(&key)
             .arg(conf.monitoring.per_gateway_frame_log_ttl.as_millis() as usize)
             .ignore()
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -118,7 +117,7 @@ pub async fn log_downlink_for_gateway(dfl: &stream::DownlinkFrameLog) -> Result<
             .arg("*")
             .arg("down")
             .arg(&b)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -131,7 +130,7 @@ pub async fn log_uplink_for_device(ufl: &stream::UplinkFrameLog) -> Result<()> {
     }
 
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
+
     let b = ufl.encode_to_vec();
 
     // per device stream
@@ -152,7 +151,7 @@ pub async fn log_uplink_for_device(ufl: &stream::UplinkFrameLog) -> Result<()> {
             .arg(&key)
             .arg(conf.monitoring.per_device_frame_log_ttl.as_millis() as usize)
             .ignore()
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -166,7 +165,7 @@ pub async fn log_uplink_for_device(ufl: &stream::UplinkFrameLog) -> Result<()> {
             .arg("*")
             .arg("up")
             .arg(&b)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -179,7 +178,7 @@ pub async fn log_downlink_for_device(dfl: &stream::DownlinkFrameLog) -> Result<(
     }
 
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
+
     let b = dfl.encode_to_vec();
 
     // per device stream
@@ -200,7 +199,7 @@ pub async fn log_downlink_for_device(dfl: &stream::DownlinkFrameLog) -> Result<(
             .arg(&key)
             .arg(conf.monitoring.per_device_frame_log_ttl.as_millis() as usize)
             .ignore()
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -214,7 +213,7 @@ pub async fn log_downlink_for_device(dfl: &stream::DownlinkFrameLog) -> Result<(
             .arg("*")
             .arg("down")
             .arg(&b)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -227,7 +226,6 @@ pub async fn get_frame_logs(
     channel: mpsc::Sender<api::LogItem>,
 ) -> Result<()> {
     let mut last_id = "0".to_string();
-    let mut c = get_async_redis_conn().await?;
 
     loop {
         if channel.is_closed() {
@@ -241,7 +239,7 @@ pub async fn get_frame_logs(
             .arg("STREAMS")
             .arg(&key)
             .arg(&last_id)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await
             .context("XREAD frame stream")?;
 

@@ -7,7 +7,6 @@ use lrwn::EUI64;
 
 pub async fn set_pending(dev_eui: &EUI64, cid: lrwn::CID, set: &lrwn::MACCommandSet) -> Result<()> {
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
 
     let key = redis_key(format!("device:{}:mac:pending:{}", dev_eui, cid.to_u8()));
     let ttl = conf.network.device_session_ttl.as_millis() as usize;
@@ -17,7 +16,7 @@ pub async fn set_pending(dev_eui: &EUI64, cid: lrwn::CID, set: &lrwn::MACCommand
         .arg(key)
         .arg(ttl)
         .arg(b)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     info!(dev_eui = %dev_eui, cid = %cid, "Pending mac-command block set");
@@ -25,9 +24,11 @@ pub async fn set_pending(dev_eui: &EUI64, cid: lrwn::CID, set: &lrwn::MACCommand
 }
 
 pub async fn get_pending(dev_eui: &EUI64, cid: lrwn::CID) -> Result<Option<lrwn::MACCommandSet>> {
-    let mut c = get_async_redis_conn().await?;
     let key = redis_key(format!("device:{}:mac:pending:{}", dev_eui, cid.to_u8()));
-    let b: Vec<u8> = redis::cmd("GET").arg(key).query_async(&mut c).await?;
+    let b: Vec<u8> = redis::cmd("GET")
+        .arg(key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
 
     let out = if !b.is_empty() {
         let mut mac = lrwn::MACCommandSet::from_slice(&b);
@@ -45,10 +46,12 @@ pub async fn get_pending(dev_eui: &EUI64, cid: lrwn::CID) -> Result<Option<lrwn:
 }
 
 pub async fn delete_pending(dev_eui: &EUI64, cid: lrwn::CID) -> Result<()> {
-    let mut c = get_async_redis_conn().await?;
     let key = redis_key(format!("device:{}:mac:pending:{}", dev_eui, cid.to_u8()));
 
-    redis::cmd("DEL").arg(key).query_async(&mut c).await?;
+    redis::cmd("DEL")
+        .arg(key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
 
     info!(dev_eui = %dev_eui, cid = %cid, "Pending mac-command block deleted");
     Ok(())

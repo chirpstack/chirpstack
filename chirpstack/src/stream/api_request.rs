@@ -7,7 +7,6 @@ use chirpstack_api::stream;
 
 pub async fn log_request(pl: &stream::ApiRequestLog) -> Result<()> {
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
 
     if conf.monitoring.api_request_log_max_history == 0 {
         return Ok(());
@@ -22,7 +21,7 @@ pub async fn log_request(pl: &stream::ApiRequestLog) -> Result<()> {
         .arg("*")
         .arg("request")
         .arg(&b)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     Ok(())
@@ -49,7 +48,6 @@ mod tests {
         };
         log_request(&pl).await.unwrap();
 
-        let mut c = get_async_redis_conn().await.unwrap();
         let key = redis_key("api:stream:request".to_string());
         let srr: StreamReadReply = redis::cmd("XREAD")
             .arg("COUNT")
@@ -57,7 +55,7 @@ mod tests {
             .arg("STREAMS")
             .arg(&key)
             .arg("0")
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await.unwrap())
             .await
             .unwrap();
 

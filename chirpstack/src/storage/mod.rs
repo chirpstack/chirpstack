@@ -250,8 +250,9 @@ pub async fn reset_db() -> Result<()> {
 
 #[cfg(test)]
 pub async fn reset_redis() -> Result<()> {
-    let mut c = get_async_redis_conn().await?;
-    redis::cmd("FLUSHDB").query_async(&mut c).await?;
+    redis::cmd("FLUSHDB")
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
     Ok(())
 }
 

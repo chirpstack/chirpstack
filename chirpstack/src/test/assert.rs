@@ -397,7 +397,6 @@ pub fn uplink_meta_log(um: stream::UplinkMeta) -> Validator {
     Box::new(move || {
         let um = um.clone();
         Box::pin(async move {
-            let mut c = get_async_redis_conn().await.unwrap();
             let key = redis_key("stream:meta".to_string());
             let srr: StreamReadReply = redis::cmd("XREAD")
                 .arg("COUNT")
@@ -405,7 +404,7 @@ pub fn uplink_meta_log(um: stream::UplinkMeta) -> Validator {
                 .arg("STREAMS")
                 .arg(&key)
                 .arg("0")
-                .query_async(&mut c)
+                .query_async(&mut get_async_redis_conn().await.unwrap())
                 .await
                 .unwrap();
 
@@ -434,7 +433,6 @@ pub fn device_uplink_frame_log(uf: stream::UplinkFrameLog) -> Validator {
     Box::new(move || {
         let uf = uf.clone();
         Box::pin(async move {
-            let mut c = get_async_redis_conn().await.unwrap();
             let key = redis_key(format!("device:{{{}}}:stream:frame", uf.dev_eui));
             let srr: StreamReadReply = redis::cmd("XREAD")
                 .arg("COUNT")
@@ -442,7 +440,7 @@ pub fn device_uplink_frame_log(uf: stream::UplinkFrameLog) -> Validator {
                 .arg("STREAMS")
                 .arg(&key)
                 .arg("0")
-                .query_async(&mut c)
+                .query_async(&mut get_async_redis_conn().await.unwrap())
                 .await
                 .unwrap();
 

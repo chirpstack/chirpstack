@@ -19,11 +19,10 @@ pub async fn get_geoloc_buffer(
 
     trace!(dev_eui = %dev_eui, "Getting geolocation buffer");
     let key = redis_key(format!("device:{{{}}}:loracloud:buffer", dev_eui));
-    let mut c = get_async_redis_conn().await?;
 
     let b: Vec<u8> = redis::cmd("GET")
         .arg(key)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("Get geolocation buffer")?;
     if b.is_empty() {
@@ -77,7 +76,6 @@ pub async fn save_geoloc_buffer(
 
     trace!(dev_eui = %dev_eui, "Saving geolocation buffer");
     let key = redis_key(format!("device:{{{}}}:loracloud:buffer", dev_eui));
-    let mut c = get_async_redis_conn().await?;
 
     let buffer = internal::LoraCloudGeolocBuffer {
         uplinks: items
@@ -92,7 +90,7 @@ pub async fn save_geoloc_buffer(
         .arg(key)
         .arg(ttl.num_milliseconds())
         .arg(b)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     info!(dev_eui = %dev_eui, "Geolocation buffer saved");

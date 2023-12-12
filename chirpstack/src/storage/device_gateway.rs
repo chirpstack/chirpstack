@@ -15,13 +15,12 @@ pub async fn save_rx_info(rx_info: &internal::DeviceGatewayRxInfo) -> Result<()>
     let key = redis_key(format!("device:{{{}}}:gwrx", dev_eui));
     let ttl = conf.network.device_session_ttl.as_millis() as usize;
     let b = rx_info.encode_to_vec();
-    let mut c = get_async_redis_conn().await?;
 
     redis::cmd("PSETEX")
         .arg(key)
         .arg(ttl)
         .arg(b)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     info!(dev_eui = %dev_eui, "Gateway rx-info saved");
@@ -29,12 +28,11 @@ pub async fn save_rx_info(rx_info: &internal::DeviceGatewayRxInfo) -> Result<()>
 }
 
 pub async fn get_rx_info(dev_eui: &EUI64) -> Result<internal::DeviceGatewayRxInfo, Error> {
-    let mut c = get_async_redis_conn().await?;
     let key = redis_key(format!("device:{{{}}}:gwrx", dev_eui));
 
     let b: Vec<u8> = redis::cmd("GET")
         .arg(key)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("Get rx-info")?;
     if b.is_empty() {
@@ -51,7 +49,6 @@ pub async fn get_rx_info_for_dev_euis(
         return Ok(Vec::new());
     }
 
-    let mut c = get_async_redis_conn().await?;
     let mut keys: Vec<String> = Vec::new();
     for dev_eui in dev_euis {
         keys.push(redis_key(format!("device:{{{}}}:gwrx", dev_eui)));
@@ -59,7 +56,7 @@ pub async fn get_rx_info_for_dev_euis(
 
     let bb: Vec<Vec<u8>> = redis::cmd("MGET")
         .arg(keys)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await
         .context("MGET")?;
     let mut out: Vec<internal::DeviceGatewayRxInfo> = Vec::new();

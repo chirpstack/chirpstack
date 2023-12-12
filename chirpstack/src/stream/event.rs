@@ -17,7 +17,6 @@ use chirpstack_api::{api, integration};
 
 pub async fn log_event_for_device(typ: &str, dev_eui: &str, b: &[u8]) -> Result<()> {
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
 
     // per device stream
     if conf.monitoring.per_device_event_log_max_history > 0 {
@@ -36,7 +35,7 @@ pub async fn log_event_for_device(typ: &str, dev_eui: &str, b: &[u8]) -> Result<
             .arg(&key)
             .arg(conf.monitoring.per_device_event_log_ttl.as_millis() as usize)
             .ignore()
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -50,7 +49,7 @@ pub async fn log_event_for_device(typ: &str, dev_eui: &str, b: &[u8]) -> Result<
             .arg("*")
             .arg(typ)
             .arg(b)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await?;
     }
 
@@ -63,7 +62,6 @@ pub async fn get_event_logs(
     channel: mpsc::Sender<api::LogItem>,
 ) -> Result<()> {
     let mut last_id = "0".to_string();
-    let mut c = get_async_redis_conn().await?;
 
     loop {
         if channel.is_closed() {
@@ -77,7 +75,7 @@ pub async fn get_event_logs(
             .arg("STREAMS")
             .arg(&key)
             .arg(&last_id)
-            .query_async(&mut c)
+            .query_async(&mut get_async_redis_conn().await?)
             .await
             .context("XREAD event stream")?;
 

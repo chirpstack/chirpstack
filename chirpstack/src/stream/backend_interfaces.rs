@@ -30,7 +30,6 @@ pub async fn get_log_sender() -> Option<Sender<stream::BackendInterfacesRequest>
 
 pub async fn log_request(pl: stream::BackendInterfacesRequest) -> Result<()> {
     let conf = config::get();
-    let mut c = get_async_redis_conn().await?;
 
     if conf.monitoring.backend_interfaces_log_max_history == 0 {
         return Ok(());
@@ -45,7 +44,7 @@ pub async fn log_request(pl: stream::BackendInterfacesRequest) -> Result<()> {
         .arg("*")
         .arg("request")
         .arg(&b)
-        .query_async(&mut c)
+        .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
     Ok(())
