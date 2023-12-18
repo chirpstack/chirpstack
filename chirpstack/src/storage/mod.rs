@@ -56,12 +56,12 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 #[derive(Clone)]
 pub enum AsyncRedisPool {
     Client(deadpool_redis::Pool),
-    ClusterClient(deadpool_redis_cluster::Pool),
+    ClusterClient(deadpool_redis::cluster::Pool),
 }
 
 pub enum AsyncRedisPoolConnection {
     Client(deadpool_redis::Connection),
-    ClusterClient(deadpool_redis_cluster::Connection),
+    ClusterClient(deadpool_redis::cluster::Connection),
 }
 
 impl ConnectionLike for AsyncRedisPoolConnection {
@@ -112,7 +112,7 @@ pub async fn setup() -> Result<()> {
 
     info!("Setting up Redis client");
     if conf.redis.cluster {
-        let pool = deadpool_redis_cluster::Config::from_urls(conf.redis.servers.clone())
+        let pool = deadpool_redis::cluster::Config::from_urls(conf.redis.servers.clone())
             .builder()?
             .max_size(conf.redis.max_open_connections as usize)
             .build()?;

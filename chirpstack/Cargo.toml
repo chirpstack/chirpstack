@@ -37,9 +37,8 @@ diesel-async = { version = "0.4", features = ["deadpool", "postgres", "async-con
 tokio-postgres = "0.7"
 tokio-postgres-rustls = "0.10.0"
 bigdecimal = "0.4"
-redis = { version = "0.23", features = ["cluster", "tls-rustls", "tokio-rustls-comp"] }
-deadpool-redis = "0.13"
-deadpool-redis-cluster = "0.1"
+redis = { version = "0.24", features = [ "tls-rustls", "tokio-rustls-comp"] }
+deadpool-redis = { version = "0.14", features = ["cluster"] }
 
 # Logging
 tracing = "0.1"

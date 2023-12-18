@@ -802,7 +802,6 @@ dependencies = [
  "chrono",
  "clap",
  "deadpool-redis",
- "deadpool-redis-cluster",
  "diesel",
  "diesel-async",
  "diesel_migrations",
@@ -1203,23 +1202,12 @@ dependencies = [
 
 [[package]]
 name = "deadpool-redis"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84930e585871d35b8e06d3e03d03e3a8a4c5dc71afa4376c7cd5f9223e1da1ea"
+checksum = "36f2381b0e993d06a1f6d49f486b33bc4004085bf980340fc05726bacc681fff"
 dependencies = [
  "deadpool",
  "redis",
-]
-
-[[package]]
-name = "deadpool-redis-cluster"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "857c968579c82072dff24f48969d24fb1daab4970d94bb740d87ebb13bc8c2c4"
-dependencies = [
- "deadpool",
- "redis",
- "redis_cluster_async",
 ]
 
 [[package]]
@@ -3397,9 +3385,9 @@ dependencies = [
 
 [[package]]
 name = "redis"
-version = "0.23.3"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f49cdc0bb3f412bf8e7d1bd90fe1d9eb10bc5c399ba90973c14662a27b3f8ba"
+checksum = "c580d9cbbe1d1b479e8d67cf9daf6a62c957e6846048408b80b43ac3f6af84cd"
 dependencies = [
  "async-trait",
  "bytes",
@@ -3414,6 +3402,8 @@ dependencies = [
  "rand",
  "rustls",
  "rustls-native-certs",
+ "rustls-pemfile",
+ "rustls-webpki",
  "ryu",
  "sha1_smol",
  "socket2 0.4.10",
@@ -3421,21 +3411,6 @@ dependencies = [
  "tokio-rustls",
  "tokio-util",
  "url",
-]
-
-[[package]]
-name = "redis_cluster_async"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "093073cc58cbe376f3308c530edcda1a49ef980de1c32f3fa63622fc5c6f0fb9"
-dependencies = [
- "crc16",
- "futures",
- "log",
- "pin-project-lite",
- "rand",
- "redis",
- "tokio",
 ]
 
 [[package]]
