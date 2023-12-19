@@ -600,6 +600,12 @@ pub fn run() {
     # of redirecting to the login page.
     logout_url="{{ user_authentication.openid_connect.logout_url }}"
 
+    # Login redirect.
+    #
+    # If set to true, then ChirpStack will immediately redirect to the OAuth2
+    # provider for login.
+    login_redirect={{ user_authentication.openid_connect.login_redirect }}
+
     # Login label.
     #
     # The login label is used in the web-interface login form.
@@ -673,6 +679,12 @@ pub fn run() {
     # When set, ChirpStack will redirect to this URL instead
     # of redirecting to the login page.
     logout_url="{{ user_authentication.oauth2.logout_url }}"
+
+    # Login redirect.
+    #
+    # If set to true, then ChirpStack will immediately redirect to the OAuth2
+    # provider for login.
+    login_redirect={{ user_authentication.oauth2.login_redirect }}
 
     # Login label.
     #

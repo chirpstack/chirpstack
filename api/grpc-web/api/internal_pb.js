@@ -3627,7 +3627,8 @@ proto.api.OpenIdConnect.toObject = function(includeInstance, msg) {
     enabled: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
     loginUrl: jspb.Message.getFieldWithDefault(msg, 2, ""),
     loginLabel: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    logoutUrl: jspb.Message.getFieldWithDefault(msg, 4, "")
+    logoutUrl: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    loginRedirect: jspb.Message.getBooleanFieldWithDefault(msg, 5, false)
   };
 
   if (includeInstance) {
@@ -3679,6 +3680,10 @@ proto.api.OpenIdConnect.deserializeBinaryFromReader = function(msg, reader) {
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setLogoutUrl(value);
+      break;
+    case 5:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setLoginRedirect(value);
       break;
     default:
       reader.skipField();
@@ -3734,6 +3739,13 @@ proto.api.OpenIdConnect.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       4,
+      f
+    );
+  }
+  f = message.getLoginRedirect();
+  if (f) {
+    writer.writeBool(
+      5,
       f
     );
   }
@@ -3812,6 +3824,24 @@ proto.api.OpenIdConnect.prototype.setLogoutUrl = function(value) {
 };
 
 
+/**
+ * optional bool login_redirect = 5;
+ * @return {boolean}
+ */
+proto.api.OpenIdConnect.prototype.getLoginRedirect = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 5, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.OpenIdConnect} returns this
+ */
+proto.api.OpenIdConnect.prototype.setLoginRedirect = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 5, value);
+};
+
+
 
 
 
@@ -3847,7 +3877,8 @@ proto.api.OAuth2.toObject = function(includeInstance, msg) {
     enabled: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
     loginUrl: jspb.Message.getFieldWithDefault(msg, 2, ""),
     loginLabel: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    logoutUrl: jspb.Message.getFieldWithDefault(msg, 4, "")
+    logoutUrl: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    loginRedirect: jspb.Message.getBooleanFieldWithDefault(msg, 5, false)
   };
 
   if (includeInstance) {
@@ -3899,6 +3930,10 @@ proto.api.OAuth2.deserializeBinaryFromReader = function(msg, reader) {
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setLogoutUrl(value);
+      break;
+    case 5:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setLoginRedirect(value);
       break;
     default:
       reader.skipField();
@@ -3954,6 +3989,13 @@ proto.api.OAuth2.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       4,
+      f
+    );
+  }
+  f = message.getLoginRedirect();
+  if (f) {
+    writer.writeBool(
+      5,
       f
     );
   }
@@ -4029,6 +4071,24 @@ proto.api.OAuth2.prototype.getLogoutUrl = function() {
  */
 proto.api.OAuth2.prototype.setLogoutUrl = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional bool login_redirect = 5;
+ * @return {boolean}
+ */
+proto.api.OAuth2.prototype.getLoginRedirect = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 5, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.OAuth2} returns this
+ */
+proto.api.OAuth2.prototype.setLoginRedirect = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 5, value);
 };
 
 

@@ -410,12 +410,14 @@ impl InternalService for Internal {
             openid_connect: Some(api::OpenIdConnect {
                 enabled: conf.user_authentication.enabled == "openid_connect",
                 login_url: "/auth/oidc/login".into(),
+                login_redirect: conf.user_authentication.openid_connect.login_redirect,
                 login_label: conf.user_authentication.openid_connect.login_label.clone(),
                 logout_url: conf.user_authentication.openid_connect.logout_url.clone(),
             }),
             oauth2: Some(api::OAuth2 {
                 enabled: conf.user_authentication.enabled == "oauth2",
                 login_url: "/auth/oauth2/login".into(),
+                login_redirect: conf.user_authentication.oauth2.login_redirect,
                 login_label: conf.user_authentication.oauth2.login_label.clone(),
                 logout_url: conf.user_authentication.oauth2.logout_url.clone(),
             }),

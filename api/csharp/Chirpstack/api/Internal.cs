@@ -53,72 +53,73 @@ namespace Chirpstack.Api {
             "dmljZV9uYW1lGAggASgJEhIKCmdhdGV3YXlfaWQYCSABKAkSFAoMZ2F0ZXdh",
             "eV9uYW1lGAogASgJIlsKEFNldHRpbmdzUmVzcG9uc2USKgoOb3BlbmlkX2Nv",
             "bm5lY3QYASABKAsyEi5hcGkuT3BlbklkQ29ubmVjdBIbCgZvYXV0aDIYAiAB",
-            "KAsyCy5hcGkuT0F1dGgyIlwKDU9wZW5JZENvbm5lY3QSDwoHZW5hYmxlZBgB",
+            "KAsyCy5hcGkuT0F1dGgyInQKDU9wZW5JZENvbm5lY3QSDwoHZW5hYmxlZBgB",
             "IAEoCBIRCglsb2dpbl91cmwYAiABKAkSEwoLbG9naW5fbGFiZWwYAyABKAkS",
-            "EgoKbG9nb3V0X3VybBgEIAEoCSJVCgZPQXV0aDISDwoHZW5hYmxlZBgBIAEo",
-            "CBIRCglsb2dpbl91cmwYAiABKAkSEwoLbG9naW5fbGFiZWwYAyABKAkSEgoK",
-            "bG9nb3V0X3VybBgEIAEoCSI4ChlPcGVuSWRDb25uZWN0TG9naW5SZXF1ZXN0",
-            "EgwKBGNvZGUYASABKAkSDQoFc3RhdGUYAiABKAkiKwoaT3BlbklkQ29ubmVj",
-            "dExvZ2luUmVzcG9uc2USDQoFdG9rZW4YASABKAkiMQoST0F1dGgyTG9naW5S",
-            "ZXF1ZXN0EgwKBGNvZGUYASABKAkSDQoFc3RhdGUYAiABKAkiJAoTT0F1dGgy",
-            "TG9naW5SZXNwb25zZRINCgV0b2tlbhgBIAEoCSItChhHZXREZXZpY2VzU3Vt",
-            "bWFyeVJlcXVlc3QSEQoJdGVuYW50X2lkGAEgASgJItIBChlHZXREZXZpY2Vz",
-            "U3VtbWFyeVJlc3BvbnNlEhQKDGFjdGl2ZV9jb3VudBgBIAEoDRIWCg5pbmFj",
-            "dGl2ZV9jb3VudBgCIAEoDRI9Cghkcl9jb3VudBgDIAMoCzIrLmFwaS5HZXRE",
-            "ZXZpY2VzU3VtbWFyeVJlc3BvbnNlLkRyQ291bnRFbnRyeRIYChBuZXZlcl9z",
-            "ZWVuX2NvdW50GAQgASgNGi4KDERyQ291bnRFbnRyeRILCgNrZXkYASABKA0S",
-            "DQoFdmFsdWUYAiABKA06AjgBIi4KGUdldEdhdGV3YXlzU3VtbWFyeVJlcXVl",
-            "c3QSEQoJdGVuYW50X2lkGAEgASgJImMKGkdldEdhdGV3YXlzU3VtbWFyeVJl",
-            "c3BvbnNlEhQKDG9ubGluZV9jb3VudBgBIAEoDRIVCg1vZmZsaW5lX2NvdW50",
-            "GAIgASgNEhgKEG5ldmVyX3NlZW5fY291bnQYAyABKA0ixwEKB0xvZ0l0ZW0S",
-            "CgoCaWQYASABKAkSKAoEdGltZRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
-            "aW1lc3RhbXASEwoLZGVzY3JpcHRpb24YAyABKAkSDAoEYm9keRgEIAEoCRIw",
-            "Cgpwcm9wZXJ0aWVzGAUgAygLMhwuYXBpLkxvZ0l0ZW0uUHJvcGVydGllc0Vu",
-            "dHJ5GjEKD1Byb3BlcnRpZXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUY",
-            "AiABKAk6AjgBIjAKGlN0cmVhbUdhdGV3YXlGcmFtZXNSZXF1ZXN0EhIKCmdh",
-            "dGV3YXlfaWQYASABKAkiLAoZU3RyZWFtRGV2aWNlRnJhbWVzUmVxdWVzdBIP",
-            "CgdkZXZfZXVpGAEgASgJIiwKGVN0cmVhbURldmljZUV2ZW50c1JlcXVlc3QS",
-            "DwoHZGV2X2V1aRgBIAEoCSI7ChNMaXN0UmVnaW9uc1Jlc3BvbnNlEiQKB3Jl",
-            "Z2lvbnMYASADKAsyEy5hcGkuUmVnaW9uTGlzdEl0ZW0iUQoOUmVnaW9uTGlz",
-            "dEl0ZW0SCgoCaWQYASABKAkSHgoGcmVnaW9uGAIgASgOMg4uY29tbW9uLlJl",
-            "Z2lvbhITCgtkZXNjcmlwdGlvbhgDIAEoCSIeChBHZXRSZWdpb25SZXF1ZXN0",
-            "EgoKAmlkGAEgASgJIqgCChFHZXRSZWdpb25SZXNwb25zZRIKCgJpZBgBIAEo",
-            "CRIeCgZyZWdpb24YAiABKA4yDi5jb21tb24uUmVnaW9uEhEKCXVzZXJfaW5m",
-            "bxgDIAEoCRIrCg91cGxpbmtfY2hhbm5lbHMYBCADKAsyEi5hcGkuUmVnaW9u",
-            "Q2hhbm5lbBIRCglyeDFfZGVsYXkYBSABKA0SFQoNcngxX2RyX29mZnNldBgG",
-            "IAEoDRIOCgZyeDJfZHIYByABKA0SFQoNcngyX2ZyZXF1ZW5jeRgIIAEoDRIc",
-            "ChRjbGFzc19iX3Bpbmdfc2xvdF9kchgJIAEoDRIjChtjbGFzc19iX3Bpbmdf",
-            "c2xvdF9mcmVxdWVuY3kYCiABKA0SEwoLZGVzY3JpcHRpb24YCyABKAkiQgoN",
-            "UmVnaW9uQ2hhbm5lbBIRCglmcmVxdWVuY3kYASABKA0SDgoGZHJfbWluGAIg",
-            "ASgNEg4KBmRyX21heBgDIAEoDTL4CAoPSW50ZXJuYWxTZXJ2aWNlEjAKBUxv",
-            "Z2luEhEuYXBpLkxvZ2luUmVxdWVzdBoSLmFwaS5Mb2dpblJlc3BvbnNlIgAS",
-            "OQoHUHJvZmlsZRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoULmFwaS5Qcm9m",
-            "aWxlUmVzcG9uc2UiABJFCgxHbG9iYWxTZWFyY2gSGC5hcGkuR2xvYmFsU2Vh",
-            "cmNoUmVxdWVzdBoZLmFwaS5HbG9iYWxTZWFyY2hSZXNwb25zZSIAEkUKDENy",
-            "ZWF0ZUFwaUtleRIYLmFwaS5DcmVhdGVBcGlLZXlSZXF1ZXN0GhkuYXBpLkNy",
-            "ZWF0ZUFwaUtleVJlc3BvbnNlIgASQgoMRGVsZXRlQXBpS2V5EhguYXBpLkRl",
-            "bGV0ZUFwaUtleVJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkiABJC",
-            "CgtMaXN0QXBpS2V5cxIXLmFwaS5MaXN0QXBpS2V5c1JlcXVlc3QaGC5hcGku",
-            "TGlzdEFwaUtleXNSZXNwb25zZSIAEjsKCFNldHRpbmdzEhYuZ29vZ2xlLnBy",
-            "b3RvYnVmLkVtcHR5GhUuYXBpLlNldHRpbmdzUmVzcG9uc2UiABJXChJPcGVu",
-            "SWRDb25uZWN0TG9naW4SHi5hcGkuT3BlbklkQ29ubmVjdExvZ2luUmVxdWVz",
-            "dBofLmFwaS5PcGVuSWRDb25uZWN0TG9naW5SZXNwb25zZSIAEkIKC09BdXRo",
-            "MkxvZ2luEhcuYXBpLk9BdXRoMkxvZ2luUmVxdWVzdBoYLmFwaS5PQXV0aDJM",
-            "b2dpblJlc3BvbnNlIgASVAoRR2V0RGV2aWNlc1N1bW1hcnkSHS5hcGkuR2V0",
-            "RGV2aWNlc1N1bW1hcnlSZXF1ZXN0Gh4uYXBpLkdldERldmljZXNTdW1tYXJ5",
-            "UmVzcG9uc2UiABJXChJHZXRHYXRld2F5c1N1bW1hcnkSHi5hcGkuR2V0R2F0",
-            "ZXdheXNTdW1tYXJ5UmVxdWVzdBofLmFwaS5HZXRHYXRld2F5c1N1bW1hcnlS",
-            "ZXNwb25zZSIAEkgKE1N0cmVhbUdhdGV3YXlGcmFtZXMSHy5hcGkuU3RyZWFt",
-            "R2F0ZXdheUZyYW1lc1JlcXVlc3QaDC5hcGkuTG9nSXRlbSIAMAESRgoSU3Ry",
-            "ZWFtRGV2aWNlRnJhbWVzEh4uYXBpLlN0cmVhbURldmljZUZyYW1lc1JlcXVl",
-            "c3QaDC5hcGkuTG9nSXRlbSIAMAESRgoSU3RyZWFtRGV2aWNlRXZlbnRzEh4u",
-            "YXBpLlN0cmVhbURldmljZUV2ZW50c1JlcXVlc3QaDC5hcGkuTG9nSXRlbSIA",
-            "MAESQQoLTGlzdFJlZ2lvbnMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGC5h",
-            "cGkuTGlzdFJlZ2lvbnNSZXNwb25zZSIAEjwKCUdldFJlZ2lvbhIVLmFwaS5H",
-            "ZXRSZWdpb25SZXF1ZXN0GhYuYXBpLkdldFJlZ2lvblJlc3BvbnNlIgBCZQoR",
-            "aW8uY2hpcnBzdGFjay5hcGlCDUludGVybmFsUHJvdG9QAVouZ2l0aHViLmNv",
-            "bS9jaGlycHN0YWNrL2NoaXJwc3RhY2svYXBpL2dvL3Y0L2FwaaoCDkNoaXJw",
-            "c3RhY2suQXBpYgZwcm90bzM="));
+            "EgoKbG9nb3V0X3VybBgEIAEoCRIWCg5sb2dpbl9yZWRpcmVjdBgFIAEoCCJt",
+            "CgZPQXV0aDISDwoHZW5hYmxlZBgBIAEoCBIRCglsb2dpbl91cmwYAiABKAkS",
+            "EwoLbG9naW5fbGFiZWwYAyABKAkSEgoKbG9nb3V0X3VybBgEIAEoCRIWCg5s",
+            "b2dpbl9yZWRpcmVjdBgFIAEoCCI4ChlPcGVuSWRDb25uZWN0TG9naW5SZXF1",
+            "ZXN0EgwKBGNvZGUYASABKAkSDQoFc3RhdGUYAiABKAkiKwoaT3BlbklkQ29u",
+            "bmVjdExvZ2luUmVzcG9uc2USDQoFdG9rZW4YASABKAkiMQoST0F1dGgyTG9n",
+            "aW5SZXF1ZXN0EgwKBGNvZGUYASABKAkSDQoFc3RhdGUYAiABKAkiJAoTT0F1",
+            "dGgyTG9naW5SZXNwb25zZRINCgV0b2tlbhgBIAEoCSItChhHZXREZXZpY2Vz",
+            "U3VtbWFyeVJlcXVlc3QSEQoJdGVuYW50X2lkGAEgASgJItIBChlHZXREZXZp",
+            "Y2VzU3VtbWFyeVJlc3BvbnNlEhQKDGFjdGl2ZV9jb3VudBgBIAEoDRIWCg5p",
+            "bmFjdGl2ZV9jb3VudBgCIAEoDRI9Cghkcl9jb3VudBgDIAMoCzIrLmFwaS5H",
+            "ZXREZXZpY2VzU3VtbWFyeVJlc3BvbnNlLkRyQ291bnRFbnRyeRIYChBuZXZl",
+            "cl9zZWVuX2NvdW50GAQgASgNGi4KDERyQ291bnRFbnRyeRILCgNrZXkYASAB",
+            "KA0SDQoFdmFsdWUYAiABKA06AjgBIi4KGUdldEdhdGV3YXlzU3VtbWFyeVJl",
+            "cXVlc3QSEQoJdGVuYW50X2lkGAEgASgJImMKGkdldEdhdGV3YXlzU3VtbWFy",
+            "eVJlc3BvbnNlEhQKDG9ubGluZV9jb3VudBgBIAEoDRIVCg1vZmZsaW5lX2Nv",
+            "dW50GAIgASgNEhgKEG5ldmVyX3NlZW5fY291bnQYAyABKA0ixwEKB0xvZ0l0",
+            "ZW0SCgoCaWQYASABKAkSKAoEdGltZRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1",
+            "Zi5UaW1lc3RhbXASEwoLZGVzY3JpcHRpb24YAyABKAkSDAoEYm9keRgEIAEo",
+            "CRIwCgpwcm9wZXJ0aWVzGAUgAygLMhwuYXBpLkxvZ0l0ZW0uUHJvcGVydGll",
+            "c0VudHJ5GjEKD1Byb3BlcnRpZXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFs",
+            "dWUYAiABKAk6AjgBIjAKGlN0cmVhbUdhdGV3YXlGcmFtZXNSZXF1ZXN0EhIK",
+            "CmdhdGV3YXlfaWQYASABKAkiLAoZU3RyZWFtRGV2aWNlRnJhbWVzUmVxdWVz",
+            "dBIPCgdkZXZfZXVpGAEgASgJIiwKGVN0cmVhbURldmljZUV2ZW50c1JlcXVl",
+            "c3QSDwoHZGV2X2V1aRgBIAEoCSI7ChNMaXN0UmVnaW9uc1Jlc3BvbnNlEiQK",
+            "B3JlZ2lvbnMYASADKAsyEy5hcGkuUmVnaW9uTGlzdEl0ZW0iUQoOUmVnaW9u",
+            "TGlzdEl0ZW0SCgoCaWQYASABKAkSHgoGcmVnaW9uGAIgASgOMg4uY29tbW9u",
+            "LlJlZ2lvbhITCgtkZXNjcmlwdGlvbhgDIAEoCSIeChBHZXRSZWdpb25SZXF1",
+            "ZXN0EgoKAmlkGAEgASgJIqgCChFHZXRSZWdpb25SZXNwb25zZRIKCgJpZBgB",
+            "IAEoCRIeCgZyZWdpb24YAiABKA4yDi5jb21tb24uUmVnaW9uEhEKCXVzZXJf",
+            "aW5mbxgDIAEoCRIrCg91cGxpbmtfY2hhbm5lbHMYBCADKAsyEi5hcGkuUmVn",
+            "aW9uQ2hhbm5lbBIRCglyeDFfZGVsYXkYBSABKA0SFQoNcngxX2RyX29mZnNl",
+            "dBgGIAEoDRIOCgZyeDJfZHIYByABKA0SFQoNcngyX2ZyZXF1ZW5jeRgIIAEo",
+            "DRIcChRjbGFzc19iX3Bpbmdfc2xvdF9kchgJIAEoDRIjChtjbGFzc19iX3Bp",
+            "bmdfc2xvdF9mcmVxdWVuY3kYCiABKA0SEwoLZGVzY3JpcHRpb24YCyABKAki",
+            "QgoNUmVnaW9uQ2hhbm5lbBIRCglmcmVxdWVuY3kYASABKA0SDgoGZHJfbWlu",
+            "GAIgASgNEg4KBmRyX21heBgDIAEoDTL4CAoPSW50ZXJuYWxTZXJ2aWNlEjAK",
+            "BUxvZ2luEhEuYXBpLkxvZ2luUmVxdWVzdBoSLmFwaS5Mb2dpblJlc3BvbnNl",
+            "IgASOQoHUHJvZmlsZRIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoULmFwaS5Q",
+            "cm9maWxlUmVzcG9uc2UiABJFCgxHbG9iYWxTZWFyY2gSGC5hcGkuR2xvYmFs",
+            "U2VhcmNoUmVxdWVzdBoZLmFwaS5HbG9iYWxTZWFyY2hSZXNwb25zZSIAEkUK",
+            "DENyZWF0ZUFwaUtleRIYLmFwaS5DcmVhdGVBcGlLZXlSZXF1ZXN0GhkuYXBp",
+            "LkNyZWF0ZUFwaUtleVJlc3BvbnNlIgASQgoMRGVsZXRlQXBpS2V5EhguYXBp",
+            "LkRlbGV0ZUFwaUtleVJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHki",
+            "ABJCCgtMaXN0QXBpS2V5cxIXLmFwaS5MaXN0QXBpS2V5c1JlcXVlc3QaGC5h",
+            "cGkuTGlzdEFwaUtleXNSZXNwb25zZSIAEjsKCFNldHRpbmdzEhYuZ29vZ2xl",
+            "LnByb3RvYnVmLkVtcHR5GhUuYXBpLlNldHRpbmdzUmVzcG9uc2UiABJXChJP",
+            "cGVuSWRDb25uZWN0TG9naW4SHi5hcGkuT3BlbklkQ29ubmVjdExvZ2luUmVx",
+            "dWVzdBofLmFwaS5PcGVuSWRDb25uZWN0TG9naW5SZXNwb25zZSIAEkIKC09B",
+            "dXRoMkxvZ2luEhcuYXBpLk9BdXRoMkxvZ2luUmVxdWVzdBoYLmFwaS5PQXV0",
+            "aDJMb2dpblJlc3BvbnNlIgASVAoRR2V0RGV2aWNlc1N1bW1hcnkSHS5hcGku",
+            "R2V0RGV2aWNlc1N1bW1hcnlSZXF1ZXN0Gh4uYXBpLkdldERldmljZXNTdW1t",
+            "YXJ5UmVzcG9uc2UiABJXChJHZXRHYXRld2F5c1N1bW1hcnkSHi5hcGkuR2V0",
+            "R2F0ZXdheXNTdW1tYXJ5UmVxdWVzdBofLmFwaS5HZXRHYXRld2F5c1N1bW1h",
+            "cnlSZXNwb25zZSIAEkgKE1N0cmVhbUdhdGV3YXlGcmFtZXMSHy5hcGkuU3Ry",
+            "ZWFtR2F0ZXdheUZyYW1lc1JlcXVlc3QaDC5hcGkuTG9nSXRlbSIAMAESRgoS",
+            "U3RyZWFtRGV2aWNlRnJhbWVzEh4uYXBpLlN0cmVhbURldmljZUZyYW1lc1Jl",
+            "cXVlc3QaDC5hcGkuTG9nSXRlbSIAMAESRgoSU3RyZWFtRGV2aWNlRXZlbnRz",
+            "Eh4uYXBpLlN0cmVhbURldmljZUV2ZW50c1JlcXVlc3QaDC5hcGkuTG9nSXRl",
+            "bSIAMAESQQoLTGlzdFJlZ2lvbnMSFi5nb29nbGUucHJvdG9idWYuRW1wdHka",
+            "GC5hcGkuTGlzdFJlZ2lvbnNSZXNwb25zZSIAEjwKCUdldFJlZ2lvbhIVLmFw",
+            "aS5HZXRSZWdpb25SZXF1ZXN0GhYuYXBpLkdldFJlZ2lvblJlc3BvbnNlIgBC",
+            "ZQoRaW8uY2hpcnBzdGFjay5hcGlCDUludGVybmFsUHJvdG9QAVouZ2l0aHVi",
+            "LmNvbS9jaGlycHN0YWNrL2NoaXJwc3RhY2svYXBpL2dvL3Y0L2FwaaoCDkNo",
+            "aXJwc3RhY2suQXBpYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Chirpstack.Common.CommonReflection.Descriptor, global::Chirpstack.Api.UserReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -136,8 +137,8 @@ namespace Chirpstack.Api {
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.GlobalSearchResponse), global::Chirpstack.Api.GlobalSearchResponse.Parser, new[]{ "Result" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.GlobalSearchResult), global::Chirpstack.Api.GlobalSearchResult.Parser, new[]{ "Kind", "Score", "TenantId", "TenantName", "ApplicationId", "ApplicationName", "DeviceDevEui", "DeviceName", "GatewayId", "GatewayName" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.SettingsResponse), global::Chirpstack.Api.SettingsResponse.Parser, new[]{ "OpenidConnect", "Oauth2" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.OpenIdConnect), global::Chirpstack.Api.OpenIdConnect.Parser, new[]{ "Enabled", "LoginUrl", "LoginLabel", "LogoutUrl" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.OAuth2), global::Chirpstack.Api.OAuth2.Parser, new[]{ "Enabled", "LoginUrl", "LoginLabel", "LogoutUrl" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.OpenIdConnect), global::Chirpstack.Api.OpenIdConnect.Parser, new[]{ "Enabled", "LoginUrl", "LoginLabel", "LogoutUrl", "LoginRedirect" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.OAuth2), global::Chirpstack.Api.OAuth2.Parser, new[]{ "Enabled", "LoginUrl", "LoginLabel", "LogoutUrl", "LoginRedirect" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.OpenIdConnectLoginRequest), global::Chirpstack.Api.OpenIdConnectLoginRequest.Parser, new[]{ "Code", "State" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.OpenIdConnectLoginResponse), global::Chirpstack.Api.OpenIdConnectLoginResponse.Parser, new[]{ "Token" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.OAuth2LoginRequest), global::Chirpstack.Api.OAuth2LoginRequest.Parser, new[]{ "Code", "State" }, null, null, null, null),
@@ -3989,6 +3990,7 @@ namespace Chirpstack.Api {
       loginUrl_ = other.loginUrl_;
       loginLabel_ = other.loginLabel_;
       logoutUrl_ = other.logoutUrl_;
+      loginRedirect_ = other.loginRedirect_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -4058,6 +4060,21 @@ namespace Chirpstack.Api {
       }
     }
 
+    /// <summary>Field number for the "login_redirect" field.</summary>
+    public const int LoginRedirectFieldNumber = 5;
+    private bool loginRedirect_;
+    /// <summary>
+    /// Login redirect.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool LoginRedirect {
+      get { return loginRedirect_; }
+      set {
+        loginRedirect_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -4077,6 +4094,7 @@ namespace Chirpstack.Api {
       if (LoginUrl != other.LoginUrl) return false;
       if (LoginLabel != other.LoginLabel) return false;
       if (LogoutUrl != other.LogoutUrl) return false;
+      if (LoginRedirect != other.LoginRedirect) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -4088,6 +4106,7 @@ namespace Chirpstack.Api {
       if (LoginUrl.Length != 0) hash ^= LoginUrl.GetHashCode();
       if (LoginLabel.Length != 0) hash ^= LoginLabel.GetHashCode();
       if (LogoutUrl.Length != 0) hash ^= LogoutUrl.GetHashCode();
+      if (LoginRedirect != false) hash ^= LoginRedirect.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -4122,6 +4141,10 @@ namespace Chirpstack.Api {
         output.WriteRawTag(34);
         output.WriteString(LogoutUrl);
       }
+      if (LoginRedirect != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(LoginRedirect);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -4148,6 +4171,10 @@ namespace Chirpstack.Api {
         output.WriteRawTag(34);
         output.WriteString(LogoutUrl);
       }
+      if (LoginRedirect != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(LoginRedirect);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -4169,6 +4196,9 @@ namespace Chirpstack.Api {
       }
       if (LogoutUrl.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(LogoutUrl);
+      }
+      if (LoginRedirect != false) {
+        size += 1 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -4193,6 +4223,9 @@ namespace Chirpstack.Api {
       }
       if (other.LogoutUrl.Length != 0) {
         LogoutUrl = other.LogoutUrl;
+      }
+      if (other.LoginRedirect != false) {
+        LoginRedirect = other.LoginRedirect;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -4225,6 +4258,10 @@ namespace Chirpstack.Api {
             LogoutUrl = input.ReadString();
             break;
           }
+          case 40: {
+            LoginRedirect = input.ReadBool();
+            break;
+          }
         }
       }
     #endif
@@ -4254,6 +4291,10 @@ namespace Chirpstack.Api {
           }
           case 34: {
             LogoutUrl = input.ReadString();
+            break;
+          }
+          case 40: {
+            LoginRedirect = input.ReadBool();
             break;
           }
         }
@@ -4301,6 +4342,7 @@ namespace Chirpstack.Api {
       loginUrl_ = other.loginUrl_;
       loginLabel_ = other.loginLabel_;
       logoutUrl_ = other.logoutUrl_;
+      loginRedirect_ = other.loginRedirect_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -4370,6 +4412,21 @@ namespace Chirpstack.Api {
       }
     }
 
+    /// <summary>Field number for the "login_redirect" field.</summary>
+    public const int LoginRedirectFieldNumber = 5;
+    private bool loginRedirect_;
+    /// <summary>
+    /// Login redirect.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool LoginRedirect {
+      get { return loginRedirect_; }
+      set {
+        loginRedirect_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -4389,6 +4446,7 @@ namespace Chirpstack.Api {
       if (LoginUrl != other.LoginUrl) return false;
       if (LoginLabel != other.LoginLabel) return false;
       if (LogoutUrl != other.LogoutUrl) return false;
+      if (LoginRedirect != other.LoginRedirect) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -4400,6 +4458,7 @@ namespace Chirpstack.Api {
       if (LoginUrl.Length != 0) hash ^= LoginUrl.GetHashCode();
       if (LoginLabel.Length != 0) hash ^= LoginLabel.GetHashCode();
       if (LogoutUrl.Length != 0) hash ^= LogoutUrl.GetHashCode();
+      if (LoginRedirect != false) hash ^= LoginRedirect.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -4434,6 +4493,10 @@ namespace Chirpstack.Api {
         output.WriteRawTag(34);
         output.WriteString(LogoutUrl);
       }
+      if (LoginRedirect != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(LoginRedirect);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -4460,6 +4523,10 @@ namespace Chirpstack.Api {
         output.WriteRawTag(34);
         output.WriteString(LogoutUrl);
       }
+      if (LoginRedirect != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(LoginRedirect);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -4481,6 +4548,9 @@ namespace Chirpstack.Api {
       }
       if (LogoutUrl.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(LogoutUrl);
+      }
+      if (LoginRedirect != false) {
+        size += 1 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -4505,6 +4575,9 @@ namespace Chirpstack.Api {
       }
       if (other.LogoutUrl.Length != 0) {
         LogoutUrl = other.LogoutUrl;
+      }
+      if (other.LoginRedirect != false) {
+        LoginRedirect = other.LoginRedirect;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -4537,6 +4610,10 @@ namespace Chirpstack.Api {
             LogoutUrl = input.ReadString();
             break;
           }
+          case 40: {
+            LoginRedirect = input.ReadBool();
+            break;
+          }
         }
       }
     #endif
@@ -4566,6 +4643,10 @@ namespace Chirpstack.Api {
           }
           case 34: {
             LogoutUrl = input.ReadString();
+            break;
+          }
+          case 40: {
+            LoginRedirect = input.ReadBool();
             break;
           }
         }

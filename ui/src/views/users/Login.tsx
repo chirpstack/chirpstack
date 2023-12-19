@@ -137,8 +137,6 @@ function Login() {
     SessionStore.logout(true, () => { });
 
     InternalStore.settings((resp: SettingsResponse) => {
-      setLoaded(true);
-
       const oidc = resp.getOpenidConnect()!;
       const oAuth2 = resp.getOauth2()!;
 
@@ -170,6 +168,14 @@ function Login() {
           SessionStore.oAuth2Login(req, () => {
             navigate("/");
           });
+        }
+      } else {
+        if (oidc.getEnabled() && oidc.getLoginRedirect()) {
+          window.location.replace(oidc.getLoginUrl());
+        } else if (oAuth2.getEnabled() && oAuth2.getLoginRedirect()) {
+          window.location.replace(oAuth2.getLoginUrl());
+        } else {
+          setLoaded(true);
         }
       }
     });

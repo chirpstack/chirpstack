@@ -148,28 +148,32 @@ class SettingsResponse(_message.Message):
     def __init__(self, openid_connect: _Optional[_Union[OpenIdConnect, _Mapping]] = ..., oauth2: _Optional[_Union[OAuth2, _Mapping]] = ...) -> None: ...
 
 class OpenIdConnect(_message.Message):
-    __slots__ = ["enabled", "login_url", "login_label", "logout_url"]
+    __slots__ = ["enabled", "login_url", "login_label", "logout_url", "login_redirect"]
     ENABLED_FIELD_NUMBER: _ClassVar[int]
     LOGIN_URL_FIELD_NUMBER: _ClassVar[int]
     LOGIN_LABEL_FIELD_NUMBER: _ClassVar[int]
     LOGOUT_URL_FIELD_NUMBER: _ClassVar[int]
+    LOGIN_REDIRECT_FIELD_NUMBER: _ClassVar[int]
     enabled: bool
     login_url: str
     login_label: str
     logout_url: str
-    def __init__(self, enabled: bool = ..., login_url: _Optional[str] = ..., login_label: _Optional[str] = ..., logout_url: _Optional[str] = ...) -> None: ...
+    login_redirect: bool
+    def __init__(self, enabled: bool = ..., login_url: _Optional[str] = ..., login_label: _Optional[str] = ..., logout_url: _Optional[str] = ..., login_redirect: bool = ...) -> None: ...
 
 class OAuth2(_message.Message):
-    __slots__ = ["enabled", "login_url", "login_label", "logout_url"]
+    __slots__ = ["enabled", "login_url", "login_label", "logout_url", "login_redirect"]
     ENABLED_FIELD_NUMBER: _ClassVar[int]
     LOGIN_URL_FIELD_NUMBER: _ClassVar[int]
     LOGIN_LABEL_FIELD_NUMBER: _ClassVar[int]
     LOGOUT_URL_FIELD_NUMBER: _ClassVar[int]
+    LOGIN_REDIRECT_FIELD_NUMBER: _ClassVar[int]
     enabled: bool
     login_url: str
     login_label: str
     logout_url: str
-    def __init__(self, enabled: bool = ..., login_url: _Optional[str] = ..., login_label: _Optional[str] = ..., logout_url: _Optional[str] = ...) -> None: ...
+    login_redirect: bool
+    def __init__(self, enabled: bool = ..., login_url: _Optional[str] = ..., login_label: _Optional[str] = ..., logout_url: _Optional[str] = ..., login_redirect: bool = ...) -> None: ...
 
 class OpenIdConnectLoginRequest(_message.Message):
     __slots__ = ["code", "state"]

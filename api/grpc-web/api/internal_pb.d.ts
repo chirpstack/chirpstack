@@ -397,6 +397,9 @@ export class OpenIdConnect extends jspb.Message {
   getLogoutUrl(): string;
   setLogoutUrl(value: string): OpenIdConnect;
 
+  getLoginRedirect(): boolean;
+  setLoginRedirect(value: boolean): OpenIdConnect;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): OpenIdConnect.AsObject;
   static toObject(includeInstance: boolean, msg: OpenIdConnect): OpenIdConnect.AsObject;
@@ -411,6 +414,7 @@ export namespace OpenIdConnect {
     loginUrl: string,
     loginLabel: string,
     logoutUrl: string,
+    loginRedirect: boolean,
   }
 }
 
@@ -427,6 +431,9 @@ export class OAuth2 extends jspb.Message {
   getLogoutUrl(): string;
   setLogoutUrl(value: string): OAuth2;
 
+  getLoginRedirect(): boolean;
+  setLoginRedirect(value: boolean): OAuth2;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): OAuth2.AsObject;
   static toObject(includeInstance: boolean, msg: OAuth2): OAuth2.AsObject;
@@ -441,6 +448,7 @@ export namespace OAuth2 {
     loginUrl: string,
     loginLabel: string,
     logoutUrl: string,
+    loginRedirect: boolean,
   }
 }
 

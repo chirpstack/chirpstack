@@ -232,6 +232,9 @@ message OpenIdConnect {
 
   // Logout url.
   string logout_url = 4;
+
+  // Login redirect.
+  bool login_redirect = 5;
 }
 
 message OAuth2 {
@@ -246,6 +249,9 @@ message OAuth2 {
 
   // Logout url.
   string logout_url = 4;
+
+  // Login redirect.
+  bool login_redirect = 5;
 }
 
 message OpenIdConnectLoginRequest {

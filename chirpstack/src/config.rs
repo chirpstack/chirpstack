@@ -419,6 +419,7 @@ pub struct OpenIdConnect {
     pub client_secret: String,
     pub redirect_url: String,
     pub logout_url: String,
+    pub login_redirect: bool,
     pub login_label: String,
     pub assume_email_verified: bool,
 }
@@ -436,6 +437,7 @@ pub struct OAuth2 {
     pub userinfo_url: String,
     pub provider: String,
     pub logout_url: String,
+    pub login_redirect: bool,
     pub login_label: String,
     pub assume_email_verified: bool,
 }
