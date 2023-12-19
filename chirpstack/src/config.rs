@@ -391,22 +391,50 @@ impl Default for CodecJs {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct UserAuthentication {
+    pub enabled: String,
     pub openid_connect: OpenIdConnect,
+    pub oauth2: OAuth2,
+}
+
+impl Default for UserAuthentication {
+    fn default() -> Self {
+        UserAuthentication {
+            enabled: "internal".into(),
+            openid_connect: Default::default(),
+            oauth2: Default::default(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(default)]
 pub struct OpenIdConnect {
-    pub enabled: bool,
     pub registration_enabled: bool,
     pub registration_callback_url: String,
     pub provider_url: String,
     pub client_id: String,
     pub client_secret: String,
     pub redirect_url: String,
+    pub logout_url: String,
+    pub login_label: String,
+    pub assume_email_verified: bool,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone)]
+#[serde(default)]
+pub struct OAuth2 {
+    pub registration_enabled: bool,
+    pub registration_callback_url: String,
+    pub client_id: String,
+    pub client_secret: String,
+    pub auth_url: String,
+    pub token_url: String,
+    pub redirect_url: String,
+    pub userinfo_url: String,
+    pub provider: String,
     pub logout_url: String,
     pub login_label: String,
     pub assume_email_verified: bool,

@@ -107,6 +107,7 @@ rustls-pemfile = "1.0"
 rsa = "0.9"
 rcgen = { version = "0.12", features = [ "x509-parser" ] }
 openidconnect = { version = "3.3", features = ["accept-rfc3339-timestamps"] }
+oauth2 = "4.4"
 
 # MQTT
 rumqttc = { version = "0.23", features = ["url"] }

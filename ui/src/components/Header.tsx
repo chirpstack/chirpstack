@@ -53,14 +53,19 @@ function Header({ user }: { user: User }) {
     }
 
     let oidc = settings.getOpenidConnect()!;
+    let oAuth2 = settings.getOauth2()!;
 
-    if (!oidc.getEnabled() || oidc.getLogoutUrl() === "") {
-      SessionStore.logout(true, () => {
-        navigate("/login");
-      });
-    } else {
+    if (oidc.getEnabled() && oidc.getLogoutUrl() !== "") {
       SessionStore.logout(false, () => {
         navigate(oidc.getLogoutUrl());
+      });
+    } else if (oAuth2.getEnabled() && oAuth2.getLogoutUrl() !== "") {
+      SessionStore.logout(false, () => {
+        navigate(oAuth2.getLogoutUrl());
+      });
+    } else {
+      SessionStore.logout(true, () => {
+        navigate("/login");
       });
     }
   };
@@ -86,23 +91,23 @@ function Header({ user }: { user: User }) {
     label: any;
     options: any[];
   }[] = [
-    {
-      label: renderTitle("Tenants"),
-      options: [],
-    },
-    {
-      label: renderTitle("Gateways"),
-      options: [],
-    },
-    {
-      label: renderTitle("Applications"),
-      options: [],
-    },
-    {
-      label: renderTitle("Devices"),
-      options: [],
-    },
-  ];
+      {
+        label: renderTitle("Tenants"),
+        options: [],
+      },
+      {
+        label: renderTitle("Gateways"),
+        options: [],
+      },
+      {
+        label: renderTitle("Applications"),
+        options: [],
+      },
+      {
+        label: renderTitle("Devices"),
+        options: [],
+      },
+    ];
 
   if (searchResult !== undefined) {
     for (const res of searchResult.getResultList()) {

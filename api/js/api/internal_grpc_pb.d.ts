@@ -16,6 +16,7 @@ interface IInternalServiceService extends grpc.ServiceDefinition<grpc.UntypedSer
   listApiKeys: grpc.MethodDefinition<api_internal_pb.ListApiKeysRequest, api_internal_pb.ListApiKeysResponse>;
   settings: grpc.MethodDefinition<google_protobuf_empty_pb.Empty, api_internal_pb.SettingsResponse>;
   openIdConnectLogin: grpc.MethodDefinition<api_internal_pb.OpenIdConnectLoginRequest, api_internal_pb.OpenIdConnectLoginResponse>;
+  oAuth2Login: grpc.MethodDefinition<api_internal_pb.OAuth2LoginRequest, api_internal_pb.OAuth2LoginResponse>;
   getDevicesSummary: grpc.MethodDefinition<api_internal_pb.GetDevicesSummaryRequest, api_internal_pb.GetDevicesSummaryResponse>;
   getGatewaysSummary: grpc.MethodDefinition<api_internal_pb.GetGatewaysSummaryRequest, api_internal_pb.GetGatewaysSummaryResponse>;
   streamGatewayFrames: grpc.MethodDefinition<api_internal_pb.StreamGatewayFramesRequest, api_internal_pb.LogItem>;
@@ -36,6 +37,7 @@ export interface IInternalServiceServer extends grpc.UntypedServiceImplementatio
   listApiKeys: grpc.handleUnaryCall<api_internal_pb.ListApiKeysRequest, api_internal_pb.ListApiKeysResponse>;
   settings: grpc.handleUnaryCall<google_protobuf_empty_pb.Empty, api_internal_pb.SettingsResponse>;
   openIdConnectLogin: grpc.handleUnaryCall<api_internal_pb.OpenIdConnectLoginRequest, api_internal_pb.OpenIdConnectLoginResponse>;
+  oAuth2Login: grpc.handleUnaryCall<api_internal_pb.OAuth2LoginRequest, api_internal_pb.OAuth2LoginResponse>;
   getDevicesSummary: grpc.handleUnaryCall<api_internal_pb.GetDevicesSummaryRequest, api_internal_pb.GetDevicesSummaryResponse>;
   getGatewaysSummary: grpc.handleUnaryCall<api_internal_pb.GetGatewaysSummaryRequest, api_internal_pb.GetGatewaysSummaryResponse>;
   streamGatewayFrames: grpc.handleServerStreamingCall<api_internal_pb.StreamGatewayFramesRequest, api_internal_pb.LogItem>;
@@ -71,6 +73,9 @@ export class InternalServiceClient extends grpc.Client {
   openIdConnectLogin(argument: api_internal_pb.OpenIdConnectLoginRequest, callback: grpc.requestCallback<api_internal_pb.OpenIdConnectLoginResponse>): grpc.ClientUnaryCall;
   openIdConnectLogin(argument: api_internal_pb.OpenIdConnectLoginRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.OpenIdConnectLoginResponse>): grpc.ClientUnaryCall;
   openIdConnectLogin(argument: api_internal_pb.OpenIdConnectLoginRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.OpenIdConnectLoginResponse>): grpc.ClientUnaryCall;
+  oAuth2Login(argument: api_internal_pb.OAuth2LoginRequest, callback: grpc.requestCallback<api_internal_pb.OAuth2LoginResponse>): grpc.ClientUnaryCall;
+  oAuth2Login(argument: api_internal_pb.OAuth2LoginRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.OAuth2LoginResponse>): grpc.ClientUnaryCall;
+  oAuth2Login(argument: api_internal_pb.OAuth2LoginRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.OAuth2LoginResponse>): grpc.ClientUnaryCall;
   getDevicesSummary(argument: api_internal_pb.GetDevicesSummaryRequest, callback: grpc.requestCallback<api_internal_pb.GetDevicesSummaryResponse>): grpc.ClientUnaryCall;
   getDevicesSummary(argument: api_internal_pb.GetDevicesSummaryRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.GetDevicesSummaryResponse>): grpc.ClientUnaryCall;
   getDevicesSummary(argument: api_internal_pb.GetDevicesSummaryRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.GetDevicesSummaryResponse>): grpc.ClientUnaryCall;

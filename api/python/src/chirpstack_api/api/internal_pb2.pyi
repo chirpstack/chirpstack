@@ -140,12 +140,26 @@ class GlobalSearchResult(_message.Message):
     def __init__(self, kind: _Optional[str] = ..., score: _Optional[float] = ..., tenant_id: _Optional[str] = ..., tenant_name: _Optional[str] = ..., application_id: _Optional[str] = ..., application_name: _Optional[str] = ..., device_dev_eui: _Optional[str] = ..., device_name: _Optional[str] = ..., gateway_id: _Optional[str] = ..., gateway_name: _Optional[str] = ...) -> None: ...
 
 class SettingsResponse(_message.Message):
-    __slots__ = ["openid_connect"]
+    __slots__ = ["openid_connect", "oauth2"]
     OPENID_CONNECT_FIELD_NUMBER: _ClassVar[int]
+    OAUTH2_FIELD_NUMBER: _ClassVar[int]
     openid_connect: OpenIdConnect
-    def __init__(self, openid_connect: _Optional[_Union[OpenIdConnect, _Mapping]] = ...) -> None: ...
+    oauth2: OAuth2
+    def __init__(self, openid_connect: _Optional[_Union[OpenIdConnect, _Mapping]] = ..., oauth2: _Optional[_Union[OAuth2, _Mapping]] = ...) -> None: ...
 
 class OpenIdConnect(_message.Message):
+    __slots__ = ["enabled", "login_url", "login_label", "logout_url"]
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    LOGIN_URL_FIELD_NUMBER: _ClassVar[int]
+    LOGIN_LABEL_FIELD_NUMBER: _ClassVar[int]
+    LOGOUT_URL_FIELD_NUMBER: _ClassVar[int]
+    enabled: bool
+    login_url: str
+    login_label: str
+    logout_url: str
+    def __init__(self, enabled: bool = ..., login_url: _Optional[str] = ..., login_label: _Optional[str] = ..., logout_url: _Optional[str] = ...) -> None: ...
+
+class OAuth2(_message.Message):
     __slots__ = ["enabled", "login_url", "login_label", "logout_url"]
     ENABLED_FIELD_NUMBER: _ClassVar[int]
     LOGIN_URL_FIELD_NUMBER: _ClassVar[int]
@@ -166,6 +180,20 @@ class OpenIdConnectLoginRequest(_message.Message):
     def __init__(self, code: _Optional[str] = ..., state: _Optional[str] = ...) -> None: ...
 
 class OpenIdConnectLoginResponse(_message.Message):
+    __slots__ = ["token"]
+    TOKEN_FIELD_NUMBER: _ClassVar[int]
+    token: str
+    def __init__(self, token: _Optional[str] = ...) -> None: ...
+
+class OAuth2LoginRequest(_message.Message):
+    __slots__ = ["code", "state"]
+    CODE_FIELD_NUMBER: _ClassVar[int]
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    code: str
+    state: str
+    def __init__(self, code: _Optional[str] = ..., state: _Optional[str] = ...) -> None: ...
+
+class OAuth2LoginResponse(_message.Message):
     __slots__ = ["token"]
     TOKEN_FIELD_NUMBER: _ClassVar[int]
     token: str

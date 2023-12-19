@@ -106,8 +106,8 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
 async fn get_client() -> Result<CoreClient> {
     let conf = config::get();
 
-    if !conf.user_authentication.openid_connect.enabled {
-        return Err(anyhow!("OIDC is disabled"));
+    if conf.user_authentication.enabled != "openid_connect" {
+        return Err(anyhow!("OIDC is not enabled"));
     }
 
     let client_id = ClientId::new(conf.user_authentication.openid_connect.client_id.clone());

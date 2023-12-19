@@ -195,6 +195,28 @@ function deserialize_api_LoginResponse(buffer_arg) {
   return api_internal_pb.LoginResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_OAuth2LoginRequest(arg) {
+  if (!(arg instanceof api_internal_pb.OAuth2LoginRequest)) {
+    throw new Error('Expected argument of type api.OAuth2LoginRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_OAuth2LoginRequest(buffer_arg) {
+  return api_internal_pb.OAuth2LoginRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_api_OAuth2LoginResponse(arg) {
+  if (!(arg instanceof api_internal_pb.OAuth2LoginResponse)) {
+    throw new Error('Expected argument of type api.OAuth2LoginResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_OAuth2LoginResponse(buffer_arg) {
+  return api_internal_pb.OAuth2LoginResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_OpenIdConnectLoginRequest(arg) {
   if (!(arg instanceof api_internal_pb.OpenIdConnectLoginRequest)) {
     throw new Error('Expected argument of type api.OpenIdConnectLoginRequest');
@@ -381,6 +403,18 @@ openIdConnectLogin: {
     requestDeserialize: deserialize_api_OpenIdConnectLoginRequest,
     responseSerialize: serialize_api_OpenIdConnectLoginResponse,
     responseDeserialize: deserialize_api_OpenIdConnectLoginResponse,
+  },
+  // OAuth2 login.
+oAuth2Login: {
+    path: '/api.InternalService/OAuth2Login',
+    requestStream: false,
+    responseStream: false,
+    requestType: api_internal_pb.OAuth2LoginRequest,
+    responseType: api_internal_pb.OAuth2LoginResponse,
+    requestSerialize: serialize_api_OAuth2LoginRequest,
+    requestDeserialize: deserialize_api_OAuth2LoginRequest,
+    responseSerialize: serialize_api_OAuth2LoginResponse,
+    responseDeserialize: deserialize_api_OAuth2LoginResponse,
   },
   // GetDevicesSummary returns an aggregated summary of the devices.
 getDevicesSummary: {

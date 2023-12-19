@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Row, Col, Card } from "antd";
 import { Form, Input, Button } from "antd";
 
-import { SettingsResponse, OpenIdConnectLoginRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { SettingsResponse, OpenIdConnectLoginRequest, OAuth2LoginRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import SessionStore from "../../stores/SessionStore";
 import InternalStore from "../../stores/InternalStore";
@@ -35,7 +35,27 @@ interface OidcLoginProps {
   loginLabel: string;
 }
 
+interface OAuth2LoginProps {
+  loginUrl: string;
+  loginLabel: string;
+}
+
 function OidcLogin({ loginUrl, loginLabel }: OidcLoginProps) {
+  return (
+    <Row style={{ marginTop: "200px" }}>
+      <Col span={8} offset={8}>
+        <Card title="ChirpStack login">
+          <a href={loginUrl}>
+            <Button type="primary">{loginLabel}</Button>
+          </a>
+        </Card>
+      </Col>
+    </Row>
+  );
+}
+
+
+function OAuth2Login({ loginUrl, loginLabel }: OAuth2LoginProps) {
   return (
     <Row style={{ marginTop: "200px" }}>
       <Col span={8} offset={8}>
@@ -107,30 +127,52 @@ function Login() {
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [oidcEnabled, setOidcEnabled] = useState<boolean>(false);
+  const [oAuth2Enabled, setOAuth2Enabled] = useState<boolean>(false);
   const [oidcLoginLabel, setOidcLoginLabel] = useState<string>("");
   const [oidcLoginUrl, setOidcLoginUrl] = useState<string>("");
+  const [oAuth2LoginLabel, setOAuth2LoginLabel] = useState<string>("");
+  const [oAuth2LoginUrl, setOAuth2LoginUrl] = useState<string>("");
 
   useEffect(() => {
-    SessionStore.logout(true, () => {});
+    SessionStore.logout(true, () => { });
 
-    if (location.search === "") {
-      InternalStore.settings((resp: SettingsResponse) => {
-        setLoaded(true);
-        setOidcEnabled(resp.getOpenidConnect()!.getEnabled());
-        setOidcLoginLabel(resp.getOpenidConnect()!.getLoginLabel());
-        setOidcLoginUrl(resp.getOpenidConnect()!.getLoginUrl());
-      });
-    } else {
-      // Callback from OIDC provider.
-      let q = new URLSearchParams(location.search);
-      let req = new OpenIdConnectLoginRequest();
-      req.setCode(q.get("code") || "");
-      req.setState(q.get("state") || "");
+    InternalStore.settings((resp: SettingsResponse) => {
+      setLoaded(true);
 
-      SessionStore.openIdConnectLogin(req, () => {
-        navigate("/");
-      });
-    }
+      const oidc = resp.getOpenidConnect()!;
+      const oAuth2 = resp.getOauth2()!;
+
+      setOidcEnabled(oidc.getEnabled());
+      setOidcLoginLabel(oidc.getLoginLabel());
+      setOidcLoginUrl(oidc.getLoginUrl());
+
+      setOAuth2Enabled(oAuth2.getEnabled());
+      setOAuth2LoginLabel(oAuth2.getLoginLabel());
+      setOAuth2LoginUrl(oAuth2.getLoginUrl());
+
+      if (location.search !== "") {
+        // Callback from OIDC or OAuth2 provider.
+        let q = new URLSearchParams(location.search);
+
+        if (oidc.getEnabled()) {
+          let req = new OpenIdConnectLoginRequest();
+          req.setCode(q.get("code") || "");
+          req.setState(q.get("state") || "");
+
+          SessionStore.openIdConnectLogin(req, () => {
+            navigate("/");
+          });
+        } else if (oAuth2.getEnabled()) {
+          let req = new OAuth2LoginRequest();
+          req.setCode(q.get("code") || "");
+          req.setState(q.get("state") || "");
+
+          SessionStore.oAuth2Login(req, () => {
+            navigate("/");
+          });
+        }
+      }
+    });
   }, [location, navigate]);
 
   if (!loaded) {
@@ -139,6 +181,8 @@ function Login() {
 
   if (oidcEnabled) {
     return <OidcLogin loginUrl={oidcLoginUrl} loginLabel={oidcLoginLabel} />;
+  } else if (oAuth2Enabled) {
+    return <OAuth2Login loginUrl={oAuth2LoginUrl} loginLabel={oAuth2LoginLabel} />;
   } else {
     return <LoginForm />;
   }

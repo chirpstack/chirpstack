@@ -55,6 +55,7 @@ pub mod helpers;
 pub mod internal;
 pub mod monitoring;
 pub mod multicast;
+pub mod oauth2;
 pub mod oidc;
 pub mod relay;
 pub mod tenant;
@@ -181,6 +182,10 @@ pub async fn setup() -> Result<()> {
                 .or(warp::path!("auth" / "oidc" / "callback")
                     .and(warp::query::<oidc::CallbackArgs>())
                     .and_then(oidc::callback_handler))
+                .or(warp::path!("auth" / "oauth2" / "login").and_then(oauth2::login_handler))
+                .or(warp::path!("auth" / "oauth2" / "callback")
+                    .and(warp::query::<oauth2::CallbackArgs>())
+                    .and_then(oauth2::callback_handler))
                 .or(warp::path::tail().and_then(http_serve)),
         );
         let mut warp_service = ServiceBuilder::new()

@@ -7,6 +7,7 @@ use anyhow::{Context as AnyhowContext, Result};
 use futures::Stream;
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::Client;
+use serde::Serialize;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status};
@@ -20,7 +21,7 @@ use super::auth::claims;
 use super::auth::{validator, AuthID};
 use super::error::ToStatus;
 use super::helpers::ToProto;
-use super::{helpers, oidc};
+use super::{helpers, oauth2, oidc};
 use crate::storage::{api_key, device, error::Error, gateway, redis_key, search, tenant, user};
 use crate::{config, region, stream};
 use lrwn::EUI64;
@@ -38,25 +39,25 @@ impl Internal {
         }
     }
 
-    async fn create_and_provision_user(&self, oidc_user: &oidc::User) -> Result<user::User> {
-        let external_id = oidc_user.subject().to_string();
-        let email = match oidc_user.email() {
-            Some(v) => v.to_string(),
-            None => {
-                return Err(anyhow!("email is missing"));
-            }
-        };
-        let email_verified = oidc_user.email_verified().unwrap_or_default();
-
+    async fn create_and_provision_user<S>(
+        &self,
+        external_id: &str,
+        email: &str,
+        email_verified: bool,
+        user_info: &S,
+    ) -> Result<user::User>
+    where
+        S: Serialize,
+    {
         let u = user::User {
             is_active: true,
-            email,
+            email: email.to_string(),
             email_verified,
-            external_id: Some(external_id),
+            external_id: Some(external_id.to_string()),
             ..Default::default()
         };
         let u = user::create(u).await?;
-        if let Err(e) = self.provision_user(&u.id, oidc_user).await {
+        if let Err(e) = self.provision_user(&u.id, user_info).await {
             error!(error = %e, "Provisioning user failed");
             user::delete(&u.id).await?;
             return Err(e);
@@ -65,7 +66,10 @@ impl Internal {
         Ok(u)
     }
 
-    async fn provision_user(&self, user_id: &Uuid, oidc_user: &oidc::User) -> Result<()> {
+    async fn provision_user<S>(&self, user_id: &Uuid, user_info: &S) -> Result<()>
+    where
+        S: Serialize,
+    {
         let conf = config::get();
         if conf
             .user_authentication
@@ -87,7 +91,7 @@ impl Internal {
                     .openid_connect
                     .registration_callback_url,
             )
-            .json(&oidc_user)
+            .json(user_info)
             .query(&[("user_id", user_id.to_string())])
             .headers(headers)
             .send()
@@ -404,10 +408,16 @@ impl InternalService for Internal {
 
         Ok(Response::new(api::SettingsResponse {
             openid_connect: Some(api::OpenIdConnect {
-                enabled: conf.user_authentication.openid_connect.enabled,
+                enabled: conf.user_authentication.enabled == "openid_connect",
                 login_url: "/auth/oidc/login".into(),
                 login_label: conf.user_authentication.openid_connect.login_label.clone(),
                 logout_url: conf.user_authentication.openid_connect.logout_url.clone(),
+            }),
+            oauth2: Some(api::OAuth2 {
+                enabled: conf.user_authentication.enabled == "oauth2",
+                login_url: "/auth/oauth2/login".into(),
+                login_label: conf.user_authentication.oauth2.login_label.clone(),
+                logout_url: conf.user_authentication.oauth2.logout_url.clone(),
             }),
         }))
     }
@@ -456,7 +466,7 @@ impl InternalService for Internal {
         if u.is_none() {
             u = match user::get_by_email(&email).await {
                 Ok(mut v) => {
-                    v.external_id = Some(external_id);
+                    v.external_id = Some(external_id.clone());
                     Some(v)
                 }
                 Err(e) => match e {
@@ -471,7 +481,7 @@ impl InternalService for Internal {
         // register the user (if enabled)
         if u.is_none() && conf.user_authentication.openid_connect.registration_enabled {
             u = Some(
-                self.create_and_provision_user(&oidc_user)
+                self.create_and_provision_user(&external_id, &email, email_verified, &oidc_user)
                     .await
                     .map_err(|e| e.status())?,
             );
@@ -495,6 +505,87 @@ impl InternalService for Internal {
             .encode(self.jwt_secret.as_ref())
             .map_err(|e| e.status())?;
         Ok(Response::new(api::OpenIdConnectLoginResponse { token }))
+    }
+
+    async fn o_auth2_login(
+        &self,
+        request: Request<api::OAuth2LoginRequest>,
+    ) -> Result<Response<api::OAuth2LoginResponse>, Status> {
+        let req = request.get_ref();
+        let conf = config::get();
+
+        let oauth_user = oauth2::get_user(&req.code, &req.state)
+            .await
+            .map_err(|e| e.status())?;
+
+        let email_verified =
+            oauth_user.email_verified || conf.user_authentication.oauth2.assume_email_verified;
+
+        if !email_verified {
+            return Err(Status::failed_precondition(
+                "email address must be verified before you can login",
+            ));
+        }
+
+        // try to get user by external id
+        let mut u: Option<user::User> =
+            match user::get_by_external_id(&oauth_user.external_id).await {
+                Ok(v) => Some(v),
+                Err(e) => match e {
+                    Error::NotFound(_) => None,
+                    _ => {
+                        return Err(e.status());
+                    }
+                },
+            };
+
+        if u.is_none() {
+            u = match user::get_by_email(&oauth_user.email).await {
+                Ok(mut v) => {
+                    v.external_id = Some(oauth_user.external_id.clone());
+                    Some(v)
+                }
+                Err(e) => match e {
+                    Error::NotFound(_) => None,
+                    _ => {
+                        return Err(e.status());
+                    }
+                },
+            };
+        }
+
+        // register the user (if enabled)
+        if u.is_none() && conf.user_authentication.oauth2.registration_enabled {
+            u = Some(
+                self.create_and_provision_user(
+                    &oauth_user.external_id,
+                    &oauth_user.email,
+                    email_verified,
+                    &oauth_user,
+                )
+                .await
+                .map_err(|e| e.status())?,
+            );
+        }
+
+        let mut u = match u {
+            Some(v) => v,
+            None => {
+                return Err(Status::not_found("User does not exist"));
+            }
+        };
+
+        // update the user
+        // in case it was fetched using the external id, this will make sure we sync with any
+        // possible email change.
+        u.email = oauth_user.email.clone();
+        u.email_verified = email_verified;
+        let u = user::update(u).await.map_err(|e| e.status())?;
+
+        let token = claims::AuthClaim::new_for_user(&u.id)
+            .encode(self.jwt_secret.as_ref())
+            .map_err(|e| e.status())?;
+        Ok(Response::new(api::OAuth2LoginResponse { token }))
     }
 
     async fn get_devices_summary(

@@ -65,6 +65,13 @@ export class InternalServiceClient {
                response: api_internal_pb.OpenIdConnectLoginResponse) => void
   ): grpcWeb.ClientReadableStream<api_internal_pb.OpenIdConnectLoginResponse>;
 
+  oAuth2Login(
+    request: api_internal_pb.OAuth2LoginRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: api_internal_pb.OAuth2LoginResponse) => void
+  ): grpcWeb.ClientReadableStream<api_internal_pb.OAuth2LoginResponse>;
+
   getDevicesSummary(
     request: api_internal_pb.GetDevicesSummaryRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -154,6 +161,11 @@ export class InternalServicePromiseClient {
     request: api_internal_pb.OpenIdConnectLoginRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<api_internal_pb.OpenIdConnectLoginResponse>;
+
+  oAuth2Login(
+    request: api_internal_pb.OAuth2LoginRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<api_internal_pb.OAuth2LoginResponse>;
 
   getDevicesSummary(
     request: api_internal_pb.GetDevicesSummaryRequest,

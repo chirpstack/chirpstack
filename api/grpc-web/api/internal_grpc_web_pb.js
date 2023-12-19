@@ -573,6 +573,67 @@ proto.api.InternalServicePromiseClient.prototype.openIdConnectLogin =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.api.OAuth2LoginRequest,
+ *   !proto.api.OAuth2LoginResponse>}
+ */
+const methodDescriptor_InternalService_OAuth2Login = new grpc.web.MethodDescriptor(
+  '/api.InternalService/OAuth2Login',
+  grpc.web.MethodType.UNARY,
+  proto.api.OAuth2LoginRequest,
+  proto.api.OAuth2LoginResponse,
+  /**
+   * @param {!proto.api.OAuth2LoginRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.OAuth2LoginResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.api.OAuth2LoginRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.api.OAuth2LoginResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.api.OAuth2LoginResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.InternalServiceClient.prototype.oAuth2Login =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.InternalService/OAuth2Login',
+      request,
+      metadata || {},
+      methodDescriptor_InternalService_OAuth2Login,
+      callback);
+};
+
+
+/**
+ * @param {!proto.api.OAuth2LoginRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.api.OAuth2LoginResponse>}
+ *     Promise that resolves to the response
+ */
+proto.api.InternalServicePromiseClient.prototype.oAuth2Login =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.InternalService/OAuth2Login',
+      request,
+      metadata || {},
+      methodDescriptor_InternalService_OAuth2Login);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.api.GetDevicesSummaryRequest,
  *   !proto.api.GetDevicesSummaryResponse>}
  */

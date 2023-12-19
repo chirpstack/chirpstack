@@ -7,6 +7,7 @@ import {
   LoginRequest,
   UserTenantLink,
   OpenIdConnectLoginRequest,
+  OAuth2LoginRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
@@ -23,7 +24,7 @@ class SessionStore extends EventEmitter {
     this.client = new InternalServiceClient("");
     this.tenants = [];
 
-    this.fetchProfile(() => {});
+    this.fetchProfile(() => { });
   }
 
   login = (email: string, password: string, callbackFunc: any) => {
@@ -43,6 +44,18 @@ class SessionStore extends EventEmitter {
 
   openIdConnectLogin = (req: OpenIdConnectLoginRequest, callbackFunc: any) => {
     this.client.openIdConnectLogin(req, {}, (err, resp) => {
+      if (err !== null) {
+        HandleLoginError(err);
+        return;
+      }
+
+      this.setToken(resp.getToken());
+      this.fetchProfile(callbackFunc);
+    });
+  };
+
+  oAuth2Login = (req: OAuth2LoginRequest, callbackFunc: any) => {
+    this.client.oAuth2Login(req, {}, (err, resp) => {
       if (err !== null) {
         HandleLoginError(err);
         return;

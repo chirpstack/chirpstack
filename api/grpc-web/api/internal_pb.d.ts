@@ -364,6 +364,11 @@ export class SettingsResponse extends jspb.Message {
   hasOpenidConnect(): boolean;
   clearOpenidConnect(): SettingsResponse;
 
+  getOauth2(): OAuth2 | undefined;
+  setOauth2(value?: OAuth2): SettingsResponse;
+  hasOauth2(): boolean;
+  clearOauth2(): SettingsResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): SettingsResponse.AsObject;
   static toObject(includeInstance: boolean, msg: SettingsResponse): SettingsResponse.AsObject;
@@ -375,6 +380,7 @@ export class SettingsResponse extends jspb.Message {
 export namespace SettingsResponse {
   export type AsObject = {
     openidConnect?: OpenIdConnect.AsObject,
+    oauth2?: OAuth2.AsObject,
   }
 }
 
@@ -400,6 +406,36 @@ export class OpenIdConnect extends jspb.Message {
 }
 
 export namespace OpenIdConnect {
+  export type AsObject = {
+    enabled: boolean,
+    loginUrl: string,
+    loginLabel: string,
+    logoutUrl: string,
+  }
+}
+
+export class OAuth2 extends jspb.Message {
+  getEnabled(): boolean;
+  setEnabled(value: boolean): OAuth2;
+
+  getLoginUrl(): string;
+  setLoginUrl(value: string): OAuth2;
+
+  getLoginLabel(): string;
+  setLoginLabel(value: string): OAuth2;
+
+  getLogoutUrl(): string;
+  setLogoutUrl(value: string): OAuth2;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): OAuth2.AsObject;
+  static toObject(includeInstance: boolean, msg: OAuth2): OAuth2.AsObject;
+  static serializeBinaryToWriter(message: OAuth2, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): OAuth2;
+  static deserializeBinaryFromReader(message: OAuth2, reader: jspb.BinaryReader): OAuth2;
+}
+
+export namespace OAuth2 {
   export type AsObject = {
     enabled: boolean,
     loginUrl: string,
@@ -443,6 +479,46 @@ export class OpenIdConnectLoginResponse extends jspb.Message {
 }
 
 export namespace OpenIdConnectLoginResponse {
+  export type AsObject = {
+    token: string,
+  }
+}
+
+export class OAuth2LoginRequest extends jspb.Message {
+  getCode(): string;
+  setCode(value: string): OAuth2LoginRequest;
+
+  getState(): string;
+  setState(value: string): OAuth2LoginRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): OAuth2LoginRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: OAuth2LoginRequest): OAuth2LoginRequest.AsObject;
+  static serializeBinaryToWriter(message: OAuth2LoginRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): OAuth2LoginRequest;
+  static deserializeBinaryFromReader(message: OAuth2LoginRequest, reader: jspb.BinaryReader): OAuth2LoginRequest;
+}
+
+export namespace OAuth2LoginRequest {
+  export type AsObject = {
+    code: string,
+    state: string,
+  }
+}
+
+export class OAuth2LoginResponse extends jspb.Message {
+  getToken(): string;
+  setToken(value: string): OAuth2LoginResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): OAuth2LoginResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: OAuth2LoginResponse): OAuth2LoginResponse.AsObject;
+  static serializeBinaryToWriter(message: OAuth2LoginResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): OAuth2LoginResponse;
+  static deserializeBinaryFromReader(message: OAuth2LoginResponse, reader: jspb.BinaryReader): OAuth2LoginResponse;
+}
+
+export namespace OAuth2LoginResponse {
   export type AsObject = {
     token: string,
   }

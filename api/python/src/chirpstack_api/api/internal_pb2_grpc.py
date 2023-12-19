@@ -56,6 +56,11 @@ class InternalServiceStub(object):
                 request_serializer=chirpstack__api_dot_api_dot_internal__pb2.OpenIdConnectLoginRequest.SerializeToString,
                 response_deserializer=chirpstack__api_dot_api_dot_internal__pb2.OpenIdConnectLoginResponse.FromString,
                 )
+        self.OAuth2Login = channel.unary_unary(
+                '/api.InternalService/OAuth2Login',
+                request_serializer=chirpstack__api_dot_api_dot_internal__pb2.OAuth2LoginRequest.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_internal__pb2.OAuth2LoginResponse.FromString,
+                )
         self.GetDevicesSummary = channel.unary_unary(
                 '/api.InternalService/GetDevicesSummary',
                 request_serializer=chirpstack__api_dot_api_dot_internal__pb2.GetDevicesSummaryRequest.SerializeToString,
@@ -153,6 +158,13 @@ class InternalServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def OAuth2Login(self, request, context):
+        """OAuth2 login.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetDevicesSummary(self, request, context):
         """GetDevicesSummary returns an aggregated summary of the devices.
         """
@@ -244,6 +256,11 @@ def add_InternalServiceServicer_to_server(servicer, server):
                     servicer.OpenIdConnectLogin,
                     request_deserializer=chirpstack__api_dot_api_dot_internal__pb2.OpenIdConnectLoginRequest.FromString,
                     response_serializer=chirpstack__api_dot_api_dot_internal__pb2.OpenIdConnectLoginResponse.SerializeToString,
+            ),
+            'OAuth2Login': grpc.unary_unary_rpc_method_handler(
+                    servicer.OAuth2Login,
+                    request_deserializer=chirpstack__api_dot_api_dot_internal__pb2.OAuth2LoginRequest.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_internal__pb2.OAuth2LoginResponse.SerializeToString,
             ),
             'GetDevicesSummary': grpc.unary_unary_rpc_method_handler(
                     servicer.GetDevicesSummary,
@@ -424,6 +441,23 @@ class InternalService(object):
         return grpc.experimental.unary_unary(request, target, '/api.InternalService/OpenIdConnectLogin',
             chirpstack__api_dot_api_dot_internal__pb2.OpenIdConnectLoginRequest.SerializeToString,
             chirpstack__api_dot_api_dot_internal__pb2.OpenIdConnectLoginResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def OAuth2Login(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.InternalService/OAuth2Login',
+            chirpstack__api_dot_api_dot_internal__pb2.OAuth2LoginRequest.SerializeToString,
+            chirpstack__api_dot_api_dot_internal__pb2.OAuth2LoginResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

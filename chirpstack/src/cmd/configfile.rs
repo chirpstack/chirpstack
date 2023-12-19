@@ -544,13 +544,16 @@ pub fn run() {
 # User authentication configuration.
 [user_authentication]
 
+  # Enabled authentication backend.
+  #
+  # Options are:
+  #  * internal       - Internal authentication backend (default).
+  #  * openid_connect - OpenID Connect based backend.
+  #  * oauth2         - OAuth2 based backend.
+  enabled="{{ user_authentication.enabled }}"
+
   # OpenID Connect.
   [user_authentication.openid_connect]
-
-    # Enable OpenID Connect authentication.
-    #
-    # Enabling this option replaces password authentication.
-    enabled={{ user_authentication.openid_connect.enabled }}
 
     # Registration enabled.
     #
@@ -587,13 +590,13 @@ pub fn run() {
 
     # Redirect URL.
     #
-    # This must contain the ChirpStack Application Server web-interface hostname
+    # This must contain the ChirpStack web-interface hostname
     # with '/auth/oidc/callback' path, e.g. https://example.com/auth/oidc/callback.
     redirect_url="{{ user_authentication.openid_connect.redirect_url }}"
 
     # Logout URL.
     #
-    # When set, ChirpStack Application Server will redirect to this URL instead
+    # When set, ChirpStack will redirect to this URL instead
     # of redirecting to the login page.
     logout_url="{{ user_authentication.openid_connect.logout_url }}"
 
@@ -609,6 +612,78 @@ pub fn run() {
     # providers do not provide this field, in which case setting this value
     # is needed.
     assume_email_verified={{ user_authentication.openid_connect.assume_email_verified }}
+
+
+  # OAuth2 backend.
+  [user_authentication.oauth2]
+
+    # Provider.
+    #
+    # Options are:
+    #  * clerk
+    provider="{{ user_authentication.oauth2.provider }}"
+
+    # Registration enabled.
+    #
+    # Enabling this will automatically register the user when it is not yet present
+    # in the ChirpStack database. There is no registration form as the user information
+    # is automatically received using the OAuth2 provided information.
+    # The user will not be associated with any organization, but in order to
+    # facilitate the automatic onboarding of users, it is possible to configure a
+    # registration callback URL (next config option).
+    registration_enabled={{ user_authentication.oauth2.registration_enabled }}
+
+    # Registration callback URL.
+    #
+    # This (optional) endpoint will be called on the registration of the user and
+    # can implement the association of the user with an organization, create a new
+    # organization, ...
+    # ChirpStack will make a HTTP POST call to this endpoint,
+    # with the following URL parameters:
+    # - user_id, of the newly created user in ChirpStack.
+    #
+    # The POST body contains a JSON payload with the OAuth2 payload.
+    registration_callback_url="{{ user_authentication.oauth2.registration_callback_url }}"
+
+    # OAuth2 client ID.
+    client_id="{{ user_authentication.oauth2.client_id }}"
+
+    # OAuth2 client secret.
+    client_secret="{{ user_authentication.oauth2.client_secret }}"
+
+    # OAuth2 auth URL.
+    auth_url="{{ user_authentication.oauth2.auth_url }}"
+
+    # OAuth2 token URL.
+    token_url="{{ user_authentication.oauth2.token_url }}"
+
+    # Userinfo URL.
+    #
+    # This is the URL that ChirpStack will request to receive the user information.
+    userinfo_url="{{ user_authentication.oauth2.userinfo_url }}"
+    
+    # Redirect URL.
+    #
+    # This must contain the ChirpStack web-interface hostname
+    # with '/auth/oauth2/callback' path, e.g. https://example.com/auth/oauth2/callback.
+    redirect_url="{{ user_authentication.oauth2.redirect_url }}"
+
+    # Logout URL.
+    #
+    # When set, ChirpStack will redirect to this URL instead
+    # of redirecting to the login page.
+    logout_url="{{ user_authentication.oauth2.logout_url }}"
+
+    # Login label.
+    #
+    # The login label is used in the web-interface login form.
+    login_label="{{ user_authentication.oauth2.login_label }}"
+
+    # Assume e-mail verified.
+    #
+    # If set to true, then ChirpStack will ignore the email_verified received
+    # from the userinfo URL, assuming it will be true.
+    assume_email_verified={{ user_authentication.oauth2.assume_email_verified }}
 
 
 # Join Server configuration.

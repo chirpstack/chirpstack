@@ -28,6 +28,7 @@ const (
 	InternalService_ListApiKeys_FullMethodName         = "/api.InternalService/ListApiKeys"
 	InternalService_Settings_FullMethodName            = "/api.InternalService/Settings"
 	InternalService_OpenIdConnectLogin_FullMethodName  = "/api.InternalService/OpenIdConnectLogin"
+	InternalService_OAuth2Login_FullMethodName         = "/api.InternalService/OAuth2Login"
 	InternalService_GetDevicesSummary_FullMethodName   = "/api.InternalService/GetDevicesSummary"
 	InternalService_GetGatewaysSummary_FullMethodName  = "/api.InternalService/GetGatewaysSummary"
 	InternalService_StreamGatewayFrames_FullMethodName = "/api.InternalService/StreamGatewayFrames"
@@ -57,6 +58,8 @@ type InternalServiceClient interface {
 	Settings(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*SettingsResponse, error)
 	// OpenId Connect login.
 	OpenIdConnectLogin(ctx context.Context, in *OpenIdConnectLoginRequest, opts ...grpc.CallOption) (*OpenIdConnectLoginResponse, error)
+	// OAuth2 login.
+	OAuth2Login(ctx context.Context, in *OAuth2LoginRequest, opts ...grpc.CallOption) (*OAuth2LoginResponse, error)
 	// GetDevicesSummary returns an aggregated summary of the devices.
 	GetDevicesSummary(ctx context.Context, in *GetDevicesSummaryRequest, opts ...grpc.CallOption) (*GetDevicesSummaryResponse, error)
 	// GetGatewaysSummary returns an aggregated summary of the gateways.
@@ -147,6 +150,15 @@ func (c *internalServiceClient) Settings(ctx context.Context, in *emptypb.Empty,
 func (c *internalServiceClient) OpenIdConnectLogin(ctx context.Context, in *OpenIdConnectLoginRequest, opts ...grpc.CallOption) (*OpenIdConnectLoginResponse, error) {
 	out := new(OpenIdConnectLoginResponse)
 	err := c.cc.Invoke(ctx, InternalService_OpenIdConnectLogin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *internalServiceClient) OAuth2Login(ctx context.Context, in *OAuth2LoginRequest, opts ...grpc.CallOption) (*OAuth2LoginResponse, error) {
+	out := new(OAuth2LoginResponse)
+	err := c.cc.Invoke(ctx, InternalService_OAuth2Login_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -305,6 +317,8 @@ type InternalServiceServer interface {
 	Settings(context.Context, *emptypb.Empty) (*SettingsResponse, error)
 	// OpenId Connect login.
 	OpenIdConnectLogin(context.Context, *OpenIdConnectLoginRequest) (*OpenIdConnectLoginResponse, error)
+	// OAuth2 login.
+	OAuth2Login(context.Context, *OAuth2LoginRequest) (*OAuth2LoginResponse, error)
 	// GetDevicesSummary returns an aggregated summary of the devices.
 	GetDevicesSummary(context.Context, *GetDevicesSummaryRequest) (*GetDevicesSummaryResponse, error)
 	// GetGatewaysSummary returns an aggregated summary of the gateways.
@@ -349,6 +363,9 @@ func (UnimplementedInternalServiceServer) Settings(context.Context, *emptypb.Emp
 }
 func (UnimplementedInternalServiceServer) OpenIdConnectLogin(context.Context, *OpenIdConnectLoginRequest) (*OpenIdConnectLoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OpenIdConnectLogin not implemented")
+}
+func (UnimplementedInternalServiceServer) OAuth2Login(context.Context, *OAuth2LoginRequest) (*OAuth2LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OAuth2Login not implemented")
 }
 func (UnimplementedInternalServiceServer) GetDevicesSummary(context.Context, *GetDevicesSummaryRequest) (*GetDevicesSummaryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDevicesSummary not implemented")
@@ -528,6 +545,24 @@ func _InternalService_OpenIdConnectLogin_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InternalService_OAuth2Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OAuth2LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InternalServiceServer).OAuth2Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InternalService_OAuth2Login_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InternalServiceServer).OAuth2Login(ctx, req.(*OAuth2LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _InternalService_GetDevicesSummary_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDevicesSummaryRequest)
 	if err := dec(in); err != nil {
@@ -701,6 +736,10 @@ var InternalService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "OpenIdConnectLogin",
 			Handler:    _InternalService_OpenIdConnectLogin_Handler,
+		},
+		{
+			MethodName: "OAuth2Login",
+			Handler:    _InternalService_OAuth2Login_Handler,
 		},
 		{
 			MethodName: "GetDevicesSummary",

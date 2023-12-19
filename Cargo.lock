@@ -823,6 +823,7 @@ dependencies = [
  "lazy_static",
  "lrwn",
  "mime_guess",
+ "oauth2",
  "openidconnect",
  "pbjson-types",
  "pbkdf2",

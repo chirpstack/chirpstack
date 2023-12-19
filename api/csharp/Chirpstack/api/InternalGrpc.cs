@@ -77,6 +77,10 @@ namespace Chirpstack.Api {
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::Chirpstack.Api.OpenIdConnectLoginResponse> __Marshaller_api_OpenIdConnectLoginResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.OpenIdConnectLoginResponse.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::Chirpstack.Api.OAuth2LoginRequest> __Marshaller_api_OAuth2LoginRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.OAuth2LoginRequest.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::Chirpstack.Api.OAuth2LoginResponse> __Marshaller_api_OAuth2LoginResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.OAuth2LoginResponse.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::Chirpstack.Api.GetDevicesSummaryRequest> __Marshaller_api_GetDevicesSummaryRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetDevicesSummaryRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::Chirpstack.Api.GetDevicesSummaryResponse> __Marshaller_api_GetDevicesSummaryResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetDevicesSummaryResponse.Parser));
@@ -162,6 +166,14 @@ namespace Chirpstack.Api {
         "OpenIdConnectLogin",
         __Marshaller_api_OpenIdConnectLoginRequest,
         __Marshaller_api_OpenIdConnectLoginResponse);
+
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::Chirpstack.Api.OAuth2LoginRequest, global::Chirpstack.Api.OAuth2LoginResponse> __Method_OAuth2Login = new grpc::Method<global::Chirpstack.Api.OAuth2LoginRequest, global::Chirpstack.Api.OAuth2LoginResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "OAuth2Login",
+        __Marshaller_api_OAuth2LoginRequest,
+        __Marshaller_api_OAuth2LoginResponse);
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Method<global::Chirpstack.Api.GetDevicesSummaryRequest, global::Chirpstack.Api.GetDevicesSummaryResponse> __Method_GetDevicesSummary = new grpc::Method<global::Chirpstack.Api.GetDevicesSummaryRequest, global::Chirpstack.Api.GetDevicesSummaryResponse>(
@@ -321,6 +333,18 @@ namespace Chirpstack.Api {
       /// <returns>The response to send back to the client (wrapped by a task).</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
       public virtual global::System.Threading.Tasks.Task<global::Chirpstack.Api.OpenIdConnectLoginResponse> OpenIdConnectLogin(global::Chirpstack.Api.OpenIdConnectLoginRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      /// <summary>
+      /// OAuth2 login.
+      /// </summary>
+      /// <param name="request">The request received from the client.</param>
+      /// <param name="context">The context of the server-side call handler being invoked.</param>
+      /// <returns>The response to send back to the client (wrapped by a task).</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::System.Threading.Tasks.Task<global::Chirpstack.Api.OAuth2LoginResponse> OAuth2Login(global::Chirpstack.Api.OAuth2LoginRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -826,6 +850,54 @@ namespace Chirpstack.Api {
         return CallInvoker.AsyncUnaryCall(__Method_OpenIdConnectLogin, null, options, request);
       }
       /// <summary>
+      /// OAuth2 login.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::Chirpstack.Api.OAuth2LoginResponse OAuth2Login(global::Chirpstack.Api.OAuth2LoginRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return OAuth2Login(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// OAuth2 login.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::Chirpstack.Api.OAuth2LoginResponse OAuth2Login(global::Chirpstack.Api.OAuth2LoginRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_OAuth2Login, null, options, request);
+      }
+      /// <summary>
+      /// OAuth2 login.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::Chirpstack.Api.OAuth2LoginResponse> OAuth2LoginAsync(global::Chirpstack.Api.OAuth2LoginRequest request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return OAuth2LoginAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// OAuth2 login.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::Chirpstack.Api.OAuth2LoginResponse> OAuth2LoginAsync(global::Chirpstack.Api.OAuth2LoginRequest request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_OAuth2Login, null, options, request);
+      }
+      /// <summary>
       /// GetDevicesSummary returns an aggregated summary of the devices.
       /// </summary>
       /// <param name="request">The request to send to the server.</param>
@@ -1111,6 +1183,7 @@ namespace Chirpstack.Api {
           .AddMethod(__Method_ListApiKeys, serviceImpl.ListApiKeys)
           .AddMethod(__Method_Settings, serviceImpl.Settings)
           .AddMethod(__Method_OpenIdConnectLogin, serviceImpl.OpenIdConnectLogin)
+          .AddMethod(__Method_OAuth2Login, serviceImpl.OAuth2Login)
           .AddMethod(__Method_GetDevicesSummary, serviceImpl.GetDevicesSummary)
           .AddMethod(__Method_GetGatewaysSummary, serviceImpl.GetGatewaysSummary)
           .AddMethod(__Method_StreamGatewayFrames, serviceImpl.StreamGatewayFrames)
@@ -1135,6 +1208,7 @@ namespace Chirpstack.Api {
       serviceBinder.AddMethod(__Method_ListApiKeys, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.ListApiKeysRequest, global::Chirpstack.Api.ListApiKeysResponse>(serviceImpl.ListApiKeys));
       serviceBinder.AddMethod(__Method_Settings, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::Chirpstack.Api.SettingsResponse>(serviceImpl.Settings));
       serviceBinder.AddMethod(__Method_OpenIdConnectLogin, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.OpenIdConnectLoginRequest, global::Chirpstack.Api.OpenIdConnectLoginResponse>(serviceImpl.OpenIdConnectLogin));
+      serviceBinder.AddMethod(__Method_OAuth2Login, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.OAuth2LoginRequest, global::Chirpstack.Api.OAuth2LoginResponse>(serviceImpl.OAuth2Login));
       serviceBinder.AddMethod(__Method_GetDevicesSummary, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.GetDevicesSummaryRequest, global::Chirpstack.Api.GetDevicesSummaryResponse>(serviceImpl.GetDevicesSummary));
       serviceBinder.AddMethod(__Method_GetGatewaysSummary, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.GetGatewaysSummaryRequest, global::Chirpstack.Api.GetGatewaysSummaryResponse>(serviceImpl.GetGatewaysSummary));
       serviceBinder.AddMethod(__Method_StreamGatewayFrames, serviceImpl == null ? null : new grpc::ServerStreamingServerMethod<global::Chirpstack.Api.StreamGatewayFramesRequest, global::Chirpstack.Api.LogItem>(serviceImpl.StreamGatewayFrames));
