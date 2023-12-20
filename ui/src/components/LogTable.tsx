@@ -49,7 +49,7 @@ function LogTable(props: IProps) {
   const theme = {
     scheme: "google",
     author: "seth wright (http://sethawright.com)",
-    base00: "#000000",
+    base00: "#ffffff",
     base01: "#282a2e",
     base02: "#373b41",
     base03: "#969896",
