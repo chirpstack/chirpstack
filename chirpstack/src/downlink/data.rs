@@ -2600,16 +2600,27 @@ fn filter_mac_commands(
     .collect();
 
     let mut filtered_mac_commands: Vec<lrwn::MACCommandSet> = Vec::new();
+    let conf = config::get();
 
     'outer: for mac_command_set in mac_commands {
         for mac_command in &**mac_command_set {
             // Check if it doesn't exceed the max error error count.
+            let cid_id = mac_command.cid().to_u8() as u32;
             if device_session
                 .mac_command_error_count
-                .get(&(mac_command.cid().to_u8() as u32))
+                .get(&cid_id)
                 .cloned()
                 .unwrap_or_default()
                 > 1
+            {
+                continue 'outer;
+            }
+            if device_session
+                .mac_command_unack_count
+                .get(&cid_id)
+                .cloned()
+                .unwrap_or_default()
+                > conf.network.max_mac_command_unack_count
             {
                 continue 'outer;
             }

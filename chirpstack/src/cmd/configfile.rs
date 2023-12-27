@@ -213,6 +213,16 @@ pub fn run() {
   # Mac-commands disabled.
   mac_commands_disabled={{ network.mac_commands_disabled }}
 
+  # Max unacknowledged mac-command error count.
+  #
+  # When a mac-command is not responded to for more than the configured value, then the
+  # ChirpStack Network Server will stop sending this mac-command to the device.
+  # This setting prevents the Network Server from sending mac-commands
+  # on every downlink in case of a malfunctioning device.
+  #
+  # Default: 5
+  max_mac_command_unack_count={{ network.max_mac_command_unack_count }}
+
   # Custom ADR plugins.
   #
   # The custom ADR plugin must be implemented in JavaScript. For an example

@@ -115,6 +115,9 @@ message DeviceSession {
   // Mac-command error count.
   map<uint32, uint32> mac_command_error_count = 31;
 
+  // Unacknowledged mac-command error count.
+  map<uint32, uint32> mac_command_unack_count = 43;
+
   // Last device-status request.
   google.protobuf.Timestamp last_device_status_request = 32;
 
