@@ -94,6 +94,9 @@ pub async fn handle_uplink<'a>(
             if let Err(e) = mac_command::delete_pending(&dev_eui, cid).await {
                 error!(dev_eui = %dev_eui, cid = %cid, error = %e, "Delete pending mac-command error");
             }
+
+            // MAC command is responded to, so clear the unacknowledged error counter.
+            ds.mac_command_unack_count.remove(&(cid.to_u8() as u32));
         }
 
         // Handle the mac-command, which might return a block to answer the uplink mac-command
@@ -124,6 +127,56 @@ pub async fn handle_uplink<'a>(
     }
 
     Ok((out, must_respond_with_downlink))
+}
+
+// Checks for MAC commands which the device is unresponsive towards.
+pub async fn check_nonresponsive_mac_commands(
+    dev: &device::Device,
+    ds: &mut internal::DeviceSession,
+) {
+    let conf = config::get();
+    if conf.network.mac_commands_disabled {
+        return;
+    }
+    let max_unack_count = conf.network.max_mac_command_unack_count;
+    let dev_eui = dev.dev_eui;
+
+    // Get the remaining, pending CIDs.
+    let cids = match mac_command::get_pending_cids(&dev_eui).await {
+        Ok(v) => v,
+        Err(e) => {
+            error!(dev_eui = %dev_eui, error = %e, "Get pending mac-command CIDs error");
+            return;
+        }
+    };
+
+    // The device failed to respond to these commands. Increment the unacked counter.
+    for cid in cids {
+        let unack_count = get_maccommand_unack_count(cid, ds);
+        if unack_count <= max_unack_count {
+            // increase the unacked counter
+            let count = ds.mac_command_unack_count.entry(cid as u32).or_insert(0);
+            *count += 1;
+
+            warn!(dev_eui = %dev_eui, cid = %cid, unack_count = %unack_count, max_unack_count = %max_unack_count, "Device did not respond to mac-command");
+        }
+    }
+
+    // Clear all pending MAC commands.
+    let _ = mac_command::clear_pending(&dev_eui).await;
+}
+
+fn get_maccommand_unack_count(cid: u8, ds: &mut internal::DeviceSession) -> u32 {
+    return ds
+        .mac_command_unack_count
+        .get(&(cid as u32))
+        .cloned()
+        .unwrap_or_default();
+}
+
+// Deletes the specified pending MAC command blocks by CIDs.
+pub async fn delete_pending_cids(dev_eui: &EUI64, cids: Vec<u8>) {
+    let _ = mac_command::delete_pending_cids(&dev_eui, cids).await;
 }
 
 #[allow(clippy::too_many_arguments)]

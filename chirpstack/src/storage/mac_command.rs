@@ -8,14 +8,21 @@ use lrwn::EUI64;
 pub async fn set_pending(dev_eui: &EUI64, cid: lrwn::CID, set: &lrwn::MACCommandSet) -> Result<()> {
     let conf = config::get();
 
-    let key = redis_key(format!("device:{}:mac:pending:{}", dev_eui, cid.to_u8()));
-    let ttl = conf.network.device_session_ttl.as_millis() as usize;
+    let key = redis_key(format!("device:{}:mac:pending", dev_eui));
+    let field = cid.to_u8();
+    let ttl = conf.network.device_session_ttl.as_secs() as usize;
     let b = set.to_vec()?;
 
-    redis::cmd("PSETEX")
+    redis::cmd("HSET")
+        .arg(key.clone())
+        .arg(field)
+        .arg(b)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
+
+    redis::cmd("EXPIRE")
         .arg(key)
         .arg(ttl)
-        .arg(b)
         .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
@@ -24,9 +31,11 @@ pub async fn set_pending(dev_eui: &EUI64, cid: lrwn::CID, set: &lrwn::MACCommand
 }
 
 pub async fn get_pending(dev_eui: &EUI64, cid: lrwn::CID) -> Result<Option<lrwn::MACCommandSet>> {
-    let key = redis_key(format!("device:{}:mac:pending:{}", dev_eui, cid.to_u8()));
-    let b: Vec<u8> = redis::cmd("GET")
+    let key = redis_key(format!("device:{}:mac:pending", dev_eui));
+    let field = cid.to_u8();
+    let b: Vec<u8> = redis::cmd("HGET")
         .arg(key)
+        .arg(field)
         .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
@@ -46,14 +55,51 @@ pub async fn get_pending(dev_eui: &EUI64, cid: lrwn::CID) -> Result<Option<lrwn:
 }
 
 pub async fn delete_pending(dev_eui: &EUI64, cid: lrwn::CID) -> Result<()> {
-    let key = redis_key(format!("device:{}:mac:pending:{}", dev_eui, cid.to_u8()));
+    let key = redis_key(format!("device:{}:mac:pending", dev_eui));
+    let field = cid.to_u8();
+
+    redis::cmd("HDEL")
+        .arg(key)
+        .arg(field)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
+
+    info!(dev_eui = %dev_eui, cid = %cid, "Pending mac-command block deleted");
+    Ok(())
+}
+
+pub async fn delete_pending_cids(dev_eui: &EUI64, cids: Vec<u8>) -> Result<()> {
+    let key = redis_key(format!("device:{}:mac:pending", dev_eui));
+
+    redis::cmd("HDEL")
+        .arg(key)
+        .arg(cids)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
+
+    info!(dev_eui = %dev_eui, "Pending mac-command blocks deleted");
+    Ok(())
+}
+
+pub async fn get_pending_cids(dev_eui: &EUI64) -> Result<Vec<u8>> {
+    let key = redis_key(format!("device:{}:mac:pending", dev_eui));
+    let b: Vec<u8> = redis::cmd("HKEYS")
+        .arg(key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
+
+    Ok(b)
+}
+
+pub async fn clear_pending(dev_eui: &EUI64) -> Result<()> {
+    let key = redis_key(format!("device:{}:mac:pending", dev_eui));
 
     redis::cmd("DEL")
         .arg(key)
         .query_async(&mut get_async_redis_conn().await?)
         .await?;
 
-    info!(dev_eui = %dev_eui, cid = %cid, "Pending mac-command block deleted");
+    info!(dev_eui = %dev_eui, "Cleared all pending mac-command blocks");
     Ok(())
 }
 

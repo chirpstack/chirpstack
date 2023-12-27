@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -50,6 +51,7 @@ pub struct Data {
     immediately: bool,
     device_queue_item: Option<device_queue::DeviceQueueItem>,
     more_device_queue_items: bool,
+    mac_cids_dropped: HashSet<u8>,
 }
 
 impl Data {
@@ -205,6 +207,7 @@ impl Data {
             immediately: false,
             device_queue_item: None,
             more_device_queue_items: false,
+            mac_cids_dropped: HashSet::new(),
         };
 
         ctx.select_downlink_gateway()?;
@@ -214,6 +217,7 @@ impl Data {
 
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
+            ctx.unset_dropped_pending_maccommands().await?;
             ctx.update_device_queue_item().await?;
             ctx.save_downlink_frame().await?;
             if ctx._is_roaming() {
@@ -275,6 +279,7 @@ impl Data {
             immediately: false,
             device_queue_item: None,
             more_device_queue_items: false,
+            mac_cids_dropped: HashSet::new(),
         };
 
         ctx.select_downlink_gateway()?;
@@ -283,6 +288,7 @@ impl Data {
         ctx.set_mac_commands().await?;
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
+            ctx.unset_dropped_pending_maccommands().await?;
             ctx.wrap_phy_payloads_in_forward_downlink_req()?;
             ctx.save_downlink_frame_relayed().await?;
             ctx.save_device_session().await?;
@@ -328,6 +334,7 @@ impl Data {
             immediately: false,
             device_queue_item: None,
             more_device_queue_items: false,
+            mac_cids_dropped: HashSet::new(),
         };
 
         ctx.select_downlink_gateway()?;
@@ -347,6 +354,7 @@ impl Data {
         ctx.get_next_device_queue_item().await?;
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
+            ctx.unset_dropped_pending_maccommands().await?;
             ctx.update_device_queue_item().await?;
             ctx.save_downlink_frame().await?;
             ctx.send_downlink_frame().await?;
@@ -667,6 +675,7 @@ impl Data {
     fn set_phy_payloads(&mut self) -> Result<()> {
         trace!("Setting downlink PHYPayloads");
         let mut f_pending = self.more_device_queue_items;
+        let mut mac_cids_included = HashSet::<u8>::new();
 
         for item in self.downlink_frame_items.iter_mut() {
             let mut mac_size: usize = 0;
@@ -677,9 +686,13 @@ impl Data {
                 // get size of mac-command block
                 let s = mac_set.size().context("Get mac-command size")?;
 
-                // break if it does not fit within the RemainingPayloadSize
+                for mac in &**mac_set {
+                    self.mac_cids_dropped.insert(mac.cid().to_u8());
+                }
+
+                // skip if it does not fit within the RemainingPayloadSize
                 if (item.remaining_payload_size as isize) - (s as isize) < 0 {
-                    break;
+                    continue;
                 }
 
                 item.remaining_payload_size -= s;
@@ -687,6 +700,7 @@ impl Data {
 
                 for mac in &**mac_set {
                     mac_commands.push(mac.clone());
+                    mac_cids_included.insert(mac.cid().to_u8());
                 }
             }
 
@@ -818,6 +832,11 @@ impl Data {
             self.downlink_frame
                 .items
                 .push(item.downlink_frame_item.clone());
+        }
+
+        // MAC commands not included in any payload are dropped.
+        for cid in mac_cids_included.iter() {
+            self.mac_cids_dropped.remove(cid);
         }
 
         Ok(())
@@ -2584,6 +2603,15 @@ impl Data {
         }
 
         Ok(false)
+    }
+
+    async fn unset_dropped_pending_maccommands(&mut self) -> Result<()> {
+        trace!("Unsetting dropped pending MAC Commands");
+        if !self.mac_cids_dropped.is_empty() {
+            let cids = self.mac_cids_dropped.iter().cloned().collect::<Vec<_>>();
+            maccommand::delete_pending_cids(&self.device.dev_eui, cids).await;
+        }
+        Ok(())
     }
 }
 

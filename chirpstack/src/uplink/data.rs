@@ -833,6 +833,12 @@ impl Data {
             }
         }
 
+        maccommand::check_nonresponsive_mac_commands(
+            self.device.as_ref().unwrap(),
+            self.device_session.as_mut().unwrap(),
+        )
+        .await;
+
         Ok(())
     }
 
