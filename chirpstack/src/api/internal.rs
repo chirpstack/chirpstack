@@ -56,12 +56,15 @@ impl Internal {
             external_id: Some(external_id.to_string()),
             ..Default::default()
         };
-        let u = user::create(u).await?;
+        let mut u = user::create(u).await?;
         if let Err(e) = self.provision_user(&u.id, user_info).await {
             error!(error = %e, "Provisioning user failed");
             user::delete(&u.id).await?;
             return Err(e);
         }
+
+        // fetch user again because the provisioning callback url may have updated the user.
+        u = user::get(&u.id).await.map_err(|e| e.status())?;
 
         Ok(u)
     }
