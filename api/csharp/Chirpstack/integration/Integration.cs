@@ -89,15 +89,15 @@ namespace Chirpstack.Integration {
             "X2V1aRgCIAEoCRIRCgljb25maXJtZWQYAyABKAgSDgoGZl9wb3J0GAQgASgN",
             "EgwKBGRhdGEYBSABKAwSJwoGb2JqZWN0GAYgASgLMhcuZ29vZ2xlLnByb3Rv",
             "YnVmLlN0cnVjdCosCghMb2dMZXZlbBIICgRJTkZPEAASCwoHV0FSTklORxAB",
-            "EgkKBUVSUk9SEAIq6gEKB0xvZ0NvZGUSCwoHVU5LTk9XThAAEhkKFURPV05M",
+            "EgkKBUVSUk9SEAIq+wEKB0xvZ0NvZGUSCwoHVU5LTk9XThAAEhkKFURPV05M",
             "SU5LX1BBWUxPQURfU0laRRABEhAKDFVQTElOS19DT0RFQxACEhIKDkRPV05M",
             "SU5LX0NPREVDEAMSCAoET1RBQRAEEhYKElVQTElOS19GX0NOVF9SRVNFVBAF",
             "Eg4KClVQTElOS19NSUMQBhIfChtVUExJTktfRl9DTlRfUkVUUkFOU01JU1NJ",
             "T04QBxIUChBET1dOTElOS19HQVRFV0FZEAgSGAoUUkVMQVlfTkVXX0VORF9E",
-            "RVZJQ0UQCRIOCgpGX0NOVF9ET1dOEApCgQEKHWlvLmNoaXJwc3RhY2suYXBp",
-            "LmludGVncmF0aW9uQhBJbnRlZ3JhdGlvblByb3RvUAFaM2dpdGh1Yi5jb20v",
-            "YnJvY2Fhci9jaGlycHN0YWNrL2FwaS9nby92NC9pbnRlZ3JhdGlvbqoCFkNo",
-            "aXJwc3RhY2suSW50ZWdyYXRpb25iBnByb3RvMw=="));
+            "RVZJQ0UQCRIOCgpGX0NOVF9ET1dOEAoSDwoLTUFDX0NPTU1BTkQQC0KBAQod",
+            "aW8uY2hpcnBzdGFjay5hcGkuaW50ZWdyYXRpb25CEEludGVncmF0aW9uUHJv",
+            "dG9QAVozZ2l0aHViLmNvbS9icm9jYWFyL2NoaXJwc3RhY2svYXBpL2dvL3Y0",
+            "L2ludGVncmF0aW9uqgIWQ2hpcnBzdGFjay5JbnRlZ3JhdGlvbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Chirpstack.Common.CommonReflection.Descriptor, global::Chirpstack.Gateway.GwReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Integration.LogLevel), typeof(global::Chirpstack.Integration.LogCode), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -180,6 +180,10 @@ namespace Chirpstack.Integration {
     /// Downlink frame-counter.
     /// </summary>
     [pbr::OriginalName("F_CNT_DOWN")] FCntDown = 10,
+    /// <summary>
+    /// MAC command error.
+    /// </summary>
+    [pbr::OriginalName("MAC_COMMAND")] MacCommand = 11,
   }
 
   #endregion

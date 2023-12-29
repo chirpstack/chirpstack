@@ -834,7 +834,10 @@ impl Data {
         }
 
         maccommand::check_nonresponsive_mac_commands(
+            &self.uplink_frame_set,
+            self.application.as_ref().unwrap(),
             self.device.as_ref().unwrap(),
+            self.device_info.as_ref().unwrap(),
             self.device_session.as_mut().unwrap(),
         )
         .await;

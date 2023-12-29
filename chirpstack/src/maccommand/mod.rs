@@ -5,9 +5,13 @@ use tracing::{error, warn};
 
 use crate::config;
 use crate::helpers::errors::PrintFullError;
+use crate::integration;
 use crate::storage::{application, device, device_profile, mac_command, tenant};
+use crate::uplink::helpers;
 use crate::uplink::UplinkFrameSet;
+use chirpstack_api::integration as integration_pb;
 use chirpstack_api::internal;
+use chrono::{DateTime, Utc};
 use lrwn::EUI64;
 
 pub mod configure_fwd_limit;
@@ -131,7 +135,10 @@ pub async fn handle_uplink<'a>(
 
 // Checks for MAC commands which the device is unresponsive towards.
 pub async fn check_nonresponsive_mac_commands(
+    uplink_frame_set: &UplinkFrameSet,
+    app: &application::Application,
     dev: &device::Device,
+    di: &integration_pb::DeviceInfo,
     ds: &mut internal::DeviceSession,
 ) {
     let conf = config::get();
@@ -140,6 +147,8 @@ pub async fn check_nonresponsive_mac_commands(
     }
     let max_unack_count = conf.network.max_mac_command_unack_count;
     let dev_eui = dev.dev_eui;
+
+    let ts: DateTime<Utc> = helpers::get_rx_timestamp(&uplink_frame_set.rx_info_set).into();
 
     // Get the remaining, pending CIDs.
     let cids = match mac_command::get_pending_cids(&dev_eui).await {
@@ -159,6 +168,28 @@ pub async fn check_nonresponsive_mac_commands(
             *count += 1;
 
             warn!(dev_eui = %dev_eui, cid = %cid, unack_count = %unack_count, max_unack_count = %max_unack_count, "Device did not respond to mac-command");
+
+            // Raise an event on the last attempt.
+            if unack_count == max_unack_count {
+                let pl = integration_pb::LogEvent {
+                    time: Some(ts.into()),
+                    device_info: Some(di.clone()),
+                    level: integration_pb::LogLevel::Warning.into(),
+                    code: integration_pb::LogCode::MacCommand.into(),
+                    description: format!("Device not responding to MAC command"),
+                    context: [
+                        (
+                            "deduplication_id".to_string(),
+                            uplink_frame_set.uplink_set_id.to_string(),
+                        ),
+                        ("cid".to_string(), cid.to_string()),
+                    ]
+                    .iter()
+                    .cloned()
+                    .collect(),
+                };
+                integration::log_event(app.id, &dev.variables, &pl).await;
+            }
         }
     }
 

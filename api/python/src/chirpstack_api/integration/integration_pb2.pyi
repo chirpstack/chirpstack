@@ -29,6 +29,7 @@ class LogCode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     DOWNLINK_GATEWAY: _ClassVar[LogCode]
     RELAY_NEW_END_DEVICE: _ClassVar[LogCode]
     F_CNT_DOWN: _ClassVar[LogCode]
+    MAC_COMMAND: _ClassVar[LogCode]
 INFO: LogLevel
 WARNING: LogLevel
 ERROR: LogLevel
@@ -43,6 +44,7 @@ UPLINK_F_CNT_RETRANSMISSION: LogCode
 DOWNLINK_GATEWAY: LogCode
 RELAY_NEW_END_DEVICE: LogCode
 F_CNT_DOWN: LogCode
+MAC_COMMAND: LogCode
 
 class DeviceInfo(_message.Message):
     __slots__ = ["tenant_id", "tenant_name", "application_id", "application_name", "device_profile_id", "device_profile_name", "device_name", "dev_eui", "device_class_enabled", "tags"]

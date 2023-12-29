@@ -58,6 +58,9 @@ enum LogCode {
 
   // Downlink frame-counter.
   F_CNT_DOWN = 10;
+
+  // MAC command error.
+  MAC_COMMAND = 11;
 }
 
 // Device information.

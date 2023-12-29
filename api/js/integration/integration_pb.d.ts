@@ -601,6 +601,7 @@ export interface LogCodeMap {
   DOWNLINK_GATEWAY: 8;
   RELAY_NEW_END_DEVICE: 9;
   F_CNT_DOWN: 10;
+  MAC_COMMAND: 11;
 }
 
 export const LogCode: LogCodeMap;

@@ -4590,7 +4590,8 @@ proto.integration.LogCode = {
   UPLINK_F_CNT_RETRANSMISSION: 7,
   DOWNLINK_GATEWAY: 8,
   RELAY_NEW_END_DEVICE: 9,
-  F_CNT_DOWN: 10
+  F_CNT_DOWN: 10,
+  MAC_COMMAND: 11
 };
 
 goog.object.extend(exports, proto.integration);
