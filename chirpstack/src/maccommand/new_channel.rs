@@ -93,20 +93,17 @@ pub fn handle(
             return Err(anyhow!("Expected NewChannelReq"));
         };
 
+        // The device (positive/negative) acknowledged the channel. Mark it as configured.
+        ds.extra_uplink_channels.insert(
+            req_pl.ch_index as u32,
+            internal::DeviceSessionChannel {
+                frequency: req_pl.freq,
+                min_dr: req_pl.min_dr as u32,
+                max_dr: req_pl.max_dr as u32,
+            },
+        );
+
         if ans_pl.channel_freq_ok && ans_pl.dr_range_ok {
-            // Reset the error-counter.
-            ds.mac_command_error_count
-                .remove(&(lrwn::CID::NewChannelReq.to_u8() as u32));
-
-            ds.extra_uplink_channels.insert(
-                req_pl.ch_index as u32,
-                internal::DeviceSessionChannel {
-                    frequency: req_pl.freq,
-                    min_dr: req_pl.min_dr as u32,
-                    max_dr: req_pl.max_dr as u32,
-                },
-            );
-
             if !ds
                 .enabled_uplink_channel_indices
                 .contains(&(req_pl.ch_index as u32))
@@ -117,12 +114,7 @@ pub fn handle(
 
             info!(dev_eui = %dev.dev_eui, freq = req_pl.freq, channel = req_pl.ch_index, min_dr = req_pl.min_dr, max_dr = req_pl.max_dr, "NewChannelReq acknowledged");
         } else {
-            let count = ds
-                .mac_command_error_count
-                .entry(lrwn::CID::NewChannelReq.to_u8() as u32)
-                .or_insert(0);
-            *count += 1;
-
+            // Device negative-acknowledged the datarate, frequency or even both, indicating no support. Do not enable the channel.
             warn!(
                 dev_eui = %dev.dev_eui,
                 freq = req_pl.freq,
