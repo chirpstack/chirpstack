@@ -115,6 +115,14 @@ pub fn handle(
 
         info!(dev_eui = %dev.dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged (device has ADR disabled)");
     } else {
+        if !ch_mask_ack {
+            // The device's knowledge of channels differs from Chirpstack's. So, reconfigure the channels with NewChannelReq over the next attempt.
+            // It may occur due to the device (silently) rejecting channels during OTAA, but there is no mechanism to indicate this happening.
+            for (i, _ch) in ds.extra_uplink_channels.drain() {
+                ds.enabled_uplink_channel_indices.retain(|&x| x != i);
+            }
+        }
+
         // increase the error counter
         let count = ds
             .mac_command_error_count
