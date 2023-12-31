@@ -210,6 +210,11 @@ pub async fn delete_pending_cids(dev_eui: &EUI64, cids: Vec<u8>) {
     let _ = mac_command::delete_pending_cids(&dev_eui, cids).await;
 }
 
+// Clears all pending MAC commands for the specified device.
+pub async fn clear_pending(dev_eui: &EUI64) {
+    let _ = mac_command::clear_pending(&dev_eui).await;
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn handle(
     uplink_frame_set: &UplinkFrameSet,

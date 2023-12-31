@@ -29,7 +29,9 @@ use crate::storage::{
     helpers::get_all_device_data,
     metrics, tenant,
 };
-use crate::{config, devaddr::get_random_dev_addr, downlink, integration, region, stream};
+use crate::{
+    config, devaddr::get_random_dev_addr, downlink, integration, maccommand, region, stream,
+};
 use chirpstack_api::{common, integration as integration_pb, internal, stream as stream_pb};
 
 pub struct JoinRequest {
@@ -802,6 +804,7 @@ impl JoinRequest {
         };
 
         device_profile.reset_session_to_boot_params(&mut ds);
+        maccommand::clear_pending(&device.dev_eui).await;
 
         match region_conf.get_cf_list(device_profile.mac_version) {
             Some(CFList::Channels(channels)) => {

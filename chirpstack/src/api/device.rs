@@ -19,7 +19,7 @@ use crate::storage::error::Error;
 use crate::storage::{
     device, device_keys, device_profile, device_queue, device_session, fields, metrics,
 };
-use crate::{codec, devaddr::get_random_dev_addr};
+use crate::{codec, devaddr::get_random_dev_addr, maccommand};
 
 pub struct Device {
     validator: validator::RequestValidator,
@@ -530,6 +530,7 @@ impl DeviceService for Device {
             ..Default::default()
         };
         dp.reset_session_to_boot_params(&mut ds);
+        maccommand::clear_pending(&dev_eui).await;
 
         device_session::save(&ds).await.map_err(|e| e.status())?;
         if dp.flush_queue_on_activate {
