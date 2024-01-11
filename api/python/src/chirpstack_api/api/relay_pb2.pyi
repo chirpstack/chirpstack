@@ -9,7 +9,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class RelayListItem(_message.Message):
-    __slots__ = ["dev_eui", "name"]
+    __slots__ = ("dev_eui", "name")
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     dev_eui: str
@@ -17,7 +17,7 @@ class RelayListItem(_message.Message):
     def __init__(self, dev_eui: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
 
 class ListRelaysRequest(_message.Message):
-    __slots__ = ["limit", "offset", "application_id"]
+    __slots__ = ("limit", "offset", "application_id")
     LIMIT_FIELD_NUMBER: _ClassVar[int]
     OFFSET_FIELD_NUMBER: _ClassVar[int]
     APPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -27,7 +27,7 @@ class ListRelaysRequest(_message.Message):
     def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ..., application_id: _Optional[str] = ...) -> None: ...
 
 class ListRelaysResponse(_message.Message):
-    __slots__ = ["total_count", "result"]
+    __slots__ = ("total_count", "result")
     TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
     RESULT_FIELD_NUMBER: _ClassVar[int]
     total_count: int
@@ -35,7 +35,7 @@ class ListRelaysResponse(_message.Message):
     def __init__(self, total_count: _Optional[int] = ..., result: _Optional[_Iterable[_Union[RelayListItem, _Mapping]]] = ...) -> None: ...
 
 class AddRelayDeviceRequest(_message.Message):
-    __slots__ = ["relay_dev_eui", "device_dev_eui"]
+    __slots__ = ("relay_dev_eui", "device_dev_eui")
     RELAY_DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     DEVICE_DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     relay_dev_eui: str
@@ -43,7 +43,7 @@ class AddRelayDeviceRequest(_message.Message):
     def __init__(self, relay_dev_eui: _Optional[str] = ..., device_dev_eui: _Optional[str] = ...) -> None: ...
 
 class RemoveRelayDeviceRequest(_message.Message):
-    __slots__ = ["relay_dev_eui", "device_dev_eui"]
+    __slots__ = ("relay_dev_eui", "device_dev_eui")
     RELAY_DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     DEVICE_DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     relay_dev_eui: str
@@ -51,7 +51,7 @@ class RemoveRelayDeviceRequest(_message.Message):
     def __init__(self, relay_dev_eui: _Optional[str] = ..., device_dev_eui: _Optional[str] = ...) -> None: ...
 
 class ListRelayDevicesRequest(_message.Message):
-    __slots__ = ["limit", "offset", "relay_dev_eui"]
+    __slots__ = ("limit", "offset", "relay_dev_eui")
     LIMIT_FIELD_NUMBER: _ClassVar[int]
     OFFSET_FIELD_NUMBER: _ClassVar[int]
     RELAY_DEV_EUI_FIELD_NUMBER: _ClassVar[int]
@@ -61,7 +61,7 @@ class ListRelayDevicesRequest(_message.Message):
     def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ..., relay_dev_eui: _Optional[str] = ...) -> None: ...
 
 class RelayDeviceListItem(_message.Message):
-    __slots__ = ["dev_eui", "created_at", "name"]
+    __slots__ = ("dev_eui", "created_at", "name")
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
@@ -71,7 +71,7 @@ class RelayDeviceListItem(_message.Message):
     def __init__(self, dev_eui: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., name: _Optional[str] = ...) -> None: ...
 
 class ListRelayDevicesResponse(_message.Message):
-    __slots__ = ["total_count", "result"]
+    __slots__ = ("total_count", "result")
     TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
     RESULT_FIELD_NUMBER: _ClassVar[int]
     total_count: int

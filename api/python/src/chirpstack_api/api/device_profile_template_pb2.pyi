@@ -11,16 +11,16 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class DeviceProfileTemplate(_message.Message):
-    __slots__ = ["id", "name", "description", "vendor", "firmware", "region", "mac_version", "reg_params_revision", "adr_algorithm_id", "payload_codec_runtime", "payload_codec_script", "flush_queue_on_activate", "uplink_interval", "device_status_req_interval", "supports_otaa", "supports_class_b", "supports_class_c", "class_b_timeout", "class_b_ping_slot_nb_k", "class_b_ping_slot_dr", "class_b_ping_slot_freq", "class_c_timeout", "abp_rx1_delay", "abp_rx1_dr_offset", "abp_rx2_dr", "abp_rx2_freq", "tags", "measurements", "auto_detect_measurements"]
+    __slots__ = ("id", "name", "description", "vendor", "firmware", "region", "mac_version", "reg_params_revision", "adr_algorithm_id", "payload_codec_runtime", "payload_codec_script", "flush_queue_on_activate", "uplink_interval", "device_status_req_interval", "supports_otaa", "supports_class_b", "supports_class_c", "class_b_timeout", "class_b_ping_slot_nb_k", "class_b_ping_slot_dr", "class_b_ping_slot_freq", "class_c_timeout", "abp_rx1_delay", "abp_rx1_dr_offset", "abp_rx2_dr", "abp_rx2_freq", "tags", "measurements", "auto_detect_measurements")
     class TagsEntry(_message.Message):
-        __slots__ = ["key", "value"]
+        __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     class MeasurementsEntry(_message.Message):
-        __slots__ = ["key", "value"]
+        __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
@@ -87,7 +87,7 @@ class DeviceProfileTemplate(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., vendor: _Optional[str] = ..., firmware: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mac_version: _Optional[_Union[_common_pb2.MacVersion, str]] = ..., reg_params_revision: _Optional[_Union[_common_pb2.RegParamsRevision, str]] = ..., adr_algorithm_id: _Optional[str] = ..., payload_codec_runtime: _Optional[_Union[_device_profile_pb2.CodecRuntime, str]] = ..., payload_codec_script: _Optional[str] = ..., flush_queue_on_activate: bool = ..., uplink_interval: _Optional[int] = ..., device_status_req_interval: _Optional[int] = ..., supports_otaa: bool = ..., supports_class_b: bool = ..., supports_class_c: bool = ..., class_b_timeout: _Optional[int] = ..., class_b_ping_slot_nb_k: _Optional[int] = ..., class_b_ping_slot_dr: _Optional[int] = ..., class_b_ping_slot_freq: _Optional[int] = ..., class_c_timeout: _Optional[int] = ..., abp_rx1_delay: _Optional[int] = ..., abp_rx1_dr_offset: _Optional[int] = ..., abp_rx2_dr: _Optional[int] = ..., abp_rx2_freq: _Optional[int] = ..., tags: _Optional[_Mapping[str, str]] = ..., measurements: _Optional[_Mapping[str, _device_profile_pb2.Measurement]] = ..., auto_detect_measurements: bool = ...) -> None: ...
 
 class DeviceProfileTemplateListItem(_message.Message):
-    __slots__ = ["id", "created_at", "updated_at", "name", "vendor", "firmware", "region", "mac_version", "reg_params_revision", "supports_otaa", "supports_class_b", "supports_class_c"]
+    __slots__ = ("id", "created_at", "updated_at", "name", "vendor", "firmware", "region", "mac_version", "reg_params_revision", "supports_otaa", "supports_class_b", "supports_class_c")
     ID_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
@@ -115,19 +115,19 @@ class DeviceProfileTemplateListItem(_message.Message):
     def __init__(self, id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., name: _Optional[str] = ..., vendor: _Optional[str] = ..., firmware: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mac_version: _Optional[_Union[_common_pb2.MacVersion, str]] = ..., reg_params_revision: _Optional[_Union[_common_pb2.RegParamsRevision, str]] = ..., supports_otaa: bool = ..., supports_class_b: bool = ..., supports_class_c: bool = ...) -> None: ...
 
 class CreateDeviceProfileTemplateRequest(_message.Message):
-    __slots__ = ["device_profile_template"]
+    __slots__ = ("device_profile_template",)
     DEVICE_PROFILE_TEMPLATE_FIELD_NUMBER: _ClassVar[int]
     device_profile_template: DeviceProfileTemplate
     def __init__(self, device_profile_template: _Optional[_Union[DeviceProfileTemplate, _Mapping]] = ...) -> None: ...
 
 class GetDeviceProfileTemplateRequest(_message.Message):
-    __slots__ = ["id"]
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class GetDeviceProfileTemplateResponse(_message.Message):
-    __slots__ = ["device_profile_template", "created_at", "updated_at"]
+    __slots__ = ("device_profile_template", "created_at", "updated_at")
     DEVICE_PROFILE_TEMPLATE_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
@@ -137,19 +137,19 @@ class GetDeviceProfileTemplateResponse(_message.Message):
     def __init__(self, device_profile_template: _Optional[_Union[DeviceProfileTemplate, _Mapping]] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class UpdateDeviceProfileTemplateRequest(_message.Message):
-    __slots__ = ["device_profile_template"]
+    __slots__ = ("device_profile_template",)
     DEVICE_PROFILE_TEMPLATE_FIELD_NUMBER: _ClassVar[int]
     device_profile_template: DeviceProfileTemplate
     def __init__(self, device_profile_template: _Optional[_Union[DeviceProfileTemplate, _Mapping]] = ...) -> None: ...
 
 class DeleteDeviceProfileTemplateRequest(_message.Message):
-    __slots__ = ["id"]
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class ListDeviceProfileTemplatesRequest(_message.Message):
-    __slots__ = ["limit", "offset"]
+    __slots__ = ("limit", "offset")
     LIMIT_FIELD_NUMBER: _ClassVar[int]
     OFFSET_FIELD_NUMBER: _ClassVar[int]
     limit: int
@@ -157,7 +157,7 @@ class ListDeviceProfileTemplatesRequest(_message.Message):
     def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ...) -> None: ...
 
 class ListDeviceProfileTemplatesResponse(_message.Message):
-    __slots__ = ["total_count", "result"]
+    __slots__ = ("total_count", "result")
     TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
     RESULT_FIELD_NUMBER: _ClassVar[int]
     total_count: int

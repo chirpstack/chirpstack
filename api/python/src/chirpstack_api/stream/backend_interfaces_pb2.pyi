@@ -6,7 +6,7 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class BackendInterfacesRequest(_message.Message):
-    __slots__ = ["sender_id", "receiver_id", "time", "transaction_id", "message_type", "result_code", "request_body", "request_error", "response_body"]
+    __slots__ = ("sender_id", "receiver_id", "time", "transaction_id", "message_type", "result_code", "request_body", "request_error", "response_body")
     SENDER_ID_FIELD_NUMBER: _ClassVar[int]
     RECEIVER_ID_FIELD_NUMBER: _ClassVar[int]
     TIME_FIELD_NUMBER: _ClassVar[int]

@@ -8,7 +8,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class UplinkMeta(_message.Message):
-    __slots__ = ["dev_eui", "tx_info", "rx_info", "phy_payload_byte_count", "mac_command_byte_count", "application_payload_byte_count", "message_type"]
+    __slots__ = ("dev_eui", "tx_info", "rx_info", "phy_payload_byte_count", "mac_command_byte_count", "application_payload_byte_count", "message_type")
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     TX_INFO_FIELD_NUMBER: _ClassVar[int]
     RX_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -26,7 +26,7 @@ class UplinkMeta(_message.Message):
     def __init__(self, dev_eui: _Optional[str] = ..., tx_info: _Optional[_Union[_gw_pb2.UplinkTxInfo, _Mapping]] = ..., rx_info: _Optional[_Iterable[_Union[_gw_pb2.UplinkRxInfo, _Mapping]]] = ..., phy_payload_byte_count: _Optional[int] = ..., mac_command_byte_count: _Optional[int] = ..., application_payload_byte_count: _Optional[int] = ..., message_type: _Optional[_Union[_common_pb2.MType, str]] = ...) -> None: ...
 
 class DownlinkMeta(_message.Message):
-    __slots__ = ["dev_eui", "multicast_group_id", "tx_info", "phy_payload_byte_count", "mac_command_byte_count", "application_payload_byte_count", "message_type", "gateway_id"]
+    __slots__ = ("dev_eui", "multicast_group_id", "tx_info", "phy_payload_byte_count", "mac_command_byte_count", "application_payload_byte_count", "message_type", "gateway_id")
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     TX_INFO_FIELD_NUMBER: _ClassVar[int]

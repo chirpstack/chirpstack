@@ -11,13 +11,13 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class CodecRuntime(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     NONE: _ClassVar[CodecRuntime]
     CAYENNE_LPP: _ClassVar[CodecRuntime]
     JS: _ClassVar[CodecRuntime]
 
 class MeasurementKind(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     UNKNOWN: _ClassVar[MeasurementKind]
     COUNTER: _ClassVar[MeasurementKind]
     ABSOLUTE: _ClassVar[MeasurementKind]
@@ -25,7 +25,7 @@ class MeasurementKind(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     STRING: _ClassVar[MeasurementKind]
 
 class CadPeriodicity(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     SEC_1: _ClassVar[CadPeriodicity]
     MS_500: _ClassVar[CadPeriodicity]
     MS_250: _ClassVar[CadPeriodicity]
@@ -34,7 +34,7 @@ class CadPeriodicity(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     MS_20: _ClassVar[CadPeriodicity]
 
 class SecondChAckOffset(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     KHZ_0: _ClassVar[SecondChAckOffset]
     KHZ_200: _ClassVar[SecondChAckOffset]
     KHZ_400: _ClassVar[SecondChAckOffset]
@@ -43,7 +43,7 @@ class SecondChAckOffset(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     KHZ_3200: _ClassVar[SecondChAckOffset]
 
 class RelayModeActivation(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     DISABLE_RELAY_MODE: _ClassVar[RelayModeActivation]
     ENABLE_RELAY_MODE: _ClassVar[RelayModeActivation]
     DYNAMIC: _ClassVar[RelayModeActivation]
@@ -74,16 +74,16 @@ DYNAMIC: RelayModeActivation
 END_DEVICE_CONTROLLED: RelayModeActivation
 
 class DeviceProfile(_message.Message):
-    __slots__ = ["id", "tenant_id", "name", "description", "region", "mac_version", "reg_params_revision", "adr_algorithm_id", "payload_codec_runtime", "payload_codec_script", "flush_queue_on_activate", "uplink_interval", "device_status_req_interval", "supports_otaa", "supports_class_b", "supports_class_c", "class_b_timeout", "class_b_ping_slot_nb_k", "class_b_ping_slot_dr", "class_b_ping_slot_freq", "class_c_timeout", "abp_rx1_delay", "abp_rx1_dr_offset", "abp_rx2_dr", "abp_rx2_freq", "tags", "measurements", "auto_detect_measurements", "region_config_id", "is_relay", "is_relay_ed", "relay_ed_relay_only", "relay_enabled", "relay_cad_periodicity", "relay_default_channel_index", "relay_second_channel_freq", "relay_second_channel_dr", "relay_second_channel_ack_offset", "relay_ed_activation_mode", "relay_ed_smart_enable_level", "relay_ed_back_off", "relay_ed_uplink_limit_bucket_size", "relay_ed_uplink_limit_reload_rate", "relay_join_req_limit_reload_rate", "relay_notify_limit_reload_rate", "relay_global_uplink_limit_reload_rate", "relay_overall_limit_reload_rate", "relay_join_req_limit_bucket_size", "relay_notify_limit_bucket_size", "relay_global_uplink_limit_bucket_size", "relay_overall_limit_bucket_size", "allow_roaming"]
+    __slots__ = ("id", "tenant_id", "name", "description", "region", "mac_version", "reg_params_revision", "adr_algorithm_id", "payload_codec_runtime", "payload_codec_script", "flush_queue_on_activate", "uplink_interval", "device_status_req_interval", "supports_otaa", "supports_class_b", "supports_class_c", "class_b_timeout", "class_b_ping_slot_nb_k", "class_b_ping_slot_dr", "class_b_ping_slot_freq", "class_c_timeout", "abp_rx1_delay", "abp_rx1_dr_offset", "abp_rx2_dr", "abp_rx2_freq", "tags", "measurements", "auto_detect_measurements", "region_config_id", "is_relay", "is_relay_ed", "relay_ed_relay_only", "relay_enabled", "relay_cad_periodicity", "relay_default_channel_index", "relay_second_channel_freq", "relay_second_channel_dr", "relay_second_channel_ack_offset", "relay_ed_activation_mode", "relay_ed_smart_enable_level", "relay_ed_back_off", "relay_ed_uplink_limit_bucket_size", "relay_ed_uplink_limit_reload_rate", "relay_join_req_limit_reload_rate", "relay_notify_limit_reload_rate", "relay_global_uplink_limit_reload_rate", "relay_overall_limit_reload_rate", "relay_join_req_limit_bucket_size", "relay_notify_limit_bucket_size", "relay_global_uplink_limit_bucket_size", "relay_overall_limit_bucket_size", "allow_roaming")
     class TagsEntry(_message.Message):
-        __slots__ = ["key", "value"]
+        __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     class MeasurementsEntry(_message.Message):
-        __slots__ = ["key", "value"]
+        __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
@@ -196,7 +196,7 @@ class DeviceProfile(_message.Message):
     def __init__(self, id: _Optional[str] = ..., tenant_id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mac_version: _Optional[_Union[_common_pb2.MacVersion, str]] = ..., reg_params_revision: _Optional[_Union[_common_pb2.RegParamsRevision, str]] = ..., adr_algorithm_id: _Optional[str] = ..., payload_codec_runtime: _Optional[_Union[CodecRuntime, str]] = ..., payload_codec_script: _Optional[str] = ..., flush_queue_on_activate: bool = ..., uplink_interval: _Optional[int] = ..., device_status_req_interval: _Optional[int] = ..., supports_otaa: bool = ..., supports_class_b: bool = ..., supports_class_c: bool = ..., class_b_timeout: _Optional[int] = ..., class_b_ping_slot_nb_k: _Optional[int] = ..., class_b_ping_slot_dr: _Optional[int] = ..., class_b_ping_slot_freq: _Optional[int] = ..., class_c_timeout: _Optional[int] = ..., abp_rx1_delay: _Optional[int] = ..., abp_rx1_dr_offset: _Optional[int] = ..., abp_rx2_dr: _Optional[int] = ..., abp_rx2_freq: _Optional[int] = ..., tags: _Optional[_Mapping[str, str]] = ..., measurements: _Optional[_Mapping[str, Measurement]] = ..., auto_detect_measurements: bool = ..., region_config_id: _Optional[str] = ..., is_relay: bool = ..., is_relay_ed: bool = ..., relay_ed_relay_only: bool = ..., relay_enabled: bool = ..., relay_cad_periodicity: _Optional[_Union[CadPeriodicity, str]] = ..., relay_default_channel_index: _Optional[int] = ..., relay_second_channel_freq: _Optional[int] = ..., relay_second_channel_dr: _Optional[int] = ..., relay_second_channel_ack_offset: _Optional[_Union[SecondChAckOffset, str]] = ..., relay_ed_activation_mode: _Optional[_Union[RelayModeActivation, str]] = ..., relay_ed_smart_enable_level: _Optional[int] = ..., relay_ed_back_off: _Optional[int] = ..., relay_ed_uplink_limit_bucket_size: _Optional[int] = ..., relay_ed_uplink_limit_reload_rate: _Optional[int] = ..., relay_join_req_limit_reload_rate: _Optional[int] = ..., relay_notify_limit_reload_rate: _Optional[int] = ..., relay_global_uplink_limit_reload_rate: _Optional[int] = ..., relay_overall_limit_reload_rate: _Optional[int] = ..., relay_join_req_limit_bucket_size: _Optional[int] = ..., relay_notify_limit_bucket_size: _Optional[int] = ..., relay_global_uplink_limit_bucket_size: _Optional[int] = ..., relay_overall_limit_bucket_size: _Optional[int] = ..., allow_roaming: bool = ...) -> None: ...
 
 class Measurement(_message.Message):
-    __slots__ = ["name", "kind"]
+    __slots__ = ("name", "kind")
     NAME_FIELD_NUMBER: _ClassVar[int]
     KIND_FIELD_NUMBER: _ClassVar[int]
     name: str
@@ -204,7 +204,7 @@ class Measurement(_message.Message):
     def __init__(self, name: _Optional[str] = ..., kind: _Optional[_Union[MeasurementKind, str]] = ...) -> None: ...
 
 class DeviceProfileListItem(_message.Message):
-    __slots__ = ["id", "created_at", "updated_at", "name", "region", "mac_version", "reg_params_revision", "supports_otaa", "supports_class_b", "supports_class_c"]
+    __slots__ = ("id", "created_at", "updated_at", "name", "region", "mac_version", "reg_params_revision", "supports_otaa", "supports_class_b", "supports_class_c")
     ID_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
@@ -228,25 +228,25 @@ class DeviceProfileListItem(_message.Message):
     def __init__(self, id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., name: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mac_version: _Optional[_Union[_common_pb2.MacVersion, str]] = ..., reg_params_revision: _Optional[_Union[_common_pb2.RegParamsRevision, str]] = ..., supports_otaa: bool = ..., supports_class_b: bool = ..., supports_class_c: bool = ...) -> None: ...
 
 class CreateDeviceProfileRequest(_message.Message):
-    __slots__ = ["device_profile"]
+    __slots__ = ("device_profile",)
     DEVICE_PROFILE_FIELD_NUMBER: _ClassVar[int]
     device_profile: DeviceProfile
     def __init__(self, device_profile: _Optional[_Union[DeviceProfile, _Mapping]] = ...) -> None: ...
 
 class CreateDeviceProfileResponse(_message.Message):
-    __slots__ = ["id"]
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class GetDeviceProfileRequest(_message.Message):
-    __slots__ = ["id"]
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class GetDeviceProfileResponse(_message.Message):
-    __slots__ = ["device_profile", "created_at", "updated_at"]
+    __slots__ = ("device_profile", "created_at", "updated_at")
     DEVICE_PROFILE_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
@@ -256,19 +256,19 @@ class GetDeviceProfileResponse(_message.Message):
     def __init__(self, device_profile: _Optional[_Union[DeviceProfile, _Mapping]] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class UpdateDeviceProfileRequest(_message.Message):
-    __slots__ = ["device_profile"]
+    __slots__ = ("device_profile",)
     DEVICE_PROFILE_FIELD_NUMBER: _ClassVar[int]
     device_profile: DeviceProfile
     def __init__(self, device_profile: _Optional[_Union[DeviceProfile, _Mapping]] = ...) -> None: ...
 
 class DeleteDeviceProfileRequest(_message.Message):
-    __slots__ = ["id"]
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class ListDeviceProfilesRequest(_message.Message):
-    __slots__ = ["limit", "offset", "search", "tenant_id"]
+    __slots__ = ("limit", "offset", "search", "tenant_id")
     LIMIT_FIELD_NUMBER: _ClassVar[int]
     OFFSET_FIELD_NUMBER: _ClassVar[int]
     SEARCH_FIELD_NUMBER: _ClassVar[int]
@@ -280,7 +280,7 @@ class ListDeviceProfilesRequest(_message.Message):
     def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ..., search: _Optional[str] = ..., tenant_id: _Optional[str] = ...) -> None: ...
 
 class ListDeviceProfilesResponse(_message.Message):
-    __slots__ = ["total_count", "result"]
+    __slots__ = ("total_count", "result")
     TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
     RESULT_FIELD_NUMBER: _ClassVar[int]
     total_count: int
@@ -288,7 +288,7 @@ class ListDeviceProfilesResponse(_message.Message):
     def __init__(self, total_count: _Optional[int] = ..., result: _Optional[_Iterable[_Union[DeviceProfileListItem, _Mapping]]] = ...) -> None: ...
 
 class ListDeviceProfileAdrAlgorithmsResponse(_message.Message):
-    __slots__ = ["total_count", "result"]
+    __slots__ = ("total_count", "result")
     TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
     RESULT_FIELD_NUMBER: _ClassVar[int]
     total_count: int
@@ -296,7 +296,7 @@ class ListDeviceProfileAdrAlgorithmsResponse(_message.Message):
     def __init__(self, total_count: _Optional[int] = ..., result: _Optional[_Iterable[_Union[AdrAlgorithmListItem, _Mapping]]] = ...) -> None: ...
 
 class AdrAlgorithmListItem(_message.Message):
-    __slots__ = ["id", "name"]
+    __slots__ = ("id", "name")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     id: str

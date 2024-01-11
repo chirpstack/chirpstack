@@ -11,13 +11,13 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class LogLevel(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     INFO: _ClassVar[LogLevel]
     WARNING: _ClassVar[LogLevel]
     ERROR: _ClassVar[LogLevel]
 
 class LogCode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     UNKNOWN: _ClassVar[LogCode]
     DOWNLINK_PAYLOAD_SIZE: _ClassVar[LogCode]
     UPLINK_CODEC: _ClassVar[LogCode]
@@ -45,9 +45,9 @@ RELAY_NEW_END_DEVICE: LogCode
 F_CNT_DOWN: LogCode
 
 class DeviceInfo(_message.Message):
-    __slots__ = ["tenant_id", "tenant_name", "application_id", "application_name", "device_profile_id", "device_profile_name", "device_name", "dev_eui", "device_class_enabled", "tags"]
+    __slots__ = ("tenant_id", "tenant_name", "application_id", "application_name", "device_profile_id", "device_profile_name", "device_name", "dev_eui", "device_class_enabled", "tags")
     class TagsEntry(_message.Message):
-        __slots__ = ["key", "value"]
+        __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
@@ -76,7 +76,7 @@ class DeviceInfo(_message.Message):
     def __init__(self, tenant_id: _Optional[str] = ..., tenant_name: _Optional[str] = ..., application_id: _Optional[str] = ..., application_name: _Optional[str] = ..., device_profile_id: _Optional[str] = ..., device_profile_name: _Optional[str] = ..., device_name: _Optional[str] = ..., dev_eui: _Optional[str] = ..., device_class_enabled: _Optional[_Union[_common_pb2.DeviceClass, str]] = ..., tags: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class UplinkRelayRxInfo(_message.Message):
-    __slots__ = ["dev_eui", "frequency", "dr", "snr", "rssi", "wor_channel"]
+    __slots__ = ("dev_eui", "frequency", "dr", "snr", "rssi", "wor_channel")
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     FREQUENCY_FIELD_NUMBER: _ClassVar[int]
     DR_FIELD_NUMBER: _ClassVar[int]
@@ -92,7 +92,7 @@ class UplinkRelayRxInfo(_message.Message):
     def __init__(self, dev_eui: _Optional[str] = ..., frequency: _Optional[int] = ..., dr: _Optional[int] = ..., snr: _Optional[int] = ..., rssi: _Optional[int] = ..., wor_channel: _Optional[int] = ...) -> None: ...
 
 class JoinServerContext(_message.Message):
-    __slots__ = ["session_key_id", "app_s_key"]
+    __slots__ = ("session_key_id", "app_s_key")
     SESSION_KEY_ID_FIELD_NUMBER: _ClassVar[int]
     APP_S_KEY_FIELD_NUMBER: _ClassVar[int]
     session_key_id: str
@@ -100,7 +100,7 @@ class JoinServerContext(_message.Message):
     def __init__(self, session_key_id: _Optional[str] = ..., app_s_key: _Optional[_Union[_common_pb2.KeyEnvelope, _Mapping]] = ...) -> None: ...
 
 class UplinkEvent(_message.Message):
-    __slots__ = ["deduplication_id", "time", "device_info", "dev_addr", "adr", "dr", "f_cnt", "f_port", "confirmed", "data", "object", "rx_info", "tx_info", "relay_rx_info", "join_server_context"]
+    __slots__ = ("deduplication_id", "time", "device_info", "dev_addr", "adr", "dr", "f_cnt", "f_port", "confirmed", "data", "object", "rx_info", "tx_info", "relay_rx_info", "join_server_context")
     DEDUPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
     TIME_FIELD_NUMBER: _ClassVar[int]
     DEVICE_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -134,7 +134,7 @@ class UplinkEvent(_message.Message):
     def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., dev_addr: _Optional[str] = ..., adr: bool = ..., dr: _Optional[int] = ..., f_cnt: _Optional[int] = ..., f_port: _Optional[int] = ..., confirmed: bool = ..., data: _Optional[bytes] = ..., object: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., rx_info: _Optional[_Iterable[_Union[_gw_pb2.UplinkRxInfo, _Mapping]]] = ..., tx_info: _Optional[_Union[_gw_pb2.UplinkTxInfo, _Mapping]] = ..., relay_rx_info: _Optional[_Union[UplinkRelayRxInfo, _Mapping]] = ..., join_server_context: _Optional[_Union[JoinServerContext, _Mapping]] = ...) -> None: ...
 
 class JoinEvent(_message.Message):
-    __slots__ = ["deduplication_id", "time", "device_info", "dev_addr", "relay_rx_info", "join_server_context"]
+    __slots__ = ("deduplication_id", "time", "device_info", "dev_addr", "relay_rx_info", "join_server_context")
     DEDUPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
     TIME_FIELD_NUMBER: _ClassVar[int]
     DEVICE_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -150,7 +150,7 @@ class JoinEvent(_message.Message):
     def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., dev_addr: _Optional[str] = ..., relay_rx_info: _Optional[_Union[UplinkRelayRxInfo, _Mapping]] = ..., join_server_context: _Optional[_Union[JoinServerContext, _Mapping]] = ...) -> None: ...
 
 class AckEvent(_message.Message):
-    __slots__ = ["deduplication_id", "time", "device_info", "queue_item_id", "acknowledged", "f_cnt_down"]
+    __slots__ = ("deduplication_id", "time", "device_info", "queue_item_id", "acknowledged", "f_cnt_down")
     DEDUPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
     TIME_FIELD_NUMBER: _ClassVar[int]
     DEVICE_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -166,7 +166,7 @@ class AckEvent(_message.Message):
     def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., queue_item_id: _Optional[str] = ..., acknowledged: bool = ..., f_cnt_down: _Optional[int] = ...) -> None: ...
 
 class TxAckEvent(_message.Message):
-    __slots__ = ["downlink_id", "time", "device_info", "queue_item_id", "f_cnt_down", "gateway_id", "tx_info"]
+    __slots__ = ("downlink_id", "time", "device_info", "queue_item_id", "f_cnt_down", "gateway_id", "tx_info")
     DOWNLINK_ID_FIELD_NUMBER: _ClassVar[int]
     TIME_FIELD_NUMBER: _ClassVar[int]
     DEVICE_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -184,9 +184,9 @@ class TxAckEvent(_message.Message):
     def __init__(self, downlink_id: _Optional[int] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., queue_item_id: _Optional[str] = ..., f_cnt_down: _Optional[int] = ..., gateway_id: _Optional[str] = ..., tx_info: _Optional[_Union[_gw_pb2.DownlinkTxInfo, _Mapping]] = ...) -> None: ...
 
 class LogEvent(_message.Message):
-    __slots__ = ["time", "device_info", "level", "code", "description", "context"]
+    __slots__ = ("time", "device_info", "level", "code", "description", "context")
     class ContextEntry(_message.Message):
-        __slots__ = ["key", "value"]
+        __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
@@ -207,7 +207,7 @@ class LogEvent(_message.Message):
     def __init__(self, time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., level: _Optional[_Union[LogLevel, str]] = ..., code: _Optional[_Union[LogCode, str]] = ..., description: _Optional[str] = ..., context: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class StatusEvent(_message.Message):
-    __slots__ = ["deduplication_id", "time", "device_info", "margin", "external_power_source", "battery_level_unavailable", "battery_level"]
+    __slots__ = ("deduplication_id", "time", "device_info", "margin", "external_power_source", "battery_level_unavailable", "battery_level")
     DEDUPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
     TIME_FIELD_NUMBER: _ClassVar[int]
     DEVICE_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -225,7 +225,7 @@ class StatusEvent(_message.Message):
     def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., margin: _Optional[int] = ..., external_power_source: bool = ..., battery_level_unavailable: bool = ..., battery_level: _Optional[float] = ...) -> None: ...
 
 class LocationEvent(_message.Message):
-    __slots__ = ["deduplication_id", "time", "device_info", "location"]
+    __slots__ = ("deduplication_id", "time", "device_info", "location")
     DEDUPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
     TIME_FIELD_NUMBER: _ClassVar[int]
     DEVICE_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -237,7 +237,7 @@ class LocationEvent(_message.Message):
     def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., location: _Optional[_Union[_common_pb2.Location, _Mapping]] = ...) -> None: ...
 
 class IntegrationEvent(_message.Message):
-    __slots__ = ["deduplication_id", "time", "device_info", "integration_name", "event_type", "object"]
+    __slots__ = ("deduplication_id", "time", "device_info", "integration_name", "event_type", "object")
     DEDUPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
     TIME_FIELD_NUMBER: _ClassVar[int]
     DEVICE_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -253,7 +253,7 @@ class IntegrationEvent(_message.Message):
     def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., integration_name: _Optional[str] = ..., event_type: _Optional[str] = ..., object: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class DownlinkCommand(_message.Message):
-    __slots__ = ["id", "dev_eui", "confirmed", "f_port", "data", "object"]
+    __slots__ = ("id", "dev_eui", "confirmed", "f_port", "data", "object")
     ID_FIELD_NUMBER: _ClassVar[int]
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     CONFIRMED_FIELD_NUMBER: _ClassVar[int]

@@ -9,7 +9,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class UplinkFrameLog(_message.Message):
-    __slots__ = ["phy_payload", "tx_info", "rx_info", "m_type", "dev_addr", "dev_eui", "time", "plaintext_f_opts", "plaintext_frm_payload"]
+    __slots__ = ("phy_payload", "tx_info", "rx_info", "m_type", "dev_addr", "dev_eui", "time", "plaintext_f_opts", "plaintext_frm_payload")
     PHY_PAYLOAD_FIELD_NUMBER: _ClassVar[int]
     TX_INFO_FIELD_NUMBER: _ClassVar[int]
     RX_INFO_FIELD_NUMBER: _ClassVar[int]
@@ -31,7 +31,7 @@ class UplinkFrameLog(_message.Message):
     def __init__(self, phy_payload: _Optional[bytes] = ..., tx_info: _Optional[_Union[_gw_pb2.UplinkTxInfo, _Mapping]] = ..., rx_info: _Optional[_Iterable[_Union[_gw_pb2.UplinkRxInfo, _Mapping]]] = ..., m_type: _Optional[_Union[_common_pb2.MType, str]] = ..., dev_addr: _Optional[str] = ..., dev_eui: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., plaintext_f_opts: bool = ..., plaintext_frm_payload: bool = ...) -> None: ...
 
 class DownlinkFrameLog(_message.Message):
-    __slots__ = ["time", "phy_payload", "tx_info", "downlink_id", "gateway_id", "m_type", "dev_addr", "dev_eui", "plaintext_f_opts", "plaintext_frm_payload"]
+    __slots__ = ("time", "phy_payload", "tx_info", "downlink_id", "gateway_id", "m_type", "dev_addr", "dev_eui", "plaintext_f_opts", "plaintext_frm_payload")
     TIME_FIELD_NUMBER: _ClassVar[int]
     PHY_PAYLOAD_FIELD_NUMBER: _ClassVar[int]
     TX_INFO_FIELD_NUMBER: _ClassVar[int]

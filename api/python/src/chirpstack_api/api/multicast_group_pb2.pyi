@@ -11,12 +11,12 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class MulticastGroupType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     CLASS_C: _ClassVar[MulticastGroupType]
     CLASS_B: _ClassVar[MulticastGroupType]
 
 class MulticastGroupSchedulingType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     DELAY: _ClassVar[MulticastGroupSchedulingType]
     GPS_TIME: _ClassVar[MulticastGroupSchedulingType]
 CLASS_C: MulticastGroupType
@@ -25,7 +25,7 @@ DELAY: MulticastGroupSchedulingType
 GPS_TIME: MulticastGroupSchedulingType
 
 class MulticastGroup(_message.Message):
-    __slots__ = ["id", "name", "application_id", "region", "mc_addr", "mc_nwk_s_key", "mc_app_s_key", "f_cnt", "group_type", "dr", "frequency", "class_b_ping_slot_period", "class_c_scheduling_type"]
+    __slots__ = ("id", "name", "application_id", "region", "mc_addr", "mc_nwk_s_key", "mc_app_s_key", "f_cnt", "group_type", "dr", "frequency", "class_b_ping_slot_period", "class_c_scheduling_type")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     APPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -55,7 +55,7 @@ class MulticastGroup(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., application_id: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mc_addr: _Optional[str] = ..., mc_nwk_s_key: _Optional[str] = ..., mc_app_s_key: _Optional[str] = ..., f_cnt: _Optional[int] = ..., group_type: _Optional[_Union[MulticastGroupType, str]] = ..., dr: _Optional[int] = ..., frequency: _Optional[int] = ..., class_b_ping_slot_period: _Optional[int] = ..., class_c_scheduling_type: _Optional[_Union[MulticastGroupSchedulingType, str]] = ...) -> None: ...
 
 class MulticastGroupListItem(_message.Message):
-    __slots__ = ["id", "created_at", "updated_at", "name", "region", "group_type"]
+    __slots__ = ("id", "created_at", "updated_at", "name", "region", "group_type")
     ID_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
@@ -71,25 +71,25 @@ class MulticastGroupListItem(_message.Message):
     def __init__(self, id: _Optional[str] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., name: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., group_type: _Optional[_Union[MulticastGroupType, str]] = ...) -> None: ...
 
 class CreateMulticastGroupRequest(_message.Message):
-    __slots__ = ["multicast_group"]
+    __slots__ = ("multicast_group",)
     MULTICAST_GROUP_FIELD_NUMBER: _ClassVar[int]
     multicast_group: MulticastGroup
     def __init__(self, multicast_group: _Optional[_Union[MulticastGroup, _Mapping]] = ...) -> None: ...
 
 class CreateMulticastGroupResponse(_message.Message):
-    __slots__ = ["id"]
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class GetMulticastGroupRequest(_message.Message):
-    __slots__ = ["id"]
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class GetMulticastGroupResponse(_message.Message):
-    __slots__ = ["multicast_group", "created_at", "updated_at"]
+    __slots__ = ("multicast_group", "created_at", "updated_at")
     MULTICAST_GROUP_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     UPDATED_AT_FIELD_NUMBER: _ClassVar[int]
@@ -99,19 +99,19 @@ class GetMulticastGroupResponse(_message.Message):
     def __init__(self, multicast_group: _Optional[_Union[MulticastGroup, _Mapping]] = ..., created_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., updated_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class UpdateMulticastGroupRequest(_message.Message):
-    __slots__ = ["multicast_group"]
+    __slots__ = ("multicast_group",)
     MULTICAST_GROUP_FIELD_NUMBER: _ClassVar[int]
     multicast_group: MulticastGroup
     def __init__(self, multicast_group: _Optional[_Union[MulticastGroup, _Mapping]] = ...) -> None: ...
 
 class DeleteMulticastGroupRequest(_message.Message):
-    __slots__ = ["id"]
+    __slots__ = ("id",)
     ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class ListMulticastGroupsRequest(_message.Message):
-    __slots__ = ["limit", "offset", "search", "application_id"]
+    __slots__ = ("limit", "offset", "search", "application_id")
     LIMIT_FIELD_NUMBER: _ClassVar[int]
     OFFSET_FIELD_NUMBER: _ClassVar[int]
     SEARCH_FIELD_NUMBER: _ClassVar[int]
@@ -123,7 +123,7 @@ class ListMulticastGroupsRequest(_message.Message):
     def __init__(self, limit: _Optional[int] = ..., offset: _Optional[int] = ..., search: _Optional[str] = ..., application_id: _Optional[str] = ...) -> None: ...
 
 class ListMulticastGroupsResponse(_message.Message):
-    __slots__ = ["total_count", "result"]
+    __slots__ = ("total_count", "result")
     TOTAL_COUNT_FIELD_NUMBER: _ClassVar[int]
     RESULT_FIELD_NUMBER: _ClassVar[int]
     total_count: int
@@ -131,7 +131,7 @@ class ListMulticastGroupsResponse(_message.Message):
     def __init__(self, total_count: _Optional[int] = ..., result: _Optional[_Iterable[_Union[MulticastGroupListItem, _Mapping]]] = ...) -> None: ...
 
 class AddDeviceToMulticastGroupRequest(_message.Message):
-    __slots__ = ["multicast_group_id", "dev_eui"]
+    __slots__ = ("multicast_group_id", "dev_eui")
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     multicast_group_id: str
@@ -139,7 +139,7 @@ class AddDeviceToMulticastGroupRequest(_message.Message):
     def __init__(self, multicast_group_id: _Optional[str] = ..., dev_eui: _Optional[str] = ...) -> None: ...
 
 class RemoveDeviceFromMulticastGroupRequest(_message.Message):
-    __slots__ = ["multicast_group_id", "dev_eui"]
+    __slots__ = ("multicast_group_id", "dev_eui")
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     DEV_EUI_FIELD_NUMBER: _ClassVar[int]
     multicast_group_id: str
@@ -147,7 +147,7 @@ class RemoveDeviceFromMulticastGroupRequest(_message.Message):
     def __init__(self, multicast_group_id: _Optional[str] = ..., dev_eui: _Optional[str] = ...) -> None: ...
 
 class AddGatewayToMulticastGroupRequest(_message.Message):
-    __slots__ = ["multicast_group_id", "gateway_id"]
+    __slots__ = ("multicast_group_id", "gateway_id")
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     GATEWAY_ID_FIELD_NUMBER: _ClassVar[int]
     multicast_group_id: str
@@ -155,7 +155,7 @@ class AddGatewayToMulticastGroupRequest(_message.Message):
     def __init__(self, multicast_group_id: _Optional[str] = ..., gateway_id: _Optional[str] = ...) -> None: ...
 
 class RemoveGatewayFromMulticastGroupRequest(_message.Message):
-    __slots__ = ["multicast_group_id", "gateway_id"]
+    __slots__ = ("multicast_group_id", "gateway_id")
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     GATEWAY_ID_FIELD_NUMBER: _ClassVar[int]
     multicast_group_id: str
@@ -163,7 +163,7 @@ class RemoveGatewayFromMulticastGroupRequest(_message.Message):
     def __init__(self, multicast_group_id: _Optional[str] = ..., gateway_id: _Optional[str] = ...) -> None: ...
 
 class MulticastGroupQueueItem(_message.Message):
-    __slots__ = ["multicast_group_id", "f_cnt", "f_port", "data"]
+    __slots__ = ("multicast_group_id", "f_cnt", "f_port", "data")
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     F_CNT_FIELD_NUMBER: _ClassVar[int]
     F_PORT_FIELD_NUMBER: _ClassVar[int]
@@ -175,31 +175,31 @@ class MulticastGroupQueueItem(_message.Message):
     def __init__(self, multicast_group_id: _Optional[str] = ..., f_cnt: _Optional[int] = ..., f_port: _Optional[int] = ..., data: _Optional[bytes] = ...) -> None: ...
 
 class EnqueueMulticastGroupQueueItemRequest(_message.Message):
-    __slots__ = ["queue_item"]
+    __slots__ = ("queue_item",)
     QUEUE_ITEM_FIELD_NUMBER: _ClassVar[int]
     queue_item: MulticastGroupQueueItem
     def __init__(self, queue_item: _Optional[_Union[MulticastGroupQueueItem, _Mapping]] = ...) -> None: ...
 
 class EnqueueMulticastGroupQueueItemResponse(_message.Message):
-    __slots__ = ["f_cnt"]
+    __slots__ = ("f_cnt",)
     F_CNT_FIELD_NUMBER: _ClassVar[int]
     f_cnt: int
     def __init__(self, f_cnt: _Optional[int] = ...) -> None: ...
 
 class FlushMulticastGroupQueueRequest(_message.Message):
-    __slots__ = ["multicast_group_id"]
+    __slots__ = ("multicast_group_id",)
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     multicast_group_id: str
     def __init__(self, multicast_group_id: _Optional[str] = ...) -> None: ...
 
 class ListMulticastGroupQueueRequest(_message.Message):
-    __slots__ = ["multicast_group_id"]
+    __slots__ = ("multicast_group_id",)
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     multicast_group_id: str
     def __init__(self, multicast_group_id: _Optional[str] = ...) -> None: ...
 
 class ListMulticastGroupQueueResponse(_message.Message):
-    __slots__ = ["items"]
+    __slots__ = ("items",)
     ITEMS_FIELD_NUMBER: _ClassVar[int]
     items: _containers.RepeatedCompositeFieldContainer[MulticastGroupQueueItem]
     def __init__(self, items: _Optional[_Iterable[_Union[MulticastGroupQueueItem, _Mapping]]] = ...) -> None: ...

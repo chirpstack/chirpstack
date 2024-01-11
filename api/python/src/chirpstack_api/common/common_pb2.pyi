@@ -8,13 +8,13 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class Modulation(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     LORA: _ClassVar[Modulation]
     FSK: _ClassVar[Modulation]
     LR_FHSS: _ClassVar[Modulation]
 
 class Region(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     EU868: _ClassVar[Region]
     US915: _ClassVar[Region]
     CN779: _ClassVar[Region]
@@ -31,7 +31,7 @@ class Region(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ISM2400: _ClassVar[Region]
 
 class MType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     JOIN_REQUEST: _ClassVar[MType]
     JOIN_ACCEPT: _ClassVar[MType]
     UNCONFIRMED_DATA_UP: _ClassVar[MType]
@@ -42,7 +42,7 @@ class MType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PROPRIETARY: _ClassVar[MType]
 
 class MacVersion(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     LORAWAN_1_0_0: _ClassVar[MacVersion]
     LORAWAN_1_0_1: _ClassVar[MacVersion]
     LORAWAN_1_0_2: _ClassVar[MacVersion]
@@ -51,7 +51,7 @@ class MacVersion(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     LORAWAN_1_1_0: _ClassVar[MacVersion]
 
 class RegParamsRevision(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     A: _ClassVar[RegParamsRevision]
     B: _ClassVar[RegParamsRevision]
     RP002_1_0_0: _ClassVar[RegParamsRevision]
@@ -60,7 +60,7 @@ class RegParamsRevision(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     RP002_1_0_3: _ClassVar[RegParamsRevision]
 
 class LocationSource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     UNKNOWN: _ClassVar[LocationSource]
     GPS: _ClassVar[LocationSource]
     CONFIG: _ClassVar[LocationSource]
@@ -70,19 +70,19 @@ class LocationSource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     GEO_RESOLVER_WIFI: _ClassVar[LocationSource]
 
 class Aggregation(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     HOUR: _ClassVar[Aggregation]
     DAY: _ClassVar[Aggregation]
     MONTH: _ClassVar[Aggregation]
 
 class MetricKind(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     COUNTER: _ClassVar[MetricKind]
     ABSOLUTE: _ClassVar[MetricKind]
     GAUGE: _ClassVar[MetricKind]
 
 class DeviceClass(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__ = ()
     CLASS_A: _ClassVar[DeviceClass]
     CLASS_B: _ClassVar[DeviceClass]
     CLASS_C: _ClassVar[DeviceClass]
@@ -141,7 +141,7 @@ CLASS_B: DeviceClass
 CLASS_C: DeviceClass
 
 class Location(_message.Message):
-    __slots__ = ["latitude", "longitude", "altitude", "source", "accuracy"]
+    __slots__ = ("latitude", "longitude", "altitude", "source", "accuracy")
     LATITUDE_FIELD_NUMBER: _ClassVar[int]
     LONGITUDE_FIELD_NUMBER: _ClassVar[int]
     ALTITUDE_FIELD_NUMBER: _ClassVar[int]
@@ -155,7 +155,7 @@ class Location(_message.Message):
     def __init__(self, latitude: _Optional[float] = ..., longitude: _Optional[float] = ..., altitude: _Optional[float] = ..., source: _Optional[_Union[LocationSource, str]] = ..., accuracy: _Optional[float] = ...) -> None: ...
 
 class KeyEnvelope(_message.Message):
-    __slots__ = ["kek_label", "aes_key"]
+    __slots__ = ("kek_label", "aes_key")
     KEK_LABEL_FIELD_NUMBER: _ClassVar[int]
     AES_KEY_FIELD_NUMBER: _ClassVar[int]
     kek_label: str
@@ -163,7 +163,7 @@ class KeyEnvelope(_message.Message):
     def __init__(self, kek_label: _Optional[str] = ..., aes_key: _Optional[bytes] = ...) -> None: ...
 
 class Metric(_message.Message):
-    __slots__ = ["name", "timestamps", "datasets", "kind"]
+    __slots__ = ("name", "timestamps", "datasets", "kind")
     NAME_FIELD_NUMBER: _ClassVar[int]
     TIMESTAMPS_FIELD_NUMBER: _ClassVar[int]
     DATASETS_FIELD_NUMBER: _ClassVar[int]
@@ -175,7 +175,7 @@ class Metric(_message.Message):
     def __init__(self, name: _Optional[str] = ..., timestamps: _Optional[_Iterable[_Union[_timestamp_pb2.Timestamp, _Mapping]]] = ..., datasets: _Optional[_Iterable[_Union[MetricDataset, _Mapping]]] = ..., kind: _Optional[_Union[MetricKind, str]] = ...) -> None: ...
 
 class MetricDataset(_message.Message):
-    __slots__ = ["label", "data"]
+    __slots__ = ("label", "data")
     LABEL_FIELD_NUMBER: _ClassVar[int]
     DATA_FIELD_NUMBER: _ClassVar[int]
     label: str
