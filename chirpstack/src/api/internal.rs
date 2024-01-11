@@ -64,7 +64,7 @@ impl Internal {
         }
 
         // fetch user again because the provisioning callback url may have updated the user.
-        u = user::get(&u.id).await.map_err(|e| e.status())?;
+        u = user::get(&u.id).await?;
 
         Ok(u)
     }
