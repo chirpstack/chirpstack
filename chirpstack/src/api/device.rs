@@ -17,7 +17,8 @@ use super::error::ToStatus;
 use super::helpers::{self, FromProto, ToProto};
 use crate::storage::error::Error;
 use crate::storage::{
-    device, device_keys, device_profile, device_queue, device_session, fields, metrics,
+    device::{self, DeviceClass},
+    device_keys, device_profile, device_queue, device_session, fields, metrics,
 };
 use crate::{codec, devaddr::get_random_dev_addr};
 
@@ -534,6 +535,17 @@ impl DeviceService for Device {
         device_session::save(&ds).await.map_err(|e| e.status())?;
         if dp.flush_queue_on_activate {
             device_queue::flush_for_dev_eui(&dev_eui)
+                .await
+                .map_err(|e| e.status())?;
+        }
+
+        // LoRaWAN 1.1 devices send a mac-command when changing to Class-C. Change the class here for LoRaWAN 1.0 devices.
+        if dp.supports_class_c && dp.mac_version.to_string().starts_with("1.0") {
+            let _ = device::set_enabled_class(&dev_eui, DeviceClass::C)
+                .await
+                .map_err(|e| e.status())?;
+        } else {
+            let _ = device::set_enabled_class(&dev_eui, DeviceClass::A)
                 .await
                 .map_err(|e| e.status())?;
         }
