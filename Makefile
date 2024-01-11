@@ -9,7 +9,6 @@ dev-dependencies:
 	cargo install cross --version 0.2.5
 	cargo install diesel_cli --version 2.1.0 --no-default-features --features postgres
 	cargo install cargo-deb --version 1.43.1
-	cargo install cargo-bitbake --version 0.3.16
 	cargo install cargo-generate-rpm --version 0.12.1
 
 # Set the versions
