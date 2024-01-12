@@ -57,11 +57,11 @@ function Header({ user }: { user: User }) {
 
     if (oidc.getEnabled() && oidc.getLogoutUrl() !== "") {
       SessionStore.logout(false, () => {
-        navigate(oidc.getLogoutUrl());
+        window.location.replace(oidc.getLogoutUrl());
       });
     } else if (oAuth2.getEnabled() && oAuth2.getLogoutUrl() !== "") {
       SessionStore.logout(false, () => {
-        navigate(oAuth2.getLogoutUrl());
+        window.location.replace(oAuth2.getLogoutUrl());
       });
     } else {
       SessionStore.logout(true, () => {
