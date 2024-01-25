@@ -533,6 +533,13 @@ impl DeviceService for Device {
         dp.reset_session_to_boot_params(&mut ds);
 
         device_session::save(&ds).await.map_err(|e| e.status())?;
+
+        // Set device DevAddr.
+        device::set_dev_addr(dev_eui, dev_addr)
+            .await
+            .map_err(|e| e.status())?;
+
+        // Flush queue (if configured).
         if dp.flush_queue_on_activate {
             device_queue::flush_for_dev_eui(&dev_eui)
                 .await
@@ -1434,6 +1441,15 @@ pub mod test {
             },
         );
         let _ = service.activate(activate_req).await.unwrap();
+
+        // test that the device DevAddr was set.
+        let dev = device::get(&EUI64::from_str("0102030405060708").unwrap())
+            .await
+            .unwrap();
+        assert_eq!(
+            DevAddr::from_str("04030201").unwrap(),
+            dev.dev_addr.unwrap()
+        );
 
         // get activation
         let get_activation_req = get_request(
