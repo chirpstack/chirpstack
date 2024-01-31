@@ -1,4 +1,5 @@
 use std::sync::RwLock;
+use std::time::Instant;
 
 use anyhow::Result;
 use diesel::{ConnectionError, ConnectionResult};
@@ -9,6 +10,7 @@ use diesel_async::AsyncPgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use futures_util::future::BoxFuture;
 use futures_util::FutureExt;
+use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
 use redis::aio::ConnectionLike;
 use tokio::sync::RwLock as TokioRwLock;
 use tokio::task;
@@ -41,6 +43,7 @@ pub mod tenant;
 pub mod user;
 
 use crate::helpers::tls::get_root_certs;
+use crate::monitoring::prometheus;
 
 pub type AsyncPgPool = DeadpoolPool<AsyncPgConnection>;
 pub type AsyncPgPoolConnection = DeadpoolObject<AsyncPgConnection>;
@@ -49,6 +52,24 @@ lazy_static! {
     static ref ASYNC_PG_POOL: RwLock<Option<AsyncPgPool>> = RwLock::new(None);
     static ref ASYNC_REDIS_POOL: TokioRwLock<Option<AsyncRedisPool>> = TokioRwLock::new(None);
     static ref REDIS_PREFIX: RwLock<String> = RwLock::new("".to_string());
+    static ref STORAGE_REDIS_CONN_GET: Histogram = {
+        let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
+        prometheus::register(
+            "storage_redis_conn_get_duration_seconds",
+            "Time between requesting a Redis connection and the connection-pool returning it",
+            histogram.clone(),
+        );
+        histogram
+    };
+    static ref STORAGE_PG_CONN_GET: Histogram = {
+        let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
+        prometheus::register(
+            "storage_pg_conn_get_duration_seconds",
+            "Time between requesting a PostgreSQL connection and the connection-pool returning it",
+            histogram.clone(),
+        );
+        histogram
+    };
 }
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
@@ -174,7 +195,13 @@ pub fn get_async_db_pool() -> Result<AsyncPgPool> {
 
 pub async fn get_async_db_conn() -> Result<AsyncPgPoolConnection> {
     let pool = get_async_db_pool()?;
-    Ok(pool.get().await?)
+
+    let start = Instant::now();
+    let res = pool.get().await?;
+
+    STORAGE_PG_CONN_GET.observe(start.elapsed().as_secs_f64());
+
+    Ok(res)
 }
 
 async fn get_async_redis_pool() -> Result<AsyncRedisPool> {
@@ -189,12 +216,17 @@ async fn get_async_redis_pool() -> Result<AsyncRedisPool> {
 pub async fn get_async_redis_conn() -> Result<AsyncRedisPoolConnection> {
     let pool = get_async_redis_pool().await?;
 
-    Ok(match pool {
+    let start = Instant::now();
+    let res = match pool {
         AsyncRedisPool::Client(v) => AsyncRedisPoolConnection::Client(v.get().await?),
         AsyncRedisPool::ClusterClient(v) => {
             AsyncRedisPoolConnection::ClusterClient(v.clone().get().await?)
         }
-    })
+    };
+
+    STORAGE_REDIS_CONN_GET.observe(start.elapsed().as_secs_f64());
+
+    Ok(res)
 }
 
 pub fn set_async_db_pool(p: AsyncPgPool) {
