@@ -612,6 +612,7 @@ impl DeviceService for Device {
                 Error::NotFound(_) => {
                     return Ok(Response::new(api::GetDeviceActivationResponse {
                         device_activation: None,
+                        join_server_context: None,
                     }));
                 }
                 _ => {
@@ -635,6 +636,26 @@ impl DeviceService for Device {
                 n_f_cnt_down: ds.n_f_cnt_down,
                 a_f_cnt_down: ds.a_f_cnt_down,
             }),
+            join_server_context: if !ds.js_session_key_id.is_empty() {
+                Some(common::JoinServerContext {
+                    app_s_key: None,
+                    session_key_id: hex::encode(&ds.js_session_key_id),
+                })
+            } else if let Some(app_s_key) = &ds.app_s_key {
+                if !app_s_key.kek_label.is_empty() {
+                    Some(common::JoinServerContext {
+                        app_s_key: Some(common::KeyEnvelope {
+                            kek_label: app_s_key.kek_label.clone(),
+                            aes_key: app_s_key.aes_key.clone(),
+                        }),
+                        session_key_id: "".into(),
+                    })
+                } else {
+                    None
+                }
+            } else {
+                None
+            },
         });
         resp.metadata_mut()
             .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
@@ -1503,6 +1524,60 @@ pub mod test {
         );
         let get_activation_resp = service.get_activation(get_activation_req).await.unwrap();
         assert!(get_activation_resp.get_ref().device_activation.is_none());
+
+        // test get activation with JS session-key ID.
+        device_session::save(&internal::DeviceSession {
+            dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
+            dev_addr: vec![1, 2, 3, 4],
+            js_session_key_id: vec![8, 7, 6, 5, 4, 3, 2, 1],
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let get_activation_req = get_request(
+            &u.id,
+            api::GetDeviceActivationRequest {
+                dev_eui: "0102030405060708".into(),
+            },
+        );
+        let get_activation_resp = service.get_activation(get_activation_req).await.unwrap();
+        assert_eq!(
+            Some(common::JoinServerContext {
+                session_key_id: "0807060504030201".into(),
+                app_s_key: None,
+            }),
+            get_activation_resp.get_ref().join_server_context
+        );
+
+        // test activation with AppSKey key-envelope.
+        device_session::save(&internal::DeviceSession {
+            dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
+            dev_addr: vec![1, 2, 3, 4],
+            app_s_key: Some(common::KeyEnvelope {
+                kek_label: "test-key".into(),
+                aes_key: vec![8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1],
+            }),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let get_activation_req = get_request(
+            &u.id,
+            api::GetDeviceActivationRequest {
+                dev_eui: "0102030405060708".into(),
+            },
+        );
+        let get_activation_resp = service.get_activation(get_activation_req).await.unwrap();
+        assert_eq!(
+            Some(common::JoinServerContext {
+                session_key_id: "".into(),
+                app_s_key: Some(common::KeyEnvelope {
+                    kek_label: "test-key".into(),
+                    aes_key: vec![8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1],
+                }),
+            }),
+            get_activation_resp.get_ref().join_server_context
+        );
 
         // get random dev addr
         let get_random_dev_addr_req = get_request(

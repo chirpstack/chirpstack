@@ -119,6 +119,30 @@ export namespace MetricDataset {
   }
 }
 
+export class JoinServerContext extends jspb.Message {
+  getSessionKeyId(): string;
+  setSessionKeyId(value: string): JoinServerContext;
+
+  getAppSKey(): KeyEnvelope | undefined;
+  setAppSKey(value?: KeyEnvelope): JoinServerContext;
+  hasAppSKey(): boolean;
+  clearAppSKey(): JoinServerContext;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): JoinServerContext.AsObject;
+  static toObject(includeInstance: boolean, msg: JoinServerContext): JoinServerContext.AsObject;
+  static serializeBinaryToWriter(message: JoinServerContext, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): JoinServerContext;
+  static deserializeBinaryFromReader(message: JoinServerContext, reader: jspb.BinaryReader): JoinServerContext;
+}
+
+export namespace JoinServerContext {
+  export type AsObject = {
+    sessionKeyId: string,
+    appSKey?: KeyEnvelope.AsObject,
+  }
+}
+
 export enum Modulation { 
   LORA = 0,
   FSK = 1,

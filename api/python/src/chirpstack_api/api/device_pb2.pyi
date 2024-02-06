@@ -227,10 +227,12 @@ class GetDeviceActivationRequest(_message.Message):
     def __init__(self, dev_eui: _Optional[str] = ...) -> None: ...
 
 class GetDeviceActivationResponse(_message.Message):
-    __slots__ = ("device_activation",)
+    __slots__ = ("device_activation", "join_server_context")
     DEVICE_ACTIVATION_FIELD_NUMBER: _ClassVar[int]
+    JOIN_SERVER_CONTEXT_FIELD_NUMBER: _ClassVar[int]
     device_activation: DeviceActivation
-    def __init__(self, device_activation: _Optional[_Union[DeviceActivation, _Mapping]] = ...) -> None: ...
+    join_server_context: _common_pb2.JoinServerContext
+    def __init__(self, device_activation: _Optional[_Union[DeviceActivation, _Mapping]] = ..., join_server_context: _Optional[_Union[_common_pb2.JoinServerContext, _Mapping]] = ...) -> None: ...
 
 class GetRandomDevAddrRequest(_message.Message):
     __slots__ = ("dev_eui",)

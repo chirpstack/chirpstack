@@ -573,6 +573,11 @@ export class GetDeviceActivationResponse extends jspb.Message {
   hasDeviceActivation(): boolean;
   clearDeviceActivation(): GetDeviceActivationResponse;
 
+  getJoinServerContext(): common_common_pb.JoinServerContext | undefined;
+  setJoinServerContext(value?: common_common_pb.JoinServerContext): GetDeviceActivationResponse;
+  hasJoinServerContext(): boolean;
+  clearJoinServerContext(): GetDeviceActivationResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDeviceActivationResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetDeviceActivationResponse): GetDeviceActivationResponse.AsObject;
@@ -584,6 +589,7 @@ export class GetDeviceActivationResponse extends jspb.Message {
 export namespace GetDeviceActivationResponse {
   export type AsObject = {
     deviceActivation?: DeviceActivation.AsObject,
+    joinServerContext?: common_common_pb.JoinServerContext.AsObject,
   }
 }
 

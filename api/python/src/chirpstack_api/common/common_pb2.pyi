@@ -181,3 +181,11 @@ class MetricDataset(_message.Message):
     label: str
     data: _containers.RepeatedScalarFieldContainer[float]
     def __init__(self, label: _Optional[str] = ..., data: _Optional[_Iterable[float]] = ...) -> None: ...
+
+class JoinServerContext(_message.Message):
+    __slots__ = ("session_key_id", "app_s_key")
+    SESSION_KEY_ID_FIELD_NUMBER: _ClassVar[int]
+    APP_S_KEY_FIELD_NUMBER: _ClassVar[int]
+    session_key_id: str
+    app_s_key: KeyEnvelope
+    def __init__(self, session_key_id: _Optional[str] = ..., app_s_key: _Optional[_Union[KeyEnvelope, _Mapping]] = ...) -> None: ...

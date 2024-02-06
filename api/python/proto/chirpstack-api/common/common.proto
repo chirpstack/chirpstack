@@ -213,3 +213,12 @@ enum DeviceClass {
   // Class-C.
   CLASS_C = 2;
 }
+
+// Join-Server context.
+message JoinServerContext {
+  // Session-key ID.
+  string session_key_id = 1;
+
+  // AppSKey envelope.
+  KeyEnvelope app_s_key = 2;
+}

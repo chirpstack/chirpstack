@@ -5091,7 +5091,8 @@ proto.api.GetDeviceActivationResponse.prototype.toObject = function(opt_includeI
  */
 proto.api.GetDeviceActivationResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    deviceActivation: (f = msg.getDeviceActivation()) && proto.api.DeviceActivation.toObject(includeInstance, f)
+    deviceActivation: (f = msg.getDeviceActivation()) && proto.api.DeviceActivation.toObject(includeInstance, f),
+    joinServerContext: (f = msg.getJoinServerContext()) && common_common_pb.JoinServerContext.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -5133,6 +5134,11 @@ proto.api.GetDeviceActivationResponse.deserializeBinaryFromReader = function(msg
       reader.readMessage(value,proto.api.DeviceActivation.deserializeBinaryFromReader);
       msg.setDeviceActivation(value);
       break;
+    case 2:
+      var value = new common_common_pb.JoinServerContext;
+      reader.readMessage(value,common_common_pb.JoinServerContext.deserializeBinaryFromReader);
+      msg.setJoinServerContext(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -5168,6 +5174,14 @@ proto.api.GetDeviceActivationResponse.serializeBinaryToWriter = function(message
       1,
       f,
       proto.api.DeviceActivation.serializeBinaryToWriter
+    );
+  }
+  f = message.getJoinServerContext();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      common_common_pb.JoinServerContext.serializeBinaryToWriter
     );
   }
 };
@@ -5207,6 +5221,43 @@ proto.api.GetDeviceActivationResponse.prototype.clearDeviceActivation = function
  */
 proto.api.GetDeviceActivationResponse.prototype.hasDeviceActivation = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional common.JoinServerContext join_server_context = 2;
+ * @return {?proto.common.JoinServerContext}
+ */
+proto.api.GetDeviceActivationResponse.prototype.getJoinServerContext = function() {
+  return /** @type{?proto.common.JoinServerContext} */ (
+    jspb.Message.getWrapperField(this, common_common_pb.JoinServerContext, 2));
+};
+
+
+/**
+ * @param {?proto.common.JoinServerContext|undefined} value
+ * @return {!proto.api.GetDeviceActivationResponse} returns this
+*/
+proto.api.GetDeviceActivationResponse.prototype.setJoinServerContext = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.api.GetDeviceActivationResponse} returns this
+ */
+proto.api.GetDeviceActivationResponse.prototype.clearJoinServerContext = function() {
+  return this.setJoinServerContext(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.api.GetDeviceActivationResponse.prototype.hasJoinServerContext = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 

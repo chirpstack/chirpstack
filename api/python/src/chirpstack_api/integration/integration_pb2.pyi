@@ -91,14 +91,6 @@ class UplinkRelayRxInfo(_message.Message):
     wor_channel: int
     def __init__(self, dev_eui: _Optional[str] = ..., frequency: _Optional[int] = ..., dr: _Optional[int] = ..., snr: _Optional[int] = ..., rssi: _Optional[int] = ..., wor_channel: _Optional[int] = ...) -> None: ...
 
-class JoinServerContext(_message.Message):
-    __slots__ = ("session_key_id", "app_s_key")
-    SESSION_KEY_ID_FIELD_NUMBER: _ClassVar[int]
-    APP_S_KEY_FIELD_NUMBER: _ClassVar[int]
-    session_key_id: str
-    app_s_key: _common_pb2.KeyEnvelope
-    def __init__(self, session_key_id: _Optional[str] = ..., app_s_key: _Optional[_Union[_common_pb2.KeyEnvelope, _Mapping]] = ...) -> None: ...
-
 class UplinkEvent(_message.Message):
     __slots__ = ("deduplication_id", "time", "device_info", "dev_addr", "adr", "dr", "f_cnt", "f_port", "confirmed", "data", "object", "rx_info", "tx_info", "relay_rx_info", "join_server_context")
     DEDUPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -130,8 +122,8 @@ class UplinkEvent(_message.Message):
     rx_info: _containers.RepeatedCompositeFieldContainer[_gw_pb2.UplinkRxInfo]
     tx_info: _gw_pb2.UplinkTxInfo
     relay_rx_info: UplinkRelayRxInfo
-    join_server_context: JoinServerContext
-    def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., dev_addr: _Optional[str] = ..., adr: bool = ..., dr: _Optional[int] = ..., f_cnt: _Optional[int] = ..., f_port: _Optional[int] = ..., confirmed: bool = ..., data: _Optional[bytes] = ..., object: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., rx_info: _Optional[_Iterable[_Union[_gw_pb2.UplinkRxInfo, _Mapping]]] = ..., tx_info: _Optional[_Union[_gw_pb2.UplinkTxInfo, _Mapping]] = ..., relay_rx_info: _Optional[_Union[UplinkRelayRxInfo, _Mapping]] = ..., join_server_context: _Optional[_Union[JoinServerContext, _Mapping]] = ...) -> None: ...
+    join_server_context: _common_pb2.JoinServerContext
+    def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., dev_addr: _Optional[str] = ..., adr: bool = ..., dr: _Optional[int] = ..., f_cnt: _Optional[int] = ..., f_port: _Optional[int] = ..., confirmed: bool = ..., data: _Optional[bytes] = ..., object: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., rx_info: _Optional[_Iterable[_Union[_gw_pb2.UplinkRxInfo, _Mapping]]] = ..., tx_info: _Optional[_Union[_gw_pb2.UplinkTxInfo, _Mapping]] = ..., relay_rx_info: _Optional[_Union[UplinkRelayRxInfo, _Mapping]] = ..., join_server_context: _Optional[_Union[_common_pb2.JoinServerContext, _Mapping]] = ...) -> None: ...
 
 class JoinEvent(_message.Message):
     __slots__ = ("deduplication_id", "time", "device_info", "dev_addr", "relay_rx_info", "join_server_context")
@@ -146,8 +138,8 @@ class JoinEvent(_message.Message):
     device_info: DeviceInfo
     dev_addr: str
     relay_rx_info: UplinkRelayRxInfo
-    join_server_context: JoinServerContext
-    def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., dev_addr: _Optional[str] = ..., relay_rx_info: _Optional[_Union[UplinkRelayRxInfo, _Mapping]] = ..., join_server_context: _Optional[_Union[JoinServerContext, _Mapping]] = ...) -> None: ...
+    join_server_context: _common_pb2.JoinServerContext
+    def __init__(self, deduplication_id: _Optional[str] = ..., time: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., device_info: _Optional[_Union[DeviceInfo, _Mapping]] = ..., dev_addr: _Optional[str] = ..., relay_rx_info: _Optional[_Union[UplinkRelayRxInfo, _Mapping]] = ..., join_server_context: _Optional[_Union[_common_pb2.JoinServerContext, _Mapping]] = ...) -> None: ...
 
 class AckEvent(_message.Message):
     __slots__ = ("deduplication_id", "time", "device_info", "queue_item_id", "acknowledged", "f_cnt_down")

@@ -255,7 +255,7 @@ async fn test_js() {
                         ..Default::default()
                     }),
                     dev_addr: "01020304".into(),
-                    join_server_context: Some(integration_pb::JoinServerContext {
+                    join_server_context: Some(common::JoinServerContext {
                         session_key_id: "01020304".into(),
                         ..Default::default()
                     }),
@@ -330,7 +330,7 @@ async fn test_js() {
                         ..Default::default()
                     }),
                     dev_addr: "01020304".into(),
-                    join_server_context: Some(integration_pb::JoinServerContext {
+                    join_server_context: Some(common::JoinServerContext {
                         app_s_key: Some(common::KeyEnvelope {
                             kek_label: "kek-label".into(),
                             aes_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],

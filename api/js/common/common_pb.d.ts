@@ -128,6 +128,32 @@ export namespace MetricDataset {
   }
 }
 
+export class JoinServerContext extends jspb.Message {
+  getSessionKeyId(): string;
+  setSessionKeyId(value: string): void;
+
+  hasAppSKey(): boolean;
+  clearAppSKey(): void;
+  getAppSKey(): KeyEnvelope | undefined;
+  setAppSKey(value?: KeyEnvelope): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): JoinServerContext.AsObject;
+  static toObject(includeInstance: boolean, msg: JoinServerContext): JoinServerContext.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: JoinServerContext, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): JoinServerContext;
+  static deserializeBinaryFromReader(message: JoinServerContext, reader: jspb.BinaryReader): JoinServerContext;
+}
+
+export namespace JoinServerContext {
+  export type AsObject = {
+    sessionKeyId: string,
+    appSKey?: KeyEnvelope.AsObject,
+  }
+}
+
 export interface ModulationMap {
   LORA: 0;
   FSK: 1;

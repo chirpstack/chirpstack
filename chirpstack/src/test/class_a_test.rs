@@ -1807,7 +1807,7 @@ async fn test_lorawan_10_end_to_end_enc() {
                 f_port: 1,
                 dr: 0,
                 data: vec![1, 2, 3, 4],
-                join_server_context: Some(integration_pb::JoinServerContext {
+                join_server_context: Some(common::JoinServerContext {
                     session_key_id: "010203".into(),
                     ..Default::default()
                 }),
@@ -1857,7 +1857,7 @@ async fn test_lorawan_10_end_to_end_enc() {
                 f_port: 1,
                 dr: 0,
                 data: vec![1, 2, 3, 4],
-                join_server_context: Some(integration_pb::JoinServerContext {
+                join_server_context: Some(common::JoinServerContext {
                     app_s_key: Some(common::KeyEnvelope {
                         kek_label: "kek-label".into(),
                         aes_key: vec![1, 2, 3],
@@ -1919,7 +1919,7 @@ async fn test_lorawan_10_end_to_end_enc() {
                     f_port: 1,
                     dr: 0,
                     data: vec![1, 2, 3, 4],
-                    join_server_context: Some(integration_pb::JoinServerContext {
+                    join_server_context: Some(common::JoinServerContext {
                         app_s_key: Some(common::KeyEnvelope {
                             kek_label: "kek-label".into(),
                             aes_key: vec![1, 2, 3],

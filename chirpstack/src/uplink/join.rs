@@ -941,7 +941,7 @@ impl JoinRequest {
             relay_rx_info: self.relay_rx_info.clone(),
             dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
             join_server_context: if !self.js_session_key_id.is_empty() {
-                Some(integration_pb::JoinServerContext {
+                Some(common::JoinServerContext {
                     app_s_key: None,
                     session_key_id: hex::encode(&self.js_session_key_id),
                 })
@@ -949,7 +949,7 @@ impl JoinRequest {
                 if app_s_key.kek_label.is_empty() {
                     None
                 } else {
-                    Some(integration_pb::JoinServerContext {
+                    Some(common::JoinServerContext {
                         app_s_key: Some(common::KeyEnvelope {
                             kek_label: app_s_key.kek_label.clone(),
                             aes_key: app_s_key.aes_key.clone(),

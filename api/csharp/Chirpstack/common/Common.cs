@@ -33,37 +33,40 @@ namespace Chirpstack.Common {
             "ZXN0YW1wcxgCIAMoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASJwoI",
             "ZGF0YXNldHMYAyADKAsyFS5jb21tb24uTWV0cmljRGF0YXNldBIgCgRraW5k",
             "GAQgASgOMhIuY29tbW9uLk1ldHJpY0tpbmQiLAoNTWV0cmljRGF0YXNldBIN",
-            "CgVsYWJlbBgBIAEoCRIMCgRkYXRhGAIgAygCKiwKCk1vZHVsYXRpb24SCAoE",
-            "TE9SQRAAEgcKA0ZTSxABEgsKB0xSX0ZIU1MQAiqqAQoGUmVnaW9uEgkKBUVV",
-            "ODY4EAASCQoFVVM5MTUQAhIJCgVDTjc3ORADEgkKBUVVNDMzEAQSCQoFQVU5",
-            "MTUQBRIJCgVDTjQ3MBAGEgkKBUFTOTIzEAcSCwoHQVM5MjNfMhAMEgsKB0FT",
-            "OTIzXzMQDRILCgdBUzkyM180EA4SCQoFS1I5MjAQCBIJCgVJTjg2NRAJEgkK",
-            "BVJVODY0EAoSCwoHSVNNMjQwMBALKrMBCgVNVHlwZRIQCgxKT0lOX1JFUVVF",
-            "U1QQABIPCgtKT0lOX0FDQ0VQVBABEhcKE1VOQ09ORklSTUVEX0RBVEFfVVAQ",
-            "AhIZChVVTkNPTkZJUk1FRF9EQVRBX0RPV04QAxIVChFDT05GSVJNRURfREFU",
-            "QV9VUBAEEhcKE0NPTkZJUk1FRF9EQVRBX0RPV04QBRISCg5SRUpPSU5fUkVR",
-            "VUVTVBAGEg8KC1BST1BSSUVUQVJZEAcqfgoKTWFjVmVyc2lvbhIRCg1MT1JB",
-            "V0FOXzFfMF8wEAASEQoNTE9SQVdBTl8xXzBfMRABEhEKDUxPUkFXQU5fMV8w",
-            "XzIQAhIRCg1MT1JBV0FOXzFfMF8zEAMSEQoNTE9SQVdBTl8xXzBfNBAEEhEK",
-            "DUxPUkFXQU5fMV8xXzAQBSplChFSZWdQYXJhbXNSZXZpc2lvbhIFCgFBEAAS",
-            "BQoBQhABEg8KC1JQMDAyXzFfMF8wEAISDwoLUlAwMDJfMV8wXzEQAxIPCgtS",
-            "UDAwMl8xXzBfMhAEEg8KC1JQMDAyXzFfMF8zEAUqjgEKDkxvY2F0aW9uU291",
-            "cmNlEgsKB1VOS05PV04QABIHCgNHUFMQARIKCgZDT05GSUcQAhIVChFHRU9f",
-            "UkVTT0xWRVJfVERPQRADEhUKEUdFT19SRVNPTFZFUl9SU1NJEAQSFQoRR0VP",
-            "X1JFU09MVkVSX0dOU1MQBRIVChFHRU9fUkVTT0xWRVJfV0lGSRAGKisKC0Fn",
-            "Z3JlZ2F0aW9uEggKBEhPVVIQABIHCgNEQVkQARIJCgVNT05USBACKjIKCk1l",
-            "dHJpY0tpbmQSCwoHQ09VTlRFUhAAEgwKCEFCU09MVVRFEAESCQoFR0FVR0UQ",
-            "Aio0CgtEZXZpY2VDbGFzcxILCgdDTEFTU19BEAASCwoHQ0xBU1NfQhABEgsK",
-            "B0NMQVNTX0MQAkJpChFpby5jaGlycHN0YWNrLmFwaUILQ29tbW9uUHJvdG9Q",
-            "AVoxZ2l0aHViLmNvbS9jaGlycHN0YWNrL2NoaXJwc3RhY2svYXBpL2dvL3Y0",
-            "L2NvbW1vbqoCEUNoaXJwc3RhY2suQ29tbW9uYgZwcm90bzM="));
+            "CgVsYWJlbBgBIAEoCRIMCgRkYXRhGAIgAygCIlMKEUpvaW5TZXJ2ZXJDb250",
+            "ZXh0EhYKDnNlc3Npb25fa2V5X2lkGAEgASgJEiYKCWFwcF9zX2tleRgCIAEo",
+            "CzITLmNvbW1vbi5LZXlFbnZlbG9wZSosCgpNb2R1bGF0aW9uEggKBExPUkEQ",
+            "ABIHCgNGU0sQARILCgdMUl9GSFNTEAIqqgEKBlJlZ2lvbhIJCgVFVTg2OBAA",
+            "EgkKBVVTOTE1EAISCQoFQ043NzkQAxIJCgVFVTQzMxAEEgkKBUFVOTE1EAUS",
+            "CQoFQ040NzAQBhIJCgVBUzkyMxAHEgsKB0FTOTIzXzIQDBILCgdBUzkyM18z",
+            "EA0SCwoHQVM5MjNfNBAOEgkKBUtSOTIwEAgSCQoFSU44NjUQCRIJCgVSVTg2",
+            "NBAKEgsKB0lTTTI0MDAQCyqzAQoFTVR5cGUSEAoMSk9JTl9SRVFVRVNUEAAS",
+            "DwoLSk9JTl9BQ0NFUFQQARIXChNVTkNPTkZJUk1FRF9EQVRBX1VQEAISGQoV",
+            "VU5DT05GSVJNRURfREFUQV9ET1dOEAMSFQoRQ09ORklSTUVEX0RBVEFfVVAQ",
+            "BBIXChNDT05GSVJNRURfREFUQV9ET1dOEAUSEgoOUkVKT0lOX1JFUVVFU1QQ",
+            "BhIPCgtQUk9QUklFVEFSWRAHKn4KCk1hY1ZlcnNpb24SEQoNTE9SQVdBTl8x",
+            "XzBfMBAAEhEKDUxPUkFXQU5fMV8wXzEQARIRCg1MT1JBV0FOXzFfMF8yEAIS",
+            "EQoNTE9SQVdBTl8xXzBfMxADEhEKDUxPUkFXQU5fMV8wXzQQBBIRCg1MT1JB",
+            "V0FOXzFfMV8wEAUqZQoRUmVnUGFyYW1zUmV2aXNpb24SBQoBQRAAEgUKAUIQ",
+            "ARIPCgtSUDAwMl8xXzBfMBACEg8KC1JQMDAyXzFfMF8xEAMSDwoLUlAwMDJf",
+            "MV8wXzIQBBIPCgtSUDAwMl8xXzBfMxAFKo4BCg5Mb2NhdGlvblNvdXJjZRIL",
+            "CgdVTktOT1dOEAASBwoDR1BTEAESCgoGQ09ORklHEAISFQoRR0VPX1JFU09M",
+            "VkVSX1RET0EQAxIVChFHRU9fUkVTT0xWRVJfUlNTSRAEEhUKEUdFT19SRVNP",
+            "TFZFUl9HTlNTEAUSFQoRR0VPX1JFU09MVkVSX1dJRkkQBiorCgtBZ2dyZWdh",
+            "dGlvbhIICgRIT1VSEAASBwoDREFZEAESCQoFTU9OVEgQAioyCgpNZXRyaWNL",
+            "aW5kEgsKB0NPVU5URVIQABIMCghBQlNPTFVURRABEgkKBUdBVUdFEAIqNAoL",
+            "RGV2aWNlQ2xhc3MSCwoHQ0xBU1NfQRAAEgsKB0NMQVNTX0IQARILCgdDTEFT",
+            "U19DEAJCaQoRaW8uY2hpcnBzdGFjay5hcGlCC0NvbW1vblByb3RvUAFaMWdp",
+            "dGh1Yi5jb20vY2hpcnBzdGFjay9jaGlycHN0YWNrL2FwaS9nby92NC9jb21t",
+            "b26qAhFDaGlycHN0YWNrLkNvbW1vbmIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Common.Modulation), typeof(global::Chirpstack.Common.Region), typeof(global::Chirpstack.Common.MType), typeof(global::Chirpstack.Common.MacVersion), typeof(global::Chirpstack.Common.RegParamsRevision), typeof(global::Chirpstack.Common.LocationSource), typeof(global::Chirpstack.Common.Aggregation), typeof(global::Chirpstack.Common.MetricKind), typeof(global::Chirpstack.Common.DeviceClass), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.Location), global::Chirpstack.Common.Location.Parser, new[]{ "Latitude", "Longitude", "Altitude", "Source", "Accuracy" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.KeyEnvelope), global::Chirpstack.Common.KeyEnvelope.Parser, new[]{ "KekLabel", "AesKey" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.Metric), global::Chirpstack.Common.Metric.Parser, new[]{ "Name", "Timestamps", "Datasets", "Kind" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.MetricDataset), global::Chirpstack.Common.MetricDataset.Parser, new[]{ "Label", "Data" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.MetricDataset), global::Chirpstack.Common.MetricDataset.Parser, new[]{ "Label", "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Common.JoinServerContext), global::Chirpstack.Common.JoinServerContext.Parser, new[]{ "SessionKeyId", "AppSKey" }, null, null, null, null)
           }));
     }
     #endregion
@@ -1366,6 +1369,250 @@ namespace Chirpstack.Common {
           case 18:
           case 21: {
             data_.AddEntriesFrom(ref input, _repeated_data_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// Join-Server context.
+  /// </summary>
+  public sealed partial class JoinServerContext : pb::IMessage<JoinServerContext>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<JoinServerContext> _parser = new pb::MessageParser<JoinServerContext>(() => new JoinServerContext());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<JoinServerContext> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Chirpstack.Common.CommonReflection.Descriptor.MessageTypes[4]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public JoinServerContext() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public JoinServerContext(JoinServerContext other) : this() {
+      sessionKeyId_ = other.sessionKeyId_;
+      appSKey_ = other.appSKey_ != null ? other.appSKey_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public JoinServerContext Clone() {
+      return new JoinServerContext(this);
+    }
+
+    /// <summary>Field number for the "session_key_id" field.</summary>
+    public const int SessionKeyIdFieldNumber = 1;
+    private string sessionKeyId_ = "";
+    /// <summary>
+    /// Session-key ID.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string SessionKeyId {
+      get { return sessionKeyId_; }
+      set {
+        sessionKeyId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "app_s_key" field.</summary>
+    public const int AppSKeyFieldNumber = 2;
+    private global::Chirpstack.Common.KeyEnvelope appSKey_;
+    /// <summary>
+    /// AppSKey envelope.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Chirpstack.Common.KeyEnvelope AppSKey {
+      get { return appSKey_; }
+      set {
+        appSKey_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as JoinServerContext);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(JoinServerContext other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (SessionKeyId != other.SessionKeyId) return false;
+      if (!object.Equals(AppSKey, other.AppSKey)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (SessionKeyId.Length != 0) hash ^= SessionKeyId.GetHashCode();
+      if (appSKey_ != null) hash ^= AppSKey.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (SessionKeyId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(SessionKeyId);
+      }
+      if (appSKey_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(AppSKey);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (SessionKeyId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(SessionKeyId);
+      }
+      if (appSKey_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(AppSKey);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (SessionKeyId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(SessionKeyId);
+      }
+      if (appSKey_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(AppSKey);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(JoinServerContext other) {
+      if (other == null) {
+        return;
+      }
+      if (other.SessionKeyId.Length != 0) {
+        SessionKeyId = other.SessionKeyId;
+      }
+      if (other.appSKey_ != null) {
+        if (appSKey_ == null) {
+          AppSKey = new global::Chirpstack.Common.KeyEnvelope();
+        }
+        AppSKey.MergeFrom(other.AppSKey);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            SessionKeyId = input.ReadString();
+            break;
+          }
+          case 18: {
+            if (appSKey_ == null) {
+              AppSKey = new global::Chirpstack.Common.KeyEnvelope();
+            }
+            input.ReadMessage(AppSKey);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            SessionKeyId = input.ReadString();
+            break;
+          }
+          case 18: {
+            if (appSKey_ == null) {
+              AppSKey = new global::Chirpstack.Common.KeyEnvelope();
+            }
+            input.ReadMessage(AppSKey);
             break;
           }
         }

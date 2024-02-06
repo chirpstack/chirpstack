@@ -2011,6 +2011,7 @@ applications.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | device_activation | [DeviceActivation](#api-DeviceActivation) |  | Device activation object. |
+| join_server_context | [common.JoinServerContext](#common-JoinServerContext) |  | Join-Server context. A non-empty value indicatest that ChirpStack does not have access to the AppSKey and that the encryption / decryption of the payloads is the responsibility of the end-application. |
 
 
 

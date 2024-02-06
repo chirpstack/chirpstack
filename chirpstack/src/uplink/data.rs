@@ -22,7 +22,7 @@ use crate::storage::{
     metrics, tenant,
 };
 use crate::{codec, config, downlink, integration, maccommand, region, stream};
-use chirpstack_api::{integration as integration_pb, internal, stream as stream_pb};
+use chirpstack_api::{common, integration as integration_pb, internal, stream as stream_pb};
 use lrwn::{AES128Key, EUI64};
 
 pub struct Data {
@@ -955,7 +955,7 @@ impl Data {
             rx_info: self.uplink_frame_set.rx_info_set.clone(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
             join_server_context: if self._is_end_to_end_encrypted() {
-                Some(integration_pb::JoinServerContext {
+                Some(common::JoinServerContext {
                     session_key_id: hex::encode(&ds.js_session_key_id),
                     app_s_key: ds.app_s_key.clone(),
                 })
