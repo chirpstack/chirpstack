@@ -63,6 +63,8 @@ diesel::table! {
         tags -> Jsonb,
         variables -> Jsonb,
         join_eui -> Bytea,
+        secondary_dev_addr -> Nullable<Bytea>,
+        device_session -> Nullable<Bytea>,
     }
 }
 

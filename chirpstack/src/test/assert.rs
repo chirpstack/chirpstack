@@ -240,7 +240,11 @@ pub fn device_session(dev_eui: EUI64, ds: internal::DeviceSession) -> Validator 
     Box::new(move || {
         let ds = ds.clone();
         Box::pin(async move {
-            let ds_get = device_session::get(&dev_eui).await.unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds_get = internal::DeviceSession::decode(&mut Cursor::new(
+                d.device_session.as_ref().unwrap(),
+            ))
+            .unwrap();
             assert_eq!(ds, ds_get);
         })
     })
@@ -249,8 +253,8 @@ pub fn device_session(dev_eui: EUI64, ds: internal::DeviceSession) -> Validator 
 pub fn no_device_session(dev_eui: EUI64) -> Validator {
     Box::new(move || {
         Box::pin(async move {
-            let res = device_session::get(&dev_eui).await;
-            assert_eq!(true, res.is_err());
+            let d = device::get(&dev_eui).await.unwrap();
+            assert!(d.device_session.is_none());
         })
     })
 }

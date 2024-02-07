@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::io::Cursor;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
@@ -7,14 +8,23 @@ use bigdecimal::BigDecimal;
 use chrono::{DateTime, Duration, Utc};
 use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
 use diesel_async::RunQueryDsl;
+use prost::Message;
 use tracing::info;
 use uuid::Uuid;
 
+use chirpstack_api::internal;
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{application, device, device_profile, multicast_group_device, tenant};
 use super::{error::Error, fields, get_async_db_conn};
+use crate::api::helpers::FromProto;
 use crate::config;
+
+pub enum ValidationStatus {
+    Ok(u32, internal::DeviceSession),
+    Retransmission(u32, internal::DeviceSession),
+    Reset(u32, internal::DeviceSession),
+}
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, AsExpression, FromSqlRow)]
 #[diesel(sql_type = Text)]
@@ -95,6 +105,20 @@ pub struct Device {
     pub tags: fields::KeyValue,
     pub variables: fields::KeyValue,
     pub join_eui: EUI64,
+    pub secondary_dev_addr: Option<DevAddr>,
+    pub device_session: Option<Vec<u8>>,
+}
+
+#[derive(AsChangeset, Debug, Clone, Default)]
+#[diesel(table_name = device)]
+pub struct DeviceChangeset {
+    pub last_seen_at: Option<Option<DateTime<Utc>>>,
+    pub dr: Option<Option<i16>>,
+    pub dev_addr: Option<Option<DevAddr>>,
+    pub enabled_class: Option<DeviceClass>,
+    pub join_eui: Option<EUI64>,
+    pub secondary_dev_addr: Option<Option<DevAddr>>,
+    pub device_session: Option<Option<Vec<u8>>>,
 }
 
 impl Device {
@@ -134,6 +158,8 @@ impl Default for Device {
             tags: fields::KeyValue::new(HashMap::new()),
             variables: fields::KeyValue::new(HashMap::new()),
             join_eui: EUI64::default(),
+            secondary_dev_addr: None,
+            device_session: None,
         }
     }
 }
@@ -237,6 +263,143 @@ pub async fn get(dev_eui: &EUI64) -> Result<Device, Error> {
     Ok(d)
 }
 
+// Return the device-session matching the given PhyPayload. This will fetch all device-session
+// associated with the used DevAddr and based on f_cont and mic, decides which one to use.
+// This function will increment the uplink frame-counter and will immediately update the
+// device-session in the database, to make sure that in case this function is called multiple
+// times, at most one will be valid.
+// On Ok response, the PhyPayload f_cnt will be set to the full 32bit frame-counter based on the
+// device-session context.
+pub async fn get_for_phypayload_and_incr_f_cnt_up(
+    relayed: bool,
+    phy: &mut lrwn::PhyPayload,
+    tx_dr: u8,
+    tx_ch: u8,
+) -> Result<ValidationStatus, Error> {
+    let mut dev_addr = lrwn::DevAddr::from_be_bytes([0x00, 0x00, 0x00, 0x00]);
+    let mut f_cnt_orig = 0;
+
+    // Get the dev_addr and original f_cnt.
+    if let lrwn::Payload::MACPayload(pl) = &phy.payload {
+        dev_addr = pl.fhdr.devaddr;
+        f_cnt_orig = pl.fhdr.f_cnt;
+    } else {
+        return Err(Error::InvalidPayload("MacPayload".to_string()));
+    }
+
+    let mut c = get_async_db_conn().await?;
+
+    c.build_transaction()
+        .run::<ValidationStatus, Error, _>(|c| {
+            Box::pin(async move {
+                let devices: Vec<(EUI64, Option<Vec<u8>>)> = device::dsl::device
+                    .select((device::dev_eui, device::device_session))
+                    .filter(
+                        device::dsl::dev_addr
+                            .eq(&dev_addr)
+                            .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
+                    )
+                    .for_update()
+                    .load(c)
+                    .await?;
+
+                for d in &devices {
+                    if d.1.is_none() {
+                        continue;
+                    }
+
+                    let mut ds =
+                        internal::DeviceSession::decode(&mut Cursor::new(d.1.as_ref().unwrap()))?;
+
+                    // Get the full 32bit frame-counter.
+                    let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
+                    let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
+                    let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
+
+                    // Check both the full frame-counter and the received frame-counter
+                    // truncated to the 16LSB.
+                    // The latter is needed in case of a frame-counter reset as the
+                    // GetFullFCntUp will think the 16LSB has rolled over and will
+                    // increment the 16MSB bit.
+                    let mut mic_ok = false;
+                    for f_cnt in [full_f_cnt, f_cnt_orig] {
+                        // Set the full f_cnt.
+                        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                            pl.fhdr.f_cnt = f_cnt;
+                        }
+
+                        mic_ok = phy
+                            .validate_uplink_data_mic(
+                                ds.mac_version().from_proto(),
+                                ds.conf_f_cnt,
+                                tx_dr,
+                                tx_ch,
+                                &f_nwk_s_int_key,
+                                &s_nwk_s_int_key,
+                            )
+                            .context("Validate MIC")?;
+
+                        if mic_ok {
+                            break;
+                        }
+                    }
+
+                    if mic_ok {
+                        let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
+                            pl.fhdr.f_cnt
+                        } else {
+                            0
+                        };
+
+                        if let Some(relay) = &ds.relay {
+                            if !relayed && relay.ed_relay_only {
+                                info!(
+                                    dev_eui = %d.0,
+                                    "Only communication through relay is allowed"
+                                );
+                                return Err(Error::NotFound(dev_addr.to_string()));
+                            }
+                        }
+
+                        if full_f_cnt >= ds.f_cnt_up {
+                            // We immediately save the device-session to make sure that concurrent calls for
+                            // the same uplink will fail on the frame-counter validation.
+                            let ds_f_cnt_up = ds.f_cnt_up;
+                            ds.f_cnt_up = full_f_cnt + 1;
+
+                            let _ = diesel::update(device::dsl::device.find(&d.0))
+                                .set(device::device_session.eq(&ds.encode_to_vec()))
+                                .execute(c)
+                                .await?;
+
+                            // We do return the device-session with original frame-counter
+                            ds.f_cnt_up = ds_f_cnt_up;
+
+                            return Ok(ValidationStatus::Ok(full_f_cnt, ds));
+                        } else if ds.skip_f_cnt_check {
+                            // re-transmission or frame-counter reset
+                            ds.f_cnt_up = 0;
+                            return Ok(ValidationStatus::Ok(full_f_cnt, ds));
+                        } else if full_f_cnt == (ds.f_cnt_up - 1) {
+                            // re-transmission, the frame-counter did not increment
+                            return Ok(ValidationStatus::Retransmission(full_f_cnt, ds));
+                        } else {
+                            return Ok(ValidationStatus::Reset(full_f_cnt, ds));
+                        }
+                    }
+
+                    // Restore the original f_cnt.
+                    if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                        pl.fhdr.f_cnt = f_cnt_orig;
+                    }
+                }
+
+                Err(Error::InvalidMIC)
+            })
+        })
+        .await
+}
+
 pub async fn update(d: Device) -> Result<Device, Error> {
     d.validate()?;
 
@@ -257,6 +420,17 @@ pub async fn update(d: Device) -> Result<Device, Error> {
         .await
         .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))?;
     info!(dev_eui = %d.dev_eui, "Device updated");
+    Ok(d)
+}
+
+pub async fn partial_update(dev_eui: EUI64, d: &DeviceChangeset) -> Result<Device, Error> {
+    let d = diesel::update(device::dsl::device.find(&dev_eui))
+        .set(d)
+        .get_result::<Device>(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+
+    info!(dev_eui = %dev_eui, "Device partially updated");
     Ok(d)
 }
 
@@ -528,6 +702,29 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
         })
         .await
         .context("Get with Class B/C queue-items transaction")
+}
+
+// GetFullFCntUp returns the full 32bit frame-counter, given the fCntUp which
+// has been truncated to the last 16 LSB.
+// Notes:
+// * After a succesful validation of the FCntUp and the MIC, don't forget
+//   to synchronize the device FCntUp with the packet FCnt.
+// * In case of a frame-counter rollover, the returned values will be less
+//   than the given DeviceSession FCntUp. This must be validated outside this
+//   function!
+// * In case of a re-transmission, the returned frame-counter equals
+//   DeviceSession.FCntUp - 1, as the FCntUp value holds the next expected
+//   frame-counter, not the FCntUp which was last seen.
+fn get_full_f_cnt_up(next_expected_full_fcnt: u32, truncated_f_cnt: u32) -> u32 {
+    // Handle re-transmission.
+    if truncated_f_cnt == (((next_expected_full_fcnt % (1 << 16)) as u16).wrapping_sub(1)) as u32 {
+        return next_expected_full_fcnt - 1;
+    }
+
+    let gap = ((truncated_f_cnt as u16).wrapping_sub((next_expected_full_fcnt % (1 << 16)) as u16))
+        as u32;
+
+    next_expected_full_fcnt.wrapping_add(gap)
 }
 
 #[cfg(test)]

@@ -8,7 +8,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_keys, device_profile, gateway, reset_redis, tenant,
+    device_keys, device_profile, gateway, reset_db, reset_redis, tenant,
 };
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
 use chirpstack_api::{common, gw, internal, stream};
@@ -1224,7 +1224,7 @@ async fn test_lorawan_11() {
 async fn run_test(t: &Test) {
     println!("> {}", t.name);
 
-    reset_redis().await.unwrap();
+    reset_db().await.unwrap();
 
     let mut conf: config::Configuration = (*config::get()).clone();
     for f in &t.extra_uplink_channels {

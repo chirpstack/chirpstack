@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
+use prost::Message;
 use tracing::{error, info, span, trace, warn, Instrument, Level};
 
 use lrwn::{
@@ -20,7 +21,6 @@ use super::{
 use crate::api::{backend::get_async_receiver, helpers::ToProto};
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::helpers::errors::PrintFullError;
-use crate::storage::device_session;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
@@ -53,6 +53,7 @@ pub struct JoinRequest {
     nwk_s_enc_key: Option<AES128Key>,
     app_s_key: Option<common::KeyEnvelope>,
     js_session_key_id: Vec<u8>,
+    device_changeset: device::DeviceChangeset,
 }
 
 impl JoinRequest {
@@ -110,6 +111,7 @@ impl JoinRequest {
             nwk_s_enc_key: None,
             app_s_key: None,
             js_session_key_id: vec![],
+            device_changeset: Default::default(),
         };
 
         ctx.get_join_request_payload()?;
@@ -141,11 +143,12 @@ impl JoinRequest {
             ctx.construct_join_accept_and_set_keys()?;
         }
         ctx.log_uplink_meta().await?;
-        ctx.create_device_session().await?;
+        ctx.set_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
         ctx.set_dev_addr().await?;
         ctx.set_join_eui().await?;
+        ctx.update_device().await?;
         ctx.start_downlink_join_accept_flow().await?;
         ctx.send_join_event().await?;
 
@@ -173,6 +176,7 @@ impl JoinRequest {
             nwk_s_enc_key: None,
             app_s_key: None,
             js_session_key_id: vec![],
+            device_changeset: Default::default(),
         };
 
         ctx.get_join_request_payload_relayed()?;
@@ -193,11 +197,12 @@ impl JoinRequest {
             ctx.validate_dev_nonce_and_get_device_keys().await?;
             ctx.construct_join_accept_and_set_keys()?;
         }
-        ctx.create_device_session().await?;
+        ctx.set_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
         ctx.set_dev_addr().await?;
         ctx.set_join_eui().await?;
+        ctx.update_device().await?;
         ctx.start_downlink_join_accept_flow_relayed().await?;
         ctx.send_join_event().await?;
 
@@ -768,8 +773,8 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn create_device_session(&mut self) -> Result<()> {
-        trace!("Creating device-session");
+    async fn set_device_session(&mut self) -> Result<()> {
+        trace!("Setting device-session");
 
         let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
         let region_network = config::get_region_network(&self.uplink_frame_set.region_config_id)?;
@@ -847,10 +852,7 @@ impl JoinRequest {
             None => {}
         }
 
-        device_session::save(&ds)
-            .await
-            .context("Saving device-session failed")?;
-
+        self.device_changeset.device_session = Some(Some(ds.encode_to_vec()));
         self.device_session = Some(ds);
 
         Ok(())
@@ -870,31 +872,35 @@ impl JoinRequest {
 
     async fn set_device_mode(&mut self) -> Result<()> {
         let dp = self.device_profile.as_ref().unwrap();
-        let device = self.device.as_mut().unwrap();
 
         // LoRaWAN 1.1 devices send a mac-command when changing to Class-C.
         if dp.supports_class_c && dp.mac_version.to_string().starts_with("1.0") {
-            *device = device::set_enabled_class(&device.dev_eui, DeviceClass::C).await?;
+            self.device_changeset.enabled_class = Some(DeviceClass::C);
         } else {
-            *device = device::set_enabled_class(&device.dev_eui, DeviceClass::A).await?;
+            self.device_changeset.enabled_class = Some(DeviceClass::A);
         }
+
         Ok(())
     }
 
     async fn set_dev_addr(&mut self) -> Result<()> {
         trace!("Setting DevAddr");
-        let dev = self.device.as_mut().unwrap();
-        *dev = device::set_dev_addr(dev.dev_eui, self.dev_addr.unwrap()).await?;
+        self.device_changeset.dev_addr = Some(Some(self.dev_addr.unwrap()));
+        self.device_changeset.secondary_dev_addr = Some(None);
         Ok(())
     }
 
     async fn set_join_eui(&mut self) -> Result<()> {
         trace!("Setting JoinEUI");
-        let dev = self.device.as_mut().unwrap();
         let req = self.join_request.as_ref().unwrap();
+        self.device_changeset.join_eui = Some(req.join_eui);
+        Ok(())
+    }
 
-        *dev = device::set_join_eui(dev.dev_eui, req.join_eui).await?;
-
+    async fn update_device(&mut self) -> Result<()> {
+        trace!("Updating device");
+        let d = self.device.as_mut().unwrap();
+        *d = device::partial_update(d.dev_eui, &self.device_changeset).await?;
         Ok(())
     }
 

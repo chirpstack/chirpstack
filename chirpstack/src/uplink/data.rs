@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Local, Utc};
+use prost::Message;
 use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 
 use super::error::Error;
@@ -50,6 +51,7 @@ pub struct Data {
     must_send_downlink: bool,
     downlink_mac_commands: Vec<lrwn::MACCommandSet>,
     device_gateway_rx_info: Option<internal::DeviceGatewayRxInfo>,
+    device_changeset: device::DeviceChangeset,
 }
 
 impl Data {
@@ -109,6 +111,7 @@ impl Data {
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
             device_gateway_rx_info: None,
+            device_changeset: Default::default(),
         };
 
         ctx.handle_passive_roaming_device().await?;
@@ -149,6 +152,7 @@ impl Data {
         ctx.sync_uplink_f_cnt()?;
         ctx.set_region_config_id()?;
         ctx.save_device_session().await?;
+        ctx.update_device().await?;
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics().await?;
 
@@ -184,6 +188,7 @@ impl Data {
             uplink_event: None,
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
+            device_changeset: Default::default(),
         };
 
         ctx.get_device_session_relayed().await?;
@@ -239,7 +244,7 @@ impl Data {
             return Err(Error::AnyhowError(anyhow!("No MacPayload in PhyPayload")));
         };
 
-        match device_session::get_for_phypayload_and_incr_f_cnt_up(
+        match device::get_for_phypayload_and_incr_f_cnt_up(
             false,
             &mut self.phy_payload,
             self.uplink_frame_set.dr,
@@ -248,16 +253,16 @@ impl Data {
         .await
         {
             Ok(v) => match v {
-                device_session::ValidationStatus::Ok(f_cnt, ds) => {
+                device::ValidationStatus::Ok(f_cnt, ds) => {
                     self.device_session = Some(ds);
                     self.f_cnt_up_full = f_cnt;
                 }
-                device_session::ValidationStatus::Retransmission(f_cnt, ds) => {
+                device::ValidationStatus::Retransmission(f_cnt, ds) => {
                     self.retransmission = true;
                     self.device_session = Some(ds);
                     self.f_cnt_up_full = f_cnt;
                 }
-                device_session::ValidationStatus::Reset(f_cnt, ds) => {
+                device::ValidationStatus::Reset(f_cnt, ds) => {
                     self.reset = true;
                     self.device_session = Some(ds);
                     self.f_cnt_up_full = f_cnt;
@@ -1107,11 +1112,17 @@ impl Data {
         Ok(())
     }
 
-    async fn save_device_session(&self) -> Result<()> {
-        trace!("Saving device-session");
-        device_session::save(self.device_session.as_ref().unwrap())
-            .await
-            .context("Save device-session")?;
+    async fn save_device_session(&mut self) -> Result<()> {
+        trace!("Setting device-session");
+        let ds = self.device_session.as_ref().unwrap();
+        self.device_changeset.device_session = Some(Some(ds.encode_to_vec()));
+        Ok(())
+    }
+
+    async fn update_device(&mut self) -> Result<()> {
+        trace!("Updating device");
+        let d = self.device.as_mut().unwrap();
+        *d = device::partial_update(d.dev_eui, &self.device_changeset).await?;
         Ok(())
     }
 
