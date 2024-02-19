@@ -19,6 +19,7 @@ type Function = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;
 
 struct Test {
     name: String,
+    dev_eui: EUI64,
     before_func: Option<Function>,
     after_func: Option<Function>,
     tx_info: gw::UplinkTxInfo,
@@ -153,6 +154,7 @@ async fn test_gateway_filtering() {
     let tests = vec![
         Test {
             name: "private gateway of same tenant".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
@@ -198,6 +200,7 @@ async fn test_gateway_filtering() {
         },
         Test {
             name: "private gateway other tenant".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
@@ -375,6 +378,7 @@ async fn test_lorawan_10() {
     let tests = vec![
         Test {
             name: "dev-nonce already used".into(),
+            dev_eui: dev.dev_eui,
             before_func: None,
             after_func: None,
             rx_info: rx_info.clone(),
@@ -387,6 +391,7 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
@@ -576,6 +581,7 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted + skip fcnt check".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
@@ -633,6 +639,7 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted + cflist".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
@@ -786,6 +793,7 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted + class-b supported".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
@@ -813,6 +821,7 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "join-request accepted + class-c supported".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
@@ -840,6 +849,7 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "device disabled".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
@@ -997,6 +1007,7 @@ async fn test_lorawan_11() {
     let tests = vec![
         Test {
             name: "dev-nonce already used".into(),
+            dev_eui: dev.dev_eui,
             before_func: None,
             after_func: None,
             rx_info: rx_info.clone(),
@@ -1009,6 +1020,7 @@ async fn test_lorawan_11() {
         },
         Test {
             name: "join-request accepted".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 Box::pin(async move {
@@ -1189,6 +1201,7 @@ async fn test_lorawan_11() {
         },
         Test {
             name: "join-request accepted + class-c supported".into(),
+            dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
                 let dp_id = dp.id.clone();
@@ -1224,8 +1237,6 @@ async fn test_lorawan_11() {
 async fn run_test(t: &Test) {
     println!("> {}", t.name);
 
-    reset_db().await.unwrap();
-
     let mut conf: config::Configuration = (*config::get()).clone();
     for f in &t.extra_uplink_channels {
         conf.regions[0]
@@ -1245,6 +1256,17 @@ async fn run_test(t: &Test) {
 
     integration::mock::reset().await;
     gateway_backend::mock::reset().await;
+
+    device::partial_update(
+        t.dev_eui,
+        &device::DeviceChangeset {
+            dev_addr: Some(None),
+            device_session: Some(None),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     if let Some(f) = &t.before_func {
         f().await;

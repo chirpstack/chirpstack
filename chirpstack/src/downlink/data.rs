@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
+use prost::Message;
 use rand::Rng;
 use tracing::{debug, span, trace, warn, Instrument, Level};
 
@@ -16,7 +17,7 @@ use crate::storage;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, device_session, downlink_frame,
+    device_gateway, device_profile, device_queue, downlink_frame,
     helpers::get_all_device_data,
     mac_command, relay, tenant,
 };
@@ -216,13 +217,13 @@ impl Data {
             ctx.set_phy_payloads()?;
             ctx.update_device_queue_item().await?;
             ctx.save_downlink_frame().await?;
+            // Some mac-commands set their state (e.g. last requested) to the
+            // device-session.
+            ctx.save_device_session().await?;
             if ctx._is_roaming() {
-                ctx.save_device_session().await?;
                 ctx.send_downlink_frame_passive_roaming().await?;
                 ctx.handle_passive_roaming_tx_ack().await?;
             } else {
-                // Some mac-commands set their state (e.g. last requested) to the device-session.
-                ctx.save_device_session().await?;
                 ctx.send_downlink_frame().await?;
             }
         }
@@ -299,8 +300,8 @@ impl Data {
     async fn _handle_schedule_next_queue_item(downlink_id: u32, dev: device::Device) -> Result<()> {
         trace!("Handle schedule next-queue item flow");
 
-        let (_, app, ten, dp) = get_all_device_data(dev.dev_eui).await?;
-        let ds = device_session::get(&dev.dev_eui).await?;
+        let (dev, app, ten, dp) = get_all_device_data(dev.dev_eui).await?;
+        let ds = dev.get_device_session()?;
         let rc = region::get(&ds.region_config_id)?;
         let rn = config::get_region_network(&ds.region_config_id)?;
         let dev_gw = device_gateway::get_rx_info(&dev.dev_eui).await?;
@@ -1030,9 +1031,15 @@ impl Data {
     async fn save_device_session(&self) -> Result<()> {
         trace!("Saving device-session");
 
-        device_session::save(&self.device_session)
-            .await
-            .context("Save device-session")?;
+        device::partial_update(
+            self.device.dev_eui,
+            &device::DeviceChangeset {
+                device_session: Some(Some(self.device_session.encode_to_vec())),
+                ..Default::default()
+            },
+        )
+        .await?;
+
         Ok(())
     }
 
@@ -1524,7 +1531,8 @@ impl Data {
                             || rd.uplink_limit_reload_rate
                                 != device.relay_ed_uplink_limit_reload_rate as u32
                         {
-                            let ds = match device_session::get(&device.dev_eui).await {
+                            let d = device::get(&device.dev_eui).await?;
+                            let ds = match d.get_device_session() {
                                 Ok(v) => v,
                                 Err(_) => {
                                     // It is valid that the device is no longer activated.
@@ -1583,7 +1591,8 @@ impl Data {
                         continue;
                     }
 
-                    let ds = match device_session::get(&device.dev_eui).await {
+                    let d = device::get(&device.dev_eui).await?;
+                    let ds = match d.get_device_session() {
                         Ok(v) => v,
                         Err(_) => {
                             // It is valid that the device is no longer activated.
@@ -2412,9 +2421,14 @@ impl Data {
         let conf = config::get();
         let scheduler_run_after_ts = Utc::now() + conf.network.scheduler.class_c_lock_duration;
 
-        self.device =
-            device::set_scheduler_run_after(&self.device.dev_eui, Some(scheduler_run_after_ts))
-                .await?;
+        self.device = device::partial_update(
+            self.device.dev_eui,
+            &device::DeviceChangeset {
+                scheduler_run_after: Some(Some(scheduler_run_after_ts)),
+                ..Default::default()
+            },
+        )
+        .await?;
 
         Ok(())
     }
@@ -2465,9 +2479,14 @@ impl Data {
         // Update the device next scheduler run.
         let scheduler_run_after_ts = ping_slot_ts.to_date_time();
         trace!(scheduler_run_after = %scheduler_run_after_ts, "Setting scheduler_run_after for device");
-        self.device =
-            device::set_scheduler_run_after(&self.device.dev_eui, Some(scheduler_run_after_ts))
-                .await?;
+        self.device = device::partial_update(
+            self.device.dev_eui,
+            &device::DeviceChangeset {
+                scheduler_run_after: Some(Some(scheduler_run_after_ts)),
+                ..Default::default()
+            },
+        )
+        .await?;
 
         // Use default frequency if not configured. Based on the configured region this will use
         // channel-hopping.
@@ -3380,15 +3399,15 @@ mod test {
                     dev_addr: Some(*dev_addr),
                     application_id: app.id,
                     device_profile_id: dp_ed.id,
-                    ..Default::default()
-                })
-                .await
-                .unwrap();
-
-                let _ = device_session::save(&internal::DeviceSession {
-                    dev_addr: dev_addr.to_vec(),
-                    dev_eui: dev_eui.to_vec(),
-                    nwk_s_enc_key: vec![0; 16],
+                    device_session: Some(
+                        internal::DeviceSession {
+                            dev_addr: dev_addr.to_vec(),
+                            dev_eui: dev_eui.to_vec(),
+                            nwk_s_enc_key: vec![0; 16],
+                            ..Default::default()
+                        }
+                        .encode_to_vec(),
+                    ),
                     ..Default::default()
                 })
                 .await

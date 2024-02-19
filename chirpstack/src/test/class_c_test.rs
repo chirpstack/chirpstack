@@ -1,10 +1,11 @@
+use prost::Message;
 use uuid::Uuid;
 
 use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, device_session, gateway, reset_redis, tenant,
+    device_gateway, device_profile, device_queue, gateway, reset_redis, tenant,
 };
 use crate::{downlink, gateway::backend as gateway_backend, integration, test};
 use chirpstack_api::{common, gw, internal};
@@ -12,6 +13,7 @@ use lrwn::EUI64;
 
 struct DownlinkTest {
     name: String,
+    dev_eui: EUI64,
     device_queue_items: Vec<device_queue::DeviceQueueItem>,
     device_session: Option<internal::DeviceSession>,
     device_gateway_rx_info: Option<internal::DeviceGatewayRxInfo>,
@@ -112,6 +114,7 @@ async fn test_downlink_scheduler() {
 
     run_scheduler_test(&DownlinkTest {
         name: "device has not yet sent an uplink".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -126,12 +129,19 @@ async fn test_downlink_scheduler() {
     .await;
 
     // remove the schedule run after
-    device::set_scheduler_run_after(&dev.dev_eui.clone(), None)
-        .await
-        .unwrap();
+    device::partial_update(
+        dev.dev_eui,
+        &device::DeviceChangeset {
+            scheduler_run_after: Some(None),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     run_scheduler_test(&DownlinkTest {
         name: "unconfirmed data".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -178,6 +188,7 @@ async fn test_downlink_scheduler() {
 
     run_scheduler_test(&DownlinkTest {
         name: "scheduler_run_after has not yet expired".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -192,12 +203,19 @@ async fn test_downlink_scheduler() {
     .await;
 
     // remove the schedule run after
-    device::set_scheduler_run_after(&dev.dev_eui.clone(), None)
-        .await
-        .unwrap();
+    device::partial_update(
+        dev.dev_eui,
+        &device::DeviceChangeset {
+            scheduler_run_after: Some(None),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     run_scheduler_test(&DownlinkTest {
         name: "unconfirmed data".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -246,12 +264,19 @@ async fn test_downlink_scheduler() {
     .await;
 
     // remove the schedule run after
-    device::set_scheduler_run_after(&dev.dev_eui.clone(), None)
-        .await
-        .unwrap();
+    device::partial_update(
+        dev.dev_eui,
+        &device::DeviceChangeset {
+            scheduler_run_after: Some(None),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     run_scheduler_test(&DownlinkTest {
         name: "unconfirmed data".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -276,13 +301,16 @@ async fn run_scheduler_test(t: &DownlinkTest) {
 
     integration::mock::reset().await;
     gateway_backend::mock::reset().await;
-
-    if let Some(ds) = &t.device_session {
-        let _ = device_session::save(&ds).await.unwrap();
-
-        let dev_eui = EUI64::from_slice(&ds.dev_eui).unwrap();
-        device_queue::flush_for_dev_eui(&dev_eui).await.unwrap();
-    }
+    device_queue::flush_for_dev_eui(&t.dev_eui).await.unwrap();
+    device::partial_update(
+        t.dev_eui,
+        &device::DeviceChangeset {
+            device_session: Some(t.device_session.as_ref().map(|v| v.encode_to_vec())),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     if let Some(rx_info) = &t.device_gateway_rx_info {
         let _ = device_gateway::save_rx_info(rx_info).await.unwrap();

@@ -18,7 +18,7 @@ use crate::backend::{joinserver, keywrap, roaming};
 use crate::downlink::data_fns;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{
-    device_session, error::Error as StorageError, get_async_redis_conn, passive_roaming, redis_key,
+    device, error::Error as StorageError, get_async_redis_conn, passive_roaming, redis_key,
 };
 use crate::uplink::{
     data_sns, error::Error as UplinkError, helpers, join_sns, RoamingMetaData, UplinkFrameSet,
@@ -312,7 +312,7 @@ async fn _handle_pr_start_req_data(
     };
 
     // get device-session
-    let ds = device_session::get_for_phypayload(&mut ufs.phy_payload, ufs.dr, ufs.ch as u8).await?;
+    let ds = device::get_for_phypayload(&mut ufs.phy_payload, ufs.dr, ufs.ch as u8).await?;
     let pr_lifetime = roaming::get_passive_roaming_lifetime(sender_id)?;
     let kek_label = roaming::get_passive_roaming_kek_label(sender_id)?;
 

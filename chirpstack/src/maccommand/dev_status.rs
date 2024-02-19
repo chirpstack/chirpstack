@@ -23,15 +23,18 @@ pub async fn handle(
     if let lrwn::MACCommand::DevStatusAns(pl) = mac {
         info!(dev_eui = %dev.dev_eui, battery = pl.battery, margin = pl.margin, "DevStatusAns received");
 
-        device::set_status(
-            &dev.dev_eui,
-            pl.margin as i32,
-            pl.battery == 0,
-            if pl.battery > 0 && pl.battery < 255 {
-                let v: BigDecimal = ((pl.battery as f32) / 254.0 * 100.0).try_into()?;
-                Some(v.with_scale(2))
-            } else {
-                None
+        device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                margin: Some(pl.margin as i32),
+                external_power_source: Some(pl.battery == 0),
+                battery_level: Some(if pl.battery > 0 && pl.battery < 255 {
+                    let v: BigDecimal = ((pl.battery as f32) / 254.0 * 100.0).try_into()?;
+                    Some(v.with_scale(2))
+                } else {
+                    None
+                }),
+                ..Default::default()
             },
         )
         .await?;

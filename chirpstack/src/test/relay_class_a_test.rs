@@ -1,19 +1,22 @@
 use std::time::Duration;
 
+use prost::Message;
 use uuid::Uuid;
 
 use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_profile, device_queue, device_session, gateway, reset_redis, tenant,
+    device_profile, device_queue, gateway, reset_redis, tenant,
 };
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, integration as integration_pb, internal};
-use lrwn::{AES128Key, EUI64};
+use lrwn::{AES128Key, DevAddr, EUI64};
 
 struct Test {
     name: String,
+    dev_eui_relay: EUI64,
+    dev_eui_relay_ed: EUI64,
     device_queue_items_relay_ed: Vec<device_queue::DeviceQueueItem>,
     device_session_relay: Option<internal::DeviceSession>,
     device_session_relay_ed: Option<internal::DeviceSession>,
@@ -85,6 +88,7 @@ async fn test_lorawan_10() {
         device_profile_id: dp_relay.id,
         dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 1, 1, 1])),
         ..Default::default()
     })
     .await
@@ -96,6 +100,7 @@ async fn test_lorawan_10() {
         device_profile_id: dp_relay_ed.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([2, 2, 2, 2])),
         ..Default::default()
     })
     .await
@@ -439,6 +444,8 @@ async fn test_lorawan_10() {
     let tests = vec![
         Test {
             name: "relayed unconfirmed uplink".into(),
+            dev_eui_relay: dev_relay.dev_eui,
+            dev_eui_relay_ed: dev_relay_ed.dev_eui,
             device_queue_items_relay_ed: vec![],
             device_session_relay: Some(ds_relay.clone()),
             device_session_relay_ed: Some(ds_relay_ed.clone()),
@@ -503,6 +510,8 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "relayed confirmed uplink".into(),
+            dev_eui_relay: dev_relay.dev_eui,
+            dev_eui_relay_ed: dev_relay_ed.dev_eui,
             device_queue_items_relay_ed: vec![],
             device_session_relay: Some(ds_relay.clone()),
             device_session_relay_ed: Some(ds_relay_ed.clone()),
@@ -627,6 +636,8 @@ async fn test_lorawan_10() {
         },
         Test {
             name: "relayed unconfirmed uplink + adr_ack_req".into(),
+            dev_eui_relay: dev_relay.dev_eui,
+            dev_eui_relay_ed: dev_relay_ed.dev_eui,
             device_queue_items_relay_ed: vec![],
             device_session_relay: Some(ds_relay.clone()),
             device_session_relay_ed: Some(ds_relay_ed.clone()),
@@ -765,20 +776,34 @@ async fn run_test(t: &Test) {
 
     integration::mock::reset().await;
     gateway_backend::mock::reset().await;
-
-    if let Some(ds) = &t.device_session_relay {
-        let _ = device_session::save(&ds).await.unwrap();
-
-        let dev_eui = EUI64::from_slice(&ds.dev_eui).unwrap();
-        device_queue::flush_for_dev_eui(&dev_eui).await.unwrap();
-    }
-
-    if let Some(ds) = &t.device_session_relay_ed {
-        let _ = device_session::save(&ds).await.unwrap();
-
-        let dev_eui = EUI64::from_slice(&ds.dev_eui).unwrap();
-        device_queue::flush_for_dev_eui(&dev_eui).await.unwrap();
-    }
+    device_queue::flush_for_dev_eui(&t.dev_eui_relay)
+        .await
+        .unwrap();
+    device_queue::flush_for_dev_eui(&t.dev_eui_relay_ed)
+        .await
+        .unwrap();
+    device::partial_update(
+        t.dev_eui_relay,
+        &device::DeviceChangeset {
+            device_session: Some(t.device_session_relay.as_ref().map(|v| v.encode_to_vec())),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
+    device::partial_update(
+        t.dev_eui_relay_ed,
+        &device::DeviceChangeset {
+            device_session: Some(
+                t.device_session_relay_ed
+                    .as_ref()
+                    .map(|v| v.encode_to_vec()),
+            ),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     for qi in &t.device_queue_items_relay_ed {
         let _ = device_queue::enqueue_item(qi.clone()).await.unwrap();

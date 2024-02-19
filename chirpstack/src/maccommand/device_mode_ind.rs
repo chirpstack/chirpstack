@@ -10,11 +10,14 @@ pub async fn handle(
         .first()
         .ok_or_else(|| anyhow!("Expected DeviceModeInd"))?;
     if let lrwn::MACCommand::DeviceModeInd(pl) = mac {
-        device::set_enabled_class(
-            &dev.dev_eui,
-            match pl.class {
-                lrwn::DeviceModeClass::ClassA => DeviceClass::A,
-                lrwn::DeviceModeClass::ClassC => DeviceClass::C,
+        device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                enabled_class: Some(match pl.class {
+                    lrwn::DeviceModeClass::ClassA => DeviceClass::A,
+                    lrwn::DeviceModeClass::ClassC => DeviceClass::C,
+                }),
+                ..Default::default()
             },
         )
         .await?;

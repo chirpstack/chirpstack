@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
+use prost::Message;
 use tracing::{span, trace, Instrument, Level};
 
 use super::{error::Error, helpers, UplinkFrameSet};
@@ -10,7 +11,7 @@ use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_keys, device_profile, device_queue, device_session,
+    device_keys, device_profile, device_queue,
     error::Error as StorageError,
     helpers::get_all_device_data,
     metrics, tenant,
@@ -101,8 +102,7 @@ impl JoinRequest {
         ctx.log_uplink_meta().await?;
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
-        ctx.set_device_mode().await?;
-        ctx.set_join_eui().await?;
+        ctx.update_device().await?;
         ctx.send_join_event().await?;
         ctx.set_pr_start_ans_payload()?;
 
@@ -627,10 +627,6 @@ impl JoinRequest {
             }
         }
 
-        device_session::save(&ds)
-            .await
-            .context("Saving device-session failed")?;
-
         self.device_session = Some(ds);
 
         Ok(())
@@ -648,25 +644,32 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn set_device_mode(&mut self) -> Result<()> {
+    async fn update_device(&mut self) -> Result<()> {
+        trace!("Updating device");
         let dp = self.device_profile.as_ref().unwrap();
-        let device = self.device.as_mut().unwrap();
 
-        // LoRaWAN 1.1 devices send a mac-command when changing to Class-C.
-        if dp.supports_class_c && dp.mac_version.to_string().starts_with("1.0") {
-            *device = device::set_enabled_class(&device.dev_eui, DeviceClass::C).await?;
-        } else {
-            *device = device::set_enabled_class(&device.dev_eui, DeviceClass::A).await?;
-        }
-        Ok(())
-    }
-
-    async fn set_join_eui(&mut self) -> Result<()> {
-        trace!("Setting JoinEUI");
-        let dev = self.device.as_mut().unwrap();
-        let req = self.join_request.as_ref().unwrap();
-
-        *dev = device::set_join_eui(dev.dev_eui, req.join_eui).await?;
+        self.device = Some(
+            device::partial_update(
+                self.device.as_ref().unwrap().dev_eui,
+                &device::DeviceChangeset {
+                    device_session: Some(Some(
+                        self.device_session.as_ref().unwrap().encode_to_vec(),
+                    )),
+                    join_eui: Some(self.join_request.as_ref().unwrap().join_eui),
+                    dev_addr: Some(Some(self.dev_addr.unwrap())),
+                    secondary_dev_addr: Some(None),
+                    enabled_class: Some(
+                        if dp.supports_class_c && dp.mac_version.to_string().starts_with("1.0") {
+                            DeviceClass::C
+                        } else {
+                            DeviceClass::A
+                        },
+                    ),
+                    ..Default::default()
+                },
+            )
+            .await?,
+        );
 
         Ok(())
     }

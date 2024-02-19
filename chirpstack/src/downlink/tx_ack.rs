@@ -1,5 +1,6 @@
 use anyhow::Result;
 use chrono::{Duration, Utc};
+use prost::Message;
 use tracing::{error, info, span, trace, Instrument, Level};
 use uuid::Uuid;
 
@@ -9,7 +10,9 @@ use crate::api::helpers::ToProto;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_profile, device_queue, device_session, downlink_frame, multicast, tenant,
+    device_profile, device_queue, downlink_frame,
+    helpers::get_all_device_data,
+    multicast, tenant,
 };
 use crate::{integration, stream};
 use chirpstack_api::{common, gw, integration as integration_pb, internal, stream as stream_pb};
@@ -88,10 +91,7 @@ impl TxAck {
 
         if ctx.is_error() {
             if ctx.is_application_payload() || ctx.is_mac_only_downlink() {
-                ctx.get_device().await?;
-                ctx.get_device_profile().await?;
-                ctx.get_application().await?;
-                ctx.get_tenant().await?;
+                ctx.get_device_data().await?;
                 ctx.log_tx_ack_error().await?;
             }
 
@@ -99,30 +99,28 @@ impl TxAck {
                 ctx.delete_multicast_group_queue_item().await?;
             }
         } else {
-            if ctx.is_application_payload() {
-                ctx.get_device().await?;
-                ctx.get_device_profile().await?;
-                ctx.get_application().await?;
-                ctx.get_tenant().await?;
-                ctx.get_device_session().await?;
-                ctx.get_device_queue_item().await?;
-                if ctx.is_unconfirmed_downlink() {
-                    ctx.delete_device_queue_item().await?;
+            if ctx.is_application_payload() || ctx.is_mac_only_downlink() {
+                ctx.get_device_data().await?;
+
+                if ctx.is_application_payload() {
+                    ctx.get_device_queue_item().await?;
+                    if ctx.is_unconfirmed_downlink() {
+                        ctx.delete_device_queue_item().await?;
+                    }
+
+                    if ctx.is_confirmed_downlink() {
+                        ctx.set_device_queue_item_pending().await?;
+                        ctx.set_device_session_conf_f_cnt()?;
+                    }
+
+                    ctx.increment_a_f_cnt_down()?;
+                    ctx.send_tx_ack_event().await?;
                 }
 
-                if ctx.is_confirmed_downlink() {
-                    ctx.set_device_queue_item_pending().await?;
-                    ctx.set_device_session_conf_f_cnt()?;
+                if ctx.is_mac_only_downlink() {
+                    ctx.increment_n_f_cnt_down()?;
                 }
 
-                ctx.increment_a_f_cnt_down()?;
-                ctx.save_device_session().await?;
-                ctx.send_tx_ack_event().await?;
-            }
-
-            if ctx.is_mac_only_downlink() {
-                ctx.get_device_session().await?;
-                ctx.increment_n_f_cnt_down()?;
                 ctx.save_device_session().await?;
             }
 
@@ -140,24 +138,22 @@ impl TxAck {
 
     async fn _handle_relayed(&mut self) -> Result<()> {
         self.get_phy_payload_relayed()?;
+        self.get_device_data().await?; // the device-data of the relay
 
         if self.is_error() {
             // We log the tx ack error under the relay as this is the device to which the downlink
             // is sent.
-            self.get_device().await?;
-            self.get_device_profile().await?;
-            self.get_application().await?;
-            self.get_tenant().await?;
             self.log_tx_ack_error().await?;
         } else {
             // First handle the relay frame-counter increment.
-            self.get_device_session().await?;
             self.increment_a_f_cnt_down()?;
             self.save_device_session().await?;
 
+            // Get data of relayed device.
+            self.get_device_data_relayed().await?;
+
             // Handle end-device frame-counter increment + queue item.
             if self.is_application_payload_relayed() {
-                self.get_device_session_relayed().await?;
                 self.get_device_queue_item().await?;
                 if self.is_unconfirmed_downlink_relayed() {
                     self.delete_device_queue_item().await?;
@@ -172,13 +168,9 @@ impl TxAck {
                 self.save_device_session_relayed().await?;
 
                 // Log tx ack event.
-                self.get_device_relayed().await?;
-                self.get_device_profile_relayed().await?;
-                self.get_application_relayed().await?;
-                self.get_tenant_relayed().await?;
+                self.get_device_data_relayed().await?;
                 self.send_tx_ack_event_relayed().await?;
             } else if self.is_mac_only_downlink_relayed() {
-                self.get_device_session_relayed().await?;
                 self.increment_n_f_cnt_down_relayed()?;
                 self.save_device_session_relayed().await?;
             }
@@ -225,75 +217,31 @@ impl TxAck {
         Ok(())
     }
 
-    async fn get_device_session(&mut self) -> Result<()> {
-        trace!("Getting device-session");
+    async fn get_device_data(&mut self) -> Result<()> {
+        trace!("Getting device data");
         let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui)?;
-        self.device_session = Some(device_session::get(&dev_eui).await?);
+        let (dev, app, t, dp) = get_all_device_data(dev_eui).await?;
+
+        self.device_session = Some(dev.get_device_session()?);
+        self.tenant = Some(t);
+        self.application = Some(app);
+        self.device_profile = Some(dp);
+        self.device = Some(dev);
 
         Ok(())
     }
 
-    async fn get_device_session_relayed(&mut self) -> Result<()> {
-        trace!("Getting relayed device-session");
+    async fn get_device_data_relayed(&mut self) -> Result<()> {
+        trace!("Getting relayed device data");
         let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui_relayed)?;
-        self.device_session_relayed = Some(device_session::get(&dev_eui).await?);
+        let (dev, app, t, dp) = get_all_device_data(dev_eui).await?;
 
-        Ok(())
-    }
+        self.device_session_relayed = Some(dev.get_device_session()?);
+        self.tenant_relayed = Some(t);
+        self.application_relayed = Some(app);
+        self.device_profile_relayed = Some(dp);
+        self.device_relayed = Some(dev);
 
-    async fn get_device(&mut self) -> Result<()> {
-        trace!("Getting device");
-        let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui)?;
-        self.device = Some(device::get(&dev_eui).await?);
-        Ok(())
-    }
-
-    async fn get_device_relayed(&mut self) -> Result<()> {
-        trace!("Getting relayed device");
-        let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui_relayed)?;
-        self.device_relayed = Some(device::get(&dev_eui).await?);
-        Ok(())
-    }
-
-    async fn get_device_profile(&mut self) -> Result<()> {
-        trace!("Getting device-profile");
-        self.device_profile =
-            Some(device_profile::get(&self.device.as_ref().unwrap().device_profile_id).await?);
-        Ok(())
-    }
-
-    async fn get_device_profile_relayed(&mut self) -> Result<()> {
-        trace!("Getting relayed device-profile");
-        self.device_profile_relayed = Some(
-            device_profile::get(&self.device_relayed.as_ref().unwrap().device_profile_id).await?,
-        );
-        Ok(())
-    }
-
-    async fn get_application(&mut self) -> Result<()> {
-        trace!("Getting application");
-        self.application =
-            Some(application::get(&self.device.as_ref().unwrap().application_id).await?);
-        Ok(())
-    }
-
-    async fn get_application_relayed(&mut self) -> Result<()> {
-        trace!("Getting relayed application");
-        self.application_relayed =
-            Some(application::get(&self.device_relayed.as_ref().unwrap().application_id).await?);
-        Ok(())
-    }
-
-    async fn get_tenant(&mut self) -> Result<()> {
-        trace!("Getting tenant");
-        self.tenant = Some(tenant::get(&self.application.as_ref().unwrap().tenant_id).await?);
-        Ok(())
-    }
-
-    async fn get_tenant_relayed(&mut self) -> Result<()> {
-        trace!("Getting relayed tenant");
-        self.tenant_relayed =
-            Some(tenant::get(&self.application_relayed.as_ref().unwrap().tenant_id).await?);
         Ok(())
     }
 
@@ -422,13 +370,36 @@ impl TxAck {
 
     async fn save_device_session(&self) -> Result<()> {
         trace!("Saving device-session");
-        device_session::save(self.device_session.as_ref().unwrap()).await?;
+
+        device::partial_update(
+            self.device.as_ref().unwrap().dev_eui,
+            &device::DeviceChangeset {
+                device_session: Some(Some(self.device_session.as_ref().unwrap().encode_to_vec())),
+                ..Default::default()
+            },
+        )
+        .await?;
+
         Ok(())
     }
 
     async fn save_device_session_relayed(&self) -> Result<()> {
         trace!("Saving relayed device-session");
-        device_session::save(self.device_session_relayed.as_ref().unwrap()).await?;
+
+        device::partial_update(
+            self.device.as_ref().unwrap().dev_eui,
+            &device::DeviceChangeset {
+                device_session: Some(Some(
+                    self.device_session_relayed
+                        .as_ref()
+                        .unwrap()
+                        .encode_to_vec(),
+                )),
+                ..Default::default()
+            },
+        )
+        .await?;
+
         Ok(())
     }
 

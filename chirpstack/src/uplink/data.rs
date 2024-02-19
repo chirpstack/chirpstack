@@ -18,7 +18,7 @@ use crate::storage::error::Error as StorageError;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, device_session, fields,
+    device_gateway, device_profile, device_queue, fields,
     helpers::get_all_device_data,
     metrics, tenant,
 };
@@ -123,7 +123,6 @@ impl Data {
         let span = tracing::Span::current();
         span.record("dev_eui", ctx.device.as_ref().unwrap().dev_eui.to_string());
 
-        ctx.abort_on_device_is_disabled().await?;
         ctx.set_device_info()?;
         ctx.set_device_gateway_rx_info()?;
         ctx.handle_retransmission_reset().await?;
@@ -193,7 +192,6 @@ impl Data {
 
         ctx.get_device_session_relayed().await?;
         ctx.get_device_data().await?;
-        ctx.abort_on_device_is_disabled().await?;
         ctx.set_device_info()?;
         ctx.set_relay_rx_info()?;
         ctx.handle_retransmission_reset().await?;
@@ -210,6 +208,7 @@ impl Data {
         ctx.sync_uplink_f_cnt()?;
         ctx.set_region_config_id()?;
         ctx.save_device_session().await?;
+        ctx.update_device().await?;
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics_relayed().await?;
         ctx.start_downlink_data_flow_relayed().await?;
@@ -312,25 +311,20 @@ impl Data {
             dr,
         )? as u8;
 
-        match device_session::get_for_phypayload_and_incr_f_cnt_up(
-            true,
-            &mut self.phy_payload,
-            dr,
-            ch,
-        )
-        .await
+        match device::get_for_phypayload_and_incr_f_cnt_up(true, &mut self.phy_payload, dr, ch)
+            .await
         {
             Ok(v) => match v {
-                device_session::ValidationStatus::Ok(f_cnt, ds) => {
+                device::ValidationStatus::Ok(f_cnt, ds) => {
                     self.device_session = Some(ds);
                     self.f_cnt_up_full = f_cnt;
                 }
-                device_session::ValidationStatus::Retransmission(f_cnt, ds) => {
+                device::ValidationStatus::Retransmission(f_cnt, ds) => {
                     self.retransmission = true;
                     self.device_session = Some(ds);
                     self.f_cnt_up_full = f_cnt;
                 }
-                device_session::ValidationStatus::Reset(f_cnt, ds) => {
+                device::ValidationStatus::Reset(f_cnt, ds) => {
                     self.reset = true;
                     self.device_session = Some(ds);
                     self.f_cnt_up_full = f_cnt;
@@ -474,24 +468,6 @@ impl Data {
         Ok(())
     }
 
-    async fn abort_on_device_is_disabled(&self) -> Result<(), Error> {
-        let device = self.device.as_ref().unwrap();
-
-        if device.is_disabled {
-            // Restore the device-session in case the device is disabled.
-            // This is because during the fcnt validation, we immediately store the
-            // device-session with incremented fcnt to avoid race conditions.
-            device_session::save(self.device_session.as_ref().unwrap())
-                .await
-                .context("Savel device-session")?;
-
-            info!(dev_eui = %device.dev_eui, "Device is disabled, aborting flow");
-            return Err(Error::Abort);
-        }
-
-        Ok(())
-    }
-
     async fn handle_retransmission_reset(&self) -> Result<(), Error> {
         trace!("Handle retransmission and reset");
         let dev = self.device.as_ref().unwrap();
@@ -560,8 +536,14 @@ impl Data {
             if dev.scheduler_run_after.is_none()
                 || scheduler_run_after > dev.scheduler_run_after.unwrap()
             {
-                *dev = device::set_scheduler_run_after(&dev.dev_eui, Some(scheduler_run_after))
-                    .await?;
+                *dev = device::partial_update(
+                    dev.dev_eui,
+                    &device::DeviceChangeset {
+                        scheduler_run_after: Some(Some(scheduler_run_after)),
+                        ..Default::default()
+                    },
+                )
+                .await?;
             }
         }
 
@@ -580,9 +562,16 @@ impl Data {
                 // Restore the device-session in case of an error (no gateways available).
                 // This is because during the fcnt validation, we immediately store the
                 // device-session with incremented fcnt to avoid race conditions.
-                device_session::save(self.device_session.as_ref().unwrap())
-                    .await
-                    .context("Save device-session")?;
+                device::partial_update(
+                    self.device.as_ref().unwrap().dev_eui,
+                    &device::DeviceChangeset {
+                        device_session: Some(Some(
+                            self.device_session.as_ref().unwrap().encode_to_vec(),
+                        )),
+                        ..Default::default()
+                    },
+                )
+                .await?;
 
                 Err(v)
             }
@@ -670,8 +659,12 @@ impl Data {
 
     async fn set_uplink_data_rate(&mut self) -> Result<()> {
         trace!("Set uplink data-rate and reset tx-power on change");
-        let device = self.device.as_mut().unwrap();
-        *device = device::set_last_seen_dr(&device.dev_eui, self.uplink_frame_set.dr).await?;
+        let device = self.device.as_ref().unwrap();
+
+        self.device_changeset.last_seen_at = Some(Some(Utc::now()));
+        if device.dr.is_none() || self.uplink_frame_set.dr as i16 != device.dr.unwrap_or_default() {
+            self.device_changeset.dr = Some(Some(self.uplink_frame_set.dr.into()));
+        }
 
         let ds = self.device_session.as_mut().unwrap();
         // The node changed its data-rate. Possibly the node did also reset its
@@ -682,6 +675,7 @@ impl Data {
             ds.uplink_adr_history = Vec::new();
         }
         ds.dr = self.uplink_frame_set.dr as u32;
+
         Ok(())
     }
 
@@ -689,7 +683,11 @@ impl Data {
         trace!("Set relayed uplink data-rate and reset tx-power on change");
         let device = self.device.as_mut().unwrap();
         let relay_ctx = self.relay_context.as_ref().unwrap();
-        *device = device::set_last_seen_dr(&device.dev_eui, self.uplink_frame_set.dr).await?;
+
+        self.device_changeset.last_seen_at = Some(Some(Utc::now()));
+        if device.dr.is_none() || self.uplink_frame_set.dr as i16 != device.dr.unwrap_or_default() {
+            self.device_changeset.dr = Some(Some(self.uplink_frame_set.dr.into()));
+        }
 
         let ds = self.device_session.as_mut().unwrap();
         // The node changed its data-rate. Possibly the node did also reset its
@@ -722,7 +720,7 @@ impl Data {
 
         // Update if the enabled class has changed.
         if dev.enabled_class != enabled_class {
-            *dev = device::set_enabled_class(&dev.dev_eui, enabled_class).await?;
+            self.device_changeset.enabled_class = Some(enabled_class);
         }
 
         Ok(())
