@@ -2,7 +2,6 @@ use anyhow::Result;
 use tracing::info;
 
 use crate::storage::device;
-use chirpstack_api::internal;
 
 pub fn request(
     uplink_dwell_time_400ms: bool,
@@ -29,11 +28,13 @@ pub fn request(
 }
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     _block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending TxParamSetupReq"));
     }
@@ -52,7 +53,7 @@ pub fn handle(
     ds.downlink_dwell_time_400ms = req_pl.downlink_dwell_time == lrwn::DwellTime::Limit400ms;
     ds.uplink_max_eirp_index = req_pl.max_eirp as u32;
 
-    info!(dev_eui = %dev.dev_eui, uplink_dwell_time_400ms = ds.uplink_dwell_time_400ms, downlink_dwell_time_400ms = ds.downlink_dwell_time_400ms, uplink_max_eirp_index = ds.uplink_max_eirp_index, "TxParamSetupReq acknowledged");
+    info!(dev_eui = %dev_eui, uplink_dwell_time_400ms = ds.uplink_dwell_time_400ms, downlink_dwell_time_400ms = ds.downlink_dwell_time_400ms, uplink_max_eirp_index = ds.uplink_max_eirp_index, "TxParamSetupReq acknowledged");
     Ok(None)
 }
 

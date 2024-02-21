@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
-use prost::Message;
 use tracing::{span, trace, Instrument, Level};
 
 use super::{error::Error, helpers, UplinkFrameSet};
@@ -29,7 +28,6 @@ pub struct JoinRequest {
     join_request: Option<lrwn::JoinRequestPayload>,
     join_accept: Option<lrwn::PhyPayload>,
     device: Option<device::Device>,
-    device_session: Option<internal::DeviceSession>,
     js_client: Option<Arc<backend::Client>>,
     application: Option<application::Application>,
     tenant: Option<tenant::Tenant>,
@@ -67,7 +65,6 @@ impl JoinRequest {
             join_request: None,
             join_accept: None,
             device: None,
-            device_session: None,
             js_client: None,
             application: None,
             tenant: None,
@@ -100,7 +97,7 @@ impl JoinRequest {
             ctx.construct_join_accept_and_set_keys()?;
         }
         ctx.log_uplink_meta().await?;
-        ctx.create_device_session().await?;
+        ctx.set_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.update_device().await?;
         ctx.send_join_event().await?;
@@ -562,21 +559,18 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn create_device_session(&mut self) -> Result<()> {
-        trace!("Creating device-session");
+    async fn set_device_session(&mut self) -> Result<()> {
+        trace!("Setting device-session");
 
         let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
         let region_network = config::get_region_network(&self.uplink_frame_set.region_config_id)?;
 
-        let device = self.device.as_ref().unwrap();
+        let device = self.device.as_mut().unwrap();
         let device_profile = self.device_profile.as_ref().unwrap();
-        let join_request = self.join_request.as_ref().unwrap();
 
         let mut ds = internal::DeviceSession {
             region_config_id: self.uplink_frame_set.region_config_id.clone(),
-            dev_eui: device.dev_eui.to_be_bytes().to_vec(),
             dev_addr: self.dev_addr.unwrap().to_be_bytes().to_vec(),
-            join_eui: join_request.join_eui.to_be_bytes().to_vec(),
             f_nwk_s_int_key: self.f_nwk_s_int_key.as_ref().unwrap().to_vec(),
             s_nwk_s_int_key: self.s_nwk_s_int_key.as_ref().unwrap().to_vec(),
             nwk_s_enc_key: self.nwk_s_enc_key.as_ref().unwrap().to_vec(),
@@ -627,7 +621,7 @@ impl JoinRequest {
             }
         }
 
-        self.device_session = Some(ds);
+        device.device_session = Some(ds);
 
         Ok(())
     }
@@ -647,14 +641,19 @@ impl JoinRequest {
     async fn update_device(&mut self) -> Result<()> {
         trace!("Updating device");
         let dp = self.device_profile.as_ref().unwrap();
+        let ds = self
+            .device
+            .as_ref()
+            .unwrap()
+            .device_session
+            .as_ref()
+            .unwrap();
 
         self.device = Some(
             device::partial_update(
                 self.device.as_ref().unwrap().dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(
-                        self.device_session.as_ref().unwrap().encode_to_vec(),
-                    )),
+                    device_session: Some(Some(ds.clone())),
                     join_eui: Some(self.join_request.as_ref().unwrap().join_eui),
                     dev_addr: Some(Some(self.dev_addr.unwrap())),
                     secondary_dev_addr: Some(None),
@@ -717,7 +716,9 @@ impl JoinRequest {
 
     fn set_pr_start_ans_payload(&mut self) -> Result<()> {
         trace!("Setting PRStartAnsPayload");
-        let ds = self.device_session.as_ref().unwrap();
+        let d = self.device.as_ref().unwrap();
+        let ds = d.get_device_session()?;
+
         let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
 
         let sender_id = NetID::from_slice(&self.pr_start_req.base.sender_id)?;
@@ -756,8 +757,8 @@ impl JoinRequest {
                 .base
                 .to_base_payload_result(backend::ResultCode::Success, ""),
             phy_payload: self.join_accept.as_ref().unwrap().to_vec()?,
-            dev_eui: ds.dev_eui.clone(),
-            dev_addr: ds.dev_addr.clone(),
+            dev_eui: d.dev_eui.to_vec(),
+            dev_addr: d.get_dev_addr()?.to_vec(),
             lifetime: if pr_lifetime.is_zero() {
                 None
             } else {
@@ -767,7 +768,7 @@ impl JoinRequest {
             nwk_s_key,
             f_cnt_up: Some(0),
             dl_meta_data: Some(backend::DLMetaData {
-                dev_eui: ds.dev_eui.clone(),
+                dev_eui: d.dev_eui.to_vec(),
                 dl_freq_1: Some(rx1_freq as f64 / 1_000_000.0),
                 dl_freq_2: Some(rx2_freq as f64 / 1_000_000.0),
                 rx_delay_1: Some(rx1_delay.as_secs() as usize),

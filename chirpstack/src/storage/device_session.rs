@@ -6,7 +6,7 @@ use prost::Message;
 use super::error::Error;
 use super::{get_async_redis_conn, redis_key};
 use chirpstack_api::internal;
-use lrwn::{EUI64};
+use lrwn::EUI64;
 
 pub async fn get(dev_eui: &EUI64) -> Result<internal::DeviceSession, Error> {
     let key = redis_key(format!("device:{{{}}}:ds", dev_eui));
@@ -19,7 +19,7 @@ pub async fn get(dev_eui: &EUI64) -> Result<internal::DeviceSession, Error> {
     if v.is_empty() {
         return Err(Error::NotFound(dev_eui.to_string()));
     }
-    let ds = internal::DeviceSession::decode(&mut Cursor::new(v))
-        .context("Decode device-session")?;
+    let ds =
+        internal::DeviceSession::decode(&mut Cursor::new(v)).context("Decode device-session")?;
     Ok(ds)
 }

@@ -876,6 +876,7 @@ dependencies = [
 name = "chirpstack_api"
 version = "4.7.0-test.3"
 dependencies = [
+ "diesel",
  "hex",
  "pbjson",
  "pbjson-build",

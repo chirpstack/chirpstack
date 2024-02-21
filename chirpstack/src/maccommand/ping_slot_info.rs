@@ -2,13 +2,14 @@ use anyhow::Result;
 use tracing::info;
 
 use crate::storage::device;
-use chirpstack_api::internal;
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     let mac = (**block)
         .first()
         .ok_or_else(|| anyhow!("MACCommandSet is empty"))?;
@@ -21,7 +22,7 @@ pub fn handle(
 
     ds.class_b_ping_slot_nb = 1 << (7 - pl.periodicity);
 
-    info!(dev_eui = %dev.dev_eui, periodicity = pl.periodicity, ping_slot_nb = ds.class_b_ping_slot_nb, "PingSlotInfoReq received");
+    info!(dev_eui = %dev_eui, periodicity = pl.periodicity, ping_slot_nb = ds.class_b_ping_slot_nb, "PingSlotInfoReq received");
 
     Ok(Some(lrwn::MACCommandSet::new(vec![
         lrwn::MACCommand::PingSlotInfoAns,

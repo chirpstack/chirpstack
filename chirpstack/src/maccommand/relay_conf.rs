@@ -5,11 +5,13 @@ use crate::storage::device;
 use chirpstack_api::internal;
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending RelayConfReq mac-command"));
     }
@@ -43,7 +45,7 @@ pub fn handle(
         && ans_pl.default_ch_idx_ack
         && ans_pl.cad_periodicity_ack
     {
-        info!(dev_eui = %dev.dev_eui, "RelayConfReq acknowledged");
+        info!(dev_eui = %dev_eui, "RelayConfReq acknowledged");
 
         if let Some(relay) = &mut ds.relay {
             relay.enabled = req_pl.channel_settings_relay.start_stop == 1;
@@ -56,7 +58,7 @@ pub fn handle(
         }
     } else {
         warn!(
-            dev_eui = %dev.dev_eui,
+            dev_eui = %dev_eui,
             second_ch_ack_offset_ack = ans_pl.second_ch_ack_offset_ack,
             second_ch_dr_ack = ans_pl.second_ch_dr_ack,
             second_ch_idx_ack = ans_pl.second_ch_idx_ack,

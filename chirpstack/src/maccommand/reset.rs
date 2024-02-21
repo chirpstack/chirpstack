@@ -2,16 +2,17 @@ use anyhow::Result;
 use tracing::info;
 
 use crate::storage::{device, device_profile};
-use chirpstack_api::internal;
 
 const SERV_LORAWAN_VERSION: lrwn::Version = lrwn::Version::LoRaWAN1_1;
 
 pub fn handle(
-    dev: &device::Device,
+    dev: &mut device::Device,
     dp: &device_profile::DeviceProfile,
-    ds: &mut internal::DeviceSession,
     block: &lrwn::MACCommandSet,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     let block_mac = (**block)
         .first()
         .ok_or_else(|| anyhow!("MACCommandSet is empty"))?;
@@ -21,7 +22,7 @@ pub fn handle(
         return Err(anyhow!("ResetInd expected"));
     };
 
-    info!(dev_eui = %dev.dev_eui, dev_lorawan_version = %block_pl.dev_lorawan_version, serv_lorawan_version = %SERV_LORAWAN_VERSION, "ResetInd received");
+    info!(dev_eui = %dev_eui, dev_lorawan_version = %block_pl.dev_lorawan_version, serv_lorawan_version = %SERV_LORAWAN_VERSION, "ResetInd received");
 
     dp.reset_session_to_boot_params(ds);
 

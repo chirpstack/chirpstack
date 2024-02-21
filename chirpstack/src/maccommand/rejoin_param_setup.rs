@@ -2,7 +2,6 @@ use anyhow::Result;
 use tracing::{info, warn};
 
 use crate::storage::device;
-use chirpstack_api::internal;
 
 pub fn request(max_time_n: u8, max_count_n: u8) -> lrwn::MACCommandSet {
     lrwn::MACCommandSet::new(vec![lrwn::MACCommand::RejoinParamSetupReq(
@@ -14,11 +13,12 @@ pub fn request(max_time_n: u8, max_count_n: u8) -> lrwn::MACCommandSet {
 }
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Pending RejoinParamSetupReq expected"));
     }

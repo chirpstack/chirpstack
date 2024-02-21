@@ -62,11 +62,13 @@ pub fn request(
 }
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending NewChannelReq"));
     }
@@ -115,7 +117,7 @@ pub fn handle(
                     .push(req_pl.ch_index as u32);
             }
 
-            info!(dev_eui = %dev.dev_eui, freq = req_pl.freq, channel = req_pl.ch_index, min_dr = req_pl.min_dr, max_dr = req_pl.max_dr, "NewChannelReq acknowledged");
+            info!(dev_eui = %dev_eui, freq = req_pl.freq, channel = req_pl.ch_index, min_dr = req_pl.min_dr, max_dr = req_pl.max_dr, "NewChannelReq acknowledged");
         } else {
             let count = ds
                 .mac_command_error_count
@@ -124,7 +126,7 @@ pub fn handle(
             *count += 1;
 
             warn!(
-                dev_eui = %dev.dev_eui,
+                dev_eui = %dev_eui,
                 freq = req_pl.freq,
                 channel = req_pl.ch_index,
                 min_dr = req_pl.min_dr,

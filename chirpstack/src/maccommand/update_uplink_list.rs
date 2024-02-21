@@ -2,14 +2,14 @@ use anyhow::Result;
 use tracing::info;
 
 use crate::storage::device;
-use chirpstack_api::internal;
 
 pub fn handle(
-    _dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     _block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending UpdateUplinkListReq mac-command"));
     }

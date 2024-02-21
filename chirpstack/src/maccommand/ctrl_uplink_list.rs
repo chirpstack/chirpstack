@@ -1,19 +1,19 @@
 use std::iter::zip;
 
 use anyhow::Result;
-use prost::Message;
 use tracing::{info, warn};
 
 use crate::storage::device;
-use chirpstack_api::internal;
 use lrwn::EUI64;
 
 pub async fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending CtrlUplinkListReq mac-command"));
     }
@@ -50,7 +50,7 @@ pub async fn handle(
         if ans_pl.uplink_list_idx_ack {
             if let Some(relay) = &mut ds.relay {
                 info!(
-                    dev_eui = %dev.dev_eui,
+                    dev_eui = %dev_eui,
                     uplink_list_idx = req_pl.ctrl_uplink_action.uplink_list_idx,
                     ctrl_uplink_action = action,
                     w_f_cnt = ans_pl.w_fcnt,
@@ -61,15 +61,15 @@ pub async fn handle(
                     for rd in &relay.devices {
                         if req_pl.ctrl_uplink_action.uplink_list_idx as u32 == rd.index {
                             let dev_eui = EUI64::from_slice(&rd.dev_eui)?;
-                            let d = device::get(&dev_eui).await?;
-                            let mut ds = d.get_device_session()?;
+                            let mut d = device::get(&dev_eui).await?;
+                            let ds = d.get_device_session_mut()?;
                             if let Some(relay) = &mut ds.relay {
                                 relay.w_f_cnt = ans_pl.w_fcnt;
                             };
                             device::partial_update(
                                 dev_eui,
                                 &device::DeviceChangeset {
-                                    device_session: Some(Some(ds.encode_to_vec())),
+                                    device_session: Some(d.device_session.clone()),
                                     ..Default::default()
                                 },
                             )
@@ -84,7 +84,7 @@ pub async fn handle(
             }
         } else {
             warn!(
-                dev_eui = %dev.dev_eui,
+                dev_eui = %dev_eui,
                 uplink_list_idx = req_pl.ctrl_uplink_action.uplink_list_idx,
                 "CtrlUplinkListReq not acknowledged",
             );

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::io::Cursor;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
@@ -8,7 +7,6 @@ use bigdecimal::BigDecimal;
 use chrono::{DateTime, Duration, Utc};
 use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
 use diesel_async::RunQueryDsl;
-use prost::Message;
 use tracing::info;
 use uuid::Uuid;
 
@@ -21,9 +19,9 @@ use crate::api::helpers::FromProto;
 use crate::config;
 
 pub enum ValidationStatus {
-    Ok(u32, internal::DeviceSession),
-    Retransmission(u32, internal::DeviceSession),
-    Reset(u32, internal::DeviceSession),
+    Ok(u32, Device),
+    Retransmission(u32, Device),
+    Reset(u32, Device),
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, AsExpression, FromSqlRow)]
@@ -106,7 +104,7 @@ pub struct Device {
     pub variables: fields::KeyValue,
     pub join_eui: EUI64,
     pub secondary_dev_addr: Option<DevAddr>,
-    pub device_session: Option<Vec<u8>>,
+    pub device_session: Option<internal::DeviceSession>,
 }
 
 #[derive(AsChangeset, Debug, Clone, Default)]
@@ -118,7 +116,7 @@ pub struct DeviceChangeset {
     pub enabled_class: Option<DeviceClass>,
     pub join_eui: Option<EUI64>,
     pub secondary_dev_addr: Option<Option<DevAddr>>,
-    pub device_session: Option<Option<Vec<u8>>>,
+    pub device_session: Option<Option<internal::DeviceSession>>,
     pub margin: Option<i32>,
     pub external_power_source: Option<bool>,
     pub battery_level: Option<Option<BigDecimal>>,
@@ -133,15 +131,20 @@ impl Device {
         Ok(())
     }
 
-    pub fn set_device_session(&mut self, ds: &internal::DeviceSession) {
-        self.device_session = Some(ds.encode_to_vec())
+    pub fn get_device_session(&self) -> Result<&internal::DeviceSession, Error> {
+        self.device_session
+            .as_ref()
+            .ok_or_else(|| Error::NotFound(self.dev_eui.to_string()))
     }
 
-    pub fn get_device_session(&self) -> Result<internal::DeviceSession, Error> {
-        match &self.device_session {
-            None => Err(Error::NotFound(self.dev_eui.to_string())),
-            Some(v) => Ok(internal::DeviceSession::decode(&mut Cursor::new(&v))?),
-        }
+    pub fn get_device_session_mut(&mut self) -> Result<&mut internal::DeviceSession, Error> {
+        self.device_session
+            .as_mut()
+            .ok_or_else(|| Error::NotFound(self.dev_eui.to_string()))
+    }
+
+    pub fn get_dev_addr(&self) -> Result<DevAddr> {
+        self.dev_addr.ok_or_else(|| anyhow!("DevAddr is not set"))
     }
 }
 
@@ -303,8 +306,7 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
     c.build_transaction()
         .run::<ValidationStatus, Error, _>(|c| {
             Box::pin(async move {
-                let devices: Vec<(EUI64, Option<Vec<u8>>)> = device::dsl::device
-                    .select((device::dev_eui, device::device_session))
+                let mut devices: Vec<Device> = device::dsl::device
                     .filter(
                         device::dsl::dev_addr
                             .eq(&dev_addr)
@@ -319,107 +321,105 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                     return Err(Error::NotFound(dev_addr.to_string()));
                 }
 
-                let mut sessions: Vec<(EUI64, internal::DeviceSession)> = Vec::new();
+                for d in &mut devices {
+                    let mut sessions = vec![];
 
-                for d in &devices {
-                    if d.1.is_none() {
-                        continue;
-                    }
-
-                    let ds =
-                        internal::DeviceSession::decode(&mut Cursor::new(d.1.as_ref().unwrap()))?;
-
-                    if let Some(pending_ds) = &ds.pending_rejoin_device_session {
-                        sessions.push((d.0, *pending_ds.clone()));
-                    }
-                    sessions.push((d.0, ds));
-                }
-
-                for (dev_eui, ds) in &mut sessions {
-                    if ds.dev_addr != dev_addr.to_vec() {
-                        continue;
-                    }
-
-                    // Get the full 32bit frame-counter.
-                    let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
-                    let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
-                    let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
-
-                    // Check both the full frame-counter and the received frame-counter
-                    // truncated to the 16LSB.
-                    // The latter is needed in case of a frame-counter reset as the
-                    // GetFullFCntUp will think the 16LSB has rolled over and will
-                    // increment the 16MSB bit.
-                    let mut mic_ok = false;
-                    for f_cnt in [full_f_cnt, f_cnt_orig] {
-                        // Set the full f_cnt.
-                        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-                            pl.fhdr.f_cnt = f_cnt;
-                        }
-
-                        mic_ok = phy
-                            .validate_uplink_data_mic(
-                                ds.mac_version().from_proto(),
-                                ds.conf_f_cnt,
-                                tx_dr,
-                                tx_ch,
-                                &f_nwk_s_int_key,
-                                &s_nwk_s_int_key,
-                            )
-                            .context("Validate MIC")?;
-
-                        if mic_ok {
-                            break;
+                    if let Some(ds) = &d.device_session {
+                        sessions.push(ds.clone());
+                        if let Some(ds) = &ds.pending_rejoin_device_session {
+                            sessions.push(*ds.clone());
                         }
                     }
 
-                    if mic_ok {
-                        let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
-                            pl.fhdr.f_cnt
-                        } else {
-                            0
-                        };
+                    for ds in &mut sessions {
+                        if ds.dev_addr != dev_addr.to_vec() {
+                            continue;
+                        }
 
-                        if let Some(relay) = &ds.relay {
-                            if !relayed && relay.ed_relay_only {
-                                info!(
-                                    dev_eui = %dev_eui,
-                                    "Only communication through relay is allowed"
-                                );
-                                return Err(Error::NotFound(dev_addr.to_string()));
+                        // Get the full 32bit frame-counter.
+                        let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
+                        let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
+                        let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
+
+                        // Check both the full frame-counter and the received frame-counter
+                        // truncated to the 16LSB.
+                        // The latter is needed in case of a frame-counter reset as the
+                        // GetFullFCntUp will think the 16LSB has rolled over and will
+                        // increment the 16MSB bit.
+                        let mut mic_ok = false;
+                        for f_cnt in [full_f_cnt, f_cnt_orig] {
+                            // Set the full f_cnt.
+                            if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                                pl.fhdr.f_cnt = f_cnt;
+                            }
+
+                            mic_ok = phy
+                                .validate_uplink_data_mic(
+                                    ds.mac_version().from_proto(),
+                                    ds.conf_f_cnt,
+                                    tx_dr,
+                                    tx_ch,
+                                    &f_nwk_s_int_key,
+                                    &s_nwk_s_int_key,
+                                )
+                                .context("Validate MIC")?;
+
+                            if mic_ok {
+                                break;
                             }
                         }
 
-                        if full_f_cnt >= ds.f_cnt_up {
-                            // We immediately save the device-session to make sure that concurrent calls for
-                            // the same uplink will fail on the frame-counter validation.
-                            let ds_f_cnt_up = ds.f_cnt_up;
-                            ds.f_cnt_up = full_f_cnt + 1;
+                        if mic_ok {
+                            let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
+                                pl.fhdr.f_cnt
+                            } else {
+                                0
+                            };
 
-                            let _ = diesel::update(device::dsl::device.find(*dev_eui))
-                                .set(device::device_session.eq(&ds.encode_to_vec()))
-                                .execute(c)
-                                .await?;
+                            if let Some(relay) = &ds.relay {
+                                if !relayed && relay.ed_relay_only {
+                                    info!(
+                                        dev_eui = %d.dev_eui,
+                                        "Only communication through relay is allowed"
+                                    );
+                                    return Err(Error::NotFound(dev_addr.to_string()));
+                                }
+                            }
 
-                            // We do return the device-session with original frame-counter
-                            ds.f_cnt_up = ds_f_cnt_up;
+                            if full_f_cnt >= ds.f_cnt_up {
+                                // We immediately save the device-session to make sure that concurrent calls for
+                                // the same uplink will fail on the frame-counter validation.
+                                let ds_f_cnt_up = ds.f_cnt_up;
+                                ds.f_cnt_up = full_f_cnt + 1;
 
-                            return Ok(ValidationStatus::Ok(full_f_cnt, ds.clone()));
-                        } else if ds.skip_f_cnt_check {
-                            // re-transmission or frame-counter reset
-                            ds.f_cnt_up = 0;
-                            return Ok(ValidationStatus::Ok(full_f_cnt, ds.clone()));
-                        } else if full_f_cnt == (ds.f_cnt_up - 1) {
-                            // re-transmission, the frame-counter did not increment
-                            return Ok(ValidationStatus::Retransmission(full_f_cnt, ds.clone()));
-                        } else {
-                            return Ok(ValidationStatus::Reset(full_f_cnt, ds.clone()));
+                                let _ = diesel::update(device::dsl::device.find(d.dev_eui))
+                                    .set(device::device_session.eq(&ds.clone()))
+                                    .execute(c)
+                                    .await?;
+
+                                // We do return the device-session with original frame-counter
+                                ds.f_cnt_up = ds_f_cnt_up;
+                                d.device_session = Some(ds.clone());
+                                return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
+                            } else if ds.skip_f_cnt_check {
+                                // re-transmission or frame-counter reset
+                                ds.f_cnt_up = 0;
+                                d.device_session = Some(ds.clone());
+                                return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
+                            } else if full_f_cnt == (ds.f_cnt_up - 1) {
+                                // re-transmission, the frame-counter did not increment
+                                d.device_session = Some(ds.clone());
+                                return Ok(ValidationStatus::Retransmission(full_f_cnt, d.clone()));
+                            } else {
+                                d.device_session = Some(ds.clone());
+                                return Ok(ValidationStatus::Reset(full_f_cnt, d.clone()));
+                            }
                         }
-                    }
 
-                    // Restore the original f_cnt.
-                    if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-                        pl.fhdr.f_cnt = f_cnt_orig;
+                        // Restore the original f_cnt.
+                        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                            pl.fhdr.f_cnt = f_cnt_orig;
+                        }
                     }
                 }
 
@@ -433,7 +433,7 @@ pub async fn get_for_phypayload(
     phy: &mut lrwn::PhyPayload,
     tx_dr: u8,
     tx_ch: u8,
-) -> Result<internal::DeviceSession, Error> {
+) -> Result<Device, Error> {
     // Get the dev_addr and original f_cnt.
     let (dev_addr, f_cnt_orig) = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
         (pl.fhdr.devaddr, pl.fhdr.f_cnt)
@@ -441,14 +441,13 @@ pub async fn get_for_phypayload(
         return Err(Error::InvalidPayload("MacPayload".to_string()));
     };
 
-    let devices: Vec<(EUI64, Option<Vec<u8>>)> = device::dsl::device
-        .select((device::dev_eui, device::device_session))
+    let devices: Vec<Device> = device::dsl::device
         .filter(
             device::dsl::dev_addr
                 .eq(&dev_addr)
                 .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
         )
-        .for_update()
+        .filter(device::dsl::is_disabled.eq(false))
         .load(&mut get_async_db_conn().await?)
         .await?;
 
@@ -457,40 +456,49 @@ pub async fn get_for_phypayload(
     }
 
     for d in &devices {
-        if d.1.is_none() {
-            continue;
+        let mut sessions = vec![];
+
+        if let Some(ds) = &d.device_session {
+            sessions.push(ds.clone());
+            if let Some(ds) = &ds.pending_rejoin_device_session {
+                sessions.push(*ds.clone());
+            }
         }
 
-        let ds = internal::DeviceSession::decode(&mut Cursor::new(&d.1.as_ref().unwrap()))?;
+        for ds in &mut sessions {
+            if ds.dev_addr != dev_addr.to_vec() {
+                continue;
+            }
 
-        // Get the full 32bit frame-counter.
-        let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
-        let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
-        let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
+            // Get the full 32bit frame-counter.
+            let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
+            let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
+            let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
 
-        // Set the full f_cnt
-        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-            pl.fhdr.f_cnt = full_f_cnt;
-        }
+            // Set the full f_cnt
+            if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                pl.fhdr.f_cnt = full_f_cnt;
+            }
 
-        let mic_ok = phy
-            .validate_uplink_data_mic(
-                ds.mac_version().from_proto(),
-                ds.conf_f_cnt,
-                tx_dr,
-                tx_ch,
-                &f_nwk_s_int_key,
-                &s_nwk_s_int_key,
-            )
-            .context("Validate MIC")?;
+            let mic_ok = phy
+                .validate_uplink_data_mic(
+                    ds.mac_version().from_proto(),
+                    ds.conf_f_cnt,
+                    tx_dr,
+                    tx_ch,
+                    &f_nwk_s_int_key,
+                    &s_nwk_s_int_key,
+                )
+                .context("Validate MIC")?;
 
-        if mic_ok && full_f_cnt >= ds.f_cnt_up {
-            return Ok(ds);
-        }
+            if mic_ok && full_f_cnt >= ds.f_cnt_up {
+                return Ok(d.clone());
+            }
 
-        // Restore the original f_cnt.
-        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-            pl.fhdr.f_cnt = f_cnt_orig;
+            // Restore the original f_cnt.
+            if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                pl.fhdr.f_cnt = f_cnt_orig;
+            }
         }
     }
 
@@ -1002,100 +1010,6 @@ pub mod test {
     async fn test_device_session() {
         let _guard = test::prepare().await;
 
-        let device_sessions = vec![
-            internal::DeviceSession {
-                dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                dev_eui: vec![0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01],
-                s_nwk_s_int_key: vec![
-                    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                    0x01, 0x01, 0x01,
-                ],
-                f_nwk_s_int_key: vec![
-                    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                    0x01, 0x01, 0x01,
-                ],
-                nwk_s_enc_key: vec![
-                    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                    0x01, 0x01, 0x01,
-                ],
-                f_cnt_up: 100,
-                skip_f_cnt_check: true,
-                ..Default::default()
-            },
-            internal::DeviceSession {
-                dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                dev_eui: vec![0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02],
-                s_nwk_s_int_key: vec![
-                    0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                    0x02, 0x02, 0x02,
-                ],
-                f_nwk_s_int_key: vec![
-                    0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                    0x02, 0x02, 0x02,
-                ],
-                nwk_s_enc_key: vec![
-                    0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                    0x02, 0x02, 0x02,
-                ],
-                f_cnt_up: 200,
-                ..Default::default()
-            },
-            internal::DeviceSession {
-                dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                dev_eui: vec![0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03],
-                s_nwk_s_int_key: vec![
-                    0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                    0x03, 0x03, 0x03,
-                ],
-                f_nwk_s_int_key: vec![
-                    0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                    0x03, 0x03, 0x03,
-                ],
-                nwk_s_enc_key: vec![
-                    0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                    0x03, 0x03, 0x03,
-                ],
-                f_cnt_up: 300,
-                pending_rejoin_device_session: Some(Box::new(internal::DeviceSession {
-                    dev_addr: vec![0x04, 0x03, 0x02, 0x01],
-                    dev_eui: vec![0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03],
-                    s_nwk_s_int_key: vec![
-                        0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                        0x04, 0x04, 0x04, 0x04,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                        0x04, 0x04, 0x04, 0x04,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                        0x04, 0x04, 0x04, 0x04,
-                    ],
-                    f_cnt_up: 0,
-                    ..Default::default()
-                })),
-                ..Default::default()
-            },
-            internal::DeviceSession {
-                dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                dev_eui: vec![0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05],
-                s_nwk_s_int_key: vec![
-                    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                    0x05, 0x05, 0x05,
-                ],
-                f_nwk_s_int_key: vec![
-                    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                    0x05, 0x05, 0x05,
-                ],
-                nwk_s_enc_key: vec![
-                    0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                    0x05, 0x05, 0x05,
-                ],
-                f_cnt_up: (1 << 16) + 1,
-                ..Default::default()
-            },
-        ];
-
         let t = storage::tenant::create(storage::tenant::Tenant {
             name: "test-tenant".into(),
             ..Default::default()
@@ -1119,22 +1033,130 @@ pub mod test {
         .await
         .unwrap();
 
-        for ds in &device_sessions {
-            create(Device {
-                dev_eui: EUI64::from_slice(&ds.dev_eui).unwrap(),
-                dev_addr: Some(DevAddr::from_slice(&ds.dev_addr).unwrap()),
-                secondary_dev_addr: ds
-                    .pending_rejoin_device_session
-                    .as_ref()
-                    .map(|v| DevAddr::from_slice(&v.dev_addr).unwrap()),
-                name: hex::encode(&ds.dev_eui),
+        let mut devices = vec![
+            Device {
                 application_id: app.id,
                 device_profile_id: dp.id,
-                device_session: Some(ds.encode_to_vec()),
+                name: "0101010101010101".into(),
+                dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+                dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+                device_session: Some(internal::DeviceSession {
+                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                    s_nwk_s_int_key: vec![
+                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                        0x01, 0x01, 0x01, 0x01,
+                    ],
+                    f_nwk_s_int_key: vec![
+                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                        0x01, 0x01, 0x01, 0x01,
+                    ],
+                    nwk_s_enc_key: vec![
+                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                        0x01, 0x01, 0x01, 0x01,
+                    ],
+                    f_cnt_up: 100,
+                    skip_f_cnt_check: true,
+                    ..Default::default()
+                }),
                 ..Default::default()
-            })
-            .await
-            .unwrap();
+            },
+            Device {
+                application_id: app.id,
+                device_profile_id: dp.id,
+                name: "0202020202020202".into(),
+                dev_eui: EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+                device_session: Some(internal::DeviceSession {
+                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                    s_nwk_s_int_key: vec![
+                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                        0x02, 0x02, 0x02, 0x02,
+                    ],
+                    f_nwk_s_int_key: vec![
+                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                        0x02, 0x02, 0x02, 0x02,
+                    ],
+                    nwk_s_enc_key: vec![
+                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                        0x02, 0x02, 0x02, 0x02,
+                    ],
+                    f_cnt_up: 200,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            Device {
+                application_id: app.id,
+                device_profile_id: dp.id,
+                name: "0303030303030303".into(),
+                dev_eui: EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+                secondary_dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
+                device_session: Some(internal::DeviceSession {
+                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                    s_nwk_s_int_key: vec![
+                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                        0x03, 0x03, 0x03, 0x03,
+                    ],
+                    f_nwk_s_int_key: vec![
+                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                        0x03, 0x03, 0x03, 0x03,
+                    ],
+                    nwk_s_enc_key: vec![
+                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                        0x03, 0x03, 0x03, 0x03,
+                    ],
+                    f_cnt_up: 300,
+                    pending_rejoin_device_session: Some(Box::new(internal::DeviceSession {
+                        dev_addr: vec![0x04, 0x03, 0x02, 0x01],
+                        s_nwk_s_int_key: vec![
+                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                            0x04, 0x04, 0x04, 0x04,
+                        ],
+                        f_nwk_s_int_key: vec![
+                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                            0x04, 0x04, 0x04, 0x04,
+                        ],
+                        nwk_s_enc_key: vec![
+                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                            0x04, 0x04, 0x04, 0x04,
+                        ],
+                        f_cnt_up: 0,
+                        ..Default::default()
+                    })),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            Device {
+                application_id: app.id,
+                device_profile_id: dp.id,
+                name: "0505050505050505".into(),
+                dev_eui: EUI64::from_be_bytes([5, 5, 5, 5, 5, 5, 5, 5]),
+                dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+                device_session: Some(internal::DeviceSession {
+                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                    s_nwk_s_int_key: vec![
+                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                        0x05, 0x05, 0x05, 0x05,
+                    ],
+                    f_nwk_s_int_key: vec![
+                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                        0x05, 0x05, 0x05, 0x05,
+                    ],
+                    nwk_s_enc_key: vec![
+                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                        0x05, 0x05, 0x05, 0x05,
+                    ],
+                    f_cnt_up: (1 << 16) + 1,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        ];
+
+        for d in &mut devices {
+            *d = create(d.clone()).await.unwrap();
         }
 
         #[derive(Default)]
@@ -1155,65 +1177,97 @@ pub mod test {
             Test {
                 name: "matching dev_eui 0101010101010101".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
-                f_nwk_s_int_key: AES128Key::from_slice(&device_sessions[0].f_nwk_s_int_key)
-                    .unwrap(),
-                s_nwk_s_int_key: AES128Key::from_slice(&device_sessions[0].s_nwk_s_int_key)
-                    .unwrap(),
-                f_cnt: device_sessions[0].f_cnt_up,
+                f_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[0].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                )
+                .unwrap(),
+                s_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[0].device_sessions.as_ref().unwrap().s_nwk_s_int_key,
+                )
+                .unwrap(),
+                f_cnt: devices[0].device_session.as_ref().unwrap().f_cnt_up,
                 expected_retransmission: false,
                 expected_reset: false,
-                expected_fcnt_up: device_sessions[0].f_cnt_up,
-                expected_dev_eui: EUI64::from_slice(&device_sessions[0].dev_eui).unwrap(),
+                expected_fcnt_up: devices[0].device_session.as_ref().f_cnt_up,
+                expected_dev_eui: EUI64::from_slice(
+                    &devices[0].device_session.as_ref().unwrap().dev_eui,
+                )
+                .unwrap(),
                 expected_error: None,
             },
             Test {
                 name: "matching dev_eui 0202020202020202".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
-                f_nwk_s_int_key: AES128Key::from_slice(&device_sessions[1].f_nwk_s_int_key)
-                    .unwrap(),
-                s_nwk_s_int_key: AES128Key::from_slice(&device_sessions[1].s_nwk_s_int_key)
-                    .unwrap(),
-                f_cnt: device_sessions[1].f_cnt_up,
+                f_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[1].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                )
+                .unwrap(),
+                s_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[1].device_session.as_ref().unwrap().s_nwk_s_int_key,
+                )
+                .unwrap(),
+                f_cnt: devices[1].device_session.as_ref().unwrap().f_cnt_up,
                 expected_retransmission: false,
                 expected_reset: false,
-                expected_fcnt_up: device_sessions[1].f_cnt_up,
-                expected_dev_eui: EUI64::from_slice(&device_sessions[1].dev_eui).unwrap(),
+                expected_fcnt_up: devices[1].device_session.as_ref().unwrap().f_cnt_up,
+                expected_dev_eui: EUI64::from_slice(
+                    &devices[1].device_session.as_ref().unwrap().dev_eui,
+                )
+                .unwrap(),
                 expected_error: None,
             },
             Test {
                 name: "matching dev_eui 0101010101010101 with frame-counter reset".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
-                f_nwk_s_int_key: AES128Key::from_slice(&device_sessions[0].f_nwk_s_int_key)
-                    .unwrap(),
-                s_nwk_s_int_key: AES128Key::from_slice(&device_sessions[0].s_nwk_s_int_key)
-                    .unwrap(),
+                f_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[0].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                )
+                .unwrap(),
+                s_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[0].device_session.as_ref().unwrap().s_nwk_s_int_key,
+                )
+                .unwrap(),
                 f_cnt: 0,
                 expected_retransmission: false,
                 expected_reset: false,
                 expected_fcnt_up: 0,
-                expected_dev_eui: EUI64::from_slice(&device_sessions[0].dev_eui).unwrap(),
+                expected_dev_eui: EUI64::from_slice(
+                    &devices[0].device_session.as_ref().unwrap().dev_eui,
+                )
+                .unwrap(),
                 expected_error: None,
             },
             Test {
                 name: "matching dev_eui 0202020202020202 with invalid frame-counter".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
-                f_nwk_s_int_key: AES128Key::from_slice(&device_sessions[1].f_nwk_s_int_key)
-                    .unwrap(),
-                s_nwk_s_int_key: AES128Key::from_slice(&device_sessions[1].s_nwk_s_int_key)
-                    .unwrap(),
+                f_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[1].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                )
+                .unwrap(),
+                s_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[1].device_session.as_ref().unwrap().s_nwk_s_int_key,
+                )
+                .unwrap(),
                 f_cnt: 0,
                 expected_reset: true,
-                expected_dev_eui: EUI64::from_slice(&device_sessions[1].dev_eui).unwrap(),
+                expected_dev_eui: EUI64::from_slice(
+                    &devices[1].device_session.as_ref().unwrap().dev_eui,
+                )
+                .unwrap(),
                 ..Default::default()
             },
             Test {
                 name: "invalid DevAddr".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x01, 0x01, 0x01]),
-                f_nwk_s_int_key: AES128Key::from_slice(&device_sessions[0].f_nwk_s_int_key)
-                    .unwrap(),
-                s_nwk_s_int_key: AES128Key::from_slice(&device_sessions[0].s_nwk_s_int_key)
-                    .unwrap(),
-                f_cnt: device_sessions[0].f_cnt_up,
+                f_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[0].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                )
+                .unwrap(),
+                s_nwk_s_int_key: AES128Key::from_slice(
+                    &devices[0].device_session.as_ref().unwrap().s_nwk_s_int_key,
+                )
+                .unwrap(),
+                f_cnt: devices[0].device_session.as_ref().unwrap().f_cnt_up,
                 expected_error: Some("Object does not exist (id: 01010101)".to_string()),
                 ..Default::default()
             },
@@ -1226,7 +1280,7 @@ pub mod test {
                 s_nwk_s_int_key: AES128Key::from_bytes([
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
                 ]),
-                f_cnt: device_sessions[0].f_cnt_up,
+                f_cnt: devices[0].device_session.as_ref().unwrap().f_cnt_up,
                 expected_error: Some("Invalid MIC".to_string()),
                 ..Default::default()
             },
@@ -1242,7 +1296,10 @@ pub mod test {
                     0x04, 0x04, 0x04,
                 ]),
                 f_cnt: 0,
-                expected_dev_eui: EUI64::from_slice(&device_sessions[2].dev_eui).unwrap(),
+                expected_dev_eui: EUI64::from_slice(
+                    &devices[2].device_session.as_ref().unwrap().dev_eui,
+                )
+                .unwrap(),
                 expected_fcnt_up: 0,
                 expected_retransmission: false,
                 expected_error: None,
@@ -1260,7 +1317,10 @@ pub mod test {
                     0x05, 0x05, 0x05,
                 ]),
                 f_cnt: (1 << 16) + 11,
-                expected_dev_eui: EUI64::from_slice(&device_sessions[3].dev_eui).unwrap(),
+                expected_dev_eui: EUI64::from_slice(
+                    &devices[3].device_session.as_ref().unwrap().dev_eui,
+                )
+                .unwrap(),
                 expected_fcnt_up: (1 << 16) + 11,
                 expected_retransmission: false,
                 expected_error: None,
@@ -1302,18 +1362,18 @@ pub mod test {
                 pl.fhdr.f_cnt = tst.f_cnt % (1 << 16);
             }
 
-            let ds_res = get_for_phypayload_and_incr_f_cnt_up(false, &mut phy, 0, 0).await;
+            let d = get_for_phypayload_and_incr_f_cnt_up(false, &mut phy, 0, 0).await;
             if tst.expected_error.is_some() {
-                assert_eq!(true, ds_res.is_err());
+                assert_eq!(true, d.is_err());
                 assert_eq!(
                     tst.expected_error.as_ref().unwrap(),
-                    &ds_res.err().unwrap().to_string()
+                    &d.err().unwrap().to_string()
                 );
                 if let lrwn::Payload::MACPayload(pl) = &phy.payload {
                     assert_eq!(tst.f_cnt, pl.fhdr.f_cnt);
                 }
             } else {
-                let ds = ds_res.unwrap();
+                let ds = d.device_session.unwrap();
 
                 // Validate that the f_cnt of the PhyPayload was set to the full frame-counter.
                 if let lrwn::Payload::MACPayload(pl) = &phy.payload {

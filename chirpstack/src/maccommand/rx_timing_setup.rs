@@ -2,7 +2,6 @@ use anyhow::Result;
 use tracing::info;
 
 use crate::storage::device;
-use chirpstack_api::internal;
 
 pub fn request(rx1_delay: u8) -> lrwn::MACCommandSet {
     lrwn::MACCommandSet::new(vec![lrwn::MACCommand::RxTimingSetupReq(
@@ -11,11 +10,13 @@ pub fn request(rx1_delay: u8) -> lrwn::MACCommandSet {
 }
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     _block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Pending RxTimingSetupReq expected"));
     }
@@ -31,7 +32,7 @@ pub fn handle(
     };
 
     ds.rx1_delay = req_pl.delay as u32;
-    info!(dev_eui = %dev.dev_eui, rx1_delay = req_pl.delay, "RxTimingSetupReq acknowledged");
+    info!(dev_eui = %dev_eui, rx1_delay = req_pl.delay, "RxTimingSetupReq acknowledged");
 
     Ok(None)
 }

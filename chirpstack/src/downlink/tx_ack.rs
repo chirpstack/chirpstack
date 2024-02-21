@@ -1,6 +1,5 @@
 use anyhow::Result;
 use chrono::{Duration, Utc};
-use prost::Message;
 use tracing::{error, info, span, trace, Instrument, Level};
 use uuid::Uuid;
 
@@ -26,8 +25,6 @@ pub struct TxAck {
     downlink_frame_item: Option<gw::DownlinkFrameItem>,
     phy_payload: Option<PhyPayload>,
     phy_payload_relayed: Option<PhyPayload>,
-    device_session: Option<internal::DeviceSession>,
-    device_session_relayed: Option<internal::DeviceSession>,
     tenant: Option<tenant::Tenant>,
     tenant_relayed: Option<tenant::Tenant>,
     application: Option<application::Application>,
@@ -69,8 +66,6 @@ impl TxAck {
             downlink_frame_item: None,
             phy_payload: None,
             phy_payload_relayed: None,
-            device_session: None,
-            device_session_relayed: None,
             tenant: None,
             tenant_relayed: None,
             application: None,
@@ -222,7 +217,6 @@ impl TxAck {
         let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui)?;
         let (dev, app, t, dp) = get_all_device_data(dev_eui).await?;
 
-        self.device_session = Some(dev.get_device_session()?);
         self.tenant = Some(t);
         self.application = Some(app);
         self.device_profile = Some(dp);
@@ -236,7 +230,6 @@ impl TxAck {
         let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui_relayed)?;
         let (dev, app, t, dp) = get_all_device_data(dev_eui).await?;
 
-        self.device_session_relayed = Some(dev.get_device_session()?);
         self.tenant_relayed = Some(t);
         self.application_relayed = Some(app);
         self.device_profile_relayed = Some(dp);
@@ -301,7 +294,8 @@ impl TxAck {
     fn set_device_session_conf_f_cnt(&mut self) -> Result<()> {
         trace!("Setting device-session conf_f_cnt");
 
-        let ds = self.device_session.as_mut().unwrap();
+        let d = self.device.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
         let qi = self.device_queue_item.as_ref().unwrap();
 
         ds.conf_f_cnt = match qi.f_cnt_down {
@@ -318,7 +312,8 @@ impl TxAck {
     fn set_device_session_conf_f_cnt_relayed(&mut self) -> Result<()> {
         trace!("Setting relayed device-session conf_f_cnt");
 
-        let ds = self.device_session_relayed.as_mut().unwrap();
+        let d = self.device_relayed.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
         let qi = self.device_queue_item.as_ref().unwrap();
 
         ds.conf_f_cnt = match qi.f_cnt_down {
@@ -335,7 +330,8 @@ impl TxAck {
     fn increment_a_f_cnt_down(&mut self) -> Result<()> {
         trace!("Incrementing a_f_cnt_down");
 
-        let ds = self.device_session.as_mut().unwrap();
+        let d = self.device.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
         ds.set_a_f_cnt_down(self.downlink_frame.as_ref().unwrap().a_f_cnt_down + 1);
 
         Ok(())
@@ -344,7 +340,8 @@ impl TxAck {
     fn increment_a_f_cnt_down_relayed(&mut self) -> Result<()> {
         trace!("Incrementing relayed a_f_cnt_down");
 
-        let ds = self.device_session_relayed.as_mut().unwrap();
+        let d = self.device_relayed.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
         ds.set_a_f_cnt_down(ds.get_a_f_cnt_down() + 1);
 
         Ok(())
@@ -353,7 +350,8 @@ impl TxAck {
     fn increment_n_f_cnt_down(&mut self) -> Result<()> {
         trace!("Incrementing n_f_cnt_down");
 
-        let ds = self.device_session.as_mut().unwrap();
+        let d = self.device.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
         ds.n_f_cnt_down += 1;
 
         Ok(())
@@ -362,7 +360,8 @@ impl TxAck {
     fn increment_n_f_cnt_down_relayed(&mut self) -> Result<()> {
         trace!("Incrementing relayed n_f_cnt_down");
 
-        let ds = self.device_session_relayed.as_mut().unwrap();
+        let d = self.device_relayed.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
         ds.n_f_cnt_down += 1;
 
         Ok(())
@@ -371,10 +370,12 @@ impl TxAck {
     async fn save_device_session(&self) -> Result<()> {
         trace!("Saving device-session");
 
+        let d = self.device.as_ref().unwrap();
+
         device::partial_update(
-            self.device.as_ref().unwrap().dev_eui,
+            d.dev_eui,
             &device::DeviceChangeset {
-                device_session: Some(Some(self.device_session.as_ref().unwrap().encode_to_vec())),
+                device_session: Some(d.device_session.clone()),
                 ..Default::default()
             },
         )
@@ -386,15 +387,12 @@ impl TxAck {
     async fn save_device_session_relayed(&self) -> Result<()> {
         trace!("Saving relayed device-session");
 
+        let d = self.device_relayed.as_ref().unwrap();
+
         device::partial_update(
-            self.device.as_ref().unwrap().dev_eui,
+            d.dev_eui,
             &device::DeviceChangeset {
-                device_session: Some(Some(
-                    self.device_session_relayed
-                        .as_ref()
-                        .unwrap()
-                        .encode_to_vec(),
-                )),
+                device_session: Some(d.device_session.clone()),
                 ..Default::default()
             },
         )

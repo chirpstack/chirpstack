@@ -4,15 +4,16 @@ use tracing::{info, warn};
 use crate::region;
 use crate::storage::device;
 use crate::uplink::UplinkFrameSet;
-use chirpstack_api::internal;
 
 pub fn handle(
     uplink_frame_set: &UplinkFrameSet,
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending LinkADRReq mac-command"));
     }
@@ -82,7 +83,7 @@ pub fn handle(
         ds.nb_trans = link_adr_req.redundancy.nb_rep as u32;
         ds.enabled_uplink_channel_indices = chans.iter().map(|i| *i as u32).collect::<Vec<u32>>();
 
-        info!(dev_eui = %dev.dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged");
+        info!(dev_eui = %dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged");
     } else if !ds.adr && ch_mask_ack {
         // In case the device has ADR disabled, at least it must acknowledge the
         // channel-mask. It does not have to acknowledge the other parameters.
@@ -113,7 +114,7 @@ pub fn handle(
             ds.tx_power_index = link_adr_req.tx_power as u32;
         }
 
-        info!(dev_eui = %dev.dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged (device has ADR disabled)");
+        info!(dev_eui = %dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged (device has ADR disabled)");
     } else {
         // increase the error counter
         let count = ds

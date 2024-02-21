@@ -5,7 +5,6 @@ use std::time::SystemTime;
 
 use bigdecimal::ToPrimitive;
 use chrono::{DateTime, Local, Utc};
-use prost::Message;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
@@ -516,7 +515,6 @@ impl DeviceService for Device {
 
         let mut ds = internal::DeviceSession {
             region_config_id: "".to_string(),
-            dev_eui: dev_eui.to_vec(),
             dev_addr: dev_addr.to_vec(),
             mac_version: dp.mac_version.to_proto().into(),
             s_nwk_s_int_key: s_nwk_s_int_key.to_vec(),
@@ -535,7 +533,7 @@ impl DeviceService for Device {
         dp.reset_session_to_boot_params(&mut ds);
 
         let mut device_changeset = device::DeviceChangeset {
-            device_session: Some(Some(ds.encode_to_vec())),
+            device_session: Some(Some(ds)),
             dev_addr: Some(Some(dev_addr)),
             secondary_dev_addr: Some(None),
             ..Default::default()
@@ -633,8 +631,8 @@ impl DeviceService for Device {
 
         let mut resp = Response::new(api::GetDeviceActivationResponse {
             device_activation: Some(api::DeviceActivation {
-                dev_eui: hex::encode(&ds.dev_eui),
-                dev_addr: hex::encode(&ds.dev_addr),
+                dev_eui: d.dev_eui.to_string(),
+                dev_addr: d.get_dev_addr().map_err(|e| e.status())?.to_string(),
                 app_s_key: match &ds.app_s_key {
                     Some(v) => hex::encode(&v.aes_key),
                     None => "".to_string(),
@@ -1200,7 +1198,7 @@ impl DeviceService for Device {
 
         let d = device::get(&dev_eui).await.map_err(|e| e.status())?;
         let ds = match d.get_device_session() {
-            Ok(v) => v,
+            Ok(v) => v.clone(),
             Err(StorageError::NotFound(_)) => Default::default(),
             Err(e) => {
                 return Err(e.status());
