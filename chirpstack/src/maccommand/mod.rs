@@ -170,6 +170,8 @@ async fn handle(
 pub mod test {
     use super::*;
     use crate::config;
+    use chirpstack_api::internal;
+    use lrwn::EUI64;
     use uuid::Uuid;
 
     #[tokio::test]
@@ -203,16 +205,18 @@ pub mod test {
         let t: tenant::Tenant = Default::default();
         let app: application::Application = Default::default();
         let dp: device_profile::DeviceProfile = Default::default();
-        let dev: device::Device = Default::default();
-        let mut ds = internal::DeviceSession {
-            dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
+        let mut dev = device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            device_session: Some(internal::DeviceSession {
+                ..Default::default()
+            }),
             ..Default::default()
         };
 
         // must respond
         let cmds = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::RxTimingSetupAns]);
 
-        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &dev, &mut ds)
+        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &mut dev)
             .await
             .unwrap();
         assert_eq!(0, resp.len());
@@ -223,7 +227,7 @@ pub mod test {
         conf.network.mac_commands_disabled = true;
         config::set(conf);
 
-        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &dev, &mut ds)
+        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &mut dev)
             .await
             .unwrap();
         assert_eq!(0, resp.len());

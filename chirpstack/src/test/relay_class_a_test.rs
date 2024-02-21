@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use prost::Message;
 use uuid::Uuid;
 
 use super::assert;
@@ -125,7 +124,6 @@ async fn test_lorawan_10() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 5).unwrap();
 
     let ds_relay = internal::DeviceSession {
-        dev_eui: dev_relay.dev_eui.to_vec(),
         mac_version: common::MacVersion::Lorawan104.into(),
         dev_addr: vec![1, 1, 1, 1],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -145,7 +143,6 @@ async fn test_lorawan_10() {
     };
 
     let ds_relay_ed = internal::DeviceSession {
-        dev_eui: dev_relay_ed.dev_eui.to_vec(),
         mac_version: common::MacVersion::Lorawan104.into(),
         dev_addr: vec![2, 2, 2, 2],
         f_nwk_s_int_key: vec![2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -785,7 +782,7 @@ async fn run_test(t: &Test) {
     device::partial_update(
         t.dev_eui_relay,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session_relay.as_ref().map(|v| v.encode_to_vec())),
+            device_session: Some(t.device_session_relay.clone()),
             ..Default::default()
         },
     )
@@ -794,11 +791,7 @@ async fn run_test(t: &Test) {
     device::partial_update(
         t.dev_eui_relay_ed,
         &device::DeviceChangeset {
-            device_session: Some(
-                t.device_session_relay_ed
-                    .as_ref()
-                    .map(|v| v.encode_to_vec()),
-            ),
+            device_session: Some(t.device_session_relay_ed.clone()),
             ..Default::default()
         },
     )

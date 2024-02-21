@@ -471,16 +471,12 @@ pub mod test {
         ];
 
         for tst in &tests {
-            let mut ds = tst.device_session.clone();
+            let mut dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
 
-            let res = handle(
-                &device::Device {
-                    ..Default::default()
-                },
-                &mut ds,
-                &tst.new_channel_ans,
-                tst.new_channel_req.as_ref(),
-            );
+            let res = handle(&mut dev, &tst.new_channel_ans, tst.new_channel_req.as_ref());
 
             if let Some(e) = &tst.expected_error {
                 assert_eq!(true, res.is_err(), "{}", tst.name);
@@ -489,7 +485,12 @@ pub mod test {
                 assert_eq!(true, res.unwrap().is_none(), "{}", tst.name);
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }

@@ -99,6 +99,7 @@ mod test {
     use super::*;
     use crate::storage;
     use crate::test;
+    use chirpstack_api::internal;
 
     struct Test {
         name: String,
@@ -163,7 +164,6 @@ mod test {
                 },
                 device_session_ed: internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
-                    dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     relay: Some(internal::Relay {
                         w_f_cnt: 1,
                         ..Default::default()
@@ -179,7 +179,6 @@ mod test {
                 ]),
                 expected_device_session_ed: internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
-                    dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     relay: Some(internal::Relay {
                         w_f_cnt: 1,
                         ..Default::default()
@@ -203,7 +202,6 @@ mod test {
                 },
                 device_session_ed: internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
-                    dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     relay: Some(internal::Relay {
                         w_f_cnt: 1,
                         ..Default::default()
@@ -226,7 +224,6 @@ mod test {
                 ]),
                 expected_device_session_ed: internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
-                    dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     relay: Some(internal::Relay {
                         w_f_cnt: 10,
                         ..Default::default()
@@ -250,7 +247,6 @@ mod test {
                 },
                 device_session_ed: internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
-                    dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     ..Default::default()
                 },
                 ctrl_uplink_list_req: Some(lrwn::MACCommandSet::new(vec![
@@ -269,7 +265,6 @@ mod test {
                 ]),
                 expected_device_session_ed: internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
-                    dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     ..Default::default()
                 },
                 expected_error: None,
@@ -282,17 +277,20 @@ mod test {
             device::partial_update(
                 dev.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(tst.device_session_ed.encode_to_vec())),
+                    device_session: Some(Some(tst.device_session_ed.clone())),
                     ..Default::default()
                 },
             )
             .await
             .unwrap();
 
-            let mut ds = tst.device_session.clone();
+            let mut relay_dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
+
             let resp = handle(
-                &device::Device::default(),
-                &mut ds,
+                &mut relay_dev,
                 &tst.ctrl_uplink_list_ans,
                 tst.ctrl_uplink_list_req.as_ref(),
             )
@@ -305,12 +303,9 @@ mod test {
                 assert_eq!(true, resp.unwrap().is_none());
             }
 
-            let ds = device::get(&dev.dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
-            assert_eq!(tst.expected_device_session_ed, ds);
+            let d = device::get(&dev.dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
+            assert_eq!(&tst.expected_device_session_ed, ds);
         }
     }
 }

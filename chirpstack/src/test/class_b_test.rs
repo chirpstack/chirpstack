@@ -1,4 +1,3 @@
-use prost::Message;
 use uuid::Uuid;
 
 use super::assert;
@@ -107,9 +106,7 @@ async fn test_uplink() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -257,9 +254,7 @@ async fn test_downlink_scheduler() {
     .unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -454,7 +449,7 @@ async fn run_uplink_test(t: &UplinkTest) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.as_ref().map(|v| v.encode_to_vec())),
+            device_session: Some(t.device_session.clone()),
             ..Default::default()
         },
     )
@@ -495,7 +490,7 @@ async fn run_scheduler_test(t: &DownlinkTest) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.as_ref().map(|v| v.encode_to_vec())),
+            device_session: Some(t.device_session.clone()),
             ..Default::default()
         },
     )

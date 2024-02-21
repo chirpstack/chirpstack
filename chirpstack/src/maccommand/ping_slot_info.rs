@@ -32,22 +32,19 @@ pub fn handle(
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use chirpstack_api::internal;
 
     #[test]
     fn test_handle() {
-        let mut ds: internal::DeviceSession = Default::default();
+        let mut dev = device::Device {
+            device_session: Some(internal::DeviceSession::default()),
+            ..Default::default()
+        };
         let block = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::PingSlotInfoReq(
             lrwn::PingSlotInfoReqPayload { periodicity: 3 },
         )]);
-        let res = handle(
-            &device::Device {
-                ..Default::default()
-            },
-            &mut ds,
-            &block,
-        )
-        .unwrap();
-        assert_eq!(16, ds.class_b_ping_slot_nb);
+        let res = handle(&mut dev, &block).unwrap();
+        assert_eq!(16, dev.get_device_session().unwrap().class_b_ping_slot_nb);
         assert_eq!(
             Some(lrwn::MACCommandSet::new(vec![
                 lrwn::MACCommand::PingSlotInfoAns,

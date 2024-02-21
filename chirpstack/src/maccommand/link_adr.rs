@@ -154,6 +154,7 @@ pub fn handle(
 pub mod test {
     use super::*;
     use crate::region;
+    use chirpstack_api::internal;
     use std::collections::HashMap;
     use std::str::FromStr;
     use uuid::Uuid;
@@ -358,11 +359,11 @@ pub mod test {
         };
 
         for tst in &tests {
-            let dev = device::Device {
+            let mut dev = device::Device {
                 dev_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
+                device_session: Some(tst.device_session.clone()),
                 ..Default::default()
             };
-            let mut ds = tst.device_session.clone();
             let block = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRAns(
                 tst.link_adr_ans.clone(),
             )]);
@@ -373,7 +374,7 @@ pub mod test {
                 None => None,
             };
 
-            let res = handle(&ufs, &dev, &mut ds, &block, pending.as_ref());
+            let res = handle(&ufs, &mut dev, &block, pending.as_ref());
             if let Some(e) = &tst.expected_error {
                 assert_eq!(true, res.is_err(), "{}", tst.name);
                 assert_eq!(e, &format!("{}", res.err().unwrap()), "{}", tst.name);
@@ -381,7 +382,12 @@ pub mod test {
                 assert_eq!(true, res.unwrap().is_none(), "{}", tst.name);
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }

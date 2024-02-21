@@ -8,7 +8,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_keys, device_profile, gateway, reset_db, reset_redis, tenant,
+    device_keys, device_profile, gateway, tenant,
 };
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
 use chirpstack_api::{common, gw, internal, stream};
@@ -170,8 +170,6 @@ async fn test_gateway_filtering() {
                 dev.dev_eui.clone(),
                 internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
-                    dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
-                    join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     mac_version: common::MacVersion::Lorawan102.into(),
                     f_nwk_s_int_key: vec![
                         128, 47, 168, 41, 62, 215, 212, 79, 19, 83, 183, 201, 43, 169, 125, 200,
@@ -412,8 +410,6 @@ async fn test_lorawan_10() {
                     dev.dev_eui.clone(),
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
-                        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
-                        join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                         mac_version: common::MacVersion::Lorawan102.into(),
                         f_nwk_s_int_key: vec![
                             128, 47, 168, 41, 62, 215, 212, 79, 19, 83, 183, 201, 43, 169, 125, 200,
@@ -608,8 +604,6 @@ async fn test_lorawan_10() {
                 dev.dev_eui.clone(),
                 internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
-                    dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
-                    join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     mac_version: common::MacVersion::Lorawan102.into(),
                     f_nwk_s_int_key: vec![
                         128, 47, 168, 41, 62, 215, 212, 79, 19, 83, 183, 201, 43, 169, 125, 200,
@@ -656,8 +650,6 @@ async fn test_lorawan_10() {
                     dev.dev_eui.clone(),
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
-                        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
-                        join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                         mac_version: common::MacVersion::Lorawan102.into(),
                         f_nwk_s_int_key: vec![
                             128, 47, 168, 41, 62, 215, 212, 79, 19, 83, 183, 201, 43, 169, 125, 200,
@@ -1037,8 +1029,6 @@ async fn test_lorawan_11() {
                     dev.dev_eui.clone(),
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
-                        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
-                        join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                         mac_version: common::MacVersion::Lorawan110.into(),
                         f_nwk_s_int_key: vec![
                             98, 222, 198, 158, 98, 155, 205, 235, 143, 171, 203, 19, 221, 9, 1, 231,

@@ -709,7 +709,7 @@ impl Data {
             // LoRaWAN MAC payload
             let mut mac_pl = lrwn::MACPayload {
                 fhdr: lrwn::FHDR {
-                    devaddr: self.device.dev_addr.unwrap(),
+                    devaddr: self.device.get_dev_addr()?,
                     f_cnt: ds.n_f_cnt_down,
                     f_ctrl: lrwn::FCtrl {
                         adr: !self.network_conf.adr_disabled,
@@ -838,7 +838,7 @@ impl Data {
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
                     fhdr: lrwn::FHDR {
-                        devaddr: relay_ctx.device.dev_addr.unwrap(),
+                        devaddr: relay_ctx.device.get_dev_addr()?,
                         f_cnt: relay_ds.get_a_f_cnt_down(),
                         f_ctrl: lrwn::FCtrl {
                             adr: !self.network_conf.adr_disabled,
@@ -886,7 +886,7 @@ impl Data {
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
                     fhdr: lrwn::FHDR {
-                        devaddr: relay_ctx.device.dev_addr.unwrap(),
+                        devaddr: relay_ctx.device.get_dev_addr()?,
                         f_cnt: relay_ds.get_a_f_cnt_down(),
                         f_ctrl: lrwn::FCtrl {
                             adr: !self.network_conf.adr_disabled,
@@ -1615,12 +1615,8 @@ impl Data {
                                 root_wor_s_key,
                             },
                         )]);
-                    mac_command::set_pending(
-                        &dev_eui,
-                        lrwn::CID::UpdateUplinkListReq,
-                        &set,
-                    )
-                    .await?;
+                    mac_command::set_pending(&dev_eui, lrwn::CID::UpdateUplinkListReq, &set)
+                        .await?;
                     self.mac_commands.push(set);
 
                     ds.relay
@@ -1823,8 +1819,7 @@ impl Data {
                     },
                 },
             )]);
-            mac_command::set_pending(&dev_eui, lrwn::CID::ConfigureFwdLimitReq, &set)
-                .await?;
+            mac_command::set_pending(&dev_eui, lrwn::CID::ConfigureFwdLimitReq, &set).await?;
             self.mac_commands.push(set);
         }
 
@@ -1958,12 +1953,7 @@ impl Data {
                                 filter_list_eui: eui,
                             },
                         )]);
-                        mac_command::set_pending(
-                            &dev_eui,
-                            lrwn::CID::FilterListReq,
-                            &set,
-                        )
-                        .await?;
+                        mac_command::set_pending(&dev_eui, lrwn::CID::FilterListReq, &set).await?;
                         self.mac_commands.push(set);
 
                         f.join_eui = device.join_eui.to_vec();
@@ -1995,8 +1985,7 @@ impl Data {
                         filter_list_eui: eui,
                     },
                 )]);
-                mac_command::set_pending(&dev_eui, lrwn::CID::FilterListReq, &set)
-                    .await?;
+                mac_command::set_pending(&dev_eui, lrwn::CID::FilterListReq, &set).await?;
                 self.mac_commands.push(set);
 
                 ds.relay
@@ -2113,8 +2102,7 @@ impl Data {
                     second_ch_freq: self.device_profile.relay_second_channel_freq as u32,
                 },
             )]);
-            mac_command::set_pending(&dev_eui, lrwn::CID::EndDeviceConfReq, &set)
-                .await?;
+            mac_command::set_pending(&dev_eui, lrwn::CID::EndDeviceConfReq, &set).await?;
             self.mac_commands.push(set);
         }
 
@@ -2676,7 +2664,7 @@ fn filter_mac_commands(
 mod test {
     use super::*;
     use crate::test;
-    use lrwn::EUI64;
+    use lrwn::{DevAddr, EUI64};
     use tokio::time::sleep;
     use uuid::Uuid;
 
@@ -2882,6 +2870,17 @@ mod test {
                 device_queue::enqueue_item(qi.clone()).await.unwrap();
             }
 
+            // update device device-session
+            let d = device::partial_update(
+                d.dev_eui,
+                &device::DeviceChangeset {
+                    device_session: Some(Some(ds.clone())),
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+
             let mut ctx = Data {
                 relay_context: None,
                 uplink_frame_set: None,
@@ -2889,7 +2888,6 @@ mod test {
                 application: app.clone(),
                 device_profile: dp.clone(),
                 device: d.clone(),
-                device_session: ds.clone(),
                 network_conf: config::get_region_network("eu868").unwrap(),
                 region_conf: region::get("eu868").unwrap(),
                 must_send: false,
@@ -3420,15 +3418,11 @@ mod test {
                     dev_addr: Some(*dev_addr),
                     application_id: app.id,
                     device_profile_id: dp_ed.id,
-                    device_session: Some(
-                        internal::DeviceSession {
-                            dev_addr: dev_addr.to_vec(),
-                            dev_eui: dev_eui.to_vec(),
-                            nwk_s_enc_key: vec![0; 16],
-                            ..Default::default()
-                        }
-                        .encode_to_vec(),
-                    ),
+                    device_session: Some(internal::DeviceSession {
+                        dev_addr: dev_addr.to_vec(),
+                        nwk_s_enc_key: vec![0; 16],
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 })
                 .await
@@ -3437,6 +3431,17 @@ mod test {
                 relay::add_device(d_relay.dev_eui, d.dev_eui).await.unwrap();
             }
 
+            // update device with device-session
+            let d_relay = device::partial_update(
+                d_relay.dev_eui,
+                &device::DeviceChangeset {
+                    device_session: Some(Some(test.device_session.clone())),
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+
             let mut ctx = Data {
                 relay_context: None,
                 uplink_frame_set: None,
@@ -3444,7 +3449,6 @@ mod test {
                 application: app.clone(),
                 device_profile: dp_relay.clone(),
                 device: d_relay.clone(),
-                device_session: test.device_session.clone(),
                 network_conf: config::get_region_network("eu868").unwrap(),
                 region_conf: region::get("eu868").unwrap(),
                 must_send: false,
@@ -3467,14 +3471,17 @@ mod test {
             }
 
             // We can not predict the w_f_cnt_last_request timestamp.
-            if let Some(relay) = &mut ctx.device_session.relay {
+            if let Some(relay) = &mut ctx.device.get_device_session_mut().unwrap().relay {
                 for rd in &mut relay.devices {
                     rd.w_f_cnt_last_request = None;
                 }
             }
 
             assert_eq!(test.expected_mac_commands, ctx.mac_commands);
-            assert_eq!(test.expected_device_session, ctx.device_session);
+            assert_eq!(
+                &test.expected_device_session,
+                ctx.device.get_device_session().unwrap()
+            );
         }
     }
 
@@ -3873,6 +3880,17 @@ mod test {
                 relay::add_device(d_relay.dev_eui, d.dev_eui).await.unwrap();
             }
 
+            // update relay device with device-session
+            let d_relay = device::partial_update(
+                d_relay.dev_eui,
+                &device::DeviceChangeset {
+                    device_session: Some(Some(test.device_session.clone())),
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+
             let mut ctx = Data {
                 relay_context: None,
                 uplink_frame_set: None,
@@ -3880,7 +3898,6 @@ mod test {
                 application: app.clone(),
                 device_profile: dp_relay.clone(),
                 device: d_relay.clone(),
-                device_session: test.device_session.clone(),
                 network_conf: config::get_region_network("eu868").unwrap(),
                 region_conf: region::get("eu868").unwrap(),
                 must_send: false,
@@ -3903,7 +3920,10 @@ mod test {
             }
 
             assert_eq!(test.expected_mac_commands, ctx.mac_commands);
-            assert_eq!(test.expected_device_session, ctx.device_session);
+            assert_eq!(
+                &test.expected_device_session,
+                ctx.device.get_device_session().unwrap()
+            );
         }
     }
 
@@ -3994,8 +4014,10 @@ mod test {
                 tenant: tenant::Tenant::default(),
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
-                device: device::Device::default(),
-                device_session: test.device_session.clone(),
+                device: device::Device {
+                    device_session: Some(test.device_session.clone()),
+                    ..Default::default()
+                },
                 network_conf: config::get_region_network("eu868").unwrap(),
                 region_conf: region::get("eu868").unwrap(),
                 must_send: false,
@@ -4103,8 +4125,10 @@ mod test {
                 tenant: tenant::Tenant::default(),
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
-                device: device::Device::default(),
-                device_session: test.device_session.clone(),
+                device: device::Device {
+                    device_session: Some(test.device_session.clone()),
+                    ..Default::default()
+                },
                 network_conf: config::get_region_network("eu868").unwrap(),
                 region_conf: region::get("eu868").unwrap(),
                 must_send: false,
@@ -4222,8 +4246,10 @@ mod test {
                 tenant: tenant::Tenant::default(),
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
-                device: device::Device::default(),
-                device_session: test.device_session.clone(),
+                device: device::Device {
+                    device_session: Some(test.device_session.clone()),
+                    ..Default::default()
+                },
                 network_conf: config::get_region_network("eu868").unwrap(),
                 region_conf: region::get("eu868").unwrap(),
                 must_send: false,
@@ -4258,7 +4284,6 @@ mod test {
                 name: "w_f_cnt has been recently requested".into(),
                 relay_devices: vec![EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2])],
                 device_session: internal::DeviceSession {
-                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![internal::RelayDevice {
                             index: 1,
@@ -4276,7 +4301,6 @@ mod test {
                 name: "w_f_cnt has never been requested".into(),
                 relay_devices: vec![EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2])],
                 device_session: internal::DeviceSession {
-                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![internal::RelayDevice {
                             index: 1,
@@ -4301,7 +4325,6 @@ mod test {
                 name: "w_f_cnt has been requested two days ago".into(),
                 relay_devices: vec![EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2])],
                 device_session: internal::DeviceSession {
-                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![internal::RelayDevice {
                             index: 1,
@@ -4336,7 +4359,6 @@ mod test {
                     EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 5]),
                 ],
                 device_session: internal::DeviceSession {
-                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![
                             internal::RelayDevice {
@@ -4394,7 +4416,6 @@ mod test {
                 name: "device has been removed".into(),
                 relay_devices: vec![],
                 device_session: internal::DeviceSession {
-                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
                     relay: Some(internal::Relay {
                         devices: vec![internal::RelayDevice {
                             index: 1,
@@ -4479,6 +4500,17 @@ mod test {
                 relay::add_device(d_relay.dev_eui, d.dev_eui).await.unwrap();
             }
 
+            // update relay device
+            let d_relay = device::partial_update(
+                d_relay.dev_eui,
+                &device::DeviceChangeset {
+                    device_session: Some(Some(test.device_session.clone())),
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+
             let mut ctx = Data {
                 relay_context: None,
                 uplink_frame_set: None,
@@ -4486,7 +4518,6 @@ mod test {
                 application: application::Application::default(),
                 device_profile: device_profile::DeviceProfile::default(),
                 device: d_relay.clone(),
-                device_session: test.device_session.clone(),
                 network_conf: config::get_region_network("eu868").unwrap(),
                 region_conf: region::get("eu868").unwrap(),
                 must_send: false,

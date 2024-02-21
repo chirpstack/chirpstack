@@ -1089,7 +1089,7 @@ pub mod test {
                 application_id: app.id,
                 device_profile_id: dp.id,
                 name: "0303030303030303".into(),
-                dev_eui: EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                dev_eui: EUI64::from_be_bytes([3, 3, 3, 3, 3, 3, 3, 3]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
                 secondary_dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
                 device_session: Some(internal::DeviceSession {
@@ -1178,96 +1178,84 @@ pub mod test {
                 name: "matching dev_eui 0101010101010101".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
                 f_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[0].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                    &devices[0].get_device_session().unwrap().f_nwk_s_int_key,
                 )
                 .unwrap(),
                 s_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[0].device_sessions.as_ref().unwrap().s_nwk_s_int_key,
+                    &devices[0].get_device_session().unwrap().s_nwk_s_int_key,
                 )
                 .unwrap(),
-                f_cnt: devices[0].device_session.as_ref().unwrap().f_cnt_up,
+                f_cnt: devices[0].get_device_session().unwrap().f_cnt_up,
                 expected_retransmission: false,
                 expected_reset: false,
-                expected_fcnt_up: devices[0].device_session.as_ref().f_cnt_up,
-                expected_dev_eui: EUI64::from_slice(
-                    &devices[0].device_session.as_ref().unwrap().dev_eui,
-                )
-                .unwrap(),
+                expected_fcnt_up: devices[0].get_device_session().unwrap().f_cnt_up,
+                expected_dev_eui: devices[0].dev_eui,
                 expected_error: None,
             },
             Test {
                 name: "matching dev_eui 0202020202020202".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
                 f_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[1].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                    &devices[1].get_device_session().unwrap().f_nwk_s_int_key,
                 )
                 .unwrap(),
                 s_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[1].device_session.as_ref().unwrap().s_nwk_s_int_key,
+                    &devices[1].get_device_session().unwrap().s_nwk_s_int_key,
                 )
                 .unwrap(),
-                f_cnt: devices[1].device_session.as_ref().unwrap().f_cnt_up,
+                f_cnt: devices[1].get_device_session().unwrap().f_cnt_up,
                 expected_retransmission: false,
                 expected_reset: false,
-                expected_fcnt_up: devices[1].device_session.as_ref().unwrap().f_cnt_up,
-                expected_dev_eui: EUI64::from_slice(
-                    &devices[1].device_session.as_ref().unwrap().dev_eui,
-                )
-                .unwrap(),
+                expected_fcnt_up: devices[1].get_device_session().unwrap().f_cnt_up,
+                expected_dev_eui: devices[1].dev_eui,
                 expected_error: None,
             },
             Test {
                 name: "matching dev_eui 0101010101010101 with frame-counter reset".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
                 f_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[0].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                    &devices[0].get_device_session().unwrap().f_nwk_s_int_key,
                 )
                 .unwrap(),
                 s_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[0].device_session.as_ref().unwrap().s_nwk_s_int_key,
+                    &devices[0].get_device_session().unwrap().s_nwk_s_int_key,
                 )
                 .unwrap(),
                 f_cnt: 0,
                 expected_retransmission: false,
                 expected_reset: false,
                 expected_fcnt_up: 0,
-                expected_dev_eui: EUI64::from_slice(
-                    &devices[0].device_session.as_ref().unwrap().dev_eui,
-                )
-                .unwrap(),
+                expected_dev_eui: devices[0].dev_eui,
                 expected_error: None,
             },
             Test {
                 name: "matching dev_eui 0202020202020202 with invalid frame-counter".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
                 f_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[1].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                    &devices[1].get_device_session().unwrap().f_nwk_s_int_key,
                 )
                 .unwrap(),
                 s_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[1].device_session.as_ref().unwrap().s_nwk_s_int_key,
+                    &devices[1].get_device_session().unwrap().s_nwk_s_int_key,
                 )
                 .unwrap(),
                 f_cnt: 0,
                 expected_reset: true,
-                expected_dev_eui: EUI64::from_slice(
-                    &devices[1].device_session.as_ref().unwrap().dev_eui,
-                )
-                .unwrap(),
+                expected_dev_eui: devices[1].dev_eui,
                 ..Default::default()
             },
             Test {
                 name: "invalid DevAddr".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x01, 0x01, 0x01]),
                 f_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[0].device_session.as_ref().unwrap().f_nwk_s_int_key,
+                    &devices[0].get_device_session().unwrap().f_nwk_s_int_key,
                 )
                 .unwrap(),
                 s_nwk_s_int_key: AES128Key::from_slice(
-                    &devices[0].device_session.as_ref().unwrap().s_nwk_s_int_key,
+                    &devices[0].get_device_session().unwrap().s_nwk_s_int_key,
                 )
                 .unwrap(),
-                f_cnt: devices[0].device_session.as_ref().unwrap().f_cnt_up,
+                f_cnt: devices[0].get_device_session().unwrap().f_cnt_up,
                 expected_error: Some("Object does not exist (id: 01010101)".to_string()),
                 ..Default::default()
             },
@@ -1280,7 +1268,7 @@ pub mod test {
                 s_nwk_s_int_key: AES128Key::from_bytes([
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
                 ]),
-                f_cnt: devices[0].device_session.as_ref().unwrap().f_cnt_up,
+                f_cnt: devices[0].get_device_session().unwrap().f_cnt_up,
                 expected_error: Some("Invalid MIC".to_string()),
                 ..Default::default()
             },
@@ -1296,10 +1284,7 @@ pub mod test {
                     0x04, 0x04, 0x04,
                 ]),
                 f_cnt: 0,
-                expected_dev_eui: EUI64::from_slice(
-                    &devices[2].device_session.as_ref().unwrap().dev_eui,
-                )
-                .unwrap(),
+                expected_dev_eui: devices[2].dev_eui,
                 expected_fcnt_up: 0,
                 expected_retransmission: false,
                 expected_error: None,
@@ -1317,10 +1302,7 @@ pub mod test {
                     0x05, 0x05, 0x05,
                 ]),
                 f_cnt: (1 << 16) + 11,
-                expected_dev_eui: EUI64::from_slice(
-                    &devices[3].device_session.as_ref().unwrap().dev_eui,
-                )
-                .unwrap(),
+                expected_dev_eui: devices[3].dev_eui,
                 expected_fcnt_up: (1 << 16) + 11,
                 expected_retransmission: false,
                 expected_error: None,
@@ -1373,33 +1355,24 @@ pub mod test {
                     assert_eq!(tst.f_cnt, pl.fhdr.f_cnt);
                 }
             } else {
-                let ds = d.device_session.unwrap();
+                let d = d.unwrap();
 
                 // Validate that the f_cnt of the PhyPayload was set to the full frame-counter.
                 if let lrwn::Payload::MACPayload(pl) = &phy.payload {
                     assert_eq!(tst.expected_fcnt_up, pl.fhdr.f_cnt);
                 }
 
-                if let ValidationStatus::Ok(full_f_cnt, ds) = ds {
+                if let ValidationStatus::Ok(full_f_cnt, d) = d {
                     assert_eq!(false, tst.expected_retransmission);
-                    assert_eq!(
-                        tst.expected_dev_eui,
-                        EUI64::from_slice(&ds.dev_eui).unwrap()
-                    );
+                    assert_eq!(tst.expected_dev_eui, d.dev_eui,);
                     assert_eq!(tst.expected_fcnt_up, full_f_cnt);
-                } else if let ValidationStatus::Retransmission(full_f_cnt, ds) = ds {
+                } else if let ValidationStatus::Retransmission(full_f_cnt, d) = d {
                     assert_eq!(true, tst.expected_retransmission);
-                    assert_eq!(
-                        tst.expected_dev_eui,
-                        EUI64::from_slice(&ds.dev_eui).unwrap()
-                    );
+                    assert_eq!(tst.expected_dev_eui, d.dev_eui,);
                     assert_eq!(tst.expected_fcnt_up, full_f_cnt);
-                } else if let ValidationStatus::Reset(_, ds) = ds {
+                } else if let ValidationStatus::Reset(_, d) = d {
                     assert_eq!(true, tst.expected_reset);
-                    assert_eq!(
-                        tst.expected_dev_eui,
-                        EUI64::from_slice(&ds.dev_eui).unwrap()
-                    );
+                    assert_eq!(tst.expected_dev_eui, d.dev_eui,);
                 }
             }
         }

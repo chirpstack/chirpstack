@@ -179,13 +179,11 @@ mod test {
         ];
 
         for tst in &tests {
-            let mut ds = tst.device_session.clone();
-            let resp = handle(
-                &device::Device::default(),
-                &mut ds,
-                &tst.relay_conf_ans,
-                tst.relay_conf_req.as_ref(),
-            );
+            let mut dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
+            let resp = handle(&mut dev, &tst.relay_conf_ans, tst.relay_conf_req.as_ref());
 
             if let Some(e) = &tst.expected_error {
                 assert_eq!(true, resp.is_err(), "{}", tst.name);
@@ -194,7 +192,12 @@ mod test {
                 assert_eq!(true, resp.unwrap().is_none());
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }

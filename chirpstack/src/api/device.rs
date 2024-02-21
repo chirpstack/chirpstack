@@ -1544,15 +1544,12 @@ pub mod test {
         device::partial_update(
             dev.dev_eui,
             &device::DeviceChangeset {
-                device_session: Some(Some(
-                    internal::DeviceSession {
-                        dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
-                        dev_addr: vec![1, 2, 3, 4],
-                        js_session_key_id: vec![8, 7, 6, 5, 4, 3, 2, 1],
-                        ..Default::default()
-                    }
-                    .encode_to_vec(),
-                )),
+                dev_addr: Some(Some(DevAddr::from_be_bytes([1, 2, 3, 4]))),
+                device_session: Some(Some(internal::DeviceSession {
+                    dev_addr: vec![1, 2, 3, 4],
+                    js_session_key_id: vec![8, 7, 6, 5, 4, 3, 2, 1],
+                    ..Default::default()
+                })),
                 ..Default::default()
             },
         )
@@ -1577,18 +1574,14 @@ pub mod test {
         device::partial_update(
             dev.dev_eui,
             &device::DeviceChangeset {
-                device_session: Some(Some(
-                    internal::DeviceSession {
-                        dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
-                        dev_addr: vec![1, 2, 3, 4],
-                        app_s_key: Some(common::KeyEnvelope {
-                            kek_label: "test-key".into(),
-                            aes_key: vec![8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1],
-                        }),
-                        ..Default::default()
-                    }
-                    .encode_to_vec(),
-                )),
+                device_session: Some(Some(internal::DeviceSession {
+                    dev_addr: vec![1, 2, 3, 4],
+                    app_s_key: Some(common::KeyEnvelope {
+                        kek_label: "test-key".into(),
+                        aes_key: vec![8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1],
+                    }),
+                    ..Default::default()
+                })),
                 ..Default::default()
             },
         )

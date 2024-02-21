@@ -1,4 +1,3 @@
-use prost::Message;
 use uuid::Uuid;
 
 use super::assert;
@@ -9,7 +8,7 @@ use crate::storage::{
 };
 use crate::{downlink, gateway::backend as gateway_backend, integration, test};
 use chirpstack_api::{common, gw, internal};
-use lrwn::EUI64;
+use lrwn::{DevAddr, EUI64};
 
 struct DownlinkTest {
     name: String,
@@ -73,6 +72,7 @@ async fn test_downlink_scheduler() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::C,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -88,10 +88,8 @@ async fn test_downlink_scheduler() {
     };
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
-        mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
+        mac_version: common::MacVersion::Lorawan104.into(),
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -305,7 +303,7 @@ async fn run_scheduler_test(t: &DownlinkTest) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.as_ref().map(|v| v.encode_to_vec())),
+            device_session: Some(t.device_session.clone()),
             ..Default::default()
         },
     )

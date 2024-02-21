@@ -2,7 +2,6 @@ use std::future::Future;
 use std::pin::Pin;
 use std::time::Duration;
 
-use prost::Message;
 use uuid::Uuid;
 
 use super::assert;
@@ -96,25 +95,20 @@ async fn test_gateway_filtering() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
-        device_session: Some(
-            internal::DeviceSession {
-                dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
-                mac_version: common::MacVersion::Lorawan102.into(),
-                join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
-                dev_addr: vec![1, 2, 3, 4],
-                f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-                s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-                nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-                f_cnt_up: 7,
-                n_f_cnt_down: 5,
-                enabled_uplink_channel_indices: vec![0, 1, 2],
-                rx1_delay: 1,
-                rx2_frequency: 869525000,
-                region_config_id: "eu868".into(),
-                ..Default::default()
-            }
-            .encode_to_vec(),
-        ),
+        device_session: Some(internal::DeviceSession {
+            mac_version: common::MacVersion::Lorawan102.into(),
+            dev_addr: vec![1, 2, 3, 4],
+            f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            f_cnt_up: 7,
+            n_f_cnt_down: 5,
+            enabled_uplink_channel_indices: vec![0, 1, 2],
+            rx1_delay: 1,
+            rx2_frequency: 869525000,
+            region_config_id: "eu868".into(),
+            ..Default::default()
+        }),
         ..Default::default()
     })
     .await
@@ -205,7 +199,7 @@ async fn test_gateway_filtering() {
                 }),
                 mic: Some([48, 94, 26, 239]),
             },
-            assert: vec![assert::f_cnt_up(dev.dev_eui.clone(), 7)],
+            assert: vec![assert::f_cnt_up(dev.dev_eui, 7)],
         },
     ];
 
@@ -303,9 +297,7 @@ async fn test_region_config_id_filtering() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -453,9 +445,7 @@ async fn test_lorawan_10_errors() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -658,9 +648,7 @@ async fn test_lorawan_11_errors() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_dr, 3).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -809,9 +797,7 @@ async fn test_lorawan_10_skip_f_cnt() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -1005,9 +991,7 @@ async fn test_lorawan_10_device_disabled() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -1136,9 +1120,7 @@ async fn test_lorawan_10_uplink() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 10).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -1769,9 +1751,7 @@ async fn test_lorawan_10_end_to_end_enc() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds_sess_key_id = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -1788,9 +1768,7 @@ async fn test_lorawan_10_end_to_end_enc() {
     };
 
     let ds_app_s_key = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -2107,9 +2085,7 @@ async fn test_lorawan_11_uplink() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan110.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -2348,9 +2324,7 @@ async fn test_lorawan_10_rx_delay() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -2563,9 +2537,7 @@ async fn test_lorawan_10_mac_commands() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -2930,9 +2902,7 @@ async fn test_lorawan_11_mac_commands() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan110.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -3126,9 +3096,7 @@ async fn test_lorawan_10_device_queue() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -3605,9 +3573,7 @@ async fn test_lorawan_11_device_queue() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan110.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -4088,9 +4054,7 @@ async fn test_lorawan_10_adr() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -4942,9 +4906,7 @@ async fn test_lorawan_10_device_status_request() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -5215,9 +5177,7 @@ async fn test_lorawan_11_receive_window_selection() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan110.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -5600,7 +5560,7 @@ async fn run_test(t: &Test) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.as_ref().map(|v| v.encode_to_vec())),
+            device_session: Some(t.device_session.clone()),
             ..Default::default()
         },
     )

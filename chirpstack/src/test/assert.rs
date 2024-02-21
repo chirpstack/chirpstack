@@ -27,11 +27,8 @@ pub fn f_cnt_up(dev_eui: EUI64, f_cnt: u32) -> Validator {
     Box::new(move || {
         let dev_eui = dev_eui.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(f_cnt, ds.f_cnt_up);
         })
     })
@@ -41,11 +38,8 @@ pub fn n_f_cnt_down(dev_eui: EUI64, f_cnt: u32) -> Validator {
     Box::new(move || {
         let dev_eui = dev_eui.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(f_cnt, ds.n_f_cnt_down);
         })
     })
@@ -55,11 +49,8 @@ pub fn a_f_cnt_down(dev_eui: EUI64, f_cnt: u32) -> Validator {
     Box::new(move || {
         let dev_eui = dev_eui.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(f_cnt, ds.a_f_cnt_down);
         })
     })
@@ -69,11 +60,8 @@ pub fn tx_power_index(dev_eui: EUI64, tx_power: u32) -> Validator {
     Box::new(move || {
         let dev_eui = dev_eui.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(tx_power, ds.tx_power_index);
         })
     })
@@ -83,11 +71,8 @@ pub fn nb_trans(dev_eui: EUI64, nb_trans: u32) -> Validator {
     Box::new(move || {
         let dev_eui = dev_eui.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(nb_trans, ds.nb_trans);
         })
     })
@@ -98,11 +83,8 @@ pub fn enabled_uplink_channel_indices(dev_eui: EUI64, channels: Vec<u32>) -> Val
         let dev_eui = dev_eui.clone();
         let channels = channels.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(channels, ds.enabled_uplink_channel_indices);
         })
     })
@@ -112,11 +94,8 @@ pub fn dr(dev_eui: EUI64, dr: u32) -> Validator {
     Box::new(move || {
         let dev_eui = dev_eui.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(dr, ds.dr);
         })
     })
@@ -126,11 +105,8 @@ pub fn mac_command_error_count(dev_eui: EUI64, cid: lrwn::CID, count: u32) -> Va
     Box::new(move || {
         let dev_eui = dev_eui.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(
                 count,
                 ds.mac_command_error_count
@@ -147,11 +123,8 @@ pub fn uplink_adr_history(dev_eui: EUI64, uh: Vec<internal::UplinkAdrHistory>) -
         let dev_eui = dev_eui.clone();
         let uh = uh.clone();
         Box::pin(async move {
-            let ds = device::get(&dev_eui)
-                .await
-                .unwrap()
-                .get_device_session()
-                .unwrap();
+            let d = device::get(&dev_eui).await.unwrap();
+            let ds = d.get_device_session().unwrap();
             assert_eq!(uh, ds.uplink_adr_history);
         })
     })
@@ -277,11 +250,8 @@ pub fn device_session(dev_eui: EUI64, ds: internal::DeviceSession) -> Validator 
         let ds = ds.clone();
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
-            let ds_get = internal::DeviceSession::decode(&mut Cursor::new(
-                d.device_session.as_ref().unwrap(),
-            ))
-            .unwrap();
-            assert_eq!(ds, ds_get);
+            let ds_get = d.get_device_session().unwrap();
+            assert_eq!(&ds, ds_get);
         })
     })
 }

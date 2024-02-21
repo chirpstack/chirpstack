@@ -156,8 +156,6 @@ async fn test_js() {
                     dev.dev_eui.clone(),
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
-                        dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
-                        join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                         mac_version: common::MacVersion::Lorawan103.into(),
                         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],
                         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -225,8 +223,6 @@ async fn test_js() {
                     dev.dev_eui.clone(),
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
-                        dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
-                        join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                         mac_version: common::MacVersion::Lorawan103.into(),
                         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],
                         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -297,8 +293,6 @@ async fn test_js() {
                     dev.dev_eui.clone(),
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
-                        dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
-                        join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                         mac_version: common::MacVersion::Lorawan103.into(),
                         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],
                         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],

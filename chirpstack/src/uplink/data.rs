@@ -120,16 +120,16 @@ impl Data {
         let span = tracing::Span::current();
         span.record("dev_eui", ctx.device.as_ref().unwrap().dev_eui.to_string());
 
-        ctx.set_device_info()?;
-        ctx.set_device_gateway_rx_info()?;
-        ctx.handle_retransmission_reset().await?;
-        ctx.set_scheduler_run_after().await?;
         if !ctx._is_roaming() {
             // In case of roaming we do not know the gateways and therefore it must not be
             // filtered.
             ctx.filter_rx_info_by_tenant().await?;
             ctx.filter_rx_info_by_region_config_id()?;
         }
+        ctx.set_device_info()?;
+        ctx.set_device_gateway_rx_info()?;
+        ctx.handle_retransmission_reset().await?;
+        ctx.set_scheduler_run_after().await?;
         ctx.decrypt_f_opts_mac_commands()?;
         ctx.decrypt_frm_payload()?;
         ctx.log_uplink_frame_set().await?;
@@ -955,7 +955,7 @@ impl Data {
         let app = self.application.as_ref().unwrap();
         let dp = self.device_profile.as_ref().unwrap();
         let dev = self.device.as_ref().unwrap();
-        let ds = dev.device_session.as_ref().unwrap();
+        let ds = dev.get_device_session()?;
         let mac = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             pl
         } else {

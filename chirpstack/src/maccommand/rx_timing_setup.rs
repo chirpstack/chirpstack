@@ -40,6 +40,7 @@ pub fn handle(
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use chirpstack_api::internal;
 
     struct Test {
         name: String,
@@ -101,12 +102,12 @@ pub mod test {
         ];
 
         for tst in &tests {
-            let mut ds = tst.device_session.clone();
+            let mut dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
             let resp = handle(
-                &device::Device {
-                    ..Default::default()
-                },
-                &mut ds,
+                &mut dev,
                 &tst.rx_timing_setup_ans,
                 tst.rx_timing_setup_req.as_ref(),
             );
@@ -118,7 +119,12 @@ pub mod test {
                 assert_eq!(true, resp.unwrap().is_none());
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }
