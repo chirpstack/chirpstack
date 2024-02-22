@@ -78,6 +78,9 @@ enum Commands {
         #[arg(short, long, value_name = "NAME")]
         name: String,
     },
+
+    /// Migrate device-sessions from Redis to PostgreSQL.
+    MigrateDeviceSessionsToPostgres {},
 }
 
 #[tokio::main]
@@ -116,6 +119,7 @@ async fn main() -> Result<()> {
                 .unwrap()
         }
         Some(Commands::CreateApiKey { name }) => cmd::create_api_key::run(name).await?,
+        Some(Commands::MigrateDeviceSessionsToPostgres {}) => cmd::migrate_ds_to_pg::run().await?,
         None => cmd::root::run().await?,
     }
 
