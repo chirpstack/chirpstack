@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
@@ -7,12 +8,13 @@ use openidconnect::core::{
     CoreResponseType,
 };
 use openidconnect::reqwest::async_http_client;
+use openidconnect::{AdditionalClaims, UserInfoClaims};
 use openidconnect::{
     AuthenticationFlow, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
     OAuth2TokenResponse, RedirectUrl, Scope,
 };
-use openidconnect::{EmptyAdditionalClaims, UserInfoClaims};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tracing::{error, trace};
 use warp::{Rejection, Reply};
 
@@ -20,7 +22,15 @@ use crate::config;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{get_async_redis_conn, redis_key};
 
-pub type User = UserInfoClaims<EmptyAdditionalClaims, CoreGenderClaim>;
+pub type User = UserInfoClaims<CustomClaims, CoreGenderClaim>;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CustomClaims {
+    #[serde(flatten)]
+    other: HashMap<String, Value>,
+}
+
+impl AdditionalClaims for CustomClaims {}
 
 #[derive(Serialize, Deserialize)]
 pub struct CallbackArgs {
