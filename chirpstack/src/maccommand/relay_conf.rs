@@ -5,11 +5,13 @@ use crate::storage::device;
 use chirpstack_api::internal;
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending RelayConfReq mac-command"));
     }
@@ -43,7 +45,7 @@ pub fn handle(
         && ans_pl.default_ch_idx_ack
         && ans_pl.cad_periodicity_ack
     {
-        info!(dev_eui = %dev.dev_eui, "RelayConfReq acknowledged");
+        info!(dev_eui = %dev_eui, "RelayConfReq acknowledged");
 
         if let Some(relay) = &mut ds.relay {
             relay.enabled = req_pl.channel_settings_relay.start_stop == 1;
@@ -56,7 +58,7 @@ pub fn handle(
         }
     } else {
         warn!(
-            dev_eui = %dev.dev_eui,
+            dev_eui = %dev_eui,
             second_ch_ack_offset_ack = ans_pl.second_ch_ack_offset_ack,
             second_ch_dr_ack = ans_pl.second_ch_dr_ack,
             second_ch_idx_ack = ans_pl.second_ch_idx_ack,
@@ -177,13 +179,11 @@ mod test {
         ];
 
         for tst in &tests {
-            let mut ds = tst.device_session.clone();
-            let resp = handle(
-                &device::Device::default(),
-                &mut ds,
-                &tst.relay_conf_ans,
-                tst.relay_conf_req.as_ref(),
-            );
+            let mut dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
+            let resp = handle(&mut dev, &tst.relay_conf_ans, tst.relay_conf_req.as_ref());
 
             if let Some(e) = &tst.expected_error {
                 assert_eq!(true, resp.is_err(), "{}", tst.name);
@@ -192,7 +192,12 @@ mod test {
                 assert_eq!(true, resp.unwrap().is_none());
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }

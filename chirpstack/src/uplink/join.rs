@@ -6,8 +6,8 @@ use chrono::{DateTime, Local, Utc};
 use tracing::{error, info, span, trace, warn, Instrument, Level};
 
 use lrwn::{
-    keys, AES128Key, CFList, DLSettings, DevAddr, JoinAcceptPayload, JoinRequestPayload, JoinType,
-    MType, Major, Payload, PhyPayload, MHDR,
+    keys, AES128Key, CFList, DLSettings, JoinAcceptPayload, JoinRequestPayload, JoinType, MType,
+    Major, Payload, PhyPayload, MHDR,
 };
 
 use super::error::Error;
@@ -20,7 +20,6 @@ use super::{
 use crate::api::{backend::get_async_receiver, helpers::ToProto};
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::helpers::errors::PrintFullError;
-use crate::storage::device_session;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
@@ -40,12 +39,10 @@ pub struct JoinRequest {
     join_request: Option<JoinRequestPayload>,
     join_accept: Option<PhyPayload>,
     device: Option<device::Device>,
-    device_session: Option<internal::DeviceSession>,
     application: Option<application::Application>,
     tenant: Option<tenant::Tenant>,
     device_profile: Option<device_profile::DeviceProfile>,
     device_keys: Option<device_keys::DeviceKeys>,
-    dev_addr: Option<DevAddr>,
     device_info: Option<integration_pb::DeviceInfo>,
     relay_rx_info: Option<integration_pb::UplinkRelayRxInfo>,
     f_nwk_s_int_key: Option<AES128Key>,
@@ -96,12 +93,10 @@ impl JoinRequest {
             js_client: None,
             join_request: None,
             device: None,
-            device_session: None,
             application: None,
             tenant: None,
             device_profile: None,
             device_keys: None,
-            dev_addr: None,
             join_accept: None,
             device_info: None,
             relay_rx_info: None,
@@ -130,7 +125,7 @@ impl JoinRequest {
         ctx.abort_on_relay_only_comm()?;
         ctx.log_uplink_frame_set().await?;
         ctx.abort_on_otaa_is_disabled()?;
-        ctx.get_random_dev_addr()?;
+        ctx.set_random_dev_addr()?;
         if ctx.js_client.is_some() {
             // Using join-server
             ctx.get_join_accept_from_js().await?;
@@ -141,11 +136,10 @@ impl JoinRequest {
             ctx.construct_join_accept_and_set_keys()?;
         }
         ctx.log_uplink_meta().await?;
-        ctx.create_device_session().await?;
+        ctx.set_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
-        ctx.set_dev_addr().await?;
-        ctx.set_join_eui().await?;
+        ctx.update_device().await?;
         ctx.start_downlink_join_accept_flow().await?;
         ctx.send_join_event().await?;
 
@@ -159,12 +153,10 @@ impl JoinRequest {
             js_client: None,
             join_request: None,
             device: None,
-            device_session: None,
             application: None,
             tenant: None,
             device_profile: None,
             device_keys: None,
-            dev_addr: None,
             join_accept: None,
             device_info: None,
             relay_rx_info: None,
@@ -183,7 +175,7 @@ impl JoinRequest {
         ctx.abort_on_device_is_disabled()?;
         ctx.abort_on_otaa_is_disabled()?;
         ctx.abort_on_relay_only_comm()?;
-        ctx.get_random_dev_addr()?;
+        ctx.set_random_dev_addr()?;
         if ctx.js_client.is_some() {
             // Using join-server
             ctx.get_join_accept_from_js().await?;
@@ -193,11 +185,10 @@ impl JoinRequest {
             ctx.validate_dev_nonce_and_get_device_keys().await?;
             ctx.construct_join_accept_and_set_keys()?;
         }
-        ctx.create_device_session().await?;
+        ctx.set_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
-        ctx.set_dev_addr().await?;
-        ctx.set_join_eui().await?;
+        ctx.update_device().await?;
         ctx.start_downlink_join_accept_flow_relayed().await?;
         ctx.send_join_event().await?;
 
@@ -514,8 +505,10 @@ impl JoinRequest {
         Ok(())
     }
 
-    fn get_random_dev_addr(&mut self) -> Result<()> {
-        self.dev_addr = Some(get_random_dev_addr());
+    fn set_random_dev_addr(&mut self) -> Result<()> {
+        trace!("Setting random DevAddr");
+        let d = self.device.as_mut().unwrap();
+        d.dev_addr = Some(get_random_dev_addr());
         Ok(())
     }
 
@@ -550,7 +543,7 @@ impl JoinRequest {
             mac_version: dp.mac_version.to_string(),
             phy_payload: phy_b,
             dev_eui: dev.dev_eui.to_vec(),
-            dev_addr: self.dev_addr.unwrap().to_vec(),
+            dev_addr: dev.dev_addr.unwrap().to_vec(),
             dl_settings: dl_settings.to_le_bytes()?.to_vec(),
             rx_delay: region_network.rx1_delay,
             cf_list: match region_conf.get_cf_list(dp.mac_version) {
@@ -619,6 +612,7 @@ impl JoinRequest {
         let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
         let join_request = self.join_request.as_ref().unwrap();
 
+        let d = self.device.as_ref().unwrap();
         let dk = self.device_keys.as_mut().unwrap();
 
         let join_nonce = dk.join_nonce - 1; // this was incremented on validation
@@ -643,7 +637,7 @@ impl JoinRequest {
             payload: Payload::JoinAccept(JoinAcceptPayload {
                 join_nonce: join_nonce as u32,
                 home_netid: conf.network.net_id,
-                devaddr: self.dev_addr.unwrap(),
+                devaddr: d.dev_addr.unwrap(),
                 dl_settings: DLSettings {
                     opt_neg,
                     rx2_dr: region_network.rx2_dr,
@@ -768,21 +762,18 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn create_device_session(&mut self) -> Result<()> {
-        trace!("Creating device-session");
+    async fn set_device_session(&mut self) -> Result<()> {
+        trace!("Setting device-session");
 
         let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
         let region_network = config::get_region_network(&self.uplink_frame_set.region_config_id)?;
 
-        let device = self.device.as_ref().unwrap();
+        let device = self.device.as_mut().unwrap();
         let device_profile = self.device_profile.as_ref().unwrap();
-        let join_request = self.join_request.as_ref().unwrap();
 
         let mut ds = internal::DeviceSession {
             region_config_id: self.uplink_frame_set.region_config_id.clone(),
-            dev_eui: device.dev_eui.to_be_bytes().to_vec(),
-            dev_addr: self.dev_addr.unwrap().to_be_bytes().to_vec(),
-            join_eui: join_request.join_eui.to_be_bytes().to_vec(),
+            dev_addr: device.dev_addr.unwrap().to_be_bytes().to_vec(),
             f_nwk_s_int_key: self.f_nwk_s_int_key.as_ref().unwrap().to_vec(),
             s_nwk_s_int_key: self.s_nwk_s_int_key.as_ref().unwrap().to_vec(),
             nwk_s_enc_key: self.nwk_s_enc_key.as_ref().unwrap().to_vec(),
@@ -847,11 +838,7 @@ impl JoinRequest {
             None => {}
         }
 
-        device_session::save(&ds)
-            .await
-            .context("Saving device-session failed")?;
-
-        self.device_session = Some(ds);
+        device.device_session = Some(ds);
 
         Ok(())
     }
@@ -870,30 +857,36 @@ impl JoinRequest {
 
     async fn set_device_mode(&mut self) -> Result<()> {
         let dp = self.device_profile.as_ref().unwrap();
-        let device = self.device.as_mut().unwrap();
+        let d = self.device.as_mut().unwrap();
 
         // LoRaWAN 1.1 devices send a mac-command when changing to Class-C.
         if dp.supports_class_c && dp.mac_version.to_string().starts_with("1.0") {
-            *device = device::set_enabled_class(&device.dev_eui, DeviceClass::C).await?;
+            d.enabled_class = DeviceClass::C;
         } else {
-            *device = device::set_enabled_class(&device.dev_eui, DeviceClass::A).await?;
+            d.enabled_class = DeviceClass::A;
         }
+
         Ok(())
     }
 
-    async fn set_dev_addr(&mut self) -> Result<()> {
-        trace!("Setting DevAddr");
-        let dev = self.device.as_mut().unwrap();
-        *dev = device::set_dev_addr(dev.dev_eui, self.dev_addr.unwrap()).await?;
-        Ok(())
-    }
+    async fn update_device(&mut self) -> Result<()> {
+        trace!("Updating device");
 
-    async fn set_join_eui(&mut self) -> Result<()> {
-        trace!("Setting JoinEUI");
-        let dev = self.device.as_mut().unwrap();
         let req = self.join_request.as_ref().unwrap();
+        let d = self.device.as_mut().unwrap();
 
-        *dev = device::set_join_eui(dev.dev_eui, req.join_eui).await?;
+        *d = device::partial_update(
+            d.dev_eui,
+            &device::DeviceChangeset {
+                enabled_class: Some(d.enabled_class),
+                dev_addr: Some(d.dev_addr),
+                secondary_dev_addr: Some(None),
+                join_eui: Some(req.join_eui),
+                device_session: Some(d.device_session.clone()),
+                ..Default::default()
+            },
+        )
+        .await?;
 
         Ok(())
     }
@@ -904,7 +897,6 @@ impl JoinRequest {
             &self.uplink_frame_set,
             self.tenant.as_ref().unwrap(),
             self.device.as_ref().unwrap(),
-            self.device_session.as_ref().unwrap(),
             self.join_accept.as_ref().unwrap(),
         )
         .await?;
@@ -918,7 +910,6 @@ impl JoinRequest {
             &self.uplink_frame_set,
             self.tenant.as_ref().unwrap(),
             self.device.as_ref().unwrap(),
-            self.device_session.as_ref().unwrap(),
             self.join_accept.as_ref().unwrap(),
         )
         .await?;
@@ -939,7 +930,7 @@ impl JoinRequest {
             time: Some(ts.into()),
             device_info: self.device_info.clone(),
             relay_rx_info: self.relay_rx_info.clone(),
-            dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
+            dev_addr: dev.dev_addr.unwrap().to_string(),
             join_server_context: if !self.js_session_key_id.is_empty() {
                 Some(common::JoinServerContext {
                     app_s_key: None,

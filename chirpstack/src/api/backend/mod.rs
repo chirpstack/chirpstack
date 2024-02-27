@@ -18,7 +18,7 @@ use crate::backend::{joinserver, keywrap, roaming};
 use crate::downlink::data_fns;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{
-    device_session, error::Error as StorageError, get_async_redis_conn, passive_roaming, redis_key,
+    device, error::Error as StorageError, get_async_redis_conn, passive_roaming, redis_key,
 };
 use crate::uplink::{
     data_sns, error::Error as UplinkError, helpers, join_sns, RoamingMetaData, UplinkFrameSet,
@@ -312,9 +312,10 @@ async fn _handle_pr_start_req_data(
     };
 
     // get device-session
-    let ds = device_session::get_for_phypayload(&mut ufs.phy_payload, ufs.dr, ufs.ch as u8).await?;
+    let d = device::get_for_phypayload(&mut ufs.phy_payload, ufs.dr, ufs.ch as u8).await?;
     let pr_lifetime = roaming::get_passive_roaming_lifetime(sender_id)?;
     let kek_label = roaming::get_passive_roaming_kek_label(sender_id)?;
+    let ds = d.get_device_session()?;
 
     let nwk_s_key = if ds.mac_version().to_string().starts_with("1.0") {
         Some(keywrap::wrap(
@@ -343,7 +344,7 @@ async fn _handle_pr_start_req_data(
         base: pl
             .base
             .to_base_payload_result(backend::ResultCode::Success, ""),
-        dev_eui: ds.dev_eui.clone(),
+        dev_eui: d.dev_eui.to_vec(),
         lifetime: if pr_lifetime.is_zero() {
             None
         } else {

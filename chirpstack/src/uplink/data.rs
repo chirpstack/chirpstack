@@ -17,7 +17,7 @@ use crate::storage::error::Error as StorageError;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, device_session, fields,
+    device_gateway, device_profile, device_queue, fields,
     helpers::get_all_device_data,
     metrics, tenant,
 };
@@ -40,7 +40,6 @@ pub struct Data {
     retransmission: bool,
     f_cnt_up_full: u32,
     tenant: Option<tenant::Tenant>,
-    device_session: Option<internal::DeviceSession>,
     device: Option<device::Device>,
     device_profile: Option<device_profile::DeviceProfile>,
     application: Option<application::Application>,
@@ -50,6 +49,7 @@ pub struct Data {
     must_send_downlink: bool,
     downlink_mac_commands: Vec<lrwn::MACCommandSet>,
     device_gateway_rx_info: Option<internal::DeviceGatewayRxInfo>,
+    device_changeset: device::DeviceChangeset,
 }
 
 impl Data {
@@ -99,7 +99,6 @@ impl Data {
             reset: false,
             retransmission: false,
             tenant: None,
-            device_session: None,
             device: None,
             device_profile: None,
             application: None,
@@ -109,10 +108,11 @@ impl Data {
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
             device_gateway_rx_info: None,
+            device_changeset: Default::default(),
         };
 
         ctx.handle_passive_roaming_device().await?;
-        ctx.get_device_session().await?;
+        ctx.get_device_for_phy_payload().await?;
         ctx.get_device_data().await?;
         ctx.check_roaming_allowed()?;
 
@@ -120,17 +120,16 @@ impl Data {
         let span = tracing::Span::current();
         span.record("dev_eui", ctx.device.as_ref().unwrap().dev_eui.to_string());
 
-        ctx.abort_on_device_is_disabled().await?;
-        ctx.set_device_info()?;
-        ctx.set_device_gateway_rx_info()?;
-        ctx.handle_retransmission_reset().await?;
-        ctx.set_scheduler_run_after().await?;
         if !ctx._is_roaming() {
             // In case of roaming we do not know the gateways and therefore it must not be
             // filtered.
             ctx.filter_rx_info_by_tenant().await?;
             ctx.filter_rx_info_by_region_config_id()?;
         }
+        ctx.set_device_info()?;
+        ctx.set_device_gateway_rx_info()?;
+        ctx.handle_retransmission_reset().await?;
+        ctx.set_scheduler_run_after().await?;
         ctx.decrypt_f_opts_mac_commands()?;
         ctx.decrypt_frm_payload()?;
         ctx.log_uplink_frame_set().await?;
@@ -148,7 +147,7 @@ impl Data {
         ctx.detect_and_save_measurements().await?;
         ctx.sync_uplink_f_cnt()?;
         ctx.set_region_config_id()?;
-        ctx.save_device_session().await?;
+        ctx.update_device().await?;
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics().await?;
 
@@ -175,7 +174,6 @@ impl Data {
             reset: false,
             retransmission: false,
             tenant: None,
-            device_session: None,
             device: None,
             device_profile: None,
             application: None,
@@ -184,11 +182,11 @@ impl Data {
             uplink_event: None,
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
+            device_changeset: Default::default(),
         };
 
-        ctx.get_device_session_relayed().await?;
+        ctx.get_device_for_phy_payload_relayed().await?;
         ctx.get_device_data().await?;
-        ctx.abort_on_device_is_disabled().await?;
         ctx.set_device_info()?;
         ctx.set_relay_rx_info()?;
         ctx.handle_retransmission_reset().await?;
@@ -204,7 +202,7 @@ impl Data {
         ctx.detect_and_save_measurements().await?;
         ctx.sync_uplink_f_cnt()?;
         ctx.set_region_config_id()?;
-        ctx.save_device_session().await?;
+        ctx.update_device().await?;
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics_relayed().await?;
         ctx.start_downlink_data_flow_relayed().await?;
@@ -230,8 +228,8 @@ impl Data {
         Ok(())
     }
 
-    async fn get_device_session(&mut self) -> Result<(), Error> {
-        trace!("Getting device-session for dev_addr");
+    async fn get_device_for_phy_payload(&mut self) -> Result<(), Error> {
+        trace!("Getting device for PhyPayload");
 
         let dev_addr = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             pl.fhdr.devaddr
@@ -239,7 +237,7 @@ impl Data {
             return Err(Error::AnyhowError(anyhow!("No MacPayload in PhyPayload")));
         };
 
-        match device_session::get_for_phypayload_and_incr_f_cnt_up(
+        match device::get_for_phypayload_and_incr_f_cnt_up(
             false,
             &mut self.phy_payload,
             self.uplink_frame_set.dr,
@@ -248,18 +246,18 @@ impl Data {
         .await
         {
             Ok(v) => match v {
-                device_session::ValidationStatus::Ok(f_cnt, ds) => {
-                    self.device_session = Some(ds);
+                device::ValidationStatus::Ok(f_cnt, d) => {
+                    self.device = Some(d);
                     self.f_cnt_up_full = f_cnt;
                 }
-                device_session::ValidationStatus::Retransmission(f_cnt, ds) => {
+                device::ValidationStatus::Retransmission(f_cnt, d) => {
                     self.retransmission = true;
-                    self.device_session = Some(ds);
+                    self.device = Some(d);
                     self.f_cnt_up_full = f_cnt;
                 }
-                device_session::ValidationStatus::Reset(f_cnt, ds) => {
+                device::ValidationStatus::Reset(f_cnt, d) => {
                     self.reset = true;
-                    self.device_session = Some(ds);
+                    self.device = Some(d);
                     self.f_cnt_up_full = f_cnt;
                 }
             },
@@ -289,8 +287,8 @@ impl Data {
         Ok(())
     }
 
-    async fn get_device_session_relayed(&mut self) -> Result<(), Error> {
-        trace!("Getting device-session for dev_addr (relayed)");
+    async fn get_device_for_phy_payload_relayed(&mut self) -> Result<(), Error> {
+        trace!("Getting device for PhyPayload (relayed)");
 
         let relay_ctx = self.relay_context.as_ref().unwrap();
 
@@ -307,27 +305,22 @@ impl Data {
             dr,
         )? as u8;
 
-        match device_session::get_for_phypayload_and_incr_f_cnt_up(
-            true,
-            &mut self.phy_payload,
-            dr,
-            ch,
-        )
-        .await
+        match device::get_for_phypayload_and_incr_f_cnt_up(true, &mut self.phy_payload, dr, ch)
+            .await
         {
             Ok(v) => match v {
-                device_session::ValidationStatus::Ok(f_cnt, ds) => {
-                    self.device_session = Some(ds);
+                device::ValidationStatus::Ok(f_cnt, d) => {
+                    self.device = Some(d);
                     self.f_cnt_up_full = f_cnt;
                 }
-                device_session::ValidationStatus::Retransmission(f_cnt, ds) => {
+                device::ValidationStatus::Retransmission(f_cnt, d) => {
                     self.retransmission = true;
-                    self.device_session = Some(ds);
+                    self.device = Some(d);
                     self.f_cnt_up_full = f_cnt;
                 }
-                device_session::ValidationStatus::Reset(f_cnt, ds) => {
+                device::ValidationStatus::Reset(f_cnt, d) => {
                     self.reset = true;
-                    self.device_session = Some(ds);
+                    self.device = Some(d);
                     self.f_cnt_up_full = f_cnt;
                 }
             },
@@ -353,8 +346,9 @@ impl Data {
 
     async fn get_device_data(&mut self) -> Result<()> {
         trace!("Getting device data");
-        let dev_eui = lrwn::EUI64::from_slice(&self.device_session.as_ref().unwrap().dev_eui)?;
-        let (dev, app, t, dp) = get_all_device_data(dev_eui).await?;
+
+        let dev_eui = self.device.as_ref().unwrap().dev_eui;
+        let (_, app, t, dp) = get_all_device_data(dev_eui).await?;
 
         if dp.region != self.uplink_frame_set.region_common_name {
             return Err(anyhow!("Invalid device-profile region"));
@@ -363,7 +357,6 @@ impl Data {
         self.tenant = Some(t);
         self.application = Some(app);
         self.device_profile = Some(dp);
-        self.device = Some(dev);
 
         Ok(())
     }
@@ -425,9 +418,10 @@ impl Data {
 
     fn set_device_gateway_rx_info(&mut self) -> Result<()> {
         trace!("Setting gateway rx-info for device");
+        let d = self.device.as_ref().unwrap();
 
         self.device_gateway_rx_info = Some(internal::DeviceGatewayRxInfo {
-            dev_eui: self.device_session.as_ref().unwrap().dev_eui.clone(),
+            dev_eui: d.dev_eui.to_vec(),
             dr: self.uplink_frame_set.dr as u32,
             items: self
                 .uplink_frame_set
@@ -465,24 +459,6 @@ impl Data {
                 })
                 .collect(),
         });
-
-        Ok(())
-    }
-
-    async fn abort_on_device_is_disabled(&self) -> Result<(), Error> {
-        let device = self.device.as_ref().unwrap();
-
-        if device.is_disabled {
-            // Restore the device-session in case the device is disabled.
-            // This is because during the fcnt validation, we immediately store the
-            // device-session with incremented fcnt to avoid race conditions.
-            device_session::save(self.device_session.as_ref().unwrap())
-                .await
-                .context("Savel device-session")?;
-
-            info!(dev_eui = %device.dev_eui, "Device is disabled, aborting flow");
-            return Err(Error::Abort);
-        }
 
         Ok(())
     }
@@ -555,8 +531,14 @@ impl Data {
             if dev.scheduler_run_after.is_none()
                 || scheduler_run_after > dev.scheduler_run_after.unwrap()
             {
-                *dev = device::set_scheduler_run_after(&dev.dev_eui, Some(scheduler_run_after))
-                    .await?;
+                *dev = device::partial_update(
+                    dev.dev_eui,
+                    &device::DeviceChangeset {
+                        scheduler_run_after: Some(Some(scheduler_run_after)),
+                        ..Default::default()
+                    },
+                )
+                .await?;
             }
         }
 
@@ -575,9 +557,15 @@ impl Data {
                 // Restore the device-session in case of an error (no gateways available).
                 // This is because during the fcnt validation, we immediately store the
                 // device-session with incremented fcnt to avoid race conditions.
-                device_session::save(self.device_session.as_ref().unwrap())
-                    .await
-                    .context("Save device-session")?;
+                let d = self.device.as_ref().unwrap();
+                device::partial_update(
+                    d.dev_eui,
+                    &device::DeviceChangeset {
+                        device_session: Some(d.device_session.clone()),
+                        ..Default::default()
+                    },
+                )
+                .await?;
 
                 Err(v)
             }
@@ -597,7 +585,7 @@ impl Data {
 
     fn decrypt_f_opts_mac_commands(&mut self) -> Result<()> {
         trace!("Decrypting mac-commands");
-        let ds = self.device_session.as_ref().unwrap();
+        let ds = self.device.as_ref().unwrap().get_device_session()?;
         if ds.mac_version().to_string().starts_with("1.0") {
             if let Err(e) = self.phy_payload.decode_f_opts_to_mac_commands() {
                 // This avoids failing in case of a corrupted mac-command in the frm_payload.
@@ -616,7 +604,7 @@ impl Data {
 
     fn decrypt_frm_payload(&mut self) -> Result<()> {
         trace!("Decrypting FRMPayload");
-        let ds = self.device_session.as_ref().unwrap();
+        let ds = self.device.as_ref().unwrap().get_device_session()?;
         let mut f_port = 0;
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
@@ -656,7 +644,7 @@ impl Data {
 
     fn set_adr(&mut self) -> Result<()> {
         trace!("Set ADR flag in device-session");
-        let ds = self.device_session.as_mut().unwrap();
+        let ds = self.device.as_mut().unwrap().get_device_session_mut()?;
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             ds.adr = pl.fhdr.f_ctrl.adr;
         }
@@ -666,9 +654,13 @@ impl Data {
     async fn set_uplink_data_rate(&mut self) -> Result<()> {
         trace!("Set uplink data-rate and reset tx-power on change");
         let device = self.device.as_mut().unwrap();
-        *device = device::set_last_seen_dr(&device.dev_eui, self.uplink_frame_set.dr).await?;
 
-        let ds = self.device_session.as_mut().unwrap();
+        self.device_changeset.last_seen_at = Some(Some(Utc::now()));
+        if device.dr.is_none() || self.uplink_frame_set.dr as i16 != device.dr.unwrap_or_default() {
+            self.device_changeset.dr = Some(Some(self.uplink_frame_set.dr.into()));
+        }
+
+        let ds = device.get_device_session_mut()?;
         // The node changed its data-rate. Possibly the node did also reset its
         // tx-power to max power. Because of this, we need to reset the tx-power
         // and the uplink history at the network-server side too.
@@ -677,6 +669,7 @@ impl Data {
             ds.uplink_adr_history = Vec::new();
         }
         ds.dr = self.uplink_frame_set.dr as u32;
+
         Ok(())
     }
 
@@ -684,9 +677,13 @@ impl Data {
         trace!("Set relayed uplink data-rate and reset tx-power on change");
         let device = self.device.as_mut().unwrap();
         let relay_ctx = self.relay_context.as_ref().unwrap();
-        *device = device::set_last_seen_dr(&device.dev_eui, self.uplink_frame_set.dr).await?;
 
-        let ds = self.device_session.as_mut().unwrap();
+        self.device_changeset.last_seen_at = Some(Some(Utc::now()));
+        if device.dr.is_none() || self.uplink_frame_set.dr as i16 != device.dr.unwrap_or_default() {
+            self.device_changeset.dr = Some(Some(self.uplink_frame_set.dr.into()));
+        }
+
+        let ds = device.get_device_session_mut()?;
         // The node changed its data-rate. Possibly the node did also reset its
         // tx-power to max power. Because of this, we need to reset the tx-power
         // and the uplink history at the network-server side too.
@@ -717,7 +714,7 @@ impl Data {
 
         // Update if the enabled class has changed.
         if dev.enabled_class != enabled_class {
-            *dev = device::set_enabled_class(&dev.dev_eui, enabled_class).await?;
+            self.device_changeset.enabled_class = Some(enabled_class);
         }
 
         Ok(())
@@ -770,11 +767,12 @@ impl Data {
     // device did not reset these).
     fn reset_channels_on_adr_ack_req(&mut self) -> Result<()> {
         trace!("Reset channels on adr ack req");
+        let d = self.device.as_mut().unwrap();
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             if pl.fhdr.f_ctrl.adr_ack_req {
                 let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
-                let ds = self.device_session.as_mut().unwrap();
+                let ds = d.get_device_session_mut()?;
 
                 // We reset the device-session enabled_uplink_channel_indices and
                 // extra_uplink_channels. On the downlink path, the mac-command handling will
@@ -804,8 +802,7 @@ impl Data {
                     self.tenant.as_ref().unwrap(),
                     self.application.as_ref().unwrap(),
                     self.device_profile.as_ref().unwrap(),
-                    self.device.as_ref().unwrap(),
-                    self.device_session.as_mut().unwrap(),
+                    self.device.as_mut().unwrap(),
                 )
                 .await
                 .context("Handle uplink mac-commands")?;
@@ -822,8 +819,7 @@ impl Data {
                     self.tenant.as_ref().unwrap(),
                     self.application.as_ref().unwrap(),
                     self.device_profile.as_ref().unwrap(),
-                    self.device.as_ref().unwrap(),
-                    self.device_session.as_mut().unwrap(),
+                    self.device.as_mut().unwrap(),
                 )
                 .await
                 .context("Handle uplink mac-commands")?;
@@ -847,7 +843,7 @@ impl Data {
     }
 
     fn append_meta_data_to_uplink_history(&mut self) -> Result<()> {
-        let ds = self.device_session.as_mut().unwrap();
+        let ds = self.device.as_mut().unwrap().get_device_session_mut()?;
 
         // ignore re-transmissions we don't know the source of the
         // re-transmission (it might be a replay-attack)
@@ -892,7 +888,7 @@ impl Data {
     fn append_meta_data_to_uplink_history_relayed(&mut self) -> Result<()> {
         trace!("Apping meta-data of relayed uplink to upink history");
 
-        let ds = self.device_session.as_mut().unwrap();
+        let ds = self.device.as_mut().unwrap().get_device_session_mut()?;
         let relay_ctx = self.relay_context.as_ref().unwrap();
 
         // ignore re-transmissions we don't know the source of the
@@ -929,7 +925,7 @@ impl Data {
         let app = self.application.as_ref().unwrap();
         let dp = self.device_profile.as_ref().unwrap();
         let dev = self.device.as_ref().unwrap();
-        let ds = self.device_session.as_ref().unwrap();
+        let ds = dev.get_device_session()?;
         let mac = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             pl
         } else {
@@ -1092,7 +1088,8 @@ impl Data {
     // required.
     fn sync_uplink_f_cnt(&mut self) -> Result<()> {
         trace!("Syncing uplink frame-counter");
-        let ds = self.device_session.as_mut().unwrap();
+        let d = self.device.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
         ds.f_cnt_up = self.f_cnt_up_full + 1;
         Ok(())
     }
@@ -1102,16 +1099,19 @@ impl Data {
     // value is not set initially.
     fn set_region_config_id(&mut self) -> Result<()> {
         trace!("Setting region_config_id to device-session");
-        let ds = self.device_session.as_mut().unwrap();
+        let d = self.device.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
         ds.region_config_id = self.uplink_frame_set.region_config_id.clone();
         Ok(())
     }
 
-    async fn save_device_session(&self) -> Result<()> {
-        trace!("Saving device-session");
-        device_session::save(self.device_session.as_ref().unwrap())
-            .await
-            .context("Save device-session")?;
+    async fn update_device(&mut self) -> Result<()> {
+        trace!("Updating device");
+
+        let d = self.device.as_mut().unwrap();
+        self.device_changeset.device_session = Some(d.device_session.clone());
+
+        *d = device::partial_update(d.dev_eui, &self.device_changeset).await?;
         Ok(())
     }
 
@@ -1265,7 +1265,6 @@ impl Data {
                 self.application.as_ref().cloned().unwrap(),
                 self.device_profile.as_ref().cloned().unwrap(),
                 self.device.as_ref().cloned().unwrap(),
-                self.device_session.as_ref().cloned().unwrap(),
                 pl.fhdr.f_ctrl.adr_ack_req || self.must_send_downlink,
                 self.phy_payload.mhdr.m_type == lrwn::MType::ConfirmedDataUp,
                 self.downlink_mac_commands.clone(),
@@ -1291,7 +1290,6 @@ impl Data {
                 self.application.as_ref().cloned().unwrap(),
                 self.device_profile.as_ref().cloned().unwrap(),
                 self.device.as_ref().cloned().unwrap(),
-                self.device_session.as_ref().cloned().unwrap(),
                 pl.fhdr.f_ctrl.adr_ack_req || self.must_send_downlink,
                 self.phy_payload.mhdr.m_type == lrwn::MType::ConfirmedDataUp,
                 self.downlink_mac_commands.clone(),
@@ -1314,7 +1312,6 @@ impl Data {
                                 req: pl.clone(),
                                 device: self.device.as_ref().unwrap().clone(),
                                 device_profile: self.device_profile.as_ref().unwrap().clone(),
-                                device_session: self.device_session.as_ref().unwrap().clone(),
                                 must_ack: self.phy_payload.mhdr.m_type
                                     == lrwn::MType::ConfirmedDataUp,
                                 must_send_downlink: relay_pl.fhdr.f_ctrl.adr_ack_req,
@@ -1329,7 +1326,6 @@ impl Data {
                                 req: pl.clone(),
                                 device: self.device.as_ref().unwrap().clone(),
                                 device_profile: self.device_profile.as_ref().unwrap().clone(),
-                                device_session: self.device_session.as_ref().unwrap().clone(),
                                 must_ack: self.phy_payload.mhdr.m_type
                                     == lrwn::MType::ConfirmedDataUp,
                                 must_send_downlink: relay_pl.fhdr.f_ctrl.adr_ack_req,
@@ -1369,7 +1365,10 @@ impl Data {
     }
 
     fn _is_end_to_end_encrypted(&self) -> bool {
-        let ds = self.device_session.as_ref().unwrap();
+        let ds = match self.device.as_ref().unwrap().get_device_session() {
+            Ok(v) => v,
+            Err(_) => return false,
+        };
 
         if !ds.js_session_key_id.is_empty() {
             return true;

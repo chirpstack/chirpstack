@@ -2,7 +2,6 @@ use anyhow::Result;
 use tracing::{info, warn};
 
 use crate::storage::device;
-use chirpstack_api::internal;
 
 pub fn request(dr: u8, freq: u32) -> lrwn::MACCommandSet {
     lrwn::MACCommandSet::new(vec![lrwn::MACCommand::PingSlotChannelReq(
@@ -11,11 +10,12 @@ pub fn request(dr: u8, freq: u32) -> lrwn::MACCommandSet {
 }
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Pending PingSlotChannelReq expected"));
     }
@@ -66,6 +66,7 @@ pub fn handle(
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use chirpstack_api::internal;
 
     struct Test {
         name: String,
@@ -181,12 +182,12 @@ pub mod test {
         ];
 
         for tst in &tests {
-            let mut ds = tst.device_session.clone();
+            let mut dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
             let resp = handle(
-                &device::Device {
-                    ..Default::default()
-                },
-                &mut ds,
+                &mut dev,
                 &tst.ping_slot_channel_ans,
                 tst.ping_slot_channel_req.as_ref(),
             );
@@ -198,7 +199,10 @@ pub mod test {
                 assert_eq!(true, resp.unwrap().is_none());
             }
 
-            assert_eq!(tst.expected_device_session, ds);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap()
+            );
         }
     }
 }

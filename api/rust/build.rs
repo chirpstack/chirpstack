@@ -73,13 +73,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // internal
-    tonic_build::configure()
-        .out_dir(out_dir.join("internal"))
-        .file_descriptor_set_path(out_dir.join("internal").join("proto_descriptor.bin"))
-        .compile_well_known_types(true)
-        .extern_path(".google.protobuf", well_known_types_path)
-        .extern_path(".common", "crate::common")
-        .compile(
+    {
+        let mut builder = tonic_build::configure()
+            .out_dir(out_dir.join("internal"))
+            .file_descriptor_set_path(out_dir.join("internal").join("proto_descriptor.bin"))
+            .compile_well_known_types(true)
+            .extern_path(".google.protobuf", well_known_types_path)
+            .extern_path(".common", "crate::common");
+
+        #[cfg(feature = "diesel")]
+        {
+            builder = builder.message_attribute("internal.DeviceSession", "#[derive(diesel::expression::AsExpression, diesel::deserialize::FromSqlRow)] #[diesel(sql_type = diesel::sql_types::Binary)]");
+        }
+
+        builder.compile(
             &[cs_dir
                 .join("internal")
                 .join("internal.proto")
@@ -90,6 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 proto_dir.join("google").to_str().unwrap(),
             ],
         )?;
+    }
 
     #[cfg(feature = "json")]
     {

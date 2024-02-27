@@ -2,16 +2,17 @@ use anyhow::Result;
 use tracing::info;
 
 use crate::storage::{device, device_profile};
-use chirpstack_api::internal;
 
 const SERV_LORAWAN_VERSION: lrwn::Version = lrwn::Version::LoRaWAN1_1;
 
 pub fn handle(
-    dev: &device::Device,
+    dev: &mut device::Device,
     dp: &device_profile::DeviceProfile,
-    ds: &mut internal::DeviceSession,
     block: &lrwn::MACCommandSet,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     let block_mac = (**block)
         .first()
         .ok_or_else(|| anyhow!("MACCommandSet is empty"))?;
@@ -21,7 +22,7 @@ pub fn handle(
         return Err(anyhow!("ResetInd expected"));
     };
 
-    info!(dev_eui = %dev.dev_eui, dev_lorawan_version = %block_pl.dev_lorawan_version, serv_lorawan_version = %SERV_LORAWAN_VERSION, "ResetInd received");
+    info!(dev_eui = %dev_eui, dev_lorawan_version = %block_pl.dev_lorawan_version, serv_lorawan_version = %SERV_LORAWAN_VERSION, "ResetInd received");
 
     dp.reset_session_to_boot_params(ds);
 
@@ -41,11 +42,29 @@ pub fn handle(
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use chirpstack_api::internal;
     use std::collections::HashMap;
 
     #[test]
     fn test_handle() {
-        let dev: device::Device = Default::default();
+        let mut dev = device::Device {
+            device_session: Some(internal::DeviceSession {
+                tx_power_index: 3,
+                min_supported_tx_power_index: 1,
+                max_supported_tx_power_index: 5,
+                extra_uplink_channels: [(3, Default::default())].iter().cloned().collect(),
+                rx1_delay: 3,
+                rx1_dr_offset: 1,
+                rx2_dr: 5,
+                rx2_frequency: 868900000,
+                enabled_uplink_channel_indices: vec![0, 1],
+                class_b_ping_slot_dr: 3,
+                class_b_ping_slot_freq: 868100000,
+                nb_trans: 3,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
         let dp = device_profile::DeviceProfile {
             supports_otaa: false,
             abp_rx1_delay: 1,
@@ -57,26 +76,10 @@ pub mod test {
             class_b_ping_slot_nb_k: 1,
             ..Default::default()
         };
-        let mut ds = internal::DeviceSession {
-            tx_power_index: 3,
-            min_supported_tx_power_index: 1,
-            max_supported_tx_power_index: 5,
-            extra_uplink_channels: [(3, Default::default())].iter().cloned().collect(),
-            rx1_delay: 3,
-            rx1_dr_offset: 1,
-            rx2_dr: 5,
-            rx2_frequency: 868900000,
-            enabled_uplink_channel_indices: vec![0, 1],
-            class_b_ping_slot_dr: 3,
-            class_b_ping_slot_freq: 868100000,
-            nb_trans: 3,
-            ..Default::default()
-        };
 
         let resp = handle(
-            &dev,
+            &mut dev,
             &dp,
-            &mut ds,
             &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::ResetInd(lrwn::ResetIndPayload {
                 dev_lorawan_version: lrwn::Version::LoRaWAN1_1,
             })]),
@@ -93,7 +96,7 @@ pub mod test {
         );
 
         assert_eq!(
-            internal::DeviceSession {
+            &internal::DeviceSession {
                 rx1_delay: 1,
                 rx1_dr_offset: 0,
                 rx2_dr: 0,
@@ -110,7 +113,7 @@ pub mod test {
                 extra_uplink_channels: HashMap::new(),
                 ..Default::default()
             },
-            ds
+            dev.get_device_session().unwrap()
         );
     }
 }

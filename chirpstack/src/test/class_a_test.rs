@@ -8,16 +8,17 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_profile, device_queue, device_session, gateway, mac_command, reset_redis, tenant,
+    device_profile, device_queue, gateway, mac_command, reset_redis, tenant,
 };
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
 use chirpstack_api::{common, gw, integration as integration_pb, internal, stream};
-use lrwn::{AES128Key, EUI64};
+use lrwn::{AES128Key, DevAddr, EUI64};
 
 type Function = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;
 
 struct Test {
     name: String,
+    dev_eui: EUI64,
     device_queue_items: Vec<device_queue::DeviceQueueItem>,
     before_func: Option<Function>,
     after_func: Option<Function>,
@@ -93,10 +94,27 @@ async fn test_gateway_filtering() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        device_session: Some(internal::DeviceSession {
+            mac_version: common::MacVersion::Lorawan102.into(),
+            dev_addr: vec![1, 2, 3, 4],
+            f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            f_cnt_up: 7,
+            n_f_cnt_down: 5,
+            enabled_uplink_channel_indices: vec![0, 1, 2],
+            rx1_delay: 1,
+            rx2_frequency: 869525000,
+            region_config_id: "eu868".into(),
+            ..Default::default()
+        }),
         ..Default::default()
     })
     .await
     .unwrap();
+
+    let ds = dev.get_device_session().unwrap();
 
     let mut rx_info_a = gw::UplinkRxInfo {
         gateway_id: gw_a.gateway_id.to_string(),
@@ -128,26 +146,10 @@ async fn test_gateway_filtering() {
     };
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
-    let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
-        mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
-        dev_addr: vec![1, 2, 3, 4],
-        f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        f_cnt_up: 7,
-        n_f_cnt_down: 5,
-        enabled_uplink_channel_indices: vec![0, 1, 2],
-        rx1_delay: 1,
-        rx2_frequency: 869525000,
-        region_config_id: "eu868".into(),
-        ..Default::default()
-    };
-
     let tests = vec![
         Test {
             name: "private gateway of same tenant".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -174,6 +176,7 @@ async fn test_gateway_filtering() {
         },
         Test {
             name: "private gateway other tenant".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -196,7 +199,7 @@ async fn test_gateway_filtering() {
                 }),
                 mic: Some([48, 94, 26, 239]),
             },
-            assert: vec![assert::f_cnt_up(dev.dev_eui.clone(), 7)],
+            assert: vec![assert::f_cnt_up(dev.dev_eui, 7)],
         },
     ];
 
@@ -257,6 +260,7 @@ async fn test_region_config_id_filtering() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -293,9 +297,7 @@ async fn test_region_config_id_filtering() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -312,6 +314,7 @@ async fn test_region_config_id_filtering() {
     let tests = vec![
         Test {
             name: "matching config id".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -338,6 +341,7 @@ async fn test_region_config_id_filtering() {
         },
         Test {
             name: "non-matching configuration id".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -410,12 +414,13 @@ async fn test_lorawan_10_errors() {
     .await
     .unwrap();
 
-    let _dev = device::create(device::Device {
+    let dev = device::create(device::Device {
         name: "device".into(),
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -440,9 +445,7 @@ async fn test_lorawan_10_errors() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -459,6 +462,7 @@ async fn test_lorawan_10_errors() {
     let tests = vec![
         Test {
             name: "invalid frame-counter (did not increment)".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -491,6 +495,7 @@ async fn test_lorawan_10_errors() {
         },
         Test {
             name: "invalid frame-counter (reset)".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -522,6 +527,7 @@ async fn test_lorawan_10_errors() {
         },
         Test {
             name: "invalid mic".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -605,12 +611,13 @@ async fn test_lorawan_11_errors() {
     .await
     .unwrap();
 
-    let _dev = device::create(device::Device {
+    let dev = device::create(device::Device {
         name: "device".into(),
         application_id: app.id.clone(),
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -641,9 +648,7 @@ async fn test_lorawan_11_errors() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_dr, 3).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -660,6 +665,7 @@ async fn test_lorawan_11_errors() {
     let tests = vec![
         Test {
             name: "invalid frequency (MIC)".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -686,6 +692,7 @@ async fn test_lorawan_11_errors() {
         },
         Test {
             name: "invalid frequency (MIC)".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -765,6 +772,7 @@ async fn test_lorawan_10_skip_f_cnt() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         skip_fcnt_check: true,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -789,9 +797,7 @@ async fn test_lorawan_10_skip_f_cnt() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -809,6 +815,7 @@ async fn test_lorawan_10_skip_f_cnt() {
     let tests = vec![
         Test {
             name: "frame-counter is invalid but not 0".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -857,6 +864,7 @@ async fn test_lorawan_10_skip_f_cnt() {
         },
         Test {
             name: "frame-counter is invalid and 0".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -958,6 +966,7 @@ async fn test_lorawan_10_device_disabled() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         is_disabled: true,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -982,9 +991,7 @@ async fn test_lorawan_10_device_disabled() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan102.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -1000,6 +1007,7 @@ async fn test_lorawan_10_device_disabled() {
 
     let tests = vec![Test {
         name: "uplink ignored".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![],
         before_func: None,
         after_func: None,
@@ -1081,6 +1089,7 @@ async fn test_lorawan_10_uplink() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -1111,9 +1120,7 @@ async fn test_lorawan_10_uplink() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 10).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -1134,6 +1141,7 @@ async fn test_lorawan_10_uplink() {
     let tests = vec![
         Test {
             name: "unconfirmed uplink with payload".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -1184,6 +1192,7 @@ async fn test_lorawan_10_uplink() {
         },
         Test {
             name: "unconfirmed uplink with payload using LR-FHSS dr".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
                 Box::pin(async move {
@@ -1255,6 +1264,7 @@ async fn test_lorawan_10_uplink() {
         },
         Test {
             name: "unconfirmed uplink with payload + ACK".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -1333,6 +1343,7 @@ async fn test_lorawan_10_uplink() {
         },
         Test {
             name: "unconfirmed uplink without payload (just FPort)".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -1383,6 +1394,7 @@ async fn test_lorawan_10_uplink() {
         },
         Test {
             name: "confirmed uplink with payload".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -1494,6 +1506,7 @@ async fn test_lorawan_10_uplink() {
         },
         Test {
             name: "confirmed uplink without payload".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -1604,21 +1617,34 @@ async fn test_lorawan_10_uplink() {
         },
         Test {
             name: "uplink of class-c device updates scheduler_run_after".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui;
                 Box::pin(async move {
-                    device::set_enabled_class(&dev_eui, device::DeviceClass::C)
-                        .await
-                        .unwrap();
+                    device::partial_update(
+                        dev_eui,
+                        &device::DeviceChangeset {
+                            enabled_class: Some(device::DeviceClass::C),
+                            ..Default::default()
+                        },
+                    )
+                    .await
+                    .unwrap();
                 })
             })),
             after_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui;
                 Box::pin(async move {
-                    device::set_enabled_class(&dev_eui, device::DeviceClass::A)
-                        .await
-                        .unwrap();
+                    device::partial_update(
+                        dev_eui,
+                        &device::DeviceChangeset {
+                            enabled_class: Some(device::DeviceClass::A),
+                            ..Default::default()
+                        },
+                    )
+                    .await
+                    .unwrap();
                 })
             })),
             device_session: Some(ds.clone()),
@@ -1700,6 +1726,7 @@ async fn test_lorawan_10_end_to_end_enc() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -1724,9 +1751,7 @@ async fn test_lorawan_10_end_to_end_enc() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds_sess_key_id = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -1743,9 +1768,7 @@ async fn test_lorawan_10_end_to_end_enc() {
     };
 
     let ds_app_s_key = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -1766,6 +1789,7 @@ async fn test_lorawan_10_end_to_end_enc() {
     let tests = vec![
         Test {
             name: "end-to-end encryption with session key id".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -1816,6 +1840,7 @@ async fn test_lorawan_10_end_to_end_enc() {
         },
         Test {
             name: "end-to-end encryption with AppSKey".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -1869,6 +1894,7 @@ async fn test_lorawan_10_end_to_end_enc() {
         },
         Test {
             name: "end-to-end encryption using AppSkey + encrypted downlink".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -2028,6 +2054,7 @@ async fn test_lorawan_11_uplink() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -2058,9 +2085,7 @@ async fn test_lorawan_11_uplink() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan110.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -2082,6 +2107,7 @@ async fn test_lorawan_11_uplink() {
     let tests = vec![
         Test {
             name: "unconfirmed uplink with payload".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -2132,6 +2158,7 @@ async fn test_lorawan_11_uplink() {
         },
         Test {
             name: "unconfirmed uplink with payload + ACK".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -2266,6 +2293,7 @@ async fn test_lorawan_10_rx_delay() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -2296,9 +2324,7 @@ async fn test_lorawan_10_rx_delay() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -2318,6 +2344,7 @@ async fn test_lorawan_10_rx_delay() {
 
     let tests = vec![Test {
         name: "confirmed uplink without payload (rx_delay = 3)".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![],
         before_func: None,
         after_func: None,
@@ -2479,6 +2506,7 @@ async fn test_lorawan_10_mac_commands() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -2509,9 +2537,7 @@ async fn test_lorawan_10_mac_commands() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -2532,6 +2558,7 @@ async fn test_lorawan_10_mac_commands() {
     let tests = vec![
         Test {
             name: "unconfirmed uplink + device-status request downlink (FOpts)".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
                 let dp_id = dp.id.clone();
@@ -2624,6 +2651,7 @@ async fn test_lorawan_10_mac_commands() {
         Test {
             name: "unconfirmed uplink + device-status request downlink (FOpts) + downlink payload"
                 .into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -2721,6 +2749,7 @@ async fn test_lorawan_10_mac_commands() {
         },
         Test {
             name: "RxTimingSetupAns is answered with an empty downlink".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -2848,6 +2877,7 @@ async fn test_lorawan_11_mac_commands() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -2872,9 +2902,7 @@ async fn test_lorawan_11_mac_commands() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan110.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -2928,6 +2956,7 @@ async fn test_lorawan_11_mac_commands() {
 
     let tests = vec![Test {
         name: "uplink mac-command (encrypted fopts)".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![],
         before_func: None,
         after_func: None,
@@ -3042,6 +3071,7 @@ async fn test_lorawan_10_device_queue() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -3066,9 +3096,7 @@ async fn test_lorawan_10_device_queue() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -3089,6 +3117,7 @@ async fn test_lorawan_10_device_queue() {
     let tests = vec![
         Test {
             name: "unconfirmed uplink + one unconfirmed downlink payload in queue".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -3166,6 +3195,7 @@ async fn test_lorawan_10_device_queue() {
         },
         Test {
             name: "unconfirmed uplink + two unconfirmed downlinks payload in queue".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![
                 device_queue::DeviceQueueItem {
                     id: Uuid::new_v4(),
@@ -3256,6 +3286,7 @@ async fn test_lorawan_10_device_queue() {
         },
         Test {
             name: "unconfirmed uplink + one confirmed downlink payload in queue".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -3334,6 +3365,7 @@ async fn test_lorawan_10_device_queue() {
         },
         Test {
             name: "unconfirmed uplink data + downlink payload which exceeds the max payload size (for dr 0)".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -3370,6 +3402,7 @@ async fn test_lorawan_10_device_queue() {
         },
         Test {
 			name: "unconfirmed uplink data + one unconfirmed downlink payload in queue (exactly max size for dr 0) + one mac command".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -3515,6 +3548,7 @@ async fn test_lorawan_11_device_queue() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -3539,9 +3573,7 @@ async fn test_lorawan_11_device_queue() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan110.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -3563,6 +3595,7 @@ async fn test_lorawan_11_device_queue() {
     let tests = vec![
         Test {
             name: "unconfirmed uplink + one unconfirmed downlink payload in queue".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -3640,6 +3673,7 @@ async fn test_lorawan_11_device_queue() {
         },
         Test {
             name: "unconfirmed uplink + two unconfirmed downlinks payload in queue".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![
                 device_queue::DeviceQueueItem {
                     id: Uuid::new_v4(),
@@ -3730,6 +3764,7 @@ async fn test_lorawan_11_device_queue() {
         },
         Test {
             name: "unconfirmed uplink + one confirmed downlink payload in queue".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -3808,6 +3843,7 @@ async fn test_lorawan_11_device_queue() {
         },
         Test {
             name: "unconfirmed uplink data + downlink payload which exceeds the max payload size (for dr 0)".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -3844,6 +3880,7 @@ async fn test_lorawan_11_device_queue() {
         },
         Test {
 			name: "unconfirmed uplink data + one unconfirmed downlink payload in queue (exactly max size for dr 0) + one mac command".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
                 dev_eui: dev.dev_eui.clone(),
@@ -3992,6 +4029,7 @@ async fn test_lorawan_10_adr() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -4016,9 +4054,7 @@ async fn test_lorawan_10_adr() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -4057,6 +4093,7 @@ async fn test_lorawan_10_adr() {
     let tests = vec![
         Test {
             name: "adr triggered".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -4160,6 +4197,7 @@ async fn test_lorawan_10_adr() {
         },
         Test {
             name: "device has adr disabled".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -4193,6 +4231,7 @@ async fn test_lorawan_10_adr() {
         },
         Test {
             name: "acknowledgement of pending adr request".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
@@ -4260,6 +4299,7 @@ async fn test_lorawan_10_adr() {
         },
         Test {
             name: "negative acknowledgement of pending adr request".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
@@ -4327,6 +4367,7 @@ async fn test_lorawan_10_adr() {
         },
         Test {
             name: "adr ack requested".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -4403,6 +4444,7 @@ async fn test_lorawan_10_adr() {
         },
         Test {
             name: "channel re-configuration triggered".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -4502,6 +4544,7 @@ async fn test_lorawan_10_adr() {
         },
         Test {
             name: "new channel re-configuration ack-ed".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
@@ -4567,6 +4610,7 @@ async fn test_lorawan_10_adr() {
         },
         Test {
             name: "new channel re-configuration not ack-ed".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
                 let dev_eui = dev.dev_eui.clone();
@@ -4634,6 +4678,7 @@ async fn test_lorawan_10_adr() {
         },
         Test {
             name: "channel re-configuration and adr triggered".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -4738,6 +4783,7 @@ async fn test_lorawan_10_adr() {
         // adr backoff triggered
         Test {
             name: "adr backoff triggered".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -4835,6 +4881,7 @@ async fn test_lorawan_10_device_status_request() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -4859,9 +4906,7 @@ async fn test_lorawan_10_device_status_request() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan104.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -4887,6 +4932,7 @@ async fn test_lorawan_10_device_status_request() {
     let tests = vec![
         Test {
             name: "must request device-status".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -4963,6 +5009,7 @@ async fn test_lorawan_10_device_status_request() {
         },
         Test {
             name: "interval has not yet expired".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -4993,6 +5040,7 @@ async fn test_lorawan_10_device_status_request() {
         // reporting device-status
         Test {
             name: "reporting device-status".into(),
+            dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: None,
             after_func: None,
@@ -5098,6 +5146,7 @@ async fn test_lorawan_11_receive_window_selection() {
         device_profile_id: dp.id.clone(),
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
         ..Default::default()
     })
     .await
@@ -5128,9 +5177,7 @@ async fn test_lorawan_11_receive_window_selection() {
     uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
-        dev_eui: vec![2, 2, 3, 4, 5, 6, 7, 8],
         mac_version: common::MacVersion::Lorawan110.into(),
-        join_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
         dev_addr: vec![1, 2, 3, 4],
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
@@ -5155,6 +5202,7 @@ async fn test_lorawan_11_receive_window_selection() {
 
     run_test(&Test {
         name: "unconfirmed uplink with payload (rx1)".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -5224,6 +5272,7 @@ async fn test_lorawan_11_receive_window_selection() {
 
     run_test(&Test {
         name: "unconfirmed uplink with payload (rx2)".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -5293,6 +5342,7 @@ async fn test_lorawan_11_receive_window_selection() {
 
     run_test(&Test {
         name: "unconfirmed uplink with payload (rx1 + rx2)".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -5391,6 +5441,7 @@ async fn test_lorawan_11_receive_window_selection() {
 
     run_test(&Test {
         name: "unconfirmed uplink with payload (rx1, payload exceeds rx2 limit)".into(),
+        dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
             dev_eui: dev.dev_eui.clone(),
@@ -5497,7 +5548,6 @@ async fn test_lorawan_11_receive_window_selection() {
 
 async fn run_test(t: &Test) {
     println!("> {}", t.name);
-
     reset_redis().await.unwrap();
 
     integration::set_mock().await;
@@ -5506,12 +5556,16 @@ async fn run_test(t: &Test) {
     integration::mock::reset().await;
     gateway_backend::mock::reset().await;
 
-    if let Some(ds) = &t.device_session {
-        let _ = device_session::save(&ds).await.unwrap();
-
-        let dev_eui = EUI64::from_slice(&ds.dev_eui).unwrap();
-        device_queue::flush_for_dev_eui(&dev_eui).await.unwrap();
-    }
+    device_queue::flush_for_dev_eui(&t.dev_eui).await.unwrap();
+    device::partial_update(
+        t.dev_eui,
+        &device::DeviceChangeset {
+            device_session: Some(t.device_session.clone()),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     if let Some(f) = &t.before_func {
         f().await;

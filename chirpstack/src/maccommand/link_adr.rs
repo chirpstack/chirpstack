@@ -4,15 +4,16 @@ use tracing::{info, warn};
 use crate::region;
 use crate::storage::device;
 use crate::uplink::UplinkFrameSet;
-use chirpstack_api::internal;
 
 pub fn handle(
     uplink_frame_set: &UplinkFrameSet,
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending LinkADRReq mac-command"));
     }
@@ -82,7 +83,7 @@ pub fn handle(
         ds.nb_trans = link_adr_req.redundancy.nb_rep as u32;
         ds.enabled_uplink_channel_indices = chans.iter().map(|i| *i as u32).collect::<Vec<u32>>();
 
-        info!(dev_eui = %dev.dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged");
+        info!(dev_eui = %dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged");
     } else if !ds.adr && ch_mask_ack {
         // In case the device has ADR disabled, at least it must acknowledge the
         // channel-mask. It does not have to acknowledge the other parameters.
@@ -113,7 +114,7 @@ pub fn handle(
             ds.tx_power_index = link_adr_req.tx_power as u32;
         }
 
-        info!(dev_eui = %dev.dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged (device has ADR disabled)");
+        info!(dev_eui = %dev_eui, tx_power_index = ds.tx_power_index, dr = ds.dr, nb_trans = ds.nb_trans, enabled_channels = ?ds.enabled_uplink_channel_indices, "LinkADRReq acknowledged (device has ADR disabled)");
     } else {
         // increase the error counter
         let count = ds
@@ -153,6 +154,7 @@ pub fn handle(
 pub mod test {
     use super::*;
     use crate::region;
+    use chirpstack_api::internal;
     use std::collections::HashMap;
     use std::str::FromStr;
     use uuid::Uuid;
@@ -357,11 +359,11 @@ pub mod test {
         };
 
         for tst in &tests {
-            let dev = device::Device {
+            let mut dev = device::Device {
                 dev_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
+                device_session: Some(tst.device_session.clone()),
                 ..Default::default()
             };
-            let mut ds = tst.device_session.clone();
             let block = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRAns(
                 tst.link_adr_ans.clone(),
             )]);
@@ -372,7 +374,7 @@ pub mod test {
                 None => None,
             };
 
-            let res = handle(&ufs, &dev, &mut ds, &block, pending.as_ref());
+            let res = handle(&ufs, &mut dev, &block, pending.as_ref());
             if let Some(e) = &tst.expected_error {
                 assert_eq!(true, res.is_err(), "{}", tst.name);
                 assert_eq!(e, &format!("{}", res.err().unwrap()), "{}", tst.name);
@@ -380,7 +382,12 @@ pub mod test {
                 assert_eq!(true, res.unwrap().is_none(), "{}", tst.name);
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }

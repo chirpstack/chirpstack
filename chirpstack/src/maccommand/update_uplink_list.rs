@@ -2,14 +2,14 @@ use anyhow::Result;
 use tracing::info;
 
 use crate::storage::device;
-use chirpstack_api::internal;
 
 pub fn handle(
-    _dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     _block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending UpdateUplinkListReq mac-command"));
     }
@@ -43,6 +43,7 @@ pub fn handle(
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use chirpstack_api::internal;
 
     struct Test {
         name: String,
@@ -124,12 +125,13 @@ pub mod test {
         ];
 
         for tst in &tests {
-            let mut ds = tst.device_session.clone();
+            let mut dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
+
             let resp = handle(
-                &device::Device {
-                    ..Default::default()
-                },
-                &mut ds,
+                &mut dev,
                 &tst.update_uplink_list_ans,
                 tst.update_uplink_list_req.as_ref(),
             );
@@ -141,7 +143,12 @@ pub mod test {
                 assert_eq!(true, resp.unwrap().is_none());
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }

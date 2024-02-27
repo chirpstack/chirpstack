@@ -185,12 +185,6 @@ pub fn run() {
     {{/each}}
   ]
 
-  # Device session expiration.
-  #
-  # The TTL value defines the time after which a device-session expires
-  # after no activity.
-  device_session_ttl="{{ network.device_session_ttl }}"
-
   # Time to wait for uplink de-duplication.
   #
   # This is the time that ChirpStack will wait for other gateways to receive

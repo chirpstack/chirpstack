@@ -7,8 +7,6 @@ use crate::config;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{application, device, device_profile, mac_command, tenant};
 use crate::uplink::UplinkFrameSet;
-use chirpstack_api::internal;
-use lrwn::EUI64;
 
 pub mod configure_fwd_limit;
 pub mod ctrl_uplink_list;
@@ -41,15 +39,13 @@ pub async fn handle_uplink<'a>(
     tenant: &tenant::Tenant,
     app: &application::Application,
     dp: &device_profile::DeviceProfile,
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
 ) -> Result<(Vec<lrwn::MACCommandSet>, bool)> {
     let conf = config::get();
     if conf.network.mac_commands_disabled {
         return Ok((Vec::new(), false));
     }
 
-    let dev_eui = EUI64::from_slice(&ds.dev_eui)?;
     let mut cids: Vec<lrwn::CID> = Vec::new(); // to maintain the CID order
     let mut blocks: HashMap<lrwn::CID, lrwn::MACCommandSet> = HashMap::new();
 
@@ -81,18 +77,18 @@ pub async fn handle_uplink<'a>(
             );
 
         // Get pending mac-command block, this could return None.
-        let pending = match mac_command::get_pending(&dev_eui, cid).await {
+        let pending = match mac_command::get_pending(&dev.dev_eui, cid).await {
             Ok(v) => v,
             Err(e) => {
-                error!(dev_eui = %dev_eui, cid = %cid, error = %e, "Get pending mac-command block error");
+                error!(dev_eui = %dev.dev_eui, cid = %cid, error = %e, "Get pending mac-command block error");
                 continue;
             }
         };
 
         // Delete the pending mac-command.
         if pending.is_some() {
-            if let Err(e) = mac_command::delete_pending(&dev_eui, cid).await {
-                error!(dev_eui = %dev_eui, cid = %cid, error = %e, "Delete pending mac-command error");
+            if let Err(e) = mac_command::delete_pending(&dev.dev_eui, cid).await {
+                error!(dev_eui = %dev.dev_eui, cid = %cid, error = %e, "Delete pending mac-command error");
             }
         }
 
@@ -107,13 +103,12 @@ pub async fn handle_uplink<'a>(
             app,
             dp,
             dev,
-            ds,
         )
         .await
         {
             Ok(v) => v,
             Err(e) => {
-                warn!(dev_eui = %dev_eui, cid = %cid, error = %e.full(), "Handle mac-command error");
+                warn!(dev_eui = %dev.dev_eui, cid = %cid, error = %e.full(), "Handle mac-command error");
                 continue;
             }
         };
@@ -135,8 +130,7 @@ async fn handle(
     tenant: &tenant::Tenant,
     app: &application::Application,
     dp: &device_profile::DeviceProfile,
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
 ) -> Result<Option<lrwn::MACCommandSet>> {
     match cid {
         lrwn::CID::DevStatusAns => {
@@ -144,30 +138,26 @@ async fn handle(
         }
         lrwn::CID::DeviceModeInd => device_mode_ind::handle(dev, block).await,
         lrwn::CID::DeviceTimeReq => device_time::handle(uplink_frame_set, dev, block),
-        lrwn::CID::LinkADRAns => link_adr::handle(uplink_frame_set, dev, ds, block, pending_block),
+        lrwn::CID::LinkADRAns => link_adr::handle(uplink_frame_set, dev, block, pending_block),
         lrwn::CID::LinkCheckReq => link_check::handle(uplink_frame_set, dev, block),
-        lrwn::CID::NewChannelAns => new_channel::handle(dev, ds, block, pending_block),
-        lrwn::CID::PingSlotChannelAns => ping_slot_channel::handle(dev, ds, block, pending_block),
-        lrwn::CID::PingSlotInfoReq => ping_slot_info::handle(dev, ds, block),
-        lrwn::CID::RejoinParamSetupAns => rejoin_param_setup::handle(dev, ds, block, pending_block),
+        lrwn::CID::NewChannelAns => new_channel::handle(dev, block, pending_block),
+        lrwn::CID::PingSlotChannelAns => ping_slot_channel::handle(dev, block, pending_block),
+        lrwn::CID::PingSlotInfoReq => ping_slot_info::handle(dev, block),
+        lrwn::CID::RejoinParamSetupAns => rejoin_param_setup::handle(dev, block, pending_block),
         lrwn::CID::RekeyInd => rekey::handle(dev, block),
-        lrwn::CID::ResetInd => reset::handle(dev, dp, ds, block),
-        lrwn::CID::RxParamSetupAns => rx_param_setup::handle(dev, ds, block, pending_block),
-        lrwn::CID::RxTimingSetupAns => rx_timing_setup::handle(dev, ds, block, pending_block),
-        lrwn::CID::TxParamSetupAns => tx_param_setup::handle(dev, ds, block, pending_block),
-        lrwn::CID::RelayConfAns => relay_conf::handle(dev, ds, block, pending_block),
-        lrwn::CID::EndDeviceConfAns => end_device_conf::handle(dev, ds, block, pending_block),
-        lrwn::CID::FilterListAns => filter_list::handle(dev, ds, block, pending_block),
-        lrwn::CID::UpdateUplinkListAns => update_uplink_list::handle(dev, ds, block, pending_block),
-        lrwn::CID::ConfigureFwdLimitAns => {
-            configure_fwd_limit::handle(dev, ds, block, pending_block)
-        }
+        lrwn::CID::ResetInd => reset::handle(dev, dp, block),
+        lrwn::CID::RxParamSetupAns => rx_param_setup::handle(dev, block, pending_block),
+        lrwn::CID::RxTimingSetupAns => rx_timing_setup::handle(dev, block, pending_block),
+        lrwn::CID::TxParamSetupAns => tx_param_setup::handle(dev, block, pending_block),
+        lrwn::CID::RelayConfAns => relay_conf::handle(dev, block, pending_block),
+        lrwn::CID::EndDeviceConfAns => end_device_conf::handle(dev, block, pending_block),
+        lrwn::CID::FilterListAns => filter_list::handle(dev, block, pending_block),
+        lrwn::CID::UpdateUplinkListAns => update_uplink_list::handle(dev, block, pending_block),
+        lrwn::CID::ConfigureFwdLimitAns => configure_fwd_limit::handle(dev, block, pending_block),
         lrwn::CID::NotifyNewEndDeviceReq => {
             notify_new_end_device::handle(tenant, dp, app, dev, block).await
         }
-        lrwn::CID::CtrlUplinkListAns => {
-            ctrl_uplink_list::handle(dev, ds, block, pending_block).await
-        }
+        lrwn::CID::CtrlUplinkListAns => ctrl_uplink_list::handle(dev, block, pending_block).await,
         _ => {
             warn!(cid = %cid, "Unexpected CID");
             // Return OK, we don't want to break out of the uplink handling.
@@ -180,6 +170,8 @@ async fn handle(
 pub mod test {
     use super::*;
     use crate::config;
+    use chirpstack_api::internal;
+    use lrwn::EUI64;
     use uuid::Uuid;
 
     #[tokio::test]
@@ -213,16 +205,18 @@ pub mod test {
         let t: tenant::Tenant = Default::default();
         let app: application::Application = Default::default();
         let dp: device_profile::DeviceProfile = Default::default();
-        let dev: device::Device = Default::default();
-        let mut ds = internal::DeviceSession {
-            dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
+        let mut dev = device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            device_session: Some(internal::DeviceSession {
+                ..Default::default()
+            }),
             ..Default::default()
         };
 
         // must respond
         let cmds = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::RxTimingSetupAns]);
 
-        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &dev, &mut ds)
+        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &mut dev)
             .await
             .unwrap();
         assert_eq!(0, resp.len());
@@ -233,7 +227,7 @@ pub mod test {
         conf.network.mac_commands_disabled = true;
         config::set(conf);
 
-        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &dev, &mut ds)
+        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &mut dev)
             .await
             .unwrap();
         assert_eq!(0, resp.len());

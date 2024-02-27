@@ -15,10 +15,11 @@ use lrwn::{AES128Key, DevAddr, EUI64};
 use super::auth::validator;
 use super::error::ToStatus;
 use super::helpers::{self, FromProto, ToProto};
-use crate::storage::error::Error;
 use crate::storage::{
     device::{self, DeviceClass},
-    device_keys, device_profile, device_queue, device_session, fields, metrics,
+    device_keys, device_profile, device_queue,
+    error::Error as StorageError,
+    fields, metrics,
 };
 use crate::{codec, devaddr::get_random_dev_addr};
 
@@ -514,7 +515,6 @@ impl DeviceService for Device {
 
         let mut ds = internal::DeviceSession {
             region_config_id: "".to_string(),
-            dev_eui: dev_eui.to_vec(),
             dev_addr: dev_addr.to_vec(),
             mac_version: dp.mac_version.to_proto().into(),
             s_nwk_s_int_key: s_nwk_s_int_key.to_vec(),
@@ -532,12 +532,12 @@ impl DeviceService for Device {
         };
         dp.reset_session_to_boot_params(&mut ds);
 
-        device_session::save(&ds).await.map_err(|e| e.status())?;
-
-        // Set device DevAddr.
-        device::set_dev_addr(dev_eui, dev_addr)
-            .await
-            .map_err(|e| e.status())?;
+        let mut device_changeset = device::DeviceChangeset {
+            device_session: Some(Some(ds)),
+            dev_addr: Some(Some(dev_addr)),
+            secondary_dev_addr: Some(None),
+            ..Default::default()
+        };
 
         // Flush queue (if configured).
         if dp.flush_queue_on_activate {
@@ -548,14 +548,14 @@ impl DeviceService for Device {
 
         // LoRaWAN 1.1 devices send a mac-command when changing to Class-C. Change the class here for LoRaWAN 1.0 devices.
         if dp.supports_class_c && dp.mac_version.to_string().starts_with("1.0") {
-            let _ = device::set_enabled_class(&dev_eui, DeviceClass::C)
-                .await
-                .map_err(|e| e.status())?;
+            device_changeset.enabled_class = Some(DeviceClass::C);
         } else {
-            let _ = device::set_enabled_class(&dev_eui, DeviceClass::A)
-                .await
-                .map_err(|e| e.status())?;
+            device_changeset.enabled_class = Some(DeviceClass::A);
         }
+
+        device::partial_update(dev_eui, &device_changeset)
+            .await
+            .map_err(|e| e.status())?;
 
         let mut resp = Response::new(());
         resp.metadata_mut()
@@ -581,9 +581,18 @@ impl DeviceService for Device {
         device_queue::flush_for_dev_eui(&dev_eui)
             .await
             .map_err(|e| e.status())?;
-        device_session::delete(&dev_eui)
-            .await
-            .map_err(|e| e.status())?;
+
+        device::partial_update(
+            dev_eui,
+            &device::DeviceChangeset {
+                dev_addr: Some(None),
+                secondary_dev_addr: Some(None),
+                device_session: Some(None),
+                ..Default::default()
+            },
+        )
+        .await
+        .map_err(|e| e.status())?;
 
         let mut resp = Response::new(());
         resp.metadata_mut()
@@ -606,25 +615,24 @@ impl DeviceService for Device {
             )
             .await?;
 
-        let ds = match device_session::get(&dev_eui).await {
+        let d = device::get(&dev_eui).await.map_err(|e| e.status())?;
+        let ds = match d.get_device_session() {
             Ok(v) => v,
-            Err(e) => match e {
-                Error::NotFound(_) => {
-                    return Ok(Response::new(api::GetDeviceActivationResponse {
-                        device_activation: None,
-                        join_server_context: None,
-                    }));
-                }
-                _ => {
-                    return Err(e.status());
-                }
-            },
+            Err(StorageError::NotFound(_)) => {
+                return Ok(Response::new(api::GetDeviceActivationResponse {
+                    device_activation: None,
+                    join_server_context: None,
+                }));
+            }
+            Err(e) => {
+                return Err(e.status());
+            }
         };
 
         let mut resp = Response::new(api::GetDeviceActivationResponse {
             device_activation: Some(api::DeviceActivation {
-                dev_eui: hex::encode(&ds.dev_eui),
-                dev_addr: hex::encode(&ds.dev_addr),
+                dev_eui: d.dev_eui.to_string(),
+                dev_addr: d.get_dev_addr().map_err(|e| e.status())?.to_string(),
                 app_s_key: match &ds.app_s_key {
                     Some(v) => hex::encode(&v.aes_key),
                     None => "".to_string(),
@@ -1188,7 +1196,14 @@ impl DeviceService for Device {
             )
             .await?;
 
-        let ds = device_session::get(&dev_eui).await.unwrap_or_default();
+        let d = device::get(&dev_eui).await.map_err(|e| e.status())?;
+        let ds = match d.get_device_session() {
+            Ok(v) => v.clone(),
+            Err(StorageError::NotFound(_)) => Default::default(),
+            Err(e) => {
+                return Err(e.status());
+            }
+        };
 
         let max_f_cnt_down_queue = device_queue::get_max_f_cnt_down(dev_eui)
             .await
@@ -1210,7 +1225,7 @@ pub mod test {
     use super::*;
     use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
-    use crate::storage::{application, tenant, user};
+    use crate::storage::{application, device, tenant, user};
     use crate::test;
     use lrwn::NetID;
 
@@ -1526,12 +1541,18 @@ pub mod test {
         assert!(get_activation_resp.get_ref().device_activation.is_none());
 
         // test get activation with JS session-key ID.
-        device_session::save(&internal::DeviceSession {
-            dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
-            dev_addr: vec![1, 2, 3, 4],
-            js_session_key_id: vec![8, 7, 6, 5, 4, 3, 2, 1],
-            ..Default::default()
-        })
+        device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                dev_addr: Some(Some(DevAddr::from_be_bytes([1, 2, 3, 4]))),
+                device_session: Some(Some(internal::DeviceSession {
+                    dev_addr: vec![1, 2, 3, 4],
+                    js_session_key_id: vec![8, 7, 6, 5, 4, 3, 2, 1],
+                    ..Default::default()
+                })),
+                ..Default::default()
+            },
+        )
         .await
         .unwrap();
         let get_activation_req = get_request(
@@ -1550,17 +1571,23 @@ pub mod test {
         );
 
         // test activation with AppSKey key-envelope.
-        device_session::save(&internal::DeviceSession {
-            dev_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
-            dev_addr: vec![1, 2, 3, 4],
-            app_s_key: Some(common::KeyEnvelope {
-                kek_label: "test-key".into(),
-                aes_key: vec![8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1],
-            }),
-            ..Default::default()
-        })
+        device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                device_session: Some(Some(internal::DeviceSession {
+                    dev_addr: vec![1, 2, 3, 4],
+                    app_s_key: Some(common::KeyEnvelope {
+                        kek_label: "test-key".into(),
+                        aes_key: vec![8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1],
+                    }),
+                    ..Default::default()
+                })),
+                ..Default::default()
+            },
+        )
         .await
         .unwrap();
+
         let get_activation_req = get_request(
             &u.id,
             api::GetDeviceActivationRequest {

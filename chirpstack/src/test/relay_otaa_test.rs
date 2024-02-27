@@ -6,11 +6,11 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_keys, device_profile, device_session, gateway, tenant,
+    device_keys, device_profile, gateway, tenant,
 };
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, internal};
-use lrwn::{AES128Key, EUI64};
+use lrwn::{AES128Key, DevAddr, EUI64};
 
 #[tokio::test]
 async fn test_lorawan_10() {
@@ -96,26 +96,26 @@ async fn test_lorawan_10() {
         device_profile_id: dp_relay.id.clone(),
         dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
         enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
+        device_session: Some(internal::DeviceSession {
+            mac_version: common::MacVersion::Lorawan102.into(),
+            dev_addr: vec![4, 3, 2, 1],
+            f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            f_cnt_up: 10,
+            n_f_cnt_down: 5,
+            rx1_delay: 1,
+            rx2_frequency: 869525000,
+            region_config_id: "eu868".into(),
+            ..Default::default()
+        }),
         ..Default::default()
     })
     .await
     .unwrap();
 
-    let ds_relay = internal::DeviceSession {
-        dev_eui: dev_relay.dev_eui.to_vec(),
-        mac_version: common::MacVersion::Lorawan102.into(),
-        dev_addr: vec![4, 3, 2, 1],
-        f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        f_cnt_up: 10,
-        n_f_cnt_down: 5,
-        rx1_delay: 1,
-        rx2_frequency: 869525000,
-        region_config_id: "eu868".into(),
-        ..Default::default()
-    };
-    device_session::save(&ds_relay).await.unwrap();
+    let ds_relay = dev_relay.get_device_session().unwrap();
 
     let mut rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
@@ -268,8 +268,6 @@ async fn test_lorawan_10() {
             dev.dev_eui.clone(),
             internal::DeviceSession {
                 dev_addr: vec![1, 2, 3, 4],
-                dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
-                join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                 mac_version: common::MacVersion::Lorawan102.into(),
                 f_nwk_s_int_key: vec![
                     146, 184, 94, 251, 180, 89, 48, 96, 236, 112, 106, 181, 94, 25, 215, 162,

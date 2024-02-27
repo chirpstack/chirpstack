@@ -49,7 +49,7 @@ tracing-subscriber = { version = "0.3", features = [
 ], default-features = true }
 
 # ChirpStack API definitions
-chirpstack_api = { path = "../api/rust", features = ["default", "internal"] }
+chirpstack_api = { path = "../api/rust", features = ["default", "internal", "diesel"] }
 lrwn = { path = "../lrwn", features = ["serde", "diesel", "regions", "crypto"] }
 backend = { path = "../backend" }
 

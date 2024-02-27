@@ -21,7 +21,7 @@ use crate::storage::{
     device, device_profile, error::Error as StorageError, gateway, get_async_redis_conn, redis_key,
 };
 use crate::stream;
-use chirpstack_api::{common, gw, internal, stream as stream_pb};
+use chirpstack_api::{common, gw, stream as stream_pb};
 use lrwn::region::CommonName;
 use lrwn::{ForwardUplinkReq, MType, PhyPayload, EUI64};
 
@@ -75,7 +75,6 @@ pub struct RelayContext {
     pub req: ForwardUplinkReq,
     pub device: device::Device,
     pub device_profile: device_profile::DeviceProfile,
-    pub device_session: internal::DeviceSession,
     pub must_ack: bool,
     pub must_send_downlink: bool,
 }

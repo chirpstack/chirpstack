@@ -5,11 +5,13 @@ use crate::storage::device;
 use chirpstack_api::internal;
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     _block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending ConfigureFwdLimitReq mac-command"));
     }
@@ -27,7 +29,7 @@ pub fn handle(
         ds.relay = Some(internal::Relay::default());
     }
 
-    info!(dev_eui = %dev.dev_eui, "ConfigureFwdLimitReq acknowledged");
+    info!(dev_eui = %dev_eui, "ConfigureFwdLimitReq acknowledged");
 
     if let Some(relay) = &mut ds.relay {
         relay.join_req_limit_reload_rate = req_pl.reload_rate.join_req_reload_rate as u32;
@@ -115,10 +117,12 @@ mod test {
         ];
 
         for tst in &tests {
-            let mut ds = tst.device_session.clone();
+            let mut dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
             let resp = handle(
-                &device::Device::default(),
-                &mut ds,
+                &mut dev,
                 &tst.configure_fwd_limit_ans,
                 tst.configure_fwd_limit_req.as_ref(),
             );
@@ -130,7 +134,12 @@ mod test {
                 assert_eq!(true, resp.unwrap().is_none());
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }

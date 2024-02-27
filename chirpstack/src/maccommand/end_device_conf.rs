@@ -5,11 +5,13 @@ use crate::storage::device;
 use chirpstack_api::internal;
 
 pub fn handle(
-    dev: &device::Device,
-    ds: &mut internal::DeviceSession,
+    dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
+    let dev_eui = dev.dev_eui;
+    let ds = dev.get_device_session_mut()?;
+
     if pending.is_none() {
         return Err(anyhow!("Expected pending EndDeviceConfReq mac-command"));
     }
@@ -41,7 +43,7 @@ pub fn handle(
         && ans_pl.second_ch_idx_ack
         && ans_pl.backoff_ack
     {
-        info!(dev_eui = %dev.dev_eui, "EndDeviceConfReq acknowledged");
+        info!(dev_eui = %dev_eui, "EndDeviceConfReq acknowledged");
 
         if let Some(relay) = &mut ds.relay {
             relay.ed_activation_mode =
@@ -57,7 +59,7 @@ pub fn handle(
         }
     } else {
         warn!(
-            dev_eui = %dev.dev_eui,
+            dev_eui = %dev_eui,
             second_ch_freq_ack = ans_pl.second_ch_freq_ack,
             second_ch_dr_ack = ans_pl.second_ch_dr_ack,
             second_ch_idx_ack = ans_pl.second_ch_idx_ack,
@@ -175,10 +177,12 @@ mod test {
         ];
 
         for tst in &tests {
-            let mut ds = tst.device_session.clone();
+            let mut dev = device::Device {
+                device_session: Some(tst.device_session.clone()),
+                ..Default::default()
+            };
             let resp = handle(
-                &device::Device::default(),
-                &mut ds,
+                &mut dev,
                 &tst.end_device_conf_ans,
                 tst.end_device_conf_req.as_ref(),
             );
@@ -190,7 +194,12 @@ mod test {
                 assert_eq!(true, resp.unwrap().is_none());
             }
 
-            assert_eq!(tst.expected_device_session, ds, "{}", tst.name);
+            assert_eq!(
+                &tst.expected_device_session,
+                dev.get_device_session().unwrap(),
+                "{}",
+                tst.name
+            );
         }
     }
 }
