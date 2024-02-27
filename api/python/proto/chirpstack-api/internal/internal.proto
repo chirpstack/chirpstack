@@ -7,14 +7,8 @@ import "chirpstack-api/gw/gw.proto";
 import "google/protobuf/timestamp.proto";
 
 message DeviceSession {
-  // Device EUI.
-  bytes dev_eui = 1;
-
   // Device address.
   bytes dev_addr = 2;
-
-  // Join EUI.
-  bytes join_eui = 3;
 
   // LoRaWAN mac-version.
   common.MacVersion mac_version = 4;
