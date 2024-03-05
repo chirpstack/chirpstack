@@ -75,10 +75,11 @@ function Header({ user }: { user: User }) {
   }
 
   let oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
+  let oAuth2Enabled = settings!.getOauth2()!.getEnabled();
 
   const menu = (
     <Menu>
-      {!oidcEnabled && (
+      {!(oidcEnabled || oAuth2Enabled) && (
         <Menu.Item>
           <Link to={`/users/${user.getId()}/password`}>Change password</Link>
         </Menu.Item>
