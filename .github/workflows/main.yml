@@ -32,7 +32,7 @@ jobs:
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
       -
         name: Start dependency services
-        run: docker-compose up -d
+        run: docker compose up -d
       -
         name: Build UI
         run: make build-ui

@@ -40,7 +40,7 @@ api: version
 
 # Builds the UI.
 build-ui:
-	docker-compose run --rm --no-deps chirpstack-ui make build
+	docker compose run --rm --no-deps chirpstack-ui make build
 
 # Enter the devshell.
 devshell:
@@ -48,11 +48,11 @@ devshell:
 
 # Enters the Docker devshell for ChirpStack development.
 docker-devshell:
-	docker-compose run --rm --service-ports --name chirpstack chirpstack
+	docker compose run --rm --service-ports --name chirpstack chirpstack
 
 # Enters the devshell for ChirpStack UI development.
 docker-devshell-ui:
-	docker-compose run --rm --service-ports --name chirpstack-ui chirpstack-ui bash
+	docker compose run --rm --service-ports --name chirpstack-ui chirpstack-ui bash
 
 # Runs the tests
 test:

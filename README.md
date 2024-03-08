@@ -76,7 +76,7 @@ to be running before you can run the tests. You need to start these services
 manually if you started the development shell using `nix-shell`:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 #### Run tests
