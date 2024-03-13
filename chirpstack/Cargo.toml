@@ -102,7 +102,7 @@ pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "9.2"
 rustls = "0.21"
-rustls-native-certs = "0.6"
+rustls-native-certs = "0.7"
 rustls-pemfile = "1.0"
 rsa = "0.9"
 rcgen = { version = "0.12", features = [ "x509-parser" ] }
