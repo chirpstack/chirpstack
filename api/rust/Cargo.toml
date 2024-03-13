@@ -21,13 +21,13 @@ prost-types = "0.12"
 hex = "0.4"
 rand = "0.8"
 
-tonic = { version = "0.10", features = ["codegen", "prost"], default-features = false, optional = true }
-tokio = { version = "1.32", features = ["macros"], optional = true }
+tonic = { version = "0.11", features = ["codegen", "prost"], default-features = false, optional = true }
+tokio = { version = "1.36", features = ["macros"], optional = true }
 pbjson = { version = "0.6", optional = true }
 pbjson-types = { version = "0.6", optional = true }
 serde = { version = "1.0", optional = true }
 diesel = { version = "2.1", features = ["postgres_backend"], optional = true }
 
 [build-dependencies]
-tonic-build = { version = "0.10", features = ["prost"], default-features = false }
+tonic-build = { version = "0.11", features = ["prost"], default-features = false }
 pbjson-build = "0.6"
