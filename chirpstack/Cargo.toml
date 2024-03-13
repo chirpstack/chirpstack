@@ -35,9 +35,9 @@ diesel = { version = "2.1", features = [
 diesel_migrations = { version = "2.1" }
 diesel-async = { version = "0.4", features = ["deadpool", "postgres", "async-connection-wrapper"] }
 tokio-postgres = "0.7"
-tokio-postgres-rustls = "0.10.0"
+tokio-postgres-rustls = "0.11"
 bigdecimal = "0.4"
-redis = { version = "0.24", features = [ "tls-rustls", "tokio-rustls-comp"] }
+redis = { version = "0.25.1", features = [ "tls-rustls", "tokio-rustls-comp"] }
 deadpool-redis = { version = "0.14", features = ["cluster"] }
 
 # Logging
@@ -101,16 +101,16 @@ anyhow = "1.0"
 pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "9.2"
-rustls = "0.21"
-rustls-native-certs = "0.6"
-rustls-pemfile = "1.0"
+rustls = "0.22"
+rustls-native-certs = "0.7"
+rustls-pemfile = "2.0"
 rsa = "0.9"
 rcgen = { version = "0.12", features = [ "x509-parser" ] }
 openidconnect = { version = "3.3", features = ["accept-rfc3339-timestamps"] }
 oauth2 = "4.4"
 
 # MQTT
-rumqttc = { version = "0.23", features = ["url"] }
+rumqttc = { version = "0.24", features = ["url"] }
 hex = "0.4"
 
 # Codecs

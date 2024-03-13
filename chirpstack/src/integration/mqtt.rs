@@ -110,12 +110,10 @@ impl<'a> Integration<'a> {
 
             let client_conf = if conf.tls_cert.is_empty() && conf.tls_key.is_empty() {
                 rustls::ClientConfig::builder()
-                    .with_safe_defaults()
                     .with_root_certificates(root_certs.clone())
                     .with_no_client_auth()
             } else {
                 rustls::ClientConfig::builder()
-                    .with_safe_defaults()
                     .with_root_certificates(root_certs.clone())
                     .with_client_auth_cert(load_cert(&conf.tls_cert)?, load_key(&conf.tls_key)?)?
             };

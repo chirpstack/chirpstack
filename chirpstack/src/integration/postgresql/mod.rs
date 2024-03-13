@@ -240,7 +240,6 @@ fn pg_establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgCo
         })
         .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
         let rustls_config = rustls::ClientConfig::builder()
-            .with_safe_defaults()
             .with_root_certificates(root_certs)
             .with_no_client_auth();
         let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
