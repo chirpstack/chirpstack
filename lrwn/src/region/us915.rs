@@ -864,11 +864,7 @@ impl Region for Configuration {
         for pl in pls {
             if pl.redundancy.ch_mask_cntl == 6 || pl.redundancy.ch_mask_cntl == 7 {
                 for cm in ch_mask.iter_mut().take(64) {
-                    if pl.redundancy.ch_mask_cntl == 6 {
-                        *cm = true;
-                    } else {
-                        *cm = false;
-                    }
+                    *cm = pl.redundancy.ch_mask_cntl == 6;
                 }
 
                 for (i, cm) in pl.ch_mask.into_iter().enumerate() {

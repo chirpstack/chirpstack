@@ -38,8 +38,7 @@ pub async fn get_geoloc_buffer(
         let rx_info: Vec<gw::UplinkRxInfo> = uplink
             .rx_info
             .iter()
-            .cloned()
-            .filter(|rx_info| {
+            .filter(|&rx_info| {
                 let ts: DateTime<Utc> = match &rx_info.gw_time {
                     None => {
                         return false;
@@ -55,6 +54,7 @@ pub async fn get_geoloc_buffer(
                 // The interval between now and then must be smaller than the TTL
                 (ts - Utc::now()) < ttl
             })
+            .cloned()
             .collect();
 
         if rx_info.len() > 3 {

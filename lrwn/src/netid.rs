@@ -54,7 +54,7 @@ impl NetID {
         match self.netid_type() {
             0 | 1 => self.get_id(6),
             2 => self.get_id(9),
-            3 | 4 | 5 | 6 | 7 => self.get_id(21),
+            3..=7 => self.get_id(21),
             _ => vec![],
         }
     }

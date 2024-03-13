@@ -19,7 +19,7 @@ impl UplinkMetadata {
         UplinkMetadata {
             dr: b[0] & 0x0f,
             snr: ((b[0] >> 4) | ((b[1] & 0x01) << 4)) as isize - 20,
-            rssi: -1 * (b[1] >> 1) as isize - 15,
+            rssi: -((b[1] >> 1) as isize) - 15,
             wor_channel: b[2] & 0x03,
         }
     }
@@ -52,7 +52,7 @@ impl UplinkMetadata {
 
         // Encode values
         let snr = (snr + 20) as u8;
-        let rssi = ((rssi as isize + 15) * -1) as u8;
+        let rssi = -(rssi + 15) as u8;
 
         Ok([self.dr | snr << 4, snr >> 4 | rssi << 1, self.wor_channel])
     }
@@ -97,7 +97,7 @@ pub struct ForwardDownlinkReq {
 impl ForwardDownlinkReq {
     pub fn from_slice(b: &[u8]) -> Result<Self> {
         Ok(ForwardDownlinkReq {
-            payload: Box::new(PhyPayload::from_slice(&b)?),
+            payload: Box::new(PhyPayload::from_slice(b)?),
         })
     }
 

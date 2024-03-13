@@ -167,7 +167,7 @@ async fn test_fns_uplink() {
     sns_pr_start_req_mock.assert();
     sns_pr_start_req_mock.delete();
 
-    joinserver::reset();
+    joinserver::reset().await;
 }
 
 #[tokio::test]

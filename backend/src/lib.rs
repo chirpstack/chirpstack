@@ -423,8 +423,9 @@ impl Client {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[derive(Default, Serialize, Deserialize, PartialEq, Eq, Debug, Copy, Clone)]
 pub enum MessageType {
+    #[default]
     JoinReq,
     JoinAns,
     RejoinReq,
@@ -441,14 +442,9 @@ pub enum MessageType {
     XmitDataAns,
 }
 
-impl Default for MessageType {
-    fn default() -> Self {
-        MessageType::JoinReq
-    }
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[derive(Default, Serialize, Deserialize, PartialEq, Eq, Debug, Copy, Clone)]
 pub enum ResultCode {
+    #[default]
     Success,
     MICFailed,
     JoinReqFailed,
@@ -469,12 +465,6 @@ pub enum ResultCode {
     MalformedRequest,
     FrameSizeError,
     Other,
-}
-
-impl Default for ResultCode {
-    fn default() -> Self {
-        ResultCode::Success
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Copy, Clone)]

@@ -273,7 +273,7 @@ impl serialize::ToSql<Binary, diesel::pg::Pg> for DevAddr
 where
     [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
 {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, diesel::pg::Pg>) -> serialize::Result {
         <[u8] as serialize::ToSql<Binary, diesel::pg::Pg>>::to_sql(
             &self.to_be_bytes(),
             &mut out.reborrow(),

@@ -9,5 +9,5 @@ pub enum Error {
     RoamingIsNotAllowed,
 
     #[error(transparent)]
-    AnyhowError(#[from] anyhow::Error),
+    Anyhow(#[from] anyhow::Error),
 }

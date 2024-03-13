@@ -1891,7 +1891,7 @@ impl serialize::ToSql<SmallInt, diesel::pg::Pg> for RelayModeActivation
 where
     i16: serialize::ToSql<SmallInt, diesel::pg::Pg>,
 {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, diesel::pg::Pg>) -> serialize::Result {
         let i = self.to_u8() as i16;
         <i16 as serialize::ToSql<SmallInt, diesel::pg::Pg>>::to_sql(&i, &mut out.reborrow())
     }
@@ -2191,7 +2191,7 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
         let mut b = [0; 26];
         cur.read_exact(&mut b)?;
 
-        return Ok(UpdateUplinkListReqPayload {
+        Ok(UpdateUplinkListReqPayload {
             uplink_list_idx: b[0] & 0x0f,
             uplink_limit: UplinkLimitPL::from_u8(b[1]),
             dev_addr: crate::DevAddr::from_le_bytes({
@@ -2209,7 +2209,7 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
                 bb.copy_from_slice(&b[10..26]);
                 bb
             }),
-        });
+        })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
@@ -2432,7 +2432,7 @@ impl PowerLevel {
     pub fn from_bytes(b: [u8; 2]) -> Self {
         PowerLevel {
             wor_snr: (b[0] & 0x1f) as isize - 20,
-            wor_rssi: -1 * ((b[0] >> 5) | ((b[1] & 0x0f) << 3)) as isize - 15,
+            wor_rssi: -(((b[0] >> 5) | ((b[1] & 0x0f) << 3)) as isize) - 15,
         }
     }
 
@@ -2456,7 +2456,7 @@ impl PowerLevel {
 
         // Encode values
         let wor_snr = (wor_snr + 20) as u8;
-        let wor_rssi = ((wor_rssi as isize + 15) * -1) as u8;
+        let wor_rssi = -(wor_rssi + 15) as u8;
 
         [wor_snr | wor_rssi << 5, wor_rssi >> 3]
     }

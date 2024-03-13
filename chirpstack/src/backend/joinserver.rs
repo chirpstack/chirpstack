@@ -1,6 +1,7 @@
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use anyhow::Result;
+use tokio::sync::RwLock;
 use tracing::info;
 
 use crate::{config, stream};
@@ -15,7 +16,7 @@ pub async fn setup() -> Result<()> {
     info!("Setting up Join Server clients");
     let conf = config::get();
 
-    let mut clients_w = CLIENTS.write().unwrap();
+    let mut clients_w = CLIENTS.write().await;
     *clients_w = vec![];
 
     for js in &conf.join_server.servers {
@@ -38,8 +39,8 @@ pub async fn setup() -> Result<()> {
     Ok(())
 }
 
-pub fn get(join_eui: EUI64) -> Result<Arc<Client>> {
-    let clients_r = CLIENTS.read().unwrap();
+pub async fn get(join_eui: EUI64) -> Result<Arc<Client>> {
+    let clients_r = CLIENTS.read().await;
     for client in clients_r.iter() {
         if client.0.matches(join_eui) {
             return Ok(client.1.clone());
@@ -53,7 +54,7 @@ pub fn get(join_eui: EUI64) -> Result<Arc<Client>> {
 }
 
 #[cfg(test)]
-pub fn reset() {
-    let mut clients_w = CLIENTS.write().unwrap();
+pub async fn reset() {
+    let mut clients_w = CLIENTS.write().await;
     *clients_w = vec![];
 }

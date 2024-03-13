@@ -112,7 +112,7 @@ async fn handle_stream(
     k: &str,
     v: &redis::Value,
 ) -> Result<()> {
-    match k.as_ref() {
+    match k {
         "up" => {
             trace!(key = %k, id = %stream_id, "Event-log received from stream");
             if let redis::Value::Data(b) = v {

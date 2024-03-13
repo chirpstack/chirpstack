@@ -136,8 +136,8 @@ pub fn get_time_since_gps_epoch_chrono(rx_info: &[gw::UplinkRxInfo]) -> Option<c
 pub fn get_start_location(rx_info: &[gw::UplinkRxInfo]) -> Option<common::Location> {
     let mut with_loc: Vec<gw::UplinkRxInfo> = rx_info
         .iter()
+        .filter(|&i| i.location.is_some())
         .cloned()
-        .filter(|i| i.location.is_some())
         .collect();
     with_loc.sort_by(|a, b| a.snr.partial_cmp(&b.snr).unwrap());
     with_loc

@@ -246,7 +246,7 @@ async fn test_fns() {
     })()
     .await;
 
-    joinserver::reset();
+    joinserver::reset().await;
 }
 
 #[tokio::test]
@@ -430,7 +430,7 @@ async fn test_sns() {
         pr_start_ans
     );
 
-    joinserver::reset();
+    joinserver::reset().await;
 }
 
 #[tokio::test]
@@ -588,5 +588,5 @@ async fn test_sns_roaming_not_allowed() {
         pr_start_ans
     );
 
-    joinserver::reset();
+    joinserver::reset().await;
 }

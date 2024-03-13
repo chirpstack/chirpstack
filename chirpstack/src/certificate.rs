@@ -51,7 +51,7 @@ async fn get_ca_cert(ca_cert_file: &str, ca_key_file: &str) -> Result<Certificat
     let params = CertificateParams::from_ca_cert_pem(&ca_cert_s, ca_key)
         .context("Parse gateway CA certificate")?;
 
-    Ok(Certificate::from_params(params).context("Init Certificate struct")?)
+    Certificate::from_params(params).context("Init Certificate struct")
 }
 
 // This returns the CA, certificate and private-key as PEM encoded strings.

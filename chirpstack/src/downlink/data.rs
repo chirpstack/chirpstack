@@ -623,7 +623,7 @@ impl Data {
 
         let ds = self.device.get_device_session()?;
 
-        self.mac_commands = filter_mac_commands(&ds, &self.mac_commands);
+        self.mac_commands = filter_mac_commands(ds, &self.mac_commands);
 
         Ok(())
     }

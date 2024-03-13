@@ -119,7 +119,7 @@ pub async fn save(name: &str, record: &Record) -> Result<()> {
                 .unwrap(),
         };
 
-        let key = get_key(&name, a, ts);
+        let key = get_key(name, a, ts);
 
         for (k, v) in &record.metrics {
             // Passing a reference to hincr will return a runtime error.

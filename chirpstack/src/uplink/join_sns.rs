@@ -162,7 +162,7 @@ impl JoinRequest {
 
         if self.device_keys.is_none() {
             trace!(join_eui = %jr.join_eui, "Getting Join Server client");
-            self.js_client = Some(joinserver::get(jr.join_eui)?);
+            self.js_client = Some(joinserver::get(jr.join_eui).await?);
         }
 
         Ok(())

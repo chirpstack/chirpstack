@@ -248,7 +248,7 @@ async fn deduplicate_put(
 async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
     let items_b: Vec<Vec<u8>> = {
         redis::cmd("SMEMBERS")
-            .arg(&key)
+            .arg(key)
             .query_async(&mut get_async_redis_conn().await?)
             .await
             .context("Deduplication collect")?
@@ -285,7 +285,7 @@ async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
 pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -> Result<()> {
     let rx_info = &uplink
         .rx_info
-        .get(0)
+        .first()
         .context("Unable to get first item from rx_info")?;
 
     let region_config_id = rx_info

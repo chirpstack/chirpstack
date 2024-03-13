@@ -58,7 +58,7 @@ impl JoinRequest {
         trace!("Getting home netid");
 
         trace!(join_eui = %self.join_request.join_eui, "Trying to get join-server client");
-        let js_client = joinserver::get(self.join_request.join_eui)?;
+        let js_client = joinserver::get(self.join_request.join_eui).await?;
 
         let mut home_ns_req = backend::HomeNSReqPayload {
             dev_eui: self.join_request.dev_eui.to_vec(),

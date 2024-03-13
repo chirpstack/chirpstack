@@ -215,7 +215,7 @@ impl Data {
         let mac = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             pl
         } else {
-            return Err(Error::AnyhowError(anyhow!("Expected MacPayload")));
+            return Err(Error::Anyhow(anyhow!("Expected MacPayload")));
         };
 
         if roaming::is_roaming_dev_addr(mac.fhdr.devaddr) {
@@ -234,7 +234,7 @@ impl Data {
         let dev_addr = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             pl.fhdr.devaddr
         } else {
-            return Err(Error::AnyhowError(anyhow!("No MacPayload in PhyPayload")));
+            return Err(Error::Anyhow(anyhow!("No MacPayload in PhyPayload")));
         };
 
         match device::get_for_phypayload_and_incr_f_cnt_up(
@@ -277,7 +277,7 @@ impl Data {
                     return Err(Error::Abort);
                 }
                 _ => {
-                    return Err(Error::AnyhowError(
+                    return Err(Error::Anyhow(
                         anyhow::Error::new(e).context("Get device-session"),
                     ));
                 }
@@ -295,7 +295,7 @@ impl Data {
         let dev_addr = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             pl.fhdr.devaddr
         } else {
-            return Err(Error::AnyhowError(anyhow!("No MacPayload in PhyPayload")));
+            return Err(Error::Anyhow(anyhow!("No MacPayload in PhyPayload")));
         };
 
         let dr = relay_ctx.req.metadata.dr;
@@ -334,7 +334,7 @@ impl Data {
                     return Err(Error::Abort);
                 }
                 _ => {
-                    return Err(Error::AnyhowError(
+                    return Err(Error::Anyhow(
                         anyhow::Error::new(e).context("Get device-session"),
                     ));
                 }

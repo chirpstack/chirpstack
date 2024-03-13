@@ -3,12 +3,11 @@ include!(concat!(env!("OUT_DIR"), "/internal/internal.rs"));
 include!(concat!(env!("OUT_DIR"), "/internal/internal.serde.rs"));
 
 #[cfg(feature = "diesel")]
-use std::io::Cursor;
-#[cfg(feature = "diesel")]
 use diesel::{backend::Backend, deserialize, serialize, sql_types::Binary};
 #[cfg(feature = "diesel")]
 use prost::Message;
-
+#[cfg(feature = "diesel")]
+use std::io::Cursor;
 
 impl DeviceSession {
     pub fn get_a_f_cnt_down(&self) -> u32 {
@@ -49,7 +48,7 @@ impl serialize::ToSql<Binary, diesel::pg::Pg> for DeviceSession
 where
     [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
 {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, diesel::pg::Pg>) -> serialize::Result {
         <[u8] as serialize::ToSql<Binary, diesel::pg::Pg>>::to_sql(
             &self.encode_to_vec(),
             &mut out.reborrow(),

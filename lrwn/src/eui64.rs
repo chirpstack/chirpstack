@@ -138,7 +138,7 @@ impl serialize::ToSql<Binary, diesel::pg::Pg> for EUI64
 where
     [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
 {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, diesel::pg::Pg>) -> serialize::Result {
         <[u8] as serialize::ToSql<Binary, diesel::pg::Pg>>::to_sql(
             &self.to_be_bytes(),
             &mut out.reborrow(),
@@ -197,7 +197,7 @@ impl FromStr for EUI64Prefix {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.to_string();
         let mut size: u64 = 64;
-        let parts: Vec<&str> = s.split("/").collect();
+        let parts: Vec<&str> = s.split('/').collect();
         if parts.len() == 2 {
             size = parts[1].parse().map_err(|_| Error::EUI64PrefixFormat)?;
         }

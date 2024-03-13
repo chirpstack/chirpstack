@@ -1736,7 +1736,7 @@ impl ApplicationService for Application {
                 application::IftttConfiguration {
                     key: req_int.key.clone(),
                     uplink_values: [
-                        req_int.uplink_values.get(0).cloned().unwrap_or_default(),
+                        req_int.uplink_values.first().cloned().unwrap_or_default(),
                         req_int.uplink_values.get(1).cloned().unwrap_or_default(),
                     ],
                     arbitrary_json: req_int.arbitrary_json,
@@ -1820,7 +1820,7 @@ impl ApplicationService for Application {
                 application::IftttConfiguration {
                     key: req_int.key.clone(),
                     uplink_values: [
-                        req_int.uplink_values.get(0).cloned().unwrap_or_default(),
+                        req_int.uplink_values.first().cloned().unwrap_or_default(),
                         req_int.uplink_values.get(1).cloned().unwrap_or_default(),
                     ],
                     arbitrary_json: req_int.arbitrary_json,

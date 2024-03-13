@@ -134,7 +134,7 @@ impl<'a> Integration<'a> {
                     command: r"(?P<command>[\w]+)".to_string(),
                 },
             )?)?,
-            qos: qos,
+            qos,
             json: conf.json,
             client,
             templates,

@@ -119,7 +119,7 @@ pub async fn get_by_email_and_pw(email: &str, pw: &str) -> Result<User, Error> {
         }
     };
 
-    if verify_password(&pw, &u.password_hash) {
+    if verify_password(pw, &u.password_hash) {
         return Ok(u);
     }
 
