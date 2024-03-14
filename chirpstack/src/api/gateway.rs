@@ -303,9 +303,15 @@ impl GatewayService for Gateway {
             .await
             .map_err(|e| e.status())?;
 
-        gateway::update_tls_cert(&gw_id, cert.as_bytes())
-            .await
-            .map_err(|e| e.status())?;
+        gateway::partial_update(
+            gw_id,
+            &gateway::GatewayChangeset {
+                tls_certificate: Some(Some(cert.as_bytes().to_vec())),
+                ..Default::default()
+            },
+        )
+        .await
+        .map_err(|e| e.status())?;
 
         let mut resp = Response::new(api::GenerateGatewayClientCertificateResponse {
             ca_cert,

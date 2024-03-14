@@ -4,12 +4,12 @@ use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, Utc};
 use tracing::{error, info, span, trace, warn, Instrument, Level};
 
 use crate::gateway::backend as gateway_backend;
 use crate::helpers::errors::PrintFullError;
-use crate::storage::{error::Error, gateway, metrics};
+use crate::storage::{error::Error, fields, gateway, metrics};
 use crate::{config, region};
 use chirpstack_api::{common, gw};
 use lrwn::EUI64;
@@ -71,25 +71,24 @@ impl Stats {
     async fn update_gateway_state(&mut self) -> Result<()> {
         trace!("Update gateway state");
 
+        let mut gw_cs = gateway::GatewayChangeset {
+            last_seen_at: Some(Some(Utc::now())),
+            properties: Some(fields::KeyValue::new(self.stats.metadata.clone())),
+            ..Default::default()
+        };
+
         if let Some(loc) = &self.stats.location {
-            self.gateway = Some(
-                gateway::update_state_and_loc(
-                    &self.gateway_id,
-                    loc.latitude,
-                    loc.longitude,
-                    loc.altitude as f32,
-                    &self.stats.metadata,
-                )
-                .await
-                .context("Update gateway state and location")?,
-            );
-        } else {
-            self.gateway = Some(
-                gateway::update_state(&self.gateway_id, &self.stats.metadata)
-                    .await
-                    .context("Update gateway state")?,
-            );
+            // Sanity check to make sure there is a location.
+            if !(loc.latitude == 0.0 && loc.longitude == 0.0 && loc.altitude == 0.0) {
+                gw_cs.latitude = Some(loc.latitude);
+                gw_cs.longitude = Some(loc.longitude);
+                gw_cs.altitude = Some(loc.longitude as f32);
+            }
         }
+
+        gateway::partial_update(self.gateway_id, &gw_cs)
+            .await
+            .context("Update gateway state")?;
 
         Ok(())
     }

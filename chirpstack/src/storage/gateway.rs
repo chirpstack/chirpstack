@@ -40,6 +40,17 @@ impl Gateway {
     }
 }
 
+#[derive(AsChangeset, Debug, Clone, Default)]
+#[diesel(table_name = gateway)]
+pub struct GatewayChangeset {
+    pub last_seen_at: Option<Option<DateTime<Utc>>>,
+    pub properties: Option<fields::KeyValue>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub altitude: Option<f32>,
+    pub tls_certificate: Option<Option<Vec<u8>>>,
+}
+
 #[derive(Queryable, PartialEq, Debug)]
 pub struct GatewayListItem {
     pub tenant_id: Uuid,
@@ -186,66 +197,14 @@ pub async fn update(gw: Gateway) -> Result<Gateway, Error> {
     Ok(gw)
 }
 
-pub async fn update_state(id: &EUI64, props: &HashMap<String, String>) -> Result<Gateway, Error> {
-    let props = fields::KeyValue::new(props.clone());
-
-    let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
-        .set((
-            gateway::last_seen_at.eq(Some(Utc::now())),
-            gateway::properties.eq(props),
-        ))
-        .get_result(&mut get_async_db_conn().await?)
+pub async fn partial_update(gateway_id: EUI64, gw: &GatewayChangeset) -> Result<Gateway, Error> {
+    let gw = diesel::update(gateway::dsl::gateway.find(&gateway_id))
+        .set(gw)
+        .get_result::<Gateway>(&mut get_async_db_conn().await?)
         .await
-        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+        .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
 
-    info!(
-        gateway_id = %id,
-        "Gateway state updated"
-    );
-
-    Ok(gw)
-}
-
-pub async fn update_state_and_loc(
-    id: &EUI64,
-    lat: f64,
-    lon: f64,
-    alt: f32,
-    props: &HashMap<String, String>,
-) -> Result<Gateway, Error> {
-    let props = fields::KeyValue::new(props.clone());
-
-    let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
-        .set((
-            gateway::last_seen_at.eq(Some(Utc::now())),
-            gateway::latitude.eq(lat),
-            gateway::longitude.eq(lon),
-            gateway::altitude.eq(alt),
-            gateway::properties.eq(props),
-        ))
-        .get_result(&mut get_async_db_conn().await?)
-        .await
-        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-
-    info!(
-        gateway_id = %id,
-        "Gateway state and location updated"
-    );
-
-    Ok(gw)
-}
-
-pub async fn update_tls_cert(id: &EUI64, cert: &[u8]) -> Result<Gateway, Error> {
-    let gw: Gateway = diesel::update(gateway::dsl::gateway.find(&id))
-        .set(gateway::tls_certificate.eq(cert))
-        .get_result(&mut get_async_db_conn().await?)
-        .await
-        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-    info!(
-        gateway_id = %id,
-        "Gateway tls certificate updated"
-    );
-
+    info!(gateway_id = %gateway_id, "Gateway partially updated");
     Ok(gw)
 }
 
