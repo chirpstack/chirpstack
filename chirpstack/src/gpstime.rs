@@ -5,75 +5,75 @@ lazy_static! {
     static ref LEAP_SECONDS_TABLE: Vec<(DateTime<Utc>, Duration)> = vec![
         (
             Utc.with_ymd_and_hms(1981, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1982, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1983, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1985, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1987, 12, 31, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1989, 12, 31, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1990, 12, 31, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1992, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1993, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1994, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1995, 12, 31, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1997, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(1998, 12, 31, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(2005, 12, 31, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(2008, 12, 31, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(2012, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(2015, 6, 30, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
         (
             Utc.with_ymd_and_hms(2016, 12, 31, 23, 59, 59).unwrap(),
-            Duration::seconds(1)
+            Duration::try_seconds(1).unwrap()
         ),
     ];
 }
@@ -91,7 +91,7 @@ impl ToGpsTime for DateTime<Utc> {
         let mut offset = Duration::zero();
         for ls in LEAP_SECONDS_TABLE.iter() {
             if &ls.0 < self {
-                offset = offset + ls.1;
+                offset += ls.1;
             }
         }
 
@@ -129,19 +129,19 @@ pub mod test {
             },
             Test {
                 time: Utc.with_ymd_and_hms(2010, 1, 28, 16, 36, 24).unwrap(),
-                time_since_gps_epoch: Duration::seconds(948731799),
+                time_since_gps_epoch: Duration::try_seconds(948731799).unwrap(),
             },
             Test {
                 time: Utc.with_ymd_and_hms(2025, 7, 14, 0, 0, 0).unwrap(),
-                time_since_gps_epoch: Duration::seconds(1436486418),
+                time_since_gps_epoch: Duration::try_seconds(1436486418).unwrap(),
             },
             Test {
                 time: Utc.with_ymd_and_hms(2012, 6, 30, 23, 59, 59).unwrap(),
-                time_since_gps_epoch: Duration::seconds(1025136014),
+                time_since_gps_epoch: Duration::try_seconds(1025136014).unwrap(),
             },
             Test {
                 time: Utc.with_ymd_and_hms(2012, 7, 1, 0, 0, 0).unwrap(),
-                time_since_gps_epoch: Duration::seconds(1025136016),
+                time_since_gps_epoch: Duration::try_seconds(1025136016).unwrap(),
             },
         ];
 

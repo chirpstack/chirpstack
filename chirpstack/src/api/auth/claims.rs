@@ -24,7 +24,7 @@ fn is_default<T: Default + PartialEq>(t: &T) -> bool {
 impl AuthClaim {
     pub fn new_for_user(id: &Uuid) -> Self {
         let nbf: DateTime<Utc> = Utc::now();
-        let exp = nbf.add(Duration::days(1));
+        let exp = nbf.add(Duration::try_days(1).unwrap());
 
         AuthClaim {
             aud: "chirpstack".to_string(),
@@ -75,7 +75,7 @@ pub mod test {
         let key_id = Uuid::new_v4();
 
         let nbf: DateTime<Utc> = Utc::now();
-        let exp = nbf.add(-Duration::days(1));
+        let exp = nbf.add(-Duration::try_days(1).unwrap());
 
         let claim = AuthClaim::new_for_api_key(&key_id);
         assert_eq!("key", claim.typ);

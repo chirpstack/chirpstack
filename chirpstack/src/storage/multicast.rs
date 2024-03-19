@@ -426,7 +426,7 @@ pub async fn enqueue(
 
                         // Get timestamp after which we must generate the next ping-slot.
                         let ping_slot_after_gps_time = match res {
-                            Some(v) => Duration::milliseconds(v),
+                            Some(v) => Duration::try_milliseconds(v).unwrap_or_default(),
                             None => (Utc::now()
                                 + Duration::from_std(
                                     conf.network.scheduler.multicast_class_b_margin,
@@ -993,7 +993,7 @@ pub mod test {
 
         // get
         let qi_get = get_queue_item(&ids[0]).await.unwrap();
-        assert!((Utc::now() - qi_get.scheduler_run_after) < Duration::seconds(1)); // ~ Utc::now()
+        assert!((Utc::now() - qi_get.scheduler_run_after) < Duration::try_seconds(1).unwrap()); // ~ Utc::now()
         assert!(qi_get.emit_at_time_since_gps_epoch.is_none());
         assert_eq!(10, qi_get.f_cnt);
         assert_eq!(vec![3, 2, 1], qi_get.data);

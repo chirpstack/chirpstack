@@ -972,14 +972,14 @@ pub mod test {
         .await
         .unwrap();
         qi.is_pending = true;
-        qi.timeout_after = Some(Utc::now() + Duration::seconds(10));
+        qi.timeout_after = Some(Utc::now() + Duration::try_seconds(10).unwrap());
         qi = device_queue::update_item(qi).await.unwrap();
         let res = get_with_class_b_c_queue_items(10).await.unwrap();
         assert_eq!(0, res.len());
 
         // device in class C / downlink is pending but has expired.
         qi.is_pending = true;
-        qi.timeout_after = Some(Utc::now() - Duration::seconds(10));
+        qi.timeout_after = Some(Utc::now() - Duration::try_seconds(10).unwrap());
         let _ = device_queue::update_item(qi).await.unwrap();
         let res = get_with_class_b_c_queue_items(10).await.unwrap();
         assert_eq!(1, res.len());

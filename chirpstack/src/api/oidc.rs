@@ -147,7 +147,7 @@ async fn store_nonce(state: &CsrfToken, nonce: &Nonce) -> Result<()> {
 
     redis::cmd("PSETEX")
         .arg(key)
-        .arg(Duration::minutes(5).num_milliseconds())
+        .arg(Duration::try_minutes(5).unwrap().num_milliseconds())
         .arg(nonce.secret())
         .query_async(&mut get_async_redis_conn().await?)
         .await?;

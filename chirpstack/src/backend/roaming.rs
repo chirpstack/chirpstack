@@ -249,7 +249,7 @@ pub fn ul_meta_data_to_rx_info(ul_meta_data: &ULMetaData) -> Result<Vec<gw::Upli
             fine_time_since_gps_epoch: if gw_info.fine_recv_time.is_some() {
                 let ts = ul_meta_data
                     .recv_time
-                    .duration_round(Duration::seconds(1))?;
+                    .duration_round(Duration::try_seconds(1).unwrap_or_default())?;
                 let ts = ts + Duration::nanoseconds(gw_info.fine_recv_time.unwrap() as i64);
 
                 Some(ts.to_gps_time().to_std()?.into())

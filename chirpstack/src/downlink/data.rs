@@ -1709,7 +1709,7 @@ impl Data {
                         v.clone().try_into().map_err(anyhow::Error::msg)?;
                     if last_req
                         < Utc::now()
-                            .checked_sub_signed(chrono::Duration::hours(24))
+                            .checked_sub_signed(chrono::Duration::try_hours(24).unwrap())
                             .unwrap()
                         && counter < max_count
                     {
@@ -2465,7 +2465,7 @@ impl Data {
         }
 
         // set timing
-        let now_gps_ts = Utc::now().to_gps_time() + chrono::Duration::seconds(1);
+        let now_gps_ts = Utc::now().to_gps_time() + chrono::Duration::try_seconds(1).unwrap();
         let ping_slot_ts = classb::get_next_ping_slot_after(
             now_gps_ts,
             &self.device.get_dev_addr()?,
@@ -4325,7 +4325,7 @@ mod test {
                             index: 1,
                             w_f_cnt_last_request: Some(
                                 Utc::now()
-                                    .checked_sub_signed(chrono::Duration::hours(48))
+                                    .checked_sub_signed(chrono::Duration::try_hours(48).unwrap())
                                     .unwrap()
                                     .into(),
                             ),

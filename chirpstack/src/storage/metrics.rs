@@ -189,7 +189,7 @@ pub async fn get(
             while ts.le(&end) {
                 timestamps.push(ts);
                 keys.push(get_key(name, a, ts));
-                ts += ChronoDuration::hours(1);
+                ts += ChronoDuration::try_hours(1).unwrap();
             }
         }
         Aggregation::DAY => {
@@ -204,11 +204,11 @@ pub async fn get(
                 timestamps.push(ts);
                 keys.push(get_key(name, a, ts));
                 ts = {
-                    if (ts + ChronoDuration::days(1)).day() == ts.day() {
+                    if (ts + ChronoDuration::try_days(1).unwrap()).day() == ts.day() {
                         // In case of DST to non-DST transition, the ts is incremented with less
                         // than 24h and we end up with the same day. Therefore we increment by two
                         // days.
-                        (ts + ChronoDuration::days(2))
+                        (ts + ChronoDuration::try_days(2).unwrap())
                             .date_naive()
                             .and_hms_opt(0, 0, 0)
                             .unwrap()
@@ -217,7 +217,7 @@ pub async fn get(
                     } else {
                         // Make sure that the timestamp stays at midnight in case of non-DST to DST
                         // change.
-                        (ts + ChronoDuration::days(1))
+                        (ts + ChronoDuration::try_days(1).unwrap())
                             .date_naive()
                             .and_hms_opt(0, 0, 0)
                             .unwrap()

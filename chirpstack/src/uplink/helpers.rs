@@ -124,7 +124,7 @@ pub fn get_time_since_gps_epoch_chrono(rx_info: &[gw::UplinkRxInfo]) -> Option<c
     for rxi in rx_info {
         if let Some(gps_time) = &rxi.time_since_gps_epoch {
             return Some(
-                chrono::Duration::seconds(gps_time.seconds)
+                chrono::Duration::try_seconds(gps_time.seconds).unwrap_or_default()
                     + chrono::Duration::nanoseconds(gps_time.nanos as i64),
             );
         }

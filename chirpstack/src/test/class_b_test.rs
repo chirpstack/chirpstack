@@ -283,7 +283,7 @@ async fn test_downlink_scheduler() {
         ..Default::default()
     };
 
-    let now_gps_ts = chrono::Utc::now().to_gps_time() + chrono::Duration::seconds(1);
+    let now_gps_ts = chrono::Utc::now().to_gps_time() + chrono::Duration::try_seconds(1).unwrap();
     let ping_slot_ts = classb::get_next_ping_slot_after(
         now_gps_ts,
         &DevAddr::from_slice(&ds.dev_addr).unwrap(),

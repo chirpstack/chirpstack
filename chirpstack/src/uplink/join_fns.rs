@@ -179,7 +179,7 @@ impl JoinRequest {
                 if lt == 0 {
                     None
                 } else {
-                    Some((Utc::now() + Duration::seconds(lt)).into())
+                    Some((Utc::now() + Duration::try_seconds(lt).unwrap_or_default()).into())
                 }
             },
             lorawan_1_1: pr_start_ans.f_nwk_s_int_key.is_some(),

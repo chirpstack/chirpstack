@@ -263,7 +263,8 @@ impl GatewayService for Gateway {
                     state: {
                         if let Some(ts) = gw.last_seen_at {
                             if (Utc::now() - ts)
-                                > Duration::seconds((gw.stats_interval_secs * 2).into())
+                                > Duration::try_seconds((gw.stats_interval_secs * 2).into())
+                                    .unwrap_or_default()
                             {
                                 api::GatewayState::Offline
                             } else {

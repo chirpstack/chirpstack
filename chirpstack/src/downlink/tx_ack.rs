@@ -282,7 +282,8 @@ impl TxAck {
         qi.is_pending = true;
 
         if dev.enabled_class == DeviceClass::C {
-            let timeout = Utc::now() + Duration::seconds(dp.class_c_timeout as i64);
+            let timeout =
+                Utc::now() + Duration::try_seconds(dp.class_c_timeout as i64).unwrap_or_default();
             qi.timeout_after = Some(timeout);
         }
 

@@ -15,10 +15,8 @@ pub fn get_root_certs(ca_file: Option<String>) -> Result<rustls::RootCertStore> 
         let f = File::open(ca_file).context("Open CA certificate")?;
         let mut reader = BufReader::new(f);
         let certs = rustls_pemfile::certs(&mut reader);
-        for cert in certs {
-            if let Ok(cert) = cert {
-                roots.add(cert)?;
-            }
+        for cert in certs.flatten() {
+            roots.add(cert)?;
         }
     }
 

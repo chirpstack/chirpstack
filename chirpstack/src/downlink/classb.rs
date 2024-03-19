@@ -8,16 +8,17 @@ use tracing::debug;
 use lrwn::DevAddr;
 
 lazy_static! {
-    static ref BEACON_PERIOD: Duration = Duration::seconds(128);
-    static ref BEACON_RESERVED: Duration = Duration::milliseconds(2120);
-    static ref BEACON_GUARD: Duration = Duration::seconds(3);
-    static ref BEACON_WINDOW: Duration = Duration::milliseconds(122880);
+    static ref BEACON_PERIOD: Duration = Duration::try_seconds(128).unwrap();
+    static ref BEACON_RESERVED: Duration = Duration::try_milliseconds(2120).unwrap();
+    static ref BEACON_GUARD: Duration = Duration::try_seconds(3).unwrap();
+    static ref BEACON_WINDOW: Duration = Duration::try_milliseconds(122880).unwrap();
     static ref PING_PERIOD_BASE: usize = 1 << 12;
-    static ref SLOT_LEN: Duration = Duration::milliseconds(30);
+    static ref SLOT_LEN: Duration = Duration::try_milliseconds(30).unwrap();
 }
 
 pub fn get_beacon_start(ts: Duration) -> Duration {
-    Duration::seconds(ts.num_seconds() - (ts.num_seconds() % BEACON_PERIOD.num_seconds()))
+    Duration::try_seconds(ts.num_seconds() - (ts.num_seconds() % BEACON_PERIOD.num_seconds()))
+        .unwrap_or_default()
 }
 
 pub fn get_ping_offset(beacon_ts: Duration, dev_addr: &DevAddr, ping_nb: usize) -> Result<usize> {
@@ -76,7 +77,7 @@ pub fn get_next_ping_slot_after(
             }
         }
 
-        beacon_start_ts = beacon_start_ts + *BEACON_PERIOD;
+        beacon_start_ts += *BEACON_PERIOD;
     }
 }
 
@@ -103,7 +104,11 @@ pub mod test {
         // Multiple of 128 seconds.
         assert_eq!(
             0,
-            start_ts.num_nanoseconds().unwrap() % Duration::seconds(128).num_nanoseconds().unwrap()
+            start_ts.num_nanoseconds().unwrap()
+                % Duration::try_seconds(128)
+                    .unwrap()
+                    .num_nanoseconds()
+                    .unwrap()
         );
 
         // Les than 128 seconds ago.
@@ -142,39 +147,40 @@ pub mod test {
                 after: Duration::zero(),
                 dev_addr: DevAddr::from_be_bytes([0, 0, 0, 0]),
                 ping_nb: 1,
-                expected_ping_slot_ts: Duration::minutes(1)
-                    + Duration::seconds(14)
-                    + Duration::milliseconds(300),
+                expected_ping_slot_ts: Duration::try_minutes(1).unwrap()
+                    + Duration::try_seconds(14).unwrap()
+                    + Duration::try_milliseconds(300).unwrap(),
             },
             Test {
-                after: Duration::minutes(2),
+                after: Duration::try_minutes(2).unwrap(),
                 dev_addr: DevAddr::from_be_bytes([0, 0, 0, 0]),
                 ping_nb: 1,
-                expected_ping_slot_ts: Duration::minutes(3)
-                    + Duration::seconds(5)
-                    + Duration::milliseconds(620),
+                expected_ping_slot_ts: Duration::try_minutes(3).unwrap()
+                    + Duration::try_seconds(5).unwrap()
+                    + Duration::try_milliseconds(620).unwrap(),
             },
             Test {
                 after: Duration::zero(),
                 dev_addr: DevAddr::from_be_bytes([0, 0, 0, 0]),
                 ping_nb: 2,
-                expected_ping_slot_ts: Duration::seconds(12) + Duration::milliseconds(860),
+                expected_ping_slot_ts: Duration::try_seconds(12).unwrap()
+                    + Duration::try_milliseconds(860).unwrap(),
             },
             Test {
-                after: Duration::seconds(13),
+                after: Duration::try_seconds(13).unwrap(),
                 dev_addr: DevAddr::from_be_bytes([0, 0, 0, 0]),
                 ping_nb: 2,
-                expected_ping_slot_ts: Duration::minutes(1)
-                    + Duration::seconds(14)
-                    + Duration::milliseconds(300),
+                expected_ping_slot_ts: Duration::try_minutes(1).unwrap()
+                    + Duration::try_seconds(14).unwrap()
+                    + Duration::try_milliseconds(300).unwrap(),
             },
             Test {
-                after: Duration::seconds(124),
+                after: Duration::try_seconds(124).unwrap(),
                 dev_addr: DevAddr::from_be_bytes([0, 0, 0, 0]),
                 ping_nb: 128,
-                expected_ping_slot_ts: Duration::minutes(2)
-                    + Duration::seconds(4)
-                    + Duration::milliseconds(220),
+                expected_ping_slot_ts: Duration::try_minutes(2).unwrap()
+                    + Duration::try_seconds(4).unwrap()
+                    + Duration::try_milliseconds(220).unwrap(),
             },
         ];
 

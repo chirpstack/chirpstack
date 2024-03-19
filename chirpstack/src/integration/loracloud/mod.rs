@@ -104,7 +104,7 @@ impl Integration {
                             };
 
                             // Compensate for gnss scanning time and uplink.
-                            let ts = ts - Duration::seconds(6);
+                            let ts = ts - Duration::try_seconds(6).unwrap();
                             Some(ts.num_seconds() as f64)
                         }
                     },
@@ -454,11 +454,12 @@ impl Integration {
 
         let di = pl.device_info.as_ref().unwrap();
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
-        let ttl = Duration::seconds(
+        let ttl = Duration::try_seconds(
             self.config
                 .modem_geolocation_services
                 .geolocation_buffer_ttl as i64,
-        );
+        )
+        .unwrap_or_default();
 
         let mut buf = vec![pl.rx_info.clone()];
         buf.extend_from_slice(&buffer::get_geoloc_buffer(&dev_eui, ttl).await?);
