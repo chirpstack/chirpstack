@@ -46,7 +46,7 @@ impl Integration {
     pub async fn new(conf: &GcpPubSubConfiguration) -> Result<Integration> {
         trace!("Initializing GCP Pub-Sub integration");
         let service_account = CustomServiceAccount::from_json(&conf.credentials_file)?;
-        let auth_manager = AuthenticationManager::from(service_account);
+        let auth_manager = AuthenticationManager::try_from(service_account)?;
 
         Ok(Integration {
             json: match Encoding::try_from(conf.encoding)

@@ -467,7 +467,10 @@ mod test {
         sleep(Duration::from_millis(100)).await;
 
         let redis_client = redis::Client::open(redis_url).unwrap();
-        let mut redis_conn = redis_client.get_async_connection().await.unwrap();
+        let mut redis_conn = redis_client
+            .get_multiplexed_async_connection()
+            .await
+            .unwrap();
 
         println!("Uplink");
 

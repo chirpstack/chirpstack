@@ -50,7 +50,7 @@ pub async fn decode(
     let out = ctx.with(|ctx| -> Result<pbjson_types::Struct> {
         // We need to export the Buffer class, as eval / eval_with_options
         // does not allow using import statement.
-        let buff: rquickjs::Module = ctx.compile(
+        let buff: rquickjs::Module = ctx.clone().compile(
             "b",
             r#"
             import { Buffer } from "buffer";
@@ -59,11 +59,11 @@ pub async fn decode(
         )?;
         let buff: rquickjs::Function = buff.get("Buffer")?;
 
-        let input = rquickjs::Object::new(ctx)?;
-        input.set("bytes", b.into_js(ctx)?)?;
-        input.set("fPort", f_port.into_js(ctx)?)?;
-        input.set("recvTime", recv_time.into_js(ctx)?)?;
-        input.set("variables", variables.into_js(ctx)?)?;
+        let input = rquickjs::Object::new(ctx.clone())?;
+        input.set("bytes", b.into_js(&ctx)?)?;
+        input.set("fPort", f_port.into_js(&ctx)?)?;
+        input.set("recvTime", recv_time.into_js(&ctx)?)?;
+        input.set("variables", variables.into_js(&ctx)?)?;
 
         let globals = ctx.globals();
         globals.set("chirpstack_input", input)?;
@@ -134,7 +134,7 @@ pub async fn encode(
     ctx.with(|ctx| {
         // We need to export the Buffer class, as eval / eval_with_options
         // does not allow using import statement.
-        let buff: rquickjs::Module = ctx.compile(
+        let buff: rquickjs::Module = ctx.clone().compile(
             "b",
             r#"
             import { Buffer } from "buffer";
@@ -143,10 +143,10 @@ pub async fn encode(
         )?;
         let buff: rquickjs::Function = buff.get("Buffer")?;
 
-        let input = rquickjs::Object::new(ctx)?;
-        input.set("fPort", f_port.into_js(ctx)?)?;
-        input.set("variables", variables.into_js(ctx)?)?;
-        input.set("data", convert::struct_to_rquickjs(ctx, s))?;
+        let input = rquickjs::Object::new(ctx.clone())?;
+        input.set("fPort", f_port.into_js(&ctx)?)?;
+        input.set("variables", variables.into_js(&ctx)?)?;
+        input.set("data", convert::struct_to_rquickjs(&ctx, s))?;
 
         let globals = ctx.globals();
         globals.set("chirpstack_input", input)?;

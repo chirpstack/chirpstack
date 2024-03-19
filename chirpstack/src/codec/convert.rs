@@ -62,10 +62,10 @@ fn _rquickjs_to_struct_val(val: &rquickjs::Value) -> Option<pbjson_types::value:
 }
 
 pub fn struct_to_rquickjs<'js>(
-    ctx: rquickjs::Ctx<'js>,
+    ctx: &rquickjs::Ctx<'js>,
     obj: &prost_types::Struct,
 ) -> rquickjs::Object<'js> {
-    let out = rquickjs::Object::new(ctx).unwrap();
+    let out = rquickjs::Object::new(ctx.clone()).unwrap();
 
     for (k, v) in &obj.fields {
         out.set(k, _struct_to_rquickjs(ctx, v)).unwrap();
@@ -75,27 +75,27 @@ pub fn struct_to_rquickjs<'js>(
 }
 
 fn _struct_to_rquickjs<'js>(
-    ctx: rquickjs::Ctx<'js>,
+    ctx: &rquickjs::Ctx<'js>,
     val: &prost_types::Value,
 ) -> rquickjs::Value<'js> {
     match &val.kind {
-        None => rquickjs::Value::new_null(ctx),
+        None => rquickjs::Value::new_null(ctx.clone()),
         Some(val) => match val {
-            prost_types::value::Kind::NullValue(_) => rquickjs::Value::new_null(ctx),
-            prost_types::value::Kind::NumberValue(v) => rquickjs::Value::new_float(ctx, *v),
+            prost_types::value::Kind::NullValue(_) => rquickjs::Value::new_null(ctx.clone()),
+            prost_types::value::Kind::NumberValue(v) => rquickjs::Value::new_float(ctx.clone(), *v),
             prost_types::value::Kind::StringValue(v) => {
-                rquickjs::Value::from_string(rquickjs::String::from_str(ctx, v).unwrap())
+                rquickjs::Value::from_string(rquickjs::String::from_str(ctx.clone(), v).unwrap())
             }
-            prost_types::value::Kind::BoolValue(v) => rquickjs::Value::new_bool(ctx, *v),
+            prost_types::value::Kind::BoolValue(v) => rquickjs::Value::new_bool(ctx.clone(), *v),
             prost_types::value::Kind::StructValue(v) => {
-                let out = rquickjs::Object::new(ctx).unwrap();
+                let out = rquickjs::Object::new(ctx.clone()).unwrap();
                 for (k, v) in &v.fields {
                     out.set(k, _struct_to_rquickjs(ctx, v)).unwrap();
                 }
                 rquickjs::Value::from_object(out)
             }
             prost_types::value::Kind::ListValue(v) => {
-                let out = rquickjs::Array::new(ctx).unwrap();
+                let out = rquickjs::Array::new(ctx.clone()).unwrap();
                 for (i, v) in v.values.iter().enumerate() {
                     out.set(i, _struct_to_rquickjs(ctx, v)).unwrap();
                 }

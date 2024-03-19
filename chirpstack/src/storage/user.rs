@@ -2,6 +2,7 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
 use diesel_async::RunQueryDsl;
+use email_address::EmailAddress;
 use pbkdf2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Algorithm, Pbkdf2,
@@ -9,7 +10,6 @@ use pbkdf2::{
 use rand_core::OsRng;
 use tracing::info;
 use uuid::Uuid;
-use validator::validate_email;
 
 use super::error::Error;
 use super::get_async_db_conn;
@@ -51,7 +51,7 @@ impl Default for User {
 
 impl User {
     pub fn validate(&self) -> Result<(), Error> {
-        if self.email != "admin" && !validate_email(&self.email) {
+        if self.email != "admin" && !EmailAddress::is_valid(&self.email) {
             return Err(Error::InvalidEmail);
         }
 

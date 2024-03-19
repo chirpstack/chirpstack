@@ -52,16 +52,17 @@ impl Handler for Plugin {
 
         ctx.with::<_, Result<Response>>(|ctx| {
             let m = ctx
+                .clone()
                 .compile("script", self.script.clone())
                 .context("Compile script")?;
             let func: rquickjs::Function = m.get("handle").context("Get handle function")?;
 
-            let device_variables = rquickjs::Object::new(ctx)?;
+            let device_variables = rquickjs::Object::new(ctx.clone())?;
             for (k, v) in &req.device_variables {
                 device_variables.set(k, v)?;
             }
 
-            let input = rquickjs::Object::new(ctx)?;
+            let input = rquickjs::Object::new(ctx.clone())?;
             input.set("regionConfigId", req.region_config_id.clone())?;
             input.set("regionCommonName", req.region_common_name.to_string())?;
             input.set("devEui", req.dev_eui.to_string())?;
@@ -81,7 +82,7 @@ impl Handler for Plugin {
             let mut uplink_history: Vec<rquickjs::Object> = Vec::new();
 
             for uh in &req.uplink_history {
-                let obj = rquickjs::Object::new(ctx)?;
+                let obj = rquickjs::Object::new(ctx.clone())?;
                 obj.set("fCnt", uh.f_cnt)?;
                 obj.set("maxSnr", uh.max_snr)?;
                 obj.set("maxRssi", uh.max_rssi)?;
