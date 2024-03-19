@@ -4,7 +4,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Row, Col, Card } from "antd";
 import { Form, Input, Button } from "antd";
 
-import { SettingsResponse, OpenIdConnectLoginRequest, OAuth2LoginRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import {
+  SettingsResponse,
+  OpenIdConnectLoginRequest,
+  OAuth2LoginRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import SessionStore from "../../stores/SessionStore";
 import InternalStore from "../../stores/InternalStore";
@@ -53,7 +57,6 @@ function OidcLogin({ loginUrl, loginLabel }: OidcLoginProps) {
     </Row>
   );
 }
-
 
 function OAuth2Login({ loginUrl, loginLabel }: OAuth2LoginProps) {
   return (
@@ -134,7 +137,7 @@ function Login() {
   const [oAuth2LoginUrl, setOAuth2LoginUrl] = useState<string>("");
 
   useEffect(() => {
-    SessionStore.logout(true, () => { });
+    SessionStore.logout(true, () => {});
 
     InternalStore.settings((resp: SettingsResponse) => {
       const oidc = resp.getOpenidConnect()!;

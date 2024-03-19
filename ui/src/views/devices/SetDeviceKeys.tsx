@@ -42,7 +42,13 @@ function LW10DeviceKeysForm(props: FormProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      form={form}
+    >
       <AesKeyInput
         label="Application key"
         name="nwkKey"
@@ -74,7 +80,13 @@ function LW11DeviceKeysForm(props: FormProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      form={form}
+    >
       <AesKeyInput
         label="Application key"
         tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
@@ -152,7 +164,7 @@ function SetDeviceKeys(props: IProps) {
   const flushDevNonces = () => {
     let req = new FlushDevNoncesRequest();
     req.setDevEui(props.device.getDevEui());
-    DeviceStore.flushDevNonces(req, () => { });
+    DeviceStore.flushDevNonces(req, () => {});
   };
 
   if (!deviceKeysRequested) {

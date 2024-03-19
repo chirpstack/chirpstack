@@ -71,7 +71,7 @@ function DeviceLayout(props: IProps) {
         setDeviceProfile(resp.getDeviceProfile());
       });
     });
-  }
+  };
 
   const deleteDevice = () => {
     let req = new DeleteDeviceRequest();

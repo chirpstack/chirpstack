@@ -34,7 +34,12 @@ function TenantForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+    >
       <Tabs>
         <Tabs.TabPane tab="General" key="1">
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
@@ -123,17 +128,20 @@ function TenantForm(props: IProps) {
                         <Input placeholder="Value" disabled={props.disabled} />
                       </Form.Item>
                     </Col>
-                    {!props.disabled &&
+                    {!props.disabled && (
                       <Col span={2}>
                         <MinusCircleOutlined onClick={() => remove(name)} />
-                      </Col>}
+                      </Col>
+                    )}
                   </Row>
                 ))}
-                {!props.disabled && <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                    Add tag
-                  </Button>
-                </Form.Item>}
+                {!props.disabled && (
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                      Add tag
+                    </Button>
+                  </Form.Item>
+                )}
               </>
             )}
           </Form.List>

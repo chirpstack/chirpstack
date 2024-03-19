@@ -87,7 +87,12 @@ function LoRaCloudIntegrationForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+    >
       <Tabs>
         <Tabs.TabPane tab="Modem & Geolocation Services" key="1">
           <Form.Item

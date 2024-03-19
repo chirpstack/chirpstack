@@ -38,7 +38,12 @@ function TenantUserForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+    >
       <Form.Item
         label="Email (of existing user)"
         tooltip="An user without additional permissions will be able to see all resources under this tenant and will be able to send and receive device payloads."

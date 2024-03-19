@@ -175,7 +175,13 @@ function DeviceQueue(props: IProps) {
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Card title="Enqueue">
-        <Form layout="horizontal" onFinish={onEnqueue} onFinishFailed={onFinishFailed} form={form} initialValues={{ fPort: 1 }}>
+        <Form
+          layout="horizontal"
+          onFinish={onEnqueue}
+          onFinishFailed={onFinishFailed}
+          form={form}
+          initialValues={{ fPort: 1 }}
+        >
           <Row>
             <Space direction="horizontal" style={{ width: "100%" }} size="large">
               <Form.Item name="confirmed" label="Confirmed" valuePropName="checked">
@@ -192,13 +198,15 @@ function DeviceQueue(props: IProps) {
               >
                 <Switch onChange={setIsEncrypted} />
               </Form.Item>
-              {isEncrypted && (<Form.Item
-                name="fCntDown"
-                label="Downlink frame-counter used for encryption"
-                rules={[{ required: true, message: "Please enter a downlink frame-counter!" }]}
-              >
-                <InputNumber min={0} />
-              </Form.Item>)}
+              {isEncrypted && (
+                <Form.Item
+                  name="fCntDown"
+                  label="Downlink frame-counter used for encryption"
+                  rules={[{ required: true, message: "Please enter a downlink frame-counter!" }]}
+                >
+                  <InputNumber min={0} />
+                </Form.Item>
+              )}
             </Space>
           </Row>
           <Tabs defaultActiveKey="1">

@@ -92,23 +92,23 @@ function Header({ user }: { user: User }) {
     label: any;
     options: any[];
   }[] = [
-      {
-        label: renderTitle("Tenants"),
-        options: [],
-      },
-      {
-        label: renderTitle("Gateways"),
-        options: [],
-      },
-      {
-        label: renderTitle("Applications"),
-        options: [],
-      },
-      {
-        label: renderTitle("Devices"),
-        options: [],
-      },
-    ];
+    {
+      label: renderTitle("Tenants"),
+      options: [],
+    },
+    {
+      label: renderTitle("Gateways"),
+      options: [],
+    },
+    {
+      label: renderTitle("Applications"),
+      options: [],
+    },
+    {
+      label: renderTitle("Devices"),
+      options: [],
+    },
+  ];
 
   if (searchResult !== undefined) {
     for (const res of searchResult.getResultList()) {

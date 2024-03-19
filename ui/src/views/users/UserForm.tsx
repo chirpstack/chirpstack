@@ -29,7 +29,12 @@ function UserForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+    >
       <Form.Item label="Email" name="email" rules={[{ required: true, message: "Please enter an email address!" }]}>
         <Input />
       </Form.Item>

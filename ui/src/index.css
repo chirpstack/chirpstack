@@ -22,7 +22,7 @@
   float: right;
 }
 
-.layout-header .actions>div {
+.layout-header .actions > div {
   display: inline;
   padding-left: 24px;
 }
@@ -46,7 +46,7 @@
   margin-top: 65px;
 }
 
-.layout-content .content-header>* {
+.layout-content .content-header > * {
   float: right;
 }
 
@@ -74,11 +74,11 @@ pre {
   display: block;
 }
 
-.chart-doughnut>canvas {
+.chart-doughnut > canvas {
   width: 100vh;
 }
 
-.dashboard-chart>.ant-card-body {
+.dashboard-chart > .ant-card-body {
   height: 300px;
 }
 

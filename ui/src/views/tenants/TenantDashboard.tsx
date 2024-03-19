@@ -124,7 +124,11 @@ function GatewaysActiveInactive(props: GatewayProps) {
     maintainAspectRatio: false,
   };
 
-  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
+  return (
+    <div className="chart-doughnut">
+      <Doughnut data={data} options={options} />
+    </div>
+  );
 }
 
 interface DeviceProps {
@@ -161,7 +165,11 @@ function DevicesActiveInactive(props: DeviceProps) {
     maintainAspectRatio: false,
   };
 
-  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
+  return (
+    <div className="chart-doughnut">
+      <Doughnut data={data} options={options} />
+    </div>
+  );
 }
 
 function DevicesDataRates(props: DeviceProps) {
@@ -221,7 +229,11 @@ function DevicesDataRates(props: DeviceProps) {
     maintainAspectRatio: false,
   };
 
-  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
+  return (
+    <div className="chart-doughnut">
+      <Doughnut data={data} options={options} />
+    </div>
+  );
 }
 
 function TenantDashboard({ tenant }: { tenant: Tenant }) {

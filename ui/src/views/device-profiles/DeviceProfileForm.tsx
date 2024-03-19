@@ -404,7 +404,13 @@ function DeviceProfileForm(props: IProps) {
   );
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed} form={form}>
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      form={form}
+    >
       <TemplateModal visible={templateModalVisible} onOk={onTemplateModalOk} onCancel={onTemplateModalCancel} />
       <Tabs tabBarExtraContent={operations} activeKey={tabActive} onChange={onTabChange}>
         <Tabs.TabPane tab="General" key="1" forceRender>
@@ -1136,11 +1142,7 @@ function DeviceProfileForm(props: IProps) {
                       </Form.Item>
                     </Col>
                     <Col span={10}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 1, "name"]}
-                        fieldKey={[name, 1, "name"]}
-                      >
+                      <Form.Item {...restField} name={[name, 1, "name"]} fieldKey={[name, 1, "name"]}>
                         <Input placeholder="Measurement name" disabled={props.disabled} />
                       </Form.Item>
                     </Col>

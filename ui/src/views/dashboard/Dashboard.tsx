@@ -119,7 +119,11 @@ function DevicesActiveInactive({ summary }: { summary?: GetDevicesSummaryRespons
     maintainAspectRatio: false,
   };
 
-  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
+  return (
+    <div className="chart-doughnut">
+      <Doughnut data={data} options={options} />
+    </div>
+  );
 }
 
 function GatewaysActiveInactive({ summary }: { summary?: GetGatewaysSummaryResponse }) {
@@ -150,7 +154,11 @@ function GatewaysActiveInactive({ summary }: { summary?: GetGatewaysSummaryRespo
     maintainAspectRatio: false,
   };
 
-  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
+  return (
+    <div className="chart-doughnut">
+      <Doughnut data={data} options={options} />
+    </div>
+  );
 }
 
 function DevicesDataRates({ summary }: { summary?: GetDevicesSummaryResponse }) {
@@ -210,7 +218,11 @@ function DevicesDataRates({ summary }: { summary?: GetDevicesSummaryResponse }) 
     maintainAspectRatio: false,
   };
 
-  return <div className="chart-doughnut"><Doughnut data={data} options={options} /></div>;
+  return (
+    <div className="chart-doughnut">
+      <Doughnut data={data} options={options} />
+    </div>
+  );
 }
 
 function Dashboard() {

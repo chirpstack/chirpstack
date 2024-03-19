@@ -24,7 +24,7 @@ class SessionStore extends EventEmitter {
     this.client = new InternalServiceClient("");
     this.tenants = [];
 
-    this.fetchProfile(() => { });
+    this.fetchProfile(() => {});
   }
 
   login = (email: string, password: string, callbackFunc: any) => {

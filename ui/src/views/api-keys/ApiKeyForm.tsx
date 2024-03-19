@@ -17,7 +17,12 @@ function ApiKeyForm(props: IProps) {
   };
 
   return (
-    <Form layout="vertical" initialValues={props.initialValues.toObject()} onFinish={onFinish} onFinishFailed={onFinishFailed}>
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+    >
       <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
         <Input />
       </Form.Item>
