@@ -99,6 +99,12 @@ function DevAddrInput(props: IProps) {
             duration: 3,
           });
         });
+    } else {
+      notification.error({
+        message: "Error",
+        description: "Clipboard functionality is not available.",
+        duration: 3,
+      });
     }
   };
 
