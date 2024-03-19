@@ -38,6 +38,7 @@ function CreateDeviceProfile(props: IProps) {
   // Input is an object with the following fields:
   // - bytes = Byte array containing the uplink payload, e.g. [255, 230, 255, 0]
   // - fPort = Uplink fPort.
+  // - recvTime = Uplink message timestamp as Date object.
   // - variables = Object containing the configured device variables.
   //
   // Output must be an object with the following fields:
