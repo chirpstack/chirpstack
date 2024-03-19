@@ -86,9 +86,11 @@ impl Stats {
             }
         }
 
-        gateway::partial_update(self.gateway_id, &gw_cs)
-            .await
-            .context("Update gateway state")?;
+        self.gateway = Some(
+            gateway::partial_update(self.gateway_id, &gw_cs)
+                .await
+                .context("Update gateway state")?,
+        );
 
         Ok(())
     }
