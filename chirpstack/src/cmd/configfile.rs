@@ -122,8 +122,11 @@ pub fn run() {
   # will generate client certificates which can be used by the gateway for
   # authentication and authorization. The Common Name of the certificate will
   # be set to the Gateway ID.
-  ca_key="{{ gateway.ca_key }}"
+  #
+  # The ca_key is expected to be in PKCS#8 format (you can use openssl to
+  # convert to PKCS#8).
   ca_cert="{{ gateway.ca_cert }}"
+  ca_key="{{ gateway.ca_key }}"
 
   # Certificate lifetime.
   #
@@ -412,7 +415,7 @@ pub fn run() {
     # TLS certificate file (optional)
     tls_cert="{{ integration.mqtt.tls_cert }}"
 
-    # TLS key file (optional)
+    # TLS key file (PKCS#8) (optional)
     tls_key="{{ integration.mqtt.tls_key }}"
 
 
@@ -425,8 +428,11 @@ pub fn run() {
       # will generate client certificates which can be used by the MQTT clients for
       # authentication and authorization. The Common Name of the certificate will
       # be set to the ID of the application.
-      ca_key="{{ integration.mqtt.client.ca_key }}"
+      #
+      # The ca_key is expected to be in PKCS#8 format (you can use openssl to
+      # convert to PKCS#8).
       ca_cert="{{ integration.mqtt.client.ca_cert }}"
+      ca_key="{{ integration.mqtt.client.ca_key }}"
 
       # Certificate lifetime.
       #
@@ -769,7 +775,7 @@ pub fn run() {
   # TLS certificate (path).
   tls_cert="{{ backend_interfaces.tls_cert }}"
 
-  # TLS key (path).
+  # TLS key (PKCS#8) (path).
   tls_key="{{ backend_interfaces.tls_key }}"
 
 
@@ -814,7 +820,7 @@ pub fn run() {
   #  # TLS certificate (path).
   #  tls_cert=""
   #
-  #  # TLS key (path).
+  #  # TLS key (PKCS#8) (path).
   #  tls_key=""
   #
   #  # Authorization header.
