@@ -963,4 +963,17 @@ impl InternalService for Internal {
 
         Ok(Response::new(out))
     }
+
+    async fn get_version(
+        &self,
+        request: Request<()>,
+    ) -> Result<Response<api::GetVersionResponse>, Status> {
+        self.validator
+            .validate(request.extensions(), validator::ValidateIsAdmin::new())
+            .await?;
+
+        Ok(Response::new(api::GetVersionResponse {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+        }))
+    }
 }

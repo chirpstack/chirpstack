@@ -36,10 +36,16 @@
   left: 0;
 }
 
-.layout-menu .organiation-select {
+.layout-menu .tenant-select {
   margin-left: 24px;
   margin-bottom: 12px;
   width: 252px;
+}
+
+.layout-menu .version {
+  display: block;
+  margin-left: 24px;
+  margin-top: 12px;
 }
 
 .layout-content {

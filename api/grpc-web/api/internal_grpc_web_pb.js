@@ -1043,5 +1043,66 @@ proto.api.InternalServicePromiseClient.prototype.getRegion =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.google.protobuf.Empty,
+ *   !proto.api.GetVersionResponse>}
+ */
+const methodDescriptor_InternalService_GetVersion = new grpc.web.MethodDescriptor(
+  '/api.InternalService/GetVersion',
+  grpc.web.MethodType.UNARY,
+  google_protobuf_empty_pb.Empty,
+  proto.api.GetVersionResponse,
+  /**
+   * @param {!proto.google.protobuf.Empty} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.api.GetVersionResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.api.GetVersionResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.api.GetVersionResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.api.InternalServiceClient.prototype.getVersion =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/api.InternalService/GetVersion',
+      request,
+      metadata || {},
+      methodDescriptor_InternalService_GetVersion,
+      callback);
+};
+
+
+/**
+ * @param {!proto.google.protobuf.Empty} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.api.GetVersionResponse>}
+ *     Promise that resolves to the response
+ */
+proto.api.InternalServicePromiseClient.prototype.getVersion =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/api.InternalService/GetVersion',
+      request,
+      metadata || {},
+      methodDescriptor_InternalService_GetVersion);
+};
+
+
 module.exports = proto.api;
 

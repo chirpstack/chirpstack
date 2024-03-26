@@ -929,3 +929,23 @@ export namespace RegionChannel {
   }
 }
 
+export class GetVersionResponse extends jspb.Message {
+  getVersion(): string;
+  setVersion(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetVersionResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetVersionResponse): GetVersionResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: GetVersionResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetVersionResponse;
+  static deserializeBinaryFromReader(message: GetVersionResponse, reader: jspb.BinaryReader): GetVersionResponse;
+}
+
+export namespace GetVersionResponse {
+  export type AsObject = {
+    version: string,
+  }
+}
+

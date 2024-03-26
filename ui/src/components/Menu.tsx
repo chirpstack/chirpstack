@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { Menu, MenuProps } from "antd";
+import { Menu, MenuProps, Typography } from "antd";
 import {
   CloudOutlined,
   HomeOutlined,
@@ -20,13 +20,18 @@ import {
   ListTenantsResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
+import { GetVersionResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+
 import Autocomplete, { OptionCallbackFunc, OptionsCallbackFunc } from "../components/Autocomplete";
+import Admin from "../components/Admin";
 import TenantStore from "../stores/TenantStore";
 import SessionStore from "../stores/SessionStore";
+import InternalStore from "../stores/InternalStore";
 
 function SideMenu() {
   const [tenantId, setTenantId] = useState<string>("");
   const [selectedKey, setSelectedKey] = useState<string>("");
+  const [version, setVersion] = useState<string>("");
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -136,6 +141,12 @@ function SideMenu() {
     setTenant();
     parseLocation();
 
+    if (SessionStore.isAdmin()) {
+      InternalStore.getVersion((resp: GetVersionResponse) => {
+        setVersion(resp.getVersion());
+      });
+    }
+
     return () => {
       SessionStore.removeListener("tenant.change", setTenant);
     };
@@ -244,7 +255,7 @@ function SideMenu() {
     <div>
       <Autocomplete
         placeholder="Select tenant"
-        className="organiation-select"
+        className="tenant-select"
         getOption={getTenantOption}
         getOptions={getTenantOptions}
         onSelect={onTenantSelect}
@@ -257,6 +268,11 @@ function SideMenu() {
         expandIcon={<div></div>}
         items={items}
       />
+      <Admin>
+        <Typography.Text type="secondary" className="version">
+          Version: v{version}
+        </Typography.Text>
+      </Admin>
     </div>
   );
 }

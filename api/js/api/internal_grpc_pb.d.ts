@@ -24,6 +24,7 @@ interface IInternalServiceService extends grpc.ServiceDefinition<grpc.UntypedSer
   streamDeviceEvents: grpc.MethodDefinition<api_internal_pb.StreamDeviceEventsRequest, api_internal_pb.LogItem>;
   listRegions: grpc.MethodDefinition<google_protobuf_empty_pb.Empty, api_internal_pb.ListRegionsResponse>;
   getRegion: grpc.MethodDefinition<api_internal_pb.GetRegionRequest, api_internal_pb.GetRegionResponse>;
+  getVersion: grpc.MethodDefinition<google_protobuf_empty_pb.Empty, api_internal_pb.GetVersionResponse>;
 }
 
 export const InternalServiceService: IInternalServiceService;
@@ -45,6 +46,7 @@ export interface IInternalServiceServer extends grpc.UntypedServiceImplementatio
   streamDeviceEvents: grpc.handleServerStreamingCall<api_internal_pb.StreamDeviceEventsRequest, api_internal_pb.LogItem>;
   listRegions: grpc.handleUnaryCall<google_protobuf_empty_pb.Empty, api_internal_pb.ListRegionsResponse>;
   getRegion: grpc.handleUnaryCall<api_internal_pb.GetRegionRequest, api_internal_pb.GetRegionResponse>;
+  getVersion: grpc.handleUnaryCall<google_protobuf_empty_pb.Empty, api_internal_pb.GetVersionResponse>;
 }
 
 export class InternalServiceClient extends grpc.Client {
@@ -94,4 +96,7 @@ export class InternalServiceClient extends grpc.Client {
   getRegion(argument: api_internal_pb.GetRegionRequest, callback: grpc.requestCallback<api_internal_pb.GetRegionResponse>): grpc.ClientUnaryCall;
   getRegion(argument: api_internal_pb.GetRegionRequest, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.GetRegionResponse>): grpc.ClientUnaryCall;
   getRegion(argument: api_internal_pb.GetRegionRequest, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.GetRegionResponse>): grpc.ClientUnaryCall;
+  getVersion(argument: google_protobuf_empty_pb.Empty, callback: grpc.requestCallback<api_internal_pb.GetVersionResponse>): grpc.ClientUnaryCall;
+  getVersion(argument: google_protobuf_empty_pb.Empty, metadataOrOptions: grpc.Metadata | grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.GetVersionResponse>): grpc.ClientUnaryCall;
+  getVersion(argument: google_protobuf_empty_pb.Empty, metadata: grpc.Metadata | null, options: grpc.CallOptions | null, callback: grpc.requestCallback<api_internal_pb.GetVersionResponse>): grpc.ClientUnaryCall;
 }

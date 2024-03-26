@@ -115,6 +115,13 @@ export class InternalServiceClient {
                response: api_internal_pb.GetRegionResponse) => void
   ): grpcWeb.ClientReadableStream<api_internal_pb.GetRegionResponse>;
 
+  getVersion(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: api_internal_pb.GetVersionResponse) => void
+  ): grpcWeb.ClientReadableStream<api_internal_pb.GetVersionResponse>;
+
 }
 
 export class InternalServicePromiseClient {
@@ -201,6 +208,11 @@ export class InternalServicePromiseClient {
     request: api_internal_pb.GetRegionRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<api_internal_pb.GetRegionResponse>;
+
+  getVersion(
+    request: google_protobuf_empty_pb.Empty,
+    metadata?: grpcWeb.Metadata
+  ): Promise<api_internal_pb.GetVersionResponse>;
 
 }
 

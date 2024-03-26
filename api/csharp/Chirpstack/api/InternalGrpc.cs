@@ -102,6 +102,8 @@ namespace Chirpstack.Api {
     static readonly grpc::Marshaller<global::Chirpstack.Api.GetRegionRequest> __Marshaller_api_GetRegionRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetRegionRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::Chirpstack.Api.GetRegionResponse> __Marshaller_api_GetRegionResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetRegionResponse.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::Chirpstack.Api.GetVersionResponse> __Marshaller_api_GetVersionResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Chirpstack.Api.GetVersionResponse.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Method<global::Chirpstack.Api.LoginRequest, global::Chirpstack.Api.LoginResponse> __Method_Login = new grpc::Method<global::Chirpstack.Api.LoginRequest, global::Chirpstack.Api.LoginResponse>(
@@ -230,6 +232,14 @@ namespace Chirpstack.Api {
         "GetRegion",
         __Marshaller_api_GetRegionRequest,
         __Marshaller_api_GetRegionResponse);
+
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::Chirpstack.Api.GetVersionResponse> __Method_GetVersion = new grpc::Method<global::Google.Protobuf.WellKnownTypes.Empty, global::Chirpstack.Api.GetVersionResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetVersion",
+        __Marshaller_google_protobuf_Empty,
+        __Marshaller_api_GetVersionResponse);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -432,6 +442,18 @@ namespace Chirpstack.Api {
       /// <returns>The response to send back to the client (wrapped by a task).</returns>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
       public virtual global::System.Threading.Tasks.Task<global::Chirpstack.Api.GetRegionResponse> GetRegion(global::Chirpstack.Api.GetRegionRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
+      /// <summary>
+      /// GetVersion returns the ChirpStack version.
+      /// </summary>
+      /// <param name="request">The request received from the client.</param>
+      /// <param name="context">The context of the server-side call handler being invoked.</param>
+      /// <returns>The response to send back to the client (wrapped by a task).</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::System.Threading.Tasks.Task<global::Chirpstack.Api.GetVersionResponse> GetVersion(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -1161,6 +1183,54 @@ namespace Chirpstack.Api {
       {
         return CallInvoker.AsyncUnaryCall(__Method_GetRegion, null, options, request);
       }
+      /// <summary>
+      /// GetVersion returns the ChirpStack version.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::Chirpstack.Api.GetVersionResponse GetVersion(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetVersion(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// GetVersion returns the ChirpStack version.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The response received from the server.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::Chirpstack.Api.GetVersionResponse GetVersion(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
+      {
+        return CallInvoker.BlockingUnaryCall(__Method_GetVersion, null, options, request);
+      }
+      /// <summary>
+      /// GetVersion returns the ChirpStack version.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="headers">The initial metadata to send with the call. This parameter is optional.</param>
+      /// <param name="deadline">An optional deadline for the call. The call will be cancelled if deadline is hit.</param>
+      /// <param name="cancellationToken">An optional token for canceling the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::Chirpstack.Api.GetVersionResponse> GetVersionAsync(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::Metadata headers = null, global::System.DateTime? deadline = null, global::System.Threading.CancellationToken cancellationToken = default(global::System.Threading.CancellationToken))
+      {
+        return GetVersionAsync(request, new grpc::CallOptions(headers, deadline, cancellationToken));
+      }
+      /// <summary>
+      /// GetVersion returns the ChirpStack version.
+      /// </summary>
+      /// <param name="request">The request to send to the server.</param>
+      /// <param name="options">The options for the call.</param>
+      /// <returns>The call object.</returns>
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual grpc::AsyncUnaryCall<global::Chirpstack.Api.GetVersionResponse> GetVersionAsync(global::Google.Protobuf.WellKnownTypes.Empty request, grpc::CallOptions options)
+      {
+        return CallInvoker.AsyncUnaryCall(__Method_GetVersion, null, options, request);
+      }
       /// <summary>Creates a new instance of client from given <c>ClientBaseConfiguration</c>.</summary>
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
       protected override InternalServiceClient NewInstance(ClientBaseConfiguration configuration)
@@ -1190,7 +1260,8 @@ namespace Chirpstack.Api {
           .AddMethod(__Method_StreamDeviceFrames, serviceImpl.StreamDeviceFrames)
           .AddMethod(__Method_StreamDeviceEvents, serviceImpl.StreamDeviceEvents)
           .AddMethod(__Method_ListRegions, serviceImpl.ListRegions)
-          .AddMethod(__Method_GetRegion, serviceImpl.GetRegion).Build();
+          .AddMethod(__Method_GetRegion, serviceImpl.GetRegion)
+          .AddMethod(__Method_GetVersion, serviceImpl.GetVersion).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the service binding logic.
@@ -1216,6 +1287,7 @@ namespace Chirpstack.Api {
       serviceBinder.AddMethod(__Method_StreamDeviceEvents, serviceImpl == null ? null : new grpc::ServerStreamingServerMethod<global::Chirpstack.Api.StreamDeviceEventsRequest, global::Chirpstack.Api.LogItem>(serviceImpl.StreamDeviceEvents));
       serviceBinder.AddMethod(__Method_ListRegions, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::Chirpstack.Api.ListRegionsResponse>(serviceImpl.ListRegions));
       serviceBinder.AddMethod(__Method_GetRegion, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Chirpstack.Api.GetRegionRequest, global::Chirpstack.Api.GetRegionResponse>(serviceImpl.GetRegion));
+      serviceBinder.AddMethod(__Method_GetVersion, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Google.Protobuf.WellKnownTypes.Empty, global::Chirpstack.Api.GetVersionResponse>(serviceImpl.GetVersion));
     }
 
   }

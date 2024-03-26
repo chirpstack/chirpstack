@@ -66,6 +66,9 @@ service InternalService {
 
   // GetRegion returns the region details for the given region.
   rpc GetRegion(GetRegionRequest) returns (GetRegionResponse) {}
+
+  // GetVersion returns the ChirpStack version.
+  rpc GetVersion(google.protobuf.Empty) returns (GetVersionResponse) {}
 }
 
 message ApiKey {
@@ -413,4 +416,9 @@ message RegionChannel {
 
   // Max DR.
   uint32 dr_max = 3;
+}
+
+message GetVersionResponse {
+  // version
+  string version = 1;
 }

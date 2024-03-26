@@ -107,6 +107,17 @@ function deserialize_api_GetRegionResponse(buffer_arg) {
   return api_internal_pb.GetRegionResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_api_GetVersionResponse(arg) {
+  if (!(arg instanceof api_internal_pb.GetVersionResponse)) {
+    throw new Error('Expected argument of type api.GetVersionResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_api_GetVersionResponse(buffer_arg) {
+  return api_internal_pb.GetVersionResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_api_GlobalSearchRequest(arg) {
   if (!(arg instanceof api_internal_pb.GlobalSearchRequest)) {
     throw new Error('Expected argument of type api.GlobalSearchRequest');
@@ -499,6 +510,18 @@ getRegion: {
     requestDeserialize: deserialize_api_GetRegionRequest,
     responseSerialize: serialize_api_GetRegionResponse,
     responseDeserialize: deserialize_api_GetRegionResponse,
+  },
+  // GetVersion returns the ChirpStack version.
+getVersion: {
+    path: '/api.InternalService/GetVersion',
+    requestStream: false,
+    responseStream: false,
+    requestType: google_protobuf_empty_pb.Empty,
+    responseType: api_internal_pb.GetVersionResponse,
+    requestSerialize: serialize_google_protobuf_Empty,
+    requestDeserialize: deserialize_google_protobuf_Empty,
+    responseSerialize: serialize_api_GetVersionResponse,
+    responseDeserialize: deserialize_api_GetVersionResponse,
   },
 };
 

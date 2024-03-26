@@ -96,6 +96,11 @@ class InternalServiceStub(object):
                 request_serializer=chirpstack__api_dot_api_dot_internal__pb2.GetRegionRequest.SerializeToString,
                 response_deserializer=chirpstack__api_dot_api_dot_internal__pb2.GetRegionResponse.FromString,
                 )
+        self.GetVersion = channel.unary_unary(
+                '/api.InternalService/GetVersion',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=chirpstack__api_dot_api_dot_internal__pb2.GetVersionResponse.FromString,
+                )
 
 
 class InternalServiceServicer(object):
@@ -214,6 +219,13 @@ class InternalServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetVersion(self, request, context):
+        """GetVersion returns the ChirpStack version.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_InternalServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -296,6 +308,11 @@ def add_InternalServiceServicer_to_server(servicer, server):
                     servicer.GetRegion,
                     request_deserializer=chirpstack__api_dot_api_dot_internal__pb2.GetRegionRequest.FromString,
                     response_serializer=chirpstack__api_dot_api_dot_internal__pb2.GetRegionResponse.SerializeToString,
+            ),
+            'GetVersion': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetVersion,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=chirpstack__api_dot_api_dot_internal__pb2.GetVersionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -577,5 +594,22 @@ class InternalService(object):
         return grpc.experimental.unary_unary(request, target, '/api.InternalService/GetRegion',
             chirpstack__api_dot_api_dot_internal__pb2.GetRegionRequest.SerializeToString,
             chirpstack__api_dot_api_dot_internal__pb2.GetRegionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetVersion(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/api.InternalService/GetVersion',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            chirpstack__api_dot_api_dot_internal__pb2.GetVersionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

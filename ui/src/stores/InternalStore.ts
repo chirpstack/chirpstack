@@ -24,6 +24,7 @@ import {
   ListRegionsResponse,
   GetRegionRequest,
   GetRegionResponse,
+  GetVersionResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import SessionStore from "./SessionStore";
@@ -216,6 +217,17 @@ class InternalStore extends EventEmitter {
 
   getRegion = (req: GetRegionRequest, callbackFunc: (resp: GetRegionResponse) => void) => {
     this.client.getRegion(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  getVersion = (callbackFunc: (resp: GetVersionResponse) => void) => {
+    this.client.getVersion(new google_protobuf_empty_pb.Empty(), SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;

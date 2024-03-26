@@ -340,3 +340,9 @@ class RegionChannel(_message.Message):
     dr_min: int
     dr_max: int
     def __init__(self, frequency: _Optional[int] = ..., dr_min: _Optional[int] = ..., dr_max: _Optional[int] = ...) -> None: ...
+
+class GetVersionResponse(_message.Message):
+    __slots__ = ("version",)
+    VERSION_FIELD_NUMBER: _ClassVar[int]
+    version: str
+    def __init__(self, version: _Optional[str] = ...) -> None: ...
