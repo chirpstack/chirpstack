@@ -25,7 +25,7 @@ DELAY: MulticastGroupSchedulingType
 GPS_TIME: MulticastGroupSchedulingType
 
 class MulticastGroup(_message.Message):
-    __slots__ = ("id", "name", "application_id", "region", "mc_addr", "mc_nwk_s_key", "mc_app_s_key", "f_cnt", "group_type", "dr", "frequency", "class_b_ping_slot_period", "class_c_scheduling_type")
+    __slots__ = ("id", "name", "application_id", "region", "mc_addr", "mc_nwk_s_key", "mc_app_s_key", "f_cnt", "group_type", "dr", "frequency", "class_b_ping_slot_period", "class_b_ping_slot_nb_k", "class_c_scheduling_type")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     APPLICATION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -38,6 +38,7 @@ class MulticastGroup(_message.Message):
     DR_FIELD_NUMBER: _ClassVar[int]
     FREQUENCY_FIELD_NUMBER: _ClassVar[int]
     CLASS_B_PING_SLOT_PERIOD_FIELD_NUMBER: _ClassVar[int]
+    CLASS_B_PING_SLOT_NB_K_FIELD_NUMBER: _ClassVar[int]
     CLASS_C_SCHEDULING_TYPE_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
@@ -51,8 +52,9 @@ class MulticastGroup(_message.Message):
     dr: int
     frequency: int
     class_b_ping_slot_period: int
+    class_b_ping_slot_nb_k: int
     class_c_scheduling_type: MulticastGroupSchedulingType
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., application_id: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mc_addr: _Optional[str] = ..., mc_nwk_s_key: _Optional[str] = ..., mc_app_s_key: _Optional[str] = ..., f_cnt: _Optional[int] = ..., group_type: _Optional[_Union[MulticastGroupType, str]] = ..., dr: _Optional[int] = ..., frequency: _Optional[int] = ..., class_b_ping_slot_period: _Optional[int] = ..., class_c_scheduling_type: _Optional[_Union[MulticastGroupSchedulingType, str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., application_id: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mc_addr: _Optional[str] = ..., mc_nwk_s_key: _Optional[str] = ..., mc_app_s_key: _Optional[str] = ..., f_cnt: _Optional[int] = ..., group_type: _Optional[_Union[MulticastGroupType, str]] = ..., dr: _Optional[int] = ..., frequency: _Optional[int] = ..., class_b_ping_slot_period: _Optional[int] = ..., class_b_ping_slot_nb_k: _Optional[int] = ..., class_c_scheduling_type: _Optional[_Union[MulticastGroupSchedulingType, str]] = ...) -> None: ...
 
 class MulticastGroupListItem(_message.Message):
     __slots__ = ("id", "created_at", "updated_at", "name", "region", "group_type")

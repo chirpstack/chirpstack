@@ -506,6 +506,7 @@ proto.api.MulticastGroup.toObject = function(includeInstance, msg) {
     dr: jspb.Message.getFieldWithDefault(msg, 10, 0),
     frequency: jspb.Message.getFieldWithDefault(msg, 11, 0),
     classBPingSlotPeriod: jspb.Message.getFieldWithDefault(msg, 12, 0),
+    classBPingSlotNbK: jspb.Message.getFieldWithDefault(msg, 14, 0),
     classCSchedulingType: jspb.Message.getFieldWithDefault(msg, 13, 0)
   };
 
@@ -590,6 +591,10 @@ proto.api.MulticastGroup.deserializeBinaryFromReader = function(msg, reader) {
     case 12:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setClassBPingSlotPeriod(value);
+      break;
+    case 14:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setClassBPingSlotNbK(value);
       break;
     case 13:
       var value = /** @type {!proto.api.MulticastGroupSchedulingType} */ (reader.readEnum());
@@ -705,6 +710,13 @@ proto.api.MulticastGroup.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeUint32(
       12,
+      f
+    );
+  }
+  f = message.getClassBPingSlotNbK();
+  if (f !== 0) {
+    writer.writeUint32(
+      14,
       f
     );
   }
@@ -931,6 +943,24 @@ proto.api.MulticastGroup.prototype.getClassBPingSlotPeriod = function() {
  */
 proto.api.MulticastGroup.prototype.setClassBPingSlotPeriod = function(value) {
   return jspb.Message.setProto3IntField(this, 12, value);
+};
+
+
+/**
+ * optional uint32 class_b_ping_slot_nb_k = 14;
+ * @return {number}
+ */
+proto.api.MulticastGroup.prototype.getClassBPingSlotNbK = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.api.MulticastGroup} returns this
+ */
+proto.api.MulticastGroup.prototype.setClassBPingSlotNbK = function(value) {
+  return jspb.Message.setProto3IntField(this, 14, value);
 };
 
 

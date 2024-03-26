@@ -44,6 +44,9 @@ export class MulticastGroup extends jspb.Message {
   getClassBPingSlotPeriod(): number;
   setClassBPingSlotPeriod(value: number): void;
 
+  getClassBPingSlotNbK(): number;
+  setClassBPingSlotNbK(value: number): void;
+
   getClassCSchedulingType(): MulticastGroupSchedulingTypeMap[keyof MulticastGroupSchedulingTypeMap];
   setClassCSchedulingType(value: MulticastGroupSchedulingTypeMap[keyof MulticastGroupSchedulingTypeMap]): void;
 
@@ -71,6 +74,7 @@ export namespace MulticastGroup {
     dr: number,
     frequency: number,
     classBPingSlotPeriod: number,
+    classBPingSlotNbK: number,
     classCSchedulingType: MulticastGroupSchedulingTypeMap[keyof MulticastGroupSchedulingTypeMap],
   }
 }

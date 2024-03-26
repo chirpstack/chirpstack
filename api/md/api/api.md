@@ -3630,7 +3630,10 @@ GatewayService is the service providing API methods for managing gateways.
 | group_type | [MulticastGroupType](#api-MulticastGroupType) |  | Multicast group type. |
 | dr | [uint32](#uint32) |  | Data-rate. |
 | frequency | [uint32](#uint32) |  | Frequency (Hz). |
-| class_b_ping_slot_period | [uint32](#uint32) |  | Ping-slot period (only for Class-B). |
+| class_b_ping_slot_period | [uint32](#uint32) |  | Ping-slot period (only for Class-B). Deprecated: use class_b_ping_slot_nb_k. |
+| class_b_ping_slot_nb_k | [uint32](#uint32) |  | Class-B ping-slots per beacon period (only for Class-B). Valid options are: 0 - 7;
+
+The actual number of ping-slots per beacon period equals to 2^k. |
 | class_c_scheduling_type | [MulticastGroupSchedulingType](#api-MulticastGroupSchedulingType) |  | Scheduling type (only for Class-C). |
 
 
