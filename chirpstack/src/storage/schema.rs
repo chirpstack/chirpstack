@@ -243,7 +243,7 @@ diesel::table! {
         group_type -> Bpchar,
         dr -> Int2,
         frequency -> Int8,
-        class_b_ping_slot_period -> Int4,
+        class_b_ping_slot_nb_k -> Int2,
         #[max_length = 20]
         class_c_scheduling_type -> Varchar,
     }

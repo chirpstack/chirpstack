@@ -47,7 +47,7 @@ function MulticastGroupForm(props: IProps) {
     mg.setFrequency(v.frequency);
     mg.setRegion(v.region);
     mg.setGroupType(v.groupType);
-    mg.setClassBPingSlotPeriod(v.classBPingSlotPeriod);
+    mg.setClassBPingSlotNbK(v.classBPingSlotNbK);
     mg.setClassCSchedulingType(v.classCSchedulingType);
 
     props.onFinish(mg);
@@ -146,16 +146,16 @@ function MulticastGroupForm(props: IProps) {
           </Form.Item>
         </Col>
         <Col span={8}>
-          <Form.Item label="Class-B ping-slot periodicity" name="classBPingSlotPeriod">
+          <Form.Item label="Class-B ping-slot periodicity" name="classBPingSlotNbK">
             <Select disabled={!selectPingSlotPeriod || props.disabled}>
-              <Select.Option value={32 * 1}>Every second</Select.Option>
-              <Select.Option value={32 * 2}>Every 2 seconds</Select.Option>
-              <Select.Option value={32 * 4}>Every 4 seconds</Select.Option>
-              <Select.Option value={32 * 8}>Every 8 seconds</Select.Option>
-              <Select.Option value={32 * 16}>Every 16 seconds</Select.Option>
-              <Select.Option value={32 * 32}>Every 32 seconds</Select.Option>
-              <Select.Option value={32 * 64}>Every 64 seconds</Select.Option>
-              <Select.Option value={32 * 128}>Every 128 seconds</Select.Option>
+              <Select.Option value={0}>Every second</Select.Option>
+              <Select.Option value={1}>Every 2 seconds</Select.Option>
+              <Select.Option value={2}>Every 4 seconds</Select.Option>
+              <Select.Option value={3}>Every 8 seconds</Select.Option>
+              <Select.Option value={4}>Every 16 seconds</Select.Option>
+              <Select.Option value={5}>Every 32 seconds</Select.Option>
+              <Select.Option value={6}>Every 64 seconds</Select.Option>
+              <Select.Option value={7}>Every 128 seconds</Select.Option>
             </Select>
           </Form.Item>
         </Col>

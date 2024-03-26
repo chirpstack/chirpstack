@@ -376,7 +376,7 @@ pub mod test {
             group_type: "C".into(),
             dr: 1,
             frequency: 868100000,
-            class_b_ping_slot_period: 1,
+            class_b_ping_slot_nb_k: 1,
             ..Default::default()
         })
         .await

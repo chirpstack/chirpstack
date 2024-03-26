@@ -82,7 +82,7 @@ async fn test_multicast() {
         group_type: "C".into(),
         dr: 3,
         frequency: 868300000,
-        class_b_ping_slot_period: 32,
+        class_b_ping_slot_nb_k: 0,
         ..Default::default()
     })
     .await
