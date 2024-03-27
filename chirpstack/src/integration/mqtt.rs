@@ -115,7 +115,10 @@ impl<'a> Integration<'a> {
             } else {
                 rustls::ClientConfig::builder()
                     .with_root_certificates(root_certs.clone())
-                    .with_client_auth_cert(load_cert(&conf.tls_cert)?, load_key(&conf.tls_key)?)?
+                    .with_client_auth_cert(
+                        load_cert(&conf.tls_cert).await?,
+                        load_key(&conf.tls_key).await?,
+                    )?
             };
 
             mqtt_opts.set_transport(Transport::tls_with_config(client_conf.into()));
