@@ -4,11 +4,6 @@ use anyhow::{Context, Result};
 use rcgen::{
     Certificate, CertificateParams, DnType, ExtendedKeyUsagePurpose, KeyPair, KeyUsagePurpose,
 };
-use rsa::{
-    pkcs1::DecodeRsaPrivateKey,
-    pkcs8::{EncodePrivateKey, LineEnding},
-    RsaPrivateKey,
-};
 use tokio::fs;
 use uuid::Uuid;
 
@@ -100,7 +95,25 @@ pub async fn client_cert_for_application_id(
 
 fn private_key_to_pkcs8(pem: &str) -> Result<String> {
     if pem.contains("RSA PRIVATE KEY") {
+        use rsa::{
+            pkcs1::DecodeRsaPrivateKey,
+            pkcs8::{EncodePrivateKey, LineEnding},
+            RsaPrivateKey,
+        };
+
         let pkey = RsaPrivateKey::from_pkcs1_pem(pem).context("Read RSA PKCS#1")?;
+        let pkcs8_pem = pkey.to_pkcs8_pem(LineEnding::default())?;
+        Ok(pkcs8_pem.as_str().to_owned())
+    } else if pem.contains("EC PRIVATE KEY") {
+        use elliptic_curve::{
+            pkcs8::{EncodePrivateKey, LineEnding},
+            SecretKey,
+        };
+
+        // We assume it is a P256 based secret-key, which is the most popular curve.
+        // Attempting to decode it as P256 is still better than just failing to read it.
+        let pkey: SecretKey<p256::NistP256> =
+            SecretKey::from_sec1_pem(pem).context("Read EC SEC1")?;
         let pkcs8_pem = pkey.to_pkcs8_pem(LineEnding::default())?;
         Ok(pkcs8_pem.as_str().to_owned())
     } else {
