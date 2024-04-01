@@ -58,7 +58,7 @@ docker-devshell-ui:
 
 # Runs the tests
 test:
-	cd api && make
+	cd api && make rust
 	cd backend && cargo test
 	cd chirpstack && make test
 	cd lrwn && make test
@@ -66,7 +66,7 @@ test:
 
 # Runs all the tests (including some that normally are ignored)
 test-all:
-	cd api && make
+	cd api && make rust
 	cd backend && cargo test
 	cd chirpstack && make test-all
 	cd chirpstack-integration && cargo test
