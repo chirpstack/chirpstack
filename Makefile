@@ -41,7 +41,8 @@ api: version
 
 # Builds the UI.
 build-ui:
-	docker compose run --rm --no-deps chirpstack-ui make build
+	cd api && make grpc-web
+	cd ui && make build
 
 # Enter the devshell.
 devshell:

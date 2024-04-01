@@ -24,16 +24,6 @@ services:
     ports:
       - "8080:8080"
 
-  chirpstack-ui:
-    build:
-      context: ./ui
-      dockerfile: Dockerfile-devel
-    volumes:
-      - ./api/grpc-web:/chirpstack/api/grpc-web
-      - ./ui:/chirpstack/ui
-    ports:
-      - "3000:3000"
-
   postgres:
     image: postgres:11-alpine
     volumes:

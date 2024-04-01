@@ -35,7 +35,7 @@ jobs:
         run: docker compose up -d
       -
         name: Build UI
-        run: make build-ui
+        run: nix-shell --command "make build-ui"
       -
         name: Run tests
         run: nix-shell --command "make test"
@@ -66,7 +66,7 @@ jobs:
           key: ${{ runner.os }}-cargo-dist-${{ hashFiles('**/Cargo.lock') }}
       -
         name: Build UI
-        run: make build-ui
+        run: nix-shell --command "make build-ui"
       -
         name: Install dev dependencies
         run: nix-shell --command "make dev-dependencies"
