@@ -83,7 +83,7 @@ pbjson-types = "0.6"
 
 # gRPC and HTTP multiplexing
 warp = { version = "0.3", features = ["tls"], default-features = false }
-hyper = "0.14"
+hyper = "1.2"
 tower = "0.4"
 futures = "0.3"
 futures-util = "0.3"
