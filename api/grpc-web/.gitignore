@@ -1,0 +1,4 @@
+*.ts
+*.js
+/node_modules
+*.log
