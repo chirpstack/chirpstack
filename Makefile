@@ -2,6 +2,7 @@
 
 # Build distributable binaries.
 dist:
+	cd api && make grpc-web
 	cd chirpstack && make dist
 
 # Install dev dependencies
@@ -40,7 +41,8 @@ api: version
 
 # Builds the UI.
 build-ui:
-	docker compose run --rm --no-deps chirpstack-ui make build
+	cd api && make grpc-web
+	cd ui && make build
 
 # Enter the devshell.
 devshell:
@@ -56,6 +58,7 @@ docker-devshell-ui:
 
 # Runs the tests
 test:
+	cd api && make rust
 	cd backend && cargo test
 	cd chirpstack && make test
 	cd lrwn && make test
@@ -63,6 +66,7 @@ test:
 
 # Runs all the tests (including some that normally are ignored)
 test-all:
+	cd api && make rust
 	cd backend && cargo test
 	cd chirpstack && make test-all
 	cd chirpstack-integration && cargo test

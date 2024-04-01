@@ -21,19 +21,5 @@
 /ui/node_modules
 /ui/build
 
-# API
-/api/grpc-web/node_modules
-/api/java/build
-/api/java/src
-/api/js/node_modules
-/api/kotlin/build
-/api/kotlin/src
-/api/python/src/*.egg-info/
-/api/python/src/build/
-/api/python/src/dist/
-
-# Bitbake recipes
-*.bb
-
 # Exclude from gitignore
 !/.github

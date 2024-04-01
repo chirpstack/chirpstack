@@ -1,0 +1,8 @@
+/proto
+/src/*.egg-info/
+/src/build/
+/src/dist/
+/src/chirpstack_api/**/*_pb2.py
+/src/chirpstack_api/**/*_pb2.pyi
+/src/chirpstack_api/**/*_pb2_grpc.py
+/src/chirpstack_api/**/*_pb2_grpc.pyi

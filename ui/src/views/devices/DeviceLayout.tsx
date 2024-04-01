@@ -46,6 +46,25 @@ function DeviceLayout(props: IProps) {
   const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
+    const loadDevice = () => {
+      let req = new GetDeviceRequest();
+      req.setDevEui(devEui!);
+
+      DeviceStore.get(req, (resp: GetDeviceResponse) => {
+        setDevice(resp.getDevice());
+
+        if (resp.getLastSeenAt() !== undefined) {
+          setLastSeenAt(resp.getLastSeenAt()!.toDate());
+        }
+
+        let req = new GetDeviceProfileRequest();
+        req.setId(resp.getDevice()!.getDeviceProfileId());
+        DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
+          setDeviceProfile(resp.getDeviceProfile());
+        });
+      });
+    };
+
     DeviceStore.on("change", loadDevice);
     loadDevice();
 
@@ -53,25 +72,6 @@ function DeviceLayout(props: IProps) {
       DeviceStore.removeAllListeners("change");
     };
   }, [devEui]);
-
-  const loadDevice = () => {
-    let req = new GetDeviceRequest();
-    req.setDevEui(devEui!);
-
-    DeviceStore.get(req, (resp: GetDeviceResponse) => {
-      setDevice(resp.getDevice());
-
-      if (resp.getLastSeenAt() !== undefined) {
-        setLastSeenAt(resp.getLastSeenAt()!.toDate());
-      }
-
-      let req = new GetDeviceProfileRequest();
-      req.setId(resp.getDevice()!.getDeviceProfileId());
-      DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
-        setDeviceProfile(resp.getDeviceProfile());
-      });
-    });
-  };
 
   const deleteDevice = () => {
     let req = new DeleteDeviceRequest();

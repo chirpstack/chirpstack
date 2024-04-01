@@ -5,10 +5,9 @@ all: proto test
 proto:
 	rm -rf proto
 	mkdir -p proto/chirpstack
+	mkdir -p proto/google
 	cp -r ../proto/* proto/chirpstack
-	mkdir -p proto/google/google/api
-	cp  /googleapis/google/api/annotations.proto proto/google/google/api
-	cp  /googleapis/google/api/http.proto proto/google/google/api
+	mv proto/chirpstack/google proto/google/
 
 test:
 	cargo test

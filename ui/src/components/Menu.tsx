@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { Menu, MenuProps, Typography } from "antd";
@@ -67,7 +67,7 @@ function SideMenu() {
     navigate(`/tenants/${value}`);
   };
 
-  const parseLocation = () => {
+  const parseLocation = useCallback(() => {
     const path = location.pathname;
     const tenantRe = /\/tenants\/([\w-]{36})/g;
     const match = tenantRe.exec(path);
@@ -134,7 +134,7 @@ function SideMenu() {
     if (/\/tenants\/[\w-]{36}\/applications.*/g.exec(path)) {
       setSelectedKey("tenant-applications");
     }
-  };
+  }, [location.pathname, tenantId]);
 
   useEffect(() => {
     SessionStore.on("tenant.change", setTenant);
@@ -150,11 +150,11 @@ function SideMenu() {
     return () => {
       SessionStore.removeListener("tenant.change", setTenant);
     };
-  }, []);
+  }, [parseLocation]);
 
   useEffect(() => {
     parseLocation();
-  }, [location]);
+  }, [location, parseLocation]);
 
   let items: MenuProps["items"] = [];
 

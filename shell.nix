@@ -11,7 +11,11 @@ pkgs.mkShell {
     pkgs.perl
     pkgs.cmake
     pkgs.clang
-    pkgs.postgresql   # needed to build the diesel cli utility
+    pkgs.postgresql              # needed to build the diesel cli utility
+    pkgs.go                     # go api
+    pkgs.nodejs                 # js api + ui
+    pkgs.yarn
+    pkgs.protoc-gen-grpc-web    # grpc-web api
   ];
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
   BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.llvmPackages.libclang.lib}/lib/clang/${pkgs.llvmPackages.libclang.version}/include";
