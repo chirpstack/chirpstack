@@ -4,11 +4,6 @@ PROTOC_ARGS := -I=../proto --go_out=. --go_opt=paths=source_relative --go-grpc_o
 
 all: requirements common gw api integration stream
 
-requirements:
-	go mod download
-	go install google.golang.org/protobuf/cmd/protoc-gen-go
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-
 common:
 	protoc ${PROTOC_ARGS} common/common.proto
 
