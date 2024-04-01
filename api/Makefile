@@ -7,13 +7,13 @@ rust:
 	docker compose run --rm chirpstack-api-rust
 
 grpc-web:
-	docker compose run --rm chirpstack-api-grpc-web
+	cd grpc-web && make
 
 go:
 	cd go && make
 
 js:
-	docker compose run --rm chirpstack-api-js
+	cd js && make
 
 python:
 	docker compose run --rm chirpstack-api-python
