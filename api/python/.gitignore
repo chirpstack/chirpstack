@@ -1,3 +1,4 @@
+/proto
 /src/*.egg-info/
 /src/build/
 /src/dist/

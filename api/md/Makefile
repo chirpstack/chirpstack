@@ -3,10 +3,11 @@
 all: requirements api
 
 requirements:
+	mkdir -p api
 	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.5.1
 
 api:
-	protoc -I=/googleapis -I=../proto --doc_out=./api --doc_opt=markdown,api.md \
+	protoc -I=../proto --doc_out=./api --doc_opt=markdown,api.md \
 		api/application.proto \
 		api/device.proto \
 		api/device_profile.proto \

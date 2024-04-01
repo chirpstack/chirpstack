@@ -1,7 +1,7 @@
 .PHONY: requirements common gw api integration stream
 
 PROTOC := python -m grpc_tools.protoc
-PROTOC_ARGS := -I=/googleapis -I=proto --python_out=src --grpc_python_out=src --pyi_out=src
+PROTOC_ARGS := -I=proto --python_out=src --grpc_python_out=src --pyi_out=src
 PACKAGE_NAME := import \"chirpstack-api/
 
 all: requirements pre-build common gw api integration stream
@@ -14,6 +14,7 @@ pre-build:
 	rm -rf proto
 	mkdir -p proto/chirpstack-api
 	cp -r ../proto/* proto/chirpstack-api/
+	mv proto/chirpstack-api/google proto/google
 	sed -i 's@^import "common/@$(PACKAGE_NAME)common/@g' `find proto/chirpstack-api -type f -name "*.proto*"`
 	sed -i 's@^import "gw/@$(PACKAGE_NAME)gw/@g' `find proto/chirpstack-api -type f -name "*.proto*"`
 	sed -i 's@^import "api/@$(PACKAGE_NAME)api/@g' `find proto/chirpstack-api -type f -name "*.proto*"`
