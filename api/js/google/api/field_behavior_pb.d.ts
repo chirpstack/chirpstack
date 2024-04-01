@@ -15,6 +15,7 @@ export interface FieldBehaviorMap {
   IMMUTABLE: 5;
   UNORDERED_LIST: 6;
   NON_EMPTY_DEFAULT: 7;
+  IDENTIFIER: 8;
 }
 
 export const FieldBehavior: FieldBehaviorMap;

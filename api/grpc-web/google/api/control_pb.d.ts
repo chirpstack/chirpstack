@@ -1,10 +1,16 @@
 import * as jspb from 'google-protobuf'
 
+import * as google_api_policy_pb from '../../google/api/policy_pb';
 
 
 export class Control extends jspb.Message {
   getEnvironment(): string;
   setEnvironment(value: string): Control;
+
+  getMethodPoliciesList(): Array<google_api_policy_pb.MethodPolicy>;
+  setMethodPoliciesList(value: Array<google_api_policy_pb.MethodPolicy>): Control;
+  clearMethodPoliciesList(): Control;
+  addMethodPolicies(value?: google_api_policy_pb.MethodPolicy, index?: number): google_api_policy_pb.MethodPolicy;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Control.AsObject;
@@ -17,6 +23,7 @@ export class Control extends jspb.Message {
 export namespace Control {
   export type AsObject = {
     environment: string,
+    methodPoliciesList: Array<google_api_policy_pb.MethodPolicy.AsObject>,
   }
 }
 

@@ -300,6 +300,9 @@ message MulticastGroupQueueItem {
 
     // Payload.
     bytes data = 4;
+
+    // Time to emit message at, in milliseconds after GPS epoch.
+    optional int64 emit_at = 5;
 }
 
 message EnqueueMulticastGroupQueueItemRequest {

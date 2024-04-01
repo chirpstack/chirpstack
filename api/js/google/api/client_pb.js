@@ -33,6 +33,7 @@ goog.exportSymbol('proto.google.api.PhpSettings', null, global);
 goog.exportSymbol('proto.google.api.Publishing', null, global);
 goog.exportSymbol('proto.google.api.PythonSettings', null, global);
 goog.exportSymbol('proto.google.api.RubySettings', null, global);
+goog.exportSymbol('proto.google.api.apiVersion', null, global);
 goog.exportSymbol('proto.google.api.defaultHost', null, global);
 goog.exportSymbol('proto.google.api.methodSignatureList', null, global);
 goog.exportSymbol('proto.google.api.oauthScopes', null, global);
@@ -278,7 +279,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.google.api.MethodSettings = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.google.api.MethodSettings.repeatedFields_, null);
 };
 goog.inherits(proto.google.api.MethodSettings, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -1143,7 +1144,8 @@ proto.google.api.Publishing.toObject = function(includeInstance, msg) {
     organization: jspb.Message.getFieldWithDefault(msg, 107, 0),
     librarySettingsList: jspb.Message.toObjectList(msg.getLibrarySettingsList(),
     proto.google.api.ClientLibrarySettings.toObject, includeInstance),
-    protoReferenceDocumentationUri: jspb.Message.getFieldWithDefault(msg, 110, "")
+    protoReferenceDocumentationUri: jspb.Message.getFieldWithDefault(msg, 110, ""),
+    restReferenceDocumentationUri: jspb.Message.getFieldWithDefault(msg, 111, "")
   };
 
   if (includeInstance) {
@@ -1221,6 +1223,10 @@ proto.google.api.Publishing.deserializeBinaryFromReader = function(msg, reader) 
     case 110:
       var value = /** @type {string} */ (reader.readString());
       msg.setProtoReferenceDocumentationUri(value);
+      break;
+    case 111:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setRestReferenceDocumentationUri(value);
       break;
     default:
       reader.skipField();
@@ -1320,6 +1326,13 @@ proto.google.api.Publishing.serializeBinaryToWriter = function(message, writer) 
   if (f.length > 0) {
     writer.writeString(
       110,
+      f
+    );
+  }
+  f = message.getRestReferenceDocumentationUri();
+  if (f.length > 0) {
+    writer.writeString(
+      111,
       f
     );
   }
@@ -1562,6 +1575,24 @@ proto.google.api.Publishing.prototype.getProtoReferenceDocumentationUri = functi
  */
 proto.google.api.Publishing.prototype.setProtoReferenceDocumentationUri = function(value) {
   return jspb.Message.setProto3StringField(this, 110, value);
+};
+
+
+/**
+ * optional string rest_reference_documentation_uri = 111;
+ * @return {string}
+ */
+proto.google.api.Publishing.prototype.getRestReferenceDocumentationUri = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 111, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.google.api.Publishing} returns this
+ */
+proto.google.api.Publishing.prototype.setRestReferenceDocumentationUri = function(value) {
+  return jspb.Message.setProto3StringField(this, 111, value);
 };
 
 
@@ -3057,6 +3088,13 @@ proto.google.api.GoSettings.prototype.hasCommon = function() {
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.google.api.MethodSettings.repeatedFields_ = [3];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -3089,7 +3127,8 @@ proto.google.api.MethodSettings.prototype.toObject = function(opt_includeInstanc
 proto.google.api.MethodSettings.toObject = function(includeInstance, msg) {
   var f, obj = {
     selector: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    longRunning: (f = msg.getLongRunning()) && proto.google.api.MethodSettings.LongRunning.toObject(includeInstance, f)
+    longRunning: (f = msg.getLongRunning()) && proto.google.api.MethodSettings.LongRunning.toObject(includeInstance, f),
+    autoPopulatedFieldsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -3135,6 +3174,10 @@ proto.google.api.MethodSettings.deserializeBinaryFromReader = function(msg, read
       reader.readMessage(value,proto.google.api.MethodSettings.LongRunning.deserializeBinaryFromReader);
       msg.setLongRunning(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addAutoPopulatedFields(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3177,6 +3220,13 @@ proto.google.api.MethodSettings.serializeBinaryToWriter = function(message, writ
       2,
       f,
       proto.google.api.MethodSettings.LongRunning.serializeBinaryToWriter
+    );
+  }
+  f = message.getAutoPopulatedFieldsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      3,
+      f
     );
   }
 };
@@ -3521,6 +3571,43 @@ proto.google.api.MethodSettings.prototype.hasLongRunning = function() {
 
 
 /**
+ * repeated string auto_populated_fields = 3;
+ * @return {!Array<string>}
+ */
+proto.google.api.MethodSettings.prototype.getAutoPopulatedFieldsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.google.api.MethodSettings} returns this
+ */
+proto.google.api.MethodSettings.prototype.setAutoPopulatedFieldsList = function(value) {
+  return jspb.Message.setField(this, 3, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.google.api.MethodSettings} returns this
+ */
+proto.google.api.MethodSettings.prototype.addAutoPopulatedFields = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.google.api.MethodSettings} returns this
+ */
+proto.google.api.MethodSettings.prototype.clearAutoPopulatedFieldsList = function() {
+  return this.setAutoPopulatedFieldsList([]);
+};
+
+
+/**
  * @enum {number}
  */
 proto.google.api.ClientLibraryOrganization = {
@@ -3617,5 +3704,30 @@ google_protobuf_descriptor_pb.ServiceOptions.extensionsBinary[1050] = new jspb.E
 // This registers the extension field with the extended class, so that
 // toObject() will function correctly.
 google_protobuf_descriptor_pb.ServiceOptions.extensions[1050] = proto.google.api.oauthScopes;
+
+
+/**
+ * A tuple of {field number, class constructor} for the extension
+ * field named `apiVersion`.
+ * @type {!jspb.ExtensionFieldInfo<string>}
+ */
+proto.google.api.apiVersion = new jspb.ExtensionFieldInfo(
+    525000001,
+    {apiVersion: 0},
+    null,
+     /** @type {?function((boolean|undefined),!jspb.Message=): !Object} */ (
+         null),
+    0);
+
+google_protobuf_descriptor_pb.ServiceOptions.extensionsBinary[525000001] = new jspb.ExtensionFieldBinaryInfo(
+    proto.google.api.apiVersion,
+    jspb.BinaryReader.prototype.readString,
+    jspb.BinaryWriter.prototype.writeString,
+    undefined,
+    undefined,
+    false);
+// This registers the extension field with the extended class, so that
+// toObject() will function correctly.
+google_protobuf_descriptor_pb.ServiceOptions.extensions[525000001] = proto.google.api.apiVersion;
 
 goog.object.extend(exports, proto.google.api);

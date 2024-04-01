@@ -3334,7 +3334,8 @@ proto.api.MulticastGroupQueueItem.toObject = function(includeInstance, msg) {
     multicastGroupId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     fCnt: jspb.Message.getFieldWithDefault(msg, 2, 0),
     fPort: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    data: msg.getData_asB64()
+    data: msg.getData_asB64(),
+    emitAt: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -3386,6 +3387,10 @@ proto.api.MulticastGroupQueueItem.deserializeBinaryFromReader = function(msg, re
     case 4:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setData(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setEmitAt(value);
       break;
     default:
       reader.skipField();
@@ -3441,6 +3446,13 @@ proto.api.MulticastGroupQueueItem.serializeBinaryToWriter = function(message, wr
   if (f.length > 0) {
     writer.writeBytes(
       4,
+      f
+    );
+  }
+  f = message.getEmitAt();
+  if (f !== 0) {
+    writer.writeInt64(
+      5,
       f
     );
   }
@@ -3540,6 +3552,24 @@ proto.api.MulticastGroupQueueItem.prototype.getData_asU8 = function() {
  */
 proto.api.MulticastGroupQueueItem.prototype.setData = function(value) {
   return jspb.Message.setProto3BytesField(this, 4, value);
+};
+
+
+/**
+ * optional int64 emit_at = 5;
+ * @return {number}
+ */
+proto.api.MulticastGroupQueueItem.prototype.getEmitAt = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.api.MulticastGroupQueueItem} returns this
+ */
+proto.api.MulticastGroupQueueItem.prototype.setEmitAt = function(value) {
+  return jspb.Message.setProto3IntField(this, 5, value);
 };
 
 

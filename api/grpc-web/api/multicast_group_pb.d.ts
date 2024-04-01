@@ -401,6 +401,9 @@ export class MulticastGroupQueueItem extends jspb.Message {
   getData_asB64(): string;
   setData(value: Uint8Array | string): MulticastGroupQueueItem;
 
+  getEmitAt(): number;
+  setEmitAt(value: number): MulticastGroupQueueItem;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MulticastGroupQueueItem.AsObject;
   static toObject(includeInstance: boolean, msg: MulticastGroupQueueItem): MulticastGroupQueueItem.AsObject;
@@ -415,6 +418,7 @@ export namespace MulticastGroupQueueItem {
     fCnt: number,
     fPort: number,
     data: Uint8Array | string,
+    emitAt: number,
   }
 }
 

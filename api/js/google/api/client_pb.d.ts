@@ -145,6 +145,9 @@ export class Publishing extends jspb.Message {
   getProtoReferenceDocumentationUri(): string;
   setProtoReferenceDocumentationUri(value: string): void;
 
+  getRestReferenceDocumentationUri(): string;
+  setRestReferenceDocumentationUri(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Publishing.AsObject;
   static toObject(includeInstance: boolean, msg: Publishing): Publishing.AsObject;
@@ -167,6 +170,7 @@ export namespace Publishing {
     organization: ClientLibraryOrganizationMap[keyof ClientLibraryOrganizationMap],
     librarySettingsList: Array<ClientLibrarySettings.AsObject>,
     protoReferenceDocumentationUri: string,
+    restReferenceDocumentationUri: string,
   }
 }
 
@@ -386,6 +390,11 @@ export class MethodSettings extends jspb.Message {
   getLongRunning(): MethodSettings.LongRunning | undefined;
   setLongRunning(value?: MethodSettings.LongRunning): void;
 
+  clearAutoPopulatedFieldsList(): void;
+  getAutoPopulatedFieldsList(): Array<string>;
+  setAutoPopulatedFieldsList(value: Array<string>): void;
+  addAutoPopulatedFields(value: string, index?: number): string;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MethodSettings.AsObject;
   static toObject(includeInstance: boolean, msg: MethodSettings): MethodSettings.AsObject;
@@ -400,6 +409,7 @@ export namespace MethodSettings {
   export type AsObject = {
     selector: string,
     longRunning?: MethodSettings.LongRunning.AsObject,
+    autoPopulatedFieldsList: Array<string>,
   }
 
   export class LongRunning extends jspb.Message {
@@ -446,6 +456,8 @@ export namespace MethodSettings {
   export const defaultHost: jspb.ExtensionFieldInfo<string>;
 
   export const oauthScopes: jspb.ExtensionFieldInfo<string>;
+
+  export const apiVersion: jspb.ExtensionFieldInfo<string>;
 
 export interface ClientLibraryOrganizationMap {
   CLIENT_LIBRARY_ORGANIZATION_UNSPECIFIED: 0;

@@ -165,16 +165,18 @@ class RemoveGatewayFromMulticastGroupRequest(_message.Message):
     def __init__(self, multicast_group_id: _Optional[str] = ..., gateway_id: _Optional[str] = ...) -> None: ...
 
 class MulticastGroupQueueItem(_message.Message):
-    __slots__ = ("multicast_group_id", "f_cnt", "f_port", "data")
+    __slots__ = ("multicast_group_id", "f_cnt", "f_port", "data", "emit_at")
     MULTICAST_GROUP_ID_FIELD_NUMBER: _ClassVar[int]
     F_CNT_FIELD_NUMBER: _ClassVar[int]
     F_PORT_FIELD_NUMBER: _ClassVar[int]
     DATA_FIELD_NUMBER: _ClassVar[int]
+    EMIT_AT_FIELD_NUMBER: _ClassVar[int]
     multicast_group_id: str
     f_cnt: int
     f_port: int
     data: bytes
-    def __init__(self, multicast_group_id: _Optional[str] = ..., f_cnt: _Optional[int] = ..., f_port: _Optional[int] = ..., data: _Optional[bytes] = ...) -> None: ...
+    emit_at: int
+    def __init__(self, multicast_group_id: _Optional[str] = ..., f_cnt: _Optional[int] = ..., f_port: _Optional[int] = ..., data: _Optional[bytes] = ..., emit_at: _Optional[int] = ...) -> None: ...
 
 class EnqueueMulticastGroupQueueItemRequest(_message.Message):
     __slots__ = ("queue_item",)
