@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import { Form, Input, InputNumber, Row, Col, Button, Tabs, Space, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
@@ -24,6 +24,29 @@ function GatewayForm(props: IProps) {
   const [lonValue, setLonValue] = useState<number>(0);
   const [locationPending, setLocationPending] = useState<boolean>(false);
 
+  const setLocationFields = useCallback(
+    (lat: number, lon: number) => {
+      form.setFieldsValue({
+        location: {
+          latitude: lat,
+          longitude: lon,
+        },
+      });
+    },
+    [form],
+  );
+
+  const getCurrentLocation = useCallback(() => {
+    setLocationPending(true);
+
+    LocationStore.getLocation((loc: [number, number]) => {
+      setLatValue(loc[0]);
+      setLonValue(loc[1]);
+      setLocationPending(false);
+      setLocationFields(loc[0], loc[1]);
+    });
+  }, [setLocationFields]);
+
   useEffect(() => {
     if (!props.update) {
       getCurrentLocation();
@@ -34,18 +57,7 @@ function GatewayForm(props: IProps) {
         setLonValue(loc.getLongitude());
       }
     }
-  }, [props]);
-
-  const getCurrentLocation = () => {
-    setLocationPending(true);
-
-    LocationStore.getLocation((loc: [number, number]) => {
-      setLatValue(loc[0]);
-      setLonValue(loc[1]);
-      setLocationPending(false);
-      setLocationFields(loc[0], loc[1]);
-    });
-  };
+  }, [props, getCurrentLocation]);
 
   const onFinish = (values: Gateway.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
@@ -77,15 +89,6 @@ function GatewayForm(props: IProps) {
     setLatValue(loc.lat);
     setLonValue(loc.lng);
     setLocationFields(loc.lat, loc.lng);
-  };
-
-  const setLocationFields = (lat: number, lon: number) => {
-    form.setFieldsValue({
-      location: {
-        latitude: lat,
-        longitude: lon,
-      },
-    });
   };
 
   const location: [number, number] = [latValue, lonValue];

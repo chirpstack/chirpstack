@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Struct } from "google-protobuf/google/protobuf/struct_pb";
 
 import { Switch, notification } from "antd";
-import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Checkbox, Popconfirm } from "antd";
+import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Popconfirm } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import { Table } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -23,21 +23,24 @@ function DataTable(props: IProps) {
   const [rows, setRows] = useState<object[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const onChangePage = (page: number, pz?: number | void) => {
-    setLoading(true);
+  const onChangePage = useCallback(
+    (page: number, pz?: number | void) => {
+      setLoading(true);
 
-    if (!pz) {
-      pz = pageSize;
-    }
+      if (!pz) {
+        pz = pageSize;
+      }
 
-    props.getPage(pz, (page - 1) * pz, (totalCount: number, rows: object[]) => {
-      setCurrentPage(page);
-      setTotalCount(totalCount);
-      setRows(rows);
-      setPageSize(pz || 0);
-      setLoading(false);
-    });
-  };
+      props.getPage(pz, (page - 1) * pz, (totalCount: number, rows: object[]) => {
+        setCurrentPage(page);
+        setTotalCount(totalCount);
+        setRows(rows);
+        setPageSize(pz || 0);
+        setLoading(false);
+      });
+    },
+    [props, pageSize],
+  );
 
   const onShowSizeChange = (page: number, pageSize: number) => {
     onChangePage(page, pageSize);
@@ -53,7 +56,7 @@ function DataTable(props: IProps) {
 
   useEffect(() => {
     onChangePage(currentPage, pageSize);
-  }, [props, currentPage, pageSize]);
+  }, [props, currentPage, pageSize, onChangePage]);
 
   const { getPage, refreshKey, ...otherProps } = props;
   let loadingProps = undefined;

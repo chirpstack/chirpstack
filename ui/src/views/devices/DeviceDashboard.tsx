@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 
 import moment from "moment";
@@ -33,11 +33,50 @@ function DeviceDashboard(props: IProps) {
   const [deviceLinkMetrics, setDeviceLinkMetrics] = useState<GetDeviceLinkMetricsResponse | undefined>(undefined);
   const [deviceLinkMetricsLoaded, setDeviceLinkMetricsLoaded] = useState<boolean>(false);
 
-  useEffect(() => {
-    loadMetrics();
-  }, [props, metricsAggregation]);
+  const loadDeviceMetrics = useCallback(
+    (start: Date, end: Date, agg: Aggregation) => {
+      let startPb = new Timestamp();
+      let endPb = new Timestamp();
 
-  const loadMetrics = () => {
+      startPb.fromDate(start);
+      endPb.fromDate(end);
+
+      let req = new GetDeviceMetricsRequest();
+      req.setDevEui(props.device.getDevEui());
+      req.setStart(startPb);
+      req.setEnd(endPb);
+      req.setAggregation(agg);
+
+      DeviceStore.getMetrics(req, (resp: GetDeviceMetricsResponse) => {
+        setDeviceMetrics(resp);
+      });
+    },
+    [props.device],
+  );
+
+  const loadLinkMetrics = useCallback(
+    (start: Date, end: Date, agg: Aggregation) => {
+      let startPb = new Timestamp();
+      let endPb = new Timestamp();
+
+      startPb.fromDate(start);
+      endPb.fromDate(end);
+
+      let req = new GetDeviceLinkMetricsRequest();
+      req.setDevEui(props.device.getDevEui());
+      req.setStart(startPb);
+      req.setEnd(endPb);
+      req.setAggregation(agg);
+
+      DeviceStore.getLinkMetrics(req, (resp: GetDeviceLinkMetricsResponse) => {
+        setDeviceLinkMetrics(resp);
+        setDeviceLinkMetricsLoaded(true);
+      });
+    },
+    [props.device],
+  );
+
+  const loadMetrics = useCallback(() => {
     const agg = metricsAggregation;
     const end = moment();
     let start = moment();
@@ -53,44 +92,11 @@ function DeviceDashboard(props: IProps) {
     setDeviceLinkMetricsLoaded(false);
     loadLinkMetrics(start.toDate(), end.toDate(), agg);
     loadDeviceMetrics(start.toDate(), end.toDate(), agg);
-  };
+  }, [loadLinkMetrics, loadDeviceMetrics, metricsAggregation]);
 
-  const loadDeviceMetrics = (start: Date, end: Date, agg: Aggregation) => {
-    let startPb = new Timestamp();
-    let endPb = new Timestamp();
-
-    startPb.fromDate(start);
-    endPb.fromDate(end);
-
-    let req = new GetDeviceMetricsRequest();
-    req.setDevEui(props.device.getDevEui());
-    req.setStart(startPb);
-    req.setEnd(endPb);
-    req.setAggregation(agg);
-
-    DeviceStore.getMetrics(req, (resp: GetDeviceMetricsResponse) => {
-      setDeviceMetrics(resp);
-    });
-  };
-
-  const loadLinkMetrics = (start: Date, end: Date, agg: Aggregation) => {
-    let startPb = new Timestamp();
-    let endPb = new Timestamp();
-
-    startPb.fromDate(start);
-    endPb.fromDate(end);
-
-    let req = new GetDeviceLinkMetricsRequest();
-    req.setDevEui(props.device.getDevEui());
-    req.setStart(startPb);
-    req.setEnd(endPb);
-    req.setAggregation(agg);
-
-    DeviceStore.getLinkMetrics(req, (resp: GetDeviceLinkMetricsResponse) => {
-      setDeviceLinkMetrics(resp);
-      setDeviceLinkMetricsLoaded(true);
-    });
-  };
+  useEffect(() => {
+    loadMetrics();
+  }, [props, metricsAggregation, loadMetrics]);
 
   const onMetricsAggregationChange = (e: RadioChangeEvent) => {
     setMetricsAggregation(e.target.value);

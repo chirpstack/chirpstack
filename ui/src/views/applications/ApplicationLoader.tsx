@@ -26,6 +26,16 @@ function ApplicationLoader(props: IProps) {
   const [measurementKeys, setMeasurementKeys] = useState<string[]>([]);
 
   useEffect(() => {
+    const loadApplication = () => {
+      let req = new GetApplicationRequest();
+      req.setId(applicationId!);
+
+      ApplicationStore.get(req, (resp: GetApplicationResponse) => {
+        setApplication(resp.getApplication());
+        setMeasurementKeys(resp.getMeasurementKeysList());
+      });
+    };
+
     ApplicationStore.on("change", loadApplication);
     loadApplication();
 
@@ -33,16 +43,6 @@ function ApplicationLoader(props: IProps) {
       ApplicationStore.removeAllListeners("change");
     };
   }, [applicationId]);
-
-  const loadApplication = () => {
-    let req = new GetApplicationRequest();
-    req.setId(applicationId!);
-
-    ApplicationStore.get(req, (resp: GetApplicationResponse) => {
-      setApplication(resp.getApplication());
-      setMeasurementKeys(resp.getMeasurementKeysList());
-    });
-  };
 
   const app = application;
   if (!app) {

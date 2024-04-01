@@ -23,7 +23,7 @@ interface IProps {
 }
 
 function GatewayDashboard(props: IProps) {
-  const [metricsAggregation, setMetricsAggregation] = useState<Aggregation>(Aggregation.DAY);
+  const [metricsAggregation] = useState<Aggregation>(Aggregation.DAY);
   const [gatewayMetrics, setGatewayMetrics] = useState<GetGatewayMetricsResponse | undefined>(undefined);
 
   useEffect(() => {
