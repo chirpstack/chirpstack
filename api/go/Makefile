@@ -1,6 +1,6 @@
 .PHONY: requirements common gw api integration stream
 
-PROTOC_ARGS := -I=/googleapis -I=../proto --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative
+PROTOC_ARGS := -I=../proto --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative
 
 all: requirements common gw api integration stream
 

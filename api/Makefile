@@ -10,7 +10,7 @@ grpc-web:
 	docker compose run --rm chirpstack-api-grpc-web
 
 go:
-	docker compose run --rm chirpstack-api-go
+	cd go && make
 
 js:
 	docker compose run --rm chirpstack-api-js
