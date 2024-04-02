@@ -38,7 +38,7 @@ tokio-postgres = "0.7"
 tokio-postgres-rustls = "0.11"
 bigdecimal = "0.4"
 redis = { version = "0.25.2", features = [ "tls-rustls", "tokio-rustls-comp"] }
-deadpool-redis = { version = "0.14", features = ["cluster"] }
+deadpool-redis = { version = "0.15", features = ["cluster"] }
 
 # Logging
 tracing = "0.1"
@@ -54,13 +54,13 @@ lrwn = { path = "../lrwn", features = ["serde", "diesel", "regions", "crypto"] }
 backend = { path = "../backend" }
 
 # HTTP
-reqwest = { version = "0.11", features = [
+reqwest = { version = "0.12", features = [
 	"json",
 	"rustls-tls-native-roots",
 ], default-features = false }
 
 # Integrations
-aws-sign-v4 = "0.2"
+aws-sign-v4 = "0.3"
 hmac = "0.12"
 sha2 = "0.10"
 urlencoding = "2.1"
