@@ -97,6 +97,9 @@ enum TxAckStatus {
 
   // Internal error.
   INTERNAL_ERROR = 10;
+
+  // Duty-cycle overflow.
+  DUTY_CYCLE_OVERFLOW = 11;
 }
 
 message Modulation {
@@ -249,6 +252,9 @@ message GatewayStats {
 
   // Tx packets per status.
   map<string, uint32> tx_packets_per_status = 16;
+
+  // Duty-cycle statistics (Concentratord only).
+  DutyCycleStats duty_cycle_stats = 18;
 }
 
 message PerModulationCount {
@@ -257,6 +263,31 @@ message PerModulationCount {
 
   // Count.
   uint32 count = 2;
+}
+
+message DutyCycleStats {
+  // Implemented regulation.
+  common.Regulation regulation = 1;
+
+  // Bands.
+  repeated DutyCycleBand bands = 2;
+}
+
+message DutyCycleBand {
+  // Band name.
+  string name = 1;
+
+  // Min frequency for this band.
+  uint32 frequency_min = 2;
+
+  // Max frequency for this band.
+  uint32 frequency_max = 3;
+
+  // Max. allowed load.
+  google.protobuf.Duration load_max = 4;
+
+  // Tracked load (within the window of the regionlation).
+  google.protobuf.Duration load_tracked = 5;
 }
 
 message UplinkRxInfoLegacy {

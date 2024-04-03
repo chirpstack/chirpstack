@@ -74,6 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // internal
     {
+        #[allow(unused_mut)]
         let mut builder = tonic_build::configure()
             .out_dir(out_dir.join("internal"))
             .file_descriptor_set_path(out_dir.join("internal").join("proto_descriptor.bin"))

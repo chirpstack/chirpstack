@@ -155,6 +155,14 @@ enum MetricKind {
   GAUGE = 2;
 }
 
+enum Regulation {
+  // Unknown.
+  REGULATION_UNKNOWN = 0;
+
+  // ETSI EN 300 220.
+  ETSI_EN_300_220 = 1;
+}
+
 message Location {
   // Latitude.
   double latitude = 1;

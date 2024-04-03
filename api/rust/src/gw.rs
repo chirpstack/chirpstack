@@ -67,6 +67,7 @@ impl Into<String> for TxAckStatus {
             TxAckStatus::GpsUnlocked => "GPS_UNLOCKED",
             TxAckStatus::QueueFull => "QUEUE_FULL",
             TxAckStatus::InternalError => "INTERNAL_ERROR",
+            TxAckStatus::DutyCycleOverflow => "DUTY_CYCLE_OVERFLOW",
         }
         .to_string()
     }
