@@ -104,10 +104,12 @@ jsonwebtoken = "9.2"
 rustls = "0.22"
 rustls-native-certs = "0.7"
 rustls-pemfile = "2.1"
+pem = "3.0"
+x509-parser = "0.16"
 rsa = "0.9"
 elliptic-curve = { version = "0.13", features = ["pem"] }
 p256 = "0.13"
-rcgen = { version = "0.12", features = [ "x509-parser" ] }
+rcgen = { version = "0.13.1", features = [ "x509-parser" ] }
 openidconnect = { version = "3.5", features = ["accept-rfc3339-timestamps"] }
 oauth2 = "4.4"
 
