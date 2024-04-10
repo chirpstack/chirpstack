@@ -269,8 +269,11 @@ message DutyCycleStats {
   // Implemented regulation.
   common.Regulation regulation = 1;
 
+  // Tracking window.
+  google.protobuf.Duration window = 2;
+
   // Bands.
-  repeated DutyCycleBand bands = 2;
+  repeated DutyCycleBand bands = 3;
 }
 
 message DutyCycleBand {
