@@ -601,13 +601,16 @@ pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGr
                         where
                             id in (
                                 select
-                                    id
+                                    qi.id
                                 from
-                                    multicast_group_queue_item
+                                    multicast_group_queue_item qi
+                                inner join gateway g
+                                    on g.gateway_id = qi.gateway_id
                                 where
-                                    scheduler_run_after <= $2
+                                    qi.scheduler_run_after <= $2
+                                    and now() - make_interval(secs => g.stats_interval_secs * 2) <= g.last_seen_at
                                 order by
-                                    created_at
+                                    qi.created_at
                                 limit $1
                             )
                         returning *
@@ -919,6 +922,8 @@ pub mod test {
             gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
             name: "test-gw".into(),
             tenant_id: t.id,
+            stats_interval_secs: 30,
+            last_seen_at: Some(Utc::now()),
             ..Default::default()
         })
         .await

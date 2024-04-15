@@ -1,3 +1,5 @@
+use chrono::Utc;
+
 use super::assert;
 use crate::storage::{
     application, device, device_gateway, device_profile, fields, gateway, multicast, tenant,
@@ -37,6 +39,8 @@ async fn test_multicast() {
                 .cloned()
                 .collect(),
         ),
+        stats_interval_secs: 30,
+        last_seen_at: Some(Utc::now()),
         ..Default::default()
     })
     .await
