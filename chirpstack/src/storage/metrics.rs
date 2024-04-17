@@ -13,9 +13,16 @@ use crate::storage::{get_async_redis_conn, redis_key};
 #[allow(non_camel_case_types)]
 #[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Aggregation {
+    MINUTE,
     HOUR,
     DAY,
     MONTH,
+}
+
+impl Aggregation {
+    pub fn default_aggregations() -> Vec<Aggregation> {
+        vec![Aggregation::HOUR, Aggregation::DAY, Aggregation::MONTH]
+    }
 }
 
 impl fmt::Display for Aggregation {
@@ -48,14 +55,11 @@ pub struct Record {
 
 fn get_ttl(a: Aggregation) -> Duration {
     match a {
+        Aggregation::MINUTE => Duration::from_secs(60 * 60 * 2), // two hours
         Aggregation::HOUR => Duration::from_secs(60 * 60 * 24 * 2), // two days
         Aggregation::DAY => Duration::from_secs(60 * 60 * 24 * 31 * 2), // two months
         Aggregation::MONTH => Duration::from_secs(60 * 60 * 24 * 365 * 2), // two years
     }
-}
-
-fn get_aggregations() -> Vec<Aggregation> {
-    vec![Aggregation::HOUR, Aggregation::DAY, Aggregation::MONTH]
 }
 
 fn get_key(name: &str, a: Aggregation, dt: DateTime<Local>) -> String {
@@ -82,7 +86,7 @@ pub async fn save_state(name: &str, state: &str) -> Result<()> {
     Ok(())
 }
 
-pub async fn save(name: &str, record: &Record) -> Result<()> {
+pub async fn save(name: &str, record: &Record, aggregations: &[Aggregation]) -> Result<()> {
     if record.metrics.is_empty() {
         return Ok(());
     }
@@ -90,10 +94,20 @@ pub async fn save(name: &str, record: &Record) -> Result<()> {
     let mut pipe = redis::pipe();
     pipe.atomic();
 
-    for a in get_aggregations() {
-        let ttl = get_ttl(a);
+    for a in aggregations {
+        let ttl = get_ttl(*a);
 
         let ts: DateTime<Local> = match a {
+            Aggregation::MINUTE => Local
+                .with_ymd_and_hms(
+                    record.time.year(),
+                    record.time.month(),
+                    record.time.day(),
+                    record.time.hour(),
+                    record.time.minute(),
+                    0,
+                )
+                .unwrap(),
             Aggregation::HOUR => Local
                 .with_ymd_and_hms(
                     record.time.year(),
@@ -119,7 +133,7 @@ pub async fn save(name: &str, record: &Record) -> Result<()> {
                 .unwrap(),
         };
 
-        let key = get_key(name, a, ts);
+        let key = get_key(name, *a, ts);
 
         for (k, v) in &record.metrics {
             // Passing a reference to hincr will return a runtime error.
@@ -178,6 +192,34 @@ pub async fn get(
     let mut timestamps: Vec<DateTime<Local>> = Vec::new();
 
     match a {
+        Aggregation::MINUTE => {
+            let mut ts = Local
+                .with_ymd_and_hms(
+                    start.year(),
+                    start.month(),
+                    start.day(),
+                    start.hour(),
+                    start.minute(),
+                    0,
+                )
+                .unwrap();
+            let end = Local
+                .with_ymd_and_hms(
+                    end.year(),
+                    end.month(),
+                    end.day(),
+                    end.hour(),
+                    end.minute(),
+                    0,
+                )
+                .unwrap();
+
+            while ts.le(&end) {
+                timestamps.push(ts);
+                keys.push(get_key(name, a, ts));
+                ts += ChronoDuration::minutes(1);
+            }
+        }
         Aggregation::HOUR => {
             let mut ts = Local
                 .with_ymd_and_hms(start.year(), start.month(), start.day(), start.hour(), 0, 0)
@@ -305,6 +347,41 @@ pub mod test {
     use crate::test;
 
     #[tokio::test]
+    async fn test_minute() {
+        let _guard = test::prepare().await;
+
+        let records = vec![
+            Record {
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 1, 0).unwrap(),
+                kind: Kind::ABSOLUTE,
+                metrics: [("foo".into(), 1f64), ("bar".into(), 2f64)]
+                    .iter()
+                    .cloned()
+                    .collect(),
+            },
+            Record {
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 1, 10).unwrap(),
+                kind: Kind::ABSOLUTE,
+                metrics: [("foo".into(), 4f64), ("bar".into(), 4f64)]
+                    .iter()
+                    .cloned()
+                    .collect(),
+            },
+            Record {
+                time: Local.with_ymd_and_hms(2018, 1, 1, 1, 2, 0).unwrap(),
+                kind: Kind::ABSOLUTE,
+                metrics: [("foo".into(), 5f64), ("bar".into(), 6f64)]
+                    .iter()
+                    .cloned()
+                    .collect(),
+            },
+        ];
+        for r in &records {
+            save("test", r, &[Aggregation::MINUTE]).await.unwrap();
+        }
+    }
+
+    #[tokio::test]
     async fn test_hour() {
         let _guard = test::prepare().await;
 
@@ -335,7 +412,7 @@ pub mod test {
             },
         ];
         for r in &records {
-            save("test", r).await.unwrap();
+            save("test", r, &[Aggregation::HOUR]).await.unwrap();
         }
 
         let resp = get(
@@ -402,7 +479,7 @@ pub mod test {
             },
         ];
         for r in &records {
-            save("test", r).await.unwrap();
+            save("test", r, &[Aggregation::DAY]).await.unwrap();
         }
 
         let resp = get(
@@ -469,7 +546,7 @@ pub mod test {
             },
         ];
         for r in &records {
-            save("test", r).await.unwrap();
+            save("test", r, &[Aggregation::DAY]).await.unwrap();
         }
 
         let resp = get(
@@ -536,7 +613,7 @@ pub mod test {
             },
         ];
         for r in &records {
-            save("test", r).await.unwrap();
+            save("test", r, &[Aggregation::MONTH]).await.unwrap();
         }
 
         let resp = get(
@@ -595,7 +672,7 @@ pub mod test {
             },
         ];
         for r in &records {
-            save("test", r).await.unwrap();
+            save("test", r, &[Aggregation::HOUR]).await.unwrap();
         }
 
         let resp = get(
@@ -644,7 +721,7 @@ pub mod test {
             },
         ];
         for r in &records {
-            save("test", r).await.unwrap();
+            save("test", r, &[Aggregation::HOUR]).await.unwrap();
         }
 
         let resp = get(
@@ -693,7 +770,7 @@ pub mod test {
             },
         ];
         for r in &records {
-            save("test", r).await.unwrap();
+            save("test", r, &[Aggregation::HOUR]).await.unwrap();
         }
 
         let resp = get(

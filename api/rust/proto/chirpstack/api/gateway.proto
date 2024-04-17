@@ -65,6 +65,14 @@ service GatewayService {
             get: "/api/gateways/{gateway_id}/metrics"
         };
     }
+
+    // GetDutyCycleMetrics returns the duty-cycle metrics.
+    // Note that only the last 2 hours of data are stored. Currently only per minute aggregation is available.
+    rpc GetDutyCycleMetrics(GetGatewayDutyCycleMetricsRequest) returns (GetGatewayDutyCycleMetricsResponse) {
+        option(google.api.http) = {
+            get: "/api/gateways/{gateway_id}/duty-cycle-metrics"
+        };
+    }
 }
 
 enum GatewayState {
@@ -254,4 +262,23 @@ message GetGatewayMetricsResponse {
 
     // TX packets per status.
     common.Metric tx_packets_per_status = 7;
+}
+
+message GetGatewayDutyCycleMetricsRequest {
+    // Gateway ID (EUI64).
+    string gateway_id = 1;
+
+    // Interval start timestamp.
+    google.protobuf.Timestamp start = 2;
+
+    // Interval end timestamp.
+    google.protobuf.Timestamp end = 3;
+}
+
+message GetGatewayDutyCycleMetricsResponse {
+    // Percentage relative to max load.
+    common.Metric max_load_percentage = 1;
+
+    // Percentage relative to tracking window.
+    common.Metric window_percentage = 2;
 }

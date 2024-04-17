@@ -1045,7 +1045,12 @@ impl Data {
                             metrics: [("value".to_string(), v)].iter().cloned().collect(),
                         };
 
-                        metrics::save(&format!("device:{}:{}", dev.dev_eui, k), &record).await?;
+                        metrics::save(
+                            &format!("device:{}:{}", dev.dev_eui, k),
+                            &record,
+                            &metrics::Aggregation::default_aggregations(),
+                        )
+                        .await?;
                     }
                     pbjson_types::value::Kind::StringValue(v) => {
                         metrics::save_state(
@@ -1215,7 +1220,12 @@ impl Data {
 
         let dev = self.device.as_ref().unwrap();
 
-        metrics::save(&format!("device:{}", dev.dev_eui), &record).await?;
+        metrics::save(
+            &format!("device:{}", dev.dev_eui),
+            &record,
+            &metrics::Aggregation::default_aggregations(),
+        )
+        .await?;
 
         Ok(())
     }
@@ -1246,7 +1256,12 @@ impl Data {
 
         let dev = self.device.as_ref().unwrap();
 
-        metrics::save(&format!("device:{}", dev.dev_eui), &record).await?;
+        metrics::save(
+            &format!("device:{}", dev.dev_eui),
+            &record,
+            &metrics::Aggregation::default_aggregations(),
+        )
+        .await?;
 
         Ok(())
     }

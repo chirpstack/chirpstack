@@ -2,6 +2,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
+use std::time::Duration;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
@@ -63,6 +64,7 @@ impl Stats {
 
         ctx.update_gateway_state().await?;
         ctx.save_stats().await?;
+        ctx.save_duty_cycle_stats().await?;
         ctx.update_gateway_configuration().await?;
 
         Ok(())
@@ -156,9 +158,77 @@ impl Stats {
         metrics::save(
             &format!("gw:{}", self.gateway.as_ref().unwrap().gateway_id),
             &m,
+            &metrics::Aggregation::default_aggregations(),
         )
         .await
         .context("Save gateway stats")?;
+
+        Ok(())
+    }
+
+    async fn save_duty_cycle_stats(&self) -> Result<()> {
+        trace!("Saving duty-cycle stats");
+
+        let duty_cycle_stats = match self.stats.duty_cycle_stats.as_ref() {
+            Some(v) => v,
+            None => {
+                // No stats, nothing to do.
+                return Ok(());
+            }
+        };
+
+        let window: Duration = duty_cycle_stats
+            .window
+            .clone()
+            .map(|v| v.try_into().unwrap_or_default())
+            .unwrap_or_default();
+
+        let mut m = metrics::Record {
+            time: match &self.stats.time {
+                Some(v) => DateTime::try_from(v.clone())
+                    .map_err(anyhow::Error::msg)?
+                    .into(),
+                None => Local::now(),
+            },
+            kind: metrics::Kind::COUNTER,
+            metrics: HashMap::new(),
+        };
+
+        for b in &duty_cycle_stats.bands {
+            let load_max: Duration = b
+                .load_max
+                .clone()
+                .map(|d| d.try_into().unwrap_or_default())
+                .unwrap_or_default();
+            let load_tracked: Duration = b
+                .load_tracked
+                .clone()
+                .map(|d| d.try_into().unwrap_or_default())
+                .unwrap_or_default();
+
+            let permille = load_max.as_nanos() / (window.as_nanos() / 1000);
+            let key = format!(
+                "{}_{}_{}_{}",
+                b.name, b.frequency_min, b.frequency_max, permille
+            );
+            let dc_max_load_perc_key = format!("max_load_perc_{}", key);
+            let dc_window_perc_key = format!("window_perc_{}", key);
+
+            let dc_max_load_perc =
+                load_tracked.as_nanos() as f64 / load_max.as_nanos() as f64 * 100.0;
+            let dc_window_perc = load_tracked.as_nanos() as f64 / window.as_nanos() as f64 * 100.0;
+
+            m.metrics.insert(dc_max_load_perc_key, dc_max_load_perc);
+            m.metrics.insert(dc_window_perc_key, dc_window_perc);
+        }
+
+        metrics::save(
+            &format!("gw:dc:{}", self.gateway.as_ref().unwrap().gateway_id),
+            &m,
+            &[metrics::Aggregation::MINUTE],
+        )
+        .await
+        .context("Save gateway duty-cycle stats")?;
 
         Ok(())
     }

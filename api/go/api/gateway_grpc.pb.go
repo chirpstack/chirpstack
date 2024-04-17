@@ -27,6 +27,7 @@ const (
 	GatewayService_List_FullMethodName                      = "/api.GatewayService/List"
 	GatewayService_GenerateClientCertificate_FullMethodName = "/api.GatewayService/GenerateClientCertificate"
 	GatewayService_GetMetrics_FullMethodName                = "/api.GatewayService/GetMetrics"
+	GatewayService_GetDutyCycleMetrics_FullMethodName       = "/api.GatewayService/GetDutyCycleMetrics"
 )
 
 // GatewayServiceClient is the client API for GatewayService service.
@@ -47,6 +48,9 @@ type GatewayServiceClient interface {
 	GenerateClientCertificate(ctx context.Context, in *GenerateGatewayClientCertificateRequest, opts ...grpc.CallOption) (*GenerateGatewayClientCertificateResponse, error)
 	// GetMetrics returns the gateway metrics.
 	GetMetrics(ctx context.Context, in *GetGatewayMetricsRequest, opts ...grpc.CallOption) (*GetGatewayMetricsResponse, error)
+	// GetDutyCycleMetrics returns the duty-cycle metrics.
+	// Note that only the last 2 hours of data are stored. Currently only per minute aggregation is available.
+	GetDutyCycleMetrics(ctx context.Context, in *GetGatewayDutyCycleMetricsRequest, opts ...grpc.CallOption) (*GetGatewayDutyCycleMetricsResponse, error)
 }
 
 type gatewayServiceClient struct {
@@ -120,6 +124,15 @@ func (c *gatewayServiceClient) GetMetrics(ctx context.Context, in *GetGatewayMet
 	return out, nil
 }
 
+func (c *gatewayServiceClient) GetDutyCycleMetrics(ctx context.Context, in *GetGatewayDutyCycleMetricsRequest, opts ...grpc.CallOption) (*GetGatewayDutyCycleMetricsResponse, error) {
+	out := new(GetGatewayDutyCycleMetricsResponse)
+	err := c.cc.Invoke(ctx, GatewayService_GetDutyCycleMetrics_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GatewayServiceServer is the server API for GatewayService service.
 // All implementations must embed UnimplementedGatewayServiceServer
 // for forward compatibility
@@ -138,6 +151,9 @@ type GatewayServiceServer interface {
 	GenerateClientCertificate(context.Context, *GenerateGatewayClientCertificateRequest) (*GenerateGatewayClientCertificateResponse, error)
 	// GetMetrics returns the gateway metrics.
 	GetMetrics(context.Context, *GetGatewayMetricsRequest) (*GetGatewayMetricsResponse, error)
+	// GetDutyCycleMetrics returns the duty-cycle metrics.
+	// Note that only the last 2 hours of data are stored. Currently only per minute aggregation is available.
+	GetDutyCycleMetrics(context.Context, *GetGatewayDutyCycleMetricsRequest) (*GetGatewayDutyCycleMetricsResponse, error)
 	mustEmbedUnimplementedGatewayServiceServer()
 }
 
@@ -165,6 +181,9 @@ func (UnimplementedGatewayServiceServer) GenerateClientCertificate(context.Conte
 }
 func (UnimplementedGatewayServiceServer) GetMetrics(context.Context, *GetGatewayMetricsRequest) (*GetGatewayMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetrics not implemented")
+}
+func (UnimplementedGatewayServiceServer) GetDutyCycleMetrics(context.Context, *GetGatewayDutyCycleMetricsRequest) (*GetGatewayDutyCycleMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDutyCycleMetrics not implemented")
 }
 func (UnimplementedGatewayServiceServer) mustEmbedUnimplementedGatewayServiceServer() {}
 
@@ -305,6 +324,24 @@ func _GatewayService_GetMetrics_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GatewayService_GetDutyCycleMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGatewayDutyCycleMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).GetDutyCycleMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_GetDutyCycleMetrics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).GetDutyCycleMetrics(ctx, req.(*GetGatewayDutyCycleMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GatewayService_ServiceDesc is the grpc.ServiceDesc for GatewayService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -339,6 +376,10 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMetrics",
 			Handler:    _GatewayService_GetMetrics_Handler,
+		},
+		{
+			MethodName: "GetDutyCycleMetrics",
+			Handler:    _GatewayService_GetDutyCycleMetrics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

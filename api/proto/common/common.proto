@@ -141,6 +141,9 @@ enum Aggregation {
 
   // Month.
   MONTH = 2;
+
+  // Minute.
+  MINUTE = 3;
 }
 
 enum MetricKind {

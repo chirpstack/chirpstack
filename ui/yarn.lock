@@ -1256,7 +1256,7 @@
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
 "@chirpstack/chirpstack-api-grpc-web@file:../api/grpc-web":
-  version "4.7.0"
+  version "4.8.0-test.2"
   dependencies:
     "@types/google-protobuf" "^3.15.12"
     google-protobuf "^3.21.2"
@@ -5432,6 +5432,11 @@ globby@^11.0.4, globby@^11.1.0:
     ignore "^5.2.0"
     merge2 "^1.4.1"
     slash "^3.0.0"
+
+google-palette@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/google-palette/-/google-palette-1.1.1.tgz#671b3b932c8393271b67da908ccd7f2c48e84cc7"
+  integrity sha512-yZiM5oLl8lCZzf06IMOGdDkxqvCMd9HNFcCiOMqWgGGiGzC22vWBVhKJNvykXXbeC0NAElNH97jA/y0bq6TCrA==
 
 google-protobuf@^3.21.2:
   version "3.21.2"

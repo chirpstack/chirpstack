@@ -8,6 +8,8 @@ import {
   Gateway,
   GetGatewayMetricsRequest,
   GetGatewayMetricsResponse,
+  GetGatewayDutyCycleMetricsRequest,
+  GetGatewayDutyCycleMetricsResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
@@ -25,6 +27,9 @@ interface IProps {
 function GatewayDashboard(props: IProps) {
   const [metricsAggregation] = useState<Aggregation>(Aggregation.DAY);
   const [gatewayMetrics, setGatewayMetrics] = useState<GetGatewayMetricsResponse | undefined>(undefined);
+  const [gatewayDutyCycleMetrics, setGatewayDutyCycleMetrics] = useState<
+    GetGatewayDutyCycleMetricsResponse | undefined
+  >(undefined);
 
   useEffect(() => {
     const agg = metricsAggregation;
@@ -54,12 +59,29 @@ function GatewayDashboard(props: IProps) {
     GatewayStore.getMetrics(req, (resp: GetGatewayMetricsResponse) => {
       setGatewayMetrics(resp);
     });
+
+    const dcEnd = moment().subtract(1, "minute");
+    let dcEndPb = new Timestamp();
+    dcEndPb.fromDate(dcEnd.toDate());
+
+    const dcStart = dcEnd.subtract(1, "hours");
+    let dcStartPb = new Timestamp();
+    dcStartPb.fromDate(dcStart.toDate());
+
+    let dcReq = new GetGatewayDutyCycleMetricsRequest();
+    dcReq.setGatewayId(props.gateway.getGatewayId());
+    dcReq.setStart(dcStartPb);
+    dcReq.setEnd(dcEndPb);
+
+    GatewayStore.getDutyCycleMetrics(dcReq, (resp: GetGatewayDutyCycleMetricsResponse) => {
+      setGatewayDutyCycleMetrics(resp);
+    });
   }, [props, metricsAggregation]);
 
   const loc = props.gateway.getLocation()!;
   const location: [number, number] = [loc.getLatitude(), loc.getLongitude()];
 
-  if (gatewayMetrics === undefined) {
+  if (gatewayMetrics === undefined || gatewayDutyCycleMetrics === undefined) {
     return null;
   }
 
@@ -89,6 +111,17 @@ function GatewayDashboard(props: IProps) {
           </Map>
         </Col>
       </Row>
+      {gatewayDutyCycleMetrics.getMaxLoadPercentage()!.getDatasetsList().length !== 0 &&
+        gatewayDutyCycleMetrics.getWindowPercentage()!.getDatasetsList().length !== 0 && (
+          <Row gutter={24}>
+            <Col span={12}>
+              <MetricChart metric={gatewayDutyCycleMetrics.getWindowPercentage()!} aggregation={Aggregation.MINUTE} />
+            </Col>
+            <Col span={12}>
+              <MetricChart metric={gatewayDutyCycleMetrics.getMaxLoadPercentage()!} aggregation={Aggregation.MINUTE} />
+            </Col>
+          </Row>
+        )}
       <Row gutter={24}>
         <Col span={8}>
           <MetricChart metric={gatewayMetrics.getRxPackets()!} aggregation={metricsAggregation} />

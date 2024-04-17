@@ -169,6 +169,7 @@ impl FromProto<MeasurementKind> for api::MeasurementKind {
 impl ToProto<common::Aggregation> for Aggregation {
     fn to_proto(self) -> common::Aggregation {
         match self {
+            Aggregation::MINUTE => common::Aggregation::Minute,
             Aggregation::HOUR => common::Aggregation::Hour,
             Aggregation::DAY => common::Aggregation::Day,
             Aggregation::MONTH => common::Aggregation::Month,
@@ -179,6 +180,7 @@ impl ToProto<common::Aggregation> for Aggregation {
 impl FromProto<Aggregation> for common::Aggregation {
     fn from_proto(self) -> Aggregation {
         match self {
+            common::Aggregation::Minute => Aggregation::MINUTE,
             common::Aggregation::Hour => Aggregation::HOUR,
             common::Aggregation::Day => Aggregation::DAY,
             common::Aggregation::Month => Aggregation::MONTH,

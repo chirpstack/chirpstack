@@ -338,6 +338,7 @@ impl JoinRequest {
                     .cloned()
                     .collect(),
             },
+            &metrics::Aggregation::default_aggregations(),
         )
         .await?;
 
@@ -387,6 +388,7 @@ impl JoinRequest {
                                 kind: metrics::Kind::ABSOLUTE,
                                 metrics: [("error_OTAA".into(), 1f64)].iter().cloned().collect(),
                             },
+                            &metrics::Aggregation::default_aggregations(),
                         )
                         .await?;
 
