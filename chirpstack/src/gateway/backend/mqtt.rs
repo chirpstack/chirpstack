@@ -185,7 +185,11 @@ impl<'a> MqttBackend<'a> {
             } else {
                 conf.event_topic.clone()
             };
-            let event_topic = format!("$share/{}/{}", conf.share_name, event_topic);
+            let event_topic = if conf.share_name.is_empty() {
+                event_topic
+            } else {
+                format!("$share/{}/{}", conf.share_name, event_topic)
+            };
 
             async move {
                 while connect_rx.recv().await.is_some() {
