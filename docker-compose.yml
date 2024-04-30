@@ -23,6 +23,8 @@ services:
       - TEST_AMQP_URL=amqp://guest:guest@rabbitmq:5672
     ports:
       - "8080:8080"
+    tty: true
+    stdin_open: true
 
   postgres:
     image: postgres:11-alpine
