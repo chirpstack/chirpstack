@@ -2732,7 +2732,7 @@ mod test {
                 name: "max payload size error".into(),
                 max_payload_size: 10,
                 queue_items: vec![device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     data: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
@@ -2772,7 +2772,7 @@ mod test {
                 name: "is pending".into(),
                 max_payload_size: 10,
                 queue_items: vec![device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     f_cnt_down: Some(10),
@@ -2804,7 +2804,7 @@ mod test {
                 name: "invalid frame-counter".into(),
                 max_payload_size: 10,
                 queue_items: vec![device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     data: vec![1, 2, 3],
@@ -2845,14 +2845,14 @@ mod test {
                 name: "valid payload".into(),
                 max_payload_size: 10,
                 queue_items: vec![device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     data: vec![1, 2, 3],
                     ..Default::default()
                 }],
                 expected_queue_item: Some(device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     data: vec![1, 2, 3],

@@ -158,7 +158,7 @@ pub mod test {
     pub async fn reset_nonces(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
         let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
             .set((
-                device_keys::dev_nonces.eq::<Vec<i32>>(Vec::new()),
+                device_keys::dev_nonces.eq::<DevNonces>(Vec::new().into()),
                 device_keys::join_nonce.eq(0),
             ))
             .get_result(&mut get_async_db_conn().await?)
