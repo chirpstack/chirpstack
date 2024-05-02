@@ -172,7 +172,7 @@ async fn test_gateway_filtering() {
                 }),
                 mic: Some([48, 94, 26, 239]),
             },
-            assert: vec![assert::f_cnt_up(dev.dev_eui.clone(), 8)],
+            assert: vec![assert::f_cnt_up(dev.dev_eui, 8)],
         },
         Test {
             name: "private gateway other tenant".into(),
@@ -337,7 +337,7 @@ async fn test_region_config_id_filtering() {
                 }),
                 mic: Some([48, 94, 26, 239]),
             },
-            assert: vec![assert::f_cnt_up(dev.dev_eui.clone(), 8)],
+            assert: vec![assert::f_cnt_up(dev.dev_eui, 8)],
         },
         Test {
             name: "non-matching configuration id".into(),
@@ -364,7 +364,7 @@ async fn test_region_config_id_filtering() {
                 }),
                 mic: Some([48, 94, 26, 239]),
             },
-            assert: vec![assert::f_cnt_up(dev.dev_eui.clone(), 7)],
+            assert: vec![assert::f_cnt_up(dev.dev_eui, 7)],
         },
     ];
 
@@ -858,8 +858,8 @@ async fn test_lorawan_10_skip_f_cnt() {
                     f_port: 1,
                     ..Default::default()
                 }),
-                assert::f_cnt_up(dev.dev_eui.clone(), 8),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 8),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
             ],
         },
         Test {
@@ -907,8 +907,8 @@ async fn test_lorawan_10_skip_f_cnt() {
                     f_port: 1,
                     ..Default::default()
                 }),
-                assert::f_cnt_up(dev.dev_eui.clone(), 1),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 1),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
             ],
         },
     ];
@@ -1032,8 +1032,8 @@ async fn test_lorawan_10_device_disabled() {
         },
         assert: vec![
             assert::no_uplink_event(),
-            assert::f_cnt_up(dev.dev_eui.clone(), 7),
-            assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+            assert::f_cnt_up(dev.dev_eui, 7),
+            assert::n_f_cnt_down(dev.dev_eui, 5),
         ],
     }];
 
@@ -1165,8 +1165,8 @@ async fn test_lorawan_10_uplink() {
                 mic: Some([104, 147, 35, 121]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::uplink_event(integration_pb::UplinkEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -1237,8 +1237,8 @@ async fn test_lorawan_10_uplink() {
                 mic: Some([104, 147, 35, 121]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::uplink_event(integration_pb::UplinkEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -1267,7 +1267,7 @@ async fn test_lorawan_10_uplink() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 1,
                 f_cnt_down: Some(4),
                 is_pending: true,
@@ -1299,8 +1299,8 @@ async fn test_lorawan_10_uplink() {
                 mic: Some([132, 250, 228, 10]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::ack_event(integration_pb::AckEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -1367,8 +1367,8 @@ async fn test_lorawan_10_uplink() {
                 mic: Some([160, 195, 68, 8]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::uplink_event(integration_pb::UplinkEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -1418,8 +1418,8 @@ async fn test_lorawan_10_uplink() {
                 mic: Some([69, 90, 200, 95]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::uplink_event(integration_pb::UplinkEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -1530,8 +1530,8 @@ async fn test_lorawan_10_uplink() {
                 mic: Some([210, 52, 52, 94]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::uplink_event(integration_pb::UplinkEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -1667,9 +1667,9 @@ async fn test_lorawan_10_uplink() {
                 mic: Some([104, 147, 35, 121]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
-                assert::scheduler_run_after_set(dev.dev_eui.clone()),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
+                assert::scheduler_run_after_set(dev.dev_eui),
             ],
         },
     ];
@@ -1897,7 +1897,7 @@ async fn test_lorawan_10_end_to_end_enc() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 1,
                 data: vec![1, 2, 3, 4],
                 f_cnt_down: Some(10),
@@ -1954,8 +1954,8 @@ async fn test_lorawan_10_end_to_end_enc() {
                     }),
                     ..Default::default()
                 }),
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -2131,8 +2131,8 @@ async fn test_lorawan_11_uplink() {
                 mic: Some([104, 147, 104, 147]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::uplink_event(integration_pb::UplinkEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -2161,7 +2161,7 @@ async fn test_lorawan_11_uplink() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 1,
                 f_cnt_down: Some(4),
                 is_pending: true,
@@ -2193,8 +2193,8 @@ async fn test_lorawan_11_uplink() {
                 mic: Some([76, 46, 132, 250]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::ack_event(integration_pb::AckEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -2275,7 +2275,7 @@ async fn test_lorawan_10_rx_delay() {
     .await
     .unwrap();
 
-    let dp = device_profile::create(device_profile::DeviceProfile {
+    let mut dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
         tenant_id: t.id.clone(),
         region: lrwn::region::CommonName::EU868,
@@ -2368,8 +2368,8 @@ async fn test_lorawan_10_rx_delay() {
             mic: Some([210, 52, 52, 94]),
         },
         assert: vec![
-            assert::f_cnt_up(dev.dev_eui.clone(), 11),
-            assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+            assert::f_cnt_up(dev.dev_eui, 11),
+            assert::n_f_cnt_down(dev.dev_eui, 5),
             assert::uplink_event(integration_pb::UplinkEvent {
                 device_info: Some(integration_pb::DeviceInfo {
                     tenant_name: t.name.clone(),
@@ -2451,6 +2451,238 @@ async fn test_lorawan_10_rx_delay() {
                 ],
                 ..Default::default()
             }),
+        ],
+    }];
+
+    for tst in &tests {
+        run_test(tst).await;
+    }
+
+    // Test with RX1 Delay decreased in device-profile.
+    // This should make any difference as we only accept users to increase the RX1 Delay.
+    dp.rx1_delay = 2;
+    let mut dp = device_profile::update(dp).await.unwrap();
+
+    let tests = vec![Test {
+        name: "confirmed uplink without payload (dp.rx1_delay=2, used rx_delay = 3)".into(),
+        dev_eui: dev.dev_eui,
+        device_queue_items: vec![],
+        before_func: None,
+        after_func: None,
+        device_session: Some(ds.clone()),
+        tx_info: tx_info.clone(),
+        rx_info: rx_info.clone(),
+        phy_payload: lrwn::PhyPayload {
+            mhdr: lrwn::MHDR {
+                m_type: lrwn::MType::ConfirmedDataUp,
+                major: lrwn::Major::LoRaWANR1,
+            },
+            payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                fhdr: lrwn::FHDR {
+                    devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                    f_cnt: 10,
+                    ..Default::default()
+                },
+                f_port: Some(1),
+                frm_payload: None,
+            }),
+            mic: Some([210, 52, 52, 94]),
+        },
+        assert: vec![
+            assert::f_cnt_up(dev.dev_eui, 11),
+            assert::n_f_cnt_down(dev.dev_eui, 5),
+            assert::uplink_event(integration_pb::UplinkEvent {
+                device_info: Some(integration_pb::DeviceInfo {
+                    tenant_name: t.name.clone(),
+                    tenant_id: t.id.to_string(),
+                    application_name: app.name.clone(),
+                    application_id: app.id.to_string(),
+                    device_profile_name: dp.name.clone(),
+                    device_profile_id: dp.id.to_string(),
+                    device_name: dev.name.clone(),
+                    dev_eui: dev.dev_eui.to_string(),
+                    ..Default::default()
+                }),
+                dev_addr: "01020304".into(),
+                tx_info: Some(tx_info.clone()),
+                rx_info: vec![rx_info.clone()],
+                f_cnt: 10,
+                f_port: 1,
+                confirmed: true,
+                dr: 0,
+                ..Default::default()
+            }),
+            assert::downlink_frame(gw::DownlinkFrame {
+                gateway_id: "0102030405060708".into(),
+                items: vec![
+                    gw::DownlinkFrameItem {
+                        phy_payload: vec![96, 4, 3, 2, 1, 160, 5, 0, 161, 179, 218, 104],
+                        tx_info_legacy: None,
+                        tx_info: Some(gw::DownlinkTxInfo {
+                            frequency: 868100000,
+                            power: 16,
+                            modulation: Some(gw::Modulation {
+                                parameters: Some(gw::modulation::Parameters::Lora(
+                                    gw::LoraModulationInfo {
+                                        bandwidth: 125000,
+                                        spreading_factor: 12,
+                                        code_rate: gw::CodeRate::Cr45.into(),
+                                        polarization_inversion: true,
+                                        ..Default::default()
+                                    },
+                                )),
+                            }),
+                            timing: Some(gw::Timing {
+                                parameters: Some(gw::timing::Parameters::Delay(
+                                    gw::DelayTimingInfo {
+                                        delay: Some(Duration::from_secs(3).into()),
+                                    },
+                                )),
+                            }),
+                            ..Default::default()
+                        }),
+                    },
+                    gw::DownlinkFrameItem {
+                        phy_payload: vec![96, 4, 3, 2, 1, 160, 5, 0, 161, 179, 218, 104],
+                        tx_info_legacy: None,
+                        tx_info: Some(gw::DownlinkTxInfo {
+                            frequency: 869525000,
+                            power: 29,
+                            modulation: Some(gw::Modulation {
+                                parameters: Some(gw::modulation::Parameters::Lora(
+                                    gw::LoraModulationInfo {
+                                        bandwidth: 125000,
+                                        spreading_factor: 12,
+                                        code_rate: gw::CodeRate::Cr45.into(),
+                                        polarization_inversion: true,
+                                        ..Default::default()
+                                    },
+                                )),
+                            }),
+                            timing: Some(gw::Timing {
+                                parameters: Some(gw::timing::Parameters::Delay(
+                                    gw::DelayTimingInfo {
+                                        delay: Some(Duration::from_secs(4).into()),
+                                    },
+                                )),
+                            }),
+                            ..Default::default()
+                        }),
+                    },
+                ],
+                ..Default::default()
+            }),
+        ],
+    }];
+
+    for tst in &tests {
+        run_test(tst).await;
+    }
+
+    // Test with RX1 Delay increased in device-profile.
+    // This should trigger a mac-command.
+    dp.rx1_delay = 5;
+    let dp = device_profile::update(dp).await.unwrap();
+
+    let tests = vec![Test {
+        name: "confirmed uplink without payload (dp.rx1_delay=5, expects mac-command)".into(),
+        dev_eui: dev.dev_eui,
+        device_queue_items: vec![],
+        before_func: None,
+        after_func: None,
+        device_session: Some(ds.clone()),
+        tx_info: tx_info.clone(),
+        rx_info: rx_info.clone(),
+        phy_payload: lrwn::PhyPayload {
+            mhdr: lrwn::MHDR {
+                m_type: lrwn::MType::ConfirmedDataUp,
+                major: lrwn::Major::LoRaWANR1,
+            },
+            payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                fhdr: lrwn::FHDR {
+                    devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                    f_cnt: 10,
+                    ..Default::default()
+                },
+                f_port: Some(1),
+                frm_payload: None,
+            }),
+            mic: Some([210, 52, 52, 94]),
+        },
+        assert: vec![
+            assert::f_cnt_up(dev.dev_eui, 11),
+            assert::n_f_cnt_down(dev.dev_eui, 5),
+            assert::uplink_event(integration_pb::UplinkEvent {
+                device_info: Some(integration_pb::DeviceInfo {
+                    tenant_name: t.name.clone(),
+                    tenant_id: t.id.to_string(),
+                    application_name: app.name.clone(),
+                    application_id: app.id.to_string(),
+                    device_profile_name: dp.name.clone(),
+                    device_profile_id: dp.id.to_string(),
+                    device_name: dev.name.clone(),
+                    dev_eui: dev.dev_eui.to_string(),
+                    ..Default::default()
+                }),
+                dev_addr: "01020304".into(),
+                tx_info: Some(tx_info.clone()),
+                rx_info: vec![rx_info.clone()],
+                f_cnt: 10,
+                f_port: 1,
+                confirmed: true,
+                dr: 0,
+                ..Default::default()
+            }),
+            assert::downlink_phy_payloads(vec![
+                lrwn::PhyPayload {
+                    mhdr: lrwn::MHDR {
+                        m_type: lrwn::MType::UnconfirmedDataDown,
+                        major: lrwn::Major::LoRaWANR1,
+                    },
+                    payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                        fhdr: lrwn::FHDR {
+                            devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                            f_cnt: 5,
+                            f_ctrl: lrwn::FCtrl {
+                                adr: true,
+                                ack: true,
+                                f_opts_len: 2,
+                                ..Default::default()
+                            },
+                            f_opts: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::Raw(vec![
+                                8, 5,
+                            ])]),
+                        },
+                        f_port: None,
+                        frm_payload: None,
+                    }),
+                    mic: Some([37, 72, 226, 133]),
+                },
+                lrwn::PhyPayload {
+                    mhdr: lrwn::MHDR {
+                        m_type: lrwn::MType::UnconfirmedDataDown,
+                        major: lrwn::Major::LoRaWANR1,
+                    },
+                    payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                        fhdr: lrwn::FHDR {
+                            devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                            f_cnt: 5,
+                            f_ctrl: lrwn::FCtrl {
+                                adr: true,
+                                ack: true,
+                                f_opts_len: 2,
+                                ..Default::default()
+                            },
+                            f_opts: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::Raw(vec![
+                                8, 5,
+                            ])]),
+                        },
+                        f_port: None,
+                        frm_payload: None,
+                    }),
+                    mic: Some([37, 72, 226, 133]),
+                },
+            ]),
         ],
     }];
 
@@ -2596,8 +2828,8 @@ async fn test_lorawan_10_mac_commands() {
                 mic: Some([122, 152, 152, 220]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -2654,7 +2886,7 @@ async fn test_lorawan_10_mac_commands() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 1,
                 data: vec![1, 2, 3, 4],
                 ..Default::default()
@@ -2695,8 +2927,8 @@ async fn test_lorawan_10_mac_commands() {
                 mic: Some([122, 152, 152, 220]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -2778,7 +3010,7 @@ async fn test_lorawan_10_mac_commands() {
                 mic: Some([0xb6, 0x20, 0xd2, 0x14]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -2965,7 +3197,7 @@ async fn test_lorawan_11_mac_commands() {
         rx_info: rx_info.clone(),
         phy_payload: phy,
         assert: vec![
-            assert::f_cnt_up(dev.dev_eui.clone(), 11),
+            assert::f_cnt_up(dev.dev_eui, 11),
             assert::downlink_phy_payloads(vec![
                 lrwn::PhyPayload {
                     mhdr: lrwn::MHDR {
@@ -3120,7 +3352,7 @@ async fn test_lorawan_10_device_queue() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![1, 2, 3, 4],
                 ..Default::default()
@@ -3147,8 +3379,8 @@ async fn test_lorawan_10_device_queue() {
                 mic: Some([160, 195, 68, 8]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -3199,14 +3431,14 @@ async fn test_lorawan_10_device_queue() {
             device_queue_items: vec![
                 device_queue::DeviceQueueItem {
                     id: Uuid::new_v4(),
-                    dev_eui: dev.dev_eui.clone(),
+                    dev_eui: dev.dev_eui,
                     f_port: 10,
                     data: vec![1, 2, 3, 4],
                     ..Default::default()
                 },
                 device_queue::DeviceQueueItem {
                     id: Uuid::new_v4(),
-                    dev_eui: dev.dev_eui.clone(),
+                    dev_eui: dev.dev_eui,
                     f_port: 10,
                     data: vec![2, 2, 3, 4],
                     ..Default::default()
@@ -3234,8 +3466,8 @@ async fn test_lorawan_10_device_queue() {
                 mic: Some([160, 195, 68, 8]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -3289,7 +3521,7 @@ async fn test_lorawan_10_device_queue() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![1, 2, 3, 4],
                 confirmed: true,
@@ -3317,8 +3549,8 @@ async fn test_lorawan_10_device_queue() {
                 mic: Some([160, 195, 68, 8]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -3368,7 +3600,7 @@ async fn test_lorawan_10_device_queue() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![0; 52],
                 ..Default::default()
@@ -3395,7 +3627,7 @@ async fn test_lorawan_10_device_queue() {
                 mic: Some([160, 195, 68, 8]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::no_downlink_frame(),
                 assert::integration_log(vec!["Device queue-item discarded because it exceeds the max. payload size".into()]),
             ],
@@ -3405,7 +3637,7 @@ async fn test_lorawan_10_device_queue() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![0; 51],
                 ..Default::default()
@@ -3437,7 +3669,7 @@ async fn test_lorawan_10_device_queue() {
                 mic: Some([106, 14, 124, 212]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -3598,7 +3830,7 @@ async fn test_lorawan_11_device_queue() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![1, 2, 3, 4],
                 ..Default::default()
@@ -3625,8 +3857,8 @@ async fn test_lorawan_11_device_queue() {
                 mic: Some([160, 195, 160, 195]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -3677,14 +3909,14 @@ async fn test_lorawan_11_device_queue() {
             device_queue_items: vec![
                 device_queue::DeviceQueueItem {
                     id: Uuid::new_v4(),
-                    dev_eui: dev.dev_eui.clone(),
+                    dev_eui: dev.dev_eui,
                     f_port: 10,
                     data: vec![1, 2, 3, 4],
                     ..Default::default()
                 },
                 device_queue::DeviceQueueItem {
                     id: Uuid::new_v4(),
-                    dev_eui: dev.dev_eui.clone(),
+                    dev_eui: dev.dev_eui,
                     f_port: 10,
                     data: vec![2, 2, 3, 4],
                     ..Default::default()
@@ -3712,8 +3944,8 @@ async fn test_lorawan_11_device_queue() {
                 mic: Some([160, 195, 160, 195]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -3767,7 +3999,7 @@ async fn test_lorawan_11_device_queue() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![1, 2, 3, 4],
                 confirmed: true,
@@ -3795,8 +4027,8 @@ async fn test_lorawan_11_device_queue() {
                 mic: Some([160, 195, 160, 195]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -3846,7 +4078,7 @@ async fn test_lorawan_11_device_queue() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![0; 52],
                 ..Default::default()
@@ -3873,7 +4105,7 @@ async fn test_lorawan_11_device_queue() {
                 mic: Some([160, 195, 160, 195]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::no_downlink_frame(),
                 assert::integration_log(vec!["Device queue-item discarded because it exceeds the max. payload size".into()]),
             ],
@@ -3883,7 +4115,7 @@ async fn test_lorawan_11_device_queue() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil(),
-                dev_eui: dev.dev_eui.clone(),
+                dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![0; 51],
                 ..Default::default()
@@ -3917,7 +4149,7 @@ async fn test_lorawan_11_device_queue() {
                 mic: Some([204, 225, 204, 225]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -4121,8 +4353,8 @@ async fn test_lorawan_10_adr() {
                 mic: Some([187, 243, 244, 117]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads_decoded_f_opts(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -4225,7 +4457,7 @@ async fn test_lorawan_10_adr() {
                 mic: Some([122, 152, 152, 220]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::no_downlink_frame(),
             ],
         },
@@ -4234,7 +4466,7 @@ async fn test_lorawan_10_adr() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     mac_command::set_pending(
                         &dev_eui,
@@ -4289,12 +4521,12 @@ async fn test_lorawan_10_adr() {
                 mic: Some([235, 224, 96, 3]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
-                assert::tx_power_index(dev.dev_eui.clone(), 3),
-                assert::dr(dev.dev_eui.clone(), 0),
-                assert::nb_trans(dev.dev_eui.clone(), 1),
-                assert::enabled_uplink_channel_indices(dev.dev_eui.clone(), vec![0, 1, 2]),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
+                assert::tx_power_index(dev.dev_eui, 3),
+                assert::dr(dev.dev_eui, 0),
+                assert::nb_trans(dev.dev_eui, 1),
+                assert::enabled_uplink_channel_indices(dev.dev_eui, vec![0, 1, 2]),
             ],
         },
         Test {
@@ -4302,7 +4534,7 @@ async fn test_lorawan_10_adr() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     mac_command::set_pending(
                         &dev_eui,
@@ -4357,12 +4589,12 @@ async fn test_lorawan_10_adr() {
                 mic: Some([252, 17, 226, 74]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
-                assert::tx_power_index(dev.dev_eui.clone(), 0),
-                assert::dr(dev.dev_eui.clone(), 0),
-                assert::nb_trans(dev.dev_eui.clone(), 0),
-                assert::enabled_uplink_channel_indices(dev.dev_eui.clone(), vec![0, 1, 2]),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
+                assert::tx_power_index(dev.dev_eui, 0),
+                assert::dr(dev.dev_eui, 0),
+                assert::nb_trans(dev.dev_eui, 0),
+                assert::enabled_uplink_channel_indices(dev.dev_eui, vec![0, 1, 2]),
             ],
         },
         Test {
@@ -4395,9 +4627,9 @@ async fn test_lorawan_10_adr() {
                 mic: Some([73, 26, 32, 42]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
-                assert::enabled_uplink_channel_indices(dev.dev_eui.clone(), vec![0, 1, 2]),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
+                assert::enabled_uplink_channel_indices(dev.dev_eui, vec![0, 1, 2]),
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -4468,8 +4700,8 @@ async fn test_lorawan_10_adr() {
                 mic: Some([122, 152, 152, 220]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::downlink_phy_payloads_decoded_f_opts(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -4536,10 +4768,7 @@ async fn test_lorawan_10_adr() {
                         mic: Some([0x8, 0xee, 0xdd, 0x34]),
                     },
                 ]),
-                assert::enabled_uplink_channel_indices(
-                    dev.dev_eui.clone(),
-                    vec![0, 1, 2, 3, 4, 5, 6, 7],
-                ),
+                assert::enabled_uplink_channel_indices(dev.dev_eui, vec![0, 1, 2, 3, 4, 5, 6, 7]),
             ],
         },
         Test {
@@ -4547,7 +4776,7 @@ async fn test_lorawan_10_adr() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     mac_command::set_pending(
                         &dev_eui,
@@ -4602,10 +4831,10 @@ async fn test_lorawan_10_adr() {
                 mic: Some([235, 224, 96, 3]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
                 assert::no_downlink_frame(),
-                assert::enabled_uplink_channel_indices(dev.dev_eui.clone(), vec![0, 1, 2]),
+                assert::enabled_uplink_channel_indices(dev.dev_eui, vec![0, 1, 2]),
             ],
         },
         Test {
@@ -4613,7 +4842,7 @@ async fn test_lorawan_10_adr() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     mac_command::set_pending(
                         &dev_eui,
@@ -4668,12 +4897,9 @@ async fn test_lorawan_10_adr() {
                 mic: Some([252, 17, 226, 74]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::enabled_uplink_channel_indices(
-                    dev.dev_eui.clone(),
-                    vec![0, 1, 2, 3, 4, 5, 6, 7],
-                ),
-                assert::mac_command_error_count(dev.dev_eui.clone(), lrwn::CID::LinkADRReq, 1),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::enabled_uplink_channel_indices(dev.dev_eui, vec![0, 1, 2, 3, 4, 5, 6, 7]),
+                assert::mac_command_error_count(dev.dev_eui, lrwn::CID::LinkADRReq, 1),
             ],
         },
         Test {
@@ -4706,12 +4932,9 @@ async fn test_lorawan_10_adr() {
                 mic: Some([187, 243, 244, 117]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::n_f_cnt_down(dev.dev_eui.clone(), 5),
-                assert::enabled_uplink_channel_indices(
-                    dev.dev_eui.clone(),
-                    vec![0, 1, 2, 3, 4, 5, 6, 7],
-                ),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::n_f_cnt_down(dev.dev_eui, 5),
+                assert::enabled_uplink_channel_indices(dev.dev_eui, vec![0, 1, 2, 3, 4, 5, 6, 7]),
                 assert::downlink_phy_payloads_decoded_f_opts(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -4811,11 +5034,11 @@ async fn test_lorawan_10_adr() {
                 mic: Some([187, 243, 244, 117]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
-                assert::dr(dev.dev_eui.clone(), 0),
-                assert::tx_power_index(dev.dev_eui.clone(), 0),
+                assert::f_cnt_up(dev.dev_eui, 11),
+                assert::dr(dev.dev_eui, 0),
+                assert::tx_power_index(dev.dev_eui, 0),
                 assert::uplink_adr_history(
-                    dev.dev_eui.clone(),
+                    dev.dev_eui,
                     vec![internal::UplinkAdrHistory {
                         f_cnt: 10,
                         max_snr: 0.0,
@@ -4956,7 +5179,7 @@ async fn test_lorawan_10_device_status_request() {
                 mic: Some([122, 152, 152, 220]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::downlink_phy_payloads_decoded_f_opts(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
@@ -5033,7 +5256,7 @@ async fn test_lorawan_10_device_status_request() {
                 mic: Some([122, 152, 152, 220]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::no_downlink_frame(),
             ],
         },
@@ -5073,7 +5296,7 @@ async fn test_lorawan_10_device_status_request() {
                 mic: Some([29, 141, 54, 155]),
             },
             assert: vec![
-                assert::f_cnt_up(dev.dev_eui.clone(), 11),
+                assert::f_cnt_up(dev.dev_eui, 11),
                 assert::status_event(integration_pb::StatusEvent {
                     device_info: Some(integration_pb::DeviceInfo {
                         tenant_name: t.name.clone(),
@@ -5205,7 +5428,7 @@ async fn test_lorawan_11_receive_window_selection() {
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
-            dev_eui: dev.dev_eui.clone(),
+            dev_eui: dev.dev_eui,
             f_port: 1,
             data: vec![1],
             ..Default::default()
@@ -5232,7 +5455,7 @@ async fn test_lorawan_11_receive_window_selection() {
             mic: Some([104, 147, 104, 147]),
         },
         assert: vec![
-            assert::f_cnt_up(dev.dev_eui.clone(), 11),
+            assert::f_cnt_up(dev.dev_eui, 11),
             assert::downlink_frame(gw::DownlinkFrame {
                 gateway_id: "0102030405060708".into(),
                 items: vec![gw::DownlinkFrameItem {
@@ -5275,7 +5498,7 @@ async fn test_lorawan_11_receive_window_selection() {
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
-            dev_eui: dev.dev_eui.clone(),
+            dev_eui: dev.dev_eui,
             f_port: 1,
             data: vec![1],
             ..Default::default()
@@ -5302,7 +5525,7 @@ async fn test_lorawan_11_receive_window_selection() {
             mic: Some([104, 147, 104, 147]),
         },
         assert: vec![
-            assert::f_cnt_up(dev.dev_eui.clone(), 11),
+            assert::f_cnt_up(dev.dev_eui, 11),
             assert::downlink_frame(gw::DownlinkFrame {
                 gateway_id: "0102030405060708".into(),
                 items: vec![gw::DownlinkFrameItem {
@@ -5345,7 +5568,7 @@ async fn test_lorawan_11_receive_window_selection() {
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
-            dev_eui: dev.dev_eui.clone(),
+            dev_eui: dev.dev_eui,
             f_port: 1,
             data: vec![1],
             ..Default::default()
@@ -5372,7 +5595,7 @@ async fn test_lorawan_11_receive_window_selection() {
             mic: Some([104, 147, 104, 147]),
         },
         assert: vec![
-            assert::f_cnt_up(dev.dev_eui.clone(), 11),
+            assert::f_cnt_up(dev.dev_eui, 11),
             assert::downlink_frame(gw::DownlinkFrame {
                 gateway_id: "0102030405060708".into(),
                 items: vec![
@@ -5444,7 +5667,7 @@ async fn test_lorawan_11_receive_window_selection() {
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
             id: Uuid::nil(),
-            dev_eui: dev.dev_eui.clone(),
+            dev_eui: dev.dev_eui,
             f_port: 1,
             data: vec![0; 100],
             ..Default::default()
@@ -5471,7 +5694,7 @@ async fn test_lorawan_11_receive_window_selection() {
             mic: Some([0xd4, 0x59, 0x68, 0x93]),
         },
         assert: vec![
-            assert::f_cnt_up(dev.dev_eui.clone(), 11),
+            assert::f_cnt_up(dev.dev_eui, 11),
             assert::downlink_frame(gw::DownlinkFrame {
                 gateway_id: "0102030405060708".into(),
                 items: vec![

@@ -1,3 +1,4 @@
+use std::cmp;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -1437,9 +1438,14 @@ impl Data {
             self.mac_commands.push(set);
         }
 
-        let rx1_delay = ds.rx1_delay as u8;
-        if rx1_delay != self.network_conf.rx1_delay {
-            let set = maccommand::rx_timing_setup::request(self.network_conf.rx1_delay);
+        let dev_rx1_delay = ds.rx1_delay as u8;
+        let req_rx1_delay = cmp::max(
+            self.network_conf.rx1_delay,
+            self.device_profile.rx1_delay as u8,
+        );
+
+        if dev_rx1_delay != req_rx1_delay {
+            let set = maccommand::rx_timing_setup::request(req_rx1_delay);
             mac_command::set_pending(&self.device.dev_eui, lrwn::CID::RxTimingSetupReq, &set)
                 .await?;
             self.mac_commands.push(set);

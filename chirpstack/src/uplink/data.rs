@@ -1269,8 +1269,23 @@ impl Data {
     async fn start_downlink_data_flow(&mut self) -> Result<()> {
         trace!("Starting downlink data flow");
 
-        let conf = config::get();
-        tokio::time::sleep(conf.network.get_downlink_data_delay).await;
+        // We sleep get_downlink_data_delay to give the end-user application some time
+        // to enqueue data before the downlink flow starts. In case the user has increased
+        // the RX1 Delay relative to the system RX1 Delay, then we add the additional
+        // seconds to this wait.
+        {
+            let conf = config::get();
+            let ds = self.device.as_ref().unwrap().get_device_session()?;
+            let network_conf = config::get_region_network(&ds.region_config_id)?;
+
+            let dev_rx1_delay = ds.rx1_delay as u8;
+            let sys_rx1_delay = network_conf.rx1_delay;
+
+            let rx1_delay_increase = dev_rx1_delay.checked_sub(sys_rx1_delay).unwrap_or_default();
+            let rx1_delay_increase = std::time::Duration::from_secs(rx1_delay_increase.into());
+
+            tokio::time::sleep(conf.network.get_downlink_data_delay + rx1_delay_increase).await;
+        }
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             downlink::data::Data::handle_response(
@@ -1293,8 +1308,26 @@ impl Data {
     async fn start_downlink_data_flow_relayed(&mut self) -> Result<()> {
         trace!("Starting relayed downlink data flow");
 
-        let conf = config::get();
-        tokio::time::sleep(conf.network.get_downlink_data_delay).await;
+        // We sleep get_downlink_data_delay to give the end-user application some time
+        // to enqueue data before the downlink flow starts. In case the user has increased
+        // the RX1 Delay relative to the system RX1 Delay, then we add the additional
+        // seconds to this wait.
+        // Note: In this case we use the RX1 Delay from the Relay device-session.
+        {
+            let conf = config::get();
+            let relay_ctx = self.relay_context.as_ref().unwrap();
+            let ds = relay_ctx.device.get_device_session()?;
+
+            let network_conf = config::get_region_network(&ds.region_config_id)?;
+
+            let dev_rx1_delay = ds.rx1_delay as u8;
+            let sys_rx1_delay = network_conf.rx1_delay;
+
+            let rx1_delay_increase = dev_rx1_delay.checked_sub(sys_rx1_delay).unwrap_or_default();
+            let rx1_delay_increase = std::time::Duration::from_secs(rx1_delay_increase.into());
+
+            tokio::time::sleep(conf.network.get_downlink_data_delay + rx1_delay_increase).await;
+        }
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
             downlink::data::Data::handle_response_relayed(

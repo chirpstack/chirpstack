@@ -410,6 +410,15 @@ message DeviceProfile {
   //
   // If set to true, it means that the device is allowed to use roaming.
   bool allow_roaming = 52;
+
+  // RX1 Delay.
+  //
+  // This makes it possible to override the system RX1 Delay. Please note that
+  // this values only has effect in case it is higher than the system value.
+  // In other words, it can be used to increase the RX1 Delay but not to decrease
+  // it.
+  // Valid options are 1 - 15 (0 = always use system RX1 Delay).
+  uint32 rx1_delay = 53;
 }
 
 message Measurement {

@@ -73,6 +73,7 @@ pub struct DeviceProfile {
     pub relay_global_uplink_limit_bucket_size: i16,
     pub relay_overall_limit_bucket_size: i16,
     pub allow_roaming: bool,
+    pub rx1_delay: i16,
 }
 
 impl DeviceProfile {
@@ -80,6 +81,11 @@ impl DeviceProfile {
         if self.name.is_empty() {
             return Err(Error::Validation("name is not set".into()));
         }
+
+        if self.rx1_delay < 0 || self.rx1_delay > 15 {
+            return Err(Error::Validation("RX1 Delay must be between 0 - 15".into()));
+        }
+
         Ok(())
     }
 }
@@ -143,6 +149,7 @@ impl Default for DeviceProfile {
             relay_global_uplink_limit_bucket_size: 0,
             relay_overall_limit_bucket_size: 0,
             allow_roaming: false,
+            rx1_delay: 0,
         }
     }
 }
@@ -279,6 +286,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                 .eq(&dp.relay_global_uplink_limit_bucket_size),
             device_profile::relay_overall_limit_bucket_size.eq(&dp.relay_overall_limit_bucket_size),
             device_profile::allow_roaming.eq(&dp.allow_roaming),
+            device_profile::rx1_delay.eq(&dp.rx1_delay),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await

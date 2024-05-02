@@ -143,6 +143,7 @@ diesel::table! {
         relay_global_uplink_limit_bucket_size -> Int2,
         relay_overall_limit_bucket_size -> Int2,
         allow_roaming -> Bool,
+        rx1_delay -> Int2,
     }
 }
 

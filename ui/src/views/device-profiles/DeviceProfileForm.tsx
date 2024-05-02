@@ -241,6 +241,7 @@ function DeviceProfileForm(props: IProps) {
     dp.setFlushQueueOnActivate(v.flushQueueOnActivate);
     dp.setUplinkInterval(v.uplinkInterval);
     dp.setDeviceStatusReqInterval(v.deviceStatusReqInterval);
+    dp.setRx1Delay(v.rx1Delay);
 
     // join otaa /abp
     dp.setSupportsOtaa(v.supportsOtaa);
@@ -502,6 +503,18 @@ function DeviceProfileForm(props: IProps) {
             </Col>
             <Col span={12}>
               <Form.Item
+                label="Allow roaming"
+                name="allowRoaming"
+                valuePropName="checked"
+                tooltip="If enabled (and if roaming is configured on the server), this allows the device to use roaming."
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={8}>
+              <Form.Item
                 label="Expected uplink interval (secs)"
                 tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
                 name="uplinkInterval"
@@ -515,25 +528,22 @@ function DeviceProfileForm(props: IProps) {
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>
             </Col>
-          </Row>
-          <Row>
-            <Col span={12}>
-              <Form.Item
-                label="Allow roaming"
-                name="allowRoaming"
-                valuePropName="checked"
-                tooltip="If enabled (and if roaming is configured on the server), this allows the device to use roaming."
-              >
-                <Switch />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Device-status request frequency (req/day)"
                 tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
                 name="deviceStatusReqInterval"
               >
                 <InputNumber min={0} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="RX1 Delay (0 = use system default)"
+                tooltip="This option makes it possible to set a higher RX1 Delay for devices using this device-profile. Note that a lower value than the system default will be ignored. If configured and incremented, then ChirpStack will increase the downlink data delay with the same increment."
+                name="rx1Delay"
+              >
+                <InputNumber min={0} max={15} disabled={props.disabled} />
               </Form.Item>
             </Col>
           </Row>
