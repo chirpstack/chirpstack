@@ -717,7 +717,39 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                 // this might cause issues.
                 // The alternative would be to keep the transaction open for a long time + keep
                 // the device records locked during this time which could case issues as well.
-                diesel::sql_query(
+                diesel::sql_query(if cfg!(feature = "sqlite") {
+                    r#"
+                    update
+                        device
+                    set
+                        scheduler_run_after = ?3
+                    where
+                        dev_eui in (
+                            select
+                                d.dev_eui
+                            from
+                                device d
+                            where
+                                d.enabled_class in ('B', 'C')
+                                and (d.scheduler_run_after is null or d.scheduler_run_after < ?2)
+                                and exists (
+                                    select
+                                        1
+                                    from
+                                        device_queue_item dq
+                                    where
+                                        dq.dev_eui = d.dev_eui
+                                        and not (
+                                            -- pending queue-item with timeout_after in the future
+                                            (dq.is_pending = true and dq.timeout_after > ?2)
+                                        )
+                                )
+                            order by d.dev_eui
+                            limit ?1
+                        )
+                    returning *
+                "#
+                } else {
                     r#"
                     update
                         device
@@ -750,8 +782,8 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                             for update skip locked
                         )
                     returning *
-                "#,
-                )
+                "#
+                })
                 .bind::<diesel::sql_types::Integer, _>(limit as i32)
                 .bind::<DbTimestamptz, _>(Utc::now())
                 .bind::<DbTimestamptz, _>(
