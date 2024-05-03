@@ -544,13 +544,14 @@ pub async fn get_integrations_for_application(
     Ok(items)
 }
 
-pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
-    #[derive(QueryableByName)]
-    struct Measurement {
-        #[diesel(sql_type = diesel::sql_types::Text)]
-        pub key: String,
-    }
+#[derive(QueryableByName)]
+struct Measurement {
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    pub key: String,
+}
 
+#[cfg(feature = "postgres")]
+pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
     let keys: Vec<Measurement> = diesel::sql_query(
         r#"
                 select
@@ -564,6 +565,27 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                 order by
                     key
                 "#,
+    )
+    .bind::<DbUuid, _>(UuidNT::from(application_id))
+    .load(&mut get_async_db_conn().await?)
+    .await
+    .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
+    Ok(keys.iter().map(|k| k.key.clone()).collect())
+}
+
+#[cfg(feature = "sqlite")]
+pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
+    let keys: Vec<Measurement> = diesel::sql_query(
+        r#"
+                    select distinct json_each.key as key
+                    from device_profile dp, json_each(dp.measurements)
+                    inner join device d
+                        on d.device_profile_id = dp.id
+                    where
+                        d.application_id = ?
+                    order by
+                        key
+                    "#,
     )
     .bind::<DbUuid, _>(UuidNT::from(application_id))
     .load(&mut get_async_db_conn().await?)
