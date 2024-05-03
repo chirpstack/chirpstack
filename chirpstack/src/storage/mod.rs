@@ -272,10 +272,10 @@ pub async fn reset_db() -> Result<()> {
     tokio::task::spawn_blocking(move || -> Result<()> {
         c_wrapped
             .revert_all_migrations(MIGRATIONS)
-            .map_err(|e| anyhow!("{}", e))?;
+            .map_err(|e| anyhow!("During revert: {}", e))?;
         c_wrapped
             .run_pending_migrations(MIGRATIONS)
-            .map_err(|e| anyhow!("{}", e))?;
+            .map_err(|e| anyhow!("During run: {}", e))?;
 
         Ok(())
     })
