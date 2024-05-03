@@ -3,6 +3,7 @@ use std::sync::RwLock;
 use anyhow::{Context, Result};
 use tracing::info;
 
+use diesel::sqlite::SqliteConnection;
 use diesel::{ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
@@ -33,8 +34,31 @@ pub fn setup(conf: &Postgresql) -> Result<()> {
     Ok(())
 }
 
-fn sqlite_establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncSqliteConnection>> {
-    unimplemented!()
+fn from_tokio_join_error(join_error: JoinError) -> diesel::result::Error {
+    diesel::result::Error::DatabaseError(
+        diesel::result::DatabaseErrorKind::UnableToSendCommand,
+        Box::new(join_error.to_string()),
+    )
+}
+
+fn sqlite_establish_connection(
+    config: &str,
+) -> BoxFuture<ConnectionResult<SyncConnectionWrapper<SqliteConnection>>> {
+    tokio::spawn_blocking(move || {
+        let conf = config::get();
+        let mut conn = ConnectionManager::<SqliteConnection>::new(&conf.dsn);
+
+        use diesel::RunQueryDsl;
+        diesel::sql_query("PRAGMA foreign_keys = ON").execute(conn)?;
+        conn
+    })
+    .unwrap_or_else(|err| {
+        QueryResult::Err(diesel::result::Error::DatabaseError(
+            diesel::result::DatabaseErrorKind::UnableToSendCommand,
+            Box::new(err.to_string()),
+        ))
+    })
+    .boxed;
 }
 
 fn get_async_db_pool() -> Result<AsyncSqlitePool> {
