@@ -3,7 +3,10 @@ use std::fmt;
 use std::time::Duration;
 
 use anyhow::Result;
-use chrono::{DateTime, Datelike, Duration as ChronoDuration, Local, TimeZone, Timelike};
+use chrono::{
+    DateTime, Datelike, Duration as ChronoDuration, Local, Months, NaiveDate, NaiveDateTime,
+    Timelike,
+};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -62,7 +65,7 @@ fn get_ttl(a: Aggregation) -> Duration {
     }
 }
 
-fn get_key(name: &str, a: Aggregation, dt: DateTime<Local>) -> String {
+fn get_key(name: &str, a: Aggregation, dt: NaiveDateTime) -> String {
     redis_key(format!(
         "metrics:{{{}}}:{}:{}",
         name,
@@ -97,40 +100,31 @@ pub async fn save(name: &str, record: &Record, aggregations: &[Aggregation]) -> 
     for a in aggregations {
         let ttl = get_ttl(*a);
 
-        let ts: DateTime<Local> = match a {
-            Aggregation::MINUTE => Local
-                .with_ymd_and_hms(
-                    record.time.year(),
-                    record.time.month(),
-                    record.time.day(),
-                    record.time.hour(),
-                    record.time.minute(),
-                    0,
-                )
-                .unwrap(),
-            Aggregation::HOUR => Local
-                .with_ymd_and_hms(
-                    record.time.year(),
-                    record.time.month(),
-                    record.time.day(),
-                    record.time.hour(),
-                    0,
-                    0,
-                )
-                .unwrap(),
-            Aggregation::DAY => Local
-                .with_ymd_and_hms(
-                    record.time.year(),
-                    record.time.month(),
-                    record.time.day(),
-                    0,
-                    0,
-                    0,
-                )
-                .unwrap(),
-            Aggregation::MONTH => Local
-                .with_ymd_and_hms(record.time.year(), record.time.month(), 1, 0, 0, 0)
-                .unwrap(),
+        let ts: NaiveDateTime = match a {
+            Aggregation::MINUTE => {
+                NaiveDate::from_ymd_opt(record.time.year(), record.time.month(), record.time.day())
+                    .ok_or_else(|| anyhow!("Invalid date"))?
+                    .and_hms_opt(record.time.hour(), record.time.minute(), 0)
+                    .ok_or_else(|| anyhow!("Invalid time"))?
+            }
+            Aggregation::HOUR => {
+                NaiveDate::from_ymd_opt(record.time.year(), record.time.month(), record.time.day())
+                    .ok_or_else(|| anyhow!("Invalid date"))?
+                    .and_hms_opt(record.time.hour(), 0, 0)
+                    .ok_or_else(|| anyhow!("Invalid time"))?
+            }
+            Aggregation::DAY => {
+                NaiveDate::from_ymd_opt(record.time.year(), record.time.month(), record.time.day())
+                    .ok_or_else(|| anyhow!("Invalid date"))?
+                    .and_hms_opt(0, 0, 0)
+                    .ok_or_else(|| anyhow!("Invalid time"))?
+            }
+            Aggregation::MONTH => {
+                NaiveDate::from_ymd_opt(record.time.year(), record.time.month(), 1)
+                    .ok_or_else(|| anyhow!("Invalid date"))?
+                    .and_hms_opt(0, 0, 0)
+                    .ok_or_else(|| anyhow!("Invalid time"))?
+            }
         };
 
         let key = get_key(name, *a, ts);
@@ -189,30 +183,18 @@ pub async fn get(
     end: DateTime<Local>,
 ) -> Result<Vec<Record>> {
     let mut keys: Vec<String> = Vec::new();
-    let mut timestamps: Vec<DateTime<Local>> = Vec::new();
+    let mut timestamps: Vec<NaiveDateTime> = Vec::new();
 
     match a {
         Aggregation::MINUTE => {
-            let mut ts = Local
-                .with_ymd_and_hms(
-                    start.year(),
-                    start.month(),
-                    start.day(),
-                    start.hour(),
-                    start.minute(),
-                    0,
-                )
-                .unwrap();
-            let end = Local
-                .with_ymd_and_hms(
-                    end.year(),
-                    end.month(),
-                    end.day(),
-                    end.hour(),
-                    end.minute(),
-                    0,
-                )
-                .unwrap();
+            let mut ts = NaiveDate::from_ymd_opt(start.year(), start.month(), start.day())
+                .ok_or_else(|| anyhow!("Invalid date"))?
+                .and_hms_opt(start.hour(), start.minute(), 0)
+                .ok_or_else(|| anyhow!("Invalid time"))?;
+            let end = NaiveDate::from_ymd_opt(end.year(), end.month(), end.day())
+                .ok_or_else(|| anyhow!("Invalid date"))?
+                .and_hms_opt(end.hour(), end.minute(), 0)
+                .ok_or_else(|| anyhow!("Invalid time"))?;
 
             while ts.le(&end) {
                 timestamps.push(ts);
@@ -221,74 +203,53 @@ pub async fn get(
             }
         }
         Aggregation::HOUR => {
-            let mut ts = Local
-                .with_ymd_and_hms(start.year(), start.month(), start.day(), start.hour(), 0, 0)
-                .unwrap();
-            let end = Local
-                .with_ymd_and_hms(end.year(), end.month(), end.day(), end.hour(), 0, 0)
-                .unwrap();
+            let mut ts = NaiveDate::from_ymd_opt(start.year(), start.month(), start.day())
+                .ok_or_else(|| anyhow!("Invalid date"))?
+                .and_hms_opt(start.hour(), 0, 0)
+                .ok_or_else(|| anyhow!("Invalid time"))?;
+            let end = NaiveDate::from_ymd_opt(end.year(), end.month(), end.day())
+                .ok_or_else(|| anyhow!("Invalid date"))?
+                .and_hms_opt(end.hour(), 0, 0)
+                .ok_or_else(|| anyhow!("Invalid time"))?;
 
             while ts.le(&end) {
                 timestamps.push(ts);
                 keys.push(get_key(name, a, ts));
-                ts += ChronoDuration::try_hours(1).unwrap();
+                ts += ChronoDuration::hours(1);
             }
         }
         Aggregation::DAY => {
-            let mut ts = Local
-                .with_ymd_and_hms(start.year(), start.month(), start.day(), 0, 0, 0)
-                .unwrap();
-            let end = Local
-                .with_ymd_and_hms(end.year(), end.month(), end.day(), 0, 0, 0)
-                .unwrap();
+            let mut ts = NaiveDate::from_ymd_opt(start.year(), start.month(), start.day())
+                .ok_or_else(|| anyhow!("Invalid date"))?
+                .and_hms_opt(0, 0, 0)
+                .ok_or_else(|| anyhow!("Invalid time"))?;
+            let end = NaiveDate::from_ymd_opt(end.year(), end.month(), end.day())
+                .ok_or_else(|| anyhow!("Invalid date"))?
+                .and_hms_opt(0, 0, 0)
+                .ok_or_else(|| anyhow!("Invalid time"))?;
 
             while ts.le(&end) {
                 timestamps.push(ts);
                 keys.push(get_key(name, a, ts));
-                ts = {
-                    if (ts + ChronoDuration::try_days(1).unwrap()).day() == ts.day() {
-                        // In case of DST to non-DST transition, the ts is incremented with less
-                        // than 24h and we end up with the same day. Therefore we increment by two
-                        // days.
-                        (ts + ChronoDuration::try_days(2).unwrap())
-                            .date_naive()
-                            .and_hms_opt(0, 0, 0)
-                            .unwrap()
-                            .and_local_timezone(Local)
-                            .unwrap()
-                    } else {
-                        // Make sure that the timestamp stays at midnight in case of non-DST to DST
-                        // change.
-                        (ts + ChronoDuration::try_days(1).unwrap())
-                            .date_naive()
-                            .and_hms_opt(0, 0, 0)
-                            .unwrap()
-                            .and_local_timezone(Local)
-                            .unwrap()
-                    }
-                };
+                ts += ChronoDuration::days(1);
             }
         }
         Aggregation::MONTH => {
-            let mut ts = Local
-                .with_ymd_and_hms(start.year(), start.month(), 1, 0, 0, 0)
-                .unwrap();
-            let end = Local
-                .with_ymd_and_hms(end.year(), end.month(), 1, 0, 0, 0)
-                .unwrap();
+            let mut ts = NaiveDate::from_ymd_opt(start.year(), start.month(), 1)
+                .ok_or_else(|| anyhow!("Invalid date"))?
+                .and_hms_opt(0, 0, 0)
+                .ok_or_else(|| anyhow!("Invalid time"))?;
+            let end = NaiveDate::from_ymd_opt(end.year(), end.month(), 1)
+                .ok_or_else(|| anyhow!("Invalid date"))?
+                .and_hms_opt(0, 0, 0)
+                .ok_or_else(|| anyhow!("Invalid time"))?;
 
             while ts.le(&end) {
                 timestamps.push(ts);
                 keys.push(get_key(name, a, ts));
-                ts = if ts.month() == 12 {
-                    Local
-                        .with_ymd_and_hms(ts.year() + 1, 1, 1, 0, 0, 0)
-                        .unwrap()
-                } else {
-                    Local
-                        .with_ymd_and_hms(ts.year(), ts.month() + 1, 1, 0, 0, 0)
-                        .unwrap()
-                };
+                ts = ts
+                    .checked_add_months(Months::new(1))
+                    .ok_or_else(|| anyhow!("Add month error"))?;
             }
         }
     }
@@ -308,6 +269,11 @@ pub async fn get(
     let mut out: Vec<Record> = Vec::new();
 
     for (i, r) in res.iter().enumerate() {
+        let tz = match timestamps[i].and_local_timezone(Local) {
+            chrono::LocalResult::Single(v) => v,
+            _ => continue,
+        };
+
         let mut metrics = r.clone();
 
         // In case of GAUGE values, the total aggregated value must be divided by the
@@ -328,7 +294,7 @@ pub async fn get(
         }
 
         out.push(Record {
-            time: timestamps[i],
+            time: tz,
             kind,
             metrics: metrics
                 .iter()
@@ -345,6 +311,7 @@ pub async fn get(
 pub mod test {
     use super::*;
     use crate::test;
+    use chrono::TimeZone;
 
     #[tokio::test]
     async fn test_minute() {
