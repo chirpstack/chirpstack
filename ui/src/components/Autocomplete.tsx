@@ -31,7 +31,11 @@ function AutoComplete({ placeholder, className, value, getOption, getOptions, on
     }
   }, [value, getOption]);
 
-  const onFocus = () => {
+  const onVisibleChange = (open: boolean) => {
+    if (!open) {
+      return;
+    }
+
     getOptions("", options => {
       if (option !== undefined) {
         const selected = option.value;
@@ -63,7 +67,7 @@ function AutoComplete({ placeholder, className, value, getOption, getOptions, on
     <Select
       showSearch
       options={options}
-      onFocus={onFocus}
+      onDropdownVisibleChange={onVisibleChange}
       onSearch={onSearch}
       onSelect={onSelectFn}
       filterOption={false}
