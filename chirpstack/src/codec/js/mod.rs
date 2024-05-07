@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::time::SystemTime;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use rquickjs::{CatchResultExt, IntoJs};
 
@@ -50,13 +50,17 @@ pub async fn decode(
     let out = ctx.with(|ctx| -> Result<pbjson_types::Struct> {
         // We need to export the Buffer class, as eval / eval_with_options
         // does not allow using import statement.
-        let buff: rquickjs::Module = ctx.clone().compile(
+        let buff = rquickjs::Module::declare(
+            ctx.clone(),
             "b",
             r#"
             import { Buffer } from "buffer";
             export { Buffer }
             "#,
-        )?;
+        )
+        .context("Declare script")?;
+        let (buff, buff_promise) = buff.eval().context("Evalulate script")?;
+        buff_promise.finish()?;
         let buff: rquickjs::Function = buff.get("Buffer")?;
 
         let input = rquickjs::Object::new(ctx.clone())?;
@@ -69,14 +73,11 @@ pub async fn decode(
         globals.set("chirpstack_input", input)?;
         globals.set("Buffer", buff)?;
 
+        let mut eval_options = rquickjs::context::EvalOptions::default();
+        eval_options.strict = false;
+
         let res: rquickjs::Object = ctx
-            .eval_with_options(
-                script,
-                rquickjs::context::EvalOptions {
-                    strict: false,
-                    ..Default::default()
-                },
-            )
+            .eval_with_options(script, eval_options)
             .catch(&ctx)
             .map_err(|e| anyhow!("JS error: {}", e))?;
 
@@ -137,13 +138,17 @@ pub async fn encode(
     ctx.with(|ctx| {
         // We need to export the Buffer class, as eval / eval_with_options
         // does not allow using import statement.
-        let buff: rquickjs::Module = ctx.clone().compile(
+        let buff = rquickjs::Module::declare(
+            ctx.clone(),
             "b",
             r#"
             import { Buffer } from "buffer";
             export { Buffer }
             "#,
-        )?;
+        )
+        .context("Declare script")?;
+        let (buff, buff_promise) = buff.eval().context("Evaluate script")?;
+        buff_promise.finish()?;
         let buff: rquickjs::Function = buff.get("Buffer")?;
 
         let input = rquickjs::Object::new(ctx.clone())?;
@@ -155,14 +160,11 @@ pub async fn encode(
         globals.set("chirpstack_input", input)?;
         globals.set("Buffer", buff)?;
 
+        let mut eval_options = rquickjs::context::EvalOptions::default();
+        eval_options.strict = false;
+
         let res: rquickjs::Object = ctx
-            .eval_with_options(
-                script,
-                rquickjs::context::EvalOptions {
-                    strict: false,
-                    ..Default::default()
-                },
-            )
+            .eval_with_options(script, eval_options)
             .catch(&ctx)
             .map_err(|e| anyhow!("JS error: {}", e))?;
 

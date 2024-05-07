@@ -118,7 +118,7 @@ rumqttc = { version = "0.24", features = ["url"] }
 hex = "0.4"
 
 # Codecs
-rquickjs = { version = "0.5", features = [
+rquickjs = { version = "0.6", features = [
 	"bindgen",
 	"loader",
 	"array-buffer",

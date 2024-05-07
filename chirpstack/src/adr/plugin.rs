@@ -18,9 +18,10 @@ impl Plugin {
         let script = fs::read_to_string(file_path).context("Read ADR plugin")?;
 
         let (id, name) = ctx.with::<_, Result<(String, String)>>(|ctx| {
-            let m = ctx
-                .compile("script", script.clone())
-                .context("Compile script")?;
+            let m = rquickjs::Module::declare(ctx, "script", script.clone())
+                .context("Declare script")?;
+            let (m, m_promise) = m.eval().context("Evaluate script")?;
+            m_promise.finish()?;
             let id_func: rquickjs::Function = m.get("id").context("Get id function")?;
             let name_func: rquickjs::Function = m.get("name").context("Get name function")?;
 
@@ -51,10 +52,10 @@ impl Handler for Plugin {
         let ctx = rquickjs::Context::full(&rt)?;
 
         ctx.with::<_, Result<Response>>(|ctx| {
-            let m = ctx
-                .clone()
-                .compile("script", self.script.clone())
-                .context("Compile script")?;
+            let m = rquickjs::Module::declare(ctx.clone(), "script", self.script.clone())
+                .context("Declare script")?;
+            let (m, m_promise) = m.eval().context("Evaluate script")?;
+            m_promise.finish()?;
             let func: rquickjs::Function = m.get("handle").context("Get handle function")?;
 
             let device_variables = rquickjs::Object::new(ctx.clone())?;
