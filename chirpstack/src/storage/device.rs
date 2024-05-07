@@ -121,6 +121,7 @@ pub struct DeviceChangeset {
     pub external_power_source: Option<bool>,
     pub battery_level: Option<Option<BigDecimal>>,
     pub scheduler_run_after: Option<Option<DateTime<Utc>>>,
+    pub is_disabled: Option<bool>,
 }
 
 impl Device {
@@ -699,6 +700,7 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                             where
                                 d.enabled_class in ('B', 'C')
                                 and (d.scheduler_run_after is null or d.scheduler_run_after < $2)
+                                and d.is_disabled = false
                                 and exists (
                                     select
                                         1
@@ -961,11 +963,26 @@ pub mod test {
         let res = get_with_class_b_c_queue_items(10).await.unwrap();
         assert_eq!(0, res.len());
 
+        // Class-C item pending, but device is disabled.
+        let d = partial_update(
+            d.dev_eui,
+            &DeviceChangeset {
+                scheduler_run_after: Some(None),
+                is_disabled: Some(true),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+        let res = get_with_class_b_c_queue_items(10).await.unwrap();
+        assert_eq!(0, res.len());
+
         // device in class C / downlink is pending.
         let _ = partial_update(
             d.dev_eui,
             &DeviceChangeset {
                 scheduler_run_after: Some(None),
+                is_disabled: Some(false),
                 ..Default::default()
             },
         )
