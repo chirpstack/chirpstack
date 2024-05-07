@@ -785,6 +785,50 @@ pub fn run() {
   # Resolve NetID domain suffix.
   resolve_net_id_domain_suffix="{{ backend_interfaces.resolve_net_id_domain_suffix }}"
 
+
+  # Default roaming server.
+  [roaming.default]
+
+    # Enable default roaming server.
+    enabled={{roaming.default.enabled}}
+
+    # Async timeout (set to 0 to disable async interface).
+    async_timeout="{{roaming.default.async_timeout}}"
+
+    # Passive-roaming session lifetime (set to 0 for stateless).
+    passive_roaming_lifetime="{{roaming.default.passive_roaming_lifetime}}"
+   
+    # Passive-roaming KEK label (optional).
+    #
+    # If set, the session-keys will be encrypted using the given KEK.
+    passive_roaming_kek_label="{{roaming.default.passive_roaming_kek_label}}"
+   
+    # Server.
+    #
+    # If set, this will bypass the DNS resolving of the server.
+    server="{{roaming.default.server}}"
+   
+    # Use target role suffix.
+    #
+    # Depending the context of the remote server, this will add
+    # the /sns or /fns path to the server endpoint.
+    use_target_role_suffix={{roaming.default.use_target_role_suffix}}
+   
+    # CA certificate (path).
+    ca_cert="{{roaming.default.ca_cert}}"
+  
+    # TLS certificate (path).
+    tls_cert="{{roaming.default.tls_cert}}"
+  
+    # TLS key (PKCS#8) (path).
+    tls_key="{{roaming.default.tls_key}}"
+   
+    # Authorization header.
+    #
+    # Optional value of the Authorization header, e.g. token or password.
+    authorization_header="{{roaming.default.authorization_header}}"
+
+
   # Per server roaming configuration (this can be repeated).
   # Example:
   # [[roaming.servers]]

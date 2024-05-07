@@ -252,6 +252,10 @@ impl Client {
         Ok(ans)
     }
 
+    pub async fn home_ns_ans(&self, target_role: Role, pl: &HomeNSAnsPayload) -> Result<()> {
+        self.response_request(Some(target_role), pl).await
+    }
+
     pub async fn xmit_data_req(
         &self,
         target_role: Role,

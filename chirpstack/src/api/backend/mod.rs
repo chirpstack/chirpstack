@@ -163,6 +163,7 @@ pub async fn _handle_request(bp: BasePayload, b: Vec<u8>) -> http::Response<hype
         MessageType::PRStartReq => handle_pr_start_req(sender_client, bp, &b).await,
         MessageType::PRStopReq => handle_pr_stop_req(sender_client, bp, &b).await,
         MessageType::XmitDataReq => handle_xmit_data_req(sender_client, bp, &b).await,
+        MessageType::HomeNSReq => handle_home_ns_req(sender_client, bp, &b).await,
         // Unknown message
         _ => warp::reply::with_status(
             "Handler for {:?} is not implemented",
@@ -520,6 +521,68 @@ async fn _handle_xmit_data_req(
         base: pl
             .base
             .to_base_payload_result(backend::ResultCode::Success, ""),
+    })
+}
+
+async fn handle_home_ns_req(
+    sender_client: Arc<backend::Client>,
+    bp: backend::BasePayload,
+    b: &[u8],
+) -> http::Response<hyper::Body> {
+    let pl: backend::HomeNSReqPayload = match serde_json::from_slice(b) {
+        Ok(v) => v,
+        Err(e) => {
+            let ans = err_to_response(anyhow::Error::new(e), &bp);
+            log_request_response(&bp, b, &ans).await;
+            return warp::reply::json(&ans).into_response();
+        }
+    };
+
+    if sender_client.is_async() {
+        let b = b.to_vec();
+        task::spawn(async move {
+            let ans = match _handle_home_ns_req(pl).await {
+                Ok(v) => v,
+                Err(e) => {
+                    let msg = e.to_string();
+                    backend::HomeNSAnsPayload {
+                        base: bp.to_base_payload_result(err_to_result_code(e), &msg),
+                        h_net_id: Vec::new(),
+                    }
+                }
+            };
+
+            log_request_response(&bp, &b, &ans).await;
+
+            if let Err(e) = sender_client.home_ns_ans(backend::Role::FNS, &ans).await {
+                error!(error = %e.full(), "Send async HomeNSAns error");
+            }
+        });
+
+        warp::reply::with_status("", StatusCode::OK).into_response()
+    } else {
+        match _handle_home_ns_req(pl).await {
+            Ok(ans) => {
+                log_request_response(&bp, b, &ans).await;
+                warp::reply::json(&ans).into_response()
+            }
+            Err(e) => {
+                let ans = err_to_response(e, &bp);
+                log_request_response(&bp, b, &ans).await;
+                warp::reply::json(&ans).into_response()
+            }
+        }
+    }
+}
+
+async fn _handle_home_ns_req(pl: backend::HomeNSReqPayload) -> Result<backend::HomeNSAnsPayload> {
+    let conf = config::get();
+
+    Ok(backend::HomeNSAnsPayload {
+        base: pl
+            .base
+            .to_base_payload_result(backend::ResultCode::Success, ""),
+        h_net_id: conf.network.net_id.to_vec(),
     })
 }
 
