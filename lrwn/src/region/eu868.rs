@@ -308,7 +308,7 @@ impl Configuration {
                                     .collect(),
                                 ),
                                 (
-                                    Revision::Latest, // RP002_1_0_2 & RP002_1_0_3
+                                    Revision::Latest, // RP002_1_0_2, RP002_1_0_3, RP002_1_0_4
                                     [
                                         (0, MaxPayloadSize { m: 59, n: 51 }),
                                         (1, MaxPayloadSize { m: 59, n: 51 }),
@@ -483,7 +483,7 @@ impl Configuration {
                                     .collect(),
                                 ),
                                 (
-                                    Revision::Latest, // RP002_1_0_2 & RP002_1_0_3
+                                    Revision::Latest, // RP002_1_0_2, RP002_1_0_3, RP002_1_0_4
                                     [
                                         (0, MaxPayloadSize { m: 59, n: 51 }),
                                         (1, MaxPayloadSize { m: 59, n: 51 }),

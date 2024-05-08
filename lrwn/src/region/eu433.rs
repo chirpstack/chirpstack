@@ -231,7 +231,7 @@ impl Configuration {
                         (
                             MacVersion::Latest,
                             [(
-                                Revision::Latest, // RP002-1.0.0, RP002-1.0.1, RP002-1.0.2, PR002-1.0.3
+                                Revision::Latest, // RP002-1.0.0, RP002-1.0.1, RP002-1.0.2, PR002-1.0.3, RP002-1.0.4
                                 [
                                     (0, MaxPayloadSize { m: 59, n: 51 }),
                                     (1, MaxPayloadSize { m: 59, n: 51 }),
@@ -368,7 +368,7 @@ impl Configuration {
                         (
                             MacVersion::Latest,
                             [(
-                                Revision::Latest, // RP002-1.0.0, RP002-1.0.1, RP002-1.0.2, RP002-1.0.3
+                                Revision::Latest, // RP002-1.0.0, RP002-1.0.1, RP002-1.0.2, RP002-1.0.3, RP002-1.0.4
                                 [
                                     (0, MaxPayloadSize { m: 59, n: 51 }),
                                     (1, MaxPayloadSize { m: 59, n: 51 }),
@@ -408,10 +408,10 @@ impl Configuration {
                 tx_power_offsets: vec![
                     0,   // 0
                     -2,  // 1
-                    -4,  // 1
-                    -6,  // 2
-                    -8,  // 3
-                    -10, // 4
+                    -4,  // 2
+                    -6,  // 3
+                    -8,  // 4
+                    -10, // 5
                 ],
                 uplink_channels: vec![
                     Channel {

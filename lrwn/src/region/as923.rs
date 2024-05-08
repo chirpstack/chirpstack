@@ -269,7 +269,7 @@ impl Configuration {
                             (
                                 MacVersion::Latest,
                                 [(
-                                    Revision::Latest, // RP002-1.0.3
+                                    Revision::Latest, // RP002-1.0.3, RP002-1.0.4
                                     [
                                         (0, MaxPayloadSize { m: 0, n: 0 }),
                                         (1, MaxPayloadSize { m: 0, n: 0 }),
@@ -429,7 +429,7 @@ impl Configuration {
                             (
                                 MacVersion::Latest,
                                 [(
-                                    Revision::Latest, // RP002-1.0.3
+                                    Revision::Latest, // RP002-1.0.3, RP002-1.0.4
                                     [
                                         (0, MaxPayloadSize { m: 59, n: 51 }),
                                         (1, MaxPayloadSize { m: 59, n: 51 }),
@@ -591,7 +591,7 @@ impl Configuration {
                             (
                                 MacVersion::Latest,
                                 [(
-                                    Revision::Latest, // RP002-1.0.3
+                                    Revision::Latest, // RP002-1.0.3, RP002-1.0.4
                                     [
                                         (0, MaxPayloadSize { m: 0, n: 0 }),
                                         (1, MaxPayloadSize { m: 0, n: 0 }),
@@ -751,7 +751,7 @@ impl Configuration {
                             (
                                 MacVersion::Latest,
                                 [(
-                                    Revision::Latest, // RP002-1.0.3
+                                    Revision::Latest, // RP002-1.0.3, RP002-1.0.4
                                     [
                                         (0, MaxPayloadSize { m: 59, n: 51 }),
                                         (1, MaxPayloadSize { m: 59, n: 51 }),
