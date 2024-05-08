@@ -583,7 +583,7 @@ impl InternalService for Internal {
         // update the user
         // in case it was fetched using the external id, this will make sure we sync with any
         // possible email change.
-        u.email = oauth_user.email.clone();
+        u.email.clone_from(&oauth_user.email);
         u.email_verified = email_verified;
         let u = user::update(u).await.map_err(|e| e.status())?;
 
@@ -933,14 +933,14 @@ impl InternalService for Internal {
 
         for region_conf in &conf.regions {
             if req.id == region_conf.id {
-                out.id = region_conf.id.clone();
+                out.id.clone_from(&region_conf.id);
                 out.description = if region_conf.description.is_empty() {
                     region_conf.id.clone()
                 } else {
                     region_conf.description.clone()
                 };
                 out.region = region_conf.common_name.to_proto().into();
-                out.user_info = region_conf.user_info.clone();
+                out.user_info.clone_from(&region_conf.user_info);
                 out.rx1_delay = region_conf.network.rx1_delay as u32;
                 out.rx1_dr_offset = region_conf.network.rx1_dr_offset as u32;
                 out.rx2_dr = region_conf.network.rx2_dr as u32;

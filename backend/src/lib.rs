@@ -160,7 +160,7 @@ impl Client {
         pl: &mut JoinReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<JoinAnsPayload> {
-        pl.base.sender_id = self.config.sender_id.clone();
+        pl.base.sender_id.clone_from(&self.config.sender_id);
         pl.base.receiver_id = receiver_id;
         pl.base.message_type = MessageType::JoinReq;
 
@@ -174,8 +174,8 @@ impl Client {
         pl: &mut RejoinReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<RejoinAnsPayload> {
-        pl.base.sender_id = self.config.sender_id.clone();
-        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.sender_id.clone_from(&self.config.sender_id);
+        pl.base.receiver_id.clone_from(&self.config.receiver_id);
         pl.base.message_type = MessageType::RejoinReq;
 
         let mut ans: RejoinAnsPayload = Default::default();
@@ -188,8 +188,8 @@ impl Client {
         pl: &mut AppSKeyReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<AppSKeyAnsPayload> {
-        pl.base.sender_id = self.config.sender_id.clone();
-        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.sender_id.clone_from(&self.config.sender_id);
+        pl.base.receiver_id.clone_from(&self.config.receiver_id);
         pl.base.message_type = MessageType::AppSKeyReq;
 
         let mut ans: AppSKeyAnsPayload = Default::default();
@@ -203,8 +203,8 @@ impl Client {
         pl: &mut PRStartReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<PRStartAnsPayload> {
-        pl.base.sender_id = self.config.sender_id.clone();
-        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.sender_id.clone_from(&self.config.sender_id);
+        pl.base.receiver_id.clone_from(&self.config.receiver_id);
         pl.base.message_type = MessageType::PRStartReq;
 
         let mut ans: PRStartAnsPayload = Default::default();
@@ -223,8 +223,8 @@ impl Client {
         pl: &mut PRStopReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<PRStopAnsPayload> {
-        pl.base.sender_id = self.config.sender_id.clone();
-        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.sender_id.clone_from(&self.config.sender_id);
+        pl.base.receiver_id.clone_from(&self.config.receiver_id);
         pl.base.message_type = MessageType::PRStopReq;
 
         let mut ans: PRStopAnsPayload = Default::default();
@@ -243,7 +243,7 @@ impl Client {
         pl: &mut HomeNSReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<HomeNSAnsPayload> {
-        pl.base.sender_id = self.config.sender_id.clone();
+        pl.base.sender_id.clone_from(&self.config.sender_id);
         pl.base.receiver_id = receiver_id;
         pl.base.message_type = MessageType::HomeNSReq;
 
@@ -262,8 +262,8 @@ impl Client {
         pl: &mut XmitDataReqPayload,
         async_resp: Option<Receiver<Vec<u8>>>,
     ) -> Result<XmitDataAnsPayload> {
-        pl.base.sender_id = self.config.sender_id.clone();
-        pl.base.receiver_id = self.config.receiver_id.clone();
+        pl.base.sender_id.clone_from(&self.config.sender_id);
+        pl.base.receiver_id.clone_from(&self.config.receiver_id);
         pl.base.message_type = MessageType::XmitDataReq;
 
         let mut ans: XmitDataAnsPayload = Default::default();
@@ -376,7 +376,7 @@ impl Client {
         };
 
         let body = serde_json::to_string(&pl)?;
-        be_req_log.request_body = body.clone();
+        be_req_log.request_body.clone_from(&body);
 
         info!(server = %server, async_interface = %async_resp.is_some(), "Making request");
 
@@ -407,7 +407,7 @@ impl Client {
             None => res.text().await?,
         };
 
-        be_req_log.response_body = resp_json.clone();
+        be_req_log.response_body.clone_from(&resp_json);
 
         let base: BasePayloadResult = serde_json::from_str(&resp_json)?;
         be_req_log.result_code = format!("{:?}", base.result.result_code);

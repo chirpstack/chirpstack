@@ -81,7 +81,7 @@ pub async fn get_event_logs(
 
         for stream_key in &srr.keys {
             for stream_id in &stream_key.ids {
-                last_id = stream_id.id.clone();
+                last_id.clone_from(&stream_id.id);
                 for (k, v) in &stream_id.map {
                     let res = handle_stream(&last_id, &channel, k, v).await;
 

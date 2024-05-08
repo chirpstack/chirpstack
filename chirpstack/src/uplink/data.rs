@@ -1106,7 +1106,7 @@ impl Data {
         trace!("Setting region_config_id to device-session");
         let d = self.device.as_mut().unwrap();
         let ds = d.get_device_session_mut()?;
-        ds.region_config_id = self.uplink_frame_set.region_config_id.clone();
+        ds.region_config_id.clone_from(&self.uplink_frame_set.region_config_id);
         Ok(())
     }
 

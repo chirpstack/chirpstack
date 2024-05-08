@@ -76,7 +76,7 @@ impl Data {
             .cloned()
             .ok_or_else(|| anyhow!("rx_info is empty"))?;
 
-        self.downlink_frame.gateway_id = rx_info.gateway_id.clone();
+        self.downlink_frame.gateway_id.clone_from(&rx_info.gateway_id);
         if self.dl_meta_data.dl_freq_1.is_some()
             && self.dl_meta_data.data_rate_1.is_some()
             && self.dl_meta_data.rx_delay_1.is_some()

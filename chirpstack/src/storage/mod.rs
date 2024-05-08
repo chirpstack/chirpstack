@@ -148,7 +148,7 @@ pub async fn setup() -> Result<()> {
 
     if !conf.redis.key_prefix.is_empty() {
         info!(prefix = %conf.redis.key_prefix, "Setting Redis prefix");
-        *REDIS_PREFIX.write().unwrap() = conf.redis.key_prefix.clone();
+        REDIS_PREFIX.write().unwrap().clone_from(&conf.redis.key_prefix);
     }
 
     Ok(())
