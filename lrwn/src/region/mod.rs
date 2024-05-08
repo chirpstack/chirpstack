@@ -123,6 +123,7 @@ pub enum Revision {
     RP002_1_0_1,
     RP002_1_0_2,
     RP002_1_0_3,
+    RP002_1_0_4,
 }
 
 impl Revision {
@@ -133,7 +134,8 @@ impl Revision {
             Revision::RP002_1_0_0 => "RP002-1.0.0".to_string(),
             Revision::RP002_1_0_1 => "RP002-1.0.1".to_string(),
             Revision::RP002_1_0_2 => "RP002-1.0.2".to_string(),
-            Revision::RP002_1_0_3 | Revision::Latest => "RP002-1.0.3".to_string(),
+            Revision::RP002_1_0_3 => "RP002-1.0.3".to_string(),
+            Revision::RP002_1_0_4 | Revision::Latest => "RP002-1.0.4".to_string(),
         }
     }
 }
@@ -161,6 +163,7 @@ impl FromStr for Revision {
             "RP002-1.0.1" => Revision::RP002_1_0_1,
             "RP002-1.0.2" => Revision::RP002_1_0_2,
             "RP002-1.0.3" => Revision::RP002_1_0_3,
+            "RP002-1.0.4" => Revision::RP002_1_0_4,
             _ => {
                 return Err(anyhow!("Unexpected Revision: {}", s));
             }

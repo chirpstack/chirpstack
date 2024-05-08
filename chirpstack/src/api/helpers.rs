@@ -66,6 +66,7 @@ impl FromProto<Revision> for common::RegParamsRevision {
             common::RegParamsRevision::Rp002101 => Revision::RP002_1_0_1,
             common::RegParamsRevision::Rp002102 => Revision::RP002_1_0_2,
             common::RegParamsRevision::Rp002103 => Revision::RP002_1_0_3,
+            common::RegParamsRevision::Rp002104 => Revision::RP002_1_0_4,
         }
     }
 }
@@ -78,7 +79,8 @@ impl ToProto<common::RegParamsRevision> for Revision {
             Revision::RP002_1_0_0 => common::RegParamsRevision::Rp002100,
             Revision::RP002_1_0_1 => common::RegParamsRevision::Rp002101,
             Revision::RP002_1_0_2 => common::RegParamsRevision::Rp002102,
-            Revision::RP002_1_0_3 | Revision::Latest => common::RegParamsRevision::Rp002103,
+            Revision::RP002_1_0_3 => common::RegParamsRevision::Rp002103,
+            Revision::RP002_1_0_4 | Revision::Latest => common::RegParamsRevision::Rp002104,
         }
     }
 }
