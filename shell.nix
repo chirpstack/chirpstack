@@ -18,7 +18,6 @@ pkgs.mkShell {
     pkgs.protoc-gen-grpc-web    # grpc-web api
     pkgs.protoc-gen-go          # go api
     pkgs.protoc-gen-go-grpc
-    pkgs.mold
   ];
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
   BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.llvmPackages.libclang.lib}/lib/clang/${pkgs.llvmPackages.libclang.version}/include";
