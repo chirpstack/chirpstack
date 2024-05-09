@@ -9,7 +9,7 @@
   repository = "https://github.com/chirpstack/chirpstack"
 
 [dependencies]
-  chirpstack_api = { path = "../api/rust", version = "4.8.0-test.1" }
+  chirpstack_api = { path = "../api/rust", version = "4.8.0-test.3" }
   redis = { version = "0.25", features = [
     "cluster-async",
     "tokio-rustls-comp",
