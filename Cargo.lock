@@ -570,7 +570,7 @@ dependencies = [
 
 [[package]]
 name = "backend"
-version = "4.8.0-test.5"
+version = "4.8.0"
 dependencies = [
  "aes-kw",
  "anyhow",
@@ -800,7 +800,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chirpstack"
-version = "4.8.0-test.5"
+version = "4.8.0"
 dependencies = [
  "aes",
  "anyhow",
@@ -891,7 +891,7 @@ dependencies = [
 
 [[package]]
 name = "chirpstack_api"
-version = "4.8.0-test.5"
+version = "4.8.0"
 dependencies = [
  "diesel",
  "hex",
@@ -2582,7 +2582,7 @@ dependencies = [
 
 [[package]]
 name = "lrwn"
-version = "4.8.0-test.5"
+version = "4.8.0"
 dependencies = [
  "aes",
  "anyhow",
@@ -2596,7 +2596,7 @@ dependencies = [
 
 [[package]]
 name = "lrwn_filters"
-version = "4.8.0-test.5"
+version = "4.8.0"
 dependencies = [
  "hex",
  "lrwn",
