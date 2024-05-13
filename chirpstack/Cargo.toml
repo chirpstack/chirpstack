@@ -101,7 +101,7 @@ anyhow = "1.0"
 pbkdf2 = { version = "0.12", features = ["simple"] }
 rand_core = { version = "0.6", features = ["std"] }
 jsonwebtoken = "9.2"
-rustls = "0.22"
+rustls = "0.23"
 rustls-native-certs = "0.7"
 rustls-pemfile = "2.1"
 pem = "3.0"
