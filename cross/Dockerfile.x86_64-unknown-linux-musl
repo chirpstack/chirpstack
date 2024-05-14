@@ -1,4 +1,4 @@
-FROM ghcr.io/cross-rs/x86_64-unknown-linux-musl:latest
+FROM ghcr.io/cross-rs/x86_64-unknown-linux-musl:main
 
 RUN apt-get update && \
     apt-get --assume-yes install \
