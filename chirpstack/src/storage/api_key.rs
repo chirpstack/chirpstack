@@ -6,19 +6,19 @@ use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
-use super::db_adapter::Uuid as UuidNT;
+use super::db_adapter::Uuid as fields::Uuid;
 use super::error::Error;
 use super::schema::api_key;
-use super::{error, get_async_db_conn};
+use super::{error, fields, get_async_db_conn};
 
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = api_key)]
 pub struct ApiKey {
-    pub id: UuidNT,
+    pub id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub name: String,
     pub is_admin: bool,
-    pub tenant_id: Option<UuidNT>,
+    pub tenant_id: Option<fields::Uuid>,
 }
 
 impl ApiKey {
@@ -62,7 +62,7 @@ pub async fn create(ak: ApiKey) -> Result<ApiKey, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(api_key::dsl::api_key.find(UuidNT::from(id)))
+    let ra = diesel::delete(api_key::dsl::api_key.find(fields::Uuid::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
@@ -79,7 +79,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(api_key::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
+        q = q.filter(api_key::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -91,7 +91,7 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<ApiK
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(api_key::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
+        q = q.filter(api_key::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     let items = q
@@ -119,7 +119,7 @@ pub mod test {
 
     pub async fn get(id: &Uuid) -> Result<ApiKey, Error> {
         api_key::dsl::api_key
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .first(&mut get_async_db_conn().await?)
             .await
             .map_err(|e| error::Error::from_diesel(e, id.to_string()))

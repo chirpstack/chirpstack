@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use lrwn::EUI64;
 
-use super::db_adapter::Uuid as UuidNT;
+use super::db_adapter::Uuid as fields::Uuid;
 use super::schema::{gateway, multicast_group_gateway, tenant};
 use super::{error::Error, fields, get_async_db_conn};
 
@@ -18,7 +18,7 @@ use super::{error::Error, fields, get_async_db_conn};
 #[diesel(table_name = gateway)]
 pub struct Gateway {
     pub gateway_id: EUI64,
-    pub tenant_id: UuidNT,
+    pub tenant_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub last_seen_at: Option<DateTime<Utc>>,
@@ -55,7 +55,7 @@ pub struct GatewayChangeset {
 
 #[derive(Queryable, PartialEq, Debug)]
 pub struct GatewayListItem {
-    pub tenant_id: UuidNT,
+    pub tenant_id: fields::Uuid,
     pub gateway_id: EUI64,
     pub name: String,
     pub description: String,
@@ -72,7 +72,7 @@ pub struct GatewayListItem {
 #[derive(Queryable, PartialEq, Debug)]
 pub struct GatewayMeta {
     pub gateway_id: EUI64,
-    pub tenant_id: UuidNT,
+    pub tenant_id: fields::Uuid,
     pub latitude: f64,
     pub longitude: f64,
     pub altitude: f32,
@@ -233,12 +233,12 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(gateway::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
+        q = q.filter(gateway::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(multicast_group_id) = &filters.multicast_group_id {
         q = q.filter(
-            multicast_group_gateway::dsl::multicast_group_id.eq(UuidNT::from(multicast_group_id)),
+            multicast_group_gateway::dsl::multicast_group_id.eq(fields::Uuid::from(multicast_group_id)),
         );
     }
 
@@ -281,7 +281,7 @@ pub async fn list(
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(gateway::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
+        q = q.filter(gateway::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
@@ -297,7 +297,7 @@ pub async fn list(
 
     if let Some(multicast_group_id) = &filters.multicast_group_id {
         q = q.filter(
-            multicast_group_gateway::dsl::multicast_group_id.eq(UuidNT::from(multicast_group_id)),
+            multicast_group_gateway::dsl::multicast_group_id.eq(fields::Uuid::from(multicast_group_id)),
         );
     }
 
@@ -339,7 +339,7 @@ pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCoun
             gateway
         where
             $1 is null or tenant_id = $1
-    "#).bind::<diesel::sql_types::Nullable<DbUuid>, _>(tenant_id.map(|u| UuidNT::from(u))).get_result(&mut get_async_db_conn().await?).await?;
+    "#).bind::<diesel::sql_types::Nullable<DbUuid>, _>(tenant_id.map(|u| fields::Uuid::from(u))).get_result(&mut get_async_db_conn().await?).await?;
     Ok(counts)
 }
 

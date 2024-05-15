@@ -7,9 +7,8 @@ use uuid::Uuid;
 
 use lrwn::{DevAddr, EUI64};
 
-use super::db_adapter::Uuid as UuidNT;
 use super::schema::{device, device_profile, relay_device};
-use super::{device::Device, error::Error, get_async_db_conn};
+use super::{device::Device, error::Error, fields, get_async_db_conn};
 
 // This is set to 15, because the FilterList must contain a "catch-all" record to filter all
 // uplinks that do not match the remaining records. This means that we can use 16 - 1 FilterList
@@ -51,7 +50,7 @@ pub async fn get_relay_count(filters: &RelayFilters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(UuidNT::from(application_id)));
+        q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -69,7 +68,7 @@ pub async fn list_relays(
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(UuidNT::from(application_id)));
+        q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     q.order_by(device::dsl::name)

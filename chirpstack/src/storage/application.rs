@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 use uuid::Uuid;
 
-use super::db_adapter::Uuid as UuidNT;
+use super::db_adapter::Uuid as fields::Uuid;
 use super::error::Error;
 use super::schema::{application, application_integration};
 use super::{fields, get_async_db_conn};
@@ -23,8 +23,8 @@ use super::{fields, get_async_db_conn};
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application)]
 pub struct Application {
-    pub id: UuidNT,
-    pub tenant_id: UuidNT,
+    pub id: fields::Uuid,
+    pub tenant_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -67,7 +67,7 @@ pub struct Filters {
 
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct ApplicationListItem {
-    pub id: UuidNT,
+    pub id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -294,7 +294,7 @@ pub struct IftttConfiguration {
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application_integration)]
 pub struct Integration {
-    pub application_id: UuidNT,
+    pub application_id: fields::Uuid,
     pub kind: IntegrationKind,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -331,7 +331,7 @@ pub async fn create(a: Application) -> Result<Application, Error> {
 
 pub async fn get(id: &Uuid) -> Result<Application, Error> {
     let a = application::dsl::application
-        .find(UuidNT::from(id))
+        .find(fields::Uuid::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -361,7 +361,7 @@ pub async fn update(a: Application) -> Result<Application, Error> {
 }
 
 pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application, Error> {
-    let app: Application = diesel::update(application::dsl::application.find(UuidNT::from(id)))
+    let app: Application = diesel::update(application::dsl::application.find(fields::Uuid::from(id)))
         .set(application::mqtt_tls_cert.eq(cert))
         .get_result(&mut get_async_db_conn().await?)
         .await
@@ -376,7 +376,7 @@ pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application,
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(application::dsl::application.find(UuidNT::from(id)))
+    let ra = diesel::delete(application::dsl::application.find(fields::Uuid::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
@@ -397,7 +397,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(application::dsl::tenant_id.eq(UuidNT::from(tenant_id)));
+        q = q.filter(application::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
@@ -471,7 +471,7 @@ pub async fn get_integration(
     let mut i: Integration = application_integration::dsl::application_integration
         .filter(
             application_integration::dsl::application_id
-                .eq(UuidNT::from(application_id))
+                .eq(fields::Uuid::from(application_id))
                 .and(application_integration::dsl::kind.eq(kind)),
         )
         .first(&mut get_async_db_conn().await?)
@@ -518,7 +518,7 @@ pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) ->
     let ra = diesel::delete(
         application_integration::dsl::application_integration.filter(
             application_integration::dsl::application_id
-                .eq(UuidNT::from(application_id))
+                .eq(fields::Uuid::from(application_id))
                 .and(application_integration::dsl::kind.eq(&kind)),
         ),
     )
@@ -537,7 +537,7 @@ pub async fn get_integrations_for_application(
     application_id: &Uuid,
 ) -> Result<Vec<Integration>, Error> {
     let items: Vec<Integration> = application_integration::dsl::application_integration
-        .filter(application_integration::dsl::application_id.eq(UuidNT::from(application_id)))
+        .filter(application_integration::dsl::application_id.eq(fields::Uuid::from(application_id)))
         .order_by(application_integration::dsl::kind)
         .load(&mut get_async_db_conn().await?)
         .await?;
@@ -566,7 +566,7 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                     key
                 "#,
     )
-    .bind::<DbUuid, _>(UuidNT::from(application_id))
+    .bind::<DbUuid, _>(fields::Uuid::from(application_id))
     .load(&mut get_async_db_conn().await?)
     .await
     .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
@@ -587,7 +587,7 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                         key
                     "#,
     )
-    .bind::<DbUuid, _>(UuidNT::from(application_id))
+    .bind::<DbUuid, _>(fields::Uuid::from(application_id))
     .load(&mut get_async_db_conn().await?)
     .await
     .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;

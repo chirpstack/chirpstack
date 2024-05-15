@@ -50,8 +50,6 @@ pub mod user;
 
 use crate::monitoring::prometheus;
 
-pub use db_adapter::Uuid;
-
 lazy_static! {
     static ref ASYNC_PG_POOL: RwLock<Option<AsyncPgPool>> = RwLock::new(None);
     static ref ASYNC_REDIS_POOL: TokioRwLock<Option<AsyncRedisPool>> = TokioRwLock::new(None);

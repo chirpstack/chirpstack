@@ -11,15 +11,14 @@ use rand_core::OsRng;
 use tracing::info;
 use uuid::Uuid;
 
-use super::db_adapter::Uuid as UuidNT;
 use super::error::Error;
-use super::get_async_db_conn;
 use super::schema::user;
+use super::{fields, get_async_db_conn};
 
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = user)]
 pub struct User {
-    pub id: UuidNT,
+    pub id: fields::Uuid,
     pub external_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -79,7 +78,7 @@ pub async fn create(u: User) -> Result<User, Error> {
 
 pub async fn get(id: &Uuid) -> Result<User, Error> {
     let u = user::dsl::user
-        .find(&UuidNT::from(id))
+        .find(&fields::Uuid::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -148,7 +147,7 @@ pub async fn update(u: User) -> Result<User, Error> {
 }
 
 pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
-    let u: User = diesel::update(user::dsl::user.find(&UuidNT::from(id)))
+    let u: User = diesel::update(user::dsl::user.find(&fields::Uuid::from(id)))
         .set(user::password_hash.eq(&hash))
         .get_result(&mut get_async_db_conn().await?)
         .await
@@ -158,7 +157,7 @@ pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(user::dsl::user.find(&UuidNT::from(id)))
+    let ra = diesel::delete(user::dsl::user.find(&fields::Uuid::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;

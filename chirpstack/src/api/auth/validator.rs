@@ -11,11 +11,10 @@ use lrwn::EUI64;
 use super::error::Error;
 use crate::api::auth::AuthID;
 use crate::helpers::errors::PrintFullError;
-use crate::storage::get_async_db_conn;
 use crate::storage::schema::{
     api_key, application, device, device_profile, gateway, multicast_group, tenant_user, user,
 };
-use crate::storage::Uuid as UuidNT;
+use crate::storage::{fields, get_async_db_conn};
 
 #[derive(Copy, Clone)]
 pub enum Flag {
@@ -95,7 +94,7 @@ impl Validator for ValidateActiveUser {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
         let count = user::dsl::user
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(user::dsl::is_active.eq(true))
             .first(&mut get_async_db_conn().await?)
             .await?;
@@ -120,7 +119,7 @@ impl Validator for ValidateIsAdmin {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
         let count = user::dsl::user
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(
                 user::dsl::is_active
                     .eq(true)
@@ -145,7 +144,7 @@ impl Validator for ValidateActiveUserOrKey {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let count = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .first(&mut get_async_db_conn().await?)
             .await?;
         Ok(count)
@@ -154,7 +153,7 @@ impl Validator for ValidateActiveUserOrKey {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
         let count = user::dsl::user
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(user::dsl::is_active.eq(true))
             .first(&mut get_async_db_conn().await?)
             .await?;
@@ -177,7 +176,7 @@ impl Validator for ValidateUsersAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = user::dsl::user
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(user::dsl::is_active.eq(true))
             .into_boxed();
 
@@ -198,7 +197,7 @@ impl Validator for ValidateUsersAccess {
         // admin api key
         let count = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(api_key::dsl::is_admin.eq(true))
             .first(&mut get_async_db_conn().await?)
             .await?;
@@ -222,7 +221,7 @@ impl Validator for ValidateUserAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = user::dsl::user
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(user::dsl::is_active.eq(true))
             .into_boxed();
 
@@ -233,7 +232,7 @@ impl Validator for ValidateUserAccess {
                 q = q.filter(
                     user::dsl::is_admin
                         .eq(true)
-                        .or(user::dsl::id.eq(UuidNT::from(self.user_id))),
+                        .or(user::dsl::id.eq(fields::Uuid::from(self.user_id))),
                 );
             }
             // admin user
@@ -252,7 +251,7 @@ impl Validator for ValidateUserAccess {
         // admin api key
         let count = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(api_key::dsl::is_admin.eq(true))
             .first(&mut get_async_db_conn().await?)
             .await?;
@@ -284,7 +283,7 @@ impl Validator for ValidateApiKeysAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -348,7 +347,7 @@ impl Validator for ValidateApiKeyAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -400,7 +399,7 @@ impl Validator for ValidateTenantsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = user::dsl::user
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(user::dsl::is_active.eq(true))
             .into_boxed();
 
@@ -423,7 +422,7 @@ impl Validator for ValidateTenantsAccess {
         // admin api key
         let count = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .filter(api_key::dsl::is_admin.eq(true))
             .first(&mut get_async_db_conn().await?)
             .await?;
@@ -449,7 +448,7 @@ impl Validator for ValidateTenantAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT(id))
+                    .eq(fields::Uuid(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -484,7 +483,7 @@ impl Validator for ValidateTenantAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .into_boxed();
 
         match self.flag {
@@ -528,7 +527,7 @@ impl Validator for ValidateTenantUsersAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -572,7 +571,7 @@ impl Validator for ValidateTenantUsersAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .into_boxed();
 
         match self.flag {
@@ -617,7 +616,7 @@ impl Validator for ValidateTenantUserAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT(id))
+                    .eq(fields::Uuid(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -667,7 +666,7 @@ impl Validator for ValidateTenantUserAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .into_boxed();
 
         match self.flag {
@@ -707,7 +706,7 @@ impl Validator for ValidateApplicationsAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -756,7 +755,7 @@ impl Validator for ValidateApplicationsAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .into_boxed();
 
         match self.flag {
@@ -808,7 +807,7 @@ impl Validator for ValidateApplicationAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -867,7 +866,7 @@ impl Validator for ValidateApplicationAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {
@@ -908,7 +907,7 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -931,7 +930,7 @@ impl Validator for ValidateDeviceProfileTemplatesAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .into_boxed();
 
         match self.flag {
@@ -967,7 +966,7 @@ impl Validator for ValidateDeviceProfileTemplateAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -990,7 +989,7 @@ impl Validator for ValidateDeviceProfileTemplateAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .into_boxed();
 
         match self.flag {
@@ -1027,7 +1026,7 @@ impl Validator for ValidateDeviceProfilesAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1076,7 +1075,7 @@ impl Validator for ValidateDeviceProfilesAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .into_boxed();
 
         match self.flag {
@@ -1119,7 +1118,7 @@ impl Validator for ValidateDeviceProfileAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1178,7 +1177,7 @@ impl Validator for ValidateDeviceProfileAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {
@@ -1223,7 +1222,7 @@ impl Validator for ValidateDevicesAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1282,7 +1281,7 @@ impl Validator for ValidateDevicesAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {
@@ -1324,7 +1323,7 @@ impl Validator for ValidateDeviceAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1385,7 +1384,7 @@ impl Validator for ValidateDeviceAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {
@@ -1427,7 +1426,7 @@ impl Validator for ValidateDeviceQueueAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1463,7 +1462,7 @@ impl Validator for ValidateDeviceQueueAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {
@@ -1505,7 +1504,7 @@ impl Validator for ValidateGatewaysAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1554,7 +1553,7 @@ impl Validator for ValidateGatewaysAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .find(UuidNT::from(id))
+            .find(fields::Uuid::from(id))
             .into_boxed();
 
         match self.flag {
@@ -1594,7 +1593,7 @@ impl Validator for ValidateGatewayAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1653,7 +1652,7 @@ impl Validator for ValidateGatewayAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {
@@ -1699,7 +1698,7 @@ impl Validator for ValidateMulticastGroupsAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1758,7 +1757,7 @@ impl Validator for ValidateMulticastGroupsAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {
@@ -1803,7 +1802,7 @@ impl Validator for ValidateMulticastGroupAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1864,7 +1863,7 @@ impl Validator for ValidateMulticastGroupAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {
@@ -1911,7 +1910,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(UuidNT::from(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -1972,7 +1971,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
     async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
         let mut q = api_key::dsl::api_key
             .select(dsl::count_star())
-            .filter(api_key::dsl::id.eq(UuidNT::from(id)))
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
             .into_boxed();
 
         match self.flag {

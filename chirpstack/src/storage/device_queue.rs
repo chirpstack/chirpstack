@@ -5,16 +5,14 @@ use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
-use super::db_adapter::Uuid as UuidNT;
-use super::error::Error;
-use super::get_async_db_conn;
 use super::schema::device_queue_item;
+use super::{error::Error, fields, get_async_db_conn};
 use lrwn::EUI64;
 
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = device_queue_item)]
 pub struct DeviceQueueItem {
-    pub id: UuidNT,
+    pub id: fields::Uuid,
     pub dev_eui: EUI64,
     pub created_at: DateTime<Utc>,
     pub f_port: i16,
@@ -77,7 +75,7 @@ pub async fn enqueue_item(qi: DeviceQueueItem) -> Result<DeviceQueueItem, Error>
 
 pub async fn get_item(id: &Uuid) -> Result<DeviceQueueItem, Error> {
     let qi = device_queue_item::dsl::device_queue_item
-        .find(&UuidNT::from(id))
+        .find(&fields::Uuid::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -100,9 +98,10 @@ pub async fn update_item(qi: DeviceQueueItem) -> Result<DeviceQueueItem, Error> 
 }
 
 pub async fn delete_item(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(device_queue_item::dsl::device_queue_item.find(&UuidNT::from(id)))
-        .execute(&mut get_async_db_conn().await?)
-        .await?;
+    let ra =
+        diesel::delete(device_queue_item::dsl::device_queue_item.find(&fields::Uuid::from(id)))
+            .execute(&mut get_async_db_conn().await?)
+            .await?;
     if ra == 0 {
         return Err(Error::NotFound(id.to_string()));
     }

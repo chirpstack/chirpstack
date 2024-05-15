@@ -12,7 +12,7 @@ use uuid::Uuid;
 use chirpstack_api::internal;
 use lrwn::{DevAddr, EUI64};
 
-use super::db_adapter::{DbTimestamptz, DbUuid, Uuid as UuidNT};
+use super::db_adapter::{DbTimestamptz, DbUuid};
 use super::schema::{application, device, device_profile, multicast_group_device, tenant};
 use super::{error::Error, fields, get_async_db_conn};
 use crate::api::helpers::FromProto;
@@ -93,8 +93,8 @@ impl serialize::ToSql<Text, diesel::sqlite::Sqlite> for DeviceClass {
 #[diesel(table_name = device)]
 pub struct Device {
     pub dev_eui: EUI64,
-    pub application_id: UuidNT,
-    pub device_profile_id: UuidNT,
+    pub application_id: fields::Uuid,
+    pub device_profile_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub last_seen_at: Option<DateTime<Utc>>,
@@ -200,7 +200,7 @@ pub struct DeviceListItem {
     pub dev_eui: EUI64,
     pub name: String,
     pub description: String,
-    pub device_profile_id: UuidNT,
+    pub device_profile_id: fields::Uuid,
     pub device_profile_name: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -571,7 +571,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(UuidNT::from(application_id)));
+        q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     if let Some(search) = &filters.search {
@@ -587,7 +587,8 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
 
     if let Some(multicast_group_id) = &filters.multicast_group_id {
         q = q.filter(
-            multicast_group_device::dsl::multicast_group_id.eq(UuidNT::from(multicast_group_id)),
+            multicast_group_device::dsl::multicast_group_id
+                .eq(fields::Uuid::from(multicast_group_id)),
         );
     }
 
@@ -619,13 +620,44 @@ pub async fn list(
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(UuidNT::from(UuidNT::from(application_id))));
+        q = q.filter(
+            device::dsl::application_id.eq(fields::Uuid::from(application_id)),
+        );
     }
 
     if let Some(search) = &filters.search {
         #[cfg(feature = "postgres")]
         {
             q = q.filter(device::dsl::name.ilike(format!("%{}%", search)));
+=======
+            if let Some(application_id) = &filters.application_id {
+                q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
+            }
+
+            if let Some(search) = &filters.search {
+                #[cfg(feature = "postgres")]
+                {
+                    q = q.filter(device::dsl::name.ilike(format!("%{}%", search)));
+                }
+                #[cfg(feature = "sqlite")]
+                {
+                    q = q.filter(device::dsl::name.like(format!("%{}%", search)));
+                }
+            }
+
+            if let Some(multicast_group_id) = &filters.multicast_group_id {
+                q = q.filter(
+                    multicast_group_device::dsl::multicast_group_id
+                        .eq(fields::Uuid::from(multicast_group_id)),
+                );
+            }
+
+            q.order_by(device::dsl::name)
+                .limit(limit)
+                .offset(offset)
+                .load(&mut c)
+                .map_err(|e| Error::from_diesel(e, "".into()))
+>>>>>>> 4a56582b (Move storage Uuid into fields module)
         }
         #[cfg(feature = "sqlite")]
         {
@@ -635,7 +667,8 @@ pub async fn list(
 
     if let Some(multicast_group_id) = &filters.multicast_group_id {
         q = q.filter(
-            multicast_group_device::dsl::multicast_group_id.eq(UuidNT::from(multicast_group_id)),
+            multicast_group_device::dsl::multicast_group_id
+                .eq(fields::Uuid::from(multicast_group_id)),
         );
     }
 
@@ -667,7 +700,7 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
         from
             device_active_inactive
     "#)
-            .bind::<diesel::sql_types::Nullable<DbUuid>, _>(UuidNT::from(tenant_id))
+            .bind::<diesel::sql_types::Nullable<DbUuid>, _>(fields::Uuid::from(tenant_id))
     .get_result(&mut get_async_db_conn().await?).await
     .map_err(|e| Error::from_diesel(e, "".into()))
 }
@@ -685,7 +718,7 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
         .into_boxed();
 
     if let Some(id) = &tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(UuidNT::from(id)));
+        q = q.filter(device_profile::dsl::tenant_id.eq(fields::Uuid::from(id)));
     }
 
     q.load(&mut get_async_db_conn().await?)
