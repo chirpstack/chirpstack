@@ -50,7 +50,6 @@ pub mod user;
 
 use crate::monitoring::prometheus;
 
-pub use db_adapter::BigDecimal;
 pub use db_adapter::Uuid;
 
 lazy_static! {

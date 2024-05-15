@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
-use super::db_adapter::BigDecimal;
-use super::db_adapter::DbUuid;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
@@ -14,7 +12,7 @@ use uuid::Uuid;
 use chirpstack_api::internal;
 use lrwn::{DevAddr, EUI64};
 
-use super::db_adapter::{DbTimestamptz, Uuid as UuidNT};
+use super::db_adapter::{DbTimestamptz, DbUuid, Uuid as UuidNT};
 use super::schema::{application, device, device_profile, multicast_group_device, tenant};
 use super::{error::Error, fields, get_async_db_conn};
 use crate::api::helpers::FromProto;
@@ -104,7 +102,7 @@ pub struct Device {
     pub name: String,
     pub description: String,
     pub external_power_source: bool,
-    pub battery_level: Option<BigDecimal>,
+    pub battery_level: Option<fields::BigDecimal>,
     pub margin: Option<i32>,
     pub dr: Option<i16>,
     pub latitude: Option<f64>,
@@ -209,7 +207,7 @@ pub struct DeviceListItem {
     pub last_seen_at: Option<DateTime<Utc>>,
     pub margin: Option<i32>,
     pub external_power_source: bool,
-    pub battery_level: Option<BigDecimal>,
+    pub battery_level: Option<fields::BigDecimal>,
 }
 
 #[derive(Default, Clone)]
