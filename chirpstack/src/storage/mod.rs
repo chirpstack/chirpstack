@@ -17,7 +17,6 @@ use crate::config;
 
 pub mod api_key;
 pub mod application;
-mod db_adapter;
 pub mod device;
 pub mod device_gateway;
 pub mod device_keys;

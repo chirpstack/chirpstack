@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 
-use super::db_adapter::{DbJsonT, DbUuid};
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 #[cfg(feature = "sqlite")]
@@ -15,7 +14,6 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 use uuid::Uuid;
 
-use super::db_adapter::Uuid as fields::Uuid;
 use super::error::Error;
 use super::schema::{application, application_integration};
 use super::{fields, get_async_db_conn};
@@ -147,7 +145,7 @@ impl serialize::ToSql<Text, Sqlite> for IntegrationKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize)]
-#[diesel(sql_type = DbJsonT)]
+#[diesel(sql_type = fields::sql_types::JsonT)]
 pub enum IntegrationConfiguration {
     None,
     Http(HttpConfiguration),
@@ -361,11 +359,12 @@ pub async fn update(a: Application) -> Result<Application, Error> {
 }
 
 pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application, Error> {
-    let app: Application = diesel::update(application::dsl::application.find(fields::Uuid::from(id)))
-        .set(application::mqtt_tls_cert.eq(cert))
-        .get_result(&mut get_async_db_conn().await?)
-        .await
-        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    let app: Application =
+        diesel::update(application::dsl::application.find(fields::Uuid::from(id)))
+            .set(application::mqtt_tls_cert.eq(cert))
+            .get_result(&mut get_async_db_conn().await?)
+            .await
+            .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
     info!(
         application_id = %id,
@@ -587,7 +586,7 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                         key
                     "#,
     )
-    .bind::<DbUuid, _>(fields::Uuid::from(application_id))
+    .bind::<fields::sql_types::Uuid, _>(fields::Uuid::from(application_id))
     .load(&mut get_async_db_conn().await?)
     .await
     .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use super::db_adapter::DbUuid;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
@@ -339,7 +338,7 @@ pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCoun
             gateway
         where
             $1 is null or tenant_id = $1
-    "#).bind::<diesel::sql_types::Nullable<DbUuid>, _>(tenant_id.map(|u| fields::Uuid::from(u))).get_result(&mut get_async_db_conn().await?).await?;
+    "#).bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(tenant_id.map(|u| fields::Uuid::from(u))).get_result(&mut get_async_db_conn().await?).await?;
     Ok(counts)
 }
 
