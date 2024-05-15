@@ -6,10 +6,9 @@ use tracing::info;
 
 use lrwn::{AES128Key, EUI64};
 
-use super::db_adapter::DevNonces;
 use super::error::Error;
-use super::get_async_db_conn;
 use super::schema::device_keys;
+use super::{fields, get_async_db_conn};
 
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = device_keys)]
@@ -19,7 +18,7 @@ pub struct DeviceKeys {
     pub updated_at: DateTime<Utc>,
     pub nwk_key: AES128Key,
     pub app_key: AES128Key,
-    pub dev_nonces: DevNonces,
+    pub dev_nonces: fields::DevNonces,
     pub join_nonce: i32,
 }
 
