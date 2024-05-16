@@ -522,6 +522,7 @@ impl BasePayload {
                     MessageType::PRStartReq => MessageType::PRStartAns,
                     MessageType::PRStopReq => MessageType::PRStopAns,
                     MessageType::XmitDataReq => MessageType::XmitDataAns,
+                    MessageType::HomeNSReq => MessageType::HomeNSAns,
                     _ => self.message_type,
                 },
                 sender_token: self.receiver_token.clone(),
