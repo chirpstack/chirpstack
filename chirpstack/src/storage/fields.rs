@@ -3,14 +3,18 @@ use std::fmt;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
+use super::db_adapter::DbJsonT;
 use diesel::backend::Backend;
-use diesel::pg::Pg;
-use diesel::sql_types::{Jsonb, Text};
+use diesel::sql_types::Text;
+#[cfg(feature = "sqlite")]
+use diesel::sqlite::Sqlite;
 use diesel::{deserialize, serialize};
+#[cfg(feature = "postgres")]
+use diesel::{pg::Pg, sql_types::Jsonb};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, AsExpression, FromSqlRow)]
-#[diesel(sql_type = Jsonb)]
+#[diesel(sql_type = DbJsonT)]
 pub struct KeyValue(HashMap<String, String>);
 
 impl KeyValue {
@@ -38,6 +42,7 @@ impl DerefMut for KeyValue {
     }
 }
 
+#[cfg(feature = "postgres")]
 impl deserialize::FromSql<Jsonb, Pg> for KeyValue {
     fn from_sql(value: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
@@ -46,6 +51,7 @@ impl deserialize::FromSql<Jsonb, Pg> for KeyValue {
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for KeyValue {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(&self.0)?;
@@ -53,8 +59,25 @@ impl serialize::ToSql<Jsonb, Pg> for KeyValue {
     }
 }
 
+#[cfg(feature = "sqlite")]
+impl deserialize::FromSql<Text, Sqlite> for KeyValue {
+    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <*const str>::from_sql(value)?;
+        let kv: HashMap<String, String> = serde_json::from_str(unsafe { &*value })?;
+        Ok(KeyValue(kv))
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for KeyValue {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
+        out.set_value(serde_json::to_string(&self.0)?);
+        Ok(serialize::IsNull::No)
+    }
+}
+
 #[derive(Debug, Clone, AsExpression, FromSqlRow, PartialEq, Eq)]
-#[diesel(sql_type = Jsonb)]
+#[diesel(sql_type = DbJsonT)]
 pub struct Measurements(HashMap<String, Measurement>);
 
 impl Measurements {
@@ -82,6 +105,7 @@ impl DerefMut for Measurements {
     }
 }
 
+#[cfg(feature = "postgres")]
 impl deserialize::FromSql<Jsonb, Pg> for Measurements {
     fn from_sql(value: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
@@ -90,10 +114,29 @@ impl deserialize::FromSql<Jsonb, Pg> for Measurements {
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for Measurements {
     fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(&self.0)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl deserialize::FromSql<Text, Sqlite> for Measurements {
+    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <*const str>::from_sql(value)?;
+        let kv: HashMap<String, Measurement> = serde_json::from_str(unsafe { &*value })?;
+        Ok(Measurements::new(kv))
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for Measurements {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Sqlite>) -> serialize::Result {
+        let value = serde_json::to_string(&self.0)?;
+        out.set_value(value);
+        Ok(serialize::IsNull::No)
     }
 }
 
@@ -147,6 +190,7 @@ where
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Text, diesel::pg::Pg> for MulticastGroupSchedulingType
 where
     str: serialize::ToSql<Text, diesel::pg::Pg>,
@@ -159,6 +203,14 @@ where
             &self.to_string(),
             &mut out.reborrow(),
         )
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for MulticastGroupSchedulingType {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Sqlite>) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
     }
 }
 
