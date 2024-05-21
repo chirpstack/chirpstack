@@ -1218,18 +1218,6 @@ dependencies = [
 
 [[package]]
 name = "deadpool"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb84100978c1c7b37f09ed3ce3e5f843af02c2a2c431bae5b19230dad2c1b490"
-dependencies = [
- "async-trait",
- "deadpool-runtime",
- "num_cpus",
- "tokio",
-]
-
-[[package]]
-name = "deadpool"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "144f5e4b9ce67c972acc225e71aefe6b21241276f94005024562874611064d30"
@@ -1245,7 +1233,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2244d421c9514eab2e1ce1aa1e3c9d5c7cbb9cf3d9bbcac21a6b27e6a868d84"
 dependencies = [
- "deadpool 0.11.1",
+ "deadpool",
  "redis",
 ]
 
@@ -1327,10 +1315,10 @@ dependencies = [
 [[package]]
 name = "diesel-async"
 version = "0.4.1"
-source = "git+https://github.com/weiznich/diesel_async.git?rev=017ebe2fb7a2709ab5db92148dea5ce812a35e09#017ebe2fb7a2709ab5db92148dea5ce812a35e09"
+source = "git+https://github.com/weiznich/diesel_async.git?rev=b8b01cc6a3a999171c502645eb8965ed0ab60a1f#b8b01cc6a3a999171c502645eb8965ed0ab60a1f"
 dependencies = [
  "async-trait",
- "deadpool 0.10.0",
+ "deadpool",
  "diesel",
  "futures-util",
  "scoped-futures",
