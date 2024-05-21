@@ -146,7 +146,7 @@ dotenv = "0.15"
 [features]
 default = ["postgres"]
 postgres = ["diesel/postgres", "diesel/serde_json", "diesel/uuid", "lrwn/postgres"]
-sqlite = ["diesel/sqlite", "diesel/returning_clauses_for_sqlite_3_35", "lrwn/sqlite", "diesel_async/sync_connection_wrapper"]
+sqlite = ["diesel/sqlite", "diesel/returning_clauses_for_sqlite_3_35", "lrwn/sqlite", "diesel-async/sync-connection-wrapper"]
 test-all-integrations = ["test-integration-amqp", "test-integration-kafka", "test-integration-mqtt"]
 test-integration-amqp = []
 test-integration-kafka = []
