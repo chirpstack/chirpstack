@@ -1292,9 +1292,8 @@ dependencies = [
 
 [[package]]
 name = "diesel"
-version = "2.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03fc05c17098f21b89bc7d98fe1dd3cce2c11c2ad8e145f2a44fe08ed28eb559"
+version = "2.1.4"
+source = "git+http://github.com/diesel-rs/diesel?rev=f2eb9b2#f2eb9b242d66813a197b29ac058eb86f5c5ec9ba"
 dependencies = [
  "bigdecimal",
  "bitflags 2.5.0",
@@ -1328,11 +1327,11 @@ dependencies = [
 
 [[package]]
 name = "diesel_derives"
-version = "2.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d02eecb814ae714ffe61ddc2db2dd03e6c49a42e269b5001355500d431cce0c"
+version = "2.1.0"
+source = "git+http://github.com/diesel-rs/diesel?rev=f2eb9b2#f2eb9b242d66813a197b29ac058eb86f5c5ec9ba"
 dependencies = [
  "diesel_table_macro_syntax",
+ "dsl_auto_type",
  "proc-macro2",
  "quote",
  "syn 2.0.58",
@@ -1352,8 +1351,7 @@ dependencies = [
 [[package]]
 name = "diesel_table_macro_syntax"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc5557efc453706fed5e4fa85006fe9817c224c3f480a34c7e5959fd700921c5"
+source = "git+http://github.com/diesel-rs/diesel?rev=f2eb9b2#f2eb9b242d66813a197b29ac058eb86f5c5ec9ba"
 dependencies = [
  "syn 2.0.58",
 ]
@@ -1413,6 +1411,19 @@ name = "dotenv"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
+
+[[package]]
+name = "dsl_auto_type"
+version = "0.1.0"
+source = "git+http://github.com/diesel-rs/diesel?rev=f2eb9b2#f2eb9b242d66813a197b29ac058eb86f5c5ec9ba"
+dependencies = [
+ "darling",
+ "either",
+ "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.58",
+]
 
 [[package]]
 name = "dtoa"
@@ -2521,7 +2532,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.4",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
