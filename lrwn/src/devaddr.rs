@@ -218,6 +218,40 @@ impl DevAddr {
     }
 }
 
+
+// an implementation function written by Aidar.
+// Used to iterate over values of the DevAddr.
+impl IntoIterator for DevAddr {
+    type Item = u8;
+    type IntoIter = DevAddrIntoIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        DevAddrIntoIterator {
+            dev_addr: self,
+            index: 0,
+        }
+    }
+}
+pub struct DevAddrIntoIterator {
+    dev_addr: DevAddr,
+    index: usize,
+}
+impl Iterator for DevAddrIntoIterator {
+    type Item = u8;
+    fn next(&mut self) -> Option<u8> {
+        let result = match self.index {
+            0 => Some(self.dev_addr.0[0]),
+            1 => Some(self.dev_addr.0[1]),
+            2 => Some(self.dev_addr.0[2]),
+            3 => Some(self.dev_addr.0[3]),
+            _ => None,
+        };
+        self.index = self.index + 1;
+        result
+    }
+}
+
+
 impl fmt::Display for DevAddr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", hex::encode(self.0))
