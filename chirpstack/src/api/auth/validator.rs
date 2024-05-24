@@ -296,7 +296,7 @@ impl Validator for ValidateApiKeysAccess {
                     user::dsl::is_admin.eq(true).or(dsl::exists(
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::tenant_id
-                                .eq(&self.tenant_id)
+                                .eq(fields::Uuid::from(self.tenant_id))
                                 .and(tenant_user::dsl::user_id.eq(user::dsl::id))
                                 .and(tenant_user::dsl::is_admin.eq(true)),
                         ),
@@ -310,7 +310,7 @@ impl Validator for ValidateApiKeysAccess {
                     user::dsl::is_admin.eq(true).or(dsl::exists(
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::tenant_id
-                                .eq(&self.tenant_id)
+                                .eq(fields::Uuid::from(self.tenant_id))
                                 .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
                         ),
                     )),
@@ -366,7 +366,7 @@ impl Validator for ValidateApiKeyAccess {
                                 tenant_user::dsl::user_id
                                     .eq(user::dsl::id)
                                     .and(tenant_user::dsl::is_admin.eq(true))
-                                    .and(api_key::dsl::id.eq(&self.id)),
+                                    .and(api_key::dsl::id.eq(fields::Uuid::from(self.id))),
                             ),
                     )),
                 );
@@ -457,15 +457,13 @@ impl Validator for ValidateTenantAccess {
             // global admin
             // tenant user
             Flag::Read => {
-                q = q.filter(
-                    user::is_admin.eq(true).or(dsl::exists(
-                        tenant_user::dsl::tenant_user.filter(
-                            tenant_user::dsl::user_id
-                                .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id)),
+                q = q.filter(user::is_admin.eq(true).or(dsl::exists(
+                    tenant_user::dsl::tenant_user.filter(
+                        tenant_user::dsl::user_id.eq(user::dsl::id).and(
+                            tenant_user::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
                         ),
-                    )),
-                );
+                    ),
+                )));
             }
 
             // global admin
@@ -493,7 +491,7 @@ impl Validator for ValidateTenantAccess {
                 q = q.filter(
                     api_key::dsl::is_admin
                         .eq(true)
-                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                        .or(api_key::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id))),
                 );
             }
             // admin api key
@@ -541,7 +539,10 @@ impl Validator for ValidateTenantUsersAccess {
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::user_id
                                 .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(
+                                    tenant_user::dsl::tenant_id
+                                        .eq(fields::Uuid::from(self.tenant_id)),
+                                )
                                 .and(tenant_user::dsl::is_admin.eq(true)),
                         ),
                     )),
@@ -550,15 +551,13 @@ impl Validator for ValidateTenantUsersAccess {
             // global admin
             // tenant user
             Flag::List => {
-                q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
-                        tenant_user::dsl::tenant_user.filter(
-                            tenant_user::dsl::user_id
-                                .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id)),
+                q = q.filter(user::dsl::is_admin.eq(true).or(dsl::exists(
+                    tenant_user::dsl::tenant_user.filter(
+                        tenant_user::dsl::user_id.eq(user::dsl::id).and(
+                            tenant_user::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
                         ),
-                    )),
-                );
+                    ),
+                )));
             }
             _ => {
                 return Ok(0);
@@ -581,7 +580,7 @@ impl Validator for ValidateTenantUsersAccess {
                 q = q.filter(
                     api_key::dsl::is_admin
                         .eq(true)
-                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                        .or(api_key::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id))),
                 );
             }
             _ => {
@@ -631,12 +630,13 @@ impl Validator for ValidateTenantUserAccess {
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::user_id
                                 .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
                                 .and(
-                                    tenant_user::dsl::is_admin
-                                        .eq(true)
-                                        .or(tenant_user::dsl::user_id.eq(&self.user_id)),
-                                ),
+                                    tenant_user::dsl::tenant_id
+                                        .eq(fields::Uuid::from(self.tenant_id)),
+                                )
+                                .and(tenant_user::dsl::is_admin.eq(true).or(
+                                    tenant_user::dsl::user_id.eq(fields::Uuid::from(self.user_id)),
+                                )),
                         ),
                     )),
                 );
@@ -649,7 +649,10 @@ impl Validator for ValidateTenantUserAccess {
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::user_id
                                 .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(
+                                    tenant_user::dsl::tenant_id
+                                        .eq(fields::Uuid::from(self.tenant_id)),
+                                )
                                 .and(tenant_user::dsl::is_admin.eq(true)),
                         ),
                     )),
@@ -676,7 +679,7 @@ impl Validator for ValidateTenantUserAccess {
                 q = q.filter(
                     api_key::dsl::is_admin
                         .eq(true)
-                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                        .or(api_key::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id))),
                 );
             }
             _ => {
@@ -721,7 +724,10 @@ impl Validator for ValidateApplicationsAccess {
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::user_id
                                 .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(
+                                    tenant_user::dsl::tenant_id
+                                        .eq(fields::Uuid::from(self.tenant_id)),
+                                )
                                 .and(
                                     tenant_user::dsl::is_admin
                                         .eq(true)
@@ -734,15 +740,13 @@ impl Validator for ValidateApplicationsAccess {
             // global admin
             // tenant user
             Flag::List => {
-                q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
-                        tenant_user::dsl::tenant_user.filter(
-                            tenant_user::dsl::user_id
-                                .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id)),
+                q = q.filter(user::dsl::is_admin.eq(true).or(dsl::exists(
+                    tenant_user::dsl::tenant_user.filter(
+                        tenant_user::dsl::user_id.eq(user::dsl::id).and(
+                            tenant_user::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
                         ),
-                    )),
-                );
+                    ),
+                )));
             }
             _ => {
                 return Ok(0);
@@ -765,7 +769,7 @@ impl Validator for ValidateApplicationsAccess {
                 q = q.filter(
                     api_key::dsl::is_admin
                         .eq(true)
-                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                        .or(api_key::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id))),
                 );
             }
             // admin api key
@@ -774,7 +778,7 @@ impl Validator for ValidateApplicationsAccess {
                 q = q.filter(
                     api_key::dsl::is_admin
                         .eq(true)
-                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                        .or(api_key::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id))),
                 );
             }
             _ => {
@@ -825,7 +829,7 @@ impl Validator for ValidateApplicationAccess {
                                 ))
                                 .filter(
                                     application::dsl::id
-                                        .eq(&self.application_id)
+                                        .eq(fields::Uuid::from(self.application_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
                                 ),
                         )),
@@ -844,7 +848,7 @@ impl Validator for ValidateApplicationAccess {
                                 ))
                                 .filter(
                                     application::dsl::id
-                                        .eq(&self.application_id)
+                                        .eq(fields::Uuid::from(self.application_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id))
                                         .and(
                                             tenant_user::dsl::is_admin
@@ -873,13 +877,18 @@ impl Validator for ValidateApplicationAccess {
             // admin api key
             // tenant api key
             Flag::Read | Flag::Update | Flag::Delete => {
-                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                    application::dsl::application.filter(
-                        application::dsl::id.eq(&self.application_id).and(
-                            api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
+                q = q.filter(
+                    api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        application::dsl::application.filter(
+                            application::dsl::id
+                                .eq(fields::Uuid::from(self.application_id))
+                                .and(
+                                    api_key::dsl::tenant_id
+                                        .eq(application::dsl::tenant_id.nullable()),
+                                ),
                         ),
-                    ),
-                )));
+                    )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -1041,7 +1050,10 @@ impl Validator for ValidateDeviceProfilesAccess {
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::user_id
                                 .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id))
+                                .and(
+                                    tenant_user::dsl::tenant_id
+                                        .eq(fields::Uuid::from(self.tenant_id)),
+                                )
                                 .and(
                                     tenant_user::dsl::is_admin
                                         .eq(true)
@@ -1054,15 +1066,13 @@ impl Validator for ValidateDeviceProfilesAccess {
             // global admin
             // tenant user
             Flag::List => {
-                q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
-                        tenant_user::dsl::tenant_user.filter(
-                            tenant_user::dsl::user_id
-                                .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(&self.tenant_id)),
+                q = q.filter(user::dsl::is_admin.eq(true).or(dsl::exists(
+                    tenant_user::dsl::tenant_user.filter(
+                        tenant_user::dsl::user_id.eq(user::dsl::id).and(
+                            tenant_user::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
                         ),
-                    )),
-                );
+                    ),
+                )));
             }
             _ => {
                 return Ok(0);
@@ -1085,7 +1095,7 @@ impl Validator for ValidateDeviceProfilesAccess {
                 q = q.filter(
                     api_key::dsl::is_admin
                         .eq(true)
-                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                        .or(api_key::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id))),
                 );
             }
             _ => {
@@ -1136,7 +1146,7 @@ impl Validator for ValidateDeviceProfileAccess {
                                 ))
                                 .filter(
                                     device_profile::dsl::id
-                                        .eq(&self.device_profile_id)
+                                        .eq(fields::Uuid::from(self.device_profile_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
                                 ),
                         )),
@@ -1155,7 +1165,7 @@ impl Validator for ValidateDeviceProfileAccess {
                                 ))
                                 .filter(
                                     device_profile::dsl::id
-                                        .eq(&self.device_profile_id)
+                                        .eq(fields::Uuid::from(self.device_profile_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id))
                                         .and(
                                             tenant_user::dsl::is_admin
@@ -1184,13 +1194,18 @@ impl Validator for ValidateDeviceProfileAccess {
             // admin api key
             // tenant api key
             Flag::Read | Flag::Update | Flag::Delete => {
-                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                    device_profile::dsl::device_profile.filter(
-                        device_profile::dsl::id.eq(&self.device_profile_id).and(
-                            api_key::dsl::tenant_id.eq(device_profile::dsl::tenant_id.nullable()),
+                q = q.filter(
+                    api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        device_profile::dsl::device_profile.filter(
+                            device_profile::dsl::id
+                                .eq(fields::Uuid::from(self.device_profile_id))
+                                .and(
+                                    api_key::dsl::tenant_id
+                                        .eq(device_profile::dsl::tenant_id.nullable()),
+                                ),
                         ),
-                    ),
-                )));
+                    )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -1241,7 +1256,7 @@ impl Validator for ValidateDevicesAccess {
                                 ))
                                 .filter(
                                     application::dsl::id
-                                        .eq(&self.application_id)
+                                        .eq(fields::Uuid::from(self.application_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id))
                                         .and(
                                             tenant_user::dsl::is_admin
@@ -1264,7 +1279,7 @@ impl Validator for ValidateDevicesAccess {
                                 ))
                                 .filter(
                                     application::dsl::id
-                                        .eq(&self.application_id)
+                                        .eq(fields::Uuid::from(self.application_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
                                 ),
                         )),
@@ -1288,13 +1303,18 @@ impl Validator for ValidateDevicesAccess {
             // admin api key
             // tenant api key
             Flag::Create | Flag::List => {
-                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                    application::dsl::application.filter(
-                        application::dsl::id.eq(&self.application_id).and(
-                            api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
+                q = q.filter(
+                    api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        application::dsl::application.filter(
+                            application::dsl::id
+                                .eq(fields::Uuid::from(self.application_id))
+                                .and(
+                                    api_key::dsl::tenant_id
+                                        .eq(application::dsl::tenant_id.nullable()),
+                                ),
                         ),
-                    ),
-                )));
+                    )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -1518,7 +1538,7 @@ impl Validator for ValidateGatewaysAccess {
                     user::dsl::is_admin.eq(true).or(dsl::exists(
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::tenant_id
-                                .eq(&self.tenant_id)
+                                .eq(fields::Uuid::from(self.tenant_id))
                                 .and(tenant_user::dsl::user_id.eq(user::dsl::id))
                                 .and(
                                     tenant_user::dsl::is_admin
@@ -1536,7 +1556,7 @@ impl Validator for ValidateGatewaysAccess {
                     user::dsl::is_admin.eq(true).or(dsl::exists(
                         tenant_user::dsl::tenant_user.filter(
                             tenant_user::dsl::tenant_id
-                                .eq(&self.tenant_id)
+                                .eq(fields::Uuid::from(self.tenant_id))
                                 .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
                         ),
                     )),
@@ -1563,7 +1583,7 @@ impl Validator for ValidateGatewaysAccess {
                 q = q.filter(
                     api_key::dsl::is_admin
                         .eq(true)
-                        .or(api_key::dsl::tenant_id.eq(&self.tenant_id)),
+                        .or(api_key::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id))),
                 );
             }
             _ => {
@@ -1717,7 +1737,7 @@ impl Validator for ValidateMulticastGroupsAccess {
                                 ))
                                 .filter(
                                     application::dsl::id
-                                        .eq(&self.application_id)
+                                        .eq(fields::Uuid::from(self.application_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id))
                                         .and(
                                             tenant_user::dsl::is_admin
@@ -1740,7 +1760,7 @@ impl Validator for ValidateMulticastGroupsAccess {
                                 ))
                                 .filter(
                                     application::dsl::id
-                                        .eq(&self.application_id)
+                                        .eq(fields::Uuid::from(self.application_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
                                 ),
                         )),
@@ -1764,13 +1784,18 @@ impl Validator for ValidateMulticastGroupsAccess {
             // admin api key
             // tenant api key
             Flag::Create | Flag::List => {
-                q = q.filter(api_key::dsl::is_admin.eq(true).or(dsl::exists(
-                    application::dsl::application.filter(
-                        application::dsl::id.eq(&self.application_id).and(
-                            api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
+                q = q.filter(
+                    api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        application::dsl::application.filter(
+                            application::dsl::id
+                                .eq(fields::Uuid::from(self.application_id))
+                                .and(
+                                    api_key::dsl::tenant_id
+                                        .eq(application::dsl::tenant_id.nullable()),
+                                ),
                         ),
-                    ),
-                )));
+                    )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -1821,7 +1846,7 @@ impl Validator for ValidateMulticastGroupAccess {
                                 ))
                                 .filter(
                                     multicast_group::dsl::id
-                                        .eq(&self.multicast_group_id)
+                                        .eq(fields::Uuid::from(self.multicast_group_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
                                 ),
                         )),
@@ -1841,7 +1866,7 @@ impl Validator for ValidateMulticastGroupAccess {
                                 ))
                                 .filter(
                                     multicast_group::dsl::id
-                                        .eq(&self.multicast_group_id)
+                                        .eq(fields::Uuid::from(self.multicast_group_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id))
                                         .and(
                                             tenant_user::dsl::is_admin
@@ -1874,9 +1899,14 @@ impl Validator for ValidateMulticastGroupAccess {
                     api_key::dsl::is_admin.eq(true).or(dsl::exists(
                         multicast_group::dsl::multicast_group
                             .inner_join(application::table)
-                            .filter(multicast_group::dsl::id.eq(&self.multicast_group_id).and(
-                                api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
-                            )),
+                            .filter(
+                                multicast_group::dsl::id
+                                    .eq(fields::Uuid::from(self.multicast_group_id))
+                                    .and(
+                                        api_key::dsl::tenant_id
+                                            .eq(application::dsl::tenant_id.nullable()),
+                                    ),
+                            ),
                     )),
                 );
             }
@@ -1930,7 +1960,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                                 ))
                                 .filter(
                                     multicast_group::dsl::id
-                                        .eq(&self.multicast_group_id)
+                                        .eq(fields::Uuid::from(self.multicast_group_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id))
                                         .and(
                                             tenant_user::dsl::is_admin
@@ -1954,7 +1984,7 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                                 ))
                                 .filter(
                                     multicast_group::dsl::id
-                                        .eq(&self.multicast_group_id)
+                                        .eq(fields::Uuid::from(self.multicast_group_id))
                                         .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
                                 ),
                         )),
@@ -1982,9 +2012,14 @@ impl Validator for ValidateMulticastGroupQueueAccess {
                     api_key::dsl::is_admin.eq(true).or(dsl::exists(
                         multicast_group::dsl::multicast_group
                             .inner_join(application::table)
-                            .filter(multicast_group::dsl::id.eq(&self.multicast_group_id).and(
-                                api_key::dsl::tenant_id.eq(application::dsl::tenant_id.nullable()),
-                            )),
+                            .filter(
+                                multicast_group::dsl::id
+                                    .eq(fields::Uuid::from(self.multicast_group_id))
+                                    .and(
+                                        api_key::dsl::tenant_id
+                                            .eq(application::dsl::tenant_id.nullable()),
+                                    ),
+                            ),
                     )),
                 );
             }

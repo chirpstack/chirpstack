@@ -259,7 +259,7 @@ pub async fn get_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<TenantUser, Er
 pub async fn get_user_count(tenant_id: &Uuid) -> Result<i64, Error> {
     let count = tenant_user::dsl::tenant_user
         .select(dsl::count_star())
-        .filter(tenant_user::dsl::tenant_id.eq(&tenant_id))
+        .filter(tenant_user::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)))
         .first(&mut get_async_db_conn().await?)
         .await?;
     Ok(count)

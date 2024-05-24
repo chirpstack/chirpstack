@@ -121,7 +121,7 @@ where
     *const str: deserialize::FromSql<Text, DB>,
 {
     fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let string = <*const str>::from_sql(value)?;
+        let string = <*const str as deserialize::FromSql<Text, DB>>::from_sql(value)?;
         Ok(Self::from_str(unsafe { &*string })?)
     }
 }
@@ -179,7 +179,8 @@ impl serialize::ToSql<Jsonb, Pg> for IntegrationConfiguration {
 #[cfg(feature = "sqlite")]
 impl deserialize::FromSql<Text, Sqlite> for IntegrationConfiguration {
     fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let s = <*const str>::from_sql(value)?;
+        let s =
+            <*const str as deserialize::FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(value)?;
         Ok(serde_json::from_str(unsafe { &*s })?)
     }
 }
@@ -429,7 +430,7 @@ pub async fn list(
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(application::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(application::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {

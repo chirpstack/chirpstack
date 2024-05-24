@@ -10,7 +10,7 @@ use diesel::{Connection, ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::sync_connection_wrapper::SyncConnectionWrapper;
-use futures::future::BoxFuture;
+use futures::future::{BoxFuture, FutureExt, TryFutureExt};
 use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
 
 use crate::config;
@@ -48,19 +48,22 @@ pub fn setup(conf: &config::Postgresql) -> Result<()> {
 }
 
 fn sqlite_establish_connection(
-    config: &str,
+    _config: &str,
 ) -> BoxFuture<ConnectionResult<SyncConnectionWrapper<SqliteConnection>>> {
-    tokio::task::spawn_blocking(move || {
-        let config = config::get();
-        let conn = SqliteConnection::establish(config.postgres.dsn)?;
+    tokio::task::spawn_blocking(
+        move || -> ConnectionResult<SyncConnectionWrapper<SqliteConnection>> {
+            let config = config::get();
+            let mut conn = SqliteConnection::establish(&config.postgresql.dsn)?;
 
-        // Enable foreign keys since it's off by default in sqlite
-        use diesel::RunQueryDsl;
-        diesel::sql_query("PRAGMA foreign_keys = ON")
-            .execute(conn)
-            .map_err(|err| ConnectionError::BadConnection(conn.to_string()))?;
-        conn
-    })
+            // Enable foreign keys since it's off by default in sqlite
+            use diesel::RunQueryDsl;
+            diesel::sql_query("PRAGMA foreign_keys = ON")
+                .execute(&mut conn)
+                .map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
+            Ok(SyncConnectionWrapper::new(conn))
+        },
+    )
+    .unwrap_or_else(|err| Err(ConnectionError::BadConnection(err.to_string())))
     .boxed()
 }
 

@@ -71,9 +71,13 @@ impl serialize::ToSql<DevNoncesPgType, Pg> for DevNonces {
 }
 
 #[cfg(feature = "sqlite")]
-impl deserialize::FromSql<Text, Sqlite> for DevNonces {
+impl deserialize::FromSql<Text, Sqlite> for DevNonces
+where
+    *const str: deserialize::FromSql<Text, Sqlite>,
+{
     fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let s = <*const str>::from_sql(value)?;
+        let s =
+            <*const str as deserialize::FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(value)?;
         let nonces = serde_json::from_str::<DevNonces>(unsafe { &*s })?;
         Ok(nonces)
     }

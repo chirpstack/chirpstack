@@ -57,10 +57,14 @@ impl serialize::ToSql<Jsonb, Pg> for KeyValue {
 }
 
 #[cfg(feature = "sqlite")]
-impl deserialize::FromSql<Text, Sqlite> for KeyValue {
+impl deserialize::FromSql<Text, Sqlite> for KeyValue
+where
+    *const str: deserialize::FromSql<Text, Sqlite>,
+{
     fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let value = <*const str>::from_sql(value)?;
-        let kv: HashMap<String, String> = serde_json::from_str(unsafe { &*value })?;
+        let s =
+            <*const str as deserialize::FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(value)?;
+        let kv: HashMap<String, String> = serde_json::from_str(unsafe { &*s })?;
         Ok(KeyValue(kv))
     }
 }

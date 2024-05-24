@@ -71,7 +71,8 @@ impl serialize::ToSql<diesel::sql_types::Uuid, Pg> for Uuid {
 #[cfg(feature = "sqlite")]
 impl deserialize::FromSql<diesel::sql_types::Text, Sqlite> for Uuid {
     fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let s = <*const str>::from_sql(value)?;
+        let s =
+            <*const str as deserialize::FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(value)?;
         let u = uuid::Uuid::try_parse(unsafe { &*s })?;
         Ok(Uuid(u))
     }

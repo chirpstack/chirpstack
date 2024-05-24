@@ -65,10 +65,14 @@ impl serialize::ToSql<Numeric, Pg> for BigDecimal {
 }
 
 #[cfg(feature = "sqlite")]
-impl deserialize::FromSql<Double, Sqlite> for BigDecimal {
+impl deserialize::FromSql<Double, Sqlite> for BigDecimal
+where
+    f64: deserialize::FromSql<Double, Sqlite>,
+{
     fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         use bigdecimal::FromPrimitive;
-        let bd_val = <f64>::from_sql(value)?;
+        let bd_val =
+            <f64 as deserialize::FromSql<diesel::sql_types::Double, Sqlite>>::from_sql(value)?;
         let bd = bigdecimal::BigDecimal::from_f64(bd_val)
             .ok_or_else(|| format!("Unrepresentable BigDecimal from f64 value"))?;
         Ok(BigDecimal(bd))
