@@ -1,7 +1,7 @@
 use std::sync::RwLock;
 use std::time::Instant;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use tracing::info;
 
 use crate::monitoring::prometheus;
@@ -10,7 +10,7 @@ use diesel::{ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::sync_connection_wrapper::SyncConnectionWrapper;
-use futures_util::FutureExt;
+use futures::future::BoxFuture;
 use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
 
 use crate::config;
@@ -19,8 +19,8 @@ pub type AsyncSqlitePool = DeadpoolPool<SyncConnectionWrapper<SqliteConnection>>
 pub type AsyncSqlitePoolConnection = DeadpoolObject<SyncConnectionWrapper<SqliteConnection>>;
 
 lazy_static! {
-    static ref ASYNC_SQLITE_POOL: RwLock<Option<SqlitePool>> = RwLock::new(None);
-    static ref STORAGE_PG_CONN_GET: Histogram = {
+    static ref ASYNC_SQLITE_POOL: RwLock<Option<AsyncSqlitePool>> = RwLock::new(None);
+    static ref STORAGE_SQLITE_CONN_GET: Histogram = {
         let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
         prometheus::register(
             "storage_pg_conn_get_duration_seconds",
@@ -47,30 +47,21 @@ pub fn setup(conf: &config::Postgresql) -> Result<()> {
     Ok(())
 }
 
-fn from_tokio_join_error(join_error: JoinError) -> diesel::result::Error {
-    diesel::result::Error::DatabaseError(
-        diesel::result::DatabaseErrorKind::UnableToSendCommand,
-        Box::new(join_error.to_string()),
-    )
-}
-
 fn sqlite_establish_connection(
     config: &str,
 ) -> BoxFuture<ConnectionResult<SyncConnectionWrapper<SqliteConnection>>> {
-    tokio::spawn_blocking(move || {
-        let mut conn = ConnectionManager::<SqliteConnection>::new(config);
+    tokio::task::spawn_blocking(move || {
+        let config = config::get();
+        let conn = SqliteConnection::establish(config.postgres.dsn)?;
 
+        // Enable foreign keys since it's off by default in sqlite
         use diesel::RunQueryDsl;
-        diesel::sql_query("PRAGMA foreign_keys = ON").execute(conn)?;
+        diesel::sql_query("PRAGMA foreign_keys = ON")
+            .execute(conn)
+            .map_err(|err| ConnectionError::BadConnection(conn.to_string()))?;
         conn
     })
-    .unwrap_or_else(|err| {
-        QueryResult::Err(diesel::result::Error::DatabaseError(
-            diesel::result::DatabaseErrorKind::UnableToSendCommand,
-            Box::new(err.to_string()),
-        ))
-    })
-    .boxed;
+    .boxed();
 }
 
 fn get_async_db_pool() -> Result<AsyncSqlitePool> {
