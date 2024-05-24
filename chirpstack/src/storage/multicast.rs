@@ -510,7 +510,8 @@ pub async fn enqueue(
                                     multicast_group_queue_item::dsl::multicast_group_id
                                         .eq(&qi.multicast_group_id),
                                 )
-                                .get_results(c)?
+                                .get_results(c)
+                                .await?
                                 .into_iter()
                                 // fallback on code max instead of DB builtin
                                 .max();
