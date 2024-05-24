@@ -2,16 +2,13 @@ use std::sync::RwLock;
 use std::time::Instant;
 
 use anyhow::Result;
+use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use futures_util::future::BoxFuture;
-use futures_util::FutureExt;
 use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
 use redis::aio::ConnectionLike;
 use tokio::sync::RwLock as TokioRwLock;
 use tokio::task;
 use tracing::{error, info};
-
-use diesel::r2d2::{Pool, PooledConnection};
 
 use crate::config;
 
@@ -50,7 +47,6 @@ pub mod user;
 use crate::monitoring::prometheus;
 
 lazy_static! {
-    static ref ASYNC_PG_POOL: RwLock<Option<AsyncPgPool>> = RwLock::new(None);
     static ref ASYNC_REDIS_POOL: TokioRwLock<Option<AsyncRedisPool>> = TokioRwLock::new(None);
     static ref REDIS_PREFIX: RwLock<String> = RwLock::new("".to_string());
     static ref STORAGE_REDIS_CONN_GET: Histogram = {
@@ -58,15 +54,6 @@ lazy_static! {
         prometheus::register(
             "storage_redis_conn_get_duration_seconds",
             "Time between requesting a Redis connection and the connection-pool returning it",
-            histogram.clone(),
-        );
-        histogram
-    };
-    static ref STORAGE_PG_CONN_GET: Histogram = {
-        let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
-        prometheus::register(
-            "storage_pg_conn_get_duration_seconds",
-            "Time between requesting a PostgreSQL connection and the connection-pool returning it",
             histogram.clone(),
         );
         histogram
@@ -79,9 +66,9 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations_sqlite");
 
 #[cfg(feature = "postgres")]
-pub use postgres::get_async_db_conn;
+pub use postgres::{get_async_db_conn, AsyncPgPoolConnection as AsyncDbPoolConnection};
 #[cfg(feature = "sqlite")]
-pub use sqlite::get_async_db_conn;
+pub use sqlite::{get_async_db_conn, AsyncSqlitePoolConnection as AsyncDbPoolConnection};
 
 #[derive(Clone)]
 pub enum AsyncRedisPool {
@@ -134,6 +121,7 @@ pub async fn setup() -> Result<()> {
     {
         sqlite::setup(&conf.postgresql)?;
     }
+    run_db_migrations().await?;
 
     info!("Setting up Redis client");
     if conf.redis.cluster {
@@ -190,7 +178,7 @@ pub async fn run_db_migrations() -> Result<()> {
     info!("Applying schema migrations");
 
     let c = get_async_db_conn().await?;
-    let mut c_wrapped: AsyncConnectionWrapper<AsyncPgPoolConnection> =
+    let mut c_wrapped: AsyncConnectionWrapper<AsyncDbPoolConnection> =
         AsyncConnectionWrapper::from(c);
 
     task::spawn_blocking(move || -> Result<()> {

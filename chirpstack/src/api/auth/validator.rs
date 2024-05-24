@@ -448,7 +448,7 @@ impl Validator for ValidateTenantAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(fields::Uuid(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();
@@ -616,7 +616,7 @@ impl Validator for ValidateTenantUserAccess {
             .select(dsl::count_star())
             .filter(
                 user::dsl::id
-                    .eq(fields::Uuid(id))
+                    .eq(fields::Uuid::from(id))
                     .and(user::dsl::is_active.eq(true)),
             )
             .into_boxed();

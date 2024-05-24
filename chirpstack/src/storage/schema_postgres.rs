@@ -63,6 +63,8 @@ diesel::table! {
         tags -> Jsonb,
         variables -> Jsonb,
         join_eui -> Bytea,
+        secondary_dev_addr -> Nullable<Bytea>,
+        device_session -> Nullable<Bytea>,
     }
 }
 
@@ -141,6 +143,7 @@ diesel::table! {
         relay_global_uplink_limit_bucket_size -> Int2,
         relay_overall_limit_bucket_size -> Int2,
         allow_roaming -> Bool,
+        rx1_delay -> Int2,
     }
 }
 
@@ -241,7 +244,7 @@ diesel::table! {
         group_type -> Bpchar,
         dr -> Int2,
         frequency -> Int8,
-        class_b_ping_slot_period -> Int4,
+        class_b_ping_slot_nb_k -> Int2,
         #[max_length = 20]
         class_c_scheduling_type -> Varchar,
     }

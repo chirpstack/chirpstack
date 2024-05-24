@@ -565,7 +565,7 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                     key
                 "#,
     )
-    .bind::<DbUuid, _>(fields::Uuid::from(application_id))
+    .bind::<fields::sql_types::Uuid, _>(fields::Uuid::from(application_id))
     .load(&mut get_async_db_conn().await?)
     .await
     .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;

@@ -96,7 +96,7 @@ pub async fn delete(dev_eui: &EUI64) -> Result<(), Error> {
 pub async fn set_dev_nonces(dev_eui: &EUI64, nonces: &[i32]) -> Result<DeviceKeys, Error> {
     let nonces: Vec<Option<i32>> = nonces.iter().map(|v| Some(*v)).collect();
     let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(dev_eui))
-        .set(device_keys::dev_nonces.eq(DevNonces::from(nonces)))
+        .set(device_keys::dev_nonces.eq(fields::DevNonces::from(nonces)))
         .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;

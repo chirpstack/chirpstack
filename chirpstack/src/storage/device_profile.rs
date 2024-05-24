@@ -9,7 +9,6 @@ use uuid::Uuid;
 
 use lrwn::region::{CommonName, MacVersion, Revision};
 
-use super::db_adapter::Uuid as fields::Uuid;
 use super::error::Error;
 use super::schema::device_profile;
 use super::{error, fields, get_async_db_conn};

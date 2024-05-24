@@ -130,7 +130,7 @@ pub struct DeviceChangeset {
     pub device_session: Option<Option<internal::DeviceSession>>,
     pub margin: Option<i32>,
     pub external_power_source: Option<bool>,
-    pub battery_level: Option<Option<BigDecimal>>,
+    pub battery_level: Option<Option<fields::BigDecimal>>,
     pub scheduler_run_after: Option<Option<DateTime<Utc>>>,
     pub is_disabled: Option<bool>,
 }
@@ -619,44 +619,13 @@ pub async fn list(
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(
-            device::dsl::application_id.eq(fields::Uuid::from(application_id)),
-        );
+        q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     if let Some(search) = &filters.search {
         #[cfg(feature = "postgres")]
         {
             q = q.filter(device::dsl::name.ilike(format!("%{}%", search)));
-=======
-            if let Some(application_id) = &filters.application_id {
-                q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
-            }
-
-            if let Some(search) = &filters.search {
-                #[cfg(feature = "postgres")]
-                {
-                    q = q.filter(device::dsl::name.ilike(format!("%{}%", search)));
-                }
-                #[cfg(feature = "sqlite")]
-                {
-                    q = q.filter(device::dsl::name.like(format!("%{}%", search)));
-                }
-            }
-
-            if let Some(multicast_group_id) = &filters.multicast_group_id {
-                q = q.filter(
-                    multicast_group_device::dsl::multicast_group_id
-                        .eq(fields::Uuid::from(multicast_group_id)),
-                );
-            }
-
-            q.order_by(device::dsl::name)
-                .limit(limit)
-                .offset(offset)
-                .load(&mut c)
-                .map_err(|e| Error::from_diesel(e, "".into()))
->>>>>>> 4a56582b (Move storage Uuid into fields module)
         }
         #[cfg(feature = "sqlite")]
         {
@@ -699,7 +668,7 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
         from
             device_active_inactive
     "#)
-            .bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(fields::Uuid::from(tenant_id))
+            .bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(tenant_id.map(fields::Uuid::from))
     .get_result(&mut get_async_db_conn().await?).await
     .map_err(|e| Error::from_diesel(e, "".into()))
 }
@@ -814,11 +783,11 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                     returning *
                 "#
                 })
-            .bind::<diesel::sql_types::Integer, _>(limit as i32)
-            .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
-            .bind::<fields::sql_types::Timestamptz, _>(
-                Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
-            )
+                .bind::<diesel::sql_types::Integer, _>(limit as i32)
+                .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
+                .bind::<fields::sql_types::Timestamptz, _>(
+                    Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
+                )
                 .load(c)
                 .await
                 .map_err(|e| Error::from_diesel(e, "".into()))

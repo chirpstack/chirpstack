@@ -1,14 +1,18 @@
 use std::sync::RwLock;
+use std::time::Instant;
 
-use anyhow::{Context, Result};
-use tracing::info;
+use anyhow::Result;
+use tracing::{error, info};
 
+use crate::monitoring::prometheus;
 use diesel::{ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::AsyncPgConnection;
+use futures::{future::BoxFuture, FutureExt};
+use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
 
-use crate::config::Postgresql;
+use crate::config;
 
 use crate::helpers::tls::get_root_certs;
 
@@ -17,9 +21,18 @@ pub type AsyncPgPoolConnection = DeadpoolObject<AsyncPgConnection>;
 
 lazy_static! {
     static ref ASYNC_PG_POOL: RwLock<Option<AsyncPgPool>> = RwLock::new(None);
+    static ref STORAGE_PG_CONN_GET: Histogram = {
+        let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
+        prometheus::register(
+            "storage_pg_conn_get_duration_seconds",
+            "Time between requesting a PostgreSQL connection and the connection-pool returning it",
+            histogram.clone(),
+        );
+        histogram
+    };
 }
 
-pub fn setup(conf: &Postgresql) -> Result<()> {
+pub fn setup(conf: &config::Postgresql) -> Result<()> {
     info!("Setting up PostgreSQL connection pool");
     let mut config = ManagerConfig::default();
     config.custom_setup = Box::new(pg_establish_connection);
