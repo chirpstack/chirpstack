@@ -5,7 +5,7 @@ use std::str::FromStr;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tracing::info;
 use uuid::Uuid;
 
@@ -235,8 +235,7 @@ pub struct DevicesDataRate {
 pub async fn create(d: Device) -> Result<Device, Error> {
     let mut c = get_async_db_conn().await?;
     let d: Device = c
-        .build_transaction()
-        .run::<Device, Error, _>(|c| {
+        .transaction::<Device, Error, _>(|c| {
             Box::pin(async move {
                 let query = tenant::dsl::tenant
                     .select((
@@ -315,130 +314,129 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
 
     let mut c = get_async_db_conn().await?;
 
-    c.build_transaction()
-        .run::<ValidationStatus, Error, _>(|c| {
-            Box::pin(async move {
-                let query = device::dsl::device
-                    .filter(
-                        device::dsl::dev_addr
-                            .eq(&dev_addr)
-                            .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
-                    )
-                    .filter(device::dsl::is_disabled.eq(false));
-                #[cfg(feature = "postgres")]
-                let query = query.for_update();
-                let mut devices: Vec<Device> = query.load(c).await?;
+    c.transaction::<ValidationStatus, Error, _>(|c| {
+        Box::pin(async move {
+            let query = device::dsl::device
+                .filter(
+                    device::dsl::dev_addr
+                        .eq(&dev_addr)
+                        .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
+                )
+                .filter(device::dsl::is_disabled.eq(false));
+            #[cfg(feature = "postgres")]
+            let query = query.for_update();
+            let mut devices: Vec<Device> = query.load(c).await?;
 
-                if devices.is_empty() {
-                    return Err(Error::NotFound(dev_addr.to_string()));
+            if devices.is_empty() {
+                return Err(Error::NotFound(dev_addr.to_string()));
+            }
+
+            for d in &mut devices {
+                let mut sessions = vec![];
+
+                if let Some(ds) = &d.device_session {
+                    sessions.push(ds.clone());
+                    if let Some(ds) = &ds.pending_rejoin_device_session {
+                        sessions.push(*ds.clone());
+                    }
                 }
 
-                for d in &mut devices {
-                    let mut sessions = vec![];
-
-                    if let Some(ds) = &d.device_session {
-                        sessions.push(ds.clone());
-                        if let Some(ds) = &ds.pending_rejoin_device_session {
-                            sessions.push(*ds.clone());
-                        }
+                for ds in &mut sessions {
+                    if ds.dev_addr != dev_addr.to_vec() {
+                        continue;
                     }
 
-                    for ds in &mut sessions {
-                        if ds.dev_addr != dev_addr.to_vec() {
-                            continue;
+                    // Get the full 32bit frame-counter.
+                    let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
+                    let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
+                    let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
+
+                    // Check both the full frame-counter and the received frame-counter
+                    // truncated to the 16LSB.
+                    // The latter is needed in case of a frame-counter reset as the
+                    // GetFullFCntUp will think the 16LSB has rolled over and will
+                    // increment the 16MSB bit.
+                    let mut mic_ok = false;
+                    for f_cnt in [full_f_cnt, f_cnt_orig] {
+                        // Set the full f_cnt.
+                        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                            pl.fhdr.f_cnt = f_cnt;
                         }
 
-                        // Get the full 32bit frame-counter.
-                        let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
-                        let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
-                        let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
-
-                        // Check both the full frame-counter and the received frame-counter
-                        // truncated to the 16LSB.
-                        // The latter is needed in case of a frame-counter reset as the
-                        // GetFullFCntUp will think the 16LSB has rolled over and will
-                        // increment the 16MSB bit.
-                        let mut mic_ok = false;
-                        for f_cnt in [full_f_cnt, f_cnt_orig] {
-                            // Set the full f_cnt.
-                            if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-                                pl.fhdr.f_cnt = f_cnt;
-                            }
-
-                            mic_ok = phy
-                                .validate_uplink_data_mic(
-                                    ds.mac_version().from_proto(),
-                                    ds.conf_f_cnt,
-                                    tx_dr,
-                                    tx_ch,
-                                    &f_nwk_s_int_key,
-                                    &s_nwk_s_int_key,
-                                )
-                                .context("Validate MIC")?;
-
-                            if mic_ok {
-                                break;
-                            }
-                        }
+                        mic_ok = phy
+                            .validate_uplink_data_mic(
+                                ds.mac_version().from_proto(),
+                                ds.conf_f_cnt,
+                                tx_dr,
+                                tx_ch,
+                                &f_nwk_s_int_key,
+                                &s_nwk_s_int_key,
+                            )
+                            .context("Validate MIC")?;
 
                         if mic_ok {
-                            let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
-                                pl.fhdr.f_cnt
-                            } else {
-                                0
-                            };
-
-                            if let Some(relay) = &ds.relay {
-                                if !relayed && relay.ed_relay_only {
-                                    info!(
-                                        dev_eui = %d.dev_eui,
-                                        "Only communication through relay is allowed"
-                                    );
-                                    return Err(Error::NotFound(dev_addr.to_string()));
-                                }
-                            }
-
-                            if full_f_cnt >= ds.f_cnt_up {
-                                // We immediately save the device-session to make sure that concurrent calls for
-                                // the same uplink will fail on the frame-counter validation.
-                                let ds_f_cnt_up = ds.f_cnt_up;
-                                ds.f_cnt_up = full_f_cnt + 1;
-
-                                let _ = diesel::update(device::dsl::device.find(d.dev_eui))
-                                    .set(device::device_session.eq(&ds.clone()))
-                                    .execute(c)
-                                    .await?;
-
-                                // We do return the device-session with original frame-counter
-                                ds.f_cnt_up = ds_f_cnt_up;
-                                d.device_session = Some(ds.clone());
-                                return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
-                            } else if ds.skip_f_cnt_check {
-                                // re-transmission or frame-counter reset
-                                ds.f_cnt_up = 0;
-                                d.device_session = Some(ds.clone());
-                                return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
-                            } else if full_f_cnt == (ds.f_cnt_up - 1) {
-                                // re-transmission, the frame-counter did not increment
-                                d.device_session = Some(ds.clone());
-                                return Ok(ValidationStatus::Retransmission(full_f_cnt, d.clone()));
-                            } else {
-                                d.device_session = Some(ds.clone());
-                                return Ok(ValidationStatus::Reset(full_f_cnt, d.clone()));
-                            }
-                        }
-
-                        // Restore the original f_cnt.
-                        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-                            pl.fhdr.f_cnt = f_cnt_orig;
+                            break;
                         }
                     }
-                }
 
-                Err(Error::InvalidMIC)
-            })
+                    if mic_ok {
+                        let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
+                            pl.fhdr.f_cnt
+                        } else {
+                            0
+                        };
+
+                        if let Some(relay) = &ds.relay {
+                            if !relayed && relay.ed_relay_only {
+                                info!(
+                                    dev_eui = %d.dev_eui,
+                                    "Only communication through relay is allowed"
+                                );
+                                return Err(Error::NotFound(dev_addr.to_string()));
+                            }
+                        }
+
+                        if full_f_cnt >= ds.f_cnt_up {
+                            // We immediately save the device-session to make sure that concurrent calls for
+                            // the same uplink will fail on the frame-counter validation.
+                            let ds_f_cnt_up = ds.f_cnt_up;
+                            ds.f_cnt_up = full_f_cnt + 1;
+
+                            let _ = diesel::update(device::dsl::device.find(d.dev_eui))
+                                .set(device::device_session.eq(&ds.clone()))
+                                .execute(c)
+                                .await?;
+
+                            // We do return the device-session with original frame-counter
+                            ds.f_cnt_up = ds_f_cnt_up;
+                            d.device_session = Some(ds.clone());
+                            return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
+                        } else if ds.skip_f_cnt_check {
+                            // re-transmission or frame-counter reset
+                            ds.f_cnt_up = 0;
+                            d.device_session = Some(ds.clone());
+                            return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
+                        } else if full_f_cnt == (ds.f_cnt_up - 1) {
+                            // re-transmission, the frame-counter did not increment
+                            d.device_session = Some(ds.clone());
+                            return Ok(ValidationStatus::Retransmission(full_f_cnt, d.clone()));
+                        } else {
+                            d.device_session = Some(ds.clone());
+                            return Ok(ValidationStatus::Reset(full_f_cnt, d.clone()));
+                        }
+                    }
+
+                    // Restore the original f_cnt.
+                    if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                        pl.fhdr.f_cnt = f_cnt_orig;
+                    }
+                }
+            }
+
+            Err(Error::InvalidMIC)
         })
-        .await
+    })
+    .await
 }
 
 pub async fn get_for_phypayload(
@@ -696,28 +694,27 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
 
 pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>> {
     let mut c = get_async_db_conn().await?;
-    c.build_transaction()
-        .run::<Vec<Device>, Error, _>(|c| {
-            Box::pin(async {
-                let conf = config::get();
+    c.transaction::<Vec<Device>, Error, _>(|c| {
+        Box::pin(async {
+            let conf = config::get();
 
-                // This query will:
-                //  * Select the devices for which a Class-B or Class-C downlink can be scheduled.
-                //  * Lock the device records for update with skip locked such that other
-                //    ChirpStack instances are able to do the same for the remaining devices.
-                //  * Update the scheduler_run_after for these devices to now() + 2 * scheduler
-                //    interval to avoid concurrency issues (other ChirpStack instance scheduling
-                //    the same queue items).
-                //
-                // This way, we do not have to keep the device records locked until the scheduler
-                // finishes its batch as the same set of devices will not be returned until after
-                // the updated scheduler_run_after. Only if the scheduler takes more time than 2x the
-                // interval (the scheduler is still working on processing the batch after 2 x interval)
-                // this might cause issues.
-                // The alternative would be to keep the transaction open for a long time + keep
-                // the device records locked during this time which could case issues as well.
-                diesel::sql_query(if cfg!(feature = "sqlite") {
-                    r#"
+            // This query will:
+            //  * Select the devices for which a Class-B or Class-C downlink can be scheduled.
+            //  * Lock the device records for update with skip locked such that other
+            //    ChirpStack instances are able to do the same for the remaining devices.
+            //  * Update the scheduler_run_after for these devices to now() + 2 * scheduler
+            //    interval to avoid concurrency issues (other ChirpStack instance scheduling
+            //    the same queue items).
+            //
+            // This way, we do not have to keep the device records locked until the scheduler
+            // finishes its batch as the same set of devices will not be returned until after
+            // the updated scheduler_run_after. Only if the scheduler takes more time than 2x the
+            // interval (the scheduler is still working on processing the batch after 2 x interval)
+            // this might cause issues.
+            // The alternative would be to keep the transaction open for a long time + keep
+            // the device records locked during this time which could case issues as well.
+            diesel::sql_query(if cfg!(feature = "sqlite") {
+                r#"
                     update
                         device
                     set
@@ -748,8 +745,8 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                         )
                     returning *
                 "#
-                } else {
-                    r#"
+            } else {
+                r#"
                     update
                         device
                     set
@@ -782,19 +779,19 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                         )
                     returning *
                 "#
-                })
-                .bind::<diesel::sql_types::Integer, _>(limit as i32)
-                .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
-                .bind::<fields::sql_types::Timestamptz, _>(
-                    Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
-                )
-                .load(c)
-                .await
-                .map_err(|e| Error::from_diesel(e, "".into()))
             })
+            .bind::<diesel::sql_types::Integer, _>(limit as i32)
+            .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
+            .bind::<fields::sql_types::Timestamptz, _>(
+                Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
+            )
+            .load(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, "".into()))
         })
-        .await
-        .context("Get with Class B/C queue-items transaction")
+    })
+    .await
+    .context("Get with Class B/C queue-items transaction")
 }
 
 // GetFullFCntUp returns the full 32bit frame-counter, given the fCntUp which

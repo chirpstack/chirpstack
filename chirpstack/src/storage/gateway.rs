@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tracing::info;
 use uuid::Uuid;
 
@@ -122,8 +122,7 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
     gw.validate()?;
     let mut c = get_async_db_conn().await?;
     let gw: Gateway = c
-        .build_transaction()
-        .run::<Gateway, Error, _>(|c| {
+        .transaction::<Gateway, Error, _>(|c| {
             Box::pin(async move {
                 let query = tenant::dsl::tenant.find(&gw.tenant_id);
                 // use for_update to lock the tenant.
