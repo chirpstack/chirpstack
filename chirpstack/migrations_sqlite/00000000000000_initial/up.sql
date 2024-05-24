@@ -170,7 +170,7 @@ create table device_profile (
     supports_class_c boolean not null,
     class_b_timeout integer not null,
     class_b_ping_slot_period integer not null,
-    class_b_ping_slot_dr integer not null, -- switched to smallint in base schema (was added in device_profile_templates)
+    class_b_ping_slot_dr smallint not null, -- switched to smallint in base schema (was added in device_profile_templates)
     class_b_ping_slot_freq bigint not null,
     class_c_timeout integer not null,
     abp_rx1_delay smallint not null,
