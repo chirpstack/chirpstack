@@ -6,7 +6,7 @@ use tracing::info;
 
 use crate::monitoring::prometheus;
 use diesel::sqlite::SqliteConnection;
-use diesel::{ConnectionError, ConnectionResult};
+use diesel::{Connection, ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::sync_connection_wrapper::SyncConnectionWrapper;
@@ -61,7 +61,7 @@ fn sqlite_establish_connection(
             .map_err(|err| ConnectionError::BadConnection(conn.to_string()))?;
         conn
     })
-    .boxed();
+    .boxed()
 }
 
 fn get_async_db_pool() -> Result<AsyncSqlitePool> {

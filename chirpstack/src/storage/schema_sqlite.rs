@@ -58,6 +58,8 @@ diesel::table! {
         tags -> Text,
         variables -> Text,
         join_eui -> Binary,
+        secondary_dev_addr -> Nullable<Binary>,
+        device_session -> Nullable<Binary>,
     }
 }
 
@@ -92,7 +94,7 @@ diesel::table! {
         supports_class_c -> Bool,
         class_b_timeout -> Integer,
         class_b_ping_slot_nb_k -> Integer,
-        class_b_ping_slot_dr -> SmallInt,
+        class_b_ping_slot_dr -> Integer,
         class_b_ping_slot_freq -> BigInt,
         class_c_timeout -> Integer,
         abp_rx1_delay -> SmallInt,
@@ -129,6 +131,7 @@ diesel::table! {
         relay_global_uplink_limit_bucket_size -> SmallInt,
         relay_overall_limit_bucket_size -> SmallInt,
         allow_roaming -> Bool,
+        rx1_delay -> SmallInt,
     }
 }
 
@@ -217,7 +220,7 @@ diesel::table! {
         group_type -> Text,
         dr -> SmallInt,
         frequency -> BigInt,
-        class_b_ping_slot_period -> Integer,
+        class_b_ping_slot_nb_k -> SmallInt,
         class_c_scheduling_type -> Text,
     }
 }

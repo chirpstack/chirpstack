@@ -259,7 +259,7 @@ create table multicast_group (
     group_type char(1) not null,
     dr smallint not null,
     frequency bigint not null,
-    class_b_ping_slot_period integer not null
+    class_b_ping_slot_period smallint not null
 );
 
 create index idx_multicast_group_application_id on multicast_group (application_id);
