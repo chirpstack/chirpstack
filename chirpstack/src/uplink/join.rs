@@ -841,7 +841,7 @@ impl JoinRequest {
             None => {}
         }
 
-        device.device_session = Some(ds);
+        device.device_session = Some(ds.into());
 
         Ok(())
     }

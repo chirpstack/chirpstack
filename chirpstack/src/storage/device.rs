@@ -115,7 +115,7 @@ pub struct Device {
     pub variables: fields::KeyValue,
     pub join_eui: EUI64,
     pub secondary_dev_addr: Option<DevAddr>,
-    pub device_session: Option<internal::DeviceSession>,
+    pub device_session: Option<fields::DeviceSession>,
 }
 
 #[derive(AsChangeset, Debug, Clone, Default)]
@@ -127,7 +127,7 @@ pub struct DeviceChangeset {
     pub enabled_class: Option<DeviceClass>,
     pub join_eui: Option<EUI64>,
     pub secondary_dev_addr: Option<Option<DevAddr>>,
-    pub device_session: Option<Option<internal::DeviceSession>>,
+    pub device_session: Option<Option<fields::DeviceSession>>,
     pub margin: Option<i32>,
     pub external_power_source: Option<bool>,
     pub battery_level: Option<Option<fields::BigDecimal>>,
@@ -146,12 +146,14 @@ impl Device {
     pub fn get_device_session(&self) -> Result<&internal::DeviceSession, Error> {
         self.device_session
             .as_ref()
+            .map(|ds| &ds.0)
             .ok_or_else(|| Error::NotFound(self.dev_eui.to_string()))
     }
 
     pub fn get_device_session_mut(&mut self) -> Result<&mut internal::DeviceSession, Error> {
         self.device_session
             .as_mut()
+            .map(|ds| &mut ds.0)
             .ok_or_else(|| Error::NotFound(self.dev_eui.to_string()))
     }
 
@@ -337,7 +339,7 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                 if let Some(ds) = &d.device_session {
                     sessions.push(ds.clone());
                     if let Some(ds) = &ds.pending_rejoin_device_session {
-                        sessions.push(*ds.clone());
+                        sessions.push(ds.as_ref().into());
                     }
                 }
 
@@ -471,7 +473,7 @@ pub async fn get_for_phypayload(
         if let Some(ds) = &d.device_session {
             sessions.push(ds.clone());
             if let Some(ds) = &ds.pending_rejoin_device_session {
-                sessions.push(*ds.clone());
+                sessions.push(ds.as_ref().into());
             }
         }
 
@@ -1127,24 +1129,27 @@ pub mod test {
                 name: "0101010101010101".into(),
                 dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
-                device_session: Some(internal::DeviceSession {
-                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                    s_nwk_s_int_key: vec![
-                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01,
-                    ],
-                    f_cnt_up: 100,
-                    skip_f_cnt_check: true,
-                    ..Default::default()
-                }),
+                device_session: Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                        s_nwk_s_int_key: vec![
+                            0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                            0x01, 0x01, 0x01, 0x01,
+                        ],
+                        f_nwk_s_int_key: vec![
+                            0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                            0x01, 0x01, 0x01, 0x01,
+                        ],
+                        nwk_s_enc_key: vec![
+                            0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                            0x01, 0x01, 0x01, 0x01,
+                        ],
+                        f_cnt_up: 100,
+                        skip_f_cnt_check: true,
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             },
             Device {
@@ -1153,23 +1158,26 @@ pub mod test {
                 name: "0202020202020202".into(),
                 dev_eui: EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
-                device_session: Some(internal::DeviceSession {
-                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                    s_nwk_s_int_key: vec![
-                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                        0x02, 0x02, 0x02, 0x02,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                        0x02, 0x02, 0x02, 0x02,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                        0x02, 0x02, 0x02, 0x02,
-                    ],
-                    f_cnt_up: 200,
-                    ..Default::default()
-                }),
+                device_session: Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                        s_nwk_s_int_key: vec![
+                            0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                            0x02, 0x02, 0x02, 0x02,
+                        ],
+                        f_nwk_s_int_key: vec![
+                            0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                            0x02, 0x02, 0x02, 0x02,
+                        ],
+                        nwk_s_enc_key: vec![
+                            0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                            0x02, 0x02, 0x02, 0x02,
+                        ],
+                        f_cnt_up: 200,
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             },
             Device {
@@ -1179,40 +1187,43 @@ pub mod test {
                 dev_eui: EUI64::from_be_bytes([3, 3, 3, 3, 3, 3, 3, 3]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
                 secondary_dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
-                device_session: Some(internal::DeviceSession {
-                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                    s_nwk_s_int_key: vec![
-                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                        0x03, 0x03, 0x03, 0x03,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                        0x03, 0x03, 0x03, 0x03,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                        0x03, 0x03, 0x03, 0x03,
-                    ],
-                    f_cnt_up: 300,
-                    pending_rejoin_device_session: Some(Box::new(internal::DeviceSession {
-                        dev_addr: vec![0x04, 0x03, 0x02, 0x01],
+                device_session: Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![0x01, 0x02, 0x03, 0x04],
                         s_nwk_s_int_key: vec![
-                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                            0x04, 0x04, 0x04, 0x04,
+                            0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                            0x03, 0x03, 0x03, 0x03,
                         ],
                         f_nwk_s_int_key: vec![
-                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                            0x04, 0x04, 0x04, 0x04,
+                            0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                            0x03, 0x03, 0x03, 0x03,
                         ],
                         nwk_s_enc_key: vec![
-                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                            0x04, 0x04, 0x04, 0x04,
+                            0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                            0x03, 0x03, 0x03, 0x03,
                         ],
-                        f_cnt_up: 0,
+                        f_cnt_up: 300,
+                        pending_rejoin_device_session: Some(Box::new(internal::DeviceSession {
+                            dev_addr: vec![0x04, 0x03, 0x02, 0x01],
+                            s_nwk_s_int_key: vec![
+                                0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                                0x04, 0x04, 0x04, 0x04, 0x04,
+                            ],
+                            f_nwk_s_int_key: vec![
+                                0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                                0x04, 0x04, 0x04, 0x04, 0x04,
+                            ],
+                            nwk_s_enc_key: vec![
+                                0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                                0x04, 0x04, 0x04, 0x04, 0x04,
+                            ],
+                            f_cnt_up: 0,
+                            ..Default::default()
+                        })),
                         ..Default::default()
-                    })),
-                    ..Default::default()
-                }),
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             },
             Device {
@@ -1221,23 +1232,26 @@ pub mod test {
                 name: "0505050505050505".into(),
                 dev_eui: EUI64::from_be_bytes([5, 5, 5, 5, 5, 5, 5, 5]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
-                device_session: Some(internal::DeviceSession {
-                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                    s_nwk_s_int_key: vec![
-                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                        0x05, 0x05, 0x05, 0x05,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                        0x05, 0x05, 0x05, 0x05,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                        0x05, 0x05, 0x05, 0x05,
-                    ],
-                    f_cnt_up: (1 << 16) + 1,
-                    ..Default::default()
-                }),
+                device_session: Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                        s_nwk_s_int_key: vec![
+                            0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                            0x05, 0x05, 0x05, 0x05,
+                        ],
+                        f_nwk_s_int_key: vec![
+                            0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                            0x05, 0x05, 0x05, 0x05,
+                        ],
+                        nwk_s_enc_key: vec![
+                            0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                            0x05, 0x05, 0x05, 0x05,
+                        ],
+                        f_cnt_up: (1 << 16) + 1,
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             },
         ];

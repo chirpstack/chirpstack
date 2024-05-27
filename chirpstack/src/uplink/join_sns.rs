@@ -623,7 +623,7 @@ impl JoinRequest {
             }
         }
 
-        device.device_session = Some(ds);
+        device.device_session = Some(ds.into());
 
         Ok(())
     }
@@ -649,7 +649,7 @@ impl JoinRequest {
             device::partial_update(
                 self.device.as_ref().unwrap().dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(ds.clone())),
+                    device_session: Some(Some(ds.into())),
                     join_eui: Some(self.join_request.as_ref().unwrap().join_eui),
                     dev_addr: Some(Some(self.dev_addr.unwrap())),
                     secondary_dev_addr: Some(None),

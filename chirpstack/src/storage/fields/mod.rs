@@ -1,5 +1,6 @@
 mod big_decimal;
 mod dev_nonces;
+mod device_session;
 mod key_value;
 mod measurements;
 mod multicast_group_scheduling_type;
@@ -7,6 +8,7 @@ mod uuid;
 
 pub use big_decimal::BigDecimal;
 pub use dev_nonces::*;
+pub use device_session::DeviceSession;
 pub use key_value::KeyValue;
 pub use measurements::*;
 pub use multicast_group_scheduling_type::MulticastGroupSchedulingType;

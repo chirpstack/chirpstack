@@ -533,7 +533,7 @@ impl DeviceService for Device {
         dp.reset_session_to_boot_params(&mut ds);
 
         let mut device_changeset = device::DeviceChangeset {
-            device_session: Some(Some(ds)),
+            device_session: Some(Some(ds.into())),
             dev_addr: Some(Some(dev_addr)),
             secondary_dev_addr: Some(None),
             ..Default::default()
