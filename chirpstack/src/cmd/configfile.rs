@@ -802,6 +802,13 @@ pub fn run() {
     #
     # If set, the session-keys will be encrypted using the given KEK.
     passive_roaming_kek_label="{{roaming.default.passive_roaming_kek_label}}"
+
+    # Passive-roaming validate MIC.
+    #
+    # If set ChirpStack will validate the MIC (for non-stateless roaming
+    # agreements). As well it means it will expose the NwkSKey / FNwkSIntKey
+    # on PRStartAns.
+    passive_roaming_validate_mic={{roaming.default.passive_roaming_validate_mic}}
    
     # Server.
     #
@@ -846,6 +853,13 @@ pub fn run() {
   #  #
   #  # If set, the session-keys will be encrypted using the given KEK.
   #  passive_roaming_kek_label=""
+
+  #  # Passive-roaming validate MIC.
+  #  #
+  #  # If set ChirpStack will validate the MIC (for non-stateless roaming
+  #  # agreements). As well it means it will expose the NwkSKey / FNwkSIntKey
+  #  # on PRStartAns.
+  #  passive_roaming_validate_mic=false
   #
   #  # Server.
   #  #
@@ -878,6 +892,7 @@ pub fn run() {
     async_timeout="{{ this.async_timeout }}"
     passive_roaming_lifetime="{{ this.passive_roaming_lifetime }}"
     passive_roaming_kek_label="{{ this.passive_roaming_kek_label }}"
+    passive_roaming_validate_mic={{ this.passive_roaming_validate_mic }}
     server="{{ this.server }}"
     use_target_role_suffix="{{ this.use_target_role_suffix }}"
     ca_cert="{{ this.ca_cert }}"

@@ -155,6 +155,25 @@ pub fn get_passive_roaming_kek_label(net_id: NetID) -> Result<String> {
     ))
 }
 
+pub fn get_passive_roaming_validate_mic(net_id: NetID) -> Result<bool> {
+    let conf = config::get();
+
+    for s in &conf.roaming.servers {
+        if s.net_id == net_id {
+            return Ok(s.passive_roaming_validate_mic);
+        }
+    }
+
+    if conf.roaming.default.enabled {
+        return Ok(conf.roaming.default.passive_roaming_validate_mic);
+    }
+
+    Err(anyhow!(
+        "Passive-roaming mic-check for net_id {} does not exist",
+        net_id
+    ))
+}
+
 pub fn is_enabled() -> bool {
     let conf = config::get();
     conf.roaming.default.enabled || !conf.roaming.servers.is_empty()

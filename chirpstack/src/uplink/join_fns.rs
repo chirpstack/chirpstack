@@ -172,6 +172,7 @@ impl JoinRequest {
         let sess = internal::PassiveRoamingDeviceSession {
             session_id: sess_id.as_bytes().to_vec(),
             net_id: self.home_net_id.unwrap().to_vec(),
+            validate_mic: roaming::get_passive_roaming_validate_mic(self.home_net_id.unwrap())?,
             dev_addr: pr_start_ans.dev_addr.clone(),
             dev_eui: self.join_request.dev_eui.to_vec(),
             lifetime: {
