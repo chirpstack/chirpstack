@@ -1900,6 +1900,7 @@ async fn test_lorawan_10_end_to_end_enc() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil().into(),
+                dev_eui: dev.dev_eui,
                 f_port: 1,
                 data: vec![1, 2, 3, 4],
                 f_cnt_down: Some(10),
@@ -2163,6 +2164,7 @@ async fn test_lorawan_11_uplink() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil().into(),
+                dev_eui: dev.dev_eui,
                 f_port: 1,
                 f_cnt_down: Some(4),
                 is_pending: true,
@@ -2887,6 +2889,7 @@ async fn test_lorawan_10_mac_commands() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![device_queue::DeviceQueueItem {
                 id: Uuid::nil().into(),
+                dev_eui: dev.dev_eui,
                 f_port: 1,
                 data: vec![1, 2, 3, 4],
                 ..Default::default()
