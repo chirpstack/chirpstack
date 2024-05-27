@@ -48,12 +48,12 @@ pub fn setup(conf: &config::Postgresql) -> Result<()> {
 }
 
 fn sqlite_establish_connection(
-    _config: &str,
+    url: &str,
 ) -> BoxFuture<ConnectionResult<SyncConnectionWrapper<SqliteConnection>>> {
+    let url = url.to_string();
     tokio::task::spawn_blocking(
         move || -> ConnectionResult<SyncConnectionWrapper<SqliteConnection>> {
-            let config = config::get();
-            let mut conn = SqliteConnection::establish(&config.postgresql.dsn)?;
+            let mut conn = SqliteConnection::establish(&url)?;
 
             // Enable foreign keys since it's off by default in sqlite
             use diesel::RunQueryDsl;
