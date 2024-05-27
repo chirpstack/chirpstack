@@ -730,6 +730,7 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                             where
                                 d.enabled_class in ('B', 'C')
                                 and (d.scheduler_run_after is null or d.scheduler_run_after < ?2)
+                                and d.is_disabled = false
                                 and exists (
                                     select
                                         1
