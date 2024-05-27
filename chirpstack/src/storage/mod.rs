@@ -204,7 +204,7 @@ pub fn redis_key(s: String) -> String {
 #[cfg(test)]
 pub async fn reset_db() -> Result<()> {
     let c = get_async_db_conn().await?;
-    let mut c_wrapped: AsyncConnectionWrapper<AsyncPgPoolConnection> =
+    let mut c_wrapped: AsyncConnectionWrapper<AsyncDbPoolConnection> =
         AsyncConnectionWrapper::from(c);
 
     tokio::task::spawn_blocking(move || -> Result<()> {

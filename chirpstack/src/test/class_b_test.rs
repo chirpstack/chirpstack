@@ -5,7 +5,7 @@ use crate::gpstime::ToGpsTime;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, gateway, reset_redis, tenant,
+    device_gateway, device_profile, device_queue, fields, gateway, reset_redis, tenant,
 };
 use crate::{
     config, downlink, downlink::classb, gateway::backend as gateway_backend, integration, test,
@@ -449,7 +449,12 @@ async fn run_uplink_test(t: &UplinkTest) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.clone()),
+            device_session: Some(
+                t.device_session
+                    .as_ref()
+                    .map(fields::DeviceSession::from)
+                    .clone(),
+            ),
             ..Default::default()
         },
     )
@@ -490,7 +495,12 @@ async fn run_scheduler_test(t: &DownlinkTest) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.clone()),
+            device_session: Some(
+                t.device_session
+                    .as_ref()
+                    .map(fields::DeviceSession::from)
+                    .clone(),
+            ),
             ..Default::default()
         },
     )

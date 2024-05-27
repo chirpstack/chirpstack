@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 #[serde(transparent)]
 #[cfg_attr(feature = "postgres", diesel(sql_type = diesel::sql_types::Uuid))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = diesel::sql_types::Text))]
-pub struct Uuid(uuid::Uuid);
+pub struct Uuid(pub uuid::Uuid);
 
 impl std::convert::From<uuid::Uuid> for Uuid {
     fn from(u: uuid::Uuid) -> Self {

@@ -1119,7 +1119,7 @@ pub mod test {
         let mut stats_req = Request::new(stats_req);
         stats_req
             .extensions_mut()
-            .insert(AuthID::User(u.id.clone()));
+            .insert(AuthID::User(u.id.0.clone()));
         let stats_resp = service.get_duty_cycle_metrics(stats_req).await.unwrap();
         let stats_resp = stats_resp.get_ref();
         assert_eq!(

@@ -1545,11 +1545,14 @@ pub mod test {
             dev.dev_eui,
             &device::DeviceChangeset {
                 dev_addr: Some(Some(DevAddr::from_be_bytes([1, 2, 3, 4]))),
-                device_session: Some(Some(internal::DeviceSession {
-                    dev_addr: vec![1, 2, 3, 4],
-                    js_session_key_id: vec![8, 7, 6, 5, 4, 3, 2, 1],
-                    ..Default::default()
-                })),
+                device_session: Some(Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![1, 2, 3, 4],
+                        js_session_key_id: vec![8, 7, 6, 5, 4, 3, 2, 1],
+                        ..Default::default()
+                    }
+                    .into(),
+                )),
                 ..Default::default()
             },
         )
@@ -1574,14 +1577,17 @@ pub mod test {
         device::partial_update(
             dev.dev_eui,
             &device::DeviceChangeset {
-                device_session: Some(Some(internal::DeviceSession {
-                    dev_addr: vec![1, 2, 3, 4],
-                    app_s_key: Some(common::KeyEnvelope {
-                        kek_label: "test-key".into(),
-                        aes_key: vec![8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1],
-                    }),
-                    ..Default::default()
-                })),
+                device_session: Some(Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![1, 2, 3, 4],
+                        app_s_key: Some(common::KeyEnvelope {
+                            kek_label: "test-key".into(),
+                            aes_key: vec![8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1],
+                        }),
+                        ..Default::default()
+                    }
+                    .into(),
+                )),
                 ..Default::default()
             },
         )

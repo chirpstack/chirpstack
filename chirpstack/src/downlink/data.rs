@@ -2878,7 +2878,7 @@ mod test {
             let d = device::partial_update(
                 d.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(ds.clone())),
+                    device_session: Some(Some(ds.clone().into())),
                     ..Default::default()
                 },
             )
@@ -3422,11 +3422,14 @@ mod test {
                     dev_addr: Some(*dev_addr),
                     application_id: app.id,
                     device_profile_id: dp_ed.id,
-                    device_session: Some(internal::DeviceSession {
-                        dev_addr: dev_addr.to_vec(),
-                        nwk_s_enc_key: vec![0; 16],
-                        ..Default::default()
-                    }),
+                    device_session: Some(
+                        internal::DeviceSession {
+                            dev_addr: dev_addr.to_vec(),
+                            nwk_s_enc_key: vec![0; 16],
+                            ..Default::default()
+                        }
+                        .into(),
+                    ),
                     ..Default::default()
                 })
                 .await
@@ -3439,7 +3442,7 @@ mod test {
             let d_relay = device::partial_update(
                 d_relay.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(test.device_session.clone())),
+                    device_session: Some(Some(test.device_session.clone().into())),
                     ..Default::default()
                 },
             )
@@ -3888,7 +3891,7 @@ mod test {
             let d_relay = device::partial_update(
                 d_relay.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(test.device_session.clone())),
+                    device_session: Some(Some(test.device_session.clone().into())),
                     ..Default::default()
                 },
             )
@@ -4019,7 +4022,7 @@ mod test {
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
                 device: device::Device {
-                    device_session: Some(test.device_session.clone()),
+                    device_session: Some(test.device_session.clone().into()),
                     ..Default::default()
                 },
                 network_conf: config::get_region_network("eu868").unwrap(),
@@ -4130,7 +4133,7 @@ mod test {
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
                 device: device::Device {
-                    device_session: Some(test.device_session.clone()),
+                    device_session: Some(test.device_session.clone().into()),
                     ..Default::default()
                 },
                 network_conf: config::get_region_network("eu868").unwrap(),
@@ -4251,7 +4254,7 @@ mod test {
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
                 device: device::Device {
-                    device_session: Some(test.device_session.clone()),
+                    device_session: Some(test.device_session.clone().into()),
                     ..Default::default()
                 },
                 network_conf: config::get_region_network("eu868").unwrap(),
@@ -4508,7 +4511,7 @@ mod test {
             let d_relay = device::partial_update(
                 d_relay.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(test.device_session.clone())),
+                    device_session: Some(Some(test.device_session.clone().into())),
                     ..Default::default()
                 },
             )

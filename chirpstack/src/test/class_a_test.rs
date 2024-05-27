@@ -8,7 +8,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_profile, device_queue, gateway, mac_command, reset_redis, tenant,
+    device_profile, device_queue, fields, gateway, mac_command, reset_redis, tenant,
 };
 use crate::{config, gateway::backend as gateway_backend, integration, region, test, uplink};
 use chirpstack_api::{common, gw, integration as integration_pb, internal, stream};
@@ -95,20 +95,23 @@ async fn test_gateway_filtering() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
-        device_session: Some(internal::DeviceSession {
-            mac_version: common::MacVersion::Lorawan102.into(),
-            dev_addr: vec![1, 2, 3, 4],
-            f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-            s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-            nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-            f_cnt_up: 7,
-            n_f_cnt_down: 5,
-            enabled_uplink_channel_indices: vec![0, 1, 2],
-            rx1_delay: 1,
-            rx2_frequency: 869525000,
-            region_config_id: "eu868".into(),
-            ..Default::default()
-        }),
+        device_session: Some(
+            internal::DeviceSession {
+                mac_version: common::MacVersion::Lorawan102.into(),
+                dev_addr: vec![1, 2, 3, 4],
+                f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                f_cnt_up: 7,
+                n_f_cnt_down: 5,
+                enabled_uplink_channel_indices: vec![0, 1, 2],
+                rx1_delay: 1,
+                rx2_frequency: 869525000,
+                region_config_id: "eu868".into(),
+                ..Default::default()
+            }
+            .into(),
+        ),
         ..Default::default()
     })
     .await
@@ -5780,7 +5783,12 @@ async fn run_test(t: &Test) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.clone()),
+            device_session: Some(
+                t.device_session
+                    .as_ref()
+                    .map(fields::DeviceSession::from)
+                    .clone(),
+            ),
             ..Default::default()
         },
     )

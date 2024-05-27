@@ -4,7 +4,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, gateway, reset_redis, tenant,
+    device_gateway, device_profile, device_queue, fields, gateway, reset_redis, tenant,
 };
 use crate::{downlink, gateway::backend as gateway_backend, integration, test};
 use chirpstack_api::{common, gw, internal};
@@ -303,7 +303,12 @@ async fn run_scheduler_test(t: &DownlinkTest) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.clone()),
+            device_session: Some(
+                t.device_session
+                    .as_ref()
+                    .map(fields::DeviceSession::from)
+                    .clone(),
+            ),
             ..Default::default()
         },
     )
