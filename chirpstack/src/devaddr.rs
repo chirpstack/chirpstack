@@ -9,7 +9,7 @@ const NUMBER_OF_SLOTS: u32 = 64;
 static mut CURRENT_SLOT: u32 = 0;
 
 // project/chirpstack/src/devaddr.rs
-fn get_random_dev_addr() -> DevAddr {
+pub fn get_random_dev_addr() -> DevAddr {
     // check whether we still have any time slots left
     unsafe {
         // old implementation, panic if I run out of time slots
