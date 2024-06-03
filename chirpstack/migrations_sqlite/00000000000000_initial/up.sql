@@ -47,7 +47,9 @@ create table tenant (
     can_have_gateways boolean not null,
     max_device_count integer not null,
     max_gateway_count integer not null,
-    private_gateways boolean not null
+    private_gateways_up boolean not null,
+    private_gateways_down boolean not null default false,
+    tags text not null default '{}'
 );
 
 -- sqlite has advanced text search with https://www.sqlite.org/fts5.html
@@ -63,7 +65,7 @@ insert into "tenant" (
     can_have_gateways,
     max_device_count,
     max_gateway_count,
-    private_gateways
+    private_gateways_up
 ) values (
     '52f14cd4-c6f1-4fbd-8f87-4025e1d49242',
     datetime('now'),
@@ -121,7 +123,8 @@ create table application (
     updated_at datetime not null,
     name varchar(100) not null,
     description text not null,
-    mqtt_tls_cert blob
+    mqtt_tls_cert blob,
+    tags text not null default '{}'
 );
 
 create index idx_application_tenant_id on application (tenant_id);
@@ -135,7 +138,7 @@ create table application_integration (
     updated_at datetime not null,
     configuration text not null,
 
-    primary key(application_id, kind)
+    primary key (application_id, kind)
 );
 
 -- api-key
@@ -161,23 +164,51 @@ create table device_profile (
     reg_params_revision varchar(20) not null,
     adr_algorithm_id varchar(100) not null,
     payload_codec_runtime varchar(20) not null,
-    payload_encoder_config text not null,
-    payload_decoder_config text not null,
     uplink_interval integer not null,
     device_status_req_interval integer not null,
     supports_otaa boolean not null,
     supports_class_b boolean not null,
     supports_class_c boolean not null,
     class_b_timeout integer not null,
-    class_b_ping_slot_period integer not null,
-    class_b_ping_slot_dr smallint not null, -- switched to smallint in base schema (was added in device_profile_templates)
+    class_b_ping_slot_nb_k integer not null,
+    class_b_ping_slot_dr smallint not null,
     class_b_ping_slot_freq bigint not null,
     class_c_timeout integer not null,
     abp_rx1_delay smallint not null,
     abp_rx1_dr_offset smallint not null,
     abp_rx2_dr smallint not null,
     abp_rx2_freq bigint not null,
-    tags text not null
+    tags text not null,
+    payload_codec_script text not null default '',
+    flush_queue_on_activate boolean not null default false,
+    description text not null default '',
+    measurements text not null default '{}',
+    auto_detect_measurements boolean not null default true,
+    region_config_id varchar(100) null,
+    is_relay boolean not null default false,
+    is_relay_ed boolean not null default false,
+    relay_ed_relay_only boolean not null default false,
+    relay_enabled boolean not null default false,
+    relay_cad_periodicity smallint not null default 0,
+    relay_default_channel_index smallint not null default 0,
+    relay_second_channel_freq bigint not null default 0,
+    relay_second_channel_dr smallint not null default 0,
+    relay_second_channel_ack_offset smallint not null default 0,
+    relay_ed_activation_mode smallint not null default 0,
+    relay_ed_smart_enable_level smallint not null default 0,
+    relay_ed_back_off smallint not null default 0,
+    relay_ed_uplink_limit_bucket_size smallint not null default 0,
+    relay_ed_uplink_limit_reload_rate smallint not null default 0,
+    relay_join_req_limit_reload_rate smallint not null default 0,
+    relay_notify_limit_reload_rate smallint not null default 0,
+    relay_global_uplink_limit_reload_rate smallint not null default 0,
+    relay_overall_limit_reload_rate smallint not null default 0,
+    relay_join_req_limit_bucket_size smallint not null default 0,
+    relay_notify_limit_bucket_size smallint not null default 0,
+    relay_global_uplink_limit_bucket_size smallint not null default 0,
+    relay_overall_limit_bucket_size smallint not null default 0,
+    allow_roaming boolean not null default true,
+    rx1_delay smallint not null default 0
 );
 
 create index idx_device_profile_tenant_id on device_profile (tenant_id);
@@ -207,7 +238,10 @@ create table device (
     skip_fcnt_check boolean not null,
     is_disabled boolean not null,
     tags text not null,
-    variables text not null
+    variables text not null,
+    join_eui blob not null default x'00000000',
+    secondary_dev_addr blob,
+    device_session blob
 );
 
 create index idx_device_application_id on device (application_id);
@@ -236,13 +270,13 @@ create table device_queue_item (
     data blob not null,
     is_pending boolean not null,
     f_cnt_down bigint null,
-    timeout_after datetime
+    timeout_after datetime,
+    is_encrypted boolean default false not null
 );
 
 create index idx_device_queue_item_dev_eui on device_queue_item (dev_eui);
 create index idx_device_queue_item_created_at on device_queue_item (created_at);
 create index idx_device_queue_item_timeout_after on device_queue_item (timeout_after);
-
 
 -- multicast groups
 create table multicast_group (
@@ -259,7 +293,8 @@ create table multicast_group (
     group_type char(1) not null,
     dr smallint not null,
     frequency bigint not null,
-    class_b_ping_slot_period smallint not null
+    class_b_ping_slot_nb_k smallint not null,
+    class_c_scheduling_type varchar(20) not null default 'delay'
 );
 
 create index idx_multicast_group_application_id on multicast_group (application_id);
@@ -286,3 +321,56 @@ create table multicast_group_queue_item (
 
 create index idx_multicast_group_queue_item_multicast_group_id on multicast_group_queue_item (multicast_group_id);
 create index idx_multicast_group_queue_item_scheduler_run_after on multicast_group_queue_item (scheduler_run_after);
+
+create table device_profile_template (
+    id text not null primary key,
+    created_at datetime not null,
+    updated_at datetime not null,
+    name varchar(100) not null,
+    description text not null,
+    vendor varchar(100) not null,
+    firmware varchar(100) not null,
+    region varchar(10) not null,
+    mac_version varchar(10) not null,
+    reg_params_revision varchar(20) not null,
+    adr_algorithm_id varchar(100) not null,
+    payload_codec_runtime varchar(20) not null,
+    payload_codec_script text not null,
+    uplink_interval integer not null,
+    device_status_req_interval integer not null,
+    flush_queue_on_activate boolean not null,
+    supports_otaa boolean not null,
+    supports_class_b boolean not null,
+    supports_class_c boolean not null,
+    class_b_timeout integer not null,
+    class_b_ping_slot_nb_k integer not null,
+    class_b_ping_slot_dr smallint not null,
+    class_b_ping_slot_freq bigint not null,
+    class_c_timeout integer not null,
+    abp_rx1_delay smallint not null,
+    abp_rx1_dr_offset smallint not null,
+    abp_rx2_dr smallint not null,
+    abp_rx2_freq bigint not null,
+    tags text not null,
+    measurements text not null default '{}',
+    auto_detect_measurements boolean not null default true
+);
+
+create table multicast_group_gateway (
+    multicast_group_id text not null references multicast_group on delete cascade,
+    gateway_id blob not null references gateway on delete cascade,
+    created_at datetime not null,
+    primary key (multicast_group_id, gateway_id)
+);
+
+create table relay_device (
+    relay_dev_eui blob not null references device on delete cascade,
+    dev_eui blob not null references device on delete cascade,
+    created_at datetime not null,
+    primary key (relay_dev_eui, dev_eui)
+);
+
+create index idx_tenant_tags on tenant (tags);
+create index idx_application_tags on application (tags);
+create index idx_device_dev_addr on device (dev_addr);
+create index idx_device_secondary_dev_addr on device (secondary_dev_addr);
