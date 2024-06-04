@@ -115,9 +115,10 @@ pub async fn validate_incr_join_and_store_dev_nonce(
         .build_transaction()
         .run::<DeviceKeys, Error, _>(|c| {
             Box::pin(async move {
-                let mut dk: DeviceKeys = device_keys::dsl::device_keys
-                    .find(&dev_eui)
-                    .for_update()
+                let query = device_keys::dsl::device_keys.find(&dev_eui);
+                #[cfg(feature = "postgres")]
+                let query = query.for_update();
+                let mut dk: DeviceKeys = query
                     .first(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;

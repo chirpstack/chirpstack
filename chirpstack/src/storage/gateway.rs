@@ -125,10 +125,11 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
         .build_transaction()
         .run::<Gateway, Error, _>(|c| {
             Box::pin(async move {
+                let query = tenant::dsl::tenant.find(&gw.tenant_id);
                 // use for_update to lock the tenant.
-                let t: super::tenant::Tenant = tenant::dsl::tenant
-                    .find(&gw.tenant_id)
-                    .for_update()
+                #[cfg(feature = "postgres")]
+                let query = query.for_update();
+                let t: super::tenant::Tenant = query
                     .get_result(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, gw.tenant_id.to_string()))?;

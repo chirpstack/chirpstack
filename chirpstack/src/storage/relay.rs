@@ -131,10 +131,11 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
     c.build_transaction()
         .run::<(), Error, _>(|c| {
             Box::pin(async move {
+                let query = device::dsl::device.find(&relay_dev_eui);
                 // We lock the relay device to avoid race-conditions in the validation.
-                let rd: Device = device::dsl::device
-                    .find(&relay_dev_eui)
-                    .for_update()
+                #[cfg(feature = "postgres")]
+                let query = query.for_update();
+                let rd: Device = query
                     .get_result(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, relay_dev_eui.to_string()))?;

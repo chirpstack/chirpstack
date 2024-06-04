@@ -227,8 +227,7 @@ pub async fn create(d: Device) -> Result<Device, Error> {
         .build_transaction()
         .run::<Device, Error, _>(|c| {
             Box::pin(async move {
-                // use for update to lock the tenant
-                let t: super::tenant::Tenant = tenant::dsl::tenant
+                let query = tenant::dsl::tenant
                     .select((
                         tenant::dsl::id,
                         tenant::dsl::created_at,
@@ -243,10 +242,11 @@ pub async fn create(d: Device) -> Result<Device, Error> {
                         tenant::dsl::tags,
                     ))
                     .inner_join(application::table)
-                    .filter(application::dsl::id.eq(&d.application_id))
-                    .for_update()
-                    .first(c)
-                    .await?;
+                    .filter(application::dsl::id.eq(&d.application_id));
+                // use for update to lock the tenant
+                #[cfg(feature = "postgres")]
+                let query = query.for_update();
+                let t: super::tenant::Tenant = query.first(c).await?;
 
                 let dev_count: i64 = device::dsl::device
                     .select(dsl::count_star())
@@ -307,16 +307,16 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
     c.build_transaction()
         .run::<ValidationStatus, Error, _>(|c| {
             Box::pin(async move {
-                let mut devices: Vec<Device> = device::dsl::device
+                let query = device::dsl::device
                     .filter(
                         device::dsl::dev_addr
                             .eq(&dev_addr)
                             .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
                     )
-                    .filter(device::dsl::is_disabled.eq(false))
-                    .for_update()
-                    .load(c)
-                    .await?;
+                    .filter(device::dsl::is_disabled.eq(false));
+                #[cfg(feature = "postgres")]
+                let query = query.for_update();
+                let mut devices: Vec<Device> = query.load(c).await?;
 
                 if devices.is_empty() {
                     return Err(Error::NotFound(dev_addr.to_string()));

@@ -255,36 +255,40 @@ pub async fn add_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
     c.build_transaction()
         .run::<(), Error, _>(|c| {
             Box::pin(async move {
-                let d: super::device::Device = device::dsl::device
-                    .find(&dev_eui)
-                    .for_update()
+                let device_query = device::dsl::device.find(&dev_eui);
+                #[cfg(feature = "postgres")]
+                let device_query = device_query.for_update();
+                let d: super::device::Device = device_query
                     .get_result(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
-                let mg: MulticastGroup = multicast_group::dsl::multicast_group
-                    .find(&group_id)
-                    .for_update()
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
+            let fields_group_id = fields::Uuid::from(group_id);
+
+            let multicast_group_query =
+                multicast_group::dsl::multicast_group.find(&fields_group_id);
+            #[cfg(feature = "postgres")]
+            let multicast_group_query = multicast_group_query.for_update();
+            let mg: MulticastGroup = multicast_group_query
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
 
                 if d.application_id != mg.application_id {
                     // Device not found within the same application.
                     return Err(Error::NotFound(dev_eui.to_string()));
                 }
 
-                let _ = diesel::insert_into(multicast_group_device::table)
-                    .values((
-                        multicast_group_device::multicast_group_id.eq(&group_id),
-                        multicast_group_device::dev_eui.eq(&dev_eui),
-                        multicast_group_device::created_at.eq(Utc::now()),
-                    ))
-                    .execute(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, "".into()))?;
-                Ok(())
-            })
+            let _ = diesel::insert_into(multicast_group_device::table)
+                .values((
+                    multicast_group_device::multicast_group_id.eq(&fields_group_id),
+                    multicast_group_device::dev_eui.eq(&dev_eui),
+                    multicast_group_device::created_at.eq(Utc::now()),
+                ))
+                .execute(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, "".into()))?;
+            Ok(())
         })
         .await?;
     info!(multicast_group_id = %group_id, dev_eui = %dev_eui, "Device added to multicast-group");
@@ -314,23 +318,29 @@ pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Erro
     c.build_transaction()
         .run::<(), Error, _>(|c| {
             Box::pin(async move {
-                let gw: super::gateway::Gateway = gateway::dsl::gateway
-                    .find(&gateway_id)
-                    .for_update()
+                let gateway_query = gateway::dsl::gateway.find(&gateway_id);
+                #[cfg(feature = "postgres")]
+                let gateway_query = gateway_query.for_update();
+                let gw: super::gateway::Gateway = gateway_query
                     .get_result(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, gateway_id.to_string()))?;
 
-                let mg: MulticastGroup = multicast_group::dsl::multicast_group
-                    .find(&group_id)
-                    .for_update()
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
+            let fields_group_id = fields::Uuid::from(group_id);
 
-                let a: super::application::Application = application::dsl::application
-                    .find(&mg.application_id)
-                    .for_update()
+            let multicast_group_query =
+                multicast_group::dsl::multicast_group.find(&fields_group_id);
+            #[cfg(feature = "postgres")]
+            let multicast_group_query = multicast_group_query.for_update();
+            let mg: MulticastGroup = multicast_group_query
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
+
+                let application_query = application::dsl::application.find(&mg.application_id);
+                #[cfg(feature = "postgres")]
+                let application_query = application_query.for_update();
+                let a: super::application::Application = application_query
                     .get_result(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, mg.application_id.to_string()))?;
@@ -340,17 +350,16 @@ pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Erro
                     return Err(Error::NotFound(gateway_id.to_string()));
                 }
 
-                let _ = diesel::insert_into(multicast_group_gateway::table)
-                    .values((
-                        multicast_group_gateway::multicast_group_id.eq(&group_id),
-                        multicast_group_gateway::gateway_id.eq(&gateway_id),
-                        multicast_group_gateway::created_at.eq(Utc::now()),
-                    ))
-                    .execute(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, "".into()))?;
-                Ok(())
-            })
+            let _ = diesel::insert_into(multicast_group_gateway::table)
+                .values((
+                    multicast_group_gateway::multicast_group_id.eq(&fields_group_id),
+                    multicast_group_gateway::gateway_id.eq(&gateway_id),
+                    multicast_group_gateway::created_at.eq(Utc::now()),
+                ))
+                .execute(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, "".into()))?;
+            Ok(())
         })
         .await?;
     info!(multicast_group_id = %group_id, gateway_id = %gateway_id, "Gateway added to multicast-group");
@@ -409,9 +418,10 @@ pub async fn enqueue(
         .run::<(Vec<Uuid>, u32), Error, _>(|c| {
             Box::pin(async move {
                 let mut ids: Vec<Uuid> = Vec::new();
-                let mg: MulticastGroup = multicast_group::dsl::multicast_group
-                    .find(&qi.multicast_group_id)
-                    .for_update()
+                let query = multicast_group::dsl::multicast_group.find(&qi.multicast_group_id);
+                #[cfg(feature = "postgres")]
+                let query = query.for_update();
+                let mg: MulticastGroup = query
                     .get_result(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, qi.multicast_group_id.to_string()))?;
