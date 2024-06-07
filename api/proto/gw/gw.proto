@@ -749,3 +749,18 @@ message ConnState {
 
   State state = 2;
 }
+
+// Gateway Mesh stats (sent by the Relay gateways).
+message MeshStats {
+  // Gateway ID (of the Border Gateway).
+  string gateway_id = 1;
+
+  // Relay ID.
+  string relay_id = 2;
+
+  // Timestamp (second precision).
+  google.protobuf.Timestamp time = 3;
+
+  // Relay path.
+  repeated string relay_path = 4;
+}
