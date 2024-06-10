@@ -1,8 +1,11 @@
 .PHONY: requirements common gw api integration stream
 
-PROTOC_ARGS := -I=../proto --grpc_out=./generated --plugin=protoc-gen-grpc=$(where grpc_php_plugin) --php_out=./generated
+PROTOC_ARGS := -I=../proto --grpc_out=./generated --plugin=protoc-gen-grpc=/opt/homebrew/bin/grpc_php_plugin --php_out=./generated
 
 all: requirements common gw api integration stream
+
+requirements:
+	mkdir generated
 
 common:
 	protoc ${PROTOC_ARGS} common/common.proto
