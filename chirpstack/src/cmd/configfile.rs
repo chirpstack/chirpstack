@@ -29,10 +29,9 @@ pub fn run() {
   # Format example: postgres://<USERNAME>:<PASSWORD>@<HOSTNAME>/<DATABASE>?sslmode=<SSLMODE>.
   #
   # SSL mode options:
-  #  * disable - no SSL
-  #  * require - Always SSL (skip verification)
-  #  * verify-ca - Always SSL (verify that the certificate presented by the server was signed by a trusted CA)
-  #  * verify-full - Always SSL (verify that the certification presented by the server was signed by a trusted CA and the server host name matches the one in the certificate)
+  #  * disable - Do not use TLS
+  #  * prefer - Attempt to connect with TLS but allow sessions without
+  #  * require - Require the use of TLS
   dsn="{{ postgresql.dsn }}"
 
   # Max open connections.
