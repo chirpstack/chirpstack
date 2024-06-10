@@ -5,6 +5,7 @@ PROTOC_ARGS := -I=../proto --grpc_out=./generated --plugin=protoc-gen-grpc=/opt/
 all: requirements common gw api integration stream
 
 requirements:
+	rm -rf generated
 	mkdir generated
 
 common:
