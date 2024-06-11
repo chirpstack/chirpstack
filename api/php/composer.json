@@ -15,7 +15,9 @@
   "autoload": {
     "psr-4": {
       "Chirpstack\\": "generated/Chirpstack/",
-      "GPBMetadata\\Chirpstack": "generated/GPBMetadata/Chirpstack"
+      "Google\\": "generated/Google/",
+      "GPBMetadata\\Chirpstack\\": "generated/GPBMetadata/Chirpstack/",
+      "GPBMetadata\\Google\\": "generated/GPBMetadata/Google/"
     }
   }
 }

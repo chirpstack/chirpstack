@@ -1,8 +1,8 @@
-.PHONY: requirements common gw api integration stream
+.PHONY: requirements common gw api integration stream google
 
 PROTOC_ARGS := -I=../proto --grpc_out=./generated --plugin=protoc-gen-grpc=/usr/bin/grpc_php_plugin --php_out=./generated
 
-all: requirements common gw api integration stream
+all: requirements common gw api integration stream google
 
 requirements:
 	rm -rf generated
@@ -34,3 +34,7 @@ stream:
 	protoc ${PROTOC_ARGS} stream/frame.proto
 	protoc ${PROTOC_ARGS} stream/api_request.proto
 	protoc ${PROTOC_ARGS} stream/backend_interfaces.proto
+
+google:
+	protoc ${PROTOC_ARGS} google/api/annotations.proto
+	protoc ${PROTOC_ARGS} google/api/http.proto
