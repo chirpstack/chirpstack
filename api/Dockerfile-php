@@ -1,6 +1,7 @@
-FROM php:7.4
+FROM php:8.1-bookworm
 
-RUN apk add --no-cache grpc grpc_php_plugin
+RUN apt update -y
+RUN apt install -y make protobuf-compiler protobuf-compiler-grpc
 
 ENV PROJECT_PATH=/chirpstack/api
 
