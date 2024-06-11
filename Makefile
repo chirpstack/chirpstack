@@ -27,6 +27,7 @@ version:
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./api/rust/Cargo.toml
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./api/java/build.gradle.kts
 	sed -i 's/^version.*/version = "$(VERSION)"/g' ./api/kotlin/build.gradle.kts
+	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/php/composer.json
 
 	cd api && make
 	make build-ui
