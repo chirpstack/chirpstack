@@ -1,0 +1,23 @@
+{
+  "name": "chirpstack/chirpstack-api",
+  "description": "Chirpstack PHP API",
+  "license": "MIT",
+  "type": "library",
+  "version": "4.8.1",
+  "require": {
+    "php": ">=7.0.0",
+    "grpc/grpc": "^v1.57.0",
+    "google/protobuf": "^v4.27.1"
+  },
+  "suggest": {
+    "ext-grpc": "To make it all work"
+  },
+  "autoload": {
+    "psr-4": {
+      "Chirpstack\\": "generated/Chirpstack/",
+      "Google\\": "generated/Google/",
+      "GPBMetadata\\Chirpstack\\": "generated/GPBMetadata/Chirpstack/",
+      "GPBMetadata\\Google\\": "generated/GPBMetadata/Google/"
+    }
+  }
+}
