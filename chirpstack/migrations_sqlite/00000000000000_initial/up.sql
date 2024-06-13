@@ -29,10 +29,10 @@ insert into "user" (
     '05244f12-6daf-4e1f-8315-c66783a0ab56',
     datetime('now'),
     datetime('now'),
-    'true',
-    'true',
+    TRUE,
+    TRUE,
     'admin',
-    'false',
+    FALSE,
     '$pbkdf2-sha512$i=1,l=64$l8zGKtxRESq3PA2kFhHRWA$H3lGMxOt55wjwoc+myeOoABofJY9oDpldJa7fhqdjbh700V6FLPML75UmBOt9J5VFNjAL1AvqCozA1HJM0QVGA',
     ''
 );
@@ -48,7 +48,7 @@ create table tenant (
     max_device_count integer not null,
     max_gateway_count integer not null,
     private_gateways_up boolean not null,
-    private_gateways_down boolean not null default false,
+    private_gateways_down boolean not null default FALSE,
     tags text not null default '{}'
 );
 
@@ -72,10 +72,10 @@ insert into "tenant" (
     datetime('now'),
     'ChirpStack',
     '',
-    'true',
+    TRUE,
     0,
     0,
-    'false'
+    FALSE
 );
 
 -- tenant user
@@ -180,15 +180,15 @@ create table device_profile (
     abp_rx2_freq bigint not null,
     tags text not null,
     payload_codec_script text not null default '',
-    flush_queue_on_activate boolean not null default false,
+    flush_queue_on_activate boolean not null default FALSE,
     description text not null default '',
     measurements text not null default '{}',
-    auto_detect_measurements boolean not null default true,
+    auto_detect_measurements boolean not null default TRUE,
     region_config_id varchar(100) null,
-    is_relay boolean not null default false,
-    is_relay_ed boolean not null default false,
-    relay_ed_relay_only boolean not null default false,
-    relay_enabled boolean not null default false,
+    is_relay boolean not null default FALSE,
+    is_relay_ed boolean not null default FALSE,
+    relay_ed_relay_only boolean not null default FALSE,
+    relay_enabled boolean not null default FALSE,
     relay_cad_periodicity smallint not null default 0,
     relay_default_channel_index smallint not null default 0,
     relay_second_channel_freq bigint not null default 0,
@@ -207,7 +207,7 @@ create table device_profile (
     relay_notify_limit_bucket_size smallint not null default 0,
     relay_global_uplink_limit_bucket_size smallint not null default 0,
     relay_overall_limit_bucket_size smallint not null default 0,
-    allow_roaming boolean not null default true,
+    allow_roaming boolean not null default TRUE,
     rx1_delay smallint not null default 0
 );
 
@@ -271,7 +271,7 @@ create table device_queue_item (
     is_pending boolean not null,
     f_cnt_down bigint null,
     timeout_after datetime,
-    is_encrypted boolean default false not null
+    is_encrypted boolean default FALSE not null
 );
 
 create index idx_device_queue_item_dev_eui on device_queue_item (dev_eui);
@@ -353,7 +353,7 @@ create table device_profile_template (
     abp_rx2_freq bigint not null,
     tags text not null,
     measurements text not null default '{}',
-    auto_detect_measurements boolean not null default true
+    auto_detect_measurements boolean not null default TRUE
 );
 
 create table multicast_group_gateway (

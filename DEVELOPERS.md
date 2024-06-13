@@ -58,6 +58,7 @@ TEST_POSTGRESQL_DSN=sqlite:///tmp/test.sqlite cargo test --no-default-features -
 - When altering a table, a single operation can be done on one query with sqlite. Meaning there need to be one alter table per altered column (dropped, added or other) for example.
 - Index on a table needs to be dropped before its target column. Because SQLite fails to drop the column if an index exists on it.
 - Sqlite requires a complex procedure for some column operations like changing column type or removing the default of the column. ([see "simple procedure" in the second half of this section](https://www.sqlite.org/lang_altertable.html#otheralter)). An alternative could be creating a new column, moving the data in it, dropping the old and renaming the new to old if necessary.
+- Sqlite uses TRUE/FALSE keywords or 1/0 integers for boolean values instead of true/false
 
 ### Diesel differences
 
