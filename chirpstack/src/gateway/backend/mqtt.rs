@@ -414,6 +414,18 @@ async fn message_callback(
 
             set_gateway_json(&event.gateway_id, json);
             tokio::spawn(downlink::tx_ack::TxAck::handle(event));
+        } else if topic.ends_with("/mesh-stats") {
+            EVENT_COUNTER
+                .get_or_create(&EventLabels {
+                    event: "mesh-stats".to_string(),
+                })
+                .inc();
+            let event = match json {
+                true => serde_json::from_slice(&p.payload)?,
+                false => chirpstack_api::gw::MeshStats::decode(&mut Cursor::new(&p.payload))?,
+            };
+
+            tokio::spawn(uplink::mesh_stats::MeshStats::handle(event));
         } else {
             return Err(anyhow!("Unknown event type"));
         }

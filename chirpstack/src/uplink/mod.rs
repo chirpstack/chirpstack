@@ -33,6 +33,7 @@ pub mod helpers;
 pub mod join;
 pub mod join_fns;
 pub mod join_sns;
+pub mod mesh_stats;
 pub mod stats;
 
 #[derive(Clone, Hash, PartialEq, Eq, EncodeLabelSet, Debug)]
