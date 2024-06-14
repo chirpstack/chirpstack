@@ -57,7 +57,12 @@ fn sqlite_establish_connection(
 
             // Enable foreign keys since it's off by default in sqlite
             use diesel::RunQueryDsl;
-            diesel::sql_query("PRAGMA foreign_keys = ON")
+            diesel::sql_query("PRAGMA foreign_keys = ON;")
+                .execute(&mut conn)
+                .map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
+            // Enable busy_timeout to avoid manually managing transaction contention
+            // see https://sqlite.org/rescode.html#busy
+            diesel::sql_query("PRAGMA busy_timeout = 5000;")
                 .execute(&mut conn)
                 .map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
             Ok(SyncConnectionWrapper::new(conn))
