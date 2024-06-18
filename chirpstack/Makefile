@@ -1,20 +1,21 @@
 .PHONY: dist
 
 PKG_VERSION := $(shell cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+FEATURES ?= postgres
 
 debug-amd64:
-	cross build --target x86_64-unknown-linux-musl
+	cross build --target x86_64-unknown-linux-musl --no-default-features --features="$(FEATURES)"
 
 release-amd64:
-	cross build --target x86_64-unknown-linux-musl --release
+	cross build --target x86_64-unknown-linux-musl --release --no-default-features --features="$(FEATURES)"
 
 dist:
 	# Keep these in this order, as aarch64 is based on Debian Buster (older),
 	# the others on Bullseye. For some build scripts we want to build against
 	# least recent LIBC.
-	cross build --target aarch64-unknown-linux-musl --release
-	cross build --target x86_64-unknown-linux-musl --release
-	cross build --target armv7-unknown-linux-musleabihf --release
+	cross build --target aarch64-unknown-linux-musl --release --no-default-features --features="$(FEATURES)"
+	cross build --target x86_64-unknown-linux-musl --release --no-default-features --features="$(FEATURES)"
+	cross build --target armv7-unknown-linux-musleabihf --release --no-default-features --features="$(FEATURES)"
 
 	cargo deb --target x86_64-unknown-linux-musl --no-build --no-strip
 	cargo deb --target armv7-unknown-linux-musleabihf --no-build --no-strip
@@ -41,9 +42,9 @@ dist:
 test:
 	cargo fmt --check
 	cargo clippy --no-deps
-	TZ=UTC cargo test
+	TZ=UTC cargo test --no-default-features --features="$(FEATURES)"
 
 test-all:
 	cargo fmt --check
 	cargo clippy --no-deps
-	TZ=UTC cargo test --features test-all-integrations
+	TZ=UTC cargo test --no-default-features --features="$(FEATURES),test-all-integrations"

@@ -13,18 +13,25 @@ env:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        features:
+          - postgres
+          - sqlite
+    env:
+      FEATURES: ${{ matrix.features }}
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - 
         name: Install Nix
-        uses: cachix/install-nix-action@v20
+        uses: cachix/install-nix-action@v27
         with:
-          nix_path: nixpkgs=channel:nixos-22.11
+          nix_path: nixpkgs=channel:nixos-24.05
       -
         name: Cargo cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -32,7 +39,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-test-${{ matrix.features }}-${{ hashFiles('**/Cargo.lock') }}
       -
         name: Start dependency services
         run: docker compose up -d
