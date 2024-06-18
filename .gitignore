@@ -3,6 +3,7 @@
 !/chirpstack/.rpm
 !/.cargo
 !/.env
+!.npmignore
 
 # Log files
 *.log

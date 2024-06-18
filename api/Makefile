@@ -1,6 +1,6 @@
-.PHONY: rust grpc-web go js python md java kotlin csharp
+.PHONY: rust grpc-web go js python md java kotlin csharp php
 
-all: rust grpc-web go js python md java kotlin csharp
+all: rust grpc-web go js python md java kotlin csharp php
 
 rust:
 	cd rust && make
@@ -28,3 +28,6 @@ kotlin:
 
 csharp:
 	docker compose run --rm chirpstack-csharp
+
+php:
+	docker compose run --rm chirpstack-api-php

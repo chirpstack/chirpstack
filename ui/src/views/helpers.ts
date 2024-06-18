@@ -34,6 +34,8 @@ export function formatRegParamsRevision(r: RegParamsRevision) {
       return "RP002-1.0.2";
     case RegParamsRevision.RP002_1_0_3:
       return "RP002-1.0.3";
+    case RegParamsRevision.RP002_1_0_4:
+      return "RP002-1.0.4";
   }
 
   return "";

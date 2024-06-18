@@ -1,4 +1,4 @@
-FROM ghcr.io/cross-rs/armv7-unknown-linux-musleabihf:latest
+FROM ghcr.io/cross-rs/armv7-unknown-linux-musleabihf:main
 
 RUN apt-get update && \
     apt-get --assume-yes install \

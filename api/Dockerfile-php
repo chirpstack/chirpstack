@@ -1,0 +1,9 @@
+FROM php:8.1-bookworm
+
+RUN apt update -y
+RUN apt install -y make protobuf-compiler protobuf-compiler-grpc
+
+ENV PROJECT_PATH=/chirpstack/api
+
+RUN mkdir -p PROJECT_PATH
+WORKDIR $PROJECT_PATH

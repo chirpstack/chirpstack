@@ -182,6 +182,7 @@ async fn test_sns_uplink() {
     // Set roaming agreement.
     conf.roaming.servers.push(config::RoamingServer {
         net_id: NetID::from_str("000202").unwrap(),
+        passive_roaming_validate_mic: true,
         server: fns_mock.url("/"),
         ..Default::default()
     });

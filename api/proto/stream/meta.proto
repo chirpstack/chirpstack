@@ -7,6 +7,8 @@ option java_package = "io.chirpstack.api.stream";
 option java_multiple_files = true;
 option java_outer_classname = "MetaProto";
 option csharp_namespace = "Chirpstack.Stream";
+option php_namespace = "Chirpstack\\Stream";
+option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Stream";
 
 import "common/common.proto";
 import "gw/gw.proto";

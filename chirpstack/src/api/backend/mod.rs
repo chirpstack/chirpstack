@@ -293,6 +293,7 @@ async fn _handle_pr_start_req_data(
     let region_common_name = CommonName::from_str(&pl.ul_meta_data.rf_region)?;
     let region_config_id = region::get_region_config_id(region_common_name)?;
     let dr = pl.ul_meta_data.data_rate.unwrap_or_default();
+    let validate_mic = roaming::get_passive_roaming_validate_mic(sender_id)?;
 
     let mut ufs = UplinkFrameSet {
         uplink_set_id: Uuid::new_v4(),
@@ -318,7 +319,7 @@ async fn _handle_pr_start_req_data(
     let kek_label = roaming::get_passive_roaming_kek_label(sender_id)?;
     let ds = d.get_device_session()?;
 
-    let nwk_s_key = if ds.mac_version().to_string().starts_with("1.0") {
+    let nwk_s_key = if validate_mic && ds.mac_version().to_string().starts_with("1.0") {
         Some(keywrap::wrap(
             &kek_label,
             AES128Key::from_slice(&ds.nwk_s_enc_key)?,
@@ -327,7 +328,7 @@ async fn _handle_pr_start_req_data(
         None
     };
 
-    let f_nwk_s_int_key = if ds.mac_version().to_string().starts_with("1.0") {
+    let f_nwk_s_int_key = if validate_mic && ds.mac_version().to_string().starts_with("1.0") {
         None
     } else {
         Some(keywrap::wrap(
