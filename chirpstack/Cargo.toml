@@ -1,223 +1,253 @@
 [package]
-name = "chirpstack"
-description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
-repository = "https://github.com/chirpstack/chirpstack"
-homepage = "https://www.chirpstack.io/"
-version = "4.8.0-test.5"
-authors = ["Orne Brocaar <info@brocaar.com>"]
-edition = "2021"
-publish = false
-license = "MIT"
+  name = "chirpstack"
+  description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
+  repository = "https://github.com/chirpstack/chirpstack"
+  homepage = "https://www.chirpstack.io/"
+  version = "4.8.0-test.5"
+  authors = ["Orne Brocaar <info@brocaar.com>"]
+  edition = "2021"
+  publish = false
+  license = "MIT"
 
 [dependencies]
-# CLI interface
-clap = { version = "4.5", features = ["derive"] }
+  # CLI interface
+  clap = { version = "4.5", features = ["derive"] }
 
-# Configuration
-serde = { version = "1.0", features = ["derive", "rc"] }
-serde_yaml = "0.9"
-serde_json = "1.0"
-serde_urlencoded = "0.7"
-humantime-serde = "1.1"
-toml = "0.8"
-handlebars = "5.1"
+  # Configuration
+  serde = { version = "1.0", features = ["derive", "rc"] }
+  serde_yaml = "0.9"
+  serde_json = "1.0"
+  serde_urlencoded = "0.7"
+  humantime-serde = "1.1"
+  toml = "0.8"
+  handlebars = "5.1"
 
-# Database
-email_address = "0.2"
-diesel = { version = "2.1", features = [
-	"chrono",
-	"numeric",
-	"64-column-tables",
-	"postgres_backend",
-] }
-diesel_migrations = { version = "2.1" }
-diesel-async = { version = "0.4", features = ["deadpool", "postgres", "async-connection-wrapper"] }
-tokio-postgres = "0.7"
-tokio-postgres-rustls = "0.11"
-bigdecimal = "0.4"
-redis = { version = "0.25.2", features = [ "tls-rustls", "tokio-rustls-comp"] }
-deadpool-redis = { version = "0.15", features = ["cluster"] }
+  # Database
+  email_address = "0.2"
+  diesel = { version = "2.1", features = [
+    "chrono",
+    "numeric",
+    "64-column-tables",
+    "postgres_backend",
+  ] }
+  diesel_migrations = { version = "2.1" }
+  diesel-async = { version = "0.4", features = [
+    "deadpool",
+    "postgres",
+    "async-connection-wrapper",
+  ] }
+  tokio-postgres = "0.7"
+  tokio-postgres-rustls = "0.11"
+  bigdecimal = "0.4"
+  redis = { version = "0.25.2", features = ["tls-rustls", "tokio-rustls-comp"] }
+  deadpool-redis = { version = "0.15", features = ["cluster"] }
 
-# Logging
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = [
-	"fmt",
-	"ansi",
-	"json",
-], default-features = true }
+  # Logging
+  tracing = "0.1"
+  tracing-subscriber = { version = "0.3", features = [
+    "fmt",
+    "ansi",
+    "json",
+  ], default-features = true }
 
-# ChirpStack API definitions
-chirpstack_api = { path = "../api/rust", features = ["default", "internal", "diesel"] }
-lrwn = { path = "../lrwn", features = ["serde", "diesel", "regions", "crypto"] }
-backend = { path = "../backend" }
+  # ChirpStack API definitions
+  chirpstack_api = { path = "../api/rust", features = [
+    "default",
+    "internal",
+    "diesel",
+  ] }
+  lrwn = { path = "../lrwn", features = [
+    "serde",
+    "diesel",
+    "regions",
+    "crypto",
+  ] }
+  backend = { path = "../backend" }
 
-# HTTP
-reqwest = { version = "0.12", features = [
-	"json",
-	"rustls-tls-native-roots",
-], default-features = false }
+  # HTTP
+  reqwest = { version = "0.12", features = [
+    "json",
+    "rustls-tls-native-roots",
+  ], default-features = false }
 
-# Integrations
-aws-sign-v4 = "0.3"
-hmac = "0.12"
-sha2 = "0.10"
-urlencoding = "2.1"
-geohash = "0.13"
-gcp_auth = "0.11"
-lapin = "2.3"
-tokio-executor-trait = "2.1"
-tokio-reactor-trait = "1.1"
-rdkafka = { version = "0.36", default-features = false, features = ["tokio", "cmake-build"] }
+  # Integrations
+  aws-sign-v4 = "0.3"
+  hmac = "0.12"
+  sha2 = "0.10"
+  urlencoding = "2.1"
+  geohash = "0.13"
+  gcp_auth = "0.11"
+  lapin = "2.3"
+  tokio-executor-trait = "2.1"
+  tokio-reactor-trait = "1.1"
+  rdkafka = { version = "0.36", default-features = false, features = [
+    "tokio",
+    "cmake-build",
+  ] }
 
-# gRPC and Protobuf
-tonic = "0.11"
-tonic-web = "0.11"
-tonic-reflection = "0.11"
-tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
-tokio-stream = "0.1"
-prost-types = "0.12"
-prost = "0.12"
-pbjson-types = "0.6"
+  # gRPC and Protobuf
+  tonic = "0.11"
+  tonic-web = "0.11"
+  tonic-reflection = "0.11"
+  tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
+  tokio-stream = "0.1"
+  prost-types = "0.12"
+  prost = "0.12"
+  pbjson-types = "0.6"
 
-# gRPC and HTTP multiplexing
-warp = { version = "0.3", features = ["tls"], default-features = false }
-hyper = "0.14"
-tower = "0.4"
-futures = "0.3"
-futures-util = "0.3"
-http = "0.2"
-http-body = "0.4"
-rust-embed = "8.3"
-mime_guess = "2.0"
-tower-http = { version = "0.4", features = ["trace", "auth"] }
+  # gRPC and HTTP multiplexing
+  warp = { version = "0.3", features = ["tls"], default-features = false }
+  hyper = "0.14"
+  tower = "0.4"
+  futures = "0.3"
+  futures-util = "0.3"
+  http = "0.2"
+  http-body = "0.4"
+  rust-embed = "8.3"
+  mime_guess = "2.0"
+  tower-http = { version = "0.4", features = ["trace", "auth"] }
 
-# Error handling
-thiserror = "1.0"
-anyhow = "1.0"
+  # Error handling
+  thiserror = "1.0"
+  anyhow = "1.0"
 
-# Authentication
-pbkdf2 = { version = "0.12", features = ["simple"] }
-rand_core = { version = "0.6", features = ["std"] }
-jsonwebtoken = "9.2"
-rustls = "0.22"
-rustls-native-certs = "0.7"
-rustls-pemfile = "2.1"
-pem = "3.0"
-x509-parser = "0.16"
-rsa = "0.9"
-elliptic-curve = { version = "0.13", features = ["pem"] }
-p256 = "0.13"
-rcgen = { version = "0.13.1", features = [ "x509-parser" ] }
-openidconnect = { version = "3.5", features = ["accept-rfc3339-timestamps"] }
-oauth2 = "4.4"
+  # Authentication
+  pbkdf2 = { version = "0.12", features = ["simple"] }
+  rand_core = { version = "0.6", features = ["std"] }
+  jsonwebtoken = "9.2"
+  rustls = "0.22"
+  rustls-native-certs = "0.7"
+  rustls-pemfile = "2.1"
+  pem = "3.0"
+  x509-parser = "0.16"
+  rsa = "0.9"
+  elliptic-curve = { version = "0.13", features = ["pem"] }
+  p256 = "0.13"
+  rcgen = { version = "0.13.1", features = ["x509-parser"] }
+  openidconnect = { version = "3.5", features = ["accept-rfc3339-timestamps"] }
+  oauth2 = "4.4"
 
-# MQTT
-rumqttc = { version = "0.24", features = ["url"] }
-hex = "0.4"
+  # MQTT
+  rumqttc = { version = "0.24", features = ["url"] }
+  hex = "0.4"
 
-# Codecs
-rquickjs = { version = "0.6", features = [
-	"bindgen",
-	"loader",
-	"array-buffer",
-	"chrono",
-] }
+  # Codecs
+  rquickjs = { version = "0.6", features = [
+    "bindgen",
+    "loader",
+    "array-buffer",
+    "chrono",
+  ] }
 
-# Misc
-lazy_static = "1.4"
-uuid = { version = "1.8", features = ["v4", "serde"] }
-chrono = "0.4"
-async-trait = "0.1"
-aes = "0.8"
-rand = "0.8"
-base64 = "0.22"
-async-recursion = "1.0"
-regex = "1.10"
-petgraph = "0.6"
-prometheus-client = "0.22"
-pin-project = "1.1"
+  # Misc
+  lazy_static = "1.4"
+  uuid = { version = "1.8", features = ["v4", "serde"] }
+  chrono = "0.4"
+  async-trait = "0.1"
+  aes = "0.8"
+  rand = "0.8"
+  base64 = "0.22"
+  async-recursion = "1.0"
+  regex = "1.10"
+  petgraph = "0.6"
+  prometheus-client = "0.22"
+  pin-project = "1.1"
 
 # Development and testing
 [dev-dependencies]
-httpmock = "0.7.0"
-bytes = "1.5"
-dotenv = "0.15"
+  httpmock = "0.7.0"
+  bytes = "1.5"
+  dotenv = "0.15"
 
 [features]
-default = ["postgres"]
-postgres = ["diesel/postgres", "diesel/serde_json", "diesel/uuid", "lrwn/postgres"]
-sqlite = ["diesel/sqlite", "diesel/returning_clauses_for_sqlite_3_35", "lrwn/sqlite", "diesel-async/sync-connection-wrapper"]
-test-all-integrations = ["test-integration-amqp", "test-integration-kafka", "test-integration-mqtt"]
-test-integration-amqp = []
-test-integration-kafka = []
-test-integration-mqtt = []
+  default = ["postgres"]
+  postgres = [
+    "diesel/postgres",
+    "diesel/serde_json",
+    "diesel/uuid",
+    "lrwn/postgres",
+  ]
+  sqlite = [
+    "diesel/sqlite",
+    "diesel/returning_clauses_for_sqlite_3_35",
+    "lrwn/sqlite",
+    "diesel-async/sync-connection-wrapper",
+  ]
+  test-all-integrations = [
+    "test-integration-amqp",
+    "test-integration-kafka",
+    "test-integration-mqtt",
+  ]
+  test-integration-amqp = []
+  test-integration-kafka = []
+  test-integration-mqtt = []
 
-# Debian packaging.
-[package.metadata.deb]
-assets = [
-	[
-		"target/release/chirpstack",
-		"usr/bin/",
-		"755",
-	],
-	[
-		"configuration/*.toml",
-		"etc/chirpstack/",
-		"640",
-	],
-]
-conf-files = [
-	"/etc/chirpstack/chirpstack.toml",
-	"/etc/chirpstack/region_as923.toml",
-	"/etc/chirpstack/region_as923_2.toml",
-	"/etc/chirpstack/region_as923_3.toml",
-	"/etc/chirpstack/region_as923_4.toml",
-	"/etc/chirpstack/region_au915_0.toml",
-	"/etc/chirpstack/region_au915_1.toml",
-	"/etc/chirpstack/region_au915_2.toml",
-	"/etc/chirpstack/region_au915_3.toml",
-	"/etc/chirpstack/region_au915_4.toml",
-	"/etc/chirpstack/region_au915_5.toml",
-	"/etc/chirpstack/region_au915_6.toml",
-	"/etc/chirpstack/region_au915_7.toml",
-	"/etc/chirpstack/region_cn779.toml",
-	"/etc/chirpstack/region_eu433.toml",
-	"/etc/chirpstack/region_eu868.toml",
-	"/etc/chirpstack/region_in865.toml",
-	"/etc/chirpstack/region_ism2400.toml",
-	"/etc/chirpstack/region_kr920.toml",
-	"/etc/chirpstack/region_ru864.toml",
-	"/etc/chirpstack/region_us915_0.toml",
-	"/etc/chirpstack/region_us915_1.toml",
-	"/etc/chirpstack/region_us915_2.toml",
-	"/etc/chirpstack/region_us915_3.toml",
-	"/etc/chirpstack/region_us915_4.toml",
-	"/etc/chirpstack/region_us915_5.toml",
-	"/etc/chirpstack/region_us915_6.toml",
-	"/etc/chirpstack/region_us915_7.toml",
-]
-suggests = "postgresql, mosquitto, redis"
-maintainer-scripts = "debian/"
-systemd-units = { enable = true }
+  # Debian packaging.
+  [package.metadata.deb]
+    assets = [
+      [
+        "target/release/chirpstack",
+        "usr/bin/",
+        "755",
+      ],
+      [
+        "configuration/*.toml",
+        "etc/chirpstack/",
+        "640",
+      ],
+    ]
+    conf-files = [
+      "/etc/chirpstack/chirpstack.toml",
+      "/etc/chirpstack/region_as923.toml",
+      "/etc/chirpstack/region_as923_2.toml",
+      "/etc/chirpstack/region_as923_3.toml",
+      "/etc/chirpstack/region_as923_4.toml",
+      "/etc/chirpstack/region_au915_0.toml",
+      "/etc/chirpstack/region_au915_1.toml",
+      "/etc/chirpstack/region_au915_2.toml",
+      "/etc/chirpstack/region_au915_3.toml",
+      "/etc/chirpstack/region_au915_4.toml",
+      "/etc/chirpstack/region_au915_5.toml",
+      "/etc/chirpstack/region_au915_6.toml",
+      "/etc/chirpstack/region_au915_7.toml",
+      "/etc/chirpstack/region_cn779.toml",
+      "/etc/chirpstack/region_eu433.toml",
+      "/etc/chirpstack/region_eu868.toml",
+      "/etc/chirpstack/region_in865.toml",
+      "/etc/chirpstack/region_ism2400.toml",
+      "/etc/chirpstack/region_kr920.toml",
+      "/etc/chirpstack/region_ru864.toml",
+      "/etc/chirpstack/region_us915_0.toml",
+      "/etc/chirpstack/region_us915_1.toml",
+      "/etc/chirpstack/region_us915_2.toml",
+      "/etc/chirpstack/region_us915_3.toml",
+      "/etc/chirpstack/region_us915_4.toml",
+      "/etc/chirpstack/region_us915_5.toml",
+      "/etc/chirpstack/region_us915_6.toml",
+      "/etc/chirpstack/region_us915_7.toml",
+    ]
+    suggests = "postgresql, mosquitto, redis"
+    maintainer-scripts = "debian/"
+    systemd-units = { enable = true }
 
-[package.metadata.generate-rpm]
-auto-req = "no"
+  [package.metadata.generate-rpm]
+    auto-req = "no"
 
-pre_install_script = '''
+    pre_install_script = '''
 id chirpstack &>/dev/null
 if [[ $? -ne 0 ]]; then
 	useradd --system -U -M chirpstack -s /bin/false -d /etc/chirpstack
 fi
 '''
 
-post_install_script = '''
+    post_install_script = '''
 chown -R chirpstack:chirpstack /etc/chirpstack
 chmod 750 /etc/chirpstack
 chmod 640 /etc/chirpstack/*.toml
 '''
 
-assets = [
-	{ source = "target/release/chirpstack", dest = "/usr/bin/chirpstack", mode = "755" },
-	{ source = "configuration/*", dest = "/etc/chirpstack"},
-	{ source = "rpm/chirpstack.service", dest = "/lib/systemd/system/chirpstack.service"},
-]
+    assets = [
+      { source = "target/release/chirpstack", dest = "/usr/bin/chirpstack", mode = "755" },
+      { source = "configuration/*", dest = "/etc/chirpstack" },
+      { source = "rpm/chirpstack.service", dest = "/lib/systemd/system/chirpstack.service" },
+    ]
