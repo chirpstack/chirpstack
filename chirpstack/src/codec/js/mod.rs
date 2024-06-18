@@ -59,7 +59,10 @@ pub async fn decode(
             "#,
         )
         .context("Declare script")?;
-        let (buff, buff_promise) = buff.eval().context("Evalulate script")?;
+        let (buff, buff_promise) = buff
+            .eval()
+            .catch(&ctx)
+            .map_err(|e| anyhow!("JS error: {}", e))?;
         buff_promise.finish()?;
         let buff: rquickjs::Function = buff.get("Buffer")?;
 
@@ -147,7 +150,10 @@ pub async fn encode(
             "#,
         )
         .context("Declare script")?;
-        let (buff, buff_promise) = buff.eval().context("Evaluate script")?;
+        let (buff, buff_promise) = buff
+            .eval()
+            .catch(&ctx)
+            .map_err(|e| anyhow!("JS error: {}", e))?;
         buff_promise.finish()?;
         let buff: rquickjs::Function = buff.get("Buffer")?;
 
