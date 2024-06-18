@@ -23,21 +23,21 @@ lazy_static! {
     static ref STORAGE_SQLITE_CONN_GET: Histogram = {
         let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
         prometheus::register(
-            "storage_pg_conn_get_duration_seconds",
-            "Time between requesting a PostgreSQL connection and the connection-pool returning it",
+            "storage_sqlite_conn_get_duration_seconds",
+            "Time between requesting a SQLite connection and the connection-pool returning it",
             histogram.clone(),
         );
         histogram
     };
 }
 
-pub fn setup(conf: &config::Postgresql) -> Result<()> {
-    info!("Setting up Sqlite connection pool");
+pub fn setup(conf: &config::Sqlite) -> Result<()> {
+    info!("Setting up SQLite connection pool");
     let mut config = ManagerConfig::default();
     config.custom_setup = Box::new(sqlite_establish_connection);
     let mgr =
         AsyncDieselConnectionManager::<SyncConnectionWrapper<SqliteConnection>>::new_with_config(
-            &conf.dsn, config,
+            &conf.path, config,
         );
     let pool = DeadpoolPool::builder(mgr)
         .max_size(conf.max_open_connections as usize)

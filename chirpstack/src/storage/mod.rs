@@ -119,7 +119,7 @@ pub async fn setup() -> Result<()> {
     }
     #[cfg(feature = "sqlite")]
     {
-        sqlite::setup(&conf.postgresql)?;
+        sqlite::setup(&conf.sqlite)?;
     }
     run_db_migrations().await?;
 
