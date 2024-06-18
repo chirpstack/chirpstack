@@ -83,6 +83,35 @@ service DeviceService {
     };
   }
 
+  rpc CreateSlot(CreateDeviceSlotRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/devices/{device_slot.dev_eui}/slot"
+      body : "*"
+    };
+  }
+
+    // Get the device-slot for the given DevEUI.
+  rpc GetSlot(GetDeviceSlotRequest) returns (GetDeviceSlotResponse) {
+    option (google.api.http) = {
+      get : "/api/devices/{dev_eui}/slot"
+    };
+  }
+
+  // Update the given device-slot.
+  rpc UpdateSlot(UpdateDeviceSlotRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/api/devices/{device_slot.dev_eui}/slot"
+      body : "*"
+    };
+  }
+
+  // Delete the device-slot for the given DevEUI.
+  rpc DeleteSlot(DeleteDeviceSlotRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/api/devices/{dev_eui}/slot"
+    };
+  }
+
   // FlushDevNonces flushes the OTAA device nonces.
   rpc FlushDevNonces(FlushDevNoncesRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
@@ -275,6 +304,20 @@ message DeviceKeys {
   string app_key = 3;
 }
 
+message DeviceSlot {
+  // DevEUI (EUI64).
+  string dev_eui = 1;
+
+  // Device address (HEX encoded).
+  string dev_addr = 2;
+
+  // Device slot in time frame.
+  uint32 slot = 3;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 4;
+}
+
 message CreateDeviceRequest {
   // Device object.
   Device device = 1;
@@ -367,6 +410,37 @@ message UpdateDeviceKeysRequest {
 }
 
 message DeleteDeviceKeysRequest {
+  // DevEUI (EUI64).
+  string dev_eui = 1;
+}
+
+message CreateDeviceSlotRequest {
+  // Device-slot object.
+  DeviceSlot device_slot = 1;
+}
+
+message GetDeviceSlotRequest {
+  // DevEUI (EUI64).
+  string dev_eui = 1;
+}
+
+message GetDeviceSlotResponse {
+  // Device address (HEX encoded).
+  string dev_addr = 1;
+
+  // Device slot in time frame.
+  uint32 slot = 2;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 3;
+}
+
+message UpdateDeviceSlotRequest {
+  // Device-slot object.
+  DeviceSlot device_slot = 1;
+}
+
+message DeleteDeviceSlotRequest {
   // DevEUI (EUI64).
   string dev_eui = 1;
 }

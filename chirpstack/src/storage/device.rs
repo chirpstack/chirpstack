@@ -241,6 +241,7 @@ pub async fn create(d: Device) -> Result<Device, Error> {
                         tenant::dsl::private_gateways_up,
                         tenant::dsl::private_gateways_down,
                         tenant::dsl::tags,
+                        tenant::dsl::max_slot_count,
                     ))
                     .inner_join(application::table)
                     .filter(application::dsl::id.eq(&d.application_id))

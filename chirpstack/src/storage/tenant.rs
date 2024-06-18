@@ -25,6 +25,7 @@ pub struct Tenant {
     pub private_gateways_up: bool,
     pub private_gateways_down: bool,
     pub tags: fields::KeyValue,
+    pub max_slot_count: i32,
 }
 
 impl Tenant {
@@ -52,6 +53,7 @@ impl Default for Tenant {
             private_gateways_up: false,
             private_gateways_down: false,
             tags: fields::KeyValue::new(HashMap::new()),
+            max_slot_count: 0,
         }
     }
 }
@@ -137,6 +139,7 @@ pub async fn update(t: Tenant) -> Result<Tenant, Error> {
             tenant::private_gateways_up.eq(&t.private_gateways_up),
             tenant::private_gateways_down.eq(&t.private_gateways_down),
             tenant::tags.eq(&t.tags),
+            tenant::max_slot_count.eq(&t.max_slot_count),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await
@@ -335,6 +338,7 @@ pub mod test {
             private_gateways_up: true,
             private_gateways_down: true,
             tags: fields::KeyValue::new(HashMap::new()),
+            max_slot_count: 64,
         };
         create(t).await.unwrap()
     }

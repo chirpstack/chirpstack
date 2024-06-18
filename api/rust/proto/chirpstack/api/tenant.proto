@@ -112,21 +112,25 @@ message Tenant {
   // When set to 0, the tenant can have unlimited devices.
   uint32 max_device_count = 6;
 
+  // Max. slot count for tenant.
+  // When set to 0, the tenant can have unlimited slots.
+  uint32 max_slot_count = 7;
+
   // Private gateways (uplink).
   // If enabled, then uplink messages will not be shared with other tenants.
-  bool private_gateways_up = 7;
+  bool private_gateways_up = 8;
 
   // Private gateways (downlink).
   // If enabled, then other tenants will not be able to schedule downlink
   // messages through the gateways of this tenant. For example, in case you
   // do want to share uplinks with other tenants (private_gateways_up=false),
   // but you want to prevent other tenants from using gateway airtime.
-  bool private_gateways_down = 8;
+  bool private_gateways_down = 9;
 
   // Tags (user defined).
   // These tags can be used to add additional information to the tenant. These
   // tags are NOT exposed in the integration events.
-  map<string, string> tags = 9;
+  map<string, string> tags = 10;
 }
 
 message TenantListItem {
@@ -149,7 +153,7 @@ message TenantListItem {
   bool private_gateways_up = 6;
 
   // Private gateways (downlink).
-  bool private_gateways_down = 9;
+  bool private_gateways_down = 10;
 
   // Max gateway count.
   // 0 = unlimited.
@@ -158,6 +162,10 @@ message TenantListItem {
   // Max device count.
   // 0 = unlimited.
   uint32 max_device_count = 8;
+
+  // Max slot count.
+  // 0 = unlimited.
+  uint32 max_slot_count = 9;
 }
 
 message CreateTenantRequest {

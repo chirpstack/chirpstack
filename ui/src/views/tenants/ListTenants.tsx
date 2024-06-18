@@ -25,7 +25,7 @@ function ListTenants() {
       title: "Can have gateways",
       dataIndex: "canHaveGateways",
       key: "canHaveGateways",
-      width: 250,
+      width: 200,
       render: (text, record) => {
         if (record.canHaveGateways) {
           return "yes";
@@ -38,7 +38,7 @@ function ListTenants() {
       title: "Private gateways (uplink)",
       dataIndex: "privateGatewaysUp",
       key: "privateGatewaysUp",
-      width: 250,
+      width: 200,
       render: (text, record) => {
         if (record.privateGatewaysUp) {
           return "yes";
@@ -51,7 +51,7 @@ function ListTenants() {
       title: "Private gateways (down)",
       dataIndex: "privateGatewaysDown",
       key: "privateGatewaysDown",
-      width: 250,
+      width: 200,
       render: (text, record) => {
         if (record.privateGatewaysDown) {
           return "yes";
@@ -64,7 +64,7 @@ function ListTenants() {
       title: "Max. gateways",
       dataIndex: "maxGatewayCount",
       key: "maxGatewayCount",
-      width: 250,
+      width: 200,
       render: (text, record) => {
         if (!record.canHaveGateways) {
           return 0;
@@ -81,12 +81,25 @@ function ListTenants() {
       title: "Max. devices",
       dataIndex: "maxDeviceCount",
       key: "maxDeviceCount",
-      width: 250,
+      width: 200,
       render: (text, record) => {
         if (record.maxDeviceCount === 0) {
           return "unlimited";
         } else {
           return record.maxDeviceCount;
+        }
+      },
+    },
+    {
+      title: "Max. slots",
+      dataIndex: "maxSlotCount",
+      key: "maxSlotCount",
+      width: 200,
+      render: (text, record) => {
+        if (record.maxSlotCount === 0) {
+          return "unlimited";
+        } else {
+          return record.maxSlotCount;
         }
       },
     },

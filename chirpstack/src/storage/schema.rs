@@ -81,6 +81,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    device_slot (dev_eui) {
+        dev_eui -> Bytea,
+        dev_addr -> Nullable<Bytea>,
+        slot -> Nullable<Int4>, 
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     device_profile (id) {
         id -> Uuid,
         tenant_id -> Uuid,
@@ -302,6 +311,7 @@ diesel::table! {
         private_gateways_up -> Bool,
         private_gateways_down -> Bool,
         tags -> Jsonb,
+        max_slot_count -> Int4,
     }
 }
 
@@ -339,6 +349,7 @@ diesel::joinable!(application_integration -> application (application_id));
 diesel::joinable!(device -> application (application_id));
 diesel::joinable!(device -> device_profile (device_profile_id));
 diesel::joinable!(device_keys -> device (dev_eui));
+diesel::joinable!(device_slot -> device (dev_eui));
 diesel::joinable!(device_profile -> tenant (tenant_id));
 diesel::joinable!(device_queue_item -> device (dev_eui));
 diesel::joinable!(gateway -> tenant (tenant_id));
@@ -358,6 +369,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     application_integration,
     device,
     device_keys,
+    device_slot,
     device_profile,
     device_profile_template,
     device_queue_item,

@@ -50,6 +50,7 @@ impl TenantService for Tenant {
             private_gateways_up: req_tenant.private_gateways_up,
             private_gateways_down: req_tenant.private_gateways_down,
             tags: fields::KeyValue::new(req_tenant.tags.clone()),
+            max_slot_count: req_tenant.max_slot_count as i32,
             ..Default::default()
         };
 
@@ -91,6 +92,7 @@ impl TenantService for Tenant {
                 private_gateways_up: t.private_gateways_up,
                 private_gateways_down: t.private_gateways_down,
                 tags: t.tags.into_hashmap(),
+                max_slot_count: t.max_slot_count as u32,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&t.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&t.updated_at)),
@@ -131,6 +133,7 @@ impl TenantService for Tenant {
             private_gateways_up: req_tenant.private_gateways_up,
             private_gateways_down: req_tenant.private_gateways_down,
             tags: fields::KeyValue::new(req_tenant.tags.clone()),
+            max_slot_count: req_tenant.max_slot_count as i32,
             ..Default::default()
         })
         .await
@@ -229,6 +232,7 @@ impl TenantService for Tenant {
                     private_gateways_down: t.private_gateways_down,
                     max_gateway_count: t.max_gateway_count as u32,
                     max_device_count: t.max_device_count as u32,
+                    max_slot_count: t.max_slot_count as u32,
                 })
                 .collect(),
         }))
@@ -478,6 +482,7 @@ pub mod test {
                 can_have_gateways: true,
                 max_device_count: 10,
                 max_gateway_count: 3,
+                max_slot_count: 64,
                 ..Default::default()
             }),
         };
@@ -502,6 +507,7 @@ pub mod test {
                 can_have_gateways: true,
                 max_device_count: 10,
                 max_gateway_count: 3,
+                max_slot_count: 64,
                 ..Default::default()
             }),
             get_resp.get_ref().tenant
@@ -516,6 +522,7 @@ pub mod test {
                 can_have_gateways: true,
                 max_device_count: 10,
                 max_gateway_count: 3,
+                max_slot_count: 64,
                 ..Default::default()
             }),
         };
@@ -538,6 +545,7 @@ pub mod test {
                 can_have_gateways: true,
                 max_device_count: 10,
                 max_gateway_count: 3,
+                max_slot_count: 64,
                 ..Default::default()
             }),
             get_resp.get_ref().tenant

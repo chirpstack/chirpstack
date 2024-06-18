@@ -17,7 +17,7 @@ use super::error::ToStatus;
 use super::helpers::{self, FromProto, ToProto};
 use crate::storage::{
     device::{self, DeviceClass},
-    device_keys, device_profile, device_queue,
+    device_keys, device_profile, device_queue, device_slot,
     error::Error as StorageError,
     fields, metrics,
 };
@@ -453,6 +453,124 @@ impl DeviceService for Device {
             .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
 
         Ok(resp)
+    }
+
+    // Create a slot
+    async fn create_slot(
+        &self,
+        request: Request<api::CreateDeviceSlotRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_ds = match &request.get_ref().device_slot {
+            Some(v) => v,
+            None => return Err(Status::invalid_argument("slot is missing")),
+        };
+        let dev_eui = EUI64::from_str(&req_ds.dev_eui).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceAccess::new(validator::Flag::Update, dev_eui),
+            )
+            .await?;
+
+        let dev_addr = DevAddr::from_str(&req_ds.dev_addr).map_err(|e| e.status())?;
+
+        let ds = device_slot::DeviceSlot {
+            dev_eui,
+            dev_addr: Some(dev_addr),
+            slot: Some(req_ds.slot as i32),
+            created_at: chrono::Utc::now(),
+        };
+
+        device_slot::create(ds).await.map_err(|e| e.status())?;
+
+        Ok(Response::new(()))
+    }
+
+    // Get a slot
+    async fn get_slot(
+        &self,
+        request: Request<api::GetDeviceSlotRequest>,
+    ) -> Result<Response<api::GetDeviceSlotResponse>, Status> {
+        let req = request.get_ref();
+        let dev_eui = EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceAccess::new(validator::Flag::Read, dev_eui),
+            )
+            .await?;
+
+        let ds = device_slot::get(&dev_eui).await.map_err(|e| e.status())?;
+        let slot: u32 = match ds.slot {
+            Some(s) => s as u32,
+            None => return Err(Status::invalid_argument("Slot is missing")),
+        };    
+        let dev_addr = match ds.dev_addr {
+            Some(addr) => addr.to_string(),
+            None => return Err(Status::invalid_argument("DevAddr is missing or not specified")),
+        };
+            
+
+        let response = api::GetDeviceSlotResponse {
+            dev_addr,
+            slot,
+            created_at: Some(helpers::datetime_to_prost_timestamp(&ds.created_at)),
+        };
+
+        Ok(Response::new(response))
+    }
+
+    // Update a slot
+    async fn update_slot(
+        &self,
+        request: Request<api::UpdateDeviceSlotRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_ds = match &request.get_ref().device_slot {
+            Some(v) => v,
+            None => return Err(Status::invalid_argument("slot is missing")),
+        };
+        let dev_eui = EUI64::from_str(&req_ds.dev_eui).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceAccess::new(validator::Flag::Update, dev_eui),
+            )
+            .await?;
+
+        let ds = device_slot::get(&dev_eui).await.map_err(|e| e.status())?;
+        let updated_ds = device_slot::DeviceSlot {
+            dev_eui: ds.dev_eui,
+            dev_addr: ds.dev_addr,
+            slot: Some(req_ds.slot as i32),
+            created_at: ds.created_at,
+        };
+
+        device_slot::update(updated_ds).await.map_err(|e| e.status())?;
+
+        Ok(Response::new(()))
+    }
+
+    // Delete a slot
+    async fn delete_slot(
+        &self,
+        request: Request<api::DeleteDeviceSlotRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req = request.get_ref();
+        let dev_eui = EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceAccess::new(validator::Flag::Update, dev_eui),
+            )
+            .await?;
+
+            device_slot::delete(&dev_eui).await.map_err(|e| e.status())?;
+
+        Ok(Response::new(()))
     }
 
     async fn flush_dev_nonces(

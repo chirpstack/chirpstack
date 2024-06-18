@@ -6,6 +6,7 @@ drop table multicast_group;
 -- device
 drop table device_queue_item;
 drop table device_keys;
+drop table device_slot;
 drop table device;
 
 -- device-profile

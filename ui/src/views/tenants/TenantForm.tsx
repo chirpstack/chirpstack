@@ -22,6 +22,7 @@ function TenantForm(props: IProps) {
     tenant.setCanHaveGateways(v.canHaveGateways);
     tenant.setMaxGatewayCount(v.maxGatewayCount);
     tenant.setMaxDeviceCount(v.maxDeviceCount);
+    tenant.setMaxSlotCount(v.maxSlotCount);
     tenant.setPrivateGatewaysUp(v.privateGatewaysUp);
     tenant.setPrivateGatewaysDown(v.privateGatewaysDown);
 
@@ -81,7 +82,7 @@ function TenantForm(props: IProps) {
             </Col>
           </Row>
           <Row>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Max. gateway count"
                 name="maxGatewayCount"
@@ -90,12 +91,22 @@ function TenantForm(props: IProps) {
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item
                 label="Max. device count"
                 name="maxDeviceCount"
                 required={true}
                 tooltip="The maximum number of devices that can be added by this tenant (0 = unlimited)."
+              >
+                <InputNumber min={0} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                label="Max. slot count"
+                name="maxSlotCount"
+                required={true}
+                tooltip="The maximum number of slots that can be used by this tenant (0 = unlimited)."
               >
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>
@@ -107,7 +118,7 @@ function TenantForm(props: IProps) {
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
+                  <Row gutter={24} key={key}>
                     <Col span={6}>
                       <Form.Item
                         {...restField}

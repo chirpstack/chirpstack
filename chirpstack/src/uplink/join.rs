@@ -28,7 +28,7 @@ use crate::storage::{
     helpers::get_all_device_data,
     metrics, tenant,
 };
-use crate::{config, devaddr::get_random_dev_addr, downlink, integration, region, stream};
+use crate::{config, devaddr::get_random_dev_addr_slot, downlink, integration, region, stream};
 use chirpstack_api::{common, integration as integration_pb, internal, stream as stream_pb};
 
 pub struct JoinRequest {
@@ -125,7 +125,7 @@ impl JoinRequest {
         ctx.abort_on_relay_only_comm()?;
         ctx.log_uplink_frame_set().await?;
         ctx.abort_on_otaa_is_disabled()?;
-        ctx.set_random_dev_addr()?;
+        ctx.set_random_dev_addr().await?;
         if ctx.js_client.is_some() {
             // Using join-server
             ctx.get_join_accept_from_js().await?;
@@ -175,7 +175,7 @@ impl JoinRequest {
         ctx.abort_on_device_is_disabled()?;
         ctx.abort_on_otaa_is_disabled()?;
         ctx.abort_on_relay_only_comm()?;
-        ctx.set_random_dev_addr()?;
+        ctx.set_random_dev_addr().await?;
         if ctx.js_client.is_some() {
             // Using join-server
             ctx.get_join_accept_from_js().await?;
@@ -507,10 +507,10 @@ impl JoinRequest {
         Ok(())
     }
 
-    fn set_random_dev_addr(&mut self) -> Result<()> {
+    async fn set_random_dev_addr(&mut self) -> Result<()> {
         trace!("Setting random DevAddr");
         let d = self.device.as_mut().unwrap();
-        d.dev_addr = Some(get_random_dev_addr());
+        d.dev_addr = Some(get_random_dev_addr_slot(d.dev_eui).await?);
         Ok(())
     }
 

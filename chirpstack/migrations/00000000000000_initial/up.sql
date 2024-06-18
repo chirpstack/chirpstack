@@ -47,7 +47,8 @@ create table tenant (
     can_have_gateways boolean not null,
     max_device_count integer not null,
     max_gateway_count integer not null,
-    private_gateways boolean not null
+    private_gateways boolean not null,
+    max_slot_count integer not null
 );
 
 create index idx_tenant_name_trgm on tenant using gin (name gin_trgm_ops);
@@ -61,7 +62,8 @@ insert into "tenant" (
     can_have_gateways,
     max_device_count,
     max_gateway_count,
-    private_gateways
+    private_gateways,
+    max_slot_count
 ) values (
     '52f14cd4-c6f1-4fbd-8f87-4025e1d49242',
     now(),
@@ -71,7 +73,8 @@ insert into "tenant" (
     true,
     0,
     0,
-    false
+    false,
+    0
 );
 
 -- tenant user
@@ -223,6 +226,13 @@ create table device_keys (
     app_key bytea not null,
     dev_nonces int[] not null,
     join_nonce int not null
+);
+
+CREATE TABLE device_slot (
+    dev_eui bytea primary key references device on delete cascade,
+    dev_addr bytea,
+    slot integer,
+    created_at timestamp with time zone not null
 );
 
 create table device_queue_item (
