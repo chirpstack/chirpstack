@@ -24,13 +24,13 @@
 
   # Database
   email_address = "0.2"
-  diesel = { version = "2.1", features = [
+  diesel = { version = "2.2", features = [
     "chrono",
     "numeric",
     "64-column-tables",
     "postgres_backend",
   ] }
-  diesel_migrations = { version = "2.1" }
+  diesel_migrations = { version = "2.2" }
   diesel-async = { version = "0.4", features = [
     "deadpool",
     "postgres",
