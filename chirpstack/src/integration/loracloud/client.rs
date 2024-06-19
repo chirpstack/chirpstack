@@ -375,25 +375,13 @@ pub struct LocationResult {
     pub latitude: f64,
     pub longitude: f64,
     pub altitude: f64,
-    pub accuracy: Option<f64>, // documented as INT, but JSON does (sometimes) contain x.y value. Also, this value can be null.
-    #[serde(rename = "algorithmType")]
-    pub algorithm_type: String,
-    #[serde(rename = "numberOfGatewaysReceived")]
-    pub number_of_gateways_received: f64, // documented as INT, but JSON does (sometimes) contain x.y value.
-    #[serde(rename = "numberOfGatewaysUsed")]
-    pub number_of_gateways_used: f64, // documented as INT, but JSON does (sometimes) contain x.y value.
+    pub accuracy: Option<f64>,
 }
 
 #[derive(Deserialize, Clone)]
 pub struct LocationSolverResult {
-    pub ecef: Vec<f64>,
     pub llh: Vec<f64>,
-    pub gdop: f64,
     pub accuracy: f64,
-    #[serde(rename = "capture_time_gps")]
-    pub capture_time_gps: f64,
-    #[serde(rename = "capture_time_utc")]
-    pub capture_time_utc: f64,
 }
 
 #[derive(Serialize, Clone)]
