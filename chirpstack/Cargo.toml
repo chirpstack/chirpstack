@@ -28,16 +28,14 @@
     "chrono",
     "numeric",
     "64-column-tables",
-    "postgres_backend",
   ] }
   diesel_migrations = { version = "2.2" }
   diesel-async = { version = "0.4", features = [
     "deadpool",
-    "postgres",
     "async-connection-wrapper",
   ] }
-  tokio-postgres = "0.7"
-  tokio-postgres-rustls = "0.11"
+  tokio-postgres = { version = "0.7", optional = true }
+  tokio-postgres-rustls = { version = "0.11", optional = true }
   bigdecimal = "0.4"
   redis = { version = "0.25.2", features = ["tls-rustls", "tokio-rustls-comp"] }
   deadpool-redis = { version = "0.15", features = ["cluster"] }
@@ -162,9 +160,12 @@
 [features]
   default = ["postgres"]
   postgres = [
-    "diesel/postgres",
+    "tokio-postgres",
+    "tokio-postgres-rustls",
+    "diesel/postgres_backend",
     "diesel/serde_json",
     "diesel/uuid",
+    "diesel-async/postgres",
     "lrwn/postgres",
   ]
   sqlite = [
