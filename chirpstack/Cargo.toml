@@ -49,11 +49,7 @@
   ], default-features = true }
 
   # ChirpStack API definitions
-  chirpstack_api = { path = "../api/rust", features = [
-    "default",
-    "internal",
-    "diesel",
-  ] }
+  chirpstack_api = { path = "../api/rust", features = ["default", "internal"] }
   lrwn = { path = "../lrwn", features = [
     "serde",
     "diesel",
