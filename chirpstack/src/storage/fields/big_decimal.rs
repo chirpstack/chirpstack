@@ -8,8 +8,6 @@ use diesel::{pg::Pg, sql_types::Numeric};
 use diesel::{sql_types::Double, sqlite::Sqlite};
 
 #[derive(Clone, Debug, Eq, PartialEq, AsExpression, FromSqlRow)]
-// Sqlite has no native arbitrary precision type so use double for now
-// TODO: Maybe use string representation instead?
 #[cfg_attr(feature="postgres", diesel(sql_type = Numeric))]
 #[cfg_attr(feature="sqlite", diesel(sql_type = Double))]
 pub struct BigDecimal(bigdecimal::BigDecimal);
