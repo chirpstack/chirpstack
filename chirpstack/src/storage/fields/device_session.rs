@@ -14,7 +14,7 @@ use chirpstack_api::internal;
 
 #[derive(Debug, Clone, PartialEq, AsExpression, FromSqlRow)]
 #[diesel(sql_type = diesel::sql_types::Binary)]
-pub struct DeviceSession(pub internal::DeviceSession);
+pub struct DeviceSession(internal::DeviceSession);
 
 impl DeviceSession {
     pub fn new(m: internal::DeviceSession) -> Self {
