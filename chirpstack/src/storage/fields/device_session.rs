@@ -20,11 +20,6 @@ impl DeviceSession {
     pub fn new(m: internal::DeviceSession) -> Self {
         DeviceSession(m)
     }
-
-    #[allow(clippy::wrong_self_convention)]
-    pub fn into_hashmap(&self) -> internal::DeviceSession {
-        self.0.clone()
-    }
 }
 
 impl std::convert::From<internal::DeviceSession> for DeviceSession {
