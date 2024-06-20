@@ -7,6 +7,8 @@ option java_package = "io.chirpstack.api.integration";
 option java_multiple_files = true;
 option java_outer_classname = "IntegrationProto";
 option csharp_namespace = "Chirpstack.Integration";
+option php_namespace = "Chirpstack\\Integration";
+option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Integration";
 
 import "common/common.proto";
 import "gw/gw.proto";

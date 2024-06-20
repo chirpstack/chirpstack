@@ -382,6 +382,9 @@ message RelayGatewayListItem {
     // Please note that the state of the relay is driven by the last
     // received stats packet sent by the relay-gateway.
     GatewayState state = 10;
+
+    // Region configuration ID.
+    string region_config_id = 11;
 }
 
 message UpdateRelayGatewayRequest {
@@ -414,4 +417,7 @@ message RelayGateway {
     // This defines the expected interval in which the gateway sends its
     // statistics.
     uint32 stats_interval = 5;
+
+    // Region configuration ID.
+    string region_config_id = 6;
 }

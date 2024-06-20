@@ -299,6 +299,8 @@ diesel::table! {
         name -> Varchar,
         description -> Text,
         stats_interval_secs -> Int4,
+        #[max_length = 100]
+        region_config_id -> Varchar,
     }
 }
 

@@ -131,6 +131,7 @@ pub struct RelayGateway {
     pub name: String,
     pub description: String,
     pub stats_interval_secs: i32,
+    pub region_config_id: String,
 }
 
 impl Default for RelayGateway {
@@ -146,6 +147,7 @@ impl Default for RelayGateway {
             name: "".into(),
             description: "".into(),
             stats_interval_secs: 900,
+            region_config_id: "".into(),
         }
     }
 }
@@ -165,6 +167,7 @@ pub struct RelayGatewayListItem {
     pub name: String,
     pub description: String,
     pub stats_interval_secs: i32,
+    pub region_config_id: String,
 }
 
 pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
@@ -400,6 +403,7 @@ pub async fn update_relay_gateway(relay: RelayGateway) -> Result<RelayGateway, E
                 relay_gateway::name.eq(&relay.name),
                 relay_gateway::description.eq(&relay.description),
                 relay_gateway::stats_interval_secs.eq(&relay.stats_interval_secs),
+                relay_gateway::region_config_id.eq(&relay.region_config_id),
             ))
             .get_result(&mut get_async_db_conn().await?)
             .await
@@ -450,6 +454,7 @@ pub async fn list_relay_gateways(
             relay_gateway::name,
             relay_gateway::description,
             relay_gateway::stats_interval_secs,
+            relay_gateway::region_config_id,
         ))
         .into_boxed();
 
@@ -662,6 +667,7 @@ pub mod test {
             tenant_id: gw.tenant_id,
             name: "test-relay".into(),
             description: "test relay".into(),
+            region_config_id: "eu868".into(),
             ..Default::default()
         })
         .await
@@ -675,6 +681,7 @@ pub mod test {
 
         // update
         relay.name = "updated-relay".into();
+        relay.region_config_id = "us915_0".into();
         relay = update_relay_gateway(relay).await.unwrap();
         let relay_get = get_relay_gateway(relay.tenant_id, relay.relay_id)
             .await

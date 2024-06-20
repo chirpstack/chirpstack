@@ -7,6 +7,7 @@ create table relay_gateway (
     name varchar(100) not null,
     description text not null,
     stats_interval_secs integer not null,
+    region_config_id varchar(100) not null,
 
     primary key (tenant_id, relay_id)
 );

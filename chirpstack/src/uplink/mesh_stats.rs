@@ -95,6 +95,11 @@ impl MeshStats {
                 }
 
                 v.last_seen_at = Some(ts);
+                v.region_config_id = border_gw
+                    .properties
+                    .get("region_config_id")
+                    .cloned()
+                    .unwrap_or_default();
                 gateway::update_relay_gateway(v).await?;
             }
             Err(_) => {

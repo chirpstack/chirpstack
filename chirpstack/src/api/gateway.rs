@@ -815,6 +815,7 @@ impl GatewayService for Gateway {
                 name: relay.name,
                 description: relay.description,
                 stats_interval: relay.stats_interval_secs as u32,
+                region_config_id: relay.region_config_id.to_string(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&relay.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&relay.updated_at)),
@@ -859,6 +860,7 @@ impl GatewayService for Gateway {
             name: req_relay.name.clone(),
             description: req_relay.description.clone(),
             stats_interval_secs: req_relay.stats_interval as i32,
+            region_config_id: req_relay.region_config_id.clone(),
             ..Default::default()
         })
         .await
@@ -962,6 +964,7 @@ impl GatewayService for Gateway {
                         }
                     }
                     .into(),
+                    region_config_id: r.region_config_id.to_string(),
                 })
                 .collect(),
         });
@@ -1358,6 +1361,7 @@ pub mod test {
             relay_id: gateway::RelayId::from_be_bytes([1, 2, 3, 4]),
             name: "test-relay".into(),
             description: "test relay".into(),
+            region_config_id: "eu868".into(),
             ..Default::default()
         })
         .await
@@ -1378,6 +1382,7 @@ pub mod test {
                 name: "test-relay".into(),
                 description: "test relay".into(),
                 stats_interval: 900,
+                region_config_id: "eu868".into(),
             }),
             get_relay_resp.get_ref().relay_gateway
         );
@@ -1390,6 +1395,7 @@ pub mod test {
                 name: "updated-relay".into(),
                 description: "updated relay".into(),
                 stats_interval: 600,
+                region_config_id: "us915_0".into(),
             }),
         };
         let mut up_relay_req = Request::new(up_relay_req);
@@ -1411,6 +1417,7 @@ pub mod test {
                 name: "updated-relay".into(),
                 description: "updated relay".into(),
                 stats_interval: 600,
+                region_config_id: "us915_0".into(),
             }),
             get_relay_resp.get_ref().relay_gateway
         );
