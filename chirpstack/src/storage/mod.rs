@@ -61,7 +61,7 @@ lazy_static! {
 }
 
 #[cfg(feature = "postgres")]
-pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations_postgres");
 #[cfg(feature = "sqlite")]
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations_sqlite");
 
