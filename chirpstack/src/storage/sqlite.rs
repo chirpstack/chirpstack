@@ -76,7 +76,7 @@ fn get_async_db_pool() -> Result<AsyncSqlitePool> {
     let pool_r = ASYNC_SQLITE_POOL.read().unwrap();
     let pool: AsyncSqlitePool = pool_r
         .as_ref()
-        .ok_or_else(|| anyhow!("PostgreSQL connection pool is not initialized"))?
+        .ok_or_else(|| anyhow!("SQLite connection pool is not initialized"))?
         .clone();
     Ok(pool)
 }
