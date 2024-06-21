@@ -71,6 +71,7 @@ ifeq ($(DATABASE),postgres)
 endif
 ifeq ($(DATABASE),sqlite)
 	DATABASE_URL="chirpstack_test.sqlite" diesel --config-file diesel_sqlite.toml migration --migration-dir migrations_sqlite revert
+	sed -i 's/Timestamp/TimestamptzSqlite/g' src/storage/schema_sqlite.rs
 endif
 
 chirpstack_test.sqlite:
