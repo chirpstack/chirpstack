@@ -80,15 +80,7 @@ impl Algorithm {
     fn get_nb_trans(&self, current_nb_trans: u8, pkt_loss_rate: f32) -> u8 {
         let pkt_loss_table: [[u8; 3]; 4] = [[1, 1, 2], [1, 2, 3], [2, 3, 3], [3, 3, 3]];
 
-        let mut current_nb_trans = current_nb_trans;
-        if current_nb_trans < 1 {
-            current_nb_trans = 1;
-        }
-
-        if current_nb_trans > 3 {
-            current_nb_trans = 3;
-        }
-
+        let current_nb_trans = current_nb_trans.clamp(1, 3);
         let nb_trans_index = current_nb_trans as usize - 1;
         if pkt_loss_rate < 5.0 {
             return pkt_loss_table[0][nb_trans_index];

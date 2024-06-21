@@ -182,7 +182,7 @@ impl JoinAccept<'_> {
         trace!("Select downlink gateway");
 
         let gw_down = helpers::select_downlink_gateway(
-            Some(self.tenant.id),
+            Some(self.tenant.id.into()),
             &self.uplink_frame_set.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
             self.device_gateway_rx_info.as_mut().unwrap(),

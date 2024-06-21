@@ -1,14 +1,14 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tracing::info;
 
 use lrwn::{AES128Key, EUI64};
 
 use super::error::Error;
-use super::get_async_db_conn;
 use super::schema::device_keys;
+use super::{fields, get_async_db_conn};
 
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = device_keys)]
@@ -18,7 +18,7 @@ pub struct DeviceKeys {
     pub updated_at: DateTime<Utc>,
     pub nwk_key: AES128Key,
     pub app_key: AES128Key,
-    pub dev_nonces: Vec<Option<i32>>,
+    pub dev_nonces: fields::DevNonces,
     pub join_nonce: i32,
 }
 
@@ -38,7 +38,7 @@ impl Default for DeviceKeys {
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00,
             ]),
-            dev_nonces: Vec::new(),
+            dev_nonces: Vec::new().into(),
             join_nonce: 0,
         }
     }
@@ -94,8 +94,9 @@ pub async fn delete(dev_eui: &EUI64) -> Result<(), Error> {
 }
 
 pub async fn set_dev_nonces(dev_eui: &EUI64, nonces: &[i32]) -> Result<DeviceKeys, Error> {
+    let nonces: Vec<Option<i32>> = nonces.iter().map(|v| Some(*v)).collect();
     let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(dev_eui))
-        .set(device_keys::dev_nonces.eq(nonces))
+        .set(device_keys::dev_nonces.eq(fields::DevNonces::from(nonces)))
         .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
@@ -112,12 +113,12 @@ pub async fn validate_incr_join_and_store_dev_nonce(
 ) -> Result<DeviceKeys, Error> {
     let mut c = get_async_db_conn().await?;
     let dk: DeviceKeys = c
-        .build_transaction()
-        .run::<DeviceKeys, Error, _>(|c| {
+        .transaction::<DeviceKeys, Error, _>(|c| {
             Box::pin(async move {
-                let mut dk: DeviceKeys = device_keys::dsl::device_keys
-                    .find(&dev_eui)
-                    .for_update()
+                let query = device_keys::dsl::device_keys.find(&dev_eui);
+                #[cfg(feature = "postgres")]
+                let query = query.for_update();
+                let mut dk: DeviceKeys = query
                     .first(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
@@ -155,7 +156,7 @@ pub mod test {
     pub async fn reset_nonces(dev_eui: &EUI64) -> Result<DeviceKeys, Error> {
         let dk: DeviceKeys = diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
             .set((
-                device_keys::dev_nonces.eq::<Vec<i32>>(Vec::new()),
+                device_keys::dev_nonces.eq(fields::DevNonces::from(Vec::new())),
                 device_keys::join_nonce.eq(0),
             ))
             .get_result(&mut get_async_db_conn().await?)

@@ -97,19 +97,22 @@ async fn test_lorawan_10() {
         dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
-        device_session: Some(internal::DeviceSession {
-            mac_version: common::MacVersion::Lorawan102.into(),
-            dev_addr: vec![4, 3, 2, 1],
-            f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-            s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-            nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-            f_cnt_up: 10,
-            n_f_cnt_down: 5,
-            rx1_delay: 1,
-            rx2_frequency: 869525000,
-            region_config_id: "eu868".into(),
-            ..Default::default()
-        }),
+        device_session: Some(
+            internal::DeviceSession {
+                mac_version: common::MacVersion::Lorawan102.into(),
+                dev_addr: vec![4, 3, 2, 1],
+                f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                f_cnt_up: 10,
+                n_f_cnt_down: 5,
+                rx1_delay: 1,
+                rx2_frequency: 869525000,
+                region_config_id: "eu868".into(),
+                ..Default::default()
+            }
+            .into(),
+        ),
         ..Default::default()
     })
     .await
@@ -291,7 +294,8 @@ async fn test_lorawan_10() {
                 region_config_id: "eu868".to_string(),
                 class_b_ping_slot_nb: 1,
                 ..Default::default()
-            },
+            }
+            .into(),
         ),
         assert::downlink_frame(gw::DownlinkFrame {
             items: vec![

@@ -78,6 +78,7 @@ impl Handler for Plugin {
             input.set("installationMargin", req.installation_margin)?;
             input.set("minDr", req.min_dr)?;
             input.set("maxDr", req.max_dr)?;
+            input.set("skipFCntCheck", req.skip_f_cnt_check)?;
             input.set("deviceVariables", device_variables)?;
 
             let mut uplink_history: Vec<rquickjs::Object> = Vec::new();

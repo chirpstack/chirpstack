@@ -19,6 +19,7 @@ pub struct Configuration {
     pub logging: Logging,
     pub postgresql: Postgresql,
     pub redis: Redis,
+    pub sqlite: Sqlite,
     pub api: Api,
     pub gateway: Gateway,
     pub network: Network,
@@ -85,6 +86,22 @@ impl Default for Redis {
             key_prefix: "".into(),
             max_open_connections: 100,
             min_idle_connections: 0,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct Sqlite {
+    pub path: String,
+    pub max_open_connections: u32,
+}
+
+impl Default for Sqlite {
+    fn default() -> Self {
+        Sqlite {
+            path: "chirpstack.sqlite".into(),
+            max_open_connections: 10,
         }
     }
 }

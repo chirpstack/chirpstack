@@ -14,7 +14,7 @@ use super::{fields, get_async_db_conn};
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = tenant)]
 pub struct Tenant {
-    pub id: Uuid,
+    pub id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -41,7 +41,7 @@ impl Default for Tenant {
         let now = Utc::now();
 
         Tenant {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             created_at: now,
             updated_at: now,
             name: "".into(),
@@ -59,8 +59,8 @@ impl Default for Tenant {
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Eq, Debug)]
 #[diesel(table_name = tenant_user)]
 pub struct TenantUser {
-    pub tenant_id: Uuid,
-    pub user_id: Uuid,
+    pub tenant_id: fields::Uuid,
+    pub user_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub is_admin: bool,
@@ -73,8 +73,8 @@ impl Default for TenantUser {
         let now = Utc::now();
 
         TenantUser {
-            tenant_id: Uuid::nil(),
-            user_id: Uuid::nil(),
+            tenant_id: Uuid::nil().into(),
+            user_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
             is_admin: false,
@@ -86,8 +86,8 @@ impl Default for TenantUser {
 
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct TenantUserListItem {
-    pub tenant_id: Uuid,
-    pub user_id: Uuid,
+    pub tenant_id: fields::Uuid,
+    pub user_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub email: String,
@@ -116,7 +116,7 @@ pub async fn create(t: Tenant) -> Result<Tenant, Error> {
 
 pub async fn get(id: &Uuid) -> Result<Tenant, Error> {
     let t = tenant::dsl::tenant
-        .find(&id)
+        .find(&fields::Uuid::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -146,7 +146,7 @@ pub async fn update(t: Tenant) -> Result<Tenant, Error> {
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(tenant::dsl::tenant.find(&id))
+    let ra = diesel::delete(tenant::dsl::tenant.find(&fields::Uuid::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -164,11 +164,18 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(user_id) = &filters.user_id {
-        q = q.filter(tenant_user::dsl::user_id.eq(user_id));
+        q = q.filter(tenant_user::dsl::user_id.eq(fields::Uuid::from(user_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(tenant::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(tenant::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(tenant::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     Ok(
@@ -189,11 +196,18 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<Tena
         .into_boxed();
 
     if let Some(user_id) = &filters.user_id {
-        q = q.filter(tenant_user::dsl::user_id.eq(user_id));
+        q = q.filter(tenant_user::dsl::user_id.eq(fields::Uuid::from(user_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(tenant::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(tenant::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(tenant::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     let items = q.load(&mut get_async_db_conn().await?).await?;
@@ -234,8 +248,8 @@ pub async fn update_user(tu: TenantUser) -> Result<TenantUser, Error> {
 
 pub async fn get_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<TenantUser, Error> {
     let tu: TenantUser = tenant_user::dsl::tenant_user
-        .filter(tenant_user::dsl::tenant_id.eq(&tenant_id))
-        .filter(tenant_user::dsl::user_id.eq(&user_id))
+        .filter(tenant_user::dsl::tenant_id.eq(&fields::Uuid::from(tenant_id)))
+        .filter(tenant_user::dsl::user_id.eq(&fields::Uuid::from(user_id)))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, user_id.to_string()))?;
@@ -245,7 +259,7 @@ pub async fn get_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<TenantUser, Er
 pub async fn get_user_count(tenant_id: &Uuid) -> Result<i64, Error> {
     let count = tenant_user::dsl::tenant_user
         .select(dsl::count_star())
-        .filter(tenant_user::dsl::tenant_id.eq(&tenant_id))
+        .filter(tenant_user::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)))
         .first(&mut get_async_db_conn().await?)
         .await?;
     Ok(count)
@@ -268,7 +282,7 @@ pub async fn get_users(
             tenant_user::dsl::is_device_admin,
             tenant_user::dsl::is_gateway_admin,
         ))
-        .filter(tenant_user::dsl::tenant_id.eq(&tenant_id))
+        .filter(tenant_user::dsl::tenant_id.eq(&fields::Uuid::from(tenant_id)))
         .order_by(user::dsl::email)
         .limit(limit)
         .offset(offset)
@@ -281,8 +295,8 @@ pub async fn get_users(
 pub async fn delete_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<(), Error> {
     let ra = diesel::delete(
         tenant_user::dsl::tenant_user
-            .filter(tenant_user::dsl::tenant_id.eq(&tenant_id))
-            .filter(tenant_user::dsl::user_id.eq(&user_id)),
+            .filter(tenant_user::dsl::tenant_id.eq(&fields::Uuid::from(tenant_id)))
+            .filter(tenant_user::dsl::user_id.eq(&fields::Uuid::from(user_id))),
     )
     .execute(&mut get_async_db_conn().await?)
     .await?;
@@ -299,7 +313,7 @@ pub async fn delete_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<(), Error> 
 
 pub async fn get_tenant_users_for_user(user_id: &Uuid) -> Result<Vec<TenantUser>, Error> {
     let items = tenant_user::dsl::tenant_user
-        .filter(tenant_user::dsl::user_id.eq(&user_id))
+        .filter(tenant_user::dsl::user_id.eq(&fields::Uuid::from(user_id)))
         .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
@@ -324,7 +338,7 @@ pub mod test {
 
     pub async fn create_tenant() -> Tenant {
         let t = Tenant {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             created_at: Utc::now().round_subsecs(1),
             updated_at: Utc::now().round_subsecs(1),
             name: "test t".into(),
@@ -365,7 +379,7 @@ pub mod test {
 
         let tu = TenantUser {
             tenant_id: t.id,
-            user_id: user.id,
+            user_id: user.id.into(),
             is_admin: true,
             ..Default::default()
         };
@@ -426,7 +440,7 @@ pub mod test {
             },
             FilterTest {
                 filter: Filters {
-                    user_id: Some(user.id),
+                    user_id: Some(user.id.into()),
                     search: None,
                 },
                 ts: vec![&t],
@@ -466,7 +480,7 @@ pub mod test {
 
         let tu = TenantUser {
             tenant_id: t.id,
-            user_id: user.id,
+            user_id: user.id.into(),
             is_admin: true,
             ..Default::default()
         };

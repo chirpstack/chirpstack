@@ -4,6 +4,8 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
+#[cfg(feature = "sqlite")]
+use diesel::sqlite::Sqlite;
 #[cfg(feature = "diesel")]
 use diesel::{
     backend::Backend,
@@ -64,12 +66,12 @@ where
     *const str: deserialize::FromSql<Text, DB>,
 {
     fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let string = String::from_sql(value)?;
-        Ok(CommonName::from_str(&string)?)
+        let string = <*const str>::from_sql(value)?;
+        Ok(Self::from_str(unsafe { &*string })?)
     }
 }
 
-#[cfg(feature = "diesel")]
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Text, diesel::pg::Pg> for CommonName
 where
     str: serialize::ToSql<Text, diesel::pg::Pg>,
@@ -82,6 +84,14 @@ where
             &self.to_string(),
             &mut out.reborrow(),
         )
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for CommonName {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
     }
 }
 
@@ -178,12 +188,12 @@ where
     *const str: deserialize::FromSql<Text, DB>,
 {
     fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let string = String::from_sql(value)?;
-        Ok(Revision::from_str(&string)?)
+        let string = <*const str>::from_sql(value)?;
+        Ok(Self::from_str(unsafe { &*string })?)
     }
 }
 
-#[cfg(feature = "diesel")]
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Text, diesel::pg::Pg> for Revision
 where
     str: serialize::ToSql<Text, diesel::pg::Pg>,
@@ -196,6 +206,14 @@ where
             &self.to_string(),
             &mut out.reborrow(),
         )
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for Revision {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
     }
 }
 
@@ -263,12 +281,12 @@ where
     *const str: deserialize::FromSql<Text, DB>,
 {
     fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let string = String::from_sql(value)?;
-        Ok(MacVersion::from_str(&string)?)
+        let string = <*const str>::from_sql(value)?;
+        Ok(Self::from_str(unsafe { &*string })?)
     }
 }
 
-#[cfg(feature = "diesel")]
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Text, diesel::pg::Pg> for MacVersion
 where
     str: serialize::ToSql<Text, diesel::pg::Pg>,
@@ -281,6 +299,14 @@ where
             &self.to_string(),
             &mut out.reborrow(),
         )
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for MacVersion {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
     }
 }
 

@@ -277,7 +277,7 @@ mod test {
             device::partial_update(
                 dev.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(tst.device_session_ed.clone())),
+                    device_session: Some(Some(tst.device_session_ed.clone().into())),
                     ..Default::default()
                 },
             )
@@ -285,7 +285,7 @@ mod test {
             .unwrap();
 
             let mut relay_dev = device::Device {
-                device_session: Some(tst.device_session.clone()),
+                device_session: Some(tst.device_session.clone().into()),
                 ..Default::default()
             };
 

@@ -216,7 +216,7 @@ mod test {
 
         for tst in &tests {
             let mut dev = device::Device {
-                device_session: Some(tst.device_session.clone()),
+                device_session: Some(tst.device_session.clone().into()),
                 ..Default::default()
             };
             let resp = handle(&mut dev, &tst.filter_list_ans, tst.filter_list_req.as_ref());

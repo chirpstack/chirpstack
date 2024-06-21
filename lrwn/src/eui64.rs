@@ -2,6 +2,8 @@ use std::fmt;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
+#[cfg(feature = "sqlite")]
+use diesel::sqlite::Sqlite;
 #[cfg(feature = "diesel")]
 use diesel::{backend::Backend, deserialize, serialize, sql_types::Binary};
 #[cfg(feature = "serde")]
@@ -133,7 +135,7 @@ where
     }
 }
 
-#[cfg(feature = "diesel")]
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Binary, diesel::pg::Pg> for EUI64
 where
     [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
@@ -143,6 +145,14 @@ where
             &self.to_be_bytes(),
             &mut out.reborrow(),
         )
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Binary, Sqlite> for EUI64 {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
+        out.set_value(Vec::from(self.to_be_bytes().as_slice()));
+        Ok(serialize::IsNull::No)
     }
 }
 

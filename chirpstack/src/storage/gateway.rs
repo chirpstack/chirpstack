@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tracing::info;
 use uuid::Uuid;
 
@@ -16,7 +16,7 @@ use super::{error::Error, fields, get_async_db_conn};
 #[diesel(table_name = gateway)]
 pub struct Gateway {
     pub gateway_id: EUI64,
-    pub tenant_id: Uuid,
+    pub tenant_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub last_seen_at: Option<DateTime<Utc>>,
@@ -53,7 +53,7 @@ pub struct GatewayChangeset {
 
 #[derive(Queryable, PartialEq, Debug)]
 pub struct GatewayListItem {
-    pub tenant_id: Uuid,
+    pub tenant_id: fields::Uuid,
     pub gateway_id: EUI64,
     pub name: String,
     pub description: String,
@@ -70,7 +70,7 @@ pub struct GatewayListItem {
 #[derive(Queryable, PartialEq, Debug)]
 pub struct GatewayMeta {
     pub gateway_id: EUI64,
-    pub tenant_id: Uuid,
+    pub tenant_id: fields::Uuid,
     pub latitude: f64,
     pub longitude: f64,
     pub altitude: f32,
@@ -101,7 +101,7 @@ impl Default for Gateway {
 
         Gateway {
             gateway_id: EUI64::from_be_bytes([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
-            tenant_id: Uuid::nil(),
+            tenant_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
             last_seen_at: None,
@@ -122,13 +122,13 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
     gw.validate()?;
     let mut c = get_async_db_conn().await?;
     let gw: Gateway = c
-        .build_transaction()
-        .run::<Gateway, Error, _>(|c| {
+        .transaction::<Gateway, Error, _>(|c| {
             Box::pin(async move {
+                let query = tenant::dsl::tenant.find(&gw.tenant_id);
                 // use for_update to lock the tenant.
-                let t: super::tenant::Tenant = tenant::dsl::tenant
-                    .find(&gw.tenant_id)
-                    .for_update()
+                #[cfg(feature = "postgres")]
+                let query = query.for_update();
+                let t: super::tenant::Tenant = query
                     .get_result(c)
                     .await
                     .map_err(|e| Error::from_diesel(e, gw.tenant_id.to_string()))?;
@@ -230,15 +230,25 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(gateway::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(gateway::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(multicast_group_id) = &filters.multicast_group_id {
-        q = q.filter(multicast_group_gateway::dsl::multicast_group_id.eq(multicast_group_id));
+        q = q.filter(
+            multicast_group_gateway::dsl::multicast_group_id
+                .eq(fields::Uuid::from(multicast_group_id)),
+        );
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(gateway::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -269,15 +279,25 @@ pub async fn list(
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(gateway::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(gateway::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(gateway::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(gateway::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     if let Some(multicast_group_id) = &filters.multicast_group_id {
-        q = q.filter(multicast_group_gateway::dsl::multicast_group_id.eq(multicast_group_id));
+        q = q.filter(
+            multicast_group_gateway::dsl::multicast_group_id
+                .eq(fields::Uuid::from(multicast_group_id)),
+        );
     }
 
     let items = q
@@ -318,7 +338,7 @@ pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCoun
             gateway
         where
             $1 is null or tenant_id = $1
-    "#).bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id).get_result(&mut get_async_db_conn().await?).await?;
+    "#).bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(tenant_id.map(|u| fields::Uuid::from(u))).get_result(&mut get_async_db_conn().await?).await?;
     Ok(counts)
 }
 
@@ -382,7 +402,7 @@ pub mod test {
         .await
         .unwrap();
 
-        storage::multicast::add_gateway(&mg.id, &gw.gateway_id)
+        storage::multicast::add_gateway(&mg.id.into(), &gw.gateway_id)
             .await
             .unwrap();
 
@@ -433,7 +453,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
-                    tenant_id: Some(gw.tenant_id),
+                    tenant_id: Some(gw.tenant_id.into()),
                     multicast_group_id: None,
                     search: None,
                 },
@@ -456,7 +476,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     tenant_id: None,
-                    multicast_group_id: Some(mg.id),
+                    multicast_group_id: Some(mg.id.into()),
                     search: None,
                 },
                 gws: vec![&gw],

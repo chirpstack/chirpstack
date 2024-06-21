@@ -28,6 +28,7 @@ pub mod mock;
 mod mqtt;
 mod mydevices;
 mod pilot_things;
+#[cfg(feature = "postgres")]
 mod postgresql;
 mod redis;
 mod thingsboard;
@@ -54,6 +55,7 @@ pub async fn setup() -> Result<()> {
                         .context("Setup MQTT integration")?,
                 ));
             }
+            #[cfg(feature = "postgres")]
             "postgresql" => integrations.push(Box::new(
                 postgresql::Integration::new(&conf.integration.postgresql)
                     .await
@@ -533,7 +535,7 @@ async fn handle_down_command(application_id: String, pl: integration::DownlinkCo
         // Validate that the application_id from the topic is indeed the application ID to which
         // the device belongs.
         let dev = device::get(&dev_eui).await?;
-        if dev.application_id != app_id {
+        if Into::<Uuid>::into(dev.application_id) != app_id {
             return Err(anyhow!(
                 "Application ID from topic does not match application ID from device"
             ));
@@ -555,8 +557,8 @@ async fn handle_down_command(application_id: String, pl: integration::DownlinkCo
 
         let qi = device_queue::DeviceQueueItem {
             id: match pl.id.is_empty() {
-                true => Uuid::new_v4(),
-                false => Uuid::from_str(&pl.id)?,
+                true => Uuid::new_v4().into(),
+                false => Uuid::from_str(&pl.id)?.into(),
             },
             f_port: pl.f_port as i16,
             confirmed: pl.confirmed,

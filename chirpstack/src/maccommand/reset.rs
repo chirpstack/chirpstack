@@ -48,21 +48,24 @@ pub mod test {
     #[test]
     fn test_handle() {
         let mut dev = device::Device {
-            device_session: Some(internal::DeviceSession {
-                tx_power_index: 3,
-                min_supported_tx_power_index: 1,
-                max_supported_tx_power_index: 5,
-                extra_uplink_channels: [(3, Default::default())].iter().cloned().collect(),
-                rx1_delay: 3,
-                rx1_dr_offset: 1,
-                rx2_dr: 5,
-                rx2_frequency: 868900000,
-                enabled_uplink_channel_indices: vec![0, 1],
-                class_b_ping_slot_dr: 3,
-                class_b_ping_slot_freq: 868100000,
-                nb_trans: 3,
-                ..Default::default()
-            }),
+            device_session: Some(
+                internal::DeviceSession {
+                    tx_power_index: 3,
+                    min_supported_tx_power_index: 1,
+                    max_supported_tx_power_index: 5,
+                    extra_uplink_channels: [(3, Default::default())].iter().cloned().collect(),
+                    rx1_delay: 3,
+                    rx1_dr_offset: 1,
+                    rx2_dr: 5,
+                    rx2_frequency: 868900000,
+                    enabled_uplink_channel_indices: vec![0, 1],
+                    class_b_ping_slot_dr: 3,
+                    class_b_ping_slot_freq: 868100000,
+                    nb_trans: 3,
+                    ..Default::default()
+                }
+                .into(),
+            ),
             ..Default::default()
         };
         let dp = device_profile::DeviceProfile {

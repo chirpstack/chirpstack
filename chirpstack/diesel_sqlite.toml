@@ -2,4 +2,4 @@
 # see diesel.rs/guides/configuring-diesel-cli
 
 [print_schema]
-file = "src/storage/schema.rs"
+  file = "src/storage/schema_sqlite.rs"
