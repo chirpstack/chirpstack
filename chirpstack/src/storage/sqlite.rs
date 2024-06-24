@@ -55,16 +55,17 @@ fn sqlite_establish_connection(
         move || -> ConnectionResult<SyncConnectionWrapper<SqliteConnection>> {
             let mut conn = SqliteConnection::establish(&url)?;
 
-            // Enable foreign keys since it's off by default in sqlite
-            use diesel::RunQueryDsl;
-            diesel::sql_query("PRAGMA foreign_keys = ON;")
-                .execute(&mut conn)
-                .map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
-            // Enable busy_timeout to avoid manually managing transaction contention
+            use diesel::connection::SimpleConnection;
+            // A few settings need to be configure:
+            // - enable foreign keys since it's off by default in sqlite
+            // - set busy_timeout to avoid manually managing transaction business/contention
             // see https://sqlite.org/rescode.html#busy
-            diesel::sql_query("PRAGMA busy_timeout = 5000;")
-                .execute(&mut conn)
-                .map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
+            conn.batch_execute(
+                r#"
+                PRAGMA busy_timeout = 5000;
+                PRAGMA foreign_keys = ON;
+                "#
+            ).map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
             Ok(SyncConnectionWrapper::new(conn))
         },
     )
