@@ -414,10 +414,10 @@ async fn message_callback(
 
             set_gateway_json(&event.gateway_id, json);
             tokio::spawn(downlink::tx_ack::TxAck::handle(event));
-        } else if topic.ends_with("/mesh-stats") {
+        } else if topic.ends_with("/mesh-heartbeat") {
             EVENT_COUNTER
                 .get_or_create(&EventLabels {
-                    event: "mesh-stats".to_string(),
+                    event: "mesh-heartbeat".to_string(),
                 })
                 .inc();
             let event = match json {
