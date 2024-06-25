@@ -7,10 +7,12 @@ use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
-use lrwn::EUI64;
+use lrwn::{DevAddr, EUI64};
 
-use super::schema::{gateway, multicast_group_gateway, tenant};
+use super::schema::{gateway, multicast_group_gateway, relay_gateway, tenant};
 use super::{error::Error, fields, get_async_db_conn};
+
+pub type RelayId = DevAddr;
 
 #[derive(Queryable, Insertable, PartialEq, Debug)]
 #[diesel(table_name = gateway)]
@@ -37,6 +39,29 @@ impl Gateway {
             return Err(Error::Validation("name is not set".into()));
         }
         Ok(())
+    }
+}
+
+impl Default for Gateway {
+    fn default() -> Self {
+        let now = Utc::now();
+
+        Gateway {
+            gateway_id: EUI64::from_be_bytes([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+            tenant_id: Uuid::nil(),
+            created_at: now,
+            updated_at: now,
+            last_seen_at: None,
+            name: "".into(),
+            description: "".into(),
+            latitude: 0.0,
+            longitude: 0.0,
+            altitude: 0.0,
+            tls_certificate: None,
+            stats_interval_secs: 30,
+            tags: fields::KeyValue::new(HashMap::new()),
+            properties: fields::KeyValue::new(HashMap::new()),
+        }
     }
 }
 
@@ -95,27 +120,54 @@ pub struct GatewayCountsByState {
     pub offline_count: i64,
 }
 
-impl Default for Gateway {
+#[derive(Queryable, Insertable, PartialEq, Debug)]
+#[diesel(table_name = relay_gateway)]
+pub struct RelayGateway {
+    pub tenant_id: Uuid,
+    pub relay_id: RelayId,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub last_seen_at: Option<DateTime<Utc>>,
+    pub name: String,
+    pub description: String,
+    pub stats_interval_secs: i32,
+    pub region_config_id: String,
+}
+
+impl Default for RelayGateway {
     fn default() -> Self {
         let now = Utc::now();
 
-        Gateway {
-            gateway_id: EUI64::from_be_bytes([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+        RelayGateway {
+            relay_id: RelayId::from_be_bytes([1, 2, 3, 4]),
             tenant_id: Uuid::nil(),
             created_at: now,
             updated_at: now,
             last_seen_at: None,
             name: "".into(),
             description: "".into(),
-            latitude: 0.0,
-            longitude: 0.0,
-            altitude: 0.0,
-            tls_certificate: None,
-            stats_interval_secs: 30,
-            tags: fields::KeyValue::new(HashMap::new()),
-            properties: fields::KeyValue::new(HashMap::new()),
+            stats_interval_secs: 900,
+            region_config_id: "".into(),
         }
     }
+}
+
+#[derive(Default, Clone)]
+pub struct RelayGatewayFilters {
+    pub tenant_id: Option<Uuid>,
+}
+
+#[derive(Queryable, PartialEq, Debug)]
+pub struct RelayGatewayListItem {
+    pub relay_id: RelayId,
+    pub tenant_id: Uuid,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub last_seen_at: Option<DateTime<Utc>>,
+    pub name: String,
+    pub description: String,
+    pub stats_interval_secs: i32,
+    pub region_config_id: String,
 }
 
 pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
@@ -322,6 +374,103 @@ pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCoun
     Ok(counts)
 }
 
+pub async fn create_relay_gateway(relay: RelayGateway) -> Result<RelayGateway, Error> {
+    let relay: RelayGateway = diesel::insert_into(relay_gateway::table)
+        .values(&relay)
+        .get_result(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, relay.relay_id.to_string()))?;
+
+    info!(relay_id = %relay.relay_id, "Relay Gateway created");
+
+    Ok(relay)
+}
+
+pub async fn get_relay_gateway(tenant_id: Uuid, relay_id: RelayId) -> Result<RelayGateway, Error> {
+    let relay = relay_gateway::dsl::relay_gateway
+        .find((&tenant_id, &relay_id))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, relay_id.to_string()))?;
+    Ok(relay)
+}
+
+pub async fn update_relay_gateway(relay: RelayGateway) -> Result<RelayGateway, Error> {
+    let relay: RelayGateway =
+        diesel::update(relay_gateway::dsl::relay_gateway.find((&relay.tenant_id, &relay.relay_id)))
+            .set((
+                relay_gateway::updated_at.eq(&relay.updated_at),
+                relay_gateway::name.eq(&relay.name),
+                relay_gateway::description.eq(&relay.description),
+                relay_gateway::stats_interval_secs.eq(&relay.stats_interval_secs),
+                relay_gateway::region_config_id.eq(&relay.region_config_id),
+            ))
+            .get_result(&mut get_async_db_conn().await?)
+            .await
+            .map_err(|e| Error::from_diesel(e, relay.relay_id.to_string()))?;
+
+    info!(relay_id = %relay.relay_id, "Relay Gateway updated");
+
+    Ok(relay)
+}
+
+pub async fn get_relay_gateway_count(filters: &RelayGatewayFilters) -> Result<i64, Error> {
+    let mut q = relay_gateway::dsl::relay_gateway
+        .select(dsl::count_star())
+        .into_boxed();
+
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(relay_gateway::dsl::tenant_id.eq(tenant_id));
+    }
+
+    Ok(q.first(&mut get_async_db_conn().await?).await?)
+}
+
+pub async fn delete_relay_gateway(tenant_id: Uuid, relay_id: RelayId) -> Result<(), Error> {
+    let ra = diesel::delete(relay_gateway::dsl::relay_gateway.find((&tenant_id, &relay_id)))
+        .execute(&mut get_async_db_conn().await?)
+        .await?;
+    if ra == 0 {
+        return Err(Error::NotFound(relay_id.to_string()));
+    }
+
+    info!(relay_id = %relay_id, "Relay Gateway deleted");
+
+    Ok(())
+}
+
+pub async fn list_relay_gateways(
+    limit: i64,
+    offset: i64,
+    filters: &RelayGatewayFilters,
+) -> Result<Vec<RelayGatewayListItem>, Error> {
+    let mut q = relay_gateway::dsl::relay_gateway
+        .select((
+            relay_gateway::relay_id,
+            relay_gateway::tenant_id,
+            relay_gateway::created_at,
+            relay_gateway::updated_at,
+            relay_gateway::last_seen_at,
+            relay_gateway::name,
+            relay_gateway::description,
+            relay_gateway::stats_interval_secs,
+            relay_gateway::region_config_id,
+        ))
+        .into_boxed();
+
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(relay_gateway::dsl::tenant_id.eq(tenant_id));
+    }
+
+    let items = q
+        .order_by(relay_gateway::dsl::name)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut get_async_db_conn().await?)
+        .await?;
+    Ok(items)
+}
+
 #[cfg(test)]
 pub mod test {
     use super::*;
@@ -332,6 +481,14 @@ pub mod test {
     struct FilterTest<'a> {
         filters: Filters,
         gws: Vec<&'a Gateway>,
+        count: usize,
+        limit: i64,
+        offset: i64,
+    }
+
+    struct RelayGatewayFilterTest<'a> {
+        filters: RelayGatewayFilters,
+        relay_gateways: Vec<&'a RelayGateway>,
         count: usize,
         limit: i64,
         offset: i64,
@@ -497,5 +654,94 @@ pub mod test {
         // delete
         delete(&gw.gateway_id).await.unwrap();
         assert_eq!(true, delete(&gw.gateway_id).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_relay_gateway() {
+        let _guard = test::prepare().await;
+        let gw = create_gateway(EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8])).await;
+
+        // create
+        let mut relay = create_relay_gateway(RelayGateway {
+            relay_id: RelayId::from_be_bytes([1, 2, 3, 4]),
+            tenant_id: gw.tenant_id,
+            name: "test-relay".into(),
+            description: "test relay".into(),
+            region_config_id: "eu868".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // get
+        let relay_get = get_relay_gateway(relay.tenant_id, relay.relay_id)
+            .await
+            .unwrap();
+        assert_eq!(relay, relay_get);
+
+        // update
+        relay.name = "updated-relay".into();
+        relay.region_config_id = "us915_0".into();
+        relay = update_relay_gateway(relay).await.unwrap();
+        let relay_get = get_relay_gateway(relay.tenant_id, relay.relay_id)
+            .await
+            .unwrap();
+        assert_eq!(relay, relay_get);
+
+        // test count and list
+        let tests = vec![
+            RelayGatewayFilterTest {
+                filters: RelayGatewayFilters { tenant_id: None },
+                relay_gateways: vec![&relay],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+            RelayGatewayFilterTest {
+                filters: RelayGatewayFilters {
+                    tenant_id: Some(gw.tenant_id),
+                },
+                relay_gateways: vec![&relay],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+            RelayGatewayFilterTest {
+                filters: RelayGatewayFilters {
+                    tenant_id: Some(gw.tenant_id),
+                },
+                relay_gateways: vec![&relay],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+        ];
+
+        for tst in tests {
+            let count = get_relay_gateway_count(&tst.filters).await.unwrap() as usize;
+            assert_eq!(tst.count, count);
+
+            let items = list_relay_gateways(tst.limit, tst.offset, &tst.filters)
+                .await
+                .unwrap();
+            assert_eq!(
+                tst.relay_gateways
+                    .iter()
+                    .map(|r| r.relay_id.to_string())
+                    .collect::<String>(),
+                items
+                    .iter()
+                    .map(|r| r.relay_id.to_string())
+                    .collect::<String>(),
+            );
+        }
+
+        // delete
+        delete_relay_gateway(relay.tenant_id, relay.relay_id)
+            .await
+            .unwrap();
+        assert!(delete_relay_gateway(relay.tenant_id, relay.relay_id)
+            .await
+            .is_err());
     }
 }

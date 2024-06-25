@@ -28,6 +28,10 @@ const (
 	GatewayService_GenerateClientCertificate_FullMethodName = "/api.GatewayService/GenerateClientCertificate"
 	GatewayService_GetMetrics_FullMethodName                = "/api.GatewayService/GetMetrics"
 	GatewayService_GetDutyCycleMetrics_FullMethodName       = "/api.GatewayService/GetDutyCycleMetrics"
+	GatewayService_GetRelayGateway_FullMethodName           = "/api.GatewayService/GetRelayGateway"
+	GatewayService_ListRelayGateways_FullMethodName         = "/api.GatewayService/ListRelayGateways"
+	GatewayService_UpdateRelayGateway_FullMethodName        = "/api.GatewayService/UpdateRelayGateway"
+	GatewayService_DeleteRelayGateway_FullMethodName        = "/api.GatewayService/DeleteRelayGateway"
 )
 
 // GatewayServiceClient is the client API for GatewayService service.
@@ -51,6 +55,14 @@ type GatewayServiceClient interface {
 	// GetDutyCycleMetrics returns the duty-cycle metrics.
 	// Note that only the last 2 hours of data are stored. Currently only per minute aggregation is available.
 	GetDutyCycleMetrics(ctx context.Context, in *GetGatewayDutyCycleMetricsRequest, opts ...grpc.CallOption) (*GetGatewayDutyCycleMetricsResponse, error)
+	// Get the given Relay Gateway.
+	GetRelayGateway(ctx context.Context, in *GetRelayGatewayRequest, opts ...grpc.CallOption) (*GetRelayGatewayResponse, error)
+	// List the detected Relay Gateways.
+	ListRelayGateways(ctx context.Context, in *ListRelayGatewaysRequest, opts ...grpc.CallOption) (*ListRelayGatewaysResponse, error)
+	// Update the given Relay Gateway.
+	UpdateRelayGateway(ctx context.Context, in *UpdateRelayGatewayRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Delete the given Relay Gateway.
+	DeleteRelayGateway(ctx context.Context, in *DeleteRelayGatewayRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type gatewayServiceClient struct {
@@ -133,6 +145,42 @@ func (c *gatewayServiceClient) GetDutyCycleMetrics(ctx context.Context, in *GetG
 	return out, nil
 }
 
+func (c *gatewayServiceClient) GetRelayGateway(ctx context.Context, in *GetRelayGatewayRequest, opts ...grpc.CallOption) (*GetRelayGatewayResponse, error) {
+	out := new(GetRelayGatewayResponse)
+	err := c.cc.Invoke(ctx, GatewayService_GetRelayGateway_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewayServiceClient) ListRelayGateways(ctx context.Context, in *ListRelayGatewaysRequest, opts ...grpc.CallOption) (*ListRelayGatewaysResponse, error) {
+	out := new(ListRelayGatewaysResponse)
+	err := c.cc.Invoke(ctx, GatewayService_ListRelayGateways_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewayServiceClient) UpdateRelayGateway(ctx context.Context, in *UpdateRelayGatewayRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, GatewayService_UpdateRelayGateway_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewayServiceClient) DeleteRelayGateway(ctx context.Context, in *DeleteRelayGatewayRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, GatewayService_DeleteRelayGateway_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GatewayServiceServer is the server API for GatewayService service.
 // All implementations must embed UnimplementedGatewayServiceServer
 // for forward compatibility
@@ -154,6 +202,14 @@ type GatewayServiceServer interface {
 	// GetDutyCycleMetrics returns the duty-cycle metrics.
 	// Note that only the last 2 hours of data are stored. Currently only per minute aggregation is available.
 	GetDutyCycleMetrics(context.Context, *GetGatewayDutyCycleMetricsRequest) (*GetGatewayDutyCycleMetricsResponse, error)
+	// Get the given Relay Gateway.
+	GetRelayGateway(context.Context, *GetRelayGatewayRequest) (*GetRelayGatewayResponse, error)
+	// List the detected Relay Gateways.
+	ListRelayGateways(context.Context, *ListRelayGatewaysRequest) (*ListRelayGatewaysResponse, error)
+	// Update the given Relay Gateway.
+	UpdateRelayGateway(context.Context, *UpdateRelayGatewayRequest) (*emptypb.Empty, error)
+	// Delete the given Relay Gateway.
+	DeleteRelayGateway(context.Context, *DeleteRelayGatewayRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedGatewayServiceServer()
 }
 
@@ -184,6 +240,18 @@ func (UnimplementedGatewayServiceServer) GetMetrics(context.Context, *GetGateway
 }
 func (UnimplementedGatewayServiceServer) GetDutyCycleMetrics(context.Context, *GetGatewayDutyCycleMetricsRequest) (*GetGatewayDutyCycleMetricsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDutyCycleMetrics not implemented")
+}
+func (UnimplementedGatewayServiceServer) GetRelayGateway(context.Context, *GetRelayGatewayRequest) (*GetRelayGatewayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRelayGateway not implemented")
+}
+func (UnimplementedGatewayServiceServer) ListRelayGateways(context.Context, *ListRelayGatewaysRequest) (*ListRelayGatewaysResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRelayGateways not implemented")
+}
+func (UnimplementedGatewayServiceServer) UpdateRelayGateway(context.Context, *UpdateRelayGatewayRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRelayGateway not implemented")
+}
+func (UnimplementedGatewayServiceServer) DeleteRelayGateway(context.Context, *DeleteRelayGatewayRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRelayGateway not implemented")
 }
 func (UnimplementedGatewayServiceServer) mustEmbedUnimplementedGatewayServiceServer() {}
 
@@ -342,6 +410,78 @@ func _GatewayService_GetDutyCycleMetrics_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GatewayService_GetRelayGateway_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRelayGatewayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).GetRelayGateway(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_GetRelayGateway_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).GetRelayGateway(ctx, req.(*GetRelayGatewayRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GatewayService_ListRelayGateways_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRelayGatewaysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).ListRelayGateways(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_ListRelayGateways_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).ListRelayGateways(ctx, req.(*ListRelayGatewaysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GatewayService_UpdateRelayGateway_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRelayGatewayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).UpdateRelayGateway(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_UpdateRelayGateway_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).UpdateRelayGateway(ctx, req.(*UpdateRelayGatewayRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GatewayService_DeleteRelayGateway_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRelayGatewayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).DeleteRelayGateway(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_DeleteRelayGateway_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).DeleteRelayGateway(ctx, req.(*DeleteRelayGatewayRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GatewayService_ServiceDesc is the grpc.ServiceDesc for GatewayService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -380,6 +520,22 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDutyCycleMetrics",
 			Handler:    _GatewayService_GetDutyCycleMetrics_Handler,
+		},
+		{
+			MethodName: "GetRelayGateway",
+			Handler:    _GatewayService_GetRelayGateway_Handler,
+		},
+		{
+			MethodName: "ListRelayGateways",
+			Handler:    _GatewayService_ListRelayGateways_Handler,
+		},
+		{
+			MethodName: "UpdateRelayGateway",
+			Handler:    _GatewayService_UpdateRelayGateway_Handler,
+		},
+		{
+			MethodName: "DeleteRelayGateway",
+			Handler:    _GatewayService_DeleteRelayGateway_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

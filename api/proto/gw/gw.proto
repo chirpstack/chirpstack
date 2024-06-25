@@ -749,3 +749,29 @@ message ConnState {
 
   State state = 2;
 }
+
+// Gateway Mesh heartbeat (sent periodically by the Relay Gateways).
+message MeshHeartbeat {
+  // Gateway ID (of the Border Gateway).
+  string gateway_id = 1;
+
+  // Relay ID.
+  string relay_id = 2;
+
+  // Timestamp (second precision).
+  google.protobuf.Timestamp time = 3;
+
+  // Relay path.
+  repeated MeshHeartbeatRelayPath relay_path = 4;
+}
+
+message MeshHeartbeatRelayPath {
+  // Relay ID.
+  string relay_id = 1;
+
+  // RSSI.
+  int32 rssi = 2;
+
+  // SNR.
+  int32 snr = 3;
+}
