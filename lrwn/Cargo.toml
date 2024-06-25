@@ -1,33 +1,33 @@
 [package]
-name = "lrwn"
-description = "Library for encoding / decoding LoRaWAN frames."
-homepage = "https://www.chirpstack.io"
-license = "MIT"
-version = "4.9.0-test.1"
-authors = ["Orne Brocaar <info@brocaar.com>"]
-edition = "2018"
-repository = "https://github.com/chirpstack/chirpstack"
+  name = "lrwn"
+  description = "Library for encoding / decoding LoRaWAN frames."
+  homepage = "https://www.chirpstack.io"
+  license = "MIT"
+  version = "4.9.0-test.2"
+  authors = ["Orne Brocaar <info@brocaar.com>"]
+  edition = "2018"
+  repository = "https://github.com/chirpstack/chirpstack"
 
-[package.metadata.docs.rs]
-all-features = true
+  [package.metadata.docs.rs]
+    all-features = true
 
 [dependencies]
-hex = "0.4"
-cmac = { version = "0.7", optional = true }
-aes = { version = "0.8", optional = true }
-serde = { version = "1.0", features = ["derive"], optional = true }
-diesel = { version = "2.1", features = ["postgres_backend"], optional = true }
+  hex = "0.4"
+  cmac = { version = "0.7", optional = true }
+  aes = { version = "0.8", optional = true }
+  serde = { version = "1.0", features = ["derive"], optional = true }
+  diesel = { version = "2.1", features = ["postgres_backend"], optional = true }
 
-# Error handling
-thiserror = "1.0"
-anyhow = "1.0"
+  # Error handling
+  thiserror = "1.0"
+  anyhow = "1.0"
 
-# Misc
-lazy_static = "1.4"
+  # Misc
+  lazy_static = "1.4"
 
 [features]
-default = []
-diesel = ["dep:diesel", "serde"]
-serde = ["dep:serde"]
-crypto = ["dep:cmac", "dep:aes"]
-regions = []
+  default = []
+  diesel = ["dep:diesel", "serde"]
+  serde = ["dep:serde"]
+  crypto = ["dep:cmac", "dep:aes"]
+  regions = []

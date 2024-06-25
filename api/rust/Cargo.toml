@@ -1,33 +1,38 @@
 [package]
-name = "chirpstack_api"
-description = "ChirpStack Protobuf / gRPC API definitions."
-version = "4.9.0-test.1"
-authors = ["Orne Brocaar <info@brocaar.com>"]
-license = "MIT"
-homepage = "https://www.chirpstack.io"
-repository = "https://github.com/chirpstack/chirpstack"
-edition = "2021"
+  name = "chirpstack_api"
+  description = "ChirpStack Protobuf / gRPC API definitions."
+  version = "4.9.0-test.2"
+  authors = ["Orne Brocaar <info@brocaar.com>"]
+  license = "MIT"
+  homepage = "https://www.chirpstack.io"
+  repository = "https://github.com/chirpstack/chirpstack"
+  edition = "2021"
 
 [features]
-default = ["api", "json"]
-api = ["tonic/transport", "tonic-build/transport", "tokio"]
-json = ["pbjson", "pbjson-types", "serde"]
-diesel = ["dep:diesel"]
-internal = []
+  default = ["api", "json"]
+  api = ["tonic/transport", "tonic-build/transport", "tokio"]
+  json = ["pbjson", "pbjson-types", "serde"]
+  diesel = ["dep:diesel"]
+  internal = []
 
 [dependencies]
-prost = "0.12"
-prost-types = "0.12"
-hex = "0.4"
-rand = "0.8"
+  prost = "0.12"
+  prost-types = "0.12"
+  hex = "0.4"
+  rand = "0.8"
 
-tonic = { version = "0.11", features = ["codegen", "prost"], default-features = false, optional = true }
-tokio = { version = "1.37", features = ["macros"], optional = true }
-pbjson = { version = "0.6", optional = true }
-pbjson-types = { version = "0.6", optional = true }
-serde = { version = "1.0", optional = true }
-diesel = { version = "2.1", features = ["postgres_backend"], optional = true }
+  tonic = { version = "0.11", features = [
+    "codegen",
+    "prost",
+  ], default-features = false, optional = true }
+  tokio = { version = "1.37", features = ["macros"], optional = true }
+  pbjson = { version = "0.6", optional = true }
+  pbjson-types = { version = "0.6", optional = true }
+  serde = { version = "1.0", optional = true }
+  diesel = { version = "2.1", features = ["postgres_backend"], optional = true }
 
 [build-dependencies]
-tonic-build = { version = "0.11", features = ["prost"], default-features = false }
-pbjson-build = "0.6"
+  tonic-build = { version = "0.11", features = [
+    "prost",
+  ], default-features = false }
+  pbjson-build = "0.6"

@@ -1,24 +1,29 @@
 [package]
-name = "backend"
-version = "4.9.0-test.1"
-authors = ["Orne Brocaar <info@brocaar.com>"]
-edition = "2018"
-publish = false
+  name = "backend"
+  version = "4.9.0-test.2"
+  authors = ["Orne Brocaar <info@brocaar.com>"]
+  edition = "2018"
+  publish = false
 
 [dependencies]
-serde = { version = "1.0", features = ["derive", "rc"] }
-serde_json = "1.0"
-thiserror = "1.0"
-anyhow = "1.0"
-tracing = "0.1"
-hex = "0.4"
-rand = "0.8"
-aes-kw = "0.2"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
-chrono = { version = "0.4", features = ["serde"] }
-tokio = { version = "1.36", features = ["macros" ] }
-chirpstack_api = { path = "../api/rust", default-features = false, features = ["json"] }
+  serde = { version = "1.0", features = ["derive", "rc"] }
+  serde_json = "1.0"
+  thiserror = "1.0"
+  anyhow = "1.0"
+  tracing = "0.1"
+  hex = "0.4"
+  rand = "0.8"
+  aes-kw = "0.2"
+  reqwest = { version = "0.12", features = [
+    "json",
+    "rustls-tls",
+  ], default-features = false }
+  chrono = { version = "0.4", features = ["serde"] }
+  tokio = { version = "1.36", features = ["macros"] }
+  chirpstack_api = { path = "../api/rust", default-features = false, features = [
+    "json",
+  ] }
 
 # Development and testing
 [dev-dependencies]
-httpmock = "0.7.0"
+  httpmock = "0.7.0"
