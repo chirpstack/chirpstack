@@ -622,7 +622,7 @@ pub fn run() {
     #
     # When set, additional OpenID Connect scopes are used during login. Default scopes
     # are "email" and "profile".
-    enabled_regions=[
+    additional_scopes=[
       {{#each user_authentication.openid_connect.additional_scopes}}
         "{{this}}",
       {{/each}}
@@ -709,7 +709,7 @@ pub fn run() {
     #
     # When set, additional oAuth2 scopes are used during login. Default scope
     # is "email".
-    enabled_regions=[
+    additional_scopes=[
       {{#each user_authentication.openid_connect.additional_scopes}}
         "{{this}}",
       {{/each}}
