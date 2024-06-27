@@ -409,7 +409,7 @@ impl Default for UserAuthentication {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct OpenIdConnect {
     pub registration_enabled: bool,
@@ -422,9 +422,28 @@ pub struct OpenIdConnect {
     pub login_redirect: bool,
     pub login_label: String,
     pub assume_email_verified: bool,
+    pub additional_scopes: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+impl Default for OpenIdConnect {
+    fn default() -> Self {
+        OpenIdConnect {
+            registration_enabled: false,
+            registration_callback_url: "".to_string(),
+            provider_url: "".to_string(),
+            client_id: "".to_string(),
+            client_secret: "".to_string(),
+            redirect_url: "".to_string(),
+            logout_url: "".to_string(),
+            login_redirect: false,
+            login_label: "".to_string(),
+            assume_email_verified: false,
+            additional_scopes: vec![],
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct OAuth2 {
     pub registration_enabled: bool,
@@ -440,6 +459,28 @@ pub struct OAuth2 {
     pub login_redirect: bool,
     pub login_label: String,
     pub assume_email_verified: bool,
+    pub additional_scopes: Vec<String>,
+}
+
+impl Default for OAuth2 {
+    fn default() -> Self {
+        OAuth2 {
+            registration_enabled: false,
+            registration_callback_url: "".to_string(),
+            client_id: "".to_string(),
+            client_secret: "".to_string(),
+            auth_url: "".to_string(),
+            token_url: "".to_string(),
+            redirect_url: "".to_string(),
+            userinfo_url: "".to_string(),
+            provider: "".to_string(),
+            logout_url: "".to_string(),
+            login_redirect: false,
+            login_label: "".to_string(),
+            assume_email_verified: false,
+            additional_scopes: vec![],
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
