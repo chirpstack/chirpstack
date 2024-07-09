@@ -2437,22 +2437,8 @@ impl PowerLevel {
     }
 
     pub fn to_bytes(&self) -> [u8; 2] {
-        let mut wor_snr = self.wor_snr;
-        let mut wor_rssi = self.wor_rssi;
-
-        // Set to closest possible value.
-        if wor_snr < -20 {
-            wor_snr = -20;
-        }
-        if wor_snr > 11 {
-            wor_snr = 11;
-        }
-        if wor_rssi > -15 {
-            wor_rssi = -15;
-        }
-        if wor_rssi < -142 {
-            wor_rssi = -142;
-        }
+        let wor_snr = self.wor_snr.clamp(-12, 11);
+        let wor_rssi = self.wor_rssi.clamp(-142, -15);
 
         // Encode values
         let wor_snr = (wor_snr + 20) as u8;
