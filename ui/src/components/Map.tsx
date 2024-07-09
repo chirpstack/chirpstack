@@ -1,9 +1,11 @@
-import React, { useEffect, PropsWithChildren } from "react";
+import React, { useEffect, PropsWithChildren, useState } from "react";
 
 import L, { LatLngTuple, FitBoundsOptions } from "leaflet";
 import "leaflet.awesome-markers";
 import { MarkerProps as LMarkerProps, useMap } from "react-leaflet";
 import { MapContainer, Marker as LMarker, TileLayer } from "react-leaflet";
+
+import InternalStore from "../stores/InternalStore";
 
 interface IProps {
   height: number;
@@ -33,6 +35,21 @@ function MapControl(props: { center?: [number, number]; bounds?: LatLngTuple[]; 
 }
 
 function Map(props: PropsWithChildren<IProps>) {
+  const [tileserver, setTileserver] = useState<string>('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+
+  useEffect(() => {
+    const updateTileserver = () => {
+      InternalStore.settings((v) => setTileserver(v.getTileserverUrl()));
+    };
+
+    InternalStore.on("change", updateTileserver);
+    updateTileserver();
+
+    return () => {
+      InternalStore.removeListener("change", updateTileserver);
+    };
+  }, [props]);
+
   const style = {
     height: props.height,
   };
@@ -48,7 +65,7 @@ function Map(props: PropsWithChildren<IProps>) {
     >
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        url={tileserver}
       />
       {props.children}
       <MapControl bounds={props.bounds} boundsOptions={props.boundsOptions} center={props.center} />
