@@ -924,6 +924,13 @@ pub fn run() {
   label="{{ this.label }}"
   kek="{{ this.kek }}"
 {{/each}}
+
+# General configuration.
+[general]
+  # Tileserver URL
+  #
+  # Configure the Tileserver used in the UI
+  tileserver_url="{{general.tileserver_url}}"
 "#;
 
     let mut reg = Handlebars::new();

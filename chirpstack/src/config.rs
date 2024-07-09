@@ -31,6 +31,7 @@ pub struct Configuration {
     pub roaming: Roaming,
     pub keks: Vec<Kek>,
     pub regions: Vec<Region>,
+    pub general: General,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -709,6 +710,20 @@ impl Default for GatewayChannel {
             modulation: GatewayChannelModulation::LORA,
             spreading_factors: vec![],
             datarate: 0,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct General {
+    pub tileserver_url: String
+}
+
+impl Default for General {
+    fn default() -> Self {
+        General {
+            tileserver_url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png".into()
         }
     }
 }

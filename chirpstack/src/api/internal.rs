@@ -424,6 +424,7 @@ impl InternalService for Internal {
                 login_label: conf.user_authentication.oauth2.login_label.clone(),
                 logout_url: conf.user_authentication.oauth2.logout_url.clone(),
             }),
+            tileserver_url: conf.general.tileserver_url
         }))
     }
 
