@@ -35,18 +35,24 @@ function MapControl(props: { center?: [number, number]; bounds?: LatLngTuple[]; 
 }
 
 function Map(props: PropsWithChildren<IProps>) {
-  const [tileserver, setTileserver] = useState<string>('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+  const [tileserver, setTileserver] = useState<string>("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+  const [attribution, setAttribution] = useState<string>(
+    '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  );
 
   useEffect(() => {
-    const updateTileserver = () => {
-      InternalStore.settings((v) => setTileserver(v.getTileserverUrl()));
+    const updateMapProperties = () => {
+      InternalStore.settings(v => {
+        setTileserver(v.getTileserverUrl());
+        setAttribution(v.getMapAttribution());
+      });
     };
 
-    InternalStore.on("change", updateTileserver);
-    updateTileserver();
+    InternalStore.on("change", updateMapProperties);
+    updateMapProperties();
 
     return () => {
-      InternalStore.removeListener("change", updateTileserver);
+      InternalStore.removeListener("change", updateMapProperties);
     };
   }, [props]);
 
@@ -63,10 +69,7 @@ function Map(props: PropsWithChildren<IProps>) {
       scrollWheelZoom={false}
       style={style}
     >
-      <TileLayer
-        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-        url={tileserver}
-      />
+      <TileLayer attribution={attribution} url={tileserver} />
       {props.children}
       <MapControl bounds={props.bounds} boundsOptions={props.boundsOptions} center={props.center} />
     </MapContainer>

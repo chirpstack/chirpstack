@@ -224,8 +224,11 @@ message SettingsResponse {
   // OAuth2 settings.
   OAuth2 oauth2 = 2;
 
-  // Tileserver
+  // Tileserver URL
   string tileserver_url = 3;
+
+  // Map Attribution
+  string map_attribution = 4;
 }
 
 message OpenIdConnect {

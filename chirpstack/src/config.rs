@@ -31,7 +31,7 @@ pub struct Configuration {
     pub roaming: Roaming,
     pub keks: Vec<Kek>,
     pub regions: Vec<Region>,
-    pub general: General,
+    pub ui: UI,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -716,14 +716,17 @@ impl Default for GatewayChannel {
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
-pub struct General {
-    pub tileserver_url: String
+pub struct UI {
+    pub tileserver_url: String,
+    pub map_attribution: String,
 }
 
-impl Default for General {
+impl Default for UI {
     fn default() -> Self {
-        General {
-            tileserver_url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png".into()
+        UI {
+            tileserver_url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png".into(),
+            map_attribution:
+                "&copy; <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors".into(),
         }
     }
 }

@@ -925,12 +925,17 @@ pub fn run() {
   kek="{{ this.kek }}"
 {{/each}}
 
-# General configuration.
-[general]
+# UI configuration.
+[ui]
   # Tileserver URL
   #
   # Configure the Tileserver used in the UI
-  tileserver_url="{{general.tileserver_url}}"
+  tileserver_url="{{ui.tileserver_url}}"
+
+  # Map Attribution
+  #
+  # Configure the Attribution shown in the map
+  map_attribution="{{ui.map_attribution}}"
 "#;
 
     let mut reg = Handlebars::new();
