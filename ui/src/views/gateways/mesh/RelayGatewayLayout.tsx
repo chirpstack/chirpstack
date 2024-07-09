@@ -87,7 +87,7 @@ function RelayGatewayLayout(props: IProps) {
         title={relayGateway.getName()}
         subTitle={`relay id: ${relayGateway.getRelayId()}`}
         extra={[
-          <Admin tenantId={props.tenant.getId()} isGatewayAdmin>
+          <Admin tenantId={props.tenant.getId()} isGatewayAdmin={isGatewayAdmin}>
             <DeleteConfirm confirm={relayGateway.getName()} typ="relay gateway" onConfirm={deleteRelayGateway}>
               <Button danger type="primary">
                 Delete Relay Gateway
