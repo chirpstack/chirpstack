@@ -32,6 +32,7 @@ import { HandleError } from "./helpers";
 
 class InternalStore extends EventEmitter {
   client: InternalServiceClient;
+  cachedSettings?: SettingsResponse;
 
   constructor() {
     super();
@@ -55,7 +56,7 @@ class InternalStore extends EventEmitter {
   };
 
   deleteApiKey = (req: DeleteApiKeyRequest, callbackFunc: () => void) => {
-    this.client.deleteApiKey(req, SessionStore.getMetadata(), (err, resp) => {
+    this.client.deleteApiKey(req, SessionStore.getMetadata(), (err) => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -92,7 +93,7 @@ class InternalStore extends EventEmitter {
         callbackFunc(resp);
       });
 
-      stream = stream.on("end", function () {
+      stream = stream.on("end", function() {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });
@@ -119,7 +120,7 @@ class InternalStore extends EventEmitter {
         callbackFunc(resp);
       });
 
-      stream = stream.on("end", function () {
+      stream = stream.on("end", function() {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });
@@ -145,7 +146,7 @@ class InternalStore extends EventEmitter {
         callbackFunc(resp);
       });
 
-      stream = stream.on("end", function () {
+      stream = stream.on("end", function() {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });
@@ -183,12 +184,18 @@ class InternalStore extends EventEmitter {
   };
 
   settings = (callbackFunc: (resp: SettingsResponse) => void) => {
+    if (this.cachedSettings !== undefined) {
+      callbackFunc(this.cachedSettings);
+      return;
+    }
+
     this.client.settings(new google_protobuf_empty_pb.Empty(), {}, (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;
       }
 
+      this.cachedSettings = resp;
       callbackFunc(resp);
     });
   };

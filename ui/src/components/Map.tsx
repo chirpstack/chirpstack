@@ -35,10 +35,8 @@ function MapControl(props: { center?: [number, number]; bounds?: LatLngTuple[]; 
 }
 
 function Map(props: PropsWithChildren<IProps>) {
-  const [tileserver, setTileserver] = useState<string>("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
-  const [attribution, setAttribution] = useState<string>(
-    '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-  );
+  const [tileserver, setTileserver] = useState<string>("");
+  const [attribution, setAttribution] = useState<string>("");
 
   useEffect(() => {
     const updateMapProperties = () => {
@@ -59,6 +57,10 @@ function Map(props: PropsWithChildren<IProps>) {
   const style = {
     height: props.height,
   };
+
+  if (attribution === "" || tileserver === "") {
+    return null;
+  }
 
   return (
     <MapContainer
