@@ -927,14 +927,17 @@ pub fn run() {
 
 # UI configuration.
 [ui]
-  # Tileserver URL
+  # Tileserver URL.
   #
-  # Configure the Tileserver used in the UI
+  # This configures the tileserver used in the UI to display maps.
+  # The default value uses the OSM tiles.
   tileserver_url="{{ui.tileserver_url}}"
 
-  # Map Attribution
+  # Map attribution.
   #
-  # Configure the Attribution shown in the map
+  # This configures the map attribution. The default attribution relates to the
+  # default tileserver_url (OSM). If you configure a different tile-server, you
+  # might need to update the map_attribution.
   map_attribution="{{ui.map_attribution}}"
 "#;
 
