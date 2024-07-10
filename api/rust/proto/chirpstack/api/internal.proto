@@ -224,10 +224,10 @@ message SettingsResponse {
   // OAuth2 settings.
   OAuth2 oauth2 = 2;
 
-  // Tileserver URL
+  // Tileserver URL.
   string tileserver_url = 3;
 
-  // Map Attribution
+  // Map attribution.
   string map_attribution = 4;
 }
 
