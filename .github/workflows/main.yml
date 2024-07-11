@@ -16,7 +16,8 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
       - 
         name: Install Nix
         uses: cachix/install-nix-action@v20
@@ -24,7 +25,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-22.11
       -
         name: Cargo cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -50,7 +51,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - 
         name: Install Nix
         uses: cachix/install-nix-action@v20
@@ -58,7 +59,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-22.11
       -
         name: Cargo cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
