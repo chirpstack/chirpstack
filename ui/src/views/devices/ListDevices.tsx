@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-import moment from "moment";
+import { format } from "date-fns";
 import { Space, Button, Dropdown, Menu, Modal, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -75,7 +75,7 @@ function ListDevices(props: IProps) {
         if (record.lastSeenAt !== undefined) {
           const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
-          return moment(ts).format("YYYY-MM-DD HH:mm:ss");
+          return format(ts, "YYYY-MM-DD HH:mm:ss");
         }
         return "Never";
       },

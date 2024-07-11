@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 import moment from "moment";
+import { format } from "date-fns";
 import { Descriptions, Space, Card, Row, Col } from "antd";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
@@ -89,7 +90,7 @@ function GatewayDashboard(props: IProps) {
 
   let lastSeenAt: string = "Never";
   if (props.lastSeenAt !== undefined) {
-    lastSeenAt = moment(props.lastSeenAt).format("YYYY-MM-DD HH:mm:ss");
+    lastSeenAt = format(props.lastSeenAt, "YYYY-MM-DD HH:mm:ss");
   }
 
   return (

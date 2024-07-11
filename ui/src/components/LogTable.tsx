@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import moment from "moment";
+import { format } from "date-fns";
 import { JSONTree as JSONTreeOriginal } from "react-json-tree";
 import fileDownload from "js-file-download";
 
@@ -25,7 +25,7 @@ function LogTable(props: IProps) {
   const onDrawerOpen = (time: { seconds: number } | undefined, body: string) => {
     const ts = new Date(0);
     ts.setUTCSeconds(time!.seconds);
-    const drawerTitle = moment(ts).format("YYYY-MM-DD HH:mm:ss");
+    const drawerTitle = format(ts, "YYYY-MM-DD HH:mm:ss");
 
     return () => {
       setBody(body);
@@ -106,7 +106,7 @@ function LogTable(props: IProps) {
             render: (text, obj) => {
               const ts = new Date(0);
               ts.setUTCSeconds(obj.time!.seconds);
-              return moment(ts).format("YYYY-MM-DD HH:mm:ss");
+              return format(ts, "YYYY-MM-DD HH:mm:ss");
             },
           },
           {

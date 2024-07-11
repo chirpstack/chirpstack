@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 
+import { format } from "date-fns";
 import moment from "moment";
 import { ReloadOutlined } from "@ant-design/icons";
 import type { RadioChangeEvent } from "antd";
@@ -153,7 +154,7 @@ function DeviceDashboard(props: IProps) {
 
   let lastSeenAt = "Never";
   if (props.lastSeenAt !== undefined) {
-    lastSeenAt = moment(props.lastSeenAt).format("YYYY-MM-DD HH:mm:ss");
+    lastSeenAt = format(props.lastSeenAt, "YYYY-MM-DD HH:mm:ss");
   }
 
   const loading = !deviceLinkMetricsLoaded || !deviceMetrics;
