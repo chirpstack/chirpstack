@@ -7,11 +7,10 @@ use openidconnect::core::{
     CoreClient, CoreGenderClaim, CoreIdTokenClaims, CoreIdTokenVerifier, CoreProviderMetadata,
     CoreResponseType,
 };
-use openidconnect::reqwest::async_http_client;
-use openidconnect::{AdditionalClaims, UserInfoClaims};
+use openidconnect::{reqwest, AdditionalClaims, UserInfoClaims};
 use openidconnect::{
-    AuthenticationFlow, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
-    OAuth2TokenResponse, RedirectUrl, Scope,
+    AuthenticationFlow, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EndpointMaybeSet,
+    EndpointNotSet, EndpointSet, IssuerUrl, Nonce, OAuth2TokenResponse, RedirectUrl, Scope,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -23,6 +22,15 @@ use crate::helpers::errors::PrintFullError;
 use crate::storage::{get_async_redis_conn, redis_key};
 
 pub type User = UserInfoClaims<CustomClaims, CoreGenderClaim>;
+
+type Client = CoreClient<
+    EndpointSet,
+    EndpointNotSet,
+    EndpointNotSet,
+    EndpointNotSet,
+    EndpointMaybeSet,
+    EndpointMaybeSet,
+>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CustomClaims {
@@ -90,9 +98,13 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
     let nonce = get_nonce(&state).await?;
     let client = get_client().await?;
 
+    let http_client = reqwest::ClientBuilder::new()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()?;
+
     let token_response = client
-        .exchange_code(AuthorizationCode::new(code.to_string()))
-        .request_async(async_http_client)
+        .exchange_code(AuthorizationCode::new(code.to_string()))?
+        .request_async(&http_client)
         .await?;
 
     let id_token_verifier: CoreIdTokenVerifier = client.id_token_verifier();
@@ -106,39 +118,11 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
     let userinfo_claims: User = client
         .user_info(token_response.access_token().to_owned(), None)
         .context("No user info endpoint")?
-        .request_async(async_http_client)
+        .request_async(&http_client)
         .await
         .context("Failed requesting user info")?;
 
     Ok(userinfo_claims)
-}
-
-async fn get_client() -> Result<CoreClient> {
-    let conf = config::get();
-
-    if conf.user_authentication.enabled != "openid_connect" {
-        return Err(anyhow!("OIDC is not enabled"));
-    }
-
-    let client_id = ClientId::new(conf.user_authentication.openid_connect.client_id.clone());
-    let client_secret = ClientSecret::new(
-        conf.user_authentication
-            .openid_connect
-            .client_secret
-            .clone(),
-    );
-    let provider_url =
-        IssuerUrl::new(conf.user_authentication.openid_connect.provider_url.clone())?;
-    let redirect_url =
-        RedirectUrl::new(conf.user_authentication.openid_connect.redirect_url.clone())?;
-
-    let provider_metadata =
-        CoreProviderMetadata::discover_async(provider_url, async_http_client).await?;
-    let client =
-        CoreClient::from_provider_metadata(provider_metadata, client_id, Some(client_secret))
-            .set_redirect_uri(redirect_url);
-
-    Ok(client)
 }
 
 async fn store_nonce(state: &CsrfToken, nonce: &Nonce) -> Result<()> {
@@ -166,4 +150,38 @@ async fn get_nonce(state: &CsrfToken) -> Result<Nonce> {
         .context("Get nonce")?;
 
     Ok(Nonce::new(v))
+}
+
+async fn get_client() -> Result<Client> {
+    let conf = config::get();
+
+    if conf.user_authentication.enabled != "openid_connect" {
+        return Err(anyhow!("OIDC is not enabled"));
+    }
+
+    let http_client = reqwest::ClientBuilder::new()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()?;
+
+    let provider_metadata = CoreProviderMetadata::discover_async(
+        IssuerUrl::new(conf.user_authentication.openid_connect.provider_url.clone())?,
+        &http_client,
+    )
+    .await?;
+
+    let client = CoreClient::from_provider_metadata(
+        provider_metadata,
+        ClientId::new(conf.user_authentication.openid_connect.client_id.clone()),
+        Some(ClientSecret::new(
+            conf.user_authentication
+                .openid_connect
+                .client_secret
+                .clone(),
+        )),
+    )
+    .set_redirect_uri(RedirectUrl::new(
+        conf.user_authentication.openid_connect.redirect_url.clone(),
+    )?);
+
+    Ok(client)
 }

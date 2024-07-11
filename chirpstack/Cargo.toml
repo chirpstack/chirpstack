@@ -126,8 +126,10 @@
   elliptic-curve = { version = "0.13", features = ["pem"] }
   p256 = "0.13"
   rcgen = { version = "0.13.1", features = ["x509-parser"] }
-  openidconnect = { version = "3.5", features = ["accept-rfc3339-timestamps"] }
   oauth2 = "5.0.0-alpha.4"
+  openidconnect = { version = "4.0.0-alpha.2", features = [
+    "accept-rfc3339-timestamps",
+  ] }
 
   # MQTT
   rumqttc = { version = "0.24", features = ["url"] }
