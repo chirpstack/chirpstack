@@ -4,19 +4,15 @@ import { Route, Routes, useParams, Link, useNavigate, useLocation } from "react-
 import { Space, Breadcrumb, Card, Button, Menu } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import {
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type {
   DeviceProfile,
-  GetDeviceProfileRequest,
   GetDeviceProfileResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import {
-  Device,
-  GetDeviceRequest,
-  GetDeviceResponse,
-  DeleteDeviceRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { GetDeviceProfileRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { Device, GetDeviceResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { GetDeviceRequest, DeleteDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";

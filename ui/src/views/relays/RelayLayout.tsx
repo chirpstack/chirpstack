@@ -4,9 +4,10 @@ import { Route, Routes, useParams, Link } from "react-router-dom";
 import { Space, Breadcrumb, Card, Menu } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Device, GetDeviceRequest, GetDeviceResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Device, GetDeviceResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { GetDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import DeviceStore from "../../stores/DeviceStore";
 import ListRelayDevices from "./ListRelayDevices";

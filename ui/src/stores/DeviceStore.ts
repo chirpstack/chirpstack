@@ -2,7 +2,7 @@ import { notification } from "antd";
 import { EventEmitter } from "events";
 
 import { DeviceServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/device_grpc_web_pb";
-import {
+import type {
   CreateDeviceRequest,
   GetDeviceRequest,
   GetDeviceResponse,

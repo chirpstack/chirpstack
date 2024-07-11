@@ -4,11 +4,13 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import { Space, Breadcrumb, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import {
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type {
   DeviceProfile,
-  GetDeviceProfileRequest,
   GetDeviceProfileResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import {
+  GetDeviceProfileRequest,
   UpdateDeviceProfileRequest,
   DeleteDeviceProfileRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";

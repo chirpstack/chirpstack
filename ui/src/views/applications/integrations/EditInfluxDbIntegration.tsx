@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   InfluxDbIntegration,
-  GetInfluxDbIntegrationRequest,
   GetInfluxDbIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetInfluxDbIntegrationRequest,
   UpdateInfluxDbIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 

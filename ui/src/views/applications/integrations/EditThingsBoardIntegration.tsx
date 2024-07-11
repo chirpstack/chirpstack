@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   ThingsBoardIntegration,
-  GetThingsBoardIntegrationRequest,
   GetThingsBoardIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetThingsBoardIntegrationRequest,
   UpdateThingsBoardIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 

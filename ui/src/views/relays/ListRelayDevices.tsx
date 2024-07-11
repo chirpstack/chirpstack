@@ -1,17 +1,14 @@
 import { useState } from "react";
 
 import { Space, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
-import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import {
-  ListRelayDevicesRequest,
-  ListRelayDevicesResponse,
-  RelayDeviceListItem,
-  RemoveRelayDeviceRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+import type { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { ListRelayDevicesResponse, RelayDeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+import { ListRelayDevicesRequest, RemoveRelayDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import RelayStore from "../../stores/RelayStore";
 
 interface IProps {

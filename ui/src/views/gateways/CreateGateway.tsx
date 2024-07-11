@@ -4,7 +4,7 @@ import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
 import { Gateway, CreateGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import GatewayForm from "./GatewayForm";
 import GatewayStore from "../../stores/GatewayStore";

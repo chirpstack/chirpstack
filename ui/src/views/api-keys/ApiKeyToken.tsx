@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 import { Input, Typography, Button, Space } from "antd";
 
-import { CreateApiKeyResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { CreateApiKeyResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 interface IProps {
   createApiKeyResponse: CreateApiKeyResponse;

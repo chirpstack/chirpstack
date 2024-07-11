@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-import { RelayGateway, UpdateRelayGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { RelayGateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { UpdateRelayGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import RelayGatewayForm from "./RelayGatewayForm";
 import GatewayStore from "../../../stores/GatewayStore";

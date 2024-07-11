@@ -3,27 +3,22 @@ import { Link } from "react-router-dom";
 
 import moment from "moment";
 import { Space, Breadcrumb, Button, Badge, Menu, Modal, TreeSelect, Dropdown } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  ListGatewaysRequest,
-  ListGatewaysResponse,
-  GatewayListItem,
-  GatewayState,
-} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
-import {
-  ListApplicationsRequest,
-  ListApplicationsResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { ListGatewaysResponse, GatewayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { ListGatewaysRequest, GatewayState } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { ListApplicationsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { ListApplicationsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { ListMulticastGroupsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import {
   ListMulticastGroupsRequest,
-  ListMulticastGroupsResponse,
   AddGatewayToMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import GatewayStore from "../../stores/GatewayStore";
 import ApplicationStore from "../../stores/ApplicationStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
@@ -33,9 +28,16 @@ interface IProps {
   tenant: Tenant;
 }
 
+interface MulticastGroup {
+  title: string;
+  value: string;
+  disabled: boolean;
+  children: { title: string; value: string }[];
+}
+
 function ListGateways(props: IProps) {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
-  const [multicastGroups, setMulticastGroups] = useState<any[]>([]);
+  const [multicastGroups, setMulticastGroups] = useState<MulticastGroup[]>([]);
   const [mgModalVisible, setMgModalVisible] = useState<boolean>(false);
   const [mgSelected, setMgSelected] = useState<string>("");
 

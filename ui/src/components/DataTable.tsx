@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 
 import { Table } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
 import SessionStore from "../stores/SessionStore";
 
 export type GetPageCallbackFunc = (totalCount: number, rows: object[]) => void;
 
 interface IProps {
-  columns: ColumnsType<any>;
+  columns: ColumnsType<object>;
   getPage: (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => void;
   onRowsSelectChange?: (ids: string[]) => void;
   rowKey: string;
-  refreshKey?: any;
+  refreshKey?: unknown;
   noPagination?: boolean;
 }
 

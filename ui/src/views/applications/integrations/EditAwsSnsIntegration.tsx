@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   AwsSnsIntegration,
-  GetAwsSnsIntegrationRequest,
   GetAwsSnsIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetAwsSnsIntegrationRequest,
   UpdateAwsSnsIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 
-import { ListTenantsRequest, ListTenantsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { ListTenantsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { ListTenantsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import TenantStore from "../../stores/TenantStore";
 import SessionStore from "../../stores/SessionStore";

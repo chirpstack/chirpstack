@@ -2,11 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
-  Application,
-  HttpIntegration,
-  CreateHttpIntegrationRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { HttpIntegration, CreateHttpIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import HttpIntegrationForm from "./HttpIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";

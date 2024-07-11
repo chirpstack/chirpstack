@@ -4,12 +4,14 @@ import moment from "moment";
 import { Descriptions, Space, Card, Row, Col } from "antd";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
-import {
+import type {
   Gateway,
-  GetGatewayMetricsRequest,
   GetGatewayMetricsResponse,
-  GetGatewayDutyCycleMetricsRequest,
   GetGatewayDutyCycleMetricsResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import {
+  GetGatewayMetricsRequest,
+  GetGatewayDutyCycleMetricsRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 

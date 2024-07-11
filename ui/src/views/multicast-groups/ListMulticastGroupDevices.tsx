@@ -1,20 +1,16 @@
 import { useState } from "react";
 
 import { Space, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
-import {
-  ListDevicesRequest,
-  ListDevicesResponse,
-  DeviceListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { ListDevicesResponse, DeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { ListDevicesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
-import {
-  MulticastGroup,
-  RemoveDeviceFromMulticastGroupRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { MulticastGroup } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import { RemoveDeviceFromMulticastGroupRequest } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 

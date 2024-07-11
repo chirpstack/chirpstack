@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.6",
+    "@types/codemirror": "^5.60.15",
     "@types/events": "^3.0.3",
     "@types/leaflet": "^1.9.12",
     "@types/leaflet.awesome-markers": "^2.0.28",

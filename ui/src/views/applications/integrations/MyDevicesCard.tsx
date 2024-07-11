@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Col, Card, Popconfirm } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-import { Application, DeleteMyDevicesIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { DeleteMyDevicesIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationStore from "../../../stores/ApplicationStore";
 
@@ -19,7 +20,7 @@ function MyDevicesCard(props: IProps) {
     ApplicationStore.deleteMyDevicesIntegration(req, () => {});
   };
 
-  let actions: any[] = [];
+  let actions: JSX.Element[] = [];
 
   if (props.add) {
     actions = [

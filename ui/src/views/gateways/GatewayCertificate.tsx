@@ -3,11 +3,11 @@ import { useState } from "react";
 import moment from "moment";
 import { Card, Button, Form, Input } from "antd";
 
-import {
+import type {
   Gateway,
-  GenerateGatewayClientCertificateRequest,
   GenerateGatewayClientCertificateResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { GenerateGatewayClientCertificateRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import GatewayStore from "../../stores/GatewayStore";
 
 interface IProps {

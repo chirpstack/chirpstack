@@ -8,7 +8,7 @@ import {
   MulticastGroupType,
   MulticastGroupSchedulingType,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
-import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import { getEnumName, onFinishFailed } from "../helpers";
 import InternalStore from "../../stores/InternalStore";

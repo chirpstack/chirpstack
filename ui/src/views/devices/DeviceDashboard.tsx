@@ -3,18 +3,21 @@ import { Link } from "react-router-dom";
 
 import moment from "moment";
 import { ReloadOutlined } from "@ant-design/icons";
-import { Descriptions, Space, Card, Statistic, Row, Col, Tabs, Radio, RadioChangeEvent, Button, Spin } from "antd";
+import type { RadioChangeEvent } from "antd";
+import { Descriptions, Space, Card, Statistic, Row, Col, Tabs, Radio, Button, Spin } from "antd";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
-import {
+import type {
   Device,
-  GetDeviceMetricsRequest,
   GetDeviceMetricsResponse,
-  GetDeviceLinkMetricsRequest,
   GetDeviceLinkMetricsResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import {
+  GetDeviceMetricsRequest,
+  GetDeviceLinkMetricsRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import DeviceStore from "../../stores/DeviceStore";
 import MetricChart from "../../components/MetricChart";

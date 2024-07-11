@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 
-import { Gateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
-import { StreamGatewayFramesRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { Gateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { StreamGatewayFramesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import InternalStore from "../../stores/InternalStore";
 import LogTable from "../../components/LogTable";

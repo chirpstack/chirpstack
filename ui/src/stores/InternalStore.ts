@@ -1,10 +1,10 @@
-import * as grpcWeb from "grpc-web";
+import type * as grpcWeb from "grpc-web";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 
 import { notification } from "antd";
 import { EventEmitter } from "events";
 import { InternalServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/internal_grpc_web_pb";
-import {
+import type {
   CreateApiKeyRequest,
   CreateApiKeyResponse,
   DeleteApiKeyRequest,

@@ -1,9 +1,11 @@
+import type { ReactElement } from "react";
 import React, { useState } from "react";
+import type { RouterProps } from "react-router-dom";
 import { Router, Routes, Route } from "react-router-dom";
 
 import { Layout } from "antd";
 
-import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
 import Header from "./components/Header";
 import Menu from "./components/Menu";
@@ -42,7 +44,12 @@ import SessionStore from "./stores/SessionStore";
 
 import history from "./history";
 
-const CustomRouter = ({ history, ...props }: any) => {
+interface IProps extends Omit<RouterProps, "location" | "navigationType" | "navigator"> {
+  history: typeof history;
+  children: (ReactElement | undefined)[];
+}
+
+const CustomRouter = ({ history, ...props }: IProps) => {
   const [state, setState] = useState({
     action: history.action,
     location: history.location,

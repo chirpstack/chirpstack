@@ -7,7 +7,7 @@ import fileDownload from "js-file-download";
 import { Tag, Drawer, Button, Table, Spin, Space } from "antd";
 import { ZoomInOutlined } from "@ant-design/icons";
 
-import { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 interface IProps {
   logs: LogItem[];
@@ -15,16 +15,16 @@ interface IProps {
 
 function LogTable(props: IProps) {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
-  const [body, setBody] = useState<any>(null);
-  const [drawerTitle, setDrawerTitle] = useState<any>(null);
+  const [body, setBody] = useState<string | null>(null);
+  const [drawerTitle, setDrawerTitle] = useState<string | null>(null);
 
   const onDrawerClose = () => {
     setDrawerOpen(false);
   };
 
-  const onDrawerOpen = (time: any, body: any) => {
+  const onDrawerOpen = (time: { seconds: number } | undefined, body: string) => {
     const ts = new Date(0);
-    ts.setUTCSeconds(time.seconds);
+    ts.setUTCSeconds(time!.seconds);
     const drawerTitle = moment(ts).format("YYYY-MM-DD HH:mm:ss");
 
     return () => {
@@ -35,7 +35,7 @@ function LogTable(props: IProps) {
   };
 
   const downloadSingleFrame = () => {
-    fileDownload(JSON.stringify(JSON.parse(body), null, 4), "single-log.json", "application/json");
+    fileDownload(JSON.stringify(JSON.parse(body!), null, 4), "single-log.json", "application/json");
   };
 
   const downloadFrames = () => {
@@ -44,7 +44,7 @@ function LogTable(props: IProps) {
   };
 
   const items = props.logs.map((l, i) => l.toObject());
-  const bodyJson = JSON.parse(body);
+  const bodyJson = JSON.parse(body!);
 
   const theme = {
     scheme: "google",

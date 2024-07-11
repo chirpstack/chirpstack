@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { ApiKey, CreateApiKeyRequest, CreateApiKeyResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { CreateApiKeyResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { ApiKey, CreateApiKeyRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import ApiKeyForm from "./ApiKeyForm";
 import ApiKeyToken from "./ApiKeyToken";

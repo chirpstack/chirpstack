@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 
 import { Row } from "antd";
 
-import {
+import type {
   Application,
-  ListIntegrationsRequest,
   ListIntegrationsResponse,
   IntegrationListItem,
-  IntegrationKind,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { ListIntegrationsRequest, IntegrationKind } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationStore from "../../stores/ApplicationStore";
 import HttpCard from "./integrations/HttpCard";
@@ -28,8 +27,8 @@ interface IProps {
 }
 
 function ListIntegrations(props: IProps) {
-  const [configured, setConfigured] = useState<any[]>([]);
-  const [available, setAvailable] = useState<any[]>([]);
+  const [configured, setConfigured] = useState<JSX.Element[]>([]);
+  const [available, setAvailable] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
     const loadIntegrations = () => {
@@ -37,8 +36,8 @@ function ListIntegrations(props: IProps) {
       req.setApplicationId(props.application.getId());
 
       ApplicationStore.listIntegrations(req, (resp: ListIntegrationsResponse) => {
-        const configured: any[] = [];
-        const available: any[] = [];
+        const configured: JSX.Element[] = [];
+        const available: JSX.Element[] = [];
 
         const includes = (integrations: IntegrationListItem[], kind: IntegrationKind) => {
           for (const x of integrations) {

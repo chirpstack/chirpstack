@@ -2,18 +2,18 @@ import { Link } from "react-router-dom";
 
 import moment from "moment";
 import { Space, Breadcrumb, Badge } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  ListRelayGatewaysRequest,
+import type {
   ListRelayGatewaysResponse,
   RelayGatewayListItem,
-  GatewayState,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { ListRelayGatewaysRequest, GatewayState } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../../components/DataTable";
+import DataTable from "../../../components/DataTable";
 import GatewayStore from "../../../stores/GatewayStore";
 
 interface IProps {

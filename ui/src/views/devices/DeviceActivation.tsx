@@ -3,17 +3,16 @@ import { useNavigate } from "react-router-dom";
 
 import { Space, Form, Button, Row, Col, InputNumber, Alert } from "antd";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Device, GetDeviceActivationResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import {
-  Device,
   GetDeviceActivationRequest,
-  GetDeviceActivationResponse,
   DeviceActivation as DeviceActivationPb,
   ActivateDeviceRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { MacVersion } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import AesKeyInput from "../../components/AesKeyInput";
 import DevAddrInput from "../../components/DevAddrInput";

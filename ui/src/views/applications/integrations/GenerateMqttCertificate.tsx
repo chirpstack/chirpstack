@@ -3,11 +3,11 @@ import { useState } from "react";
 import moment from "moment";
 import { Card, Button, Form, Input } from "antd";
 
-import {
+import type {
   Application,
-  GenerateMqttIntegrationClientCertificateRequest,
   GenerateMqttIntegrationClientCertificateResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { GenerateMqttIntegrationClientCertificateRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationStore from "../../../stores/ApplicationStore";
 

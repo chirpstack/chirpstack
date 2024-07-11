@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 
 import { Form, Button, Space, Popconfirm } from "antd";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { GetDeviceKeysResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import {
   DeviceKeys,
   GetDeviceKeysRequest,
-  GetDeviceKeysResponse,
   CreateDeviceKeysRequest,
   UpdateDeviceKeysRequest,
   FlushDevNoncesRequest,

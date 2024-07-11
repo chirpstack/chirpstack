@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { notification, Input, Select, Button, Space, Form, Dropdown, Menu } from "antd";
 import { ReloadOutlined, CopyOutlined } from "@ant-design/icons";
 
-import { GetRandomDevAddrRequest, GetRandomDevAddrResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { GetRandomDevAddrResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { GetRandomDevAddrRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import DeviceStore from "../stores/DeviceStore";
 

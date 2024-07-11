@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 
-import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import { StreamDeviceFramesRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { StreamDeviceFramesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import InternalStore from "../../stores/InternalStore";
 import LogTable from "../../components/LogTable";

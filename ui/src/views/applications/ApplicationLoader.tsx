@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import { Route, Routes, useParams } from "react-router-dom";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import {
-  Application,
-  GetApplicationRequest,
-  GetApplicationResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application, GetApplicationResponse } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { GetApplicationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationStore from "../../stores/ApplicationStore";
 import ApplicationLayout from "./ApplicationLayout";

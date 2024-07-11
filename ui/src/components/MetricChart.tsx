@@ -1,11 +1,12 @@
 import { Card } from "antd";
 
-import { TimeUnit } from "chart.js";
+import type { TimeUnit } from "chart.js";
 import { Line } from "react-chartjs-2";
 import moment from "moment";
 import palette from "google-palette";
 
-import { Metric, Aggregation, MetricKind } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import type { Metric } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import { Aggregation, MetricKind } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
 interface IProps {
   metric: Metric;
@@ -27,7 +28,7 @@ function MetricChart(props: IProps) {
     tooltipFormat = "LT";
   }
 
-  const animation: false = false;
+  const animation = false as const;
 
   const options = {
     animation: animation,

@@ -13,15 +13,17 @@ import {
   RelayModeActivation,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
-import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import {
-  ListDeviceProfileTemplatesRequest,
+import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type {
   ListDeviceProfileTemplatesResponse,
-  GetDeviceProfileTemplateRequest,
   GetDeviceProfileTemplateResponse,
   DeviceProfileTemplateListItem,
   DeviceProfileTemplate,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
+import {
+  ListDeviceProfileTemplatesRequest,
+  GetDeviceProfileTemplateRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
 
 import { getEnumName, onFinishFailed } from "../helpers";

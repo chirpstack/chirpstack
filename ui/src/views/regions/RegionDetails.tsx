@@ -7,7 +7,8 @@ import { PageHeader } from "@ant-design/pro-layout";
 import ReactMarkdown from "react-markdown";
 
 import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { GetRegionRequest, GetRegionResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { GetRegionResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { GetRegionRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import { getEnumName } from "../helpers";
 import InternalStore from "../../stores/InternalStore";

@@ -1,10 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import {
-  MulticastGroup,
-  UpdateMulticastGroupRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { MulticastGroup } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import { UpdateMulticastGroupRequest } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import MulticastGroupForm from "./MulticastGroupForm";

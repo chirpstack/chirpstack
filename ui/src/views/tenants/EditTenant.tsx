@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 
-import { Tenant, UpdateTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { UpdateTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import TenantStore from "../../stores/TenantStore";
 import TenantForm from "./TenantForm";

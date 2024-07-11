@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant, TenantUser, AddTenantUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { TenantUser, AddTenantUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import TenantUserForm from "./TenantUserForm";
 import TenantStore from "../../stores/TenantStore";

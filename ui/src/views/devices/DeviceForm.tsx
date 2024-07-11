@@ -1,18 +1,20 @@
 import { Form, Input, Row, Col, Button, Tabs, Switch } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type {
+  ListDeviceProfilesResponse,
+  GetDeviceProfileResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import {
   ListDeviceProfilesRequest,
-  ListDeviceProfilesResponse,
   GetDeviceProfileRequest,
-  GetDeviceProfileResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import { onFinishFailed } from "../helpers";
 import EuiInput from "../../components/EuiInput";
-import { OptionsCallbackFunc, OptionCallbackFunc } from "../../components/Autocomplete";
+import type { OptionsCallbackFunc, OptionCallbackFunc } from "../../components/Autocomplete";
 import AutocompleteInput from "../../components/AutocompleteInput";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 

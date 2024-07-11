@@ -1,11 +1,14 @@
+// TODO: find a way to type `ctx`
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card } from "antd";
 
 import { color } from "chart.js/helpers";
-import { TimeUnit } from "chart.js";
+import type { TimeUnit } from "chart.js";
 import { Chart } from "react-chartjs-2";
 import moment from "moment";
 
-import { Metric, Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import type { Metric } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import { Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
 interface IProps {
   metric: Metric;
@@ -22,7 +25,7 @@ function MetricHeatmap(props: IProps) {
     unit = "month";
   }
 
-  const animation: false = false;
+  const animation = false as const;
 
   const options = {
     animation: animation,

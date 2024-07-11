@@ -5,13 +5,9 @@ import { Route, Routes, Link, useParams, useNavigate, useLocation } from "react-
 import { Space, Breadcrumb, Card, Button, Menu } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import {
-  Gateway,
-  GetGatewayRequest,
-  GetGatewayResponse,
-  DeleteGatewayRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Gateway, GetGatewayResponse } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { GetGatewayRequest, DeleteGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import GatewayStore from "../../stores/GatewayStore";
 import DeleteConfirm from "../../components/DeleteConfirm";

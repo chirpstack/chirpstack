@@ -10,6 +10,7 @@ import { onFinishFailed } from "../helpers";
 import EuiInput from "../../components/EuiInput";
 import Map, { Marker } from "../../components/Map";
 import LocationStore from "../../stores/LocationStore";
+import type { DragEndEvent } from "leaflet";
 
 interface IProps {
   initialValues: Gateway;
@@ -84,7 +85,7 @@ function GatewayForm(props: IProps) {
     props.onFinish(gw);
   };
 
-  const updateLocation = (e: any) => {
+  const updateLocation = (e: DragEndEvent) => {
     const loc = e.target.getLatLng();
     setLatValue(loc.lat);
     setLonValue(loc.lng);

@@ -1,6 +1,7 @@
 import { Form } from "antd";
 
-import Autocomplete, { OptionCallbackFunc, OptionsCallbackFunc } from "./Autocomplete";
+import type { OptionCallbackFunc, OptionsCallbackFunc } from "./Autocomplete";
+import Autocomplete from "./Autocomplete";
 
 interface IProps {
   label: string;

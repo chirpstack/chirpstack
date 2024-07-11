@@ -4,11 +4,9 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Space, Breadcrumb, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
+import type { Tenant, TenantUser, GetTenantUserResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import {
-  Tenant,
-  TenantUser,
   GetTenantUserRequest,
-  GetTenantUserResponse,
   UpdateTenantUserRequest,
   DeleteTenantUserRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";

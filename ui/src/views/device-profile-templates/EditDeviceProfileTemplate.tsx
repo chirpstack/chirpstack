@@ -5,10 +5,12 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Space, Breadcrumb, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
+import type {
   DeviceProfileTemplate,
-  GetDeviceProfileTemplateRequest,
   GetDeviceProfileTemplateResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
+import {
+  GetDeviceProfileTemplateRequest,
   UpdateDeviceProfileTemplateRequest,
   DeleteDeviceProfileTemplateRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";

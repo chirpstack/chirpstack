@@ -4,11 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Row, Col, Card } from "antd";
 import { Form, Input, Button } from "antd";
 
-import {
-  SettingsResponse,
-  OpenIdConnectLoginRequest,
-  OAuth2LoginRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { SettingsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { OpenIdConnectLoginRequest, OAuth2LoginRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import SessionStore from "../../stores/SessionStore";
 import InternalStore from "../../stores/InternalStore";

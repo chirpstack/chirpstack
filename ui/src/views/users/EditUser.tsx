@@ -4,13 +4,8 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { Space, Breadcrumb, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  User,
-  GetUserRequest,
-  GetUserResponse,
-  UpdateUserRequest,
-  DeleteUserRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import type { User, GetUserResponse } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import { GetUserRequest, UpdateUserRequest, DeleteUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";

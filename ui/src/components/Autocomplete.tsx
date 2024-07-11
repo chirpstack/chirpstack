@@ -55,7 +55,7 @@ function AutoComplete({ placeholder, className, value, getOption, getOptions, on
     });
   };
 
-  const onSelectFn = (value: string, option: any) => {
+  const onSelectFn = (value: string, option: Option) => {
     setOption({ label: option.label, value: option.value });
 
     if (onSelect !== undefined) {

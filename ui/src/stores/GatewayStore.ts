@@ -1,7 +1,7 @@
 import { notification } from "antd";
 import { EventEmitter } from "events";
 import { GatewayServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_grpc_web_pb";
-import {
+import type {
   CreateGatewayRequest,
   GetGatewayRequest,
   GetGatewayResponse,

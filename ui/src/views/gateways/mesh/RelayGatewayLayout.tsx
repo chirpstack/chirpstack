@@ -5,13 +5,9 @@ import { Route, Routes, Link, useParams, useNavigate } from "react-router-dom";
 import { Space, Breadcrumb, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import {
-  RelayGateway,
-  GetRelayGatewayRequest,
-  GetRelayGatewayResponse,
-  DeleteRelayGatewayRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { RelayGateway, GetRelayGatewayResponse } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { GetRelayGatewayRequest, DeleteRelayGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import Admin from "../../../components/Admin";
 import SessionStore from "../../../stores/SessionStore";

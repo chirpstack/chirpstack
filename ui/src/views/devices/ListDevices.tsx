@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import moment from "moment";
 import { Space, Button, Dropdown, Menu, Modal, Select } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlug,
@@ -13,26 +13,22 @@ import {
   faBatteryThreeQuarters,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import {
-  ListDevicesRequest,
-  ListDevicesResponse,
-  DeviceListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import {
-  ListMulticastGroupsRequest,
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { ListDevicesResponse, DeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { ListDevicesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type {
   ListMulticastGroupsResponse,
   MulticastGroupListItem,
-  AddDeviceToMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import {
-  ListRelaysRequest,
-  ListRelaysResponse,
-  RelayListItem,
-  AddRelayDeviceRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+  ListMulticastGroupsRequest,
+  AddDeviceToMulticastGroupRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { ListRelaysResponse, RelayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+import { ListRelaysRequest, AddRelayDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import RelayStore from "../../stores/RelayStore";

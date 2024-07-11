@@ -3,13 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import { CreateDeviceRequest, Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import {
-  GetDeviceProfileRequest,
-  GetDeviceProfileResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { GetDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import { GetDeviceProfileRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import DeviceForm from "./DeviceForm";
 import DeviceStore from "../../stores/DeviceStore";

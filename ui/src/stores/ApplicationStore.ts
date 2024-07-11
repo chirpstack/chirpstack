@@ -1,7 +1,7 @@
 import { notification } from "antd";
 import { EventEmitter } from "events";
 import { ApplicationServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/application_grpc_web_pb";
-import {
+import type {
   CreateApplicationRequest,
   CreateApplicationResponse,
   GetApplicationRequest,

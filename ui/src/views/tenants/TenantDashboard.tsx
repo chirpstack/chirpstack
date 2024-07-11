@@ -5,29 +5,28 @@ import { presetPalettes } from "@ant-design/colors";
 import { Card, Col, Row, Space, Empty } from "antd";
 
 import moment from "moment";
-import { LatLngTuple, PointTuple } from "leaflet";
+import type { LatLngTuple, PointTuple } from "leaflet";
 import { Popup } from "react-leaflet";
 import { Doughnut } from "react-chartjs-2";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-import {
-  GetGatewaysSummaryRequest,
+import type {
   GetGatewaysSummaryResponse,
-  GetDevicesSummaryRequest,
   GetDevicesSummaryResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
-
 import {
-  ListGatewaysRequest,
-  ListGatewaysResponse,
-  GatewayListItem,
-  GatewayState,
-} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+  GetGatewaysSummaryRequest,
+  GetDevicesSummaryRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+
+import type { ListGatewaysResponse, GatewayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { ListGatewaysRequest, GatewayState } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import InternalStore from "../../stores/InternalStore";
 import GatewayStore from "../../stores/GatewayStore";
-import Map, { Marker, MarkerColor } from "../../components/Map";
+import type { MarkerColor } from "../../components/Map";
+import Map, { Marker } from "../../components/Map";
 
 interface GatewaysMapProps {
   items: GatewayListItem[];
@@ -45,7 +44,7 @@ function GatewaysMap(props: GatewaysMapProps) {
   };
 
   const bounds: LatLngTuple[] = [];
-  const markers: any[] = [];
+  const markers: JSX.Element[] = [];
 
   for (const item of props.items) {
     if (item.getLocation() === undefined) {

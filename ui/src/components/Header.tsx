@@ -4,12 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button, Menu, Dropdown, Input, AutoComplete } from "antd";
 import { UserOutlined, DownOutlined, QuestionOutlined } from "@ant-design/icons";
 
-import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
-import {
-  SettingsResponse,
-  GlobalSearchRequest,
-  GlobalSearchResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import type { SettingsResponse, GlobalSearchResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { GlobalSearchRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import InternalStore from "../stores/InternalStore";
 import SessionStore from "../stores/SessionStore";
@@ -89,8 +86,8 @@ function Header({ user }: { user: User }) {
   );
 
   const options: {
-    label: any;
-    options: any[];
+    label: JSX.Element;
+    options: ReturnType<typeof renderItem>[];
   }[] = [
     {
       label: renderTitle("Tenants"),
