@@ -8,7 +8,8 @@ import SessionStore from "../stores/SessionStore";
 export type GetPageCallbackFunc = (totalCount: number, rows: object[]) => void;
 
 interface IProps {
-  columns: ColumnsType<object>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: ColumnsType<any>;
   getPage: (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => void;
   onRowsSelectChange?: (ids: string[]) => void;
   rowKey: string;
