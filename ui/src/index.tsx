@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 
 import { Chart, registerables } from "chart.js";
 import { MatrixElement, MatrixController } from "chartjs-chart-matrix";
-import "chartjs-adapter-moment";
+import "chartjs-adapter-date-fns";
 
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
