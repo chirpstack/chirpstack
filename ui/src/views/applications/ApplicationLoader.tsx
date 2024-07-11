@@ -27,7 +27,7 @@ function ApplicationLoader(props: IProps) {
 
   useEffect(() => {
     const loadApplication = () => {
-      let req = new GetApplicationRequest();
+      const req = new GetApplicationRequest();
       req.setId(applicationId!);
 
       ApplicationStore.get(req, (resp: GetApplicationResponse) => {

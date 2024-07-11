@@ -47,14 +47,14 @@ function ListRelayDevices(props: IProps) {
 
     let count = 0;
 
-    for (let devEui of selectedRowIds) {
+    for (const devEui of selectedRowIds) {
       count++;
 
-      let req = new RemoveRelayDeviceRequest();
+      const req = new RemoveRelayDeviceRequest();
       req.setRelayDevEui(props.relayDevice.getDevEui());
       req.setDeviceDevEui(devEui);
 
-      let cbFunc = (cnt: number) => {
+      const cbFunc = (cnt: number) => {
         return () => {
           if (cnt === selectedRowIds.length) {
             setRefreshKey(refreshKey + 1);
@@ -67,7 +67,7 @@ function ListRelayDevices(props: IProps) {
   };
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListRelayDevicesRequest();
+    const req = new ListRelayDevicesRequest();
     req.setRelayDevEui(props.relayDevice.getDevEui());
     req.setLimit(limit);
     req.setOffset(offset);

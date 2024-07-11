@@ -14,7 +14,7 @@ interface IProps {
 
 function AwsSns(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteAwsSnsIntegrationRequest();
+    const req = new DeleteAwsSnsIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.deleteAwsSnsIntegration(req, () => {});
@@ -22,7 +22,7 @@ function AwsSns(props: IProps) {
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="aws-sns/create">
         <PlusOutlined />

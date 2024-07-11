@@ -48,7 +48,7 @@ function ListMulticastGroupGateways(props: IProps) {
   };
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListGatewaysRequest();
+    const req = new ListGatewaysRequest();
     req.setTenantId(props.application.getTenantId());
     req.setMulticastGroupId(props.multicastGroup.getId());
     req.setLimit(limit);
@@ -67,14 +67,14 @@ function ListMulticastGroupGateways(props: IProps) {
 
     let count = 0;
 
-    for (let gatewayId of selectedRowIds) {
+    for (const gatewayId of selectedRowIds) {
       count++;
 
-      let req = new RemoveGatewayFromMulticastGroupRequest();
+      const req = new RemoveGatewayFromMulticastGroupRequest();
       req.setMulticastGroupId(props.multicastGroup.getId());
       req.setGatewayId(gatewayId);
 
-      let cbFunc = (cnt: number) => {
+      const cbFunc = (cnt: number) => {
         return () => {
           if (cnt === selectedRowIds.length) {
             setRefreshKey(refreshKey + 1);

@@ -23,7 +23,7 @@ function EditAwsSnsIntegration(props: IProps) {
   const [integration, setIntegration] = useState<AwsSnsIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetAwsSnsIntegrationRequest();
+    const req = new GetAwsSnsIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getAwsSnsIntegration(req, (resp: GetAwsSnsIntegrationResponse) => {
@@ -32,7 +32,7 @@ function EditAwsSnsIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: AwsSnsIntegration) => {
-    let req = new UpdateAwsSnsIntegrationRequest();
+    const req = new UpdateAwsSnsIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateAwsSnsIntegration(req, () => {

@@ -22,7 +22,7 @@ function EditUser() {
   const [user, setUser] = useState<User | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetUserRequest();
+    const req = new GetUserRequest();
     req.setId(userId!);
 
     UserStore.get(req, (resp: GetUserResponse) => {
@@ -31,7 +31,7 @@ function EditUser() {
   }, [userId]);
 
   const onFinish = (obj: User, password: string) => {
-    let req = new UpdateUserRequest();
+    const req = new UpdateUserRequest();
     req.setUser(obj);
 
     UserStore.update(req, () => {
@@ -44,7 +44,7 @@ function EditUser() {
       return;
     }
 
-    let req = new DeleteUserRequest();
+    const req = new DeleteUserRequest();
     req.setId(user.getId());
 
     UserStore.delete(req, () => {

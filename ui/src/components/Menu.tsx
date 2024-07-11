@@ -42,7 +42,7 @@ function SideMenu() {
   };
 
   const getTenantOptions = (search: string, fn: OptionsCallbackFunc) => {
-    let req = new ListTenantsRequest();
+    const req = new ListTenantsRequest();
     req.setSearch(search);
     req.setLimit(10);
 
@@ -162,7 +162,7 @@ function SideMenu() {
     parseLocation();
   }, [location, parseLocation]);
 
-  let items: MenuProps["items"] = [];
+  const items: MenuProps["items"] = [];
 
   if (SessionStore.isAdmin()) {
     items.push({

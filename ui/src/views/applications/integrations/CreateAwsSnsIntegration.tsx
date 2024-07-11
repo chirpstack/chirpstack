@@ -21,7 +21,7 @@ function CreateAwsSnsIntegration(props: IProps) {
   const onFinish = (obj: AwsSnsIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateAwsSnsIntegrationRequest();
+    const req = new CreateAwsSnsIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createAwsSnsIntegration(req, () => {

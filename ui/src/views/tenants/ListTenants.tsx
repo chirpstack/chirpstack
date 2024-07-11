@@ -93,7 +93,7 @@ function ListTenants() {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListTenantsRequest();
+    const req = new ListTenantsRequest();
     req.setLimit(limit);
     req.setOffset(offset);
 

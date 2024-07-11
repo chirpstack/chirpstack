@@ -23,7 +23,7 @@ function EditHttpIntegration(props: IProps) {
   const [integration, setIntegration] = useState<HttpIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetHttpIntegrationRequest();
+    const req = new GetHttpIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getHttpIntegration(req, (resp: GetHttpIntegrationResponse) => {
@@ -32,7 +32,7 @@ function EditHttpIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: HttpIntegration) => {
-    let req = new UpdateHttpIntegrationRequest();
+    const req = new UpdateHttpIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateHttpIntegration(req, () => {

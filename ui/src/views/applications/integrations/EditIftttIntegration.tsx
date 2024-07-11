@@ -24,7 +24,7 @@ function EditIftttIntegration(props: IProps) {
   const [integration, setIntegration] = useState<IftttIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetIftttIntegrationRequest();
+    const req = new GetIftttIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getIftttIntegration(req, (resp: GetIftttIntegrationResponse) => {
@@ -33,7 +33,7 @@ function EditIftttIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: IftttIntegration) => {
-    let req = new UpdateIftttIntegrationRequest();
+    const req = new UpdateIftttIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateIftttIntegration(req, () => {

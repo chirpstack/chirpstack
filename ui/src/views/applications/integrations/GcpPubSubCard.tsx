@@ -14,14 +14,14 @@ interface IProps {
 
 function GcpPubSubCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteGcpPubSubIntegrationRequest();
+    const req = new DeleteGcpPubSubIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteGcpPubSubIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="gcp-pub-sub/create">
         <PlusOutlined />

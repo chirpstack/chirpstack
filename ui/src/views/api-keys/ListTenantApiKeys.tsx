@@ -55,7 +55,7 @@ function ListTenantApiKeys(props: IProps) {
 
   const deleteApiKey = (id: string): (() => void) => {
     return () => {
-      let req = new DeleteApiKeyRequest();
+      const req = new DeleteApiKeyRequest();
       req.setId(id);
 
       InternalStore.deleteApiKey(req, () => {
@@ -66,7 +66,7 @@ function ListTenantApiKeys(props: IProps) {
   };
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListApiKeysRequest();
+    const req = new ListApiKeysRequest();
     req.setLimit(limit);
     req.setOffset(offset);
     req.setTenantId(props.tenant.getId());

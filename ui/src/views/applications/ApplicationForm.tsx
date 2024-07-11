@@ -13,7 +13,7 @@ interface IProps {
 function ApplicationForm(props: IProps) {
   const onFinish = (values: Application.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let app = new Application();
+    const app = new Application();
 
     app.setId(v.id);
     app.setTenantId(v.tenantId);

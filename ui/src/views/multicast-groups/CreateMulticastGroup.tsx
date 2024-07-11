@@ -25,7 +25,7 @@ function CreateMulticastGroup(props: IProps) {
   const onFinish = (obj: MulticastGroup) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateMulticastGroupRequest();
+    const req = new CreateMulticastGroupRequest();
     req.setMulticastGroup(obj);
 
     MulticastGroupStore.create(req, (resp: CreateMulticastGroupResponse) => {
@@ -33,7 +33,7 @@ function CreateMulticastGroup(props: IProps) {
     });
   };
 
-  let multicastGroup = new MulticastGroup();
+  const multicastGroup = new MulticastGroup();
   multicastGroup.setApplicationId(props.application.getId());
 
   return (

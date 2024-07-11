@@ -17,14 +17,14 @@ interface IProps {
 
 function PilotThingsCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeletePilotThingsIntegrationRequest();
+    const req = new DeletePilotThingsIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deletePilotThingsIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="pilot-things/create">
         <PlusOutlined />

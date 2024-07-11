@@ -17,14 +17,14 @@ interface IProps {
 
 function ThingsBoardCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteThingsBoardIntegrationRequest();
+    const req = new DeleteThingsBoardIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteThingsBoardIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="thingsboard/create">
         <PlusOutlined />

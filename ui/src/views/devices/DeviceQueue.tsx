@@ -107,7 +107,7 @@ function DeviceQueue(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new GetDeviceQueueItemsRequest();
+    const req = new GetDeviceQueueItemsRequest();
     req.setDevEui(props.device.getDevEui());
 
     DeviceStore.getQueue(req, (resp: GetDeviceQueueItemsResponse) => {
@@ -121,7 +121,7 @@ function DeviceQueue(props: IProps) {
   };
 
   const flushQueue = () => {
-    let req = new FlushDeviceQueueRequest();
+    const req = new FlushDeviceQueueRequest();
     req.setDevEui(props.device.getDevEui());
     DeviceStore.flushQueue(req, () => {
       refreshQueue();
@@ -129,8 +129,8 @@ function DeviceQueue(props: IProps) {
   };
 
   const onEnqueue = (values: any) => {
-    let req = new EnqueueDeviceQueueItemRequest();
-    let item = new DeviceQueueItem();
+    const req = new EnqueueDeviceQueueItemRequest();
+    const item = new DeviceQueueItem();
 
     item.setDevEui(props.device.getDevEui());
     item.setFPort(values.fPort);
@@ -149,7 +149,7 @@ function DeviceQueue(props: IProps) {
     if (values.json !== undefined) {
       try {
         const obj = JSON.parse(values.json);
-        let struct = Struct.fromJavaScript(obj);
+        const struct = Struct.fromJavaScript(obj);
 
         item.setObject(struct);
       } catch (err) {

@@ -14,14 +14,14 @@ interface IProps {
 
 function InfluxdbCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteInfluxDbIntegrationRequest();
+    const req = new DeleteInfluxDbIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteInfluxDbIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="influxdb/create">
         <PlusOutlined />

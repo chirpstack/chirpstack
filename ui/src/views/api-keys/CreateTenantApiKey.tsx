@@ -21,7 +21,7 @@ function CreateTenantApiKey(props: IProps) {
   const onFinish = (obj: ApiKey) => {
     obj.setTenantId(props.tenant.getId());
 
-    let req = new CreateApiKeyRequest();
+    const req = new CreateApiKeyRequest();
     req.setApiKey(obj);
 
     InternalStore.createApiKey(req, (resp: CreateApiKeyResponse) => {

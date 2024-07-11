@@ -21,7 +21,7 @@ function CreateInfluxDbIntegration(props: IProps) {
   const onFinish = (obj: InfluxDbIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateInfluxDbIntegrationRequest();
+    const req = new CreateInfluxDbIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createInfluxDbIntegration(req, () => {

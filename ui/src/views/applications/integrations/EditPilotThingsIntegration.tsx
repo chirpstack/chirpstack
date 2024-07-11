@@ -23,7 +23,7 @@ function EditPilotThingsIntegration(props: IProps) {
   const [integration, setIntegration] = useState<PilotThingsIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetPilotThingsIntegrationRequest();
+    const req = new GetPilotThingsIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getPilotThingsIntegration(req, (resp: GetPilotThingsIntegrationResponse) => {
@@ -32,7 +32,7 @@ function EditPilotThingsIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: PilotThingsIntegration) => {
-    let req = new UpdatePilotThingsIntegrationRequest();
+    const req = new UpdatePilotThingsIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updatePilotThingsIntegration(req, () => {

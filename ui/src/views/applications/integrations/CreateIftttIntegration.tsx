@@ -22,7 +22,7 @@ function CreateIftttIntegration(props: IProps) {
   const onFinish = (obj: IftttIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateIftttIntegrationRequest();
+    const req = new CreateIftttIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createIftttIntegration(req, () => {

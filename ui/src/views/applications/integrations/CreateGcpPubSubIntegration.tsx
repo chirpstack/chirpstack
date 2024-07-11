@@ -21,7 +21,7 @@ function CreateGcpPubSubIntegration(props: IProps) {
   const onFinish = (obj: GcpPubSubIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateGcpPubSubIntegrationRequest();
+    const req = new CreateGcpPubSubIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createGcpPubSubIntegration(req, () => {

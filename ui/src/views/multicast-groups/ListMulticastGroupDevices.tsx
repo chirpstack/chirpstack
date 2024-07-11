@@ -45,7 +45,7 @@ function ListMulticastGroupDevices(props: IProps) {
   };
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListDevicesRequest();
+    const req = new ListDevicesRequest();
     req.setApplicationId(props.multicastGroup.getApplicationId());
     req.setMulticastGroupId(props.multicastGroup.getId());
     req.setLimit(limit);
@@ -64,14 +64,14 @@ function ListMulticastGroupDevices(props: IProps) {
 
     let count = 0;
 
-    for (let devEui of selectedRowIds) {
+    for (const devEui of selectedRowIds) {
       count++;
 
-      let req = new RemoveDeviceFromMulticastGroupRequest();
+      const req = new RemoveDeviceFromMulticastGroupRequest();
       req.setMulticastGroupId(props.multicastGroup.getId());
       req.setDevEui(devEui);
 
-      let cbFunc = (cnt: number) => {
+      const cbFunc = (cnt: number) => {
         return () => {
           if (cnt === selectedRowIds.length) {
             setRefreshKey(refreshKey + 1);

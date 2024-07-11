@@ -38,7 +38,7 @@ function Header({ user }: { user: User }) {
       return;
     }
 
-    let req = new GlobalSearchRequest();
+    const req = new GlobalSearchRequest();
     req.setLimit(20);
     req.setSearch(search);
 
@@ -52,8 +52,8 @@ function Header({ user }: { user: User }) {
       return;
     }
 
-    let oidc = settings.getOpenidConnect()!;
-    let oAuth2 = settings.getOauth2()!;
+    const oidc = settings.getOpenidConnect()!;
+    const oAuth2 = settings.getOauth2()!;
 
     if (oidc.getEnabled() && oidc.getLogoutUrl() !== "") {
       SessionStore.logout(false, () => {
@@ -74,8 +74,8 @@ function Header({ user }: { user: User }) {
     return null;
   }
 
-  let oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
-  let oAuth2Enabled = settings!.getOauth2()!.getEnabled();
+  const oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
+  const oAuth2Enabled = settings!.getOauth2()!.getEnabled();
 
   const menu = (
     <Menu>
@@ -88,7 +88,7 @@ function Header({ user }: { user: User }) {
     </Menu>
   );
 
-  let options: {
+  const options: {
     label: any;
     options: any[];
   }[] = [

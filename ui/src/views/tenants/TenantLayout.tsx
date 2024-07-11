@@ -16,7 +16,7 @@ function TenantLayout({ tenant }: { tenant: Tenant }) {
   const location = useLocation();
 
   const deleteTenant = () => {
-    let req = new DeleteTenantRequest();
+    const req = new DeleteTenantRequest();
     req.setId(tenant.getId());
 
     TenantStore.delete(req, () => {

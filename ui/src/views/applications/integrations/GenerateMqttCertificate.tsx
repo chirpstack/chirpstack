@@ -24,7 +24,7 @@ function GenerateMqttCertificate(props: IProps) {
   const requestCertificate = () => {
     setButtonDisabled(true);
 
-    let req = new GenerateMqttIntegrationClientCertificateRequest();
+    const req = new GenerateMqttIntegrationClientCertificateRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.generateMqttIntegrationClientCertificate(

@@ -24,7 +24,7 @@ function EditDeviceProfileTemplate() {
 
   useEffect(() => {
     const id = deviceProfileTemplateId!;
-    let req = new GetDeviceProfileTemplateRequest();
+    const req = new GetDeviceProfileTemplateRequest();
     req.setId(id);
 
     DeviceProfileTemplateStore.get(req, (resp: GetDeviceProfileTemplateResponse) => {
@@ -33,7 +33,7 @@ function EditDeviceProfileTemplate() {
   }, [deviceProfileTemplateId]);
 
   const onFinish = (obj: DeviceProfileTemplate) => {
-    let req = new UpdateDeviceProfileTemplateRequest();
+    const req = new UpdateDeviceProfileTemplateRequest();
     req.setDeviceProfileTemplate(obj);
 
     DeviceProfileTemplateStore.update(req, () => {
@@ -42,7 +42,7 @@ function EditDeviceProfileTemplate() {
   };
 
   const deleteDeviceProfileTemplate = () => {
-    let req = new DeleteDeviceProfileTemplateRequest();
+    const req = new DeleteDeviceProfileTemplateRequest();
     req.setId(deviceProfileTemplateId!);
 
     DeviceProfileTemplateStore.delete(req, () => {

@@ -39,7 +39,7 @@ function LoRaCloudIntegrationForm(props: IProps) {
     const v = Object.assign(props.initialValues.toObject(), values);
     const mgsv = v.modemGeolocationServices;
 
-    let mgs = new LoraCloudModemGeolocationServices();
+    const mgs = new LoraCloudModemGeolocationServices();
 
     if (mgsv !== undefined) {
       mgs.setToken(mgsv.token);
@@ -59,7 +59,7 @@ function LoRaCloudIntegrationForm(props: IProps) {
       mgs.setGeolocationGnssUseRxTime(mgsv.geolocationGnssUseRxTime);
     }
 
-    let i = new LoraCloudIntegration();
+    const i = new LoraCloudIntegration();
     i.setApplicationId(v.applicationId);
     i.setModemGeolocationServices(mgs);
 

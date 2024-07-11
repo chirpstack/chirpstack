@@ -23,7 +23,7 @@ function DeviceFrames(props: IProps) {
   }, []);
 
   useEffect(() => {
-    let req = new StreamDeviceFramesRequest();
+    const req = new StreamDeviceFramesRequest();
     req.setDevEui(props.device.getDevEui());
     return InternalStore.streamDeviceFrames(req, onMessage);
   }, [props, onMessage]);

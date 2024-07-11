@@ -17,14 +17,14 @@ interface IProps {
 
 function AzureServiceBusCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteAzureServiceBusIntegrationRequest();
+    const req = new DeleteAzureServiceBusIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteAzureServiceBusIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="azure-service-bus/create">
         <PlusOutlined />

@@ -47,7 +47,7 @@ class TenantStore extends EventEmitter {
   };
 
   get = (id: string, callbackFunc: (resp: GetTenantResponse) => void) => {
-    let req = new GetTenantRequest();
+    const req = new GetTenantRequest();
     req.setId(id);
 
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {

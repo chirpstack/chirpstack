@@ -23,10 +23,10 @@ function DeviceEvents(props: IProps) {
   }, []);
 
   useEffect(() => {
-    let req = new StreamDeviceEventsRequest();
+    const req = new StreamDeviceEventsRequest();
     req.setDevEui(props.device.getDevEui());
 
-    let cancelFunc = InternalStore.streamDeviceEvents(req, onMessage);
+    const cancelFunc = InternalStore.streamDeviceEvents(req, onMessage);
 
     return () => {
       cancelFunc();

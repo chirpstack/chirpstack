@@ -62,7 +62,7 @@ function ListGateways(props: IProps) {
       width: 250,
       render: (text, record) => {
         if (record.lastSeenAt !== undefined) {
-          let ts = new Date(0);
+          const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
           return moment(ts).format("YYYY-MM-DD HH:mm:ss");
         }
@@ -115,13 +115,13 @@ function ListGateways(props: IProps) {
   ];
 
   useEffect(() => {
-    let req = new ListApplicationsRequest();
+    const req = new ListApplicationsRequest();
     req.setLimit(999);
     req.setTenantId(props.tenant.getId());
 
     ApplicationStore.list(req, (resp: ListApplicationsResponse) => {
       for (const app of resp.getResultList()) {
-        let req = new ListMulticastGroupsRequest();
+        const req = new ListMulticastGroupsRequest();
         req.setLimit(999);
         req.setApplicationId(app.getId());
 
@@ -144,7 +144,7 @@ function ListGateways(props: IProps) {
   }, [props]);
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListGatewaysRequest();
+    const req = new ListGatewaysRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);
     req.setOffset(offset);
@@ -172,8 +172,8 @@ function ListGateways(props: IProps) {
   };
 
   const handleMgModalOk = () => {
-    for (let gatewayId of selectedRowIds) {
-      let req = new AddGatewayToMulticastGroupRequest();
+    for (const gatewayId of selectedRowIds) {
+      const req = new AddGatewayToMulticastGroupRequest();
       req.setMulticastGroupId(mgSelected);
       req.setGatewayId(gatewayId);
 

@@ -52,7 +52,7 @@ function ListDevices(props: IProps) {
   const [relaySelected, setRelaySelected] = useState<string>("");
 
   useEffect(() => {
-    let mgReq = new ListMulticastGroupsRequest();
+    const mgReq = new ListMulticastGroupsRequest();
     mgReq.setLimit(999);
     mgReq.setApplicationId(props.application.getId());
 
@@ -60,7 +60,7 @@ function ListDevices(props: IProps) {
       setMulticastGroups(resp.getResultList());
     });
 
-    let relayReq = new ListRelaysRequest();
+    const relayReq = new ListRelaysRequest();
     relayReq.setLimit(999);
     relayReq.setApplicationId(props.application.getId());
 
@@ -77,7 +77,7 @@ function ListDevices(props: IProps) {
       width: 250,
       render: (text, record) => {
         if (record.lastSeenAt !== undefined) {
-          let ts = new Date(0);
+          const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
           return moment(ts).format("YYYY-MM-DD HH:mm:ss");
         }
@@ -139,7 +139,7 @@ function ListDevices(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListDevicesRequest();
+    const req = new ListDevicesRequest();
     req.setApplicationId(props.application.getId());
     req.setLimit(limit);
     req.setOffset(offset);
@@ -179,8 +179,8 @@ function ListDevices(props: IProps) {
   };
 
   const handleMgModalOk = () => {
-    for (let devEui of selectedRowIds) {
-      let req = new AddDeviceToMulticastGroupRequest();
+    for (const devEui of selectedRowIds) {
+      const req = new AddDeviceToMulticastGroupRequest();
       req.setMulticastGroupId(mgSelected);
       req.setDevEui(devEui);
 
@@ -191,8 +191,8 @@ function ListDevices(props: IProps) {
   };
 
   const handleRelayModalOk = () => {
-    for (let devEui of selectedRowIds) {
-      let req = new AddRelayDeviceRequest();
+    for (const devEui of selectedRowIds) {
+      const req = new AddRelayDeviceRequest();
       req.setRelayDevEui(relaySelected);
       req.setDeviceDevEui(devEui);
 

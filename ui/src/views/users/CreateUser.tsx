@@ -12,7 +12,7 @@ function CreateUser() {
   const navigate = useNavigate();
 
   const onFinish = (obj: User, password: string) => {
-    let req = new CreateUserRequest();
+    const req = new CreateUserRequest();
     req.setUser(obj);
     req.setPassword(password);
 

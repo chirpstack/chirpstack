@@ -47,7 +47,7 @@ function ListUsers() {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListUsersRequest();
+    const req = new ListUsersRequest();
     req.setLimit(limit);
     req.setOffset(offset);
 

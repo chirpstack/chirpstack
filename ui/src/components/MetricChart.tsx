@@ -52,7 +52,7 @@ function MetricChart(props: IProps) {
   };
 
   let prevValue = 0;
-  let data = {
+  const data = {
     labels: props.metric.getTimestampsList().map(v => moment(v.toDate()).valueOf()),
     datasets: props.metric
       .getDatasetsList()
@@ -72,7 +72,7 @@ function MetricChart(props: IProps) {
               return null;
             } else {
               if (props.metric.getKind() === MetricKind.COUNTER) {
-                let val = v - prevValue;
+                const val = v - prevValue;
                 prevValue = v;
                 if (val < 0) {
                   return 0;

@@ -21,7 +21,7 @@ function CreateThingsBoardIntegration(props: IProps) {
   const onFinish = (obj: ThingsBoardIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateThingsBoardIntegrationRequest();
+    const req = new CreateThingsBoardIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createThingsBoardIntegration(req, () => {

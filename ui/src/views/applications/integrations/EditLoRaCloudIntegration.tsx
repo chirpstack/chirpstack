@@ -23,7 +23,7 @@ function EditLoRaCloudIntegration(props: IProps) {
   const [integration, setIntegration] = useState<LoraCloudIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetLoraCloudIntegrationRequest();
+    const req = new GetLoraCloudIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getLoraCloudIntegration(req, (resp: GetLoraCloudIntegrationResponse) => {
@@ -32,7 +32,7 @@ function EditLoRaCloudIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: LoraCloudIntegration) => {
-    let req = new UpdateLoraCloudIntegrationRequest();
+    const req = new UpdateLoraCloudIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateLoraCloudIntegration(req, () => {

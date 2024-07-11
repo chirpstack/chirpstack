@@ -21,7 +21,7 @@ function CreateAzureServiceBusIntegration(props: IProps) {
   const onFinish = (obj: AzureServiceBusIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateAzureServiceBusIntegrationRequest();
+    const req = new CreateAzureServiceBusIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createAzureServiceBusIntegration(req, () => {

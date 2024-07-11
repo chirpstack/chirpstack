@@ -12,7 +12,7 @@ interface IProps {
 function ThingsBoardIntegrationForm(props: IProps) {
   const onFinish = (values: ThingsBoardIntegration.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let i = new ThingsBoardIntegration();
+    const i = new ThingsBoardIntegration();
 
     i.setApplicationId(v.applicationId);
     i.setServer(v.server);

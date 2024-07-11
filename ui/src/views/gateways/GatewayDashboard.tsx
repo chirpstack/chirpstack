@@ -44,13 +44,13 @@ function GatewayDashboard(props: IProps) {
       start = start.subtract(12, "months");
     }
 
-    let startPb = new Timestamp();
-    let endPb = new Timestamp();
+    const startPb = new Timestamp();
+    const endPb = new Timestamp();
 
     startPb.fromDate(start.toDate());
     endPb.fromDate(end.toDate());
 
-    let req = new GetGatewayMetricsRequest();
+    const req = new GetGatewayMetricsRequest();
     req.setGatewayId(props.gateway.getGatewayId());
     req.setStart(startPb);
     req.setEnd(endPb);
@@ -61,14 +61,14 @@ function GatewayDashboard(props: IProps) {
     });
 
     const dcEnd = moment().subtract(1, "minute");
-    let dcEndPb = new Timestamp();
+    const dcEndPb = new Timestamp();
     dcEndPb.fromDate(dcEnd.toDate());
 
     const dcStart = dcEnd.subtract(1, "hours");
-    let dcStartPb = new Timestamp();
+    const dcStartPb = new Timestamp();
     dcStartPb.fromDate(dcStart.toDate());
 
-    let dcReq = new GetGatewayDutyCycleMetricsRequest();
+    const dcReq = new GetGatewayDutyCycleMetricsRequest();
     dcReq.setGatewayId(props.gateway.getGatewayId());
     dcReq.setStart(dcStartPb);
     dcReq.setEnd(dcEndPb);

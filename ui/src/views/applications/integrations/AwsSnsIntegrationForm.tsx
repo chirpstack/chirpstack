@@ -10,7 +10,7 @@ interface IProps {
 function AwsSnsIntegrationForm(props: IProps) {
   const onFinish = (values: AwsSnsIntegration.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let i = new AwsSnsIntegration();
+    const i = new AwsSnsIntegration();
 
     i.setApplicationId(v.applicationId);
     i.setEncoding(v.encoding);

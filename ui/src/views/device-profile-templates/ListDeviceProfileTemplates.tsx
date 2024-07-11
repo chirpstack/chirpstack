@@ -45,7 +45,7 @@ function ListDeviceProfileTemplates() {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListDeviceProfileTemplatesRequest();
+    const req = new ListDeviceProfileTemplatesRequest();
     req.setLimit(limit);
     req.setOffset(offset);
 

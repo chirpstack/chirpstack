@@ -33,15 +33,15 @@ function ListIntegrations(props: IProps) {
 
   useEffect(() => {
     const loadIntegrations = () => {
-      let req = new ListIntegrationsRequest();
+      const req = new ListIntegrationsRequest();
       req.setApplicationId(props.application.getId());
 
       ApplicationStore.listIntegrations(req, (resp: ListIntegrationsResponse) => {
-        let configured: any[] = [];
-        let available: any[] = [];
+        const configured: any[] = [];
+        const available: any[] = [];
 
         const includes = (integrations: IntegrationListItem[], kind: IntegrationKind) => {
-          for (let x of integrations) {
+          for (const x of integrations) {
             if (x.getKind() === kind) {
               return true;
             }

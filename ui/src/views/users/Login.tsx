@@ -153,10 +153,10 @@ function Login() {
 
       if (location.search !== "") {
         // Callback from OIDC or OAuth2 provider.
-        let q = new URLSearchParams(location.search);
+        const q = new URLSearchParams(location.search);
 
         if (oidc.getEnabled()) {
-          let req = new OpenIdConnectLoginRequest();
+          const req = new OpenIdConnectLoginRequest();
           req.setCode(q.get("code") || "");
           req.setState(q.get("state") || "");
 
@@ -164,7 +164,7 @@ function Login() {
             navigate("/");
           });
         } else if (oAuth2.getEnabled()) {
-          let req = new OAuth2LoginRequest();
+          const req = new OAuth2LoginRequest();
           req.setCode(q.get("code") || "");
           req.setState(q.get("state") || "");
 

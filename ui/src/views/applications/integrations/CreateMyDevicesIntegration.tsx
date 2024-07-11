@@ -21,7 +21,7 @@ function CreateMyDevicesIntegration(props: IProps) {
   const onFinish = (obj: MyDevicesIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateMyDevicesIntegrationRequest();
+    const req = new CreateMyDevicesIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createMyDevicesIntegration(req, () => {

@@ -13,7 +13,7 @@ function TenantRedirect() {
   if (tenantId !== "") {
     navigate(`/tenants/${tenantId}`);
   } else {
-    let req = new ListTenantsRequest();
+    const req = new ListTenantsRequest();
     req.setLimit(1);
 
     TenantStore.list(req, (resp: ListTenantsResponse) => {

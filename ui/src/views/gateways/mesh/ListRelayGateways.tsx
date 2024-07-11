@@ -44,7 +44,7 @@ function ListRelayGateways(props: IProps) {
       width: 250,
       render: (text, record) => {
         if (record.lastSeenAt !== undefined) {
-          let ts = new Date(0);
+          const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
           return moment(ts).format("YYYY-MM-DD HH:mm:ss");
         }
@@ -76,7 +76,7 @@ function ListRelayGateways(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListRelayGatewaysRequest();
+    const req = new ListRelayGatewaysRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);
     req.setOffset(offset);

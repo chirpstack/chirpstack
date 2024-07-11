@@ -21,7 +21,7 @@ function CreateHttpIntegration(props: IProps) {
   const onFinish = (obj: HttpIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateHttpIntegrationRequest();
+    const req = new CreateHttpIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createHttpIntegration(req, () => {

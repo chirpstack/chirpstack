@@ -23,7 +23,7 @@ function EditThingsBoardIntegration(props: IProps) {
   const [integration, setIntegration] = useState<ThingsBoardIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetThingsBoardIntegrationRequest();
+    const req = new GetThingsBoardIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getThingsBoardIntegration(req, (resp: GetThingsBoardIntegrationResponse) => {
@@ -32,7 +32,7 @@ function EditThingsBoardIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: ThingsBoardIntegration) => {
-    let req = new UpdateThingsBoardIntegrationRequest();
+    const req = new UpdateThingsBoardIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateThingsBoardIntegration(req, () => {

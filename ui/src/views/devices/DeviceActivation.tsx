@@ -33,7 +33,7 @@ function LW10DeviceActivationForm(props: FormProps) {
 
   const onFinish = (values: DeviceActivationPb.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let da = new DeviceActivationPb();
+    const da = new DeviceActivationPb();
 
     da.setDevAddr(v.devAddr);
     da.setAppSKey(v.appSKey);
@@ -100,7 +100,7 @@ function LW11DeviceActivationForm(props: FormProps) {
 
   const onFinish = (values: DeviceActivationPb.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let da = new DeviceActivationPb();
+    const da = new DeviceActivationPb();
 
     da.setDevAddr(v.devAddr);
     da.setAppSKey(v.appSKey);
@@ -187,7 +187,7 @@ function DeviceActivation(props: IProps) {
   const [deviceActivationRequested, setDeviceActivationRequested] = useState<boolean>(false);
 
   useEffect(() => {
-    let req = new GetDeviceActivationRequest();
+    const req = new GetDeviceActivationRequest();
     req.setDevEui(props.device.getDevEui());
 
     DeviceStore.getActivation(req, (resp: GetDeviceActivationResponse) => {
@@ -197,7 +197,7 @@ function DeviceActivation(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: DeviceActivationPb) => {
-    let req = new ActivateDeviceRequest();
+    const req = new ActivateDeviceRequest();
     obj.setDevEui(props.device.getDevEui());
     req.setDeviceActivation(obj);
 
@@ -216,7 +216,7 @@ function DeviceActivation(props: IProps) {
     return <Alert type="info" showIcon message="This device has not (yet) been activated." />;
   }
 
-  let macVersion = props.deviceProfile.getMacVersion();
+  const macVersion = props.deviceProfile.getMacVersion();
   const lw11 = macVersion === MacVersion.LORAWAN_1_1_0;
 
   let initialValues = new DeviceActivationPb();

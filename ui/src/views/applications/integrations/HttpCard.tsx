@@ -14,14 +14,14 @@ interface IProps {
 
 function HttpCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteHttpIntegrationRequest();
+    const req = new DeleteHttpIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteHttpIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="http/create">
         <PlusOutlined />

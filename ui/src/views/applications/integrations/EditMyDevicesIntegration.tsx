@@ -23,7 +23,7 @@ function EditMyDevicesIntegration(props: IProps) {
   const [integration, setIntegration] = useState<MyDevicesIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetMyDevicesIntegrationRequest();
+    const req = new GetMyDevicesIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getMyDevicesIntegration(req, (resp: GetMyDevicesIntegrationResponse) => {
@@ -32,7 +32,7 @@ function EditMyDevicesIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: MyDevicesIntegration) => {
-    let req = new UpdateMyDevicesIntegrationRequest();
+    const req = new UpdateMyDevicesIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateMyDevicesIntegration(req, () => {

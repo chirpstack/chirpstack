@@ -9,7 +9,7 @@ interface IProps {
 }
 
 function MqttCard(props: IProps) {
-  let actions: any[] = [<Link to="mqtt/certificate">Get certificate</Link>];
+  const actions: any[] = [<Link to="mqtt/certificate">Get certificate</Link>];
 
   return (
     <Col span={8}>

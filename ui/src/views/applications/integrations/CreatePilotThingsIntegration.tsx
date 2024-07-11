@@ -21,7 +21,7 @@ function CreatePilotThingsIntegration(props: IProps) {
   const onFinish = (obj: PilotThingsIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreatePilotThingsIntegrationRequest();
+    const req = new CreatePilotThingsIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createPilotThingsIntegration(req, () => {

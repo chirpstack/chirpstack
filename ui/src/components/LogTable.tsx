@@ -23,9 +23,9 @@ function LogTable(props: IProps) {
   };
 
   const onDrawerOpen = (time: any, body: any) => {
-    let ts = new Date(0);
+    const ts = new Date(0);
     ts.setUTCSeconds(time.seconds);
-    let drawerTitle = moment(ts).format("YYYY-MM-DD HH:mm:ss");
+    const drawerTitle = moment(ts).format("YYYY-MM-DD HH:mm:ss");
 
     return () => {
       setBody(body);
@@ -39,12 +39,12 @@ function LogTable(props: IProps) {
   };
 
   const downloadFrames = () => {
-    let items = props.logs.map((l, i) => JSON.parse(l.getBody()));
+    const items = props.logs.map((l, i) => JSON.parse(l.getBody()));
     fileDownload(JSON.stringify(items, null, 4), "log.json");
   };
 
-  let items = props.logs.map((l, i) => l.toObject());
-  let bodyJson = JSON.parse(body);
+  const items = props.logs.map((l, i) => l.toObject());
+  const bodyJson = JSON.parse(body);
 
   const theme = {
     scheme: "google",
@@ -104,7 +104,7 @@ function LogTable(props: IProps) {
             key: "time",
             width: 200,
             render: (text, obj) => {
-              let ts = new Date(0);
+              const ts = new Date(0);
               ts.setUTCSeconds(obj.time!.seconds);
               return moment(ts).format("YYYY-MM-DD HH:mm:ss");
             },

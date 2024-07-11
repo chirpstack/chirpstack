@@ -32,7 +32,7 @@ function MulticastGroupLayout(props: IProps) {
   const [multicastGroup, setMulticastGroup] = useState<MulticastGroup | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetMulticastGroupRequest();
+    const req = new GetMulticastGroupRequest();
     req.setId(multicastGroupId!);
 
     MulticastGroupStore.get(req, (resp: GetMulticastGroupResponse) => {
@@ -41,7 +41,7 @@ function MulticastGroupLayout(props: IProps) {
   }, [multicastGroupId]);
 
   const deleteMulticastGroup = () => {
-    let req = new DeleteMulticastGroupRequest();
+    const req = new DeleteMulticastGroupRequest();
     req.setId(multicastGroupId!);
 
     MulticastGroupStore.delete(req, () => {

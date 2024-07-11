@@ -28,7 +28,7 @@ class SessionStore extends EventEmitter {
   }
 
   login = (email: string, password: string, callbackFunc: any) => {
-    let req = new LoginRequest();
+    const req = new LoginRequest();
     req.setEmail(email);
     req.setPassword(password);
     this.client.login(req, {}, (err, resp) => {
@@ -83,7 +83,7 @@ class SessionStore extends EventEmitter {
   };
 
   getToken = (): string => {
-    let token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
     if (token == null) {
       return "";
     }

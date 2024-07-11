@@ -14,7 +14,7 @@ function EditRelayGateway(props: IProps) {
   const navigate = useNavigate();
 
   const onFinish = (obj: RelayGateway) => {
-    let req = new UpdateRelayGatewayRequest();
+    const req = new UpdateRelayGatewayRequest();
     req.setRelayGateway(obj);
 
     GatewayStore.updateRelayGateway(req, () => {

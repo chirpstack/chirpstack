@@ -36,7 +36,7 @@ function ListRelays(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListRelaysRequest();
+    const req = new ListRelaysRequest();
     req.setApplicationId(props.application.getId());
     req.setLimit(limit);
     req.setOffset(offset);

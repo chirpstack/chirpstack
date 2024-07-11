@@ -28,7 +28,7 @@ function DeviceForm(props: IProps) {
 
   const onFinish = (values: Device.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let d = new Device();
+    const d = new Device();
 
     d.setApplicationId(v.applicationId);
     d.setName(v.name);
@@ -53,7 +53,7 @@ function DeviceForm(props: IProps) {
   };
 
   const getDeviceProfileOptions = (search: string, fn: OptionsCallbackFunc) => {
-    let req = new ListDeviceProfilesRequest();
+    const req = new ListDeviceProfilesRequest();
     req.setTenantId(props.tenant.getId());
     req.setSearch(search);
     req.setLimit(10);
@@ -68,7 +68,7 @@ function DeviceForm(props: IProps) {
   };
 
   const getDeviceProfileOption = (id: string, fn: OptionCallbackFunc) => {
-    let req = new GetDeviceProfileRequest();
+    const req = new GetDeviceProfileRequest();
     req.setId(id);
 
     DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {

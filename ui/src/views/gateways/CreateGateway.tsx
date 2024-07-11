@@ -19,7 +19,7 @@ function CreateGateway(props: IProps) {
   const onFinish = (obj: Gateway) => {
     obj.setTenantId(props.tenant.getId());
 
-    let req = new CreateGatewayRequest();
+    const req = new CreateGatewayRequest();
     req.setGateway(obj);
 
     GatewayStore.create(req, () => {
@@ -27,7 +27,7 @@ function CreateGateway(props: IProps) {
     });
   };
 
-  let gateway = new Gateway();
+  const gateway = new Gateway();
   gateway.setStatsInterval(30);
 
   return (

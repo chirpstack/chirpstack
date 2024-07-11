@@ -14,14 +14,14 @@ interface IProps {
 
 function MyDevicesCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteMyDevicesIntegrationRequest();
+    const req = new DeleteMyDevicesIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteMyDevicesIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="mydevices/create">
         <PlusOutlined />

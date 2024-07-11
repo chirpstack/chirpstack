@@ -14,14 +14,14 @@ interface IProps {
 
 function IftttCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteIftttIntegrationRequest();
+    const req = new DeleteIftttIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteIftttIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="ifttt/create">
         <PlusOutlined />

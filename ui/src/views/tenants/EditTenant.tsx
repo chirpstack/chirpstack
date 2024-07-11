@@ -10,7 +10,7 @@ function EditTenant({ tenant }: { tenant: Tenant }) {
   const navigate = useNavigate();
 
   const onFinish = (obj: Tenant) => {
-    let req = new UpdateTenantRequest();
+    const req = new UpdateTenantRequest();
     req.setTenant(obj);
 
     TenantStore.update(req, () => {

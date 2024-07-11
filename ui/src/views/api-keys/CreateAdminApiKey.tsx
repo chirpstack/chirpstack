@@ -16,7 +16,7 @@ function CreateAdminApiKey() {
   const onFinish = (obj: ApiKey) => {
     obj.setIsAdmin(true);
 
-    let req = new CreateApiKeyRequest();
+    const req = new CreateApiKeyRequest();
     req.setApiKey(obj);
 
     InternalStore.createApiKey(req, (resp: CreateApiKeyResponse) => {

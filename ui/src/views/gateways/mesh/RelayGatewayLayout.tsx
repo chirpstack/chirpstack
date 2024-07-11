@@ -30,7 +30,7 @@ function RelayGatewayLayout(props: IProps) {
   const [relayGateway, setRelayGateway] = useState<RelayGateway | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetRelayGatewayRequest();
+    const req = new GetRelayGatewayRequest();
     req.setTenantId(props.tenant.getId());
     req.setRelayId(relayId!);
 
@@ -40,7 +40,7 @@ function RelayGatewayLayout(props: IProps) {
   }, [props, relayId]);
 
   const deleteRelayGateway = () => {
-    let req = new DeleteRelayGatewayRequest();
+    const req = new DeleteRelayGatewayRequest();
     req.setTenantId(props.tenant.getId());
     req.setRelayId(relayId!);
 
@@ -53,7 +53,7 @@ function RelayGatewayLayout(props: IProps) {
     return null;
   }
 
-  let isGatewayAdmin =
+  const isGatewayAdmin =
     SessionStore.isAdmin() ||
     SessionStore.isTenantAdmin(props.tenant.getId()) ||
     SessionStore.isTenantGatewayAdmin(props.tenant.getId());

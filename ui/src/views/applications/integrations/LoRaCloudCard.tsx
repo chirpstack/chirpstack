@@ -14,14 +14,14 @@ interface IProps {
 
 function LoRaCloudCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteLoraCloudIntegrationRequest();
+    const req = new DeleteLoraCloudIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteLoraCloudIntegration(req, () => {});
   };
 
   let actions: any[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="loracloud/create">
         <PlusOutlined />

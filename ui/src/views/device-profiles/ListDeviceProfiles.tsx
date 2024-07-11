@@ -100,7 +100,7 @@ function ListDeviceProfiles(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListDeviceProfilesRequest();
+    const req = new ListDeviceProfilesRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);
     req.setOffset(offset);

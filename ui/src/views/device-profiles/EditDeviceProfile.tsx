@@ -30,7 +30,7 @@ function EditDeviceProfile(props: IProps) {
 
   useEffect(() => {
     const id = deviceProfileId!;
-    let req = new GetDeviceProfileRequest();
+    const req = new GetDeviceProfileRequest();
     req.setId(id);
 
     DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
@@ -39,7 +39,7 @@ function EditDeviceProfile(props: IProps) {
   }, [deviceProfileId]);
 
   const onFinish = (obj: DeviceProfile) => {
-    let req = new UpdateDeviceProfileRequest();
+    const req = new UpdateDeviceProfileRequest();
     req.setDeviceProfile(obj);
 
     DeviceProfileStore.update(req, () => {
@@ -48,7 +48,7 @@ function EditDeviceProfile(props: IProps) {
   };
 
   const deleteDeviceProfile = () => {
-    let req = new DeleteDeviceProfileRequest();
+    const req = new DeleteDeviceProfileRequest();
     req.setId(deviceProfileId!);
 
     DeviceProfileStore.delete(req, () => {

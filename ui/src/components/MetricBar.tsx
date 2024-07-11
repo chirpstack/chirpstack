@@ -43,7 +43,7 @@ function MetricBar(props: IProps) {
     },
   };
 
-  let data: {
+  const data: {
     labels: number[];
     datasets: {
       label: string;

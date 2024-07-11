@@ -17,7 +17,7 @@ function EditDevice(props: IProps) {
   const navigate = useNavigate();
 
   const onFinish = (obj: Device) => {
-    let req = new UpdateDeviceRequest();
+    const req = new UpdateDeviceRequest();
     req.setDevice(obj);
 
     DeviceStore.update(req, () => {

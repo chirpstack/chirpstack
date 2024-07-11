@@ -23,7 +23,7 @@ function EditInfluxDbIntegration(props: IProps) {
   const [integration, setIntegration] = useState<InfluxDbIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetInfluxDbIntegrationRequest();
+    const req = new GetInfluxDbIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getInfluxDbIntegration(req, (resp: GetInfluxDbIntegrationResponse) => {
@@ -32,7 +32,7 @@ function EditInfluxDbIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: InfluxDbIntegration) => {
-    let req = new UpdateInfluxDbIntegrationRequest();
+    const req = new UpdateInfluxDbIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateInfluxDbIntegration(req, () => {

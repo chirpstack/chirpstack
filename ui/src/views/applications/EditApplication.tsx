@@ -14,7 +14,7 @@ function EditApplication(props: IProps) {
   const navigate = useNavigate();
 
   const onFinish = (obj: Application) => {
-    let req = new UpdateApplicationRequest();
+    const req = new UpdateApplicationRequest();
     req.setApplication(obj);
 
     ApplicationStore.update(req, () => {

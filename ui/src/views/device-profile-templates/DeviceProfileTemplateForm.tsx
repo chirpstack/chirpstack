@@ -34,7 +34,7 @@ function DeviceProfileTemplateForm(props: IProps) {
     setPayloadCodecRuntime(v.getPayloadCodecRuntime());
 
     DeviceProfileStore.listAdrAlgorithms((resp: ListDeviceProfileAdrAlgorithmsResponse) => {
-      let adrAlgorithms: [string, string][] = [];
+      const adrAlgorithms: [string, string][] = [];
       for (const a of resp.getResultList()) {
         adrAlgorithms.push([a.getId(), a.getName()]);
       }
@@ -45,7 +45,7 @@ function DeviceProfileTemplateForm(props: IProps) {
 
   const onFinish = (values: DeviceProfileTemplate.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let dp = new DeviceProfileTemplate();
+    const dp = new DeviceProfileTemplate();
     dp.setId(v.id);
 
     dp.setName(v.name);
@@ -89,7 +89,7 @@ function DeviceProfileTemplateForm(props: IProps) {
 
     // measurements
     for (const elm of v.measurementsMap) {
-      let m = new Measurement();
+      const m = new Measurement();
       m.setKind(elm[1].kind);
       m.setName(elm[1].name);
       dp.getMeasurementsMap().set(elm[0], m);

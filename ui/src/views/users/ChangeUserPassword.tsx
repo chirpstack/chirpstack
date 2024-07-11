@@ -19,7 +19,7 @@ function ChangeUserPassword() {
   const [user, setUser] = useState<User | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetUserRequest();
+    const req = new GetUserRequest();
     req.setId(userId!);
 
     UserStore.get(req, (resp: GetUserResponse) => {
@@ -28,7 +28,7 @@ function ChangeUserPassword() {
   }, [userId]);
 
   const onFinish = (pw: string) => {
-    let req = new UpdateUserPasswordRequest();
+    const req = new UpdateUserPasswordRequest();
     req.setUserId(userId!);
     req.setPassword(pw);
 

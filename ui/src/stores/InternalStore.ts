@@ -83,9 +83,9 @@ class InternalStore extends EventEmitter {
   };
 
   streamGatewayFrames = (req: StreamGatewayFramesRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
-    var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
+    let stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
-    let setup = () => {
+    const setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamGatewayFrames(req, SessionStore.getMetadata());
 
@@ -110,9 +110,9 @@ class InternalStore extends EventEmitter {
   };
 
   streamDeviceFrames = (req: StreamDeviceFramesRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
-    var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
+    let stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
-    let setup = () => {
+    const setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamDeviceFrames(req, SessionStore.getMetadata());
 
@@ -136,9 +136,9 @@ class InternalStore extends EventEmitter {
   };
 
   streamDeviceEvents = (req: StreamDeviceEventsRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
-    var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
+    let stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
-    let setup = () => {
+    const setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamDeviceEvents(req, SessionStore.getMetadata());
 

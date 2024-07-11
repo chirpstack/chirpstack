@@ -58,7 +58,7 @@ function ListMulticastGroups(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListMulticastGroupsRequest();
+    const req = new ListMulticastGroupsRequest();
     req.setApplicationId(props.application.getId());
     req.setLimit(limit);
     req.setOffset(offset);

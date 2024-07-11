@@ -32,7 +32,7 @@ function GatewaysMap() {
   const [items, setItems] = useState<GatewayListItem[]>([]);
 
   useEffect(() => {
-    let req = new ListGatewaysRequest();
+    const req = new ListGatewaysRequest();
     req.setLimit(9999);
     GatewayStore.list(req, (resp: ListGatewaysResponse) => {
       setItems(resp.getResultList());
@@ -49,8 +49,8 @@ function GatewaysMap() {
     padding: [50, 50],
   };
 
-  let bounds: LatLngTuple[] = [];
-  let markers: any[] = [];
+  const bounds: LatLngTuple[] = [];
+  const markers: any[] = [];
 
   for (const item of items) {
     const pos: LatLngTuple = [item.getLocation()!.getLatitude(), item.getLocation()!.getLongitude()];
@@ -66,7 +66,7 @@ function GatewaysMap() {
     }
 
     if (item.getLastSeenAt() !== undefined) {
-      let ts = moment(item.getLastSeenAt()!.toDate());
+      const ts = moment(item.getLastSeenAt()!.toDate());
       lastSeen = ts.fromNow();
     }
 
@@ -186,7 +186,7 @@ function DevicesDataRates({ summary }: { summary?: GetDevicesSummaryResponse }) 
     return <Empty />;
   }
 
-  let data: {
+  const data: {
     labels: string[];
     datasets: {
       data: number[];

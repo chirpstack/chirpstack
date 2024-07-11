@@ -15,7 +15,7 @@ interface IProps {
 function RelayGatewayForm(props: IProps) {
   const onFinish = (values: RelayGateway.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let relay = new RelayGateway();
+    const relay = new RelayGateway();
 
     relay.setTenantId(v.tenantId);
     relay.setRelayId(v.relayId);

@@ -49,7 +49,7 @@ function ApplicationLayout(props: IProps) {
   const location = useLocation();
 
   const deleteApplication = () => {
-    let req = new DeleteApplicationRequest();
+    const req = new DeleteApplicationRequest();
     req.setId(props.application.getId());
 
     ApplicationStore.delete(req, () => {

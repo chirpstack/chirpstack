@@ -13,7 +13,7 @@ interface IProps {
 }
 
 function IftttIntegrationForm(props: IProps) {
-  const [arbitraryJson, setArbitraryJson] = useState<Boolean>(false);
+  const [arbitraryJson, setArbitraryJson] = useState<boolean>(false);
 
   useEffect(() => {
     setArbitraryJson(props.initialValues.getArbitraryJson());
@@ -21,7 +21,7 @@ function IftttIntegrationForm(props: IProps) {
 
   const onFinish = (values: IftttIntegration.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let i = new IftttIntegration();
+    const i = new IftttIntegration();
 
     i.setApplicationId(v.applicationId);
     i.setKey(v.key);

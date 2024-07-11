@@ -25,7 +25,7 @@ function CreateDeviceProfile(props: IProps) {
   const onFinish = (obj: DeviceProfile) => {
     obj.setTenantId(props.tenant.getId());
 
-    let req = new CreateDeviceProfileRequest();
+    const req = new CreateDeviceProfileRequest();
     req.setDeviceProfile(obj);
 
     DeviceProfileStore.create(req, (_resp: CreateDeviceProfileResponse) => {
@@ -66,7 +66,7 @@ function CreateDeviceProfile(props: IProps) {
   }
   `;
 
-  let deviceProfile = new DeviceProfile();
+  const deviceProfile = new DeviceProfile();
   deviceProfile.setPayloadCodecScript(codecScript);
   deviceProfile.setSupportsOtaa(true);
   deviceProfile.setUplinkInterval(3600);

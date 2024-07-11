@@ -21,7 +21,7 @@ function RelayLayout(props: IProps) {
   const { relayDevEui } = useParams();
 
   useEffect(() => {
-    let req = new GetDeviceRequest();
+    const req = new GetDeviceRequest();
     req.setDevEui(relayDevEui!);
 
     DeviceStore.get(req, (resp: GetDeviceResponse) => {
@@ -37,7 +37,7 @@ function RelayLayout(props: IProps) {
     return null;
   }
 
-  let tab = "devices";
+  const tab = "devices";
 
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">

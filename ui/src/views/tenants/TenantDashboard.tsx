@@ -44,8 +44,8 @@ function GatewaysMap(props: GatewaysMapProps) {
     padding: [50, 50],
   };
 
-  let bounds: LatLngTuple[] = [];
-  let markers: any[] = [];
+  const bounds: LatLngTuple[] = [];
+  const markers: any[] = [];
 
   for (const item of props.items) {
     if (item.getLocation() === undefined) {
@@ -65,7 +65,7 @@ function GatewaysMap(props: GatewaysMapProps) {
     }
 
     if (item.getLastSeenAt() !== undefined) {
-      let ts = moment(item.getLastSeenAt()!.toDate());
+      const ts = moment(item.getLastSeenAt()!.toDate());
       lastSeen = ts.fromNow();
     }
 
@@ -197,7 +197,7 @@ function DevicesDataRates(props: DeviceProps) {
     return <Empty />;
   }
 
-  let data: {
+  const data: {
     labels: string[];
     datasets: {
       data: number[];
@@ -243,7 +243,7 @@ function TenantDashboard({ tenant }: { tenant: Tenant }) {
 
   useEffect(() => {
     {
-      let req = new GetGatewaysSummaryRequest();
+      const req = new GetGatewaysSummaryRequest();
       req.setTenantId(tenant.getId());
 
       InternalStore.getGatewaysSummary(req, (resp: GetGatewaysSummaryResponse) => {
@@ -252,7 +252,7 @@ function TenantDashboard({ tenant }: { tenant: Tenant }) {
     }
 
     {
-      let req = new GetDevicesSummaryRequest();
+      const req = new GetDevicesSummaryRequest();
       req.setTenantId(tenant.getId());
 
       InternalStore.getDevicesSummary(req, (resp: GetDevicesSummaryResponse) => {
@@ -261,7 +261,7 @@ function TenantDashboard({ tenant }: { tenant: Tenant }) {
     }
 
     {
-      let req = new ListGatewaysRequest();
+      const req = new ListGatewaysRequest();
       req.setTenantId(tenant.getId());
       req.setLimit(9999);
 

@@ -12,7 +12,7 @@ function CreateTenant() {
   const navigate = useNavigate();
 
   const onFinish = (obj: Tenant) => {
-    let req = new CreateTenantRequest();
+    const req = new CreateTenantRequest();
     req.setTenant(obj);
 
     TenantStore.create(req, (resp: CreateTenantResponse) => {

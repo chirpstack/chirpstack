@@ -61,8 +61,8 @@ function GatewayForm(props: IProps) {
 
   const onFinish = (values: Gateway.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let gw = new Gateway();
-    let loc = new Location();
+    const gw = new Gateway();
+    const loc = new Location();
 
     if (v.location) {
       loc.setLatitude(v.location.latitude);

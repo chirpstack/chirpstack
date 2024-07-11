@@ -34,7 +34,7 @@ function MulticastGroupForm(props: IProps) {
 
   const onFinish = (values: MulticastGroup.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let mg = new MulticastGroup();
+    const mg = new MulticastGroup();
     mg.setId(v.id);
     mg.setApplicationId(v.applicationId);
 

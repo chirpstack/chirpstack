@@ -26,15 +26,15 @@ function CreateDevice(props: IProps) {
   const onFinish = (obj: Device) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateDeviceRequest();
+    const req = new CreateDeviceRequest();
     req.setDevice(obj);
 
     DeviceStore.create(req, () => {
-      let req = new GetDeviceProfileRequest();
+      const req = new GetDeviceProfileRequest();
       req.setId(obj.getDeviceProfileId());
 
       DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
-        let dp = resp.getDeviceProfile()!;
+        const dp = resp.getDeviceProfile()!;
         if (dp.getSupportsOtaa()) {
           navigate(
             `/tenants/${props.tenant.getId()}/applications/${props.application.getId()}/devices/${obj.getDevEui()}/keys`,
@@ -48,7 +48,7 @@ function CreateDevice(props: IProps) {
     });
   };
 
-  let device = new Device();
+  const device = new Device();
   device.setApplicationId(props.application.getId());
 
   return (

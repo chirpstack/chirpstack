@@ -25,7 +25,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let req = new GetTenantUserRequest();
+    const req = new GetTenantUserRequest();
     req.setTenantId(tenant.getId());
     req.setUserId(userId!);
 
@@ -35,7 +35,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
   }, [userId, tenant]);
 
   const onFinish = (obj: TenantUser) => {
-    let req = new UpdateTenantUserRequest();
+    const req = new UpdateTenantUserRequest();
     req.setTenantUser(obj);
 
     TenantStore.updateUser(req, () => {
@@ -44,7 +44,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
   };
 
   const deleteTenantUser = () => {
-    let req = new DeleteTenantUserRequest();
+    const req = new DeleteTenantUserRequest();
     req.setTenantId(tenant.getId());
     req.setUserId(userId!);
 

@@ -22,7 +22,7 @@ function TenantUserForm(props: IProps) {
   const onFinish = (values: TenantUser.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
 
-    let tu = new TenantUser();
+    const tu = new TenantUser();
     tu.setEmail(v.email);
     tu.setIsAdmin(v.isAdmin);
     tu.setIsGatewayAdmin(v.isGatewayAdmin);

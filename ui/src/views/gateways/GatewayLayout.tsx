@@ -35,7 +35,7 @@ function GatewayLayout(props: IProps) {
   const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetGatewayRequest();
+    const req = new GetGatewayRequest();
     req.setGatewayId(gatewayId!);
 
     GatewayStore.get(req, (resp: GetGatewayResponse) => {
@@ -48,7 +48,7 @@ function GatewayLayout(props: IProps) {
   }, [props, gatewayId]);
 
   const deleteGateway = () => {
-    let req = new DeleteGatewayRequest();
+    const req = new DeleteGatewayRequest();
     req.setGatewayId(gatewayId!);
 
     GatewayStore.delete(req, () => {
@@ -75,7 +75,7 @@ function GatewayLayout(props: IProps) {
     tab = "frames";
   }
 
-  let isGatewayAdmin =
+  const isGatewayAdmin =
     SessionStore.isAdmin() ||
     SessionStore.isTenantAdmin(props.tenant.getId()) ||
     SessionStore.isTenantGatewayAdmin(props.tenant.getId());

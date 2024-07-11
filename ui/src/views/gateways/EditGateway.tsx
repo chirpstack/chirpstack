@@ -14,7 +14,7 @@ function EditGateway(props: IProps) {
   const navigate = useNavigate();
 
   const onFinish = (obj: Gateway) => {
-    let req = new UpdateGatewayRequest();
+    const req = new UpdateGatewayRequest();
     req.setGateway(obj);
 
     GatewayStore.update(req, () => {

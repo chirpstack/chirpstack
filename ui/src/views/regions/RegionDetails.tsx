@@ -17,7 +17,7 @@ function RegionDetails() {
   const { id } = useParams();
 
   useEffect(() => {
-    let req = new GetRegionRequest();
+    const req = new GetRegionRequest();
     req.setId(id!);
 
     InternalStore.getRegion(req, (resp: GetRegionResponse) => {

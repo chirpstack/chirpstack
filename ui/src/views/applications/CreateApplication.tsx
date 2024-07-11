@@ -23,7 +23,7 @@ function CreateApplication(props: IProps) {
   const onFinish = (obj: Application) => {
     obj.setTenantId(props.tenant.getId());
 
-    let req = new CreateApplicationRequest();
+    const req = new CreateApplicationRequest();
     req.setApplication(obj);
 
     ApplicationStore.create(req, (resp: CreateApplicationResponse) => {
