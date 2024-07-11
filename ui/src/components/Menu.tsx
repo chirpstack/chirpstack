@@ -12,6 +12,7 @@ import {
   ControlOutlined,
   AppstoreOutlined,
   CompassOutlined,
+  RadarChartOutlined,
 } from "@ant-design/icons";
 
 import {
@@ -130,6 +131,11 @@ function SideMenu() {
       setSelectedKey("tenant-gateways");
     }
 
+    // tenant gateway-mesh
+    if (/\/tenants\/[\w-]{36}\/gateways\/mesh.*/g.exec(path)) {
+      setSelectedKey("tenant-gateways-mesh");
+    }
+
     // tenant applications
     if (/\/tenants\/[\w-]{36}\/applications.*/g.exec(path)) {
       setSelectedKey("tenant-applications");
@@ -241,6 +247,11 @@ function SideMenu() {
           key: "tenant-gateways",
           icon: <WifiOutlined />,
           label: <Link to={`/tenants/${tenantId}/gateways`}>Gateways</Link>,
+        },
+        {
+          key: "tenant-gateways-mesh",
+          icon: <RadarChartOutlined />,
+          label: <Link to={`/tenants/${tenantId}/gateways/mesh/relays`}>Gateway Mesh</Link>,
         },
         {
           key: "tenant-applications",

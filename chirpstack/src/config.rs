@@ -31,6 +31,7 @@ pub struct Configuration {
     pub roaming: Roaming,
     pub keks: Vec<Kek>,
     pub regions: Vec<Region>,
+    pub ui: UI,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -750,6 +751,23 @@ impl Default for GatewayChannel {
             modulation: GatewayChannelModulation::LORA,
             spreading_factors: vec![],
             datarate: 0,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
+pub struct UI {
+    pub tileserver_url: String,
+    pub map_attribution: String,
+}
+
+impl Default for UI {
+    fn default() -> Self {
+        UI {
+            tileserver_url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png".into(),
+            map_attribution:
+                "&copy; <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors".into(),
         }
     }
 }

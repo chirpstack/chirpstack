@@ -33,22 +33,8 @@ impl UplinkMetadata {
             return Err(anyhow!("max wor_channel value is 1"));
         }
 
-        let mut snr = self.snr;
-        let mut rssi = self.rssi;
-
-        // Set to closest possible value.
-        if snr < -20 {
-            snr = -20;
-        }
-        if snr > 11 {
-            snr = 11;
-        }
-        if rssi > -15 {
-            rssi = -15;
-        }
-        if rssi < -142 {
-            rssi = -142;
-        }
+        let snr = self.snr.clamp(-20, 11);
+        let rssi = self.rssi.clamp(-142, -15);
 
         // Encode values
         let snr = (snr + 20) as u8;

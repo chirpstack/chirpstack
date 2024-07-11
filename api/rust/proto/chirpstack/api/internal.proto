@@ -7,6 +7,8 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "InternalProto";
 option csharp_namespace = "Chirpstack.Api";
+option php_namespace = "Chirpstack\\Api";
+option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
@@ -221,6 +223,12 @@ message SettingsResponse {
 
   // OAuth2 settings.
   OAuth2 oauth2 = 2;
+
+  // Tileserver URL.
+  string tileserver_url = 3;
+
+  // Map attribution.
+  string map_attribution = 4;
 }
 
 message OpenIdConnect {

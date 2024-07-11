@@ -7,6 +7,8 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "GatewayProto";
 option csharp_namespace = "Chirpstack.Api";
+option php_namespace = "Chirpstack\\Api";
+option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
@@ -73,6 +75,35 @@ service GatewayService {
             get: "/api/gateways/{gateway_id}/duty-cycle-metrics"
         };
     }
+
+    // Get the given Relay Gateway.
+    rpc GetRelayGateway(GetRelayGatewayRequest) returns (GetRelayGatewayResponse) {
+        option(google.api.http) = {
+            get: "/api/gateways/relay-gateways/{tenant_id}/{relay_id}"
+        };
+    }
+
+    // List the detected Relay Gateways.
+    rpc ListRelayGateways(ListRelayGatewaysRequest) returns (ListRelayGatewaysResponse) {
+        option(google.api.http) = {
+            get: "/api/gateways/relay-gateways"
+        };
+    }
+
+    // Update the given Relay Gateway.
+    rpc UpdateRelayGateway(UpdateRelayGatewayRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            put: "/api/gateways/relay-gateways/{relay_gateway.tenant_id}/{relay_gateway.relay_id}"
+            body: "*"
+        };
+    }
+
+    // Delete the given Relay Gateway.
+    rpc DeleteRelayGateway(DeleteRelayGatewayRequest) returns (google.protobuf.Empty) {
+        option(google.api.http) = {
+            delete: "/api/gateways/relay-gateways/{tenant_id}/{relay_id}"
+        };
+    }
 }
 
 enum GatewayState {
@@ -133,11 +164,11 @@ message GatewayListItem {
     // Gateway properties.
     map<string, string> properties = 6;
 
-	// Created at timestamp.
-	google.protobuf.Timestamp created_at = 7;
+	  // Created at timestamp.
+	  google.protobuf.Timestamp created_at = 7;
 
-	// Last update timestamp.
-	google.protobuf.Timestamp updated_at = 8;
+	  // Last update timestamp.
+	  google.protobuf.Timestamp updated_at = 8;
 
     // Last seen at timestamp.
     google.protobuf.Timestamp last_seen_at = 9;
@@ -281,4 +312,112 @@ message GetGatewayDutyCycleMetricsResponse {
 
     // Percentage relative to tracking window.
     common.Metric window_percentage = 2;
+}
+
+message GetRelayGatewayRequest {
+    // Tenant ID (UUID).
+    string tenant_id = 1;
+
+    // Relay ID (4 byte HEX).
+    string relay_id = 2;
+}
+
+message GetRelayGatewayResponse {
+    // Relay Gateway object.
+    RelayGateway relay_gateway = 1;
+
+	  // Created at timestamp.
+	  google.protobuf.Timestamp created_at = 2;
+
+	  // Last update timestamp.
+	  google.protobuf.Timestamp updated_at = 3;
+
+    // Last seen at timestamp.
+    google.protobuf.Timestamp last_seen_at = 4;
+}
+
+message ListRelayGatewaysRequest {
+    // Max number of relay-gateways to return in the result-set.
+    uint32 limit = 1;
+
+    // Offset in the result-set (for pagination).
+    uint32 offset = 2;
+
+    // Tenant ID (UUID) to filter relay-gateways on.
+    // To list all relay-gateways as a global admin user, this field can be left blank.
+    string tenant_id = 3;
+}
+
+message ListRelayGatewaysResponse {
+    // Total number of relay-gateways.
+    uint32 total_count = 1;
+
+    // Result-set.
+    repeated RelayGatewayListItem result = 2;
+}
+
+message RelayGatewayListItem {
+    // Tenant ID.
+    string tenant_id = 1;
+
+    // Relay ID (4 byte HEX).
+    string relay_id = 2;
+
+    // Name.
+    string name = 3;
+
+    // Description.
+    string description = 4;
+
+	  // Created at timestamp.
+	  google.protobuf.Timestamp created_at = 5;
+
+	  // Last update timestamp.
+	  google.protobuf.Timestamp updated_at = 6;
+
+    // Last seen at timestamp.
+    google.protobuf.Timestamp last_seen_at = 7;
+
+    // Gateway state.
+    // Please note that the state of the relay is driven by the last
+    // received stats packet sent by the relay-gateway.
+    GatewayState state = 10;
+
+    // Region configuration ID.
+    string region_config_id = 11;
+}
+
+message UpdateRelayGatewayRequest {
+    // Relay Gateway object.
+    RelayGateway relay_gateway = 1;
+}
+
+message DeleteRelayGatewayRequest {
+    // Tenant ID.
+    string tenant_id = 1;
+
+    // Relay ID (4 byte HEX).
+    string relay_id = 2;
+}
+
+message RelayGateway {
+    // Tenant ID.
+    string tenant_id = 1;
+
+    // Relay ID (4 byte HEX).
+    string relay_id = 2;
+
+    // Name.
+    string name = 3;
+
+    // Description.
+    string description = 4;
+
+    // Stats interval (seconds).
+    // This defines the expected interval in which the gateway sends its
+    // statistics.
+    uint32 stats_interval = 5;
+
+    // Region configuration ID.
+    string region_config_id = 6;
 }

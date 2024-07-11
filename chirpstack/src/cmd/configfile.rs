@@ -943,6 +943,21 @@ pub fn run() {
   label="{{ this.label }}"
   kek="{{ this.kek }}"
 {{/each}}
+
+# UI configuration.
+[ui]
+  # Tileserver URL.
+  #
+  # This configures the tileserver used in the UI to display maps.
+  # The default value uses the OSM tiles.
+  tileserver_url="{{ui.tileserver_url}}"
+
+  # Map attribution.
+  #
+  # This configures the map attribution. The default attribution relates to the
+  # default tileserver_url (OSM). If you configure a different tile-server, you
+  # might need to update the map_attribution.
+  map_attribution="{{ui.map_attribution}}"
 "#;
 
     let mut reg = Handlebars::new();

@@ -84,7 +84,7 @@ impl Stats {
             if !(loc.latitude == 0.0 && loc.longitude == 0.0 && loc.altitude == 0.0) {
                 gw_cs.latitude = Some(loc.latitude);
                 gw_cs.longitude = Some(loc.longitude);
-                gw_cs.altitude = Some(loc.longitude as f32);
+                gw_cs.altitude = Some(loc.altitude as f32);
             }
         }
 

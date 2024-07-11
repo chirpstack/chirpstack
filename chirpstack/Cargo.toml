@@ -3,7 +3,7 @@
   description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
   repository = "https://github.com/chirpstack/chirpstack"
   homepage = "https://www.chirpstack.io/"
-  version = "4.8.1"
+  version = "4.9.0-test.3"
   authors = ["Orne Brocaar <info@brocaar.com>"]
   edition = "2021"
   publish = false
@@ -126,8 +126,10 @@
   elliptic-curve = { version = "0.13", features = ["pem"] }
   p256 = "0.13"
   rcgen = { version = "0.13.1", features = ["x509-parser"] }
-  openidconnect = { version = "3.5", features = ["accept-rfc3339-timestamps"] }
-  oauth2 = "4.4"
+  oauth2 = "5.0.0-alpha.4"
+  openidconnect = { version = "4.0.0-alpha.2", features = [
+    "accept-rfc3339-timestamps",
+  ] }
 
   # MQTT
   rumqttc = { version = "0.24", features = ["url"] }
