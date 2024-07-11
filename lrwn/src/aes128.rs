@@ -62,7 +62,9 @@ impl FromStr for AES128Key {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut bytes: [u8; 16] = [0; 16];
-        hex::decode_to_slice(s, &mut bytes)?;
+        if !s.is_empty() {
+            hex::decode_to_slice(s, &mut bytes)?;
+        }
         Ok(AES128Key(bytes))
     }
 }

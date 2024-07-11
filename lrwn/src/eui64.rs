@@ -70,7 +70,9 @@ impl FromStr for EUI64 {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut bytes: [u8; 8] = [0; 8];
-        hex::decode_to_slice(s, &mut bytes)?;
+        if !s.is_empty() {
+            hex::decode_to_slice(s, &mut bytes)?;
+        }
         Ok(EUI64(bytes))
     }
 }
