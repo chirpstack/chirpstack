@@ -56,7 +56,7 @@ class InternalStore extends EventEmitter {
   };
 
   deleteApiKey = (req: DeleteApiKeyRequest, callbackFunc: () => void) => {
-    this.client.deleteApiKey(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteApiKey(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -93,7 +93,7 @@ class InternalStore extends EventEmitter {
         callbackFunc(resp);
       });
 
-      stream = stream.on("end", function() {
+      stream = stream.on("end", function () {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });
@@ -120,7 +120,7 @@ class InternalStore extends EventEmitter {
         callbackFunc(resp);
       });
 
-      stream = stream.on("end", function() {
+      stream = stream.on("end", function () {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });
@@ -146,7 +146,7 @@ class InternalStore extends EventEmitter {
         callbackFunc(resp);
       });
 
-      stream = stream.on("end", function() {
+      stream = stream.on("end", function () {
         console.log("gRPC stream end, reconnecting");
         setTimeout(setup, 1000);
       });

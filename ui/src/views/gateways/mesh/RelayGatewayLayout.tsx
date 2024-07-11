@@ -47,7 +47,7 @@ function RelayGatewayLayout(props: IProps) {
     GatewayStore.deleteRelayGateway(req, () => {
       navigate(`/tenants/${props.tenant.getId()}/gateways/mesh/relays`);
     });
-  }
+  };
 
   if (!relayGateway) {
     return null;

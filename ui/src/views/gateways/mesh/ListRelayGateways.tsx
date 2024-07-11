@@ -69,9 +69,9 @@ function ListRelayGateways(props: IProps) {
       dataIndex: "regionConfigId",
       key: "regionConfigId",
       width: 150,
-      render: (text) => {
+      render: text => {
         return <Link to={`/regions/${text}`}>{text}</Link>;
-      }
+      },
     },
   ];
 
