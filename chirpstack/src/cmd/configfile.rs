@@ -618,13 +618,13 @@ pub fn run() {
     # is needed.
     assume_email_verified={{ user_authentication.openid_connect.assume_email_verified }}
 
-    # Add additional scopes.
+    # Scopes.
     #
-    # When set, additional OpenID Connect scopes are used during login. Default scopes
-    # are "email" and "profile".
-    additional_scopes=[
-      {{#each user_authentication.openid_connect.additional_scopes}}
-        "{{this}}",
+    # This configures the scopes that are used during login. You must at least define
+    # "email" and "profile".
+    scopes=[
+      {{#each user_authentication.openid_connect.scopes}}
+      "{{this}}",
       {{/each}}
     ]
 
@@ -705,13 +705,13 @@ pub fn run() {
     # from the userinfo URL, assuming it will be true.
     assume_email_verified={{ user_authentication.oauth2.assume_email_verified }}
 
-    # Add additional scopes.
+    # Scopes.
     #
-    # When set, additional oAuth2 scopes are used during login. Default scope
-    # is "email".
-    additional_scopes=[
-      {{#each user_authentication.openid_connect.additional_scopes}}
-        "{{this}}",
+    # This configures the scopes that are used during login. You must at least define
+    # "email".
+    scopes=[
+      {{#each user_authentication.oauth2.scopes}}
+      "{{this}}",
       {{/each}}
     ]
 

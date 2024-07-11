@@ -60,16 +60,13 @@ pub async fn login_handler() -> Result<impl Reply, Rejection> {
     };
 
     let conf = config::get();
-    let mut request = client
-        .authorize_url(
-            AuthenticationFlow::<CoreResponseType>::AuthorizationCode,
-            CsrfToken::new_random,
-            Nonce::new_random,
-        )
-        .add_scope(Scope::new("email".to_string()))
-        .add_scope(Scope::new("profile".to_string()));
-    for additional_scope in &conf.user_authentication.openid_connect.additional_scopes {
-        request = request.add_scope(Scope::new(additional_scope.to_string()))
+    let mut request = client.authorize_url(
+        AuthenticationFlow::<CoreResponseType>::AuthorizationCode,
+        CsrfToken::new_random,
+        Nonce::new_random,
+    );
+    for scope in &conf.user_authentication.openid_connect.scopes {
+        request = request.add_scope(Scope::new(scope.to_string()))
     }
     let (auth_url, csrf_state, nonce) = request.url();
 

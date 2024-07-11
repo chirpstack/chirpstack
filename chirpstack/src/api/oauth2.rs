@@ -55,12 +55,10 @@ pub async fn login_handler() -> Result<impl Reply, Rejection> {
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
     let conf = config::get();
 
-    let mut request = client
-        .authorize_url(CsrfToken::new_random)
-        .add_scope(Scope::new("email".into()));
+    let mut request = client.authorize_url(CsrfToken::new_random);
 
-    for additional_scope in &conf.user_authentication.oauth2.additional_scopes {
-        request = request.add_scope(Scope::new(additional_scope.to_string()))
+    for scope in &conf.user_authentication.oauth2.scopes {
+        request = request.add_scope(Scope::new(scope.to_string()))
     }
     let (auth_url, csrf_token) = request.set_pkce_challenge(pkce_challenge).url();
 

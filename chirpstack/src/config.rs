@@ -423,7 +423,7 @@ pub struct OpenIdConnect {
     pub login_redirect: bool,
     pub login_label: String,
     pub assume_email_verified: bool,
-    pub additional_scopes: Vec<String>,
+    pub scopes: Vec<String>,
 }
 
 impl Default for OpenIdConnect {
@@ -439,7 +439,7 @@ impl Default for OpenIdConnect {
             login_redirect: false,
             login_label: "".to_string(),
             assume_email_verified: false,
-            additional_scopes: vec![],
+            scopes: vec!["email".to_string(), "profile".to_string()],
         }
     }
 }
@@ -460,7 +460,7 @@ pub struct OAuth2 {
     pub login_redirect: bool,
     pub login_label: String,
     pub assume_email_verified: bool,
-    pub additional_scopes: Vec<String>,
+    pub scopes: Vec<String>,
 }
 
 impl Default for OAuth2 {
@@ -479,7 +479,7 @@ impl Default for OAuth2 {
             login_redirect: false,
             login_label: "".to_string(),
             assume_email_verified: false,
-            additional_scopes: vec![],
+            scopes: vec!["email".to_string()],
         }
     }
 }
