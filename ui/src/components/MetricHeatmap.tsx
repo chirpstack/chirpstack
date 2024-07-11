@@ -5,7 +5,6 @@ import { Card } from "antd";
 import { color } from "chart.js/helpers";
 import type { TimeUnit } from "chart.js";
 import { Chart } from "react-chartjs-2";
-import moment from "moment";
 
 import type { Metric } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
@@ -44,7 +43,7 @@ function MetricHeatmap(props: IProps) {
           unit: unit,
         },
         offset: true,
-        labels: props.metric.getTimestampsList().map(v => moment(v.toDate().valueOf())),
+        labels: props.metric.getTimestampsList().map(v => v.toDate().getTime()),
         grid: {
           display: false,
         },
@@ -127,7 +126,7 @@ function MetricHeatmap(props: IProps) {
       }
 
       data.datasets[0].data.push({
-        x: moment(tsList[i].toDate()).valueOf(),
+        x: tsList[i].toDate().getTime(),
         y: ds.getLabel(),
         v: v,
       });
