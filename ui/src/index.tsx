@@ -5,8 +5,8 @@ import { Chart, registerables } from "chart.js";
 import { MatrixElement, MatrixController } from "chartjs-chart-matrix";
 import "chartjs-adapter-moment";
 
-import App from "./App.tsx";
-import reportWebVitals from "./reportWebVitals.ts";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
 
 import "antd/dist/reset.css";
 import "leaflet/dist/leaflet.css";
