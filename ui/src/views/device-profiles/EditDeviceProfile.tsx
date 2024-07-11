@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button } from "antd";

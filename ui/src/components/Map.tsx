@@ -1,4 +1,4 @@
-import React, { useEffect, PropsWithChildren, useState } from "react";
+import { useEffect, PropsWithChildren, useState } from "react";
 
 import L, { LatLngTuple, FitBoundsOptions } from "leaflet";
 import "leaflet.awesome-markers";

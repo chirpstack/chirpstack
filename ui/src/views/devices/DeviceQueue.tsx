@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Struct } from "google-protobuf/google/protobuf/struct_pb";
 

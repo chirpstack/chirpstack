@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Routes, Route } from "react-router";
 
 import { Tenant, GetTenantResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";

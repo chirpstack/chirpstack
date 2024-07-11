@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { StreamDeviceEventsRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";

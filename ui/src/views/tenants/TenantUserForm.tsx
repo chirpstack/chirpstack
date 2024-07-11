@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Form, Input, Switch, Row, Col, Button } from "antd";
 
 import { TenantUser } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Controlled as CodeMirror } from "react-codemirror2";
 
 import { Form } from "antd";

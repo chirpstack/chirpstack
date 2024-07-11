@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import moment from "moment";
 import { Descriptions, Space, Card, Row, Col } from "antd";

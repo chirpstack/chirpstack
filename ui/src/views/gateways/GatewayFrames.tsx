@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { Gateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { StreamGatewayFramesRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";

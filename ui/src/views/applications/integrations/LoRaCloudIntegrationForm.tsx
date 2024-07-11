@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { Form, Input, InputNumber, Switch, Button, Tabs, Collapse } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";

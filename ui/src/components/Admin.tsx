@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useState, useEffect } from "react";
+import { PropsWithChildren, useState, useEffect } from "react";
 
 import SessionStore from "../stores/SessionStore";
 
