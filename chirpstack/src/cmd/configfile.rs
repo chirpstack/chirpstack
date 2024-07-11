@@ -618,6 +618,15 @@ pub fn run() {
     # is needed.
     assume_email_verified={{ user_authentication.openid_connect.assume_email_verified }}
 
+    # Scopes.
+    #
+    # This configures the scopes that are used during login. You must at least define
+    # "email" and "profile".
+    scopes=[
+      {{#each user_authentication.openid_connect.scopes}}
+      "{{this}}",
+      {{/each}}
+    ]
 
   # OAuth2 backend.
   [user_authentication.oauth2]
@@ -695,6 +704,16 @@ pub fn run() {
     # If set to true, then ChirpStack will ignore the email_verified received
     # from the userinfo URL, assuming it will be true.
     assume_email_verified={{ user_authentication.oauth2.assume_email_verified }}
+
+    # Scopes.
+    #
+    # This configures the scopes that are used during login. You must at least define
+    # "email".
+    scopes=[
+      {{#each user_authentication.oauth2.scopes}}
+      "{{this}}",
+      {{/each}}
+    ]
 
 
 # Join Server configuration.

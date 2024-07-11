@@ -59,15 +59,16 @@ pub async fn login_handler() -> Result<impl Reply, Rejection> {
         }
     };
 
-    let (auth_url, csrf_state, nonce) = client
-        .authorize_url(
-            AuthenticationFlow::<CoreResponseType>::AuthorizationCode,
-            CsrfToken::new_random,
-            Nonce::new_random,
-        )
-        .add_scope(Scope::new("email".to_string()))
-        .add_scope(Scope::new("profile".to_string()))
-        .url();
+    let conf = config::get();
+    let mut request = client.authorize_url(
+        AuthenticationFlow::<CoreResponseType>::AuthorizationCode,
+        CsrfToken::new_random,
+        Nonce::new_random,
+    );
+    for scope in &conf.user_authentication.openid_connect.scopes {
+        request = request.add_scope(Scope::new(scope.to_string()))
+    }
+    let (auth_url, csrf_state, nonce) = request.url();
 
     if let Err(e) = store_nonce(&csrf_state, &nonce).await {
         error!(error = %e.full(), "Store nonce error");

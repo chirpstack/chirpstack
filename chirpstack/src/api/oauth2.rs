@@ -53,11 +53,14 @@ pub async fn login_handler() -> Result<impl Reply, Rejection> {
     };
 
     let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
-    let (auth_url, csrf_token) = client
-        .authorize_url(CsrfToken::new_random)
-        .add_scope(Scope::new("email".into()))
-        .set_pkce_challenge(pkce_challenge)
-        .url();
+    let conf = config::get();
+
+    let mut request = client.authorize_url(CsrfToken::new_random);
+
+    for scope in &conf.user_authentication.oauth2.scopes {
+        request = request.add_scope(Scope::new(scope.to_string()))
+    }
+    let (auth_url, csrf_token) = request.set_pkce_challenge(pkce_challenge).url();
 
     if let Err(e) = store_verifier(&csrf_token, &pkce_verifier).await {
         error!(error = %e.full(), "Store verifier error");
