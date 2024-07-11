@@ -838,7 +838,7 @@ dependencies = [
  "lazy_static",
  "lrwn",
  "mime_guess",
- "oauth2",
+ "oauth2 5.0.0-alpha.4",
  "openidconnect",
  "p256",
  "pbjson-types",
@@ -2836,6 +2836,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "oauth2"
+version = "5.0.0-alpha.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "098af5a5110b4deacf3200682963713b143ae9d28762b739bdb7b98429dfaf68"
+dependencies = [
+ "base64 0.22.0",
+ "chrono",
+ "getrandom",
+ "http 1.1.0",
+ "rand",
+ "reqwest 0.12.3",
+ "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "sha2",
+ "thiserror",
+ "url",
+]
+
+[[package]]
 name = "object"
 version = "0.32.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2873,7 +2893,7 @@ dependencies = [
  "http 0.2.12",
  "itertools 0.10.5",
  "log",
- "oauth2",
+ "oauth2 4.4.2",
  "p256",
  "p384",
  "rand",

@@ -127,7 +127,7 @@
   p256 = "0.13"
   rcgen = { version = "0.13.1", features = ["x509-parser"] }
   openidconnect = { version = "3.5", features = ["accept-rfc3339-timestamps"] }
-  oauth2 = "4.4"
+  oauth2 = "5.0.0-alpha.4"
 
   # MQTT
   rumqttc = { version = "0.24", features = ["url"] }

@@ -3,10 +3,10 @@ use std::str::FromStr;
 use anyhow::{Context, Result};
 use chrono::Duration;
 use oauth2::basic::BasicClient;
-use oauth2::reqwest::async_http_client;
+use oauth2::reqwest;
 use oauth2::{
-    AuthType, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge,
-    RedirectUrl, Scope, TokenResponse, TokenUrl,
+    AuthType, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EndpointNotSet,
+    EndpointSet, PkceCodeChallenge, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
 use reqwest::header::AUTHORIZATION;
 use serde::{Deserialize, Serialize};
@@ -16,6 +16,8 @@ use warp::{Rejection, Reply};
 use crate::config;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{get_async_redis_conn, redis_key};
+
+type Client = BasicClient<EndpointSet, EndpointNotSet, EndpointNotSet, EndpointNotSet, EndpointSet>;
 
 #[derive(Deserialize)]
 struct ClerkUserinfo {
@@ -81,29 +83,31 @@ pub async fn callback_handler(args: CallbackArgs) -> Result<impl Reply, Rejectio
     ))
 }
 
-fn get_client() -> Result<BasicClient> {
+fn get_client() -> Result<Client> {
     let conf = config::get();
 
     if conf.user_authentication.enabled != "oauth2" {
         return Err(anyhow!("OAuth2 is not enabled"));
     }
 
-    let client = BasicClient::new(
-        ClientId::new(conf.user_authentication.oauth2.client_id.clone()),
-        Some(ClientSecret::new(
-            conf.user_authentication.oauth2.client_secret.clone(),
-        )),
-        AuthUrl::new(conf.user_authentication.oauth2.auth_url.clone())?,
-        Some(TokenUrl::new(
-            conf.user_authentication.oauth2.token_url.clone(),
-        )?),
-    )
+    let client = BasicClient::new(ClientId::new(
+        conf.user_authentication.oauth2.client_id.clone(),
+    ))
+    .set_client_secret(ClientSecret::new(
+        conf.user_authentication.oauth2.client_secret.clone(),
+    ))
+    .set_auth_uri(AuthUrl::new(
+        conf.user_authentication.oauth2.auth_url.clone(),
+    )?)
+    .set_token_uri(TokenUrl::new(
+        conf.user_authentication.oauth2.token_url.clone(),
+    )?)
     .set_redirect_uri(RedirectUrl::new(
         conf.user_authentication.oauth2.redirect_url.clone(),
     )?)
     .set_auth_type(match conf.user_authentication.oauth2.provider.as_ref() {
         "clerk" => AuthType::RequestBody, // clerk does not support BasicAuth
-        _ => AuthType::BasicAuth,         //  default oauth2 crate value
+        _ => AuthType::BasicAuth,         // default oauth2 crate value
     });
 
     Ok(client)
@@ -114,10 +118,14 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
     let verifier = get_verifier(&state).await?;
     let client = get_client()?;
 
+    let http_client = reqwest::ClientBuilder::new()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()?;
+
     let token = match client
         .exchange_code(AuthorizationCode::new(code.to_string()))
         .set_pkce_verifier(verifier)
-        .request_async(async_http_client)
+        .request_async(&http_client)
         .await
     {
         Ok(v) => v,
