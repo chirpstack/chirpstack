@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
-import moment from "moment";
-import { format } from "date-fns";
+import { format, sub } from "date-fns";
 import { Descriptions, Space, Card, Row, Col } from "antd";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
@@ -36,22 +35,22 @@ function GatewayDashboard(props: IProps) {
 
   useEffect(() => {
     const agg = metricsAggregation;
-    const end = moment();
-    let start = moment();
+    const end = new Date();
+    let start = new Date();
 
     if (agg === Aggregation.DAY) {
-      start = start.subtract(30, "days");
+      start = sub(start, { days: 30 });
     } else if (agg === Aggregation.HOUR) {
-      start = start.subtract(24, "hours");
+      start = sub(start, { hours: 24 });
     } else if (agg === Aggregation.MONTH) {
-      start = start.subtract(12, "months");
+      start = sub(start, { months: 12 });
     }
 
     const startPb = new Timestamp();
     const endPb = new Timestamp();
 
-    startPb.fromDate(start.toDate());
-    endPb.fromDate(end.toDate());
+    startPb.fromDate(start);
+    endPb.fromDate(end);
 
     const req = new GetGatewayMetricsRequest();
     req.setGatewayId(props.gateway.getGatewayId());
@@ -63,13 +62,13 @@ function GatewayDashboard(props: IProps) {
       setGatewayMetrics(resp);
     });
 
-    const dcEnd = moment().subtract(1, "minute");
+    const dcEnd = sub(new Date(), { minutes: 1 });
     const dcEndPb = new Timestamp();
-    dcEndPb.fromDate(dcEnd.toDate());
+    dcEndPb.fromDate(dcEnd);
 
-    const dcStart = dcEnd.subtract(1, "hours");
+    const dcStart = sub(dcEnd, { hours: 1 });
     const dcStartPb = new Timestamp();
-    dcStartPb.fromDate(dcStart.toDate());
+    dcStartPb.fromDate(dcStart);
 
     const dcReq = new GetGatewayDutyCycleMetricsRequest();
     dcReq.setGatewayId(props.gateway.getGatewayId());

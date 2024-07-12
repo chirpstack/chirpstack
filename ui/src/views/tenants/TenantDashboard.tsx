@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { presetPalettes } from "@ant-design/colors";
 import { Card, Col, Row, Space, Empty } from "antd";
 
-import moment from "moment";
+import { formatDistanceToNow } from "date-fns";
 import type { LatLngTuple, PointTuple } from "leaflet";
 import { Popup } from "react-leaflet";
 import { Doughnut } from "react-chartjs-2";
@@ -64,8 +64,7 @@ function GatewaysMap(props: GatewaysMapProps) {
     }
 
     if (item.getLastSeenAt() !== undefined) {
-      const ts = moment(item.getLastSeenAt()!.toDate());
-      lastSeen = ts.fromNow();
+      lastSeen = formatDistanceToNow(item.getLastSeenAt()!.toDate(), { addSuffix: true });
     }
 
     markers.push(

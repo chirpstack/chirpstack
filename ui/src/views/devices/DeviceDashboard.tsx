@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 
-import { format } from "date-fns";
-import moment from "moment";
+import { format, sub } from "date-fns";
 import { ReloadOutlined } from "@ant-design/icons";
 import type { RadioChangeEvent } from "antd";
 import { Descriptions, Space, Card, Statistic, Row, Col, Tabs, Radio, Button, Spin } from "antd";
@@ -82,20 +81,20 @@ function DeviceDashboard(props: IProps) {
 
   const loadMetrics = useCallback(() => {
     const agg = metricsAggregation;
-    const end = moment();
-    let start = moment();
+    const end = new Date();
+    let start = new Date();
 
     if (agg === Aggregation.DAY) {
-      start = start.subtract(30, "days");
+      start = sub(start, { days: 30 });
     } else if (agg === Aggregation.HOUR) {
-      start = start.subtract(24, "hours");
+      start = sub(start, { hours: 24 });
     } else if (agg === Aggregation.MONTH) {
-      start = start.subtract(12, "months");
+      start = sub(start, { months: 12 });
     }
 
     setDeviceLinkMetricsLoaded(false);
-    loadLinkMetrics(start.toDate(), end.toDate(), agg);
-    loadDeviceMetrics(start.toDate(), end.toDate(), agg);
+    loadLinkMetrics(start, end, agg);
+    loadDeviceMetrics(start, end, agg);
   }, [loadLinkMetrics, loadDeviceMetrics, metricsAggregation]);
 
   useEffect(() => {
