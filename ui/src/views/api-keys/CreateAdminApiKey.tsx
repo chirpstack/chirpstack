@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { ApiKey, CreateApiKeyRequest, CreateApiKeyResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { CreateApiKeyResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { ApiKey, CreateApiKeyRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import ApiKeyForm from "./ApiKeyForm";
 import ApiKeyToken from "./ApiKeyToken";
@@ -16,7 +17,7 @@ function CreateAdminApiKey() {
   const onFinish = (obj: ApiKey) => {
     obj.setIsAdmin(true);
 
-    let req = new CreateApiKeyRequest();
+    const req = new CreateApiKeyRequest();
     req.setApiKey(obj);
 
     InternalStore.createApiKey(req, (resp: CreateApiKeyResponse) => {

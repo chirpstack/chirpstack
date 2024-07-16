@@ -3,12 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import {
-  Application,
-  CreateApplicationRequest,
-  CreateApplicationResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { CreateApplicationResponse } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { Application, CreateApplicationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationForm from "./ApplicationForm";
 import ApplicationStore from "../../stores/ApplicationStore";
@@ -23,7 +20,7 @@ function CreateApplication(props: IProps) {
   const onFinish = (obj: Application) => {
     obj.setTenantId(props.tenant.getId());
 
-    let req = new CreateApplicationRequest();
+    const req = new CreateApplicationRequest();
     req.setApplication(obj);
 
     ApplicationStore.create(req, (resp: CreateApplicationResponse) => {

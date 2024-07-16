@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   AzureServiceBusIntegration,
-  GetAzureServiceBusIntegrationRequest,
   GetAzureServiceBusIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetAzureServiceBusIntegrationRequest,
   UpdateAzureServiceBusIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
@@ -23,7 +25,7 @@ function EditAzureServiceBusIntegration(props: IProps) {
   const [integration, setIntegration] = useState<AzureServiceBusIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetAzureServiceBusIntegrationRequest();
+    const req = new GetAzureServiceBusIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getAzureServiceBusIntegration(req, (resp: GetAzureServiceBusIntegrationResponse) => {
@@ -32,7 +34,7 @@ function EditAzureServiceBusIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: AzureServiceBusIntegration) => {
-    let req = new UpdateAzureServiceBusIntegrationRequest();
+    const req = new UpdateAzureServiceBusIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateAzureServiceBusIntegration(req, () => {

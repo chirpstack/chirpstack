@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Controlled as CodeMirror } from "react-codemirror2";
+import type { Editor, EditorChange } from "codemirror";
 
 import { Form } from "antd";
 
@@ -23,7 +24,7 @@ function CodeEditor(props: IProps) {
     setReloadKey(k => k + 1);
   }, [form, props]);
 
-  const handleChange = (editor: any, data: any, newCode: string) => {
+  const handleChange = (editor: Editor, data: EditorChange, newCode: string) => {
     setValue(newCode);
     form.setFieldsValue({
       [props.name]: newCode,

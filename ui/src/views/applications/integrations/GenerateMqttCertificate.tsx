@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import moment from "moment";
 import { Card, Button, Form, Input } from "antd";
 
-import {
+import type {
   Application,
-  GenerateMqttIntegrationClientCertificateRequest,
   GenerateMqttIntegrationClientCertificateResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { GenerateMqttIntegrationClientCertificateRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationStore from "../../../stores/ApplicationStore";
 
@@ -24,7 +24,7 @@ function GenerateMqttCertificate(props: IProps) {
   const requestCertificate = () => {
     setButtonDisabled(true);
 
-    let req = new GenerateMqttIntegrationClientCertificateRequest();
+    const req = new GenerateMqttIntegrationClientCertificateRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.generateMqttIntegrationClientCertificate(

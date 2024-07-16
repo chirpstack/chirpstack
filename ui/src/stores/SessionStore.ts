@@ -1,15 +1,15 @@
 import google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
-import { Metadata } from "grpc-web";
+import type { Metadata } from "grpc-web";
 
 import { EventEmitter } from "events";
 import { InternalServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/internal_grpc_web_pb";
-import {
-  LoginRequest,
+import type {
   UserTenantLink,
   OpenIdConnectLoginRequest,
   OAuth2LoginRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
-import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import { LoginRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
 import { HandleError, HandleLoginError } from "./helpers";
 
@@ -27,8 +27,8 @@ class SessionStore extends EventEmitter {
     this.fetchProfile(() => {});
   }
 
-  login = (email: string, password: string, callbackFunc: any) => {
-    let req = new LoginRequest();
+  login = (email: string, password: string, callbackFunc: () => void) => {
+    const req = new LoginRequest();
     req.setEmail(email);
     req.setPassword(password);
     this.client.login(req, {}, (err, resp) => {
@@ -42,7 +42,7 @@ class SessionStore extends EventEmitter {
     });
   };
 
-  openIdConnectLogin = (req: OpenIdConnectLoginRequest, callbackFunc: any) => {
+  openIdConnectLogin = (req: OpenIdConnectLoginRequest, callbackFunc: () => void) => {
     this.client.openIdConnectLogin(req, {}, (err, resp) => {
       if (err !== null) {
         HandleLoginError(err);
@@ -54,7 +54,7 @@ class SessionStore extends EventEmitter {
     });
   };
 
-  oAuth2Login = (req: OAuth2LoginRequest, callbackFunc: any) => {
+  oAuth2Login = (req: OAuth2LoginRequest, callbackFunc: () => void) => {
     this.client.oAuth2Login(req, {}, (err, resp) => {
       if (err !== null) {
         HandleLoginError(err);
@@ -83,7 +83,7 @@ class SessionStore extends EventEmitter {
   };
 
   getToken = (): string => {
-    let token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
     if (token == null) {
       return "";
     }
@@ -118,7 +118,7 @@ class SessionStore extends EventEmitter {
     };
   };
 
-  fetchProfile = (callbackFunc: any) => {
+  fetchProfile = (callbackFunc: () => void) => {
     if (this.getToken() === "") {
       return;
     }

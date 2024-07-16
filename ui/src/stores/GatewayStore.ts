@@ -1,7 +1,7 @@
 import { notification } from "antd";
 import { EventEmitter } from "events";
 import { GatewayServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_grpc_web_pb";
-import {
+import type {
   CreateGatewayRequest,
   GetGatewayRequest,
   GetGatewayResponse,
@@ -151,8 +151,8 @@ class GatewayStore extends EventEmitter {
       }
 
       callbackFunc(resp);
-    })
-  }
+    });
+  };
 
   listRelayGateways = (req: ListRelayGatewaysRequest, callbackFunc: (resp: ListRelayGatewaysResponse) => void) => {
     this.client.listRelayGateways(req, SessionStore.getMetadata(), (err, resp) => {
@@ -162,11 +162,11 @@ class GatewayStore extends EventEmitter {
       }
 
       callbackFunc(resp);
-    })
-  }
+    });
+  };
 
   updateRelayGateway = (req: UpdateRelayGatewayRequest, callbackFunc: () => void) => {
-    this.client.updateRelayGateway(req, SessionStore.getMetadata(), (err) => {
+    this.client.updateRelayGateway(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -178,11 +178,11 @@ class GatewayStore extends EventEmitter {
       });
 
       callbackFunc();
-    })
-  }
+    });
+  };
 
   deleteRelayGateway = (req: DeleteRelayGatewayRequest, callbackFunc: () => void) => {
-    this.client.deleteRelayGateway(req, SessionStore.getMetadata(), (err) => {
+    this.client.deleteRelayGateway(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -194,8 +194,8 @@ class GatewayStore extends EventEmitter {
       });
 
       callbackFunc();
-    })
-  }
+    });
+  };
 }
 
 const gatewayStore = new GatewayStore();

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { Menu, MenuProps, Typography } from "antd";
+import type { MenuProps } from "antd";
+import { Menu, Typography } from "antd";
 import {
   CloudOutlined,
   HomeOutlined,
@@ -15,15 +16,13 @@ import {
   RadarChartOutlined,
 } from "@ant-design/icons";
 
-import {
-  GetTenantResponse,
-  ListTenantsRequest,
-  ListTenantsResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { GetTenantResponse, ListTenantsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { ListTenantsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-import { GetVersionResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { GetVersionResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
-import Autocomplete, { OptionCallbackFunc, OptionsCallbackFunc } from "../components/Autocomplete";
+import type { OptionCallbackFunc, OptionsCallbackFunc } from "../components/Autocomplete";
+import Autocomplete from "../components/Autocomplete";
 import Admin from "../components/Admin";
 import TenantStore from "../stores/TenantStore";
 import SessionStore from "../stores/SessionStore";
@@ -42,7 +41,7 @@ function SideMenu() {
   };
 
   const getTenantOptions = (search: string, fn: OptionsCallbackFunc) => {
-    let req = new ListTenantsRequest();
+    const req = new ListTenantsRequest();
     req.setSearch(search);
     req.setLimit(10);
 
@@ -162,7 +161,7 @@ function SideMenu() {
     parseLocation();
   }, [location, parseLocation]);
 
-  let items: MenuProps["items"] = [];
+  const items: MenuProps["items"] = [];
 
   if (SessionStore.isAdmin()) {
     items.push({

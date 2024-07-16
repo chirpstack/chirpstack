@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Space, Form, Button, Row, Col, InputNumber, Alert } from "antd";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Device, GetDeviceActivationResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import {
-  Device,
   GetDeviceActivationRequest,
-  GetDeviceActivationResponse,
   DeviceActivation as DeviceActivationPb,
   ActivateDeviceRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { MacVersion } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import AesKeyInput from "../../components/AesKeyInput";
 import DevAddrInput from "../../components/DevAddrInput";
@@ -33,7 +32,7 @@ function LW10DeviceActivationForm(props: FormProps) {
 
   const onFinish = (values: DeviceActivationPb.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let da = new DeviceActivationPb();
+    const da = new DeviceActivationPb();
 
     da.setDevAddr(v.devAddr);
     da.setAppSKey(v.appSKey);
@@ -100,7 +99,7 @@ function LW11DeviceActivationForm(props: FormProps) {
 
   const onFinish = (values: DeviceActivationPb.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let da = new DeviceActivationPb();
+    const da = new DeviceActivationPb();
 
     da.setDevAddr(v.devAddr);
     da.setAppSKey(v.appSKey);
@@ -187,7 +186,7 @@ function DeviceActivation(props: IProps) {
   const [deviceActivationRequested, setDeviceActivationRequested] = useState<boolean>(false);
 
   useEffect(() => {
-    let req = new GetDeviceActivationRequest();
+    const req = new GetDeviceActivationRequest();
     req.setDevEui(props.device.getDevEui());
 
     DeviceStore.getActivation(req, (resp: GetDeviceActivationResponse) => {
@@ -197,7 +196,7 @@ function DeviceActivation(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: DeviceActivationPb) => {
-    let req = new ActivateDeviceRequest();
+    const req = new ActivateDeviceRequest();
     obj.setDevEui(props.device.getDevEui());
     req.setDeviceActivation(obj);
 
@@ -216,7 +215,7 @@ function DeviceActivation(props: IProps) {
     return <Alert type="info" showIcon message="This device has not (yet) been activated." />;
   }
 
-  let macVersion = props.deviceProfile.getMacVersion();
+  const macVersion = props.deviceProfile.getMacVersion();
   const lw11 = macVersion === MacVersion.LORAWAN_1_1_0;
 
   let initialValues = new DeviceActivationPb();

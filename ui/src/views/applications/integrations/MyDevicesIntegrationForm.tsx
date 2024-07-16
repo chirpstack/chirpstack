@@ -17,7 +17,7 @@ function MyDevicesIntegrationForm(props: IProps) {
 
   const onFinish = (values: MyDevicesIntegration.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let i = new MyDevicesIntegration();
+    const i = new MyDevicesIntegration();
 
     i.setApplicationId(v.applicationId);
     if (v.endpoint === "custom") {

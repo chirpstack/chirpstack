@@ -1,4 +1,5 @@
-import { useState, PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
+import { useState } from "react";
 import { Popover, Button, Typography, Space, Input } from "antd";
 
 interface IProps {

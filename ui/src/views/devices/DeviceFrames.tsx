@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import { StreamDeviceFramesRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { StreamDeviceFramesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import InternalStore from "../../stores/InternalStore";
 import LogTable from "../../components/LogTable";
@@ -23,7 +24,7 @@ function DeviceFrames(props: IProps) {
   }, []);
 
   useEffect(() => {
-    let req = new StreamDeviceFramesRequest();
+    const req = new StreamDeviceFramesRequest();
     req.setDevEui(props.device.getDevEui());
     return InternalStore.streamDeviceFrames(req, onMessage);
   }, [props, onMessage]);

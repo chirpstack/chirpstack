@@ -15,7 +15,7 @@ function TenantForm(props: IProps) {
   const onFinish = (values: Tenant.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
 
-    let tenant = new Tenant();
+    const tenant = new Tenant();
     tenant.setId(v.id);
     tenant.setName(v.name);
     tenant.setDescription(v.description);

@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
-  Application,
   AzureServiceBusIntegration,
   CreateAzureServiceBusIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -21,7 +21,7 @@ function CreateAzureServiceBusIntegration(props: IProps) {
   const onFinish = (obj: AzureServiceBusIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateAzureServiceBusIntegrationRequest();
+    const req = new CreateAzureServiceBusIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createAzureServiceBusIntegration(req, () => {

@@ -12,7 +12,7 @@ interface IProps {
 function PilotThingsIntegrationForm(props: IProps) {
   const onFinish = (values: PilotThingsIntegration.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let i = new PilotThingsIntegration();
+    const i = new PilotThingsIntegration();
 
     i.setApplicationId(v.applicationId);
     i.setServer(v.server);

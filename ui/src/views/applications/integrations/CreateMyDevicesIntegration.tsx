@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
-  Application,
   MyDevicesIntegration,
   CreateMyDevicesIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -21,7 +21,7 @@ function CreateMyDevicesIntegration(props: IProps) {
   const onFinish = (obj: MyDevicesIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateMyDevicesIntegrationRequest();
+    const req = new CreateMyDevicesIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createMyDevicesIntegration(req, () => {

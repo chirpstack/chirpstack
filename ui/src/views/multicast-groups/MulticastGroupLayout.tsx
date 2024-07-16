@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Route, Routes, useNavigate, useParams, useLocation, Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button, Menu } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import {
-  GetMulticastGroupRequest,
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type {
   GetMulticastGroupResponse,
   MulticastGroup,
+} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import {
+  GetMulticastGroupRequest,
   DeleteMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
@@ -32,7 +34,7 @@ function MulticastGroupLayout(props: IProps) {
   const [multicastGroup, setMulticastGroup] = useState<MulticastGroup | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetMulticastGroupRequest();
+    const req = new GetMulticastGroupRequest();
     req.setId(multicastGroupId!);
 
     MulticastGroupStore.get(req, (resp: GetMulticastGroupResponse) => {
@@ -41,7 +43,7 @@ function MulticastGroupLayout(props: IProps) {
   }, [multicastGroupId]);
 
   const deleteMulticastGroup = () => {
-    let req = new DeleteMulticastGroupRequest();
+    const req = new DeleteMulticastGroupRequest();
     req.setId(multicastGroupId!);
 
     MulticastGroupStore.delete(req, () => {

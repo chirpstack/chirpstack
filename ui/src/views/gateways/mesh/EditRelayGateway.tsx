@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-import { RelayGateway, UpdateRelayGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { RelayGateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { UpdateRelayGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import RelayGatewayForm from "./RelayGatewayForm";
 import GatewayStore from "../../../stores/GatewayStore";
@@ -14,7 +15,7 @@ function EditRelayGateway(props: IProps) {
   const navigate = useNavigate();
 
   const onFinish = (obj: RelayGateway) => {
-    let req = new UpdateRelayGatewayRequest();
+    const req = new UpdateRelayGatewayRequest();
     req.setRelayGateway(obj);
 
     GatewayStore.updateRelayGateway(req, () => {

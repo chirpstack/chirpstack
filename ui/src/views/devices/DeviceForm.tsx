@@ -1,18 +1,20 @@
 import { Form, Input, Row, Col, Button, Tabs, Switch } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type {
+  ListDeviceProfilesResponse,
+  GetDeviceProfileResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import {
   ListDeviceProfilesRequest,
-  ListDeviceProfilesResponse,
   GetDeviceProfileRequest,
-  GetDeviceProfileResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import { onFinishFailed } from "../helpers";
 import EuiInput from "../../components/EuiInput";
-import { OptionsCallbackFunc, OptionCallbackFunc } from "../../components/Autocomplete";
+import type { OptionsCallbackFunc, OptionCallbackFunc } from "../../components/Autocomplete";
 import AutocompleteInput from "../../components/AutocompleteInput";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 
@@ -28,7 +30,7 @@ function DeviceForm(props: IProps) {
 
   const onFinish = (values: Device.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let d = new Device();
+    const d = new Device();
 
     d.setApplicationId(v.applicationId);
     d.setName(v.name);
@@ -53,7 +55,7 @@ function DeviceForm(props: IProps) {
   };
 
   const getDeviceProfileOptions = (search: string, fn: OptionsCallbackFunc) => {
-    let req = new ListDeviceProfilesRequest();
+    const req = new ListDeviceProfilesRequest();
     req.setTenantId(props.tenant.getId());
     req.setSearch(search);
     req.setLimit(10);
@@ -68,7 +70,7 @@ function DeviceForm(props: IProps) {
   };
 
   const getDeviceProfileOption = (id: string, fn: OptionCallbackFunc) => {
-    let req = new GetDeviceProfileRequest();
+    const req = new GetDeviceProfileRequest();
     req.setId(id);
 
     DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {

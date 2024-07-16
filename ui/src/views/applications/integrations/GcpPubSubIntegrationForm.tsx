@@ -12,7 +12,7 @@ interface IProps {
 function GcpPubSubIntegrationForm(props: IProps) {
   const onFinish = (values: GcpPubSubIntegration.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let i = new GcpPubSubIntegration();
+    const i = new GcpPubSubIntegration();
 
     i.setApplicationId(v.applicationId);
     i.setEncoding(v.encoding);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Form, Input, InputNumber, Select, Row, Col, Button } from "antd";
 
@@ -8,7 +8,7 @@ import {
   MulticastGroupType,
   MulticastGroupSchedulingType,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
-import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import { getEnumName, onFinishFailed } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
@@ -34,7 +34,7 @@ function MulticastGroupForm(props: IProps) {
 
   const onFinish = (values: MulticastGroup.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let mg = new MulticastGroup();
+    const mg = new MulticastGroup();
     mg.setId(v.id);
     mg.setApplicationId(v.applicationId);
 

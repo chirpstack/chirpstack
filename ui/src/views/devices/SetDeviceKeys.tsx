@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Form, Button, Space, Popconfirm } from "antd";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { DeviceProfile } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { GetDeviceKeysResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import {
   DeviceKeys,
   GetDeviceKeysRequest,
-  GetDeviceKeysResponse,
   CreateDeviceKeysRequest,
   UpdateDeviceKeysRequest,
   FlushDevNoncesRequest,
@@ -31,7 +31,7 @@ function LW10DeviceKeysForm(props: FormProps) {
 
   const onFinish = (values: DeviceKeys.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let dk = new DeviceKeys();
+    const dk = new DeviceKeys();
 
     dk.setDevEui(v.devEui);
     // NOTE: this is not an error! In the LoRaWAN 1.1 specs, the what was previously
@@ -70,7 +70,7 @@ function LW11DeviceKeysForm(props: FormProps) {
 
   const onFinish = (values: DeviceKeys.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let dk = new DeviceKeys();
+    const dk = new DeviceKeys();
 
     dk.setDevEui(v.devEui);
     dk.setAppKey(v.appKey);
@@ -123,7 +123,7 @@ function SetDeviceKeys(props: IProps) {
   const [deviceKeysRequested, setDeviceKeysRequested] = useState<boolean>(false);
 
   useEffect(() => {
-    let req = new GetDeviceKeysRequest();
+    const req = new GetDeviceKeysRequest();
     req.setDevEui(props.device.getDevEui());
 
     DeviceStore.getKeys(req, (resp?: GetDeviceKeysResponse) => {
@@ -139,7 +139,7 @@ function SetDeviceKeys(props: IProps) {
   const onFinish = (obj: DeviceKeys) => {
     if (deviceKeys) {
       // this is an update
-      let req = new UpdateDeviceKeysRequest();
+      const req = new UpdateDeviceKeysRequest();
       req.setDeviceKeys(obj);
 
       DeviceStore.updateKeys(req, () => {
@@ -149,7 +149,7 @@ function SetDeviceKeys(props: IProps) {
       });
     } else {
       // this is a create
-      let req = new CreateDeviceKeysRequest();
+      const req = new CreateDeviceKeysRequest();
       obj.setDevEui(props.device.getDevEui());
       req.setDeviceKeys(obj);
 
@@ -162,7 +162,7 @@ function SetDeviceKeys(props: IProps) {
   };
 
   const flushDevNonces = () => {
-    let req = new FlushDevNoncesRequest();
+    const req = new FlushDevNoncesRequest();
     req.setDevEui(props.device.getDevEui());
     DeviceStore.flushDevNonces(req, () => {});
   };

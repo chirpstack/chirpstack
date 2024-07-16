@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import moment from "moment";
 import { Space, Button, Dropdown, Menu, Modal, Select } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlug,
@@ -13,26 +13,22 @@ import {
   faBatteryThreeQuarters,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import {
-  ListDevicesRequest,
-  ListDevicesResponse,
-  DeviceListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import {
-  ListMulticastGroupsRequest,
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { ListDevicesResponse, DeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { ListDevicesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type {
   ListMulticastGroupsResponse,
   MulticastGroupListItem,
-  AddDeviceToMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import {
-  ListRelaysRequest,
-  ListRelaysResponse,
-  RelayListItem,
-  AddRelayDeviceRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+  ListMulticastGroupsRequest,
+  AddDeviceToMulticastGroupRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { ListRelaysResponse, RelayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+import { ListRelaysRequest, AddRelayDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import RelayStore from "../../stores/RelayStore";
@@ -52,7 +48,7 @@ function ListDevices(props: IProps) {
   const [relaySelected, setRelaySelected] = useState<string>("");
 
   useEffect(() => {
-    let mgReq = new ListMulticastGroupsRequest();
+    const mgReq = new ListMulticastGroupsRequest();
     mgReq.setLimit(999);
     mgReq.setApplicationId(props.application.getId());
 
@@ -60,7 +56,7 @@ function ListDevices(props: IProps) {
       setMulticastGroups(resp.getResultList());
     });
 
-    let relayReq = new ListRelaysRequest();
+    const relayReq = new ListRelaysRequest();
     relayReq.setLimit(999);
     relayReq.setApplicationId(props.application.getId());
 
@@ -77,7 +73,7 @@ function ListDevices(props: IProps) {
       width: 250,
       render: (text, record) => {
         if (record.lastSeenAt !== undefined) {
-          let ts = new Date(0);
+          const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
           return moment(ts).format("YYYY-MM-DD HH:mm:ss");
         }
@@ -139,7 +135,7 @@ function ListDevices(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListDevicesRequest();
+    const req = new ListDevicesRequest();
     req.setApplicationId(props.application.getId());
     req.setLimit(limit);
     req.setOffset(offset);
@@ -179,8 +175,8 @@ function ListDevices(props: IProps) {
   };
 
   const handleMgModalOk = () => {
-    for (let devEui of selectedRowIds) {
-      let req = new AddDeviceToMulticastGroupRequest();
+    for (const devEui of selectedRowIds) {
+      const req = new AddDeviceToMulticastGroupRequest();
       req.setMulticastGroupId(mgSelected);
       req.setDevEui(devEui);
 
@@ -191,8 +187,8 @@ function ListDevices(props: IProps) {
   };
 
   const handleRelayModalOk = () => {
-    for (let devEui of selectedRowIds) {
-      let req = new AddRelayDeviceRequest();
+    for (const devEui of selectedRowIds) {
+      const req = new AddRelayDeviceRequest();
       req.setRelayDevEui(relaySelected);
       req.setDeviceDevEui(devEui);
 

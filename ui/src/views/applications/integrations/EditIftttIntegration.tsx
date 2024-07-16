@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   IftttIntegration,
-  GetIftttIntegrationRequest,
   GetIftttIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetIftttIntegrationRequest,
   UpdateIftttIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
@@ -24,7 +26,7 @@ function EditIftttIntegration(props: IProps) {
   const [integration, setIntegration] = useState<IftttIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetIftttIntegrationRequest();
+    const req = new GetIftttIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getIftttIntegration(req, (resp: GetIftttIntegrationResponse) => {
@@ -33,7 +35,7 @@ function EditIftttIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: IftttIntegration) => {
-    let req = new UpdateIftttIntegrationRequest();
+    const req = new UpdateIftttIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateIftttIntegration(req, () => {

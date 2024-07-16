@@ -16,7 +16,7 @@ function CreateDeviceProfileTemplate() {
   const navigate = useNavigate();
 
   const onFinish = (obj: DeviceProfileTemplate) => {
-    let req = new CreateDeviceProfileTemplateRequest();
+    const req = new CreateDeviceProfileTemplateRequest();
     req.setDeviceProfileTemplate(obj);
 
     DeviceProfileTemplateStore.create(req, () => {
@@ -56,7 +56,7 @@ function CreateDeviceProfileTemplate() {
   }
   `;
 
-  let deviceProfileTemplate = new DeviceProfileTemplate();
+  const deviceProfileTemplate = new DeviceProfileTemplate();
   deviceProfileTemplate.setPayloadCodecScript(codecScript);
   deviceProfileTemplate.setSupportsOtaa(true);
   deviceProfileTemplate.setUplinkInterval(3600);

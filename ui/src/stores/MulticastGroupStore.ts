@@ -2,7 +2,7 @@ import { notification } from "antd";
 import { EventEmitter } from "events";
 
 import { MulticastGroupServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_grpc_web_pb";
-import {
+import type {
   CreateMulticastGroupRequest,
   CreateMulticastGroupResponse,
   GetMulticastGroupRequest,

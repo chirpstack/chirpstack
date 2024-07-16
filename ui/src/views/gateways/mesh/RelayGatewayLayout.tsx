@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { Route, Routes, Link, useParams, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import {
-  RelayGateway,
-  GetRelayGatewayRequest,
-  GetRelayGatewayResponse,
-  DeleteRelayGatewayRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { RelayGateway, GetRelayGatewayResponse } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { GetRelayGatewayRequest, DeleteRelayGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import Admin from "../../../components/Admin";
 import SessionStore from "../../../stores/SessionStore";
@@ -30,7 +26,7 @@ function RelayGatewayLayout(props: IProps) {
   const [relayGateway, setRelayGateway] = useState<RelayGateway | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetRelayGatewayRequest();
+    const req = new GetRelayGatewayRequest();
     req.setTenantId(props.tenant.getId());
     req.setRelayId(relayId!);
 
@@ -40,20 +36,20 @@ function RelayGatewayLayout(props: IProps) {
   }, [props, relayId]);
 
   const deleteRelayGateway = () => {
-    let req = new DeleteRelayGatewayRequest();
+    const req = new DeleteRelayGatewayRequest();
     req.setTenantId(props.tenant.getId());
     req.setRelayId(relayId!);
 
     GatewayStore.deleteRelayGateway(req, () => {
       navigate(`/tenants/${props.tenant.getId()}/gateways/mesh/relays`);
     });
-  }
+  };
 
   if (!relayGateway) {
     return null;
   }
 
-  let isGatewayAdmin =
+  const isGatewayAdmin =
     SessionStore.isAdmin() ||
     SessionStore.isTenantAdmin(props.tenant.getId()) ||
     SessionStore.isTenantGatewayAdmin(props.tenant.getId());

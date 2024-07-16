@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 
-import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import { StreamDeviceEventsRequest, LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { StreamDeviceEventsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import InternalStore from "../../stores/InternalStore";
 import LogTable from "../../components/LogTable";
@@ -23,10 +24,10 @@ function DeviceEvents(props: IProps) {
   }, []);
 
   useEffect(() => {
-    let req = new StreamDeviceEventsRequest();
+    const req = new StreamDeviceEventsRequest();
     req.setDevEui(props.device.getDevEui());
 
-    let cancelFunc = InternalStore.streamDeviceEvents(req, onMessage);
+    const cancelFunc = InternalStore.streamDeviceEvents(req, onMessage);
 
     return () => {
       cancelFunc();

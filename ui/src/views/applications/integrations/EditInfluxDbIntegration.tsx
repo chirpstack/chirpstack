@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   InfluxDbIntegration,
-  GetInfluxDbIntegrationRequest,
   GetInfluxDbIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetInfluxDbIntegrationRequest,
   UpdateInfluxDbIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
@@ -23,7 +25,7 @@ function EditInfluxDbIntegration(props: IProps) {
   const [integration, setIntegration] = useState<InfluxDbIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetInfluxDbIntegrationRequest();
+    const req = new GetInfluxDbIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getInfluxDbIntegration(req, (resp: GetInfluxDbIntegrationResponse) => {
@@ -32,7 +34,7 @@ function EditInfluxDbIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: InfluxDbIntegration) => {
-    let req = new UpdateInfluxDbIntegrationRequest();
+    const req = new UpdateInfluxDbIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateInfluxDbIntegration(req, () => {

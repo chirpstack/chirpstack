@@ -1,11 +1,14 @@
+// TODO: find a way to type `ctx`
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card } from "antd";
 
 import { color } from "chart.js/helpers";
-import { TimeUnit } from "chart.js";
+import type { TimeUnit } from "chart.js";
 import { Chart } from "react-chartjs-2";
 import moment from "moment";
 
-import { Metric, Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import type { Metric } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import { Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
 interface IProps {
   metric: Metric;
@@ -22,9 +25,9 @@ function MetricHeatmap(props: IProps) {
     unit = "month";
   }
 
-  const animation: false = false;
+  const animation = false as const;
 
-  let options = {
+  const options = {
     animation: animation,
     maintainAspectRatio: false,
     scales: {
@@ -63,13 +66,13 @@ function MetricHeatmap(props: IProps) {
     },
   };
 
-  let dataData: {
+  const dataData: {
     x: number;
     y: string;
     v: number;
   }[] = [];
 
-  let data = {
+  const data = {
     labels: props.metric.getDatasetsList().map(v => v.getLabel()),
     datasets: [
       {
@@ -93,8 +96,8 @@ function MetricHeatmap(props: IProps) {
           const step = value - ctx.dataset.minValue;
           const factor = (1 / steps) * step;
 
-          let result: [number, number, number] = ctx.dataset.fromColor.slice();
-          for (var i = 0; i < 3; i++) {
+          const result: [number, number, number] = ctx.dataset.fromColor.slice();
+          for (let i = 0; i < 3; i++) {
             result[i] = Math.round(result[i] + factor * (ctx.dataset.toColor[i] - ctx.dataset.fromColor[i]));
           }
 
@@ -117,8 +120,8 @@ function MetricHeatmap(props: IProps) {
   const dsList = props.metric.getDatasetsList();
 
   for (let i = 0; i < tsList.length; i++) {
-    for (let ds of dsList) {
-      let v = ds.getDataList()[i];
+    for (const ds of dsList) {
+      const v = ds.getDataList()[i];
       if (v === 0) {
         continue;
       }

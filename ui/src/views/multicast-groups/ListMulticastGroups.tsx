@@ -1,19 +1,22 @@
 import { Link } from "react-router-dom";
 
 import { Space, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import {
-  MulticastGroupType,
-  ListMulticastGroupsRequest,
+import type {
   ListMulticastGroupsResponse,
   MulticastGroupListItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import {
+  MulticastGroupType,
+  ListMulticastGroupsRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
 import { getEnumName } from "../helpers";
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import Admin from "../../components/Admin";
 
@@ -58,7 +61,7 @@ function ListMulticastGroups(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListMulticastGroupsRequest();
+    const req = new ListMulticastGroupsRequest();
     req.setApplicationId(props.application.getId());
     req.setLimit(limit);
     req.setOffset(offset);

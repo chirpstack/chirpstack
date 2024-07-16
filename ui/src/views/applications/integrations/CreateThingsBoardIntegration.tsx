@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
-  Application,
   ThingsBoardIntegration,
   CreateThingsBoardIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -21,7 +21,7 @@ function CreateThingsBoardIntegration(props: IProps) {
   const onFinish = (obj: ThingsBoardIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateThingsBoardIntegrationRequest();
+    const req = new CreateThingsBoardIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createThingsBoardIntegration(req, () => {

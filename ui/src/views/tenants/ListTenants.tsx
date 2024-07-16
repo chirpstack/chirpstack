@@ -1,16 +1,14 @@
 import { Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  ListTenantsRequest,
-  ListTenantsResponse,
-  TenantListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { ListTenantsResponse, TenantListItem } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { ListTenantsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import TenantStore from "../../stores/TenantStore";
 
 function ListTenants() {
@@ -93,7 +91,7 @@ function ListTenants() {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListTenantsRequest();
+    const req = new ListTenantsRequest();
     req.setLimit(limit);
     req.setOffset(offset);
 

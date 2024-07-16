@@ -2,7 +2,7 @@ import { notification } from "antd";
 import { EventEmitter } from "events";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 import { DeviceProfileServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_grpc_web_pb";
-import {
+import type {
   CreateDeviceProfileRequest,
   CreateDeviceProfileResponse,
   GetDeviceProfileRequest,

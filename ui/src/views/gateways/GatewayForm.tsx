@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { Form, Input, InputNumber, Row, Col, Button, Tabs, Space, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
@@ -10,6 +10,7 @@ import { onFinishFailed } from "../helpers";
 import EuiInput from "../../components/EuiInput";
 import Map, { Marker } from "../../components/Map";
 import LocationStore from "../../stores/LocationStore";
+import type { DragEndEvent } from "leaflet";
 
 interface IProps {
   initialValues: Gateway;
@@ -61,8 +62,8 @@ function GatewayForm(props: IProps) {
 
   const onFinish = (values: Gateway.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let gw = new Gateway();
-    let loc = new Location();
+    const gw = new Gateway();
+    const loc = new Location();
 
     if (v.location) {
       loc.setLatitude(v.location.latitude);
@@ -84,7 +85,7 @@ function GatewayForm(props: IProps) {
     props.onFinish(gw);
   };
 
-  const updateLocation = (e: any) => {
+  const updateLocation = (e: DragEndEvent) => {
     const loc = e.target.getLatLng();
     setLatValue(loc.lat);
     setLonValue(loc.lng);

@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
+import type { Tenant, TenantUser, GetTenantUserResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import {
-  Tenant,
-  TenantUser,
   GetTenantUserRequest,
-  GetTenantUserResponse,
   UpdateTenantUserRequest,
   DeleteTenantUserRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -25,7 +23,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let req = new GetTenantUserRequest();
+    const req = new GetTenantUserRequest();
     req.setTenantId(tenant.getId());
     req.setUserId(userId!);
 
@@ -35,7 +33,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
   }, [userId, tenant]);
 
   const onFinish = (obj: TenantUser) => {
-    let req = new UpdateTenantUserRequest();
+    const req = new UpdateTenantUserRequest();
     req.setTenantUser(obj);
 
     TenantStore.updateUser(req, () => {
@@ -44,7 +42,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
   };
 
   const deleteTenantUser = () => {
-    let req = new DeleteTenantUserRequest();
+    const req = new DeleteTenantUserRequest();
     req.setTenantId(tenant.getId());
     req.setUserId(userId!);
 

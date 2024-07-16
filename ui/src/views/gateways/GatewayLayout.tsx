@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { Route, Routes, Link, useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button, Menu } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import {
-  Gateway,
-  GetGatewayRequest,
-  GetGatewayResponse,
-  DeleteGatewayRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Gateway, GetGatewayResponse } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { GetGatewayRequest, DeleteGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import GatewayStore from "../../stores/GatewayStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
@@ -35,7 +31,7 @@ function GatewayLayout(props: IProps) {
   const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetGatewayRequest();
+    const req = new GetGatewayRequest();
     req.setGatewayId(gatewayId!);
 
     GatewayStore.get(req, (resp: GetGatewayResponse) => {
@@ -48,7 +44,7 @@ function GatewayLayout(props: IProps) {
   }, [props, gatewayId]);
 
   const deleteGateway = () => {
-    let req = new DeleteGatewayRequest();
+    const req = new DeleteGatewayRequest();
     req.setGatewayId(gatewayId!);
 
     GatewayStore.delete(req, () => {
@@ -75,7 +71,7 @@ function GatewayLayout(props: IProps) {
     tab = "frames";
   }
 
-  let isGatewayAdmin =
+  const isGatewayAdmin =
     SessionStore.isAdmin() ||
     SessionStore.isTenantAdmin(props.tenant.getId()) ||
     SessionStore.isTenantGatewayAdmin(props.tenant.getId());

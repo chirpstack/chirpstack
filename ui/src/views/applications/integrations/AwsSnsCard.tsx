@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Col, Card, Popconfirm } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-import { Application, DeleteAwsSnsIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { DeleteAwsSnsIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationStore from "../../../stores/ApplicationStore";
 
@@ -14,15 +15,15 @@ interface IProps {
 
 function AwsSns(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteAwsSnsIntegrationRequest();
+    const req = new DeleteAwsSnsIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.deleteAwsSnsIntegration(req, () => {});
   };
 
-  let actions: any[] = [];
+  let actions: JSX.Element[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="aws-sns/create">
         <PlusOutlined />

@@ -1,20 +1,19 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 import moment from "moment";
 import { Space, Breadcrumb, Badge } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  ListRelayGatewaysRequest,
+import type {
   ListRelayGatewaysResponse,
   RelayGatewayListItem,
-  GatewayState,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { ListRelayGatewaysRequest, GatewayState } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../../components/DataTable";
+import DataTable from "../../../components/DataTable";
 import GatewayStore from "../../../stores/GatewayStore";
 
 interface IProps {
@@ -45,7 +44,7 @@ function ListRelayGateways(props: IProps) {
       width: 250,
       render: (text, record) => {
         if (record.lastSeenAt !== undefined) {
-          let ts = new Date(0);
+          const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
           return moment(ts).format("YYYY-MM-DD HH:mm:ss");
         }
@@ -70,14 +69,14 @@ function ListRelayGateways(props: IProps) {
       dataIndex: "regionConfigId",
       key: "regionConfigId",
       width: 150,
-      render: (text) => {
+      render: text => {
         return <Link to={`/regions/${text}`}>{text}</Link>;
-      }
+      },
     },
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListRelayGatewaysRequest();
+    const req = new ListRelayGatewaysRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);
     req.setOffset(offset);

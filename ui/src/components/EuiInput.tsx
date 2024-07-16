@@ -36,7 +36,7 @@ function EuiInput(props: IProps) {
   };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let v = e.target.value;
+    const v = e.target.value;
     const match = v.match(/[A-Fa-f0-9]/g);
 
     let value = "";
@@ -68,11 +68,11 @@ function EuiInput(props: IProps) {
   };
 
   const generateRandom = () => {
-    let cryptoObj = window.crypto || window.Crypto;
-    let b = new Uint8Array(8);
+    const cryptoObj = window.crypto || window.Crypto;
+    const b = new Uint8Array(8);
     cryptoObj.getRandomValues(b);
 
-    let key = Buffer.from(b).toString("hex");
+    const key = Buffer.from(b).toString("hex");
     setValue(key);
     updateField(key);
   };

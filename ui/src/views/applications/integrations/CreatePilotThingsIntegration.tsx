@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
-  Application,
   PilotThingsIntegration,
   CreatePilotThingsIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -21,7 +21,7 @@ function CreatePilotThingsIntegration(props: IProps) {
   const onFinish = (obj: PilotThingsIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreatePilotThingsIntegrationRequest();
+    const req = new CreatePilotThingsIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createPilotThingsIntegration(req, () => {

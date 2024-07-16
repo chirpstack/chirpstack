@@ -1,8 +1,11 @@
-import React, { useEffect, PropsWithChildren, useState } from "react";
+import type { PropsWithChildren } from "react";
+import { useEffect, useState } from "react";
 
-import L, { LatLngTuple, FitBoundsOptions } from "leaflet";
+import type { LatLngTuple, FitBoundsOptions } from "leaflet";
+import L from "leaflet";
 import "leaflet.awesome-markers";
-import { MarkerProps as LMarkerProps, useMap } from "react-leaflet";
+import type { MarkerProps as LMarkerProps } from "react-leaflet";
+import { useMap } from "react-leaflet";
 import { MapContainer, Marker as LMarker, TileLayer } from "react-leaflet";
 
 import InternalStore from "../stores/InternalStore";
