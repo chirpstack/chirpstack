@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
 use lrwn::EUI64;
 
 use super::schema::{gateway, multicast_group_gateway, tenant};
-use super::{error::Error, fields, get_async_db_conn};
+use super::{error::Error, fields, get_async_db_conn, db_transaction};
 
 #[derive(Queryable, Insertable, PartialEq, Debug)]
 #[diesel(table_name = gateway)]
@@ -121,8 +121,7 @@ impl Default for Gateway {
 pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
     gw.validate()?;
     let mut c = get_async_db_conn().await?;
-    let gw: Gateway = c
-        .transaction::<Gateway, Error, _>(|c| {
+    let gw: Gateway = db_transaction::<Gateway, Error, _>(&mut c, |c| {
             Box::pin(async move {
                 let query = tenant::dsl::tenant.find(&gw.tenant_id);
                 // use for_update to lock the tenant.

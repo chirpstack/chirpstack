@@ -146,6 +146,7 @@
   petgraph = "0.6"
   prometheus-client = "0.22"
   pin-project = "1.1"
+  scoped-futures = { version = "0.1", features = ["std"] }
 
 # Development and testing
 [dev-dependencies]

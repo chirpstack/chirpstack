@@ -10,7 +10,9 @@ use diesel::{Connection, ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::sync_connection_wrapper::SyncConnectionWrapper;
+use diesel_async::AsyncConnection;
 use futures::future::{BoxFuture, FutureExt, TryFutureExt};
+use scoped_futures::ScopedBoxFuture;
 use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
 
 use crate::config;
@@ -91,6 +93,15 @@ pub async fn get_async_db_conn() -> Result<AsyncSqlitePoolConnection> {
     STORAGE_SQLITE_CONN_GET.observe(start.elapsed().as_secs_f64());
 
     Ok(res)
+}
+
+pub async fn db_transaction<'a, R, E, F>(conn: &mut AsyncSqlitePoolConnection, callback: F) -> Result<R, E>
+where
+    F: for<'r> FnOnce(&'r mut AsyncSqlitePoolConnection) -> ScopedBoxFuture<'a, 'r, Result<R, E>> + Send + 'a,
+    E: From<diesel::result::Error> + Send + 'a,
+    R: Send + 'a,
+{
+    conn.transaction(callback).await
 }
 
 fn set_async_db_pool(p: AsyncSqlitePool) {

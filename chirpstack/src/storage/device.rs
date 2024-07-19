@@ -6,7 +6,7 @@ use std::str::FromStr;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
@@ -14,7 +14,7 @@ use chirpstack_api::internal;
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{application, device, device_profile, multicast_group_device, tenant};
-use super::{error::Error, fields, get_async_db_conn};
+use super::{error::Error, fields, get_async_db_conn, db_transaction};
 use crate::api::helpers::FromProto;
 use crate::config;
 
@@ -237,8 +237,7 @@ pub struct DevicesDataRate {
 
 pub async fn create(d: Device) -> Result<Device, Error> {
     let mut c = get_async_db_conn().await?;
-    let d: Device = c
-        .transaction::<Device, Error, _>(|c| {
+    let d: Device = db_transaction::<Device, Error, _>(&mut c, |c| {
             Box::pin(async move {
                 let query = tenant::dsl::tenant
                     .select((
@@ -317,7 +316,7 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
 
     let mut c = get_async_db_conn().await?;
 
-    c.transaction::<ValidationStatus, Error, _>(|c| {
+    db_transaction::<ValidationStatus, Error, _>(&mut c, |c| {
         Box::pin(async move {
             let query = device::dsl::device
                 .filter(
@@ -697,7 +696,7 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
 
 pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<Vec<Device>, Error, _>(|c| {
+    db_transaction::<Vec<Device>, Error, _>(&mut c, |c| {
         Box::pin(async {
             let conf = config::get();
 

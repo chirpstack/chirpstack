@@ -1,14 +1,14 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{device, device_profile, relay_device};
-use super::{device::Device, error::Error, fields, get_async_db_conn};
+use super::{device::Device, error::Error, fields, get_async_db_conn, db_transaction};
 
 // This is set to 15, because the FilterList must contain a "catch-all" record to filter all
 // uplinks that do not match the remaining records. This means that we can use 16 - 1 FilterList
@@ -128,7 +128,7 @@ pub async fn list_devices(
 
 pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(), Error> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<(), Error, _>(|c| {
+    db_transaction::<(), Error, _>(&mut c, |c| {
         Box::pin(async move {
             let query = device::dsl::device.find(&relay_dev_eui);
             // We lock the relay device to avoid race-conditions in the validation.

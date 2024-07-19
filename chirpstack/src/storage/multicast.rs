@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use diesel::{dsl, prelude::*};
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
@@ -13,7 +13,7 @@ use super::schema::{
     application, device, gateway, multicast_group, multicast_group_device, multicast_group_gateway,
     multicast_group_queue_item,
 };
-use super::{fields, get_async_db_conn};
+use super::{fields, get_async_db_conn, db_transaction};
 use crate::downlink::classb;
 use crate::{config, gpstime::ToDateTime, gpstime::ToGpsTime};
 
@@ -252,7 +252,7 @@ pub async fn list(
 
 pub async fn add_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<(), Error, _>(|c| {
+    db_transaction::<(), Error, _>(&mut c, |c| {
         Box::pin(async move {
             let device_query = device::dsl::device.find(&dev_eui);
             #[cfg(feature = "postgres")]
@@ -315,7 +315,7 @@ pub async fn remove_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error
 
 pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Error> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<(), Error, _>(|c| {
+    db_transaction::<(), Error, _>(&mut c, |c| {
         Box::pin(async move {
             let gateway_query = gateway::dsl::gateway.find(&gateway_id);
             #[cfg(feature = "postgres")]
@@ -413,8 +413,7 @@ pub async fn enqueue(
     qi.validate()?;
     let mut c = get_async_db_conn().await?;
     let conf = config::get();
-    let (ids, f_cnt) = c
-        .transaction::<(Vec<Uuid>, u32), Error, _>(|c| {
+    let (ids, f_cnt) = db_transaction::<(Vec<Uuid>, u32), Error, _>(&mut c, |c| {
             Box::pin(async move {
                 let mut ids: Vec<Uuid> = Vec::new();
                 let query = multicast_group::dsl::multicast_group.find(&qi.multicast_group_id);
@@ -634,7 +633,7 @@ pub async fn get_queue(multicast_group_id: &Uuid) -> Result<Vec<MulticastGroupQu
 
 pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGroupQueueItem>> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<Vec<MulticastGroupQueueItem>, Error, _>(|c| {
+    db_transaction::<Vec<MulticastGroupQueueItem>, Error, _>(&mut c, |c| {
             Box::pin(async move {
                 let conf = config::get();
                 diesel::sql_query(if cfg!(feature = "sqlite") {
