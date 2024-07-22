@@ -1116,6 +1116,8 @@ type DeviceActivation struct {
 	// Application session key (HEX encoded).
 	AppSKey string `protobuf:"bytes,3,opt,name=app_s_key,json=appSKey,proto3" json:"app_s_key,omitempty"`
 	// Network session encryption key (HEX encoded).
+	// Note: For ABP in LoRaWAN 1.0.x, use this, the serving and the forwarding
+	// network session integrity key fields with the LoRaWAN 1.0.x 'NwkSKey`!
 	NwkSEncKey string `protobuf:"bytes,4,opt,name=nwk_s_enc_key,json=nwkSEncKey,proto3" json:"nwk_s_enc_key,omitempty"`
 	// Serving network session integrity key (HEX encoded).
 	SNwkSIntKey string `protobuf:"bytes,8,opt,name=s_nwk_s_int_key,json=sNwkSIntKey,proto3" json:"s_nwk_s_int_key,omitempty"`
