@@ -5,7 +5,7 @@ import { presetPalettes } from "@ant-design/colors";
 import { Space, Breadcrumb, Card, Row, Col, Empty } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import moment from "moment";
+import { formatDistanceToNow } from "date-fns";
 import type { LatLngTuple, PointTuple } from "leaflet";
 import { Popup } from "react-leaflet";
 import { Doughnut } from "react-chartjs-2";
@@ -65,8 +65,7 @@ function GatewaysMap() {
     }
 
     if (item.getLastSeenAt() !== undefined) {
-      const ts = moment(item.getLastSeenAt()!.toDate());
-      lastSeen = ts.fromNow();
+      lastSeen = formatDistanceToNow(item.getLastSeenAt()!.toDate(), { addSuffix: true });
     }
 
     markers.push(

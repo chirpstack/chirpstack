@@ -2,7 +2,6 @@ import { Card } from "antd";
 
 import type { TimeUnit } from "chart.js";
 import { Line } from "react-chartjs-2";
-import moment from "moment";
 import palette from "google-palette";
 
 import type { Metric } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
@@ -54,7 +53,7 @@ function MetricChart(props: IProps) {
 
   let prevValue = 0;
   const data = {
-    labels: props.metric.getTimestampsList().map(v => moment(v.toDate()).valueOf()),
+    labels: props.metric.getTimestampsList().map(v => v.toDate().getTime()),
     datasets: props.metric
       .getDatasetsList()
       .sort((a, b) => a.getLabel().localeCompare(b.getLabel()))

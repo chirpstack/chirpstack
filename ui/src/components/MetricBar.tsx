@@ -2,7 +2,6 @@ import { Card } from "antd";
 
 import type { TimeUnit } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import moment from "moment";
 import palette from "google-palette";
 
 import type { Metric } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
@@ -52,7 +51,7 @@ function MetricBar(props: IProps) {
       backgroundColor: string;
     }[];
   } = {
-    labels: props.metric.getTimestampsList().map(v => moment(v.toDate()).valueOf()),
+    labels: props.metric.getTimestampsList().map(v => v.toDate().getTime()),
     datasets: [],
   };
 

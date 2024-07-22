@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import moment from "moment";
+import { format } from "date-fns";
 import { Space, Breadcrumb, Badge } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
@@ -46,7 +46,7 @@ function ListRelayGateways(props: IProps) {
         if (record.lastSeenAt !== undefined) {
           const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
-          return moment(ts).format("YYYY-MM-DD HH:mm:ss");
+          return format(ts, "YYYY-MM-DD HH:mm:ss");
         }
       },
     },
