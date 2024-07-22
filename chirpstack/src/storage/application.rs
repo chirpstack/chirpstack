@@ -124,8 +124,8 @@ where
     *const str: deserialize::FromSql<Text, DB>,
 {
     fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let string = String::from_sql(value)?;
-        Ok(IntegrationKind::from_str(&string)?)
+        let string = <*const str>::from_sql(value)?;
+        Ok(Self::from_str(unsafe { &*string })?)
     }
 }
 

@@ -1,19 +1,15 @@
 [workspace]
-resolver = "2"
-members = [
-	"chirpstack",
-	"chirpstack-integration",
-	"lrwn",
-	"lrwn-filters",
-	"backend",
-	"api/rust",
-]
+  resolver = "2"
+  members = [
+    "chirpstack",
+    "chirpstack-integration",
+    "lrwn",
+    "lrwn-filters",
+    "backend",
+    "api/rust",
+  ]
 
 [profile.release]
-opt-level = 'z'
-lto = true
-codegen-units = 1
-
-[patch.crates-io]
-# Remove if diesel-async > 0.4.1
-diesel-async = { git = "https://github.com/weiznich/diesel_async.git", rev = "017ebe2fb7a2709ab5db92148dea5ce812a35e09" }
+  opt-level = 'z'
+  lto = true
+  codegen-units = 1

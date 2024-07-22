@@ -20,11 +20,11 @@
   serde_urlencoded = "0.7"
   humantime-serde = "1.1"
   toml = "0.8"
-  handlebars = "5.1"
+  handlebars = "6.0"
 
   # Database
   email_address = "0.2"
-  diesel = { version = "2.1", features = [
+  diesel = { version = "2.2", features = [
     "chrono",
     "uuid",
     "serde_json",
@@ -32,8 +32,8 @@
     "64-column-tables",
     "postgres_backend",
   ] }
-  diesel_migrations = { version = "2.1" }
-  diesel-async = { version = "0.4", features = [
+  diesel_migrations = { version = "2.2" }
+  diesel-async = { version = "0.5", features = [
     "deadpool",
     "postgres",
     "async-connection-wrapper",
@@ -91,7 +91,7 @@
   tonic = "0.11"
   tonic-web = "0.11"
   tonic-reflection = "0.11"
-  tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
+  tokio = { version = "1.38", features = ["macros", "rt-multi-thread"] }
   tokio-stream = "0.1"
   prost-types = "0.12"
   prost = "0.12"
@@ -105,7 +105,7 @@
   futures-util = "0.3"
   http = "0.2"
   http-body = "0.4"
-  rust-embed = "8.3"
+  rust-embed = "8.5"
   mime_guess = "2.0"
   tower-http = { version = "0.4", features = ["trace", "auth"] }
 
@@ -144,8 +144,8 @@
   ] }
 
   # Misc
-  lazy_static = "1.4"
-  uuid = { version = "1.8", features = ["v4", "serde"] }
+  lazy_static = "1.5"
+  uuid = { version = "1.10", features = ["v4", "serde"] }
   chrono = "0.4"
   async-trait = "0.1"
   aes = "0.8"
@@ -160,7 +160,7 @@
 # Development and testing
 [dev-dependencies]
   httpmock = "0.7.0"
-  bytes = "1.5"
+  bytes = "1.6"
   dotenv = "0.15"
 
 [features]

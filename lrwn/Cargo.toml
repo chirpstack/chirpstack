@@ -16,14 +16,14 @@
   cmac = { version = "0.7", optional = true }
   aes = { version = "0.8", optional = true }
   serde = { version = "1.0", features = ["derive"], optional = true }
-  diesel = { version = "2.1", features = ["postgres_backend"], optional = true }
+  diesel = { version = "2.2", features = ["postgres_backend"], optional = true }
 
   # Error handling
   thiserror = "1.0"
   anyhow = "1.0"
 
   # Misc
-  lazy_static = "1.4"
+  lazy_static = "1.5"
 
 [features]
   default = []
