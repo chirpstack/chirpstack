@@ -2,6 +2,11 @@ use std::fs::File;
 use std::io::BufReader;
 
 use anyhow::{Context, Result};
+use rumqttc::tokio_rustls::rustls::{
+    self,
+    pki_types::{CertificateDer, PrivateKeyDer},
+};
+use tokio::fs;
 
 // Return root certificates, optionally with the provided ca_file appended.
 pub fn get_root_certs(ca_file: Option<String>) -> Result<rustls::RootCertStore> {
@@ -20,6 +25,38 @@ pub fn get_root_certs(ca_file: Option<String>) -> Result<rustls::RootCertStore> 
     }
 
     Ok(roots)
+}
+
+pub async fn load_cert(cert_file: &str) -> Result<Vec<CertificateDer<'static>>> {
+    let cert_s = fs::read_to_string(cert_file)
+        .await
+        .context("Read TLS certificate")?;
+    let mut cert_b = cert_s.as_bytes();
+    let certs = rustls_pemfile::certs(&mut cert_b);
+    let mut out = Vec::new();
+    for cert in certs {
+        out.push(cert?.into_owned());
+    }
+    Ok(out)
+}
+
+pub async fn load_key(key_file: &str) -> Result<PrivateKeyDer<'static>> {
+    let key_s = fs::read_to_string(key_file)
+        .await
+        .context("Read private key")?;
+    let key_s = private_key_to_pkcs8(&key_s)?;
+    let mut key_b = key_s.as_bytes();
+    let mut keys = rustls_pemfile::pkcs8_private_keys(&mut key_b);
+    if let Some(key) = keys.next() {
+        match key {
+            Ok(v) => return Ok(PrivateKeyDer::Pkcs8(v.clone_key())),
+            Err(e) => {
+                return Err(anyhow!("Error parsing private key, error: {}", e));
+            }
+        }
+    }
+
+    Err(anyhow!("No private key found"))
 }
 
 pub fn private_key_to_pkcs8(pem: &str) -> Result<String> {

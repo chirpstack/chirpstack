@@ -39,9 +39,9 @@
     "async-connection-wrapper",
   ] }
   tokio-postgres = "0.7"
-  tokio-postgres-rustls = "0.11"
+  tokio-postgres-rustls = "0.12"
   bigdecimal = "0.4"
-  redis = { version = "0.25.2", features = ["tls-rustls", "tokio-rustls-comp"] }
+  redis = { version = "0.25", features = ["tls-rustls", "tokio-rustls-comp"] }
   deadpool-redis = { version = "0.15", features = ["cluster"] }
 
   # Logging
@@ -78,7 +78,7 @@
   sha2 = "0.10"
   urlencoding = "2.1"
   geohash = "0.13"
-  gcp_auth = "0.11"
+  gcp_auth = "0.12"
   lapin = "2.3"
   tokio-executor-trait = "2.1"
   tokio-reactor-trait = "1.1"
@@ -117,7 +117,12 @@
   pbkdf2 = { version = "0.12", features = ["simple"] }
   rand_core = { version = "0.6", features = ["std"] }
   jsonwebtoken = "9.2"
-  rustls = "0.22"
+  rustls = { version = "0.23", default-features = false, features = [
+    "logging",
+    "std",
+    "tls12",
+    "ring",
+  ] }
   rustls-native-certs = "0.7"
   rustls-pemfile = "2.1"
   pem = "3.0"

@@ -23,7 +23,7 @@ use tracing::{error, info, trace};
 
 use super::GatewayBackend;
 use crate::config::GatewayBackendMqtt;
-use crate::helpers::tls::{get_root_certs, load_cert, load_key};
+use crate::helpers::tls22::{get_root_certs, load_cert, load_key};
 use crate::monitoring::prometheus;
 use crate::{downlink, uplink};
 use lrwn::region::CommonName;
