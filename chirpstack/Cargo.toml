@@ -170,6 +170,7 @@
     "diesel/returning_clauses_for_sqlite_3_35",
     "lrwn/sqlite",
     "diesel-async/sync-connection-wrapper",
+    "diesel-async/sqlite",
   ]
   test-all-integrations = [
     "test-integration-amqp",
