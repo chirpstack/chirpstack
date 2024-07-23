@@ -31,7 +31,21 @@
   #
   # This sets the min. number of idle connections in the PostgreSQL connection
   # pool (0 = equal to max_open_connections).
-  min_idle_connections=0
+ 
+# SQLite configuration.
+[sqlite]
+
+  # Sqlite path.
+  #
+  # Format example: sqlite:///<DATABASE_PATH>.
+  #
+  path="sqlite:///tmp/chirpstack.sqlite"
+
+  # Max open connections.
+  #
+  # This sets the max. number of open connections that are allowed in the
+  # connection pool.
+  max_open_connections=4
 
 
 # Redis configuration.

@@ -95,15 +95,24 @@ impl Default for Redis {
 pub struct Sqlite {
     pub path: String,
     pub max_open_connections: u32,
+    #[serde(default = "default_sqlite_busy_timeout")]
+    pub busy_timeout: u32,
+    pub journal_mode: Option<String>,
 }
 
 impl Default for Sqlite {
     fn default() -> Self {
         Sqlite {
             path: "chirpstack.sqlite".into(),
-            max_open_connections: 10,
+            max_open_connections: 4,
+            busy_timeout: default_sqlite_busy_timeout(),
+            journal_mode: None,
         }
     }
+}
+
+fn default_sqlite_busy_timeout() -> u32 {
+    1000
 }
 
 #[derive(Serialize, Deserialize, Clone)]

@@ -47,6 +47,38 @@ pub fn run() {
   # store.
   ca_cert="{{ postgresql.ca_cert }}"
 
+# SQLite configuration.
+[sqlite]
+
+  # Sqlite DB path.
+  #
+  # Format example: sqlite:///<DATABASE>.
+  #
+  path="{{ sqlite.path }}"
+
+  # Max open connections.
+  #
+  # This sets the max. number of open connections that are allowed in the
+  # SQLite connection pool.
+  max_open_connections={{ sqlite.max_open_connections }}
+
+  # Busy timeout (optional).
+  #
+  # This setting will configure how much time connections will wait when they can't
+  # access the DB due to concurrent activity (https://sqlite.org/rescode.html#busy).
+  #
+  # Defaults to 1000
+  #
+  # Value is in ms as https://sqlite.org/pragma.html#pragma_busy_timeout.
+  busy_timeout="{{ sqlite.busy_timeout }}"
+
+  # SQLite journal mode (optional).
+  #
+  # Set this to control the SQLite journaling mode. None is set if it isn't configured,
+  # which means the SQLite default will be used.
+  # See https://sqlite.org/pragma.html#pragma_journal_mode
+  journal_mode="{{ sqlite.journal_mode }}"
+
 
 # Redis configuration.
 [redis]
