@@ -30,7 +30,7 @@
     "64-column-tables",
   ] }
   diesel_migrations = { version = "2.2" }
-  diesel-async = { version = "0.4", features = [
+  diesel-async = { version = "0.5", features = [
     "deadpool",
     "async-connection-wrapper",
   ] }
