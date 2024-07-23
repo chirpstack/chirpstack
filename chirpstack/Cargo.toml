@@ -151,7 +151,7 @@
   aes = "0.8"
   rand = "0.8"
   base64 = "0.22"
-  async-recursion = "1.0"
+  async-recursion = "1.1"
   regex = "1.10"
   petgraph = "0.6"
   prometheus-client = "0.22"
