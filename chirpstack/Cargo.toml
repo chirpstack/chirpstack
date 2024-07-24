@@ -79,7 +79,7 @@
   urlencoding = "2.1"
   geohash = "0.13"
   gcp_auth = "0.12"
-  lapin = "2.3"
+  lapin = { version = "2.4", default-features = false }
   tokio-executor-trait = "2.1"
   tokio-reactor-trait = "1.1"
   rdkafka = { version = "0.36", default-features = false, features = [
