@@ -16,7 +16,7 @@
   internal = []
 
 [dependencies]
-  prost = "0.12"
+  prost = "0.13"
   prost-types = "0.12"
   hex = "0.4"
   rand = "0.8"
