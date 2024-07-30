@@ -66,7 +66,7 @@ function ListGateways(props: IProps) {
         if (record.lastSeenAt !== undefined) {
           const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
-          return format(ts, "YYYY-MM-DD HH:mm:ss");
+          return format(ts, "yyyy-MM-dd HH:mm:ss");
         }
       },
     },
@@ -179,7 +179,7 @@ function ListGateways(props: IProps) {
       req.setMulticastGroupId(mgSelected);
       req.setGatewayId(gatewayId);
 
-      MulticastGroupStore.addGateway(req, () => {});
+      MulticastGroupStore.addGateway(req, () => { });
     }
 
     setMgModalVisible(false);

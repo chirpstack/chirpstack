@@ -55,7 +55,7 @@ function GatewayCertificate(props: IProps) {
     const cert = certificate!;
 
     const initial = {
-      expiresAt: format(cert.getExpiresAt()!.toDate()!, "YYYY-MM-DD HH:mm:ss"),
+      expiresAt: format(cert.getExpiresAt()!.toDate()!, "yyyy-MM-dd HH:mm:ss"),
       caCert: cert.getCaCert(),
       tlsCert: cert.getTlsCert(),
       tlsKey: cert.getTlsKey(),

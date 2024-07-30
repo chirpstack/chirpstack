@@ -153,7 +153,7 @@ function DeviceDashboard(props: IProps) {
 
   let lastSeenAt = "Never";
   if (props.lastSeenAt !== undefined) {
-    lastSeenAt = format(props.lastSeenAt, "YYYY-MM-DD HH:mm:ss");
+    lastSeenAt = format(props.lastSeenAt, "yyyy-MM-dd HH:mm:ss");
   }
 
   const loading = !deviceLinkMetricsLoaded || !deviceMetrics;

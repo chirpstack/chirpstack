@@ -25,7 +25,7 @@ function LogTable(props: IProps) {
   const onDrawerOpen = (time: { seconds: number } | undefined, body: string) => {
     const ts = new Date(0);
     ts.setUTCSeconds(time!.seconds);
-    const drawerTitle = format(ts, "YYYY-MM-DD HH:mm:ss");
+    const drawerTitle = format(ts, "yyyy-MM-dd HH:mm:ss");
 
     return () => {
       setBody(body);
@@ -106,7 +106,7 @@ function LogTable(props: IProps) {
             render: (text, obj) => {
               const ts = new Date(0);
               ts.setUTCSeconds(obj.time!.seconds);
-              return format(ts, "YYYY-MM-DD HH:mm:ss");
+              return format(ts, "yyyy-MM-dd HH:mm:ss");
             },
           },
           {

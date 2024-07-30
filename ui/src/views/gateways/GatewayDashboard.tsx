@@ -89,7 +89,7 @@ function GatewayDashboard(props: IProps) {
 
   let lastSeenAt: string = "Never";
   if (props.lastSeenAt !== undefined) {
-    lastSeenAt = format(props.lastSeenAt, "YYYY-MM-DD HH:mm:ss");
+    lastSeenAt = format(props.lastSeenAt, "yyyy-MM-dd HH:mm:ss");
   }
 
   return (
