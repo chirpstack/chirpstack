@@ -152,10 +152,10 @@ pub async fn global_search(
             .bind::<diesel::sql_types::Text, _>(&search)
             .bind::<diesel::sql_types::Text, _>(&query)
             .bind::<diesel::sql_types::Bool, _>(global_admin)
-            .bind::<diesel::sql_types::Uuid, _>(&fields::Uuid::from(user_id))
+            .bind::<fields::sql_types::Uuid, _>(&fields::Uuid::from(user_id))
             .bind::<diesel::sql_types::BigInt, _>(limit as i64)
             .bind::<diesel::sql_types::BigInt, _>(offset as i64)
-            .bind::<diesel::sql_types::Jsonb, _>(tags)
+            .bind::<fields::sql_types::JsonT, _>(tags)
             .load(&mut get_async_db_conn().await?).await?;
 
     Ok(res)
@@ -163,13 +163,125 @@ pub async fn global_search(
 
 #[cfg(feature = "sqlite")]
 pub async fn global_search(
-    _user_id: &Uuid,
-    _global_admin: bool,
-    _search: &str,
-    _limit: usize,
-    _offset: usize,
+    user_id: &Uuid,
+    global_admin: bool,
+    search: &str,
+    limit: usize,
+    offset: usize,
 ) -> Result<Vec<SearchResult>, Error> {
-    unimplemented!()
+    let (query, tags) = parse_search_query(search);
+    let query = format!("%{}%", query);
+    let tags = serde_json::to_string(&tags).context("To serde_json string")?;
+
+    let res: Vec<SearchResult> = diesel::sql_query(
+        r#"
+            -- device
+            select
+                'device' as kind,
+                0.0 as score,
+                t.id as tenant_id,
+                t.name as tenant_name,
+                a.id as application_id,
+                a.name as application_name,
+                d.dev_eui as device_dev_eui,
+                d.name as device_name,
+                null as gateway_id,
+                null as gateway_name
+            from device d
+            inner join application a
+                on a.id = d.application_id
+            inner join tenant t
+                on t.id = a.tenant_id
+            left join tenant_user tu
+                on tu.tenant_id = t.id
+            left join "user" u
+                on u.id = tu.user_id
+            where
+                (?3 = true or u.id = ?4)
+                    and (d.name like ?2 or hex(d.dev_eui) like ?2 or hex(d.dev_addr) like ?2)
+            -- gateway
+            union
+            select
+                'gateway' as kind,
+                0.0 as score,
+                t.id as tenant_id,
+                t.name as tenant_name,
+                null as application_id,
+                null as application_name,
+                null as device_dev_eui,
+                null as device_name,
+                g.gateway_id as gateway_id,
+                g.name as gateway_name
+            from
+                gateway g
+            inner join tenant t
+                on t.id = g.tenant_id
+            left join tenant_user tu
+                on tu.tenant_id = t.id
+            left join "user" u
+                on u.id = tu.user_id
+            where
+                (?3 = true or u.id = ?4)
+                and (g.name like ?2 or hex(g.gateway_id) like ?2)
+            -- tenant
+            union
+            select
+                'tenant' as kind,
+                0.0 as score,
+                t.id as tenant_id,
+                t.name as tenant_name,
+                null as application_id,
+                null as application_name,
+                null as device_dev_eui,
+                null as device_name,
+                null as gateway_id,
+                null as gateway_name
+            from
+                tenant t
+            left join tenant_user tu
+                on tu.tenant_id = t.id
+            left join "user" u
+                on u.id = tu.user_id
+            where
+                (?3 = true or u.id = ?4)
+                and t.name like ?2
+            -- application
+            union
+            select
+                'application' as kind,
+                0.0 as score,
+                t.id as tenant_id,
+                t.name as tenant_name,
+                a.id as application_id,
+                a.name as application_name,
+                null as device_dev_eui,
+                null as device_name,
+                null as gateway_id,
+                null as gateway_name
+            from
+                application a
+            inner join tenant t
+                on t.id = a.tenant_id
+            left join tenant_user tu
+                on tu.tenant_id = t.id
+            left join "user" u
+                on u.id = tu.user_id
+            where
+                (?3 = true or u.id = ?4)
+                and a.name like ?2
+            limit ?5
+            offset ?6
+        "#)
+            // first argument is unused but kept to facilitate diffing with postgres query
+            .bind::<diesel::sql_types::Text, _>(&search)
+            .bind::<diesel::sql_types::Text, _>(&query)
+            .bind::<diesel::sql_types::Bool, _>(global_admin)
+            .bind::<fields::sql_types::Uuid, _>(&fields::Uuid::from(user_id))
+            .bind::<diesel::sql_types::BigInt, _>(limit as i64)
+            .bind::<diesel::sql_types::BigInt, _>(offset as i64)
+            .load(&mut get_async_db_conn().await?).await?;
+
+    Ok(res)
 }
 
 fn parse_search_query(q: &str) -> (String, HashMap<String, String>) {
@@ -244,7 +356,6 @@ pub mod test {
         }
     }
 
-    #[cfg(feature = "postgres")]
     #[tokio::test]
     async fn test_global_search() {
         let _guard = test::prepare().await;
@@ -309,6 +420,7 @@ pub mod test {
             "device".into(),
         ];
         for q in &queries {
+            println!("{q}");
             let res = global_search(&u.id, false, q, 10, 0).await.unwrap();
             assert_eq!(0, res.len());
         }
