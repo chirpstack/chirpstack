@@ -198,7 +198,24 @@ pub async fn global_search(
                 on u.id = tu.user_id
             where
                 (?3 = true or u.id = ?4)
-                    and (d.name like ?2 or hex(d.dev_eui) like ?2 or hex(d.dev_addr) like ?2)
+                    and (
+                        d.name like ?2 or hex(d.dev_eui) like ?2 or hex(d.dev_addr) like ?2
+                        or (
+                            ?7 != '{}'
+                            and 0 = (
+                                -- this makes sure tags are present
+                                -- by counting number of different top level json values
+                                select
+                                    count(*)
+                                from json_each(?7) search_tag
+                                left join json_each(d.tags) item_tag
+                                   on search_tag.key = item_tag.key
+                                where
+                                    -- `is not` is like `!=` but handles null
+                                    search_tag.value is not item_tag.value
+                            )
+                        )
+                    )
             -- gateway
             union
             select
@@ -222,7 +239,24 @@ pub async fn global_search(
                 on u.id = tu.user_id
             where
                 (?3 = true or u.id = ?4)
-                and (g.name like ?2 or hex(g.gateway_id) like ?2)
+                and (
+                    g.name like ?2 or hex(g.gateway_id) like ?2
+                    or (
+                        ?7 != '{}'
+                        and 0 = (
+                            -- this makes sure tags are present
+                            -- by counting number of different top level json values
+                            select
+                                count(*)
+                            from json_each(?7) search_tag
+                            left join json_each(g.tags) item_tag
+                               on search_tag.key = item_tag.key
+                            where
+                                -- `is not` is like `!=` but handles null
+                                search_tag.value is not item_tag.value
+                        )
+                    )
+                )
             -- tenant
             union
             select
@@ -279,6 +313,7 @@ pub async fn global_search(
             .bind::<fields::sql_types::Uuid, _>(&fields::Uuid::from(user_id))
             .bind::<diesel::sql_types::BigInt, _>(limit as i64)
             .bind::<diesel::sql_types::BigInt, _>(offset as i64)
+            .bind::<fields::sql_types::JsonT, _>(tags)
             .load(&mut get_async_db_conn().await?).await?;
 
     Ok(res)
