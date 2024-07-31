@@ -356,6 +356,10 @@ pub mod test {
         }
     }
 
+    fn build_tags(tags: &[(&str, &str)]) -> fields::KeyValue {
+        fields::KeyValue::new(tags.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect())
+    }
+
     #[tokio::test]
     async fn test_global_search() {
         let _guard = test::prepare().await;
@@ -395,6 +399,7 @@ pub mod test {
             gateway_id: EUI64::from_str("0102030405060708").unwrap(),
             name: "test-gateway".into(),
             tenant_id: t.id.clone(),
+            tags: build_tags(&[("common_tag", "value"),("mytag", "gw_value")]),
             ..Default::default()
         })
         .await
@@ -405,6 +410,18 @@ pub mod test {
             name: "test-device".into(),
             application_id: a.id.clone(),
             device_profile_id: dp.id.clone(),
+            tags: build_tags(&[("common_tag", "value"),("mytag", "dev_value")]),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let _d = device::create(device::Device {
+            dev_eui: EUI64::from_str("030405060708090A").unwrap(),
+            name: "sensor".into(),
+            application_id: a.id.clone(),
+            device_profile_id: dp.id.clone(),
+            tags: build_tags(&[("a", "1"),("b", "2")]),
             ..Default::default()
         })
         .await
@@ -418,6 +435,9 @@ pub mod test {
             "010203".into(),
             "020304".into(),
             "device".into(),
+            "other mytag:gw_value".into(),
+            "other mytag:dev_value".into(),
+            "other common_tag:value".into(),
         ];
         for q in &queries {
             println!("{q}");
@@ -435,12 +455,17 @@ pub mod test {
             ("device".into(), 1),
             ("dev".into(), 1),
             ("gatew".into(), 1),
+            ("other mytag:gw_value".into(), 1),
+            ("other mytag:dev_value".into(), 1),
+            ("other common_tag:value".into(), 2),
+            ("other a:1 b:2".into(), 1),
         ]
         .iter()
         .cloned()
         .collect();
         for (k, v) in &queries {
             let res = global_search(&u.id, true, k, 10, 0).await.unwrap();
+            println!("{res:#?}");
             assert_eq!(*v, res.len(), "query: {}", k);
         }
 
@@ -462,6 +487,10 @@ pub mod test {
             ("device".into(), 1),
             ("dev".into(), 1),
             ("gatew".into(), 1),
+            ("other mytag:gw_value".into(), 1),
+            ("other mytag:dev_value".into(), 1),
+            ("other common_tag:value".into(), 2),
+            ("other a:1 b:2".into(), 1),
         ]
         .iter()
         .cloned()
