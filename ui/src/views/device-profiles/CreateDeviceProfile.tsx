@@ -31,15 +31,15 @@ function CreateDeviceProfile(props: IProps) {
   };
 
   const codecScript = `/**
-  * Decode uplink function
-  * 
-  * @param {object} input
-  * @param {number[]} input.bytes Byte array containing the uplink payload, e.g. [255, 230, 255, 0]
-  * @param {number} input.fPort Uplink fPort.
-  * @param {Record<string, string>} input.variables Object containing the configured device variables.
-  * 
-  * @returns {{data: Record<string, any>}} Object representing the decoded payload.
-  */
+ * Decode uplink function
+ * 
+ * @param {object} input
+ * @param {number[]} input.bytes Byte array containing the uplink payload, e.g. [255, 230, 255, 0]
+ * @param {number} input.fPort Uplink fPort.
+ * @param {Record<string, string>} input.variables Object containing the configured device variables.
+ * 
+ * @returns {{data: Record<string, any>}} Object representing the decoded payload.
+ */
 function decodeUplink(input) {
   return {
     data: {
