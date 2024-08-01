@@ -88,26 +88,26 @@
   ] }
 
   # gRPC and Protobuf
-  tonic = "0.11"
-  tonic-web = "0.11"
-  tonic-reflection = "0.11"
+  tonic = "0.12"
+  tonic-web = "0.12"
+  tonic-reflection = "0.12"
   tokio = { version = "1.38", features = ["macros", "rt-multi-thread"] }
   tokio-stream = "0.1"
-  prost-types = "0.12"
-  prost = "0.12"
-  pbjson-types = "0.6"
+  prost-types = "0.13"
+  prost = "0.13"
+  pbjson-types = "0.7"
 
   # gRPC and HTTP multiplexing
-  warp = { version = "0.3", features = ["tls"], default-features = false }
-  hyper = "0.14"
-  tower = "0.4"
+  axum = "0.7"
+  axum-server = { version = "0.7.1", features = ["tls-rustls-no-provider"] }
+  tower = { version = "0.4" }
   futures = "0.3"
   futures-util = "0.3"
-  http = "0.2"
-  http-body = "0.4"
+  http = "1.1"
+  http-body = "1.0"
   rust-embed = "8.5"
   mime_guess = "2.0"
-  tower-http = { version = "0.4", features = ["trace", "auth"] }
+  tower-http = { version = "0.5", features = ["trace", "auth"] }
 
   # Error handling
   thiserror = "1.0"

@@ -1,8 +1,12 @@
 use std::collections::HashMap;
-use std::str::FromStr;
 
 use anyhow::{Context, Result};
+use axum::{
+    extract::Query,
+    response::{IntoResponse, Redirect, Response},
+};
 use chrono::Duration;
+use http::StatusCode;
 use openidconnect::core::{
     CoreClient, CoreGenderClaim, CoreIdTokenClaims, CoreIdTokenVerifier, CoreProviderMetadata,
     CoreResponseType,
@@ -15,7 +19,6 @@ use openidconnect::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tracing::{error, trace};
-use warp::{Rejection, Reply};
 
 use crate::config;
 use crate::helpers::errors::PrintFullError;
@@ -40,22 +43,18 @@ pub struct CustomClaims {
 
 impl AdditionalClaims for CustomClaims {}
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct CallbackArgs {
     pub code: String,
     pub state: String,
 }
 
-pub async fn login_handler() -> Result<impl Reply, Rejection> {
+pub async fn login_handler() -> Response {
     let client = match get_client().await {
         Ok(v) => v,
         Err(e) => {
             error!(error = %e.full(), "Get OIDC client error");
-            return Ok(warp::reply::with_status(
-                "Internal error",
-                warp::http::StatusCode::INTERNAL_SERVER_ERROR,
-            )
-            .into_response());
+            return (StatusCode::INTERNAL_SERVER_ERROR, "Internal error").into_response();
         }
     };
 
@@ -72,26 +71,16 @@ pub async fn login_handler() -> Result<impl Reply, Rejection> {
 
     if let Err(e) = store_nonce(&csrf_state, &nonce).await {
         error!(error = %e.full(), "Store nonce error");
-        return Ok(warp::reply::with_status(
-            "Internal error",
-            warp::http::StatusCode::INTERNAL_SERVER_ERROR,
-        )
-        .into_response());
+        return (StatusCode::INTERNAL_SERVER_ERROR, "Internal error").into_response();
     }
 
-    Ok(
-        warp::redirect::found(warp::http::Uri::from_str(auth_url.as_str()).unwrap())
-            .into_response(),
-    )
+    Redirect::temporary(auth_url.as_str()).into_response()
 }
 
-pub async fn callback_handler(args: CallbackArgs) -> Result<impl Reply, Rejection> {
-    // warp::redirect does not work with '#'.
-    Ok(warp::reply::with_header(
-        warp::http::StatusCode::PERMANENT_REDIRECT,
-        warp::http::header::LOCATION,
-        format!("/#/login?code={}&state={}", args.code, args.state),
-    ))
+pub async fn callback_handler(args: Query<CallbackArgs>) -> Response {
+    let args: CallbackArgs = args.0;
+    Redirect::permanent(&format!("/#/login?code={}&state={}", args.code, args.state))
+        .into_response()
 }
 
 pub async fn get_user(code: &str, state: &str) -> Result<User> {
