@@ -663,9 +663,9 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
                 $1 is null or dp.tenant_id = $1
         )
         select
-            coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
-            coalesce(sum(case when (now() - uplink_interval) > last_seen_at then 1 end), 0) as inactive_count,
-            coalesce(sum(case when (now() - uplink_interval) <= last_seen_at then 1 end), 0) as active_count
+            sum(case when last_seen_at is null then 1 else 0 end) as never_seen_count,
+            sum(case when (now() - uplink_interval) > last_seen_at then 1 else 0 end) as inactive_count,
+            sum(case when (now() - uplink_interval) <= last_seen_at then 1 else 0 end) as active_count
         from
             device_active_inactive
     "#)
