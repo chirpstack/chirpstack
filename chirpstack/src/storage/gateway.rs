@@ -327,6 +327,7 @@ pub async fn get_meta(gateway_id: &EUI64) -> Result<GatewayMeta, Error> {
     Ok(meta)
 }
 
+#[cfg(feature = "postgres")]
 pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCountsByState, Error> {
     let counts: GatewayCountsByState = diesel::sql_query(r#"
         select
@@ -337,6 +338,21 @@ pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCoun
             gateway
         where
             $1 is null or tenant_id = $1
+    "#).bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(tenant_id.map(|u| fields::Uuid::from(u))).get_result(&mut get_async_db_conn().await?).await?;
+    Ok(counts)
+}
+
+#[cfg(feature = "sqlite")]
+pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCountsByState, Error> {
+    let counts: GatewayCountsByState = diesel::sql_query(r#"
+        select
+            sum(case when last_seen_at is null then 1 else 0 end) as never_seen_count,
+            sum(case when (unixepoch('now') - unixepoch(last_seen_at)) > (stats_interval_secs * 2) then 1 else 0 end) as offline_count,
+            sum(case when (unixepoch('now') - unixepoch(last_seen_at)) <= (stats_interval_secs * 2) then 1 else 0 end) as online_count
+        from
+            gateway
+        where
+            ?1 is null or tenant_id = ?1
     "#).bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(tenant_id.map(|u| fields::Uuid::from(u))).get_result(&mut get_async_db_conn().await?).await?;
     Ok(counts)
 }
