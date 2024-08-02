@@ -648,6 +648,7 @@ pub async fn list(
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
+#[cfg(feature = "postgres")]
 pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActiveInactive, Error> {
     diesel::sql_query(r#"
         with device_active_inactive as (
@@ -665,6 +666,33 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
             coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
             coalesce(sum(case when (now() - uplink_interval) > last_seen_at then 1 end), 0) as inactive_count,
             coalesce(sum(case when (now() - uplink_interval) <= last_seen_at then 1 end), 0) as active_count
+        from
+            device_active_inactive
+    "#)
+            .bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(tenant_id.map(fields::Uuid::from))
+    .get_result(&mut get_async_db_conn().await?).await
+    .map_err(|e| Error::from_diesel(e, "".into()))
+}
+
+#[cfg(feature = "sqlite")]
+pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActiveInactive, Error> {
+    diesel::sql_query(r#"
+        with device_active_inactive as (
+            select
+                dp.uplink_interval * 1.5 as uplink_interval,
+                d.last_seen_at as last_seen_at,
+                (unixepoch('now') - unixepoch(last_seen_at)) as not_seen_duration
+            from
+                device d
+            inner join device_profile dp
+                on d.device_profile_id = dp.id
+            where
+                ?1 is null or dp.tenant_id = ?1
+        )
+        select
+            sum(case when last_seen_at is null then 1 else 0 end) as never_seen_count,
+            sum(case when not_seen_duration > uplink_interval then 1 else 0 end) as inactive_count,
+            sum(case when not_seen_duration <= uplink_interval then 1 else 0 end) as active_count
         from
             device_active_inactive
     "#)
