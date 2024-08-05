@@ -866,7 +866,7 @@ dependencies = [
  "rand_core",
  "rcgen",
  "rdkafka",
- "redis",
+ "redis 0.26.1",
  "regex",
  "reqwest",
  "rquickjs",
@@ -927,7 +927,7 @@ dependencies = [
  "async-trait",
  "chirpstack_api",
  "lazy_static",
- "redis",
+ "redis 0.26.1",
  "serde",
  "serde_json",
  "tokio",
@@ -1242,7 +1242,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ff315fab2a7a42132352909afc81140d06b8bbfd1414b098ce278e3f95dd1b9"
 dependencies = [
  "deadpool",
- "redis",
+ "redis 0.25.4",
 ]
 
 [[package]]
@@ -3508,7 +3508,32 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "rand",
- "rustls 0.22.4",
+ "ryu",
+ "tokio",
+ "tokio-util",
+ "url",
+]
+
+[[package]]
+name = "redis"
+version = "0.26.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e902a69d09078829137b4a5d9d082e0490393537badd7c91a3d69d14639e115f"
+dependencies = [
+ "arc-swap",
+ "async-trait",
+ "bytes",
+ "combine",
+ "crc16",
+ "futures",
+ "futures-util",
+ "itoa",
+ "log",
+ "num-bigint",
+ "percent-encoding",
+ "pin-project-lite",
+ "rand",
+ "rustls 0.23.12",
  "rustls-native-certs",
  "rustls-pemfile",
  "rustls-pki-types",
@@ -3516,7 +3541,7 @@ dependencies = [
  "sha1_smol",
  "socket2 0.5.7",
  "tokio",
- "tokio-rustls 0.25.0",
+ "tokio-rustls 0.26.0",
  "tokio-util",
  "url",
 ]
