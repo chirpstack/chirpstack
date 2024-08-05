@@ -38,7 +38,7 @@ function CreateDeviceProfile(props: IProps) {
  * @param {number} input.fPort Uplink fPort.
  * @param {Record<string, string>} input.variables Object containing the configured device variables.
  * 
- * @returns {{data: Record<string, any>}} Object representing the decoded payload.
+ * @returns {{data: object}} Object representing the decoded payload.
  */
 function decodeUplink(input) {
   return {
