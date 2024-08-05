@@ -62,7 +62,7 @@ mod tests {
         assert_eq!(1, srr.keys.len());
         assert_eq!(1, srr.keys[0].ids.len());
 
-        if let Some(redis::Value::Data(b)) = srr.keys[0].ids[0].map.get("request") {
+        if let Some(redis::Value::BulkString(b)) = srr.keys[0].ids[0].map.get("request") {
             let pl_recv = stream::ApiRequestLog::decode(&mut Cursor::new(b)).unwrap();
             assert_eq!(pl, pl_recv);
         } else {

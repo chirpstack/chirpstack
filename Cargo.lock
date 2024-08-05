@@ -1230,7 +1230,17 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6541a3916932fe57768d4be0b1ffb5ec7cbf74ca8c903fdfd5c0fe8aa958f0ed"
 dependencies = [
- "deadpool-runtime",
+ "deadpool-runtime 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num_cpus",
+ "tokio",
+]
+
+[[package]]
+name = "deadpool"
+version = "0.12.1"
+source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
+dependencies = [
+ "deadpool-runtime 0.1.4 (git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be)",
  "num_cpus",
  "tokio",
 ]
@@ -1238,10 +1248,9 @@ dependencies = [
 [[package]]
 name = "deadpool-redis"
 version = "0.15.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ff315fab2a7a42132352909afc81140d06b8bbfd1414b098ce278e3f95dd1b9"
+source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
 dependencies = [
- "deadpool",
+ "deadpool 0.12.1 (git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be)",
  "redis",
 ]
 
@@ -1250,6 +1259,11 @@ name = "deadpool-runtime"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "092966b41edc516079bdf31ec78a2e0588d1d0c08f78b91d8307215928642b2b"
+
+[[package]]
+name = "deadpool-runtime"
+version = "0.1.4"
+source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
 dependencies = [
  "tokio",
 ]
@@ -1315,7 +1329,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcb799bb6f8ca6a794462125d7b8983b0c86e6c93a33a9c55934a4a5de4409d3"
 dependencies = [
  "async-trait",
- "deadpool",
+ "deadpool 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "diesel",
  "futures-util",
  "scoped-futures",
@@ -3493,10 +3507,11 @@ dependencies = [
 
 [[package]]
 name = "redis"
-version = "0.25.4"
+version = "0.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0d7a6955c7511f60f3ba9e86c6d02b3c3f144f8c24b288d1f4e18074ab8bbec"
+checksum = "e902a69d09078829137b4a5d9d082e0490393537badd7c91a3d69d14639e115f"
 dependencies = [
+ "arc-swap",
  "async-trait",
  "bytes",
  "combine",
@@ -3505,10 +3520,11 @@ dependencies = [
  "futures-util",
  "itoa",
  "log",
+ "num-bigint",
  "percent-encoding",
  "pin-project-lite",
  "rand",
- "rustls 0.22.4",
+ "rustls 0.23.12",
  "rustls-native-certs",
  "rustls-pemfile",
  "rustls-pki-types",
@@ -3516,7 +3532,7 @@ dependencies = [
  "sha1_smol",
  "socket2 0.5.7",
  "tokio",
- "tokio-rustls 0.25.0",
+ "tokio-rustls 0.26.0",
  "tokio-util",
  "url",
 ]

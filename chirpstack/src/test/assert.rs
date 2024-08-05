@@ -422,7 +422,7 @@ pub fn uplink_meta_log(um: stream::UplinkMeta) -> Validator {
                 for stream_id in &stream_key.ids {
                     for (k, v) in &stream_id.map {
                         assert_eq!("up", k);
-                        if let redis::Value::Data(b) = v {
+                        if let redis::Value::BulkString(b) = v {
                             let pl = stream::UplinkMeta::decode(&mut Cursor::new(b)).unwrap();
                             assert_eq!(um, pl);
                         } else {
@@ -458,7 +458,7 @@ pub fn device_uplink_frame_log(uf: stream::UplinkFrameLog) -> Validator {
                 for stream_id in &stream_key.ids {
                     for (k, v) in &stream_id.map {
                         assert_eq!("up", k);
-                        if let redis::Value::Data(b) = v {
+                        if let redis::Value::BulkString(b) = v {
                             let mut pl =
                                 stream::UplinkFrameLog::decode(&mut Cursor::new(b)).unwrap();
                             pl.time = None; // we don't have control over this value

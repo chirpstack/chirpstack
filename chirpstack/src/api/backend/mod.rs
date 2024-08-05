@@ -658,7 +658,7 @@ pub async fn get_async_receiver(
                 for (k, v) in &stream_id.map {
                     match k.as_ref() {
                         "pl" => {
-                            if let redis::Value::Data(b) = v {
+                            if let redis::Value::BulkString(b) = v {
                                 let _ = tx.send(b.to_vec());
                                 return;
                             }
