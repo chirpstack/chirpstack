@@ -46,7 +46,7 @@ function decodeUplink(input) {
  * Encode downlink function.
  * 
  * @param {object} input
- * @param {Record<string, any>} input.data Object representing the payload that must be encoded.
+ * @param {object} input.data Object representing the payload that must be encoded.
  * @param {Record<string, string>} input.variables Object containing the configured device variables.
  * 
  * @returns {{bytes: number[]}} Byte array containing the downlink payload.
