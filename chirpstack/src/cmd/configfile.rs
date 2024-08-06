@@ -62,23 +62,16 @@ pub fn run() {
   # SQLite connection pool.
   max_open_connections={{ sqlite.max_open_connections }}
 
-  # Busy timeout (optional).
+  # PRAGMAs.
   #
-  # This setting will configure how much time connections will wait when they can't
-  # access the DB due to concurrent activity (https://sqlite.org/rescode.html#busy).
-  #
-  # Defaults to 1000
-  #
-  # Value is in ms as https://sqlite.org/pragma.html#pragma_busy_timeout.
-  busy_timeout="{{ sqlite.busy_timeout }}"
-
-  # SQLite journal mode (optional).
-  #
-  # Set this to control the SQLite journaling mode. None is set if it isn't configured,
-  # which means the SQLite default will be used.
-  # See https://sqlite.org/pragma.html#pragma_journal_mode
-  journal_mode="{{ sqlite.journal_mode }}"
-
+  # This configures the list of PRAGMAs that are executed to prepare the
+  # SQLite library. For a full list of available PRAGMAs see:
+  # https://www.sqlite.org/pragma.html
+  pragmas=[
+    {{#each sqlite.pragmas}}
+    "{{this}}",
+    {{/each}}
+  ]
 
 # Redis configuration.
 [redis]

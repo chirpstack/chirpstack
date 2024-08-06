@@ -94,25 +94,23 @@ impl Default for Redis {
 #[serde(default)]
 pub struct Sqlite {
     pub path: String,
+    pub pragmas: Vec<String>,
     pub max_open_connections: u32,
-    #[serde(default = "default_sqlite_busy_timeout")]
-    pub busy_timeout: u32,
-    pub journal_mode: Option<String>,
 }
 
 impl Default for Sqlite {
     fn default() -> Self {
         Sqlite {
-            path: "chirpstack.sqlite".into(),
+            path: "sqlite://chirpstack.sqlite".into(),
+            pragmas: vec![
+                // Set busy_timeout to avoid manually managing transaction business/contention
+                "busy_timeout = 1000".to_string(),
+                // Enable foreign-keys since it is off by default
+                "foreign_keys = ON".to_string(),
+            ],
             max_open_connections: 4,
-            busy_timeout: default_sqlite_busy_timeout(),
-            journal_mode: None,
         }
     }
-}
-
-fn default_sqlite_busy_timeout() -> u32 {
-    1000
 }
 
 #[derive(Serialize, Deserialize, Clone)]
