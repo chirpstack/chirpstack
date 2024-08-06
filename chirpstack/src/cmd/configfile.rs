@@ -3,7 +3,8 @@ use handlebars::{no_escape, Handlebars};
 use super::super::config;
 
 pub fn run() {
-    let template = r#"
+    let template = vec![
+r#"
 # Logging configuration
 [logging]
 
@@ -20,7 +21,9 @@ pub fn run() {
 
   # Log as JSON.
   json={{ logging.json }}
-
+"#,
+#[cfg(feature = "postgres")]
+r#"
 # PostgreSQL configuration.
 [postgresql]
 
@@ -46,7 +49,9 @@ pub fn run() {
   # the server-certificate is not signed by a CA in the platform certificate
   # store.
   ca_cert="{{ postgresql.ca_cert }}"
-
+"#,
+#[cfg(feature = "sqlite")]
+r#"
 # SQLite configuration.
 [sqlite]
 
@@ -72,7 +77,8 @@ pub fn run() {
     "{{this}}",
     {{/each}}
   ]
-
+"#,
+r#"
 # Redis configuration.
 [redis]
 
@@ -949,14 +955,14 @@ pub fn run() {
   label="{{ this.label }}"
   kek="{{ this.kek }}"
 {{/each}}
-"#;
+"#].join("\n");
 
     let mut reg = Handlebars::new();
     reg.register_escape_fn(no_escape);
     let conf = config::get();
     println!(
         "{}",
-        reg.render_template(template, &conf)
+        reg.render_template(&template, &conf)
             .expect("render configfile error")
     );
 }
