@@ -331,9 +331,9 @@ pub async fn get_meta(gateway_id: &EUI64) -> Result<GatewayMeta, Error> {
 pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCountsByState, Error> {
     let counts: GatewayCountsByState = diesel::sql_query(r#"
         select
-            sum(case when last_seen_at is null then 1 else 0 end) as never_seen_count,
-            sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) > last_seen_at then 1 else 0 end) as offline_count,
-            sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) <= last_seen_at then 1 else 0 end) as online_count
+            coalesce(sum(case when last_seen_at is null then 1 else 0 end), 0) as never_seen_count,
+            coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) > last_seen_at then 1 else 0 end), 0) as offline_count,
+            coalesce(sum(case when (now() - make_interval(secs => stats_interval_secs * 2)) <= last_seen_at then 1 else 0 end), 0) as online_count
         from
             gateway
         where
@@ -346,9 +346,9 @@ pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCoun
 pub async fn get_counts_by_state(tenant_id: &Option<Uuid>) -> Result<GatewayCountsByState, Error> {
     let counts: GatewayCountsByState = diesel::sql_query(r#"
         select
-            sum(case when last_seen_at is null then 1 else 0 end) as never_seen_count,
-            sum(case when (unixepoch('now') - unixepoch(last_seen_at)) > (stats_interval_secs * 2) then 1 else 0 end) as offline_count,
-            sum(case when (unixepoch('now') - unixepoch(last_seen_at)) <= (stats_interval_secs * 2) then 1 else 0 end) as online_count
+            coalesce(sum(case when last_seen_at is null then 1 else 0 end), 0) as never_seen_count,
+            coalesce(sum(case when (unixepoch('now') - unixepoch(last_seen_at)) > (stats_interval_secs * 2) then 1 else 0 end), 0) as offline_count,
+            coalesce(sum(case when (unixepoch('now') - unixepoch(last_seen_at)) <= (stats_interval_secs * 2) then 1 else 0 end), 0) as online_count
         from
             gateway
         where
