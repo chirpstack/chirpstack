@@ -876,6 +876,7 @@ dependencies = [
  "rustls 0.23.12",
  "rustls-native-certs",
  "rustls-pemfile",
+ "scoped-futures",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -905,7 +906,6 @@ dependencies = [
 name = "chirpstack_api"
 version = "4.9.0-test.5"
 dependencies = [
- "diesel",
  "hex",
  "pbjson",
  "pbjson-build",
@@ -1315,10 +1315,12 @@ dependencies = [
  "chrono",
  "diesel_derives",
  "itoa",
+ "libsqlite3-sys",
  "num-bigint",
  "num-integer",
  "num-traits",
  "serde_json",
+ "time",
  "uuid",
 ]
 
@@ -2177,9 +2179,9 @@ dependencies = [
 
 [[package]]
 name = "hyper-util"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ab92f4f49ee4fb4f997c784b7a2e0fa70050211e0b6a287f898c3c9785ca956"
+checksum = "cde7055719c54e36e95e8719f95883f22072a48ede39db7fc17a4e1d5281e9b9"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -2476,6 +2478,16 @@ checksum = "c0ff37bd590ca25063e35af745c343cb7a0271906fb7b37e4813e8f79f00268d"
 dependencies = [
  "bitflags 2.6.0",
  "libc",
+]
+
+[[package]]
+name = "libsqlite3-sys"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4588d65215825ee71ebff9e1c9982067833b1355d7546845ffdb3165cbd7456"
+dependencies = [
+ "pkg-config",
+ "vcpkg",
 ]
 
 [[package]]
@@ -5008,6 +5020,12 @@ name = "value-bag"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a84c137d37ab0142f0f2ddfe332651fdbf252e7b7dbb4e67b6c1f1b2e925101"
+
+[[package]]
+name = "vcpkg"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
 name = "version_check"

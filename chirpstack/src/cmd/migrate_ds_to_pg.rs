@@ -43,7 +43,7 @@ pub async fn run() -> Result<()> {
             *dev_eui,
             &storage::device::DeviceChangeset {
                 dev_addr: Some(Some(DevAddr::from_slice(&ds.dev_addr)?)),
-                device_session: Some(Some(ds)),
+                device_session: Some(Some(ds.into())),
                 ..Default::default()
             },
         )

@@ -8,7 +8,7 @@ use uuid::Uuid;
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{device, device_profile, relay_device};
-use super::{device::Device, error::Error, get_async_db_conn};
+use super::{db_transaction, device::Device, error::Error, fields, get_async_db_conn};
 
 // This is set to 15, because the FilterList must contain a "catch-all" record to filter all
 // uplinks that do not match the remaining records. This means that we can use 16 - 1 FilterList
@@ -50,7 +50,7 @@ pub async fn get_relay_count(filters: &RelayFilters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(application_id));
+        q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -68,7 +68,7 @@ pub async fn list_relays(
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(application_id));
+        q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     q.order_by(device::dsl::name)
@@ -128,86 +128,86 @@ pub async fn list_devices(
 
 pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(), Error> {
     let mut c = get_async_db_conn().await?;
-    c.build_transaction()
-        .run::<(), Error, _>(|c| {
-            Box::pin(async move {
-                // We lock the relay device to avoid race-conditions in the validation.
-                let rd: Device = device::dsl::device
-                    .find(&relay_dev_eui)
-                    .for_update()
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, relay_dev_eui.to_string()))?;
+    db_transaction::<(), Error, _>(&mut c, |c| {
+        Box::pin(async move {
+            let query = device::dsl::device.find(&relay_dev_eui);
+            // We lock the relay device to avoid race-conditions in the validation.
+            #[cfg(feature = "postgres")]
+            let query = query.for_update();
+            let rd: Device = query
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, relay_dev_eui.to_string()))?;
 
-                // Is the given relay_dev_eui a Relay?
-                let rdp: super::device_profile::DeviceProfile = device_profile::dsl::device_profile
-                    .find(&rd.device_profile_id)
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, rd.device_profile_id.to_string()))?;
-                if !rdp.is_relay {
-                    return Err(Error::Validation("Device is not a relay".to_string()));
-                }
+            // Is the given relay_dev_eui a Relay?
+            let rdp: super::device_profile::DeviceProfile = device_profile::dsl::device_profile
+                .find(&rd.device_profile_id)
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, rd.device_profile_id.to_string()))?;
+            if !rdp.is_relay {
+                return Err(Error::Validation("Device is not a relay".to_string()));
+            }
 
-                // Validate that relay and device are under the same application.
-                let d: Device = device::dsl::device
-                    .find(&device_dev_eui)
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, device_dev_eui.to_string()))?;
+            // Validate that relay and device are under the same application.
+            let d: Device = device::dsl::device
+                .find(&device_dev_eui)
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, device_dev_eui.to_string()))?;
 
-                if rd.application_id != d.application_id {
-                    return Err(Error::Validation(
-                        "Relay and device must be under the same application".into(),
-                    ));
-                }
+            if rd.application_id != d.application_id {
+                return Err(Error::Validation(
+                    "Relay and device must be under the same application".into(),
+                ));
+            }
 
-                // Validate that the relay and device are under the same region.
-                let dp: super::device_profile::DeviceProfile = device_profile::dsl::device_profile
-                    .find(&d.device_profile_id)
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, d.device_profile_id.to_string()))?;
-                if rdp.region != dp.region {
-                    return Err(Error::Validation(
-                        "Relay and device must be under the same region".into(),
-                    ));
-                }
+            // Validate that the relay and device are under the same region.
+            let dp: super::device_profile::DeviceProfile = device_profile::dsl::device_profile
+                .find(&d.device_profile_id)
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, d.device_profile_id.to_string()))?;
+            if rdp.region != dp.region {
+                return Err(Error::Validation(
+                    "Relay and device must be under the same region".into(),
+                ));
+            }
 
-                // Validate that the device is not a relay.
-                if dp.is_relay {
-                    return Err(Error::Validation("Can not add relay to a relay".into()));
-                }
+            // Validate that the device is not a relay.
+            if dp.is_relay {
+                return Err(Error::Validation("Can not add relay to a relay".into()));
+            }
 
-                // Validate max. number of devices.
-                let count: i64 = relay_device::dsl::relay_device
-                    .select(dsl::count_star())
-                    .filter(relay_device::dsl::relay_dev_eui.eq(&relay_dev_eui))
-                    .first(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, "".into()))?;
+            // Validate max. number of devices.
+            let count: i64 = relay_device::dsl::relay_device
+                .select(dsl::count_star())
+                .filter(relay_device::dsl::relay_dev_eui.eq(&relay_dev_eui))
+                .first(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, "".into()))?;
 
-                if count > RELAY_MAX_DEVICES {
-                    return Err(Error::Validation(format!(
-                        "Max number of devices that can be added to a relay is {}",
-                        RELAY_MAX_DEVICES
-                    )));
-                }
+            if count > RELAY_MAX_DEVICES {
+                return Err(Error::Validation(format!(
+                    "Max number of devices that can be added to a relay is {}",
+                    RELAY_MAX_DEVICES
+                )));
+            }
 
-                let _ = diesel::insert_into(relay_device::table)
-                    .values((
-                        relay_device::relay_dev_eui.eq(&relay_dev_eui),
-                        relay_device::dev_eui.eq(&device_dev_eui),
-                        relay_device::created_at.eq(Utc::now()),
-                    ))
-                    .execute(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, "".into()))?;
+            let _ = diesel::insert_into(relay_device::table)
+                .values((
+                    relay_device::relay_dev_eui.eq(&relay_dev_eui),
+                    relay_device::dev_eui.eq(&device_dev_eui),
+                    relay_device::created_at.eq(Utc::now()),
+                ))
+                .execute(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, "".into()))?;
 
-                Ok(())
-            })
+            Ok(())
         })
-        .await?;
+    })
+    .await?;
 
     info!(relay_dev_eui = %relay_dev_eui, device_dev_eui = %device_dev_eui, "Device added to relay");
 
@@ -256,35 +256,35 @@ pub mod test {
 
         let d = storage::device::test::create_device(
             EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            dp.id,
+            dp.id.into(),
             None,
         )
         .await;
 
         let d_relay = storage::device::test::create_device(
             EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
-            dp_relay.id,
-            Some(d.application_id),
+            dp_relay.id.into(),
+            Some(d.application_id.into()),
         )
         .await;
 
         let d_other_app = storage::device::test::create_device(
             EUI64::from_be_bytes([3, 2, 3, 4, 5, 6, 7, 8]),
-            dp.id,
+            dp.id.into(),
             None,
         )
         .await;
 
         let d_other_same_app = storage::device::test::create_device(
             EUI64::from_be_bytes([4, 2, 3, 4, 5, 6, 7, 8]),
-            dp.id,
-            Some(d.application_id),
+            dp.id.into(),
+            Some(d.application_id.into()),
         )
         .await;
 
         // relay count
         let relay_count = get_relay_count(&RelayFilters {
-            application_id: Some(d_relay.application_id),
+            application_id: Some(d_relay.application_id.into()),
         })
         .await
         .unwrap();
@@ -295,7 +295,7 @@ pub mod test {
             10,
             0,
             &RelayFilters {
-                application_id: Some(d_relay.application_id),
+                application_id: Some(d_relay.application_id.into()),
             },
         )
         .await

@@ -361,7 +361,7 @@ pub mod test {
         for tst in &tests {
             let mut dev = device::Device {
                 dev_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
-                device_session: Some(tst.device_session.clone()),
+                device_session: Some(tst.device_session.clone().into()),
                 ..Default::default()
             };
             let block = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRAns(

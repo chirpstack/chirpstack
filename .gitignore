@@ -11,8 +11,12 @@
 # Binary packages
 /dist
 
+# SQLite databases
+*.sqlite
+
 # Rust target directory
 **/target
+**/target-sqlite
 
 # Certificates
 /chirpstack/configuration/certs/*

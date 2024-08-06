@@ -26,20 +26,16 @@
   email_address = "0.2"
   diesel = { version = "2.2", features = [
     "chrono",
-    "uuid",
-    "serde_json",
     "numeric",
     "64-column-tables",
-    "postgres_backend",
   ] }
   diesel_migrations = { version = "2.2" }
   diesel-async = { version = "0.5", features = [
     "deadpool",
-    "postgres",
     "async-connection-wrapper",
   ] }
-  tokio-postgres = "0.7"
-  tokio-postgres-rustls = "0.12"
+  tokio-postgres = { version = "0.7", optional = true }
+  tokio-postgres-rustls = { version = "0.12", optional = true }
   bigdecimal = "0.4"
   redis = { version = "0.26", features = ["tls-rustls", "tokio-rustls-comp"] }
   deadpool-redis = { version = "0.15", features = ["cluster"] }
@@ -53,11 +49,7 @@
   ], default-features = true }
 
   # ChirpStack API definitions
-  chirpstack_api = { path = "../api/rust", features = [
-    "default",
-    "internal",
-    "diesel",
-  ] }
+  chirpstack_api = { path = "../api/rust", features = ["default", "internal"] }
   lrwn = { path = "../lrwn", features = [
     "serde",
     "diesel",
@@ -161,6 +153,7 @@
   petgraph = "0.6"
   prometheus-client = "0.22"
   pin-project = "1.1"
+  scoped-futures = { version = "0.1", features = ["std"] }
 
 # Development and testing
 [dev-dependencies]
@@ -169,6 +162,23 @@
   dotenv = "0.15"
 
 [features]
+  default = ["postgres"]
+  postgres = [
+    "tokio-postgres",
+    "tokio-postgres-rustls",
+    "diesel/postgres_backend",
+    "diesel/serde_json",
+    "diesel/uuid",
+    "diesel-async/postgres",
+    "lrwn/postgres",
+  ]
+  sqlite = [
+    "diesel/sqlite",
+    "diesel/returning_clauses_for_sqlite_3_35",
+    "lrwn/sqlite",
+    "diesel-async/sync-connection-wrapper",
+    "diesel-async/sqlite",
+  ]
   test-all-integrations = [
     "test-integration-amqp",
     "test-integration-kafka",

@@ -12,7 +12,6 @@
   default = ["api", "json"]
   api = ["tonic/transport", "tonic-build/transport", "tokio"]
   json = ["pbjson", "pbjson-types", "serde"]
-  diesel = ["dep:diesel"]
   internal = []
 
 [dependencies]
@@ -29,7 +28,6 @@
   pbjson = { version = "0.7", optional = true }
   pbjson-types = { version = "0.7", optional = true }
   serde = { version = "1.0", optional = true }
-  diesel = { version = "2.2", features = ["postgres_backend"], optional = true }
 
 [build-dependencies]
   tonic-build = { version = "0.12", features = [

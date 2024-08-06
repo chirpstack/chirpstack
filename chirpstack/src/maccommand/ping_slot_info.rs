@@ -37,7 +37,7 @@ pub mod test {
     #[test]
     fn test_handle() {
         let mut dev = device::Device {
-            device_session: Some(internal::DeviceSession::default()),
+            device_session: Some(internal::DeviceSession::default().into()),
             ..Default::default()
         };
         let block = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::PingSlotInfoReq(

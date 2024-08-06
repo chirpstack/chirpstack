@@ -39,6 +39,7 @@ pub async fn prepare<'a>() -> std::sync::MutexGuard<'a, ()> {
     let mut conf: config::Configuration = Default::default();
     conf.postgresql.dsn = env::var("TEST_POSTGRESQL_DSN").unwrap();
     conf.redis.servers = vec![env::var("TEST_REDIS_URL").unwrap()];
+    conf.sqlite.path = ":memory:".to_string();
     conf.network.enabled_regions = vec!["eu868".to_string()];
     conf.regions = vec![config::Region {
         id: "eu868".to_string(),

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
-use bigdecimal::BigDecimal;
 use chrono::{DateTime, Duration, Utc};
 use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
 use diesel_async::RunQueryDsl;
@@ -14,7 +14,7 @@ use chirpstack_api::internal;
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{application, device, device_profile, multicast_group_device, tenant};
-use super::{error::Error, fields, get_async_db_conn};
+use super::{db_transaction, error::Error, fields, get_async_db_conn};
 use crate::api::helpers::FromProto;
 use crate::config;
 
@@ -62,6 +62,7 @@ where
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Text, diesel::pg::Pg> for DeviceClass
 where
     str: serialize::ToSql<Text, diesel::pg::Pg>,
@@ -77,12 +78,23 @@ where
     }
 }
 
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, diesel::sqlite::Sqlite> for DeviceClass {
+    fn to_sql(
+        &self,
+        out: &mut serialize::Output<'_, '_, diesel::sqlite::Sqlite>,
+    ) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
+    }
+}
+
 #[derive(Queryable, QueryableByName, Insertable, PartialEq, Debug, Clone)]
 #[diesel(table_name = device)]
 pub struct Device {
     pub dev_eui: EUI64,
-    pub application_id: Uuid,
-    pub device_profile_id: Uuid,
+    pub application_id: fields::Uuid,
+    pub device_profile_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub last_seen_at: Option<DateTime<Utc>>,
@@ -90,7 +102,7 @@ pub struct Device {
     pub name: String,
     pub description: String,
     pub external_power_source: bool,
-    pub battery_level: Option<BigDecimal>,
+    pub battery_level: Option<fields::BigDecimal>,
     pub margin: Option<i32>,
     pub dr: Option<i16>,
     pub latitude: Option<f64>,
@@ -104,7 +116,7 @@ pub struct Device {
     pub variables: fields::KeyValue,
     pub join_eui: EUI64,
     pub secondary_dev_addr: Option<DevAddr>,
-    pub device_session: Option<internal::DeviceSession>,
+    pub device_session: Option<fields::DeviceSession>,
 }
 
 #[derive(AsChangeset, Debug, Clone, Default)]
@@ -116,10 +128,10 @@ pub struct DeviceChangeset {
     pub enabled_class: Option<DeviceClass>,
     pub join_eui: Option<EUI64>,
     pub secondary_dev_addr: Option<Option<DevAddr>>,
-    pub device_session: Option<Option<internal::DeviceSession>>,
+    pub device_session: Option<Option<fields::DeviceSession>>,
     pub margin: Option<i32>,
     pub external_power_source: Option<bool>,
-    pub battery_level: Option<Option<BigDecimal>>,
+    pub battery_level: Option<Option<fields::BigDecimal>>,
     pub scheduler_run_after: Option<Option<DateTime<Utc>>>,
     pub is_disabled: Option<bool>,
 }
@@ -135,12 +147,14 @@ impl Device {
     pub fn get_device_session(&self) -> Result<&internal::DeviceSession, Error> {
         self.device_session
             .as_ref()
+            .map(|ds| ds.deref())
             .ok_or_else(|| Error::NotFound(self.dev_eui.to_string()))
     }
 
     pub fn get_device_session_mut(&mut self) -> Result<&mut internal::DeviceSession, Error> {
         self.device_session
             .as_mut()
+            .map(|ds| ds.deref_mut())
             .ok_or_else(|| Error::NotFound(self.dev_eui.to_string()))
     }
 
@@ -155,8 +169,8 @@ impl Default for Device {
 
         Device {
             dev_eui: EUI64::default(),
-            application_id: Uuid::nil(),
-            device_profile_id: Uuid::nil(),
+            application_id: Uuid::nil().into(),
+            device_profile_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
             last_seen_at: None,
@@ -188,14 +202,14 @@ pub struct DeviceListItem {
     pub dev_eui: EUI64,
     pub name: String,
     pub description: String,
-    pub device_profile_id: Uuid,
+    pub device_profile_id: fields::Uuid,
     pub device_profile_name: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub last_seen_at: Option<DateTime<Utc>>,
     pub margin: Option<i32>,
     pub external_power_source: bool,
-    pub battery_level: Option<BigDecimal>,
+    pub battery_level: Option<fields::BigDecimal>,
 }
 
 #[derive(Default, Clone)]
@@ -223,52 +237,50 @@ pub struct DevicesDataRate {
 
 pub async fn create(d: Device) -> Result<Device, Error> {
     let mut c = get_async_db_conn().await?;
-    let d: Device = c
-        .build_transaction()
-        .run::<Device, Error, _>(|c| {
-            Box::pin(async move {
-                // use for update to lock the tenant
-                let t: super::tenant::Tenant = tenant::dsl::tenant
-                    .select((
-                        tenant::dsl::id,
-                        tenant::dsl::created_at,
-                        tenant::dsl::updated_at,
-                        tenant::dsl::name,
-                        tenant::dsl::description,
-                        tenant::dsl::can_have_gateways,
-                        tenant::dsl::max_device_count,
-                        tenant::dsl::max_gateway_count,
-                        tenant::dsl::private_gateways_up,
-                        tenant::dsl::private_gateways_down,
-                        tenant::dsl::tags,
-                    ))
-                    .inner_join(application::table)
-                    .filter(application::dsl::id.eq(&d.application_id))
-                    .for_update()
-                    .first(c)
-                    .await?;
+    let d: Device = db_transaction::<Device, Error, _>(&mut c, |c| {
+        Box::pin(async move {
+            let query = tenant::dsl::tenant
+                .select((
+                    tenant::dsl::id,
+                    tenant::dsl::created_at,
+                    tenant::dsl::updated_at,
+                    tenant::dsl::name,
+                    tenant::dsl::description,
+                    tenant::dsl::can_have_gateways,
+                    tenant::dsl::max_device_count,
+                    tenant::dsl::max_gateway_count,
+                    tenant::dsl::private_gateways_up,
+                    tenant::dsl::private_gateways_down,
+                    tenant::dsl::tags,
+                ))
+                .inner_join(application::table)
+                .filter(application::dsl::id.eq(&d.application_id));
+            // use for update to lock the tenant
+            #[cfg(feature = "postgres")]
+            let query = query.for_update();
+            let t: super::tenant::Tenant = query.first(c).await?;
 
-                let dev_count: i64 = device::dsl::device
-                    .select(dsl::count_star())
-                    .inner_join(application::table)
-                    .filter(application::dsl::tenant_id.eq(&t.id))
-                    .first(c)
-                    .await?;
+            let dev_count: i64 = device::dsl::device
+                .select(dsl::count_star())
+                .inner_join(application::table)
+                .filter(application::dsl::tenant_id.eq(&t.id))
+                .first(c)
+                .await?;
 
-                if t.max_device_count != 0 && dev_count as i32 >= t.max_device_count {
-                    return Err(Error::NotAllowed(
-                        "Max number of devices exceeded for tenant".into(),
-                    ));
-                }
+            if t.max_device_count != 0 && dev_count as i32 >= t.max_device_count {
+                return Err(Error::NotAllowed(
+                    "Max number of devices exceeded for tenant".into(),
+                ));
+            }
 
-                diesel::insert_into(device::table)
-                    .values(&d)
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))
-            })
+            diesel::insert_into(device::table)
+                .values(&d)
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))
         })
-        .await?;
+    })
+    .await?;
     info!(dev_eui = %d.dev_eui, "Device created");
     Ok(d)
 }
@@ -304,130 +316,129 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
 
     let mut c = get_async_db_conn().await?;
 
-    c.build_transaction()
-        .run::<ValidationStatus, Error, _>(|c| {
-            Box::pin(async move {
-                let mut devices: Vec<Device> = device::dsl::device
-                    .filter(
-                        device::dsl::dev_addr
-                            .eq(&dev_addr)
-                            .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
-                    )
-                    .filter(device::dsl::is_disabled.eq(false))
-                    .for_update()
-                    .load(c)
-                    .await?;
+    db_transaction::<ValidationStatus, Error, _>(&mut c, |c| {
+        Box::pin(async move {
+            let query = device::dsl::device
+                .filter(
+                    device::dsl::dev_addr
+                        .eq(&dev_addr)
+                        .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
+                )
+                .filter(device::dsl::is_disabled.eq(false));
+            #[cfg(feature = "postgres")]
+            let query = query.for_update();
+            let mut devices: Vec<Device> = query.load(c).await?;
 
-                if devices.is_empty() {
-                    return Err(Error::NotFound(dev_addr.to_string()));
+            if devices.is_empty() {
+                return Err(Error::NotFound(dev_addr.to_string()));
+            }
+
+            for d in &mut devices {
+                let mut sessions = vec![];
+
+                if let Some(ds) = &d.device_session {
+                    sessions.push(ds.clone());
+                    if let Some(ds) = &ds.pending_rejoin_device_session {
+                        sessions.push(ds.as_ref().into());
+                    }
                 }
 
-                for d in &mut devices {
-                    let mut sessions = vec![];
-
-                    if let Some(ds) = &d.device_session {
-                        sessions.push(ds.clone());
-                        if let Some(ds) = &ds.pending_rejoin_device_session {
-                            sessions.push(*ds.clone());
-                        }
+                for ds in &mut sessions {
+                    if ds.dev_addr != dev_addr.to_vec() {
+                        continue;
                     }
 
-                    for ds in &mut sessions {
-                        if ds.dev_addr != dev_addr.to_vec() {
-                            continue;
+                    // Get the full 32bit frame-counter.
+                    let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
+                    let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
+                    let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
+
+                    // Check both the full frame-counter and the received frame-counter
+                    // truncated to the 16LSB.
+                    // The latter is needed in case of a frame-counter reset as the
+                    // GetFullFCntUp will think the 16LSB has rolled over and will
+                    // increment the 16MSB bit.
+                    let mut mic_ok = false;
+                    for f_cnt in [full_f_cnt, f_cnt_orig] {
+                        // Set the full f_cnt.
+                        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                            pl.fhdr.f_cnt = f_cnt;
                         }
 
-                        // Get the full 32bit frame-counter.
-                        let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
-                        let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
-                        let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
-
-                        // Check both the full frame-counter and the received frame-counter
-                        // truncated to the 16LSB.
-                        // The latter is needed in case of a frame-counter reset as the
-                        // GetFullFCntUp will think the 16LSB has rolled over and will
-                        // increment the 16MSB bit.
-                        let mut mic_ok = false;
-                        for f_cnt in [full_f_cnt, f_cnt_orig] {
-                            // Set the full f_cnt.
-                            if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-                                pl.fhdr.f_cnt = f_cnt;
-                            }
-
-                            mic_ok = phy
-                                .validate_uplink_data_mic(
-                                    ds.mac_version().from_proto(),
-                                    ds.conf_f_cnt,
-                                    tx_dr,
-                                    tx_ch,
-                                    &f_nwk_s_int_key,
-                                    &s_nwk_s_int_key,
-                                )
-                                .context("Validate MIC")?;
-
-                            if mic_ok {
-                                break;
-                            }
-                        }
+                        mic_ok = phy
+                            .validate_uplink_data_mic(
+                                ds.mac_version().from_proto(),
+                                ds.conf_f_cnt,
+                                tx_dr,
+                                tx_ch,
+                                &f_nwk_s_int_key,
+                                &s_nwk_s_int_key,
+                            )
+                            .context("Validate MIC")?;
 
                         if mic_ok {
-                            let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
-                                pl.fhdr.f_cnt
-                            } else {
-                                0
-                            };
-
-                            if let Some(relay) = &ds.relay {
-                                if !relayed && relay.ed_relay_only {
-                                    info!(
-                                        dev_eui = %d.dev_eui,
-                                        "Only communication through relay is allowed"
-                                    );
-                                    return Err(Error::NotFound(dev_addr.to_string()));
-                                }
-                            }
-
-                            if full_f_cnt >= ds.f_cnt_up {
-                                // We immediately save the device-session to make sure that concurrent calls for
-                                // the same uplink will fail on the frame-counter validation.
-                                let ds_f_cnt_up = ds.f_cnt_up;
-                                ds.f_cnt_up = full_f_cnt + 1;
-
-                                let _ = diesel::update(device::dsl::device.find(d.dev_eui))
-                                    .set(device::device_session.eq(&ds.clone()))
-                                    .execute(c)
-                                    .await?;
-
-                                // We do return the device-session with original frame-counter
-                                ds.f_cnt_up = ds_f_cnt_up;
-                                d.device_session = Some(ds.clone());
-                                return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
-                            } else if ds.skip_f_cnt_check {
-                                // re-transmission or frame-counter reset
-                                ds.f_cnt_up = 0;
-                                d.device_session = Some(ds.clone());
-                                return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
-                            } else if full_f_cnt == (ds.f_cnt_up - 1) {
-                                // re-transmission, the frame-counter did not increment
-                                d.device_session = Some(ds.clone());
-                                return Ok(ValidationStatus::Retransmission(full_f_cnt, d.clone()));
-                            } else {
-                                d.device_session = Some(ds.clone());
-                                return Ok(ValidationStatus::Reset(full_f_cnt, d.clone()));
-                            }
-                        }
-
-                        // Restore the original f_cnt.
-                        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-                            pl.fhdr.f_cnt = f_cnt_orig;
+                            break;
                         }
                     }
-                }
 
-                Err(Error::InvalidMIC)
-            })
+                    if mic_ok {
+                        let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
+                            pl.fhdr.f_cnt
+                        } else {
+                            0
+                        };
+
+                        if let Some(relay) = &ds.relay {
+                            if !relayed && relay.ed_relay_only {
+                                info!(
+                                    dev_eui = %d.dev_eui,
+                                    "Only communication through relay is allowed"
+                                );
+                                return Err(Error::NotFound(dev_addr.to_string()));
+                            }
+                        }
+
+                        if full_f_cnt >= ds.f_cnt_up {
+                            // We immediately save the device-session to make sure that concurrent calls for
+                            // the same uplink will fail on the frame-counter validation.
+                            let ds_f_cnt_up = ds.f_cnt_up;
+                            ds.f_cnt_up = full_f_cnt + 1;
+
+                            let _ = diesel::update(device::dsl::device.find(d.dev_eui))
+                                .set(device::device_session.eq(&ds.clone()))
+                                .execute(c)
+                                .await?;
+
+                            // We do return the device-session with original frame-counter
+                            ds.f_cnt_up = ds_f_cnt_up;
+                            d.device_session = Some(ds.clone());
+                            return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
+                        } else if ds.skip_f_cnt_check {
+                            // re-transmission or frame-counter reset
+                            ds.f_cnt_up = 0;
+                            d.device_session = Some(ds.clone());
+                            return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
+                        } else if full_f_cnt == (ds.f_cnt_up - 1) {
+                            // re-transmission, the frame-counter did not increment
+                            d.device_session = Some(ds.clone());
+                            return Ok(ValidationStatus::Retransmission(full_f_cnt, d.clone()));
+                        } else {
+                            d.device_session = Some(ds.clone());
+                            return Ok(ValidationStatus::Reset(full_f_cnt, d.clone()));
+                        }
+                    }
+
+                    // Restore the original f_cnt.
+                    if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                        pl.fhdr.f_cnt = f_cnt_orig;
+                    }
+                }
+            }
+
+            Err(Error::InvalidMIC)
         })
-        .await
+    })
+    .await
 }
 
 pub async fn get_for_phypayload(
@@ -462,7 +473,7 @@ pub async fn get_for_phypayload(
         if let Some(ds) = &d.device_session {
             sessions.push(ds.clone());
             if let Some(ds) = &ds.pending_rejoin_device_session {
-                sessions.push(*ds.clone());
+                sessions.push(ds.as_ref().into());
             }
         }
 
@@ -559,15 +570,25 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(application_id));
+        q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(device::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(device::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(device::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     if let Some(multicast_group_id) = &filters.multicast_group_id {
-        q = q.filter(multicast_group_device::dsl::multicast_group_id.eq(multicast_group_id));
+        q = q.filter(
+            multicast_group_device::dsl::multicast_group_id
+                .eq(fields::Uuid::from(multicast_group_id)),
+        );
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -598,15 +619,25 @@ pub async fn list(
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(device::dsl::application_id.eq(application_id));
+        q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(device::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(device::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(device::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     if let Some(multicast_group_id) = &filters.multicast_group_id {
-        q = q.filter(multicast_group_device::dsl::multicast_group_id.eq(multicast_group_id));
+        q = q.filter(
+            multicast_group_device::dsl::multicast_group_id
+                .eq(fields::Uuid::from(multicast_group_id)),
+        );
     }
 
     q.order_by(device::dsl::name)
@@ -617,6 +648,7 @@ pub async fn list(
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
+#[cfg(feature = "postgres")]
 pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActiveInactive, Error> {
     diesel::sql_query(r#"
         with device_active_inactive as (
@@ -637,8 +669,40 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
         from
             device_active_inactive
     "#)
-    .bind::<diesel::sql_types::Nullable<diesel::sql_types::Uuid>, _>(tenant_id)
+            .bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(tenant_id.map(fields::Uuid::from))
     .get_result(&mut get_async_db_conn().await?).await
+    .map_err(|e| Error::from_diesel(e, "".into()))
+}
+
+#[cfg(feature = "sqlite")]
+pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActiveInactive, Error> {
+    diesel::sql_query(
+        r#"
+        with device_active_inactive as (
+            select
+                dp.uplink_interval * 1.5 as uplink_interval,
+                d.last_seen_at as last_seen_at,
+                (unixepoch('now') - unixepoch(last_seen_at)) as not_seen_duration
+            from
+                device d
+            inner join device_profile dp
+                on d.device_profile_id = dp.id
+            where
+                ?1 is null or dp.tenant_id = ?1
+        )
+        select
+            coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
+            coalesce(sum(case when not_seen_duration > uplink_interval then 1 end), 0) as inactive_count,
+            coalesce(sum(case when not_seen_duration <= uplink_interval then 1 end), 0) as active_count
+        from
+            device_active_inactive
+    "#,
+    )
+    .bind::<diesel::sql_types::Nullable<fields::sql_types::Uuid>, _>(
+        tenant_id.map(fields::Uuid::from),
+    )
+    .get_result(&mut get_async_db_conn().await?)
+    .await
     .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
@@ -655,7 +719,7 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
         .into_boxed();
 
     if let Some(id) = &tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(id));
+        q = q.filter(device_profile::dsl::tenant_id.eq(fields::Uuid::from(id)));
     }
 
     q.load(&mut get_async_db_conn().await?)
@@ -665,28 +729,60 @@ pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataR
 
 pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>> {
     let mut c = get_async_db_conn().await?;
-    c.build_transaction()
-        .run::<Vec<Device>, Error, _>(|c| {
-            Box::pin(async {
-                let conf = config::get();
+    db_transaction::<Vec<Device>, Error, _>(&mut c, |c| {
+        Box::pin(async {
+            let conf = config::get();
 
-                // This query will:
-                //  * Select the devices for which a Class-B or Class-C downlink can be scheduled.
-                //  * Lock the device records for update with skip locked such that other
-                //    ChirpStack instances are able to do the same for the remaining devices.
-                //  * Update the scheduler_run_after for these devices to now() + 2 * scheduler
-                //    interval to avoid concurrency issues (other ChirpStack instance scheduling
-                //    the same queue items).
-                //
-                // This way, we do not have to keep the device records locked until the scheduler
-                // finishes its batch as the same set of devices will not be returned until after
-                // the updated scheduler_run_after. Only if the scheduler takes more time than 2x the
-                // interval (the scheduler is still working on processing the batch after 2 x interval)
-                // this might cause issues.
-                // The alternative would be to keep the transaction open for a long time + keep
-                // the device records locked during this time which could case issues as well.
-                diesel::sql_query(
-                    r#"
+            // This query will:
+            //  * Select the devices for which a Class-B or Class-C downlink can be scheduled.
+            //  * Lock the device records for update with skip locked such that other
+            //    ChirpStack instances are able to do the same for the remaining devices.
+            //  * Update the scheduler_run_after for these devices to now() + 2 * scheduler
+            //    interval to avoid concurrency issues (other ChirpStack instance scheduling
+            //    the same queue items).
+            //
+            // This way, we do not have to keep the device records locked until the scheduler
+            // finishes its batch as the same set of devices will not be returned until after
+            // the updated scheduler_run_after. Only if the scheduler takes more time than 2x the
+            // interval (the scheduler is still working on processing the batch after 2 x interval)
+            // this might cause issues.
+            // The alternative would be to keep the transaction open for a long time + keep
+            // the device records locked during this time which could case issues as well.
+            diesel::sql_query(if cfg!(feature = "sqlite") {
+                r#"
+                    update
+                        device
+                    set
+                        scheduler_run_after = ?3
+                    where
+                        dev_eui in (
+                            select
+                                d.dev_eui
+                            from
+                                device d
+                            where
+                                d.enabled_class in ('B', 'C')
+                                and (d.scheduler_run_after is null or d.scheduler_run_after < ?2)
+                                and d.is_disabled = FALSE
+                                and exists (
+                                    select
+                                        1
+                                    from
+                                        device_queue_item dq
+                                    where
+                                        dq.dev_eui = d.dev_eui
+                                        and not (
+                                            -- pending queue-item with timeout_after in the future
+                                            (dq.is_pending = true and dq.timeout_after > ?2)
+                                        )
+                                )
+                            order by d.dev_eui
+                            limit ?1
+                        )
+                    returning *
+                "#
+            } else {
+                r#"
                     update
                         device
                     set
@@ -718,20 +814,20 @@ pub async fn get_with_class_b_c_queue_items(limit: usize) -> Result<Vec<Device>>
                             for update skip locked
                         )
                     returning *
-                "#,
-                )
-                .bind::<diesel::sql_types::Integer, _>(limit as i32)
-                .bind::<diesel::sql_types::Timestamptz, _>(Utc::now())
-                .bind::<diesel::sql_types::Timestamptz, _>(
-                    Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
-                )
-                .load(c)
-                .await
-                .map_err(|e| Error::from_diesel(e, "".into()))
+                "#
             })
+            .bind::<diesel::sql_types::Integer, _>(limit as i32)
+            .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
+            .bind::<fields::sql_types::Timestamptz, _>(
+                Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
+            )
+            .load(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, "".into()))
         })
-        .await
-        .context("Get with Class B/C queue-items transaction")
+    })
+    .await
+    .context("Get with Class B/C queue-items transaction")
 }
 
 // GetFullFCntUp returns the full 32bit frame-counter, given the fCntUp which
@@ -786,9 +882,10 @@ pub mod test {
         };
 
         let application_id = match application_id {
-            Some(v) => v,
+            Some(v) => v.into(),
             None => {
-                let a = storage::application::test::create_application(Some(tenant_id)).await;
+                let a =
+                    storage::application::test::create_application(Some(tenant_id.into())).await;
                 a.id
             }
         };
@@ -797,7 +894,7 @@ pub mod test {
             name: "test-dev".into(),
             dev_eui: dev_eui,
             application_id: application_id,
-            device_profile_id: device_profile_id,
+            device_profile_id: device_profile_id.into(),
             ..Default::default()
         };
 
@@ -808,8 +905,12 @@ pub mod test {
     async fn test_device() {
         let _guard = test::prepare().await;
         let dp = storage::device_profile::test::create_device_profile(None).await;
-        let mut d =
-            create_device(EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]), dp.id, None).await;
+        let mut d = create_device(
+            EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            dp.id.into(),
+            None,
+        )
+        .await;
 
         // get
         let d_get = get(&d.dev_eui).await.unwrap();
@@ -858,7 +959,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
-                    application_id: Some(d.application_id),
+                    application_id: Some(d.application_id.into()),
                     multicast_group_id: None,
                     search: None,
                 },
@@ -906,7 +1007,12 @@ pub mod test {
     async fn test_get_with_class_b_c_queue_items() {
         let _guard = test::prepare().await;
         let dp = storage::device_profile::test::create_device_profile(None).await;
-        let d = create_device(EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]), dp.id, None).await;
+        let d = create_device(
+            EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            dp.id.into(),
+            None,
+        )
+        .await;
 
         // nothing in the queue
         let res = get_with_class_b_c_queue_items(10).await.unwrap();
@@ -1057,24 +1163,27 @@ pub mod test {
                 name: "0101010101010101".into(),
                 dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
-                device_session: Some(internal::DeviceSession {
-                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                    s_nwk_s_int_key: vec![
-                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                        0x01, 0x01, 0x01, 0x01,
-                    ],
-                    f_cnt_up: 100,
-                    skip_f_cnt_check: true,
-                    ..Default::default()
-                }),
+                device_session: Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                        s_nwk_s_int_key: vec![
+                            0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                            0x01, 0x01, 0x01, 0x01,
+                        ],
+                        f_nwk_s_int_key: vec![
+                            0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                            0x01, 0x01, 0x01, 0x01,
+                        ],
+                        nwk_s_enc_key: vec![
+                            0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                            0x01, 0x01, 0x01, 0x01,
+                        ],
+                        f_cnt_up: 100,
+                        skip_f_cnt_check: true,
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             },
             Device {
@@ -1083,23 +1192,26 @@ pub mod test {
                 name: "0202020202020202".into(),
                 dev_eui: EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
-                device_session: Some(internal::DeviceSession {
-                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                    s_nwk_s_int_key: vec![
-                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                        0x02, 0x02, 0x02, 0x02,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                        0x02, 0x02, 0x02, 0x02,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-                        0x02, 0x02, 0x02, 0x02,
-                    ],
-                    f_cnt_up: 200,
-                    ..Default::default()
-                }),
+                device_session: Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                        s_nwk_s_int_key: vec![
+                            0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                            0x02, 0x02, 0x02, 0x02,
+                        ],
+                        f_nwk_s_int_key: vec![
+                            0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                            0x02, 0x02, 0x02, 0x02,
+                        ],
+                        nwk_s_enc_key: vec![
+                            0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+                            0x02, 0x02, 0x02, 0x02,
+                        ],
+                        f_cnt_up: 200,
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             },
             Device {
@@ -1109,40 +1221,43 @@ pub mod test {
                 dev_eui: EUI64::from_be_bytes([3, 3, 3, 3, 3, 3, 3, 3]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
                 secondary_dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
-                device_session: Some(internal::DeviceSession {
-                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                    s_nwk_s_int_key: vec![
-                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                        0x03, 0x03, 0x03, 0x03,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                        0x03, 0x03, 0x03, 0x03,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
-                        0x03, 0x03, 0x03, 0x03,
-                    ],
-                    f_cnt_up: 300,
-                    pending_rejoin_device_session: Some(Box::new(internal::DeviceSession {
-                        dev_addr: vec![0x04, 0x03, 0x02, 0x01],
+                device_session: Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![0x01, 0x02, 0x03, 0x04],
                         s_nwk_s_int_key: vec![
-                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                            0x04, 0x04, 0x04, 0x04,
+                            0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                            0x03, 0x03, 0x03, 0x03,
                         ],
                         f_nwk_s_int_key: vec![
-                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                            0x04, 0x04, 0x04, 0x04,
+                            0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                            0x03, 0x03, 0x03, 0x03,
                         ],
                         nwk_s_enc_key: vec![
-                            0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-                            0x04, 0x04, 0x04, 0x04,
+                            0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
+                            0x03, 0x03, 0x03, 0x03,
                         ],
-                        f_cnt_up: 0,
+                        f_cnt_up: 300,
+                        pending_rejoin_device_session: Some(Box::new(internal::DeviceSession {
+                            dev_addr: vec![0x04, 0x03, 0x02, 0x01],
+                            s_nwk_s_int_key: vec![
+                                0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                                0x04, 0x04, 0x04, 0x04, 0x04,
+                            ],
+                            f_nwk_s_int_key: vec![
+                                0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                                0x04, 0x04, 0x04, 0x04, 0x04,
+                            ],
+                            nwk_s_enc_key: vec![
+                                0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+                                0x04, 0x04, 0x04, 0x04, 0x04,
+                            ],
+                            f_cnt_up: 0,
+                            ..Default::default()
+                        })),
                         ..Default::default()
-                    })),
-                    ..Default::default()
-                }),
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             },
             Device {
@@ -1151,23 +1266,26 @@ pub mod test {
                 name: "0505050505050505".into(),
                 dev_eui: EUI64::from_be_bytes([5, 5, 5, 5, 5, 5, 5, 5]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
-                device_session: Some(internal::DeviceSession {
-                    dev_addr: vec![0x01, 0x02, 0x03, 0x04],
-                    s_nwk_s_int_key: vec![
-                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                        0x05, 0x05, 0x05, 0x05,
-                    ],
-                    f_nwk_s_int_key: vec![
-                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                        0x05, 0x05, 0x05, 0x05,
-                    ],
-                    nwk_s_enc_key: vec![
-                        0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
-                        0x05, 0x05, 0x05, 0x05,
-                    ],
-                    f_cnt_up: (1 << 16) + 1,
-                    ..Default::default()
-                }),
+                device_session: Some(
+                    internal::DeviceSession {
+                        dev_addr: vec![0x01, 0x02, 0x03, 0x04],
+                        s_nwk_s_int_key: vec![
+                            0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                            0x05, 0x05, 0x05, 0x05,
+                        ],
+                        f_nwk_s_int_key: vec![
+                            0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                            0x05, 0x05, 0x05, 0x05,
+                        ],
+                        nwk_s_enc_key: vec![
+                            0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
+                            0x05, 0x05, 0x05, 0x05,
+                        ],
+                        f_cnt_up: (1 << 16) + 1,
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
                 ..Default::default()
             },
         ];

@@ -65,7 +65,7 @@ pub async fn handle(
         .collect(),
     };
 
-    integration::log_event(app.id, &dev.variables, &log_event).await;
+    integration::log_event(app.id.into(), &dev.variables, &log_event).await;
 
     Ok(None)
 }
@@ -88,19 +88,19 @@ mod test {
         integration::set_mock().await;
 
         let t = tenant::Tenant {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             name: "tenant".to_string(),
             ..Default::default()
         };
 
         let app = application::Application {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             name: "app".to_string(),
             ..Default::default()
         };
 
         let dp = device_profile::DeviceProfile {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().into(),
             name: "dp".to_string(),
             tags: fields::KeyValue::new(
                 [("dp_tag".to_string(), "dp_value".to_string())]

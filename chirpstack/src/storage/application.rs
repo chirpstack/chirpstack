@@ -4,14 +4,11 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::{
-    backend::Backend,
-    deserialize, dsl,
-    pg::Pg,
-    prelude::*,
-    serialize,
-    sql_types::{Jsonb, Text},
-};
+#[cfg(feature = "sqlite")]
+use diesel::sqlite::Sqlite;
+use diesel::{backend::Backend, deserialize, dsl, prelude::*, serialize, sql_types::Text};
+#[cfg(feature = "postgres")]
+use diesel::{pg::Pg, sql_types::Jsonb};
 use diesel_async::RunQueryDsl;
 use serde::{Deserialize, Serialize};
 use tracing::info;
@@ -24,8 +21,8 @@ use super::{fields, get_async_db_conn};
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application)]
 pub struct Application {
-    pub id: Uuid,
-    pub tenant_id: Uuid,
+    pub id: fields::Uuid,
+    pub tenant_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -48,8 +45,8 @@ impl Default for Application {
         let now = Utc::now();
 
         Application {
-            id: Uuid::new_v4(),
-            tenant_id: Uuid::nil(),
+            id: Uuid::new_v4().into(),
+            tenant_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
             name: "".into(),
@@ -68,7 +65,7 @@ pub struct Filters {
 
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct ApplicationListItem {
-    pub id: Uuid,
+    pub id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -129,6 +126,7 @@ where
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Text, Pg> for IntegrationKind
 where
     str: serialize::ToSql<Text, Pg>,
@@ -138,8 +136,16 @@ where
     }
 }
 
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for IntegrationKind {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Sqlite>) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, AsExpression, FromSqlRow, Serialize, Deserialize)]
-#[diesel(sql_type = Jsonb)]
+#[diesel(sql_type = fields::sql_types::JsonT)]
 pub enum IntegrationConfiguration {
     None,
     Http(HttpConfiguration),
@@ -154,6 +160,7 @@ pub enum IntegrationConfiguration {
     Ifttt(IftttConfiguration),
 }
 
+#[cfg(feature = "postgres")]
 impl deserialize::FromSql<Jsonb, Pg> for IntegrationConfiguration {
     fn from_sql(value: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
@@ -161,10 +168,28 @@ impl deserialize::FromSql<Jsonb, Pg> for IntegrationConfiguration {
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for IntegrationConfiguration {
     fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl deserialize::FromSql<Text, Sqlite> for IntegrationConfiguration {
+    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let s =
+            <*const str as deserialize::FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(value)?;
+        Ok(serde_json::from_str(unsafe { &*s })?)
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for IntegrationConfiguration {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Sqlite>) -> serialize::Result {
+        out.set_value(serde_json::to_string(self)?);
+        Ok(serialize::IsNull::No)
     }
 }
 
@@ -268,7 +293,7 @@ pub struct IftttConfiguration {
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
 #[diesel(table_name = application_integration)]
 pub struct Integration {
-    pub application_id: Uuid,
+    pub application_id: fields::Uuid,
     pub kind: IntegrationKind,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -280,7 +305,7 @@ impl Default for Integration {
         let now = Utc::now();
 
         Integration {
-            application_id: Uuid::nil(),
+            application_id: Uuid::nil().into(),
             kind: IntegrationKind::Http,
             created_at: now,
             updated_at: now,
@@ -305,7 +330,7 @@ pub async fn create(a: Application) -> Result<Application, Error> {
 
 pub async fn get(id: &Uuid) -> Result<Application, Error> {
     let a = application::dsl::application
-        .find(&id)
+        .find(fields::Uuid::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
@@ -335,11 +360,12 @@ pub async fn update(a: Application) -> Result<Application, Error> {
 }
 
 pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application, Error> {
-    let app: Application = diesel::update(application::dsl::application.find(&id))
-        .set(application::mqtt_tls_cert.eq(cert))
-        .get_result(&mut get_async_db_conn().await?)
-        .await
-        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    let app: Application =
+        diesel::update(application::dsl::application.find(fields::Uuid::from(id)))
+            .set(application::mqtt_tls_cert.eq(cert))
+            .get_result(&mut get_async_db_conn().await?)
+            .await
+            .map_err(|e| Error::from_diesel(e, id.to_string()))?;
 
     info!(
         application_id = %id,
@@ -350,7 +376,7 @@ pub async fn update_mqtt_cls_cert(id: &Uuid, cert: &[u8]) -> Result<Application,
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(application::dsl::application.find(&id))
+    let ra = diesel::delete(application::dsl::application.find(fields::Uuid::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
@@ -371,11 +397,18 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(application::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(application::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(application::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -397,11 +430,18 @@ pub async fn list(
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(application::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(application::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(application::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     let items = q
@@ -431,7 +471,7 @@ pub async fn get_integration(
     let mut i: Integration = application_integration::dsl::application_integration
         .filter(
             application_integration::dsl::application_id
-                .eq(application_id)
+                .eq(fields::Uuid::from(application_id))
                 .and(application_integration::dsl::kind.eq(kind)),
         )
         .first(&mut get_async_db_conn().await?)
@@ -478,7 +518,7 @@ pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) ->
     let ra = diesel::delete(
         application_integration::dsl::application_integration.filter(
             application_integration::dsl::application_id
-                .eq(&application_id)
+                .eq(fields::Uuid::from(application_id))
                 .and(application_integration::dsl::kind.eq(&kind)),
         ),
     )
@@ -497,20 +537,21 @@ pub async fn get_integrations_for_application(
     application_id: &Uuid,
 ) -> Result<Vec<Integration>, Error> {
     let items: Vec<Integration> = application_integration::dsl::application_integration
-        .filter(application_integration::dsl::application_id.eq(&application_id))
+        .filter(application_integration::dsl::application_id.eq(fields::Uuid::from(application_id)))
         .order_by(application_integration::dsl::kind)
         .load(&mut get_async_db_conn().await?)
         .await?;
     Ok(items)
 }
 
-pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
-    #[derive(QueryableByName)]
-    struct Measurement {
-        #[diesel(sql_type = diesel::sql_types::Text)]
-        pub key: String,
-    }
+#[derive(QueryableByName)]
+struct Measurement {
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    pub key: String,
+}
 
+#[cfg(feature = "postgres")]
+pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
     let keys: Vec<Measurement> = diesel::sql_query(
         r#"
                 select
@@ -525,7 +566,28 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
                     key
                 "#,
     )
-    .bind::<diesel::sql_types::Uuid, _>(application_id)
+    .bind::<fields::sql_types::Uuid, _>(fields::Uuid::from(application_id))
+    .load(&mut get_async_db_conn().await?)
+    .await
+    .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
+    Ok(keys.iter().map(|k| k.key.clone()).collect())
+}
+
+#[cfg(feature = "sqlite")]
+pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, Error> {
+    let keys: Vec<Measurement> = diesel::sql_query(
+        r#"
+                    select distinct json_each.key as key
+                    from device_profile dp, json_each(dp.measurements)
+                    inner join device d
+                        on d.device_profile_id = dp.id
+                    where
+                        d.application_id = ?
+                    order by
+                        key
+                    "#,
+    )
+    .bind::<fields::sql_types::Uuid, _>(fields::Uuid::from(application_id))
     .load(&mut get_async_db_conn().await?)
     .await
     .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
@@ -548,7 +610,7 @@ pub mod test {
 
     pub async fn create_application(tenant_id: Option<Uuid>) -> Application {
         let tenant_id = match tenant_id {
-            Some(v) => v,
+            Some(v) => v.into(),
             None => {
                 let t = storage::tenant::test::create_tenant().await;
                 t.id
@@ -623,7 +685,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
-                    tenant_id: Some(app.tenant_id),
+                    tenant_id: Some(app.tenant_id.into()),
                     search: None,
                 },
                 apps: vec![&app],

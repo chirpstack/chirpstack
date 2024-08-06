@@ -45,7 +45,7 @@ impl DeviceProfileService for DeviceProfile {
             .await?;
 
         let mut dp = device_profile::DeviceProfile {
-            tenant_id,
+            tenant_id: tenant_id.into(),
             name: req_dp.name.clone(),
             description: req_dp.description.clone(),
             region: req_dp.region().from_proto(),
@@ -247,7 +247,7 @@ impl DeviceProfileService for DeviceProfile {
 
         // update
         let _ = device_profile::update(device_profile::DeviceProfile {
-            id: dp_id,
+            id: dp_id.into(),
             name: req_dp.name.clone(),
             description: req_dp.description.clone(),
             region: req_dp.region().from_proto(),
