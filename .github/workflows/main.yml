@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        features:
+        database:
           - postgres
           - sqlite
     env:
-      FEATURES: ${{ matrix.features }}
+      DATABASE: ${{ matrix.database }}
     steps:
       -
         name: Checkout
@@ -39,7 +39,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-test-${{ matrix.features }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-test-${{ matrix.database }}-${{ hashFiles('**/Cargo.lock') }}
       -
         name: Start dependency services
         run: docker compose up -d
