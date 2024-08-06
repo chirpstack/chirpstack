@@ -1,17 +1,15 @@
 import { Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  ListTenantUsersRequest,
-  ListTenantUsersResponse,
-  TenantUserListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { ListTenantUsersResponse, TenantUserListItem } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { ListTenantUsersRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import TenantStore from "../../stores/TenantStore";
 import Admin from "../../components/Admin";
 
@@ -66,7 +64,7 @@ function ListTenatUsers(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListTenantUsersRequest();
+    const req = new ListTenantUsersRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);
     req.setOffset(offset);

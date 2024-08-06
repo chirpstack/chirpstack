@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   GcpPubSubIntegration,
-  GetGcpPubSubIntegrationRequest,
   GetGcpPubSubIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetGcpPubSubIntegrationRequest,
   UpdateGcpPubSubIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
@@ -23,7 +25,7 @@ function EditGcpPubSubIntegration(props: IProps) {
   const [integration, setIntegration] = useState<GcpPubSubIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetGcpPubSubIntegrationRequest();
+    const req = new GetGcpPubSubIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getGcpPubSubIntegration(req, (resp: GetGcpPubSubIntegrationResponse) => {
@@ -32,7 +34,7 @@ function EditGcpPubSubIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: GcpPubSubIntegration) => {
-    let req = new UpdateGcpPubSubIntegrationRequest();
+    const req = new UpdateGcpPubSubIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateGcpPubSubIntegration(req, () => {

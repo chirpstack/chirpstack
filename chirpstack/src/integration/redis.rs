@@ -254,7 +254,7 @@ pub mod test {
         let stream_id = &stream_key.ids[0];
 
         let v = stream_id.map.get(event).unwrap();
-        assert_eq!(&redis::Value::Data(b.to_vec()), v);
+        assert_eq!(&redis::Value::BulkString(b.to_vec()), v);
 
         stream_id.id.clone()
     }

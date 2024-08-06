@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { Row } from "antd";
 
-import {
+import type {
   Application,
-  ListIntegrationsRequest,
   ListIntegrationsResponse,
   IntegrationListItem,
-  IntegrationKind,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { ListIntegrationsRequest, IntegrationKind } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationStore from "../../stores/ApplicationStore";
 import HttpCard from "./integrations/HttpCard";
@@ -28,20 +27,20 @@ interface IProps {
 }
 
 function ListIntegrations(props: IProps) {
-  const [configured, setConfigured] = useState<any[]>([]);
-  const [available, setAvailable] = useState<any[]>([]);
+  const [configured, setConfigured] = useState<JSX.Element[]>([]);
+  const [available, setAvailable] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
     const loadIntegrations = () => {
-      let req = new ListIntegrationsRequest();
+      const req = new ListIntegrationsRequest();
       req.setApplicationId(props.application.getId());
 
       ApplicationStore.listIntegrations(req, (resp: ListIntegrationsResponse) => {
-        let configured: any[] = [];
-        let available: any[] = [];
+        const configured: JSX.Element[] = [];
+        const available: JSX.Element[] = [];
 
         const includes = (integrations: IntegrationListItem[], kind: IntegrationKind) => {
-          for (let x of integrations) {
+          for (const x of integrations) {
             if (x.getKind() === kind) {
               return true;
             }

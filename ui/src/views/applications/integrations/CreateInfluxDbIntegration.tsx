@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
-  Application,
   InfluxDbIntegration,
   CreateInfluxDbIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -21,7 +21,7 @@ function CreateInfluxDbIntegration(props: IProps) {
   const onFinish = (obj: InfluxDbIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateInfluxDbIntegrationRequest();
+    const req = new CreateInfluxDbIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createInfluxDbIntegration(req, () => {

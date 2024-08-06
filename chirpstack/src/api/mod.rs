@@ -1,4 +1,3 @@
-use std::convert::Infallible;
 use std::time::{Duration, Instant};
 use std::{
     future::Future,
@@ -7,23 +6,27 @@ use std::{
 };
 
 use anyhow::Result;
-use futures::future::{self, Either, TryFutureExt};
-use hyper::{service::make_service_fn, Server};
+use axum::{response::IntoResponse, routing::get, Router};
+use http::{
+    header::{self, HeaderMap, HeaderValue},
+    Request, StatusCode, Uri,
+};
 use pin_project::pin_project;
 use prometheus_client::encoding::EncodeLabelSet;
 use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prometheus_client::metrics::histogram::Histogram;
 use rust_embed::RustEmbed;
-use tokio::{task, try_join};
+use tokio::task;
+use tokio::try_join;
 use tonic::transport::Server as TonicServer;
 use tonic::Code;
 use tonic_reflection::server::Builder as TonicReflectionBuilder;
 use tonic_web::GrpcWebLayer;
-use tower::{Service, ServiceBuilder};
+use tower::util::ServiceExt;
+use tower::Service;
 use tower_http::trace::TraceLayer;
 use tracing::{error, info};
-use warp::{http::header::HeaderValue, path::Tail, reply::Response, Filter, Rejection, Reply};
 
 use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
@@ -51,6 +54,7 @@ pub mod device_profile;
 pub mod device_profile_template;
 pub mod error;
 pub mod gateway;
+mod grpc_multiplex;
 pub mod helpers;
 pub mod internal;
 pub mod monitoring;
@@ -89,210 +93,120 @@ lazy_static! {
     };
 }
 
-type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
-
 #[derive(RustEmbed)]
 #[folder = "../ui/build"]
 struct Asset;
 
+type BoxError = Box<dyn std::error::Error + Send + Sync>;
+
 pub async fn setup() -> Result<()> {
     let conf = config::get();
-    let addr = conf.api.bind.parse()?;
+    let bind = conf.api.bind.parse()?;
 
-    info!(bind = %conf.api.bind, "Setting up API interface");
+    info!(bind = %bind, "Setting up API interface");
 
-    // Taken from the tonic hyper_warp_multiplex example:
-    // https://github.com/hyperium/tonic/blob/master/examples/src/hyper_warp_multiplex/server.rs#L101
-    let service = make_service_fn(move |_| {
-        // tonic gRPC service
-        let tonic_service = TonicServer::builder()
-            .accept_http1(true)
-            .layer(GrpcWebLayer::new())
-            .add_service(
-                TonicReflectionBuilder::configure()
-                    .register_encoded_file_descriptor_set(chirpstack_api::api::DESCRIPTOR)
-                    .build()
-                    .unwrap(),
-            )
-            .add_service(InternalServiceServer::with_interceptor(
-                internal::Internal::new(
-                    validator::RequestValidator::new(),
-                    conf.api.secret.clone(),
-                ),
-                auth::auth_interceptor,
-            ))
-            .add_service(ApplicationServiceServer::with_interceptor(
-                application::Application::new(validator::RequestValidator::new()),
-                auth::auth_interceptor,
-            ))
-            .add_service(DeviceProfileServiceServer::with_interceptor(
-                device_profile::DeviceProfile::new(validator::RequestValidator::new()),
-                auth::auth_interceptor,
-            ))
-            .add_service(DeviceProfileTemplateServiceServer::with_interceptor(
-                device_profile_template::DeviceProfileTemplate::new(
-                    validator::RequestValidator::new(),
-                ),
-                auth::auth_interceptor,
-            ))
-            .add_service(TenantServiceServer::with_interceptor(
-                tenant::Tenant::new(validator::RequestValidator::new()),
-                auth::auth_interceptor,
-            ))
-            .add_service(DeviceServiceServer::with_interceptor(
-                device::Device::new(validator::RequestValidator::new()),
-                auth::auth_interceptor,
-            ))
-            .add_service(UserServiceServer::with_interceptor(
-                user::User::new(validator::RequestValidator::new()),
-                auth::auth_interceptor,
-            ))
-            .add_service(GatewayServiceServer::with_interceptor(
-                gateway::Gateway::new(validator::RequestValidator::new()),
-                auth::auth_interceptor,
-            ))
-            .add_service(MulticastGroupServiceServer::with_interceptor(
-                multicast::MulticastGroup::new(validator::RequestValidator::new()),
-                auth::auth_interceptor,
-            ))
-            .add_service(RelayServiceServer::with_interceptor(
-                relay::Relay::new(validator::RequestValidator::new()),
-                auth::auth_interceptor,
-            ))
-            .into_service();
-        let mut tonic_service = ServiceBuilder::new()
-            .layer(
-                TraceLayer::new_for_grpc()
-                    .make_span_with(|req: &http::Request<hyper::Body>| {
-                        tracing::info_span!(
-                        "gRPC",
-                        uri = %req.uri().path(),
-                        )
-                    })
-                    .on_request(OnRequest {})
-                    .on_response(OnResponse {}),
-            )
-            .layer(ApiLogger {})
-            .service(tonic_service);
+    let web = Router::new()
+        .route("/auth/oidc/login", get(oidc::login_handler))
+        .route("/auth/oidc/callback", get(oidc::callback_handler))
+        .route("/auth/oauth2/login", get(oauth2::login_handler))
+        .route("/auth/oauth2/callback", get(oauth2::callback_handler))
+        .fallback(service_static_handler)
+        .into_service()
+        .map_response(|r| r.map(tonic::body::boxed));
 
-        // HTTP service
-        let warp_service = warp::service(
-            warp::path!("auth" / "oidc" / "login")
-                .and_then(oidc::login_handler)
-                .or(warp::path!("auth" / "oidc" / "callback")
-                    .and(warp::query::<oidc::CallbackArgs>())
-                    .and_then(oidc::callback_handler))
-                .or(warp::path!("auth" / "oauth2" / "login").and_then(oauth2::login_handler))
-                .or(warp::path!("auth" / "oauth2" / "callback")
-                    .and(warp::query::<oauth2::CallbackArgs>())
-                    .and_then(oauth2::callback_handler))
-                .or(warp::path::tail().and_then(http_serve)),
-        );
-        let mut warp_service = ServiceBuilder::new()
-            .layer(
-                TraceLayer::new_for_http()
-                    .make_span_with(|req: &http::Request<hyper::Body>| {
-                        tracing::info_span!(
-                        "http",
-                        method = req.method().as_str(),
-                        uri = %req.uri().path(),
-                        version = ?req.version(),
-                        )
-                    })
-                    .on_request(OnRequest {})
-                    .on_response(OnResponse {}),
-            )
-            .service(warp_service);
-
-        future::ok::<_, Infallible>(tower::service_fn(
-            move |req: hyper::Request<hyper::Body>| match req.method() {
-                &hyper::Method::GET => Either::Left(
-                    warp_service
-                        .call(req)
-                        .map_ok(|res| res.map(EitherBody::Right))
-                        .map_err(Error::from),
-                ),
-                _ => Either::Right(
-                    tonic_service
-                        .call(req)
-                        .map_ok(|res| res.map(EitherBody::Left))
-                        .map_err(Error::from),
-                ),
-            },
+    let grpc = TonicServer::builder()
+        .accept_http1(true)
+        .layer(
+            TraceLayer::new_for_grpc()
+                .make_span_with(|req: &Request<_>| {
+                    tracing::info_span!(
+                    "gRPC",
+                    uri = %req.uri().path(),
+                    )
+                })
+                .on_request(OnRequest {})
+                .on_response(OnResponse {}),
+        )
+        .layer(grpc_multiplex::GrpcMultiplexLayer::new(web))
+        .layer(ApiLoggerLayer {})
+        .layer(GrpcWebLayer::new())
+        .add_service(
+            TonicReflectionBuilder::configure()
+                .register_encoded_file_descriptor_set(chirpstack_api::api::DESCRIPTOR)
+                .build()
+                .unwrap(),
+        )
+        .add_service(InternalServiceServer::with_interceptor(
+            internal::Internal::new(validator::RequestValidator::new(), conf.api.secret.clone()),
+            auth::auth_interceptor,
         ))
-    });
+        .add_service(ApplicationServiceServer::with_interceptor(
+            application::Application::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(DeviceProfileServiceServer::with_interceptor(
+            device_profile::DeviceProfile::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(DeviceProfileTemplateServiceServer::with_interceptor(
+            device_profile_template::DeviceProfileTemplate::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(TenantServiceServer::with_interceptor(
+            tenant::Tenant::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(DeviceServiceServer::with_interceptor(
+            device::Device::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(UserServiceServer::with_interceptor(
+            user::User::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(GatewayServiceServer::with_interceptor(
+            gateway::Gateway::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(MulticastGroupServiceServer::with_interceptor(
+            multicast::MulticastGroup::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(RelayServiceServer::with_interceptor(
+            relay::Relay::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ));
 
     let backend_handle = tokio::spawn(backend::setup());
     let monitoring_handle = tokio::spawn(monitoring::setup());
-    let api_handle = tokio::spawn(Server::bind(&addr).serve(service));
+    let grpc_handle = tokio::spawn(grpc.serve(bind));
 
-    let _ = try_join!(api_handle, backend_handle, monitoring_handle)?;
+    let _ = try_join!(grpc_handle, backend_handle, monitoring_handle)?;
 
     Ok(())
 }
 
-enum EitherBody<A, B> {
-    Left(A),
-    Right(B),
-}
-
-impl<A, B> http_body::Body for EitherBody<A, B>
-where
-    A: http_body::Body + Send + Unpin,
-    B: http_body::Body<Data = A::Data> + Send + Unpin,
-    A::Error: Into<Error>,
-    B::Error: Into<Error>,
-{
-    type Data = A::Data;
-    type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
-
-    fn is_end_stream(&self) -> bool {
-        match self {
-            EitherBody::Left(b) => b.is_end_stream(),
-            EitherBody::Right(b) => b.is_end_stream(),
-        }
-    }
-
-    fn poll_data(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Option<Result<Self::Data, Self::Error>>> {
-        match self.get_mut() {
-            EitherBody::Left(b) => Pin::new(b).poll_data(cx).map(map_option_err),
-            EitherBody::Right(b) => Pin::new(b).poll_data(cx).map(map_option_err),
-        }
-    }
-
-    fn poll_trailers(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Result<Option<http::HeaderMap>, Self::Error>> {
-        match self.get_mut() {
-            EitherBody::Left(b) => Pin::new(b).poll_trailers(cx).map_err(Into::into),
-            EitherBody::Right(b) => Pin::new(b).poll_trailers(cx).map_err(Into::into),
-        }
-    }
-}
-
-fn map_option_err<T, U: Into<Error>>(err: Option<Result<T, U>>) -> Option<Result<T, Error>> {
-    err.map(|e| e.map_err(Into::into))
-}
-
-async fn http_serve(path: Tail) -> Result<impl Reply, Rejection> {
-    let mut path = path.as_str();
+async fn service_static_handler(uri: Uri) -> impl IntoResponse {
+    let mut path = {
+        let mut chars = uri.path().chars();
+        chars.next();
+        chars.as_str()
+    };
     if path.is_empty() {
         path = "index.html";
     }
 
-    let asset = Asset::get(path).ok_or_else(warp::reject::not_found)?;
-    let mime = mime_guess::from_path(path).first_or_octet_stream();
-
-    let mut res = Response::new(asset.data.into());
-    res.headers_mut().insert(
-        "content-type",
-        HeaderValue::from_str(mime.as_ref()).unwrap(),
-    );
-    Ok(res)
+    if let Some(asset) = Asset::get(path) {
+        let mime = mime_guess::from_path(path).first_or_octet_stream();
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_str(mime.as_ref()).unwrap(),
+        );
+        (StatusCode::OK, headers, asset.data.into())
+    } else {
+        (StatusCode::NOT_FOUND, HeaderMap::new(), vec![])
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -320,13 +234,14 @@ struct GrpcLabels {
     status_code: String,
 }
 
-struct ApiLogger {}
+#[derive(Debug, Clone)]
+struct ApiLoggerLayer {}
 
-impl<S> tower::Layer<S> for ApiLogger {
+impl<S> tower::Layer<S> for ApiLoggerLayer {
     type Service = ApiLoggerService<S>;
 
-    fn layer(&self, service: S) -> Self::Service {
-        ApiLoggerService { inner: service }
+    fn layer(&self, inner: S) -> Self::Service {
+        ApiLoggerService { inner }
     }
 }
 
@@ -335,15 +250,15 @@ struct ApiLoggerService<S> {
     inner: S,
 }
 
-impl<S, ReqBody, ResBody> Service<http::Request<ReqBody>> for ApiLoggerService<S>
+impl<ReqBody, ResBody, S> Service<http::Request<ReqBody>> for ApiLoggerService<S>
 where
-    S: Service<http::Request<ReqBody>, Response = http::Response<ResBody>>,
-    ReqBody: http_body::Body,
     ResBody: http_body::Body,
+    S: Service<http::Request<ReqBody>, Response = http::Response<ResBody>>,
+    S::Error: Into<BoxError> + Send,
 {
     type Response = S::Response;
     type Error = S::Error;
-    type Future = ApiLoggerResponseFuture<S::Future>;
+    type Future = ApiLoggerFuture<S::Future>;
 
     fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.inner.poll_ready(cx)
@@ -352,10 +267,10 @@ where
     fn call(&mut self, request: http::Request<ReqBody>) -> Self::Future {
         let uri = request.uri().path().to_string();
         let uri_parts: Vec<&str> = uri.split('/').collect();
-        let response_future = self.inner.call(request);
+        let future = self.inner.call(request);
         let start = Instant::now();
-        ApiLoggerResponseFuture {
-            response_future,
+        ApiLoggerFuture {
+            future,
             start,
             service: uri_parts.get(1).map(|v| v.to_string()).unwrap_or_default(),
             method: uri_parts.get(2).map(|v| v.to_string()).unwrap_or_default(),
@@ -364,25 +279,26 @@ where
 }
 
 #[pin_project]
-struct ApiLoggerResponseFuture<F> {
+struct ApiLoggerFuture<F> {
     #[pin]
-    response_future: F,
+    future: F,
     start: Instant,
     service: String,
     method: String,
 }
 
-impl<F, ResBody, Error> Future for ApiLoggerResponseFuture<F>
+impl<ResBody, F, E> Future for ApiLoggerFuture<F>
 where
-    F: Future<Output = Result<http::Response<ResBody>, Error>>,
     ResBody: http_body::Body,
+    F: Future<Output = Result<http::Response<ResBody>, E>>,
+    E: Into<BoxError> + Send,
 {
-    type Output = Result<http::Response<ResBody>, Error>;
+    type Output = Result<http::Response<ResBody>, E>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.project();
 
-        match this.response_future.poll(cx) {
+        match this.future.poll(cx) {
             Poll::Ready(result) => {
                 if let Ok(response) = &result {
                     let status_code: i32 = match response.headers().get("grpc-status") {

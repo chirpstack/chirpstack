@@ -1,24 +1,24 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Struct } from "google-protobuf/google/protobuf/struct_pb";
 
 import { Switch, notification } from "antd";
 import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Popconfirm } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
 
+import type { Device, GetDeviceQueueItemsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import {
-  Device,
   EnqueueDeviceQueueItemRequest,
   GetDeviceQueueItemsRequest,
-  GetDeviceQueueItemsResponse,
   FlushDeviceQueueRequest,
   DeviceQueueItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import { onFinishFailed } from "../helpers";
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import CodeEditor from "../../components/CodeEditor";
 
@@ -26,10 +26,20 @@ interface IProps {
   device: Device;
 }
 
+interface FormRules {
+  confirmed: boolean;
+  fPort: number;
+  isEncrypted: boolean;
+  fCntDown: number;
+  hex: string;
+  base64: string;
+  json: string;
+}
+
 function DeviceQueue(props: IProps) {
   const [refreshCounter, setRefreshCounter] = useState<number>(0);
   const [isEncrypted, setIsEncrypted] = useState<boolean>(false);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<FormRules>();
 
   const columns: ColumnsType<DeviceQueueItem.AsObject> = [
     {
@@ -107,7 +117,7 @@ function DeviceQueue(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new GetDeviceQueueItemsRequest();
+    const req = new GetDeviceQueueItemsRequest();
     req.setDevEui(props.device.getDevEui());
 
     DeviceStore.getQueue(req, (resp: GetDeviceQueueItemsResponse) => {
@@ -121,16 +131,16 @@ function DeviceQueue(props: IProps) {
   };
 
   const flushQueue = () => {
-    let req = new FlushDeviceQueueRequest();
+    const req = new FlushDeviceQueueRequest();
     req.setDevEui(props.device.getDevEui());
     DeviceStore.flushQueue(req, () => {
       refreshQueue();
     });
   };
 
-  const onEnqueue = (values: any) => {
-    let req = new EnqueueDeviceQueueItemRequest();
-    let item = new DeviceQueueItem();
+  const onEnqueue = (values: FormRules) => {
+    const req = new EnqueueDeviceQueueItemRequest();
+    const item = new DeviceQueueItem();
 
     item.setDevEui(props.device.getDevEui());
     item.setFPort(values.fPort);
@@ -149,7 +159,7 @@ function DeviceQueue(props: IProps) {
     if (values.json !== undefined) {
       try {
         const obj = JSON.parse(values.json);
-        let struct = Struct.fromJavaScript(obj);
+        const struct = Struct.fromJavaScript(obj);
 
         item.setObject(struct);
       } catch (err) {

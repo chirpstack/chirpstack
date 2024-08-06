@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Form, Input, Switch, Row, Col, Button } from "antd";
 
 import { TenantUser } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -22,7 +22,7 @@ function TenantUserForm(props: IProps) {
   const onFinish = (values: TenantUser.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
 
-    let tu = new TenantUser();
+    const tu = new TenantUser();
     tu.setEmail(v.email);
     tu.setIsAdmin(v.isAdmin);
     tu.setIsGatewayAdmin(v.isGatewayAdmin);

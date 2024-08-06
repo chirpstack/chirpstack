@@ -18,7 +18,7 @@ function UserForm(props: IProps) {
   const onFinish = (v: UserWithPassword) => {
     const values = Object.assign(props.initialValues.toObject(), v);
 
-    let user = new User();
+    const user = new User();
     user.setId(values.id);
     user.setEmail(values.email);
     user.setNote(values.note);

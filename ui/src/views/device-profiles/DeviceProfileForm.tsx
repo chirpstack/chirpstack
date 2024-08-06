@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
@@ -13,15 +13,17 @@ import {
   RelayModeActivation,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
-import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import {
-  ListDeviceProfileTemplatesRequest,
+import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type {
   ListDeviceProfileTemplatesResponse,
-  GetDeviceProfileTemplateRequest,
   GetDeviceProfileTemplateResponse,
   DeviceProfileTemplateListItem,
   DeviceProfileTemplate,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
+import {
+  ListDeviceProfileTemplatesRequest,
+  GetDeviceProfileTemplateRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
 
 import { getEnumName, onFinishFailed } from "../helpers";
@@ -51,7 +53,7 @@ function TemplateModal(props: ModalProps) {
     if (props.visible) {
       setTemplatesLoaded(false);
 
-      let req = new ListDeviceProfileTemplatesRequest();
+      const req = new ListDeviceProfileTemplatesRequest();
       req.setLimit(99999);
 
       DeviceProfileTemplateStore.list(req, (resp: ListDeviceProfileTemplatesResponse) => {
@@ -67,7 +69,7 @@ function TemplateModal(props: ModalProps) {
 
   const onOk = () => {
     if (templateId) {
-      let req = new GetDeviceProfileTemplateRequest();
+      const req = new GetDeviceProfileTemplateRequest();
       req.setId(templateId);
 
       DeviceProfileTemplateStore.get(req, (resp: GetDeviceProfileTemplateResponse) => {
@@ -79,7 +81,7 @@ function TemplateModal(props: ModalProps) {
     }
   };
 
-  let options: Option[] = [];
+  const options: Option[] = [];
   let vendor = "";
   let device = "";
   let firmware = "";
@@ -148,7 +150,7 @@ function TemplateModal(props: ModalProps) {
       bodyStyle={{ height: 300 }}
       onOk={onOk}
       onCancel={props.onCancel}
-      okButtonProps={{ disabled: !!!templateId }}
+      okButtonProps={{ disabled: !templateId }}
     >
       {!templatesLoaded && (
         <div className="spinner">
@@ -200,7 +202,7 @@ function DeviceProfileForm(props: IProps) {
     InternalStore.listRegions((resp: ListRegionsResponse) => {
       setRegionConfigurations(resp.getRegionsList());
 
-      let regionConfigurationsFiltered: [string, string][] = [];
+      const regionConfigurationsFiltered: [string, string][] = [];
       for (const r of resp.getRegionsList()) {
         if (v.getRegion() === r.getRegion()) {
           regionConfigurationsFiltered.push([r.getId(), r.getDescription()]);
@@ -211,7 +213,7 @@ function DeviceProfileForm(props: IProps) {
     });
 
     DeviceProfileStore.listAdrAlgorithms((resp: ListDeviceProfileAdrAlgorithmsResponse) => {
-      let adrAlgorithms: [string, string][] = [];
+      const adrAlgorithms: [string, string][] = [];
       for (const a of resp.getResultList()) {
         adrAlgorithms.push([a.getId(), a.getName()]);
       }
@@ -227,7 +229,7 @@ function DeviceProfileForm(props: IProps) {
   const onFinish = (values: DeviceProfile.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
 
-    let dp = new DeviceProfile();
+    const dp = new DeviceProfile();
     dp.setId(v.id);
     dp.setTenantId(v.tenantId);
 
@@ -299,7 +301,7 @@ function DeviceProfileForm(props: IProps) {
 
     // measurements
     for (const elm of v.measurementsMap) {
-      let m = new Measurement();
+      const m = new Measurement();
       m.setKind(elm[1].kind);
       m.setName(elm[1].name);
       dp.getMeasurementsMap().set(elm[0], m);
@@ -379,7 +381,7 @@ function DeviceProfileForm(props: IProps) {
   };
 
   const onRegionChange = (region: Region) => {
-    let regionConfigurationsFiltered: [string, string][] = [];
+    const regionConfigurationsFiltered: [string, string][] = [];
     for (const r of regionConfigurations) {
       if (region === r.getRegion()) {
         regionConfigurationsFiltered.push([r.getId(), r.getDescription()]);

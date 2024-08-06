@@ -23,7 +23,7 @@ use tracing::{error, info, trace};
 
 use super::GatewayBackend;
 use crate::config::GatewayBackendMqtt;
-use crate::helpers::tls::{get_root_certs, load_cert, load_key};
+use crate::helpers::tls22::{get_root_certs, load_cert, load_key};
 use crate::monitoring::prometheus;
 use crate::{downlink, uplink};
 use lrwn::region::CommonName;
@@ -414,6 +414,18 @@ async fn message_callback(
 
             set_gateway_json(&event.gateway_id, json);
             tokio::spawn(downlink::tx_ack::TxAck::handle(event));
+        } else if topic.ends_with("/mesh-heartbeat") {
+            EVENT_COUNTER
+                .get_or_create(&EventLabels {
+                    event: "mesh-heartbeat".to_string(),
+                })
+                .inc();
+            let event = match json {
+                true => serde_json::from_slice(&p.payload)?,
+                false => chirpstack_api::gw::MeshHeartbeat::decode(&mut Cursor::new(&p.payload))?,
+            };
+
+            tokio::spawn(uplink::mesh::MeshHeartbeat::handle(event));
         } else {
             return Err(anyhow!("Unknown event type"));
         }

@@ -11,7 +11,7 @@ interface IProps {
 
 function ApiKeyForm(props: IProps) {
   const onFinish = (values: ApiKey.AsObject) => {
-    let apiKey = new ApiKey();
+    const apiKey = new ApiKey();
     apiKey.setName(values.name);
     props.onFinish(apiKey);
   };

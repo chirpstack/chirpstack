@@ -374,3 +374,19 @@ create index idx_tenant_tags on tenant (tags);
 create index idx_application_tags on application (tags);
 create index idx_device_dev_addr on device (dev_addr);
 create index idx_device_secondary_dev_addr on device (secondary_dev_addr);
+
+
+-- relay gateway
+create table relay_gateway (
+  tenant_id text not null references tenant on delete cascade,
+  relay_id blob not null,
+  created_at datetime not null,
+  updated_at datetime not null,
+  last_seen_at datetime,
+  name varchar(100) not null,
+  description text not null,
+  stats_interval_secs integer not null,
+  region_config_id varchar(100) not null,
+
+  primary key (tenant_id, relay_id)
+);

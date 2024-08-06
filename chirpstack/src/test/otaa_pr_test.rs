@@ -379,7 +379,9 @@ async fn test_sns() {
     let resp =
         backend_api::handle_request(Bytes::from(serde_json::to_string(&pr_start_req).unwrap()))
             .await;
-    let resp_b = hyper::body::to_bytes(resp.into_body()).await.unwrap();
+    let resp_b = axum::body::to_bytes(resp.into_body(), usize::MAX)
+        .await
+        .unwrap();
 
     let pr_start_ans: backend::PRStartAnsPayload = serde_json::from_slice(&resp_b).unwrap();
 
@@ -562,7 +564,9 @@ async fn test_sns_roaming_not_allowed() {
     let resp =
         backend_api::handle_request(Bytes::from(serde_json::to_string(&pr_start_req).unwrap()))
             .await;
-    let resp_b = hyper::body::to_bytes(resp.into_body()).await.unwrap();
+    let resp_b = axum::body::to_bytes(resp.into_body(), usize::MAX)
+        .await
+        .unwrap();
 
     let pr_start_ans: backend::PRStartAnsPayload = serde_json::from_slice(&resp_b).unwrap();
 

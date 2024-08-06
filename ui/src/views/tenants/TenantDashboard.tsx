@@ -1,33 +1,32 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { presetPalettes } from "@ant-design/colors";
 import { Card, Col, Row, Space, Empty } from "antd";
 
-import moment from "moment";
-import { LatLngTuple, PointTuple } from "leaflet";
+import { formatDistanceToNow } from "date-fns";
+import type { LatLngTuple, PointTuple } from "leaflet";
 import { Popup } from "react-leaflet";
 import { Doughnut } from "react-chartjs-2";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
-import {
-  GetGatewaysSummaryRequest,
+import type {
   GetGatewaysSummaryResponse,
-  GetDevicesSummaryRequest,
   GetDevicesSummaryResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
-
 import {
-  ListGatewaysRequest,
-  ListGatewaysResponse,
-  GatewayListItem,
-  GatewayState,
-} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+  GetGatewaysSummaryRequest,
+  GetDevicesSummaryRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+
+import type { ListGatewaysResponse, GatewayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { ListGatewaysRequest, GatewayState } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import InternalStore from "../../stores/InternalStore";
 import GatewayStore from "../../stores/GatewayStore";
-import Map, { Marker, MarkerColor } from "../../components/Map";
+import type { MarkerColor } from "../../components/Map";
+import Map, { Marker } from "../../components/Map";
 
 interface GatewaysMapProps {
   items: GatewayListItem[];
@@ -44,8 +43,8 @@ function GatewaysMap(props: GatewaysMapProps) {
     padding: [50, 50],
   };
 
-  let bounds: LatLngTuple[] = [];
-  let markers: any[] = [];
+  const bounds: LatLngTuple[] = [];
+  const markers: JSX.Element[] = [];
 
   for (const item of props.items) {
     if (item.getLocation() === undefined) {
@@ -65,8 +64,7 @@ function GatewaysMap(props: GatewaysMapProps) {
     }
 
     if (item.getLastSeenAt() !== undefined) {
-      let ts = moment(item.getLastSeenAt()!.toDate());
-      lastSeen = ts.fromNow();
+      lastSeen = formatDistanceToNow(item.getLastSeenAt()!.toDate(), { addSuffix: true });
     }
 
     markers.push(
@@ -197,7 +195,7 @@ function DevicesDataRates(props: DeviceProps) {
     return <Empty />;
   }
 
-  let data: {
+  const data: {
     labels: string[];
     datasets: {
       data: number[];
@@ -243,7 +241,7 @@ function TenantDashboard({ tenant }: { tenant: Tenant }) {
 
   useEffect(() => {
     {
-      let req = new GetGatewaysSummaryRequest();
+      const req = new GetGatewaysSummaryRequest();
       req.setTenantId(tenant.getId());
 
       InternalStore.getGatewaysSummary(req, (resp: GetGatewaysSummaryResponse) => {
@@ -252,7 +250,7 @@ function TenantDashboard({ tenant }: { tenant: Tenant }) {
     }
 
     {
-      let req = new GetDevicesSummaryRequest();
+      const req = new GetDevicesSummaryRequest();
       req.setTenantId(tenant.getId());
 
       InternalStore.getDevicesSummary(req, (resp: GetDevicesSummaryResponse) => {
@@ -261,7 +259,7 @@ function TenantDashboard({ tenant }: { tenant: Tenant }) {
     }
 
     {
-      let req = new ListGatewaysRequest();
+      const req = new ListGatewaysRequest();
       req.setTenantId(tenant.getId());
       req.setLimit(9999);
 

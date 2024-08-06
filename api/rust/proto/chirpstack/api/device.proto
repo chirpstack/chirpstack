@@ -7,6 +7,8 @@ option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "DeviceProto";
 option csharp_namespace = "Chirpstack.Api";
+option php_namespace = "Chirpstack\\Api";
+option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
 
 import "common/common.proto";
 import "google/api/annotations.proto";
@@ -382,6 +384,8 @@ message DeviceActivation {
   string app_s_key = 3;
 
   // Network session encryption key (HEX encoded).
+  // Note: For ABP in LoRaWAN 1.0.x, use this, the serving and the forwarding
+  // network session integrity key fields with the LoRaWAN 1.0.x 'NwkSKey`!
   string nwk_s_enc_key = 4;
 
   // Serving network session integrity key (HEX encoded).

@@ -45,8 +45,8 @@ export function getEnumName(enums: { [key: number]: string }, index: number) {
   for (const [k, v] of Object.entries(enums)) {
     // This is weird. 'typeof v' returns 'number', but 'v === 0' errors
     // that v (string) can't be compared to number.
-    let vUnknown = v as unknown;
-    let vNumber = vUnknown as number;
+    const vUnknown = v as unknown;
+    const vNumber = vUnknown as number;
     if (vNumber === index) {
       return k;
     }

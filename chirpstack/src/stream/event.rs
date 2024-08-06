@@ -115,7 +115,7 @@ async fn handle_stream(
     match k {
         "up" => {
             trace!(key = %k, id = %stream_id, "Event-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = integration::UplinkEvent::decode(&mut Cursor::new(b))?;
                 let pl = api::LogItem {
                     id: stream_id.to_string(),
@@ -141,7 +141,7 @@ async fn handle_stream(
         }
         "join" => {
             trace!(key = %k, id = %stream_id, "Event-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = integration::JoinEvent::decode(&mut Cursor::new(b))?;
                 let pl = api::LogItem {
                     id: stream_id.to_string(),
@@ -162,7 +162,7 @@ async fn handle_stream(
         }
         "ack" => {
             trace!(key = %k, id = %stream_id, "Event-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = integration::AckEvent::decode(&mut Cursor::new(b))?;
                 let pl = api::LogItem {
                     id: stream_id.to_string(),
@@ -180,7 +180,7 @@ async fn handle_stream(
         }
         "txack" => {
             trace!(key = %k, id = %stream_id, "Event-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = integration::TxAckEvent::decode(&mut Cursor::new(b))?;
                 let pl = api::LogItem {
                     id: stream_id.to_string(),
@@ -198,7 +198,7 @@ async fn handle_stream(
         }
         "status" => {
             trace!(key = %k, id = %stream_id, "Event-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = integration::StatusEvent::decode(&mut Cursor::new(b))?;
                 let pl = api::LogItem {
                     id: stream_id.to_string(),
@@ -230,7 +230,7 @@ async fn handle_stream(
         }
         "log" => {
             trace!(key = %k, id =%stream_id, "Event-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = integration::LogEvent::decode(&mut Cursor::new(b))?;
                 let pl = api::LogItem {
                     id: stream_id.to_string(),
@@ -254,7 +254,7 @@ async fn handle_stream(
         }
         "location" => {
             trace!(key = %k, id=%stream_id, "Event-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = integration::LocationEvent::decode(&mut Cursor::new(b))?;
                 let pl = api::LogItem {
                     id: stream_id.to_string(),
@@ -272,7 +272,7 @@ async fn handle_stream(
         }
         "integration" => {
             trace!(key = %k, id=%stream_id, "Event-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = integration::IntegrationEvent::decode(&mut Cursor::new(b))?;
                 let pl = api::LogItem {
                     id: stream_id.to_string(),

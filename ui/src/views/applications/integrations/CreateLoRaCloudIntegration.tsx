@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
-  Application,
   LoraCloudIntegration,
   LoraCloudModemGeolocationServices,
   CreateLoraCloudIntegrationRequest,
@@ -22,7 +22,7 @@ function CreateLoRaCloudIntegration(props: IProps) {
   const onFinish = (obj: LoraCloudIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateLoraCloudIntegrationRequest();
+    const req = new CreateLoraCloudIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createLoraCloudIntegration(req, () => {
@@ -30,8 +30,8 @@ function CreateLoRaCloudIntegration(props: IProps) {
     });
   };
 
-  let i = new LoraCloudIntegration();
-  let mgs = new LoraCloudModemGeolocationServices();
+  const i = new LoraCloudIntegration();
+  const mgs = new LoraCloudModemGeolocationServices();
   mgs.setModemEnabled(true);
   mgs.setForwardFPortsList([192, 197, 198, 199]);
 

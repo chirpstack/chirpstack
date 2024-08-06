@@ -1,3 +1,4 @@
+drop table relay_gateway;
 drop table multicast_group_gateway;
 drop table multicast_group_queue_item;
 drop table multicast_group_device;

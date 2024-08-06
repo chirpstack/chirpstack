@@ -1,19 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { DeleteOutlined } from "@ant-design/icons";
 import { Space, Breadcrumb, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  ListApiKeysRequest,
-  ListApiKeysResponse,
-  DeleteApiKeyRequest,
-  ApiKey,
-} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { ListApiKeysResponse, ApiKey } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { ListApiKeysRequest, DeleteApiKeyRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import InternalStore from "../../stores/InternalStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 
@@ -47,7 +44,7 @@ function ListAdminApiKeys() {
 
   const deleteApiKey = (id: string): (() => void) => {
     return () => {
-      let req = new DeleteApiKeyRequest();
+      const req = new DeleteApiKeyRequest();
       req.setId(id);
 
       InternalStore.deleteApiKey(req, () => {
@@ -58,7 +55,7 @@ function ListAdminApiKeys() {
   };
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListApiKeysRequest();
+    const req = new ListApiKeysRequest();
     req.setLimit(limit);
     req.setOffset(offset);
     req.setIsAdmin(true);

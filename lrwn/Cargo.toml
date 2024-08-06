@@ -3,7 +3,7 @@
   description = "Library for encoding / decoding LoRaWAN frames."
   homepage = "https://www.chirpstack.io"
   license = "MIT"
-  version = "4.8.1"
+  version = "4.9.0-test.5"
   authors = ["Orne Brocaar <info@brocaar.com>"]
   edition = "2018"
   repository = "https://github.com/chirpstack/chirpstack"
@@ -23,12 +23,12 @@
   anyhow = "1.0"
 
   # Misc
-  lazy_static = "1.4"
+  lazy_static = "1.5"
 
 [features]
   default = []
   diesel = ["dep:diesel", "serde"]
-  postgres = ["diesel", "diesel/postgres"]
+  postgres = ["diesel", "diesel/postgres_backend"]
   sqlite = ["diesel", "diesel/sqlite"]
   serde = ["dep:serde"]
   crypto = ["dep:cmac", "dep:aes"]

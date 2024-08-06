@@ -279,7 +279,7 @@ async fn handle_stream(
     match k {
         "up" => {
             trace!(key = %k, id = %stream_id, "Frame-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = stream::UplinkFrameLog::decode(&mut Cursor::new(b))?;
                 let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                 if pl.plaintext_f_opts {
@@ -320,7 +320,7 @@ async fn handle_stream(
         }
         "down" => {
             trace!(key = %k, id = %stream_id, "frame-log received from stream");
-            if let redis::Value::Data(b) = v {
+            if let redis::Value::BulkString(b) = v {
                 let pl = stream::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
                 let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
                 if pl.plaintext_f_opts {

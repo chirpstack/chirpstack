@@ -649,6 +649,15 @@ r#"
     # is needed.
     assume_email_verified={{ user_authentication.openid_connect.assume_email_verified }}
 
+    # Scopes.
+    #
+    # This configures the scopes that are used during login. You must at least define
+    # "email" and "profile".
+    scopes=[
+      {{#each user_authentication.openid_connect.scopes}}
+      "{{this}}",
+      {{/each}}
+    ]
 
   # OAuth2 backend.
   [user_authentication.oauth2]
@@ -726,6 +735,16 @@ r#"
     # If set to true, then ChirpStack will ignore the email_verified received
     # from the userinfo URL, assuming it will be true.
     assume_email_verified={{ user_authentication.oauth2.assume_email_verified }}
+
+    # Scopes.
+    #
+    # This configures the scopes that are used during login. You must at least define
+    # "email".
+    scopes=[
+      {{#each user_authentication.oauth2.scopes}}
+      "{{this}}",
+      {{/each}}
+    ]
 
 
 # Join Server configuration.
@@ -955,6 +974,22 @@ r#"
   label="{{ this.label }}"
   kek="{{ this.kek }}"
 {{/each}}
+
+
+# UI configuration.
+[ui]
+  # Tileserver URL.
+  #
+  # This configures the tileserver used in the UI to display maps.
+  # The default value uses the OSM tiles.
+  tileserver_url="{{ui.tileserver_url}}"
+
+  # Map attribution.
+  #
+  # This configures the map attribution. The default attribution relates to the
+  # default tileserver_url (OSM). If you configure a different tile-server, you
+  # might need to update the map_attribution.
+  map_attribution="{{ui.map_attribution}}"
 "#].join("\n");
 
     let mut reg = Handlebars::new();

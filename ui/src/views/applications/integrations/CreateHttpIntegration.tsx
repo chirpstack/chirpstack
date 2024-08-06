@@ -2,11 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
-  Application,
-  HttpIntegration,
-  CreateHttpIntegrationRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { HttpIntegration, CreateHttpIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import HttpIntegrationForm from "./HttpIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
@@ -21,7 +18,7 @@ function CreateHttpIntegration(props: IProps) {
   const onFinish = (obj: HttpIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateHttpIntegrationRequest();
+    const req = new CreateHttpIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createHttpIntegration(req, () => {

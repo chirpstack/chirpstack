@@ -1,17 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Space, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
-import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
-import {
-  ListRelayDevicesRequest,
-  ListRelayDevicesResponse,
-  RelayDeviceListItem,
-  RemoveRelayDeviceRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+import type { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { ListRelayDevicesResponse, RelayDeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+import { ListRelayDevicesRequest, RemoveRelayDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import RelayStore from "../../stores/RelayStore";
 
 interface IProps {
@@ -47,14 +44,14 @@ function ListRelayDevices(props: IProps) {
 
     let count = 0;
 
-    for (let devEui of selectedRowIds) {
+    for (const devEui of selectedRowIds) {
       count++;
 
-      let req = new RemoveRelayDeviceRequest();
+      const req = new RemoveRelayDeviceRequest();
       req.setRelayDevEui(props.relayDevice.getDevEui());
       req.setDeviceDevEui(devEui);
 
-      let cbFunc = (cnt: number) => {
+      const cbFunc = (cnt: number) => {
         return () => {
           if (cnt === selectedRowIds.length) {
             setRefreshKey(refreshKey + 1);
@@ -67,7 +64,7 @@ function ListRelayDevices(props: IProps) {
   };
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListRelayDevicesRequest();
+    const req = new ListRelayDevicesRequest();
     req.setRelayDevEui(props.relayDevice.getDevEui());
     req.setLimit(limit);
     req.setOffset(offset);

@@ -3,7 +3,7 @@
   description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
   repository = "https://github.com/chirpstack/chirpstack"
   homepage = "https://www.chirpstack.io/"
-  version = "4.8.1"
+  version = "4.9.0-test.5"
   authors = ["Orne Brocaar <info@brocaar.com>"]
   edition = "2021"
   publish = false
@@ -20,7 +20,7 @@
   serde_urlencoded = "0.7"
   humantime-serde = "1.1"
   toml = "0.8"
-  handlebars = "5.1"
+  handlebars = "6.0"
 
   # Database
   email_address = "0.2"
@@ -35,9 +35,9 @@
     "async-connection-wrapper",
   ] }
   tokio-postgres = { version = "0.7", optional = true }
-  tokio-postgres-rustls = { version = "0.11", optional = true }
+  tokio-postgres-rustls = { version = "0.12", optional = true }
   bigdecimal = "0.4"
-  redis = { version = "0.25.2", features = ["tls-rustls", "tokio-rustls-comp"] }
+  redis = { version = "0.26", features = ["tls-rustls", "tokio-rustls-comp"] }
   deadpool-redis = { version = "0.15", features = ["cluster"] }
 
   # Logging
@@ -70,8 +70,8 @@
   sha2 = "0.10"
   urlencoding = "2.1"
   geohash = "0.13"
-  gcp_auth = "0.11"
-  lapin = "2.3"
+  gcp_auth = "0.12"
+  lapin = { version = "2.5", default-features = false }
   tokio-executor-trait = "2.1"
   tokio-reactor-trait = "1.1"
   rdkafka = { version = "0.36", default-features = false, features = [
@@ -80,26 +80,26 @@
   ] }
 
   # gRPC and Protobuf
-  tonic = "0.11"
-  tonic-web = "0.11"
-  tonic-reflection = "0.11"
-  tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
+  tonic = "0.12"
+  tonic-web = "0.12"
+  tonic-reflection = "0.12"
+  tokio = { version = "1.38", features = ["macros", "rt-multi-thread"] }
   tokio-stream = "0.1"
-  prost-types = "0.12"
-  prost = "0.12"
-  pbjson-types = "0.6"
+  prost-types = "0.13"
+  prost = "0.13"
+  pbjson-types = "0.7"
 
   # gRPC and HTTP multiplexing
-  warp = { version = "0.3", features = ["tls"], default-features = false }
-  hyper = "0.14"
-  tower = "0.4"
+  axum = "0.7"
+  axum-server = { version = "0.7.1", features = ["tls-rustls-no-provider"] }
+  tower = { version = "0.4" }
   futures = "0.3"
   futures-util = "0.3"
-  http = "0.2"
-  http-body = "0.4"
-  rust-embed = "8.3"
+  http = "1.1"
+  http-body = "1.0"
+  rust-embed = "8.5"
   mime_guess = "2.0"
-  tower-http = { version = "0.4", features = ["trace", "auth"] }
+  tower-http = { version = "0.5", features = ["trace", "auth"] }
 
   # Error handling
   thiserror = "1.0"
@@ -109,7 +109,12 @@
   pbkdf2 = { version = "0.12", features = ["simple"] }
   rand_core = { version = "0.6", features = ["std"] }
   jsonwebtoken = "9.2"
-  rustls = "0.22"
+  rustls = { version = "0.23", default-features = false, features = [
+    "logging",
+    "std",
+    "tls12",
+    "ring",
+  ] }
   rustls-native-certs = "0.7"
   rustls-pemfile = "2.1"
   pem = "3.0"
@@ -118,8 +123,10 @@
   elliptic-curve = { version = "0.13", features = ["pem"] }
   p256 = "0.13"
   rcgen = { version = "0.13.1", features = ["x509-parser"] }
-  openidconnect = { version = "3.5", features = ["accept-rfc3339-timestamps"] }
-  oauth2 = "4.4"
+  oauth2 = "5.0.0-alpha.4"
+  openidconnect = { version = "4.0.0-alpha.2", features = [
+    "accept-rfc3339-timestamps",
+  ] }
 
   # MQTT
   rumqttc = { version = "0.24", features = ["url"] }
@@ -134,14 +141,14 @@
   ] }
 
   # Misc
-  lazy_static = "1.4"
-  uuid = { version = "1.8", features = ["v4", "serde"] }
+  lazy_static = "1.5"
+  uuid = { version = "1.10", features = ["v4", "serde"] }
   chrono = "0.4"
   async-trait = "0.1"
   aes = "0.8"
   rand = "0.8"
   base64 = "0.22"
-  async-recursion = "1.0"
+  async-recursion = "1.1"
   regex = "1.10"
   petgraph = "0.6"
   prometheus-client = "0.22"
@@ -151,7 +158,7 @@
 # Development and testing
 [dev-dependencies]
   httpmock = "0.7.0"
-  bytes = "1.5"
+  bytes = "1.6"
   dotenv = "0.15"
 
 [features]

@@ -1,18 +1,19 @@
 import { Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  ListDeviceProfileTemplatesRequest,
+import type {
   ListDeviceProfileTemplatesResponse,
   DeviceProfileTemplateListItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
+import { ListDeviceProfileTemplatesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
 import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
 import { getEnumName } from "../helpers";
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
 
 function ListDeviceProfileTemplates() {
@@ -45,7 +46,7 @@ function ListDeviceProfileTemplates() {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListDeviceProfileTemplatesRequest();
+    const req = new ListDeviceProfileTemplatesRequest();
     req.setLimit(limit);
     req.setOffset(offset);
 

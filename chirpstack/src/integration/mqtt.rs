@@ -19,7 +19,7 @@ use tracing::{error, info, trace, warn};
 
 use super::Integration as IntegrationTrait;
 use crate::config::MqttIntegration as Config;
-use crate::helpers::tls::{get_root_certs, load_cert, load_key};
+use crate::helpers::tls22::{get_root_certs, load_cert, load_key};
 use chirpstack_api::integration;
 
 pub struct Integration<'a> {

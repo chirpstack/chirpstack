@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { ListUsersRequest, ListUsersResponse, UserListItem } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import type { ListUsersResponse, UserListItem } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import { ListUsersRequest } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 
 import UserStore from "../../stores/UserStore";
 
@@ -47,7 +49,7 @@ function ListUsers() {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListUsersRequest();
+    const req = new ListUsersRequest();
     req.setLimit(limit);
     req.setOffset(offset);
 

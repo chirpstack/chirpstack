@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
@@ -6,7 +6,7 @@ import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { DeviceProfileTemplate } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
 import { CodecRuntime, Measurement, MeasurementKind } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import { onFinishFailed } from "../helpers";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
@@ -34,7 +34,7 @@ function DeviceProfileTemplateForm(props: IProps) {
     setPayloadCodecRuntime(v.getPayloadCodecRuntime());
 
     DeviceProfileStore.listAdrAlgorithms((resp: ListDeviceProfileAdrAlgorithmsResponse) => {
-      let adrAlgorithms: [string, string][] = [];
+      const adrAlgorithms: [string, string][] = [];
       for (const a of resp.getResultList()) {
         adrAlgorithms.push([a.getId(), a.getName()]);
       }
@@ -45,7 +45,7 @@ function DeviceProfileTemplateForm(props: IProps) {
 
   const onFinish = (values: DeviceProfileTemplate.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let dp = new DeviceProfileTemplate();
+    const dp = new DeviceProfileTemplate();
     dp.setId(v.id);
 
     dp.setName(v.name);
@@ -89,7 +89,7 @@ function DeviceProfileTemplateForm(props: IProps) {
 
     // measurements
     for (const elm of v.measurementsMap) {
-      let m = new Measurement();
+      const m = new Measurement();
       m.setKind(elm[1].kind);
       m.setName(elm[1].name);
       dp.getMeasurementsMap().set(elm[0], m);

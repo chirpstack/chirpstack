@@ -1,7 +1,7 @@
 import { notification } from "antd";
 import { EventEmitter } from "events";
 import { UserServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/user_grpc_web_pb";
-import {
+import type {
   CreateUserRequest,
   CreateUserResponse,
   GetUserRequest,

@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Menu, Dropdown, Input, AutoComplete } from "antd";
 import { UserOutlined, DownOutlined, QuestionOutlined } from "@ant-design/icons";
 
-import { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
-import {
-  SettingsResponse,
-  GlobalSearchRequest,
-  GlobalSearchResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import type { SettingsResponse, GlobalSearchResponse } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import { GlobalSearchRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import InternalStore from "../stores/InternalStore";
 import SessionStore from "../stores/SessionStore";
@@ -38,7 +35,7 @@ function Header({ user }: { user: User }) {
       return;
     }
 
-    let req = new GlobalSearchRequest();
+    const req = new GlobalSearchRequest();
     req.setLimit(20);
     req.setSearch(search);
 
@@ -52,8 +49,8 @@ function Header({ user }: { user: User }) {
       return;
     }
 
-    let oidc = settings.getOpenidConnect()!;
-    let oAuth2 = settings.getOauth2()!;
+    const oidc = settings.getOpenidConnect()!;
+    const oAuth2 = settings.getOauth2()!;
 
     if (oidc.getEnabled() && oidc.getLogoutUrl() !== "") {
       SessionStore.logout(false, () => {
@@ -74,8 +71,8 @@ function Header({ user }: { user: User }) {
     return null;
   }
 
-  let oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
-  let oAuth2Enabled = settings!.getOauth2()!.getEnabled();
+  const oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
+  const oAuth2Enabled = settings!.getOauth2()!.getEnabled();
 
   const menu = (
     <Menu>
@@ -88,9 +85,9 @@ function Header({ user }: { user: User }) {
     </Menu>
   );
 
-  let options: {
-    label: any;
-    options: any[];
+  const options: {
+    label: JSX.Element;
+    options: ReturnType<typeof renderItem>[];
   }[] = [
     {
       label: renderTitle("Tenants"),

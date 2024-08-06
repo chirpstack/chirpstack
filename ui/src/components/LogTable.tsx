@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-import moment from "moment";
+import { format } from "date-fns";
 import { JSONTree as JSONTreeOriginal } from "react-json-tree";
 import fileDownload from "js-file-download";
 
 import { Tag, Drawer, Button, Table, Spin, Space } from "antd";
 import { ZoomInOutlined } from "@ant-design/icons";
 
-import { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
+import type { LogItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 interface IProps {
   logs: LogItem[];
@@ -15,17 +15,17 @@ interface IProps {
 
 function LogTable(props: IProps) {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
-  const [body, setBody] = useState<any>(null);
-  const [drawerTitle, setDrawerTitle] = useState<any>(null);
+  const [body, setBody] = useState<string | null>(null);
+  const [drawerTitle, setDrawerTitle] = useState<string | null>(null);
 
   const onDrawerClose = () => {
     setDrawerOpen(false);
   };
 
-  const onDrawerOpen = (time: any, body: any) => {
-    let ts = new Date(0);
-    ts.setUTCSeconds(time.seconds);
-    let drawerTitle = moment(ts).format("YYYY-MM-DD HH:mm:ss");
+  const onDrawerOpen = (time: { seconds: number } | undefined, body: string) => {
+    const ts = new Date(0);
+    ts.setUTCSeconds(time!.seconds);
+    const drawerTitle = format(ts, "yyyy-MM-dd HH:mm:ss");
 
     return () => {
       setBody(body);
@@ -35,16 +35,16 @@ function LogTable(props: IProps) {
   };
 
   const downloadSingleFrame = () => {
-    fileDownload(JSON.stringify(JSON.parse(body), null, 4), "single-log.json", "application/json");
+    fileDownload(JSON.stringify(JSON.parse(body!), null, 4), "single-log.json", "application/json");
   };
 
   const downloadFrames = () => {
-    let items = props.logs.map((l, i) => JSON.parse(l.getBody()));
+    const items = props.logs.map((l, i) => JSON.parse(l.getBody()));
     fileDownload(JSON.stringify(items, null, 4), "log.json");
   };
 
-  let items = props.logs.map((l, i) => l.toObject());
-  let bodyJson = JSON.parse(body);
+  const items = props.logs.map((l, i) => l.toObject());
+  const bodyJson = JSON.parse(body!);
 
   const theme = {
     scheme: "google",
@@ -104,9 +104,9 @@ function LogTable(props: IProps) {
             key: "time",
             width: 200,
             render: (text, obj) => {
-              let ts = new Date(0);
+              const ts = new Date(0);
               ts.setUTCSeconds(obj.time!.seconds);
-              return moment(ts).format("YYYY-MM-DD HH:mm:ss");
+              return format(ts, "yyyy-MM-dd HH:mm:ss");
             },
           },
           {

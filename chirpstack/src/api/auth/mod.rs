@@ -6,7 +6,7 @@ pub mod claims;
 pub mod error;
 pub mod validator;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum AuthID {
     None,
     User(Uuid),

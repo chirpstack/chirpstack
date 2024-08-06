@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
-  Application,
   GcpPubSubIntegration,
   CreateGcpPubSubIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -21,7 +21,7 @@ function CreateGcpPubSubIntegration(props: IProps) {
   const onFinish = (obj: GcpPubSubIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateGcpPubSubIntegrationRequest();
+    const req = new CreateGcpPubSubIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createGcpPubSubIntegration(req, () => {

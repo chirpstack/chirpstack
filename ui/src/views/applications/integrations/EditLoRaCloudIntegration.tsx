@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   LoraCloudIntegration,
-  GetLoraCloudIntegrationRequest,
   GetLoraCloudIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetLoraCloudIntegrationRequest,
   UpdateLoraCloudIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
@@ -23,7 +25,7 @@ function EditLoRaCloudIntegration(props: IProps) {
   const [integration, setIntegration] = useState<LoraCloudIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetLoraCloudIntegrationRequest();
+    const req = new GetLoraCloudIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getLoraCloudIntegration(req, (resp: GetLoraCloudIntegrationResponse) => {
@@ -32,7 +34,7 @@ function EditLoRaCloudIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: LoraCloudIntegration) => {
-    let req = new UpdateLoraCloudIntegrationRequest();
+    const req = new UpdateLoraCloudIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateLoraCloudIntegration(req, () => {

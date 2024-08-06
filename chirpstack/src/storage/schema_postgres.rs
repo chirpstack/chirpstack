@@ -289,6 +289,22 @@ diesel::table! {
 }
 
 diesel::table! {
+    relay_gateway (tenant_id, relay_id) {
+        tenant_id -> Uuid,
+        relay_id -> Bytea,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        last_seen_at -> Nullable<Timestamptz>,
+        #[max_length = 100]
+        name -> Varchar,
+        description -> Text,
+        stats_interval_secs -> Int4,
+        #[max_length = 100]
+        region_config_id -> Varchar,
+    }
+}
+
+diesel::table! {
     tenant (id) {
         id -> Uuid,
         created_at -> Timestamptz,
@@ -349,6 +365,7 @@ diesel::joinable!(multicast_group_gateway -> gateway (gateway_id));
 diesel::joinable!(multicast_group_gateway -> multicast_group (multicast_group_id));
 diesel::joinable!(multicast_group_queue_item -> gateway (gateway_id));
 diesel::joinable!(multicast_group_queue_item -> multicast_group (multicast_group_id));
+diesel::joinable!(relay_gateway -> tenant (tenant_id));
 diesel::joinable!(tenant_user -> tenant (tenant_id));
 diesel::joinable!(tenant_user -> user (user_id));
 
@@ -367,6 +384,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     multicast_group_gateway,
     multicast_group_queue_item,
     relay_device,
+    relay_gateway,
     tenant,
     tenant_user,
     user,

@@ -2,7 +2,7 @@ import { notification } from "antd";
 import { EventEmitter } from "events";
 
 import { RelayServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/relay_grpc_web_pb";
-import {
+import type {
   ListRelaysRequest,
   ListRelaysResponse,
   AddRelayDeviceRequest,

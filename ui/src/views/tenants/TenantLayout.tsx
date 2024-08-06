@@ -3,7 +3,8 @@ import { Routes, Route, Link, useNavigate, useLocation } from "react-router-dom"
 import { Space, Breadcrumb, Menu, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant, DeleteTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { DeleteTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import TenantStore from "../../stores/TenantStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
@@ -16,7 +17,7 @@ function TenantLayout({ tenant }: { tenant: Tenant }) {
   const location = useLocation();
 
   const deleteTenant = () => {
-    let req = new DeleteTenantRequest();
+    const req = new DeleteTenantRequest();
     req.setId(tenant.getId());
 
     TenantStore.delete(req, () => {

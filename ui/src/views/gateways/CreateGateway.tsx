@@ -4,7 +4,7 @@ import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
 import { Gateway, CreateGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import GatewayForm from "./GatewayForm";
 import GatewayStore from "../../stores/GatewayStore";
@@ -19,7 +19,7 @@ function CreateGateway(props: IProps) {
   const onFinish = (obj: Gateway) => {
     obj.setTenantId(props.tenant.getId());
 
-    let req = new CreateGatewayRequest();
+    const req = new CreateGatewayRequest();
     req.setGateway(obj);
 
     GatewayStore.create(req, () => {
@@ -27,7 +27,7 @@ function CreateGateway(props: IProps) {
     });
   };
 
-  let gateway = new Gateway();
+  const gateway = new Gateway();
   gateway.setStatsInterval(30);
 
   return (

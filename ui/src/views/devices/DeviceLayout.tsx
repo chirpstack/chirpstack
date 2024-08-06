@@ -1,22 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Route, Routes, useParams, Link, useNavigate, useLocation } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button, Menu } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import {
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type {
   DeviceProfile,
-  GetDeviceProfileRequest,
   GetDeviceProfileResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import {
-  Device,
-  GetDeviceRequest,
-  GetDeviceResponse,
-  DeleteDeviceRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { GetDeviceProfileRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { Device, GetDeviceResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { GetDeviceRequest, DeleteDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
@@ -47,7 +43,7 @@ function DeviceLayout(props: IProps) {
 
   useEffect(() => {
     const loadDevice = () => {
-      let req = new GetDeviceRequest();
+      const req = new GetDeviceRequest();
       req.setDevEui(devEui!);
 
       DeviceStore.get(req, (resp: GetDeviceResponse) => {
@@ -57,7 +53,7 @@ function DeviceLayout(props: IProps) {
           setLastSeenAt(resp.getLastSeenAt()!.toDate());
         }
 
-        let req = new GetDeviceProfileRequest();
+        const req = new GetDeviceProfileRequest();
         req.setId(resp.getDevice()!.getDeviceProfileId());
         DeviceProfileStore.get(req, (resp: GetDeviceProfileResponse) => {
           setDeviceProfile(resp.getDeviceProfile());
@@ -74,7 +70,7 @@ function DeviceLayout(props: IProps) {
   }, [devEui]);
 
   const deleteDevice = () => {
-    let req = new DeleteDeviceRequest();
+    const req = new DeleteDeviceRequest();
     req.setDevEui(devEui!);
 
     DeviceStore.delete(req, () => {

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Routes, Route } from "react-router";
 
-import { Tenant, GetTenantResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant, GetTenantResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import TenantStore from "../../stores/TenantStore";
 import SessionStore from "../../stores/SessionStore";
@@ -19,8 +19,10 @@ import CreateDeviceProfile from "../device-profiles/CreateDeviceProfile";
 import EditDeviceProfile from "../device-profiles/EditDeviceProfile";
 
 import ListGateways from "../gateways/ListGateways";
+import ListRelayGateways from "../gateways/mesh/ListRelayGateways";
 import CreateGateway from "../gateways/CreateGateway";
 import GatewayLayout from "../gateways/GatewayLayout";
+import RelayGatewayLayout from "../gateways/mesh/RelayGatewayLayout";
 
 import ListApplications from "../applications/ListApplications";
 import CreateApplication from "../applications/CreateApplication";
@@ -65,6 +67,8 @@ function TenantLoader() {
 
       <Route path="/gateways" element={<ListGateways tenant={tenant} />} />
       <Route path="/gateways/create" element={<CreateGateway tenant={tenant} />} />
+      <Route path="/gateways/mesh/relays" element={<ListRelayGateways tenant={tenant} />} />
+      <Route path="/gateways/mesh/relays/:relayId/*" element={<RelayGatewayLayout tenant={tenant} />} />
       <Route path="/gateways/:gatewayId/*" element={<GatewayLayout tenant={tenant} />} />
 
       <Route path="/applications" element={<ListApplications tenant={tenant} />} />

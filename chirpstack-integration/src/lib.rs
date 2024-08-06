@@ -215,7 +215,7 @@ impl Integration {
                             info!(key = %k, "Event received from Redis stream");
                             match k.as_ref() {
                                 "up" => {
-                                    if let redis::Value::Data(b) = v {
+                                    if let redis::Value::BulkString(b) = v {
                                         let pl = integration_pb::UplinkEvent::decode(
                                             &mut Cursor::new(b),
                                         )?;
@@ -223,21 +223,21 @@ impl Integration {
                                     }
                                 }
                                 "join" => {
-                                    if let redis::Value::Data(b) = v {
+                                    if let redis::Value::BulkString(b) = v {
                                         let pl =
                                             integration_pb::JoinEvent::decode(&mut Cursor::new(b))?;
                                         tokio::spawn(join_event(pl));
                                     }
                                 }
                                 "ack" => {
-                                    if let redis::Value::Data(b) = v {
+                                    if let redis::Value::BulkString(b) = v {
                                         let pl =
                                             integration_pb::AckEvent::decode(&mut Cursor::new(b))?;
                                         tokio::spawn(ack_event(pl));
                                     }
                                 }
                                 "txack" => {
-                                    if let redis::Value::Data(b) = v {
+                                    if let redis::Value::BulkString(b) = v {
                                         let pl = integration_pb::TxAckEvent::decode(
                                             &mut Cursor::new(b),
                                         )?;
@@ -245,7 +245,7 @@ impl Integration {
                                     }
                                 }
                                 "status" => {
-                                    if let redis::Value::Data(b) = v {
+                                    if let redis::Value::BulkString(b) = v {
                                         let pl = integration_pb::StatusEvent::decode(
                                             &mut Cursor::new(b),
                                         )?;
@@ -253,14 +253,14 @@ impl Integration {
                                     }
                                 }
                                 "log" => {
-                                    if let redis::Value::Data(b) = v {
+                                    if let redis::Value::BulkString(b) = v {
                                         let pl =
                                             integration_pb::LogEvent::decode(&mut Cursor::new(b))?;
                                         tokio::spawn(log_event(pl));
                                     }
                                 }
                                 "location" => {
-                                    if let redis::Value::Data(b) = v {
+                                    if let redis::Value::BulkString(b) = v {
                                         let pl = integration_pb::LocationEvent::decode(
                                             &mut Cursor::new(b),
                                         )?;
@@ -268,7 +268,7 @@ impl Integration {
                                     }
                                 }
                                 "integration" => {
-                                    if let redis::Value::Data(b) = v {
+                                    if let redis::Value::BulkString(b) = v {
                                         let pl = integration_pb::IntegrationEvent::decode(
                                             &mut Cursor::new(b),
                                         )?;

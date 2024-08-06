@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  User,
-  GetUserRequest,
-  GetUserResponse,
-  UpdateUserPasswordRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import type { User, GetUserResponse } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import { GetUserRequest, UpdateUserPasswordRequest } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 import UserStore from "../../stores/UserStore";
 import PasswordForm from "./PasswordForm";
 
@@ -19,7 +15,7 @@ function ChangeUserPassword() {
   const [user, setUser] = useState<User | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetUserRequest();
+    const req = new GetUserRequest();
     req.setId(userId!);
 
     UserStore.get(req, (resp: GetUserResponse) => {
@@ -28,7 +24,7 @@ function ChangeUserPassword() {
   }, [userId]);
 
   const onFinish = (pw: string) => {
-    let req = new UpdateUserPasswordRequest();
+    const req = new UpdateUserPasswordRequest();
     req.setUserId(userId!);
     req.setPassword(pw);
 

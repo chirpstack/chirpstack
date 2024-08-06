@@ -264,6 +264,20 @@ diesel::table! {
 }
 
 diesel::table! {
+    relay_gateway (tenant_id, relay_id) {
+        tenant_id -> Text,
+        relay_id -> Binary,
+        created_at -> TimestamptzSqlite,
+        updated_at -> TimestamptzSqlite,
+        last_seen_at -> Nullable<TimestamptzSqlite>,
+        name -> Text,
+        description -> Text,
+        stats_interval_secs -> Integer,
+        region_config_id -> Text,
+    }
+}
+
+diesel::table! {
     tenant (id) {
         id -> Text,
         created_at -> TimestamptzSqlite,
@@ -322,6 +336,7 @@ diesel::joinable!(multicast_group_gateway -> gateway (gateway_id));
 diesel::joinable!(multicast_group_gateway -> multicast_group (multicast_group_id));
 diesel::joinable!(multicast_group_queue_item -> gateway (gateway_id));
 diesel::joinable!(multicast_group_queue_item -> multicast_group (multicast_group_id));
+diesel::joinable!(relay_gateway -> tenant (tenant_id));
 diesel::joinable!(tenant_user -> tenant (tenant_id));
 diesel::joinable!(tenant_user -> user (user_id));
 
@@ -340,6 +355,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     multicast_group_gateway,
     multicast_group_queue_item,
     relay_device,
+    relay_gateway,
     tenant,
     tenant_user,
     user,

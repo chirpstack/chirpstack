@@ -1,20 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Space, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
-import {
-  ListDevicesRequest,
-  ListDevicesResponse,
-  DeviceListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import type { ListDevicesResponse, DeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { ListDevicesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
-import {
-  MulticastGroup,
-  RemoveDeviceFromMulticastGroupRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { MulticastGroup } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import { RemoveDeviceFromMulticastGroupRequest } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 
@@ -45,7 +41,7 @@ function ListMulticastGroupDevices(props: IProps) {
   };
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListDevicesRequest();
+    const req = new ListDevicesRequest();
     req.setApplicationId(props.multicastGroup.getApplicationId());
     req.setMulticastGroupId(props.multicastGroup.getId());
     req.setLimit(limit);
@@ -64,14 +60,14 @@ function ListMulticastGroupDevices(props: IProps) {
 
     let count = 0;
 
-    for (let devEui of selectedRowIds) {
+    for (const devEui of selectedRowIds) {
       count++;
 
-      let req = new RemoveDeviceFromMulticastGroupRequest();
+      const req = new RemoveDeviceFromMulticastGroupRequest();
       req.setMulticastGroupId(props.multicastGroup.getId());
       req.setDevEui(devEui);
 
-      let cbFunc = (cnt: number) => {
+      const cbFunc = (cnt: number) => {
         return () => {
           if (cnt === selectedRowIds.length) {
             setRefreshKey(refreshKey + 1);

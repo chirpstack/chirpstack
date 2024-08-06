@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   MyDevicesIntegration,
-  GetMyDevicesIntegrationRequest,
   GetMyDevicesIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetMyDevicesIntegrationRequest,
   UpdateMyDevicesIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
@@ -23,7 +25,7 @@ function EditMyDevicesIntegration(props: IProps) {
   const [integration, setIntegration] = useState<MyDevicesIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetMyDevicesIntegrationRequest();
+    const req = new GetMyDevicesIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getMyDevicesIntegration(req, (resp: GetMyDevicesIntegrationResponse) => {
@@ -32,7 +34,7 @@ function EditMyDevicesIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: MyDevicesIntegration) => {
-    let req = new UpdateMyDevicesIntegrationRequest();
+    const req = new UpdateMyDevicesIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateMyDevicesIntegration(req, () => {

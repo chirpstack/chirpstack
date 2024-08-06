@@ -1,5 +1,5 @@
 import { notification } from "antd";
-import { RpcError } from "grpc-web";
+import type { RpcError } from "grpc-web";
 
 import history from "../history";
 

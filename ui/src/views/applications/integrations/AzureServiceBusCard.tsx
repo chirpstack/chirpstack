@@ -3,10 +3,8 @@ import { Link } from "react-router-dom";
 import { Col, Card, Popconfirm } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
-import {
-  Application,
-  DeleteAzureServiceBusIntegrationRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { DeleteAzureServiceBusIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import ApplicationStore from "../../../stores/ApplicationStore";
 
@@ -17,14 +15,14 @@ interface IProps {
 
 function AzureServiceBusCard(props: IProps) {
   const onDelete = () => {
-    let req = new DeleteAzureServiceBusIntegrationRequest();
+    const req = new DeleteAzureServiceBusIntegrationRequest();
     req.setApplicationId(props.application.getId());
     ApplicationStore.deleteAzureServiceBusIntegration(req, () => {});
   };
 
-  let actions: any[] = [];
+  let actions: JSX.Element[] = [];
 
-  if (!!props.add) {
+  if (props.add) {
     actions = [
       <Link to="azure-service-bus/create">
         <PlusOutlined />

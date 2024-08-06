@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
-import moment from "moment";
+import { format, sub } from "date-fns";
 import { Descriptions, Space, Card, Row, Col } from "antd";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
-import {
+import type {
   Gateway,
-  GetGatewayMetricsRequest,
   GetGatewayMetricsResponse,
-  GetGatewayDutyCycleMetricsRequest,
   GetGatewayDutyCycleMetricsResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import {
+  GetGatewayMetricsRequest,
+  GetGatewayDutyCycleMetricsRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { Aggregation } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 
@@ -33,24 +35,24 @@ function GatewayDashboard(props: IProps) {
 
   useEffect(() => {
     const agg = metricsAggregation;
-    const end = moment();
-    let start = moment();
+    const end = new Date();
+    let start = new Date();
 
     if (agg === Aggregation.DAY) {
-      start = start.subtract(30, "days");
+      start = sub(start, { days: 30 });
     } else if (agg === Aggregation.HOUR) {
-      start = start.subtract(24, "hours");
+      start = sub(start, { hours: 24 });
     } else if (agg === Aggregation.MONTH) {
-      start = start.subtract(12, "months");
+      start = sub(start, { months: 12 });
     }
 
-    let startPb = new Timestamp();
-    let endPb = new Timestamp();
+    const startPb = new Timestamp();
+    const endPb = new Timestamp();
 
-    startPb.fromDate(start.toDate());
-    endPb.fromDate(end.toDate());
+    startPb.fromDate(start);
+    endPb.fromDate(end);
 
-    let req = new GetGatewayMetricsRequest();
+    const req = new GetGatewayMetricsRequest();
     req.setGatewayId(props.gateway.getGatewayId());
     req.setStart(startPb);
     req.setEnd(endPb);
@@ -60,15 +62,15 @@ function GatewayDashboard(props: IProps) {
       setGatewayMetrics(resp);
     });
 
-    const dcEnd = moment().subtract(1, "minute");
-    let dcEndPb = new Timestamp();
-    dcEndPb.fromDate(dcEnd.toDate());
+    const dcEnd = sub(new Date(), { minutes: 1 });
+    const dcEndPb = new Timestamp();
+    dcEndPb.fromDate(dcEnd);
 
-    const dcStart = dcEnd.subtract(1, "hours");
-    let dcStartPb = new Timestamp();
-    dcStartPb.fromDate(dcStart.toDate());
+    const dcStart = sub(dcEnd, { hours: 1 });
+    const dcStartPb = new Timestamp();
+    dcStartPb.fromDate(dcStart);
 
-    let dcReq = new GetGatewayDutyCycleMetricsRequest();
+    const dcReq = new GetGatewayDutyCycleMetricsRequest();
     dcReq.setGatewayId(props.gateway.getGatewayId());
     dcReq.setStart(dcStartPb);
     dcReq.setEnd(dcEndPb);
@@ -87,7 +89,7 @@ function GatewayDashboard(props: IProps) {
 
   let lastSeenAt: string = "Never";
   if (props.lastSeenAt !== undefined) {
-    lastSeenAt = moment(props.lastSeenAt).format("YYYY-MM-DD HH:mm:ss");
+    lastSeenAt = format(props.lastSeenAt, "yyyy-MM-dd HH:mm:ss");
   }
 
   return (

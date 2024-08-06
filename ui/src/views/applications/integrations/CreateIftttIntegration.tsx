@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
-  Application,
   IftttIntegration,
   CreateIftttIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -22,7 +22,7 @@ function CreateIftttIntegration(props: IProps) {
   const onFinish = (obj: IftttIntegration) => {
     obj.setApplicationId(props.application.getId());
 
-    let req = new CreateIftttIntegrationRequest();
+    const req = new CreateIftttIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.createIftttIntegration(req, () => {

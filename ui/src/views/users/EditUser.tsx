@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
-import {
-  User,
-  GetUserRequest,
-  GetUserResponse,
-  UpdateUserRequest,
-  DeleteUserRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import type { User, GetUserResponse } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
+import { GetUserRequest, UpdateUserRequest, DeleteUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";
@@ -22,7 +17,7 @@ function EditUser() {
   const [user, setUser] = useState<User | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetUserRequest();
+    const req = new GetUserRequest();
     req.setId(userId!);
 
     UserStore.get(req, (resp: GetUserResponse) => {
@@ -31,7 +26,7 @@ function EditUser() {
   }, [userId]);
 
   const onFinish = (obj: User, password: string) => {
-    let req = new UpdateUserRequest();
+    const req = new UpdateUserRequest();
     req.setUser(obj);
 
     UserStore.update(req, () => {
@@ -44,7 +39,7 @@ function EditUser() {
       return;
     }
 
-    let req = new DeleteUserRequest();
+    const req = new DeleteUserRequest();
     req.setId(user.getId());
 
     UserStore.delete(req, () => {

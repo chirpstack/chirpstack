@@ -1,24 +1,24 @@
 [package]
-name = "lrwn_filters"
-description = "Library for filtering LoRaWAN payloads on DevAddr and JoinEUIs prefixes"
-homepage = "https://www.chirpstack.io/"
-license = "MIT"
-version = "4.8.1"
-authors = ["Orne Brocaar <info@brocaar.com>"]
-edition = "2021"
-repository = "https://github.com/chirpstack/chirpstack"
+  name = "lrwn_filters"
+  description = "Library for filtering LoRaWAN payloads on DevAddr and JoinEUIs prefixes"
+  homepage = "https://www.chirpstack.io/"
+  license = "MIT"
+  version = "4.9.0-test.5"
+  authors = ["Orne Brocaar <info@brocaar.com>"]
+  edition = "2021"
+  repository = "https://github.com/chirpstack/chirpstack"
 
-[package.metadata.docs.rs]
-all-features = true
+  [package.metadata.docs.rs]
+    all-features = true
 
 [dependencies]
-hex = "0.4"
-thiserror = "1.0"
-serde = { version = "1.0", features = ["derive"], optional = true }
+  hex = "0.4"
+  thiserror = "1.0"
+  serde = { version = "1.0", features = ["derive"], optional = true }
 
 [dev-dependencies]
-lrwn = { path = "../lrwn" }
+  lrwn = { path = "../lrwn" }
 
 [features]
-default = []
-serde = ["dep:serde"]
+  default = []
+  serde = ["dep:serde"]

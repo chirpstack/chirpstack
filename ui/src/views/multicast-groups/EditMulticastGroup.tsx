@@ -1,10 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import {
-  MulticastGroup,
-  UpdateMulticastGroupRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { MulticastGroup } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import { UpdateMulticastGroupRequest } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import MulticastGroupForm from "./MulticastGroupForm";
@@ -19,7 +17,7 @@ function EditMulticastGroup(props: IProps) {
   const navigate = useNavigate();
 
   const onFinish = (obj: MulticastGroup) => {
-    let req = new UpdateMulticastGroupRequest();
+    const req = new UpdateMulticastGroupRequest();
     req.setMulticastGroup(obj);
 
     MulticastGroupStore.update(req, () => {
@@ -27,7 +25,7 @@ function EditMulticastGroup(props: IProps) {
     });
   };
 
-  let disabled = !(
+  const disabled = !(
     SessionStore.isAdmin() ||
     SessionStore.isTenantAdmin(props.application.getTenantId()) ||
     SessionStore.isTenantDeviceAdmin(props.application.getTenantId())

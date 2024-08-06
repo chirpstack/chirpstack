@@ -1,10 +1,9 @@
 import { notification } from "antd";
 import { EventEmitter } from "events";
 import { TenantServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_grpc_web_pb";
-import {
+import type {
   CreateTenantRequest,
   CreateTenantResponse,
-  GetTenantRequest,
   GetTenantResponse,
   UpdateTenantRequest,
   ListTenantsRequest,
@@ -18,6 +17,7 @@ import {
   ListTenantUsersRequest,
   ListTenantUsersResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { GetTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
@@ -47,7 +47,7 @@ class TenantStore extends EventEmitter {
   };
 
   get = (id: string, callbackFunc: (resp: GetTenantResponse) => void) => {
-    let req = new GetTenantRequest();
+    const req = new GetTenantRequest();
     req.setId(id);
 
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {

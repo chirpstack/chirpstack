@@ -1,10 +1,10 @@
-import * as grpcWeb from "grpc-web";
+import type * as grpcWeb from "grpc-web";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 
 import { notification } from "antd";
 import { EventEmitter } from "events";
 import { InternalServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/internal_grpc_web_pb";
-import {
+import type {
   CreateApiKeyRequest,
   CreateApiKeyResponse,
   DeleteApiKeyRequest,
@@ -32,6 +32,7 @@ import { HandleError } from "./helpers";
 
 class InternalStore extends EventEmitter {
   client: InternalServiceClient;
+  cachedSettings?: SettingsResponse;
 
   constructor() {
     super();
@@ -55,7 +56,7 @@ class InternalStore extends EventEmitter {
   };
 
   deleteApiKey = (req: DeleteApiKeyRequest, callbackFunc: () => void) => {
-    this.client.deleteApiKey(req, SessionStore.getMetadata(), (err, resp) => {
+    this.client.deleteApiKey(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
@@ -82,9 +83,9 @@ class InternalStore extends EventEmitter {
   };
 
   streamGatewayFrames = (req: StreamGatewayFramesRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
-    var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
+    let stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
-    let setup = () => {
+    const setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamGatewayFrames(req, SessionStore.getMetadata());
 
@@ -109,9 +110,9 @@ class InternalStore extends EventEmitter {
   };
 
   streamDeviceFrames = (req: StreamDeviceFramesRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
-    var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
+    let stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
-    let setup = () => {
+    const setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamDeviceFrames(req, SessionStore.getMetadata());
 
@@ -135,9 +136,9 @@ class InternalStore extends EventEmitter {
   };
 
   streamDeviceEvents = (req: StreamDeviceEventsRequest, callbackFunc: (resp: LogItem) => void): (() => void) => {
-    var stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
+    let stream: grpcWeb.ClientReadableStream<LogItem> | undefined = undefined;
 
-    let setup = () => {
+    const setup = () => {
       console.log("Setting up gRPC stream");
       stream = this.client.streamDeviceEvents(req, SessionStore.getMetadata());
 
@@ -183,12 +184,18 @@ class InternalStore extends EventEmitter {
   };
 
   settings = (callbackFunc: (resp: SettingsResponse) => void) => {
+    if (this.cachedSettings !== undefined) {
+      callbackFunc(this.cachedSettings);
+      return;
+    }
+
     this.client.settings(new google_protobuf_empty_pb.Empty(), {}, (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;
       }
 
+      this.cachedSettings = resp;
       callbackFunc(resp);
     });
   };

@@ -1,22 +1,18 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Space, Button } from "antd";
-import { ColumnsType } from "antd/es/table";
+import type { ColumnsType } from "antd/es/table";
 
-import {
-  ListGatewaysRequest,
-  ListGatewaysResponse,
-  GatewayListItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { ListGatewaysResponse, GatewayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { ListGatewaysRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
-import {
-  MulticastGroup,
-  RemoveGatewayFromMulticastGroupRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { MulticastGroup } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import { RemoveGatewayFromMulticastGroupRequest } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
-import DataTable, { GetPageCallbackFunc } from "../../components/DataTable";
+import type { GetPageCallbackFunc } from "../../components/DataTable";
+import DataTable from "../../components/DataTable";
 import GatewayStore from "../../stores/GatewayStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 
@@ -48,7 +44,7 @@ function ListMulticastGroupGateways(props: IProps) {
   };
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    let req = new ListGatewaysRequest();
+    const req = new ListGatewaysRequest();
     req.setTenantId(props.application.getTenantId());
     req.setMulticastGroupId(props.multicastGroup.getId());
     req.setLimit(limit);
@@ -67,14 +63,14 @@ function ListMulticastGroupGateways(props: IProps) {
 
     let count = 0;
 
-    for (let gatewayId of selectedRowIds) {
+    for (const gatewayId of selectedRowIds) {
       count++;
 
-      let req = new RemoveGatewayFromMulticastGroupRequest();
+      const req = new RemoveGatewayFromMulticastGroupRequest();
       req.setMulticastGroupId(props.multicastGroup.getId());
       req.setGatewayId(gatewayId);
 
-      let cbFunc = (cnt: number) => {
+      const cbFunc = (cnt: number) => {
         return () => {
           if (cnt === selectedRowIds.length) {
             setRefreshKey(refreshKey + 1);

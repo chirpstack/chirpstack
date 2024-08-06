@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import { Form, Input, Button, Select } from "antd";
 
@@ -24,7 +24,7 @@ function InfluxDbIntegrationForm(props: IProps) {
 
   const onFinish = (values: InfluxDbIntegration.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
-    let i = new InfluxDbIntegration();
+    const i = new InfluxDbIntegration();
 
     i.setApplicationId(v.applicationId);
     i.setVersion(v.version);

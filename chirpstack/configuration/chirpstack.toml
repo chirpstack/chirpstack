@@ -31,6 +31,7 @@
   #
   # This sets the min. number of idle connections in the PostgreSQL connection
   # pool (0 = equal to max_open_connections).
+  min_idle_connections = 0
 
 
 # Redis configuration.

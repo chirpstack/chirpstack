@@ -4,13 +4,10 @@ import { Space, Breadcrumb, Card } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
 import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
-import {
-  DeviceProfile,
-  CreateDeviceProfileRequest,
-  CreateDeviceProfileResponse,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { CreateDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import { DeviceProfile, CreateDeviceProfileRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
-import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import DeviceProfileForm from "./DeviceProfileForm";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
@@ -25,7 +22,7 @@ function CreateDeviceProfile(props: IProps) {
   const onFinish = (obj: DeviceProfile) => {
     obj.setTenantId(props.tenant.getId());
 
-    let req = new CreateDeviceProfileRequest();
+    const req = new CreateDeviceProfileRequest();
     req.setDeviceProfile(obj);
 
     DeviceProfileStore.create(req, (_resp: CreateDeviceProfileResponse) => {
@@ -66,7 +63,7 @@ function CreateDeviceProfile(props: IProps) {
   }
   `;
 
-  let deviceProfile = new DeviceProfile();
+  const deviceProfile = new DeviceProfile();
   deviceProfile.setPayloadCodecScript(codecScript);
   deviceProfile.setSupportsOtaa(true);
   deviceProfile.setUplinkInterval(3600);

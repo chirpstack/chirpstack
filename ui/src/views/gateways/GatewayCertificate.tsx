@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-import moment from "moment";
+import { format } from "date-fns";
 import { Card, Button, Form, Input } from "antd";
 
-import {
+import type {
   Gateway,
-  GenerateGatewayClientCertificateRequest,
   GenerateGatewayClientCertificateResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { GenerateGatewayClientCertificateRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import GatewayStore from "../../stores/GatewayStore";
 
 interface IProps {
@@ -21,7 +21,7 @@ function GatewayCertificate(props: IProps) {
   const requestCertificate = () => {
     setButtonDisabled(true);
 
-    let req = new GenerateGatewayClientCertificateRequest();
+    const req = new GenerateGatewayClientCertificateRequest();
     req.setGatewayId(props.gateway.getGatewayId());
 
     GatewayStore.generateClientCertificate(req, (resp: GenerateGatewayClientCertificateResponse) => {
@@ -55,7 +55,7 @@ function GatewayCertificate(props: IProps) {
     const cert = certificate!;
 
     const initial = {
-      expiresAt: moment(cert.getExpiresAt()!.toDate()!).format("YYYY-MM-DD HH:mm:ss"),
+      expiresAt: format(cert.getExpiresAt()!.toDate()!, "yyyy-MM-dd HH:mm:ss"),
       caCert: cert.getCaCert(),
       tlsCert: cert.getTlsCert(),
       tlsKey: cert.getTlsKey(),

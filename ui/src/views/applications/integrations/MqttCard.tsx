@@ -2,14 +2,14 @@ import { Link } from "react-router-dom";
 
 import { Col, Card } from "antd";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 interface IProps {
   application: Application;
 }
 
 function MqttCard(props: IProps) {
-  let actions: any[] = [<Link to="mqtt/certificate">Get certificate</Link>];
+  const actions = [<Link to="mqtt/certificate">Get certificate</Link>];
 
   return (
     <Col span={8}>

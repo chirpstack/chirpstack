@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 
-import { ListTenantsRequest, ListTenantsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { ListTenantsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { ListTenantsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import TenantStore from "../../stores/TenantStore";
 import SessionStore from "../../stores/SessionStore";
@@ -13,7 +14,7 @@ function TenantRedirect() {
   if (tenantId !== "") {
     navigate(`/tenants/${tenantId}`);
   } else {
-    let req = new ListTenantsRequest();
+    const req = new ListTenantsRequest();
     req.setLimit(1);
 
     TenantStore.list(req, (resp: ListTenantsResponse) => {

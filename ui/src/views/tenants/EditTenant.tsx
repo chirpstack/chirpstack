@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 
-import { Tenant, UpdateTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import { UpdateTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import TenantStore from "../../stores/TenantStore";
 import TenantForm from "./TenantForm";
@@ -10,7 +11,7 @@ function EditTenant({ tenant }: { tenant: Tenant }) {
   const navigate = useNavigate();
 
   const onFinish = (obj: Tenant) => {
-    let req = new UpdateTenantRequest();
+    const req = new UpdateTenantRequest();
     req.setTenant(obj);
 
     TenantStore.update(req, () => {

@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Card } from "antd";
 
-import {
+import type {
   Application,
   ThingsBoardIntegration,
-  GetThingsBoardIntegrationRequest,
   GetThingsBoardIntegrationResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  GetThingsBoardIntegrationRequest,
   UpdateThingsBoardIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
@@ -23,7 +25,7 @@ function EditThingsBoardIntegration(props: IProps) {
   const [integration, setIntegration] = useState<ThingsBoardIntegration | undefined>(undefined);
 
   useEffect(() => {
-    let req = new GetThingsBoardIntegrationRequest();
+    const req = new GetThingsBoardIntegrationRequest();
     req.setApplicationId(props.application.getId());
 
     ApplicationStore.getThingsBoardIntegration(req, (resp: GetThingsBoardIntegrationResponse) => {
@@ -32,7 +34,7 @@ function EditThingsBoardIntegration(props: IProps) {
   }, [props]);
 
   const onFinish = (obj: ThingsBoardIntegration) => {
-    let req = new UpdateThingsBoardIntegrationRequest();
+    const req = new UpdateThingsBoardIntegrationRequest();
     req.setIntegration(obj);
 
     ApplicationStore.updateThingsBoardIntegration(req, () => {

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-import { Gateway, UpdateGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import type { Gateway } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
+import { UpdateGatewayRequest } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 
 import GatewayForm from "./GatewayForm";
 import GatewayStore from "../../stores/GatewayStore";
@@ -14,7 +15,7 @@ function EditGateway(props: IProps) {
   const navigate = useNavigate();
 
   const onFinish = (obj: Gateway) => {
-    let req = new UpdateGatewayRequest();
+    const req = new UpdateGatewayRequest();
     req.setGateway(obj);
 
     GatewayStore.update(req, () => {
