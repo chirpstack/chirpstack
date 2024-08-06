@@ -66,9 +66,13 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations_postg
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations_sqlite");
 
 #[cfg(feature = "postgres")]
-pub use postgres::{get_async_db_conn, db_transaction, AsyncPgPoolConnection as AsyncDbPoolConnection};
+pub use postgres::{
+    db_transaction, get_async_db_conn, AsyncPgPoolConnection as AsyncDbPoolConnection,
+};
 #[cfg(feature = "sqlite")]
-pub use sqlite::{get_async_db_conn, db_transaction, AsyncSqlitePoolConnection as AsyncDbPoolConnection};
+pub use sqlite::{
+    db_transaction, get_async_db_conn, AsyncSqlitePoolConnection as AsyncDbPoolConnection,
+};
 
 #[derive(Clone)]
 pub enum AsyncRedisPool {

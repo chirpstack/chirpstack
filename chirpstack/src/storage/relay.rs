@@ -8,7 +8,7 @@ use uuid::Uuid;
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{device, device_profile, relay_device};
-use super::{device::Device, error::Error, fields, get_async_db_conn, db_transaction};
+use super::{db_transaction, device::Device, error::Error, fields, get_async_db_conn};
 
 // This is set to 15, because the FilterList must contain a "catch-all" record to filter all
 // uplinks that do not match the remaining records. This means that we can use 16 - 1 FilterList

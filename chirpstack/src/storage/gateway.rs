@@ -10,7 +10,7 @@ use uuid::Uuid;
 use lrwn::EUI64;
 
 use super::schema::{gateway, multicast_group_gateway, tenant};
-use super::{error::Error, fields, get_async_db_conn, db_transaction};
+use super::{db_transaction, error::Error, fields, get_async_db_conn};
 
 #[derive(Queryable, Insertable, PartialEq, Debug)]
 #[diesel(table_name = gateway)]
@@ -122,40 +122,40 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
     gw.validate()?;
     let mut c = get_async_db_conn().await?;
     let gw: Gateway = db_transaction::<Gateway, Error, _>(&mut c, |c| {
-            Box::pin(async move {
-                let query = tenant::dsl::tenant.find(&gw.tenant_id);
-                // use for_update to lock the tenant.
-                #[cfg(feature = "postgres")]
-                let query = query.for_update();
-                let t: super::tenant::Tenant = query
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, gw.tenant_id.to_string()))?;
+        Box::pin(async move {
+            let query = tenant::dsl::tenant.find(&gw.tenant_id);
+            // use for_update to lock the tenant.
+            #[cfg(feature = "postgres")]
+            let query = query.for_update();
+            let t: super::tenant::Tenant = query
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, gw.tenant_id.to_string()))?;
 
-                if !t.can_have_gateways {
-                    return Err(Error::NotAllowed("Tenant can not have gateways".into()));
-                }
+            if !t.can_have_gateways {
+                return Err(Error::NotAllowed("Tenant can not have gateways".into()));
+            }
 
-                let gw_count: i64 = gateway::dsl::gateway
-                    .select(dsl::count_star())
-                    .filter(gateway::dsl::tenant_id.eq(&gw.tenant_id))
-                    .first(c)
-                    .await?;
+            let gw_count: i64 = gateway::dsl::gateway
+                .select(dsl::count_star())
+                .filter(gateway::dsl::tenant_id.eq(&gw.tenant_id))
+                .first(c)
+                .await?;
 
-                if t.max_gateway_count != 0 && gw_count as i32 >= t.max_gateway_count {
-                    return Err(Error::NotAllowed(
-                        "Max number of gateways exceeded for tenant".into(),
-                    ));
-                }
+            if t.max_gateway_count != 0 && gw_count as i32 >= t.max_gateway_count {
+                return Err(Error::NotAllowed(
+                    "Max number of gateways exceeded for tenant".into(),
+                ));
+            }
 
-                diesel::insert_into(gateway::table)
-                    .values(&gw)
-                    .get_result(c)
-                    .await
-                    .map_err(|e| Error::from_diesel(e, gw.gateway_id.to_string()))
-            })
+            diesel::insert_into(gateway::table)
+                .values(&gw)
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, gw.gateway_id.to_string()))
         })
-        .await?;
+    })
+    .await?;
     info!(
         gateway_id = %gw.gateway_id,
         "Gateway created"

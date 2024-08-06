@@ -10,8 +10,8 @@ use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool a
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::{AsyncConnection, AsyncPgConnection};
 use futures::{future::BoxFuture, FutureExt};
-use scoped_futures::ScopedBoxFuture;
 use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
+use scoped_futures::ScopedBoxFuture;
 
 use crate::config;
 
@@ -95,9 +95,14 @@ pub async fn get_async_db_conn() -> Result<AsyncPgPoolConnection> {
     Ok(res)
 }
 
-pub async fn db_transaction<'a, R, E, F>(conn: &mut AsyncPgPoolConnection, callback: F) -> Result<R, E>
+pub async fn db_transaction<'a, R, E, F>(
+    conn: &mut AsyncPgPoolConnection,
+    callback: F,
+) -> Result<R, E>
 where
-    F: for<'r> FnOnce(&'r mut AsyncPgPoolConnection) -> ScopedBoxFuture<'a, 'r, Result<R, E>> + Send + 'a,
+    F: for<'r> FnOnce(&'r mut AsyncPgPoolConnection) -> ScopedBoxFuture<'a, 'r, Result<R, E>>
+        + Send
+        + 'a,
     E: From<diesel::result::Error> + Send + 'a,
     R: Send + 'a,
 {

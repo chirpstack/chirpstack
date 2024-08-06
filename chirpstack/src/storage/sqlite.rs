@@ -11,8 +11,8 @@ use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool a
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::sync_connection_wrapper::SyncConnectionWrapper;
 use futures::future::{BoxFuture, FutureExt, TryFutureExt};
-use scoped_futures::ScopedBoxFuture;
 use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
+use scoped_futures::ScopedBoxFuture;
 
 use crate::config;
 
@@ -64,18 +64,19 @@ fn sqlite_establish_connection(
             // - set user journal mode
             let conf = config::get();
             let pragmas = pragma_generate(&conf.sqlite);
-            conn.batch_execute(&pragmas).map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
+            conn.batch_execute(&pragmas)
+                .map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
             Ok(SyncConnectionWrapper::new(conn))
         },
     )
-        .unwrap_or_else(|err| Err(ConnectionError::BadConnection(err.to_string())))
-        .boxed()
+    .unwrap_or_else(|err| Err(ConnectionError::BadConnection(err.to_string())))
+    .boxed()
 }
 
 fn pragma_generate(conf: &config::Sqlite) -> String {
     let timeout = conf.busy_timeout;
     let journal_pragma = match &conf.journal_mode {
-        Some(mode) if !mode.is_empty () => format!("PRAGMA journal_mode = {mode};"),
+        Some(mode) if !mode.is_empty() => format!("PRAGMA journal_mode = {mode};"),
         _ => String::from(""),
     };
     format!(
@@ -107,9 +108,16 @@ pub async fn get_async_db_conn() -> Result<AsyncSqlitePoolConnection> {
     Ok(res)
 }
 
-pub async fn db_transaction<'a, R, E, F>(conn: &mut AsyncSqlitePoolConnection, callback: F) -> Result<R, E>
+pub async fn db_transaction<'a, R, E, F>(
+    conn: &mut AsyncSqlitePoolConnection,
+    callback: F,
+) -> Result<R, E>
 where
-    F: for<'r> FnOnce(&'r mut SyncConnectionWrapper<SqliteConnection>) -> ScopedBoxFuture<'a, 'r, Result<R, E>> + Send + 'a,
+    F: for<'r> FnOnce(
+            &'r mut SyncConnectionWrapper<SqliteConnection>,
+        ) -> ScopedBoxFuture<'a, 'r, Result<R, E>>
+        + Send
+        + 'a,
     E: From<diesel::result::Error> + Send + 'a,
     R: Send + 'a,
 {
@@ -136,20 +144,14 @@ mod test {
 
     #[test]
     fn default_sqlite_pragmas() {
-        let expected = &[
-            ("busy_timeout", "1000"),
-            ("foreign_keys", "ON"),
-        ];
+        let expected = &[("busy_timeout", "1000"), ("foreign_keys", "ON")];
         let conf = config::Sqlite::default();
         check_pragmas(expected, &pragma_generate(&conf));
     }
 
     #[test]
     fn sqlite_pragmas_with_custom_timeout() {
-        let expected = &[
-            ("busy_timeout", "123"),
-            ("foreign_keys", "ON"),
-        ];
+        let expected = &[("busy_timeout", "123"), ("foreign_keys", "ON")];
         let mut conf = config::Sqlite::default();
         conf.busy_timeout = 123;
         check_pragmas(expected, &pragma_generate(&conf));
@@ -169,10 +171,7 @@ mod test {
 
     #[test]
     fn sqlite_pragmas_with_empty_journal_mode_is_ignored() {
-        let expected = &[
-            ("busy_timeout", "1000"),
-            ("foreign_keys", "ON"),
-        ];
+        let expected = &[("busy_timeout", "1000"), ("foreign_keys", "ON")];
         let mut conf = config::Sqlite::default();
         conf.journal_mode = Some("".into());
         check_pragmas(expected, &pragma_generate(&conf));

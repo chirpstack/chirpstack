@@ -305,16 +305,18 @@ pub async fn global_search(
                 and a.name like ?2
             limit ?5
             offset ?6
-        "#)
-            // first argument is unused but kept to facilitate diffing with postgres query
-            .bind::<diesel::sql_types::Text, _>(&search)
-            .bind::<diesel::sql_types::Text, _>(&query)
-            .bind::<diesel::sql_types::Bool, _>(global_admin)
-            .bind::<fields::sql_types::Uuid, _>(&fields::Uuid::from(user_id))
-            .bind::<diesel::sql_types::BigInt, _>(limit as i64)
-            .bind::<diesel::sql_types::BigInt, _>(offset as i64)
-            .bind::<fields::sql_types::JsonT, _>(tags)
-            .load(&mut get_async_db_conn().await?).await?;
+        "#,
+    )
+    // first argument is unused but kept to facilitate diffing with postgres query
+    .bind::<diesel::sql_types::Text, _>(&search)
+    .bind::<diesel::sql_types::Text, _>(&query)
+    .bind::<diesel::sql_types::Bool, _>(global_admin)
+    .bind::<fields::sql_types::Uuid, _>(&fields::Uuid::from(user_id))
+    .bind::<diesel::sql_types::BigInt, _>(limit as i64)
+    .bind::<diesel::sql_types::BigInt, _>(offset as i64)
+    .bind::<fields::sql_types::JsonT, _>(tags)
+    .load(&mut get_async_db_conn().await?)
+    .await?;
 
     Ok(res)
 }
@@ -392,7 +394,11 @@ pub mod test {
     }
 
     fn build_tags(tags: &[(&str, &str)]) -> fields::KeyValue {
-        fields::KeyValue::new(tags.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect())
+        fields::KeyValue::new(
+            tags.iter()
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+                .collect(),
+        )
     }
 
     #[tokio::test]
@@ -434,7 +440,7 @@ pub mod test {
             gateway_id: EUI64::from_str("0102030405060708").unwrap(),
             name: "test-gateway".into(),
             tenant_id: t.id.clone(),
-            tags: build_tags(&[("common_tag", "value"),("mytag", "gw_value")]),
+            tags: build_tags(&[("common_tag", "value"), ("mytag", "gw_value")]),
             ..Default::default()
         })
         .await
@@ -445,7 +451,7 @@ pub mod test {
             name: "test-device".into(),
             application_id: a.id.clone(),
             device_profile_id: dp.id.clone(),
-            tags: build_tags(&[("common_tag", "value"),("mytag", "dev_value")]),
+            tags: build_tags(&[("common_tag", "value"), ("mytag", "dev_value")]),
             ..Default::default()
         })
         .await
@@ -456,7 +462,7 @@ pub mod test {
             name: "sensor".into(),
             application_id: a.id.clone(),
             device_profile_id: dp.id.clone(),
-            tags: build_tags(&[("a", "1"),("b", "2")]),
+            tags: build_tags(&[("a", "1"), ("b", "2")]),
             ..Default::default()
         })
         .await
