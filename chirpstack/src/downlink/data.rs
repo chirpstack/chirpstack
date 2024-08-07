@@ -1349,7 +1349,7 @@ impl Data {
                 ds.last_device_status_request = Some(Utc::now().into());
             }
             Some(ts) => {
-                let ts: DateTime<Utc> = ts.clone().try_into().map_err(anyhow::Error::msg)?;
+                let ts: DateTime<Utc> = (*ts).try_into().map_err(anyhow::Error::msg)?;
                 let req_interval = Duration::from_secs(60 * 60 * 24)
                     / self.device_profile.device_status_req_interval as u32;
 
@@ -1711,8 +1711,7 @@ impl Data {
 
             match &rd.w_f_cnt_last_request {
                 Some(v) => {
-                    let last_req: DateTime<Utc> =
-                        v.clone().try_into().map_err(anyhow::Error::msg)?;
+                    let last_req: DateTime<Utc> = (*v).try_into().map_err(anyhow::Error::msg)?;
                     if last_req
                         < Utc::now()
                             .checked_sub_signed(chrono::Duration::try_hours(24).unwrap())

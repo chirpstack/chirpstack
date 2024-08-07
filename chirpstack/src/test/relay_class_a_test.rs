@@ -121,7 +121,7 @@ async fn test_lorawan_10() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 5).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 5).unwrap();
 
     let ds_relay = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -769,7 +769,7 @@ async fn run_test(t: &Test) {
     reset_redis().await.unwrap();
 
     integration::set_mock().await;
-    gateway_backend::set_backend(&"eu868", Box::new(gateway_backend::mock::Backend {})).await;
+    gateway_backend::set_backend("eu868", Box::new(gateway_backend::mock::Backend {})).await;
 
     integration::mock::reset().await;
     gateway_backend::mock::reset().await;

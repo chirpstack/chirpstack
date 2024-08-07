@@ -795,9 +795,9 @@ pub mod test {
 
         let d = Device {
             name: "test-dev".into(),
-            dev_eui: dev_eui,
-            application_id: application_id,
-            device_profile_id: device_profile_id,
+            dev_eui,
+            application_id,
+            device_profile_id,
             ..Default::default()
         };
 
@@ -899,7 +899,7 @@ pub mod test {
 
         // delete
         delete(&d.dev_eui).await.unwrap();
-        assert_eq!(true, delete(&d.dev_eui).await.is_err());
+        assert!(delete(&d.dev_eui).await.is_err());
     }
 
     #[tokio::test]
@@ -1005,7 +1005,7 @@ pub mod test {
     #[test]
     fn test_get_full_f_cnt_up() {
         // server, device, expected
-        let tests = vec![
+        let tests = [
             (1, 1, 1),                                 // frame-counter is as expected
             (1 << 16, 0, 1 << 16),                     // frame-counter is as expected
             ((1 << 16) + 1, 1, (1 << 16) + 1),         // frame-counter is as expected
@@ -1014,7 +1014,7 @@ pub mod test {
             (2, 1, 1),                                 // re-transmission of previous frame
             ((1 << 16) + 1, 0, (1 << 16)),             // re-transmission of previous frame
             ((1 << 16), (1 << 16) - 1, (1 << 16) - 1), // re-transmission of previous frame
-            (u32::MAX, 0, 0),                          // 32bit frame-counter rollover
+            (u32::MAX, 0, 0),
         ];
 
         for (i, tst) in tests.iter().enumerate() {
@@ -1363,7 +1363,7 @@ pub mod test {
 
             let d = get_for_phypayload_and_incr_f_cnt_up(false, &mut phy, 0, 0).await;
             if tst.expected_error.is_some() {
-                assert_eq!(true, d.is_err());
+                assert!(d.is_err());
                 assert_eq!(
                     tst.expected_error.as_ref().unwrap(),
                     &d.err().unwrap().to_string()
@@ -1380,15 +1380,15 @@ pub mod test {
                 }
 
                 if let ValidationStatus::Ok(full_f_cnt, d) = d {
-                    assert_eq!(false, tst.expected_retransmission);
+                    assert!(!tst.expected_retransmission);
                     assert_eq!(tst.expected_dev_eui, d.dev_eui,);
                     assert_eq!(tst.expected_fcnt_up, full_f_cnt);
                 } else if let ValidationStatus::Retransmission(full_f_cnt, d) = d {
-                    assert_eq!(true, tst.expected_retransmission);
+                    assert!(tst.expected_retransmission);
                     assert_eq!(tst.expected_dev_eui, d.dev_eui,);
                     assert_eq!(tst.expected_fcnt_up, full_f_cnt);
                 } else if let ValidationStatus::Reset(_, d) = d {
-                    assert_eq!(true, tst.expected_reset);
+                    assert!(tst.expected_reset);
                     assert_eq!(tst.expected_dev_eui, d.dev_eui,);
                 }
             }

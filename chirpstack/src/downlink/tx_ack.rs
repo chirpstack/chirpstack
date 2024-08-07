@@ -649,7 +649,7 @@ impl TxAck {
         }
 
         let dfl = stream_pb::DownlinkFrameLog {
-            time: dfl.time.clone(),
+            time: dfl.time,
             phy_payload: phy.to_vec()?,
             tx_info: dfl.tx_info.clone(),
             downlink_id: dfl.downlink_id,

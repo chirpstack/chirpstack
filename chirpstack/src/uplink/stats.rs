@@ -102,9 +102,7 @@ impl Stats {
 
         let mut m = metrics::Record {
             time: match &self.stats.time {
-                Some(v) => DateTime::try_from(v.clone())
-                    .map_err(anyhow::Error::msg)?
-                    .into(),
+                Some(v) => DateTime::try_from(*v).map_err(anyhow::Error::msg)?.into(),
                 None => Local::now(),
             },
             kind: metrics::Kind::ABSOLUTE,
@@ -179,15 +177,12 @@ impl Stats {
 
         let window: Duration = duty_cycle_stats
             .window
-            .clone()
             .map(|v| v.try_into().unwrap_or_default())
             .unwrap_or_default();
 
         let mut m = metrics::Record {
             time: match &self.stats.time {
-                Some(v) => DateTime::try_from(v.clone())
-                    .map_err(anyhow::Error::msg)?
-                    .into(),
+                Some(v) => DateTime::try_from(*v).map_err(anyhow::Error::msg)?.into(),
                 None => Local::now(),
             },
             kind: metrics::Kind::COUNTER,
@@ -197,12 +192,10 @@ impl Stats {
         for b in &duty_cycle_stats.bands {
             let load_max: Duration = b
                 .load_max
-                .clone()
                 .map(|d| d.try_into().unwrap_or_default())
                 .unwrap_or_default();
             let load_tracked: Duration = b
                 .load_tracked
-                .clone()
                 .map(|d| d.try_into().unwrap_or_default())
                 .unwrap_or_default();
 

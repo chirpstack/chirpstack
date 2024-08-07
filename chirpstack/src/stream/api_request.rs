@@ -51,7 +51,7 @@ mod tests {
         let key = redis_key("api:stream:request".to_string());
         let srr: StreamReadReply = redis::cmd("XREAD")
             .arg("COUNT")
-            .arg(1 as usize)
+            .arg(1_usize)
             .arg("STREAMS")
             .arg(&key)
             .arg("0")

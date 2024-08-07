@@ -907,8 +907,7 @@ pub mod test {
     use crate::*;
 
     fn config_full() -> Configuration {
-        let c = Configuration::new(false);
-        c
+        Configuration::new(false)
     }
 
     fn config_chan_8_15() -> Configuration {
@@ -1030,7 +1029,7 @@ pub mod test {
     #[test]
     fn test_cf_list() {
         let c = config_chan_8_15();
-        assert_eq!(true, c.get_cf_list(MacVersion::LORAWAN_1_0_2).is_none());
+        assert!(c.get_cf_list(MacVersion::LORAWAN_1_0_2).is_none());
 
         let lw_11_cf_list = c.get_cf_list(MacVersion::LORAWAN_1_1_0).unwrap();
         assert_eq!(

@@ -95,14 +95,11 @@ pub mod test {
         assert_eq!(claim, decoded);
 
         // different key
-        assert_eq!(
-            true,
-            AuthClaim::decode(&token, other_secret.as_ref()).is_err()
-        );
+        assert!(AuthClaim::decode(&token, other_secret.as_ref()).is_err());
 
         // expired
         claim.exp = Some(exp.timestamp() as usize);
         let token = claim.encode(secrect.as_ref()).unwrap();
-        assert_eq!(true, AuthClaim::decode(&token, secrect.as_ref()).is_err());
+        assert!(AuthClaim::decode(&token, secrect.as_ref()).is_err());
     }
 }

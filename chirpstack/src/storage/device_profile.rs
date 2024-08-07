@@ -397,7 +397,7 @@ pub mod test {
         kv.insert("foo".into(), "bar".into());
 
         let dp = DeviceProfile {
-            tenant_id: tenant_id,
+            tenant_id,
             name: "test device-profile".into(),
             region: CommonName::EU868,
             mac_version: MacVersion::LORAWAN_1_0_2,
@@ -501,6 +501,6 @@ pub mod test {
 
         // delete
         delete(&dp.id).await.unwrap();
-        assert_eq!(true, delete(&dp.id).await.is_err());
+        assert!(delete(&dp.id).await.is_err());
     }
 }

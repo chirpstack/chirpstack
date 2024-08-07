@@ -171,7 +171,7 @@ pub mod test {
     #[test]
     fn test() {
         region::set(
-            &"eu868",
+            "eu868",
             lrwn::region::get(lrwn::region::CommonName::EU868, false, false),
         );
 
@@ -367,19 +367,17 @@ pub mod test {
             let block = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRAns(
                 tst.link_adr_ans.clone(),
             )]);
-            let pending = match &tst.link_adr_req {
-                Some(v) => Some(lrwn::MACCommandSet::new(vec![
-                    lrwn::MACCommand::LinkADRReq(v.clone()),
-                ])),
-                None => None,
-            };
+            let pending = tst
+                .link_adr_req
+                .as_ref()
+                .map(|v| lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(v.clone())]));
 
             let res = handle(&ufs, &mut dev, &block, pending.as_ref());
             if let Some(e) = &tst.expected_error {
-                assert_eq!(true, res.is_err(), "{}", tst.name);
+                assert!(res.is_err(), "{}", tst.name);
                 assert_eq!(e, &format!("{}", res.err().unwrap()), "{}", tst.name);
             } else {
-                assert_eq!(true, res.unwrap().is_none(), "{}", tst.name);
+                assert!(res.unwrap().is_none(), "{}", tst.name);
             }
 
             assert_eq!(

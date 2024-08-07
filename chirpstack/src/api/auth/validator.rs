@@ -2138,7 +2138,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![
+        for u in [
             &user,
             &tenant_user,
             &tenant_admin,
@@ -2382,7 +2382,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![
+        for u in [
             &user,
             &user_admin,
             &tenant_admin,
@@ -2654,7 +2654,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![
+        for u in [
             &user_active,
             &user_admin,
             &tenant_admin,
@@ -2919,7 +2919,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![&user_active, &user_admin] {
+        for u in [&user_active, &user_admin] {
             user::create(u.clone()).await.unwrap();
         }
 
@@ -3075,7 +3075,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![
+        for u in [
             &user_active,
             &user_admin,
             &tenant_admin,
@@ -3093,14 +3093,14 @@ pub mod test {
 
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "test-dp".into(),
-            tenant_id: tenant_a.id.clone(),
+            tenant_id: tenant_a.id,
             ..Default::default()
         })
         .await
         .unwrap();
         let dp_api_key_tenant = device_profile::create(device_profile::DeviceProfile {
             name: "test-dp-tenant".into(),
-            tenant_id: api_key_tenant.tenant_id.unwrap().clone(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
             ..Default::default()
         })
         .await
@@ -3378,7 +3378,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![
+        for u in [
             &user_active,
             &user_admin,
             &tenant_admin,
@@ -3636,7 +3636,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![&user_active, &user_admin, &tenant_user] {
+        for u in [&user_active, &user_admin, &tenant_user] {
             user::create(u.clone()).await.unwrap();
         }
 
@@ -3765,7 +3765,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![
+        for u in [
             &user_active,
             &user_admin,
             &tenant_admin,
@@ -4038,7 +4038,7 @@ pub mod test {
             ..Default::default()
         };
 
-        for u in vec![
+        for u in [
             &user_active,
             &user_admin,
             &tenant_admin,

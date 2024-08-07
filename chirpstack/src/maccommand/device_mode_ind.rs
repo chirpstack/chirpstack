@@ -50,22 +50,22 @@ pub mod test {
         .await
         .unwrap();
         let app = application::create(application::Application {
-            tenant_id: tenant.id.clone(),
+            tenant_id: tenant.id,
             name: "test-app".into(),
             ..Default::default()
         })
         .await
         .unwrap();
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: tenant.id.clone(),
+            tenant_id: tenant.id,
             name: "test-dp".into(),
             ..Default::default()
         })
         .await
         .unwrap();
         let dev = device::create(device::Device {
-            application_id: app.id.clone(),
-            device_profile_id: dp.id.clone(),
+            application_id: app.id,
+            device_profile_id: dp.id,
             dev_eui: EUI64::from_str("0102030405060708").unwrap(),
             name: "test-device".into(),
             ..Default::default()

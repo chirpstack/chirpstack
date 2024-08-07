@@ -189,7 +189,7 @@ pub mod test {
         };
 
         let dk = DeviceKeys {
-            dev_eui: dev_eui,
+            dev_eui,
             ..Default::default()
         };
 
@@ -213,6 +213,6 @@ pub mod test {
 
         // delete
         delete(&dk.dev_eui).await.unwrap();
-        assert_eq!(true, delete(&dk.dev_eui).await.is_err());
+        assert!(delete(&dk.dev_eui).await.is_err());
     }
 }

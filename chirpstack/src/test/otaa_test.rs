@@ -51,7 +51,7 @@ async fn test_gateway_filtering() {
 
     let gw_a = gateway::create(gateway::Gateway {
         name: "gateway-a".into(),
-        tenant_id: t_a.id.clone(),
+        tenant_id: t_a.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -60,7 +60,7 @@ async fn test_gateway_filtering() {
 
     let gw_b = gateway::create(gateway::Gateway {
         name: "gateway-b".into(),
-        tenant_id: t_b.id.clone(),
+        tenant_id: t_b.id,
         gateway_id: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -69,7 +69,7 @@ async fn test_gateway_filtering() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t_a.id.clone(),
+        tenant_id: t_a.id,
         ..Default::default()
     })
     .await
@@ -77,7 +77,7 @@ async fn test_gateway_filtering() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t_a.id.clone(),
+        tenant_id: t_a.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -89,8 +89,8 @@ async fn test_gateway_filtering() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         ..Default::default()
@@ -99,7 +99,7 @@ async fn test_gateway_filtering() {
     .unwrap();
 
     let dk = device_keys::create(device_keys::DeviceKeys {
-        dev_eui: dev.dev_eui.clone(),
+        dev_eui: dev.dev_eui,
         nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         dev_nonces: vec![Some(258)],
         ..Default::default()
@@ -135,7 +135,7 @@ async fn test_gateway_filtering() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut jr_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
@@ -144,7 +144,7 @@ async fn test_gateway_filtering() {
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
             join_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            dev_eui: dev.dev_eui.clone(),
+            dev_eui: dev.dev_eui,
             dev_nonce: 258,
         }),
         mic: None,
@@ -156,7 +156,7 @@ async fn test_gateway_filtering() {
             name: "private gateway of same tenant".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
@@ -167,7 +167,7 @@ async fn test_gateway_filtering() {
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: vec![],
             assert: vec![assert::device_session(
-                dev.dev_eui.clone(),
+                dev.dev_eui,
                 internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
                     mac_version: common::MacVersion::Lorawan102.into(),
@@ -200,7 +200,7 @@ async fn test_gateway_filtering() {
             name: "private gateway other tenant".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
@@ -210,7 +210,7 @@ async fn test_gateway_filtering() {
             tx_info: tx_info.clone(),
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: vec![],
-            assert: vec![assert::no_device_session(dev.dev_eui.clone())],
+            assert: vec![assert::no_device_session(dev.dev_eui)],
         },
     ];
 
@@ -232,7 +232,7 @@ async fn test_lorawan_10() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -241,7 +241,7 @@ async fn test_lorawan_10() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -249,7 +249,7 @@ async fn test_lorawan_10() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -261,8 +261,8 @@ async fn test_lorawan_10() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         ..Default::default()
@@ -271,7 +271,7 @@ async fn test_lorawan_10() {
     .unwrap();
 
     let dk = device_keys::create(device_keys::DeviceKeys {
-        dev_eui: dev.dev_eui.clone(),
+        dev_eui: dev.dev_eui,
         nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         dev_nonces: vec![Some(258)],
         ..Default::default()
@@ -295,7 +295,7 @@ async fn test_lorawan_10() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut jr_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
@@ -304,7 +304,7 @@ async fn test_lorawan_10() {
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
             join_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            dev_eui: dev.dev_eui.clone(),
+            dev_eui: dev.dev_eui,
             dev_nonce: 258,
         }),
         mic: None,
@@ -391,7 +391,7 @@ async fn test_lorawan_10() {
             name: "join-request accepted".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
@@ -407,7 +407,7 @@ async fn test_lorawan_10() {
                     EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
                 ),
                 assert::device_session(
-                    dev.dev_eui.clone(),
+                    dev.dev_eui,
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
                         mac_version: common::MacVersion::Lorawan102.into(),
@@ -563,8 +563,8 @@ async fn test_lorawan_10() {
                     }),
                     ..Default::default()
                 }),
-                assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A),
-                assert::device_queue_items(dev.dev_eui.clone(), vec![]),
+                assert::enabled_class(dev.dev_eui, DeviceClass::A),
+                assert::device_queue_items(dev.dev_eui, vec![]),
                 assert::uplink_meta_log(stream::UplinkMeta {
                     dev_eui: dev.dev_eui.to_string(),
                     tx_info: Some(tx_info.clone()),
@@ -579,7 +579,7 @@ async fn test_lorawan_10() {
             name: "join-request accepted + skip fcnt check".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
@@ -589,7 +589,7 @@ async fn test_lorawan_10() {
                 })
             })),
             after_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     let mut dev = device::get(&dev_eui).await.unwrap();
                     dev.skip_fcnt_check = false;
@@ -601,7 +601,7 @@ async fn test_lorawan_10() {
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: vec![],
             assert: vec![assert::device_session(
-                dev.dev_eui.clone(),
+                dev.dev_eui,
                 internal::DeviceSession {
                     dev_addr: vec![1, 2, 3, 4],
                     mac_version: common::MacVersion::Lorawan102.into(),
@@ -635,7 +635,7 @@ async fn test_lorawan_10() {
             name: "join-request accepted + cflist".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
@@ -647,7 +647,7 @@ async fn test_lorawan_10() {
             extra_uplink_channels: vec![867100000, 867300000, 867500000, 867700000, 867900000],
             assert: vec![
                 assert::device_session(
-                    dev.dev_eui.clone(),
+                    dev.dev_eui,
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
                         mac_version: common::MacVersion::Lorawan102.into(),
@@ -787,8 +787,8 @@ async fn test_lorawan_10() {
             name: "join-request accepted + class-b supported".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
-                let dp_id = dp.id.clone();
+                let dev_eui = dev.dev_eui;
+                let dp_id = dp.id;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
@@ -798,7 +798,7 @@ async fn test_lorawan_10() {
                 })
             })),
             after_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dp_id = dp.id;
                 Box::pin(async move {
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.supports_class_b = false;
@@ -809,14 +809,14 @@ async fn test_lorawan_10() {
             tx_info: tx_info.clone(),
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: Vec::new(),
-            assert: vec![assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A)],
+            assert: vec![assert::enabled_class(dev.dev_eui, DeviceClass::A)],
         },
         Test {
             name: "join-request accepted + class-c supported".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
-                let dp_id = dp.id.clone();
+                let dev_eui = dev.dev_eui;
+                let dp_id = dp.id;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
@@ -826,7 +826,7 @@ async fn test_lorawan_10() {
                 })
             })),
             after_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dp_id = dp.id;
                 Box::pin(async move {
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.supports_class_c = false;
@@ -837,13 +837,13 @@ async fn test_lorawan_10() {
             tx_info: tx_info.clone(),
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: Vec::new(),
-            assert: vec![assert::enabled_class(dev.dev_eui.clone(), DeviceClass::C)],
+            assert: vec![assert::enabled_class(dev.dev_eui, DeviceClass::C)],
         },
         Test {
             name: "device disabled".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
@@ -853,7 +853,7 @@ async fn test_lorawan_10() {
                 })
             })),
             after_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     let mut dev = device::get(&dev_eui).await.unwrap();
                     dev.is_disabled = false;
@@ -887,7 +887,7 @@ async fn test_lorawan_11() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -896,7 +896,7 @@ async fn test_lorawan_11() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -904,7 +904,7 @@ async fn test_lorawan_11() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_1_0,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -916,8 +916,8 @@ async fn test_lorawan_11() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         ..Default::default()
@@ -926,7 +926,7 @@ async fn test_lorawan_11() {
     .unwrap();
 
     let dk = device_keys::create(device_keys::DeviceKeys {
-        dev_eui: dev.dev_eui.clone(),
+        dev_eui: dev.dev_eui,
         nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         app_key: AES128Key::from_bytes([16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]),
         dev_nonces: vec![Some(258)],
@@ -951,7 +951,7 @@ async fn test_lorawan_11() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut jr_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
@@ -960,7 +960,7 @@ async fn test_lorawan_11() {
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
             join_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            dev_eui: dev.dev_eui.clone(),
+            dev_eui: dev.dev_eui,
             dev_nonce: 258,
         }),
         mic: None,
@@ -1014,7 +1014,7 @@ async fn test_lorawan_11() {
             name: "join-request accepted".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
+                let dev_eui = dev.dev_eui;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
                 })
@@ -1026,7 +1026,7 @@ async fn test_lorawan_11() {
             extra_uplink_channels: vec![],
             assert: vec![
                 assert::device_session(
-                    dev.dev_eui.clone(),
+                    dev.dev_eui,
                     internal::DeviceSession {
                         dev_addr: vec![1, 2, 3, 4],
                         mac_version: common::MacVersion::Lorawan110.into(),
@@ -1185,16 +1185,16 @@ async fn test_lorawan_11() {
                     }),
                     ..Default::default()
                 }),
-                assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A),
-                assert::device_queue_items(dev.dev_eui.clone(), vec![]),
+                assert::enabled_class(dev.dev_eui, DeviceClass::A),
+                assert::device_queue_items(dev.dev_eui, vec![]),
             ],
         },
         Test {
             name: "join-request accepted + class-c supported".into(),
             dev_eui: dev.dev_eui,
             before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui.clone();
-                let dp_id = dp.id.clone();
+                let dev_eui = dev.dev_eui;
+                let dp_id = dp.id;
                 Box::pin(async move {
                     device_keys::test::reset_nonces(&dev_eui).await.unwrap();
 
@@ -1204,7 +1204,7 @@ async fn test_lorawan_11() {
                 })
             })),
             after_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dp_id = dp.id;
                 Box::pin(async move {
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.supports_class_c = false;
@@ -1215,7 +1215,7 @@ async fn test_lorawan_11() {
             tx_info: tx_info.clone(),
             phy_payload: jr_pl.clone(),
             extra_uplink_channels: Vec::new(),
-            assert: vec![assert::enabled_class(dev.dev_eui.clone(), DeviceClass::A)],
+            assert: vec![assert::enabled_class(dev.dev_eui, DeviceClass::A)],
         },
     ];
 
@@ -1242,7 +1242,7 @@ async fn run_test(t: &Test) {
     region::setup().unwrap();
 
     integration::set_mock().await;
-    gateway_backend::set_backend(&"eu868", Box::new(gateway_backend::mock::Backend {})).await;
+    gateway_backend::set_backend("eu868", Box::new(gateway_backend::mock::Backend {})).await;
 
     integration::mock::reset().await;
     gateway_backend::mock::reset().await;

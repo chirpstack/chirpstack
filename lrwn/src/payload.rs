@@ -464,7 +464,7 @@ mod tests {
         // before it can be decoded
         assert_eq!(
             Payload::Raw(vec![0x01, 0x02, 0x03]),
-            Payload::from_slice(MType::JoinAccept, &vec![0x01, 0x02, 0x03]).unwrap()
+            Payload::from_slice(MType::JoinAccept, &[0x01, 0x02, 0x03]).unwrap()
         );
 
         // test decoding the (decrypted) join-accept payload

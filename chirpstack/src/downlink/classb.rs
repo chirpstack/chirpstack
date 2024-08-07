@@ -127,8 +127,8 @@ pub mod test {
 
             for _ in 0..100000 {
                 let offset = get_ping_offset(beacon_ts, &dev_addr, ping_nb).unwrap();
-                assert!(offset <= ping_period - 1);
-                beacon_ts = beacon_ts + *BEACON_PERIOD;
+                assert!(offset < ping_period);
+                beacon_ts += *BEACON_PERIOD;
             }
         }
     }

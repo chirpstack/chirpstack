@@ -22,7 +22,7 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
         EUI64::from_slice(&ds.dev_eui)?
     };
 
-    let lifetime: DateTime<Utc> = match ds.lifetime.clone() {
+    let lifetime: DateTime<Utc> = match ds.lifetime {
         Some(v) => v.try_into().map_err(anyhow::Error::msg)?,
         None => {
             debug!("Not saving passive-roaming device-session, no passive-roaming lifetime set");

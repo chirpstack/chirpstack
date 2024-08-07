@@ -502,7 +502,7 @@ pub mod test {
 
         let gw = Gateway {
             gateway_id: id,
-            tenant_id: tenant_id,
+            tenant_id,
             name: "gw".into(),
             ..Default::default()
         };
@@ -653,7 +653,7 @@ pub mod test {
 
         // delete
         delete(&gw.gateway_id).await.unwrap();
-        assert_eq!(true, delete(&gw.gateway_id).await.is_err());
+        assert!(delete(&gw.gateway_id).await.is_err());
     }
 
     #[tokio::test]

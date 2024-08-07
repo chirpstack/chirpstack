@@ -69,7 +69,7 @@ pub fn get_rx_timestamp(rx_info: &[gw::UplinkRxInfo]) -> SystemTime {
     // Then search for time.
     for rxi in rx_info {
         if let Some(ts) = &rxi.gw_time {
-            let ts: Result<DateTime<Utc>> = ts.clone().try_into().map_err(anyhow::Error::msg);
+            let ts: Result<DateTime<Utc>> = (*ts).try_into().map_err(anyhow::Error::msg);
             if let Ok(ts) = ts {
                 return ts.into();
             }
@@ -96,7 +96,7 @@ pub fn get_rx_timestamp_chrono(rx_info: &[gw::UplinkRxInfo]) -> DateTime<Utc> {
     // Then search for time.
     for rxi in rx_info {
         if let Some(ts) = &rxi.gw_time {
-            let ts: Result<DateTime<Utc>> = ts.clone().try_into().map_err(anyhow::Error::msg);
+            let ts: Result<DateTime<Utc>> = (*ts).try_into().map_err(anyhow::Error::msg);
             if let Ok(ts) = ts {
                 return ts;
             }
@@ -140,9 +140,7 @@ pub fn get_start_location(rx_info: &[gw::UplinkRxInfo]) -> Option<common::Locati
         .cloned()
         .collect();
     with_loc.sort_by(|a, b| a.snr.partial_cmp(&b.snr).unwrap());
-    with_loc
-        .first()
-        .map(|i| i.location.as_ref().unwrap().clone())
+    with_loc.first().map(|i| *i.location.as_ref().unwrap())
 }
 
 #[cfg(test)]

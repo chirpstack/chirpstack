@@ -254,7 +254,7 @@ pub mod test {
 
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "test-dp".into(),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             ..Default::default()
         })
         .await
@@ -262,7 +262,7 @@ pub mod test {
 
         let a = application::create(application::Application {
             name: "test-app".into(),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             ..Default::default()
         })
         .await
@@ -271,7 +271,7 @@ pub mod test {
         let _gw = gateway::create(gateway::Gateway {
             gateway_id: EUI64::from_str("0102030405060708").unwrap(),
             name: "test-gateway".into(),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             ..Default::default()
         })
         .await
@@ -280,8 +280,8 @@ pub mod test {
         let _d = device::create(device::Device {
             dev_eui: EUI64::from_str("0203040506070809").unwrap(),
             name: "test-device".into(),
-            application_id: a.id.clone(),
-            device_profile_id: dp.id.clone(),
+            application_id: a.id,
+            device_profile_id: dp.id,
             ..Default::default()
         })
         .await
@@ -322,8 +322,8 @@ pub mod test {
 
         // User is tenant-user, this returns results.
         tenant::add_user(tenant::TenantUser {
-            tenant_id: t.id.clone(),
-            user_id: u.id.clone(),
+            tenant_id: t.id,
+            user_id: u.id,
             ..Default::default()
         })
         .await

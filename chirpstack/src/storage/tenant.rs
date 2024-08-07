@@ -344,7 +344,7 @@ pub mod test {
         let _guard = test::prepare().await;
 
         // delete default tenant
-        let _ = delete(&Uuid::from_str("52f14cd4-c6f1-4fbd-8f87-4025e1d49242").unwrap())
+        delete(&Uuid::from_str("52f14cd4-c6f1-4fbd-8f87-4025e1d49242").unwrap())
             .await
             .unwrap();
 
@@ -454,7 +454,7 @@ pub mod test {
 
         // delete
         delete(&t.id).await.unwrap();
-        assert_eq!(true, delete(&t.id).await.is_err());
+        assert!(delete(&t.id).await.is_err());
     }
 
     #[tokio::test]

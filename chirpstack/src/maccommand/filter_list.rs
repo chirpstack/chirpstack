@@ -222,10 +222,10 @@ mod test {
             let resp = handle(&mut dev, &tst.filter_list_ans, tst.filter_list_req.as_ref());
 
             if let Some(e) = &tst.expected_error {
-                assert_eq!(true, resp.is_err(), "{}", tst.name);
+                assert!(resp.is_err(), "{}", tst.name);
                 assert_eq!(e, &format!("{}", resp.err().unwrap()), "{}", tst.name);
             } else {
-                assert_eq!(true, resp.unwrap().is_none());
+                assert!(resp.unwrap().is_none());
             }
 
             assert_eq!(

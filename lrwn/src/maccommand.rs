@@ -2649,7 +2649,7 @@ mod test {
                 uplink: false,
                 command: MACCommand::NewChannelReq(NewChannelReqPayload {
                     ch_index: 3,
-                    freq: 2410_000_000,
+                    freq: 2_410_000_000,
                     max_dr: 5,
                     min_dr: 0,
                 }),

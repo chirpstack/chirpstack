@@ -550,7 +550,7 @@ pub mod test {
         // create application
         let app = application::create(application::Application {
             name: "test-app".into(),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             ..Default::default()
         })
         .await
@@ -559,7 +559,7 @@ pub mod test {
         // create device-profile
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "test-dp".into(),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             ..Default::default()
         })
         .await
@@ -871,7 +871,7 @@ pub mod test {
 
     fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {
         let mut req = Request::new(req);
-        req.extensions_mut().insert(AuthID::User(user_id.clone()));
+        req.extensions_mut().insert(AuthID::User(*user_id));
         req
     }
 }

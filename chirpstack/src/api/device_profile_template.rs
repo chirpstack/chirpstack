@@ -444,7 +444,7 @@ pub mod test {
 
     fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {
         let mut req = Request::new(req);
-        req.extensions_mut().insert(AuthID::User(user_id.clone()));
+        req.extensions_mut().insert(AuthID::User(*user_id));
         req
     }
 }
