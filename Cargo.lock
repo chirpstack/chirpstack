@@ -1230,27 +1230,18 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6541a3916932fe57768d4be0b1ffb5ec7cbf74ca8c903fdfd5c0fe8aa958f0ed"
 dependencies = [
- "deadpool-runtime 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "num_cpus",
- "tokio",
-]
-
-[[package]]
-name = "deadpool"
-version = "0.12.1"
-source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
-dependencies = [
- "deadpool-runtime 0.1.4 (git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be)",
+ "deadpool-runtime",
  "num_cpus",
  "tokio",
 ]
 
 [[package]]
 name = "deadpool-redis"
-version = "0.15.1"
-source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ed4f481f6a4770b95e09b91e183ee5ed6e1d4a34c0b09814012b3ee5e585f70"
 dependencies = [
- "deadpool 0.12.1 (git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be)",
+ "deadpool",
  "redis",
 ]
 
@@ -1259,11 +1250,6 @@ name = "deadpool-runtime"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "092966b41edc516079bdf31ec78a2e0588d1d0c08f78b91d8307215928642b2b"
-
-[[package]]
-name = "deadpool-runtime"
-version = "0.1.4"
-source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
 dependencies = [
  "tokio",
 ]
@@ -1329,7 +1315,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcb799bb6f8ca6a794462125d7b8983b0c86e6c93a33a9c55934a4a5de4409d3"
 dependencies = [
  "async-trait",
- "deadpool 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "deadpool",
  "diesel",
  "futures-util",
  "scoped-futures",

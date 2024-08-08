@@ -13,7 +13,3 @@
   opt-level = 'z'
   lto = true
   codegen-units = 1
-
-
-[patch.crates-io]
-  deadpool-redis = { git = "https://github.com/bikeshedder/deadpool.git", rev = "6c361a306059bc8b0d3426515991e253015af6be" }
