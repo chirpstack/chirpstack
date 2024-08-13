@@ -400,6 +400,7 @@ pub async fn update_relay_gateway(relay: RelayGateway) -> Result<RelayGateway, E
         diesel::update(relay_gateway::dsl::relay_gateway.find((&relay.tenant_id, &relay.relay_id)))
             .set((
                 relay_gateway::updated_at.eq(&relay.updated_at),
+                relay_gateway::last_seen_at.eq(&relay.last_seen_at),
                 relay_gateway::name.eq(&relay.name),
                 relay_gateway::description.eq(&relay.description),
                 relay_gateway::stats_interval_secs.eq(&relay.stats_interval_secs),
