@@ -161,6 +161,8 @@
   petgraph = "0.6"
   prometheus-client = "0.22"
   pin-project = "1.1"
+  signal-hook = "0.3"
+  signal-hook-tokio = { version = "0.3", features = ["futures-v0_3"] }
 
 # Development and testing
 [dev-dependencies]
