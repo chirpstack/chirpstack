@@ -44,7 +44,7 @@ impl ApplicationService for Application {
             .await?;
 
         let a = application::Application {
-            tenant_id,
+            tenant_id: tenant_id.into(),
             name: req_app.name.clone(),
             description: req_app.description.clone(),
             tags: fields::KeyValue::new(req_app.tags.clone()),
@@ -119,7 +119,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update(application::Application {
-            id: app_id,
+            id: app_id.into(),
             name: req_app.name.to_string(),
             description: req_app.description.to_string(),
             tags: fields::KeyValue::new(req_app.tags.clone()),
@@ -279,7 +279,7 @@ impl ApplicationService for Application {
             .await?;
 
         let i = application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::Http,
             configuration: application::IntegrationConfiguration::Http(
                 application::HttpConfiguration {
@@ -367,7 +367,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::Http,
             configuration: application::IntegrationConfiguration::Http(
                 application::HttpConfiguration {
@@ -438,7 +438,7 @@ impl ApplicationService for Application {
             .await?;
 
         let i = application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::InfluxDb,
             configuration: application::IntegrationConfiguration::InfluxDb(
                 application::InfluxDbConfiguration {
@@ -535,7 +535,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::InfluxDb,
             configuration: application::IntegrationConfiguration::InfluxDb(
                 application::InfluxDbConfiguration {
@@ -610,7 +610,7 @@ impl ApplicationService for Application {
             .await?;
 
         let i = application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::ThingsBoard,
             configuration: application::IntegrationConfiguration::ThingsBoard(
                 application::ThingsBoardConfiguration {
@@ -689,7 +689,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::ThingsBoard,
             configuration: application::IntegrationConfiguration::ThingsBoard(
                 application::ThingsBoardConfiguration {
@@ -755,7 +755,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::MyDevices,
             configuration: application::IntegrationConfiguration::MyDevices(
                 application::MyDevicesConfiguration {
@@ -832,7 +832,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::MyDevices,
             configuration: application::IntegrationConfiguration::MyDevices(
                 application::MyDevicesConfiguration {
@@ -907,7 +907,7 @@ impl ApplicationService for Application {
         };
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::LoraCloud,
             configuration: application::IntegrationConfiguration::LoraCloud(
                 application::LoraCloudConfiguration {
@@ -1032,7 +1032,7 @@ impl ApplicationService for Application {
         };
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::LoraCloud,
             configuration: application::IntegrationConfiguration::LoraCloud(
                 application::LoraCloudConfiguration {
@@ -1119,7 +1119,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::GcpPubSub,
             configuration: application::IntegrationConfiguration::GcpPubSub(
                 application::GcpPubSubConfiguration {
@@ -1202,7 +1202,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::GcpPubSub,
             configuration: application::IntegrationConfiguration::GcpPubSub(
                 application::GcpPubSubConfiguration {
@@ -1271,7 +1271,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::AwsSns,
             configuration: application::IntegrationConfiguration::AwsSns(
                 application::AwsSnsConfiguration {
@@ -1354,7 +1354,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::AwsSns,
             configuration: application::IntegrationConfiguration::AwsSns(
                 application::AwsSnsConfiguration {
@@ -1424,7 +1424,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::AzureServiceBus,
             configuration: application::IntegrationConfiguration::AzureServiceBus(
                 application::AzureServiceBusConfiguration {
@@ -1506,7 +1506,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::AzureServiceBus,
             configuration: application::IntegrationConfiguration::AzureServiceBus(
                 application::AzureServiceBusConfiguration {
@@ -1574,7 +1574,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::PilotThings,
             configuration: application::IntegrationConfiguration::PilotThings(
                 application::PilotThingsConfiguration {
@@ -1653,7 +1653,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::PilotThings,
             configuration: application::IntegrationConfiguration::PilotThings(
                 application::PilotThingsConfiguration {
@@ -1730,7 +1730,7 @@ impl ApplicationService for Application {
         }
 
         let _ = application::create_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::Ifttt,
             configuration: application::IntegrationConfiguration::Ifttt(
                 application::IftttConfiguration {
@@ -1814,7 +1814,7 @@ impl ApplicationService for Application {
             .await?;
 
         let _ = application::update_integration(application::Integration {
-            application_id: app_id,
+            application_id: app_id.into(),
             kind: application::IntegrationKind::Ifttt,
             configuration: application::IntegrationConfiguration::Ifttt(
                 application::IftttConfiguration {
@@ -1945,7 +1945,9 @@ pub mod test {
             }),
         };
         let mut create_req = Request::new(create_req);
-        create_req.extensions_mut().insert(AuthID::User(u.id));
+        create_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let create_resp = service.create(create_req).await.unwrap();
         let create_resp = create_resp.get_ref();
 
@@ -1954,7 +1956,9 @@ pub mod test {
             id: create_resp.id.clone(),
         };
         let mut get_req = Request::new(get_req);
-        get_req.extensions_mut().insert(AuthID::User(u.id));
+        get_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Application {
@@ -1976,7 +1980,9 @@ pub mod test {
             }),
         };
         let mut up_req = Request::new(up_req);
-        up_req.extensions_mut().insert(AuthID::User(u.id));
+        up_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let _ = service.update(up_req).await.unwrap();
 
         //get
@@ -1984,7 +1990,9 @@ pub mod test {
             id: create_resp.id.clone(),
         };
         let mut get_req = Request::new(get_req);
-        get_req.extensions_mut().insert(AuthID::User(u.id));
+        get_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Application {
@@ -2004,7 +2012,9 @@ pub mod test {
             offset: 0,
         };
         let mut list_req = Request::new(list_req);
-        list_req.extensions_mut().insert(AuthID::User(u.id));
+        list_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let list_resp = service.list(list_req).await.unwrap();
         assert_eq!(1, list_resp.get_ref().total_count);
         assert_eq!(1, list_resp.get_ref().result.len());
@@ -2014,14 +2024,18 @@ pub mod test {
             id: create_resp.id.clone(),
         };
         let mut del_req = Request::new(del_req);
-        del_req.extensions_mut().insert(AuthID::User(u.id));
+        del_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let _ = service.delete(del_req).await.unwrap();
 
         let del_req = api::DeleteApplicationRequest {
             id: create_resp.id.clone(),
         };
         let mut del_req = Request::new(del_req);
-        del_req.extensions_mut().insert(AuthID::User(u.id));
+        del_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
         let del_resp = service.delete(del_req).await;
         assert!(del_resp.is_err());
     }

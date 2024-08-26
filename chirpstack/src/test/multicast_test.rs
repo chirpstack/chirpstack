@@ -91,7 +91,9 @@ async fn test_multicast() {
     })
     .await
     .unwrap();
-    multicast::add_device(&mg.id, &d.dev_eui).await.unwrap();
+    multicast::add_device(&mg.id.into(), &d.dev_eui)
+        .await
+        .unwrap();
 
     // device <> gateway
     device_gateway::save_rx_info(&internal::DeviceGatewayRxInfo {
@@ -116,7 +118,7 @@ async fn test_multicast() {
             name: "one item in queue".into(),
             multicast_group: mg.clone(),
             multicast_group_queue_items: vec![multicast::MulticastGroupQueueItem {
-                multicast_group_id: mg.id,
+                multicast_group_id: mg.id.into(),
                 f_port: 5,
                 data: vec![1, 2, 3],
                 ..Default::default()
@@ -158,13 +160,13 @@ async fn test_multicast() {
             multicast_group: mg.clone(),
             multicast_group_queue_items: vec![
                 multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id,
+                    multicast_group_id: mg.id.into(),
                     f_port: 5,
                     data: vec![1, 2, 3],
                     ..Default::default()
                 },
                 multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id,
+                    multicast_group_id: mg.id.into(),
                     f_port: 6,
                     data: vec![1, 2, 3],
                     ..Default::default()
@@ -207,13 +209,13 @@ async fn test_multicast() {
             multicast_group: mg.clone(),
             multicast_group_queue_items: vec![
                 multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id,
+                    multicast_group_id: mg.id.into(),
                     f_port: 5,
                     data: vec![2; 300],
                     ..Default::default()
                 },
                 multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id,
+                    multicast_group_id: mg.id.into(),
                     f_port: 6,
                     data: vec![1, 2, 3],
                     ..Default::default()

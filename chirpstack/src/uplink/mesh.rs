@@ -84,7 +84,7 @@ impl MeshHeartbeat {
             }
         };
 
-        match gateway::get_relay_gateway(border_gw.tenant_id, self.relay_id).await {
+        match gateway::get_relay_gateway(border_gw.tenant_id.into(), self.relay_id).await {
             Ok(mut v) => {
                 if let Some(last_seen_at) = v.last_seen_at {
                     if last_seen_at > ts {

@@ -207,9 +207,12 @@ pub mod test {
         let dp: device_profile::DeviceProfile = Default::default();
         let mut dev = device::Device {
             dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            device_session: Some(internal::DeviceSession {
-                ..Default::default()
-            }),
+            device_session: Some(
+                internal::DeviceSession {
+                    ..Default::default()
+                }
+                .into(),
+            ),
             ..Default::default()
         };
 

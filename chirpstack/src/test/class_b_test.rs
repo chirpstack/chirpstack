@@ -5,7 +5,7 @@ use crate::gpstime::ToGpsTime;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, gateway, reset_redis, tenant,
+    device_gateway, device_profile, device_queue, fields, gateway, reset_redis, tenant,
 };
 use crate::{
     config, downlink, downlink::classb, gateway::backend as gateway_backend, integration, test,
@@ -295,7 +295,7 @@ async fn test_downlink_scheduler() {
         name: "class-b downlink".into(),
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
-            id: Uuid::nil(),
+            id: Uuid::nil().into(),
             dev_eui: dev.dev_eui,
             f_port: 10,
             data: vec![1, 2, 3],
@@ -347,7 +347,7 @@ async fn test_downlink_scheduler() {
         name: "scheduler_run_after has not yet expired".into(),
         dev_eui: dev.dev_eui,
         device_queue_items: vec![device_queue::DeviceQueueItem {
-            id: Uuid::nil(),
+            id: Uuid::nil().into(),
             dev_eui: dev.dev_eui,
             f_port: 10,
             data: vec![1, 2, 3],
@@ -375,14 +375,14 @@ async fn test_downlink_scheduler() {
         dev_eui: dev.dev_eui,
         device_queue_items: vec![
             device_queue::DeviceQueueItem {
-                id: Uuid::nil(),
+                id: Uuid::nil().into(),
                 dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![1, 2, 3],
                 ..Default::default()
             },
             device_queue::DeviceQueueItem {
-                id: Uuid::new_v4(),
+                id: Uuid::new_v4().into(),
                 dev_eui: dev.dev_eui,
                 f_port: 10,
                 data: vec![1, 2, 3, 4],
@@ -449,7 +449,12 @@ async fn run_uplink_test(t: &UplinkTest) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.clone()),
+            device_session: Some(
+                t.device_session
+                    .as_ref()
+                    .map(fields::DeviceSession::from)
+                    .clone(),
+            ),
             ..Default::default()
         },
     )
@@ -490,7 +495,12 @@ async fn run_scheduler_test(t: &DownlinkTest) {
     device::partial_update(
         t.dev_eui,
         &device::DeviceChangeset {
-            device_session: Some(t.device_session.clone()),
+            device_session: Some(
+                t.device_session
+                    .as_ref()
+                    .map(fields::DeviceSession::from)
+                    .clone(),
+            ),
             ..Default::default()
         },
     )

@@ -19,8 +19,8 @@ use chirpstack_api::internal;
 #[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
 #[diesel(table_name = device_profile)]
 pub struct DeviceProfile {
-    pub id: Uuid,
-    pub tenant_id: Uuid,
+    pub id: fields::Uuid,
+    pub tenant_id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -95,8 +95,8 @@ impl Default for DeviceProfile {
         let now = Utc::now();
 
         DeviceProfile {
-            id: Uuid::new_v4(),
-            tenant_id: Uuid::nil(),
+            id: Uuid::new_v4().into(),
+            tenant_id: Uuid::nil().into(),
             created_at: now,
             updated_at: now,
             name: "".into(),
@@ -185,7 +185,7 @@ impl DeviceProfile {
 
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct DeviceProfileListItem {
-    pub id: Uuid,
+    pub id: fields::Uuid,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub name: String,
@@ -217,7 +217,7 @@ pub async fn create(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
 
 pub async fn get(id: &Uuid) -> Result<DeviceProfile, Error> {
     let dp = device_profile::dsl::device_profile
-        .find(&id)
+        .find(&fields::Uuid::from(id))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| error::Error::from_diesel(e, id.to_string()))?;
@@ -297,17 +297,18 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
 }
 
 pub async fn set_measurements(id: Uuid, m: &fields::Measurements) -> Result<DeviceProfile, Error> {
-    let dp: DeviceProfile = diesel::update(device_profile::dsl::device_profile.find(&id))
-        .set(device_profile::measurements.eq(m))
-        .get_result(&mut get_async_db_conn().await?)
-        .await
-        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    let dp: DeviceProfile =
+        diesel::update(device_profile::dsl::device_profile.find(&fields::Uuid::from(id)))
+            .set(device_profile::measurements.eq(m))
+            .get_result(&mut get_async_db_conn().await?)
+            .await
+            .map_err(|e| Error::from_diesel(e, id.to_string()))?;
     info!(id = %id, "Device-profile measurements updated");
     Ok(dp)
 }
 
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
-    let ra = diesel::delete(device_profile::dsl::device_profile.find(&id))
+    let ra = diesel::delete(device_profile::dsl::device_profile.find(&fields::Uuid::from(id)))
         .execute(&mut get_async_db_conn().await?)
         .await?;
     if ra == 0 {
@@ -323,11 +324,18 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(device_profile::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(device_profile::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(device_profile::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(device_profile::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     Ok(q.first(&mut get_async_db_conn().await?).await?)
@@ -354,11 +362,18 @@ pub async fn list(
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(tenant_id));
+        q = q.filter(device_profile::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
-        q = q.filter(device_profile::dsl::name.ilike(format!("%{}%", search)));
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(device_profile::dsl::name.ilike(format!("%{}%", search)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            q = q.filter(device_profile::dsl::name.like(format!("%{}%", search)));
+        }
     }
 
     let items = q
@@ -386,7 +401,7 @@ pub mod test {
 
     pub async fn create_device_profile(tenant_id: Option<Uuid>) -> DeviceProfile {
         let tenant_id = match tenant_id {
-            Some(v) => v,
+            Some(v) => v.into(),
             None => {
                 let t = storage::tenant::test::create_tenant().await;
                 t.id
@@ -462,7 +477,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
-                    tenant_id: Some(dp.tenant_id),
+                    tenant_id: Some(dp.tenant_id.into()),
                     search: None,
                 },
                 dps: vec![&dp],

@@ -5,8 +5,11 @@ use std::str::FromStr;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use diesel::backend::Backend;
+#[cfg(feature = "postgres")]
 use diesel::pg::Pg;
 use diesel::sql_types::Text;
+#[cfg(feature = "sqlite")]
+use diesel::sqlite::Sqlite;
 use diesel::{deserialize, serialize};
 use serde::{Deserialize, Serialize};
 
@@ -40,12 +43,21 @@ where
     }
 }
 
+#[cfg(feature = "postgres")]
 impl serialize::ToSql<Text, Pg> for Codec
 where
     str: serialize::ToSql<Text, Pg>,
 {
     fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         <str as serialize::ToSql<Text, Pg>>::to_sql(&self.to_string(), &mut out.reborrow())
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for Codec {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Sqlite>) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
     }
 }
 

@@ -84,7 +84,11 @@ docker compose up -d
 Run the following command to run the ChirpStack tests:
 
 ```bash
+# Test (with PostgresQL database backend)
 make test
+
+# Test with SQLite database backend
+DATABASE=sqlite make test
 ```
 
 ### Building ChirpStack binaries
@@ -108,6 +112,34 @@ make release-amd64
 # Build all packages (all targets, .deb, .rpm and .tar.gz files)
 make dist
 ```
+
+By default the above commands will build ChirpStack with the PostgresQL database
+database backend. Set the `DATABASE=sqlite` env. variable to compile ChirpStack
+with the SQLite database backend.
+
+### Database migrations
+
+To create a new database migration, execute:
+
+```
+make migration-generate NAME=test-migration
+```
+
+To apply migrations, execute:
+
+```
+make migration-run
+```
+
+To revert a migration, execute:
+
+```
+make migration-revert
+```
+
+By default the above commands will execute the migration commands using the
+PostgresQL database backend. To execute migration commands for the SQLite
+database backend, set the `DATABASE=sqlite` env. variable.
 
 ## License
 

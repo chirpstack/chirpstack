@@ -309,7 +309,7 @@ impl JoinRequest {
         let dev = self.device.as_ref().unwrap();
 
         integration::log_event(
-            app.id,
+            app.id.into(),
             &dev.variables,
             &integration_pb::LogEvent {
                 time: Some(Utc::now().into()),
@@ -362,7 +362,7 @@ impl JoinRequest {
                 Err(v) => match v {
                     StorageError::InvalidDevNonce => {
                         integration::log_event(
-                            app.id,
+                            app.id.into(),
                             &dev.variables,
                             &integration_pb::LogEvent {
                                 time: Some(Utc::now().into()),
@@ -623,7 +623,7 @@ impl JoinRequest {
             }
         }
 
-        device.device_session = Some(ds);
+        device.device_session = Some(ds.into());
 
         Ok(())
     }
@@ -649,7 +649,7 @@ impl JoinRequest {
             device::partial_update(
                 self.device.as_ref().unwrap().dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(ds.clone())),
+                    device_session: Some(Some(ds.into())),
                     join_eui: Some(self.join_request.as_ref().unwrap().join_eui),
                     dev_addr: Some(Some(self.dev_addr.unwrap())),
                     secondary_dev_addr: Some(None),
@@ -706,7 +706,7 @@ impl JoinRequest {
             },
         };
 
-        integration::join_event(app.id, &dev.variables, &pl).await;
+        integration::join_event(app.id.into(), &dev.variables, &pl).await;
         Ok(())
     }
 

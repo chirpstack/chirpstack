@@ -363,7 +363,7 @@ impl Data {
         trace!("Selecting downlink gateway");
 
         let gw_down = helpers::select_downlink_gateway(
-            Some(self.tenant.id),
+            Some(self.tenant.id.into()),
             &self.device.get_device_session()?.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
             self.device_gateway_rx_info.as_mut().unwrap(),
@@ -519,7 +519,8 @@ impl Data {
                     },
                 };
 
-                integration::ack_event(self.application.id, &self.device.variables, &pl).await;
+                integration::ack_event(self.application.id.into(), &self.device.variables, &pl)
+                    .await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of timeout");
 
                 continue;
@@ -549,7 +550,8 @@ impl Data {
                     .collect(),
                 };
 
-                integration::log_event(self.application.id, &self.device.variables, &pl).await;
+                integration::log_event(self.application.id.into(), &self.device.variables, &pl)
+                    .await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of max. payload size");
 
                 continue;
@@ -585,7 +587,8 @@ impl Data {
                     .collect(),
                 };
 
-                integration::log_event(self.application.id, &self.device.variables, &pl).await;
+                integration::log_event(self.application.id.into(), &self.device.variables, &pl)
+                    .await;
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of invalid frame-counter");
 
                 continue;
@@ -2728,7 +2731,7 @@ mod test {
                 name: "max payload size error".into(),
                 max_payload_size: 10,
                 queue_items: vec![device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     data: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
@@ -2768,7 +2771,7 @@ mod test {
                 name: "is pending".into(),
                 max_payload_size: 10,
                 queue_items: vec![device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     f_cnt_down: Some(10),
@@ -2800,7 +2803,7 @@ mod test {
                 name: "invalid frame-counter".into(),
                 max_payload_size: 10,
                 queue_items: vec![device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     data: vec![1, 2, 3],
@@ -2841,14 +2844,14 @@ mod test {
                 name: "valid payload".into(),
                 max_payload_size: 10,
                 queue_items: vec![device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     data: vec![1, 2, 3],
                     ..Default::default()
                 }],
                 expected_queue_item: Some(device_queue::DeviceQueueItem {
-                    id: qi_id,
+                    id: qi_id.into(),
                     dev_eui: d.dev_eui,
                     f_port: 1,
                     data: vec![1, 2, 3],
@@ -2874,7 +2877,7 @@ mod test {
             let d = device::partial_update(
                 d.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(ds.clone())),
+                    device_session: Some(Some(ds.clone().into())),
                     ..Default::default()
                 },
             )
@@ -3418,11 +3421,14 @@ mod test {
                     dev_addr: Some(*dev_addr),
                     application_id: app.id,
                     device_profile_id: dp_ed.id,
-                    device_session: Some(internal::DeviceSession {
-                        dev_addr: dev_addr.to_vec(),
-                        nwk_s_enc_key: vec![0; 16],
-                        ..Default::default()
-                    }),
+                    device_session: Some(
+                        internal::DeviceSession {
+                            dev_addr: dev_addr.to_vec(),
+                            nwk_s_enc_key: vec![0; 16],
+                            ..Default::default()
+                        }
+                        .into(),
+                    ),
                     ..Default::default()
                 })
                 .await
@@ -3435,7 +3441,7 @@ mod test {
             let d_relay = device::partial_update(
                 d_relay.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(test.device_session.clone())),
+                    device_session: Some(Some(test.device_session.clone().into())),
                     ..Default::default()
                 },
             )
@@ -3884,7 +3890,7 @@ mod test {
             let d_relay = device::partial_update(
                 d_relay.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(test.device_session.clone())),
+                    device_session: Some(Some(test.device_session.clone().into())),
                     ..Default::default()
                 },
             )
@@ -4015,7 +4021,7 @@ mod test {
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
                 device: device::Device {
-                    device_session: Some(test.device_session.clone()),
+                    device_session: Some(test.device_session.clone().into()),
                     ..Default::default()
                 },
                 network_conf: config::get_region_network("eu868").unwrap(),
@@ -4126,7 +4132,7 @@ mod test {
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
                 device: device::Device {
-                    device_session: Some(test.device_session.clone()),
+                    device_session: Some(test.device_session.clone().into()),
                     ..Default::default()
                 },
                 network_conf: config::get_region_network("eu868").unwrap(),
@@ -4247,7 +4253,7 @@ mod test {
                 application: application::Application::default(),
                 device_profile: test.device_profile.clone(),
                 device: device::Device {
-                    device_session: Some(test.device_session.clone()),
+                    device_session: Some(test.device_session.clone().into()),
                     ..Default::default()
                 },
                 network_conf: config::get_region_network("eu868").unwrap(),
@@ -4504,7 +4510,7 @@ mod test {
             let d_relay = device::partial_update(
                 d_relay.dev_eui,
                 &device::DeviceChangeset {
-                    device_session: Some(Some(test.device_session.clone())),
+                    device_session: Some(Some(test.device_session.clone().into())),
                     ..Default::default()
                 },
             )
