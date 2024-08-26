@@ -154,7 +154,7 @@ async fn test_fns() {
                     dev_eui: vec![8, 7, 6, 5, 4, 3, 2, 1],
                     ul_freq: Some(868.1),
                     data_rate: Some(0),
-                    recv_time: recv_time,
+                    recv_time,
                     rf_region: "EU868".to_string(),
                     gw_cnt: Some(1),
                     gw_info: roaming::rx_info_to_gw_info(&[rx_info.clone()]).unwrap(),
@@ -189,7 +189,7 @@ async fn test_fns() {
         .status(200);
     });
 
-    gateway_backend::set_backend(&"eu868", Box::new(gateway_backend::mock::Backend {})).await;
+    gateway_backend::set_backend("eu868", Box::new(gateway_backend::mock::Backend {})).await;
     gateway_backend::mock::reset().await;
 
     // Simulate uplink
@@ -281,7 +281,7 @@ async fn test_sns() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -289,7 +289,7 @@ async fn test_sns() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -302,8 +302,8 @@ async fn test_sns() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         ..Default::default()
@@ -312,7 +312,7 @@ async fn test_sns() {
     .unwrap();
 
     let dk = device_keys::create(device_keys::DeviceKeys {
-        dev_eui: dev.dev_eui.clone(),
+        dev_eui: dev.dev_eui,
         nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         dev_nonces: vec![].into(),
         ..Default::default()
@@ -368,7 +368,7 @@ async fn test_sns() {
             dev_eui: dev.dev_eui.to_vec(),
             ul_freq: Some(868.1),
             data_rate: Some(0),
-            recv_time: recv_time,
+            recv_time,
             rf_region: "EU868".to_string(),
             gw_cnt: Some(1),
             gw_info: roaming::rx_info_to_gw_info(&[rx_info.clone()]).unwrap(),
@@ -467,7 +467,7 @@ async fn test_sns_roaming_not_allowed() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -475,7 +475,7 @@ async fn test_sns_roaming_not_allowed() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -487,8 +487,8 @@ async fn test_sns_roaming_not_allowed() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         ..Default::default()
@@ -497,7 +497,7 @@ async fn test_sns_roaming_not_allowed() {
     .unwrap();
 
     let dk = device_keys::create(device_keys::DeviceKeys {
-        dev_eui: dev.dev_eui.clone(),
+        dev_eui: dev.dev_eui,
         nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         dev_nonces: vec![].into(),
         ..Default::default()
@@ -553,7 +553,7 @@ async fn test_sns_roaming_not_allowed() {
             dev_eui: dev.dev_eui.to_vec(),
             ul_freq: Some(868.1),
             data_rate: Some(0),
-            recv_time: recv_time,
+            recv_time,
             rf_region: "EU868".to_string(),
             gw_cnt: Some(1),
             gw_info: roaming::rx_info_to_gw_info(&[rx_info.clone()]).unwrap(),

@@ -618,7 +618,7 @@ pub mod test {
         };
 
         let a = Application {
-            tenant_id: tenant_id,
+            tenant_id,
             name: "test application".into(),
             description: "test application description".into(),
             ..Default::default()
@@ -724,6 +724,6 @@ pub mod test {
 
         // delete
         delete(&app.id).await.unwrap();
-        assert_eq!(true, delete(&app.id).await.is_err());
+        assert!(delete(&app.id).await.is_err());
     }
 }

@@ -695,20 +695,18 @@ impl DeviceService for Device {
             .await?;
 
         let start = SystemTime::try_from(
-            req.start
+            *req.start
                 .as_ref()
                 .ok_or_else(|| anyhow!("start is None"))
-                .map_err(|e| e.status())?
-                .clone(),
+                .map_err(|e| e.status())?,
         )
         .map_err(|e| e.status())?;
 
         let end = SystemTime::try_from(
-            req.end
+            *req.end
                 .as_ref()
                 .ok_or_else(|| anyhow!("end is None"))
-                .map_err(|e| e.status())?
-                .clone(),
+                .map_err(|e| e.status())?,
         )
         .map_err(|e| e.status())?;
 
@@ -819,20 +817,18 @@ impl DeviceService for Device {
             .await?;
 
         let start = SystemTime::try_from(
-            req.start
+            *req.start
                 .as_ref()
                 .ok_or_else(|| anyhow!("start is None"))
-                .map_err(|e| e.status())?
-                .clone(),
+                .map_err(|e| e.status())?,
         )
         .map_err(|e| e.status())?;
 
         let end = SystemTime::try_from(
-            req.end
+            *req.end
                 .as_ref()
                 .ok_or_else(|| anyhow!("end is None"))
-                .map_err(|e| e.status())?
-                .clone(),
+                .map_err(|e| e.status())?,
         )
         .map_err(|e| e.status())?;
 
@@ -1256,7 +1252,7 @@ pub mod test {
         // create application
         let app = application::create(application::Application {
             name: "test-app".into(),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             ..Default::default()
         })
         .await
@@ -1265,7 +1261,7 @@ pub mod test {
         // create device-profile
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "test-dp".into(),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             ..Default::default()
         })
         .await
@@ -1421,12 +1417,10 @@ pub mod test {
         );
 
         // flush dev nonces
-        let _ = device_keys::set_dev_nonces(
-            &EUI64::from_str("0102030405060708").unwrap(),
-            &vec![1, 2, 3],
-        )
-        .await
-        .unwrap();
+        let _ =
+            device_keys::set_dev_nonces(&EUI64::from_str("0102030405060708").unwrap(), &[1, 2, 3])
+                .await
+                .unwrap();
         let flush_dev_nonces_req = get_request(
             &u.id,
             api::FlushDevNoncesRequest {
@@ -1624,7 +1618,7 @@ pub mod test {
             .await
             .unwrap();
         let dev_addr = DevAddr::from_str(&get_random_dev_addr_resp.get_ref().dev_addr).unwrap();
-        let mut dev_addr_copy = dev_addr.clone();
+        let mut dev_addr_copy = dev_addr;
         dev_addr_copy.set_dev_addr_prefix(NetID::from_str("000000").unwrap().dev_addr_prefix());
         assert_eq!(dev_addr, dev_addr_copy);
 
@@ -1672,10 +1666,10 @@ pub mod test {
         assert_eq!(2, get_queue_resp.total_count);
         assert_eq!(2, get_queue_resp.result.len());
         assert_eq!(vec![3, 2, 1], get_queue_resp.result[0].data);
-        assert_eq!(false, get_queue_resp.result[0].is_encrypted);
+        assert!(!get_queue_resp.result[0].is_encrypted);
         assert_eq!(0, get_queue_resp.result[0].f_cnt_down);
         assert_eq!(vec![1, 2, 3], get_queue_resp.result[1].data);
-        assert_eq!(true, get_queue_resp.result[1].is_encrypted);
+        assert!(get_queue_resp.result[1].is_encrypted);
         assert_eq!(10, get_queue_resp.result[1].f_cnt_down);
 
         // get next FCntDown (from queue)
@@ -1732,7 +1726,7 @@ pub mod test {
 
     fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {
         let mut req = Request::new(req);
-        req.extensions_mut().insert(AuthID::User(user_id.clone()));
+        req.extensions_mut().insert(AuthID::User(*user_id));
         req
     }
 }

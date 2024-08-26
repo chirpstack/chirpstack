@@ -58,7 +58,7 @@ async fn test_multicast() {
     // device-profile
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "test-dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -234,7 +234,7 @@ async fn run_scheduler_test(t: &MulticastTest) {
     println!("> {}", t.name);
 
     integration::set_mock().await;
-    gateway_backend::set_backend(&"eu868", Box::new(gateway_backend::mock::Backend {})).await;
+    gateway_backend::set_backend("eu868", Box::new(gateway_backend::mock::Backend {})).await;
 
     // overwrite multicast-group to deal with frame-counter increments
     multicast::update(t.multicast_group.clone()).await.unwrap();

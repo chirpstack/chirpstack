@@ -1000,8 +1000,7 @@ pub mod test {
     use crate::*;
 
     fn config() -> Configuration {
-        let c = Configuration::new(CommonName::AS923, true, true);
-        c
+        Configuration::new(CommonName::AS923, true, true)
     }
 
     #[test]

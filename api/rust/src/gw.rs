@@ -95,7 +95,7 @@ impl UplinkFrame {
                                 })
                             }
                             uplink_tx_info_legacy::ModulationInfo::FskModulationInfo(info) => {
-                                modulation::Parameters::Fsk(info.clone())
+                                modulation::Parameters::Fsk(*info)
                             }
                             uplink_tx_info_legacy::ModulationInfo::LrFhssModulationInfo(info) => {
                                 modulation::Parameters::LrFhss(LrFhssModulationInfo {
@@ -120,9 +120,9 @@ impl UplinkFrame {
                 self.rx_info = Some(UplinkRxInfo {
                     gateway_id: hex::encode(&rx_info.gateway_id),
                     uplink_id: rng.gen::<u32>(),
-                    gw_time: rx_info.time.clone(),
+                    gw_time: rx_info.time,
                     ns_time: None,
-                    time_since_gps_epoch: rx_info.time_since_gps_epoch.clone(),
+                    time_since_gps_epoch: rx_info.time_since_gps_epoch,
                     fine_time_since_gps_epoch: None,
                     rssi: rx_info.rssi,
                     snr: rx_info.lora_snr as f32,
@@ -130,7 +130,7 @@ impl UplinkFrame {
                     rf_chain: rx_info.rf_chain,
                     board: rx_info.board,
                     antenna: rx_info.antenna,
-                    location: rx_info.location.clone(),
+                    location: rx_info.location,
                     context: rx_info.context.clone(),
                     metadata: rx_info.metadata.clone(),
                     crc_status: rx_info.crc_status,
@@ -195,23 +195,19 @@ impl DownlinkFrame {
                             Some(timing::Parameters::Immediately(v)) => {
                                 tx_info_legacy.timing = DownlinkTiming::Immediately.into();
                                 tx_info_legacy.timing_info = Some(
-                                    downlink_tx_info_legacy::TimingInfo::ImmediatelyTimingInfo(
-                                        v.clone(),
-                                    ),
+                                    downlink_tx_info_legacy::TimingInfo::ImmediatelyTimingInfo(*v),
                                 );
                             }
                             Some(timing::Parameters::Delay(v)) => {
                                 tx_info_legacy.timing = DownlinkTiming::Delay.into();
-                                tx_info_legacy.timing_info = Some(
-                                    downlink_tx_info_legacy::TimingInfo::DelayTimingInfo(v.clone()),
-                                );
+                                tx_info_legacy.timing_info =
+                                    Some(downlink_tx_info_legacy::TimingInfo::DelayTimingInfo(*v));
                             }
                             Some(timing::Parameters::GpsEpoch(v)) => {
                                 tx_info_legacy.timing = DownlinkTiming::GpsEpoch.into();
-                                tx_info_legacy.timing_info =
-                                    Some(downlink_tx_info_legacy::TimingInfo::GpsEpochTimingInfo(
-                                        v.clone(),
-                                    ));
+                                tx_info_legacy.timing_info = Some(
+                                    downlink_tx_info_legacy::TimingInfo::GpsEpochTimingInfo(*v),
+                                );
                             }
                             _ => {}
                         }

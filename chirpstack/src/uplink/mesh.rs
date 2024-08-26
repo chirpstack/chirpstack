@@ -75,8 +75,7 @@ impl MeshHeartbeat {
         let border_gw = gateway::get(&self.gateway_id).await?;
 
         let ts: DateTime<Utc> = match &self.mesh_stats.time {
-            Some(v) => v
-                .clone()
+            Some(v) => (*v)
                 .try_into()
                 .map_err(|e| anyhow!("Convert time error: {}", e))?,
             None => {

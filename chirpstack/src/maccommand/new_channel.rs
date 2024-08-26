@@ -479,10 +479,10 @@ pub mod test {
             let res = handle(&mut dev, &tst.new_channel_ans, tst.new_channel_req.as_ref());
 
             if let Some(e) = &tst.expected_error {
-                assert_eq!(true, res.is_err(), "{}", tst.name);
+                assert!(res.is_err(), "{}", tst.name);
                 assert_eq!(e, &format!("{}", res.err().unwrap()), "{}", tst.name);
             } else {
-                assert_eq!(true, res.unwrap().is_none(), "{}", tst.name);
+                assert!(res.unwrap().is_none(), "{}", tst.name);
             }
 
             assert_eq!(

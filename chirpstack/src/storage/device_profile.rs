@@ -516,6 +516,6 @@ pub mod test {
 
         // delete
         delete(&dp.id).await.unwrap();
-        assert_eq!(true, delete(&dp.id).await.is_err());
+        assert!(delete(&dp.id).await.is_err());
     }
 }

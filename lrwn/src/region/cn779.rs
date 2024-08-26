@@ -566,8 +566,7 @@ mod test {
     use crate::*;
 
     fn config() -> Configuration {
-        let c = Configuration::new(false);
-        c
+        Configuration::new(false)
     }
 
     #[test]

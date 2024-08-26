@@ -127,7 +127,7 @@ pub mod test {
     pub async fn create_api_key(is_admin: bool, is_tenant: bool) -> ApiKey {
         let ak = ApiKey {
             name: "test api key".into(),
-            is_admin: is_admin,
+            is_admin,
             tenant_id: match is_tenant {
                 false => None,
                 true => Some(tenant::test::create_tenant().await.id),
@@ -191,6 +191,6 @@ pub mod test {
 
         // delete
         delete(&ak_admin.id).await.unwrap();
-        assert_eq!(true, delete(&ak_admin.id).await.is_err());
+        assert!(delete(&ak_admin.id).await.is_err());
     }
 }

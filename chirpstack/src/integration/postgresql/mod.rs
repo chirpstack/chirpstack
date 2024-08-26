@@ -268,11 +268,7 @@ impl IntegrationTrait for Integration {
 
         let e = EventUp {
             deduplication_id: Uuid::from_str(&pl.deduplication_id)?,
-            time: pl
-                .time
-                .as_ref()
-                .unwrap()
-                .clone()
+            time: (*pl.time.as_ref().unwrap())
                 .try_into()
                 .map_err(anyhow::Error::msg)?,
             tenant_id: Uuid::from_str(&di.tenant_id)?,
@@ -314,11 +310,7 @@ impl IntegrationTrait for Integration {
 
         let e = EventJoin {
             deduplication_id: Uuid::from_str(&pl.deduplication_id)?,
-            time: pl
-                .time
-                .as_ref()
-                .unwrap()
-                .clone()
+            time: (*pl.time.as_ref().unwrap())
                 .try_into()
                 .map_err(anyhow::Error::msg)?,
             tenant_id: Uuid::from_str(&di.tenant_id)?,
@@ -352,11 +344,7 @@ impl IntegrationTrait for Integration {
         let e = EventAck {
             queue_item_id: Uuid::from_str(&pl.queue_item_id)?,
             deduplication_id: Uuid::from_str(&pl.deduplication_id)?,
-            time: pl
-                .time
-                .as_ref()
-                .unwrap()
-                .clone()
+            time: (*pl.time.as_ref().unwrap())
                 .try_into()
                 .map_err(anyhow::Error::msg)?,
             tenant_id: Uuid::from_str(&di.tenant_id)?,
@@ -391,11 +379,7 @@ impl IntegrationTrait for Integration {
         let e = EventTxAck {
             queue_item_id: Uuid::from_str(&pl.queue_item_id)?,
             downlink_id: pl.downlink_id as i64,
-            time: pl
-                .time
-                .as_ref()
-                .unwrap()
-                .clone()
+            time: (*pl.time.as_ref().unwrap())
                 .try_into()
                 .map_err(anyhow::Error::msg)?,
             tenant_id: Uuid::from_str(&di.tenant_id)?,
@@ -429,11 +413,7 @@ impl IntegrationTrait for Integration {
         info!(dev_eui = %di.dev_eui, event = "log", "Inserting event");
 
         let e = EventLog {
-            time: pl
-                .time
-                .as_ref()
-                .unwrap()
-                .clone()
+            time: (*pl.time.as_ref().unwrap())
                 .try_into()
                 .map_err(anyhow::Error::msg)?,
             tenant_id: Uuid::from_str(&di.tenant_id)?,
@@ -469,11 +449,7 @@ impl IntegrationTrait for Integration {
 
         let e = EventStatus {
             deduplication_id: Uuid::from_str(&pl.deduplication_id)?,
-            time: pl
-                .time
-                .as_ref()
-                .unwrap()
-                .clone()
+            time: (*pl.time.as_ref().unwrap())
                 .try_into()
                 .map_err(anyhow::Error::msg)?,
             tenant_id: Uuid::from_str(&di.tenant_id)?,
@@ -510,11 +486,7 @@ impl IntegrationTrait for Integration {
 
         let e = EventLocation {
             deduplication_id: Uuid::from_str(&pl.deduplication_id)?,
-            time: pl
-                .time
-                .as_ref()
-                .unwrap()
-                .clone()
+            time: (*pl.time.as_ref().unwrap())
                 .try_into()
                 .map_err(anyhow::Error::msg)?,
             tenant_id: Uuid::from_str(&di.tenant_id)?,
@@ -551,11 +523,7 @@ impl IntegrationTrait for Integration {
 
         let e = EventIntegration {
             deduplication_id: Uuid::from_str(&pl.deduplication_id)?,
-            time: pl
-                .time
-                .as_ref()
-                .unwrap()
-                .clone()
+            time: (*pl.time.as_ref().unwrap())
                 .try_into()
                 .map_err(anyhow::Error::msg)?,
             tenant_id: Uuid::from_str(&di.tenant_id)?,

@@ -16,7 +16,7 @@ use lrwn::{AES128Key, DevAddr, EUI64};
 async fn test_lorawan_10() {
     let _guard = test::prepare().await;
     integration::set_mock().await;
-    gateway_backend::set_backend(&"eu868", Box::new(gateway_backend::mock::Backend {})).await;
+    gateway_backend::set_backend("eu868", Box::new(gateway_backend::mock::Backend {})).await;
 
     integration::mock::reset().await;
     gateway_backend::mock::reset().await;
@@ -31,7 +31,7 @@ async fn test_lorawan_10() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -40,7 +40,7 @@ async fn test_lorawan_10() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -48,7 +48,7 @@ async fn test_lorawan_10() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -60,7 +60,7 @@ async fn test_lorawan_10() {
 
     let dp_relay = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -73,8 +73,8 @@ async fn test_lorawan_10() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
         enabled_class: DeviceClass::A,
         ..Default::default()
@@ -83,7 +83,7 @@ async fn test_lorawan_10() {
     .unwrap();
 
     let dk_dev = device_keys::create(device_keys::DeviceKeys {
-        dev_eui: dev.dev_eui.clone(),
+        dev_eui: dev.dev_eui,
         nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -92,8 +92,8 @@ async fn test_lorawan_10() {
 
     let dev_relay = device::create(device::Device {
         name: "relay-device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp_relay.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp_relay.id,
         dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
@@ -136,7 +136,7 @@ async fn test_lorawan_10() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut jr_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
@@ -145,7 +145,7 @@ async fn test_lorawan_10() {
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
             join_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            dev_eui: dev.dev_eui.clone(),
+            dev_eui: dev.dev_eui,
             dev_nonce: 1,
         }),
         mic: None,
@@ -268,7 +268,7 @@ async fn test_lorawan_10() {
 
     let assertions = vec![
         assert::device_session(
-            dev.dev_eui.clone(),
+            dev.dev_eui,
             internal::DeviceSession {
                 dev_addr: vec![1, 2, 3, 4],
                 mac_version: common::MacVersion::Lorawan102.into(),

@@ -181,7 +181,12 @@ pub async fn setup() -> Result<()> {
     let monitoring_handle = tokio::spawn(monitoring::setup());
     let grpc_handle = tokio::spawn(grpc.serve(bind));
 
-    let _ = try_join!(grpc_handle, backend_handle, monitoring_handle)?;
+    tokio::spawn(async move {
+        if let Err(e) = try_join!(grpc_handle, backend_handle, monitoring_handle) {
+            error!(error = %e, "Setup API error");
+            std::process::exit(-1);
+        }
+    });
 
     Ok(())
 }

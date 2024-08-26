@@ -25,7 +25,7 @@ pub type Validator = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;
 
 pub fn f_cnt_up(dev_eui: EUI64, f_cnt: u32) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
             let ds = d.get_device_session().unwrap();
@@ -36,7 +36,7 @@ pub fn f_cnt_up(dev_eui: EUI64, f_cnt: u32) -> Validator {
 
 pub fn n_f_cnt_down(dev_eui: EUI64, f_cnt: u32) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
             let ds = d.get_device_session().unwrap();
@@ -47,7 +47,7 @@ pub fn n_f_cnt_down(dev_eui: EUI64, f_cnt: u32) -> Validator {
 
 pub fn a_f_cnt_down(dev_eui: EUI64, f_cnt: u32) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
             let ds = d.get_device_session().unwrap();
@@ -58,7 +58,7 @@ pub fn a_f_cnt_down(dev_eui: EUI64, f_cnt: u32) -> Validator {
 
 pub fn tx_power_index(dev_eui: EUI64, tx_power: u32) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
             let ds = d.get_device_session().unwrap();
@@ -69,7 +69,7 @@ pub fn tx_power_index(dev_eui: EUI64, tx_power: u32) -> Validator {
 
 pub fn nb_trans(dev_eui: EUI64, nb_trans: u32) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
             let ds = d.get_device_session().unwrap();
@@ -80,7 +80,7 @@ pub fn nb_trans(dev_eui: EUI64, nb_trans: u32) -> Validator {
 
 pub fn enabled_uplink_channel_indices(dev_eui: EUI64, channels: Vec<u32>) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         let channels = channels.clone();
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
@@ -92,7 +92,7 @@ pub fn enabled_uplink_channel_indices(dev_eui: EUI64, channels: Vec<u32>) -> Val
 
 pub fn dr(dev_eui: EUI64, dr: u32) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
             let ds = d.get_device_session().unwrap();
@@ -103,7 +103,7 @@ pub fn dr(dev_eui: EUI64, dr: u32) -> Validator {
 
 pub fn mac_command_error_count(dev_eui: EUI64, cid: lrwn::CID, count: u32) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
             let ds = d.get_device_session().unwrap();
@@ -120,7 +120,7 @@ pub fn mac_command_error_count(dev_eui: EUI64, cid: lrwn::CID, count: u32) -> Va
 
 pub fn uplink_adr_history(dev_eui: EUI64, uh: Vec<internal::UplinkAdrHistory>) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         let uh = uh.clone();
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
@@ -361,7 +361,7 @@ pub fn downlink_frame_saved(df: internal::DownlinkFrame) -> Validator {
 pub fn device_queue_items(dev_eui: EUI64, items: Vec<device_queue::DeviceQueueItem>) -> Validator {
     Box::new(move || {
         let items = items.clone();
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let items_get = device_queue::get_for_dev_eui(&dev_eui).await.unwrap();
 
@@ -394,8 +394,8 @@ pub fn device_queue_items(dev_eui: EUI64, items: Vec<device_queue::DeviceQueueIt
 
 pub fn enabled_class(dev_eui: EUI64, c: DeviceClass) -> Validator {
     Box::new(move || {
-        let c = c.clone();
-        let dev_eui = dev_eui.clone();
+        let c = c;
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let dev = device::get(&dev_eui).await.unwrap();
             assert_eq!(c, dev.enabled_class);
@@ -410,7 +410,7 @@ pub fn uplink_meta_log(um: stream::UplinkMeta) -> Validator {
             let key = redis_key("stream:meta".to_string());
             let srr: StreamReadReply = redis::cmd("XREAD")
                 .arg("COUNT")
-                .arg(1 as usize)
+                .arg(1_usize)
                 .arg("STREAMS")
                 .arg(&key)
                 .arg("0")
@@ -446,7 +446,7 @@ pub fn device_uplink_frame_log(uf: stream::UplinkFrameLog) -> Validator {
             let key = redis_key(format!("device:{{{}}}:stream:frame", uf.dev_eui));
             let srr: StreamReadReply = redis::cmd("XREAD")
                 .arg("COUNT")
-                .arg(1 as usize)
+                .arg(1_usize)
                 .arg("STREAMS")
                 .arg(&key)
                 .arg("0")
@@ -477,7 +477,7 @@ pub fn device_uplink_frame_log(uf: stream::UplinkFrameLog) -> Validator {
 
 pub fn scheduler_run_after_set(dev_eui: EUI64) -> Validator {
     Box::new(move || {
-        let dev_eui = dev_eui.clone();
+        let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
             assert!(d.scheduler_run_after.is_some());

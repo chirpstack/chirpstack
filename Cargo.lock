@@ -609,7 +609,7 @@ dependencies = [
 
 [[package]]
 name = "backend"
-version = "4.9.0-test.5"
+version = "4.9.0"
 dependencies = [
  "aes-kw",
  "anyhow",
@@ -812,7 +812,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chirpstack"
-version = "4.9.0-test.5"
+version = "4.9.0"
 dependencies = [
  "aes",
  "anyhow",
@@ -882,6 +882,8 @@ dependencies = [
  "serde_urlencoded",
  "serde_yaml",
  "sha2",
+ "signal-hook",
+ "signal-hook-tokio",
  "thiserror",
  "tokio",
  "tokio-executor-trait",
@@ -904,7 +906,7 @@ dependencies = [
 
 [[package]]
 name = "chirpstack_api"
-version = "4.9.0-test.5"
+version = "4.9.0"
 dependencies = [
  "hex",
  "pbjson",
@@ -921,7 +923,7 @@ dependencies = [
 
 [[package]]
 name = "chirpstack_integration"
-version = "4.9.0-test.5"
+version = "4.9.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1230,27 +1232,18 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6541a3916932fe57768d4be0b1ffb5ec7cbf74ca8c903fdfd5c0fe8aa958f0ed"
 dependencies = [
- "deadpool-runtime 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "num_cpus",
- "tokio",
-]
-
-[[package]]
-name = "deadpool"
-version = "0.12.1"
-source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
-dependencies = [
- "deadpool-runtime 0.1.4 (git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be)",
+ "deadpool-runtime",
  "num_cpus",
  "tokio",
 ]
 
 [[package]]
 name = "deadpool-redis"
-version = "0.15.1"
-source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ed4f481f6a4770b95e09b91e183ee5ed6e1d4a34c0b09814012b3ee5e585f70"
 dependencies = [
- "deadpool 0.12.1 (git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be)",
+ "deadpool",
  "redis",
 ]
 
@@ -1259,11 +1252,6 @@ name = "deadpool-runtime"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "092966b41edc516079bdf31ec78a2e0588d1d0c08f78b91d8307215928642b2b"
-
-[[package]]
-name = "deadpool-runtime"
-version = "0.1.4"
-source = "git+https://github.com/bikeshedder/deadpool.git?rev=6c361a306059bc8b0d3426515991e253015af6be#6c361a306059bc8b0d3426515991e253015af6be"
 dependencies = [
  "tokio",
 ]
@@ -1331,7 +1319,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcb799bb6f8ca6a794462125d7b8983b0c86e6c93a33a9c55934a4a5de4409d3"
 dependencies = [
  "async-trait",
- "deadpool 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "deadpool",
  "diesel",
  "futures-util",
  "scoped-futures",
@@ -2523,7 +2511,7 @@ dependencies = [
 
 [[package]]
 name = "lrwn"
-version = "4.9.0-test.5"
+version = "4.9.0"
 dependencies = [
  "aes",
  "anyhow",
@@ -2537,7 +2525,7 @@ dependencies = [
 
 [[package]]
 name = "lrwn_filters"
-version = "4.9.0-test.5"
+version = "4.9.0"
 dependencies = [
  "hex",
  "lrwn",
@@ -4210,12 +4198,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
+name = "signal-hook"
+version = "0.3.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8621587d4798caf8eb44879d42e56b9a93ea5dcd315a6487c357130095b62801"
+dependencies = [
+ "libc",
+ "signal-hook-registry",
+]
+
+[[package]]
 name = "signal-hook-registry"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9e9e0b4211b72e7b8b6e85c807d36c212bdb33ea8587f7569562a84df5465b1"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "signal-hook-tokio"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "213241f76fb1e37e27de3b6aa1b068a2c333233b59cca6634f634b80a27ecf1e"
+dependencies = [
+ "futures-core",
+ "libc",
+ "signal-hook",
+ "tokio",
 ]
 
 [[package]]

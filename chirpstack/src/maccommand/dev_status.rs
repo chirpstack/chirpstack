@@ -136,22 +136,22 @@ pub mod test {
         .await
         .unwrap();
         let app = application::create(application::Application {
-            tenant_id: tenant.id.clone(),
+            tenant_id: tenant.id,
             name: "test-app".into(),
             ..Default::default()
         })
         .await
         .unwrap();
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: tenant.id.clone(),
+            tenant_id: tenant.id,
             name: "test-dp".into(),
             ..Default::default()
         })
         .await
         .unwrap();
         let dev = device::create(device::Device {
-            application_id: app.id.clone(),
-            device_profile_id: dp.id.clone(),
+            application_id: app.id,
+            device_profile_id: dp.id,
             dev_eui: EUI64::from_str("0102030405060708").unwrap(),
             name: "test-device".into(),
             ..Default::default()
@@ -169,7 +169,7 @@ pub mod test {
         let resp = handle(&ufs, &tenant, &app, &dp, &dev, &block)
             .await
             .unwrap();
-        assert_eq!(true, resp.is_none());
+        assert!(resp.is_none());
 
         // Integration events are handled async.
         sleep(Duration::from_millis(100)).await;
@@ -200,7 +200,7 @@ pub mod test {
 
         let d = device::get(&dev.dev_eui).await.unwrap();
         assert_eq!(Some(10), d.margin);
-        assert_eq!(false, d.external_power_source);
+        assert!(!d.external_power_source);
         assert_eq!(
             Some(bigdecimal::BigDecimal::from_str("100.00").unwrap().into()),
             d.battery_level

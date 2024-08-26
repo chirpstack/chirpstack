@@ -87,6 +87,6 @@ pub mod test {
         let resp = get_pending(&dev_eui, lrwn::CID::DevStatusReq)
             .await
             .unwrap();
-        assert_eq!(true, resp.is_none());
+        assert!(resp.is_none());
     }
 }

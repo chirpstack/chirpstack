@@ -92,5 +92,5 @@ pub async fn prepare<'a>() -> std::sync::MutexGuard<'a, ()> {
     // setup adr
     adr::setup().await.unwrap();
 
-    return guard;
+    guard
 }

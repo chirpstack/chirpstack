@@ -297,7 +297,7 @@ mod tests {
     #[test]
     fn test_eui64_from_str() {
         let eui = EUI64::from_be_bytes([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]);
-        assert_eq!(eui, EUI64::from_str(&"0102030405060708").unwrap());
+        assert_eq!(eui, EUI64::from_str("0102030405060708").unwrap());
     }
 
     #[test]

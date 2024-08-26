@@ -319,7 +319,7 @@ mod tests {
             for _ in 0..100 {
                 let out = select_downlink_gateway(
                     test.tenant_id,
-                    &"eu868",
+                    "eu868",
                     test.min_snr_margin,
                     &mut rx_info,
                 )
@@ -328,8 +328,7 @@ mod tests {
             }
 
             assert_eq!(test.expected_gws.len(), gw_map.len());
-            assert_eq!(
-                true,
+            assert!(
                 expected_gws.keys().all(|k| gw_map.contains_key(k)),
                 "Expected: {:?}, got: {:?}",
                 expected_gws,

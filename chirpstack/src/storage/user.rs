@@ -232,20 +232,20 @@ pub mod test {
             email_verified: true,
             ..Default::default()
         };
-        user.set_password_hash(&"password!", 1).unwrap();
+        user.set_password_hash("password!", 1).unwrap();
         create(user).await.unwrap()
     }
 
     #[test]
     fn test_hash_password() {
-        assert_eq!(true, hash_password(&"foobar", 1000).is_ok());
+        assert!(hash_password("foobar", 1000).is_ok());
     }
 
     #[test]
     fn test_verify_password() {
         // this is the ChirpStack Application Server default admin hash, with == removed
         // to test the compatibility betweeh the two pbkdf2 implementations.
-        assert_eq!(true, verify_password(&"admin", &"$pbkdf2-sha512$i=1,l=64$l8zGKtxRESq3PA2kFhHRWA$H3lGMxOt55wjwoc+myeOoABofJY9oDpldJa7fhqdjbh700V6FLPML75UmBOt9J5VFNjAL1AvqCozA1HJM0QVGA"));
+        assert!(verify_password("admin", "$pbkdf2-sha512$i=1,l=64$l8zGKtxRESq3PA2kFhHRWA$H3lGMxOt55wjwoc+myeOoABofJY9oDpldJa7fhqdjbh700V6FLPML75UmBOt9J5VFNjAL1AvqCozA1HJM0QVGA"));
     }
 
     #[tokio::test]
@@ -262,23 +262,20 @@ pub mod test {
         user = update(user).await.unwrap();
 
         // get by external id
-        let user_get = get_by_external_id(&"external_id").await.unwrap();
+        let user_get = get_by_external_id("external_id").await.unwrap();
         assert_eq!(user, user_get);
 
         // get_by_email_and_pw
-        assert_eq!(
-            true,
-            get_by_email_and_pw(&"test@example.com", &"bar")
-                .await
-                .is_err()
-        );
-        let user_get = get_by_email_and_pw(&"test@example.com", &"password!")
+        assert!(get_by_email_and_pw("test@example.com", "bar")
+            .await
+            .is_err());
+        let user_get = get_by_email_and_pw("test@example.com", "password!")
             .await
             .unwrap();
         assert_eq!(user, user_get);
 
         // delete
         delete(&user.id).await.unwrap();
-        assert_eq!(true, delete(&user.id).await.is_err());
+        assert!(delete(&user.id).await.is_err());
     }
 }

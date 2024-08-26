@@ -1029,11 +1029,9 @@ impl Data {
                 match v {
                     pbjson_types::value::Kind::NumberValue(v) => {
                         let record = metrics::Record {
-                            time: DateTime::<Utc>::try_from(
-                                up_event.time.as_ref().unwrap().clone(),
-                            )
-                            .map_err(anyhow::Error::msg)?
-                            .with_timezone(&Local),
+                            time: DateTime::<Utc>::try_from(*up_event.time.as_ref().unwrap())
+                                .map_err(anyhow::Error::msg)?
+                                .with_timezone(&Local),
                             kind: match dp_m.kind {
                                 fields::MeasurementKind::COUNTER => metrics::Kind::COUNTER,
                                 fields::MeasurementKind::ABSOLUTE => metrics::Kind::ABSOLUTE,

@@ -30,7 +30,7 @@ pub async fn log_uplink_for_gateways(ufl: &stream::UplinkFrameLog) -> Result<()>
             m_type: ufl.m_type,
             dev_addr: ufl.dev_addr.clone(),
             dev_eui: ufl.dev_eui.clone(),
-            time: ufl.time.clone(),
+            time: ufl.time,
             plaintext_f_opts: ufl.plaintext_f_opts,
             plaintext_frm_payload: ufl.plaintext_frm_payload,
         };

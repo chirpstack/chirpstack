@@ -44,11 +44,7 @@ impl Integration {
         let di = pl.device_info.as_ref().unwrap();
 
         info!(dev_eui = %di.dev_eui, "Forwarding join notification");
-        let ts: DateTime<Utc> = pl
-            .time
-            .as_ref()
-            .unwrap()
-            .clone()
+        let ts: DateTime<Utc> = (*pl.time.as_ref().unwrap())
             .try_into()
             .map_err(anyhow::Error::msg)?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
@@ -74,11 +70,7 @@ impl Integration {
         let di = pl.device_info.as_ref().unwrap();
 
         info!(dev_eui = %di.dev_eui, "Forwarding updf message");
-        let ts: DateTime<Utc> = pl
-            .time
-            .as_ref()
-            .unwrap()
-            .clone()
+        let ts: DateTime<Utc> = (*pl.time.as_ref().unwrap())
             .try_into()
             .map_err(anyhow::Error::msg)?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
@@ -150,11 +142,7 @@ impl Integration {
     ) -> Result<()> {
         let di = pl.device_info.as_ref().unwrap();
         info!(dev_eui = %di.dev_eui, "Forwarding uplink meta-data");
-        let ts: DateTime<Utc> = pl
-            .time
-            .as_ref()
-            .unwrap()
-            .clone()
+        let ts: DateTime<Utc> = (*pl.time.as_ref().unwrap())
             .try_into()
             .map_err(anyhow::Error::msg)?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;
@@ -242,11 +230,7 @@ impl Integration {
         }
 
         let di = pl.device_info.as_ref().unwrap();
-        let ts: DateTime<Utc> = pl
-            .time
-            .as_ref()
-            .unwrap()
-            .clone()
+        let ts: DateTime<Utc> = (*pl.time.as_ref().unwrap())
             .try_into()
             .map_err(anyhow::Error::msg)?;
         let dev_eui = EUI64::from_str(&di.dev_eui)?;

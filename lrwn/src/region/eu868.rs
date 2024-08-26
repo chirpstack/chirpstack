@@ -872,7 +872,7 @@ mod tests {
                         ch_mask_cntl: 0,
                         nb_rep: 0,
                     },
-                    ch_mask: ChMask::from_slice(&vec![true, true, true]).unwrap(),
+                    ch_mask: ChMask::from_slice(&[true, true, true]).unwrap(),
                 }],
             },
             // Base channels are active
@@ -905,7 +905,7 @@ mod tests {
                         ch_mask_cntl: 0,
                         nb_rep: 0,
                     },
-                    ch_mask: ChMask::from_slice(&vec![true, true, true]).unwrap(),
+                    ch_mask: ChMask::from_slice(&[true, true, true]).unwrap(),
                 }],
             },
         ];
@@ -934,7 +934,7 @@ mod tests {
     #[test]
     fn get_uplink_channel_index() {
         let c = config_with_user_channels();
-        let tests = vec![
+        let tests = [
             (false, 868100000),
             (false, 868300000),
             (false, 868500000),
@@ -953,7 +953,7 @@ mod tests {
     #[test]
     fn get_uplink_channel_index_for_freq_dr() {
         let c = config_with_user_channels();
-        let tests = vec![
+        let tests = [
             (3, 868100000),
             (3, 868300000),
             (3, 868500000),
@@ -978,8 +978,8 @@ mod tests {
         let c = config_with_user_channels();
         assert_eq!(
             CFList::Channels(
-                CFListChannels::from_slice(&vec![
-                    867100000, 867300000, 867500000, 867700000, 867900000,
+                CFListChannels::from_slice(&[
+                    867100000, 867300000, 867500000, 867700000, 867900000
                 ])
                 .unwrap()
             ),

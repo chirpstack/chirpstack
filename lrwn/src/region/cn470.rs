@@ -588,8 +588,7 @@ mod tests {
     use crate::*;
 
     fn config_full() -> Configuration {
-        let c = Configuration::new(false);
-        c
+        Configuration::new(false)
     }
 
     #[test]

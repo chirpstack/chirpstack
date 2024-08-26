@@ -345,20 +345,18 @@ impl GatewayService for Gateway {
             .await?;
 
         let start = SystemTime::try_from(
-            req.start
+            *req.start
                 .as_ref()
                 .ok_or_else(|| anyhow!("start is None"))
-                .map_err(|e| e.status())?
-                .clone(),
+                .map_err(|e| e.status())?,
         )
         .map_err(|e| e.status())?;
 
         let end = SystemTime::try_from(
-            req.end
+            *req.end
                 .as_ref()
                 .ok_or_else(|| anyhow!("end is None"))
-                .map_err(|e| e.status())?
-                .clone(),
+                .map_err(|e| e.status())?,
         )
         .map_err(|e| e.status())?;
 
@@ -634,20 +632,18 @@ impl GatewayService for Gateway {
             .await?;
 
         let start = SystemTime::try_from(
-            req.start
+            *req.start
                 .as_ref()
                 .ok_or_else(|| anyhow!("start is None"))
-                .map_err(|e| e.status())?
-                .clone(),
+                .map_err(|e| e.status())?,
         )
         .map_err(|e| e.status())?;
 
         let end = SystemTime::try_from(
-            req.end
+            *req.end
                 .as_ref()
                 .ok_or_else(|| anyhow!("end is None"))
-                .map_err(|e| e.status())?
-                .clone(),
+                .map_err(|e| e.status())?,
         )
         .map_err(|e| e.status())?;
 
@@ -1172,7 +1168,7 @@ pub mod test {
         // create gateway
         let _ = gateway::create(gateway::Gateway {
             gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             name: "test-gw".into(),
             ..Default::default()
         })
@@ -1184,7 +1180,7 @@ pub mod test {
         // insert stats
         let mut m = metrics::Record {
             kind: metrics::Kind::ABSOLUTE,
-            time: now.into(),
+            time: now,
             metrics: HashMap::new(),
         };
 
@@ -1269,7 +1265,7 @@ pub mod test {
         // create gateway
         let _ = gateway::create(gateway::Gateway {
             gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
-            tenant_id: t.id.clone(),
+            tenant_id: t.id,
             name: "test-gw".into(),
             ..Default::default()
         })
@@ -1281,7 +1277,7 @@ pub mod test {
         // insert stats
         let mut m = metrics::Record {
             kind: metrics::Kind::COUNTER,
-            time: now.into(),
+            time: now,
             metrics: HashMap::new(),
         };
 

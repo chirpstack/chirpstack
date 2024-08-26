@@ -234,7 +234,7 @@ pub mod test {
         // next next queue item for dev eui
         let resp = get_next_for_dev_eui(&d.dev_eui).await.unwrap();
         assert_eq!(qi, resp.0);
-        assert_eq!(false, resp.1);
+        assert!(!resp.1);
 
         // update
         qi.is_pending = true;
@@ -244,7 +244,7 @@ pub mod test {
 
         // delete
         delete_item(&qi.id).await.unwrap();
-        assert_eq!(true, delete_item(&qi.id).await.is_err());
+        assert!(delete_item(&qi.id).await.is_err());
     }
 
     #[tokio::test]
@@ -269,7 +269,7 @@ pub mod test {
 
         // flush
         flush_for_dev_eui(&d.dev_eui).await.unwrap();
-        assert_eq!(true, delete_item(&qi.id).await.is_err());
+        assert!(delete_item(&qi.id).await.is_err());
     }
 
     #[tokio::test]

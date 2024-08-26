@@ -52,7 +52,7 @@ async fn test_gateway_filtering() {
 
     let gw_a = gateway::create(gateway::Gateway {
         name: "gateway-a".into(),
-        tenant_id: t_a.id.clone(),
+        tenant_id: t_a.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -61,7 +61,7 @@ async fn test_gateway_filtering() {
 
     let gw_b = gateway::create(gateway::Gateway {
         name: "gateway-b".into(),
-        tenant_id: t_b.id.clone(),
+        tenant_id: t_b.id,
         gateway_id: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -70,7 +70,7 @@ async fn test_gateway_filtering() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t_a.id.clone(),
+        tenant_id: t_a.id,
         ..Default::default()
     })
     .await
@@ -78,7 +78,7 @@ async fn test_gateway_filtering() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t_a.id.clone(),
+        tenant_id: t_a.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -90,8 +90,8 @@ async fn test_gateway_filtering() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -147,7 +147,7 @@ async fn test_gateway_filtering() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let tests = vec![
         Test {
@@ -259,8 +259,8 @@ async fn test_region_config_id_filtering() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -297,7 +297,7 @@ async fn test_region_config_id_filtering() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan102.into(),
@@ -390,7 +390,7 @@ async fn test_lorawan_10_errors() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -399,7 +399,7 @@ async fn test_lorawan_10_errors() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -407,7 +407,7 @@ async fn test_lorawan_10_errors() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -419,8 +419,8 @@ async fn test_lorawan_10_errors() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -445,7 +445,7 @@ async fn test_lorawan_10_errors() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan102.into(),
@@ -587,7 +587,7 @@ async fn test_lorawan_11_errors() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -596,7 +596,7 @@ async fn test_lorawan_11_errors() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -604,7 +604,7 @@ async fn test_lorawan_11_errors() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_1_0,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -616,8 +616,8 @@ async fn test_lorawan_11_errors() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -642,13 +642,13 @@ async fn test_lorawan_11_errors() {
         frequency: 868300000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_freq, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info_freq, 0).unwrap();
 
     let mut tx_info_dr = gw::UplinkTxInfo {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_dr, 3).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info_dr, 3).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan102.into(),
@@ -741,7 +741,7 @@ async fn test_lorawan_10_skip_f_cnt() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -750,7 +750,7 @@ async fn test_lorawan_10_skip_f_cnt() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -758,7 +758,7 @@ async fn test_lorawan_10_skip_f_cnt() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -770,8 +770,8 @@ async fn test_lorawan_10_skip_f_cnt() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         skip_fcnt_check: true,
@@ -797,7 +797,7 @@ async fn test_lorawan_10_skip_f_cnt() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan102.into(),
@@ -935,7 +935,7 @@ async fn test_lorawan_10_device_disabled() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -944,7 +944,7 @@ async fn test_lorawan_10_device_disabled() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -952,7 +952,7 @@ async fn test_lorawan_10_device_disabled() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -964,8 +964,8 @@ async fn test_lorawan_10_device_disabled() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         is_disabled: true,
@@ -991,7 +991,7 @@ async fn test_lorawan_10_device_disabled() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan102.into(),
@@ -1059,7 +1059,7 @@ async fn test_lorawan_10_uplink() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -1068,7 +1068,7 @@ async fn test_lorawan_10_uplink() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -1076,7 +1076,7 @@ async fn test_lorawan_10_uplink() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -1088,8 +1088,8 @@ async fn test_lorawan_10_uplink() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -1114,13 +1114,13 @@ async fn test_lorawan_10_uplink() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut tx_info_lr_fhss = gw::UplinkTxInfo {
         frequency: 867300000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 10).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info_lr_fhss, 10).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -1696,7 +1696,7 @@ async fn test_lorawan_10_end_to_end_enc() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -1705,7 +1705,7 @@ async fn test_lorawan_10_end_to_end_enc() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -1713,7 +1713,7 @@ async fn test_lorawan_10_end_to_end_enc() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -1725,8 +1725,8 @@ async fn test_lorawan_10_end_to_end_enc() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -1751,7 +1751,7 @@ async fn test_lorawan_10_end_to_end_enc() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds_sess_key_id = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -2024,7 +2024,7 @@ async fn test_lorawan_11_uplink() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -2033,7 +2033,7 @@ async fn test_lorawan_11_uplink() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -2041,7 +2041,7 @@ async fn test_lorawan_11_uplink() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_1_0,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -2053,8 +2053,8 @@ async fn test_lorawan_11_uplink() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -2079,13 +2079,13 @@ async fn test_lorawan_11_uplink() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut tx_info_lr_fhss = gw::UplinkTxInfo {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan110.into(),
@@ -2263,7 +2263,7 @@ async fn test_lorawan_10_rx_delay() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -2272,7 +2272,7 @@ async fn test_lorawan_10_rx_delay() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -2280,7 +2280,7 @@ async fn test_lorawan_10_rx_delay() {
 
     let mut dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -2292,8 +2292,8 @@ async fn test_lorawan_10_rx_delay() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -2318,13 +2318,13 @@ async fn test_lorawan_10_rx_delay() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut tx_info_lr_fhss = gw::UplinkTxInfo {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -2708,7 +2708,7 @@ async fn test_lorawan_10_mac_commands() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -2717,7 +2717,7 @@ async fn test_lorawan_10_mac_commands() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -2725,7 +2725,7 @@ async fn test_lorawan_10_mac_commands() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -2737,8 +2737,8 @@ async fn test_lorawan_10_mac_commands() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -2763,13 +2763,13 @@ async fn test_lorawan_10_mac_commands() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut tx_info_lr_fhss = gw::UplinkTxInfo {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -2796,7 +2796,7 @@ async fn test_lorawan_10_mac_commands() {
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
             before_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dp_id = dp.id;
                 Box::pin(async move {
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.device_status_req_interval = 1;
@@ -2804,7 +2804,7 @@ async fn test_lorawan_10_mac_commands() {
                 })
             })),
             after_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dp_id = dp.id;
                 Box::pin(async move {
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.device_status_req_interval = 0;
@@ -2895,7 +2895,7 @@ async fn test_lorawan_10_mac_commands() {
                 ..Default::default()
             }],
             before_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dp_id = dp.id;
                 Box::pin(async move {
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.device_status_req_interval = 1;
@@ -2903,7 +2903,7 @@ async fn test_lorawan_10_mac_commands() {
                 })
             })),
             after_func: Some(Box::new(move || {
-                let dp_id = dp.id.clone();
+                let dp_id = dp.id;
                 Box::pin(async move {
                     let mut dp = device_profile::get(&dp_id).await.unwrap();
                     dp.device_status_req_interval = 0;
@@ -3079,7 +3079,7 @@ async fn test_lorawan_11_mac_commands() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -3088,7 +3088,7 @@ async fn test_lorawan_11_mac_commands() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -3096,7 +3096,7 @@ async fn test_lorawan_11_mac_commands() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_1_0,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -3108,8 +3108,8 @@ async fn test_lorawan_11_mac_commands() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -3134,7 +3134,7 @@ async fn test_lorawan_11_mac_commands() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan110.into(),
@@ -3273,7 +3273,7 @@ async fn test_lorawan_10_device_queue() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -3282,7 +3282,7 @@ async fn test_lorawan_10_device_queue() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -3290,7 +3290,7 @@ async fn test_lorawan_10_device_queue() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -3302,8 +3302,8 @@ async fn test_lorawan_10_device_queue() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -3328,7 +3328,7 @@ async fn test_lorawan_10_device_queue() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -3750,7 +3750,7 @@ async fn test_lorawan_11_device_queue() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -3759,7 +3759,7 @@ async fn test_lorawan_11_device_queue() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -3767,7 +3767,7 @@ async fn test_lorawan_11_device_queue() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_1_0,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -3779,8 +3779,8 @@ async fn test_lorawan_11_device_queue() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -3805,7 +3805,7 @@ async fn test_lorawan_11_device_queue() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan110.into(),
@@ -4230,7 +4230,7 @@ async fn test_lorawan_10_adr() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -4239,7 +4239,7 @@ async fn test_lorawan_10_adr() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -4247,7 +4247,7 @@ async fn test_lorawan_10_adr() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -4260,8 +4260,8 @@ async fn test_lorawan_10_adr() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -4286,7 +4286,7 @@ async fn test_lorawan_10_adr() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -5073,7 +5073,7 @@ async fn test_lorawan_10_device_status_request() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -5082,7 +5082,7 @@ async fn test_lorawan_10_device_status_request() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -5090,7 +5090,7 @@ async fn test_lorawan_10_device_status_request() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -5103,8 +5103,8 @@ async fn test_lorawan_10_device_status_request() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -5129,7 +5129,7 @@ async fn test_lorawan_10_device_status_request() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -5339,7 +5339,7 @@ async fn test_lorawan_11_receive_window_selection() {
 
     let gw = gateway::create(gateway::Gateway {
         name: "gateway".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
@@ -5348,7 +5348,7 @@ async fn test_lorawan_11_receive_window_selection() {
 
     let app = application::create(application::Application {
         name: "app".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         ..Default::default()
     })
     .await
@@ -5356,7 +5356,7 @@ async fn test_lorawan_11_receive_window_selection() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id.clone(),
+        tenant_id: t.id,
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_1_0,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
@@ -5368,8 +5368,8 @@ async fn test_lorawan_11_receive_window_selection() {
 
     let dev = device::create(device::Device {
         name: "device".into(),
-        application_id: app.id.clone(),
-        device_profile_id: dp.id.clone(),
+        application_id: app.id,
+        device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
@@ -5394,13 +5394,13 @@ async fn test_lorawan_11_receive_window_selection() {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 0).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
 
     let mut tx_info_lr_fhss = gw::UplinkTxInfo {
         frequency: 868100000,
         ..Default::default()
     };
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info_lr_fhss, 8).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info_lr_fhss, 8).unwrap();
 
     let ds = internal::DeviceSession {
         mac_version: common::MacVersion::Lorawan110.into(),
@@ -5663,7 +5663,7 @@ async fn test_lorawan_11_receive_window_selection() {
     })
     .await;
 
-    uplink::helpers::set_uplink_modulation(&"eu868", &mut tx_info, 5).unwrap();
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 5).unwrap();
 
     run_test(&Test {
         name: "unconfirmed uplink with payload (rx1, payload exceeds rx2 limit)".into(),
@@ -5777,7 +5777,7 @@ async fn run_test(t: &Test) {
     reset_redis().await.unwrap();
 
     integration::set_mock().await;
-    gateway_backend::set_backend(&"eu868", Box::new(gateway_backend::mock::Backend {})).await;
+    gateway_backend::set_backend("eu868", Box::new(gateway_backend::mock::Backend {})).await;
 
     integration::mock::reset().await;
     gateway_backend::mock::reset().await;

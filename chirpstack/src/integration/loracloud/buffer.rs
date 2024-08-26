@@ -43,7 +43,7 @@ pub async fn get_geoloc_buffer(
                     None => {
                         return false;
                     }
-                    Some(v) => match v.clone().try_into() {
+                    Some(v) => match (*v).try_into() {
                         Ok(v) => v,
                         Err(_) => {
                             return false;

@@ -383,7 +383,7 @@ mod tests {
         ];
 
         for tst in tests {
-            let mut devaddr = tst.devaddr.clone();
+            let mut devaddr = tst.devaddr;
             devaddr.set_dev_addr_prefix(tst.netid.dev_addr_prefix());
             assert_eq!(tst.expected_devaddr, devaddr);
         }
