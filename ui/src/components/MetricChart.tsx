@@ -15,16 +15,16 @@ interface IProps {
 
 function MetricChart(props: IProps) {
   let unit: TimeUnit = "hour";
-  let tooltipFormat = "LT";
+  let tooltipFormat = "p";
   if (props.aggregation === Aggregation.DAY) {
     unit = "day";
-    tooltipFormat = "MMM Do";
+    tooltipFormat = "MMM d";
   } else if (props.aggregation === Aggregation.MONTH) {
     unit = "month";
-    tooltipFormat = "MMM YYYY";
+    tooltipFormat = "MMM yyyy";
   } else if (props.aggregation === Aggregation.MINUTE) {
     unit = "minute";
-    tooltipFormat = "LT";
+    tooltipFormat = "p";
   }
 
   const animation = false as const;
@@ -59,8 +59,6 @@ function MetricChart(props: IProps) {
       .sort((a, b) => a.getLabel().localeCompare(b.getLabel()))
       .map((v, i) => {
         const colors = palette("cb-Paired", props.metric.getDatasetsList().length).map((hex: string) => "#" + hex);
-        console.log(v.getLabel());
-        console.log(colors[i]);
 
         return {
           label: v.getLabel(),
