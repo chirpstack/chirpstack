@@ -87,8 +87,9 @@ function ListDevices(props: IProps) {
       width: 250,
       render: (text, record) => (
         <Link
-          to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/${record.devEui
-            }`}
+          to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/${
+            record.devEui
+          }`}
         >
           {text}
         </Link>
@@ -179,7 +180,7 @@ function ListDevices(props: IProps) {
       req.setMulticastGroupId(mgSelected);
       req.setDevEui(devEui);
 
-      MulticastGroupStore.addDevice(req, () => { });
+      MulticastGroupStore.addDevice(req, () => {});
     }
 
     setMgModalVisible(false);
@@ -191,7 +192,7 @@ function ListDevices(props: IProps) {
       req.setRelayDevEui(relaySelected);
       req.setDeviceDevEui(devEui);
 
-      RelayStore.addDevice(req, () => { });
+      RelayStore.addDevice(req, () => {});
     }
 
     setRelayModalVisible(false);

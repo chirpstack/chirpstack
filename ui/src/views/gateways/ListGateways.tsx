@@ -179,7 +179,7 @@ function ListGateways(props: IProps) {
       req.setMulticastGroupId(mgSelected);
       req.setGatewayId(gatewayId);
 
-      MulticastGroupStore.addGateway(req, () => { });
+      MulticastGroupStore.addGateway(req, () => {});
     }
 
     setMgModalVisible(false);
