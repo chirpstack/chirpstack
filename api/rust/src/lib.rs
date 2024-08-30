@@ -1,4 +1,5 @@
 pub use prost;
+pub use tonic;
 #[cfg(feature = "api")]
 pub mod api;
 pub mod common;
