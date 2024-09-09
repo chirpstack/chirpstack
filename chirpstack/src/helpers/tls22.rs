@@ -11,7 +11,7 @@ use tokio::fs;
 // Return root certificates, optionally with the provided ca_file appended.
 pub fn get_root_certs(ca_file: Option<String>) -> Result<rustls::RootCertStore> {
     let mut roots = rustls::RootCertStore::empty();
-    for cert in rustls_native_certs::load_native_certs()? {
+    for cert in rustls_native_certs::load_native_certs().certs {
         roots.add(cert)?;
     }
 

@@ -133,7 +133,7 @@ pub async fn setup() -> Result<()> {
         .add_service(
             TonicReflectionBuilder::configure()
                 .register_encoded_file_descriptor_set(chirpstack_api::api::DESCRIPTOR)
-                .build()
+                .build_v1()
                 .unwrap(),
         )
         .add_service(InternalServiceServer::with_interceptor(
