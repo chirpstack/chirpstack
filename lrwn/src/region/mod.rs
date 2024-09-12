@@ -13,7 +13,7 @@ use diesel::{
     {deserialize, serialize},
 };
 #[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
+use serde::{de, Deserialize, Deserializer, Serialize};
 
 use crate::{
     CFList, CFListChannelMasks, CFListChannels, ChMask, DevAddr, LinkADRReqPayload, Redundancy,
@@ -33,7 +33,7 @@ pub mod us915;
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 #[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
 #[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Text))]
 pub enum CommonName {
@@ -56,6 +56,43 @@ pub enum CommonName {
 impl fmt::Display for CommonName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl FromStr for CommonName {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(match s {
+            "EU868" => CommonName::EU868,
+            "US915" => CommonName::US915,
+            "CN779" => CommonName::CN779,
+            "EU433" => CommonName::EU433,
+            "AU915" => CommonName::AU915,
+            "CN470" => CommonName::CN470,
+            "AS923" => CommonName::AS923,
+            "AS923_2" | "AS923-2" => CommonName::AS923_2,
+            "AS923_3" | "AS923-3" => CommonName::AS923_3,
+            "AS923_4" | "AS923-4" => CommonName::AS923_4,
+            "KR920" => CommonName::KR920,
+            "IN865" => CommonName::IN865,
+            "RU864" => CommonName::RU864,
+            "ISM2400" => CommonName::ISM2400,
+            _ => {
+                return Err(anyhow!("Unexpected CommonName: {}", s));
+            }
+        })
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for CommonName {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        FromStr::from_str(&s).map_err(de::Error::custom)
     }
 }
 
@@ -92,32 +129,6 @@ impl serialize::ToSql<Text, Sqlite> for CommonName {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
         out.set_value(self.to_string());
         Ok(serialize::IsNull::No)
-    }
-}
-
-impl FromStr for CommonName {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        Ok(match s {
-            "EU868" => CommonName::EU868,
-            "US915" => CommonName::US915,
-            "CN779" => CommonName::CN779,
-            "EU433" => CommonName::EU433,
-            "AU915" => CommonName::AU915,
-            "CN470" => CommonName::CN470,
-            "AS923" => CommonName::AS923,
-            "AS923_2" | "AS923-2" => CommonName::AS923_2,
-            "AS923_3" | "AS923-3" => CommonName::AS923_3,
-            "AS923_4" | "AS923-4" => CommonName::AS923_4,
-            "KR920" => CommonName::KR920,
-            "IN865" => CommonName::IN865,
-            "RU864" => CommonName::RU864,
-            "ISM2400" => CommonName::ISM2400,
-            _ => {
-                return Err(anyhow!("Unexpected CommonName: {}", s));
-            }
-        })
     }
 }
 
@@ -178,6 +189,17 @@ impl FromStr for Revision {
                 return Err(anyhow!("Unexpected Revision: {}", s));
             }
         })
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for Revision {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        FromStr::from_str(&s).map_err(de::Error::custom)
     }
 }
 
@@ -271,6 +293,17 @@ impl FromStr for MacVersion {
                 return Err(anyhow!("Unexpected MacVersion: {}", s));
             }
         })
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for MacVersion {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        FromStr::from_str(&s).map_err(de::Error::custom)
     }
 }
 
