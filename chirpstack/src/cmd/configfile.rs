@@ -16,7 +16,6 @@ r#"
   #   * INFO
   #   * WARN
   #   * ERROR
-  #   * OFF
   level="{{ logging.level }}"
 
   # Log as JSON.
