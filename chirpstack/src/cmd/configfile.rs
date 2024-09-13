@@ -1,4 +1,4 @@
-use handlebars::{no_escape, Handlebars};
+use handlebars::Handlebars;
 
 use super::super::config;
 
@@ -992,7 +992,7 @@ r#"
 "#].join("\n");
 
     let mut reg = Handlebars::new();
-    reg.register_escape_fn(no_escape);
+    reg.register_escape_fn(|s| s.to_string().replace('"', r#"\""#));
     let conf = config::get();
     println!(
         "{}",
