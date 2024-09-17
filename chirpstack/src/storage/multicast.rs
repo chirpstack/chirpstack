@@ -98,6 +98,7 @@ pub struct MulticastGroupQueueItem {
     pub f_port: i16,
     pub data: Vec<u8>,
     pub emit_at_time_since_gps_epoch: Option<i64>,
+    pub expires_at: Option<DateTime<Utc>>,
 }
 
 impl MulticastGroupQueueItem {
@@ -126,6 +127,7 @@ impl Default for MulticastGroupQueueItem {
             f_port: 0,
             data: vec![],
             emit_at_time_since_gps_epoch: None,
+            expires_at: None,
         }
     }
 }
@@ -471,6 +473,7 @@ pub async fn enqueue(
                             emit_at_time_since_gps_epoch: Some(
                                 emit_at_time_since_gps_epoch.num_milliseconds(),
                             ),
+                            expires_at: qi.expires_at.clone(),
                             ..Default::default()
                         };
 
@@ -543,6 +546,7 @@ pub async fn enqueue(
                             f_port: qi.f_port,
                             data: qi.data.clone(),
                             emit_at_time_since_gps_epoch,
+                            expires_at: qi.expires_at.clone(),
                             ..Default::default()
                         };
 

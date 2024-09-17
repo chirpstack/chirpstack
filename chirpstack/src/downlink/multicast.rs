@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use anyhow::{Context, Result};
+use chrono::Utc;
 use petgraph::algo::min_spanning_tree;
 use petgraph::data::FromElements;
 use petgraph::graph::{DefaultIx, Graph, NodeIndex, UnGraph};
@@ -55,6 +56,7 @@ impl Multicast {
         ctx.get_gateway().await?;
         ctx.set_region_config_id()?;
         ctx.get_multicast_group().await?;
+        ctx.validate_expiration().await?;
         ctx.validate_payload_size().await?;
         ctx.set_tx_info()?;
         ctx.set_phy_payload()?;
@@ -87,6 +89,22 @@ impl Multicast {
         trace!("Getting multicast-group");
         let mg = multicast::get(&self.multicast_group_queue_item.multicast_group_id).await?;
         self.multicast_group = Some(mg);
+        Ok(())
+    }
+
+    async fn validate_expiration(&self) -> Result<()> {
+        trace!("Validating expires_at");
+        if let Some(expires_at) = self.multicast_group_queue_item.expires_at {
+            if Utc::now() > expires_at {
+                warn!(
+                    expires_at = %expires_at,
+                    "Discarding multicast-group queue item because it has expired"
+                );
+                multicast::delete_queue_item(&self.multicast_group_queue_item.id).await?;
+                return Err(anyhow!("Queue item has expired and has been discarded"));
+            }
+        }
+
         Ok(())
     }
 

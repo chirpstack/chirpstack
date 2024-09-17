@@ -60,6 +60,9 @@ enum LogCode {
 
   // Downlink frame-counter.
   F_CNT_DOWN = 10;
+
+  // Downlink has expired.
+  EXPIRED = 11;
 }
 
 // Device information.

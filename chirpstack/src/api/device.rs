@@ -1095,6 +1095,14 @@ impl DeviceService for Device {
             } else {
                 None
             },
+            expires_at: if let Some(expires_at) = req_qi.expires_at {
+                let expires_at: std::time::SystemTime = expires_at
+                    .try_into()
+                    .map_err(|e: prost_types::TimestampError| e.status())?;
+                Some(expires_at.into())
+            } else {
+                None
+            },
             data,
             ..Default::default()
         };
@@ -1169,6 +1177,10 @@ impl DeviceService for Device {
                     is_pending: qi.is_pending,
                     f_cnt_down: qi.f_cnt_down.unwrap_or(0) as u32,
                     is_encrypted: qi.is_encrypted,
+                    expires_at: qi.expires_at.map(|v| {
+                        let v: std::time::SystemTime = v.into();
+                        v.into()
+                    }),
                 })
                 .collect(),
         });

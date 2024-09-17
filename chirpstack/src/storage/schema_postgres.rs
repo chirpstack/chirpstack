@@ -203,6 +203,7 @@ diesel::table! {
         f_cnt_down -> Nullable<Int8>,
         timeout_after -> Nullable<Timestamptz>,
         is_encrypted -> Bool,
+        expires_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -277,6 +278,7 @@ diesel::table! {
         f_port -> Int2,
         data -> Bytea,
         emit_at_time_since_gps_epoch -> Nullable<Int8>,
+        expires_at -> Nullable<Timestamptz>,
     }
 }
 

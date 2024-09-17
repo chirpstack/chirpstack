@@ -22,6 +22,7 @@ pub struct DeviceQueueItem {
     pub f_cnt_down: Option<i64>,
     pub timeout_after: Option<DateTime<Utc>>,
     pub is_encrypted: bool,
+    pub expires_at: Option<DateTime<Utc>>,
 }
 
 impl DeviceQueueItem {
@@ -57,6 +58,7 @@ impl Default for DeviceQueueItem {
             f_cnt_down: None,
             timeout_after: None,
             is_encrypted: false,
+            expires_at: None,
         }
     }
 }

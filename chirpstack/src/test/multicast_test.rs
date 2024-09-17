@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{Duration, Utc};
 
 use super::assert;
 use crate::storage::{
@@ -118,7 +118,7 @@ async fn test_multicast() {
             name: "one item in queue".into(),
             multicast_group: mg.clone(),
             multicast_group_queue_items: vec![multicast::MulticastGroupQueueItem {
-                multicast_group_id: mg.id.into(),
+                multicast_group_id: mg.id,
                 f_port: 5,
                 data: vec![1, 2, 3],
                 ..Default::default()
@@ -160,13 +160,13 @@ async fn test_multicast() {
             multicast_group: mg.clone(),
             multicast_group_queue_items: vec![
                 multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id.into(),
+                    multicast_group_id: mg.id,
                     f_port: 5,
                     data: vec![1, 2, 3],
                     ..Default::default()
                 },
                 multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id.into(),
+                    multicast_group_id: mg.id,
                     f_port: 6,
                     data: vec![1, 2, 3],
                     ..Default::default()
@@ -209,18 +209,30 @@ async fn test_multicast() {
             multicast_group: mg.clone(),
             multicast_group_queue_items: vec![
                 multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id.into(),
+                    multicast_group_id: mg.id,
                     f_port: 5,
                     data: vec![2; 300],
                     ..Default::default()
                 },
                 multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id.into(),
+                    multicast_group_id: mg.id,
                     f_port: 6,
                     data: vec![1, 2, 3],
                     ..Default::default()
                 },
             ],
+            assert: vec![assert::no_downlink_frame()],
+        },
+        MulticastTest {
+            name: "item discarded because it has expired".into(),
+            multicast_group: mg.clone(),
+            multicast_group_queue_items: vec![multicast::MulticastGroupQueueItem {
+                multicast_group_id: mg.id,
+                f_port: 5,
+                data: vec![1, 2, 3],
+                expires_at: Some(Utc::now() - Duration::seconds(10)),
+                ..Default::default()
+            }],
             assert: vec![assert::no_downlink_frame()],
         },
     ];

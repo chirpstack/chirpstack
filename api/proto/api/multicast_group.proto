@@ -302,6 +302,10 @@ message MulticastGroupQueueItem {
 
     // Payload.
     bytes data = 4;
+
+    // Expires at (optional).
+    // Expired queue-items will be automatically removed from the queue.
+    google.protobuf.Timestamp expires_at = 5;
 }
 
 message EnqueueMulticastGroupQueueItemRequest {

@@ -539,6 +539,10 @@ message DeviceQueueItem {
   // the data payload. In this case, the f_cnt_down field must be set to
   // the corresponding frame-counter which has been used during the encryption.
   bool is_encrypted = 9;
+
+  // Expires at (optional).
+  // Expired queue-items will be automatically removed from the queue.
+  google.protobuf.Timestamp expires_at = 10;
 }
 
 message EnqueueDeviceQueueItemRequest { DeviceQueueItem queue_item = 1; }

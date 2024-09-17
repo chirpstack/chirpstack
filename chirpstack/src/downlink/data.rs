@@ -464,9 +464,11 @@ impl Data {
             // The queue item:
             // * should fit within the max payload size
             // * should not be pending
+            // * should not be expired
             // * in case encrypted, should have a valid FCntDown
             if qi.data.len() <= max_payload_size
                 && !qi.is_pending
+                && !(qi.expires_at.is_some() && qi.expires_at.unwrap() < Utc::now())
                 && !(qi.is_encrypted
                     && (qi.f_cnt_down.unwrap_or_default() as u32) < ds.get_a_f_cnt_down())
             {
@@ -524,6 +526,34 @@ impl Data {
                 warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because of timeout");
 
                 continue;
+            }
+
+            // Handle expired payload.
+            if let Some(expires_at) = qi.expires_at {
+                if expires_at < Utc::now() {
+                    device_queue::delete_item(&qi.id)
+                        .await
+                        .context("Delete device queue-item")?;
+
+                    let pl = integration_pb::LogEvent {
+                        time: Some(Utc::now().into()),
+                        device_info: Some(device_info.clone()),
+                        level: integration_pb::LogLevel::Error.into(),
+                        code: integration_pb::LogCode::Expired.into(),
+                        description: "Device queue-item discarded because it has expired"
+                            .to_string(),
+                        context: [("queue_item_id".to_string(), qi.id.to_string())]
+                            .iter()
+                            .cloned()
+                            .collect(),
+                    };
+
+                    integration::log_event(self.application.id.into(), &self.device.variables, &pl)
+                        .await;
+                    warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because it has expired");
+
+                    continue;
+                }
             }
 
             // Handle payload size.
@@ -2764,6 +2794,41 @@ mod test {
                     .iter()
                     .cloned()
                     .collect(),
+                    ..Default::default()
+                }),
+            },
+            Test {
+                name: "item has expired".into(),
+                max_payload_size: 10,
+                queue_items: vec![device_queue::DeviceQueueItem {
+                    id: qi_id.into(),
+                    dev_eui: d.dev_eui,
+                    f_port: 1,
+                    data: vec![1, 2, 3],
+                    expires_at: Some(Utc::now() - chrono::Duration::seconds(10)),
+                    ..Default::default()
+                }],
+                expected_queue_item: None,
+                expected_ack_event: None,
+                expected_log_event: Some(integration_pb::LogEvent {
+                    device_info: Some(integration_pb::DeviceInfo {
+                        tenant_id: t.id.to_string(),
+                        tenant_name: t.name.clone(),
+                        application_id: app.id.to_string(),
+                        application_name: app.name.clone(),
+                        device_profile_id: dp.id.to_string(),
+                        device_profile_name: dp.name.clone(),
+                        device_name: d.name.clone(),
+                        dev_eui: d.dev_eui.to_string(),
+                        ..Default::default()
+                    }),
+                    level: integration_pb::LogLevel::Error.into(),
+                    code: integration_pb::LogCode::Expired.into(),
+                    description: "Device queue-item discarded because it has expired".into(),
+                    context: [("queue_item_id".to_string(), qi_id.to_string())]
+                        .iter()
+                        .cloned()
+                        .collect(),
                     ..Default::default()
                 }),
             },

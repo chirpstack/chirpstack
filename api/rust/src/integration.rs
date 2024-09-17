@@ -32,6 +32,7 @@ impl Into<String> for LogCode {
             LogCode::DownlinkGateway => "DOWNLINK_GATEWAY",
             LogCode::RelayNewEndDevice => "RELAY_NEW_END_DEVICE",
             LogCode::FCntDown => "F_CNT_DOWN",
+            LogCode::Expired => "EXPIRED",
         }
         .to_string()
     }

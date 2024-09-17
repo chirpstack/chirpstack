@@ -183,6 +183,7 @@ diesel::table! {
         f_cnt_down -> Nullable<BigInt>,
         timeout_after -> Nullable<TimestamptzSqlite>,
         is_encrypted -> Bool,
+        expires_at -> Nullable<TimestamptzSqlite>,
     }
 }
 
@@ -252,6 +253,7 @@ diesel::table! {
         f_port -> SmallInt,
         data -> Binary,
         emit_at_time_since_gps_epoch -> Nullable<BigInt>,
+        expires_at -> Nullable<TimestamptzSqlite>,
     }
 }
 
