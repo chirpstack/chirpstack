@@ -17,6 +17,9 @@ import type {
   RemoveGatewayFromMulticastGroupRequest,
   ListMulticastGroupQueueRequest,
   ListMulticastGroupQueueResponse,
+  EnqueueMulticastGroupQueueItemRequest,
+  EnqueueMulticastGroupQueueItemResponse,
+  FlushMulticastGroupQueueRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
 import SessionStore from "./SessionStore";
@@ -154,6 +157,20 @@ class MulticastGroupStore extends EventEmitter {
     });
   };
 
+  enqueue = (
+    req: EnqueueMulticastGroupQueueItemRequest,
+    callbackFunc: (resp: EnqueueMulticastGroupQueueItemResponse) => void,
+  ) => {
+    this.client.enqueue(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
   listQueue = (req: ListMulticastGroupQueueRequest, callbackFunc: (resp: ListMulticastGroupQueueResponse) => void) => {
     this.client.listQueue(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
@@ -162,6 +179,17 @@ class MulticastGroupStore extends EventEmitter {
       }
 
       callbackFunc(resp);
+    });
+  };
+
+  flushQueue = (req: FlushMulticastGroupQueueRequest, callbackFunc: () => void) => {
+    this.client.flushQueue(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc();
     });
   };
 }

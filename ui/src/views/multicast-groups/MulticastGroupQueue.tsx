@@ -1,10 +1,8 @@
 import { useState } from "react";
 
-import { Struct } from "google-protobuf/google/protobuf/struct_pb";
 import { format } from "date-fns";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
-import { Switch, notification } from "antd";
 import {
   Button,
   Tabs,
@@ -23,98 +21,40 @@ import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
 
 import {
-  EnqueueDeviceQueueItemRequest,
-  GetDeviceQueueItemsRequest,
-  GetDeviceQueueItemsResponse,
-  Device,
-  FlushDeviceQueueRequest,
-  DeviceQueueItem,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+  EnqueueMulticastGroupQueueItemRequest,
+  ListMulticastGroupQueueRequest,
+  FlushMulticastGroupQueueRequest,
+  MulticastGroupQueueItem,
+  MulticastGroup,
+  ListMulticastGroupQueueResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
 import { onFinishFailed } from "../helpers";
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
-import DeviceStore from "../../stores/DeviceStore";
-import CodeEditor from "../../components/CodeEditor";
+import MulticastGroupStore from "../../stores/MulticastGroupStore";
 
 interface IProps {
-  device: Device;
+  multicastGroup: MulticastGroup;
 }
 
 interface FormRules {
-  confirmed: boolean;
   fPort: number;
-  isEncrypted: boolean;
-  fCntDown: number;
   hex: string;
   base64: string;
-  json: string;
   expiresAt?: DatePickerProps["value"];
 }
 
-function DeviceQueue(props: IProps) {
+function MulticastGroupQueue(props: IProps) {
   const [refreshCounter, setRefreshCounter] = useState<number>(0);
-  const [isEncrypted, setIsEncrypted] = useState<boolean>(false);
   const [form] = Form.useForm<FormRules>();
 
-  const columns: ColumnsType<DeviceQueueItem.AsObject> = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      width: 350,
-    },
-    {
-      title: "Pending",
-      dataIndex: "isPending",
-      key: "isPending",
-      width: 100,
-      render: (text, record) => {
-        if (record.isPending) {
-          return "yes";
-        } else {
-          return "no";
-        }
-      },
-    },
-    {
-      title: "Encrypted",
-      dataIndex: "isEncrypted",
-      key: "isEncrypted",
-      width: 100,
-      render: (text, record) => {
-        if (record.isEncrypted) {
-          return "yes";
-        } else {
-          return "no";
-        }
-      },
-    },
+  const columns: ColumnsType<MulticastGroupQueueItem.AsObject> = [
     {
       title: "Frame-counter",
-      dataIndex: "fCntDown",
-      key: "fCntDown",
-      width: 200,
-      render: (text, record) => {
-        if (record.isPending === true || record.isEncrypted === true) {
-          return record.fCntDown;
-        } else {
-          return "";
-        }
-      },
-    },
-    {
-      title: "Confirmed",
-      dataIndex: "confirmed",
-      key: "confirmed",
+      dataIndex: "fCnt",
+      key: "fCnt",
       width: 100,
-      render: (text, record) => {
-        if (record.confirmed) {
-          return "yes";
-        } else {
-          return "no";
-        }
-      },
     },
     {
       title: "FPort",
@@ -148,12 +88,12 @@ function DeviceQueue(props: IProps) {
   ];
 
   const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
-    const req = new GetDeviceQueueItemsRequest();
-    req.setDevEui(props.device.getDevEui());
+    const req = new ListMulticastGroupQueueRequest();
+    req.setMulticastGroupId(props.multicastGroup.getId());
 
-    DeviceStore.getQueue(req, (resp: GetDeviceQueueItemsResponse) => {
+    MulticastGroupStore.listQueue(req, (resp: ListMulticastGroupQueueResponse) => {
       const obj = resp.toObject();
-      callbackFunc(obj.totalCount, obj.resultList);
+      callbackFunc(obj.itemsList.length, obj.itemsList);
     });
   };
 
@@ -162,57 +102,36 @@ function DeviceQueue(props: IProps) {
   };
 
   const flushQueue = () => {
-    const req = new FlushDeviceQueueRequest();
-    req.setDevEui(props.device.getDevEui());
-    DeviceStore.flushQueue(req, () => {
+    const req = new FlushMulticastGroupQueueRequest();
+    req.setMulticastGroupId(props.multicastGroup.getId());
+    MulticastGroupStore.flushQueue(req, () => {
       refreshQueue();
     });
   };
 
   const onEnqueue = (values: FormRules) => {
-    const req = new EnqueueDeviceQueueItemRequest();
-    const item = new DeviceQueueItem();
+    const req = new EnqueueMulticastGroupQueueItemRequest();
+    const item = new MulticastGroupQueueItem();
 
-    item.setDevEui(props.device.getDevEui());
+    item.setMulticastGroupId(props.multicastGroup.getId());
     item.setFPort(values.fPort);
-    item.setConfirmed(values.confirmed);
-    item.setIsEncrypted(values.isEncrypted);
-    item.setFCntDown(values.fCntDown);
 
     if (values.expiresAt !== null && values.expiresAt !== undefined) {
       item.setExpiresAt(Timestamp.fromDate(values.expiresAt.toDate()));
-    }
-
-    if (values.hex !== undefined) {
-      item.setData(new Uint8Array(Buffer.from(values.hex, "hex")));
     }
 
     if (values.base64 !== undefined) {
       item.setData(new Uint8Array(Buffer.from(values.base64, "base64")));
     }
 
-    if (values.json !== undefined) {
-      try {
-        const obj = JSON.parse(values.json);
-        const struct = Struct.fromJavaScript(obj);
-
-        item.setObject(struct);
-      } catch (err) {
-        if (err instanceof Error) {
-          notification.error({
-            message: "Error",
-            description: err.message,
-            duration: 3,
-          });
-        }
-      }
+    if (values.hex !== undefined) {
+      item.setData(new Uint8Array(Buffer.from(values.hex, "hex")));
     }
 
     req.setQueueItem(item);
 
-    DeviceStore.enqueue(req, _ => {
+    MulticastGroupStore.enqueue(req, _ => {
       form.resetFields();
-      setIsEncrypted(false);
       refreshQueue();
     });
   };
@@ -229,29 +148,9 @@ function DeviceQueue(props: IProps) {
         >
           <Row>
             <Space direction="horizontal" style={{ width: "100%" }} size="large">
-              <Form.Item name="confirmed" label="Confirmed" valuePropName="checked">
-                <Switch />
-              </Form.Item>
               <Form.Item name="fPort" label="FPort">
                 <InputNumber min={1} max={254} />
               </Form.Item>
-              <Form.Item
-                name="isEncrypted"
-                label="Is encrypted"
-                valuePropName="checked"
-                tooltip="Only enable this in case the payload that you would like to enqueue has already been encrypted. In this case you also must enter the downlink frame-counter which has been used for the encryption."
-              >
-                <Switch onChange={setIsEncrypted} />
-              </Form.Item>
-              {isEncrypted && (
-                <Form.Item
-                  name="fCntDown"
-                  label="Downlink frame-counter used for encryption"
-                  rules={[{ required: true, message: "Please enter a downlink frame-counter!" }]}
-                >
-                  <InputNumber min={0} />
-                </Form.Item>
-              )}
               <Form.Item
                 name="expiresAt"
                 label="Expires at"
@@ -271,9 +170,6 @@ function DeviceQueue(props: IProps) {
               <Form.Item name="base64">
                 <Input />
               </Form.Item>
-            </Tabs.TabPane>
-            <Tabs.TabPane tab="JSON" key="3">
-              <CodeEditor name="json" />
             </Tabs.TabPane>
           </Tabs>
           <Button type="primary" htmlType="submit">
@@ -296,4 +192,4 @@ function DeviceQueue(props: IProps) {
   );
 }
 
-export default DeviceQueue;
+export default MulticastGroupQueue;

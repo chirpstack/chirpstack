@@ -21,6 +21,7 @@ import ListMulticastGroupDevices from "./ListMulticastGroupDevices";
 import ListMulticastGroupGateways from "./ListMulticastGroupGateways";
 import EditMulticastGroup from "./EditMulticastGroup";
 import Admin from "../../components/Admin";
+import MulticastGroupQueue from "./MulticastGroupQueue";
 
 interface IProps {
   tenant: Tenant;
@@ -67,6 +68,9 @@ function MulticastGroupLayout(props: IProps) {
   }
   if (path.endsWith("edit")) {
     tab = "edit";
+  }
+  if (path.endsWith("queue")) {
+    tab = "queue";
   }
 
   return (
@@ -131,11 +135,17 @@ function MulticastGroupLayout(props: IProps) {
               Configuration
             </Link>
           </Menu.Item>
+          <Menu.Item key="queue">
+            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/queue`}>
+              Queue
+            </Link>
+          </Menu.Item>
         </Menu>
         <Routes>
           <Route path="/" element={<ListMulticastGroupDevices multicastGroup={mg} />} />
           <Route path="/gateways" element={<ListMulticastGroupGateways multicastGroup={mg} application={app} />} />
           <Route path="/edit" element={<EditMulticastGroup application={app} multicastGroup={mg} />} />
+          <Route path="/queue" element={<MulticastGroupQueue multicastGroup={mg} />} />
         </Routes>
       </Card>
     </Space>
