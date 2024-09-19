@@ -20,7 +20,7 @@
   serde_urlencoded = "0.7"
   humantime-serde = "1.1"
   toml = "0.8"
-  handlebars = "6.0"
+  handlebars = "6.1"
 
   # Database
   email_address = "0.2"
@@ -38,7 +38,7 @@
   tokio-postgres-rustls = { version = "0.12", optional = true }
   bigdecimal = "0.4"
   redis = { version = "0.26", features = ["tls-rustls", "tokio-rustls-comp"] }
-  deadpool-redis = { version = "0.16", features = ["cluster"] }
+  deadpool-redis = { version = "0.16", features = ["cluster", "serde"] }
 
   # Logging
   tracing = "0.1"

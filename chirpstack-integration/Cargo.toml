@@ -9,7 +9,7 @@
   repository = "https://github.com/chirpstack/chirpstack"
 
 [dependencies]
-  chirpstack_api = { path = "../api/rust", version = "4.9.0-test.1" }
+  chirpstack_api = { path = "../api/rust", version = "4.9.0" }
   redis = { version = "0.26", features = [
     "cluster-async",
     "tokio-rustls-comp",
@@ -21,9 +21,9 @@
     "ansi",
     "json",
   ], default-features = true }
-  async-trait = "0.1.79"
+  async-trait = "0.1"
   serde = { version = "1.0", features = ["derive"] }
-  tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
-  lazy_static = "1.4"
+  tokio = { version = "1.40", features = ["macros", "rt-multi-thread"] }
+  lazy_static = "1.5"
   serde_json = "1.0"
   toml = "0.8"
