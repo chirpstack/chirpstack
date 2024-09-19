@@ -207,20 +207,12 @@ async fn test_multicast() {
         MulticastTest {
             name: "item discarded because of payload size".into(),
             multicast_group: mg.clone(),
-            multicast_group_queue_items: vec![
-                multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id,
-                    f_port: 5,
-                    data: vec![2; 300],
-                    ..Default::default()
-                },
-                multicast::MulticastGroupQueueItem {
-                    multicast_group_id: mg.id,
-                    f_port: 6,
-                    data: vec![1, 2, 3],
-                    ..Default::default()
-                },
-            ],
+            multicast_group_queue_items: vec![multicast::MulticastGroupQueueItem {
+                multicast_group_id: mg.id,
+                f_port: 5,
+                data: vec![2; 300],
+                ..Default::default()
+            }],
             assert: vec![assert::no_downlink_frame()],
         },
         MulticastTest {

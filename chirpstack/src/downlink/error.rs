@@ -7,4 +7,7 @@ pub enum Error {
 
     #[error(transparent)]
     AnyhowError(#[from] anyhow::Error),
+
+    #[error(transparent)]
+    StorageError(#[from] crate::storage::error::Error),
 }

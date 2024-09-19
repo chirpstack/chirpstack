@@ -8,7 +8,7 @@ use petgraph::graph::{DefaultIx, Graph, NodeIndex, UnGraph};
 use rand::Rng;
 use tracing::{span, trace, warn, Instrument, Level};
 
-use crate::downlink::helpers;
+use crate::downlink::{error::Error, helpers};
 use crate::gateway::backend as gateway_backend;
 use crate::storage::{device_gateway, downlink_frame, gateway, multicast};
 use crate::{config, region};
@@ -33,9 +33,19 @@ impl Multicast {
     pub async fn handle_schedule_queue_item(qi: multicast::MulticastGroupQueueItem) -> Result<()> {
         let span = span!(Level::INFO, "multicast", multicast_group_id = %qi.multicast_group_id, gateway_id = %qi.gateway_id);
 
-        Multicast::_handle_schedule_queue_item(qi)
+        match Multicast::_handle_schedule_queue_item(qi)
             .instrument(span)
             .await
+        {
+            Ok(()) => Ok(()),
+            Err(e) => match e.downcast_ref::<Error>() {
+                Some(Error::Abort) => {
+                    // Nothing to do
+                    Ok(())
+                }
+                _ => Err(e),
+            },
+        }
     }
 
     async fn _handle_schedule_queue_item(qi: multicast::MulticastGroupQueueItem) -> Result<()> {
@@ -92,7 +102,7 @@ impl Multicast {
         Ok(())
     }
 
-    async fn validate_expiration(&self) -> Result<()> {
+    async fn validate_expiration(&self) -> Result<(), Error> {
         trace!("Validating expires_at");
         if let Some(expires_at) = self.multicast_group_queue_item.expires_at {
             if Utc::now() > expires_at {
@@ -101,14 +111,14 @@ impl Multicast {
                     "Discarding multicast-group queue item because it has expired"
                 );
                 multicast::delete_queue_item(&self.multicast_group_queue_item.id).await?;
-                return Err(anyhow!("Queue item has expired and has been discarded"));
+                return Err(Error::Abort);
             }
         }
 
         Ok(())
     }
 
-    async fn validate_payload_size(&self) -> Result<()> {
+    async fn validate_payload_size(&self) -> Result<(), Error> {
         trace!("Validating payload size for DR");
         let mg = self.multicast_group.as_ref().unwrap();
         let region_conf = region::get(&self.region_config_id)?;
@@ -127,9 +137,7 @@ impl Multicast {
                 "Discarding multicast-group queue item because it exceeds max. payload size"
             );
             multicast::delete_queue_item(&self.multicast_group_queue_item.id).await?;
-            return Err(anyhow!(
-                "Queue item exceeds max payload and has been discarded"
-            ));
+            return Err(Error::Abort);
         }
 
         Ok(())
