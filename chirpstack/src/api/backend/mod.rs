@@ -328,6 +328,9 @@ async fn _handle_pr_start_req_data(
     let kek_label = roaming::get_passive_roaming_kek_label(sender_id)?;
     let ds = d.get_device_session()?;
 
+    println!("TEST: {}", ds.mac_version());
+
+    // Only in case validate_mic=true and LoRaWAN=1.0.x.
     let nwk_s_key = if validate_mic && ds.mac_version().to_string().starts_with("1.0") {
         Some(keywrap::wrap(
             &kek_label,
@@ -337,13 +340,14 @@ async fn _handle_pr_start_req_data(
         None
     };
 
-    let f_nwk_s_int_key = if validate_mic && ds.mac_version().to_string().starts_with("1.0") {
-        None
-    } else {
+    // Only in case validate_mic=true and LoRaWAN=1.1.x.
+    let f_nwk_s_int_key = if validate_mic && ds.mac_version().to_string().starts_with("1.1") {
         Some(keywrap::wrap(
             &kek_label,
             AES128Key::from_slice(&ds.f_nwk_s_int_key)?,
         )?)
+    } else {
+        None
     };
 
     // In case of stateless, the payload is directly handled
