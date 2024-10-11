@@ -54,6 +54,13 @@ jobs:
     needs: tests
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        database:
+          - postgres
+          - sqlite
+    env:
+      DATABASE: ${{ matrix.database }}
     steps:
       -
         name: Checkout
