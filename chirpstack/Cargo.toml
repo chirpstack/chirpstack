@@ -37,8 +37,8 @@
   tokio-postgres = { version = "0.7", optional = true }
   tokio-postgres-rustls = { version = "0.12", optional = true }
   bigdecimal = "0.4"
-  redis = { version = "0.26", features = ["tls-rustls", "tokio-rustls-comp"] }
-  deadpool-redis = { version = "0.16", features = ["cluster", "serde"] }
+  redis = { version = "0.27", features = ["tls-rustls", "tokio-rustls-comp"] }
+  deadpool-redis = { version = "0.18", features = ["cluster", "serde"] }
 
   # Logging
   tracing = "0.1"
@@ -99,7 +99,7 @@
   http-body = "1.0"
   rust-embed = "8.5"
   mime_guess = "2.0"
-  tower-http = { version = "0.5", features = ["trace", "auth"] }
+  tower-http = { version = "0.6", features = ["trace", "auth"] }
 
   # Error handling
   thiserror = "1.0"
