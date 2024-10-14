@@ -258,8 +258,8 @@ impl TenantService for Tenant {
             .await?;
 
         let _ = tenant::add_user(tenant::TenantUser {
+            user_id,
             tenant_id: tenant_id.into(),
-            user_id: user_id.into(),
             is_admin: req_user.is_admin,
             is_device_admin: req_user.is_device_admin,
             is_gateway_admin: req_user.is_gateway_admin,

@@ -54,7 +54,7 @@ impl deserialize::FromSql<Numeric, Pg> for BigDecimal {
 
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<Numeric, Pg> for BigDecimal {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         <bigdecimal::BigDecimal as serialize::ToSql<Numeric, Pg>>::to_sql(
             &self.0,
             &mut out.reborrow(),

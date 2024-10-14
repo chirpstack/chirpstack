@@ -111,18 +111,16 @@ pub async fn run(dir: &Path) -> Result<()> {
     let vendors_dir = dir.join("vendors");
     let vendors = fs::read_dir(vendors_dir)?;
 
-    for vendor in vendors {
-        if let Ok(vendor) = vendor {
-            if vendor.file_name() == "example-vendor" {
-                continue;
-            }
+    for vendor in vendors.flatten() {
+        if vendor.file_name() == "example-vendor" {
+            continue;
+        }
 
-            let span = span!(Level::INFO, "", vendor = ?vendor.file_name());
+        let span = span!(Level::INFO, "", vendor = ?vendor.file_name());
 
-            let vendor_dir = vendor.path();
-            if vendor_dir.is_dir() {
-                handle_vendor(&vendor_dir).instrument(span).await?;
-            }
+        let vendor_dir = vendor.path();
+        if vendor_dir.is_dir() {
+            handle_vendor(&vendor_dir).instrument(span).await?;
         }
     }
 

@@ -289,8 +289,7 @@ impl InternalService for Internal {
         } else {
             Some(
                 Uuid::from_str(&req_key.tenant_id)
-                    .map_err(|e| e.status())?
-                    .into(),
+                    .map_err(|e| e.status())?,
             )
         };
 

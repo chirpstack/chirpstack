@@ -34,9 +34,9 @@ impl std::convert::From<&internal::DeviceSession> for DeviceSession {
     }
 }
 
-impl std::convert::Into<internal::DeviceSession> for DeviceSession {
-    fn into(self) -> internal::DeviceSession {
-        self.0
+impl std::convert::From<DeviceSession> for internal::DeviceSession {
+    fn from(val: DeviceSession) -> Self {
+        val.0
     }
 }
 

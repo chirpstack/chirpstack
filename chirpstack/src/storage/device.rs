@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
@@ -146,15 +145,13 @@ impl Device {
 
     pub fn get_device_session(&self) -> Result<&internal::DeviceSession, Error> {
         self.device_session
-            .as_ref()
-            .map(|ds| ds.deref())
+            .as_deref()
             .ok_or_else(|| Error::NotFound(self.dev_eui.to_string()))
     }
 
     pub fn get_device_session_mut(&mut self) -> Result<&mut internal::DeviceSession, Error> {
         self.device_session
-            .as_mut()
-            .map(|ds| ds.deref_mut())
+            .as_deref_mut()
             .ok_or_else(|| Error::NotFound(self.dev_eui.to_string()))
     }
 

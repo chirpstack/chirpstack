@@ -466,10 +466,10 @@ impl Data {
             // * should not be pending
             // * should not be expired
             // * in case encrypted, should have a valid FCntDown
-            if qi.data.len() <= max_payload_size
-                && !qi.is_pending
-                && !(qi.expires_at.is_some() && qi.expires_at.unwrap() < Utc::now())
-                && !(qi.is_encrypted
+            if !(qi.data.len() > max_payload_size
+                || qi.is_pending
+                || qi.expires_at.is_some() && qi.expires_at.unwrap() < Utc::now()
+                || qi.is_encrypted
                     && (qi.f_cnt_down.unwrap_or_default() as u32) < ds.get_a_f_cnt_down())
             {
                 trace!(id = %qi.id, more_in_queue = more_in_queue, "Found device queue-item for downlink");

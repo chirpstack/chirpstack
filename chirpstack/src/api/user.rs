@@ -65,7 +65,7 @@ impl UserService for User {
 
             tenant::add_user(tenant::TenantUser {
                 tenant_id: tenant_id.into(),
-                user_id: u.id.into(),
+                user_id: u.id,
                 is_admin: tu.is_admin,
                 is_device_admin: tu.is_device_admin,
                 is_gateway_admin: tu.is_gateway_admin,

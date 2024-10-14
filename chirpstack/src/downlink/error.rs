@@ -6,8 +6,8 @@ pub enum Error {
     Abort,
 
     #[error(transparent)]
-    AnyhowError(#[from] anyhow::Error),
+    Anyhow(#[from] anyhow::Error),
 
     #[error(transparent)]
-    StorageError(#[from] crate::storage::error::Error),
+    Storage(#[from] crate::storage::error::Error),
 }

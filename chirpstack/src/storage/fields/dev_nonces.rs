@@ -17,15 +17,11 @@ type DevNoncesPgType = Array<Nullable<Int4>>;
 #[serde(transparent)]
 #[cfg_attr(feature = "postgres", diesel(sql_type = DevNoncesPgType))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
+#[derive(Default)]
 pub struct DevNonces(DevNoncesInner);
 
 pub type DevNoncesInner = Vec<Option<i32>>;
 
-impl std::default::Default for DevNonces {
-    fn default() -> Self {
-        Self(Vec::new())
-    }
-}
 
 impl std::convert::AsRef<DevNoncesInner> for DevNonces {
     fn as_ref(&self) -> &DevNoncesInner {
@@ -62,7 +58,7 @@ impl deserialize::FromSql<DevNoncesPgType, Pg> for DevNonces {
 
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<DevNoncesPgType, Pg> for DevNonces {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         <DevNoncesInner as serialize::ToSql<DevNoncesPgType, Pg>>::to_sql(
             &self.0,
             &mut out.reborrow(),

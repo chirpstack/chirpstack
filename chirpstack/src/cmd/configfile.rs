@@ -3,6 +3,7 @@ use handlebars::Handlebars;
 use super::super::config;
 
 pub fn run() {
+    #[allow(clippy::useless_vec)]
     let template = vec![
 r#"
 # Logging configuration

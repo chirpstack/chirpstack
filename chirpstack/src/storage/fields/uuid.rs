@@ -21,13 +21,13 @@ impl std::convert::From<uuid::Uuid> for Uuid {
 
 impl std::convert::From<&uuid::Uuid> for Uuid {
     fn from(u: &uuid::Uuid) -> Self {
-        Self::from(u.clone())
+        Self::from(*u)
     }
 }
 
-impl std::convert::Into<uuid::Uuid> for Uuid {
-    fn into(self) -> uuid::Uuid {
-        self.0
+impl std::convert::From<Uuid> for uuid::Uuid {
+    fn from(val: Uuid) -> Self {
+        val.0
     }
 }
 
@@ -60,7 +60,7 @@ impl deserialize::FromSql<diesel::sql_types::Uuid, Pg> for Uuid {
 
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<diesel::sql_types::Uuid, Pg> for Uuid {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
         <uuid::Uuid as serialize::ToSql<diesel::sql_types::Uuid, Pg>>::to_sql(
             &self.0,
             &mut out.reborrow(),
