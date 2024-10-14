@@ -287,10 +287,7 @@ impl InternalService for Internal {
         let tenant_id = if req_key.tenant_id.is_empty() {
             None
         } else {
-            Some(
-                Uuid::from_str(&req_key.tenant_id)
-                    .map_err(|e| e.status())?,
-            )
+            Some(Uuid::from_str(&req_key.tenant_id).map_err(|e| e.status())?)
         };
 
         if req_key.is_admin && tenant_id.is_some() {

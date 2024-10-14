@@ -22,7 +22,6 @@ pub struct DevNonces(DevNoncesInner);
 
 pub type DevNoncesInner = Vec<Option<i32>>;
 
-
 impl std::convert::AsRef<DevNoncesInner> for DevNonces {
     fn as_ref(&self) -> &DevNoncesInner {
         &self.0
