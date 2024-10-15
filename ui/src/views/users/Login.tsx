@@ -123,7 +123,7 @@ function LoginForm() {
 }
 
 function Login() {
-  useTitle('Login');
+  useTitle("Login");
   const location = useLocation();
   const navigate = useNavigate();
 

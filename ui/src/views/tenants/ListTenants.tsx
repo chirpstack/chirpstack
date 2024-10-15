@@ -13,7 +13,7 @@ import TenantStore from "../../stores/TenantStore";
 import { useTitle } from "../../stores/helpers";
 
 function ListTenants() {
-  useTitle('Tenants', 'Network Server')
+  useTitle("Tenants", "Network Server");
   const columns: ColumnsType<TenantListItem.AsObject> = [
     {
       title: "Name",

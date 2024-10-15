@@ -22,7 +22,7 @@ interface IProps {
 }
 
 function ListRelayGateways(props: IProps) {
-  useTitle('Relay Gateways','Gateway Mesh', props.tenant.getName(), 'Tenants')
+  useTitle("Relay Gateways", "Gateway Mesh", props.tenant.getName(), "Tenants");
   const columns: ColumnsType<RelayGatewayListItem.AsObject> = [
     {
       title: "",

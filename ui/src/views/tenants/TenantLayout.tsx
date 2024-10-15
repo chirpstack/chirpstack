@@ -14,7 +14,7 @@ import TenantDashboard from "./TenantDashboard";
 import { useTitle } from "../../stores/helpers";
 
 function TenantLayout({ tenant }: { tenant: Tenant }) {
-  useTitle(tenant.getName(), 'Tenants')
+  useTitle(tenant.getName(), "Tenants");
   const navigate = useNavigate();
   const location = useLocation();
 

@@ -19,7 +19,7 @@ interface IProps {
 
 function CreateDeviceProfile(props: IProps) {
   const navigate = useNavigate();
-  useTitle('Add', 'Device profiles', props.tenant.getName(), 'Tenants')
+  useTitle("Add", "Device profiles", props.tenant.getName(), "Tenants");
 
   const onFinish = (obj: DeviceProfile) => {
     obj.setTenantId(props.tenant.getId());

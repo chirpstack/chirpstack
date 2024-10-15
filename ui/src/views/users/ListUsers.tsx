@@ -14,7 +14,7 @@ import UserStore from "../../stores/UserStore";
 import { useTitle } from "../../stores/helpers";
 
 function ListUsers() {
-  useTitle('Users', 'Network Server')
+  useTitle("Users", "Network Server");
   const columns: ColumnsType<UserListItem.AsObject> = [
     {
       title: "Email",

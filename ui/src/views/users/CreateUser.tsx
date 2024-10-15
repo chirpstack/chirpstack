@@ -11,7 +11,7 @@ import UserStore from "../../stores/UserStore";
 import { useTitle } from "../../stores/helpers";
 
 function CreateUser() {
-  useTitle('Add', 'Users', 'Network Server')
+  useTitle("Add", "Users", "Network Server");
   const navigate = useNavigate();
 
   const onFinish = (obj: User, password: string) => {

@@ -16,7 +16,7 @@ function EditUser() {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, setUser] = useState<User | undefined>(undefined);
-  useTitle(user?.getEmail(), 'Users', 'Network Server')
+  useTitle(user?.getEmail(), "Users", "Network Server");
 
   useEffect(() => {
     const req = new GetUserRequest();

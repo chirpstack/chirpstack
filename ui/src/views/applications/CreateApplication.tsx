@@ -17,7 +17,7 @@ interface IProps {
 
 function CreateApplication(props: IProps) {
   const navigate = useNavigate();
-  useTitle('Add', 'Applications', props.tenant.getName(), 'Tenants')
+  useTitle("Add", "Applications", props.tenant.getName(), "Tenants");
 
   const onFinish = (obj: Application) => {
     obj.setTenantId(props.tenant.getId());

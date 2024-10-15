@@ -25,7 +25,7 @@ function RelayGatewayLayout(props: IProps) {
   const { relayId } = useParams();
   const navigate = useNavigate();
   const [relayGateway, setRelayGateway] = useState<RelayGateway | undefined>(undefined);
-  useTitle(relayGateway?.getName(), 'Relay Gateways','Gateway Mesh', props.tenant.getName(), 'Tenants')
+  useTitle(relayGateway?.getName(), "Relay Gateways", "Gateway Mesh", props.tenant.getName(), "Tenants");
 
   useEffect(() => {
     const req = new GetRelayGatewayRequest();

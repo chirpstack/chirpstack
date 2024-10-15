@@ -13,7 +13,7 @@ import InternalStore from "../../stores/InternalStore";
 import { useTitle } from "../../stores/helpers";
 
 function CreateAdminApiKey() {
-  useTitle('Add', 'API keys', 'Network Server')
+  useTitle("Add", "API keys", "Network Server");
   const [createApiKeyResponse, setCreateApiKeyResponse] = useState<CreateApiKeyResponse | undefined>(undefined);
 
   const onFinish = (obj: ApiKey) => {

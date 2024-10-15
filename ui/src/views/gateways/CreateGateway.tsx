@@ -16,7 +16,7 @@ interface IProps {
 
 function CreateGateway(props: IProps) {
   const navigate = useNavigate();
-  useTitle('Add', 'Gateways', props.tenant.getName(), 'Tenants')
+  useTitle("Add", "Gateways", props.tenant.getName(), "Tenants");
 
   const onFinish = (obj: Gateway) => {
     obj.setTenantId(props.tenant.getId());

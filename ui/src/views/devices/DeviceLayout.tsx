@@ -41,8 +41,15 @@ function DeviceLayout(props: IProps) {
   const [device, setDevice] = useState<Device | undefined>(undefined);
   const [deviceProfile, setDeviceProfile] = useState<DeviceProfile | undefined>(undefined);
   const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
-  useTitle(device?.getName(), 'Devices', props.application.getName(), 'Applications', props.tenant.getName(), 'Tenants')
-  
+  useTitle(
+    device?.getName(),
+    "Devices",
+    props.application.getName(),
+    "Applications",
+    props.tenant.getName(),
+    "Tenants",
+  );
+
   useEffect(() => {
     const loadDevice = () => {
       const req = new GetDeviceRequest();

@@ -24,7 +24,7 @@ function EditDeviceProfileTemplate() {
   const navigate = useNavigate();
   const [deviceProfileTemplate, setDeviceProfileTemplate] = useState<DeviceProfileTemplate | undefined>(undefined);
   const { deviceProfileTemplateId } = useParams();
-  useTitle(deviceProfileTemplate?.getName(), 'Device-profile templates', 'Network Server')
+  useTitle(deviceProfileTemplate?.getName(), "Device-profile templates", "Network Server");
 
   useEffect(() => {
     const id = deviceProfileTemplateId!;

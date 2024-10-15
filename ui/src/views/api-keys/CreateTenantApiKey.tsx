@@ -19,7 +19,7 @@ interface IProps {
 
 function CreateTenantApiKey(props: IProps) {
   const [createApiKeyResponse, setCreateApiKeyResponse] = useState<CreateApiKeyResponse | undefined>(undefined);
-  useTitle('Add', 'API Keys', props.tenant.getName(), 'Tenants')
+  useTitle("Add", "API Keys", props.tenant.getName(), "Tenants");
 
   const onFinish = (obj: ApiKey) => {
     obj.setTenantId(props.tenant.getId());

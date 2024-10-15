@@ -24,7 +24,7 @@ interface IProps {
 }
 
 function ListDeviceProfiles(props: IProps) {
-  useTitle('Device profiles', props.tenant.getName(), 'Tenants')
+  useTitle("Device profiles", props.tenant.getName(), "Tenants");
   const columns: ColumnsType<DeviceProfileListItem.AsObject> = [
     {
       title: "Name",

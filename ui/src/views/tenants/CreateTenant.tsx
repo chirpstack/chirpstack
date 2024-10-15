@@ -11,7 +11,7 @@ import TenantStore from "../../stores/TenantStore";
 import { useTitle } from "../../stores/helpers";
 
 function CreateTenant() {
-  useTitle('Add', 'Tenants', 'Network Server')
+  useTitle("Add", "Tenants", "Network Server");
   const navigate = useNavigate();
 
   const onFinish = (obj: Tenant) => {

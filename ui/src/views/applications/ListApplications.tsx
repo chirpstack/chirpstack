@@ -22,7 +22,7 @@ interface IProps {
 }
 
 function ListApplications(props: IProps) {
-  useTitle('Applications', props.tenant.getName(), 'Tenants')
+  useTitle("Applications", props.tenant.getName(), "Tenants");
   const columns: ColumnsType<ApplicationListItem.AsObject> = [
     {
       title: "Name",

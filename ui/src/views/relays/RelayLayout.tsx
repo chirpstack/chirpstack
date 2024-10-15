@@ -21,7 +21,14 @@ interface IProps {
 function RelayLayout(props: IProps) {
   const [relayDevice, setRelayDevice] = useState<Device | undefined>(undefined);
   const { relayDevEui } = useParams();
-  useTitle(relayDevice?.getName(), 'Relays', props.application.getName(), 'Applications', props.tenant.getName(), 'Tenants')
+  useTitle(
+    relayDevice?.getName(),
+    "Relays",
+    props.application.getName(),
+    "Applications",
+    props.tenant.getName(),
+    "Tenants",
+  );
 
   useEffect(() => {
     const req = new GetDeviceRequest();

@@ -30,7 +30,7 @@ function EditDeviceProfile(props: IProps) {
   const navigate = useNavigate();
   const [deviceProfile, setDeviceProfile] = useState<DeviceProfile | undefined>(undefined);
   const { deviceProfileId } = useParams();
-  useTitle(deviceProfile?.getName(), 'Device profiles', props.tenant.getName(), 'Tenants')
+  useTitle(deviceProfile?.getName(), "Device profiles", props.tenant.getName(), "Tenants");
 
   useEffect(() => {
     const id = deviceProfileId!;

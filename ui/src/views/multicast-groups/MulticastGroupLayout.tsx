@@ -34,7 +34,14 @@ function MulticastGroupLayout(props: IProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [multicastGroup, setMulticastGroup] = useState<MulticastGroup | undefined>(undefined);
-  useTitle(multicastGroup?.getName(), 'Multicast-groups', props.application.getName(), 'Applications', props.tenant.getName(), 'Tenants')
+  useTitle(
+    multicastGroup?.getName(),
+    "Multicast-groups",
+    props.application.getName(),
+    "Applications",
+    props.tenant.getName(),
+    "Tenants",
+  );
 
   useEffect(() => {
     const req = new GetMulticastGroupRequest();

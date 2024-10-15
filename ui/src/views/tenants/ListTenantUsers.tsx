@@ -19,7 +19,7 @@ interface IProps {
 }
 
 function ListTenantUsers(props: IProps) {
-  useTitle('Tenant users', props.tenant.getName(), 'Tenants')
+  useTitle("Tenant users", props.tenant.getName(), "Tenants");
   const columns: ColumnsType<TenantUserListItem.AsObject> = [
     {
       title: "Email",

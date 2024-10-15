@@ -12,7 +12,7 @@ import { useTitle } from "../../stores/helpers";
 
 function CreateTenantUser({ tenant }: { tenant: Tenant }) {
   const navigate = useNavigate();
-  useTitle('Add', 'Tenant users', tenant.getName(), 'Tenants')
+  useTitle("Add", "Tenant users", tenant.getName(), "Tenants");
 
   const onFinish = (obj: TenantUser) => {
     obj.setTenantId(tenant.getId());

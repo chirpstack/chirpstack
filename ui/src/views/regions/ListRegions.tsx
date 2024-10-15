@@ -12,7 +12,7 @@ import InternalStore from "../../stores/InternalStore";
 import { useTitle } from "../../stores/helpers";
 
 function ListRegions() {
-  useTitle('Regions', 'Network Server')
+  useTitle("Regions", "Network Server");
   const [regions, setRegions] = useState<ListRegionsResponse | undefined>(undefined);
 
   useEffect(() => {

@@ -16,7 +16,7 @@ import DeleteConfirm from "../../components/DeleteConfirm";
 import { useTitle } from "../../stores/helpers";
 
 function ListAdminApiKeys() {
-  useTitle('API keys', 'Network Server');
+  useTitle("API keys", "Network Server");
   const [refreshKey, setRefreshKey] = useState<number>(1);
 
   const columns: ColumnsType<ApiKey.AsObject> = [

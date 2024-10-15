@@ -41,7 +41,7 @@ function ListGateways(props: IProps) {
   const [multicastGroups, setMulticastGroups] = useState<MulticastGroup[]>([]);
   const [mgModalVisible, setMgModalVisible] = useState<boolean>(false);
   const [mgSelected, setMgSelected] = useState<string>("");
-  useTitle('Gateways', props.tenant.getName(), 'Tenants')
+  useTitle("Gateways", props.tenant.getName(), "Tenants");
 
   const columns: ColumnsType<GatewayListItem.AsObject> = [
     {

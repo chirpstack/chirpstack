@@ -17,18 +17,17 @@ import { useTitle } from "../../stores/helpers";
 function RegionDetails() {
   const [region, setRegion] = useState<GetRegionResponse | undefined>(undefined);
   const { id } = useParams();
-  useTitle(region?.getDescription(),  'Regions', 'Network Server');
-  
+  useTitle(region?.getDescription(), "Regions", "Network Server");
+
   useEffect(() => {
     const req = new GetRegionRequest();
     req.setId(id!);
-    
+
     InternalStore.getRegion(req, (resp: GetRegionResponse) => {
       setRegion(resp);
     });
   }, [id]);
-  
-  
+
   if (region === undefined) {
     return null;
   }

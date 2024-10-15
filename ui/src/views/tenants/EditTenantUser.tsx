@@ -22,7 +22,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
   const [tenantUser, setTenantUser] = useState<TenantUser | undefined>(undefined);
   const { userId } = useParams();
   const navigate = useNavigate();
-  useTitle(tenantUser?.getEmail(), 'Tenant users', tenant.getName(), 'Tenants')
+  useTitle(tenantUser?.getEmail(), "Tenant users", tenant.getName(), "Tenants");
 
   useEffect(() => {
     const req = new GetTenantUserRequest();

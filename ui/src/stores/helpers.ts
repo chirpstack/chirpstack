@@ -29,15 +29,17 @@ export function HandleLoginError(e: RpcError) {
 }
 
 export function useTitle(...v: unknown[]) {
-  const documentDefined = typeof document !== 'undefined';
+  const documentDefined = typeof document !== "undefined";
   const originalTitle = useRef(documentDefined ? document.title : null);
 
   useEffect(() => {
     if (!documentDefined) return;
 
-    const title = [...v, 'ChirpStack LoRaWAN® Network-Server'].join(' | ');
+    const title = [...v, "ChirpStack LoRaWAN® Network-Server"].join(" | ");
 
-    if (document.title !== title) { document.title = title; }
+    if (document.title !== title) {
+      document.title = title;
+    }
 
     return () => {
       if (originalTitle.current) {

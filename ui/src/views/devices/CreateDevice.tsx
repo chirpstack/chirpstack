@@ -21,7 +21,7 @@ interface IProps {
 
 function CreateDevice(props: IProps) {
   const navigate = useNavigate();
-  useTitle('Add device', props.application.getName(), 'Applications', props.tenant.getName(), 'Tenants')
+  useTitle("Add device", props.application.getName(), "Applications", props.tenant.getName(), "Tenants");
 
   const onFinish = (obj: Device) => {
     obj.setApplicationId(props.application.getId());

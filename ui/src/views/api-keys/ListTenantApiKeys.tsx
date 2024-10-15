@@ -23,7 +23,7 @@ interface IProps {
 
 function ListTenantApiKeys(props: IProps) {
   const [refreshKey, setRefreshKey] = useState<number>(1);
-  useTitle('API Keys', props.tenant.getName(), 'Tenants')
+  useTitle("API Keys", props.tenant.getName(), "Tenants");
 
   const columns: ColumnsType<ApiKey.AsObject> = [
     {

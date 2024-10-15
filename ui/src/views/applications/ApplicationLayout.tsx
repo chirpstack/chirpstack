@@ -49,7 +49,7 @@ interface IProps {
 function ApplicationLayout(props: IProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  useTitle(props.application.getName(), 'Applications', props.tenant.getName(), 'Tenants')
+  useTitle(props.application.getName(), "Applications", props.tenant.getName(), "Tenants");
 
   const deleteApplication = () => {
     const req = new DeleteApplicationRequest();

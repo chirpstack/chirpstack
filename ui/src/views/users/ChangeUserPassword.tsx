@@ -14,7 +14,7 @@ function ChangeUserPassword() {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, setUser] = useState<User | undefined>(undefined);
-  useTitle('Change password', user?.getEmail(), 'Users')
+  useTitle("Change password", user?.getEmail(), "Users");
 
   useEffect(() => {
     const req = new GetUserRequest();

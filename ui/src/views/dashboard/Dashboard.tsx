@@ -225,7 +225,7 @@ function DevicesDataRates({ summary }: { summary?: GetDevicesSummaryResponse }) 
 }
 
 function Dashboard() {
-  useTitle('Dashboard', 'Network Server')
+  useTitle("Dashboard", "Network Server");
   const [gatewaysSummary, setGatewaysSummary] = useState<GetGatewaysSummaryResponse | undefined>(undefined);
   const [devicesSummary, setDevicesSummary] = useState<GetDevicesSummaryResponse | undefined>(undefined);
 

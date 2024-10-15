@@ -18,7 +18,7 @@ import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore"
 import { useTitle } from "../../stores/helpers";
 
 function ListDeviceProfileTemplates() {
-  useTitle('Device-profile templates', 'Network Server');
+  useTitle("Device-profile templates", "Network Server");
   const columns: ColumnsType<DeviceProfileTemplateListItem.AsObject> = [
     {
       title: "Vendor",

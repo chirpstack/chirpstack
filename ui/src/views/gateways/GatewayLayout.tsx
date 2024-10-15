@@ -30,7 +30,7 @@ function GatewayLayout(props: IProps) {
   const location = useLocation();
   const [gateway, setGateway] = useState<Gateway | undefined>(undefined);
   const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
-  useTitle(gateway?.getName(),'Gateways', props.tenant.getName(), 'Tenants')
+  useTitle(gateway?.getName(), "Gateways", props.tenant.getName(), "Tenants");
 
   useEffect(() => {
     const req = new GetGatewayRequest();
