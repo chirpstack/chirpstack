@@ -13,6 +13,7 @@ import {
 
 import MulticastGroupForm from "./MulticastGroupForm";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
+import { useTitle } from "../../stores/helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -21,6 +22,7 @@ interface IProps {
 
 function CreateMulticastGroup(props: IProps) {
   const navigate = useNavigate();
+  useTitle('Add multicast-group', props.application.getName(), 'Applications', props.tenant.getName(), 'Tenants')
 
   const onFinish = (obj: MulticastGroup) => {
     obj.setApplicationId(props.application.getId());

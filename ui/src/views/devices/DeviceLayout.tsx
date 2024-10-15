@@ -26,6 +26,7 @@ import DeviceFrames from "./DeviceFrames";
 import DeviceEvents from "./DeviceEvents";
 import DeviceQueue from "./DeviceQueue";
 import DeviceActivation from "./DeviceActivation";
+import { useTitle } from "../../stores/helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -40,7 +41,8 @@ function DeviceLayout(props: IProps) {
   const [device, setDevice] = useState<Device | undefined>(undefined);
   const [deviceProfile, setDeviceProfile] = useState<DeviceProfile | undefined>(undefined);
   const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
-
+  useTitle(device?.getName(), 'Devices', props.application.getName(), 'Applications', props.tenant.getName(), 'Tenants')
+  
   useEffect(() => {
     const loadDevice = () => {
       const req = new GetDeviceRequest();

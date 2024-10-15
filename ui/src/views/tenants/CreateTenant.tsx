@@ -8,8 +8,10 @@ import { Tenant, CreateTenantRequest } from "@chirpstack/chirpstack-api-grpc-web
 
 import TenantForm from "./TenantForm";
 import TenantStore from "../../stores/TenantStore";
+import { useTitle } from "../../stores/helpers";
 
 function CreateTenant() {
+  useTitle('Add', 'Tenants', 'Network Server')
   const navigate = useNavigate();
 
   const onFinish = (obj: Tenant) => {
@@ -29,7 +31,7 @@ function CreateTenant() {
         breadcrumbRender={() => (
           <Breadcrumb>
             <Breadcrumb.Item>
-              <span>Network-server</span>
+              <span>Network Server</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <span>

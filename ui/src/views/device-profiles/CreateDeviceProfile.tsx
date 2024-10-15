@@ -11,6 +11,7 @@ import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import DeviceProfileForm from "./DeviceProfileForm";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
+import { useTitle } from "../../stores/helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -18,6 +19,7 @@ interface IProps {
 
 function CreateDeviceProfile(props: IProps) {
   const navigate = useNavigate();
+  useTitle('Add', 'Device profiles', props.tenant.getName(), 'Tenants')
 
   const onFinish = (obj: DeviceProfile) => {
     obj.setTenantId(props.tenant.getId());

@@ -12,6 +12,7 @@ import { GetDeviceProfileRequest } from "@chirpstack/chirpstack-api-grpc-web/api
 import DeviceForm from "./DeviceForm";
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
+import { useTitle } from "../../stores/helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -20,6 +21,7 @@ interface IProps {
 
 function CreateDevice(props: IProps) {
   const navigate = useNavigate();
+  useTitle('Add device', props.application.getName(), 'Applications', props.tenant.getName(), 'Tenants')
 
   const onFinish = (obj: Device) => {
     obj.setApplicationId(props.application.getId());

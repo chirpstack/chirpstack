@@ -10,8 +10,10 @@ import { ApiKey, CreateApiKeyRequest } from "@chirpstack/chirpstack-api-grpc-web
 import ApiKeyForm from "./ApiKeyForm";
 import ApiKeyToken from "./ApiKeyToken";
 import InternalStore from "../../stores/InternalStore";
+import { useTitle } from "../../stores/helpers";
 
 function CreateAdminApiKey() {
+  useTitle('Add', 'API keys', 'Network Server')
   const [createApiKeyResponse, setCreateApiKeyResponse] = useState<CreateApiKeyResponse | undefined>(undefined);
 
   const onFinish = (obj: ApiKey) => {
@@ -34,7 +36,7 @@ function CreateAdminApiKey() {
         breadcrumbRender={() => (
           <Breadcrumb>
             <Breadcrumb.Item>
-              <span>Network-server</span>
+              <span>Network Server</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <span>

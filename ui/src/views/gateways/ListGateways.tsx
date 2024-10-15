@@ -23,6 +23,7 @@ import GatewayStore from "../../stores/GatewayStore";
 import ApplicationStore from "../../stores/ApplicationStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import Admin from "../../components/Admin";
+import { useTitle } from "../../stores/helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -40,6 +41,7 @@ function ListGateways(props: IProps) {
   const [multicastGroups, setMulticastGroups] = useState<MulticastGroup[]>([]);
   const [mgModalVisible, setMgModalVisible] = useState<boolean>(false);
   const [mgSelected, setMgSelected] = useState<string>("");
+  useTitle('Gateways', props.tenant.getName(), 'Tenants')
 
   const columns: ColumnsType<GatewayListItem.AsObject> = [
     {

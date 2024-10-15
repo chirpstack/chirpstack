@@ -10,11 +10,13 @@ import { GetUserRequest, UpdateUserRequest, DeleteUserRequest } from "@chirpstac
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
+import { useTitle } from "../../stores/helpers";
 
 function EditUser() {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, setUser] = useState<User | undefined>(undefined);
+  useTitle(user?.getEmail(), 'Users', 'Network Server')
 
   useEffect(() => {
     const req = new GetUserRequest();
@@ -57,7 +59,7 @@ function EditUser() {
         breadcrumbRender={() => (
           <Breadcrumb>
             <Breadcrumb.Item>
-              <span>Network-server</span>
+              <span>Network Server</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <span>

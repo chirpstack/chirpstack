@@ -15,12 +15,14 @@ import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { GetPageCallbackFunc } from "../../../components/DataTable";
 import DataTable from "../../../components/DataTable";
 import GatewayStore from "../../../stores/GatewayStore";
+import { useTitle } from "../../../stores/helpers";
 
 interface IProps {
   tenant: Tenant;
 }
 
 function ListRelayGateways(props: IProps) {
+  useTitle('Relay Gateways','Gateway Mesh', props.tenant.getName(), 'Tenants')
   const columns: ColumnsType<RelayGatewayListItem.AsObject> = [
     {
       title: "",

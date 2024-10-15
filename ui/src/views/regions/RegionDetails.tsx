@@ -12,20 +12,23 @@ import { GetRegionRequest } from "@chirpstack/chirpstack-api-grpc-web/api/intern
 
 import { getEnumName } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
+import { useTitle } from "../../stores/helpers";
 
 function RegionDetails() {
   const [region, setRegion] = useState<GetRegionResponse | undefined>(undefined);
   const { id } = useParams();
-
+  useTitle(region?.getDescription(),  'Regions', 'Network Server');
+  
   useEffect(() => {
     const req = new GetRegionRequest();
     req.setId(id!);
-
+    
     InternalStore.getRegion(req, (resp: GetRegionResponse) => {
       setRegion(resp);
     });
   }, [id]);
-
+  
+  
   if (region === undefined) {
     return null;
   }

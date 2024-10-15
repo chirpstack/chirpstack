@@ -15,12 +15,14 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import ApplicationStore from "../../stores/ApplicationStore";
 import Admin from "../../components/Admin";
+import { useTitle } from "../../stores/helpers";
 
 interface IProps {
   tenant: Tenant;
 }
 
 function ListApplications(props: IProps) {
+  useTitle('Applications', props.tenant.getName(), 'Tenants')
   const columns: ColumnsType<ApplicationListItem.AsObject> = [
     {
       title: "Name",
