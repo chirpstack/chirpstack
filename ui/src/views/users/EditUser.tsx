@@ -10,13 +10,13 @@ import { GetUserRequest, UpdateUserRequest, DeleteUserRequest } from "@chirpstac
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function EditUser() {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, setUser] = useState<User | undefined>(undefined);
-  useTitle(user?.getEmail(), "Users", "Network Server");
+  useTitle("Network Server", "Users", user?.getEmail());
 
   useEffect(() => {
     const req = new GetUserRequest();

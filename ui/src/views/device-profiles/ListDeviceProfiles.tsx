@@ -17,14 +17,14 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import Admin from "../../components/Admin";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
 }
 
 function ListDeviceProfiles(props: IProps) {
-  useTitle("Device profiles", props.tenant.getName(), "Tenants");
+  useTitle("Tenants", props.tenant.getName(), "Device profiles");
   const columns: ColumnsType<DeviceProfileListItem.AsObject> = [
     {
       title: "Name",

@@ -11,10 +11,10 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 
 import UserStore from "../../stores/UserStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function ListUsers() {
-  useTitle("Users", "Network Server");
+  useTitle("Network Server", "Users");
   const columns: ColumnsType<UserListItem.AsObject> = [
     {
       title: "Email",

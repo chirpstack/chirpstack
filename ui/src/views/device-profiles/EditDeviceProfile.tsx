@@ -20,7 +20,7 @@ import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import SessionStore from "../../stores/SessionStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -30,7 +30,7 @@ function EditDeviceProfile(props: IProps) {
   const navigate = useNavigate();
   const [deviceProfile, setDeviceProfile] = useState<DeviceProfile | undefined>(undefined);
   const { deviceProfileId } = useParams();
-  useTitle(deviceProfile?.getName(), "Device profiles", props.tenant.getName(), "Tenants");
+  useTitle("Tenants", props.tenant.getName(), "Device profiles", deviceProfile?.getName());
 
   useEffect(() => {
     const id = deviceProfileId!;

@@ -26,7 +26,7 @@ import InternalStore from "../../stores/InternalStore";
 import GatewayStore from "../../stores/GatewayStore";
 import type { MarkerColor } from "../../components/Map";
 import Map, { Marker } from "../../components/Map";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function GatewaysMap() {
   const [items, setItems] = useState<GatewayListItem[]>([]);
@@ -225,7 +225,7 @@ function DevicesDataRates({ summary }: { summary?: GetDevicesSummaryResponse }) 
 }
 
 function Dashboard() {
-  useTitle("Dashboard", "Network Server");
+  useTitle("Network Server", "Dashboard");
   const [gatewaysSummary, setGatewaysSummary] = useState<GetGatewaysSummaryResponse | undefined>(undefined);
   const [devicesSummary, setDevicesSummary] = useState<GetDevicesSummaryResponse | undefined>(undefined);
 

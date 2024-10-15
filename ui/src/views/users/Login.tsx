@@ -9,7 +9,7 @@ import { OpenIdConnectLoginRequest, OAuth2LoginRequest } from "@chirpstack/chirp
 
 import SessionStore from "../../stores/SessionStore";
 import InternalStore from "../../stores/InternalStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 const layout = {
   labelCol: {

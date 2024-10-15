@@ -10,10 +10,10 @@ import { ApiKey, CreateApiKeyRequest } from "@chirpstack/chirpstack-api-grpc-web
 import ApiKeyForm from "./ApiKeyForm";
 import ApiKeyToken from "./ApiKeyToken";
 import InternalStore from "../../stores/InternalStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function CreateAdminApiKey() {
-  useTitle("Add", "API keys", "Network Server");
+  useTitle("Network Server", "API keys", "Add");
   const [createApiKeyResponse, setCreateApiKeyResponse] = useState<CreateApiKeyResponse | undefined>(undefined);
 
   const onFinish = (obj: ApiKey) => {

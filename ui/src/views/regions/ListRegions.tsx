@@ -9,10 +9,10 @@ import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack
 
 import { getEnumName } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function ListRegions() {
-  useTitle("Regions", "Network Server");
+  useTitle("Network Server", "Regions");
   const [regions, setRegions] = useState<ListRegionsResponse | undefined>(undefined);
 
   useEffect(() => {

@@ -10,10 +10,10 @@ import { ListTenantsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tena
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import TenantStore from "../../stores/TenantStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function ListTenants() {
-  useTitle("Tenants", "Network Server");
+  useTitle("Network Server", "Tenants");
   const columns: ColumnsType<TenantListItem.AsObject> = [
     {
       title: "Name",

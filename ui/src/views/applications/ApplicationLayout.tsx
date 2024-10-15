@@ -38,7 +38,7 @@ import EditThingsBoardIntegration from "./integrations/EditThingsBoardIntegratio
 import GenerateMqttCertificate from "./integrations/GenerateMqttCertificate";
 import CreateIftttIntegration from "./integrations/CreateIftttIntegration";
 import EditIftttIntegration from "./integrations/EditIftttIntegration";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -49,7 +49,7 @@ interface IProps {
 function ApplicationLayout(props: IProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  useTitle(props.application.getName(), "Applications", props.tenant.getName(), "Tenants");
+  useTitle("Tenants", props.tenant.getName(), "Applications", props.application.getName());
 
   const deleteApplication = () => {
     const req = new DeleteApplicationRequest();

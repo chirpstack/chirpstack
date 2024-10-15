@@ -11,10 +11,10 @@ import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
 import EditTenant from "./EditTenant";
 import TenantDashboard from "./TenantDashboard";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function TenantLayout({ tenant }: { tenant: Tenant }) {
-  useTitle(tenant.getName(), "Tenants");
+  useTitle("Tenants", tenant.getName());
   const navigate = useNavigate();
   const location = useLocation();
 

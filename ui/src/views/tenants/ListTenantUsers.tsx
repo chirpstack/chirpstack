@@ -12,14 +12,14 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import TenantStore from "../../stores/TenantStore";
 import Admin from "../../components/Admin";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
 }
 
 function ListTenantUsers(props: IProps) {
-  useTitle("Tenant users", props.tenant.getName(), "Tenants");
+  useTitle("Tenants", props.tenant.getName(), "Tenant users");
   const columns: ColumnsType<TenantUserListItem.AsObject> = [
     {
       title: "Email",

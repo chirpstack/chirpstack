@@ -1,5 +1,6 @@
 import { notification } from "antd";
 import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
+import { useRef, useEffect } from "react";
 
 export function formatMacVersion(m: MacVersion) {
   switch (m) {
@@ -60,4 +61,29 @@ export function onFinishFailed() {
     description: "Please inspect input fields for errors",
     duration: 3,
   });
+}
+
+/**
+ * Sets the Document Title in Reverse Order
+ * @example
+ * ```
+ * useTitle("Tenants", "Tenant", "Edit"); // Edit | Tenant | Tenants | ChirpStack LoRaWAN® Network-Server
+ * ```
+ */
+export function useTitle(...v: unknown[]) {
+  const documentDefined = typeof document !== "undefined";
+
+  useEffect(() => {
+    if (!documentDefined) return;
+
+    const title = ["ChirpStack LoRaWAN® Network-Server", ...v].reverse().join(" | ");
+
+    if (document.title !== title) {
+      document.title = title;
+    }
+
+    return () => {
+      document.title = "ChirpStack LoRaWAN® Network-Server";
+    };
+  }, [documentDefined, v]);
 }

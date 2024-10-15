@@ -8,10 +8,10 @@ import { User, CreateUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api
 
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function CreateUser() {
-  useTitle("Add", "Users", "Network Server");
+  useTitle("Network Server", "Users", "Add");
   const navigate = useNavigate();
 
   const onFinish = (obj: User, password: string) => {

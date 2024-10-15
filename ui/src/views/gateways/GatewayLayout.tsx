@@ -18,7 +18,7 @@ import GatewayFrames from "./GatewayFrames";
 import GatewayCertificate from "./GatewayCertificate";
 import Admin from "../../components/Admin";
 import SessionStore from "../../stores/SessionStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -30,7 +30,7 @@ function GatewayLayout(props: IProps) {
   const location = useLocation();
   const [gateway, setGateway] = useState<Gateway | undefined>(undefined);
   const [lastSeenAt, setLastSeenAt] = useState<Date | undefined>(undefined);
-  useTitle(gateway?.getName(), "Gateways", props.tenant.getName(), "Tenants");
+  useTitle("Tenants", props.tenant.getName(), "Gateways", gateway?.getName());
 
   useEffect(() => {
     const req = new GetGatewayRequest();

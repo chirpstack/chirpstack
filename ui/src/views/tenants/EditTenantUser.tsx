@@ -16,13 +16,13 @@ import TenantStore from "../../stores/TenantStore";
 import SessionStore from "../../stores/SessionStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function EditTenantUser({ tenant }: { tenant: Tenant }) {
   const [tenantUser, setTenantUser] = useState<TenantUser | undefined>(undefined);
   const { userId } = useParams();
   const navigate = useNavigate();
-  useTitle(tenantUser?.getEmail(), "Tenant users", tenant.getName(), "Tenants");
+  useTitle("Tenants", tenant.getName(), "Tenant users", tenantUser?.getEmail());
 
   useEffect(() => {
     const req = new GetTenantUserRequest();

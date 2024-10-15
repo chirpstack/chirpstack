@@ -11,7 +11,7 @@ import { GetDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device
 
 import DeviceStore from "../../stores/DeviceStore";
 import ListRelayDevices from "./ListRelayDevices";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -22,12 +22,12 @@ function RelayLayout(props: IProps) {
   const [relayDevice, setRelayDevice] = useState<Device | undefined>(undefined);
   const { relayDevEui } = useParams();
   useTitle(
-    relayDevice?.getName(),
-    "Relays",
-    props.application.getName(),
-    "Applications",
-    props.tenant.getName(),
     "Tenants",
+    props.tenant.getName(),
+    "Applications",
+    props.application.getName(),
+    "Relays",
+    relayDevice?.getName(),
   );
 
   useEffect(() => {

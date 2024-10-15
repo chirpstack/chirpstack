@@ -15,10 +15,10 @@ import { getEnumName } from "../helpers";
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function ListDeviceProfileTemplates() {
-  useTitle("Device-profile templates", "Network Server");
+  useTitle("Network Server", "Device-profile templates");
   const columns: ColumnsType<DeviceProfileTemplateListItem.AsObject> = [
     {
       title: "Vendor",

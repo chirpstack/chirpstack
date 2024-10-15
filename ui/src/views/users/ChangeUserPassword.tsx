@@ -8,13 +8,13 @@ import type { User, GetUserResponse } from "@chirpstack/chirpstack-api-grpc-web/
 import { GetUserRequest, UpdateUserPasswordRequest } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 import UserStore from "../../stores/UserStore";
 import PasswordForm from "./PasswordForm";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 function ChangeUserPassword() {
   const navigate = useNavigate();
   const { userId } = useParams();
   const [user, setUser] = useState<User | undefined>(undefined);
-  useTitle("Change password", user?.getEmail(), "Users");
+  useTitle("Users", user?.getEmail(), "Change password");
 
   useEffect(() => {
     const req = new GetUserRequest();

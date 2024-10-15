@@ -1,6 +1,5 @@
 import { notification } from "antd";
 import type { RpcError } from "grpc-web";
-import { useRef, useEffect } from "react";
 
 import history from "../history";
 
@@ -26,26 +25,4 @@ export function HandleLoginError(e: RpcError) {
     description: e.message,
     duration: 3,
   });
-}
-
-export function useTitle(...v: unknown[]) {
-  const documentDefined = typeof document !== "undefined";
-  const originalTitle = useRef(documentDefined ? document.title : null);
-
-  useEffect(() => {
-    if (!documentDefined) return;
-
-    const title = [...v, "ChirpStack LoRaWAN® Network-Server"].join(" | ");
-
-    if (document.title !== title) {
-      document.title = title;
-    }
-
-    return () => {
-      if (originalTitle.current) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        document.title = originalTitle.current;
-      }
-    };
-  }, [documentDefined, v]);
 }

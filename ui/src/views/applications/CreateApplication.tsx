@@ -9,7 +9,7 @@ import { Application, CreateApplicationRequest } from "@chirpstack/chirpstack-ap
 
 import ApplicationForm from "./ApplicationForm";
 import ApplicationStore from "../../stores/ApplicationStore";
-import { useTitle } from "../../stores/helpers";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -17,7 +17,7 @@ interface IProps {
 
 function CreateApplication(props: IProps) {
   const navigate = useNavigate();
-  useTitle("Add", "Applications", props.tenant.getName(), "Tenants");
+  useTitle("Tenants", props.tenant.getName(), "Applications", "Add");
 
   const onFinish = (obj: Application) => {
     obj.setTenantId(props.tenant.getId());
