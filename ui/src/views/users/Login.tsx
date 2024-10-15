@@ -9,6 +9,7 @@ import { OpenIdConnectLoginRequest, OAuth2LoginRequest } from "@chirpstack/chirp
 
 import SessionStore from "../../stores/SessionStore";
 import InternalStore from "../../stores/InternalStore";
+import { useTitle } from "../helpers";
 
 const layout = {
   labelCol: {
@@ -122,6 +123,7 @@ function LoginForm() {
 }
 
 function Login() {
+  useTitle("Login");
   const location = useLocation();
   const navigate = useNavigate();
 

@@ -15,6 +15,7 @@ import GatewayStore from "../../../stores/GatewayStore";
 import DeleteConfirm from "../../../components/DeleteConfirm";
 
 import EditRelayGateway from "./EditRelayGateway";
+import { useTitle } from "../../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -24,6 +25,7 @@ function RelayGatewayLayout(props: IProps) {
   const { relayId } = useParams();
   const navigate = useNavigate();
   const [relayGateway, setRelayGateway] = useState<RelayGateway | undefined>(undefined);
+  useTitle("Tenants", props.tenant.getName(), "Gateway Mesh", "Relay Gateways", relayGateway?.getName());
 
   useEffect(() => {
     const req = new GetRelayGatewayRequest();

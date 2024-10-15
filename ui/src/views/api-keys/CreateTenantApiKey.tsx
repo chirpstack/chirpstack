@@ -11,6 +11,7 @@ import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import ApiKeyForm from "./ApiKeyForm";
 import ApiKeyToken from "./ApiKeyToken";
 import InternalStore from "../../stores/InternalStore";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -18,6 +19,7 @@ interface IProps {
 
 function CreateTenantApiKey(props: IProps) {
   const [createApiKeyResponse, setCreateApiKeyResponse] = useState<CreateApiKeyResponse | undefined>(undefined);
+  useTitle("Tenants", props.tenant.getName(), "API Keys", "Add");
 
   const onFinish = (obj: ApiKey) => {
     obj.setTenantId(props.tenant.getId());

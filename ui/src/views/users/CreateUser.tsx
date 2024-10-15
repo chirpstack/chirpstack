@@ -8,8 +8,10 @@ import { User, CreateUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api
 
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";
+import { useTitle } from "../helpers";
 
 function CreateUser() {
+  useTitle("Network Server", "Users", "Add");
   const navigate = useNavigate();
 
   const onFinish = (obj: User, password: string) => {
@@ -30,7 +32,7 @@ function CreateUser() {
         breadcrumbRender={() => (
           <Breadcrumb>
             <Breadcrumb.Item>
-              <span>Network-server</span>
+              <span>Network Server</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <span>

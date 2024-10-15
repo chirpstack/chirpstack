@@ -8,6 +8,7 @@ import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import GatewayForm from "./GatewayForm";
 import GatewayStore from "../../stores/GatewayStore";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -15,6 +16,7 @@ interface IProps {
 
 function CreateGateway(props: IProps) {
   const navigate = useNavigate();
+  useTitle("Tenants", props.tenant.getName(), "Gateways", "Add");
 
   const onFinish = (obj: Gateway) => {
     obj.setTenantId(props.tenant.getId());

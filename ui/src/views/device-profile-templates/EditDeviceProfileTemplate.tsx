@@ -18,11 +18,13 @@ import {
 import DeviceProfileTemplateForm from "./DeviceProfileTemplateForm";
 import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
+import { useTitle } from "../helpers";
 
 function EditDeviceProfileTemplate() {
   const navigate = useNavigate();
   const [deviceProfileTemplate, setDeviceProfileTemplate] = useState<DeviceProfileTemplate | undefined>(undefined);
   const { deviceProfileTemplateId } = useParams();
+  useTitle("Network Server", "Device-profile templates", deviceProfileTemplate?.getName());
 
   useEffect(() => {
     const id = deviceProfileTemplateId!;

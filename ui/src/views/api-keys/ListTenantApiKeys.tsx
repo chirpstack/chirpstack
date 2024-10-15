@@ -15,6 +15,7 @@ import DataTable from "../../components/DataTable";
 import InternalStore from "../../stores/InternalStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -22,6 +23,7 @@ interface IProps {
 
 function ListTenantApiKeys(props: IProps) {
   const [refreshKey, setRefreshKey] = useState<number>(1);
+  useTitle("Tenants", props.tenant.getName(), "API Keys");
 
   const columns: ColumnsType<ApiKey.AsObject> = [
     {

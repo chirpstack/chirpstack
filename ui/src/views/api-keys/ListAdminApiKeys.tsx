@@ -13,8 +13,10 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import InternalStore from "../../stores/InternalStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
+import { useTitle } from "../helpers";
 
 function ListAdminApiKeys() {
+  useTitle("Network Server", "API keys");
   const [refreshKey, setRefreshKey] = useState<number>(1);
 
   const columns: ColumnsType<ApiKey.AsObject> = [

@@ -11,8 +11,10 @@ import {
 
 import DeviceProfileTemplateForm from "./DeviceProfileTemplateForm";
 import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
+import { useTitle } from "../helpers";
 
 function CreateDeviceProfileTemplate() {
+  useTitle("Network Server", "Device-profile templates", "Add");
   const navigate = useNavigate();
 
   const onFinish = (obj: DeviceProfileTemplate) => {

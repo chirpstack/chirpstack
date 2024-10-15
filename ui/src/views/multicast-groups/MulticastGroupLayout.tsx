@@ -22,6 +22,7 @@ import ListMulticastGroupGateways from "./ListMulticastGroupGateways";
 import EditMulticastGroup from "./EditMulticastGroup";
 import Admin from "../../components/Admin";
 import MulticastGroupQueue from "./MulticastGroupQueue";
+import { useTitle } from "../helpers";
 
 interface IProps {
   tenant: Tenant;
@@ -33,6 +34,14 @@ function MulticastGroupLayout(props: IProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [multicastGroup, setMulticastGroup] = useState<MulticastGroup | undefined>(undefined);
+  useTitle(
+    "Tenants",
+    props.tenant.getName(),
+    "Applications",
+    props.application.getName(),
+    "Multicast-groups",
+    multicastGroup?.getName(),
+  );
 
   useEffect(() => {
     const req = new GetMulticastGroupRequest();

@@ -8,9 +8,11 @@ import { TenantUser, AddTenantUserRequest } from "@chirpstack/chirpstack-api-grp
 
 import TenantUserForm from "./TenantUserForm";
 import TenantStore from "../../stores/TenantStore";
+import { useTitle } from "../helpers";
 
 function CreateTenantUser({ tenant }: { tenant: Tenant }) {
   const navigate = useNavigate();
+  useTitle("Tenants", tenant.getName(), "Tenant users", "Add");
 
   const onFinish = (obj: TenantUser) => {
     obj.setTenantId(tenant.getId());
