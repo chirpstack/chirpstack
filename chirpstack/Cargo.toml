@@ -240,6 +240,7 @@
     systemd-units = { enable = true }
 
   [package.metadata.deb.variants.postgres]
+    name = "chirpstack"
     suggests = "postgresql, mosquitto, redis"
     conflicts = "chirpstack-sqlite"
 
@@ -247,7 +248,7 @@
     default-features = false
     features = ["sqlite"]
     suggests = "sqlite3, mosquitto, redis"
-    conflicts = "chirpstack-postgres"
+    conflicts = "chirpstack"
 
   [package.metadata.generate-rpm]
     auto-req = "no"
@@ -272,11 +273,11 @@ chmod 640 /etc/chirpstack/*.toml
     ]
 
   [package.metadata.generate-rpm.variants.postgres]
-    name = "chirpstack-postgres"
+    name = "chirpstack"
   [package.metadata.generate-rpm.variants.postgres.conflicts]
     chirpstack-sqlite = "*"
 
   [package.metadata.generate-rpm.variants.sqlite]
     name = "chirpstack-sqlite"
   [package.metadata.generate-rpm.variants.sqlite.conflicts]
-    chirpstack-postgres = "*"
+    chirpstack = "*"
