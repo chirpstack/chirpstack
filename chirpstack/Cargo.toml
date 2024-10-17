@@ -234,7 +234,6 @@
       "/etc/chirpstack/region_us915_6.toml",
       "/etc/chirpstack/region_us915_7.toml",
     ]
-    provides = "chirpstack"
     suggests = "postgresql, mosquitto, redis"
     maintainer-scripts = "debian/"
     systemd-units = { enable = true }
@@ -247,7 +246,7 @@
   [package.metadata.deb.variants.sqlite]
     default-features = false
     features = ["sqlite"]
-    suggests = "sqlite3, mosquitto, redis"
+    suggests = "mosquitto, redis"
     conflicts = "chirpstack"
 
   [package.metadata.generate-rpm]
