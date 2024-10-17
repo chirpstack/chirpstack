@@ -33,7 +33,7 @@ function CreateTenantUser({ tenant }: { tenant: Tenant }) {
         breadcrumbRender={() => (
           <Breadcrumb>
             <Breadcrumb.Item>
-              <span>Tenants</span>
+              <span>Building</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <span>

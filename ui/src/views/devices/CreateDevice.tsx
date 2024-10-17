@@ -57,7 +57,7 @@ function CreateDevice(props: IProps) {
         breadcrumbRender={() => (
           <Breadcrumb>
             <Breadcrumb.Item>
-              <span>Tenants</span>
+              <span>Building</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <span>

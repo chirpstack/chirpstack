@@ -112,7 +112,7 @@ function ListTenants() {
               <span>Network Server</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <span>Tenants</span>
+              <span>Building</span>
             </Breadcrumb.Item>
           </Breadcrumb>
         )}

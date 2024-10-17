@@ -164,62 +164,15 @@ function SideMenu() {
   const items: MenuProps["items"] = [];
 
   if (SessionStore.isAdmin()) {
-    items.push({
-      key: "ns",
-      label: "Network Server",
-      icon: <CloudOutlined />,
-      children: [
-        {
-          key: "ns-dashboard",
-          icon: <DashboardOutlined />,
-          label: <Link to="/dashboard">Dashboard</Link>,
-        },
-        {
-          key: "ns-tenants",
-          icon: <HomeOutlined />,
-          label: <Link to="/tenants">Tenants</Link>,
-        },
-        {
-          key: "ns-users",
-          icon: <UserOutlined />,
-          label: <Link to="/users">Users</Link>,
-        },
-        {
-          key: "ns-api-keys",
-          icon: <KeyOutlined />,
-          label: <Link to="/api-keys">API Keys</Link>,
-        },
-        {
-          key: "ns-device-profile-templates",
-          icon: <ControlOutlined />,
-          label: <Link to="/device-profile-templates">Device Profile Templates</Link>,
-        },
-        {
-          key: "ns-regions",
-          icon: <CompassOutlined />,
-          label: <Link to="/regions">Regions</Link>,
-        },
-      ],
-    });
+    items.push();
   } else {
-    items.push({
-      key: "ns",
-      label: "Network Server",
-      icon: <CloudOutlined />,
-      children: [
-        {
-          key: "ns-regions",
-          icon: <CompassOutlined />,
-          label: <Link to="/regions">Regions</Link>,
-        },
-      ],
-    });
+    items.push();
   }
 
   if (tenantId !== "") {
     items.push({
       key: "tenant",
-      label: "Tenant",
+      label: "Building",
       icon: <HomeOutlined />,
       children: [
         {
@@ -238,9 +191,19 @@ function SideMenu() {
           label: <Link to={`/tenants/${tenantId}/api-keys`}>API Keys</Link>,
         },
         {
+          key: "ns-device-profile-templates",
+          icon: <ControlOutlined />,
+          label: <Link to="/device-profile-templates">Device Profile Templates</Link>,
+        },
+        {
           key: "tenant-device-profiles",
           icon: <ControlOutlined />,
           label: <Link to={`/tenants/${tenantId}/device-profiles`}>Device Profiles</Link>,
+        },
+        {
+          key: "ns-regions",
+          icon: <CompassOutlined />,
+          label: <Link to="/regions">Regions</Link>,
         },
         {
           key: "tenant-gateways",
