@@ -32,7 +32,7 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
     let mhdr = phy_payload[0];
     let m_type = mhdr >> 5;
 
-    let dev_addr: Option<u32> = match m_type {
+    let dev_addr: Option<[u8; 4]> = match m_type {
         // DataUp
         0x02 | 0x04 => {
             // MHDR + DevAddr
@@ -40,7 +40,7 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
             if phy_payload.len() >= 5 {
                 let mut dev_addr: [u8; 4] = [0; 4];
                 dev_addr.clone_from_slice(&phy_payload[1..5]);
-                Some(u32::from_le_bytes(dev_addr))
+                Some(dev_addr)
             } else {
                 None
             }
@@ -48,7 +48,7 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
         _ => None,
     };
 
-    let join_eui: Option<u64> = match m_type {
+    let join_eui: Option<[u8; 8]> = match m_type {
         // JoinRequest
         0x00 => {
             // MHDR + JoinEUI + DevEUI
@@ -56,7 +56,7 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
             if phy_payload.len() >= 17 {
                 let mut join_eui: [u8; 8] = [0; 8];
                 join_eui.clone_from_slice(&phy_payload[1..9]);
-                Some(u64::from_le_bytes(join_eui))
+                Some(join_eui)
             } else {
                 None
             }
@@ -76,8 +76,7 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
         }
 
         for p in &config.dev_addr_prefixes {
-            let prefix = u32::from_be_bytes(p.prefix());
-            if dev_addr >> (32 - p.size()) == prefix >> (32 - p.size()) {
+            if p.is_match(dev_addr) {
                 return true;
             }
         }
@@ -89,8 +88,7 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
         }
 
         for p in &config.join_eui_prefixes {
-            let prefix = u64::from_be_bytes(p.prefix());
-            if join_eui >> (64 - p.size()) == prefix >> (64 - p.size()) {
+            if p.is_match(join_eui) {
                 return true;
             }
         }
@@ -106,6 +104,12 @@ pub struct DevAddrPrefix([u8; 4], u32);
 impl DevAddrPrefix {
     pub fn new(prefix: [u8; 4], size: u32) -> Self {
         DevAddrPrefix(prefix, size)
+    }
+
+    pub fn is_match(&self, dev_addr_le: [u8; 4]) -> bool {
+        let dev_addr = u32::from_le_bytes(dev_addr_le);
+        let prefix = u32::from_be_bytes(self.prefix());
+        dev_addr >> (32 - self.size()) == prefix >> (32 - self.size())
     }
 
     fn prefix(&self) -> [u8; 4] {
@@ -202,6 +206,14 @@ pub struct EuiPrefix([u8; 8], u32);
 impl EuiPrefix {
     pub fn new(prefix: [u8; 8], size: u32) -> Self {
         EuiPrefix(prefix, size)
+    }
+
+    pub fn is_match(&self, eui_le: [u8; 8]) -> bool {
+        let eui = u64::from_le_bytes(eui_le);
+        let prefix = u64::from_be_bytes(self.prefix());
+        println!("EUI: {}", eui >> (64 - self.size()));
+        println!("PREFIX: {}", prefix >> (64 - self.size()));
+        eui >> (64 - self.size()) == prefix >> (64 - self.size())
     }
 
     fn prefix(&self) -> [u8; 8] {
