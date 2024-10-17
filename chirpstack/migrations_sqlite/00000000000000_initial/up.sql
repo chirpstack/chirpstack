@@ -70,7 +70,7 @@ insert into "tenant" (
     '52f14cd4-c6f1-4fbd-8f87-4025e1d49242',
     datetime('now'),
     datetime('now'),
-    'ChirpStack',
+    'Florawise',
     '',
     TRUE,
     0,
