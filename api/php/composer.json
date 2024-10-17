@@ -3,7 +3,7 @@
   "description": "Chirpstack PHP API",
   "license": "MIT",
   "type": "library",
-  "version": "4.10.0-test.1",
+  "version": "5.0.2",
   "require": {
     "php": ">=7.0.0",
     "grpc/grpc": "^v1.57.0",
