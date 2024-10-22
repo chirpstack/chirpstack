@@ -49,3 +49,10 @@ services:
     command: bash -c "cd php && make all"
     volumes:
       - ./:/chirpstack/api
+  chirpstack-api-c:
+    build:
+      context: .
+      dockerfile: Dockerfile-c
+    command: bash -c "cd c && make all"
+    volumes:
+      - ./:/chirpstack/api
