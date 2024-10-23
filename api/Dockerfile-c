@@ -1,0 +1,16 @@
+FROM alpine:latest
+
+ENV PROJECT_PATH=/chirpstack/api
+RUN apk add --no-cache make git bash protobuf protobuf-dev pkgconfig autoconf automake libtool gcc g++
+
+# Install protobuf implementation for C
+RUN git clone --depth=1 https://github.com/protobuf-c/protobuf-c.git /protobuf-c
+RUN cd /protobuf-c && ./autogen.sh && ./configure && make && make install
+
+
+# Proto dependencies stuff
+RUN git clone --depth=1 https://github.com/protocolbuffers/protobuf.git /protobuf
+RUN git clone --depth=1 https://github.com/googleapis/googleapis.git /googleapis
+
+RUN mkdir -p PROJECT_PATH
+WORKDIR $PROJECT_PATH
