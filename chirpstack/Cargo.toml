@@ -20,7 +20,7 @@
   serde_urlencoded = "0.7"
   humantime-serde = "1.1"
   toml = "0.8"
-  handlebars = "6.1"
+  handlebars = "6.2"
 
   # Database
   email_address = "0.2"
@@ -35,7 +35,7 @@
     "async-connection-wrapper",
   ] }
   tokio-postgres = { version = "0.7", optional = true }
-  tokio-postgres-rustls = { version = "0.12", optional = true }
+  tokio-postgres-rustls = { version = "0.13", optional = true }
   bigdecimal = "0.4"
   redis = { version = "0.27", features = ["tls-rustls", "tokio-rustls-comp"] }
   deadpool-redis = { version = "0.18", features = ["cluster", "serde"] }
@@ -83,7 +83,7 @@
   tonic = "0.12"
   tonic-web = "0.12"
   tonic-reflection = "0.12"
-  tokio = { version = "1.40", features = ["macros", "rt-multi-thread"] }
+  tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
   tokio-stream = "0.1"
   prost-types = "0.13"
   prost = "0.13"
@@ -116,7 +116,7 @@
     "ring",
   ] }
   rustls-native-certs = "0.8"
-  rustls-pemfile = "2.1"
+  rustls-pemfile = "2.2"
   pem = "3.0"
   x509-parser = "0.16"
   rsa = "0.9"
@@ -142,14 +142,14 @@
 
   # Misc
   lazy_static = "1.5"
-  uuid = { version = "1.10", features = ["v4", "serde"] }
+  uuid = { version = "1.11", features = ["v4", "serde"] }
   chrono = "0.4"
   async-trait = "0.1"
   aes = "0.8"
   rand = "0.8"
   base64 = "0.22"
   async-recursion = "1.1"
-  regex = "1.10"
+  regex = "1.11"
   petgraph = "0.6"
   prometheus-client = "0.22"
   pin-project = "1.1"
@@ -160,7 +160,7 @@
 # Development and testing
 [dev-dependencies]
   httpmock = "0.7.0"
-  bytes = "1.7"
+  bytes = "1.8"
   dotenv = "0.15"
 
 [features]
@@ -238,16 +238,16 @@
     maintainer-scripts = "debian/"
     systemd-units = { enable = true }
 
-  [package.metadata.deb.variants.postgres]
-    name = "chirpstack"
-    suggests = "postgresql, mosquitto, redis"
-    conflicts = "chirpstack-sqlite"
+    [package.metadata.deb.variants.postgres]
+      name = "chirpstack"
+      suggests = "postgresql, mosquitto, redis"
+      conflicts = "chirpstack-sqlite"
 
-  [package.metadata.deb.variants.sqlite]
-    default-features = false
-    features = ["sqlite"]
-    suggests = "mosquitto, redis"
-    conflicts = "chirpstack"
+    [package.metadata.deb.variants.sqlite]
+      default-features = false
+      features = ["sqlite"]
+      suggests = "mosquitto, redis"
+      conflicts = "chirpstack"
 
   [package.metadata.generate-rpm]
     auto-req = "no"
@@ -271,12 +271,12 @@ chmod 640 /etc/chirpstack/*.toml
       { source = "rpm/chirpstack.service", dest = "/lib/systemd/system/chirpstack.service" },
     ]
 
-  [package.metadata.generate-rpm.variants.postgres]
-    name = "chirpstack"
-  [package.metadata.generate-rpm.variants.postgres.conflicts]
-    chirpstack-sqlite = "*"
+    [package.metadata.generate-rpm.variants.postgres]
+      name = "chirpstack"
+      [package.metadata.generate-rpm.variants.postgres.conflicts]
+        chirpstack-sqlite = "*"
 
-  [package.metadata.generate-rpm.variants.sqlite]
-    name = "chirpstack-sqlite"
-  [package.metadata.generate-rpm.variants.sqlite.conflicts]
-    chirpstack = "*"
+    [package.metadata.generate-rpm.variants.sqlite]
+      name = "chirpstack-sqlite"
+      [package.metadata.generate-rpm.variants.sqlite.conflicts]
+        chirpstack = "*"
