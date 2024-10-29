@@ -103,29 +103,16 @@ jobs:
           aws s3 sync dist s3://builds.loraserver.io/chirpstack
         if: startsWith(github.ref, 'refs/tags/v')
       -
-        name: Docker meta (PostgreSQL)
+        name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
         with:
           images: |
-            chirpstack/${{ github.event.repository.name }}
+            chirpstack/${{ github.event.repository.name }}${{ matrix.database == 'postgres' && '' || format('-{0}', matrix.database) }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}
             type=semver,pattern={{major}}.{{minor}}
-        if: matrix.database == 'postgres'
-      -
-        name: Docker meta (other)
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: |
-            chirpstack/${{ github.event.repository.name }}-${{ matrix.database }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}
-            type=semver,pattern={{major}}.{{minor}}
-        if: matrix.database != 'postgres'
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
