@@ -235,17 +235,12 @@
       "/etc/chirpstack/region_us915_7.toml",
     ]
     suggests = "postgresql, mosquitto, redis"
+    conflicts = "chirpstack-sqlite"
     maintainer-scripts = "debian/"
     systemd-units = { enable = true }
 
-    [package.metadata.deb.variants.postgres]
-      name = "chirpstack"
-      suggests = "postgresql, mosquitto, redis"
-      conflicts = "chirpstack-sqlite"
-
     [package.metadata.deb.variants.sqlite]
-      default-features = false
-      features = ["sqlite"]
+      name = "chirpstack-sqlite"
       suggests = "mosquitto, redis"
       conflicts = "chirpstack"
 
@@ -271,12 +266,16 @@ chmod 640 /etc/chirpstack/*.toml
       { source = "rpm/chirpstack.service", dest = "/lib/systemd/system/chirpstack.service" },
     ]
 
-    [package.metadata.generate-rpm.variants.postgres]
-      name = "chirpstack"
-      [package.metadata.generate-rpm.variants.postgres.conflicts]
-        chirpstack-sqlite = "*"
+    [package.metadata.generate-rpm.conflicts]
+      chirpstack-sqlite = "*"
 
     [package.metadata.generate-rpm.variants.sqlite]
       name = "chirpstack-sqlite"
+      assets = [
+        { source = "target/release/chirpstack", dest = "/usr/bin/chirpstack", mode = "755" },
+        { source = "configuration/*", dest = "/etc/chirpstack" },
+        { source = "rpm/chirpstack.service", dest = "/lib/systemd/system/chirpstack-sqlite.service" },
+      ]
+
       [package.metadata.generate-rpm.variants.sqlite.conflicts]
         chirpstack = "*"

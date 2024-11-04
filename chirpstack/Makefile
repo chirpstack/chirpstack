@@ -2,6 +2,11 @@
 
 PKG_VERSION := $(shell cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
 DATABASE ?= postgres
+ifeq ($(DATABASE),postgres)
+	VARIANT_FLAGS ?=
+else
+	VARIANT_FLAGS ?= --variant="$(DATABASE)"
+endif
 
 debug-amd64:
 	cross build --target x86_64-unknown-linux-musl --no-default-features --features="$(DATABASE)"
@@ -17,13 +22,13 @@ dist:
 	cross build --target x86_64-unknown-linux-musl --release --no-default-features --features="$(DATABASE)"
 	cross build --target armv7-unknown-linux-musleabihf --release --no-default-features --features="$(DATABASE)"
 
-	cargo deb --target x86_64-unknown-linux-musl --no-build --no-strip --variant="$(DATABASE)"
-	cargo deb --target armv7-unknown-linux-musleabihf --no-build --no-strip --variant="$(DATABASE)"
-	cargo deb --target aarch64-unknown-linux-musl --no-build --no-strip --variant="$(DATABASE)"
+	cargo deb --target x86_64-unknown-linux-musl --no-build --no-strip $(VARIANT_FLAGS)
+	cargo deb --target armv7-unknown-linux-musleabihf --no-build --no-strip $(VARIANT_FLAGS)
+	cargo deb --target aarch64-unknown-linux-musl --no-build --no-strip $(VARIANT_FLAGS)
 
-	cargo generate-rpm --target x86_64-unknown-linux-musl --target-dir ../target --variant="$(DATABASE)"
-	cargo generate-rpm --target armv7-unknown-linux-musleabihf --target-dir ../target --variant="$(DATABASE)"
-	cargo generate-rpm --target aarch64-unknown-linux-musl --target-dir ../target --variant="$(DATABASE)"
+	cargo generate-rpm --target x86_64-unknown-linux-musl --target-dir ../target $(VARIANT_FLAGS)
+	cargo generate-rpm --target armv7-unknown-linux-musleabihf --target-dir ../target $(VARIANT_FLAGS)
+	cargo generate-rpm --target aarch64-unknown-linux-musl --target-dir ../target $(VARIANT_FLAGS)
 
 	mkdir -p ../dist
 
