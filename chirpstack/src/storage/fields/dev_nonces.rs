@@ -1,67 +1,48 @@
+use std::collections::HashMap;
+
 use diesel::backend::Backend;
+
 use diesel::{deserialize, serialize};
 #[cfg(feature = "postgres")]
-use diesel::{
-    pg::Pg,
-    sql_types::{Array, Int4, Nullable},
-};
+use diesel::{pg::Pg, sql_types::Jsonb};
 #[cfg(feature = "sqlite")]
 use diesel::{sql_types::Text, sqlite::Sqlite};
-use serde::{Deserialize, Serialize};
 
-#[cfg(feature = "postgres")]
-type DevNoncesPgType = Array<Nullable<Int4>>;
+use lrwn::EUI64;
 
-// Sqlite has no native array type so use text
-#[derive(Deserialize, Serialize, Clone, Debug, Eq, PartialEq, AsExpression, FromSqlRow)]
-#[serde(transparent)]
-#[cfg_attr(feature = "postgres", diesel(sql_type = DevNoncesPgType))]
+#[derive(Default, Debug, Clone, PartialEq, Eq, AsExpression, FromSqlRow)]
+#[cfg_attr(feature = "postgres", diesel(sql_type = Jsonb))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
-#[derive(Default)]
-pub struct DevNonces(DevNoncesInner);
+pub struct DevNonces(HashMap<EUI64, Vec<u16>>);
 
-pub type DevNoncesInner = Vec<Option<i32>>;
-
-impl std::convert::AsRef<DevNoncesInner> for DevNonces {
-    fn as_ref(&self) -> &DevNoncesInner {
-        &self.0
+impl DevNonces {
+    pub fn contains(&self, join_eui: EUI64, dev_nonce: u16) -> bool {
+        if let Some(v) = self.0.get(&join_eui) {
+            v.contains(&dev_nonce)
+        } else {
+            false
+        }
     }
-}
 
-impl std::convert::From<DevNoncesInner> for DevNonces {
-    fn from(value: DevNoncesInner) -> Self {
-        Self(value)
-    }
-}
-
-impl std::ops::Deref for DevNonces {
-    type Target = DevNoncesInner;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::ops::DerefMut for DevNonces {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+    pub fn insert(&mut self, join_eui: EUI64, dev_nonce: u16) {
+        self.0.entry(join_eui).or_default().push(dev_nonce)
     }
 }
 
 #[cfg(feature = "postgres")]
-impl deserialize::FromSql<DevNoncesPgType, Pg> for DevNonces {
+impl deserialize::FromSql<Jsonb, Pg> for DevNonces {
     fn from_sql(value: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let sql_val = <DevNoncesInner>::from_sql(value)?;
-        Ok(DevNonces(sql_val))
+        let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
+        let dev_nonces: HashMap<EUI64, Vec<u16>> = serde_json::from_value(value)?;
+        Ok(DevNonces(dev_nonces))
     }
 }
 
 #[cfg(feature = "postgres")]
-impl serialize::ToSql<DevNoncesPgType, Pg> for DevNonces {
-    fn to_sql(&self, out: &mut serialize::Output<'_, '_, Pg>) -> serialize::Result {
-        <DevNoncesInner as serialize::ToSql<DevNoncesPgType, Pg>>::to_sql(
-            &self.0,
-            &mut out.reborrow(),
-        )
+impl serialize::ToSql<Jsonb, Pg> for DevNonces {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+        let value = serde_json::to_value(&self.0)?;
+        <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
 
@@ -73,15 +54,15 @@ where
     fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
         let s =
             <*const str as deserialize::FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(value)?;
-        let nonces = serde_json::from_str::<DevNonces>(unsafe { &*s })?;
-        Ok(nonces)
+        let dev_nonces: HashMap<EUI64, Vec<u16>> = serde_json::from_str(unsafe { &*s })?;
+        Ok(DevNonces(dev_nonces))
     }
 }
 
 #[cfg(feature = "sqlite")]
 impl serialize::ToSql<Text, Sqlite> for DevNonces {
-    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
-        out.set_value(serde_json::to_string(self)?);
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
+        out.set_value(serde_json::to_string(&self.0)?);
         Ok(serialize::IsNull::No)
     }
 }

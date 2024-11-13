@@ -15,7 +15,7 @@ use crate::storage::{
     device::{self, DeviceClass},
     device_keys, device_profile, gateway, tenant,
 };
-use crate::{config, test, uplink};
+use crate::{config, storage::fields, test, uplink};
 use chirpstack_api::gw;
 use lrwn::{AES128Key, EUI64Prefix, NetID, EUI64};
 
@@ -314,7 +314,7 @@ async fn test_sns() {
     let dk = device_keys::create(device_keys::DeviceKeys {
         dev_eui: dev.dev_eui,
         nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
-        dev_nonces: vec![].into(),
+        dev_nonces: fields::DevNonces::default(),
         ..Default::default()
     })
     .await
@@ -499,7 +499,7 @@ async fn test_sns_roaming_not_allowed() {
     let dk = device_keys::create(device_keys::DeviceKeys {
         dev_eui: dev.dev_eui,
         nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
-        dev_nonces: vec![].into(),
+        dev_nonces: fields::DevNonces::default(),
         ..Default::default()
     })
     .await

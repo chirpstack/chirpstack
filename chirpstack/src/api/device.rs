@@ -469,7 +469,7 @@ impl DeviceService for Device {
             )
             .await?;
 
-        device_keys::set_dev_nonces(&dev_eui, &Vec::new())
+        device_keys::set_dev_nonces(dev_eui, &fields::DevNonces::default())
             .await
             .map_err(|e| e.status())?;
 
@@ -1429,10 +1429,13 @@ pub mod test {
         );
 
         // flush dev nonces
-        let _ =
-            device_keys::set_dev_nonces(&EUI64::from_str("0102030405060708").unwrap(), &[1, 2, 3])
-                .await
-                .unwrap();
+        let _ = device_keys::set_dev_nonces(EUI64::from_str("0102030405060708").unwrap(), &{
+            let mut dev_nonces = fields::DevNonces::default();
+            dev_nonces.insert(EUI64::from_str("0102030405060708").unwrap(), 123);
+            dev_nonces
+        })
+        .await
+        .unwrap();
         let flush_dev_nonces_req = get_request(
             &u.id,
             api::FlushDevNoncesRequest {
@@ -1446,7 +1449,7 @@ pub mod test {
         let dk = device_keys::get(&EUI64::from_str("0102030405060708").unwrap())
             .await
             .unwrap();
-        assert_eq!(0, dk.dev_nonces.len());
+        assert_eq!(fields::DevNonces::default(), dk.dev_nonces);
 
         // delete keys
         let del_keys_req = get_request(

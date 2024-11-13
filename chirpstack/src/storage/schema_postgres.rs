@@ -75,7 +75,7 @@ diesel::table! {
         updated_at -> Timestamptz,
         nwk_key -> Bytea,
         app_key -> Bytea,
-        dev_nonces -> Array<Nullable<Int4>>,
+        dev_nonces -> Jsonb,
         join_nonce -> Int4,
     }
 }
