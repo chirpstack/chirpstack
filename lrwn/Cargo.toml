@@ -19,7 +19,7 @@
   diesel = { version = "2.2", optional = true }
 
   # Error handling
-  thiserror = "1.0"
+  thiserror = "2.0"
   anyhow = "1.0"
 
   # Misc
