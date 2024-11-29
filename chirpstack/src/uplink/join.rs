@@ -12,10 +12,7 @@ use lrwn::{
 
 use super::error::Error;
 use super::join_fns;
-use super::{
-    filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers, RelayContext,
-    UplinkFrameSet,
-};
+use super::{filter_rx_info_by_tenant_id, helpers, RelayContext, UplinkFrameSet};
 
 use crate::api::{backend::get_async_receiver, helpers::ToProto};
 use crate::backend::{joinserver, keywrap, roaming};
@@ -119,8 +116,8 @@ impl JoinRequest {
         ctx.get_device_data_or_try_pr_roaming().await?;
         ctx.get_device_keys_or_js_client().await?; // used to validate MIC + if we need external JS
         ctx.set_device_info()?;
+        ctx.validate_region_config_id()?;
         ctx.filter_rx_info_by_tenant()?;
-        ctx.filter_rx_info_by_region_config_id()?;
         ctx.abort_on_device_is_disabled()?;
         ctx.abort_on_relay_only_comm()?;
         ctx.log_uplink_frame_set().await?;
@@ -337,6 +334,20 @@ impl JoinRequest {
         Ok(())
     }
 
+    fn validate_region_config_id(&self) -> Result<(), Error> {
+        trace!("Validating region_config_id against device-profile");
+
+        let dp = self.device_profile.as_ref().unwrap();
+        if let Some(v) = &dp.region_config_id {
+            if !self.uplink_frame_set.region_config_id.eq(v) {
+                warn!("Aborting as region config ID does not match with device-profile");
+                return Err(Error::Abort);
+            }
+        }
+
+        Ok(())
+    }
+
     fn filter_rx_info_by_tenant(&mut self) -> Result<()> {
         trace!("Filtering rx_info by tenant_id");
 
@@ -344,17 +355,6 @@ impl JoinRequest {
             self.application.as_ref().unwrap().tenant_id.into(),
             &mut self.uplink_frame_set,
         )?;
-        Ok(())
-    }
-
-    fn filter_rx_info_by_region_config_id(&mut self) -> Result<()> {
-        trace!("Filtering rx_info by region_config_id");
-
-        let dp = self.device_profile.as_ref().unwrap();
-        if let Some(v) = &dp.region_config_id {
-            filter_rx_info_by_region_config_id(v, &mut self.uplink_frame_set)?;
-        }
-
         Ok(())
     }
 

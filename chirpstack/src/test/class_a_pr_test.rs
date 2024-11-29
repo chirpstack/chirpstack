@@ -16,6 +16,7 @@ use crate::storage::{
 };
 use crate::{config, test, uplink};
 use chirpstack_api::{common, gw, internal};
+use lrwn::region::CommonName;
 use lrwn::{AES128Key, NetID, EUI64};
 
 #[tokio::test]
@@ -59,7 +60,7 @@ async fn test_fns_uplink() {
 
     let recv_time = Utc::now();
 
-    let mut rx_info = gw::UplinkRxInfo {
+    let rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
         gw_time: Some(recv_time.into()),
         location: Some(common::Location {
@@ -70,12 +71,6 @@ async fn test_fns_uplink() {
         }),
         ..Default::default()
     };
-    rx_info
-        .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -154,6 +149,8 @@ async fn test_fns_uplink() {
 
     // Simulate uplink
     uplink::handle_uplink(
+        CommonName::EU868,
+        "eu868".into(),
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: data_phy.to_vec().unwrap(),

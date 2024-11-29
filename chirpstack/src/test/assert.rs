@@ -344,7 +344,7 @@ pub fn downlink_frame_saved(df: internal::DownlinkFrame) -> Validator {
     Box::new(move || {
         let df = df.clone();
         Box::pin(async move {
-            let mut df_get = downlink_frame::get(*LAST_DOWNLINK_ID.read().await)
+            let mut df_get = downlink_frame::get_and_del(*LAST_DOWNLINK_ID.read().await)
                 .await
                 .unwrap();
 

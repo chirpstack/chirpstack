@@ -182,7 +182,7 @@ impl TxAck {
 
     async fn get_downlink_frame(&mut self) -> Result<()> {
         trace!("Get downlink-frame from Redis");
-        let df = downlink_frame::get(self.downlink_id).await?;
+        let df = downlink_frame::get_and_del(self.downlink_id).await?;
         let gw_df = &df
             .downlink_frame
             .as_ref()

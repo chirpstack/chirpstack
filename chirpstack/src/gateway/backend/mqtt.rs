@@ -5,7 +5,6 @@ use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use chrono::Utc;
 use handlebars::Handlebars;
 use prometheus_client::encoding::EncodeLabelSet;
 use prometheus_client::metrics::counter::Counter;
@@ -360,19 +359,11 @@ async fn message_callback(
                 event.v4_migrate();
             }
 
-            if let Some(rx_info) = &mut event.rx_info {
-                set_gateway_json(&rx_info.gateway_id, json);
-                rx_info.ns_time = Some(Utc::now().into());
-                rx_info
-                    .metadata
-                    .insert("region_config_id".to_string(), region_config_id.to_string());
-                rx_info.metadata.insert(
-                    "region_common_name".to_string(),
-                    region_common_name.to_string(),
-                );
-            }
-
-            tokio::spawn(uplink::deduplicate_uplink(event));
+            tokio::spawn(uplink::deduplicate_uplink(
+                region_common_name,
+                region_config_id.to_string(),
+                event,
+            ));
         } else if topic.ends_with("/stats") {
             EVENT_COUNTER
                 .get_or_create(&EventLabels {

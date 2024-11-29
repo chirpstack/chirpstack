@@ -12,6 +12,7 @@ use crate::{
     uplink,
 };
 use chirpstack_api::{common, gw, internal};
+use lrwn::region::CommonName;
 use lrwn::{DevAddr, EUI64};
 
 struct UplinkTest {
@@ -88,16 +89,10 @@ async fn test_uplink() {
     .await
     .unwrap();
 
-    let mut rx_info = gw::UplinkRxInfo {
+    let rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
         ..Default::default()
     };
-    rx_info
-        .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -466,6 +461,8 @@ async fn run_uplink_test(t: &UplinkTest) {
     }
 
     uplink::handle_uplink(
+        CommonName::EU868,
+        "eu868".into(),
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: t.phy_payload.to_vec().unwrap(),
