@@ -169,6 +169,10 @@ message UplinkEvent {
   // the AppSKey and that the encryption / decryption of the payloads is
   // the responsibility of the end-application.
   common.JoinServerContext join_server_context = 15;
+
+  // Region config ID.
+  // This contains the region config ID which reported the uplink.
+  string region_config_id = 16;
 }
 
 // JoinEvent is the message sent when a device joined the network.
@@ -194,6 +198,10 @@ message JoinEvent {
   // the AppSKey and that the encryption / decryption of the payloads is
   // the responsibility of the end-application.
   common.JoinServerContext join_server_context = 6;
+
+  // Region config ID.
+  // This contains the region config ID which reported the uplink.
+  string region_config_id = 7;
 }
 
 // AckEvent is the message sent when a confirmation on a confirmed downlink

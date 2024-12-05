@@ -466,6 +466,7 @@ async fn test_lorawan_10() {
                     data: vec![],
                     rx_info: vec![rx_info.clone()],
                     tx_info: Some(tx_info.clone()),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::uplink_event(integration_pb::UplinkEvent {
@@ -495,6 +496,7 @@ async fn test_lorawan_10() {
                         rssi: -100,
                         wor_channel: 0,
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::no_downlink_frame(),
@@ -532,6 +534,7 @@ async fn test_lorawan_10() {
                     data: vec![],
                     rx_info: vec![rx_info.clone()],
                     tx_info: Some(tx_info.clone()),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::uplink_event(integration_pb::UplinkEvent {
@@ -562,6 +565,7 @@ async fn test_lorawan_10() {
                         rssi: -100,
                         wor_channel: 0,
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::downlink_frame(gw::DownlinkFrame {
@@ -658,6 +662,7 @@ async fn test_lorawan_10() {
                     data: vec![],
                     rx_info: vec![rx_info.clone()],
                     tx_info: Some(tx_info.clone()),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::uplink_event(integration_pb::UplinkEvent {
@@ -687,6 +692,7 @@ async fn test_lorawan_10() {
                         rssi: -100,
                         wor_channel: 0,
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::downlink_frame(gw::DownlinkFrame {

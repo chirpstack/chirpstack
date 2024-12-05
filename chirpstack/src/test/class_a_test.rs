@@ -665,6 +665,7 @@ async fn test_lorawan_10_skip_f_cnt() {
                     rx_info: vec![rx_info.clone()],
                     f_cnt: 7,
                     f_port: 1,
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::f_cnt_up(dev.dev_eui, 8),
@@ -714,6 +715,7 @@ async fn test_lorawan_10_skip_f_cnt() {
                     rx_info: vec![rx_info.clone()],
                     f_cnt: 0,
                     f_port: 1,
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::f_cnt_up(dev.dev_eui, 1),
@@ -983,6 +985,7 @@ async fn test_lorawan_10_uplink() {
                     f_port: 1,
                     dr: 0,
                     data: vec![215, 241, 112, 52],
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],
@@ -1055,6 +1058,7 @@ async fn test_lorawan_10_uplink() {
                     f_port: 1,
                     dr: 10,
                     data: vec![215, 241, 112, 52],
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],
@@ -1134,6 +1138,7 @@ async fn test_lorawan_10_uplink() {
                     f_port: 1,
                     dr: 0,
                     data: vec![215, 241, 112, 52],
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],
@@ -1185,6 +1190,7 @@ async fn test_lorawan_10_uplink() {
                     f_port: 1,
                     dr: 0,
                     data: vec![],
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],
@@ -1237,6 +1243,7 @@ async fn test_lorawan_10_uplink() {
                     dr: 0,
                     confirmed: true,
                     data: vec![215, 241, 112, 52],
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::downlink_frame(gw::DownlinkFrame {
@@ -1348,6 +1355,7 @@ async fn test_lorawan_10_uplink() {
                     f_port: 1,
                     dr: 0,
                     confirmed: true,
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::downlink_frame(gw::DownlinkFrame {
@@ -1626,6 +1634,7 @@ async fn test_lorawan_10_end_to_end_enc() {
                     session_key_id: "010203".into(),
                     ..Default::default()
                 }),
+                region_config_id: "eu868".into(),
                 ..Default::default()
             })],
         },
@@ -1680,6 +1689,7 @@ async fn test_lorawan_10_end_to_end_enc() {
                     }),
                     ..Default::default()
                 }),
+                region_config_id: "eu868".into(),
                 ..Default::default()
             })],
         },
@@ -1743,6 +1753,7 @@ async fn test_lorawan_10_end_to_end_enc() {
                         }),
                         ..Default::default()
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::f_cnt_up(dev.dev_eui, 11),
@@ -1937,6 +1948,7 @@ async fn test_lorawan_11_uplink() {
                     f_port: 1,
                     dr: 0,
                     data: vec![215, 241, 112, 52],
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],
@@ -2016,6 +2028,7 @@ async fn test_lorawan_11_uplink() {
                     f_port: 1,
                     dr: 0,
                     data: vec![215, 241, 112, 52],
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],
@@ -2168,6 +2181,7 @@ async fn test_lorawan_10_rx_delay() {
                 f_port: 1,
                 confirmed: true,
                 dr: 0,
+                region_config_id: "eu868".into(),
                 ..Default::default()
             }),
             assert::downlink_frame(gw::DownlinkFrame {
@@ -2289,6 +2303,7 @@ async fn test_lorawan_10_rx_delay() {
                 f_port: 1,
                 confirmed: true,
                 dr: 0,
+                region_config_id: "eu868".into(),
                 ..Default::default()
             }),
             assert::downlink_frame(gw::DownlinkFrame {
@@ -2410,6 +2425,7 @@ async fn test_lorawan_10_rx_delay() {
                 f_port: 1,
                 confirmed: true,
                 dr: 0,
+                region_config_id: "eu868".into(),
                 ..Default::default()
             }),
             assert::downlink_phy_payloads(vec![

@@ -183,6 +183,7 @@ async fn test_js() {
                     }),
                     dev_addr: "01020304".into(),
                     join_server_context: None,
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],
@@ -250,6 +251,7 @@ async fn test_js() {
                         session_key_id: "01020304".into(),
                         ..Default::default()
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],
@@ -326,6 +328,7 @@ async fn test_js() {
                         }),
                         ..Default::default()
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
             ],

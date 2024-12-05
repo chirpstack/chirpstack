@@ -950,6 +950,7 @@ impl Data {
             } else {
                 None
             },
+            region_config_id: self.uplink_frame_set.region_config_id.clone(),
         };
 
         if !self._is_end_to_end_encrypted() {
