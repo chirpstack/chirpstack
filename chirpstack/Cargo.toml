@@ -74,7 +74,7 @@
   lapin = { version = "2.5", default-features = false }
   tokio-executor-trait = "2.1"
   tokio-reactor-trait = "1.1"
-  rdkafka = { version = "0.36", default-features = false, features = [
+  rdkafka = { version = "0.37", default-features = false, features = [
     "tokio",
     "cmake-build",
   ] }
@@ -83,7 +83,7 @@
   tonic = "0.12"
   tonic-web = "0.12"
   tonic-reflection = "0.12"
-  tokio = { version = "1.41", features = ["macros", "rt-multi-thread"] }
+  tokio = { version = "1.42", features = ["macros", "rt-multi-thread"] }
   tokio-stream = "0.1"
   prost-types = "0.13"
   prost = "0.13"
@@ -102,7 +102,7 @@
   tower-http = { version = "0.6", features = ["trace", "auth"] }
 
   # Error handling
-  thiserror = "1.0"
+  thiserror = "2.0"
   anyhow = "1.0"
 
   # Authentication
@@ -133,7 +133,7 @@
   hex = "0.4"
 
   # Codecs
-  rquickjs = { version = "0.6", features = [
+  rquickjs = { version = "0.8", features = [
     "bindgen",
     "loader",
     "array-buffer",
