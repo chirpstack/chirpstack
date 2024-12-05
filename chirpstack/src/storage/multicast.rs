@@ -1204,30 +1204,36 @@ pub mod test {
             .await
             .unwrap();
 
-        // Set gateway last_seen_at in the past.
-        gateway::partial_update(
-            gw.gateway_id,
-            &gateway::GatewayChangeset {
-                last_seen_at: Some(Some(Utc::now() - Duration::days(1))),
-                ..Default::default()
-            },
-        )
-        .await
-        .unwrap();
+        // The below features are (currently) for PostgreSQL only.
+        #[cfg(feature = "postgres")]
+        {
+            // Set gateway last_seen_at in the past.
+            gateway::partial_update(
+                gw.gateway_id,
+                &gateway::GatewayChangeset {
+                    last_seen_at: Some(Some(Utc::now() - Duration::days(1))),
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
 
-        // We expect zero items, as the gateway is not online.
-        let out = get_schedulable_queue_items(100).await.unwrap();
-        assert_eq!(0, out.len());
+            // We expect zero items, as the gateway is not online.
+            let out = get_schedulable_queue_items(100).await.unwrap();
+            assert_eq!(0, out.len());
 
-        // Set the expires_at of the queue item to now.
-        diesel::update(multicast_group_queue_item::dsl::multicast_group_queue_item.find(&qi.id))
+            // Set the expires_at of the queue item to now.
+            diesel::update(
+                multicast_group_queue_item::dsl::multicast_group_queue_item.find(&qi.id),
+            )
             .set(multicast_group_queue_item::expires_at.eq(Some(Utc::now())))
             .execute(&mut get_async_db_conn().await.unwrap())
             .await
             .unwrap();
 
-        // We expect one item, as it has expired.
-        let out = get_schedulable_queue_items(100).await.unwrap();
-        assert_eq!(1, out.len());
+            // We expect one item, as it has expired.
+            let out = get_schedulable_queue_items(100).await.unwrap();
+            assert_eq!(1, out.len());
+        }
     }
 }
