@@ -1368,6 +1368,7 @@ pub mod test {
                 multicast_group_id: "".into(),
                 limit: 10,
                 offset: 0,
+                order_by: String::from("name,desc"),
             },
         );
         let list_resp = service.list(list_req).await.unwrap();
