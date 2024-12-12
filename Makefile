@@ -53,10 +53,6 @@ devshell:
 docker-devshell:
 	docker compose run --rm --service-ports --name chirpstack chirpstack
 
-# Enters the devshell for ChirpStack UI development.
-docker-devshell-ui:
-	docker compose run --rm --service-ports --name chirpstack-ui chirpstack-ui bash
-
 # Runs the tests
 test:
 	cd api && make rust

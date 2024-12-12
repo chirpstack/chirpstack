@@ -15,6 +15,7 @@ use crate::{
 };
 use chirpstack_api::{common, gw, internal, stream};
 use lrwn::keys::get_js_int_key;
+use lrwn::region::CommonName;
 use lrwn::{AES128Key, EUI64};
 
 type Function = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;
@@ -113,29 +114,17 @@ async fn test_gateway_filtering() {
     .await
     .unwrap();
 
-    let mut rx_info_a = gw::UplinkRxInfo {
+    let rx_info_a = gw::UplinkRxInfo {
         gateway_id: gw_a.gateway_id.to_string(),
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info_a
-        .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info_a
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
 
-    let mut rx_info_b = gw::UplinkRxInfo {
+    let rx_info_b = gw::UplinkRxInfo {
         gateway_id: gw_b.gateway_id.to_string(),
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info_b
-        .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info_b
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -289,17 +278,11 @@ async fn test_lorawan_10() {
     .await
     .unwrap();
 
-    let mut rx_info = gw::UplinkRxInfo {
+    let rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info
-        .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -949,17 +932,11 @@ async fn test_lorawan_11() {
     .await
     .unwrap();
 
-    let mut rx_info = gw::UplinkRxInfo {
+    let rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info
-        .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -1277,6 +1254,8 @@ async fn run_test(t: &Test) {
     }
 
     uplink::handle_uplink(
+        CommonName::EU868,
+        "eu868".into(),
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: t.phy_payload.to_vec().unwrap(),

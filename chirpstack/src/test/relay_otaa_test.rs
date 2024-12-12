@@ -10,6 +10,7 @@ use crate::storage::{
 };
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, internal};
+use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddr, EUI64};
 
 #[tokio::test]
@@ -120,17 +121,11 @@ async fn test_lorawan_10() {
 
     let ds_relay = dev_relay.get_device_session().unwrap();
 
-    let mut rx_info = gw::UplinkRxInfo {
+    let rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info
-        .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -221,6 +216,8 @@ async fn test_lorawan_10() {
         .unwrap();
 
     uplink::handle_uplink(
+        CommonName::EU868,
+        "eu868".into(),
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: phy_relay_jr.to_vec().unwrap(),

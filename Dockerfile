@@ -1,5 +1,5 @@
 # Copy binary stage
-FROM --platform=$BUILDPLATFORM alpine:3.18.0 as binary
+FROM --platform=$BUILDPLATFORM alpine:3.21.0 as binary
 
 ARG TARGETPLATFORM
 
@@ -20,7 +20,7 @@ RUN case "$TARGETPLATFORM" in \
 	esac;
 
 # Final stage
-FROM alpine:3.18.0
+FROM alpine:3.21.0
 
 RUN apk --no-cache add \
     ca-certificates

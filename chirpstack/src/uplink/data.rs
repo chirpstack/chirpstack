@@ -6,10 +6,7 @@ use chrono::{DateTime, Duration, Local, Utc};
 use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 
 use super::error::Error;
-use super::{
-    data_fns, filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers,
-    RelayContext, UplinkFrameSet,
-};
+use super::{data_fns, filter_rx_info_by_tenant_id, helpers, RelayContext, UplinkFrameSet};
 use crate::api::helpers::ToProto;
 use crate::backend::roaming;
 use crate::helpers::errors::PrintFullError;
@@ -124,7 +121,6 @@ impl Data {
             // In case of roaming we do not know the gateways and therefore it must not be
             // filtered.
             ctx.filter_rx_info_by_tenant().await?;
-            ctx.filter_rx_info_by_region_config_id()?;
         }
         ctx.set_device_info()?;
         ctx.set_device_gateway_rx_info()?;
@@ -238,6 +234,7 @@ impl Data {
         };
 
         match device::get_for_phypayload_and_incr_f_cnt_up(
+            &self.uplink_frame_set.region_config_id,
             false,
             &mut self.phy_payload,
             self.uplink_frame_set.dr,
@@ -305,8 +302,14 @@ impl Data {
             dr,
         )? as u8;
 
-        match device::get_for_phypayload_and_incr_f_cnt_up(true, &mut self.phy_payload, dr, ch)
-            .await
+        match device::get_for_phypayload_and_incr_f_cnt_up(
+            &self.uplink_frame_set.region_config_id,
+            true,
+            &mut self.phy_payload,
+            dr,
+            ch,
+        )
+        .await
         {
             Ok(v) => match v {
                 device::ValidationStatus::Ok(f_cnt, d) => {
@@ -570,17 +573,6 @@ impl Data {
                 Err(v)
             }
         }
-    }
-
-    fn filter_rx_info_by_region_config_id(&mut self) -> Result<()> {
-        trace!("Filtering rx_info by region_config_id");
-
-        let dp = self.device_profile.as_ref().unwrap();
-        if let Some(v) = &dp.region_config_id {
-            filter_rx_info_by_region_config_id(v, &mut self.uplink_frame_set)?;
-        }
-
-        Ok(())
     }
 
     fn decrypt_f_opts_mac_commands(&mut self) -> Result<()> {
@@ -958,6 +950,7 @@ impl Data {
             } else {
                 None
             },
+            region_config_id: self.uplink_frame_set.region_config_id.clone(),
         };
 
         if !self._is_end_to_end_encrypted() {

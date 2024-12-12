@@ -10,6 +10,7 @@ use crate::storage::{
 };
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, integration as integration_pb, internal};
+use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddr, EUI64};
 
 struct Test {
@@ -105,17 +106,11 @@ async fn test_lorawan_10() {
     .await
     .unwrap();
 
-    let mut rx_info = gw::UplinkRxInfo {
+    let rx_info = gw::UplinkRxInfo {
         gateway_id: gw.gateway_id.to_string(),
         location: Some(Default::default()),
         ..Default::default()
     };
-    rx_info
-        .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -471,6 +466,7 @@ async fn test_lorawan_10() {
                     data: vec![],
                     rx_info: vec![rx_info.clone()],
                     tx_info: Some(tx_info.clone()),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::uplink_event(integration_pb::UplinkEvent {
@@ -500,6 +496,7 @@ async fn test_lorawan_10() {
                         rssi: -100,
                         wor_channel: 0,
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::no_downlink_frame(),
@@ -537,6 +534,7 @@ async fn test_lorawan_10() {
                     data: vec![],
                     rx_info: vec![rx_info.clone()],
                     tx_info: Some(tx_info.clone()),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::uplink_event(integration_pb::UplinkEvent {
@@ -567,6 +565,7 @@ async fn test_lorawan_10() {
                         rssi: -100,
                         wor_channel: 0,
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::downlink_frame(gw::DownlinkFrame {
@@ -663,6 +662,7 @@ async fn test_lorawan_10() {
                     data: vec![],
                     rx_info: vec![rx_info.clone()],
                     tx_info: Some(tx_info.clone()),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::uplink_event(integration_pb::UplinkEvent {
@@ -692,6 +692,7 @@ async fn test_lorawan_10() {
                         rssi: -100,
                         wor_channel: 0,
                     }),
+                    region_config_id: "eu868".into(),
                     ..Default::default()
                 }),
                 assert::downlink_frame(gw::DownlinkFrame {
@@ -813,6 +814,8 @@ async fn run_test(t: &Test) {
     }
 
     uplink::handle_uplink(
+        CommonName::EU868,
+        "eu868".into(),
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: t.phy_payload.to_vec().unwrap(),

@@ -324,6 +324,7 @@ pub async fn get(dev_eui: &EUI64) -> Result<Device, Error> {
 // On Ok response, the PhyPayload f_cnt will be set to the full 32bit frame-counter based on the
 // device-session context.
 pub async fn get_for_phypayload_and_incr_f_cnt_up(
+    region_config_id: &str,
     relayed: bool,
     phy: &mut lrwn::PhyPayload,
     tx_dr: u8,
@@ -366,7 +367,17 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                 }
 
                 for ds in &mut sessions {
-                    if ds.dev_addr != dev_addr.to_vec() {
+                    // Set the region_config_id if it is empty, e.g. after a ChirpStack v3 to
+                    // ChirpStack v4 migration.
+                    if ds.region_config_id.is_empty() {
+                        ds.region_config_id = region_config_id.into();
+                    }
+                    // Check that the DevAddr and region_config_id are equal.
+                    // The latter is needed because we must assure that the uplink was received
+                    // under the same region as the device was activated. In case the uplink was
+                    // received under two region configurations, this will start two uplink flows,
+                    // each with their own region_config_id associated.
+                    if ds.region_config_id != region_config_id || ds.dev_addr != dev_addr.to_vec() {
                         continue;
                     }
 
@@ -1217,6 +1228,7 @@ pub mod test {
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
                 device_session: Some(
                     internal::DeviceSession {
+                        region_config_id: "eu868".into(),
                         dev_addr: vec![0x01, 0x02, 0x03, 0x04],
                         s_nwk_s_int_key: vec![
                             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
@@ -1246,6 +1258,7 @@ pub mod test {
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
                 device_session: Some(
                     internal::DeviceSession {
+                        region_config_id: "eu868".into(),
                         dev_addr: vec![0x01, 0x02, 0x03, 0x04],
                         s_nwk_s_int_key: vec![
                             0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
@@ -1275,6 +1288,7 @@ pub mod test {
                 secondary_dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
                 device_session: Some(
                     internal::DeviceSession {
+                        region_config_id: "eu868".into(),
                         dev_addr: vec![0x01, 0x02, 0x03, 0x04],
                         s_nwk_s_int_key: vec![
                             0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
@@ -1290,6 +1304,7 @@ pub mod test {
                         ],
                         f_cnt_up: 300,
                         pending_rejoin_device_session: Some(Box::new(internal::DeviceSession {
+                            region_config_id: "eu868".into(),
                             dev_addr: vec![0x04, 0x03, 0x02, 0x01],
                             s_nwk_s_int_key: vec![
                                 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
@@ -1320,6 +1335,7 @@ pub mod test {
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
                 device_session: Some(
                     internal::DeviceSession {
+                        region_config_id: "eu868".into(),
                         dev_addr: vec![0x01, 0x02, 0x03, 0x04],
                         s_nwk_s_int_key: vec![
                             0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
@@ -1531,7 +1547,7 @@ pub mod test {
                 pl.fhdr.f_cnt = tst.f_cnt % (1 << 16);
             }
 
-            let d = get_for_phypayload_and_incr_f_cnt_up(false, &mut phy, 0, 0).await;
+            let d = get_for_phypayload_and_incr_f_cnt_up("eu868", false, &mut phy, 0, 0).await;
             if tst.expected_error.is_some() {
                 assert!(d.is_err());
                 assert_eq!(

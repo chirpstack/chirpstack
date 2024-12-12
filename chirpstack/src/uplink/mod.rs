@@ -156,21 +156,35 @@ pub struct RoamingMetaData {
     pub ul_meta_data: backend::ULMetaData,
 }
 
-pub async fn deduplicate_uplink(event: gw::UplinkFrame) {
-    if let Err(e) = _deduplicate_uplink(event).await {
+pub async fn deduplicate_uplink(
+    region_common_name: CommonName,
+    region_config_id: String,
+    event: gw::UplinkFrame,
+) {
+    if let Err(e) = _deduplicate_uplink(region_common_name, &region_config_id, event).await {
         error!(error = %e.full(), "Deduplication error");
     }
 }
 
-async fn _deduplicate_uplink(event: gw::UplinkFrame) -> Result<()> {
+async fn _deduplicate_uplink(
+    region_common_name: CommonName,
+    region_config_id: &str,
+    event: gw::UplinkFrame,
+) -> Result<()> {
     let phy_str = hex::encode(&event.phy_payload);
     let tx_info_str = match &event.tx_info {
         Some(tx_info) => hex::encode(tx_info.encode_to_vec()),
         None => "".to_string(),
     };
 
-    let key = redis_key(format!("up:collect:{{{}:{}}}", tx_info_str, phy_str));
-    let lock_key = redis_key(format!("up:collect:{{{}:{}}}:lock", tx_info_str, phy_str));
+    let key = redis_key(format!(
+        "up:collect:{{{}:{}:{}}}",
+        region_config_id, tx_info_str, phy_str
+    ));
+    let lock_key = redis_key(format!(
+        "up:collect:{{{}:{}:{}}}:lock",
+        region_config_id, tx_info_str, phy_str
+    ));
 
     let dedup_delay = config::get().network.deduplication_delay;
     let mut dedup_ttl = dedup_delay * 2;
@@ -207,9 +221,14 @@ async fn _deduplicate_uplink(event: gw::UplinkFrame) -> Result<()> {
 
     let deduplication_id = Uuid::new_v4();
     let span = span!(Level::INFO, "up", deduplication_id = %deduplication_id);
-    handle_uplink(deduplication_id, uplink)
-        .instrument(span)
-        .await?;
+    handle_uplink(
+        region_common_name,
+        region_config_id,
+        deduplication_id,
+        uplink,
+    )
+    .instrument(span)
+    .await?;
 
     Ok(())
 }
@@ -283,30 +302,16 @@ async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
     Ok(pl)
 }
 
-pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -> Result<()> {
-    let rx_info = &uplink
-        .rx_info
-        .first()
-        .context("Unable to get first item from rx_info")?;
-
-    let region_config_id = rx_info
-        .metadata
-        .get("region_config_id")
-        .cloned()
-        .unwrap_or_default();
-
-    let common_name = rx_info
-        .metadata
-        .get("region_common_name")
-        .cloned()
-        .unwrap_or_default();
-
-    let common_name = CommonName::from_str(&common_name)?;
-
+pub async fn handle_uplink(
+    region_common_name: CommonName,
+    region_config_id: &str,
+    deduplication_id: Uuid,
+    uplink: gw::UplinkFrameSet,
+) -> Result<()> {
     let mut uplink = UplinkFrameSet {
         uplink_set_id: deduplication_id,
-        region_config_id,
-        region_common_name: common_name,
+        region_common_name,
+        region_config_id: region_config_id.to_string(),
         dr: 0,
         ch: 0,
         phy_payload: PhyPayload::from_slice(&uplink.phy_payload)?,
@@ -409,16 +414,11 @@ async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
 }
 
 fn filter_rx_info_by_tenant_id(tenant_id: Uuid, uplink: &mut UplinkFrameSet) -> Result<()> {
+    let force_gws_private = config::get_force_gws_private(&uplink.region_config_id)?;
     let mut rx_info_set: Vec<gw::UplinkRxInfo> = Vec::new();
 
     for rx_info in &uplink.rx_info_set {
         let gateway_id = EUI64::from_str(&rx_info.gateway_id).context("Gateway ID")?;
-        let region_config_id = rx_info
-            .metadata
-            .get("region_config_id")
-            .map(|v| v.to_string())
-            .ok_or_else(|| anyhow!("No region_config_id in rx_info metadata"))?;
-        let force_gws_private = config::get_force_gws_private(&region_config_id)?;
 
         if !(uplink
             .gateway_private_up_map
@@ -456,28 +456,6 @@ fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
             .ok_or_else(|| anyhow!("gateway_id missing in gateway_private_up_map"))?)
         {
             rx_info_set.push(rx_info.clone());
-        }
-    }
-
-    uplink.rx_info_set = rx_info_set;
-    if uplink.rx_info_set.is_empty() {
-        return Err(anyhow!("rx_info_set is empty"));
-    }
-
-    Ok(())
-}
-
-fn filter_rx_info_by_region_config_id(
-    region_config_id: &str,
-    uplink: &mut UplinkFrameSet,
-) -> Result<()> {
-    let mut rx_info_set: Vec<gw::UplinkRxInfo> = Vec::new();
-
-    for rx_info in &uplink.rx_info_set {
-        if let Some(v) = rx_info.metadata.get("region_config_id") {
-            if v == region_config_id {
-                rx_info_set.push(rx_info.clone());
-            }
         }
     }
 

@@ -1,6 +1,6 @@
 [package]
   name = "backend"
-  version = "4.10.1"
+  version = "4.11.0-test.1"
   authors = ["Orne Brocaar <info@brocaar.com>"]
   edition = "2018"
   publish = false
@@ -8,7 +8,7 @@
 [dependencies]
   serde = { version = "1.0", features = ["derive", "rc"] }
   serde_json = "1.0"
-  thiserror = "1.0"
+  thiserror = "2.0"
   anyhow = "1.0"
   tracing = "0.1"
   hex = "0.4"
@@ -19,7 +19,7 @@
     "rustls-tls",
   ], default-features = false }
   chrono = { version = "0.4", features = ["serde"] }
-  tokio = { version = "1.41", features = ["macros"] }
+  tokio = { version = "1.42", features = ["macros"] }
   chirpstack_api = { path = "../api/rust", default-features = false, features = [
     "json",
   ] }

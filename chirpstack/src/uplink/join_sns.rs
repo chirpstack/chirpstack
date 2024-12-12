@@ -705,6 +705,7 @@ impl JoinRequest {
             } else {
                 None
             },
+            region_config_id: self.uplink_frame_set.region_config_id.clone(),
         };
 
         integration::join_event(app.id.into(), &dev.variables, &pl).await;

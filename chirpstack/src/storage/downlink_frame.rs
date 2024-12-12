@@ -22,9 +22,9 @@ pub async fn save(df: &internal::DownlinkFrame) -> Result<()> {
     Ok(())
 }
 
-pub async fn get(id: u32) -> Result<internal::DownlinkFrame, Error> {
+pub async fn get_and_del(id: u32) -> Result<internal::DownlinkFrame, Error> {
     let key = redis_key(format!("frame:{}", id));
-    let v: Vec<u8> = redis::cmd("GET")
+    let v: Vec<u8> = redis::cmd("GETDEL")
         .arg(key)
         .query_async(&mut get_async_redis_conn().await?)
         .await?;
@@ -53,7 +53,7 @@ pub mod test {
         };
 
         save(&df).await.unwrap();
-        let df_get = get(12345).await.unwrap();
+        let df_get = get_and_del(12345).await.unwrap();
         assert_eq!(df, df_get);
     }
 }
