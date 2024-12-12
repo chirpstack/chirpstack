@@ -216,7 +216,7 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct OrderBy {
     column: String,
     modifier: String,
@@ -235,7 +235,7 @@ impl OrderBy {
         } else {
             Self {
                 column: value.trim().into(),
-                ..Default::default()
+                modifier:  String::from("asc"),
             }
         }
     }
@@ -675,15 +675,13 @@ pub async fn list(
     }
 
     if let Some(order) = order_by {
-        info!(application_id = order.column, "@@@@@@@@@@@@@@@@column");
-        info!(application_id = order.modifier, "@@@@@@@@@@@@@@@@modifier");
         match order.column.as_str() {
-            "name" if "asc" == order.modifier =>
+            "name" if "" == order.modifier =>
                 q = q.order_by(device::dsl::name),
             "name" if "desc" == order.modifier =>
                 q = q.order_by(device::dsl::name.desc()),
             "devEui" if "asc" == order.modifier =>
-                q = q.order_by(device::dsl::dev_eui),
+                q = q.order_by(device::dsl::dev_eui),          
             "devEui" if "desc" == order.modifier =>
                 q = q.order_by(device::dsl::dev_eui.desc()),
             "lastSeenAt" if "asc" == order.modifier =>
@@ -693,13 +691,13 @@ pub async fn list(
                 q = q.order_by(device::dsl::last_seen_at.desc())
                     .then_order_by(device::dsl::name),
             "deviceProfileName" if "asc" == order.modifier =>
-                q = q.order_by(device_profile::dsl::name)
+                q = q.order_by(device_profile::dsl::name.asc())
                     .then_order_by(device::dsl::name),
             "deviceProfileName" if "desc" == order.modifier =>
                 q = q.order_by(device_profile::dsl::name.desc())
                     .then_order_by(device::dsl::name),
             _ => q = q.order_by(device::dsl::name)
-        };
+        };   
     } else {
         q = q.order_by(device::dsl::name)
     };
