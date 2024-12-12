@@ -147,7 +147,7 @@ function ListGateways(props: IProps) {
     });
   }, [props]);
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new ListGatewaysRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);

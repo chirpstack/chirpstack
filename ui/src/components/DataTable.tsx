@@ -4,13 +4,15 @@ import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import SessionStore from "../stores/SessionStore";
+import {FilterValue, SorterResult, SortOrder, TableCurrentDataSource} from "antd/es/table/interface";
+import {TablePaginationConfig} from "antd/lib";
 
 export type GetPageCallbackFunc = (totalCount: number, rows: object[]) => void;
 
 interface IProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   columns: ColumnsType<any>;
-  getPage: (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => void;
+  getPage: (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => void;
   onRowsSelectChange?: (ids: string[]) => void;
   rowKey: string;
   refreshKey?: unknown;
@@ -21,32 +23,24 @@ function DataTable(props: IProps) {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(SessionStore.getRowsPerPage());
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [orderBy, setOrderBy] = useState<string>("name");
   const [rows, setRows] = useState<object[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const onChangePage = useCallback(
-    (page: number, pz?: number | void) => {
+  const loadPage = useCallback(
+    (page: number, pz: number, orderBy?: string | void) => {
       setLoading(true);
 
-      if (!pz) {
-        pz = pageSize;
-      }
+      console.log("LOAD", page, pz, orderBy);
 
-      props.getPage(pz, (page - 1) * pz, (totalCount: number, rows: object[]) => {
-        setCurrentPage(page);
+      props.getPage(pz, (page - 1) * pz, orderBy, (totalCount: number, rows: object[]) => {
         setTotalCount(totalCount);
         setRows(rows);
-        setPageSize(pz || 0);
         setLoading(false);
       });
     },
     [props, pageSize],
   );
-
-  const onShowSizeChange = (page: number, pageSize: number) => {
-    onChangePage(page, pageSize);
-    SessionStore.setRowsPerPage(pageSize);
-  };
 
   const onRowsSelectChange = (ids: React.Key[]) => {
     const idss = ids as string[];
@@ -55,9 +49,52 @@ function DataTable(props: IProps) {
     }
   };
 
+  const onChange = (
+      pagination: TablePaginationConfig,
+      filters: Record<string, FilterValue | null>,
+      sorter: SorterResult<object> | SorterResult<object>[],
+      extra: TableCurrentDataSource<object>
+  ) => {
+    let page = pagination.current;
+    if (!page) {
+      page = currentPage;
+    }
+
+    let pz = pagination.pageSize;
+    if (!pz) {
+      pz = pageSize;
+    }
+    SessionStore.setRowsPerPage(pz);
+
+    let firstSorter: SorterResult<object> | void = undefined;
+    if (Array.isArray(sorter)) {
+      if (sorter.length) {
+        firstSorter = sorter[0];
+      }
+    } else {
+      firstSorter = sorter;
+    }
+    let sort: string | void = undefined;
+    if (firstSorter) {
+      if (firstSorter.columnKey) {
+        sort = firstSorter.columnKey.toString();
+        if (firstSorter.order === "descend") {
+          sort += ",desc";
+        }
+      }
+    }
+    if (!sort) {
+      sort = orderBy;
+    }
+
+    setCurrentPage(page);
+    setPageSize(pz || 0);
+    setOrderBy(sort);
+  };
+
   useEffect(() => {
-    onChangePage(currentPage, pageSize);
-  }, [props, currentPage, pageSize, onChangePage]);
+    loadPage(currentPage, pageSize, orderBy);
+  }, [props, currentPage, pageSize, orderBy, loadPage]);
 
   const { getPage, refreshKey, ...otherProps } = props;
   let loadingProps = undefined;
@@ -73,9 +110,7 @@ function DataTable(props: IProps) {
       current: currentPage,
       total: totalCount,
       pageSize: pageSize,
-      onChange: onChangePage,
       showSizeChanger: true,
-      onShowSizeChange: onShowSizeChange,
     };
   }
 
@@ -92,6 +127,7 @@ function DataTable(props: IProps) {
       dataSource={rows}
       pagination={pagination || false}
       rowSelection={rowSelection}
+      onChange={onChange}
       {...otherProps}
     />
   );

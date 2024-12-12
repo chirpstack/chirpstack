@@ -87,7 +87,7 @@ function MulticastGroupQueue(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new ListMulticastGroupQueueRequest();
     req.setMulticastGroupId(props.multicastGroup.getId());
 

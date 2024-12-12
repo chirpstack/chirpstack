@@ -277,8 +277,14 @@ impl DeviceService for Device {
             },
         };
 
+        let order_by = if req.order_by.is_empty() {
+            None
+        } else {
+            Some(device::OrderBy::new(&req.order_by))
+        };
+
         let count = device::get_count(&filters).await.map_err(|e| e.status())?;
-        let items = device::list(req.limit as i64, req.offset as i64, &filters)
+        let items = device::list(req.limit as i64, req.offset as i64, &filters, order_by)
             .await
             .map_err(|e| e.status())?;
 

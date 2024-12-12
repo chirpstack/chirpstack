@@ -147,7 +147,7 @@ function DeviceQueue(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new GetDeviceQueueItemsRequest();
     req.setDevEui(props.device.getDevEui());
 

@@ -40,7 +40,7 @@ function ListMulticastGroupDevices(props: IProps) {
     setSelectedRowIds(ids);
   };
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new ListDevicesRequest();
     req.setApplicationId(props.multicastGroup.getApplicationId());
     req.setMulticastGroupId(props.multicastGroup.getId());

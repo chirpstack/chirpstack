@@ -332,6 +332,9 @@ message ListDevicesRequest {
 
   // Multicst-group ID (UUID) to filter devices on.
   string multicast_group_id = 5;
+
+  // If set, the given string will be used to sort by (optional).
+  string order_by = 6;
 }
 
 message ListDevicesResponse {
