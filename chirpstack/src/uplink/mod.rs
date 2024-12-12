@@ -41,12 +41,26 @@ struct UplinkLabels {
     m_type: String,
 }
 
+#[derive(Clone, Hash, PartialEq, Eq, EncodeLabelSet, Debug)]
+struct UplinkMacCommandLabels {
+    mac_command: String,
+}
+
 lazy_static! {
     static ref UPLINK_COUNTER: Family<UplinkLabels, Counter> = {
         let counter = Family::<UplinkLabels, Counter>::default();
         prometheus::register(
             "uplink_count",
             "Number of received uplinks (after deduplication)",
+            counter.clone(),
+        );
+        counter
+    };
+    static ref UPLINK_MAC_COMMAND_COUNTER: Family<UplinkMacCommandLabels, Counter> = {
+        let counter = Family::<UplinkMacCommandLabels, Counter>::default();
+        prometheus::register(
+            "uplink_mac_command_count",
+            "Number of received mac commands in uplinks (after deduplication)",
             counter.clone(),
         );
         counter
@@ -328,6 +342,16 @@ pub async fn handle_uplink(
             m_type: uplink.phy_payload.mhdr.m_type.to_string(),
         })
         .inc();
+
+    if let lrwn::Payload::MACPayload(pl) = &uplink.phy_payload.payload {
+        pl.fhdr.f_opts.iter().for_each(|mac_command| {
+            UPLINK_MAC_COMMAND_COUNTER
+                .get_or_create(&UplinkMacCommandLabels {
+                   mac_command: mac_command.to_string(),
+                })
+                .inc();
+        })
+    }
 
     uplink.dr = helpers::get_uplink_dr(&uplink.region_config_id, &uplink.tx_info)?;
     uplink.ch = helpers::get_uplink_ch(
