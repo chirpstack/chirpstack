@@ -240,7 +240,7 @@ impl GatewayService for Gateway {
         let order_by = if req.order_by.is_empty() {
             None
         } else {
-            Some(device::OrderBy::new(&req.order_by))
+            Some(gateway::OrderBy::new(&req.order_by))
         };
 
         let count = gateway::get_count(&filters).await.map_err(|e| e.status())?;
