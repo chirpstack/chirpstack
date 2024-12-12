@@ -235,7 +235,7 @@ impl OrderBy {
         } else {
             Self {
                 column: value.trim().into(),
-                modifier:  String::from("asc"),
+                modifier: String::from("asc"),
             }
         }
     }
@@ -650,7 +650,7 @@ pub async fn list(
             device::battery_level,
         ))
         .distinct()
-        .into_boxed();  
+        .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
         q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
@@ -676,7 +676,7 @@ pub async fn list(
 
     if let Some(order) = order_by {
         match order.column.as_str() {
-            "name" if "" == order.modifier =>
+            "name" if "asc" == order.modifier =>
                 q = q.order_by(device::dsl::name),
             "name" if "desc" == order.modifier =>
                 q = q.order_by(device::dsl::name.desc()),

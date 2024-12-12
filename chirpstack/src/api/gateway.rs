@@ -237,8 +237,14 @@ impl GatewayService for Gateway {
             },
         };
 
+        let order_by = if req.order_by.is_empty() {
+            None
+        } else {
+            Some(device::OrderBy::new(&req.order_by))
+        };
+
         let count = gateway::get_count(&filters).await.map_err(|e| e.status())?;
-        let result = gateway::list(req.limit as i64, req.offset as i64, &filters)
+        let result = gateway::list(req.limit as i64, req.offset as i64, &filters, order_by)
             .await
             .map_err(|e| e.status())?;
 
