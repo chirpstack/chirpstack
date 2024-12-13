@@ -967,7 +967,6 @@ pub mod test {
     async fn test_device() {
         let _guard = test::prepare().await;
         let dp = storage::device_profile::test::create_device_profile(None).await;
-        let dp2 = storage::device_profile::test::create_device_profile(None).await;
         let mut d = create_device(
             EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
             dp.id.into(),

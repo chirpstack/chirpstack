@@ -31,8 +31,6 @@ function DataTable(props: IProps) {
     (page: number, pz: number, orderBy?: string | void) => {
       setLoading(true);
 
-      console.log("LOAD", page, pz, orderBy);
-
       props.getPage(pz, (page - 1) * pz, orderBy, (totalCount: number, rows: object[]) => {
         setTotalCount(totalCount);
         setRows(rows);
