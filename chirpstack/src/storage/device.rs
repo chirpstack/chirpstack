@@ -216,6 +216,31 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
+#[derive(Default, Clone, Debug)]
+pub struct OrderBy {
+    column: String,
+    modifier: String,
+}
+
+impl OrderBy {
+    pub fn new(value: &str) -> Self {
+        if value.contains(',') {
+            let i = value.find(',').expect("");
+            let column = value[0..i].trim().into();
+            let modifier = value[(i+1)..].trim().into();
+            Self {
+                column,
+                modifier,
+            }
+        } else {
+            Self {
+                column: value.trim().into(),
+                modifier: String::from("asc"),
+            }
+        }
+    }
+}
+
 #[derive(QueryableByName, PartialEq, Eq, Debug)]
 pub struct DevicesActiveInactive {
     #[diesel(sql_type = diesel::sql_types::BigInt)]
@@ -606,6 +631,7 @@ pub async fn list(
     limit: i64,
     offset: i64,
     filters: &Filters,
+    order_by: Option<OrderBy>,
 ) -> Result<Vec<DeviceListItem>, Error> {
     let mut q = device::dsl::device
         .inner_join(device_profile::table)
@@ -648,8 +674,35 @@ pub async fn list(
         );
     }
 
-    q.order_by(device::dsl::name)
-        .limit(limit)
+    if let Some(order) = order_by {
+        match order.column.as_str() {
+            "name" if "asc" == order.modifier =>
+                q = q.order_by(device::dsl::name),
+            "name" if "desc" == order.modifier =>
+                q = q.order_by(device::dsl::name.desc()),
+            "devEui" if "asc" == order.modifier =>
+                q = q.order_by(device::dsl::dev_eui),          
+            "devEui" if "desc" == order.modifier =>
+                q = q.order_by(device::dsl::dev_eui.desc()),
+            "lastSeenAt" if "asc" == order.modifier =>
+                q = q.order_by(device::dsl::last_seen_at)
+                    .then_order_by(device::dsl::name),
+            "lastSeenAt" if "desc" == order.modifier =>
+                q = q.order_by(device::dsl::last_seen_at.desc())
+                    .then_order_by(device::dsl::name),
+            "deviceProfileName" if "asc" == order.modifier =>
+                q = q.order_by(device_profile::dsl::name.asc())
+                    .then_order_by(device::dsl::name),
+            "deviceProfileName" if "desc" == order.modifier =>
+                q = q.order_by(device_profile::dsl::name.desc())
+                    .then_order_by(device::dsl::name),
+            _ => q = q.order_by(device::dsl::name)
+        };   
+    } else {
+        q = q.order_by(device::dsl::name)
+    };
+
+    q.limit(limit)
         .offset(offset)
         .load(&mut get_async_db_conn().await?)
         .await
@@ -875,6 +928,7 @@ pub mod test {
         count: usize,
         limit: i64,
         offset: i64,
+        order: OrderBy,
     }
 
     pub async fn create_device(
@@ -930,6 +984,15 @@ pub mod test {
         let d_get = get(&d.dev_eui).await.unwrap();
         assert_eq!(d, d_get);
 
+        let order_dev_desc = OrderBy{
+            column : String::from("devEui"),
+            modifier : String::from("desc"),
+        };
+        let order_name_asc = OrderBy{
+            column : String::from("name"),
+            modifier : String::from("asc"),
+        };
+
         // get count and list
         let tests = vec![
             FilterTest {
@@ -942,6 +1005,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: order_name_asc.clone(),
             },
             FilterTest {
                 filters: Filters {
@@ -953,6 +1017,7 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: order_name_asc.clone(),
             },
             FilterTest {
                 filters: Filters {
@@ -964,6 +1029,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: order_name_asc.clone(),
             },
             FilterTest {
                 filters: Filters {
@@ -975,6 +1041,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: order_name_asc.clone(),
             },
             FilterTest {
                 filters: Filters {
@@ -986,6 +1053,7 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: order_name_asc.clone(),
             },
         ];
 
@@ -993,7 +1061,7 @@ pub mod test {
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
-            let items = list(tst.limit, tst.offset, &tst.filters).await.unwrap();
+            let items = list(tst.limit, tst.offset, &tst.filters, Some(tst.order)).await.unwrap();
             assert_eq!(
                 tst.devs
                     .iter()
@@ -1004,6 +1072,7 @@ pub mod test {
                     .map(|d| d.dev_eui.to_string())
                     .collect::<String>()
             );
+            
         }
 
         // delete

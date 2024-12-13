@@ -110,6 +110,31 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
+#[derive(Default, Clone, Debug)]
+pub struct OrderBy {
+    column: String,
+    modifier: String,
+}
+
+impl OrderBy {
+    pub fn new(value: &str) -> Self {
+        if value.contains(',') {
+            let i = value.find(',').expect("");
+            let column = value[0..i].trim().into();
+            let modifier = value[(i+1)..].trim().into();
+            Self {
+                column,
+                modifier,
+            }
+        } else {
+            Self {
+                column: value.trim().into(),
+                modifier: String::from("asc"),
+            }
+        }
+    }
+}
+
 #[derive(QueryableByName, PartialEq, Eq, Debug)]
 pub struct GatewayCountsByState {
     #[diesel(sql_type = diesel::sql_types::BigInt)]
@@ -309,6 +334,7 @@ pub async fn list(
     limit: i64,
     offset: i64,
     filters: &Filters,
+    order_by: Option<OrderBy>,
 ) -> Result<Vec<GatewayListItem>, Error> {
     let mut q = gateway::dsl::gateway
         .left_join(multicast_group_gateway::table)
@@ -351,8 +377,29 @@ pub async fn list(
         );
     }
 
+    if let Some(order) = order_by {
+        match order.column.as_str() {
+            "name" if "asc" == order.modifier =>
+                q = q.order_by(gateway::dsl::name),
+            "name" if "desc" == order.modifier =>
+                q = q.order_by(gateway::dsl::name.desc()),
+            "gatewayId" if "asc" == order.modifier =>
+                q = q.order_by(gateway::dsl::gateway_id),          
+            "gatewayId" if "desc" == order.modifier =>
+                q = q.order_by(gateway::dsl::gateway_id.desc()),
+            "lastSeenAt" if "asc" == order.modifier =>
+                q = q.order_by(gateway::dsl::last_seen_at)
+                    .then_order_by(gateway::dsl::name),
+            "lastSeenAt" if "desc" == order.modifier =>
+                q = q.order_by(gateway::dsl::last_seen_at.desc())
+                    .then_order_by(gateway::dsl::name),
+            _ => q = q.order_by(gateway::dsl::name)
+        };   
+    } else {
+        q = q.order_by(gateway::dsl::name)
+    };
+
     let items = q
-        .order_by(gateway::dsl::name)
         .limit(limit)
         .offset(offset)
         .load(&mut get_async_db_conn().await?)
@@ -522,6 +569,7 @@ pub mod test {
         count: usize,
         limit: i64,
         offset: i64,
+        order: Option<OrderBy>,
     }
 
     struct RelayGatewayFilterTest<'a> {
@@ -603,6 +651,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: None,
             },
             FilterTest {
                 filters: Filters {
@@ -614,6 +663,7 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: None,
             },
             FilterTest {
                 filters: Filters {
@@ -625,6 +675,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: None,
             },
             FilterTest {
                 filters: Filters {
@@ -636,6 +687,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: None,
             },
             FilterTest {
                 filters: Filters {
@@ -647,6 +699,7 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: None,
             },
             FilterTest {
                 filters: Filters {
@@ -658,6 +711,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: None,
             },
             FilterTest {
                 filters: Filters {
@@ -669,6 +723,43 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: None,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    multicast_group_id: None,
+                    search: None,
+                },
+                gws: vec![&gw],
+                count: 1,
+                limit: 10,
+                offset: 0,
+                order: Some(OrderBy::new("name")),
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    multicast_group_id: None,
+                    search: None,
+                },
+                gws: vec![&gw],
+                count: 1,
+                limit: 10,
+                offset: 0,
+                order: Some(OrderBy::new("name,asc")),
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    multicast_group_id: None,
+                    search: None,
+                },
+                gws: vec![&gw],
+                count: 1,
+                limit: 10,
+                offset: 0,
+                order: Some(OrderBy::new("name,desc")),
             },
         ];
 
@@ -676,7 +767,7 @@ pub mod test {
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
-            let items = list(tst.limit, tst.offset, &tst.filters).await.unwrap();
+            let items = list(tst.limit, tst.offset, &tst.filters, tst.order).await.unwrap();
             assert_eq!(
                 tst.gws
                     .iter()

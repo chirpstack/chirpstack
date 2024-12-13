@@ -65,7 +65,7 @@ function ListTenantUsers(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new ListTenantUsersRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);

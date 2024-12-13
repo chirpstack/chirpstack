@@ -77,7 +77,7 @@ function ListRelayGateways(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new ListRelayGatewaysRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);

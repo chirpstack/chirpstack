@@ -56,7 +56,7 @@ function ListAdminApiKeys() {
     };
   };
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new ListApiKeysRequest();
     req.setLimit(limit);
     req.setOffset(offset);

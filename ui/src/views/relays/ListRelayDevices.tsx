@@ -63,7 +63,7 @@ function ListRelayDevices(props: IProps) {
     }
   };
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new ListRelayDevicesRequest();
     req.setRelayDevEui(props.relayDevice.getDevEui());
     req.setLimit(limit);

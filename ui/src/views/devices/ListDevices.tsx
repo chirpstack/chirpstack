@@ -79,6 +79,7 @@ function ListDevices(props: IProps) {
         }
         return "Never";
       },
+      sorter: true,
     },
     {
       title: "DevEUI",
@@ -94,11 +95,13 @@ function ListDevices(props: IProps) {
           {text}
         </Link>
       ),
+      sorter: true,
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      sorter: true,
     },
     {
       title: "Device profile",
@@ -109,6 +112,7 @@ function ListDevices(props: IProps) {
           {text}
         </Link>
       ),
+      sorter: true,
     },
     {
       title: "Battery",
@@ -134,11 +138,12 @@ function ListDevices(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
     const req = new ListDevicesRequest();
     req.setApplicationId(props.application.getId());
     req.setLimit(limit);
-    req.setOffset(offset);
+    req.setOffset(offset)
+    req.setOrderBy(orderBy || "");
 
     DeviceStore.list(req, (resp: ListDevicesResponse) => {
       const obj = resp.toObject();
