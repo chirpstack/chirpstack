@@ -33,3 +33,4 @@
   serde = ["dep:serde"]
   crypto = ["dep:cmac", "dep:aes"]
   regions = []
+  applayer = []

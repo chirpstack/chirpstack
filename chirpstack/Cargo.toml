@@ -55,6 +55,7 @@
     "diesel",
     "regions",
     "crypto",
+    "applayer",
   ] }
   backend = { path = "../backend" }
 

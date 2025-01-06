@@ -21,6 +21,8 @@ pub use self::phy_payload::*;
 pub use self::relay::*;
 
 mod aes128;
+#[cfg(feature = "applayer")]
+pub mod applayer;
 mod cflist;
 mod devaddr;
 mod dl_settings;
