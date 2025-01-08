@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use anyhow::Result;
 
 use crate::applayer::PayloadCodec;
@@ -134,7 +132,7 @@ impl PayloadCodec for PackageVersionAnsPayload {
 
 #[derive(Debug, PartialEq)]
 pub struct AppTimeReqPayload {
-    pub device_time: Duration, // Duration since GPS Epoch
+    pub device_time: u32,
     pub param: AppTimeReqPayloadParam,
 }
 
@@ -144,12 +142,12 @@ impl PayloadCodec for AppTimeReqPayload {
             return Err(anyhow!("Expected 5 bytes"));
         }
 
-        let mut device_time: [u8; 4] = [0; 4];
-        device_time.copy_from_slice(&b[0..4]);
-        let device_time_secs = u32::from_le_bytes(device_time);
-
         Ok(AppTimeReqPayload {
-            device_time: Duration::new(device_time_secs.into(), 0),
+            device_time: {
+                let mut bytes = [0; 4];
+                bytes.copy_from_slice(&b[0..4]);
+                u32::from_le_bytes(bytes)
+            },
             param: AppTimeReqPayloadParam {
                 token_req: b[4] & 0x0f,
                 ans_required: b[4] & 0x10 != 0,
@@ -163,7 +161,7 @@ impl PayloadCodec for AppTimeReqPayload {
         }
 
         let mut b = vec![0; 5];
-        b[0..4].copy_from_slice(&(self.device_time.as_secs() as u32).to_le_bytes());
+        b[0..4].copy_from_slice(&self.device_time.to_le_bytes());
         b[4] = self.param.token_req;
 
         if self.param.ans_required {
@@ -182,7 +180,7 @@ pub struct AppTimeReqPayloadParam {
 
 #[derive(Debug, PartialEq)]
 pub struct AppTimeAnsPayload {
-    pub time_correction: Duration,
+    pub time_correction: u32,
     pub param: AppTimeAnsPayloadParam,
 }
 
@@ -192,12 +190,12 @@ impl PayloadCodec for AppTimeAnsPayload {
             return Err(anyhow!("Expected 5 bytes"));
         }
 
-        let mut time_correction: [u8; 4] = [0; 4];
-        time_correction.copy_from_slice(&b[0..4]);
-        let time_correction_secs = u32::from_le_bytes(time_correction);
-
         Ok(AppTimeAnsPayload {
-            time_correction: Duration::new(time_correction_secs.into(), 0),
+            time_correction: {
+                let mut bytes = [0; 4];
+                bytes.copy_from_slice(&b[0..4]);
+                u32::from_le_bytes(bytes)
+            },
             param: AppTimeAnsPayloadParam {
                 token_ans: b[4] & 0x0f,
             },
@@ -210,7 +208,7 @@ impl PayloadCodec for AppTimeAnsPayload {
         }
 
         let mut b = vec![0; 5];
-        b[0..4].copy_from_slice(&(self.time_correction.as_secs() as u32).to_le_bytes());
+        b[0..4].copy_from_slice(&self.time_correction.to_le_bytes());
         b[4] = self.param.token_ans;
 
         Ok(b)
@@ -250,7 +248,7 @@ impl PayloadCodec for DeviceAppTimePeriodicityReqPayload {
 #[derive(Debug, PartialEq)]
 pub struct DeviceAppTimePeriodicityAnsPayload {
     pub status: DeviceAppTimePeriodicityAnsPayloadStatus,
-    pub time: Duration,
+    pub time: u32,
 }
 
 impl PayloadCodec for DeviceAppTimePeriodicityAnsPayload {
@@ -259,15 +257,15 @@ impl PayloadCodec for DeviceAppTimePeriodicityAnsPayload {
             return Err(anyhow!("Expected 5 bytes"));
         }
 
-        let mut time: [u8; 4] = [0; 4];
-        time.copy_from_slice(&b[1..5]);
-        let time_secs = u32::from_le_bytes(time);
-
         Ok(DeviceAppTimePeriodicityAnsPayload {
             status: DeviceAppTimePeriodicityAnsPayloadStatus {
                 not_supported: b[0] & 0x01 != 0,
             },
-            time: Duration::new(time_secs.into(), 0),
+            time: {
+                let mut bytes = [0; 4];
+                bytes.copy_from_slice(&b[1..5]);
+                u32::from_le_bytes(bytes)
+            },
         })
     }
 
@@ -277,7 +275,7 @@ impl PayloadCodec for DeviceAppTimePeriodicityAnsPayload {
             b[0] |= 0x01;
         }
 
-        b[1..5].copy_from_slice(&(self.time.as_secs() as u32).to_le_bytes());
+        b[1..5].copy_from_slice(&self.time.to_le_bytes());
         Ok(b)
     }
 }
@@ -387,7 +385,7 @@ mod test {
             name: "encode AppTimeReq".into(),
             uplink: true,
             command: Payload::AppTimeReq(AppTimeReqPayload {
-                device_time: Duration::from_secs(1024),
+                device_time: 1024,
                 param: AppTimeReqPayloadParam {
                     token_req: 15,
                     ans_required: true,
@@ -401,7 +399,7 @@ mod test {
             name: "decode AppTimeReq".into(),
             uplink: true,
             command: Payload::AppTimeReq(AppTimeReqPayload {
-                device_time: Duration::from_secs(1024),
+                device_time: 1024,
                 param: AppTimeReqPayloadParam {
                     token_req: 15,
                     ans_required: true,
@@ -421,7 +419,7 @@ mod test {
             name: "encode AppTimeAns".into(),
             uplink: false,
             command: Payload::AppTimeAns(AppTimeAnsPayload {
-                time_correction: Duration::from_secs(1024),
+                time_correction: 1024,
                 param: AppTimeAnsPayloadParam { token_ans: 15 },
             }),
             bytes: vec![0x01, 0x00, 0x04, 0x00, 0x00, 0x0f],
@@ -432,7 +430,7 @@ mod test {
             name: "decode AppTimeAns".into(),
             uplink: false,
             command: Payload::AppTimeAns(AppTimeAnsPayload {
-                time_correction: Duration::from_secs(1024),
+                time_correction: 1024,
                 param: AppTimeAnsPayloadParam { token_ans: 15 },
             }),
             bytes: vec![0x01, 0x00, 0x04, 0x00, 0x00, 0x0f],
@@ -478,7 +476,7 @@ mod test {
                 status: DeviceAppTimePeriodicityAnsPayloadStatus {
                     not_supported: true,
                 },
-                time: Duration::from_secs(1024),
+                time: 1024,
             }),
             bytes: vec![0x02, 0x01, 0x00, 0x04, 0x00, 0x00],
             expected_error: None,
@@ -491,7 +489,7 @@ mod test {
                 status: DeviceAppTimePeriodicityAnsPayloadStatus {
                     not_supported: true,
                 },
-                time: Duration::from_secs(1024),
+                time: 1024,
             }),
             bytes: vec![0x02, 0x01, 0x00, 0x04, 0x00, 0x00],
             expected_error: None,
