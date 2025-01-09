@@ -149,7 +149,7 @@ impl Payload {
             Self::McClassCSessionAns(pl) => out.extend_from_slice(&pl.encode()?),
             Self::McClassBSessionReq(pl) => out.extend_from_slice(&pl.encode()?),
             Self::McClassBSessionAns(pl) => out.extend_from_slice(&pl.encode()?),
-        };
+        }
 
         Ok(out)
     }
