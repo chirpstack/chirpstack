@@ -1,7 +1,9 @@
+use aes::cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit};
+use aes::{Aes128, Block};
 use anyhow::Result;
 
 use crate::applayer::PayloadCodec;
-use crate::DevAddr;
+use crate::{AES128Key, DevAddr};
 
 pub enum Cid {
     PackageVersionReq,
@@ -749,6 +751,42 @@ impl PayloadCodec for McClassBSessionAnsPayload {
     }
 }
 
+pub fn get_mc_root_key_for_gen_app_key(gen_app_key: AES128Key) -> Result<AES128Key> {
+    get_key(gen_app_key, [0; 16])
+}
+
+pub fn get_mc_root_key_for_app_key(app_key: AES128Key) -> Result<AES128Key> {
+    get_key(app_key, [0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+}
+
+pub fn get_mc_ke_key(mc_root_key: AES128Key) -> Result<AES128Key> {
+    get_key(mc_root_key, [0; 16])
+}
+
+pub fn get_mc_app_s_key(mc_key: AES128Key, mc_addr: DevAddr) -> Result<AES128Key> {
+    let mut b = [0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    b[1..5].copy_from_slice(&mc_addr.to_le_bytes());
+    get_key(mc_key, b)
+}
+
+pub fn get_mc_net_s_key(mc_key: AES128Key, mc_addr: DevAddr) -> Result<AES128Key> {
+    let mut b = [0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    b[1..5].copy_from_slice(&mc_addr.to_le_bytes());
+    get_key(mc_key, b)
+}
+
+fn get_key(key: AES128Key, b: [u8; 16]) -> Result<AES128Key> {
+    let key_bytes = key.to_bytes();
+    let key = GenericArray::from_slice(&key_bytes);
+    let cipher = Aes128::new(key);
+
+    let mut b = b;
+    let block = Block::from_mut_slice(&mut b);
+    cipher.encrypt_block(block);
+
+    Ok(AES128Key::from_slice(block)?)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -1253,6 +1291,80 @@ mod test {
 
         run_tests_encode(&encode_tests);
         run_tests_decode(&decode_tests);
+    }
+
+    const MC_ADDR: [u8; 4] = [1, 2, 3, 4];
+    const MC_KEY: [u8; 16] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+    const APP_KEY: [u8; 16] = [2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+    const GEN_APP_KEY: [u8; 16] = [3, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+    const MC_ROOT_KEY: [u8; 16] = [4, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+    #[test]
+    fn test_get_mc_root_key_for_gen_app_key() {
+        let key = get_mc_root_key_for_gen_app_key(AES128Key::from_bytes(GEN_APP_KEY)).unwrap();
+        assert_eq!(
+            AES128Key::from_bytes([
+                0x55, 0x34, 0x4e, 0x82, 0x57, 0xe, 0xae, 0xc8, 0xbf, 0x3, 0xb9, 0x99, 0x62, 0xd1,
+                0xf4, 0x45
+            ]),
+            key
+        )
+    }
+
+    #[test]
+    fn test_get_mc_root_key_for_app_key() {
+        let key = get_mc_root_key_for_app_key(AES128Key::from_bytes(APP_KEY)).unwrap();
+        assert_eq!(
+            AES128Key::from_bytes([
+                0x26, 0x4f, 0xd8, 0x59, 0x58, 0x3f, 0xcc, 0x67, 0x2, 0x41, 0xac, 0x7, 0x1c, 0xc9,
+                0xf5, 0xbb
+            ]),
+            key
+        );
+    }
+
+    #[test]
+    fn test_get_mc_ke_key() {
+        let key = get_mc_ke_key(AES128Key::from_bytes(MC_ROOT_KEY)).unwrap();
+        assert_eq!(
+            AES128Key::from_bytes([
+                0x90, 0x83, 0xbe, 0xbf, 0x70, 0x42, 0x57, 0x88, 0x31, 0x60, 0xdb, 0xfc, 0xde, 0x33,
+                0xad, 0x71
+            ]),
+            key
+        );
+    }
+
+    #[test]
+    fn test_get_mc_app_key() {
+        let key = get_mc_app_s_key(
+            AES128Key::from_bytes(MC_KEY),
+            DevAddr::from_be_bytes(MC_ADDR),
+        )
+        .unwrap();
+        assert_eq!(
+            AES128Key::from_bytes([
+                0x95, 0xcb, 0x45, 0x18, 0xee, 0x37, 0x56, 0x6, 0x73, 0x5b, 0xba, 0xcb, 0xdc, 0xe8,
+                0x37, 0xfa
+            ]),
+            key
+        );
+    }
+
+    #[test]
+    fn test_get_mc_net_s_key() {
+        let key = get_mc_net_s_key(
+            AES128Key::from_bytes(MC_KEY),
+            DevAddr::from_be_bytes(MC_ADDR),
+        )
+        .unwrap();
+        assert_eq!(
+            AES128Key::from_bytes([
+                0xc3, 0xf6, 0xb3, 0x88, 0xba, 0xd6, 0xc0, 0x0, 0xb2, 0x32, 0x91, 0xad, 0x52, 0xc1,
+                0x1c, 0x7b
+            ]),
+            key
+        );
     }
 
     fn run_tests_encode(tests: &[CommandTest]) {
