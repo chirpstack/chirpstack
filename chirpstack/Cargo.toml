@@ -150,7 +150,7 @@
   base64 = "0.22"
   async-recursion = "1.1"
   regex = "1.11"
-  petgraph = "0.6"
+  petgraph = "0.7"
   prometheus-client = "0.22"
   pin-project = "1.1"
   scoped-futures = { version = "0.1", features = ["std"] }
