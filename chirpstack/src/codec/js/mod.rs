@@ -63,7 +63,7 @@ pub async fn decode(
             .eval()
             .catch(&ctx)
             .map_err(|e| anyhow!("JS error: {}", e))?;
-        buff_promise.finish()?;
+        () = buff_promise.finish()?;
         let buff: rquickjs::Function = buff.get("Buffer")?;
 
         let input = rquickjs::Object::new(ctx.clone())?;
@@ -154,7 +154,7 @@ pub async fn encode(
             .eval()
             .catch(&ctx)
             .map_err(|e| anyhow!("JS error: {}", e))?;
-        buff_promise.finish()?;
+        () = buff_promise.finish()?;
         let buff: rquickjs::Function = buff.get("Buffer")?;
 
         let input = rquickjs::Object::new(ctx.clone())?;

@@ -119,7 +119,7 @@ async fn store_nonce(state: &CsrfToken, nonce: &Nonce) -> Result<()> {
     trace!("Storing nonce");
     let key = redis_key(format!("auth:oidc:{}", state.secret()));
 
-    redis::cmd("PSETEX")
+    () = redis::cmd("PSETEX")
         .arg(key)
         .arg(Duration::try_minutes(5).unwrap().num_milliseconds())
         .arg(nonce.secret())

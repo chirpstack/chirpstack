@@ -16,7 +16,7 @@ pub async fn save_rx_info(rx_info: &internal::DeviceGatewayRxInfo) -> Result<()>
     let ttl = conf.network.device_session_ttl.as_millis() as usize;
     let b = rx_info.encode_to_vec();
 
-    redis::cmd("PSETEX")
+    () = redis::cmd("PSETEX")
         .arg(key)
         .arg(ttl)
         .arg(b)

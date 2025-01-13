@@ -82,11 +82,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .extern_path(".google.protobuf", well_known_types_path)
             .extern_path(".common", "crate::common");
 
-        #[cfg(feature = "diesel")]
-        {
-            builder = builder.message_attribute("internal.DeviceSession", "#[derive(diesel::expression::AsExpression, diesel::deserialize::FromSqlRow)] #[diesel(sql_type = diesel::sql_types::Binary)]");
-        }
-
         builder.compile_protos(
             &[cs_dir
                 .join("internal")

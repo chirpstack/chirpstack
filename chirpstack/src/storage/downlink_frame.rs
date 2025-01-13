@@ -11,7 +11,7 @@ pub async fn save(df: &internal::DownlinkFrame) -> Result<()> {
     let b = df.encode_to_vec();
     let key = redis_key(format!("frame:{}", df.downlink_id));
 
-    redis::cmd("SETEX")
+    () = redis::cmd("SETEX")
         .arg(key)
         .arg(30)
         .arg(b)

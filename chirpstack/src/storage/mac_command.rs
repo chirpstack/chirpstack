@@ -12,7 +12,7 @@ pub async fn set_pending(dev_eui: &EUI64, cid: lrwn::CID, set: &lrwn::MACCommand
     let ttl = conf.network.device_session_ttl.as_millis() as usize;
     let b = set.to_vec()?;
 
-    redis::cmd("PSETEX")
+    () = redis::cmd("PSETEX")
         .arg(key)
         .arg(ttl)
         .arg(b)
@@ -48,7 +48,7 @@ pub async fn get_pending(dev_eui: &EUI64, cid: lrwn::CID) -> Result<Option<lrwn:
 pub async fn delete_pending(dev_eui: &EUI64, cid: lrwn::CID) -> Result<()> {
     let key = redis_key(format!("device:{}:mac:pending:{}", dev_eui, cid.to_u8()));
 
-    redis::cmd("DEL")
+    () = redis::cmd("DEL")
         .arg(key)
         .query_async(&mut get_async_redis_conn().await?)
         .await?;

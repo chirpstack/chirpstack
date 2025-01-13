@@ -55,15 +55,15 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
     //  * We need to be able to lookup the session using the DevAddr (potentially
     //    using the MIC validation).
     //  * We need to be able to stop a passive-roaming session given a DevEUI.
-    redis::pipe()
+    () = redis::pipe()
         .atomic()
         .cmd("SADD")
         .arg(&dev_addr_key)
-        .arg(&sess_id.to_string())
+        .arg(sess_id.to_string())
         .ignore()
         .cmd("SADD")
         .arg(&dev_eui_key)
-        .arg(&sess_id.to_string())
+        .arg(sess_id.to_string())
         .ignore()
         .cmd("PEXPIRE")
         .arg(&dev_addr_key)
@@ -105,7 +105,7 @@ pub async fn get(id: Uuid) -> Result<internal::PassiveRoamingDeviceSession, Erro
 pub async fn delete(id: Uuid) -> Result<()> {
     let key = redis_key(format!("pr:sess:{{{}}}", id));
 
-    redis::cmd("DEL")
+    () = redis::cmd("DEL")
         .arg(&key)
         .query_async(&mut get_async_redis_conn().await?)
         .await?;

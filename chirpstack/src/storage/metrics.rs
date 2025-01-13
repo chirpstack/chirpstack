@@ -78,7 +78,7 @@ pub async fn save_state(name: &str, state: &str) -> Result<()> {
     let key = redis_key(format!("metrics:{{{}}}", name));
     let ttl = get_ttl(Aggregation::MONTH);
 
-    redis::cmd("PSETEX")
+    () = redis::cmd("PSETEX")
         .arg(key)
         .arg(ttl.as_millis() as usize)
         .arg(state)
@@ -160,7 +160,7 @@ pub async fn save(name: &str, record: &Record, aggregations: &[Aggregation]) -> 
         info!(name = %name, aggregation = %a, "Metrics saved");
     }
 
-    pipe.query_async(&mut get_async_redis_conn().await?).await?;
+    () = pipe.query_async(&mut get_async_redis_conn().await?).await?;
 
     Ok(())
 }

@@ -601,7 +601,7 @@ async fn handle_async_ans(bp: &BasePayload, b: &[u8]) -> Result<Response> {
 
     let key = redis_key(format!("backend:async:{}", transaction_id));
 
-    redis::pipe()
+    () = redis::pipe()
         .atomic()
         .cmd("XADD")
         .arg(&key)
