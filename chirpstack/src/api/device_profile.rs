@@ -60,10 +60,6 @@ impl DeviceProfileService for DeviceProfile {
             supports_otaa: req_dp.supports_otaa,
             supports_class_b: req_dp.supports_class_b,
             supports_class_c: req_dp.supports_class_c,
-            class_b_timeout: req_dp.class_b_timeout as i32,
-            class_b_ping_slot_nb_k: req_dp.class_b_ping_slot_nb_k as i32,
-            class_b_ping_slot_dr: req_dp.class_b_ping_slot_dr as i16,
-            class_b_ping_slot_freq: req_dp.class_b_ping_slot_freq as i64,
             class_c_timeout: req_dp.class_c_timeout as i32,
             tags: fields::KeyValue::new(req_dp.tags.clone()),
             measurements: fields::Measurements::new(
@@ -120,6 +116,16 @@ impl DeviceProfileService for DeviceProfile {
                     rx2_freq: req_dp.abp_rx2_freq as u32,
                 })
             },
+            class_b_params: if req_dp.supports_class_b {
+                Some(fields::ClassBParams {
+                    timeout: req_dp.class_b_timeout as u16,
+                    ping_slot_nb_k: req_dp.class_b_ping_slot_nb_k as u8,
+                    ping_slot_dr: req_dp.class_b_ping_slot_dr as u8,
+                    ping_slot_freq: req_dp.class_b_ping_slot_freq as u32,
+                })
+            } else {
+                None
+            },
             ..Default::default()
         };
 
@@ -152,6 +158,7 @@ impl DeviceProfileService for DeviceProfile {
 
         let dp = device_profile::get(&dp_id).await.map_err(|e| e.status())?;
         let abp_params = dp.abp_params.clone().unwrap_or_default();
+        let class_b_params = dp.class_b_params.clone().unwrap_or_default();
 
         let mut resp = Response::new(api::GetDeviceProfileResponse {
             device_profile: Some(api::DeviceProfile {
@@ -171,10 +178,10 @@ impl DeviceProfileService for DeviceProfile {
                 supports_otaa: dp.supports_otaa,
                 supports_class_b: dp.supports_class_b,
                 supports_class_c: dp.supports_class_c,
-                class_b_timeout: dp.class_b_timeout as u32,
-                class_b_ping_slot_nb_k: dp.class_b_ping_slot_nb_k as u32,
-                class_b_ping_slot_dr: dp.class_b_ping_slot_dr as u32,
-                class_b_ping_slot_freq: dp.class_b_ping_slot_freq as u32,
+                class_b_timeout: class_b_params.timeout as u32,
+                class_b_ping_slot_nb_k: class_b_params.ping_slot_nb_k as u32,
+                class_b_ping_slot_dr: class_b_params.ping_slot_dr as u32,
+                class_b_ping_slot_freq: class_b_params.ping_slot_freq as u32,
                 class_c_timeout: dp.class_c_timeout as u32,
                 abp_rx1_delay: abp_params.rx1_delay as u32,
                 abp_rx1_dr_offset: abp_params.rx1_dr_offset as u32,
@@ -269,10 +276,6 @@ impl DeviceProfileService for DeviceProfile {
             supports_otaa: req_dp.supports_otaa,
             supports_class_b: req_dp.supports_class_b,
             supports_class_c: req_dp.supports_class_c,
-            class_b_timeout: req_dp.class_b_timeout as i32,
-            class_b_ping_slot_nb_k: req_dp.class_b_ping_slot_nb_k as i32,
-            class_b_ping_slot_dr: req_dp.class_b_ping_slot_dr as i16,
-            class_b_ping_slot_freq: req_dp.class_b_ping_slot_freq as i64,
             class_c_timeout: req_dp.class_c_timeout as i32,
             tags: fields::KeyValue::new(req_dp.tags.clone()),
             measurements: fields::Measurements::new(
@@ -328,6 +331,16 @@ impl DeviceProfileService for DeviceProfile {
                     rx2_dr: req_dp.abp_rx2_dr as u8,
                     rx2_freq: req_dp.abp_rx2_freq as u32,
                 })
+            },
+            class_b_params: if req_dp.supports_class_b {
+                Some(fields::ClassBParams {
+                    timeout: req_dp.class_b_timeout as u16,
+                    ping_slot_nb_k: req_dp.class_b_ping_slot_nb_k as u8,
+                    ping_slot_dr: req_dp.class_b_ping_slot_dr as u8,
+                    ping_slot_freq: req_dp.class_b_ping_slot_freq as u32,
+                })
+            } else {
+                None
             },
             ..Default::default()
         })
