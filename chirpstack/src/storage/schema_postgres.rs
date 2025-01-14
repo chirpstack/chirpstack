@@ -108,10 +108,6 @@ diesel::table! {
         class_b_ping_slot_dr -> Int2,
         class_b_ping_slot_freq -> Int8,
         class_c_timeout -> Int4,
-        abp_rx1_delay -> Int2,
-        abp_rx1_dr_offset -> Int2,
-        abp_rx2_dr -> Int2,
-        abp_rx2_freq -> Int8,
         tags -> Jsonb,
         payload_codec_script -> Text,
         flush_queue_on_activate -> Bool,
@@ -144,6 +140,7 @@ diesel::table! {
         relay_overall_limit_bucket_size -> Int2,
         allow_roaming -> Bool,
         rx1_delay -> Int2,
+        abp_params -> Nullable<Jsonb>,
     }
 }
 

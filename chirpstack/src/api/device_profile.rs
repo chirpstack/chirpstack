@@ -65,10 +65,6 @@ impl DeviceProfileService for DeviceProfile {
             class_b_ping_slot_dr: req_dp.class_b_ping_slot_dr as i16,
             class_b_ping_slot_freq: req_dp.class_b_ping_slot_freq as i64,
             class_c_timeout: req_dp.class_c_timeout as i32,
-            abp_rx1_delay: req_dp.abp_rx1_delay as i16,
-            abp_rx1_dr_offset: req_dp.abp_rx1_dr_offset as i16,
-            abp_rx2_dr: req_dp.abp_rx2_dr as i16,
-            abp_rx2_freq: req_dp.abp_rx2_freq as i64,
             tags: fields::KeyValue::new(req_dp.tags.clone()),
             measurements: fields::Measurements::new(
                 req_dp
@@ -114,6 +110,16 @@ impl DeviceProfileService for DeviceProfile {
             relay_overall_limit_bucket_size: req_dp.relay_overall_limit_bucket_size as i16,
             allow_roaming: req_dp.allow_roaming,
             rx1_delay: req_dp.rx1_delay as i16,
+            abp_params: if req_dp.supports_otaa {
+                None
+            } else {
+                Some(fields::AbpParams {
+                    rx1_delay: req_dp.abp_rx1_delay as u8,
+                    rx1_dr_offset: req_dp.abp_rx1_dr_offset as u8,
+                    rx2_dr: req_dp.abp_rx2_dr as u8,
+                    rx2_freq: req_dp.abp_rx2_freq as u32,
+                })
+            },
             ..Default::default()
         };
 
@@ -145,6 +151,7 @@ impl DeviceProfileService for DeviceProfile {
             .await?;
 
         let dp = device_profile::get(&dp_id).await.map_err(|e| e.status())?;
+        let abp_params = dp.abp_params.clone().unwrap_or_default();
 
         let mut resp = Response::new(api::GetDeviceProfileResponse {
             device_profile: Some(api::DeviceProfile {
@@ -169,10 +176,10 @@ impl DeviceProfileService for DeviceProfile {
                 class_b_ping_slot_dr: dp.class_b_ping_slot_dr as u32,
                 class_b_ping_slot_freq: dp.class_b_ping_slot_freq as u32,
                 class_c_timeout: dp.class_c_timeout as u32,
-                abp_rx1_delay: dp.abp_rx1_delay as u32,
-                abp_rx1_dr_offset: dp.abp_rx1_dr_offset as u32,
-                abp_rx2_dr: dp.abp_rx2_dr as u32,
-                abp_rx2_freq: dp.abp_rx2_freq as u32,
+                abp_rx1_delay: abp_params.rx1_delay as u32,
+                abp_rx1_dr_offset: abp_params.rx1_dr_offset as u32,
+                abp_rx2_dr: abp_params.rx2_dr as u32,
+                abp_rx2_freq: abp_params.rx2_freq as u32,
                 tags: dp.tags.into_hashmap(),
                 measurements: dp
                     .measurements
@@ -267,10 +274,6 @@ impl DeviceProfileService for DeviceProfile {
             class_b_ping_slot_dr: req_dp.class_b_ping_slot_dr as i16,
             class_b_ping_slot_freq: req_dp.class_b_ping_slot_freq as i64,
             class_c_timeout: req_dp.class_c_timeout as i32,
-            abp_rx1_delay: req_dp.abp_rx1_delay as i16,
-            abp_rx1_dr_offset: req_dp.abp_rx1_dr_offset as i16,
-            abp_rx2_dr: req_dp.abp_rx2_dr as i16,
-            abp_rx2_freq: req_dp.abp_rx2_freq as i64,
             tags: fields::KeyValue::new(req_dp.tags.clone()),
             measurements: fields::Measurements::new(
                 req_dp
@@ -316,6 +319,16 @@ impl DeviceProfileService for DeviceProfile {
             relay_overall_limit_bucket_size: req_dp.relay_overall_limit_bucket_size as i16,
             allow_roaming: req_dp.allow_roaming,
             rx1_delay: req_dp.rx1_delay as i16,
+            abp_params: if req_dp.supports_otaa {
+                None
+            } else {
+                Some(fields::AbpParams {
+                    rx1_delay: req_dp.abp_rx1_delay as u8,
+                    rx1_dr_offset: req_dp.abp_rx1_dr_offset as u8,
+                    rx2_dr: req_dp.abp_rx2_dr as u8,
+                    rx2_freq: req_dp.abp_rx2_freq as u32,
+                })
+            },
             ..Default::default()
         })
         .await
