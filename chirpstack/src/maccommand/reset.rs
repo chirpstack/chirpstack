@@ -1,7 +1,7 @@
 use anyhow::Result;
 use tracing::info;
 
-use crate::storage::{device, device_profile, fields};
+use crate::storage::{device, device_profile};
 
 const SERV_LORAWAN_VERSION: lrwn::Version = lrwn::Version::LoRaWAN1_1;
 
@@ -42,6 +42,7 @@ pub fn handle(
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use crate::storage::fields;
     use chirpstack_api::internal;
     use std::collections::HashMap;
 
@@ -70,14 +71,17 @@ pub mod test {
         };
         let dp = device_profile::DeviceProfile {
             supports_otaa: false,
-            class_b_ping_slot_dr: 2,
-            class_b_ping_slot_freq: 868100000,
-            class_b_ping_slot_nb_k: 1,
             abp_params: Some(fields::AbpParams {
                 rx1_delay: 1,
                 rx1_dr_offset: 0,
                 rx2_dr: 0,
                 rx2_freq: 868300000,
+            }),
+            class_b_params: Some(fields::ClassBParams {
+                ping_slot_dr: 2,
+                ping_slot_freq: 868100000,
+                ping_slot_nb_k: 1,
+                timeout: 0,
             }),
             ..Default::default()
         };

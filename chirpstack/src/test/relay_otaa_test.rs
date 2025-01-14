@@ -289,7 +289,6 @@ async fn test_lorawan_10() {
                 enabled_uplink_channel_indices: vec![0, 1, 2],
                 nb_trans: 1,
                 region_config_id: "eu868".to_string(),
-                class_b_ping_slot_nb: 1,
                 ..Default::default()
             }
             .into(),

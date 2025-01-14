@@ -92,10 +92,6 @@ diesel::table! {
         supports_otaa -> Bool,
         supports_class_b -> Bool,
         supports_class_c -> Bool,
-        class_b_timeout -> Integer,
-        class_b_ping_slot_nb_k -> Integer,
-        class_b_ping_slot_dr -> SmallInt,
-        class_b_ping_slot_freq -> BigInt,
         class_c_timeout -> Integer,
         tags -> Text,
         payload_codec_script -> Text,
@@ -129,6 +125,7 @@ diesel::table! {
         allow_roaming -> Bool,
         rx1_delay -> SmallInt,
         abp_params -> Nullable<Text>,
+        class_b_params -> Nullable<Text>,
     }
 }
 

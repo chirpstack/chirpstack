@@ -103,10 +103,6 @@ diesel::table! {
         supports_otaa -> Bool,
         supports_class_b -> Bool,
         supports_class_c -> Bool,
-        class_b_timeout -> Int4,
-        class_b_ping_slot_nb_k -> Int4,
-        class_b_ping_slot_dr -> Int2,
-        class_b_ping_slot_freq -> Int8,
         class_c_timeout -> Int4,
         tags -> Jsonb,
         payload_codec_script -> Text,
@@ -141,6 +137,7 @@ diesel::table! {
         allow_roaming -> Bool,
         rx1_delay -> Int2,
         abp_params -> Nullable<Jsonb>,
+        class_b_params -> Nullable<Jsonb>,
     }
 }
 
