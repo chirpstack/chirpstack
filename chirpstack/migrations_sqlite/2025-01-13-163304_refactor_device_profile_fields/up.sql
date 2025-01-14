@@ -1,5 +1,6 @@
 alter table device_profile add column abp_params text null;
 alter table device_profile add column class_b_params text null;
+alter table device_profile add column class_c_params text null;
 
 update device_profile
   set abp_params = json_object(
@@ -15,7 +16,12 @@ update device_profile
     'ping_slot_nb_k', class_b_ping_slot_nb_k,
     'ping_slot_dr', class_b_ping_slot_dr,
     'ping_slot_freq', class_b_ping_slot_freq)
-  where supports_class_b = false;
+  where supports_class_b = true;
+
+update device_profile
+  set class_c_params = json_object(
+    'timeout', class_c_timeout)
+  where supports_class_c = true;
 
 alter table device_profile drop column abp_rx1_delay;
 alter table device_profile drop column abp_rx1_dr_offset;
@@ -27,3 +33,4 @@ alter table device_profile drop column class_b_ping_slot_nb_k;
 alter table device_profile drop column class_b_ping_slot_dr;
 alter table device_profile drop column class_b_ping_slot_freq;
 
+alter table device_profile drop column class_c_timeout;

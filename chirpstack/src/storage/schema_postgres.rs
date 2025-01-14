@@ -103,7 +103,6 @@ diesel::table! {
         supports_otaa -> Bool,
         supports_class_b -> Bool,
         supports_class_c -> Bool,
-        class_c_timeout -> Int4,
         tags -> Jsonb,
         payload_codec_script -> Text,
         flush_queue_on_activate -> Bool,
@@ -138,6 +137,7 @@ diesel::table! {
         rx1_delay -> Int2,
         abp_params -> Nullable<Jsonb>,
         class_b_params -> Nullable<Jsonb>,
+        class_c_params -> Nullable<Jsonb>,
     }
 }
 

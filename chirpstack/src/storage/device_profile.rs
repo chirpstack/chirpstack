@@ -34,7 +34,6 @@ pub struct DeviceProfile {
     pub supports_otaa: bool,
     pub supports_class_b: bool,
     pub supports_class_c: bool,
-    pub class_c_timeout: i32,
     pub tags: fields::KeyValue,
     pub payload_codec_script: String,
     pub flush_queue_on_activate: bool,
@@ -68,6 +67,7 @@ pub struct DeviceProfile {
     pub rx1_delay: i16,
     pub abp_params: Option<fields::AbpParams>,
     pub class_b_params: Option<fields::ClassBParams>,
+    pub class_c_params: Option<fields::ClassCParams>,
 }
 
 impl DeviceProfile {
@@ -107,7 +107,6 @@ impl Default for DeviceProfile {
             supports_otaa: false,
             supports_class_b: false,
             supports_class_c: false,
-            class_c_timeout: 0,
             tags: fields::KeyValue::new(HashMap::new()),
             measurements: fields::Measurements::new(HashMap::new()),
             auto_detect_measurements: false,
@@ -138,6 +137,7 @@ impl Default for DeviceProfile {
             rx1_delay: 0,
             abp_params: None,
             class_b_params: None,
+            class_c_params: None,
         }
     }
 }
@@ -238,7 +238,6 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::supports_otaa.eq(&dp.supports_otaa),
             device_profile::supports_class_b.eq(&dp.supports_class_b),
             device_profile::supports_class_c.eq(&dp.supports_class_c),
-            device_profile::class_c_timeout.eq(&dp.class_c_timeout),
             device_profile::tags.eq(&dp.tags),
             device_profile::measurements.eq(&dp.measurements),
             device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
@@ -275,6 +274,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::rx1_delay.eq(&dp.rx1_delay),
             device_profile::abp_params.eq(&dp.abp_params),
             device_profile::class_b_params.eq(&dp.class_b_params),
+            device_profile::class_c_params.eq(&dp.class_c_params),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await
