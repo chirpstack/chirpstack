@@ -34,10 +34,6 @@ pub struct DeviceProfile {
     pub supports_otaa: bool,
     pub supports_class_b: bool,
     pub supports_class_c: bool,
-    pub class_b_timeout: i32,
-    pub class_b_ping_slot_nb_k: i32,
-    pub class_b_ping_slot_dr: i16,
-    pub class_b_ping_slot_freq: i64,
     pub class_c_timeout: i32,
     pub tags: fields::KeyValue,
     pub payload_codec_script: String,
@@ -71,6 +67,7 @@ pub struct DeviceProfile {
     pub allow_roaming: bool,
     pub rx1_delay: i16,
     pub abp_params: Option<fields::AbpParams>,
+    pub class_b_params: Option<fields::ClassBParams>,
 }
 
 impl DeviceProfile {
@@ -110,10 +107,6 @@ impl Default for DeviceProfile {
             supports_otaa: false,
             supports_class_b: false,
             supports_class_c: false,
-            class_b_timeout: 0,
-            class_b_ping_slot_nb_k: 0,
-            class_b_ping_slot_dr: 0,
-            class_b_ping_slot_freq: 0,
             class_c_timeout: 0,
             tags: fields::KeyValue::new(HashMap::new()),
             measurements: fields::Measurements::new(HashMap::new()),
@@ -144,6 +137,7 @@ impl Default for DeviceProfile {
             allow_roaming: false,
             rx1_delay: 0,
             abp_params: None,
+            class_b_params: None,
         }
     }
 }
@@ -151,10 +145,13 @@ impl Default for DeviceProfile {
 impl DeviceProfile {
     pub fn reset_session_to_boot_params(&self, ds: &mut internal::DeviceSession) {
         ds.mac_version = self.mac_version.to_proto().into();
-        ds.class_b_ping_slot_dr = self.class_b_ping_slot_dr as u32;
-        ds.class_b_ping_slot_freq = self.class_b_ping_slot_freq as u32;
-        ds.class_b_ping_slot_nb = 1 << self.class_b_ping_slot_nb_k as u32;
         ds.nb_trans = 1;
+
+        if let Some(class_b_params) = &self.class_b_params {
+            ds.class_b_ping_slot_dr = class_b_params.ping_slot_dr as u32;
+            ds.class_b_ping_slot_freq = class_b_params.ping_slot_freq as u32;
+            ds.class_b_ping_slot_nb = 1 << class_b_params.ping_slot_nb_k as u32;
+        }
 
         if self.is_relay_ed {
             ds.relay = Some(internal::Relay {
@@ -241,10 +238,6 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::supports_otaa.eq(&dp.supports_otaa),
             device_profile::supports_class_b.eq(&dp.supports_class_b),
             device_profile::supports_class_c.eq(&dp.supports_class_c),
-            device_profile::class_b_timeout.eq(&dp.class_b_timeout),
-            device_profile::class_b_ping_slot_nb_k.eq(&dp.class_b_ping_slot_nb_k),
-            device_profile::class_b_ping_slot_dr.eq(&dp.class_b_ping_slot_dr),
-            device_profile::class_b_ping_slot_freq.eq(&dp.class_b_ping_slot_freq),
             device_profile::class_c_timeout.eq(&dp.class_c_timeout),
             device_profile::tags.eq(&dp.tags),
             device_profile::measurements.eq(&dp.measurements),
@@ -281,6 +274,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::allow_roaming.eq(&dp.allow_roaming),
             device_profile::rx1_delay.eq(&dp.rx1_delay),
             device_profile::abp_params.eq(&dp.abp_params),
+            device_profile::class_b_params.eq(&dp.class_b_params),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await
