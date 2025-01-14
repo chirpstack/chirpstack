@@ -6,6 +6,7 @@ alter table device_profile add column class_b_timeout integer not null default 0
 alter table device_profile add column class_b_ping_slot_nb_k integer not null default 0;
 alter table device_profile add column class_b_ping_slot_dr smallint not null default 0;
 alter table device_profile add column class_b_ping_slot_freq bigint not null default 0;
+alter table device_profile add column class_c_timeout integer not null default 0;
 
 update device_profile
   set
@@ -25,6 +26,13 @@ update device_profile
   where
     class_b_params is not null;
 
+update device_profile
+  set
+    class_c_timeout = class_c_params->'timeout'
+  where
+    class_c_params is not null;
+
 alter table device_profile drop column abp_params;
 alter table device_profile drop column class_b_params;
+alter table device_profile drop column class_c_params;
 

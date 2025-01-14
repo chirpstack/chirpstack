@@ -92,7 +92,6 @@ diesel::table! {
         supports_otaa -> Bool,
         supports_class_b -> Bool,
         supports_class_c -> Bool,
-        class_c_timeout -> Integer,
         tags -> Text,
         payload_codec_script -> Text,
         flush_queue_on_activate -> Bool,
@@ -126,6 +125,7 @@ diesel::table! {
         rx1_delay -> SmallInt,
         abp_params -> Nullable<Text>,
         class_b_params -> Nullable<Text>,
+        class_c_params -> Nullable<Text>,
     }
 }
 
