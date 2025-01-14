@@ -39,10 +39,6 @@ pub struct DeviceProfile {
     pub class_b_ping_slot_dr: i16,
     pub class_b_ping_slot_freq: i64,
     pub class_c_timeout: i32,
-    pub abp_rx1_delay: i16,
-    pub abp_rx1_dr_offset: i16,
-    pub abp_rx2_dr: i16,
-    pub abp_rx2_freq: i64,
     pub tags: fields::KeyValue,
     pub payload_codec_script: String,
     pub flush_queue_on_activate: bool,
@@ -74,6 +70,7 @@ pub struct DeviceProfile {
     pub relay_overall_limit_bucket_size: i16,
     pub allow_roaming: bool,
     pub rx1_delay: i16,
+    pub abp_params: Option<fields::AbpParams>,
 }
 
 impl DeviceProfile {
@@ -118,10 +115,6 @@ impl Default for DeviceProfile {
             class_b_ping_slot_dr: 0,
             class_b_ping_slot_freq: 0,
             class_c_timeout: 0,
-            abp_rx1_delay: 0,
-            abp_rx1_dr_offset: 0,
-            abp_rx2_dr: 0,
-            abp_rx2_freq: 0,
             tags: fields::KeyValue::new(HashMap::new()),
             measurements: fields::Measurements::new(HashMap::new()),
             auto_detect_measurements: false,
@@ -150,6 +143,7 @@ impl Default for DeviceProfile {
             relay_overall_limit_bucket_size: 0,
             allow_roaming: false,
             rx1_delay: 0,
+            abp_params: None,
         }
     }
 }
@@ -174,11 +168,14 @@ impl DeviceProfile {
             ds.min_supported_tx_power_index = 0;
             ds.max_supported_tx_power_index = 0;
             ds.extra_uplink_channels = HashMap::new();
-            ds.rx1_delay = self.abp_rx1_delay as u32;
-            ds.rx1_dr_offset = self.abp_rx1_dr_offset as u32;
-            ds.rx2_dr = self.abp_rx2_dr as u32;
-            ds.rx2_frequency = self.abp_rx2_freq as u32;
             ds.enabled_uplink_channel_indices = Vec::new();
+
+            if let Some(abp_params) = &self.abp_params {
+                ds.rx1_delay = abp_params.rx1_delay as u32;
+                ds.rx1_dr_offset = abp_params.rx1_dr_offset as u32;
+                ds.rx2_dr = abp_params.rx2_dr as u32;
+                ds.rx2_frequency = abp_params.rx2_freq as u32;
+            }
         }
     }
 }
@@ -249,10 +246,6 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::class_b_ping_slot_dr.eq(&dp.class_b_ping_slot_dr),
             device_profile::class_b_ping_slot_freq.eq(&dp.class_b_ping_slot_freq),
             device_profile::class_c_timeout.eq(&dp.class_c_timeout),
-            device_profile::abp_rx1_delay.eq(&dp.abp_rx1_delay),
-            device_profile::abp_rx1_dr_offset.eq(&dp.abp_rx1_dr_offset),
-            device_profile::abp_rx2_dr.eq(&dp.abp_rx2_dr),
-            device_profile::abp_rx2_freq.eq(&dp.abp_rx2_freq),
             device_profile::tags.eq(&dp.tags),
             device_profile::measurements.eq(&dp.measurements),
             device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
@@ -287,6 +280,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::relay_overall_limit_bucket_size.eq(&dp.relay_overall_limit_bucket_size),
             device_profile::allow_roaming.eq(&dp.allow_roaming),
             device_profile::rx1_delay.eq(&dp.rx1_delay),
+            device_profile::abp_params.eq(&dp.abp_params),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await

@@ -97,10 +97,6 @@ diesel::table! {
         class_b_ping_slot_dr -> SmallInt,
         class_b_ping_slot_freq -> BigInt,
         class_c_timeout -> Integer,
-        abp_rx1_delay -> SmallInt,
-        abp_rx1_dr_offset -> SmallInt,
-        abp_rx2_dr -> SmallInt,
-        abp_rx2_freq -> BigInt,
         tags -> Text,
         payload_codec_script -> Text,
         flush_queue_on_activate -> Bool,
@@ -132,6 +128,7 @@ diesel::table! {
         relay_overall_limit_bucket_size -> SmallInt,
         allow_roaming -> Bool,
         rx1_delay -> SmallInt,
+        abp_params -> Nullable<Text>,
     }
 }
 
