@@ -1396,8 +1396,10 @@ impl Data {
         let dp = self.device_profile.as_ref().unwrap();
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
-            if dp.is_relay && pl.f_port.unwrap_or(0) == lrwn::LA_FPORT_RELAY {
-                return true;
+            if let Some(relay_params) = &dp.relay_params {
+                if relay_params.is_relay && pl.f_port.unwrap_or(0) == lrwn::LA_FPORT_RELAY {
+                    return true;
+                }
             }
         }
 
