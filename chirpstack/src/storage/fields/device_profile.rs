@@ -146,3 +146,91 @@ impl serialize::ToSql<Text, Sqlite> for ClassCParams {
         Ok(serialize::IsNull::No)
     }
 }
+
+#[derive(
+    Default, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, AsExpression, FromSqlRow,
+)]
+#[cfg_attr(feature = "postgres", diesel(sql_type = Jsonb))]
+#[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
+pub struct RelayParams {
+    pub is_relay: bool,
+    pub is_relay_ed: bool,
+    pub ed_relay_only: bool,
+    pub relay_enabled: bool,
+    pub relay_cad_periodicity: u8,
+    pub default_channel_index: u8,
+    pub second_channel_freq: u32,
+    pub second_channel_dr: u8,
+    pub second_channel_ack_offset: u8,
+    #[serde(with = "ed_activation_mode")]
+    pub ed_activation_mode: lrwn::RelayModeActivation,
+    pub ed_smart_enable_level: u8,
+    pub ed_back_off: u8,
+    pub ed_uplink_limit_bucket_size: u8,
+    pub ed_uplink_limit_reload_rate: u8,
+    pub relay_join_req_limit_reload_rate: u8,
+    pub relay_notify_limit_reload_rate: u8,
+    pub relay_global_uplink_limit_reload_rate: u8,
+    pub relay_overall_limit_reload_rate: u8,
+    pub relay_join_req_limit_bucket_size: u8,
+    pub relay_notify_limit_bucket_size: u8,
+    pub relay_global_uplink_limit_bucket_size: u8,
+    pub relay_overall_limit_bucket_size: u8,
+}
+
+#[cfg(feature = "postgres")]
+impl deserialize::FromSql<Jsonb, Pg> for RelayParams {
+    fn from_sql(value: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <serde_json::Value as deserialize::FromSql<Jsonb, Pg>>::from_sql(value)?;
+        Ok(serde_json::from_value(value)?)
+    }
+}
+
+#[cfg(feature = "postgres")]
+impl serialize::ToSql<Jsonb, Pg> for RelayParams {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+        let value = serde_json::to_value(&self)?;
+        <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl deserialize::FromSql<Text, Sqlite> for RelayParams
+where
+    *const str: deserialize::FromSql<Text, Sqlite>,
+{
+    fn from_sql(value: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let s =
+            <*const str as deserialize::FromSql<diesel::sql_types::Text, Sqlite>>::from_sql(value)?;
+        Ok(serde_json::from_str(unsafe { &*s })?)
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for RelayParams {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
+        out.set_value(serde_json::to_string(&self)?);
+        Ok(serialize::IsNull::No)
+    }
+}
+
+mod ed_activation_mode {
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(v: &lrwn::RelayModeActivation, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_u8(v.to_u8())
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<lrwn::RelayModeActivation, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let v = u8::deserialize(deserializer)?;
+        let v = lrwn::RelayModeActivation::from_u8(v)
+            .map_err(|e| serde::de::Error::custom(e.to_string()))?;
+        Ok(v)
+    }
+}

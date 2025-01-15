@@ -1,6 +1,6 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::{dsl, prelude::*};
+use diesel::{dsl, prelude::*, sql_types};
 use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
@@ -43,10 +43,24 @@ pub struct DeviceListItem {
 }
 
 pub async fn get_relay_count(filters: &RelayFilters) -> Result<i64, Error> {
-    let mut q = device::dsl::device
+    let q = device::dsl::device
         .select(dsl::count_star())
-        .inner_join(device_profile::table)
-        .filter(device_profile::dsl::is_relay.eq(true))
+        .inner_join(device_profile::table);
+
+    #[cfg(feature = "postgres")]
+    let mut q = q
+        .filter(
+            dsl::sql::<sql_types::Bool>("(relay_params->'is_relay')::boolean =")
+                .bind::<sql_types::Bool, _>(true),
+        )
+        .into_boxed();
+
+    #[cfg(feature = "sqlite")]
+    let mut q = q
+        .filter(
+            dsl::sql::<sql_types::Bool>("relay_params->>'is_relay' =")
+                .bind::<sql_types::Bool, _>(true),
+        )
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
@@ -61,10 +75,24 @@ pub async fn list_relays(
     offset: i64,
     filters: &RelayFilters,
 ) -> Result<Vec<RelayListItem>, Error> {
-    let mut q = device::dsl::device
+    let q = device::dsl::device
         .inner_join(device_profile::table)
-        .select((device::dev_eui, device::name))
-        .filter(device_profile::dsl::is_relay.eq(true))
+        .select((device::dev_eui, device::name));
+
+    #[cfg(feature = "postgres")]
+    let mut q = q
+        .filter(
+            dsl::sql::<sql_types::Bool>("(relay_params->'is_relay')::boolean =")
+                .bind::<sql_types::Bool, _>(true),
+        )
+        .into_boxed();
+
+    #[cfg(feature = "sqlite")]
+    let mut q = q
+        .filter(
+            dsl::sql::<sql_types::Bool>("relay_params->>'is_relay' =")
+                .bind::<sql_types::Bool, _>(true),
+        )
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
@@ -98,19 +126,43 @@ pub async fn list_devices(
     offset: i64,
     filters: &DeviceFilters,
 ) -> Result<Vec<DeviceListItem>, Error> {
-    let mut q = relay_device::dsl::relay_device
+    let q = relay_device::dsl::relay_device
         .inner_join(device::table.on(relay_device::dsl::dev_eui.eq(device::dsl::dev_eui)))
         .inner_join(
             device_profile::table.on(device::dsl::device_profile_id.eq(device_profile::dsl::id)),
-        )
+        );
+
+    #[cfg(feature = "postgres")]
+    let mut q = q
         .select((
             relay_device::dev_eui,
             device::join_eui,
             device::dev_addr,
             relay_device::created_at,
             device::name,
-            device_profile::relay_ed_uplink_limit_bucket_size,
-            device_profile::relay_ed_uplink_limit_reload_rate,
+            dsl::sql::<sql_types::SmallInt>(
+                "coalesce((relay_params->'ed_uplink_limit_bucket_size')::smallint, 0::smallint)",
+            ),
+            dsl::sql::<sql_types::SmallInt>(
+                "coalesce((relay_params->'ed_uplink_limit_reload_rate')::smallint, 0::smallint)",
+            ),
+        ))
+        .into_boxed();
+
+    #[cfg(feature = "sqlite")]
+    let mut q = q
+        .select((
+            relay_device::dev_eui,
+            device::join_eui,
+            device::dev_addr,
+            relay_device::created_at,
+            device::name,
+            dsl::sql::<sql_types::SmallInt>(
+                "coalesce(relay_params->>'ed_uplink_limit_bucket_size', 0)",
+            ),
+            dsl::sql::<sql_types::SmallInt>(
+                "coalesce(relay_params->>'ed_uplink_limit_reload_rate', 0)",
+            ),
         ))
         .into_boxed();
 
@@ -145,7 +197,13 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
                 .get_result(c)
                 .await
                 .map_err(|e| Error::from_diesel(e, rd.device_profile_id.to_string()))?;
-            if !rdp.is_relay {
+
+            if !rdp
+                .relay_params
+                .as_ref()
+                .map(|v| v.is_relay)
+                .unwrap_or_default()
+            {
                 return Err(Error::Validation("Device is not a relay".to_string()));
             }
 
@@ -175,8 +233,10 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
             }
 
             // Validate that the device is not a relay.
-            if dp.is_relay {
-                return Err(Error::Validation("Can not add relay to a relay".into()));
+            if let Some(relay_params) = &dp.relay_params {
+                if relay_params.is_relay {
+                    return Err(Error::Validation("Can not add relay to a relay".into()));
+                }
             }
 
             // Validate max. number of devices.
@@ -248,7 +308,10 @@ pub mod test {
         let dp_relay = storage::device_profile::create(storage::device_profile::DeviceProfile {
             tenant_id: dp.tenant_id,
             name: "relay".into(),
-            is_relay: true,
+            relay_params: Some(fields::RelayParams {
+                is_relay: true,
+                ..Default::default()
+            }),
             ..Default::default()
         })
         .await

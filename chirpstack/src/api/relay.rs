@@ -182,7 +182,7 @@ pub mod test {
     use super::*;
     use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
-    use crate::storage::{application, device, device_profile, tenant, user};
+    use crate::storage::{application, device, device_profile, fields, tenant, user};
     use crate::test;
 
     #[tokio::test]
@@ -229,7 +229,10 @@ pub mod test {
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "test-dp".into(),
             tenant_id: t.id,
-            is_relay: true,
+            relay_params: Some(fields::RelayParams {
+                is_relay: true,
+                ..Default::default()
+            }),
             ..Default::default()
         })
         .await
