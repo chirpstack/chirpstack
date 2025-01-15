@@ -79,30 +79,6 @@ impl DeviceProfileService for DeviceProfile {
             auto_detect_measurements: req_dp.auto_detect_measurements,
             region_config_id: (!req_dp.region_config_id.is_empty())
                 .then(|| req_dp.region_config_id.clone()),
-            is_relay: req_dp.is_relay,
-            is_relay_ed: req_dp.is_relay_ed,
-            relay_ed_relay_only: req_dp.relay_ed_relay_only,
-            relay_enabled: req_dp.relay_enabled,
-            relay_cad_periodicity: req_dp.relay_cad_periodicity as i16,
-            relay_default_channel_index: req_dp.relay_default_channel_index as i16,
-            relay_second_channel_freq: req_dp.relay_second_channel_freq as i64,
-            relay_second_channel_dr: req_dp.relay_second_channel_dr as i16,
-            relay_second_channel_ack_offset: req_dp.relay_second_channel_ack_offset as i16,
-            relay_ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
-            relay_ed_smart_enable_level: req_dp.relay_ed_smart_enable_level as i16,
-            relay_ed_back_off: req_dp.relay_ed_back_off as i16,
-            relay_ed_uplink_limit_bucket_size: req_dp.relay_ed_uplink_limit_bucket_size as i16,
-            relay_ed_uplink_limit_reload_rate: req_dp.relay_ed_uplink_limit_reload_rate as i16,
-            relay_join_req_limit_reload_rate: req_dp.relay_join_req_limit_reload_rate as i16,
-            relay_notify_limit_reload_rate: req_dp.relay_notify_limit_reload_rate as i16,
-            relay_global_uplink_limit_reload_rate: req_dp.relay_global_uplink_limit_reload_rate
-                as i16,
-            relay_overall_limit_reload_rate: req_dp.relay_overall_limit_reload_rate as i16,
-            relay_join_req_limit_bucket_size: req_dp.relay_join_req_limit_bucket_size as i16,
-            relay_notify_limit_bucket_size: req_dp.relay_notify_limit_bucket_size as i16,
-            relay_global_uplink_limit_bucket_size: req_dp.relay_global_uplink_limit_bucket_size
-                as i16,
-            relay_overall_limit_bucket_size: req_dp.relay_overall_limit_bucket_size as i16,
             allow_roaming: req_dp.allow_roaming,
             rx1_delay: req_dp.rx1_delay as i16,
             abp_params: if req_dp.supports_otaa {
@@ -128,6 +104,38 @@ impl DeviceProfileService for DeviceProfile {
             class_c_params: if req_dp.supports_class_c {
                 Some(fields::ClassCParams {
                     timeout: req_dp.class_c_timeout as u16,
+                })
+            } else {
+                None
+            },
+            relay_params: if req_dp.is_relay || req_dp.is_relay_ed {
+                Some(fields::RelayParams {
+                    is_relay: req_dp.is_relay,
+                    is_relay_ed: req_dp.is_relay_ed,
+                    ed_relay_only: req_dp.relay_ed_relay_only,
+                    relay_enabled: req_dp.relay_enabled,
+                    relay_cad_periodicity: req_dp.relay_cad_periodicity as u8,
+                    default_channel_index: req_dp.relay_default_channel_index as u8,
+                    second_channel_freq: req_dp.relay_second_channel_freq as u32,
+                    second_channel_dr: req_dp.relay_second_channel_dr as u8,
+                    second_channel_ack_offset: req_dp.relay_second_channel_ack_offset as u8,
+                    ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
+                    ed_smart_enable_level: req_dp.relay_ed_smart_enable_level as u8,
+                    ed_back_off: req_dp.relay_ed_back_off as u8,
+                    ed_uplink_limit_bucket_size: req_dp.relay_ed_uplink_limit_bucket_size as u8,
+                    ed_uplink_limit_reload_rate: req_dp.relay_ed_uplink_limit_reload_rate as u8,
+                    relay_join_req_limit_reload_rate: req_dp.relay_join_req_limit_reload_rate as u8,
+                    relay_notify_limit_reload_rate: req_dp.relay_notify_limit_reload_rate as u8,
+                    relay_global_uplink_limit_reload_rate: req_dp
+                        .relay_global_uplink_limit_reload_rate
+                        as u8,
+                    relay_overall_limit_reload_rate: req_dp.relay_overall_limit_reload_rate as u8,
+                    relay_join_req_limit_bucket_size: req_dp.relay_join_req_limit_bucket_size as u8,
+                    relay_notify_limit_bucket_size: req_dp.relay_notify_limit_bucket_size as u8,
+                    relay_global_uplink_limit_bucket_size: req_dp
+                        .relay_global_uplink_limit_bucket_size
+                        as u8,
+                    relay_overall_limit_bucket_size: req_dp.relay_overall_limit_bucket_size as u8,
                 })
             } else {
                 None
@@ -166,6 +174,7 @@ impl DeviceProfileService for DeviceProfile {
         let abp_params = dp.abp_params.clone().unwrap_or_default();
         let class_b_params = dp.class_b_params.clone().unwrap_or_default();
         let class_c_params = dp.class_c_params.clone().unwrap_or_default();
+        let relay_params = dp.relay_params.clone().unwrap_or_default();
 
         let mut resp = Response::new(api::GetDeviceProfileResponse {
             device_profile: Some(api::DeviceProfile {
@@ -211,30 +220,36 @@ impl DeviceProfileService for DeviceProfile {
                     .collect(),
                 auto_detect_measurements: dp.auto_detect_measurements,
                 region_config_id: dp.region_config_id.clone().unwrap_or_default(),
-                is_relay: dp.is_relay,
-                is_relay_ed: dp.is_relay_ed,
-                relay_ed_relay_only: dp.relay_ed_relay_only,
-                relay_enabled: dp.relay_enabled,
-                relay_cad_periodicity: dp.relay_cad_periodicity as i32,
-                relay_default_channel_index: dp.relay_default_channel_index as u32,
-                relay_second_channel_freq: dp.relay_second_channel_freq as u32,
-                relay_second_channel_dr: dp.relay_second_channel_dr as u32,
-                relay_second_channel_ack_offset: dp.relay_second_channel_ack_offset as i32,
-                relay_ed_activation_mode: dp.relay_ed_activation_mode.to_proto().into(),
-                relay_ed_smart_enable_level: dp.relay_ed_smart_enable_level as u32,
-                relay_ed_back_off: dp.relay_ed_back_off as u32,
-                relay_ed_uplink_limit_bucket_size: dp.relay_ed_uplink_limit_bucket_size as u32,
-                relay_ed_uplink_limit_reload_rate: dp.relay_ed_uplink_limit_reload_rate as u32,
-                relay_join_req_limit_reload_rate: dp.relay_join_req_limit_reload_rate as u32,
-                relay_notify_limit_reload_rate: dp.relay_notify_limit_reload_rate as u32,
-                relay_global_uplink_limit_reload_rate: dp.relay_global_uplink_limit_reload_rate
+                is_relay: relay_params.is_relay,
+                is_relay_ed: relay_params.is_relay_ed,
+                relay_ed_relay_only: relay_params.ed_relay_only,
+                relay_enabled: relay_params.relay_enabled,
+                relay_cad_periodicity: relay_params.relay_cad_periodicity as i32,
+                relay_default_channel_index: relay_params.default_channel_index as u32,
+                relay_second_channel_freq: relay_params.second_channel_freq as u32,
+                relay_second_channel_dr: relay_params.second_channel_dr as u32,
+                relay_second_channel_ack_offset: relay_params.second_channel_ack_offset as i32,
+                relay_ed_activation_mode: relay_params.ed_activation_mode.to_proto().into(),
+                relay_ed_smart_enable_level: relay_params.ed_smart_enable_level as u32,
+                relay_ed_back_off: relay_params.ed_back_off as u32,
+                relay_ed_uplink_limit_bucket_size: relay_params.ed_uplink_limit_bucket_size as u32,
+                relay_ed_uplink_limit_reload_rate: relay_params.ed_uplink_limit_reload_rate as u32,
+                relay_join_req_limit_reload_rate: relay_params.relay_join_req_limit_reload_rate
                     as u32,
-                relay_overall_limit_reload_rate: dp.relay_overall_limit_reload_rate as u32,
-                relay_join_req_limit_bucket_size: dp.relay_join_req_limit_bucket_size as u32,
-                relay_notify_limit_bucket_size: dp.relay_notify_limit_bucket_size as u32,
-                relay_global_uplink_limit_bucket_size: dp.relay_global_uplink_limit_bucket_size
+                relay_notify_limit_reload_rate: relay_params.relay_notify_limit_reload_rate as u32,
+                relay_global_uplink_limit_reload_rate: relay_params
+                    .relay_global_uplink_limit_reload_rate
                     as u32,
-                relay_overall_limit_bucket_size: dp.relay_overall_limit_bucket_size as u32,
+                relay_overall_limit_reload_rate: relay_params.relay_overall_limit_reload_rate
+                    as u32,
+                relay_join_req_limit_bucket_size: relay_params.relay_join_req_limit_bucket_size
+                    as u32,
+                relay_notify_limit_bucket_size: relay_params.relay_notify_limit_bucket_size as u32,
+                relay_global_uplink_limit_bucket_size: relay_params
+                    .relay_global_uplink_limit_bucket_size
+                    as u32,
+                relay_overall_limit_bucket_size: relay_params.relay_overall_limit_bucket_size
+                    as u32,
                 allow_roaming: dp.allow_roaming,
                 rx1_delay: dp.rx1_delay as u32,
             }),
@@ -302,30 +317,6 @@ impl DeviceProfileService for DeviceProfile {
             auto_detect_measurements: req_dp.auto_detect_measurements,
             region_config_id: (!req_dp.region_config_id.is_empty())
                 .then(|| req_dp.region_config_id.clone()),
-            is_relay: req_dp.is_relay,
-            is_relay_ed: req_dp.is_relay_ed,
-            relay_ed_relay_only: req_dp.relay_ed_relay_only,
-            relay_enabled: req_dp.relay_enabled,
-            relay_cad_periodicity: req_dp.relay_cad_periodicity as i16,
-            relay_default_channel_index: req_dp.relay_default_channel_index as i16,
-            relay_second_channel_freq: req_dp.relay_second_channel_freq as i64,
-            relay_second_channel_dr: req_dp.relay_second_channel_dr as i16,
-            relay_second_channel_ack_offset: req_dp.relay_second_channel_ack_offset as i16,
-            relay_ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
-            relay_ed_smart_enable_level: req_dp.relay_ed_smart_enable_level as i16,
-            relay_ed_back_off: req_dp.relay_ed_back_off as i16,
-            relay_ed_uplink_limit_bucket_size: req_dp.relay_ed_uplink_limit_bucket_size as i16,
-            relay_ed_uplink_limit_reload_rate: req_dp.relay_ed_uplink_limit_reload_rate as i16,
-            relay_join_req_limit_reload_rate: req_dp.relay_join_req_limit_reload_rate as i16,
-            relay_notify_limit_reload_rate: req_dp.relay_notify_limit_reload_rate as i16,
-            relay_global_uplink_limit_reload_rate: req_dp.relay_global_uplink_limit_reload_rate
-                as i16,
-            relay_overall_limit_reload_rate: req_dp.relay_overall_limit_reload_rate as i16,
-            relay_join_req_limit_bucket_size: req_dp.relay_join_req_limit_bucket_size as i16,
-            relay_notify_limit_bucket_size: req_dp.relay_notify_limit_bucket_size as i16,
-            relay_global_uplink_limit_bucket_size: req_dp.relay_global_uplink_limit_bucket_size
-                as i16,
-            relay_overall_limit_bucket_size: req_dp.relay_overall_limit_bucket_size as i16,
             allow_roaming: req_dp.allow_roaming,
             rx1_delay: req_dp.rx1_delay as i16,
             abp_params: if req_dp.supports_otaa {
@@ -351,6 +342,38 @@ impl DeviceProfileService for DeviceProfile {
             class_c_params: if req_dp.supports_class_c {
                 Some(fields::ClassCParams {
                     timeout: req_dp.class_c_timeout as u16,
+                })
+            } else {
+                None
+            },
+            relay_params: if req_dp.is_relay || req_dp.is_relay_ed {
+                Some(fields::RelayParams {
+                    is_relay: req_dp.is_relay,
+                    is_relay_ed: req_dp.is_relay_ed,
+                    ed_relay_only: req_dp.relay_ed_relay_only,
+                    relay_enabled: req_dp.relay_enabled,
+                    relay_cad_periodicity: req_dp.relay_cad_periodicity as u8,
+                    default_channel_index: req_dp.relay_default_channel_index as u8,
+                    second_channel_freq: req_dp.relay_second_channel_freq as u32,
+                    second_channel_dr: req_dp.relay_second_channel_dr as u8,
+                    second_channel_ack_offset: req_dp.relay_second_channel_ack_offset as u8,
+                    ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
+                    ed_smart_enable_level: req_dp.relay_ed_smart_enable_level as u8,
+                    ed_back_off: req_dp.relay_ed_back_off as u8,
+                    ed_uplink_limit_bucket_size: req_dp.relay_ed_uplink_limit_bucket_size as u8,
+                    ed_uplink_limit_reload_rate: req_dp.relay_ed_uplink_limit_reload_rate as u8,
+                    relay_join_req_limit_reload_rate: req_dp.relay_join_req_limit_reload_rate as u8,
+                    relay_notify_limit_reload_rate: req_dp.relay_notify_limit_reload_rate as u8,
+                    relay_global_uplink_limit_reload_rate: req_dp
+                        .relay_global_uplink_limit_reload_rate
+                        as u8,
+                    relay_overall_limit_reload_rate: req_dp.relay_overall_limit_reload_rate as u8,
+                    relay_join_req_limit_bucket_size: req_dp.relay_join_req_limit_bucket_size as u8,
+                    relay_notify_limit_bucket_size: req_dp.relay_notify_limit_bucket_size as u8,
+                    relay_global_uplink_limit_bucket_size: req_dp
+                        .relay_global_uplink_limit_bucket_size
+                        as u8,
+                    relay_overall_limit_bucket_size: req_dp.relay_overall_limit_bucket_size as u8,
                 })
             } else {
                 None

@@ -41,33 +41,12 @@ pub struct DeviceProfile {
     pub measurements: fields::Measurements,
     pub auto_detect_measurements: bool,
     pub region_config_id: Option<String>,
-    pub is_relay: bool,
-    pub is_relay_ed: bool,
-    pub relay_ed_relay_only: bool,
-    pub relay_enabled: bool,
-    pub relay_cad_periodicity: i16,
-    pub relay_default_channel_index: i16,
-    pub relay_second_channel_freq: i64,
-    pub relay_second_channel_dr: i16,
-    pub relay_second_channel_ack_offset: i16,
-    pub relay_ed_activation_mode: lrwn::RelayModeActivation,
-    pub relay_ed_smart_enable_level: i16,
-    pub relay_ed_back_off: i16,
-    pub relay_ed_uplink_limit_bucket_size: i16,
-    pub relay_ed_uplink_limit_reload_rate: i16,
-    pub relay_join_req_limit_reload_rate: i16,
-    pub relay_notify_limit_reload_rate: i16,
-    pub relay_global_uplink_limit_reload_rate: i16,
-    pub relay_overall_limit_reload_rate: i16,
-    pub relay_join_req_limit_bucket_size: i16,
-    pub relay_notify_limit_bucket_size: i16,
-    pub relay_global_uplink_limit_bucket_size: i16,
-    pub relay_overall_limit_bucket_size: i16,
     pub allow_roaming: bool,
     pub rx1_delay: i16,
     pub abp_params: Option<fields::AbpParams>,
     pub class_b_params: Option<fields::ClassBParams>,
     pub class_c_params: Option<fields::ClassCParams>,
+    pub relay_params: Option<fields::RelayParams>,
 }
 
 impl DeviceProfile {
@@ -111,33 +90,12 @@ impl Default for DeviceProfile {
             measurements: fields::Measurements::new(HashMap::new()),
             auto_detect_measurements: false,
             region_config_id: None,
-            is_relay: false,
-            is_relay_ed: false,
-            relay_ed_relay_only: false,
-            relay_enabled: false,
-            relay_cad_periodicity: 0,
-            relay_default_channel_index: 0,
-            relay_second_channel_freq: 0,
-            relay_second_channel_dr: 0,
-            relay_second_channel_ack_offset: 0,
-            relay_ed_activation_mode: lrwn::RelayModeActivation::DisableRelayMode,
-            relay_ed_smart_enable_level: 0,
-            relay_ed_back_off: 0,
-            relay_ed_uplink_limit_bucket_size: 0,
-            relay_ed_uplink_limit_reload_rate: 0,
-            relay_join_req_limit_reload_rate: 0,
-            relay_notify_limit_reload_rate: 0,
-            relay_global_uplink_limit_reload_rate: 0,
-            relay_overall_limit_reload_rate: 0,
-            relay_join_req_limit_bucket_size: 0,
-            relay_notify_limit_bucket_size: 0,
-            relay_global_uplink_limit_bucket_size: 0,
-            relay_overall_limit_bucket_size: 0,
             allow_roaming: false,
             rx1_delay: 0,
             abp_params: None,
             class_b_params: None,
             class_c_params: None,
+            relay_params: None,
         }
     }
 }
@@ -153,11 +111,13 @@ impl DeviceProfile {
             ds.class_b_ping_slot_nb = 1 << class_b_params.ping_slot_nb_k as u32;
         }
 
-        if self.is_relay_ed {
-            ds.relay = Some(internal::Relay {
-                ed_relay_only: self.relay_ed_relay_only,
-                ..Default::default()
-            });
+        if let Some(relay_params) = &self.relay_params {
+            if relay_params.is_relay_ed {
+                ds.relay = Some(internal::Relay {
+                    ed_relay_only: relay_params.ed_relay_only,
+                    ..Default::default()
+                });
+            }
         }
 
         if !self.supports_otaa {
@@ -242,39 +202,12 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::measurements.eq(&dp.measurements),
             device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
             device_profile::region_config_id.eq(&dp.region_config_id),
-            device_profile::is_relay.eq(&dp.is_relay),
-            device_profile::is_relay_ed.eq(&dp.is_relay_ed),
-            device_profile::relay_ed_relay_only.eq(&dp.relay_ed_relay_only),
-            device_profile::relay_enabled.eq(&dp.relay_enabled),
-            device_profile::relay_cad_periodicity.eq(&dp.relay_cad_periodicity),
-            device_profile::relay_default_channel_index.eq(&dp.relay_default_channel_index),
-            device_profile::relay_second_channel_freq.eq(&dp.relay_second_channel_freq),
-            device_profile::relay_second_channel_dr.eq(&dp.relay_second_channel_dr),
-            device_profile::relay_second_channel_ack_offset.eq(&dp.relay_second_channel_ack_offset),
-            device_profile::relay_ed_activation_mode.eq(&dp.relay_ed_activation_mode),
-            device_profile::relay_ed_smart_enable_level.eq(&dp.relay_ed_smart_enable_level),
-            device_profile::relay_ed_back_off.eq(&dp.relay_ed_back_off),
-            device_profile::relay_ed_uplink_limit_bucket_size
-                .eq(&dp.relay_ed_uplink_limit_bucket_size),
-            device_profile::relay_ed_uplink_limit_reload_rate
-                .eq(&dp.relay_ed_uplink_limit_reload_rate),
-            device_profile::relay_join_req_limit_reload_rate
-                .eq(&dp.relay_join_req_limit_reload_rate),
-            device_profile::relay_notify_limit_reload_rate.eq(&dp.relay_notify_limit_reload_rate),
-            device_profile::relay_global_uplink_limit_reload_rate
-                .eq(&dp.relay_global_uplink_limit_reload_rate),
-            device_profile::relay_overall_limit_reload_rate.eq(&dp.relay_overall_limit_reload_rate),
-            device_profile::relay_join_req_limit_bucket_size
-                .eq(&dp.relay_join_req_limit_bucket_size),
-            device_profile::relay_notify_limit_bucket_size.eq(&dp.relay_notify_limit_bucket_size),
-            device_profile::relay_global_uplink_limit_bucket_size
-                .eq(&dp.relay_global_uplink_limit_bucket_size),
-            device_profile::relay_overall_limit_bucket_size.eq(&dp.relay_overall_limit_bucket_size),
             device_profile::allow_roaming.eq(&dp.allow_roaming),
             device_profile::rx1_delay.eq(&dp.rx1_delay),
             device_profile::abp_params.eq(&dp.abp_params),
             device_profile::class_b_params.eq(&dp.class_b_params),
             device_profile::class_c_params.eq(&dp.class_c_params),
+            device_profile::relay_params.eq(&dp.relay_params),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await

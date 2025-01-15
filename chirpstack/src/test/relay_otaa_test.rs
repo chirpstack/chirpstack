@@ -6,7 +6,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_keys, device_profile, gateway, tenant,
+    device_keys, device_profile, fields, gateway, tenant,
 };
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, internal};
@@ -66,7 +66,10 @@ async fn test_lorawan_10() {
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
         supports_otaa: true,
-        is_relay: true,
+        relay_params: Some(fields::RelayParams {
+            is_relay: true,
+            ..Default::default()
+        }),
         ..Default::default()
     })
     .await

@@ -24,11 +24,7 @@
 
   # Database
   email_address = "0.2"
-  diesel = { version = "2.2", features = [
-    "chrono",
-    "numeric",
-    "64-column-tables",
-  ] }
+  diesel = { version = "2.2", features = ["chrono", "numeric"] }
   diesel_migrations = { version = "2.2" }
   diesel-async = { version = "0.5", features = [
     "deadpool",
