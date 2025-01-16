@@ -140,6 +140,15 @@ impl DeviceProfileService for DeviceProfile {
             } else {
                 None
             },
+            app_layer_params: {
+                let app_layer_params = req_dp.app_layer_params.unwrap_or_default();
+
+                fields::AppLayerParams {
+                    ts003_version: app_layer_params.ts003_version().from_proto(),
+                    ts004_version: app_layer_params.ts004_version().from_proto(),
+                    ts005_version: app_layer_params.ts005_version().from_proto(),
+                }
+            },
             ..Default::default()
         };
 
@@ -252,6 +261,11 @@ impl DeviceProfileService for DeviceProfile {
                     as u32,
                 allow_roaming: dp.allow_roaming,
                 rx1_delay: dp.rx1_delay as u32,
+                app_layer_params: Some(api::AppLayerParams {
+                    ts003_version: dp.app_layer_params.ts003_version.to_proto().into(),
+                    ts004_version: dp.app_layer_params.ts004_version.to_proto().into(),
+                    ts005_version: dp.app_layer_params.ts005_version.to_proto().into(),
+                }),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -568,6 +582,7 @@ pub mod test {
                 mac_version: common::MacVersion::Lorawan103.into(),
                 reg_params_revision: common::RegParamsRevision::A.into(),
                 adr_algorithm_id: "default".into(),
+                app_layer_params: Some(api::AppLayerParams::default()),
                 ..Default::default()
             }),
             get_resp.get_ref().device_profile
@@ -608,6 +623,7 @@ pub mod test {
                 mac_version: common::MacVersion::Lorawan103.into(),
                 reg_params_revision: common::RegParamsRevision::A.into(),
                 adr_algorithm_id: "default".into(),
+                app_layer_params: Some(api::AppLayerParams::default()),
                 ..Default::default()
             }),
             get_resp.get_ref().device_profile
