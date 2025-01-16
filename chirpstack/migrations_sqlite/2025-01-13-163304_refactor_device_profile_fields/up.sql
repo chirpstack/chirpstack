@@ -2,6 +2,7 @@ alter table device_profile add column abp_params text null;
 alter table device_profile add column class_b_params text null;
 alter table device_profile add column class_c_params text null;
 alter table device_profile add column relay_params text null;
+alter table device_profile add column app_layer_params text not null default '{}';
 
 update device_profile
   set abp_params = json_object(
@@ -44,7 +45,7 @@ update device_profile
     'relay_notify_limit_reload_rate', relay_notify_limit_reload_rate,
     'relay_global_uplink_limit_reload_rate', relay_global_uplink_limit_reload_rate,
     'relay_overall_limit_reload_rate', relay_overall_limit_reload_rate,
-    'relay_notify_limit_bucket_size', relay_join_req_limit_bucket_size,
+    'relay_join_req_limit_bucket_size', relay_join_req_limit_bucket_size,
     'relay_notify_limit_bucket_size', relay_notify_limit_bucket_size,
     'relay_global_uplink_limit_bucket_size', relay_global_uplink_limit_bucket_size,
     'relay_overall_limit_bucket_size', relay_overall_limit_bucket_size)

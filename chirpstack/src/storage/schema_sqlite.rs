@@ -105,6 +105,7 @@ diesel::table! {
         class_b_params -> Nullable<Text>,
         class_c_params -> Nullable<Text>,
         relay_params -> Nullable<Text>,
+        app_layer_params -> Text,
     }
 }
 

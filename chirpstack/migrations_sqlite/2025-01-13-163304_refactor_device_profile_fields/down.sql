@@ -85,4 +85,5 @@ alter table device_profile drop column abp_params;
 alter table device_profile drop column class_b_params;
 alter table device_profile drop column class_c_params;
 alter table device_profile drop column relay_params;
+alter table device_profile drop column app_layer_params;
 
