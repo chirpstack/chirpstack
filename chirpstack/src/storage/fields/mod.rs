@@ -1,6 +1,6 @@
 mod big_decimal;
 mod dev_nonces;
-mod device_profile;
+pub mod device_profile;
 mod device_session;
 mod key_value;
 mod measurements;
