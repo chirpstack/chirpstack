@@ -117,6 +117,7 @@ diesel::table! {
         class_b_params -> Nullable<Jsonb>,
         class_c_params -> Nullable<Jsonb>,
         relay_params -> Nullable<Jsonb>,
+        app_layer_params -> Jsonb,
     }
 }
 
