@@ -98,6 +98,30 @@ enum RelayModeActivation {
   END_DEVICE_CONTROLLED = 3;
 }
 
+enum Ts003Version {
+  // Not implemented.
+  TS003_NOT_IMPLEMENTED = 0;
+
+  // v1.0.0.
+  TS003_V100 = 1;
+}
+
+enum Ts004Version {
+  // Not implemented.
+  TS004_NOT_IMPLEMENTED = 0;
+
+  // v1.0.0.
+  TS004_V100 = 1;
+}
+
+enum Ts005Version {
+  // Not implemented.
+  TS005_NOT_IMPLEMENTED = 0;
+
+  // v1.0.0.
+  TS005_V100 = 1;
+}
+
 // DeviceProfileService is the service providing API methods for managing
 // device-profiles.
 service DeviceProfileService {
@@ -421,6 +445,9 @@ message DeviceProfile {
   // it.
   // Valid options are 1 - 15 (0 = always use system RX1 Delay).
   uint32 rx1_delay = 53;
+
+  // Application Layer parameters.
+  AppLayerParams app_layer_params = 54;
 }
 
 message Measurement {
@@ -429,6 +456,17 @@ message Measurement {
 
   // Kind.
   MeasurementKind kind = 3;
+}
+
+message AppLayerParams {
+  // TS003 version (Application Layer Clock Sync).
+  Ts003Version ts003_version = 1;
+
+  // TS004 version (Fragmented Data Block Transport).
+  Ts004Version ts004_version = 2;
+
+  // TS005 version (Remote Multicast Setup).
+  Ts005Version ts005_version = 3;
 }
 
 message DeviceProfileListItem {
