@@ -2,7 +2,11 @@ alter table device_profile
   add column abp_params jsonb null,
   add column class_b_params jsonb null,
   add column class_c_params jsonb null,
-  add column relay_params jsonb null;
+  add column relay_params jsonb null,
+  add column app_layer_params jsonb not null default '{}';
+
+alter table device_profile
+  alter column app_layer_params drop default;
 
 update device_profile
   set abp_params = json_build_object(
@@ -46,7 +50,7 @@ update device_profile
     'relay_notify_limit_reload_rate', relay_notify_limit_reload_rate,
     'relay_global_uplink_limit_reload_rate', relay_global_uplink_limit_reload_rate,
     'relay_overall_limit_reload_rate', relay_overall_limit_reload_rate,
-    'relay_notify_limit_bucket_size', relay_join_req_limit_bucket_size,
+    'relay_join_req_limit_bucket_size', relay_join_req_limit_bucket_size,
     'relay_notify_limit_bucket_size', relay_notify_limit_bucket_size,
     'relay_global_uplink_limit_bucket_size', relay_global_uplink_limit_bucket_size,
     'relay_overall_limit_bucket_size', relay_overall_limit_bucket_size)

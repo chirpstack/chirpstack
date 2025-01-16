@@ -47,6 +47,7 @@ pub struct DeviceProfile {
     pub class_b_params: Option<fields::ClassBParams>,
     pub class_c_params: Option<fields::ClassCParams>,
     pub relay_params: Option<fields::RelayParams>,
+    pub app_layer_params: fields::AppLayerParams,
 }
 
 impl DeviceProfile {
@@ -96,6 +97,7 @@ impl Default for DeviceProfile {
             class_b_params: None,
             class_c_params: None,
             relay_params: None,
+            app_layer_params: fields::AppLayerParams::default(),
         }
     }
 }
@@ -208,6 +210,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::class_b_params.eq(&dp.class_b_params),
             device_profile::class_c_params.eq(&dp.class_c_params),
             device_profile::relay_params.eq(&dp.relay_params),
+            device_profile::app_layer_params.eq(&dp.app_layer_params),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await
