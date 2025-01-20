@@ -590,6 +590,7 @@ type ListUsersRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Max number of tenants to return in the result-set.
+	// If not set, it will be treated as 0, and the response will only return the total_count.
 	Limit uint32 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
 	// Offset in the result-set (for pagination).
 	Offset uint32 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
