@@ -333,6 +333,9 @@ message ListDevicesRequest {
 
   // Multicst-group ID (UUID) to filter devices on.
   string multicast_group_id = 5;
+
+  // Tags to filter devices on.
+  map<string, string> tags = 6;
 }
 
 message ListDevicesResponse {
