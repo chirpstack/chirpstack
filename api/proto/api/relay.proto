@@ -56,6 +56,7 @@ message RelayListItem {
 
 message ListRelaysRequest {
     // Max number of devices to return in the result-set.
+    // If not set, it will be treated as 0, and the response will only return the total_count.
     uint32 limit = 1;
 
     // Offset in the result-set (for pagination).
@@ -92,6 +93,7 @@ message RemoveRelayDeviceRequest {
 
 message ListRelayDevicesRequest {
     // Max number of multicast groups to return in the result-set.
+    // If not set, it will be treated as 0, and the response will only return the total_count.
     uint32 limit = 1;
 
     // Offset in the result-set (for pagination).

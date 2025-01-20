@@ -109,6 +109,7 @@ message DeleteApiKeyRequest {
 
 message ListApiKeysRequest {
   // Max number of items to return.
+  // If not set, it will be treated as 0, and the response will only return the total_count.
   uint32 limit = 1;
 
   // Offset in the result-set (for pagination).
@@ -177,6 +178,7 @@ message GlobalSearchRequest {
   string search = 1;
 
   // Max number of results to return.
+  // If not set, it will be treated as 0, and the response will only return the total_count.
   int64 limit = 2;
 
   // Offset offset of the result-set (for pagination).
