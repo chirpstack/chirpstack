@@ -275,6 +275,7 @@ impl DeviceService for Device {
             } else {
                 Some(req.search.to_string())
             },
+            tags: req.tags.clone(),
         };
 
         let count = device::get_count(&filters).await.map_err(|e| e.status())?;
@@ -1370,6 +1371,7 @@ pub mod test {
                 offset: 0,
                 order_by: api::list_devices_request::OrderBy::Name.into(),
                 order_by_desc: true,
+                ..Default::default()
             },
         );
         let list_resp = service.list(list_req).await.unwrap();

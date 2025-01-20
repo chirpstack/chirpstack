@@ -214,6 +214,7 @@ pub struct Filters {
     pub application_id: Option<Uuid>,
     pub multicast_group_id: Option<Uuid>,
     pub search: Option<String>,
+    pub tags: HashMap<String, String>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -608,6 +609,22 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         );
     }
 
+    if !filters.tags.is_empty() {
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(device::dsl::tags.contains(serde_json::json!(&filters.tags)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            for (k, v) in filters.tags.iter() {
+                q = q.filter(
+                    dsl::sql::<diesel::sql_types::Bool>(&format!("device.tags->>'{}' =", k))
+                        .bind::<diesel::sql_types::Text, _>(v),
+                );
+            }
+        }
+    }
+
     Ok(q.first(&mut get_async_db_conn().await?).await?)
 }
 
@@ -657,6 +674,22 @@ pub async fn list(
             multicast_group_device::dsl::multicast_group_id
                 .eq(fields::Uuid::from(multicast_group_id)),
         );
+    }
+
+    if !filters.tags.is_empty() {
+        #[cfg(feature = "postgres")]
+        {
+            q = q.filter(device::dsl::tags.contains(serde_json::json!(&filters.tags)));
+        }
+        #[cfg(feature = "sqlite")]
+        {
+            for (k, v) in filters.tags.iter() {
+                q = q.filter(
+                    dsl::sql::<diesel::sql_types::Bool>(&format!("device.tags->>'{}' =", k))
+                        .bind::<diesel::sql_types::Text, _>(v),
+                );
+            }
+        }
     }
 
     q = match order_by_desc {
@@ -899,6 +932,7 @@ pub mod test {
     use lrwn::AES128Key;
 
     struct FilterTest<'a> {
+        name: String,
         filters: Filters,
         devs: Vec<&'a Device>,
         count: usize,
@@ -961,26 +995,74 @@ pub mod test {
         let d_get = get(&d.dev_eui).await.unwrap();
         assert_eq!(d, d_get);
 
+        // delete
+        delete(&d.dev_eui).await.unwrap();
+        assert!(delete(&d.dev_eui).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_device_list() {
+        let _guard = test::prepare().await;
+        let dp = storage::device_profile::test::create_device_profile(None).await;
+        let d1 = create_device(
+            EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            dp.id.into(),
+            None,
+        )
+        .await;
+
+        let d2 = create(Device {
+            name: "zzz-tags-1".into(),
+            dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
+            tags: fields::KeyValue::new(
+                [("version".to_string(), "1.1.0".to_string())]
+                    .iter()
+                    .cloned()
+                    .collect(),
+            ),
+            ..d1.clone()
+        })
+        .await
+        .unwrap();
+
+        let d3 = create(Device {
+            name: "zzz-tags-2".into(),
+            dev_eui: EUI64::from_be_bytes([3, 2, 3, 4, 5, 6, 7, 8]),
+            tags: fields::KeyValue::new(
+                [("version".to_string(), "1.2.0".to_string())]
+                    .iter()
+                    .cloned()
+                    .collect(),
+            ),
+            ..d1.clone()
+        })
+        .await
+        .unwrap();
+
         // get count and list
         let tests = vec![
             FilterTest {
+                name: "no filters".into(),
                 filters: Filters {
                     application_id: None,
                     multicast_group_id: None,
                     search: None,
+                    ..Default::default()
                 },
-                devs: vec![&d],
-                count: 1,
+                devs: vec![&d1, &d2, &d3],
+                count: 3,
                 limit: 10,
                 offset: 0,
                 order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
+                name: "filter by search - no match".into(),
                 filters: Filters {
                     application_id: None,
                     multicast_group_id: None,
-                    search: Some("uup".into()),
+                    search: Some("tee".into()),
+                    ..Default::default()
                 },
                 devs: vec![],
                 count: 0,
@@ -990,12 +1072,14 @@ pub mod test {
                 order_by_desc: false,
             },
             FilterTest {
+                name: "filter by search - match".into(),
                 filters: Filters {
                     application_id: None,
                     multicast_group_id: None,
-                    search: Some("upd".into()),
+                    search: Some("tes".into()),
+                    ..Default::default()
                 },
-                devs: vec![&d],
+                devs: vec![&d1],
                 count: 1,
                 limit: 10,
                 offset: 0,
@@ -1003,23 +1087,27 @@ pub mod test {
                 order_by_desc: false,
             },
             FilterTest {
+                name: "filter by application_id".into(),
                 filters: Filters {
-                    application_id: Some(d.application_id.into()),
+                    application_id: Some(d1.application_id.into()),
                     multicast_group_id: None,
                     search: None,
+                    ..Default::default()
                 },
-                devs: vec![&d],
-                count: 1,
+                devs: vec![&d1, &d2, &d3],
+                count: 3,
                 limit: 10,
                 offset: 0,
                 order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
+                name: "filter by application_id - no match".into(),
                 filters: Filters {
                     application_id: Some(Uuid::new_v4()),
                     multicast_group_id: None,
                     search: None,
+                    ..Default::default()
                 },
                 devs: vec![],
                 count: 0,
@@ -1028,9 +1116,38 @@ pub mod test {
                 order: OrderBy::Name,
                 order_by_desc: false,
             },
+            FilterTest {
+                name: "filter by tags - 1.1.0".into(),
+                filters: Filters {
+                    tags: [("version".to_string(), "1.1.0".to_string())]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                    ..Default::default()
+                },
+                devs: vec![&d2],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                name: "filter by tags - 1.2.0".into(),
+                filters: Filters {
+                    tags: [("version".to_string(), "1.2.0".to_string())]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                    ..Default::default()
+                },
+                devs: vec![&d3],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
         ];
 
         for tst in tests {
+            println!(" > {}", tst.name);
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
@@ -1054,10 +1171,6 @@ pub mod test {
                     .collect::<String>()
             );
         }
-
-        // delete
-        delete(&d.dev_eui).await.unwrap();
-        assert!(delete(&d.dev_eui).await.is_err());
     }
 
     #[tokio::test]

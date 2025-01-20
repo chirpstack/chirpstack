@@ -346,6 +346,9 @@ message ListDevicesRequest {
 
   // If set, the sorting direction will be decending (default = ascending) (optional).
   bool order_by_desc = 7;
+
+  // Tags to filter devices on.
+  map<string, string> tags = 8;
 }
 
 message ListDevicesResponse {
