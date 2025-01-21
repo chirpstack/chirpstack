@@ -5,28 +5,16 @@ import { format } from "date-fns";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
 import { Switch, notification } from "antd";
-import {
-  Button,
-  Tabs,
-  Space,
-  Card,
-  Row,
-  Form,
-  Input,
-  InputNumber,
-  Popconfirm,
-  DatePicker,
-  DatePickerProps,
-} from "antd";
+import type { DatePickerProps } from "antd";
+import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Popconfirm, DatePicker } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
 
+import type { GetDeviceQueueItemsResponse, Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import {
   EnqueueDeviceQueueItemRequest,
   GetDeviceQueueItemsRequest,
-  GetDeviceQueueItemsResponse,
-  Device,
   FlushDeviceQueueRequest,
   DeviceQueueItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
@@ -147,7 +135,13 @@ function DeviceQueue(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (
+    limit: number,
+    offset: number,
+    orderBy: string | void,
+    orderByDesc: boolean | void,
+    callbackFunc: GetPageCallbackFunc,
+  ) => {
     const req = new GetDeviceQueueItemsRequest();
     req.setDevEui(props.device.getDevEui());
 
@@ -225,8 +219,7 @@ function DeviceQueue(props: IProps) {
           onFinish={onEnqueue}
           onFinishFailed={onFinishFailed}
           form={form}
-          initialValues={{ fPort: 1 }}
-        >
+          initialValues={{ fPort: 1 }}>
           <Row>
             <Space direction="horizontal" style={{ width: "100%" }} size="large">
               <Form.Item name="confirmed" label="Confirmed" valuePropName="checked">
@@ -239,24 +232,21 @@ function DeviceQueue(props: IProps) {
                 name="isEncrypted"
                 label="Is encrypted"
                 valuePropName="checked"
-                tooltip="Only enable this in case the payload that you would like to enqueue has already been encrypted. In this case you also must enter the downlink frame-counter which has been used for the encryption."
-              >
+                tooltip="Only enable this in case the payload that you would like to enqueue has already been encrypted. In this case you also must enter the downlink frame-counter which has been used for the encryption.">
                 <Switch onChange={setIsEncrypted} />
               </Form.Item>
               {isEncrypted && (
                 <Form.Item
                   name="fCntDown"
                   label="Downlink frame-counter used for encryption"
-                  rules={[{ required: true, message: "Please enter a downlink frame-counter!" }]}
-                >
+                  rules={[{ required: true, message: "Please enter a downlink frame-counter!" }]}>
                   <InputNumber min={0} />
                 </Form.Item>
               )}
               <Form.Item
                 name="expiresAt"
                 label="Expires at"
-                tooltip="If set, the queue-item will automatically expire at the given timestamp if it wasn't sent yet."
-              >
+                tooltip="If set, the queue-item will automatically expire at the given timestamp if it wasn't sent yet.">
                 <DatePicker showTime />
               </Form.Item>
             </Space>

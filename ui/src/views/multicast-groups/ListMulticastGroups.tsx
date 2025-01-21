@@ -34,8 +34,7 @@ function ListMulticastGroups(props: IProps) {
         <Link
           to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/multicast-groups/${
             record.id
-          }`}
-        >
+          }`}>
           {text}
         </Link>
       ),
@@ -60,7 +59,13 @@ function ListMulticastGroups(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (
+    limit: number,
+    offset: number,
+    orderBy: string | void,
+    orderByDesc: boolean | void,
+    callbackFunc: GetPageCallbackFunc,
+  ) => {
     const req = new ListMulticastGroupsRequest();
     req.setApplicationId(props.application.getId());
     req.setLimit(limit);
@@ -77,8 +82,7 @@ function ListMulticastGroups(props: IProps) {
       <Admin tenantId={props.application.getTenantId()} isDeviceAdmin>
         <Button type="primary" style={{ float: "right" }}>
           <Link
-            to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/multicast-groups/create`}
-          >
+            to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/multicast-groups/create`}>
             Add multicast-group
           </Link>
         </Button>

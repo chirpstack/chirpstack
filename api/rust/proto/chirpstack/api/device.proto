@@ -333,8 +333,18 @@ message ListDevicesRequest {
   // Multicst-group ID (UUID) to filter devices on.
   string multicast_group_id = 5;
 
-  // If set, the given string will be used to sort by (optional).
-  string order_by = 6;
+  enum OrderBy {
+      name = 0;
+      dev_eui = 1;
+      last_seen_at = 2;
+      device_profile_name = 3;  
+  }
+
+  // If set, the given value will be used to sort by (optional).
+  OrderBy order_by = 6;
+
+  // If set, the sorting direction will be decending (default = ascending) (optional).
+  bool order_by_desc = 7;
 }
 
 message ListDevicesResponse {

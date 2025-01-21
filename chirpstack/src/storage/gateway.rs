@@ -110,29 +110,11 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
-#[derive(Default, Clone, Debug)]
-pub struct OrderBy {
-    column: String,
-    modifier: String,
-}
-
-impl OrderBy {
-    pub fn new(value: &str) -> Self {
-        if value.contains(',') {
-            let i = value.find(',').expect("");
-            let column = value[0..i].trim().into();
-            let modifier = value[(i+1)..].trim().into();
-            Self {
-                column,
-                modifier,
-            }
-        } else {
-            Self {
-                column: value.trim().into(),
-                modifier: String::from("asc"),
-            }
-        }
-    }
+#[derive(Clone, Debug)]
+pub enum OrderBy {
+    Name,
+    GatewayId,
+    LastSeenAt,
 }
 
 #[derive(QueryableByName, PartialEq, Eq, Debug)]
@@ -334,7 +316,8 @@ pub async fn list(
     limit: i64,
     offset: i64,
     filters: &Filters,
-    order_by: Option<OrderBy>,
+    order_by: OrderBy,
+    order_by_desc: bool,
 ) -> Result<Vec<GatewayListItem>, Error> {
     let mut q = gateway::dsl::gateway
         .left_join(multicast_group_gateway::table)
@@ -377,26 +360,24 @@ pub async fn list(
         );
     }
 
-    if let Some(order) = order_by {
-        match order.column.as_str() {
-            "name" if "asc" == order.modifier =>
-                q = q.order_by(gateway::dsl::name),
-            "name" if "desc" == order.modifier =>
-                q = q.order_by(gateway::dsl::name.desc()),
-            "gatewayId" if "asc" == order.modifier =>
-                q = q.order_by(gateway::dsl::gateway_id),          
-            "gatewayId" if "desc" == order.modifier =>
-                q = q.order_by(gateway::dsl::gateway_id.desc()),
-            "lastSeenAt" if "asc" == order.modifier =>
-                q = q.order_by(gateway::dsl::last_seen_at)
-                    .then_order_by(gateway::dsl::name),
-            "lastSeenAt" if "desc" == order.modifier =>
-                q = q.order_by(gateway::dsl::last_seen_at.desc())
-                    .then_order_by(gateway::dsl::name),
-            _ => q = q.order_by(gateway::dsl::name)
-        };   
-    } else {
-        q = q.order_by(gateway::dsl::name)
+    let descending: bool = order_by_desc; 
+
+    match order_by {
+        OrderBy::Name if !descending=>
+            q = q.order_by(gateway::dsl::name),
+        OrderBy::Name if descending =>
+            q = q.order_by(gateway::dsl::name.desc()),
+        OrderBy::GatewayId if !descending =>
+            q = q.order_by(gateway::dsl::gateway_id),          
+        OrderBy::GatewayId if descending =>
+            q = q.order_by(gateway::dsl::gateway_id.desc()),
+        OrderBy::LastSeenAt if !descending =>
+            q = q.order_by(gateway::dsl::last_seen_at)
+                .then_order_by(gateway::dsl::name),
+        OrderBy::LastSeenAt if descending =>
+            q = q.order_by(gateway::dsl::last_seen_at.desc())
+                .then_order_by(gateway::dsl::name),
+        _ => q = q.order_by(gateway::dsl::name)
     };
 
     let items = q
@@ -569,7 +550,8 @@ pub mod test {
         count: usize,
         limit: i64,
         offset: i64,
-        order: Option<OrderBy>,
+        order: OrderBy,
+        order_by_desc: bool,
     }
 
     struct RelayGatewayFilterTest<'a> {
@@ -651,7 +633,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -663,7 +646,8 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -675,7 +659,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -687,7 +672,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -699,7 +685,8 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -711,7 +698,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -723,7 +711,8 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -735,7 +724,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: Some(OrderBy::new("name")),
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -747,7 +737,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: Some(OrderBy::new("name,asc")),
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -759,7 +750,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: Some(OrderBy::new("name,desc")),
+                order: OrderBy::Name,
+                order_by_desc: true,
             },
         ];
 
@@ -767,7 +759,7 @@ pub mod test {
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
-            let items = list(tst.limit, tst.offset, &tst.filters, tst.order).await.unwrap();
+            let items = list(tst.limit, tst.offset, &tst.filters, tst.order, tst.order_by_desc).await.unwrap();
             assert_eq!(
                 tst.gws
                     .iter()

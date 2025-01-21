@@ -230,8 +230,17 @@ message ListGatewaysRequest {
     // Multicast-group ID (UUID) to filter gateways on.
     string multicast_group_id = 5;
 
-    // If set, the given string will be used to sort by (optional).
-    string order_by = 6;
+    enum OrderBy {
+      name = 0;
+      gateway_id = 1;
+      last_seen_at = 2;
+    }
+
+    // If set, the given value will be used to sort by (optional).
+    OrderBy order_by = 6;
+
+    // If set, the sorting direction will be decending (default = ascending) (optional).
+    bool order_by_desc = 7;
 }
 
 message ListGatewaysResponse {
