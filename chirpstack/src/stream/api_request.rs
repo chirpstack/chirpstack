@@ -14,7 +14,7 @@ pub async fn log_request(pl: &stream::ApiRequestLog) -> Result<()> {
 
     let key = redis_key("api:stream:request".to_string());
     let b = pl.encode_to_vec();
-    redis::cmd("XADD")
+    () = redis::cmd("XADD")
         .arg(&key)
         .arg("MAXLEN")
         .arg(conf.monitoring.api_request_log_max_history)

@@ -86,7 +86,7 @@ pub async fn save_geoloc_buffer(
     };
     let b = buffer.encode_to_vec();
 
-    redis::cmd("PSETEX")
+    () = redis::cmd("PSETEX")
         .arg(key)
         .arg(ttl.num_milliseconds())
         .arg(b)

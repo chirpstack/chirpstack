@@ -162,7 +162,7 @@ async fn store_verifier(
     trace!("Storing verifier");
 
     let key = redis_key(format!("auth:oauth2:{}", token.secret()));
-    redis::cmd("PSETEX")
+    () = redis::cmd("PSETEX")
         .arg(key)
         .arg(Duration::try_minutes(5).unwrap().num_milliseconds())
         .arg(verifier.secret())

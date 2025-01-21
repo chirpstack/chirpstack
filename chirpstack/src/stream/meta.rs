@@ -11,7 +11,7 @@ pub async fn log_uplink(up: &stream::UplinkMeta) -> Result<()> {
     if conf.monitoring.meta_log_max_history > 0 {
         let key = redis_key("stream:meta".to_string());
         let b = up.encode_to_vec();
-        redis::cmd("XADD")
+        () = redis::cmd("XADD")
             .arg(&key)
             .arg("MAXLEN")
             .arg(conf.monitoring.meta_log_max_history)
@@ -32,7 +32,7 @@ pub async fn log_downlink(down: &stream::DownlinkMeta) -> Result<()> {
         let key = redis_key("stream:meta".to_string());
         let b = down.encode_to_vec();
 
-        redis::cmd("XADD")
+        () = redis::cmd("XADD")
             .arg(&key)
             .arg("MAXLEN")
             .arg(conf.monitoring.meta_log_max_history)

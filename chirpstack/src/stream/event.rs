@@ -21,7 +21,7 @@ pub async fn log_event_for_device(typ: &str, dev_eui: &str, b: &[u8]) -> Result<
     // per device stream
     if conf.monitoring.per_device_event_log_max_history > 0 {
         let key = redis_key(format!("device:{{{}}}:stream:event", dev_eui));
-        redis::pipe()
+        () = redis::pipe()
             .atomic()
             .cmd("XADD")
             .arg(&key)
@@ -42,7 +42,7 @@ pub async fn log_event_for_device(typ: &str, dev_eui: &str, b: &[u8]) -> Result<
     // global device stream
     if conf.monitoring.device_event_log_max_history > 0 {
         let key = redis_key("device:stream:event".to_string());
-        redis::cmd("XADD")
+        () = redis::cmd("XADD")
             .arg(&key)
             .arg("MAXLEN")
             .arg(conf.monitoring.device_event_log_max_history)
