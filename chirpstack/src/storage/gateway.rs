@@ -316,7 +316,7 @@ pub async fn list(
     limit: i64,
     offset: i64,
     filters: &Filters,
-    order_by: Option<OrderBy>,
+    order_by: OrderBy,
     order_by_desc: bool,
 ) -> Result<Vec<GatewayListItem>, Error> {
     let mut q = gateway::dsl::gateway
@@ -362,26 +362,22 @@ pub async fn list(
 
     let descending: bool = order_by_desc; 
 
-    if let Some(order) = order_by {
-        match order {
-            OrderBy::Name if !descending=>
-                q = q.order_by(gateway::dsl::name),
-            OrderBy::Name if descending =>
-                q = q.order_by(gateway::dsl::name.desc()),
-            OrderBy::GatewayId if !descending =>
-                q = q.order_by(gateway::dsl::gateway_id),          
-            OrderBy::GatewayId if descending =>
-                q = q.order_by(gateway::dsl::gateway_id.desc()),
-            OrderBy::LastSeenAt if !descending =>
-                q = q.order_by(gateway::dsl::last_seen_at)
-                    .then_order_by(gateway::dsl::name),
-            OrderBy::LastSeenAt if descending =>
-                q = q.order_by(gateway::dsl::last_seen_at.desc())
-                    .then_order_by(gateway::dsl::name),
-            _ => q = q.order_by(gateway::dsl::name)
-        };   
-    } else {
-        q = q.order_by(gateway::dsl::name)
+    match order_by {
+        OrderBy::Name if !descending=>
+            q = q.order_by(gateway::dsl::name),
+        OrderBy::Name if descending =>
+            q = q.order_by(gateway::dsl::name.desc()),
+        OrderBy::GatewayId if !descending =>
+            q = q.order_by(gateway::dsl::gateway_id),          
+        OrderBy::GatewayId if descending =>
+            q = q.order_by(gateway::dsl::gateway_id.desc()),
+        OrderBy::LastSeenAt if !descending =>
+            q = q.order_by(gateway::dsl::last_seen_at)
+                .then_order_by(gateway::dsl::name),
+        OrderBy::LastSeenAt if descending =>
+            q = q.order_by(gateway::dsl::last_seen_at.desc())
+                .then_order_by(gateway::dsl::name),
+        _ => q = q.order_by(gateway::dsl::name)
     };
 
     let items = q
@@ -554,7 +550,7 @@ pub mod test {
         count: usize,
         limit: i64,
         offset: i64,
-        order: Option<OrderBy>,
+        order: OrderBy,
         order_by_desc: bool,
     }
 
@@ -637,7 +633,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -650,7 +646,7 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -663,7 +659,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -676,7 +672,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -689,7 +685,7 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -702,7 +698,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -715,7 +711,7 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
-                order: None,
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -728,7 +724,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: Some(OrderBy::Name),
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -741,7 +737,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: Some(OrderBy::Name),
+                order: OrderBy::Name,
                 order_by_desc: false,
             },
             FilterTest {
@@ -754,7 +750,7 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
-                order: Some(OrderBy::Name),
+                order: OrderBy::Name,
                 order_by_desc: true,
             },
         ];

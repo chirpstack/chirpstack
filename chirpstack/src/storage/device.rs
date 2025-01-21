@@ -614,7 +614,7 @@ pub async fn list(
     limit: i64,
     offset: i64,
     filters: &Filters,
-    order_by: Option<OrderBy>,
+    order_by: OrderBy,
     order_by_desc: bool,
 ) -> Result<Vec<DeviceListItem>, Error> {
     let mut q = device::dsl::device
@@ -659,33 +659,29 @@ pub async fn list(
     }
     let descending: bool = order_by_desc;
 
-    if let Some(order) = order_by {
-        match order{
-            OrderBy::Name if !descending =>
-                q = q.order_by(device::dsl::name),
-            OrderBy::Name if descending =>
-                q = q.order_by(device::dsl::name.desc()),
-            OrderBy::DevEui if !descending =>
-                q = q.order_by(device::dsl::dev_eui),          
-            OrderBy::DevEui if descending =>
-                q = q.order_by(device::dsl::dev_eui.desc()),
-            OrderBy::LastSeenAt if !descending =>
-                q = q.order_by(device::dsl::last_seen_at)
-                    .then_order_by(device::dsl::name),
-            OrderBy::LastSeenAt if descending =>
-                q = q.order_by(device::dsl::last_seen_at.desc())
-                    .then_order_by(device::dsl::name),
-            OrderBy::DeviceProfileName if !descending =>
-                q = q.order_by(device_profile::dsl::name.asc())
-                    .then_order_by(device::dsl::name),
-            OrderBy::DeviceProfileName if descending =>
-                q = q.order_by(device_profile::dsl::name.desc())
-                    .then_order_by(device::dsl::name),
-            _ => q = q.order_by(device::dsl::name)
-        };   
-    } else {
-        q = q.order_by(device::dsl::name)
-    };
+    match order_by{
+        OrderBy::Name if !descending =>
+            q = q.order_by(device::dsl::name),
+        OrderBy::Name if descending =>
+            q = q.order_by(device::dsl::name.desc()),
+        OrderBy::DevEui if !descending =>
+            q = q.order_by(device::dsl::dev_eui),          
+        OrderBy::DevEui if descending =>
+            q = q.order_by(device::dsl::dev_eui.desc()),
+        OrderBy::LastSeenAt if !descending =>
+            q = q.order_by(device::dsl::last_seen_at)
+                .then_order_by(device::dsl::name),
+        OrderBy::LastSeenAt if descending =>
+            q = q.order_by(device::dsl::last_seen_at.desc())
+                .then_order_by(device::dsl::name),
+        OrderBy::DeviceProfileName if !descending =>
+            q = q.order_by(device_profile::dsl::name.asc())
+                .then_order_by(device::dsl::name),
+        OrderBy::DeviceProfileName if descending =>
+            q = q.order_by(device_profile::dsl::name.desc())
+                .then_order_by(device::dsl::name),
+        _ => q = q.order_by(device::dsl::name)
+    };   
 
     q.limit(limit)
         .offset(offset)
@@ -1043,7 +1039,7 @@ pub mod test {
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
-            let items = list(tst.limit, tst.offset, &tst.filters, Some(tst.order), tst.order_by_desc).await.unwrap();
+            let items = list(tst.limit, tst.offset, &tst.filters, tst.order, tst.order_by_desc).await.unwrap();
             assert_eq!(
                 tst.devs
                     .iter()
@@ -1054,7 +1050,6 @@ pub mod test {
                     .map(|d| d.dev_eui.to_string())
                     .collect::<String>()
             );
-            
         }
 
         // delete

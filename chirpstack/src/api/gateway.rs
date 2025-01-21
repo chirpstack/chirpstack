@@ -243,7 +243,7 @@ impl GatewayService for Gateway {
         };
 
         let count = gateway::get_count(&filters).await.map_err(|e| e.status())?;
-        let result = gateway::list(req.limit as i64, req.offset as i64, &filters, Some(order_by), req.order_by_desc)
+        let result = gateway::list(req.limit as i64, req.offset as i64, &filters, order_by, req.order_by_desc)
             .await
             .map_err(|e| e.status())?;
 

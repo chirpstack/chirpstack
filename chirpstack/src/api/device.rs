@@ -281,12 +281,11 @@ impl DeviceService for Device {
             1 => device::OrderBy::DevEui,
             2 => device::OrderBy::LastSeenAt,
             3 => device::OrderBy::DeviceProfileName,
-            _ => device::OrderBy::Name,
-            
+            _ => device::OrderBy::Name,   
         };
 
         let count = device::get_count(&filters).await.map_err(|e| e.status())?;
-        let items = device::list(req.limit as i64, req.offset as i64, &filters, Some(order_by), req.order_by_desc)
+        let items = device::list(req.limit as i64, req.offset as i64, &filters, order_by, req.order_by_desc)
             .await
             .map_err(|e| e.status())?;
 
