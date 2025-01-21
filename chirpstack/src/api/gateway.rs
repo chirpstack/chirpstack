@@ -236,15 +236,14 @@ impl GatewayService for Gateway {
                 Some(req.search.to_string())
             },
         };
-
-        let order_by = if req.order_by.is_empty() {
-            None
-        } else {
-            Some(gateway::OrderBy::new(&req.order_by))
+        let order_by = match req.order_by{
+            1 => gateway::OrderBy::GatewayId,
+            2 => gateway::OrderBy::LastSeenAt,
+            _ => gateway::OrderBy::Name,
         };
 
         let count = gateway::get_count(&filters).await.map_err(|e| e.status())?;
-        let result = gateway::list(req.limit as i64, req.offset as i64, &filters, order_by)
+        let result = gateway::list(req.limit as i64, req.offset as i64, &filters, Some(order_by), req.order_by_desc)
             .await
             .map_err(|e| e.status())?;
 

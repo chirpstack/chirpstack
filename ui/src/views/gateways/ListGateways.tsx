@@ -148,12 +148,30 @@ function ListGateways(props: IProps) {
     });
   }, [props]);
 
-  const getPage = (limit: number, offset: number, orderBy: string | void, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (
+    limit: number,
+    offset: number,
+    orderBy: string | void,
+    orderByDesc: boolean | void,
+    callbackFunc: GetPageCallbackFunc,
+  ) => {
+    function getOrderBy(orderBy: string | void): ListGatewaysRequest.OrderBy {
+      switch (orderBy) {
+        case "lastSeenAt":
+          return ListGatewaysRequest.OrderBy.LAST_SEEN_AT;
+        case "gatewayId":
+          return ListGatewaysRequest.OrderBy.GATEWAY_ID;
+        default:
+          return ListGatewaysRequest.OrderBy.NAME;
+      }
+    }
+
     const req = new ListGatewaysRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);
     req.setOffset(offset);
-    req.setOrderBy(orderBy || "");
+    req.setOrderBy(getOrderBy(orderBy));
+    req.setOrderByDesc(orderByDesc || false);
 
     GatewayStore.list(req, (resp: ListGatewaysResponse) => {
       const obj = resp.toObject();
@@ -203,8 +221,7 @@ function ListGateways(props: IProps) {
         onOk={handleMgModalOk}
         onCancel={hideMgModal}
         okButtonProps={{ disabled: mgSelected === "" }}
-        bodyStyle={{ height: 300 }}
-      >
+        bodyStyle={{ height: 300 }}>
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <TreeSelect
             style={{ width: "100%" }}
@@ -242,8 +259,7 @@ function ListGateways(props: IProps) {
                 placement="bottomRight"
                 overlay={menu}
                 trigger={["click"]}
-                disabled={selectedRowIds.length === 0}
-              >
+                disabled={selectedRowIds.length === 0}>
                 <Button>Selected gateways</Button>
               </Dropdown>
             </Space>
