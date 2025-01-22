@@ -27,31 +27,40 @@ pub fn handle(
         .as_ref()
         .ok_or_else(|| anyhow!("parameters can not be None"))?;
 
-    if let gw::modulation::Parameters::Lora(pl) = mod_params {
-        let required_snr = config::get_required_snr_for_sf(pl.spreading_factor as u8)?;
-        let mut max_snr: f32 = 0.0;
+    // For non-LoRa modulations, the margin will be set to 0, as it can not be calculated.
+    // This way, at least the gw_cnt can be provided and the end-device is able to confirm
+    // it is still connected.
+    let margin = match mod_params {
+        gw::modulation::Parameters::Lora(pl) => {
+            let required_snr = config::get_required_snr_for_sf(pl.spreading_factor as u8)?;
+            let mut max_snr: f32 = 0.0;
 
-        for (i, rx_info) in ufs.rx_info_set.iter().enumerate() {
-            if i == 0 || rx_info.snr > max_snr {
-                max_snr = rx_info.snr;
+            for (i, rx_info) in ufs.rx_info_set.iter().enumerate() {
+                if i == 0 || rx_info.snr > max_snr {
+                    max_snr = rx_info.snr;
+                }
+            }
+
+            let margin = max_snr - required_snr;
+            if margin < 0.0 {
+                0.0
+            } else {
+                margin
             }
         }
-
-        let mut margin = max_snr - required_snr;
-        if margin < 0.0 {
-            margin = 0.0;
+        _ => {
+            warn!("Modulation does not provide margin to LinkCheckReq");
+            0.0
         }
+    };
 
-        return Ok(Some(lrwn::MACCommandSet::new(vec![
-            lrwn::MACCommand::LinkCheckAns(lrwn::LinkCheckAnsPayload {
-                margin: margin as u8,
-                gw_cnt: ufs.rx_info_set.len() as u8,
-            }),
-        ])));
-    }
-
-    warn!("Unsupported modulation for LinkCheckReq");
-    Ok(None)
+    // We always return a LinkCheckAns, even
+    Ok(Some(lrwn::MACCommandSet::new(vec![
+        lrwn::MACCommand::LinkCheckAns(lrwn::LinkCheckAnsPayload {
+            margin: margin as u8,
+            gw_cnt: ufs.rx_info_set.len() as u8,
+        }),
+    ])))
 }
 
 #[cfg(test)]
