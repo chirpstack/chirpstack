@@ -110,8 +110,9 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub enum OrderBy {
+    #[default]
     Name,
     GatewayId,
     LastSeenAt,
@@ -360,24 +361,24 @@ pub async fn list(
         );
     }
 
-    let descending: bool = order_by_desc; 
+    let descending: bool = order_by_desc;
 
     match order_by {
-        OrderBy::Name if !descending=>
-            q = q.order_by(gateway::dsl::name),
-        OrderBy::Name if descending =>
-            q = q.order_by(gateway::dsl::name.desc()),
-        OrderBy::GatewayId if !descending =>
-            q = q.order_by(gateway::dsl::gateway_id),          
-        OrderBy::GatewayId if descending =>
-            q = q.order_by(gateway::dsl::gateway_id.desc()),
-        OrderBy::LastSeenAt if !descending =>
-            q = q.order_by(gateway::dsl::last_seen_at)
-                .then_order_by(gateway::dsl::name),
-        OrderBy::LastSeenAt if descending =>
-            q = q.order_by(gateway::dsl::last_seen_at.desc())
-                .then_order_by(gateway::dsl::name),
-        _ => q = q.order_by(gateway::dsl::name)
+        OrderBy::Name if !descending => q = q.order_by(gateway::dsl::name),
+        OrderBy::Name if descending => q = q.order_by(gateway::dsl::name.desc()),
+        OrderBy::GatewayId if !descending => q = q.order_by(gateway::dsl::gateway_id),
+        OrderBy::GatewayId if descending => q = q.order_by(gateway::dsl::gateway_id.desc()),
+        OrderBy::LastSeenAt if !descending => {
+            q = q
+                .order_by(gateway::dsl::last_seen_at)
+                .then_order_by(gateway::dsl::name)
+        }
+        OrderBy::LastSeenAt if descending => {
+            q = q
+                .order_by(gateway::dsl::last_seen_at.desc())
+                .then_order_by(gateway::dsl::name)
+        }
+        _ => q = q.order_by(gateway::dsl::name),
     };
 
     let items = q
@@ -759,7 +760,15 @@ pub mod test {
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
-            let items = list(tst.limit, tst.offset, &tst.filters, tst.order, tst.order_by_desc).await.unwrap();
+            let items = list(
+                tst.limit,
+                tst.offset,
+                &tst.filters,
+                tst.order,
+                tst.order_by_desc,
+            )
+            .await
+            .unwrap();
             assert_eq!(
                 tst.gws
                     .iter()
