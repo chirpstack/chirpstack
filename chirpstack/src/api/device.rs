@@ -9,6 +9,7 @@ use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
 use chirpstack_api::api::device_service_server::DeviceService;
+use chirpstack_api::api::list_devices_request::OrderBy;
 use chirpstack_api::{api, common, internal};
 use lrwn::{AES128Key, DevAddr, EUI64};
 
@@ -277,17 +278,23 @@ impl DeviceService for Device {
             },
         };
 
-        let order_by = match req.order_by {
-            1 => device::OrderBy::DevEui,
-            2 => device::OrderBy::LastSeenAt,
-            3 => device::OrderBy::DeviceProfileName,
-            _ => device::OrderBy::Name,   
+        let order_by = match req.order_by() {
+            OrderBy::Name => device::OrderBy::Name,
+            OrderBy::DevEui => device::OrderBy::DevEui,
+            OrderBy::LastSeenAt => device::OrderBy::LastSeenAt,
+            OrderBy::DeviceProfileName => device::OrderBy::DeviceProfileName,
         };
 
         let count = device::get_count(&filters).await.map_err(|e| e.status())?;
-        let items = device::list(req.limit as i64, req.offset as i64, &filters, order_by, req.order_by_desc)
-            .await
-            .map_err(|e| e.status())?;
+        let items = device::list(
+            req.limit as i64,
+            req.offset as i64,
+            &filters,
+            order_by,
+            req.order_by_desc,
+        )
+        .await
+        .map_err(|e| e.status())?;
 
         let mut resp = Response::new(api::ListDevicesResponse {
             total_count: count as u32,
