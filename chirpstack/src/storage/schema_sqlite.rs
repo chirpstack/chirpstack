@@ -162,6 +162,55 @@ diesel::table! {
 }
 
 diesel::table! {
+    fuota_deployment (id) {
+        id -> Text,
+        created_at -> TimestamptzSqlite,
+        updated_at -> TimestamptzSqlite,
+        started_at -> Nullable<TimestamptzSqlite>,
+        completed_at -> Nullable<TimestamptzSqlite>,
+        name -> Text,
+        application_id -> Text,
+        device_profile_id -> Text,
+        multicast_group_type -> Text,
+        multicast_class_c_scheduling_type -> Text,
+        multicast_dr -> SmallInt,
+        multicast_class_b_ping_slot_nb_k -> SmallInt,
+        multicast_frequency -> BigInt,
+        multicast_timeout -> SmallInt,
+        unicast_attempt_count -> SmallInt,
+        fragmentation_fragment_size -> SmallInt,
+        fragmentation_redundancy -> SmallInt,
+        fragmentation_session_index -> SmallInt,
+        fragmentation_matrix -> SmallInt,
+        fragmentation_block_ack_delay -> SmallInt,
+        fragmentation_descriptor -> Binary,
+        request_fragmentation_session_status -> Text,
+        payload -> Binary,
+    }
+}
+
+diesel::table! {
+    fuota_deployment_device (fuota_deployment_id, dev_eui) {
+        fuota_deployment_id -> Text,
+        dev_eui -> Binary,
+        created_at -> TimestamptzSqlite,
+        updated_at -> TimestamptzSqlite,
+        mc_group_setup_completed_at -> Nullable<TimestamptzSqlite>,
+        mc_session_completed_at -> Nullable<TimestamptzSqlite>,
+        frag_session_setup_completed_at -> Nullable<TimestamptzSqlite>,
+        frag_status_completed_at -> Nullable<TimestamptzSqlite>,
+    }
+}
+
+diesel::table! {
+    fuota_deployment_gateway (fuota_deployment_id, gateway_id) {
+        fuota_deployment_id -> Text,
+        gateway_id -> Binary,
+        created_at -> TimestamptzSqlite,
+    }
+}
+
+diesel::table! {
     gateway (gateway_id) {
         gateway_id -> Binary,
         tenant_id -> Text,
@@ -304,6 +353,12 @@ diesel::joinable!(device -> device_profile (device_profile_id));
 diesel::joinable!(device_keys -> device (dev_eui));
 diesel::joinable!(device_profile -> tenant (tenant_id));
 diesel::joinable!(device_queue_item -> device (dev_eui));
+diesel::joinable!(fuota_deployment -> application (application_id));
+diesel::joinable!(fuota_deployment -> device_profile (device_profile_id));
+diesel::joinable!(fuota_deployment_device -> device (dev_eui));
+diesel::joinable!(fuota_deployment_device -> fuota_deployment (fuota_deployment_id));
+diesel::joinable!(fuota_deployment_gateway -> fuota_deployment (fuota_deployment_id));
+diesel::joinable!(fuota_deployment_gateway -> gateway (gateway_id));
 diesel::joinable!(gateway -> tenant (tenant_id));
 diesel::joinable!(multicast_group -> application (application_id));
 diesel::joinable!(multicast_group_device -> device (dev_eui));
@@ -325,6 +380,9 @@ diesel::allow_tables_to_appear_in_same_query!(
     device_profile,
     device_profile_template,
     device_queue_item,
+    fuota_deployment,
+    fuota_deployment_device,
+    fuota_deployment_gateway,
     gateway,
     multicast_group,
     multicast_group_device,

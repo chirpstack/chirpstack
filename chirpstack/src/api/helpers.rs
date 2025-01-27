@@ -4,7 +4,9 @@ use chirpstack_api::{api, common};
 use lrwn::region::{CommonName, MacVersion, Revision};
 
 use crate::codec::Codec;
-use crate::storage::fields::{self, MeasurementKind, MulticastGroupSchedulingType};
+use crate::storage::fields::{
+    self, MeasurementKind, MulticastGroupSchedulingType, RequestFragmentationSessionStatus,
+};
 use crate::storage::{device, device::DeviceClass, gateway, metrics::Aggregation};
 
 pub trait FromProto<T> {
@@ -335,6 +337,26 @@ impl FromProto<Option<fields::device_profile::Ts005Version>> for api::Ts005Versi
         match self {
             api::Ts005Version::Ts005NotImplemented => None,
             api::Ts005Version::Ts005V100 => Some(fields::device_profile::Ts005Version::V100),
+        }
+    }
+}
+
+impl ToProto<api::RequestFragmentationSessionStatus> for RequestFragmentationSessionStatus {
+    fn to_proto(self) -> api::RequestFragmentationSessionStatus {
+        match self {
+            Self::NoRequest => api::RequestFragmentationSessionStatus::NoRequest,
+            Self::AfterFragEnqueue => api::RequestFragmentationSessionStatus::AfterFragmentEnqueue,
+            Self::AfterSessTimeout => api::RequestFragmentationSessionStatus::AfterSessionTimeout,
+        }
+    }
+}
+
+impl FromProto<RequestFragmentationSessionStatus> for api::RequestFragmentationSessionStatus {
+    fn from_proto(self) -> RequestFragmentationSessionStatus {
+        match self {
+            Self::NoRequest => RequestFragmentationSessionStatus::NoRequest,
+            Self::AfterFragmentEnqueue => RequestFragmentationSessionStatus::AfterFragEnqueue,
+            Self::AfterSessionTimeout => RequestFragmentationSessionStatus::AfterSessTimeout,
         }
     }
 }

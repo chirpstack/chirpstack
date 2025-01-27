@@ -32,6 +32,7 @@ use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
 use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateServiceServer;
 use chirpstack_api::api::device_service_server::DeviceServiceServer;
+use chirpstack_api::api::fuota_service_server::FuotaServiceServer;
 use chirpstack_api::api::gateway_service_server::GatewayServiceServer;
 use chirpstack_api::api::internal_service_server::InternalServiceServer;
 use chirpstack_api::api::multicast_group_service_server::MulticastGroupServiceServer;
@@ -53,6 +54,7 @@ pub mod device;
 pub mod device_profile;
 pub mod device_profile_template;
 pub mod error;
+pub mod fuota;
 pub mod gateway;
 mod grpc_multiplex;
 pub mod helpers;
@@ -174,6 +176,10 @@ pub async fn setup() -> Result<()> {
         ))
         .add_service(RelayServiceServer::with_interceptor(
             relay::Relay::new(validator::RequestValidator::new()),
+            auth::auth_interceptor,
+        ))
+        .add_service(FuotaServiceServer::with_interceptor(
+            fuota::Fuota::new(validator::RequestValidator::new()),
             auth::auth_interceptor,
         ));
 
