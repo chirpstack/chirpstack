@@ -24,6 +24,7 @@ pub mod device_session;
 pub mod downlink_frame;
 pub mod error;
 pub mod fields;
+pub mod fuota;
 pub mod gateway;
 pub mod helpers;
 pub mod mac_command;

@@ -21,6 +21,7 @@
   humantime-serde = "1.1"
   toml = "0.8"
   handlebars = "6.2"
+  validator = { version = "0.20", features = ["derive"] }
 
   # Database
   email_address = "0.2"

@@ -215,6 +215,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .to_str()
                     .unwrap(),
                 cs_dir.join("api").join("relay.proto").to_str().unwrap(),
+                cs_dir.join("api").join("fuota.proto").to_str().unwrap(),
             ],
             &[
                 proto_dir.join("chirpstack").to_str().unwrap(),
