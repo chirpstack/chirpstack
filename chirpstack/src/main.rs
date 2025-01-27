@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 #[macro_use]
 extern crate lazy_static;
 extern crate diesel_migrations;
