@@ -211,6 +211,18 @@ diesel::table! {
 }
 
 diesel::table! {
+    fuota_deployment_job (fuota_deployment_id, job) {
+        fuota_deployment_id -> Text,
+        job -> Text,
+        created_at -> TimestamptzSqlite,
+        completed_at -> Nullable<TimestamptzSqlite>,
+        max_attempt_count -> SmallInt,
+        attempt_count -> SmallInt,
+        scheduler_run_after -> TimestamptzSqlite,
+    }
+}
+
+diesel::table! {
     gateway (gateway_id) {
         gateway_id -> Binary,
         tenant_id -> Text,
@@ -359,6 +371,7 @@ diesel::joinable!(fuota_deployment_device -> device (dev_eui));
 diesel::joinable!(fuota_deployment_device -> fuota_deployment (fuota_deployment_id));
 diesel::joinable!(fuota_deployment_gateway -> fuota_deployment (fuota_deployment_id));
 diesel::joinable!(fuota_deployment_gateway -> gateway (gateway_id));
+diesel::joinable!(fuota_deployment_job -> fuota_deployment (fuota_deployment_id));
 diesel::joinable!(gateway -> tenant (tenant_id));
 diesel::joinable!(multicast_group -> application (application_id));
 diesel::joinable!(multicast_group_device -> device (dev_eui));
@@ -383,6 +396,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     fuota_deployment,
     fuota_deployment_device,
     fuota_deployment_gateway,
+    fuota_deployment_job,
     gateway,
     multicast_group,
     multicast_group_device,

@@ -12,7 +12,7 @@ pub use big_decimal::BigDecimal;
 pub use dev_nonces::DevNonces;
 pub use device_profile::{AbpParams, AppLayerParams, ClassBParams, ClassCParams, RelayParams};
 pub use device_session::DeviceSession;
-pub use fuota::RequestFragmentationSessionStatus;
+pub use fuota::{FuotaJob, RequestFragmentationSessionStatus};
 pub use key_value::KeyValue;
 pub use measurements::*;
 pub use multicast_group_scheduling_type::MulticastGroupSchedulingType;

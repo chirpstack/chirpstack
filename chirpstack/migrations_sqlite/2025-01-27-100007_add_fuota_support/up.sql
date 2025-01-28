@@ -39,9 +39,23 @@ create table fuota_deployment_device (
 );
 
 create table fuota_deployment_gateway (
-  fuota_deployment_id text not null references fuota_deployment on delete cascade,
-  gateway_id blob not null references gateway on delete cascade,
-  created_at datetime not null,
+    fuota_deployment_id text not null references fuota_deployment on delete cascade,
+    gateway_id blob not null references gateway on delete cascade,
+    created_at datetime not null,
 
-  primary key (fuota_deployment_id, gateway_id)
+    primary key (fuota_deployment_id, gateway_id)
 );
+
+create table fuota_deployment_job (
+    fuota_deployment_id text not null references fuota_deployment on delete cascade,
+    job varchar(20) not null,
+    created_at datetime not null,
+    completed_at datetime null,
+    max_attempt_count smallint not null,
+    attempt_count smallint not null,
+    scheduler_run_after datetime not null,
+
+    primary key (fuota_deployment_id, job)
+);
+
+create index idx_fuota_deployment_job_scheduler_run_after on fuota_deployment_job(scheduler_run_after);
