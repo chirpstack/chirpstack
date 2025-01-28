@@ -473,7 +473,7 @@ impl FuotaService for Fuota {
         let count = fuota::get_gateway_count(dp_id)
             .await
             .map_err(|e| e.status())?;
-        let items = fuota::get_gateway(dp_id, req.limit as i64, req.offset as i64)
+        let items = fuota::get_gateways(dp_id, req.limit as i64, req.offset as i64)
             .await
             .map_err(|e| e.status())?;
 
@@ -493,5 +493,281 @@ impl FuotaService for Fuota {
             req.fuota_deployment_id.parse().unwrap(),
         );
         Ok(resp)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::api::auth::validator::RequestValidator;
+    use crate::api::auth::AuthID;
+    use crate::storage::{application, device, device_profile, gateway, tenant, user};
+    use crate::test;
+
+    #[tokio::test]
+    async fn test_fuota() {
+        let _guard = test::prepare().await;
+
+        // setup admin user
+        let u = user::User {
+            is_admin: true,
+            is_active: true,
+            email: "admin@admin".into(),
+            email_verified: true,
+            ..Default::default()
+        };
+        let u = user::create(u).await.unwrap();
+
+        // create tenant
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            can_have_gateways: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create app
+        let app = application::create(application::Application {
+            tenant_id: t.id,
+            name: "test-app".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create dp
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: t.id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create device
+        let dev = device::create(device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            application_id: app.id,
+            device_profile_id: dp.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create gateway
+        let gw = gateway::create(gateway::Gateway {
+            gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            tenant_id: t.id,
+            name: "test-gw".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // setup api
+        let service = Fuota::new(RequestValidator::new());
+
+        // create deployment
+        let create_req = get_request(
+            &u.id,
+            api::CreateFuotaDeploymentRequest {
+                deployment: Some(api::FuotaDeployment {
+                    application_id: app.id.to_string(),
+                    device_profile_id: dp.id.to_string(),
+                    name: "test-fuota".into(),
+                    ..Default::default()
+                }),
+            },
+        );
+        let create_resp = service.create_deployment(create_req).await.unwrap();
+        let create_resp = create_resp.get_ref();
+
+        // get deployment
+        let get_req = get_request(
+            &u.id,
+            api::GetFuotaDeploymentRequest {
+                id: create_resp.id.clone(),
+            },
+        );
+        let get_resp = service.get_deployment(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(
+            Some(api::FuotaDeployment {
+                id: create_resp.id.clone(),
+                application_id: app.id.to_string(),
+                device_profile_id: dp.id.to_string(),
+                name: "test-fuota".into(),
+                ..Default::default()
+            }),
+            get_resp.deployment
+        );
+
+        // update deployment
+        let update_req = get_request(
+            &u.id,
+            api::UpdateFuotaDeploymentRequest {
+                deployment: Some(api::FuotaDeployment {
+                    id: create_resp.id.clone(),
+                    application_id: app.id.to_string(),
+                    device_profile_id: dp.id.to_string(),
+                    name: "updated-test-fuota".into(),
+                    ..Default::default()
+                }),
+            },
+        );
+        service.update_deployment(update_req).await.unwrap();
+        let get_req = get_request(
+            &u.id,
+            api::GetFuotaDeploymentRequest {
+                id: create_resp.id.clone(),
+            },
+        );
+        let get_resp = service.get_deployment(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(
+            Some(api::FuotaDeployment {
+                id: create_resp.id.clone(),
+                application_id: app.id.to_string(),
+                device_profile_id: dp.id.to_string(),
+                name: "updated-test-fuota".into(),
+                ..Default::default()
+            }),
+            get_resp.deployment
+        );
+
+        // list deployments
+        let list_req = get_request(
+            &u.id,
+            api::ListFuotaDeploymentsRequest {
+                application_id: app.id.to_string(),
+                limit: 10,
+                offset: 0,
+            },
+        );
+        let list_resp = service.list_deployments(list_req).await.unwrap();
+        let list_resp = list_resp.get_ref();
+        assert_eq!(1, list_resp.total_count);
+        assert_eq!(1, list_resp.result.len());
+        assert_eq!(create_resp.id, list_resp.result[0].id);
+
+        // add device
+        let add_dev_req = get_request(
+            &u.id,
+            api::AddDevicesToFuotaDeploymentRequest {
+                fuota_deployment_id: create_resp.id.clone(),
+                dev_euis: vec![dev.dev_eui.to_string()],
+            },
+        );
+        service.add_devices(add_dev_req).await.unwrap();
+
+        // list devices
+        let list_devs_req = get_request(
+            &u.id,
+            api::ListFuotaDeploymentDevicesRequest {
+                fuota_deployment_id: create_resp.id.clone(),
+                limit: 10,
+                offset: 0,
+            },
+        );
+        let list_devs_resp = service.list_devices(list_devs_req).await.unwrap();
+        let list_devs_resp = list_devs_resp.get_ref();
+        assert_eq!(1, list_devs_resp.total_count);
+        assert_eq!(1, list_devs_resp.result.len());
+        assert_eq!(dev.dev_eui.to_string(), list_devs_resp.result[0].dev_eui);
+
+        // remove devices
+        let remove_devs_req = get_request(
+            &u.id,
+            api::RemoveDevicesFromFuotaDeploymentRequest {
+                fuota_deployment_id: create_resp.id.clone(),
+                dev_euis: vec![dev.dev_eui.to_string()],
+            },
+        );
+        service.remove_devices(remove_devs_req).await.unwrap();
+        let list_devs_req = get_request(
+            &u.id,
+            api::ListFuotaDeploymentDevicesRequest {
+                fuota_deployment_id: create_resp.id.clone(),
+                limit: 10,
+                offset: 0,
+            },
+        );
+        let list_devs_resp = service.list_devices(list_devs_req).await.unwrap();
+        let list_devs_resp = list_devs_resp.get_ref();
+        assert_eq!(0, list_devs_resp.total_count);
+        assert_eq!(0, list_devs_resp.result.len());
+
+        // add gateway
+        let add_gws_req = get_request(
+            &u.id,
+            api::AddGatewaysToFuotaDeploymentRequest {
+                fuota_deployment_id: create_resp.id.clone(),
+                gateway_ids: vec![gw.gateway_id.to_string()],
+            },
+        );
+        service.add_gateways(add_gws_req).await.unwrap();
+
+        // list gateways
+        let list_gws_req = get_request(
+            &u.id,
+            api::ListFuotaDeploymentGatewaysRequest {
+                fuota_deployment_id: create_resp.id.clone(),
+                limit: 10,
+                offset: 0,
+            },
+        );
+        let list_gws_resp = service.list_gateways(list_gws_req).await.unwrap();
+        let list_gws_resp = list_gws_resp.get_ref();
+        assert_eq!(1, list_gws_resp.total_count);
+        assert_eq!(1, list_gws_resp.result.len());
+        assert_eq!(
+            gw.gateway_id.to_string(),
+            list_gws_resp.result[0].gateway_id
+        );
+
+        // remove gateways
+        let remove_gws_req = get_request(
+            &u.id,
+            api::RemoveGatewaysFromFuotaDeploymentRequest {
+                fuota_deployment_id: create_resp.id.clone(),
+                gateway_ids: vec![gw.gateway_id.to_string()],
+            },
+        );
+        service.remove_gateways(remove_gws_req).await.unwrap();
+        let list_gws_req = get_request(
+            &u.id,
+            api::ListFuotaDeploymentGatewaysRequest {
+                fuota_deployment_id: create_resp.id.clone(),
+                limit: 10,
+                offset: 0,
+            },
+        );
+        let list_gws_resp = service.list_gateways(list_gws_req).await.unwrap();
+        let list_gws_resp = list_gws_resp.get_ref();
+        assert_eq!(0, list_gws_resp.total_count);
+        assert_eq!(0, list_gws_resp.result.len());
+
+        // delete deployment
+        let delete_req = get_request(
+            &u.id,
+            api::DeleteFuotaDeploymentRequest {
+                id: create_resp.id.clone(),
+            },
+        );
+        service.delete_deployment(delete_req).await.unwrap();
+        let delete_req = get_request(
+            &u.id,
+            api::DeleteFuotaDeploymentRequest {
+                id: create_resp.id.clone(),
+            },
+        );
+        assert!(service.delete_deployment(delete_req).await.is_err());
+    }
+
+    fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {
+        let mut req = Request::new(req);
+        req.extensions_mut().insert(AuthID::User(*user_id));
+        req
     }
 }
