@@ -45,3 +45,17 @@ create table fuota_deployment_gateway (
 
   primary key (fuota_deployment_id, gateway_id)
 );
+
+create table fuota_deployment_job (
+  fuota_deployment_id uuid not null references fuota_deployment on delete cascade,
+  job varchar(20) not null,
+  created_at timestamp with time zone not null,
+  completed_at timestamp with time zone null,
+  max_attempt_count smallint not null,
+  attempt_count smallint not null,
+  scheduler_run_after timestamp with time zone not null,
+
+  primary key (fuota_deployment_id, job)
+);
+
+create index idx_fuota_deployment_job_scheduler_run_after on fuota_deployment_job(scheduler_run_after);

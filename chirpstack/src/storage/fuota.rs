@@ -9,9 +9,9 @@ use validator::Validate;
 use crate::storage::error::Error;
 use crate::storage::schema::{
     application, device, fuota_deployment, fuota_deployment_device, fuota_deployment_gateway,
-    gateway, tenant,
+    fuota_deployment_job, gateway, tenant,
 };
-use crate::storage::{self, device_profile, fields, get_async_db_conn};
+use crate::storage::{self, db_transaction, device_profile, fields, get_async_db_conn};
 use lrwn::EUI64;
 
 #[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq, Validate)]
@@ -133,6 +133,34 @@ impl Default for FuotaDeploymentGateway {
     }
 }
 
+#[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
+#[diesel(table_name = fuota_deployment_job)]
+pub struct FuotaDeploymentJob {
+    pub fuota_deployment_id: fields::Uuid,
+    pub job: fields::FuotaJob,
+    pub created_at: DateTime<Utc>,
+    pub completed_at: Option<DateTime<Utc>>,
+    pub max_attempt_count: i16,
+    pub attempt_count: i16,
+    pub scheduler_run_after: DateTime<Utc>,
+}
+
+impl Default for FuotaDeploymentJob {
+    fn default() -> Self {
+        let now = Utc::now();
+
+        Self {
+            fuota_deployment_id: Uuid::nil().into(),
+            job: fields::FuotaJob::McGroupSetup,
+            created_at: now,
+            completed_at: None,
+            max_attempt_count: 0,
+            attempt_count: 0,
+            scheduler_run_after: now,
+        }
+    }
+}
+
 pub async fn create_deployment(d: FuotaDeployment) -> Result<FuotaDeployment, Error> {
     d.validate()?;
 
@@ -250,6 +278,8 @@ pub async fn add_devices(fuota_deployment_id: Uuid, dev_euis: Vec<EUI64>) -> Res
             fuota_deployment::table
                 .on(fuota_deployment::dsl::device_profile_id.eq(device::dsl::device_profile_id)),
         )
+        .inner_join(application::table.on(application::dsl::id.eq(device::dsl::application_id)))
+        .filter(application::dsl::id.eq(fuota_deployment::dsl::application_id))
         .filter(fuota_deployment::dsl::id.eq(fields::Uuid::from(fuota_deployment_id)))
         .filter(device::dsl::dev_eui.eq_any(&dev_euis))
         .load(&mut get_async_db_conn().await?)
@@ -412,7 +442,7 @@ pub async fn get_gateway_count(fuota_deployment_id: Uuid) -> Result<i64, Error> 
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
-pub async fn get_gateway(
+pub async fn get_gateways(
     fuota_deployment_id: Uuid,
     limit: i64,
     offset: i64,
@@ -428,4 +458,408 @@ pub async fn get_gateway(
         .load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, "".into()))
+}
+
+// Creating a new job, will set any pending job(s) to completed within the same transaction.
+pub async fn create_job(j: FuotaDeploymentJob) -> Result<FuotaDeploymentJob, Error> {
+    let mut c = get_async_db_conn().await?;
+    let j: FuotaDeploymentJob = db_transaction::<FuotaDeploymentJob, Error, _>(&mut c, |c| {
+        Box::pin(async move {
+            // set pending job(s) to completed
+            diesel::update(
+                fuota_deployment_job::dsl::fuota_deployment_job
+                    .filter(
+                        fuota_deployment_job::dsl::fuota_deployment_id.eq(&j.fuota_deployment_id),
+                    )
+                    .filter(fuota_deployment_job::dsl::completed_at.is_null()),
+            )
+            .set(fuota_deployment_job::dsl::completed_at.eq(Utc::now()))
+            .execute(c)
+            .await?;
+
+            // create new job
+            diesel::insert_into(fuota_deployment_job::table)
+                .values(&j)
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, j.fuota_deployment_id.to_string()))
+        })
+    })
+    .await?;
+
+    info!(fuota_deployment_id = %j.fuota_deployment_id, job = %j.job, "FUOTA deployment job created");
+    Ok(j)
+}
+
+pub async fn update_job(j: FuotaDeploymentJob) -> Result<FuotaDeploymentJob, Error> {
+    let j: FuotaDeploymentJob = diesel::update(
+        fuota_deployment_job::dsl::fuota_deployment_job.find((&j.fuota_deployment_id, &j.job)),
+    )
+    .set((
+        fuota_deployment_job::completed_at.eq(&j.completed_at),
+        fuota_deployment_job::attempt_count.eq(&j.attempt_count),
+        fuota_deployment_job::scheduler_run_after.eq(&j.scheduler_run_after),
+    ))
+    .get_result(&mut get_async_db_conn().await?)
+    .await
+    .map_err(|e| Error::from_diesel(e, j.fuota_deployment_id.to_string()))?;
+
+    info!(fuota_deployment_id = %j.fuota_deployment_id, job = %j.job, "FUOTA deployment job updated");
+    Ok(j)
+}
+
+pub async fn list_jobs(fuota_deployment_id: Uuid) -> Result<Vec<FuotaDeploymentJob>, Error> {
+    fuota_deployment_job::dsl::fuota_deployment_job
+        .filter(
+            fuota_deployment_job::dsl::fuota_deployment_id
+                .eq(fields::Uuid::from(fuota_deployment_id)),
+        )
+        .order_by(fuota_deployment_job::dsl::scheduler_run_after)
+        .load(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, fuota_deployment_id.to_string()))
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::storage::{application, device, device_profile, gateway, tenant};
+    use crate::test;
+
+    #[tokio::test]
+    async fn test_fuota() {
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: t.id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create
+        let mut d = create_deployment(FuotaDeployment {
+            application_id: app.id,
+            device_profile_id: dp.id,
+            name: "test-fuota-deployment".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d_get = get_deployment(d.id.into()).await.unwrap();
+        assert_eq!(d, d_get);
+
+        // update
+        d.name = "updated-test-fuota-deployment".into();
+        let d = update_deployment(d).await.unwrap();
+
+        // count
+        assert_eq!(1, get_deployment_count(app.id.into()).await.unwrap());
+
+        // list
+        assert_eq!(
+            vec![FuotaDeploymentListItem {
+                id: d.id,
+                created_at: d.created_at,
+                updated_at: d.updated_at,
+                started_at: None,
+                completed_at: None,
+                name: d.name.clone(),
+            }],
+            list_deployments(app.id.into(), 10, 0).await.unwrap()
+        );
+
+        // delete
+        delete_deployment(d.id.into()).await.unwrap();
+        assert!(delete_deployment(d.id.into()).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_fuota_devices() {
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app2 = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: t.id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp2 = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: t.id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dev = device::create(device::Device {
+            application_id: app.id,
+            device_profile_id: dp.id,
+            name: "test-device".into(),
+            dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dev2 = device::create(device::Device {
+            application_id: app.id,
+            device_profile_id: dp2.id,
+            name: "test-device".into(),
+            dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dev3 = device::create(device::Device {
+            application_id: app2.id,
+            device_profile_id: dp.id,
+            name: "test-device".into(),
+            dev_eui: EUI64::from_be_bytes([3, 2, 3, 4, 5, 6, 7, 8]),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create
+        let d = create_deployment(FuotaDeployment {
+            application_id: app.id,
+            device_profile_id: dp.id,
+            name: "test-fuota-deployment".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // can't add devices from multiple device-profiles
+        assert!(add_devices(d.id.into(), vec![dev2.dev_eui]).await.is_err());
+
+        // can't add devices from other applications
+        assert!(add_devices(d.id.into(), vec![dev3.dev_eui]).await.is_err());
+
+        // add devices
+        add_devices(d.id.into(), vec![dev.dev_eui]).await.unwrap();
+
+        // get device count
+        assert_eq!(1, get_device_count(d.id.into()).await.unwrap());
+
+        // get devices
+        let devices = get_devices(d.id.into(), 10, 0).await.unwrap();
+        assert_eq!(1, devices.len());
+        assert_eq!(dev.dev_eui, devices[0].dev_eui);
+        assert_eq!(d.id, devices[0].fuota_deployment_id);
+
+        // remove devices
+        remove_devices(d.id.into(), vec![dev.dev_eui])
+            .await
+            .unwrap();
+        assert_eq!(0, get_device_count(d.id.into()).await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_fuota_gateways() {
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            can_have_gateways: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let t2 = tenant::create(tenant::Tenant {
+            name: "test-tenant-2".into(),
+            can_have_gateways: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: t.id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d = create_deployment(FuotaDeployment {
+            application_id: app.id,
+            device_profile_id: dp.id,
+            name: "test-fuota-deployment".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let gw = gateway::create(gateway::Gateway {
+            gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            name: "gw-1".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let gw2 = gateway::create(gateway::Gateway {
+            gateway_id: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
+            name: "gw-2".into(),
+            tenant_id: t2.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // adding gateteway from other tenant fails
+        assert!(add_gateways(d.id.into(), vec![gw2.gateway_id])
+            .await
+            .is_err());
+
+        // add gateway
+        add_gateways(d.id.into(), vec![gw.gateway_id])
+            .await
+            .unwrap();
+
+        // get count
+        assert_eq!(1, get_gateway_count(d.id.into()).await.unwrap());
+
+        // get gateways
+        let gateways = get_gateways(d.id.into(), 10, 0).await.unwrap();
+        assert_eq!(1, gateways.len());
+
+        // remove gateways
+        remove_gateways(d.id.into(), vec![gw.gateway_id])
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_jobs() {
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: t.id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create
+        let d = create_deployment(FuotaDeployment {
+            application_id: app.id,
+            device_profile_id: dp.id,
+            name: "test-fuota-deployment".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create job
+        let mut job = create_job(FuotaDeploymentJob {
+            fuota_deployment_id: d.id,
+            job: fields::FuotaJob::McGroupSetup,
+            max_attempt_count: 3,
+            attempt_count: 1,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // list jobs
+        let jobs = list_jobs(d.id.into()).await.unwrap();
+        assert_eq!(vec![job.clone()], jobs);
+
+        // update job
+        job.attempt_count = 2;
+        let job = update_job(job).await.unwrap();
+        let jobs = list_jobs(d.id.into()).await.unwrap();
+        assert_eq!(vec![job.clone()], jobs);
+
+        // create new job
+        // we expect that this sets the previous one as completed
+        let job2 = create_job(FuotaDeploymentJob {
+            fuota_deployment_id: d.id,
+            job: fields::FuotaJob::FragStatus,
+            max_attempt_count: 3,
+            attempt_count: 1,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let jobs = list_jobs(d.id.into()).await.unwrap();
+        assert_eq!(2, jobs.len());
+        assert_eq!(job.job, jobs[0].job);
+        assert!(jobs[0].completed_at.is_some());
+        assert_eq!(job2.job, jobs[1].job);
+        assert!(jobs[1].completed_at.is_none());
+    }
 }
