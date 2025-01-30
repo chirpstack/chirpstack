@@ -30,6 +30,9 @@ service FuotaService {
   // Delete the FUOTA deployment for the given ID.
   rpc DeleteDeployment(DeleteFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
 
+  // Start the FUOTA deployment.
+  rpc StartDeployment(StartFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
+
   // List the FUOTA deployments.
   rpc ListDeployments(ListFuotaDeploymentsRequest) returns (ListFuotaDeploymentsResponse) {}
 
@@ -233,6 +236,11 @@ message UpdateFuotaDeploymentRequest {
 }
 
 message DeleteFuotaDeploymentRequest {
+  // FUOTA deployment ID.
+  string id = 1;
+}
+
+message StartFuotaDeploymentRequest {
   // FUOTA deployment ID.
   string id = 1;
 }
