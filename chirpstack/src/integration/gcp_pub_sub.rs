@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
@@ -16,12 +17,24 @@ use crate::storage::application::GcpPubSubConfiguration;
 use chirpstack_api::api::Encoding;
 use chirpstack_api::integration;
 
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
+
 pub struct Integration {
     json: bool,
     project_id: String,
     topic_name: String,
     service_account: gcp_auth::CustomServiceAccount,
-    timeout: Duration,
 }
 
 #[derive(Serialize)]
@@ -57,7 +70,6 @@ impl Integration {
             project_id: conf.project_id.clone(),
             topic_name: conf.topic_name.clone(),
             service_account,
-            timeout: Duration::from_secs(5),
         })
     }
 
@@ -93,7 +105,6 @@ impl Integration {
             .await
             .context("Get GCP bearer token")?;
 
-        let client = Client::builder().timeout(self.timeout).build()?;
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
         headers.insert(
@@ -101,7 +112,7 @@ impl Integration {
             format!("Bearer {}", token.as_str()).parse().unwrap(),
         );
 
-        let res = client
+        let res = get_client()
             .post(format!(
                 "https://pubsub.googleapis.com/v1/{}:publish",
                 topic

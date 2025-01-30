@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -12,6 +13,19 @@ use tracing::{info, trace};
 use super::Integration as IntegrationTrait;
 use crate::storage::application::MyDevicesConfiguration;
 use chirpstack_api::integration;
+
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
 
 #[derive(Serialize)]
 struct UplinkPayload {
@@ -88,7 +102,6 @@ struct Location {
 }
 
 pub struct Integration {
-    timeout: Duration,
     endpoint: String,
 }
 
@@ -96,7 +109,6 @@ impl Integration {
     pub fn new(conf: &MyDevicesConfiguration) -> Integration {
         trace!("Initializing myDevices integration");
         Integration {
-            timeout: Duration::from_secs(5),
             endpoint: conf.endpoint.clone(),
         }
     }
@@ -120,11 +132,10 @@ impl IntegrationTrait for Integration {
         let pl = UplinkPayload::from_uplink_event(pl);
         let b = serde_json::to_string(&pl)?;
 
-        let client = Client::builder().timeout(self.timeout).build()?;
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
 
-        let req = client
+        let req = get_client()
             .post(&self.endpoint)
             .body(b)
             .headers(headers)
@@ -204,7 +215,6 @@ pub mod test {
         let server = MockServer::start();
 
         let i = Integration {
-            timeout: Duration::from_secs(5),
             endpoint: server.url("/"),
         };
 

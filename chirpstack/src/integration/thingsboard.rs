@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, HashMap};
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -12,9 +13,21 @@ use super::Integration as IntegrationTrait;
 use crate::storage::application::ThingsBoardConfiguration;
 use chirpstack_api::integration;
 
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
+
 pub struct Integration {
     server: String,
-    timeout: Duration,
 }
 
 impl Integration {
@@ -22,7 +35,6 @@ impl Integration {
         trace!("Initializing ThingsBoard integration");
 
         Integration {
-            timeout: Duration::from_secs(5),
             server: conf.server.clone(),
         }
     }
@@ -39,11 +51,10 @@ impl Integration {
         let endpoint = format!("{}/api/v1/{}/attributes", self.server, access_token);
         let b = serde_json::to_string(&attributes)?;
 
-        let client = Client::builder().timeout(self.timeout).build()?;
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
 
-        let res = client
+        let res = get_client()
             .post(endpoint)
             .body(b)
             .headers(headers)
@@ -65,11 +76,10 @@ impl Integration {
         let endpoint = format!("{}/api/v1/{}/telemetry", self.server, access_token);
         let b = serde_json::to_string(&telemetry)?;
 
-        let client = Client::builder().timeout(self.timeout).build()?;
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
 
-        let res = client
+        let res = get_client()
             .post(endpoint)
             .body(b)
             .headers(headers)
@@ -323,7 +333,6 @@ pub mod test {
 
         let i = Integration {
             server: server.url(""),
-            timeout: Duration::from_secs(5),
         };
 
         let mut vars: HashMap<String, String> = HashMap::new();

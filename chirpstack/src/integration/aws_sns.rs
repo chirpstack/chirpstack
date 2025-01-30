@@ -1,9 +1,12 @@
 use std::collections::HashMap;
+use std::sync::OnceLock;
+use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine as _};
 use prost::Message;
+use reqwest::Client;
 use tracing::{info, trace};
 
 use super::Integration as IntegrationTrait;
@@ -11,13 +14,25 @@ use crate::storage::application::AwsSnsConfiguration;
 use chirpstack_api::api::Encoding;
 use chirpstack_api::integration;
 
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
+
 pub struct Integration {
     json: bool,
     access_key_id: String,
     secret_access_key: String,
     region: String,
     topic_arn: String,
-    client: reqwest::Client,
 }
 
 impl Integration {
@@ -35,7 +50,6 @@ impl Integration {
             access_key_id: conf.access_key_id.clone(),
             secret_access_key: conf.secret_access_key.clone(),
             region: conf.region.clone(),
-            client: reqwest::Client::new(),
         })
     }
 
@@ -97,7 +111,7 @@ impl Integration {
 
         headers.insert(reqwest::header::AUTHORIZATION, s.parse()?);
 
-        self.client
+        get_client()
             .post(url)
             .headers(headers)
             .body(body)

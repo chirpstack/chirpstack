@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -12,8 +13,20 @@ use super::Integration as IntegrationTrait;
 use crate::storage::application::HttpConfiguration;
 use chirpstack_api::integration;
 
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
+
 pub struct Integration {
-    timeout: Duration,
     endpoints: Vec<String>,
     headers: HashMap<String, String>,
     json: bool,
@@ -24,7 +37,6 @@ impl Integration {
         trace!("Initializing http integration");
 
         Integration {
-            timeout: Duration::from_secs(5),
             headers: conf.headers.clone(),
             json: conf.json,
             endpoints: conf
@@ -36,7 +48,6 @@ impl Integration {
     }
 
     async fn post_event(&self, event: &str, b: Vec<u8>) -> Result<()> {
-        let client = Client::builder().timeout(self.timeout).build()?;
         let mut headers = HeaderMap::new();
 
         for (k, v) in &self.headers {
@@ -51,7 +62,7 @@ impl Integration {
 
         for url in &self.endpoints {
             info!(event = %event, url = %url, "Posting event");
-            let res = client
+            let res = get_client()
                 .post(url)
                 .body(b.clone())
                 .query(&[("event", event)])
@@ -214,7 +225,6 @@ pub mod test {
         let server = MockServer::start();
 
         let i = Integration {
-            timeout: Duration::from_secs(5),
             endpoints: vec![server.url("/")],
             headers: [("Foo".to_string(), "Bar".to_string())]
                 .iter()

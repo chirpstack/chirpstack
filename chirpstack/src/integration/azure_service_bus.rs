@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::OnceLock;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
@@ -16,8 +17,20 @@ use crate::storage::application::AzureServiceBusConfiguration;
 use chirpstack_api::api::Encoding;
 use chirpstack_api::integration;
 
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
+
 pub struct Integration {
-    timeout: Duration,
     json: bool,
     uri: String,
     key_name: String,
@@ -31,7 +44,6 @@ impl Integration {
         let kv = parse_connection_string(&conf.connection_string);
 
         Ok(Integration {
-            timeout: Duration::from_secs(5),
             json: match Encoding::try_from(conf.encoding)
                 .map_err(|_| anyhow!("Invalid encoding"))?
             {
@@ -65,7 +77,6 @@ impl Integration {
             &(SystemTime::now() + Duration::from_secs(60 * 5)),
         )?;
 
-        let client = Client::builder().timeout(self.timeout).build()?;
         let mut headers = HeaderMap::new();
 
         headers.insert(AUTHORIZATION, token.parse()?);
@@ -89,7 +100,7 @@ impl Integration {
         );
 
         info!(event = %event, dev_eui = %dev_eui, "Publishing event");
-        let res = client
+        let res = get_client()
             .post(format!("{}/messages", self.uri))
             .body(pl.to_string())
             .headers(headers)
@@ -307,7 +318,6 @@ pub mod test {
         let server = MockServer::start();
 
         let i = Integration {
-            timeout: Duration::from_secs(5),
             json: true,
             uri: server.url(""),
             key_name: "key-name".to_string(),

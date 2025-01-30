@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -12,6 +13,19 @@ use super::Integration as IntegrationTrait;
 use crate::codec;
 use crate::storage::application::IftttConfiguration;
 use chirpstack_api::integration;
+
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
 
 #[derive(Serialize, Deserialize)]
 struct Values {
@@ -63,12 +77,16 @@ impl Integration {
             format!("{}/trigger/{}/with/key/{}", self.server, event, self.key)
         };
 
-        let client = Client::builder().timeout(Duration::from_secs(5)).build()?;
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
 
         info!(event = %event, "Sending event to IFTTT");
-        let res = client.post(url).json(&v).headers(headers).send().await?;
+        let res = get_client()
+            .post(url)
+            .json(&v)
+            .headers(headers)
+            .send()
+            .await?;
         match res.error_for_status() {
             Ok(_) => Ok(()),
             Err(e) => {

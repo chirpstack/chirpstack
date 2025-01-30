@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -13,8 +14,20 @@ use crate::storage::application::InfluxDbConfiguration;
 use chirpstack_api::api::{InfluxDbPrecision, InfluxDbVersion};
 use chirpstack_api::integration;
 
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
+
 pub struct Integration {
-    timeout: Duration,
     endpoint: String,
     version: InfluxDbVersion,
 
@@ -36,7 +49,6 @@ impl Integration {
         trace!("Initializing InfluxDB integration");
 
         Ok(Integration {
-            timeout: Duration::from_secs(5),
             endpoint: conf.endpoint.clone(),
             version: InfluxDbVersion::try_from(conf.version)
                 .map_err(|_| anyhow!("Invalid version"))?,
@@ -66,8 +78,6 @@ impl Integration {
         measurements.sort();
         let body = measurements.join("\n");
 
-        let client = Client::builder().timeout(self.timeout).build()?;
-
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "text/plain".parse().unwrap());
         if self.version == InfluxDbVersion::Influxdb2 {
@@ -87,7 +97,7 @@ impl Integration {
             }
         }
 
-        let mut req = client
+        let mut req = get_client()
             .post(&self.endpoint)
             .body(body)
             .query(&query)
@@ -477,7 +487,6 @@ pub mod test {
         let server = MockServer::start();
 
         let i = Integration {
-            timeout: Duration::from_secs(5),
             endpoint: server.url("/write"),
             version: InfluxDbVersion::Influxdb1,
             db: "testdb".into(),
@@ -832,7 +841,6 @@ device_uplink,application_name=test-app,dev_eui=0102030405060708,device_name=tes
         let server = MockServer::start();
 
         let i = Integration {
-            timeout: Duration::from_secs(5),
             endpoint: server.url("/write"),
             version: InfluxDbVersion::Influxdb2,
             db: "".into(),

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -12,8 +13,20 @@ use super::Integration as IntegrationTrait;
 use crate::storage::application::PilotThingsConfiguration;
 use chirpstack_api::integration;
 
+static CLIENT: OnceLock<Client> = OnceLock::new();
+
+fn get_client() -> Client {
+    CLIENT
+        .get_or_init(|| {
+            Client::builder()
+                .timeout(Duration::from_secs(5))
+                .build()
+                .unwrap()
+        })
+        .clone()
+}
+
 pub struct Integration {
-    timeout: Duration,
     server: String,
     token: String,
 }
@@ -23,7 +36,6 @@ impl Integration {
         trace!("Initializing Pilot Things integration");
 
         Integration {
-            timeout: Duration::from_secs(5),
             server: conf.server.clone(),
             token: conf.token.clone(),
         }
@@ -45,11 +57,10 @@ impl IntegrationTrait for Integration {
         let pl = UplinkPayload::from_uplink_event(pl);
         let b = serde_json::to_string(&pl)?;
 
-        let client = Client::builder().timeout(self.timeout).build()?;
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
 
-        let res = client
+        let res = get_client()
             .post(endpoint)
             .body(b)
             .query(&[("token", self.token.clone())])
@@ -182,7 +193,6 @@ pub mod test {
         let server = MockServer::start();
 
         let i = Integration {
-            timeout: Duration::from_secs(5),
             server: server.url(""),
             token: "foo-token".into(),
         };
