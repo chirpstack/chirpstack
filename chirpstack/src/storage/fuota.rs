@@ -1,11 +1,12 @@
-use anyhow::Result;
-use chrono::{DateTime, Utc};
+use anyhow::{Context, Result};
+use chrono::{DateTime, Duration, Utc};
 use diesel::{dsl, prelude::*};
 use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 use validator::Validate;
 
+use crate::config;
 use crate::storage::error::Error;
 use crate::storage::schema::{
     application, device, fuota_deployment, fuota_deployment_device, fuota_deployment_gateway,
@@ -133,7 +134,7 @@ impl Default for FuotaDeploymentGateway {
     }
 }
 
-#[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
+#[derive(Clone, Queryable, QueryableByName, Insertable, Debug, PartialEq, Eq)]
 #[diesel(table_name = fuota_deployment_job)]
 pub struct FuotaDeploymentJob {
     pub fuota_deployment_id: fields::Uuid,
@@ -520,6 +521,72 @@ pub async fn list_jobs(fuota_deployment_id: Uuid) -> Result<Vec<FuotaDeploymentJ
         .map_err(|e| Error::from_diesel(e, fuota_deployment_id.to_string()))
 }
 
+// Selected jobs will automatically have their scheduler_run_after column updated to now + 2 x scheduler interval value.
+// This is such that concurrent queries will not result in the same job being executed twice.
+pub async fn get_schedulable_jobs(limit: usize) -> Result<Vec<FuotaDeploymentJob>> {
+    let mut c = get_async_db_conn().await?;
+    db_transaction::<Vec<FuotaDeploymentJob>, Error, _>(&mut c, |c| {
+        Box::pin(async move {
+            let conf = config::get();
+            diesel::sql_query(if cfg!(feature = "sqlite") {
+                r#"
+                    update
+                        fuota_deployment_job
+                    set
+                        scheduler_run_after = ?3
+                    where
+                        (fuota_deployment_id, job) in (
+                            select
+                                fuota_deployment_id,
+                                job
+                            from
+                                fuota_deployment_job
+                            where
+                                completed_at is null
+                                and scheduler_run_after <= ?2
+                            order by
+                                created_at
+                            limit ?1
+                        )
+                    returning *
+                "#
+            } else {
+                r#"
+                    update
+                        fuota_deployment_job
+                    set
+                        scheduler_run_after = $3
+                    where
+                        (fuota_deployment_id, job) in (
+                            select
+                                fuota_deployment_id,
+                                job
+                            from
+                                fuota_deployment_job
+                            where
+                                completed_at is null
+                                and scheduler_run_after <= $2
+                            order by
+                                created_at
+                            limit $1
+                        )
+                    returning *
+                "#
+            })
+            .bind::<diesel::sql_types::Integer, _>(limit as i32)
+            .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
+            .bind::<fields::sql_types::Timestamptz, _>(
+                Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
+            )
+            .load(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, "".into()))
+        })
+    })
+    .await
+    .context("Get FUOTA jobs")
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -861,5 +928,13 @@ mod test {
         assert!(jobs[0].completed_at.is_some());
         assert_eq!(job2.job, jobs[1].job);
         assert!(jobs[1].completed_at.is_none());
+
+        // get schedulable jobs
+        let jobs = get_schedulable_jobs(10).await.unwrap();
+        assert_eq!(1, jobs.len());
+        assert_eq!(job2.job, jobs[0].job);
+
+        let jobs = get_schedulable_jobs(10).await.unwrap();
+        assert_eq!(0, jobs.len());
     }
 }
