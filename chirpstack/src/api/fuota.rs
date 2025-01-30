@@ -10,7 +10,7 @@ use lrwn::EUI64;
 use crate::api::auth::validator;
 use crate::api::error::ToStatus;
 use crate::api::helpers::{self, FromProto, ToProto};
-use crate::storage::fuota;
+use crate::storage::{fields, fuota};
 
 pub struct Fuota {
     validator: validator::RequestValidator,
@@ -221,6 +221,37 @@ impl FuotaService for Fuota {
             .await?;
 
         let _ = fuota::delete_deployment(id).await.map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-fuota_deployment_id", req.id.parse().unwrap());
+        Ok(resp)
+    }
+
+    async fn start_deployment(
+        &self,
+        request: Request<api::StartFuotaDeploymentRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req = request.get_ref();
+        let id = Uuid::from_str(&req.id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateFuotaDeploymentAccess::new(validator::Flag::Update, id),
+            )
+            .await?;
+
+        let d = fuota::get_deployment(id).await.map_err(|e| e.status())?;
+
+        fuota::create_job(fuota::FuotaDeploymentJob {
+            fuota_deployment_id: d.id,
+            job: fields::FuotaJob::McGroupSetup,
+            max_attempt_count: d.unicast_attempt_count,
+            ..Default::default()
+        })
+        .await
+        .map_err(|e| e.status())?;
 
         let mut resp = Response::new(());
         resp.metadata_mut()
@@ -650,6 +681,21 @@ mod test {
         assert_eq!(1, list_resp.total_count);
         assert_eq!(1, list_resp.result.len());
         assert_eq!(create_resp.id, list_resp.result[0].id);
+
+        // start deployment
+        let start_req = get_request(
+            &u.id,
+            api::StartFuotaDeploymentRequest {
+                id: create_resp.id.clone(),
+            },
+        );
+        service.start_deployment(start_req).await.unwrap();
+        let jobs = fuota::list_jobs(Uuid::from_str(&create_resp.id).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(1, jobs.len());
+        assert_eq!(create_resp.id, jobs[0].fuota_deployment_id.to_string());
+        assert_eq!(fields::FuotaJob::McGroupSetup, jobs[0].job);
 
         // add device
         let add_dev_req = get_request(

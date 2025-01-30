@@ -58,4 +58,5 @@ create table fuota_deployment_job (
     primary key (fuota_deployment_id, job)
 );
 
+create index idx_fuota_deployment_job_completed_at on fuota_deployment_job(completed_at);
 create index idx_fuota_deployment_job_scheduler_run_after on fuota_deployment_job(scheduler_run_after);
