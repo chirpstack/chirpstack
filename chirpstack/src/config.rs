@@ -75,6 +75,7 @@ pub struct Redis {
     pub servers: Vec<String>,
     pub cluster: bool,
     pub key_prefix: String,
+    pub master_name: String,
     pub max_open_connections: u32,
     pub min_idle_connections: u32,
 }
@@ -85,6 +86,7 @@ impl Default for Redis {
             servers: vec!["redis://127.0.0.1/".into()],
             cluster: false,
             key_prefix: "".into(),
+            master_name: "".into(),
             max_open_connections: 100,
             min_idle_connections: 0,
         }

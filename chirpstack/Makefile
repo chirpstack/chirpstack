@@ -47,7 +47,7 @@ dist:
 test:
 	cargo fmt --check
 	cargo clippy --no-deps --no-default-features --features="$(DATABASE)"
-	TZ=UTC cargo test --no-default-features --features="$(DATABASE)"
+	RUST_MIN_STACK=2621440 TZ=UTC cargo test --no-default-features --features="$(DATABASE)"
 
 test-all:
 	cargo fmt --check
