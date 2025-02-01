@@ -79,6 +79,7 @@ function ListDevices(props: IProps) {
         }
         return "Never";
       },
+      sorter: true,
     },
     {
       title: "DevEUI",
@@ -89,16 +90,17 @@ function ListDevices(props: IProps) {
         <Link
           to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/${
             record.devEui
-          }`}
-        >
+          }`}>
           {text}
         </Link>
       ),
+      sorter: true,
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      sorter: true,
     },
     {
       title: "Device profile",
@@ -109,6 +111,7 @@ function ListDevices(props: IProps) {
           {text}
         </Link>
       ),
+      sorter: true,
     },
     {
       title: "Battery",
@@ -134,11 +137,32 @@ function ListDevices(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (
+    limit: number,
+    offset: number,
+    orderBy: string | void,
+    orderByDesc: boolean | void,
+    callbackFunc: GetPageCallbackFunc,
+  ) => {
+    function getOrderBy(orderBy: string | void): ListDevicesRequest.OrderBy {
+      switch (orderBy) {
+        case "lastSeenAt":
+          return ListDevicesRequest.OrderBy.LAST_SEEN_AT;
+        case "deviceProfileName":
+          return ListDevicesRequest.OrderBy.DEVICE_PROFILE_NAME;
+        case "devEui":
+          return ListDevicesRequest.OrderBy.DEV_EUI;
+        default:
+          return ListDevicesRequest.OrderBy.NAME;
+      }
+    }
+
     const req = new ListDevicesRequest();
     req.setApplicationId(props.application.getId());
     req.setLimit(limit);
     req.setOffset(offset);
+    req.setOrderBy(getOrderBy(orderBy));
+    req.setOrderByDesc(orderByDesc || false);
 
     DeviceStore.list(req, (resp: ListDevicesResponse) => {
       const obj = resp.toObject();
@@ -216,8 +240,7 @@ function ListDevices(props: IProps) {
         visible={mgModalVisible}
         onOk={handleMgModalOk}
         onCancel={hideMgModal}
-        okButtonProps={{ disabled: mgSelected === "" }}
-      >
+        okButtonProps={{ disabled: mgSelected === "" }}>
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <Select style={{ width: "100%" }} onChange={onMgSelected} placeholder="Select Multicast-group">
             {mgOptions}
@@ -229,8 +252,7 @@ function ListDevices(props: IProps) {
         visible={relayModalVisible}
         onOk={handleRelayModalOk}
         onCancel={hideRelayModal}
-        okButtonProps={{ disabled: relaySelected === "" }}
-      >
+        okButtonProps={{ disabled: relaySelected === "" }}>
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <Select style={{ width: "100%" }} onChange={onRelaySelected} placeholder="Select Relay">
             {relayOptions}
@@ -241,8 +263,7 @@ function ListDevices(props: IProps) {
         <Space direction="horizontal" style={{ float: "right" }}>
           <Button type="primary">
             <Link
-              to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/create`}
-            >
+              to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/create`}>
               Add device
             </Link>
           </Button>

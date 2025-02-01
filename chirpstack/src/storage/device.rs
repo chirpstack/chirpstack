@@ -216,6 +216,15 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
+#[derive(Clone, Debug, Default)]
+pub enum OrderBy {
+    #[default]
+    Name,
+    DevEui,
+    LastSeenAt,
+    DeviceProfileName,
+}
+
 #[derive(QueryableByName, PartialEq, Eq, Debug)]
 pub struct DevicesActiveInactive {
     #[diesel(sql_type = diesel::sql_types::BigInt)]
@@ -606,6 +615,8 @@ pub async fn list(
     limit: i64,
     offset: i64,
     filters: &Filters,
+    order_by: OrderBy,
+    order_by_desc: bool,
 ) -> Result<Vec<DeviceListItem>, Error> {
     let mut q = device::dsl::device
         .inner_join(device_profile::table)
@@ -647,9 +658,37 @@ pub async fn list(
                 .eq(fields::Uuid::from(multicast_group_id)),
         );
     }
+    let descending: bool = order_by_desc;
 
-    q.order_by(device::dsl::name)
-        .limit(limit)
+    match order_by {
+        OrderBy::Name if !descending => q = q.order_by(device::dsl::name),
+        OrderBy::Name if descending => q = q.order_by(device::dsl::name.desc()),
+        OrderBy::DevEui if !descending => q = q.order_by(device::dsl::dev_eui),
+        OrderBy::DevEui if descending => q = q.order_by(device::dsl::dev_eui.desc()),
+        OrderBy::LastSeenAt if !descending => {
+            q = q
+                .order_by(device::dsl::last_seen_at)
+                .then_order_by(device::dsl::name)
+        }
+        OrderBy::LastSeenAt if descending => {
+            q = q
+                .order_by(device::dsl::last_seen_at.desc())
+                .then_order_by(device::dsl::name)
+        }
+        OrderBy::DeviceProfileName if !descending => {
+            q = q
+                .order_by(device_profile::dsl::name.asc())
+                .then_order_by(device::dsl::name)
+        }
+        OrderBy::DeviceProfileName if descending => {
+            q = q
+                .order_by(device_profile::dsl::name.desc())
+                .then_order_by(device::dsl::name)
+        }
+        _ => q = q.order_by(device::dsl::name),
+    };
+
+    q.limit(limit)
         .offset(offset)
         .load(&mut get_async_db_conn().await?)
         .await
@@ -875,6 +914,8 @@ pub mod test {
         count: usize,
         limit: i64,
         offset: i64,
+        order: OrderBy,
+        order_by_desc: bool,
     }
 
     pub async fn create_device(
@@ -942,6 +983,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -953,6 +996,8 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -964,6 +1009,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -975,6 +1022,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -986,6 +1035,8 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
         ];
 
@@ -993,7 +1044,15 @@ pub mod test {
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
-            let items = list(tst.limit, tst.offset, &tst.filters).await.unwrap();
+            let items = list(
+                tst.limit,
+                tst.offset,
+                &tst.filters,
+                tst.order,
+                tst.order_by_desc,
+            )
+            .await
+            .unwrap();
             assert_eq!(
                 tst.devs
                     .iter()
