@@ -5,6 +5,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
+use chrono::Utc;
 use handlebars::Handlebars;
 use prometheus_client::encoding::EncodeLabelSet;
 use prometheus_client::metrics::counter::Counter;
@@ -357,6 +358,11 @@ async fn message_callback(
 
             if v4_migrate {
                 event.v4_migrate();
+            }
+
+            if let Some(rx_info) = &mut event.rx_info {
+                set_gateway_json(&rx_info.gateway_id, json);
+                rx_info.ns_time = Some(Utc::now().into());
             }
 
             tokio::spawn(uplink::deduplicate_uplink(
