@@ -7,7 +7,6 @@ use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
 use chirpstack_api::api::gateway_service_server::GatewayService;
-use chirpstack_api::api::list_gateways_request::OrderBy;
 use chirpstack_api::{api, common};
 use lrwn::EUI64;
 
@@ -237,18 +236,13 @@ impl GatewayService for Gateway {
                 Some(req.search.to_string())
             },
         };
-        let order_by = match req.order_by() {
-            OrderBy::Name => gateway::OrderBy::Name,
-            OrderBy::GatewayId => gateway::OrderBy::GatewayId,
-            OrderBy::LastSeenAt => gateway::OrderBy::LastSeenAt,
-        };
 
         let count = gateway::get_count(&filters).await.map_err(|e| e.status())?;
         let result = gateway::list(
             req.limit as i64,
             req.offset as i64,
             &filters,
-            order_by,
+            req.order_by().from_proto(),
             req.order_by_desc,
         )
         .await

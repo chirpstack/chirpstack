@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 
 use crate::codec::Codec;
 use crate::storage::fields::{MeasurementKind, MulticastGroupSchedulingType};
-use crate::storage::{device::DeviceClass, metrics::Aggregation};
+use crate::storage::{device, device::DeviceClass, gateway, metrics::Aggregation};
 use chirpstack_api::{api, common};
 use lrwn::region::{CommonName, MacVersion, Revision};
 
@@ -259,6 +259,27 @@ impl ToProto<common::DeviceClass> for DeviceClass {
             DeviceClass::A => common::DeviceClass::ClassA,
             DeviceClass::B => common::DeviceClass::ClassB,
             DeviceClass::C => common::DeviceClass::ClassC,
+        }
+    }
+}
+
+impl FromProto<device::OrderBy> for api::list_devices_request::OrderBy {
+    fn from_proto(self) -> device::OrderBy {
+        match self {
+            Self::Name => device::OrderBy::Name,
+            Self::DevEui => device::OrderBy::DevEui,
+            Self::LastSeenAt => device::OrderBy::LastSeenAt,
+            Self::DeviceProfileName => device::OrderBy::DeviceProfileName,
+        }
+    }
+}
+
+impl FromProto<gateway::OrderBy> for api::list_gateways_request::OrderBy {
+    fn from_proto(self) -> gateway::OrderBy {
+        match self {
+            Self::Name => gateway::OrderBy::Name,
+            Self::GatewayId => gateway::OrderBy::GatewayId,
+            Self::LastSeenAt => gateway::OrderBy::LastSeenAt,
         }
     }
 }
