@@ -141,7 +141,8 @@ function MulticastGroupQueue(props: IProps) {
           onFinish={onEnqueue}
           onFinishFailed={onFinishFailed}
           form={form}
-          initialValues={{ fPort: 1 }}>
+          initialValues={{ fPort: 1 }}
+        >
           <Row>
             <Space direction="horizontal" style={{ width: "100%" }} size="large">
               <Form.Item name="fPort" label="FPort">
@@ -150,7 +151,8 @@ function MulticastGroupQueue(props: IProps) {
               <Form.Item
                 name="expiresAt"
                 label="Expires at"
-                tooltip="If set, the queue-item will automatically expire at the given timestamp if it wasn't sent yet.">
+                tooltip="If set, the queue-item will automatically expire at the given timestamp if it wasn't sent yet."
+              >
                 <DatePicker showTime />
               </Form.Item>
             </Space>

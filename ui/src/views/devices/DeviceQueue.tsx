@@ -219,7 +219,8 @@ function DeviceQueue(props: IProps) {
           onFinish={onEnqueue}
           onFinishFailed={onFinishFailed}
           form={form}
-          initialValues={{ fPort: 1 }}>
+          initialValues={{ fPort: 1 }}
+        >
           <Row>
             <Space direction="horizontal" style={{ width: "100%" }} size="large">
               <Form.Item name="confirmed" label="Confirmed" valuePropName="checked">
@@ -232,21 +233,24 @@ function DeviceQueue(props: IProps) {
                 name="isEncrypted"
                 label="Is encrypted"
                 valuePropName="checked"
-                tooltip="Only enable this in case the payload that you would like to enqueue has already been encrypted. In this case you also must enter the downlink frame-counter which has been used for the encryption.">
+                tooltip="Only enable this in case the payload that you would like to enqueue has already been encrypted. In this case you also must enter the downlink frame-counter which has been used for the encryption."
+              >
                 <Switch onChange={setIsEncrypted} />
               </Form.Item>
               {isEncrypted && (
                 <Form.Item
                   name="fCntDown"
                   label="Downlink frame-counter used for encryption"
-                  rules={[{ required: true, message: "Please enter a downlink frame-counter!" }]}>
+                  rules={[{ required: true, message: "Please enter a downlink frame-counter!" }]}
+                >
                   <InputNumber min={0} />
                 </Form.Item>
               )}
               <Form.Item
                 name="expiresAt"
                 label="Expires at"
-                tooltip="If set, the queue-item will automatically expire at the given timestamp if it wasn't sent yet.">
+                tooltip="If set, the queue-item will automatically expire at the given timestamp if it wasn't sent yet."
+              >
                 <DatePicker showTime />
               </Form.Item>
             </Space>

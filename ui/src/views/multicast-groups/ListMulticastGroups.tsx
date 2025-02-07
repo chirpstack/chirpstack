@@ -34,7 +34,8 @@ function ListMulticastGroups(props: IProps) {
         <Link
           to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/multicast-groups/${
             record.id
-          }`}>
+          }`}
+        >
           {text}
         </Link>
       ),
@@ -82,7 +83,8 @@ function ListMulticastGroups(props: IProps) {
       <Admin tenantId={props.application.getTenantId()} isDeviceAdmin>
         <Button type="primary" style={{ float: "right" }}>
           <Link
-            to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/multicast-groups/create`}>
+            to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/multicast-groups/create`}
+          >
             Add multicast-group
           </Link>
         </Button>

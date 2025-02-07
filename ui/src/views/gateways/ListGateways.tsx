@@ -221,7 +221,8 @@ function ListGateways(props: IProps) {
         onOk={handleMgModalOk}
         onCancel={hideMgModal}
         okButtonProps={{ disabled: mgSelected === "" }}
-        bodyStyle={{ height: 300 }}>
+        bodyStyle={{ height: 300 }}
+      >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <TreeSelect
             style={{ width: "100%" }}
@@ -259,7 +260,8 @@ function ListGateways(props: IProps) {
                 placement="bottomRight"
                 overlay={menu}
                 trigger={["click"]}
-                disabled={selectedRowIds.length === 0}>
+                disabled={selectedRowIds.length === 0}
+              >
                 <Button>Selected gateways</Button>
               </Dropdown>
             </Space>

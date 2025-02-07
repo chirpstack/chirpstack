@@ -90,7 +90,8 @@ function ListDevices(props: IProps) {
         <Link
           to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/${
             record.devEui
-          }`}>
+          }`}
+        >
           {text}
         </Link>
       ),
@@ -240,7 +241,8 @@ function ListDevices(props: IProps) {
         visible={mgModalVisible}
         onOk={handleMgModalOk}
         onCancel={hideMgModal}
-        okButtonProps={{ disabled: mgSelected === "" }}>
+        okButtonProps={{ disabled: mgSelected === "" }}
+      >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <Select style={{ width: "100%" }} onChange={onMgSelected} placeholder="Select Multicast-group">
             {mgOptions}
@@ -252,7 +254,8 @@ function ListDevices(props: IProps) {
         visible={relayModalVisible}
         onOk={handleRelayModalOk}
         onCancel={hideRelayModal}
-        okButtonProps={{ disabled: relaySelected === "" }}>
+        okButtonProps={{ disabled: relaySelected === "" }}
+      >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <Select style={{ width: "100%" }} onChange={onRelaySelected} placeholder="Select Relay">
             {relayOptions}
@@ -263,7 +266,8 @@ function ListDevices(props: IProps) {
         <Space direction="horizontal" style={{ float: "right" }}>
           <Button type="primary">
             <Link
-              to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/create`}>
+              to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/create`}
+            >
               Add device
             </Link>
           </Button>

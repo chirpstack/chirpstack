@@ -24,7 +24,8 @@ function ListRelays(props: IProps) {
         <Link
           to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/relays/${
             record.devEui
-          }`}>
+          }`}
+        >
           {text}
         </Link>
       ),
