@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-import { Table } from "antd";
+import { Table, TableProps } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import type { SorterResult } from "antd/es/table/interface";
 
 import SessionStore from "../stores/SessionStore";
-import type { FilterValue, SorterResult, TableCurrentDataSource } from "antd/es/table/interface";
-import { SortOrder } from "antd/es/table/interface";
-import type { TablePaginationConfig } from "antd/lib";
 
 export type GetPageCallbackFunc = (totalCount: number, rows: object[]) => void;
 
@@ -30,7 +28,7 @@ function DataTable(props: IProps) {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(SessionStore.getRowsPerPage());
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [orderBy, setOrderBy] = useState<string>("name");
+  const [orderBy, setOrderBy] = useState<string>("");
   const [orderByDesc, setOrderByDesc] = useState<boolean>(false);
   const [rows, setRows] = useState<object[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -55,12 +53,7 @@ function DataTable(props: IProps) {
     }
   };
 
-  const onChange = (
-    pagination: TablePaginationConfig,
-    filters: Record<string, FilterValue | null>,
-    sorter: SorterResult<object> | SorterResult<object>[],
-    extra: TableCurrentDataSource<object>,
-  ) => {
+  const onChange: TableProps<object>["onChange"] = (pagination, filters, sorter, extra) => {
     let page = pagination.current;
     if (!page) {
       page = currentPage;
