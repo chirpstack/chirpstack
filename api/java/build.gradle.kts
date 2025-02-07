@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.chirpstack"
-version = "4.11.1-test.1"
+version = "4.11.1"
 
 repositories {
     mavenCentral()
