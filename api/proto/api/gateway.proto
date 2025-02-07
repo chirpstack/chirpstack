@@ -231,9 +231,9 @@ message ListGatewaysRequest {
     string multicast_group_id = 5;
 
     enum OrderBy {
-      name = 0;
-      gateway_id = 1;
-      last_seen_at = 2;
+      NAME = 0;
+      GATEWAY_ID = 1;
+      LAST_SEEN_AT = 2;
     }
 
     // If set, the given value will be used to sort by (optional).

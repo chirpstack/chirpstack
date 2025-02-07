@@ -334,10 +334,10 @@ message ListDevicesRequest {
   string multicast_group_id = 5;
 
   enum OrderBy {
-      name = 0;
-      dev_eui = 1;
-      last_seen_at = 2;
-      device_profile_name = 3;  
+    NAME = 0;
+    DEV_EUI = 1;
+    LAST_SEEN_AT = 2;
+    DEVICE_PROFILE_NAME = 3;  
   }
 
   // If set, the given value will be used to sort by (optional).
