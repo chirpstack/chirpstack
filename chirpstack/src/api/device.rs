@@ -1368,7 +1368,7 @@ pub mod test {
                 multicast_group_id: "".into(),
                 limit: 10,
                 offset: 0,
-                order_by: 0,
+                order_by: api::list_devices_request::OrderBy::Name.into(),
                 order_by_desc: true,
             },
         );

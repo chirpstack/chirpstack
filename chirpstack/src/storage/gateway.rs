@@ -361,24 +361,21 @@ pub async fn list(
         );
     }
 
-    let descending: bool = order_by_desc;
-
-    match order_by {
-        OrderBy::Name if !descending => q = q.order_by(gateway::dsl::name),
-        OrderBy::Name if descending => q = q.order_by(gateway::dsl::name.desc()),
-        OrderBy::GatewayId if !descending => q = q.order_by(gateway::dsl::gateway_id),
-        OrderBy::GatewayId if descending => q = q.order_by(gateway::dsl::gateway_id.desc()),
-        OrderBy::LastSeenAt if !descending => {
-            q = q
-                .order_by(gateway::dsl::last_seen_at)
-                .then_order_by(gateway::dsl::name)
-        }
-        OrderBy::LastSeenAt if descending => {
-            q = q
+    q = match order_by_desc {
+        true => match order_by {
+            OrderBy::Name => q.order_by(gateway::dsl::name.desc()),
+            OrderBy::GatewayId => q.order_by(gateway::dsl::gateway_id.desc()),
+            OrderBy::LastSeenAt => q
                 .order_by(gateway::dsl::last_seen_at.desc())
-                .then_order_by(gateway::dsl::name)
-        }
-        _ => q = q.order_by(gateway::dsl::name),
+                .then_order_by(gateway::dsl::name),
+        },
+        false => match order_by {
+            OrderBy::Name => q.order_by(gateway::dsl::name),
+            OrderBy::GatewayId => q.order_by(gateway::dsl::gateway_id),
+            OrderBy::LastSeenAt => q
+                .order_by(gateway::dsl::last_seen_at)
+                .then_order_by(gateway::dsl::name),
+        },
     };
 
     let items = q

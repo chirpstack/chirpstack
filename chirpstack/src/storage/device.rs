@@ -658,34 +658,24 @@ pub async fn list(
                 .eq(fields::Uuid::from(multicast_group_id)),
         );
     }
-    let descending: bool = order_by_desc;
 
-    match order_by {
-        OrderBy::Name if !descending => q = q.order_by(device::dsl::name),
-        OrderBy::Name if descending => q = q.order_by(device::dsl::name.desc()),
-        OrderBy::DevEui if !descending => q = q.order_by(device::dsl::dev_eui),
-        OrderBy::DevEui if descending => q = q.order_by(device::dsl::dev_eui.desc()),
-        OrderBy::LastSeenAt if !descending => {
-            q = q
-                .order_by(device::dsl::last_seen_at)
-                .then_order_by(device::dsl::name)
-        }
-        OrderBy::LastSeenAt if descending => {
-            q = q
+    q = match order_by_desc {
+        true => match order_by {
+            OrderBy::Name => q.order_by(device::dsl::name.desc()),
+            OrderBy::DevEui => q.order_by(device::dsl::dev_eui.desc()),
+            OrderBy::LastSeenAt => q
                 .order_by(device::dsl::last_seen_at.desc())
-                .then_order_by(device::dsl::name)
-        }
-        OrderBy::DeviceProfileName if !descending => {
-            q = q
-                .order_by(device_profile::dsl::name.asc())
-                .then_order_by(device::dsl::name)
-        }
-        OrderBy::DeviceProfileName if descending => {
-            q = q
-                .order_by(device_profile::dsl::name.desc())
-                .then_order_by(device::dsl::name)
-        }
-        _ => q = q.order_by(device::dsl::name),
+                .then_order_by(device::dsl::name),
+            OrderBy::DeviceProfileName => q.order_by(device_profile::dsl::name.desc()),
+        },
+        false => match order_by {
+            OrderBy::Name => q.order_by(device::dsl::name),
+            OrderBy::DevEui => q.order_by(device::dsl::dev_eui),
+            OrderBy::LastSeenAt => q
+                .order_by(device::dsl::last_seen_at)
+                .then_order_by(device::dsl::name),
+            OrderBy::DeviceProfileName => q.order_by(device_profile::dsl::name),
+        },
     };
 
     q.limit(limit)
