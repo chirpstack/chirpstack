@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use chrono::Utc;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
@@ -45,7 +46,7 @@ impl FuotaService for Fuota {
             )
             .await?;
 
-        let dp = fuota::FuotaDeployment {
+        let mut dp = fuota::FuotaDeployment {
             name: req_dp.name.clone(),
             application_id: app_id.into(),
             device_profile_id: dp_id.into(),
@@ -61,9 +62,9 @@ impl FuotaService for Fuota {
             multicast_class_b_ping_slot_nb_k: req_dp.multicast_class_b_ping_slot_nb_k as i16,
             multicast_frequency: req_dp.multicast_frequency as i64,
             multicast_timeout: req_dp.multicast_timeout as i16,
-            unicast_attempt_count: req_dp.unicast_attempt_count as i16,
+            unicast_max_retry_count: req_dp.unicast_max_retry_count as i16,
             fragmentation_fragment_size: req_dp.fragmentation_fragment_size as i16,
-            fragmentation_redundancy: req_dp.fragmentation_redundancy as i16,
+            fragmentation_redundancy_percentage: req_dp.fragmentation_redundancy_percentage as i16,
             fragmentation_session_index: req_dp.fragmentation_session_index as i16,
             fragmentation_matrix: req_dp.fragmentation_matrix as i16,
             fragmentation_block_ack_delay: req_dp.fragmentation_block_ack_delay as i16,
@@ -74,6 +75,16 @@ impl FuotaService for Fuota {
             payload: req_dp.payload.clone(),
             ..Default::default()
         };
+        if req_dp.calculate_fragmentation_fragment_size {
+            dp.fragmentation_fragment_size = fuota::get_max_fragment_size(&dp)
+                .await
+                .map_err(|e| e.status())? as i16;
+        }
+        if req_dp.calculate_multicast_timeout {
+            dp.multicast_timeout =
+                fuota::get_multicast_timeout(&dp).map_err(|e| e.status())? as i16;
+        }
+
         let dp = fuota::create_deployment(dp).await.map_err(|e| e.status())?;
 
         let mut resp = Response::new(api::CreateFuotaDeploymentResponse {
@@ -123,9 +134,9 @@ impl FuotaService for Fuota {
                 multicast_class_b_ping_slot_nb_k: dp.multicast_class_b_ping_slot_nb_k as u32,
                 multicast_frequency: dp.multicast_frequency as u32,
                 multicast_timeout: dp.multicast_timeout as u32,
-                unicast_attempt_count: dp.unicast_attempt_count as u32,
+                unicast_max_retry_count: dp.unicast_max_retry_count as u32,
                 fragmentation_fragment_size: dp.fragmentation_fragment_size as u32,
-                fragmentation_redundancy: dp.fragmentation_redundancy as u32,
+                fragmentation_redundancy_percentage: dp.fragmentation_redundancy_percentage as u32,
                 fragmentation_session_index: dp.fragmentation_session_index as u32,
                 fragmentation_matrix: dp.fragmentation_matrix as u32,
                 fragmentation_block_ack_delay: dp.fragmentation_block_ack_delay as u32,
@@ -135,9 +146,19 @@ impl FuotaService for Fuota {
                     .to_proto()
                     .into(),
                 payload: dp.payload.clone(),
+                calculate_multicast_timeout: false,
+                calculate_fragmentation_fragment_size: false,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
+            started_at: dp
+                .started_at
+                .as_ref()
+                .map(helpers::datetime_to_prost_timestamp),
+            completed_at: dp
+                .completed_at
+                .as_ref()
+                .map(helpers::datetime_to_prost_timestamp),
         });
         resp.metadata_mut()
             .insert("x-log-fuota_deployment_id", req.id.parse().unwrap());
@@ -167,7 +188,7 @@ impl FuotaService for Fuota {
             )
             .await?;
 
-        let _ = fuota::update_deployment(fuota::FuotaDeployment {
+        let mut dp = fuota::FuotaDeployment {
             id: id.into(),
             name: req_dp.name.clone(),
             application_id: app_id.into(),
@@ -184,9 +205,9 @@ impl FuotaService for Fuota {
             multicast_class_b_ping_slot_nb_k: req_dp.multicast_class_b_ping_slot_nb_k as i16,
             multicast_frequency: req_dp.multicast_frequency as i64,
             multicast_timeout: req_dp.multicast_timeout as i16,
-            unicast_attempt_count: req_dp.unicast_attempt_count as i16,
+            unicast_max_retry_count: req_dp.unicast_max_retry_count as i16,
             fragmentation_fragment_size: req_dp.fragmentation_fragment_size as i16,
-            fragmentation_redundancy: req_dp.fragmentation_redundancy as i16,
+            fragmentation_redundancy_percentage: req_dp.fragmentation_redundancy_percentage as i16,
             fragmentation_session_index: req_dp.fragmentation_session_index as i16,
             fragmentation_matrix: req_dp.fragmentation_matrix as i16,
             fragmentation_block_ack_delay: req_dp.fragmentation_block_ack_delay as i16,
@@ -196,9 +217,18 @@ impl FuotaService for Fuota {
                 .from_proto(),
             payload: req_dp.payload.clone(),
             ..Default::default()
-        })
-        .await
-        .map_err(|e| e.status())?;
+        };
+        if req_dp.calculate_fragmentation_fragment_size {
+            dp.fragmentation_fragment_size = fuota::get_max_fragment_size(&dp)
+                .await
+                .map_err(|e| e.status())? as i16;
+        }
+        if req_dp.calculate_multicast_timeout {
+            dp.multicast_timeout =
+                fuota::get_multicast_timeout(&dp).map_err(|e| e.status())? as i16;
+        }
+
+        let _ = fuota::update_deployment(dp).await.map_err(|e| e.status())?;
 
         let mut resp = Response::new(());
         resp.metadata_mut()
@@ -242,12 +272,20 @@ impl FuotaService for Fuota {
             )
             .await?;
 
-        let d = fuota::get_deployment(id).await.map_err(|e| e.status())?;
+        let mut d = fuota::get_deployment(id).await.map_err(|e| e.status())?;
+        if d.started_at.is_some() {
+            return Err(Status::failed_precondition(
+                "FUOTA deployment has already started",
+            ));
+        }
+
+        d.started_at = Some(Utc::now());
+        let d = fuota::update_deployment(d).await.map_err(|e| e.status())?;
 
         fuota::create_job(fuota::FuotaDeploymentJob {
             fuota_deployment_id: d.id,
             job: fields::FuotaJob::McGroupSetup,
-            max_attempt_count: d.unicast_attempt_count,
+            max_retry_count: d.unicast_max_retry_count,
             ..Default::default()
         })
         .await

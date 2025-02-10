@@ -112,39 +112,47 @@ message FuotaDeployment {
   // has a different meaning for Class-B and Class-C groups.
   uint32 multicast_timeout = 10;
 
-  // Unicast attempt count.
-  // The number of attempts before considering an unicast command
-  // to be failed.
-  uint32 unicast_attempt_count = 11;
+  // Calculate multicast timeout.
+  // If set to true, ChirpStack will calculate the multicast-timeout.
+  bool calculate_multicast_timeout = 11;
+
+  // The number of times ChirpStack will retry an unicast command
+  // before it considers it to be failed.
+  uint32 unicast_max_retry_count = 12;
 
   // Fragmentation size.
   // This defines the size of each payload fragment. Please refer to the
   // Regional Parameters specification for the maximum payload sizes
   // per data-rate and region.
-  uint32 fragmentation_fragment_size = 12;
+  uint32 fragmentation_fragment_size = 13;
 
-  // Fragmentation redundancy.
-  // The number represents the additional redundant frames to send.
-  uint32 fragmentation_redundancy = 13;
+  // Calculate fragmentation size.
+  // If set to true, ChirpStack will calculate the fragmentation size.
+  bool calculate_fragmentation_fragment_size = 14;
+
+  // Fragmentation redundancy percentage.
+  // The number represents the percentage (0 - 100) of redundant messages
+  // to send.
+  uint32 fragmentation_redundancy_percentage = 15;
 
   // Fragmentation session index.
-  uint32 fragmentation_session_index = 14;
+  uint32 fragmentation_session_index = 16;
 
   // Fragmentation matrix.
-  uint32 fragmentation_matrix = 15;
+  uint32 fragmentation_matrix = 17;
 
   // Block ack delay.
-  uint32 fragmentation_block_ack_delay = 16;
+  uint32 fragmentation_block_ack_delay = 18;
 
   // Descriptor (4 bytes).
-  bytes fragmentation_descriptor = 17;
+  bytes fragmentation_descriptor = 19;
 
   // Request fragmentation session status.
-  RequestFragmentationSessionStatus request_fragmentation_session_status = 18;
+  RequestFragmentationSessionStatus request_fragmentation_session_status = 20;
 
   // Payload.
   // The FUOTA payload to send.
-  bytes payload = 19;
+  bytes payload = 21;
 }
 
 message FuotaDeploymentListItem {
@@ -228,6 +236,12 @@ message GetFuotaDeploymentResponse {
 
   // Updated at timestamp.
   google.protobuf.Timestamp updated_at = 3;
+
+  // Started at timestamp.
+  google.protobuf.Timestamp started_at = 4;
+
+  // Completed at timestamp.
+  google.protobuf.Timestamp completed_at = 5;
 }
 
 message UpdateFuotaDeploymentRequest {

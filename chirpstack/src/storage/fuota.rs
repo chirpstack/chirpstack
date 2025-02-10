@@ -32,9 +32,9 @@ pub struct FuotaDeployment {
     pub multicast_class_b_ping_slot_nb_k: i16,
     pub multicast_frequency: i64,
     pub multicast_timeout: i16,
-    pub unicast_attempt_count: i16,
+    pub unicast_max_retry_count: i16,
     pub fragmentation_fragment_size: i16,
-    pub fragmentation_redundancy: i16,
+    pub fragmentation_redundancy_percentage: i16,
     pub fragmentation_session_index: i16,
     pub fragmentation_matrix: i16,
     pub fragmentation_block_ack_delay: i16,
@@ -62,9 +62,9 @@ impl Default for FuotaDeployment {
             multicast_class_b_ping_slot_nb_k: 0,
             multicast_frequency: 0,
             multicast_timeout: 0,
-            unicast_attempt_count: 0,
+            unicast_max_retry_count: 0,
             fragmentation_fragment_size: 0,
-            fragmentation_redundancy: 0,
+            fragmentation_redundancy_percentage: 0,
             fragmentation_session_index: 0,
             fragmentation_matrix: 0,
             fragmentation_block_ack_delay: 0,
@@ -141,7 +141,7 @@ pub struct FuotaDeploymentJob {
     pub job: fields::FuotaJob,
     pub created_at: DateTime<Utc>,
     pub completed_at: Option<DateTime<Utc>>,
-    pub max_attempt_count: i16,
+    pub max_retry_count: i16,
     pub attempt_count: i16,
     pub scheduler_run_after: DateTime<Utc>,
 }
@@ -155,7 +155,7 @@ impl Default for FuotaDeploymentJob {
             job: fields::FuotaJob::McGroupSetup,
             created_at: now,
             completed_at: None,
-            max_attempt_count: 0,
+            max_retry_count: 0,
             attempt_count: 0,
             scheduler_run_after: now,
         }
@@ -208,9 +208,10 @@ pub async fn update_deployment(d: FuotaDeployment) -> Result<FuotaDeployment, Er
                 .eq(&d.multicast_class_b_ping_slot_nb_k),
             fuota_deployment::multicast_frequency.eq(&d.multicast_frequency),
             fuota_deployment::multicast_timeout.eq(&d.multicast_timeout),
-            fuota_deployment::unicast_attempt_count.eq(&d.unicast_attempt_count),
+            fuota_deployment::unicast_max_retry_count.eq(&d.unicast_max_retry_count),
             fuota_deployment::fragmentation_fragment_size.eq(&d.fragmentation_fragment_size),
-            fuota_deployment::fragmentation_redundancy.eq(&d.fragmentation_redundancy),
+            fuota_deployment::fragmentation_redundancy_percentage
+                .eq(&d.fragmentation_redundancy_percentage),
             fuota_deployment::fragmentation_session_index.eq(&d.fragmentation_session_index),
             fuota_deployment::fragmentation_matrix.eq(&d.fragmentation_matrix),
             fuota_deployment::fragmentation_block_ack_delay.eq(&d.fragmentation_block_ack_delay),
@@ -587,6 +588,69 @@ pub async fn get_schedulable_jobs(limit: usize) -> Result<Vec<FuotaDeploymentJob
     .context("Get FUOTA jobs")
 }
 
+pub async fn get_max_fragment_size(d: &FuotaDeployment) -> Result<usize> {
+    let dp = device_profile::get(&d.device_profile_id).await?;
+    let region_conf = lrwn::region::get(dp.region, false, false);
+    let max_pl_size = region_conf
+        .get_max_payload_size(dp.mac_version, dp.reg_params_revision, d.multicast_dr as u8)?
+        .n
+        - 3;
+
+    Ok(max_pl_size)
+}
+
+pub fn get_multicast_timeout(d: &FuotaDeployment) -> Result<usize> {
+    let conf = config::get();
+
+    let fragments = (d.payload.len() as f32 / d.fragmentation_fragment_size as f32).ceil() as usize;
+    let redundancy =
+        (fragments as f32 * d.fragmentation_redundancy_percentage as f32 / 100.0).ceil() as usize;
+    let total_fragments = fragments + redundancy;
+
+    match d.multicast_group_type.as_ref() {
+        "B" => {
+            // Calculate number of ping-slots per beacon period.
+            let nb_ping_slots = 1 << (d.multicast_class_b_ping_slot_nb_k as usize);
+
+            // Calculate number of beacon-periods needed.
+            // One beacon period is added as the first ping-slot might be in the next beacon-period.
+            let beacon_periods =
+                (total_fragments as f32 / nb_ping_slots as f32).ceil() as usize + 1;
+
+            // Calculate the timeout value. In case of Class-B, timeout represents the number
+            // of beacon periods (beacon periods = 2^timeout).
+            for i in 0..16 {
+                // i is 0-15
+                if (1 << i) >= beacon_periods {
+                    return Ok(i);
+                }
+            }
+
+            Err(anyhow!("Max. number of beacon period exceeded"))
+        }
+        "C" => {
+            // Get the margin between each multicast Class-C downlink.
+            let mc_class_c_margin_secs =
+                conf.network.scheduler.multicast_class_c_margin.as_secs() as usize;
+
+            // Multiply by the number of fragments (+1 for additional margin).
+            let mc_class_c_duration_secs = mc_class_c_margin_secs * (total_fragments + 1 as usize);
+
+            // Calculate the timeout value. In case of Class-B, timeout is defined as seconds,
+            // where the number of seconds is 2^timeout.
+            for i in 0..16 {
+                // i = 0-15
+                if (1 << i) >= mc_class_c_duration_secs {
+                    return Ok(i);
+                }
+            }
+
+            Err(anyhow!("Max timeout exceeded"))
+        }
+        _ => Ok(0),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -893,7 +957,7 @@ mod test {
         let mut job = create_job(FuotaDeploymentJob {
             fuota_deployment_id: d.id,
             job: fields::FuotaJob::McGroupSetup,
-            max_attempt_count: 3,
+            max_retry_count: 3,
             attempt_count: 1,
             ..Default::default()
         })
@@ -915,7 +979,7 @@ mod test {
         let job2 = create_job(FuotaDeploymentJob {
             fuota_deployment_id: d.id,
             job: fields::FuotaJob::FragStatus,
-            max_attempt_count: 3,
+            max_retry_count: 3,
             attempt_count: 1,
             ..Default::default()
         })
@@ -936,5 +1000,136 @@ mod test {
 
         let jobs = get_schedulable_jobs(10).await.unwrap();
         assert_eq!(0, jobs.len());
+    }
+
+    #[tokio::test]
+    async fn test_get_max_fragment_size() {
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: t.id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create
+        let d = create_deployment(FuotaDeployment {
+            application_id: app.id,
+            device_profile_id: dp.id,
+            name: "test-fuota-deployment".into(),
+            multicast_dr: 5,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        assert_eq!(239, get_max_fragment_size(&d).await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn test_get_multicast_timeout() {
+        let _guard = test::prepare().await;
+
+        struct Test {
+            name: String,
+            deployment: FuotaDeployment,
+            expected_timeout: usize,
+            expected_error: Option<String>,
+        }
+
+        let tests = [
+            Test {
+                name: "Class-B - 1 / beacon period - 15 fragments".into(),
+                deployment: FuotaDeployment {
+                    multicast_group_type: "B".into(),
+                    multicast_class_b_ping_slot_nb_k: 0,
+                    fragmentation_fragment_size: 10,
+                    fragmentation_redundancy_percentage: 50,
+                    payload: vec![0; 100],
+                    ..Default::default()
+                },
+                expected_timeout: 4,
+                expected_error: None,
+            },
+            Test {
+                name: "Class-B - 1 / beacon period - 16 fragments".into(),
+                deployment: FuotaDeployment {
+                    multicast_group_type: "B".into(),
+                    multicast_class_b_ping_slot_nb_k: 0,
+                    fragmentation_fragment_size: 10,
+                    fragmentation_redundancy_percentage: 60,
+                    payload: vec![0; 100],
+                    ..Default::default()
+                },
+                expected_timeout: 5,
+                expected_error: None,
+            },
+            Test {
+                name: "Class-B - 16 / beacon period - 16 fragments".into(),
+                deployment: FuotaDeployment {
+                    multicast_group_type: "B".into(),
+                    multicast_class_b_ping_slot_nb_k: 4,
+                    fragmentation_fragment_size: 10,
+                    fragmentation_redundancy_percentage: 60,
+                    payload: vec![0; 100],
+                    ..Default::default()
+                },
+                expected_timeout: 1,
+                expected_error: None,
+            },
+            Test {
+                name: "Class-B - 16 / beacon period - 17 fragments".into(),
+                deployment: FuotaDeployment {
+                    multicast_group_type: "B".into(),
+                    multicast_class_b_ping_slot_nb_k: 4,
+                    fragmentation_fragment_size: 10,
+                    fragmentation_redundancy_percentage: 70,
+                    payload: vec![0; 100],
+                    ..Default::default()
+                },
+                expected_timeout: 2,
+                expected_error: None,
+            },
+            Test {
+                name: "Class-C - 1 fragment".into(),
+                deployment: FuotaDeployment {
+                    multicast_group_type: "C".into(),
+                    fragmentation_fragment_size: 10,
+                    payload: vec![0; 10],
+                    ..Default::default()
+                },
+                expected_timeout: 3,
+                expected_error: None,
+            },
+        ];
+
+        for t in &tests {
+            println!("> {}", t.name);
+            let res = get_multicast_timeout(&t.deployment);
+            if let Some(err_str) = &t.expected_error {
+                assert!(res.is_err());
+                assert_eq!(err_str, &res.err().unwrap().to_string());
+            } else {
+                assert!(res.is_ok());
+                assert_eq!(t.expected_timeout, res.unwrap());
+            }
+        }
     }
 }
