@@ -1899,6 +1899,69 @@ impl ApplicationService for Application {
 
         Ok(resp)
     }
+
+    async fn list_device_profiles(
+        &self,
+        request: Request<api::ListApplicationDeviceProfilesRequest>,
+    ) -> Result<Response<api::ListApplicationDeviceProfilesResponse>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Read, app_id),
+            )
+            .await?;
+
+        let dp_items = application::get_device_profiles(app_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(api::ListApplicationDeviceProfilesResponse {
+            result: dp_items
+                .iter()
+                .map(|v| api::ApplicationDeviceProfileListItem {
+                    id: v.0.to_string(),
+                    name: v.1.clone(),
+                })
+                .collect(),
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
+
+    async fn list_device_tags(
+        &self,
+        request: Request<api::ListApplicationDeviceTagsRequest>,
+    ) -> Result<Response<api::ListApplicationDeviceTagsResponse>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Read, app_id),
+            )
+            .await?;
+
+        let tags = application::get_device_tags(app_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(api::ListApplicationDeviceTagsResponse {
+            result: tags
+                .into_iter()
+                .map(|(k, v)| api::ApplicationDeviceTagListItem { key: k, values: v })
+                .collect(),
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
 }
 
 #[cfg(test)]

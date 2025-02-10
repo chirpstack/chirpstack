@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt;
 use std::str::FromStr;
 
@@ -15,7 +15,7 @@ use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
-use super::schema::{application, application_integration};
+use super::schema::{application, application_integration, device, device_profile};
 use super::{fields, get_async_db_conn};
 
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
@@ -592,6 +592,95 @@ pub async fn get_measurement_keys(application_id: &Uuid) -> Result<Vec<String>, 
     .await
     .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
     Ok(keys.iter().map(|k| k.key.clone()).collect())
+}
+
+pub async fn get_device_profiles(
+    application_id: Uuid,
+) -> Result<Vec<(fields::Uuid, String)>, Error> {
+    let result: Vec<(fields::Uuid, String)> = device_profile::dsl::device_profile
+        .select((device_profile::dsl::id, device_profile::dsl::name))
+        .distinct()
+        .inner_join(device::table.on(device::dsl::device_profile_id.eq(device_profile::dsl::id)))
+        .filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)))
+        .order_by(device_profile::dsl::name)
+        .load(&mut get_async_db_conn().await?)
+        .await?;
+
+    Ok(result)
+}
+
+#[derive(QueryableByName)]
+struct DeviceTags {
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    key: String,
+    #[diesel(sql_type = diesel::sql_types::Text)]
+    value: String,
+}
+
+#[cfg(feature = "postgres")]
+pub async fn get_device_tags(application_id: Uuid) -> Result<BTreeMap<String, Vec<String>>, Error> {
+    let mut out: BTreeMap<String, Vec<String>> = BTreeMap::new();
+
+    let items: Vec<DeviceTags> = diesel::sql_query(
+        r#"
+            select
+                distinct
+                    t.key,
+                    t.value
+                from device d
+                join lateral jsonb_each_text(d.tags) t
+                    on true
+                where
+                    d.application_id = $1
+                order by
+                    t.key,
+                    t.value
+        "#,
+    )
+    .bind::<fields::sql_types::Uuid, _>(fields::Uuid::from(application_id))
+    .load(&mut get_async_db_conn().await?)
+    .await
+    .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
+
+    for item in &items {
+        let entry = out.entry(item.key.clone()).or_default();
+        entry.push(item.value.clone());
+    }
+
+    Ok(out)
+}
+
+#[cfg(feature = "sqlite")]
+pub async fn get_device_tags(application_id: Uuid) -> Result<BTreeMap<String, Vec<String>>, Error> {
+    let mut out: BTreeMap<String, Vec<String>> = BTreeMap::new();
+
+    let items: Vec<DeviceTags> = diesel::sql_query(
+        r#"
+            select
+                distinct
+                    t.key,
+                    t.value
+                from
+                    device d,
+                    json_each(d.tags) as t
+                where
+                    d.application_id = ?1
+                order by
+                    t.key,
+                    t.value
+        "#,
+    )
+    .bind::<fields::sql_types::Uuid, _>(fields::Uuid::from(application_id))
+    .load(&mut get_async_db_conn().await?)
+    .await
+    .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
+
+    for item in &items {
+        let entry = out.entry(item.key.clone()).or_default();
+        entry.push(item.value.clone());
+    }
+
+    Ok(out)
 }
 
 #[cfg(test)]
