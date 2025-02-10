@@ -278,9 +278,15 @@ impl DeviceService for Device {
         };
 
         let count = device::get_count(&filters).await.map_err(|e| e.status())?;
-        let items = device::list(req.limit as i64, req.offset as i64, &filters)
-            .await
-            .map_err(|e| e.status())?;
+        let items = device::list(
+            req.limit as i64,
+            req.offset as i64,
+            &filters,
+            req.order_by().from_proto(),
+            req.order_by_desc,
+        )
+        .await
+        .map_err(|e| e.status())?;
 
         let mut resp = Response::new(api::ListDevicesResponse {
             total_count: count as u32,
@@ -1362,6 +1368,8 @@ pub mod test {
                 multicast_group_id: "".into(),
                 limit: 10,
                 offset: 0,
+                order_by: api::list_devices_request::OrderBy::Name.into(),
+                order_by_desc: true,
             },
         );
         let list_resp = service.list(list_req).await.unwrap();

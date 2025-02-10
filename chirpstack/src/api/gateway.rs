@@ -238,9 +238,15 @@ impl GatewayService for Gateway {
         };
 
         let count = gateway::get_count(&filters).await.map_err(|e| e.status())?;
-        let result = gateway::list(req.limit as i64, req.offset as i64, &filters)
-            .await
-            .map_err(|e| e.status())?;
+        let result = gateway::list(
+            req.limit as i64,
+            req.offset as i64,
+            &filters,
+            req.order_by().from_proto(),
+            req.order_by_desc,
+        )
+        .await
+        .map_err(|e| e.status())?;
 
         let mut resp = Response::new(api::ListGatewaysResponse {
             total_count: count as u32,

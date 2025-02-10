@@ -3,30 +3,21 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
-import {
-  Button,
-  Tabs,
-  Space,
-  Card,
-  Row,
-  Form,
-  Input,
-  InputNumber,
-  Popconfirm,
-  DatePicker,
-  DatePickerProps,
-} from "antd";
+import type { DatePickerProps } from "antd";
+import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Popconfirm, DatePicker } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
 
+import type {
+  MulticastGroup,
+  ListMulticastGroupQueueResponse,
+} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import {
   EnqueueMulticastGroupQueueItemRequest,
   ListMulticastGroupQueueRequest,
   FlushMulticastGroupQueueRequest,
   MulticastGroupQueueItem,
-  MulticastGroup,
-  ListMulticastGroupQueueResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
 import { onFinishFailed } from "../helpers";
@@ -87,7 +78,13 @@ function MulticastGroupQueue(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (
+    limit: number,
+    offset: number,
+    orderBy: string | void,
+    orderByDesc: boolean | void,
+    callbackFunc: GetPageCallbackFunc,
+  ) => {
     const req = new ListMulticastGroupQueueRequest();
     req.setMulticastGroupId(props.multicastGroup.getId());
 

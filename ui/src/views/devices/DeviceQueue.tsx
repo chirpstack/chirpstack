@@ -5,28 +5,16 @@ import { format } from "date-fns";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
 import { Switch, notification } from "antd";
-import {
-  Button,
-  Tabs,
-  Space,
-  Card,
-  Row,
-  Form,
-  Input,
-  InputNumber,
-  Popconfirm,
-  DatePicker,
-  DatePickerProps,
-} from "antd";
+import type { DatePickerProps } from "antd";
+import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Popconfirm, DatePicker } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
 
+import type { GetDeviceQueueItemsResponse, Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import {
   EnqueueDeviceQueueItemRequest,
   GetDeviceQueueItemsRequest,
-  GetDeviceQueueItemsResponse,
-  Device,
   FlushDeviceQueueRequest,
   DeviceQueueItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
@@ -147,7 +135,13 @@ function DeviceQueue(props: IProps) {
     },
   ];
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (
+    limit: number,
+    offset: number,
+    orderBy: string | void,
+    orderByDesc: boolean | void,
+    callbackFunc: GetPageCallbackFunc,
+  ) => {
     const req = new GetDeviceQueueItemsRequest();
     req.setDevEui(props.device.getDevEui());
 

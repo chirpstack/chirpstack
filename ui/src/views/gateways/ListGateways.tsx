@@ -71,6 +71,7 @@ function ListGateways(props: IProps) {
           return format(ts, "yyyy-MM-dd HH:mm:ss");
         }
       },
+      sorter: true,
     },
     {
       title: "Gateway ID",
@@ -80,11 +81,13 @@ function ListGateways(props: IProps) {
       render: (text, record) => (
         <Link to={`/tenants/${props.tenant.getId()}/gateways/${record.gatewayId}`}>{text}</Link>
       ),
+      sorter: true,
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      sorter: true,
     },
     {
       title: "Region ID",
@@ -97,7 +100,6 @@ function ListGateways(props: IProps) {
             return <Link to={`/regions/${v}`}>{v}</Link>;
           }
         }
-
         return "";
       },
     },
@@ -112,7 +114,6 @@ function ListGateways(props: IProps) {
             return v;
           }
         }
-
         return "";
       },
     },
@@ -147,11 +148,30 @@ function ListGateways(props: IProps) {
     });
   }, [props]);
 
-  const getPage = (limit: number, offset: number, callbackFunc: GetPageCallbackFunc) => {
+  const getPage = (
+    limit: number,
+    offset: number,
+    orderBy: string | void,
+    orderByDesc: boolean | void,
+    callbackFunc: GetPageCallbackFunc,
+  ) => {
+    function getOrderBy(orderBy: string | void): ListGatewaysRequest.OrderBy {
+      switch (orderBy) {
+        case "lastSeenAt":
+          return ListGatewaysRequest.OrderBy.LAST_SEEN_AT;
+        case "gatewayId":
+          return ListGatewaysRequest.OrderBy.GATEWAY_ID;
+        default:
+          return ListGatewaysRequest.OrderBy.NAME;
+      }
+    }
+
     const req = new ListGatewaysRequest();
     req.setTenantId(props.tenant.getId());
     req.setLimit(limit);
     req.setOffset(offset);
+    req.setOrderBy(getOrderBy(orderBy));
+    req.setOrderByDesc(orderByDesc || false);
 
     GatewayStore.list(req, (resp: ListGatewaysResponse) => {
       const obj = resp.toObject();

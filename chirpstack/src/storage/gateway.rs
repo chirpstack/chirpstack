@@ -110,6 +110,14 @@ pub struct Filters {
     pub search: Option<String>,
 }
 
+#[derive(Clone, Debug, Default)]
+pub enum OrderBy {
+    #[default]
+    Name,
+    GatewayId,
+    LastSeenAt,
+}
+
 #[derive(QueryableByName, PartialEq, Eq, Debug)]
 pub struct GatewayCountsByState {
     #[diesel(sql_type = diesel::sql_types::BigInt)]
@@ -309,6 +317,8 @@ pub async fn list(
     limit: i64,
     offset: i64,
     filters: &Filters,
+    order_by: OrderBy,
+    order_by_desc: bool,
 ) -> Result<Vec<GatewayListItem>, Error> {
     let mut q = gateway::dsl::gateway
         .left_join(multicast_group_gateway::table)
@@ -351,8 +361,24 @@ pub async fn list(
         );
     }
 
+    q = match order_by_desc {
+        true => match order_by {
+            OrderBy::Name => q.order_by(gateway::dsl::name.desc()),
+            OrderBy::GatewayId => q.order_by(gateway::dsl::gateway_id.desc()),
+            OrderBy::LastSeenAt => q
+                .order_by(gateway::dsl::last_seen_at.desc())
+                .then_order_by(gateway::dsl::name),
+        },
+        false => match order_by {
+            OrderBy::Name => q.order_by(gateway::dsl::name),
+            OrderBy::GatewayId => q.order_by(gateway::dsl::gateway_id),
+            OrderBy::LastSeenAt => q
+                .order_by(gateway::dsl::last_seen_at)
+                .then_order_by(gateway::dsl::name),
+        },
+    };
+
     let items = q
-        .order_by(gateway::dsl::name)
         .limit(limit)
         .offset(offset)
         .load(&mut get_async_db_conn().await?)
@@ -522,6 +548,8 @@ pub mod test {
         count: usize,
         limit: i64,
         offset: i64,
+        order: OrderBy,
+        order_by_desc: bool,
     }
 
     struct RelayGatewayFilterTest<'a> {
@@ -603,6 +631,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -614,6 +644,8 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -625,6 +657,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -636,6 +670,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -647,6 +683,8 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -658,6 +696,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 filters: Filters {
@@ -669,6 +709,47 @@ pub mod test {
                 count: 0,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    multicast_group_id: None,
+                    search: None,
+                },
+                gws: vec![&gw],
+                count: 1,
+                limit: 10,
+                offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    multicast_group_id: None,
+                    search: None,
+                },
+                gws: vec![&gw],
+                count: 1,
+                limit: 10,
+                offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    multicast_group_id: None,
+                    search: None,
+                },
+                gws: vec![&gw],
+                count: 1,
+                limit: 10,
+                offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: true,
             },
         ];
 
@@ -676,7 +757,15 @@ pub mod test {
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
-            let items = list(tst.limit, tst.offset, &tst.filters).await.unwrap();
+            let items = list(
+                tst.limit,
+                tst.offset,
+                &tst.filters,
+                tst.order,
+                tst.order_by_desc,
+            )
+            .await
+            .unwrap();
             assert_eq!(
                 tst.gws
                     .iter()
