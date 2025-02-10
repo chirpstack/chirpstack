@@ -142,7 +142,7 @@
 
   # Misc
   lazy_static = "1.5"
-  uuid = { version = "1.11", features = ["v4", "serde"] }
+  uuid = { version = "1.13", features = ["v4", "serde"] }
   chrono = "0.4"
   async-trait = "0.1"
   aes = "0.8"
