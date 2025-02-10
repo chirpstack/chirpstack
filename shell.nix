@@ -18,7 +18,7 @@ pkgs.mkShell {
     pkgs.nodejs                 # js api + ui
     pkgs.yarn                   # ui
     pkgs.openssl
-    pkgs.sqlite-interactive     # sqlite binary + library for diesel
+    pkgs.sqlite                 # sqlite binary + library for diesel
     pkgs.postgresql             # psql binary + library for diesel
     pkgs.cargo-cross            # cross-compiling
     pkgs.diesel-cli             # diesel cli
