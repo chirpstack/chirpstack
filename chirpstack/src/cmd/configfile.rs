@@ -105,6 +105,12 @@ r#"
   # instance.
   cluster={{ redis.cluster }}
 
+  # Redis sentinel master name.
+  #
+  # Set the master name when the provided URLs are pointing to a Redis Sentinel
+  # instance.
+  master_name="{{ redis.master_name }}"
+
   # Key prefix.
   #
   # A key prefix can be used to avoid key collisions when multiple deployments
