@@ -19,7 +19,7 @@
     "rustls-tls",
   ], default-features = false }
   chrono = { version = "0.4", features = ["serde"] }
-  tokio = { version = "1.42", features = ["macros"] }
+  tokio = { version = "1.43", features = ["macros"] }
   chirpstack_api = { path = "../api/rust", default-features = false, features = [
     "json",
   ] }
