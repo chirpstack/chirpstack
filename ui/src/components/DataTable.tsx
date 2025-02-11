@@ -14,6 +14,7 @@ interface IProps {
   getPage: (
     limit: number,
     offset: number,
+    filters: object,
     orderBy: string | void,
     orderByDesc: boolean | void,
     callbackFunc: GetPageCallbackFunc,
@@ -30,14 +31,15 @@ function DataTable(props: IProps) {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [orderBy, setOrderBy] = useState<string>("");
   const [orderByDesc, setOrderByDesc] = useState<boolean>(false);
+  const [filters, setFilters] = useState<object>({});
   const [rows, setRows] = useState<object[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const loadPage = useCallback(
-    (page: number, pz: number, orderBy?: string | void, orderByDesc?: boolean | void) => {
+    (page: number, pz: number, filters: object, orderBy?: string | void, orderByDesc?: boolean | void) => {
       setLoading(true);
 
-      props.getPage(pz, (page - 1) * pz, orderBy, orderByDesc, (totalCount: number, rows: object[]) => {
+      props.getPage(pz, (page - 1) * pz, filters, orderBy, orderByDesc, (totalCount: number, rows: object[]) => {
         setTotalCount(totalCount);
         setRows(rows);
         setLoading(false);
@@ -53,7 +55,7 @@ function DataTable(props: IProps) {
     }
   };
 
-  const onChange: TableProps<object>["onChange"] = (pagination, filters, sorter, extra) => {
+  const onChange: TableProps<object>["onChange"] = (pagination, filters, sorter, _) => {
     let page = pagination.current;
     if (!page) {
       page = currentPage;
@@ -91,11 +93,12 @@ function DataTable(props: IProps) {
     setCurrentPage(page);
     setPageSize(pz || 0);
     setOrderBy(sort);
+    setFilters(filters);
   };
 
   useEffect(() => {
-    loadPage(currentPage, pageSize, orderBy, orderByDesc);
-  }, [props, currentPage, pageSize, orderBy, orderByDesc, loadPage]);
+    loadPage(currentPage, pageSize, filters, orderBy, orderByDesc);
+  }, [props, currentPage, pageSize, filters, orderBy, orderByDesc, loadPage]);
 
   const { getPage, refreshKey, ...otherProps } = props;
   let loadingProps = undefined;

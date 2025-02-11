@@ -12,6 +12,8 @@ import DeviceLayout from "../devices/DeviceLayout";
 import MulticastGroupLayout from "../multicast-groups/MulticastGroupLayout";
 import CreateMulticastGroup from "../multicast-groups/CreateMulticastGroup";
 import RelayLayout from "../relays/RelayLayout";
+import CreateFuotaDeployment from "../fuota/CreateFuotaDeployment";
+import FuotaDeploymentLayout from "../fuota/FuotaDeploymentLayout";
 
 interface IProps {
   tenant: Tenant;
@@ -51,6 +53,7 @@ function ApplicationLoader(props: IProps) {
   return (
     <Routes>
       <Route path="/devices/create" element={<CreateDevice tenant={tenant} application={app} />} />
+      <Route path="/fuota/create" element={<CreateFuotaDeployment tenant={tenant} application={app} />} />
       <Route path="/multicast-groups/create" element={<CreateMulticastGroup tenant={tenant} application={app} />} />
       <Route
         path="/multicast-groups/:multicastGroupId/*"
@@ -58,6 +61,7 @@ function ApplicationLoader(props: IProps) {
       />
       <Route path="/devices/:devEui/*" element={<DeviceLayout tenant={tenant} application={app} />} />
       <Route path="/relays/:relayDevEui/*" element={<RelayLayout tenant={tenant} application={app} />} />
+      <Route path="/fuota/:fuotaDeploymentId/*" element={<FuotaDeploymentLayout tenant={tenant} application={app} />} />
       <Route
         path="/*"
         element={<ApplicationLayout tenant={tenant} application={app} measurementKeys={measurementKeys} />}

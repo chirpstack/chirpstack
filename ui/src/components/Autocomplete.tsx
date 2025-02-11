@@ -13,13 +13,14 @@ interface Option {
 interface IProps {
   placeholder: string;
   className: string;
+  disabled?: boolean;
   value?: string;
   getOption: (s: string, fn: OptionCallbackFunc) => void;
   getOptions: (s: string, fn: OptionsCallbackFunc) => void;
   onSelect?: (s: string) => void;
 }
 
-function AutoComplete({ placeholder, className, value, getOption, getOptions, onSelect }: IProps) {
+function AutoComplete({ placeholder, className, value, getOption, getOptions, onSelect, disabled }: IProps) {
   const [option, setOption] = useState<Option | undefined>(undefined);
   const [options, setOptions] = useState<Option[]>([]);
 
@@ -74,6 +75,7 @@ function AutoComplete({ placeholder, className, value, getOption, getOptions, on
       placeholder={placeholder}
       className={className}
       value={value}
+      disabled={disabled}
     />
   );
 }
