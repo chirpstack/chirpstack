@@ -207,12 +207,14 @@ pub struct DeviceListItem {
     pub margin: Option<i32>,
     pub external_power_source: bool,
     pub battery_level: Option<fields::BigDecimal>,
+    pub tags: fields::KeyValue,
 }
 
 #[derive(Default, Clone)]
 pub struct Filters {
     pub application_id: Option<Uuid>,
     pub multicast_group_id: Option<Uuid>,
+    pub device_profile_id: Option<Uuid>,
     pub search: Option<String>,
     pub tags: HashMap<String, String>,
 }
@@ -591,6 +593,10 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
+    if let Some(device_profile_id) = &filters.device_profile_id {
+        q = q.filter(device::dsl::device_profile_id.eq(fields::Uuid::from(device_profile_id)));
+    }
+
     if let Some(search) = &filters.search {
         #[cfg(feature = "postgres")]
         {
@@ -650,12 +656,17 @@ pub async fn list(
             device::margin,
             device::external_power_source,
             device::battery_level,
+            device::tags,
         ))
         .distinct()
         .into_boxed();
 
     if let Some(application_id) = &filters.application_id {
         q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
+    }
+
+    if let Some(device_profile_id) = &filters.device_profile_id {
+        q = q.filter(device::dsl::device_profile_id.eq(fields::Uuid::from(device_profile_id)));
     }
 
     if let Some(search) = &filters.search {

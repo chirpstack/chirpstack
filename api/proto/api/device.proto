@@ -262,6 +262,9 @@ message DeviceListItem {
 
   // Device status.
   DeviceStatus device_status = 9;
+
+  // Device tags.
+  map<string, string> tags = 10;
 }
 
 message DeviceKeys {
@@ -349,6 +352,9 @@ message ListDevicesRequest {
 
   // Tags to filter devices on.
   map<string, string> tags = 8;
+
+  // Device-profile ID (UUID) to filter devices on.
+  string device_profile_id = 9;
 }
 
 message ListDevicesResponse {
