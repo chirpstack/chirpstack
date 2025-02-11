@@ -64,6 +64,10 @@ import type {
   DeleteIftttIntegrationRequest,
   GenerateMqttIntegrationClientCertificateRequest,
   GenerateMqttIntegrationClientCertificateResponse,
+  ListApplicationDeviceProfilesRequest,
+  ListApplicationDeviceProfilesResponse,
+  ListApplicationDeviceTagsRequest,
+  ListApplicationDeviceTagsResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import SessionStore from "./SessionStore";
@@ -792,6 +796,34 @@ class ApplicationStore extends EventEmitter {
     callbackFunc: (resp: GenerateMqttIntegrationClientCertificateResponse) => void,
   ) => {
     this.client.generateMqttIntegrationClientCertificate(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  listDeviceProfiles = (
+    req: ListApplicationDeviceProfilesRequest,
+    callbackFunc: (resp: ListApplicationDeviceProfilesResponse) => void,
+  ) => {
+    this.client.listDeviceProfiles(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  listDeviceTags = (
+    req: ListApplicationDeviceTagsRequest,
+    callbackFunc: (resp: ListApplicationDeviceTagsResponse) => void,
+  ) => {
+    this.client.listDeviceTags(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;

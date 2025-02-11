@@ -67,6 +67,8 @@ const (
 	ApplicationService_UpdateIftttIntegration_FullMethodName                   = "/api.ApplicationService/UpdateIftttIntegration"
 	ApplicationService_DeleteIftttIntegration_FullMethodName                   = "/api.ApplicationService/DeleteIftttIntegration"
 	ApplicationService_GenerateMqttIntegrationClientCertificate_FullMethodName = "/api.ApplicationService/GenerateMqttIntegrationClientCertificate"
+	ApplicationService_ListDeviceProfiles_FullMethodName                       = "/api.ApplicationService/ListDeviceProfiles"
+	ApplicationService_ListDeviceTags_FullMethodName                           = "/api.ApplicationService/ListDeviceTags"
 )
 
 // ApplicationServiceClient is the client API for ApplicationService service.
@@ -167,6 +169,10 @@ type ApplicationServiceClient interface {
 	DeleteIftttIntegration(ctx context.Context, in *DeleteIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Generates application ID specific client-certificate.
 	GenerateMqttIntegrationClientCertificate(ctx context.Context, in *GenerateMqttIntegrationClientCertificateRequest, opts ...grpc.CallOption) (*GenerateMqttIntegrationClientCertificateResponse, error)
+	// List device-profiles used within the given application.
+	ListDeviceProfiles(ctx context.Context, in *ListApplicationDeviceProfilesRequest, opts ...grpc.CallOption) (*ListApplicationDeviceProfilesResponse, error)
+	// List device tags used within the given application.
+	ListDeviceTags(ctx context.Context, in *ListApplicationDeviceTagsRequest, opts ...grpc.CallOption) (*ListApplicationDeviceTagsResponse, error)
 }
 
 type applicationServiceClient struct {
@@ -600,6 +606,24 @@ func (c *applicationServiceClient) GenerateMqttIntegrationClientCertificate(ctx 
 	return out, nil
 }
 
+func (c *applicationServiceClient) ListDeviceProfiles(ctx context.Context, in *ListApplicationDeviceProfilesRequest, opts ...grpc.CallOption) (*ListApplicationDeviceProfilesResponse, error) {
+	out := new(ListApplicationDeviceProfilesResponse)
+	err := c.cc.Invoke(ctx, ApplicationService_ListDeviceProfiles_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationServiceClient) ListDeviceTags(ctx context.Context, in *ListApplicationDeviceTagsRequest, opts ...grpc.CallOption) (*ListApplicationDeviceTagsResponse, error) {
+	out := new(ListApplicationDeviceTagsResponse)
+	err := c.cc.Invoke(ctx, ApplicationService_ListDeviceTags_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ApplicationServiceServer is the server API for ApplicationService service.
 // All implementations must embed UnimplementedApplicationServiceServer
 // for forward compatibility
@@ -698,6 +722,10 @@ type ApplicationServiceServer interface {
 	DeleteIftttIntegration(context.Context, *DeleteIftttIntegrationRequest) (*emptypb.Empty, error)
 	// Generates application ID specific client-certificate.
 	GenerateMqttIntegrationClientCertificate(context.Context, *GenerateMqttIntegrationClientCertificateRequest) (*GenerateMqttIntegrationClientCertificateResponse, error)
+	// List device-profiles used within the given application.
+	ListDeviceProfiles(context.Context, *ListApplicationDeviceProfilesRequest) (*ListApplicationDeviceProfilesResponse, error)
+	// List device tags used within the given application.
+	ListDeviceTags(context.Context, *ListApplicationDeviceTagsRequest) (*ListApplicationDeviceTagsResponse, error)
 	mustEmbedUnimplementedApplicationServiceServer()
 }
 
@@ -845,6 +873,12 @@ func (UnimplementedApplicationServiceServer) DeleteIftttIntegration(context.Cont
 }
 func (UnimplementedApplicationServiceServer) GenerateMqttIntegrationClientCertificate(context.Context, *GenerateMqttIntegrationClientCertificateRequest) (*GenerateMqttIntegrationClientCertificateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateMqttIntegrationClientCertificate not implemented")
+}
+func (UnimplementedApplicationServiceServer) ListDeviceProfiles(context.Context, *ListApplicationDeviceProfilesRequest) (*ListApplicationDeviceProfilesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDeviceProfiles not implemented")
+}
+func (UnimplementedApplicationServiceServer) ListDeviceTags(context.Context, *ListApplicationDeviceTagsRequest) (*ListApplicationDeviceTagsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDeviceTags not implemented")
 }
 func (UnimplementedApplicationServiceServer) mustEmbedUnimplementedApplicationServiceServer() {}
 
@@ -1705,6 +1739,42 @@ func _ApplicationService_GenerateMqttIntegrationClientCertificate_Handler(srv in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ApplicationService_ListDeviceProfiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListApplicationDeviceProfilesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).ListDeviceProfiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ApplicationService_ListDeviceProfiles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).ListDeviceProfiles(ctx, req.(*ListApplicationDeviceProfilesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ApplicationService_ListDeviceTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListApplicationDeviceTagsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).ListDeviceTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ApplicationService_ListDeviceTags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).ListDeviceTags(ctx, req.(*ListApplicationDeviceTagsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ApplicationService_ServiceDesc is the grpc.ServiceDesc for ApplicationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1899,6 +1969,14 @@ var ApplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GenerateMqttIntegrationClientCertificate",
 			Handler:    _ApplicationService_GenerateMqttIntegrationClientCertificate_Handler,
+		},
+		{
+			MethodName: "ListDeviceProfiles",
+			Handler:    _ApplicationService_ListDeviceProfiles_Handler,
+		},
+		{
+			MethodName: "ListDeviceTags",
+			Handler:    _ApplicationService_ListDeviceTags_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

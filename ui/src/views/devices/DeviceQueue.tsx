@@ -138,6 +138,7 @@ function DeviceQueue(props: IProps) {
   const getPage = (
     limit: number,
     offset: number,
+    filters: object,
     orderBy: string | void,
     orderByDesc: boolean | void,
     callbackFunc: GetPageCallbackFunc,

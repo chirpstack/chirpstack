@@ -6,6 +6,7 @@ import Autocomplete from "./Autocomplete";
 interface IProps {
   label: string;
   name: string;
+  disabled?: boolean;
   required?: boolean;
   value?: string;
   getOption: (s: string, fn: OptionCallbackFunc) => void;
@@ -38,6 +39,7 @@ function AutocompleteInput(props: IProps) {
         getOption={props.getOption}
         getOptions={props.getOptions}
         onSelect={onSelect}
+        disabled={props.disabled}
       />
     </Form.Item>
   );

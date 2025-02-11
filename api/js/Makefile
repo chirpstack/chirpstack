@@ -28,6 +28,7 @@ api:
 	$(PROTOC_PATH) ${PROTOC_GRPC_ARGS} ../proto/api/gateway.proto
 	$(PROTOC_PATH) ${PROTOC_GRPC_ARGS} ../proto/api/multicast_group.proto
 	$(PROTOC_PATH) ${PROTOC_GRPC_ARGS} ../proto/api/relay.proto
+	$(PROTOC_PATH) ${PROTOC_GRPC_ARGS} ../proto/api/fuota.proto
 
 integration:
 	$(PROTOC_PATH) ${PROTOC_ARGS} ../proto/integration/integration.proto
