@@ -250,6 +250,11 @@ impl DeviceService for Device {
         } else {
             Some(Uuid::from_str(&req.multicast_group_id).map_err(|e| e.status())?)
         };
+        let dp_id: Option<Uuid> = if req.device_profile_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req.device_profile_id).map_err(|e| e.status())?)
+        };
 
         self.validator
             .validate(
@@ -270,6 +275,7 @@ impl DeviceService for Device {
         let filters = device::Filters {
             application_id: Some(app_id),
             multicast_group_id: mg_id,
+            device_profile_id: dp_id,
             search: if req.search.is_empty() {
                 None
             } else {
@@ -316,6 +322,7 @@ impl DeviceService for Device {
                         }),
                         false => None,
                     },
+                    tags: d.tags.into_hashmap(),
                 })
                 .collect(),
         });
