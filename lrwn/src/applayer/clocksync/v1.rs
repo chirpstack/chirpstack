@@ -180,7 +180,7 @@ pub struct AppTimeReqPayloadParam {
 
 #[derive(Debug, PartialEq)]
 pub struct AppTimeAnsPayload {
-    pub time_correction: u32,
+    pub time_correction: i32,
     pub param: AppTimeAnsPayloadParam,
 }
 
@@ -194,7 +194,7 @@ impl PayloadCodec for AppTimeAnsPayload {
             time_correction: {
                 let mut bytes = [0; 4];
                 bytes.copy_from_slice(&b[0..4]);
-                u32::from_le_bytes(bytes)
+                i32::from_le_bytes(bytes)
             },
             param: AppTimeAnsPayloadParam {
                 token_ans: b[4] & 0x0f,
