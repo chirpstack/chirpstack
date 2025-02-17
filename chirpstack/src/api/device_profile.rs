@@ -147,6 +147,7 @@ impl DeviceProfileService for DeviceProfile {
                     ts003_version: app_layer_params.ts003_version().from_proto(),
                     ts004_version: app_layer_params.ts004_version().from_proto(),
                     ts005_version: app_layer_params.ts005_version().from_proto(),
+                    ..Default::default()
                 }
             },
             ..Default::default()
@@ -391,6 +392,16 @@ impl DeviceProfileService for DeviceProfile {
                 })
             } else {
                 None
+            },
+            app_layer_params: {
+                let app_layer_params = req_dp.app_layer_params.unwrap_or_default();
+
+                fields::AppLayerParams {
+                    ts003_version: app_layer_params.ts003_version().from_proto(),
+                    ts004_version: app_layer_params.ts004_version().from_proto(),
+                    ts005_version: app_layer_params.ts005_version().from_proto(),
+                    ..Default::default()
+                }
             },
             ..Default::default()
         })

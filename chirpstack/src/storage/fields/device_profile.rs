@@ -235,15 +235,43 @@ mod ed_activation_mode {
     }
 }
 
-#[derive(
-    Default, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, AsExpression, FromSqlRow,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, AsExpression, FromSqlRow)]
 #[cfg_attr(feature = "postgres", diesel(sql_type = Jsonb))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
+#[serde(default)]
 pub struct AppLayerParams {
     pub ts003_version: Option<Ts003Version>,
     pub ts004_version: Option<Ts004Version>,
     pub ts005_version: Option<Ts005Version>,
+    pub ts003_f_port: u8,
+    pub ts004_f_port: u8,
+    pub ts005_f_port: u8,
+}
+
+impl Default for AppLayerParams {
+    fn default() -> Self {
+        Self {
+            ts003_version: None,
+            ts004_version: None,
+            ts005_version: None,
+            ts003_f_port: 202,
+            ts004_f_port: 201,
+            ts005_f_port: 200,
+        }
+    }
+}
+
+impl AppLayerParams {
+    pub fn is_app_layer_f_port(&self, f_port: u8) -> bool {
+        if (self.ts003_version.is_some() && self.ts003_f_port == f_port)
+            || (self.ts004_version.is_some() && self.ts004_f_port == f_port)
+            || (self.ts005_version.is_some() && self.ts005_f_port == f_port)
+        {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[cfg(feature = "postgres")]
