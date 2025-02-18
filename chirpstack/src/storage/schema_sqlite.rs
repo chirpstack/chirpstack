@@ -72,6 +72,7 @@ diesel::table! {
         app_key -> Binary,
         dev_nonces -> Text,
         join_nonce -> Integer,
+        gen_app_key -> Binary,
     }
 }
 
@@ -171,6 +172,8 @@ diesel::table! {
         name -> Text,
         application_id -> Text,
         device_profile_id -> Text,
+        multicast_addr -> Binary,
+        multicast_key -> Binary,
         multicast_group_type -> Text,
         multicast_class_c_scheduling_type -> Text,
         multicast_dr -> SmallInt,
@@ -219,6 +222,7 @@ diesel::table! {
         max_retry_count -> SmallInt,
         attempt_count -> SmallInt,
         scheduler_run_after -> TimestamptzSqlite,
+        return_msg -> Text,
     }
 }
 

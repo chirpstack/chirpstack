@@ -37,6 +37,7 @@ function LW10DeviceKeysForm(props: FormProps) {
     // NOTE: this is not an error! In the LoRaWAN 1.1 specs, the what was previously
     // the AppKey has been renamed to the NwkKey and a new value AppKey was added.
     dk.setNwkKey(v.nwkKey);
+    dk.setGenAppKey(v.genAppKey);
 
     props.onFinish(dk);
   };
@@ -55,6 +56,12 @@ function LW10DeviceKeysForm(props: FormProps) {
         tooltip="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
         value={props.initialValues.getNwkKey()}
         required
+      />
+      <AesKeyInput
+        label="Gen App Key (for Remote Multicast Setup)"
+        name="genAppKey"
+        tooltip="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
+        value={props.initialValues.getGenAppKey()}
       />
       <Form.Item>
         <Button type="primary" htmlType="submit">

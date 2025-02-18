@@ -83,6 +83,9 @@ impl serialize::ToSql<Text, Sqlite> for RequestFragmentationSessionStatus {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, AsExpression, FromSqlRow)]
 #[diesel(sql_type = Text)]
 pub enum FuotaJob {
+    CreateMcGroup,
+    AddDevsToMcGroup,
+    AddGwsToMcGroup,
     McGroupSetup,
     McSession,
     FragSessionSetup,
@@ -99,6 +102,9 @@ impl fmt::Display for FuotaJob {
 impl From<&FuotaJob> for String {
     fn from(value: &FuotaJob) -> Self {
         match value {
+            FuotaJob::CreateMcGroup => "CREATE_MC_GROUP",
+            FuotaJob::AddDevsToMcGroup => "ADD_DEVS_TO_MC_GROUP",
+            FuotaJob::AddGwsToMcGroup => "ADD_GWS_TO_MC_GROUP",
             FuotaJob::McGroupSetup => "MC_GROUP_SETUP",
             FuotaJob::McSession => "MC_SESSION",
             FuotaJob::FragSessionSetup => "FRAG_SESSION_SETUP",
@@ -114,6 +120,9 @@ impl TryFrom<&str> for FuotaJob {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         Ok(match value {
+            "CREATE_MC_GROUP" => Self::CreateMcGroup,
+            "ADD_DEVS_TO_MC_GROUP" => Self::AddDevsToMcGroup,
+            "ADD_GWS_TO_MC_GROUP" => Self::AddGwsToMcGroup,
             "MC_GROUP_SETUP" => Self::McGroupSetup,
             "MC_SESSION" => Self::McSession,
             "FRAG_SESSION_SETUP" => Self::FragSessionSetup,

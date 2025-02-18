@@ -77,6 +77,7 @@ diesel::table! {
         app_key -> Bytea,
         dev_nonces -> Jsonb,
         join_nonce -> Int4,
+        gen_app_key -> Bytea,
     }
 }
 
@@ -192,6 +193,8 @@ diesel::table! {
         name -> Varchar,
         application_id -> Uuid,
         device_profile_id -> Uuid,
+        multicast_addr -> Bytea,
+        multicast_key -> Bytea,
         #[max_length = 1]
         multicast_group_type -> Bpchar,
         #[max_length = 20]
@@ -244,6 +247,7 @@ diesel::table! {
         max_retry_count -> Int2,
         attempt_count -> Int2,
         scheduler_run_after -> Timestamptz,
+        return_msg -> Text,
     }
 }
 
