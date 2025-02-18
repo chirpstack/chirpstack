@@ -8,6 +8,7 @@ use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 use super::error::Error;
 use super::{data_fns, filter_rx_info_by_tenant_id, helpers, RelayContext, UplinkFrameSet};
 use crate::api::helpers::ToProto;
+use crate::applayer;
 use crate::backend::roaming;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::error::Error as StorageError;
@@ -140,6 +141,9 @@ impl Data {
         }
         ctx.append_meta_data_to_uplink_history()?;
         ctx.send_uplink_event().await?;
+        if ctx._is_applayer() {
+            ctx.handle_applayer().await?;
+        }
         ctx.detect_and_save_measurements().await?;
         ctx.sync_uplink_f_cnt()?;
         ctx.set_region_config_id()?;
@@ -997,6 +1001,33 @@ impl Data {
         Ok(())
     }
 
+    async fn handle_applayer(&self) -> Result<()> {
+        trace!("Handling applayer protocol");
+
+        let dev = self.device.as_ref().unwrap();
+        let dp = self.device_profile.as_ref().unwrap();
+
+        let mac = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
+            pl
+        } else {
+            return Err(anyhow!("Expected MacPayload"));
+        };
+
+        applayer::handle_uplink(
+            dev,
+            dp,
+            &self.uplink_frame_set.rx_info_set,
+            mac.f_port.unwrap_or(0),
+            match &mac.frm_payload {
+                Some(lrwn::FRMPayload::Raw(b)) => b,
+                _ => &[],
+            },
+        )
+        .await;
+
+        Ok(())
+    }
+
     async fn detect_and_save_measurements(&mut self) -> Result<()> {
         trace!("Detecing and saving measurements");
 
@@ -1423,5 +1454,17 @@ impl Data {
         }
 
         false
+    }
+
+    fn _is_applayer(&self) -> bool {
+        let dp = self.device_profile.as_ref().unwrap();
+        let mac = if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload {
+            pl
+        } else {
+            return false;
+        };
+
+        dp.app_layer_params
+            .is_app_layer_f_port(mac.f_port.unwrap_or(0))
     }
 }
