@@ -1140,6 +1140,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
             FilterTest {
                 name: "filter by tags - 1.2.0".into(),
@@ -1154,6 +1156,8 @@ pub mod test {
                 count: 1,
                 limit: 10,
                 offset: 0,
+                order: OrderBy::Name,
+                order_by_desc: false,
             },
         ];
 

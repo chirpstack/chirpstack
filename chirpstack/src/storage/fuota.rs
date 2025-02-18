@@ -13,7 +13,7 @@ use crate::storage::schema::{
     fuota_deployment_job, gateway, tenant,
 };
 use crate::storage::{self, db_transaction, device_profile, fields, get_async_db_conn};
-use lrwn::EUI64;
+use lrwn::{AES128Key, DevAddr, EUI64};
 
 #[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq, Validate)]
 #[diesel(table_name = fuota_deployment)]
@@ -26,6 +26,8 @@ pub struct FuotaDeployment {
     pub name: String,
     pub application_id: fields::Uuid,
     pub device_profile_id: fields::Uuid,
+    pub multicast_addr: DevAddr,
+    pub multicast_key: AES128Key,
     pub multicast_group_type: String,
     pub multicast_class_c_scheduling_type: fields::MulticastGroupSchedulingType,
     pub multicast_dr: i16,
@@ -56,6 +58,8 @@ impl Default for FuotaDeployment {
             name: "".into(),
             application_id: Uuid::nil().into(),
             device_profile_id: Uuid::nil().into(),
+            multicast_addr: Default::default(),
+            multicast_key: Default::default(),
             multicast_group_type: "".into(),
             multicast_class_c_scheduling_type: fields::MulticastGroupSchedulingType::DELAY,
             multicast_dr: 0,
@@ -144,6 +148,7 @@ pub struct FuotaDeploymentJob {
     pub max_retry_count: i16,
     pub attempt_count: i16,
     pub scheduler_run_after: DateTime<Utc>,
+    pub return_msg: String,
 }
 
 impl Default for FuotaDeploymentJob {
@@ -158,6 +163,7 @@ impl Default for FuotaDeploymentJob {
             max_retry_count: 0,
             attempt_count: 0,
             scheduler_run_after: now,
+            return_msg: "".into(),
         }
     }
 }
@@ -324,15 +330,21 @@ pub async fn get_devices(
     limit: i64,
     offset: i64,
 ) -> Result<Vec<FuotaDeploymentDevice>, Error> {
-    fuota_deployment_device::dsl::fuota_deployment_device
+    let mut q = fuota_deployment_device::dsl::fuota_deployment_device
         .filter(
             fuota_deployment_device::dsl::fuota_deployment_id
                 .eq(fields::Uuid::from(fuota_deployment_id)),
         )
-        .order_by(fuota_deployment_device::dsl::dev_eui)
-        .limit(limit)
-        .offset(offset)
-        .load(&mut get_async_db_conn().await?)
+        .into_boxed();
+
+    if limit != -1 {
+        q = q
+            .order_by(fuota_deployment_device::dsl::dev_eui)
+            .limit(limit)
+            .offset(offset);
+    }
+
+    q.load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
@@ -449,15 +461,21 @@ pub async fn get_gateways(
     limit: i64,
     offset: i64,
 ) -> Result<Vec<FuotaDeploymentGateway>, Error> {
-    fuota_deployment_gateway::dsl::fuota_deployment_gateway
+    let mut q = fuota_deployment_gateway::dsl::fuota_deployment_gateway
         .filter(
             fuota_deployment_gateway::dsl::fuota_deployment_id
                 .eq(fields::Uuid::from(fuota_deployment_id)),
         )
-        .order_by(fuota_deployment_gateway::dsl::gateway_id)
-        .limit(limit)
-        .offset(offset)
-        .load(&mut get_async_db_conn().await?)
+        .into_boxed();
+
+    if limit != -1 {
+        q = q
+            .order_by(fuota_deployment_gateway::dsl::gateway_id)
+            .limit(limit)
+            .offset(offset);
+    }
+
+    q.load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
@@ -501,6 +519,7 @@ pub async fn update_job(j: FuotaDeploymentJob) -> Result<FuotaDeploymentJob, Err
         fuota_deployment_job::completed_at.eq(&j.completed_at),
         fuota_deployment_job::attempt_count.eq(&j.attempt_count),
         fuota_deployment_job::scheduler_run_after.eq(&j.scheduler_run_after),
+        fuota_deployment_job::return_msg.eq(&j.return_msg),
     ))
     .get_result(&mut get_async_db_conn().await?)
     .await
@@ -636,7 +655,7 @@ pub fn get_multicast_timeout(d: &FuotaDeployment) -> Result<usize> {
             // Multiply by the number of fragments (+1 for additional margin).
             let mc_class_c_duration_secs = mc_class_c_margin_secs * (total_fragments + 1 as usize);
 
-            // Calculate the timeout value. In case of Class-B, timeout is defined as seconds,
+            // Calculate the timeout value. In case of Class-C, timeout is defined as seconds,
             // where the number of seconds is 2^timeout.
             for i in 0..16 {
                 // i = 0-15
@@ -1115,7 +1134,7 @@ mod test {
                     payload: vec![0; 10],
                     ..Default::default()
                 },
-                expected_timeout: 3,
+                expected_timeout: 4,
                 expected_error: None,
             },
         ];

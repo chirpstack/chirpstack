@@ -278,6 +278,11 @@ message DeviceKeys {
   // Application root key (128 bit).
   // Note: This field only needs to be set for LoRaWAN 1.1.x devices!
   string app_key = 3;
+
+  // Gen App Key (128 bit).
+  // Note: This field only needs to be set for LoRaWAN 1.0.x devices that
+  // implement TS005 (remote multicast setup).
+  string gen_app_key = 4;
 }
 
 message CreateDeviceRequest {

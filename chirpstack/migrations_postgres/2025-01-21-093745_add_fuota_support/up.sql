@@ -7,6 +7,8 @@ create table fuota_deployment (
   name varchar(100) not null,
   application_id uuid not null references application on delete cascade,
   device_profile_id uuid not null references device_profile on delete cascade,
+  multicast_addr bytea not null,
+  multicast_key bytea not null,
   multicast_group_type char(1) not null,
   multicast_class_c_scheduling_type varchar(20) not null,
   multicast_dr smallint not null,
@@ -54,9 +56,16 @@ create table fuota_deployment_job (
   max_retry_count smallint not null,
   attempt_count smallint not null,
   scheduler_run_after timestamp with time zone not null,
+  return_msg text not null,
 
   primary key (fuota_deployment_id, job)
 );
 
 create index idx_fuota_deployment_job_completed_at on fuota_deployment_job(completed_at);
 create index idx_fuota_deployment_job_scheduler_run_after on fuota_deployment_job(scheduler_run_after);
+
+alter table device_keys
+  add column gen_app_key bytea not null default decode('00000000000000000000000000000000', 'hex');
+
+alter table device_keys
+  alter column gen_app_key drop default;

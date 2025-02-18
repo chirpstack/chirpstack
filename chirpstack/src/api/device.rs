@@ -354,11 +354,8 @@ impl DeviceService for Device {
         let dk = device_keys::DeviceKeys {
             dev_eui,
             nwk_key: AES128Key::from_str(&req_dk.nwk_key).map_err(|e| e.status())?,
-            app_key: if !req_dk.app_key.is_empty() {
-                AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?
-            } else {
-                AES128Key::null()
-            },
+            app_key: AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?,
+            gen_app_key: AES128Key::from_str(&req_dk.gen_app_key).map_err(|e| e.status())?,
             ..Default::default()
         };
 
@@ -392,6 +389,7 @@ impl DeviceService for Device {
                 dev_eui: dk.dev_eui.to_string(),
                 nwk_key: dk.nwk_key.to_string(),
                 app_key: dk.app_key.to_string(),
+                gen_app_key: dk.gen_app_key.to_string(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dk.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dk.updated_at)),
@@ -428,11 +426,8 @@ impl DeviceService for Device {
             dev_nonces: dk.dev_nonces,
             join_nonce: dk.join_nonce,
             nwk_key: AES128Key::from_str(&req_dk.nwk_key).map_err(|e| e.status())?,
-            app_key: if !req_dk.app_key.is_empty() {
-                AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?
-            } else {
-                AES128Key::null()
-            },
+            app_key: AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?,
+            gen_app_key: AES128Key::from_str(&req_dk.gen_app_key).map_err(|e| e.status())?,
             ..Default::default()
         };
         let _ = device_keys::update(dk).await.map_err(|e| e.status())?;
@@ -1393,6 +1388,7 @@ pub mod test {
                     dev_eui: "0102030405060708".into(),
                     nwk_key: "01020304050607080102030405060708".into(),
                     app_key: "02020304050607080202030405060708".into(),
+                    gen_app_key: "03020304050607080202030405060708".into(),
                 }),
             },
         );
@@ -1411,6 +1407,7 @@ pub mod test {
                 dev_eui: "0102030405060708".into(),
                 nwk_key: "01020304050607080102030405060708".into(),
                 app_key: "02020304050607080202030405060708".into(),
+                gen_app_key: "03020304050607080202030405060708".into(),
             }),
             get_keys_resp.get_ref().device_keys
         );
@@ -1423,6 +1420,7 @@ pub mod test {
                     dev_eui: "0102030405060708".into(),
                     nwk_key: "01020304050607080102030405060708".into(),
                     app_key: "03020304050607080302030405060708".into(),
+                    gen_app_key: "03020304050607080202030405060708".into(),
                 }),
             },
         );
@@ -1441,6 +1439,7 @@ pub mod test {
                 dev_eui: "0102030405060708".into(),
                 nwk_key: "01020304050607080102030405060708".into(),
                 app_key: "03020304050607080302030405060708".into(),
+                gen_app_key: "03020304050607080202030405060708".into(),
             }),
             get_keys_resp.get_ref().device_keys
         );

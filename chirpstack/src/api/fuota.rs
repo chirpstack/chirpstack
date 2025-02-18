@@ -8,9 +8,11 @@ use chirpstack_api::api;
 use chirpstack_api::api::fuota_service_server::FuotaService;
 use lrwn::EUI64;
 
+use crate::aeskey::get_random_aes_key;
 use crate::api::auth::validator;
 use crate::api::error::ToStatus;
 use crate::api::helpers::{self, FromProto, ToProto};
+use crate::devaddr::get_random_dev_addr;
 use crate::storage::{fields, fuota};
 
 pub struct Fuota {
@@ -50,6 +52,8 @@ impl FuotaService for Fuota {
             name: req_dp.name.clone(),
             application_id: app_id.into(),
             device_profile_id: dp_id.into(),
+            multicast_addr: get_random_dev_addr(),
+            multicast_key: get_random_aes_key(),
             multicast_group_type: match req_dp.multicast_group_type() {
                 api::MulticastGroupType::ClassB => "B",
                 api::MulticastGroupType::ClassC => "C",
@@ -284,8 +288,7 @@ impl FuotaService for Fuota {
 
         fuota::create_job(fuota::FuotaDeploymentJob {
             fuota_deployment_id: d.id,
-            job: fields::FuotaJob::McGroupSetup,
-            max_retry_count: d.unicast_max_retry_count,
+            job: fields::FuotaJob::CreateMcGroup,
             ..Default::default()
         })
         .await
@@ -733,7 +736,7 @@ mod test {
             .unwrap();
         assert_eq!(1, jobs.len());
         assert_eq!(create_resp.id, jobs[0].fuota_deployment_id.to_string());
-        assert_eq!(fields::FuotaJob::McGroupSetup, jobs[0].job);
+        assert_eq!(fields::FuotaJob::CreateMcGroup, jobs[0].job);
 
         // add device
         let add_dev_req = get_request(

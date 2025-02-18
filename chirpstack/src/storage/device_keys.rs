@@ -20,6 +20,7 @@ pub struct DeviceKeys {
     pub app_key: AES128Key,
     pub dev_nonces: fields::DevNonces,
     pub join_nonce: i32,
+    pub gen_app_key: AES128Key,
 }
 
 impl Default for DeviceKeys {
@@ -27,19 +28,14 @@ impl Default for DeviceKeys {
         let now = Utc::now();
 
         DeviceKeys {
-            dev_eui: EUI64::from_be_bytes([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+            dev_eui: Default::default(),
             created_at: now,
             updated_at: now,
-            nwk_key: AES128Key::from_bytes([
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00,
-            ]),
-            app_key: AES128Key::from_bytes([
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00,
-            ]),
-            dev_nonces: fields::DevNonces::default(),
+            nwk_key: Default::default(),
+            app_key: Default::default(),
+            dev_nonces: Default::default(),
             join_nonce: 0,
+            gen_app_key: Default::default(),
         }
     }
 }
