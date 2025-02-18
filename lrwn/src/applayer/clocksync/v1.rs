@@ -108,7 +108,7 @@ impl Payload {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct PackageVersionAnsPayload {
     pub package_identifier: u8,
     pub package_version: u8,
@@ -130,7 +130,7 @@ impl PayloadCodec for PackageVersionAnsPayload {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct AppTimeReqPayload {
     pub device_time: u32,
     pub param: AppTimeReqPayloadParam,
@@ -172,13 +172,13 @@ impl PayloadCodec for AppTimeReqPayload {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct AppTimeReqPayloadParam {
     pub token_req: u8,
     pub ans_required: bool,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct AppTimeAnsPayload {
     pub time_correction: i32,
     pub param: AppTimeAnsPayloadParam,
@@ -215,12 +215,12 @@ impl PayloadCodec for AppTimeAnsPayload {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct AppTimeAnsPayloadParam {
     pub token_ans: u8,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct DeviceAppTimePeriodicityReqPayload {
     pub period: u8,
 }
@@ -245,7 +245,7 @@ impl PayloadCodec for DeviceAppTimePeriodicityReqPayload {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct DeviceAppTimePeriodicityAnsPayload {
     pub status: DeviceAppTimePeriodicityAnsPayloadStatus,
     pub time: u32,
@@ -280,12 +280,12 @@ impl PayloadCodec for DeviceAppTimePeriodicityAnsPayload {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct DeviceAppTimePeriodicityAnsPayloadStatus {
     pub not_supported: bool,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ForceDeviceResyncReqPayload {
     pub force_conf: ForceDeviceResyncReqPayloadForceConf,
 }
@@ -312,7 +312,7 @@ impl PayloadCodec for ForceDeviceResyncReqPayload {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ForceDeviceResyncReqPayloadForceConf {
     pub nb_transmissions: u8,
 }
