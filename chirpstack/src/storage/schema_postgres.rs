@@ -226,6 +226,7 @@ diesel::table! {
         mc_session_completed_at -> Nullable<Timestamptz>,
         frag_session_setup_completed_at -> Nullable<Timestamptz>,
         frag_status_completed_at -> Nullable<Timestamptz>,
+        return_msg -> Text,
     }
 }
 

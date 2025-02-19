@@ -202,6 +202,7 @@ diesel::table! {
         mc_session_completed_at -> Nullable<TimestamptzSqlite>,
         frag_session_setup_completed_at -> Nullable<TimestamptzSqlite>,
         frag_status_completed_at -> Nullable<TimestamptzSqlite>,
+        return_msg -> Text,
     }
 }
 
