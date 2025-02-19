@@ -1,3 +1,4 @@
+use aes::cipher::BlockDecrypt;
 use aes::cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit};
 use aes::{Aes128, Block};
 use anyhow::Result;
@@ -775,6 +776,19 @@ pub fn get_mc_net_s_key(mc_key: AES128Key, mc_addr: DevAddr) -> Result<AES128Key
     get_key(mc_key, b)
 }
 
+pub fn encrypt_mc_key(mc_ke_key: AES128Key, mc_key: AES128Key) -> [u8; 16] {
+    let mc_ke_key_bytes = mc_ke_key.to_bytes();
+    let mut mc_key_bytes = mc_key.to_bytes();
+
+    let key = GenericArray::from_slice(&mc_ke_key_bytes);
+    let cipher = Aes128::new(key);
+
+    let block = Block::from_mut_slice(&mut mc_key_bytes);
+    cipher.decrypt_block(block);
+
+    mc_key_bytes
+}
+
 fn get_key(key: AES128Key, b: [u8; 16]) -> Result<AES128Key> {
     let key_bytes = key.to_bytes();
     let key = GenericArray::from_slice(&key_bytes);
@@ -1364,6 +1378,17 @@ mod test {
                 0x1c, 0x7b
             ]),
             key
+        );
+    }
+
+    #[test]
+    fn test_encrypt_mc_key() {
+        let ke_key = AES128Key::from_bytes([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+        let mc_key = AES128Key::from_bytes([2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]);
+
+        assert_eq!(
+            [52, 55, 214, 226, 49, 215, 2, 65, 155, 81, 180, 148, 114, 113, 182, 17],
+            encrypt_mc_key(ke_key, mc_key)
         );
     }
 
