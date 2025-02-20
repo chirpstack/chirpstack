@@ -120,8 +120,7 @@
   pem = "3.0"
   x509-parser = "0.16"
   rsa = "0.9"
-  elliptic-curve = { version = "0.13", features = ["pem"] }
-  p256 = "0.13"
+  sec1 = { version = "0.7.3", features = ["alloc", "pem", "pkcs8"] }
   rcgen = { version = "0.13.1", features = ["x509-parser"] }
   oauth2 = "5.0.0-alpha.4"
   openidconnect = { version = "4.0.0-alpha.2", features = [
