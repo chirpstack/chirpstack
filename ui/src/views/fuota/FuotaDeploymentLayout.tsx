@@ -21,6 +21,7 @@ import { useTitle } from "../helpers";
 import EditFuotaDeployment from "./EditFuotaDeployment";
 import FuotaDeploymentDevices from "./FuotaDeploymentDevices";
 import FuotaDeploymentGateways from "./FuotaDeploymentGateways";
+import FuotaDeploymentDashboard from "./FuotaDeploymentDashboard";
 
 interface IProps {
   tenant: Tenant;
@@ -203,6 +204,10 @@ function FuotaDeploymentLayout(props: IProps) {
         </Menu>
         <Routes>
           <Route
+            path="/"
+            element={<FuotaDeploymentDashboard getFuotaDeploymentResponse={getFuotaDeploymentResponse} />}
+          />
+          <Route
             path="/edit"
             element={
               <EditFuotaDeployment
@@ -213,7 +218,10 @@ function FuotaDeploymentLayout(props: IProps) {
               />
             }
           />
-          <Route path="/devices" element={<FuotaDeploymentDevices fuotaDeployment={d} />} />
+          <Route
+            path="/devices"
+            element={<FuotaDeploymentDevices getFuotaDeploymentResponse={getFuotaDeploymentResponse} />}
+          />
           <Route path="/gateways" element={<FuotaDeploymentGateways fuotaDeployment={d} />} />
         </Routes>
       </Card>

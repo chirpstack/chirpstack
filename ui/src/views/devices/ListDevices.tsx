@@ -36,7 +36,7 @@ import {
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import type { ListRelaysResponse, RelayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
 import { ListRelaysRequest, AddRelayDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
-import {
+import type {
   ListFuotaDeploymentsResponse,
   FuotaDeploymentListItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";

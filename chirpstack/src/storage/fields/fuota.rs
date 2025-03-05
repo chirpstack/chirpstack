@@ -91,6 +91,7 @@ pub enum FuotaJob {
     FragSessionSetup,
     Enqueue,
     FragStatus,
+    Complete,
 }
 
 impl fmt::Display for FuotaJob {
@@ -110,6 +111,7 @@ impl From<&FuotaJob> for String {
             FuotaJob::FragSessionSetup => "FRAG_SESSION_SETUP",
             FuotaJob::Enqueue => "ENQUEUE",
             FuotaJob::FragStatus => "FRAG_STATUS",
+            FuotaJob::Complete => "COMPLETE",
         }
         .to_string()
     }
@@ -128,6 +130,7 @@ impl TryFrom<&str> for FuotaJob {
             "FRAG_SESSION_SETUP" => Self::FragSessionSetup,
             "ENQUEUE" => Self::Enqueue,
             "FRAG_STATUS" => Self::FragStatus,
+            "COMPLETE" => Self::Complete,
             _ => return Err(anyhow!("Invalid FuotaJob value: {}", value)),
         })
     }

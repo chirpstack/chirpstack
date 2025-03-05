@@ -201,7 +201,7 @@ mod test {
             name: "test-dp".into(),
             tenant_id: t.id,
             app_layer_params: fields::AppLayerParams {
-                ts003_version: Some(fields::Ts003Version::V100),
+                ts003_version: Some(Ts003Version::V100),
                 ..Default::default()
             },
             ..Default::default()

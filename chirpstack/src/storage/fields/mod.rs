@@ -10,10 +10,7 @@ mod uuid;
 
 pub use big_decimal::BigDecimal;
 pub use dev_nonces::DevNonces;
-pub use device_profile::{
-    AbpParams, AppLayerParams, ClassBParams, ClassCParams, RelayParams, Ts003Version, Ts004Version,
-    Ts005Version,
-};
+pub use device_profile::{AbpParams, AppLayerParams, ClassBParams, ClassCParams, RelayParams};
 pub use device_session::DeviceSession;
 pub use fuota::{FuotaJob, RequestFragmentationSessionStatus};
 pub use key_value::KeyValue;

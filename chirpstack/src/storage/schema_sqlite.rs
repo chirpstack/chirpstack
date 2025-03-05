@@ -197,12 +197,12 @@ diesel::table! {
         fuota_deployment_id -> Text,
         dev_eui -> Binary,
         created_at -> TimestamptzSqlite,
-        updated_at -> TimestamptzSqlite,
+        completed_at -> Nullable<TimestamptzSqlite>,
         mc_group_setup_completed_at -> Nullable<TimestamptzSqlite>,
         mc_session_completed_at -> Nullable<TimestamptzSqlite>,
         frag_session_setup_completed_at -> Nullable<TimestamptzSqlite>,
         frag_status_completed_at -> Nullable<TimestamptzSqlite>,
-        return_msg -> Text,
+        error_msg -> Text,
     }
 }
 
@@ -223,7 +223,7 @@ diesel::table! {
         max_retry_count -> SmallInt,
         attempt_count -> SmallInt,
         scheduler_run_after -> TimestamptzSqlite,
-        return_msg -> Text,
+        error_msg -> Text,
     }
 }
 
