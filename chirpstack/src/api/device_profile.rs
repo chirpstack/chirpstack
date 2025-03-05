@@ -264,8 +264,11 @@ impl DeviceProfileService for DeviceProfile {
                 rx1_delay: dp.rx1_delay as u32,
                 app_layer_params: Some(api::AppLayerParams {
                     ts003_version: dp.app_layer_params.ts003_version.to_proto().into(),
+                    ts003_f_port: dp.app_layer_params.ts003_f_port as u32,
                     ts004_version: dp.app_layer_params.ts004_version.to_proto().into(),
+                    ts004_f_port: dp.app_layer_params.ts004_f_port as u32,
                     ts005_version: dp.app_layer_params.ts005_version.to_proto().into(),
+                    ts005_f_port: dp.app_layer_params.ts005_f_port as u32,
                 }),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
@@ -398,8 +401,11 @@ impl DeviceProfileService for DeviceProfile {
 
                 fields::AppLayerParams {
                     ts003_version: app_layer_params.ts003_version().from_proto(),
+                    ts003_f_port: app_layer_params.ts003_f_port as u8,
                     ts004_version: app_layer_params.ts004_version().from_proto(),
+                    ts004_f_port: app_layer_params.ts004_f_port as u8,
                     ts005_version: app_layer_params.ts005_version().from_proto(),
+                    ts005_f_port: app_layer_params.ts005_f_port as u8,
                     ..Default::default()
                 }
             },
