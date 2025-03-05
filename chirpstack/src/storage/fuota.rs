@@ -653,7 +653,7 @@ pub async fn list_jobs(fuota_deployment_id: Uuid) -> Result<Vec<FuotaDeploymentJ
             fuota_deployment_job::dsl::fuota_deployment_id
                 .eq(fields::Uuid::from(fuota_deployment_id)),
         )
-        .order_by(fuota_deployment_job::dsl::scheduler_run_after)
+        .order_by(fuota_deployment_job::dsl::created_at)
         .load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, fuota_deployment_id.to_string()))
