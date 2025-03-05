@@ -57,6 +57,9 @@ service FuotaService {
   // Remove the given Gateway IDs from the FUOTA deployment.
   rpc RemoveGateways(RemoveGatewaysFromFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
   // GetLogs returns the logs for the FUOTA deployment.
+
+  // List jobs for the given FUOTA deployment.
+  rpc ListJobs(ListFuotaDeploymentJobsRequest) returns (ListFuotaDeploymentJobsResponse) {}
 }
 
 enum RequestFragmentationSessionStatus {
@@ -185,8 +188,8 @@ message FuotaDeploymentDeviceListItem {
   // Created at timestamp.
   google.protobuf.Timestamp created_at = 3;
 
-  // Updated at timestamp.
-  google.protobuf.Timestamp updated_at = 4;
+  // Completed at timestamp.
+  google.protobuf.Timestamp completed_at = 4;
 
   // McGroupSetup completed at timestamp.
   google.protobuf.Timestamp mc_group_setup_completed_at = 5;
@@ -199,6 +202,9 @@ message FuotaDeploymentDeviceListItem {
 
   // FragStatus completed at timestamp.
   google.protobuf.Timestamp frag_status_completed_at = 8;
+
+  // Error message.
+  string error_msg = 9;
 }
 
 message FuotaDeploymentGatewayListItem {
@@ -353,4 +359,37 @@ message ListFuotaDeploymentGatewaysResponse {
 
   // Result-set.
   repeated FuotaDeploymentGatewayListItem result = 2;
+}
+
+message ListFuotaDeploymentJobsRequest {
+  // FUOTA Deployment ID.
+  string fuota_deployment_id = 1;
+}
+
+message ListFuotaDeploymentJobsResponse {
+  // Jobs.
+  repeated FuotaDeploymentJob jobs = 1;
+}
+
+message FuotaDeploymentJob {
+  // Job identifier.
+  string job = 1;
+
+  // Created at.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Completed at.
+  google.protobuf.Timestamp completed_at = 3;
+
+  // Max. retry count.
+  uint32 max_retry_count = 4;
+
+  // Attempt count.
+  uint32 attempt_count = 5;
+
+  // Scheduler run after.
+  google.protobuf.Timestamp scheduler_run_after = 6;
+
+  // Error message.
+  string error_msg = 7;
 }

@@ -192,6 +192,13 @@ impl FuotaService for Fuota {
             )
             .await?;
 
+        let d = fuota::get_deployment(id).await.map_err(|e| e.status())?;
+        if d.started_at.is_some() {
+            return Err(Status::failed_precondition(
+                "FUOTA deployment has already started",
+            ));
+        }
+
         let mut dp = fuota::FuotaDeployment {
             id: id.into(),
             name: req_dp.name.clone(),
@@ -361,6 +368,13 @@ impl FuotaService for Fuota {
             )
             .await?;
 
+        let d = fuota::get_deployment(dp_id).await.map_err(|e| e.status())?;
+        if d.started_at.is_some() {
+            return Err(Status::failed_precondition(
+                "FUOTA deployment has already started",
+            ));
+        }
+
         let mut dev_euis = Vec::with_capacity(req.dev_euis.len());
         for dev_eui in &req.dev_euis {
             dev_euis.push(EUI64::from_str(dev_eui).map_err(|e| e.status())?);
@@ -438,7 +452,10 @@ impl FuotaService for Fuota {
                     fuota_deployment_id: d.fuota_deployment_id.to_string(),
                     dev_eui: d.dev_eui.to_string(),
                     created_at: Some(helpers::datetime_to_prost_timestamp(&d.created_at)),
-                    updated_at: Some(helpers::datetime_to_prost_timestamp(&d.updated_at)),
+                    completed_at: d
+                        .completed_at
+                        .as_ref()
+                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
                     mc_group_setup_completed_at: d
                         .mc_group_setup_completed_at
                         .as_ref()
@@ -455,6 +472,7 @@ impl FuotaService for Fuota {
                         .frag_status_completed_at
                         .as_ref()
                         .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                    error_msg: d.error_msg.clone(),
                 })
                 .collect(),
         });
@@ -479,6 +497,13 @@ impl FuotaService for Fuota {
                 validator::ValidateFuotaDeploymentAccess::new(validator::Flag::Update, dp_id),
             )
             .await?;
+
+        let d = fuota::get_deployment(dp_id).await.map_err(|e| e.status())?;
+        if d.started_at.is_some() {
+            return Err(Status::failed_precondition(
+                "FUOTA deployment has already started",
+            ));
+        }
 
         let mut gateway_ids = Vec::with_capacity(req.gateway_ids.len());
         for gateway_id in &req.gateway_ids {
@@ -557,6 +582,48 @@ impl FuotaService for Fuota {
                     fuota_deployment_id: gw.fuota_deployment_id.to_string(),
                     gateway_id: gw.gateway_id.to_string(),
                     created_at: Some(helpers::datetime_to_prost_timestamp(&gw.created_at)),
+                })
+                .collect(),
+        });
+        resp.metadata_mut().insert(
+            "x-log-fuota_deployment_id",
+            req.fuota_deployment_id.parse().unwrap(),
+        );
+        Ok(resp)
+    }
+
+    async fn list_jobs(
+        &self,
+        request: Request<api::ListFuotaDeploymentJobsRequest>,
+    ) -> Result<Response<api::ListFuotaDeploymentJobsResponse>, Status> {
+        let req = request.get_ref();
+        let dp_id = Uuid::from_str(&req.fuota_deployment_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateFuotaDeploymentAccess::new(validator::Flag::Read, dp_id),
+            )
+            .await?;
+
+        let jobs = fuota::list_jobs(dp_id).await.map_err(|e| e.status())?;
+
+        let mut resp = Response::new(api::ListFuotaDeploymentJobsResponse {
+            jobs: jobs
+                .iter()
+                .map(|j| api::FuotaDeploymentJob {
+                    job: j.job.to_string(),
+                    created_at: Some(helpers::datetime_to_prost_timestamp(&j.created_at)),
+                    completed_at: j
+                        .completed_at
+                        .as_ref()
+                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                    max_retry_count: j.max_retry_count as u32,
+                    attempt_count: j.attempt_count as u32,
+                    scheduler_run_after: Some(helpers::datetime_to_prost_timestamp(
+                        &j.scheduler_run_after,
+                    )),
+                    error_msg: j.error_msg.clone(),
                 })
                 .collect(),
         });
@@ -723,21 +790,6 @@ mod test {
         assert_eq!(1, list_resp.result.len());
         assert_eq!(create_resp.id, list_resp.result[0].id);
 
-        // start deployment
-        let start_req = get_request(
-            &u.id,
-            api::StartFuotaDeploymentRequest {
-                id: create_resp.id.clone(),
-            },
-        );
-        service.start_deployment(start_req).await.unwrap();
-        let jobs = fuota::list_jobs(Uuid::from_str(&create_resp.id).unwrap())
-            .await
-            .unwrap();
-        assert_eq!(1, jobs.len());
-        assert_eq!(create_resp.id, jobs[0].fuota_deployment_id.to_string());
-        assert_eq!(fields::FuotaJob::CreateMcGroup, jobs[0].job);
-
         // add device
         let add_dev_req = get_request(
             &u.id,
@@ -834,6 +886,21 @@ mod test {
         let list_gws_resp = list_gws_resp.get_ref();
         assert_eq!(0, list_gws_resp.total_count);
         assert_eq!(0, list_gws_resp.result.len());
+
+        // start deployment
+        let start_req = get_request(
+            &u.id,
+            api::StartFuotaDeploymentRequest {
+                id: create_resp.id.clone(),
+            },
+        );
+        service.start_deployment(start_req).await.unwrap();
+        let jobs = fuota::list_jobs(Uuid::from_str(&create_resp.id).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(1, jobs.len());
+        assert_eq!(create_resp.id, jobs[0].fuota_deployment_id.to_string());
+        assert_eq!(fields::FuotaJob::CreateMcGroup, jobs[0].job);
 
         // delete deployment
         let delete_req = get_request(

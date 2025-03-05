@@ -599,7 +599,14 @@ pub mod test {
                 mac_version: common::MacVersion::Lorawan103.into(),
                 reg_params_revision: common::RegParamsRevision::A.into(),
                 adr_algorithm_id: "default".into(),
-                app_layer_params: Some(api::AppLayerParams::default()),
+                app_layer_params: Some(api::AppLayerParams {
+                    ts003_version: api::Ts003Version::Ts003NotImplemented.into(),
+                    ts003_f_port: 202,
+                    ts004_version: api::Ts004Version::Ts004NotImplemented.into(),
+                    ts004_f_port: 201,
+                    ts005_version: api::Ts005Version::Ts005NotImplemented.into(),
+                    ts005_f_port: 200,
+                }),
                 ..Default::default()
             }),
             get_resp.get_ref().device_profile

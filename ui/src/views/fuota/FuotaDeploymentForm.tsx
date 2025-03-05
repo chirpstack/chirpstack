@@ -4,7 +4,7 @@ import { Form, Input, InputNumber, Select, Row, Col, Button, Upload, UploadFile,
 import { UploadOutlined } from "@ant-design/icons";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
-import { FuotaDeployment } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
+import { FuotaDeployment, RequestFragmentationSessionStatus } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
 import type {
   ListDeviceProfilesResponse,
   GetDeviceProfileResponse,
@@ -72,6 +72,7 @@ function FuotaDeploymentForm(props: IProps) {
     d.setMulticastDr(v.multicastDr);
     d.setMulticastFrequency(v.multicastFrequency);
     d.setFragmentationRedundancyPercentage(v.fragmentationRedundancyPercentage);
+    d.setRequestFragmentationSessionStatus(v.requestFragmentationSessionStatus);
     d.setCalculateMulticastTimeout(v.calculateMulticastTimeout);
     d.setMulticastTimeout(v.multicastTimeout);
     d.setCalculateFragmentationFragmentSize(v.calculateFragmentationFragmentSize);
@@ -241,6 +242,25 @@ function FuotaDeploymentForm(props: IProps) {
         <Col span={8}>
           <Form.Item label="Fragmentation redundancy (%)" name="fragmentationRedundancyPercentage">
             <InputNumber min={0} max={100} addonAfter="%" style={{ width: "100%" }} disabled={props.disabled} />
+          </Form.Item>
+        </Col>
+      </Row>
+      <Row gutter={24}>
+        <Col span={8}>
+          <Form.Item
+            label="Fragmentation status request"
+            name="requestFragmentationSessionStatus"
+            tooltip="After fragment enqueue is recommended for Class-A devices, after session timeout is recommended for Class-B / Class-C devices."
+          >
+            <Select disabled={props.disabled}>
+              <Select.Option value={RequestFragmentationSessionStatus.NO_REQUEST}>Do not request</Select.Option>
+              <Select.Option value={RequestFragmentationSessionStatus.AFTER_FRAGMENT_ENQUEUE}>
+                After fragment enqueue
+              </Select.Option>
+              <Select.Option value={RequestFragmentationSessionStatus.AFTER_SESSION_TIMEOUT}>
+                After session timeout
+              </Select.Option>
+            </Select>
           </Form.Item>
         </Col>
       </Row>

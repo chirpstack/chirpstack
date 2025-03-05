@@ -21,6 +21,8 @@ import type {
   ListFuotaDeploymentGatewaysRequest,
   ListFuotaDeploymentGatewaysResponse,
   StartFuotaDeploymentRequest,
+  ListFuotaDeploymentJobsRequest,
+  ListFuotaDeploymentJobsResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
 
 import SessionStore from "./SessionStore";
@@ -40,7 +42,7 @@ class FuotaStore extends EventEmitter {
     callbackFunc: (resp: CreateFuotaDeploymentResponse) => void,
   ) => {
     this.client.createDeployment(req, SessionStore.getMetadata(), (err, resp) => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -56,7 +58,7 @@ class FuotaStore extends EventEmitter {
 
   getDeployment = (req: GetFuotaDeploymentRequest, callbackFunc: (resp: GetFuotaDeploymentResponse) => void) => {
     this.client.getDeployment(req, SessionStore.getMetadata(), (err, resp) => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -67,7 +69,7 @@ class FuotaStore extends EventEmitter {
 
   updateDeployment = (req: UpdateFuotaDeploymentRequest, callbackFunc: () => void) => {
     this.client.updateDeployment(req, SessionStore.getMetadata(), err => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -85,7 +87,7 @@ class FuotaStore extends EventEmitter {
 
   deleteDeployment = (req: DeleteFuotaDeploymentRequest, callbackFunc: () => void) => {
     this.client.deleteDeployment(req, SessionStore.getMetadata(), err => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -101,7 +103,7 @@ class FuotaStore extends EventEmitter {
 
   startDeployment = (req: StartFuotaDeploymentRequest, callbackFunc: () => void) => {
     this.client.startDeployment(req, SessionStore.getMetadata(), err => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -119,7 +121,7 @@ class FuotaStore extends EventEmitter {
 
   listDeployments = (req: ListFuotaDeploymentsRequest, callbackFunc: (resp: ListFuotaDeploymentsResponse) => void) => {
     this.client.listDeployments(req, SessionStore.getMetadata(), (err, resp) => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -130,7 +132,7 @@ class FuotaStore extends EventEmitter {
 
   addDevices = (req: AddDevicesToFuotaDeploymentRequest, callbackFunc: () => void) => {
     this.client.addDevices(req, SessionStore.getMetadata(), err => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -146,7 +148,7 @@ class FuotaStore extends EventEmitter {
 
   removeDevices = (req: RemoveDevicesFromFuotaDeploymentRequest, callbackFunc: () => void) => {
     this.client.removeDevices(req, SessionStore.getMetadata(), err => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -165,7 +167,7 @@ class FuotaStore extends EventEmitter {
     callbackFunc: (resp: ListFuotaDeploymentDevicesResponse) => void,
   ) => {
     this.client.listDevices(req, SessionStore.getMetadata(), (err, resp) => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -176,7 +178,7 @@ class FuotaStore extends EventEmitter {
 
   addGateways = (req: AddGatewaysToFuotaDeploymentRequest, callbackFunc: () => void) => {
     this.client.addGateways(req, SessionStore.getMetadata(), err => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -192,7 +194,7 @@ class FuotaStore extends EventEmitter {
 
   removeGateways = (req: RemoveGatewaysFromFuotaDeploymentRequest, callbackFunc: () => void) => {
     this.client.removeGateways(req, SessionStore.getMetadata(), err => {
-      if (err != null) {
+      if (err !== null) {
         HandleError(err);
         return;
       }
@@ -211,7 +213,18 @@ class FuotaStore extends EventEmitter {
     callbackFunc: (resp: ListFuotaDeploymentGatewaysResponse) => void,
   ) => {
     this.client.listGateways(req, SessionStore.getMetadata(), (err, resp) => {
-      if (err != null) {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  listJobs = (req: ListFuotaDeploymentJobsRequest, callbackFunc: (resp: ListFuotaDeploymentJobsResponse) => void) => {
+    this.client.listJobs(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
         HandleError(err);
         return;
       }

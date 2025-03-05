@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-import { Space, Button, Popconfirm } from "antd";
+import { Tag, Space, Button, Popconfirm, Spin, Typography, Popover } from "antd";
+import { LoadingOutlined, ZoomInOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import { format } from "date-fns";
 
 import {
   ListFuotaDeploymentDevicesRequest,
   RemoveDevicesFromFuotaDeploymentRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
 import type {
-  FuotaDeployment,
+  GetFuotaDeploymentResponse,
   ListFuotaDeploymentDevicesResponse,
   FuotaDeploymentDeviceListItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
@@ -18,19 +20,94 @@ import DataTable from "../../components/DataTable";
 import FuotaStore from "../../stores/FuotaStore";
 
 interface IProps {
-  fuotaDeployment: FuotaDeployment;
+  getFuotaDeploymentResponse: GetFuotaDeploymentResponse;
 }
 
 function FuotaDeploymentDevices(props: IProps) {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [refreshKey, setRefreshKey] = useState<number>(0);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!props.getFuotaDeploymentResponse.getCompletedAt()) {
+        setRefreshKey(refreshKey + 1);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [props.getFuotaDeploymentResponse, refreshKey]);
+
   const columns: ColumnsType<FuotaDeploymentDeviceListItem.AsObject> = [
+    {
+      title: "Status",
+      key: "status",
+      width: 100,
+      render: (_text, record) => {
+        if (record.errorMsg !== "") {
+          return (
+            <Popover content={record.errorMsg} placement="right">
+              <Tag color="red">error</Tag>
+            </Popover>
+          );
+        } else if (record.completedAt) {
+          return <Tag color="green">ok</Tag>;
+        } else if (props.getFuotaDeploymentResponse.getStartedAt()) {
+          return <Spin indicator={<LoadingOutlined spin />} size="small" />;
+        } else {
+          return "";
+        }
+      },
+    },
     {
       title: "DevEUI",
       dataIndex: "devEui",
       key: "devEui",
-      //       width: 250,
+      width: 250,
+      render: text => <Typography.Text code>{text}</Typography.Text>,
+    },
+    {
+      title: "Mc. group setup completed at",
+      key: "mcGroupSetupCompletedAt",
+      render: (_text, record) => {
+        if (record.mcGroupSetupCompletedAt !== undefined) {
+          const ts = new Date(0);
+          ts.setUTCSeconds(record.mcGroupSetupCompletedAt.seconds);
+          return format(ts, "yyyy-MM-dd HH:mm:ss");
+        }
+      },
+    },
+    {
+      title: "Frag. session setup completed at",
+      key: "fragSessionSetupCompletedAt",
+      render: (_text, record) => {
+        if (record.fragSessionSetupCompletedAt !== undefined) {
+          const ts = new Date(0);
+          ts.setUTCSeconds(record.fragSessionSetupCompletedAt.seconds);
+          return format(ts, "yyyy-MM-dd HH:mm:ss");
+        }
+      },
+    },
+    {
+      title: "Mc. session completed at",
+      key: "mcSessionCompletedAt",
+      render: (_text, record) => {
+        if (record.mcSessionCompletedAt !== undefined) {
+          const ts = new Date(0);
+          ts.setUTCSeconds(record.mcSessionCompletedAt.seconds);
+          return format(ts, "yyyy-MM-dd HH:mm:ss");
+        }
+      },
+    },
+    {
+      title: "Frag. status completed at",
+      key: "fragStatusCompletedAt",
+      render: (_text, record) => {
+        if (record.fragStatusCompletedAt !== undefined) {
+          const ts = new Date(0);
+          ts.setUTCSeconds(record.fragStatusCompletedAt.seconds);
+          return format(ts, "yyyy-MM-dd HH:mm:ss");
+        }
+      },
     },
   ];
 
@@ -47,7 +124,7 @@ function FuotaDeploymentDevices(props: IProps) {
     callbackFunc: GetPageCallbackFunc,
   ) => {
     const req = new ListFuotaDeploymentDevicesRequest();
-    req.setFuotaDeploymentId(props.fuotaDeployment.getId());
+    req.setFuotaDeploymentId(props.getFuotaDeploymentResponse.getDeployment()!.getId());
     req.setLimit(limit);
     req.setOffset(offset);
 
@@ -59,7 +136,7 @@ function FuotaDeploymentDevices(props: IProps) {
 
   const removeDevices = () => {
     const req = new RemoveDevicesFromFuotaDeploymentRequest();
-    req.setFuotaDeploymentId(props.fuotaDeployment.getId());
+    req.setFuotaDeploymentId(props.getFuotaDeploymentResponse.getDeployment()!.getId());
     req.setDevEuisList(selectedRowIds);
 
     FuotaStore.removeDevices(req, () => {

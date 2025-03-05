@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Space, Button, Popconfirm } from "antd";
+import { Space, Button, Popconfirm, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import {
@@ -30,7 +30,7 @@ function FuotaDeploymentGateways(props: IProps) {
       title: "Gateway ID",
       dataIndex: "gatewayId",
       key: "gatewayId",
-      //       width: 250,
+      render: text => <Typography.Text code>{text}</Typography.Text>,
     },
   ];
 

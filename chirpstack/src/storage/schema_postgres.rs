@@ -221,12 +221,12 @@ diesel::table! {
         fuota_deployment_id -> Uuid,
         dev_eui -> Bytea,
         created_at -> Timestamptz,
-        updated_at -> Timestamptz,
+        completed_at -> Nullable<Timestamptz>,
         mc_group_setup_completed_at -> Nullable<Timestamptz>,
         mc_session_completed_at -> Nullable<Timestamptz>,
         frag_session_setup_completed_at -> Nullable<Timestamptz>,
         frag_status_completed_at -> Nullable<Timestamptz>,
-        return_msg -> Text,
+        error_msg -> Text,
     }
 }
 
@@ -248,7 +248,7 @@ diesel::table! {
         max_retry_count -> Int2,
         attempt_count -> Int2,
         scheduler_run_after -> Timestamptz,
-        return_msg -> Text,
+        error_msg -> Text,
     }
 }
 

@@ -96,12 +96,12 @@ pub struct FuotaDeploymentDevice {
     pub fuota_deployment_id: fields::Uuid,
     pub dev_eui: EUI64,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
+    pub completed_at: Option<DateTime<Utc>>,
     pub mc_group_setup_completed_at: Option<DateTime<Utc>>,
     pub mc_session_completed_at: Option<DateTime<Utc>>,
     pub frag_session_setup_completed_at: Option<DateTime<Utc>>,
     pub frag_status_completed_at: Option<DateTime<Utc>>,
-    pub return_msg: String,
+    pub error_msg: String,
 }
 
 impl Default for FuotaDeploymentDevice {
@@ -112,12 +112,12 @@ impl Default for FuotaDeploymentDevice {
             fuota_deployment_id: Uuid::nil().into(),
             dev_eui: EUI64::default(),
             created_at: now,
-            updated_at: now,
+            completed_at: None,
             mc_group_setup_completed_at: None,
             mc_session_completed_at: None,
             frag_session_setup_completed_at: None,
             frag_status_completed_at: None,
-            return_msg: "".into(),
+            error_msg: "".into(),
         }
     }
 }
@@ -150,7 +150,7 @@ pub struct FuotaDeploymentJob {
     pub max_retry_count: i16,
     pub attempt_count: i16,
     pub scheduler_run_after: DateTime<Utc>,
-    pub return_msg: String,
+    pub error_msg: String,
 }
 
 impl Default for FuotaDeploymentJob {
@@ -165,7 +165,7 @@ impl Default for FuotaDeploymentJob {
             max_retry_count: 0,
             attempt_count: 0,
             scheduler_run_after: now,
-            return_msg: "".into(),
+            error_msg: "".into(),
         }
     }
 }
@@ -351,12 +351,10 @@ pub async fn get_devices(
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
-pub async fn get_device(
-    fuota_deployment_id: Uuid,
-    dev_eui: EUI64,
-) -> Result<FuotaDeploymentDevice, Error> {
+pub async fn get_latest_device_by_dev_eui(dev_eui: EUI64) -> Result<FuotaDeploymentDevice, Error> {
     fuota_deployment_device::dsl::fuota_deployment_device
-        .find((&fields::Uuid::from(fuota_deployment_id), &dev_eui))
+        .filter(fuota_deployment_device::dsl::dev_eui.eq(&dev_eui))
+        .order_by(fuota_deployment_device::created_at.desc())
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
@@ -368,13 +366,13 @@ pub async fn update_device(d: FuotaDeploymentDevice) -> Result<FuotaDeploymentDe
             .find((&d.fuota_deployment_id, &d.dev_eui)),
     )
     .set((
-        fuota_deployment_device::updated_at.eq(Utc::now()),
+        fuota_deployment_device::completed_at.eq(&d.completed_at),
         fuota_deployment_device::mc_group_setup_completed_at.eq(&d.mc_group_setup_completed_at),
         fuota_deployment_device::mc_session_completed_at.eq(&d.mc_session_completed_at),
         fuota_deployment_device::frag_session_setup_completed_at
             .eq(&d.frag_session_setup_completed_at),
         fuota_deployment_device::frag_status_completed_at.eq(&d.frag_status_completed_at),
-        fuota_deployment_device::return_msg.eq(&d.return_msg),
+        fuota_deployment_device::error_msg.eq(&d.error_msg),
     ))
     .get_result(&mut get_async_db_conn().await?)
     .await
@@ -412,6 +410,91 @@ pub async fn get_device_count(fuota_deployment_id: Uuid) -> Result<i64, Error> {
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
+pub async fn set_device_timeout_error(
+    fuota_deployment_id: Uuid,
+    mc_group_setup_timeout: bool,
+    mc_session_timeout: bool,
+    frag_session_setup_timeout: bool,
+    frag_status_timeout: bool,
+) -> Result<()> {
+    let fuota_deployment_id = fields::Uuid::from(fuota_deployment_id);
+
+    let mut error_msg = String::new();
+    if mc_group_setup_timeout {
+        error_msg = "McGroupSetupReq timeout.".into();
+    }
+    if mc_session_timeout {
+        error_msg = "McSessionReq timeout".into();
+    }
+    if frag_session_setup_timeout {
+        error_msg = "FragSessionSetupReq timeout.".into();
+    }
+    if frag_status_timeout {
+        error_msg = "FragStatusReq timeout.".into();
+    }
+
+    let mut q = diesel::update(fuota_deployment_device::table)
+        .set(fuota_deployment_device::dsl::error_msg.eq(&error_msg))
+        .filter(fuota_deployment_device::dsl::fuota_deployment_id.eq(&fuota_deployment_id))
+        .filter(fuota_deployment_device::dsl::error_msg.is_not_null())
+        .into_boxed();
+
+    if mc_group_setup_timeout {
+        q = q.filter(fuota_deployment_device::dsl::mc_group_setup_completed_at.is_null());
+    }
+
+    if mc_session_timeout {
+        q = q.filter(fuota_deployment_device::dsl::mc_session_completed_at.is_null());
+    }
+
+    if frag_session_setup_timeout {
+        q = q.filter(fuota_deployment_device::dsl::frag_session_setup_completed_at.is_null());
+    }
+
+    if frag_status_timeout {
+        q = q.filter(fuota_deployment_device::dsl::frag_status_completed_at.is_null());
+    }
+
+    q.execute(&mut get_async_db_conn().await?).await?;
+
+    Ok(())
+}
+
+pub async fn set_device_completed(
+    fuota_deployment_id: Uuid,
+    mc_group_setup_completed: bool,
+    mc_session_completed: bool,
+    frag_session_setup_completed: bool,
+    frag_status_completed: bool,
+) -> Result<()> {
+    let fuota_deployment_id = fields::Uuid::from(fuota_deployment_id);
+
+    let mut q = diesel::update(fuota_deployment_device::table)
+        .set(fuota_deployment_device::dsl::completed_at.eq(Some(Utc::now())))
+        .filter(fuota_deployment_device::dsl::fuota_deployment_id.eq(&fuota_deployment_id))
+        .into_boxed();
+
+    if mc_group_setup_completed {
+        q = q.filter(fuota_deployment_device::dsl::mc_group_setup_completed_at.is_not_null());
+    }
+
+    if mc_session_completed {
+        q = q.filter(fuota_deployment_device::dsl::mc_session_completed_at.is_not_null());
+    }
+
+    if frag_session_setup_completed {
+        q = q.filter(fuota_deployment_device::dsl::frag_session_setup_completed_at.is_not_null());
+    }
+
+    if frag_status_completed {
+        q = q.filter(fuota_deployment_device::dsl::frag_status_completed_at.is_not_null());
+    }
+
+    q.execute(&mut get_async_db_conn().await?).await?;
+
+    Ok(())
+}
+
 pub async fn add_gateways(fuota_deployment_id: Uuid, gateway_ids: Vec<EUI64>) -> Result<(), Error> {
     let mut errors = Vec::new();
 
@@ -439,7 +522,7 @@ pub async fn add_gateways(fuota_deployment_id: Uuid, gateway_ids: Vec<EUI64>) ->
         let res = diesel::insert_into(fuota_deployment_gateway::table)
             .values(&FuotaDeploymentGateway {
                 fuota_deployment_id: fuota_deployment_id.into(),
-                gateway_id: gateway_id,
+                gateway_id,
                 ..Default::default()
             })
             .execute(&mut get_async_db_conn().await?)
@@ -554,7 +637,7 @@ pub async fn update_job(j: FuotaDeploymentJob) -> Result<FuotaDeploymentJob, Err
         fuota_deployment_job::completed_at.eq(&j.completed_at),
         fuota_deployment_job::attempt_count.eq(&j.attempt_count),
         fuota_deployment_job::scheduler_run_after.eq(&j.scheduler_run_after),
-        fuota_deployment_job::return_msg.eq(&j.return_msg),
+        fuota_deployment_job::error_msg.eq(&j.error_msg),
     ))
     .get_result(&mut get_async_db_conn().await?)
     .await
@@ -650,7 +733,11 @@ pub async fn get_max_fragment_size(d: &FuotaDeployment) -> Result<usize> {
         .n
         - 3;
 
-    Ok(max_pl_size)
+    Ok(if max_pl_size > d.payload.len() {
+        d.payload.len()
+    } else {
+        max_pl_size
+    })
 }
 
 pub fn get_multicast_timeout(d: &FuotaDeployment) -> Result<usize> {
@@ -878,10 +965,10 @@ mod test {
         assert_eq!(d.id, devices[0].fuota_deployment_id);
 
         // get device
-        let mut fuota_d = get_device(d.id.into(), dev.dev_eui).await.unwrap();
-        fuota_d.return_msg = "Error: kaboom".into();
-        let fuota_d = update_device(fuota_d).await.unwrap();
-        assert_eq!("Error: kaboom", fuota_d.return_msg);
+        let mut devices = get_devices(d.id.into(), 1, 0).await.unwrap();
+        devices[0].error_msg = "Error: kaboom".into();
+        let fuota_d = update_device(devices[0].clone()).await.unwrap();
+        assert_eq!("Error: kaboom", fuota_d.error_msg);
 
         // remove devices
         remove_devices(d.id.into(), vec![dev.dev_eui])
@@ -1095,6 +1182,7 @@ mod test {
             device_profile_id: dp.id,
             name: "test-fuota-deployment".into(),
             multicast_dr: 5,
+            payload: vec![0; 1000],
             ..Default::default()
         })
         .await

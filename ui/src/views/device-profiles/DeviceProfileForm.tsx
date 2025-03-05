@@ -1081,10 +1081,7 @@ function DeviceProfileForm(props: IProps) {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                label="Clock sync fPort (TS003)"
-                name={["appLayerParams", "ts003FPort"]}
-              >
+              <Form.Item label="Clock sync fPort (TS003)" name={["appLayerParams", "ts003FPort"]}>
                 <InputNumber min={0} max={255} disabled={props.disabled} />
               </Form.Item>
             </Col>
@@ -1103,10 +1100,7 @@ function DeviceProfileForm(props: IProps) {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                label="Fragmented data block transport fPort (TS004)"
-                name={["appLayerParams", "ts004FPort"]}
-              >
+              <Form.Item label="Fragmented data block transport fPort (TS004)" name={["appLayerParams", "ts004FPort"]}>
                 <InputNumber min={0} max={255} disabled={props.disabled} />
               </Form.Item>
             </Col>
@@ -1125,10 +1119,7 @@ function DeviceProfileForm(props: IProps) {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                label="Remote multicast setup fPort (TS005)"
-                name={["appLayerParams", "ts005FPort"]}
-              >
+              <Form.Item label="Remote multicast setup fPort (TS005)" name={["appLayerParams", "ts005FPort"]}>
                 <InputNumber min={0} max={255} disabled={props.disabled} />
               </Form.Item>
             </Col>

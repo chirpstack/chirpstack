@@ -5,6 +5,9 @@ use crate::storage::{device, device_profile};
 use chirpstack_api::gw;
 
 pub mod clocksync;
+pub mod fragmentation;
+pub mod fuota;
+pub mod multicastsetup;
 
 pub async fn handle_uplink(
     dev: &device::Device,
@@ -31,9 +34,15 @@ async fn _handle_uplink(
             .instrument(span)
             .await
     } else if dp.app_layer_params.ts004_f_port == f_port {
-        unimplemented!()
+        let span = span!(Level::INFO, "ts004");
+        fragmentation::handle_uplink(dev, dp, data)
+            .instrument(span)
+            .await
     } else if dp.app_layer_params.ts005_f_port == f_port {
-        unimplemented!()
+        let span = span!(Level::INFO, "ts005");
+        multicastsetup::handle_uplink(dev, dp, data)
+            .instrument(span)
+            .await
     } else {
         return Err(anyhow!("Unexpected f_port {}", f_port));
     }

@@ -5,7 +5,11 @@ import { PageHeader } from "@ant-design/pro-layout";
 
 import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type { CreateDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import { DeviceProfile, CreateDeviceProfileRequest, AppLayerParams } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import {
+  DeviceProfile,
+  CreateDeviceProfileRequest,
+  AppLayerParams,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 

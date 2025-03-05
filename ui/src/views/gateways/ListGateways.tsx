@@ -142,7 +142,7 @@ function ListGateways(props: IProps) {
     req.setTenantId(props.tenant.getId());
 
     let mgGroups: MulticastGroup[] = [];
-    let fuotaDeployments: FuotaDeployment[] = [];
+    let fDeployments: FuotaDeployment[] = [];
 
     ApplicationStore.list(req, (resp: ListApplicationsResponse) => {
       for (const app of resp.getResultList()) {
@@ -169,7 +169,7 @@ function ListGateways(props: IProps) {
         fuotaReq.setLimit(999);
         fuotaReq.setApplicationId(app.getId());
         FuotaStore.listDeployments(fuotaReq, (resp: ListFuotaDeploymentsResponse) => {
-          fuotaDeployments.push({
+          fDeployments.push({
             title: app.getName(),
             value: "",
             disabled: true,
@@ -181,7 +181,7 @@ function ListGateways(props: IProps) {
 
           // The above can also be done using setFuotaDeployments and a callback
           // function, but this introduces a race-condition when executed twice.
-          setFuotaDeployments(fuotaDeployments);
+          setFuotaDeployments(fDeployments);
         });
       }
     });

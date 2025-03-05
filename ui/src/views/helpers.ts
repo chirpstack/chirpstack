@@ -1,4 +1,6 @@
 import { notification } from "antd";
+import { format } from "date-fns";
+import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { useRef, useEffect } from "react";
 
@@ -86,4 +88,24 @@ export function useTitle(...v: unknown[]) {
       document.title = "ChirpStack LoRaWAN® Network-Server";
     };
   }, [documentDefined, v]);
+}
+
+export function format_dt(dt?: google_protobuf_timestamp_pb.Timestamp): string {
+  if (dt) {
+    const ts = new Date(0);
+    ts.setUTCSeconds(dt.getSeconds());
+    return format(ts, "yyyy-MM-dd HH:mm:ss");
+  } else {
+    return "";
+  }
+}
+
+export function format_dt_from_secs(secs?: number): string {
+  if (secs) {
+    const ts = new Date(0);
+    ts.setUTCSeconds(secs);
+    return format(ts, "yyyy-MM-dd HH:mm:ss");
+  } else {
+    return "";
+  }
 }

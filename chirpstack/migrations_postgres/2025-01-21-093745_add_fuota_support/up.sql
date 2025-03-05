@@ -30,12 +30,12 @@ create table fuota_deployment_device (
   fuota_deployment_id uuid not null references fuota_deployment on delete cascade,
   dev_eui bytea not null references device on delete cascade,
   created_at timestamp with time zone not null,
-  updated_at timestamp with time zone not null,
+  completed_at timestamp with time zone null,
   mc_group_setup_completed_at timestamp with time zone null,
   mc_session_completed_at timestamp with time zone null,
   frag_session_setup_completed_at timestamp with time zone null,
   frag_status_completed_at timestamp with time zone null,
-  return_msg text not null,
+  error_msg text not null,
 
   primary key (fuota_deployment_id, dev_eui)
 );
@@ -56,7 +56,7 @@ create table fuota_deployment_job (
   max_retry_count smallint not null,
   attempt_count smallint not null,
   scheduler_run_after timestamp with time zone not null,
-  return_msg text not null,
+  error_msg text not null,
 
   primary key (fuota_deployment_id, job)
 );
