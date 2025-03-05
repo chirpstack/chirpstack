@@ -523,7 +523,6 @@ impl Flow {
 
         info!("Complete FUOTA deployment");
         self.job.attempt_count += 1;
-        self.fuota_deployment.completed_at = Some(Utc::now());
 
         if self.fuota_deployment.request_fragmentation_session_status
             == RequestFragmentationSessionStatus::NoRequest
@@ -542,6 +541,10 @@ impl Flow {
             )
             .await?;
         }
+
+        let mut d = self.fuota_deployment.clone();
+        d.completed_at = Some(Utc::now());
+        let _ = fuota::update_deployment(d).await?;
 
         Ok(None)
     }
