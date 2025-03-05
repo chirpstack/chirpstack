@@ -45,6 +45,7 @@ function FuotaDeploymentDashboard(props: IProps) {
     MC_SESSION: "Multicast session setup",
     ENQUEUE: "Enqueue fragments",
     FRAG_STATUS: "Request fragmentation status",
+    DELETE_MC_GROUP: "Delete multicast group",
     COMPLETE: "Complete deployment",
   };
 
