@@ -462,11 +462,20 @@ message AppLayerParams {
   // TS003 version (Application Layer Clock Sync).
   Ts003Version ts003_version = 1;
 
+  // TS003 fPort.
+  uint32 ts003_f_port = 2;
+
   // TS004 version (Fragmented Data Block Transport).
-  Ts004Version ts004_version = 2;
+  Ts004Version ts004_version = 3;
+
+  // TS004 fPort.
+  uint32 ts004_f_port = 4;
 
   // TS005 version (Remote Multicast Setup).
-  Ts005Version ts005_version = 3;
+  Ts005Version ts005_version = 5;
+
+  // TS005 fPort.
+  uint32 ts005_f_port = 6;
 }
 
 message DeviceProfileListItem {

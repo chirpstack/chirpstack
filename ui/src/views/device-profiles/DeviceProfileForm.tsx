@@ -5,12 +5,16 @@ import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import {
   DeviceProfile,
+  AppLayerParams,
   CodecRuntime,
   Measurement,
   MeasurementKind,
   CadPeriodicity,
   SecondChAckOffset,
   RelayModeActivation,
+  Ts003Version,
+  Ts004Version,
+  Ts005Version,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -307,6 +311,19 @@ function DeviceProfileForm(props: IProps) {
       dp.getMeasurementsMap().set(elm[0], m);
     }
     dp.setAutoDetectMeasurements(v.autoDetectMeasurements);
+
+    // App layer
+    const appLayer = new AppLayerParams();
+    if (v.appLayerParams) {
+      appLayer.setTs003Version(v.appLayerParams.ts003Version);
+      appLayer.setTs004Version(v.appLayerParams.ts004Version);
+      appLayer.setTs005Version(v.appLayerParams.ts005Version);
+
+      appLayer.setTs003FPort(v.appLayerParams.ts003FPort);
+      appLayer.setTs004FPort(v.appLayerParams.ts004FPort);
+      appLayer.setTs005FPort(v.appLayerParams.ts005FPort);
+    }
+    dp.setAppLayerParams(appLayer);
 
     props.onFinish(dp);
   };
@@ -1049,7 +1066,75 @@ function DeviceProfileForm(props: IProps) {
             </Row>
           )}
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Tags" key="7" forceRender>
+        <Tabs.TabPane tab="Application layer" key="7" forceRender>
+          <Row gutter={24}>
+            <Col span={12}>
+              <Form.Item
+                label="Clock sync version (TS003)"
+                name={["appLayerParams", "ts003Version"]}
+                tooltip="If an implemented version is selected, ChirpStack will handle payloads received on the matching fPort"
+              >
+                <Select disabled={props.disabled}>
+                  <Select.Option value={Ts003Version.TS003_NOT_IMPLEMENTED}>Not implemented</Select.Option>
+                  <Select.Option value={Ts003Version.TS003_V100}>v1.0.0</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Clock sync fPort (TS003)"
+                name={["appLayerParams", "ts003FPort"]}
+              >
+                <InputNumber min={0} max={255} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={24}>
+            <Col span={12}>
+              <Form.Item
+                label="Fragmented data block transport (TS004)"
+                name={["appLayerParams", "ts004Version"]}
+                tooltip="If an implemented version is selected, ChirpStack will handle payloads received on the matching fPort"
+              >
+                <Select disabled={props.disabled}>
+                  <Select.Option value={Ts004Version.TS004_NOT_IMPLEMENTED}>Not implemented</Select.Option>
+                  <Select.Option value={Ts004Version.TS004_V100}>v1.0.0</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Fragmented data block transport fPort (TS004)"
+                name={["appLayerParams", "ts004FPort"]}
+              >
+                <InputNumber min={0} max={255} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={24}>
+            <Col span={12}>
+              <Form.Item
+                label="Remote multicast setup version (TS005)"
+                name={["appLayerParams", "ts005Version"]}
+                tooltip="If an implemented version is selected, ChirpStack will handle payloads received on the matching fPort"
+              >
+                <Select disabled={props.disabled}>
+                  <Select.Option value={Ts005Version.TS005_NOT_IMPLEMENTED}>Not implemented</Select.Option>
+                  <Select.Option value={Ts005Version.TS005_V100}>v1.0.0</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Remote multicast setup fPort (TS005)"
+                name={["appLayerParams", "ts005FPort"]}
+              >
+                <InputNumber min={0} max={255} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Tags" key="8" forceRender>
           <Form.List name="tagsMap">
             {(fields, { add, remove }) => (
               <>
@@ -1089,7 +1174,7 @@ function DeviceProfileForm(props: IProps) {
             )}
           </Form.List>
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Measurements" key="8" forceRender>
+        <Tabs.TabPane tab="Measurements" key="9" forceRender>
           <Card bordered={false}>
             <p>
               ChirpStack can aggregate and visualize decoded device measurements in the device dashboard. To setup the
