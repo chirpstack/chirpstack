@@ -135,7 +135,10 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
     let conf = config::get();
     let provider = conf.user_authentication.oauth2.provider.clone();
     let userinfo_url = conf.user_authentication.oauth2.userinfo_url.clone();
-    let assume_email_verified = conf.user_authentication.oauth2.assume_email_verified;
+    let assume_email_verified = conf
+        .user_authentication
+        .oauth2
+        .assume_email_verified;
 
     match provider.as_ref() {
         "clerk" => get_clerk_user(access_token, &userinfo_url).await,
