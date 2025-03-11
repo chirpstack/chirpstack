@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use diesel::{dsl, prelude::*};
@@ -43,6 +45,7 @@ pub struct FuotaDeployment {
     pub fragmentation_descriptor: Vec<u8>,
     pub request_fragmentation_session_status: fields::RequestFragmentationSessionStatus,
     pub payload: Vec<u8>,
+    pub on_complete_set_device_tags: fields::KeyValue,
 }
 
 impl Default for FuotaDeployment {
@@ -76,6 +79,7 @@ impl Default for FuotaDeployment {
             request_fragmentation_session_status:
                 fields::RequestFragmentationSessionStatus::NoRequest,
             payload: Vec::new(),
+            on_complete_set_device_tags: fields::KeyValue::new(HashMap::new()),
         }
     }
 }
@@ -227,6 +231,7 @@ pub async fn update_deployment(d: FuotaDeployment) -> Result<FuotaDeployment, Er
             fuota_deployment::request_fragmentation_session_status
                 .eq(&d.request_fragmentation_session_status),
             fuota_deployment::payload.eq(&d.payload),
+            fuota_deployment::on_complete_set_device_tags.eq(&d.on_complete_set_device_tags),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await
