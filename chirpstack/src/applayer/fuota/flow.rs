@@ -1,3 +1,4 @@
+use std::ops::DerefMut;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -11,7 +12,7 @@ use crate::config;
 use crate::downlink;
 use crate::gpstime::ToGpsTime;
 use crate::storage::fields::{FuotaJob, RequestFragmentationSessionStatus};
-use crate::storage::{device_keys, device_profile, device_queue, fuota, multicast};
+use crate::storage::{device, device_keys, device_profile, device_queue, fuota, multicast};
 
 pub struct Flow {
     scheduler_interval: Duration,
@@ -569,7 +570,7 @@ impl Flow {
             return Ok(None);
         }
 
-        info!("Complete FUOTA deployment");
+        info!("Completing FUOTA deployment");
         self.job.attempt_count += 1;
 
         if self.fuota_deployment.request_fragmentation_session_status
@@ -588,6 +589,20 @@ impl Flow {
                 true,
             )
             .await?;
+        }
+
+        let fuota_devices = fuota::get_devices(self.job.fuota_deployment_id.into(), -1, 0).await?;
+        let fuota_devices: Vec<fuota::FuotaDeploymentDevice> = fuota_devices
+            .into_iter()
+            .filter(|d| d.completed_at.is_some() && d.error_msg.is_empty())
+            .collect();
+
+        for fuota_device in &fuota_devices {
+            let mut d = device::get(&fuota_device.dev_eui).await?;
+            for (k, v) in self.fuota_deployment.on_complete_set_device_tags.iter() {
+                d.tags.deref_mut().insert(k.to_string(), v.to_string());
+            }
+            let _ = device::update(d).await?;
         }
 
         let mut d = self.fuota_deployment.clone();

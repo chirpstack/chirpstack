@@ -213,6 +213,7 @@ diesel::table! {
         #[max_length = 20]
         request_fragmentation_session_status -> Varchar,
         payload -> Bytea,
+        on_complete_set_device_tags -> Jsonb,
     }
 }
 

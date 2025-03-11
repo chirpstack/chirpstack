@@ -23,7 +23,8 @@ create table fuota_deployment (
   fragmentation_block_ack_delay smallint not null,
   fragmentation_descriptor bytea not null,
   request_fragmentation_session_status varchar(20) not null,
-  payload bytea not null
+  payload bytea not null,
+  on_complete_set_device_tags jsonb not null
 );
 
 create table fuota_deployment_device (

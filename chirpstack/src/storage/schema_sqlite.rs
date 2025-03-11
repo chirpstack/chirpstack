@@ -189,6 +189,7 @@ diesel::table! {
         fragmentation_descriptor -> Binary,
         request_fragmentation_session_status -> Text,
         payload -> Binary,
+        on_complete_set_device_tags -> Text,
     }
 }
 

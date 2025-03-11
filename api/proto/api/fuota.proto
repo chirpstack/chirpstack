@@ -156,6 +156,9 @@ message FuotaDeployment {
   // Payload.
   // The FUOTA payload to send.
   bytes payload = 21;
+
+  // Set device tags on complete.
+  map<string, string> on_complete_set_device_tags = 22;
 }
 
 message FuotaDeploymentListItem {

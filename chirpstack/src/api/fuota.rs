@@ -77,6 +77,9 @@ impl FuotaService for Fuota {
                 .request_fragmentation_session_status()
                 .from_proto(),
             payload: req_dp.payload.clone(),
+            on_complete_set_device_tags: fields::KeyValue::new(
+                req_dp.on_complete_set_device_tags.clone(),
+            ),
             ..Default::default()
         };
         if req_dp.calculate_fragmentation_fragment_size {
@@ -152,6 +155,7 @@ impl FuotaService for Fuota {
                 payload: dp.payload.clone(),
                 calculate_multicast_timeout: false,
                 calculate_fragmentation_fragment_size: false,
+                on_complete_set_device_tags: dp.on_complete_set_device_tags.into_hashmap(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -227,6 +231,9 @@ impl FuotaService for Fuota {
                 .request_fragmentation_session_status()
                 .from_proto(),
             payload: req_dp.payload.clone(),
+            on_complete_set_device_tags: fields::KeyValue::new(
+                req_dp.on_complete_set_device_tags.clone(),
+            ),
             ..Default::default()
         };
         if req_dp.calculate_fragmentation_fragment_size {
