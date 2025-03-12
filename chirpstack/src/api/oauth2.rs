@@ -29,6 +29,12 @@ struct ClerkUserinfo {
 }
 
 #[derive(Deserialize)]
+struct YandexUserinfo {
+    pub default_email: String,
+    pub id: String,
+}
+
+#[derive(Deserialize)]
 pub struct CallbackArgs {
     pub code: String,
     pub state: String,
@@ -129,9 +135,11 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
     let conf = config::get();
     let provider = conf.user_authentication.oauth2.provider.clone();
     let userinfo_url = conf.user_authentication.oauth2.userinfo_url.clone();
+    let assume_email_verified = conf.user_authentication.oauth2.assume_email_verified;
 
     match provider.as_ref() {
         "clerk" => get_clerk_user(access_token, &userinfo_url).await,
+        "yandex" => get_yandex_user(access_token, &userinfo_url, assume_email_verified).await,
         _ => Err(anyhow!("Unsupported OAuth2 provider: {}", provider)),
     }
 }
@@ -152,6 +160,25 @@ async fn get_clerk_user(token: &str, url: &str) -> Result<User> {
         email: resp.email,
         email_verified: resp.email_verified,
         external_id: resp.user_id,
+    })
+}
+
+async fn get_yandex_user(token: &str, url: &str, assume_email_verified: bool) -> Result<User> {
+    let client = reqwest::Client::new();
+    let auth_header = format!("Bearer {}", token);
+
+    let resp: YandexUserinfo = client
+        .get(url)
+        .header(AUTHORIZATION, auth_header)
+        .send()
+        .await?
+        .json()
+        .await?;
+
+    Ok(User {
+        email: resp.default_email,
+        email_verified: assume_email_verified,
+        external_id: resp.id,
     })
 }
 
