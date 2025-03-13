@@ -441,7 +441,7 @@ pub async fn set_device_timeout_error(
     let mut q = diesel::update(fuota_deployment_device::table)
         .set(fuota_deployment_device::dsl::error_msg.eq(&error_msg))
         .filter(fuota_deployment_device::dsl::fuota_deployment_id.eq(&fuota_deployment_id))
-        .filter(fuota_deployment_device::dsl::error_msg.is_not_null())
+        .filter(fuota_deployment_device::dsl::error_msg.eq(""))
         .into_boxed();
 
     if mc_group_setup_timeout {
