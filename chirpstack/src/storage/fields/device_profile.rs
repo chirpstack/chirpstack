@@ -314,16 +314,19 @@ impl serialize::ToSql<Text, Sqlite> for AppLayerParams {
 pub enum Ts003Version {
     #[default]
     V100,
+    V200,
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum Ts004Version {
     #[default]
     V100,
+    V200,
 }
 
 #[derive(Default, Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum Ts005Version {
     #[default]
     V100,
+    V200,
 }

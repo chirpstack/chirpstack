@@ -1077,6 +1077,7 @@ function DeviceProfileForm(props: IProps) {
                 <Select disabled={props.disabled}>
                   <Select.Option value={Ts003Version.TS003_NOT_IMPLEMENTED}>Not implemented</Select.Option>
                   <Select.Option value={Ts003Version.TS003_V100}>v1.0.0</Select.Option>
+                  <Select.Option value={Ts003Version.TS003_V200}>v2.0.0</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -1096,6 +1097,7 @@ function DeviceProfileForm(props: IProps) {
                 <Select disabled={props.disabled}>
                   <Select.Option value={Ts004Version.TS004_NOT_IMPLEMENTED}>Not implemented</Select.Option>
                   <Select.Option value={Ts004Version.TS004_V100}>v1.0.0</Select.Option>
+                  <Select.Option value={Ts004Version.TS004_V200}>v2.0.0</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -1115,6 +1117,7 @@ function DeviceProfileForm(props: IProps) {
                 <Select disabled={props.disabled}>
                   <Select.Option value={Ts005Version.TS005_NOT_IMPLEMENTED}>Not implemented</Select.Option>
                   <Select.Option value={Ts005Version.TS005_V100}>v1.0.0</Select.Option>
+                  <Select.Option value={Ts005Version.TS005_V200}>v2.0.0</Select.Option>
                 </Select>
               </Form.Item>
             </Col>

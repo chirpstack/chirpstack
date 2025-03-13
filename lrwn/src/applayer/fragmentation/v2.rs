@@ -1,6 +1,15 @@
+#[cfg(feature = "crypto")]
+use aes::{
+    cipher::generic_array::GenericArray,
+    cipher::{BlockEncrypt, KeyInit},
+    Aes128, Block,
+};
 use anyhow::Result;
+#[cfg(feature = "crypto")]
+use cmac::{Cmac, Mac};
 
 use crate::applayer::PayloadCodec;
+use crate::AES128Key;
 
 pub enum Cid {
     PackageVersionReq,
@@ -660,6 +669,48 @@ fn matrix_line(n: usize, m: usize) -> Vec<usize> {
     }
 
     line
+}
+
+pub fn get_data_block_int_key(app_key: AES128Key) -> Result<AES128Key> {
+    let mut b: [u8; 16] = [0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    let key_bytes = app_key.to_bytes();
+    let key = GenericArray::from_slice(&key_bytes);
+    let cipher = Aes128::new(key);
+
+    let block = Block::from_mut_slice(&mut b);
+    cipher.encrypt_block(block);
+
+    Ok(AES128Key::from_slice(block)?)
+}
+
+pub fn calculate_mic(
+    data_block_int_key: AES128Key,
+    session_cnt: u16,
+    frag_index: u8,
+    descriptor: [u8; 4],
+    data: &[u8],
+) -> Result<[u8; 4]> {
+    let mut b0: [u8; 16] = [0; 16];
+    b0[0] = 0x49;
+    b0[1..3].clone_from_slice(&session_cnt.to_le_bytes());
+    b0[3] = frag_index;
+    b0[4..8].clone_from_slice(&descriptor);
+    b0[12..16].clone_from_slice(&(data.len() as u32).to_le_bytes());
+
+    let mut mac = <Cmac<Aes128> as Mac>::new_from_slice(&data_block_int_key.to_bytes()).unwrap();
+    mac.update(&b0);
+    mac.update(data);
+
+    let cmac = mac.finalize().into_bytes();
+    if cmac.len() < 4 {
+        return Err(anyhow!("cmac is less than 4 bytes"));
+    }
+
+    let mut mic: [u8; 4] = [0; 4];
+    mic.clone_from_slice(&cmac[0..4]);
+
+    Ok(mic)
 }
 
 #[cfg(test)]

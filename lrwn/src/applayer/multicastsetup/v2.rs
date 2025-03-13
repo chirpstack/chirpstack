@@ -1,6 +1,9 @@
-use aes::cipher::BlockDecrypt;
-use aes::cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit};
-use aes::{Aes128, Block};
+#[cfg(feature = "crypto")]
+use aes::{
+    cipher::BlockDecrypt,
+    cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit},
+    Aes128, Block,
+};
 use anyhow::Result;
 
 use crate::applayer::PayloadCodec;

@@ -292,6 +292,7 @@ impl ToProto<api::Ts003Version> for Option<fields::device_profile::Ts003Version>
         match self {
             None => api::Ts003Version::Ts003NotImplemented,
             Some(fields::device_profile::Ts003Version::V100) => api::Ts003Version::Ts003V100,
+            Some(fields::device_profile::Ts003Version::V200) => api::Ts003Version::Ts003V200,
         }
     }
 }
@@ -301,6 +302,7 @@ impl FromProto<Option<fields::device_profile::Ts003Version>> for api::Ts003Versi
         match self {
             api::Ts003Version::Ts003NotImplemented => None,
             api::Ts003Version::Ts003V100 => Some(fields::device_profile::Ts003Version::V100),
+            api::Ts003Version::Ts003V200 => Some(fields::device_profile::Ts003Version::V200),
         }
     }
 }
@@ -310,6 +312,7 @@ impl ToProto<api::Ts004Version> for Option<fields::device_profile::Ts004Version>
         match self {
             None => api::Ts004Version::Ts004NotImplemented,
             Some(fields::device_profile::Ts004Version::V100) => api::Ts004Version::Ts004V100,
+            Some(fields::device_profile::Ts004Version::V200) => api::Ts004Version::Ts004V200,
         }
     }
 }
@@ -319,6 +322,7 @@ impl FromProto<Option<fields::device_profile::Ts004Version>> for api::Ts004Versi
         match self {
             api::Ts004Version::Ts004NotImplemented => None,
             api::Ts004Version::Ts004V100 => Some(fields::device_profile::Ts004Version::V100),
+            api::Ts004Version::Ts004V200 => Some(fields::device_profile::Ts004Version::V200),
         }
     }
 }
@@ -328,6 +332,7 @@ impl ToProto<api::Ts005Version> for Option<fields::device_profile::Ts005Version>
         match self {
             None => api::Ts005Version::Ts005NotImplemented,
             Some(fields::device_profile::Ts005Version::V100) => api::Ts005Version::Ts005V100,
+            Some(fields::device_profile::Ts005Version::V200) => api::Ts005Version::Ts005V200,
         }
     }
 }
@@ -337,6 +342,7 @@ impl FromProto<Option<fields::device_profile::Ts005Version>> for api::Ts005Versi
         match self {
             api::Ts005Version::Ts005NotImplemented => None,
             api::Ts005Version::Ts005V100 => Some(fields::device_profile::Ts005Version::V100),
+            api::Ts005Version::Ts005V200 => Some(fields::device_profile::Ts005Version::V200),
         }
     }
 }

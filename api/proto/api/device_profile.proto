@@ -104,6 +104,9 @@ enum Ts003Version {
 
   // v1.0.0.
   TS003_V100 = 1;
+
+  // v2.0.0
+  TS003_v200 = 2;
 }
 
 enum Ts004Version {
@@ -112,6 +115,9 @@ enum Ts004Version {
 
   // v1.0.0.
   TS004_V100 = 1;
+
+  // v2.0.0
+  TS004_V200 = 2;
 }
 
 enum Ts005Version {
@@ -120,6 +126,9 @@ enum Ts005Version {
 
   // v1.0.0.
   TS005_V100 = 1;
+
+  // v2.0.0
+  TS005_V200 = 2;
 }
 
 // DeviceProfileService is the service providing API methods for managing
