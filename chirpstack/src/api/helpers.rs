@@ -130,6 +130,7 @@ impl ToProto<api::CodecRuntime> for Codec {
             Codec::NONE => api::CodecRuntime::None,
             Codec::CAYENNE_LPP => api::CodecRuntime::CayenneLpp,
             Codec::JS => api::CodecRuntime::Js,
+            Codec::JS_PLUGIN => api::CodecRuntime::JsPlugin,
         }
     }
 }
@@ -140,6 +141,7 @@ impl FromProto<Codec> for api::CodecRuntime {
             api::CodecRuntime::None => Codec::NONE,
             api::CodecRuntime::CayenneLpp => Codec::CAYENNE_LPP,
             api::CodecRuntime::Js => Codec::JS,
+            api::CodecRuntime::JsPlugin => Codec::JS_PLUGIN,
         }
     }
 }

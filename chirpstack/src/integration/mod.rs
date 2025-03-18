@@ -550,6 +550,7 @@ async fn handle_down_command(application_id: String, pl: integration::DownlinkCo
                 pl.f_port as u8,
                 &dev.variables,
                 &dp.payload_codec_script,
+                &dp.codec_plugin_id,
                 &codec::convert::pb_json_to_prost(obj),
             )
             .await?;

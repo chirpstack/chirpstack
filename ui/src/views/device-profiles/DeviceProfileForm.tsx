@@ -1,3 +1,5 @@
+// TODO: show sha hash of the plugin script?
+
 import { useState, useEffect } from "react";
 
 import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card } from "antd";
@@ -15,6 +17,7 @@ import {
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 import type { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { ListDeviceProfileCodecPluginsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import type {
   ListDeviceProfileTemplatesResponse,
   GetDeviceProfileTemplateResponse,
@@ -185,6 +188,7 @@ function DeviceProfileForm(props: IProps) {
   const [isRelayEd, setIsRelayEd] = useState<boolean>(false);
   const [payloadCodecRuntime, setPayloadCodecRuntime] = useState<CodecRuntime>(CodecRuntime.NONE);
   const [adrAlgorithms, setAdrAlgorithms] = useState<[string, string][]>([]);
+  const [codecPlugins, setCodecPlugins] = useState<[string, string][]>([]);
   const [regionConfigurations, setRegionConfigurations] = useState<RegionListItem[]>([]);
   const [regionConfigurationsFiltered, setRegionConfigurationsFiltered] = useState<[string, string][]>([]);
   const [templateModalVisible, setTemplateModalVisible] = useState<boolean>(false);
@@ -220,6 +224,15 @@ function DeviceProfileForm(props: IProps) {
 
       setAdrAlgorithms(adrAlgorithms);
     });
+
+    DeviceProfileStore.listCodecPlugins((resp: ListDeviceProfileCodecPluginsResponse) => {
+      const codecPlugins: [string, string][] = [];
+      for (const a of resp.getResultList()) {
+        codecPlugins.push([a.getId(), a.getName()]);
+      }
+
+      setCodecPlugins(codecPlugins);
+    });
   }, [props]);
 
   const onTabChange = (activeKey: string) => {
@@ -240,6 +253,7 @@ function DeviceProfileForm(props: IProps) {
     dp.setMacVersion(v.macVersion);
     dp.setRegParamsRevision(v.regParamsRevision);
     dp.setAdrAlgorithmId(v.adrAlgorithmId);
+    dp.setCodecPluginId(v.codecPluginId);
     dp.setFlushQueueOnActivate(v.flushQueueOnActivate);
     dp.setUplinkInterval(v.uplinkInterval);
     dp.setDeviceStatusReqInterval(v.deviceStatusReqInterval);
@@ -349,6 +363,7 @@ function DeviceProfileForm(props: IProps) {
       macVersion: dp.getMacVersion(),
       regParamsRevision: dp.getRegParamsRevision(),
       adrAlgorithmId: dp.getAdrAlgorithmId(),
+      codecPluginId: dp.getCodecPluginId(),
       payloadCodecRuntime: dp.getPayloadCodecRuntime(),
       payloadCodecScript: dp.getPayloadCodecScript(),
       flushQueueOnActivate: dp.getFlushQueueOnActivate(),
@@ -395,6 +410,7 @@ function DeviceProfileForm(props: IProps) {
   };
 
   const adrOptions = adrAlgorithms.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
+  const codecPluginOptions = codecPlugins.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
   const regionConfigOptions = regionConfigurationsFiltered.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
   const regionOptions = regionConfigurations
     .map(v => v.getRegion())
@@ -731,8 +747,19 @@ function DeviceProfileForm(props: IProps) {
               <Select.Option value={CodecRuntime.NONE}>None</Select.Option>
               <Select.Option value={CodecRuntime.CAYENNE_LPP}>Cayenne LPP</Select.Option>
               <Select.Option value={CodecRuntime.JS}>JavaScript functions</Select.Option>
+              <Select.Option value={CodecRuntime.JS_PLUGIN}>JavaScript plugin</Select.Option>
             </Select>
           </Form.Item>
+          {payloadCodecRuntime === CodecRuntime.JS_PLUGIN && (
+            <Form.Item
+              label="Payload codec plugin"
+              tooltip="The payload codec plugin that will be used to encode/decode payload."
+              name="codecPluginId"
+              rules={[{ required: true, message: "Please select a payload codec plugin!" }]}
+            >
+              <Select disabled={props.disabled}>{codecPluginOptions}</Select>
+            </Form.Item>
+          )}
           {payloadCodecRuntime === CodecRuntime.JS && (
             <CodeEditor label="Codec functions" name="payloadCodecScript" disabled={props.disabled} />
           )}

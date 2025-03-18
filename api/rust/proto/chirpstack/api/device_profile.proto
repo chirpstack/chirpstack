@@ -24,6 +24,9 @@ enum CodecRuntime {
 
   // JavaScript.
   JS = 2;
+
+  // JavaScript plugin.
+  JS_PLUGIN = 3;
 }
 
 enum MeasurementKind {
@@ -143,6 +146,14 @@ service DeviceProfileService {
       returns (ListDeviceProfileAdrAlgorithmsResponse) {
     option (google.api.http) = {
       get : "/api/device-profiles/adr-algorithms"
+    };
+  }
+
+  // List available codec plugins.
+  rpc ListCodecPlugins(google.protobuf.Empty)
+      returns (ListDeviceProfileCodecPluginsResponse) {
+    option (google.api.http) = {
+      get : "/api/device-profiles/codec-plugins"
     };
   }
 }
@@ -421,6 +432,9 @@ message DeviceProfile {
   // it.
   // Valid options are 1 - 15 (0 = always use system RX1 Delay).
   uint32 rx1_delay = 53;
+
+  // Payload codec plugin ID.
+  string codec_plugin_id = 54;
 }
 
 message Measurement {

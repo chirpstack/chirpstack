@@ -1,3 +1,5 @@
+// TODO: show sha hash of the plugin script?
+
 import { useState, useEffect } from "react";
 
 import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Card } from "antd";
@@ -7,6 +9,7 @@ import { DeviceProfileTemplate } from "@chirpstack/chirpstack-api-grpc-web/api/d
 import { CodecRuntime, Measurement, MeasurementKind } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { ListDeviceProfileCodecPluginsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import { onFinishFailed } from "../helpers";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
@@ -25,6 +28,7 @@ function DeviceProfileTemplateForm(props: IProps) {
   const [supportsClassC, setSupportsClassC] = useState<boolean>(false);
   const [payloadCodecRuntime, setPayloadCodecRuntime] = useState<CodecRuntime>(CodecRuntime.NONE);
   const [adrAlgorithms, setAdrAlgorithms] = useState<[string, string][]>([]);
+  const [codecPlugins, setCodecPlugins] = useState<[string, string][]>([]);
 
   useEffect(() => {
     const v = props.initialValues;
@@ -40,6 +44,15 @@ function DeviceProfileTemplateForm(props: IProps) {
       }
 
       setAdrAlgorithms(adrAlgorithms);
+    });
+
+    DeviceProfileStore.listCodecPlugins((resp: ListDeviceProfileCodecPluginsResponse) => {
+      const codecPlugins: [string, string][] = [];
+      for (const a of resp.getResultList()) {
+        codecPlugins.push([a.getId(), a.getName()]);
+      }
+
+      setCodecPlugins(codecPlugins);
     });
   }, [props.initialValues]);
 
@@ -81,6 +94,7 @@ function DeviceProfileTemplateForm(props: IProps) {
     // codec
     dp.setPayloadCodecRuntime(v.payloadCodecRuntime);
     dp.setPayloadCodecScript(v.payloadCodecScript);
+    dp.setCodecPluginId(v.codecPluginId);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -116,6 +130,7 @@ function DeviceProfileTemplateForm(props: IProps) {
   };
 
   const adrOptions = adrAlgorithms.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
+  const codecPluginsOptions = codecPlugins.map(v => <Select.Option value={v[0]}>{v[1]}</Select.Option>);
 
   return (
     <Form
@@ -437,8 +452,19 @@ function DeviceProfileTemplateForm(props: IProps) {
               <Select.Option value={CodecRuntime.NONE}>None</Select.Option>
               <Select.Option value={CodecRuntime.CAYENNE_LPP}>Cayenne LPP</Select.Option>
               <Select.Option value={CodecRuntime.JS}>JavaScript functions</Select.Option>
+              <Select.Option value={CodecRuntime.JS_PLUGIN}>JavaScript plugin</Select.Option>
             </Select>
           </Form.Item>
+          {payloadCodecRuntime === CodecRuntime.JS_PLUGIN && (
+            <Form.Item
+              label="Payload codec plugin"
+              tooltip="The payload codec plugin that will be used to encode/decode device's uplinks/downlinks."
+              name="codecPluginId"
+              rules={[{ required: true, message: "Please select a codec plugin!" }]}
+            >
+              <Select>{codecPluginsOptions}</Select>
+            </Form.Item>
+          )}
           {payloadCodecRuntime === CodecRuntime.JS && <CodeEditor label="Codec functions" name="payloadCodecScript" />}
         </Tabs.TabPane>
         <Tabs.TabPane tab="Tags" key="6">

@@ -72,6 +72,7 @@ function encodeDownlink(input) {
   deviceProfile.setUplinkInterval(3600);
   deviceProfile.setDeviceStatusReqInterval(1);
   deviceProfile.setAdrAlgorithmId("default");
+  deviceProfile.setCodecPluginId("passthrough");
   deviceProfile.setMacVersion(MacVersion.LORAWAN_1_0_3);
   deviceProfile.setRegParamsRevision(RegParamsRevision.A);
   deviceProfile.setFlushQueueOnActivate(true);

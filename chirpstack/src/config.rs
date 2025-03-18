@@ -406,12 +406,14 @@ pub struct Codec {
 pub struct CodecJs {
     #[serde(with = "humantime_serde")]
     pub max_execution_time: Duration,
+    pub plugins: Vec<String>,
 }
 
 impl Default for CodecJs {
     fn default() -> Self {
         CodecJs {
             max_execution_time: Duration::from_millis(100),
+            plugins: vec![],
         }
     }
 }

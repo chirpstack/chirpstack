@@ -96,6 +96,8 @@ diesel::table! {
         reg_params_revision -> Varchar,
         #[max_length = 100]
         adr_algorithm_id -> Varchar,
+        #[max_length = 100]
+        codec_plugin_id -> Varchar,
         #[max_length = 20]
         payload_codec_runtime -> Varchar,
         uplink_interval -> Int4,
@@ -167,6 +169,8 @@ diesel::table! {
         reg_params_revision -> Varchar,
         #[max_length = 100]
         adr_algorithm_id -> Varchar,
+        #[max_length = 100]
+        codec_plugin_id -> Varchar,
         #[max_length = 20]
         payload_codec_runtime -> Varchar,
         payload_codec_script -> Text,

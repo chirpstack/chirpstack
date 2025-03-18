@@ -570,6 +570,16 @@ r#"
     # Maximum execution time.
     max_execution_time="{{ codec.js.max_execution_time }}"
 
+    # Custom codec plugins.
+    #
+    # The custom codec plugin must be implemented in JavaScript. For an example
+    # skeleton, please see file examples/custom_plugins/plugin_skeleton.js
+    plugins=[
+      {{#each codec.js.plugins}}
+      "{{this}}",
+      {{/each}}
+    ]
+
 
 # User authentication configuration.
 [user_authentication]
