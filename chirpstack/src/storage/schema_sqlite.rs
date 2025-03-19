@@ -180,6 +180,8 @@ diesel::table! {
         multicast_class_b_ping_slot_nb_k -> SmallInt,
         multicast_frequency -> BigInt,
         multicast_timeout -> SmallInt,
+        multicast_session_start -> Nullable<TimestamptzSqlite>,
+        multicast_session_end -> Nullable<TimestamptzSqlite>,
         unicast_max_retry_count -> SmallInt,
         fragmentation_fragment_size -> SmallInt,
         fragmentation_redundancy_percentage -> SmallInt,
@@ -224,6 +226,7 @@ diesel::table! {
         max_retry_count -> SmallInt,
         attempt_count -> SmallInt,
         scheduler_run_after -> TimestamptzSqlite,
+        warning_msg -> Text,
         error_msg -> Text,
     }
 }

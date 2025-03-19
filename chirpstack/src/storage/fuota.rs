@@ -36,6 +36,8 @@ pub struct FuotaDeployment {
     pub multicast_class_b_ping_slot_nb_k: i16,
     pub multicast_frequency: i64,
     pub multicast_timeout: i16,
+    pub multicast_session_start: Option<DateTime<Utc>>,
+    pub multicast_session_end: Option<DateTime<Utc>>,
     pub unicast_max_retry_count: i16,
     pub fragmentation_fragment_size: i16,
     pub fragmentation_redundancy_percentage: i16,
@@ -69,6 +71,8 @@ impl Default for FuotaDeployment {
             multicast_class_b_ping_slot_nb_k: 0,
             multicast_frequency: 0,
             multicast_timeout: 0,
+            multicast_session_start: None,
+            multicast_session_end: None,
             unicast_max_retry_count: 0,
             fragmentation_fragment_size: 0,
             fragmentation_redundancy_percentage: 0,
@@ -154,6 +158,7 @@ pub struct FuotaDeploymentJob {
     pub max_retry_count: i16,
     pub attempt_count: i16,
     pub scheduler_run_after: DateTime<Utc>,
+    pub warning_msg: String,
     pub error_msg: String,
 }
 
@@ -169,6 +174,7 @@ impl Default for FuotaDeploymentJob {
             max_retry_count: 0,
             attempt_count: 0,
             scheduler_run_after: now,
+            warning_msg: "".into(),
             error_msg: "".into(),
         }
     }
@@ -220,6 +226,8 @@ pub async fn update_deployment(d: FuotaDeployment) -> Result<FuotaDeployment, Er
                 .eq(&d.multicast_class_b_ping_slot_nb_k),
             fuota_deployment::multicast_frequency.eq(&d.multicast_frequency),
             fuota_deployment::multicast_timeout.eq(&d.multicast_timeout),
+            fuota_deployment::multicast_session_start.eq(&d.multicast_session_start),
+            fuota_deployment::multicast_session_end.eq(&d.multicast_session_end),
             fuota_deployment::unicast_max_retry_count.eq(&d.unicast_max_retry_count),
             fuota_deployment::fragmentation_fragment_size.eq(&d.fragmentation_fragment_size),
             fuota_deployment::fragmentation_redundancy_percentage
@@ -642,6 +650,7 @@ pub async fn update_job(j: FuotaDeploymentJob) -> Result<FuotaDeploymentJob, Err
         fuota_deployment_job::completed_at.eq(&j.completed_at),
         fuota_deployment_job::attempt_count.eq(&j.attempt_count),
         fuota_deployment_job::scheduler_run_after.eq(&j.scheduler_run_after),
+        fuota_deployment_job::warning_msg.eq(&j.warning_msg),
         fuota_deployment_job::error_msg.eq(&j.error_msg),
     ))
     .get_result(&mut get_async_db_conn().await?)

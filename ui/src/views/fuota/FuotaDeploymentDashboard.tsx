@@ -63,6 +63,12 @@ function FuotaDeploymentDashboard(props: IProps) {
           );
         } else if (!record.completedAt) {
           return <Spin indicator={<LoadingOutlined spin />} size="small" />;
+        } else if (record.warningMsg !== "") {
+          return (
+            <Popover content={record.warningMsg} placement="right">
+              <Tag color="orange">warning</Tag>
+            </Popover>
+          );
         } else {
           return <Tag color="green">ok</Tag>;
         }

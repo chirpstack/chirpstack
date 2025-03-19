@@ -15,6 +15,8 @@ create table fuota_deployment (
   multicast_class_b_ping_slot_nb_k smallint not null,
   multicast_frequency bigint not null,
   multicast_timeout smallint not null,
+  multicast_session_start timestamp with time zone null,
+  multicast_session_end timestamp with time zone null,
   unicast_max_retry_count smallint not null,
   fragmentation_fragment_size smallint not null,
   fragmentation_redundancy_percentage smallint not null,
@@ -57,6 +59,7 @@ create table fuota_deployment_job (
   max_retry_count smallint not null,
   attempt_count smallint not null,
   scheduler_run_after timestamp with time zone not null,
+  warning_msg text not null,
   error_msg text not null,
 
   primary key (fuota_deployment_id, job)

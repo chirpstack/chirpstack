@@ -203,6 +203,8 @@ diesel::table! {
         multicast_class_b_ping_slot_nb_k -> Int2,
         multicast_frequency -> Int8,
         multicast_timeout -> Int2,
+        multicast_session_start -> Nullable<Timestamptz>,
+        multicast_session_end -> Nullable<Timestamptz>,
         unicast_max_retry_count -> Int2,
         fragmentation_fragment_size -> Int2,
         fragmentation_redundancy_percentage -> Int2,
@@ -249,6 +251,7 @@ diesel::table! {
         max_retry_count -> Int2,
         attempt_count -> Int2,
         scheduler_run_after -> Timestamptz,
+        warning_msg -> Text,
         error_msg -> Text,
     }
 }

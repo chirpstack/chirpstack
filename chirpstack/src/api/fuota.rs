@@ -630,6 +630,7 @@ impl FuotaService for Fuota {
                     scheduler_run_after: Some(helpers::datetime_to_prost_timestamp(
                         &j.scheduler_run_after,
                     )),
+                    warning_msg: j.warning_msg.clone(),
                     error_msg: j.error_msg.clone(),
                 })
                 .collect(),

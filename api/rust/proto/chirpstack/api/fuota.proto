@@ -393,6 +393,9 @@ message FuotaDeploymentJob {
   // Scheduler run after.
   google.protobuf.Timestamp scheduler_run_after = 6;
 
+  // Warning message.
+  string warning_msg = 7;
+
   // Error message.
-  string error_msg = 7;
+  string error_msg = 8;
 }
