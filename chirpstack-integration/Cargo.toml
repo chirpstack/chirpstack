@@ -3,13 +3,13 @@
   description = "Library for building external ChirpStack integrations"
   homepage = "https://www.chirpstack.io/"
   license = "MIT"
-  version = "4.12.0-test.1"
+  version = "4.12.0-test.2"
   authors = ["Orne Brocaar <info@brocaar.com>"]
   edition = "2021"
   repository = "https://github.com/chirpstack/chirpstack"
 
 [dependencies]
-  chirpstack_api = { path = "../api/rust", version = "4.12.0-test.1" }
+  chirpstack_api = { path = "../api/rust", version = "4.12.0-test.2" }
   redis = { version = "0.29", features = [
     "cluster-async",
     "tokio-rustls-comp",
