@@ -115,11 +115,11 @@ impl UplinkFrame {
 
         if let Some(rx_info) = &self.rx_info_legacy {
             if self.rx_info.is_none() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
 
                 self.rx_info = Some(UplinkRxInfo {
                     gateway_id: hex::encode(&rx_info.gateway_id),
-                    uplink_id: rng.gen::<u32>(),
+                    uplink_id: rng.random::<u32>(),
                     gw_time: rx_info.time,
                     ns_time: None,
                     time_since_gps_epoch: rx_info.time_since_gps_epoch,

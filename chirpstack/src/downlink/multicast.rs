@@ -53,7 +53,7 @@ impl Multicast {
 
         let mut ctx = Multicast {
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: rand::thread_rng().gen(),
+                downlink_id: rand::rng().random(),
                 gateway_id: qi.gateway_id.to_string(),
                 ..Default::default()
             },

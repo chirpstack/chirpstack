@@ -65,7 +65,7 @@ impl Data {
         must_ack: bool,
         mac_commands: Vec<lrwn::MACCommandSet>,
     ) -> Result<()> {
-        let downlink_id: u32 = rand::thread_rng().gen();
+        let downlink_id: u32 = rand::rng().random();
         let span = span!(Level::INFO, "data_down", downlink_id = downlink_id);
 
         match Data::_handle_response(
@@ -107,7 +107,7 @@ impl Data {
         must_ack: bool,
         mac_commands: Vec<lrwn::MACCommandSet>,
     ) -> Result<()> {
-        let downlink_id: u32 = rand::thread_rng().gen();
+        let downlink_id: u32 = rand::rng().random();
         let span = span!(Level::INFO, "data_down", downlink_id = downlink_id);
 
         match Data::_handle_response_relayed(
@@ -138,7 +138,7 @@ impl Data {
     }
 
     pub async fn handle_schedule_next_queue_item(device: device::Device) -> Result<()> {
-        let downlink_id: u32 = rand::thread_rng().gen();
+        let downlink_id: u32 = rand::rng().random();
         let span =
             span!(Level::INFO, "schedule", dev_eui = %device.dev_eui, downlink_id = downlink_id);
 

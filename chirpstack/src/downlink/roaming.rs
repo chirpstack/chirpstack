@@ -43,7 +43,7 @@ impl PassiveRoamingDownlink {
             network_conf,
             region_conf,
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: rand::thread_rng().gen(),
+                downlink_id: rand::rng().random(),
                 ..Default::default()
             },
             downlink_gateway: None,

@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
-use rand::seq::SliceRandom;
+use rand::seq::IndexedRandom;
 
 use super::{Handler, Request, Response};
 use crate::region;
@@ -134,7 +134,7 @@ impl Handler for Algorithm {
         // In case there are multiple with the same coding-rate, we take
         // a random one.
         resp.dr = drs
-            .choose(&mut rand::thread_rng())
+            .choose(&mut rand::rng())
             .cloned()
             .ok_or_else(|| anyhow!("Random returned None"))?;
         resp.nb_trans = 1; // 1 is the recommeded value

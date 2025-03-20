@@ -54,7 +54,7 @@ impl Data {
             xmit_data_req: pl,
             dl_meta_data: dl_meta,
             downlink_frame: gw::DownlinkFrame {
-                downlink_id: rand::thread_rng().gen(),
+                downlink_id: rand::rng().random(),
                 ..Default::default()
             },
         };

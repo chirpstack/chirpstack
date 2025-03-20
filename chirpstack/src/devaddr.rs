@@ -1,12 +1,12 @@
-use rand::seq::SliceRandom;
 use rand::RngCore;
 
 use crate::config;
 use lrwn::DevAddr;
+use rand::seq::IndexedRandom;
 
 pub fn get_random_dev_addr() -> DevAddr {
     let conf = config::get();
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     // Get configured DevAddr prefixes.
     let prefixes = if conf.network.dev_addr_prefixes.is_empty() {
