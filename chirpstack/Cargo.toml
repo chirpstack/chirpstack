@@ -105,7 +105,6 @@
 
   # Authentication
   pbkdf2 = { version = "0.12", features = ["simple"] }
-  rand_core = { version = "0.6.4", features = ["std"] }
   jsonwebtoken = "9.3"
   rustls = { version = "0.23", default-features = false, features = [
     "logging",

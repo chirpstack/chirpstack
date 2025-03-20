@@ -4,10 +4,9 @@ use diesel::{dsl, prelude::*};
 use diesel_async::RunQueryDsl;
 use email_address::EmailAddress;
 use pbkdf2::{
-    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Algorithm, Pbkdf2,
 };
-use rand_core::OsRng;
 use tracing::info;
 use uuid::Uuid;
 
