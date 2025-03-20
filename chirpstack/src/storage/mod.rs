@@ -79,11 +79,13 @@ pub use sqlite::{
 pub enum AsyncRedisPool {
     Client(deadpool_redis::Pool),
     ClusterClient(deadpool_redis::cluster::Pool),
+    SentinelClient(deadpool_redis::sentinel::Pool),
 }
 
 pub enum AsyncRedisPoolConnection {
     Client(deadpool_redis::Connection),
     ClusterClient(deadpool_redis::cluster::Connection),
+    SentinelClient(deadpool_redis::sentinel::Connection),
 }
 
 impl ConnectionLike for AsyncRedisPoolConnection {
@@ -94,6 +96,7 @@ impl ConnectionLike for AsyncRedisPoolConnection {
         match self {
             AsyncRedisPoolConnection::Client(v) => v.req_packed_command(cmd),
             AsyncRedisPoolConnection::ClusterClient(v) => v.req_packed_command(cmd),
+            AsyncRedisPoolConnection::SentinelClient(v) => v.req_packed_command(cmd),
         }
     }
     fn req_packed_commands<'a>(
@@ -105,12 +108,16 @@ impl ConnectionLike for AsyncRedisPoolConnection {
         match self {
             AsyncRedisPoolConnection::Client(v) => v.req_packed_commands(cmd, offset, count),
             AsyncRedisPoolConnection::ClusterClient(v) => v.req_packed_commands(cmd, offset, count),
+            AsyncRedisPoolConnection::SentinelClient(v) => {
+                v.req_packed_commands(cmd, offset, count)
+            }
         }
     }
     fn get_db(&self) -> i64 {
         match self {
             AsyncRedisPoolConnection::Client(v) => v.get_db(),
             AsyncRedisPoolConnection::ClusterClient(v) => v.get_db(),
+            AsyncRedisPoolConnection::SentinelClient(v) => v.get_db(),
         }
     }
 }
@@ -135,6 +142,17 @@ pub async fn setup() -> Result<()> {
             .max_size(conf.redis.max_open_connections as usize)
             .build()?;
         set_async_redis_pool(AsyncRedisPool::ClusterClient(pool)).await;
+    } else if !conf.redis.master_name.is_empty() {
+        info!("Setting up Redis sentinel client");
+        let pool = deadpool_redis::sentinel::Config::from_urls(
+            conf.redis.servers.clone(),
+            conf.redis.master_name.clone(),
+            deadpool_redis::sentinel::SentinelServerType::Master,
+        )
+        .builder()?
+        .max_size(conf.redis.max_open_connections as usize)
+        .build()?;
+        set_async_redis_pool(AsyncRedisPool::SentinelClient(pool)).await;
     } else {
         let pool = deadpool_redis::Config::from_url(conf.redis.servers[0].clone())
             .builder()?
@@ -171,6 +189,9 @@ pub async fn get_async_redis_conn() -> Result<AsyncRedisPoolConnection> {
         AsyncRedisPool::Client(v) => AsyncRedisPoolConnection::Client(v.get().await?),
         AsyncRedisPool::ClusterClient(v) => {
             AsyncRedisPoolConnection::ClusterClient(v.clone().get().await?)
+        }
+        AsyncRedisPool::SentinelClient(v) => {
+            AsyncRedisPoolConnection::SentinelClient(v.clone().get().await?)
         }
     };
 
