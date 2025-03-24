@@ -65,6 +65,7 @@ diesel::table! {
         join_eui -> Bytea,
         secondary_dev_addr -> Nullable<Bytea>,
         device_session -> Nullable<Bytea>,
+        app_layer_params -> Jsonb,
     }
 }
 

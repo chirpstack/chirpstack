@@ -1,5 +1,6 @@
 mod big_decimal;
 mod dev_nonces;
+pub mod device;
 pub mod device_profile;
 mod device_session;
 mod fuota;

@@ -116,6 +116,7 @@ pub struct Device {
     pub join_eui: EUI64,
     pub secondary_dev_addr: Option<DevAddr>,
     pub device_session: Option<fields::DeviceSession>,
+    pub app_layer_params: fields::device::AppLayerParams,
 }
 
 #[derive(AsChangeset, Debug, Clone, Default)]
@@ -133,6 +134,7 @@ pub struct DeviceChangeset {
     pub battery_level: Option<Option<fields::BigDecimal>>,
     pub scheduler_run_after: Option<Option<DateTime<Utc>>>,
     pub is_disabled: Option<bool>,
+    pub app_layer_params: Option<fields::device::AppLayerParams>,
 }
 
 impl Device {
@@ -190,6 +192,7 @@ impl Default for Device {
             join_eui: EUI64::default(),
             secondary_dev_addr: None,
             device_session: None,
+            app_layer_params: Default::default(),
         }
     }
 }
@@ -552,6 +555,7 @@ pub async fn update(d: Device) -> Result<Device, Error> {
             device::tags.eq(&d.tags),
             device::variables.eq(&d.variables),
             device::join_eui.eq(&d.join_eui),
+            device::app_layer_params.eq(&d.app_layer_params),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await

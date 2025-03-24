@@ -70,3 +70,6 @@ create index idx_fuota_deployment_job_scheduler_run_after on fuota_deployment_jo
 
 alter table device_keys
     add column gen_app_key blob not null default x'00000000000000000000000000000000';
+
+alter table device
+    add column all_layer_params text not null default '{}';

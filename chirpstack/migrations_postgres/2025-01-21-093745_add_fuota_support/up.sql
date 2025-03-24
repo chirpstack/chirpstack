@@ -73,3 +73,9 @@ alter table device_keys
 
 alter table device_keys
   alter column gen_app_key drop default;
+
+alter table device
+  add column app_layer_params jsonb not null default '{}';
+
+alter table device
+  alter column app_layer_params drop default;

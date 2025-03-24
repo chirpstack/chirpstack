@@ -397,6 +397,20 @@ impl Flow {
                 )
                 .to_vec()?,
                 Some(Ts004Version::V200) => {
+                    let dev = device::get(&fuota_dev.dev_eui).await?;
+                    let session_cnt = dev.app_layer_params.ts004_session_cnt[0];
+                    let mut app_layer_params = dev.app_layer_params.clone();
+                    app_layer_params.ts004_session_cnt[0] += 1;
+
+                    device::partial_update(
+                        fuota_dev.dev_eui,
+                        &device::DeviceChangeset {
+                            app_layer_params: Some(app_layer_params),
+                            ..Default::default()
+                        },
+                    )
+                    .await?;
+
                     let dev_keys = device_keys::get(&fuota_dev.dev_eui).await?;
                     let data_block_int_key = match self.device_profile.mac_version {
                         MacVersion::LORAWAN_1_0_0
@@ -412,7 +426,7 @@ impl Flow {
                     };
                     let mic = fragmentation::v2::calculate_mic(
                         data_block_int_key,
-                        0,
+                        session_cnt,
                         0,
                         [0, 0, 0, 0],
                         &self.fuota_deployment.payload,
@@ -434,7 +448,7 @@ impl Flow {
                             },
                             descriptor: [0, 0, 0, 0],
                             mic,
-                            session_cnt: 0,
+                            session_cnt,
                         },
                     )
                     .to_vec()?

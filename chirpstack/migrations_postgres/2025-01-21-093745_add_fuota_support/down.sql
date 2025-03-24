@@ -1,3 +1,6 @@
+alter table device
+    drop column app_layer_params;
+
 alter table device_keys
     drop column gen_app_key;
 
