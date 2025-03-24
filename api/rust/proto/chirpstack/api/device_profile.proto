@@ -550,3 +550,19 @@ message AdrAlgorithmListItem {
   // Algorithm name.
   string name = 2;
 }
+
+message ListDeviceProfileCodecPluginsResponse {
+  // Total number of plugins.
+  uint32 total_count = 1;
+
+  // Result-set.
+  repeated CodecPluginListItem result = 2;
+}
+
+message CodecPluginListItem {
+  // Pluigin ID.
+  string id = 1;
+
+  // Plugin name.
+  string name = 2;
+}
