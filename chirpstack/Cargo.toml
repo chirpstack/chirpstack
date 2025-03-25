@@ -3,7 +3,7 @@
   description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
   repository = "https://github.com/chirpstack/chirpstack"
   homepage = "https://www.chirpstack.io/"
-  version = "4.12.0-test.2"
+  version = "4.12.0-test.3"
   authors = ["Orne Brocaar <info@brocaar.com>"]
   edition = "2021"
   publish = false
