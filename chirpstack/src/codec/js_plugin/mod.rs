@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 use tokio::sync::RwLock;
 use tracing::{info, trace, warn};
+use chrono::{DateTime, Utc};
 use crate::config;
 
 pub mod plugin;
@@ -45,15 +46,28 @@ pub async fn get_plugins() -> HashMap<String, String> {
     out
 }
 
-pub async fn get_plugin_script(plugin_id: &str) -> String {
+pub async fn encode(plugin_id: &str, f_port: u8, variables: &HashMap<String, String>, obj: &prost_types::Struct) -> Result<Vec<u8>> {
     let plugins = CODEC_PLUGINS.read().await;
     match plugins.get(plugin_id) {
         Some(v) => {
-            v.get_script()
+            v.encode(f_port, variables, obj).await
         },
         None => {
             warn!(plugin_id = %plugin_id, "No codec plugin configured with given ID");
-            String::from("")
+            Err(anyhow!("No codec plugin configured with given ID: {}", plugin_id))
+        }
+    }
+}
+
+pub async fn decode(plugin_id: &str, recv_time: DateTime<Utc>, f_port: u8, variables: &HashMap<String, String>, b: &[u8]) -> Result<pbjson_types::Struct> {
+    let plugins = CODEC_PLUGINS.read().await;
+    match plugins.get(plugin_id) {
+        Some(v) => {
+            v.decode(recv_time, f_port, variables, b).await
+        },
+        None => {
+            warn!(plugin_id = %plugin_id, "No codec plugin configured with given ID");
+            Err(anyhow!("No codec plugin configured with given ID: {}", plugin_id))
         }
     }
 }
@@ -66,6 +80,11 @@ pub trait Handler {
     // Get the ID.
     fn get_id(&self) -> String;
 
-    // Get the script.
-    fn get_script(&self) -> String;
+    // Encode downlink
+    async fn encode(&self, f_port: u8, variables: &HashMap<String, String>, obj: &prost_types::Struct) -> Result<Vec<u8>>;
+
+    // Decode uplink
+    async fn decode(&self, recv_time: DateTime<Utc>, f_port: u8, variables: &HashMap<String, String>, b: &[u8]) -> Result<pbjson_types::Struct>;
 }
+
+// TODO: add tests

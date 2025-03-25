@@ -18,7 +18,7 @@ export function id() {
  * 
  * @returns {{data: object}} Object representing the decoded payload.
  */
-function decodeUplink(input) {
+export function decodeUplink(input) {
   return {
     data: {
       // temp: 22.5
@@ -35,7 +35,7 @@ function decodeUplink(input) {
  * 
  * @returns {{bytes: number[]}} Byte array containing the downlink payload.
  */
-function encodeDownlink(input) {
+export function encodeDownlink(input) {
   return {
     bytes: input.data // Passthrough
   };

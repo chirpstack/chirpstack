@@ -8,9 +8,9 @@ use rquickjs::{CatchResultExt, IntoJs};
 use super::convert;
 use crate::config;
 
-mod vendor_base64_js;
-mod vendor_buffer;
-mod vendor_ieee754;
+pub mod vendor_base64_js;
+pub mod vendor_buffer;
+pub mod vendor_ieee754;
 
 pub async fn decode(
     recv_time: DateTime<Utc>,
