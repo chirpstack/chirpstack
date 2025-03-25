@@ -223,9 +223,6 @@ impl Handler for Plugin {
 }
 
 pub mod test {
-    use super::*;
-    use chrono::TimeZone;
-
     #[tokio::test]
     async fn test_plugin() {
         let p = Plugin::new("../examples/codec_plugins/plugin_skeleton.js").unwrap();
