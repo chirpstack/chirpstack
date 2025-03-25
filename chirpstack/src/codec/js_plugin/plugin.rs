@@ -1,11 +1,11 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 use std::time::SystemTime;
 
+use super::{passthrough, Handler};
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use super::{Handler, passthrough};
 
 use rquickjs::{CatchResultExt, IntoJs};
 
@@ -53,10 +53,10 @@ impl Plugin {
     }
 
     pub fn default() -> Result<Self> {
-        let p = Plugin { 
-            script: passthrough::SCRIPT.to_string(), 
-            id: String::from("passthrough"), 
-            name: String::from("Passthrough") 
+        let p = Plugin {
+            script: passthrough::SCRIPT.to_string(),
+            id: String::from("passthrough"),
+            name: String::from("Passthrough"),
         };
 
         Ok(p)
@@ -73,7 +73,12 @@ impl Handler for Plugin {
         self.id.clone()
     }
 
-    async fn encode(&self, f_port: u8, variables: &HashMap<String, String>, obj: &prost_types::Struct) -> Result<Vec<u8>> {
+    async fn encode(
+        &self,
+        f_port: u8,
+        variables: &HashMap<String, String>,
+        obj: &prost_types::Struct,
+    ) -> Result<Vec<u8>> {
         let conf = config::get();
         let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
 
@@ -115,7 +120,9 @@ impl Handler for Plugin {
                 .context("Declare script")?;
             let (m, m_promise) = m.eval().context("Evaluate script")?;
             () = m_promise.finish()?;
-            let func: rquickjs::Function = m.get("encodeDownlink").context("Get encodeDownlink function")?;
+            let func: rquickjs::Function = m
+                .get("encodeDownlink")
+                .context("Get encodeDownlink function")?;
 
             let input = rquickjs::Object::new(ctx.clone())?;
             input.set("fPort", f_port.into_js(&ctx)?)?;
@@ -139,7 +146,7 @@ impl Handler for Plugin {
                     ));
                 }
             }
-            
+
             // Directly into u8 can result into the following error:
             // Error converting from js 'float' into type 'i32'
             let v: Vec<f64> = res.get("bytes")?;
@@ -149,7 +156,13 @@ impl Handler for Plugin {
         })
     }
 
-    async fn decode(&self, recv_time: DateTime<Utc>, f_port: u8, variables: &HashMap<String, String>, b: &[u8]) -> Result<pbjson_types::Struct> {
+    async fn decode(
+        &self,
+        recv_time: DateTime<Utc>,
+        f_port: u8,
+        variables: &HashMap<String, String>,
+        b: &[u8],
+    ) -> Result<pbjson_types::Struct> {
         let conf = config::get();
         let max_run_ts = SystemTime::now() + conf.codec.js.max_execution_time;
 
@@ -191,7 +204,8 @@ impl Handler for Plugin {
                 .context("Declare script")?;
             let (m, m_promise) = m.eval().context("Evaluate script")?;
             () = m_promise.finish()?;
-            let func: rquickjs::Function = m.get("decodeUplink").context("Get decodeUplink function")?;
+            let func: rquickjs::Function =
+                m.get("decodeUplink").context("Get decodeUplink function")?;
 
             let input = rquickjs::Object::new(ctx.clone())?;
             input.set("bytes", b.into_js(&ctx)?)?;
@@ -320,7 +334,8 @@ pub mod test {
         let mut vars: HashMap<String, String> = HashMap::new();
         vars.insert("foo".into(), "bar".into());
 
-        let out = p.decode(recv_time, 10, &vars, &[0x01, 0x02, 0x03])
+        let out = p
+            .decode(recv_time, 10, &vars, &[0x01, 0x02, 0x03])
             .await
             .unwrap();
 

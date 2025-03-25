@@ -1,15 +1,15 @@
 // TODO: provide SHA hash of the script so it can be shown in UI? (to ensure CI correctness)
 
-use anyhow::{Result};
+use crate::config;
+use anyhow::Result;
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use tokio::sync::RwLock;
 use tracing::{info, trace, warn};
-use chrono::{DateTime, Utc};
-use crate::config;
 
-pub mod plugin;
 pub mod passthrough;
+pub mod plugin;
 
 lazy_static! {
     static ref CODEC_PLUGINS: RwLock<HashMap<String, Box<dyn Handler + Sync + Send>>> =
@@ -46,28 +46,41 @@ pub async fn get_plugins() -> HashMap<String, String> {
     out
 }
 
-pub async fn encode(plugin_id: &str, f_port: u8, variables: &HashMap<String, String>, obj: &prost_types::Struct) -> Result<Vec<u8>> {
+pub async fn encode(
+    plugin_id: &str,
+    f_port: u8,
+    variables: &HashMap<String, String>,
+    obj: &prost_types::Struct,
+) -> Result<Vec<u8>> {
     let plugins = CODEC_PLUGINS.read().await;
     match plugins.get(plugin_id) {
-        Some(v) => {
-            v.encode(f_port, variables, obj).await
-        },
+        Some(v) => v.encode(f_port, variables, obj).await,
         None => {
             warn!(plugin_id = %plugin_id, "No codec plugin configured with given ID");
-            Err(anyhow!("No codec plugin configured with given ID: {}", plugin_id))
+            Err(anyhow!(
+                "No codec plugin configured with given ID: {}",
+                plugin_id
+            ))
         }
     }
 }
 
-pub async fn decode(plugin_id: &str, recv_time: DateTime<Utc>, f_port: u8, variables: &HashMap<String, String>, b: &[u8]) -> Result<pbjson_types::Struct> {
+pub async fn decode(
+    plugin_id: &str,
+    recv_time: DateTime<Utc>,
+    f_port: u8,
+    variables: &HashMap<String, String>,
+    b: &[u8],
+) -> Result<pbjson_types::Struct> {
     let plugins = CODEC_PLUGINS.read().await;
     match plugins.get(plugin_id) {
-        Some(v) => {
-            v.decode(recv_time, f_port, variables, b).await
-        },
+        Some(v) => v.decode(recv_time, f_port, variables, b).await,
         None => {
             warn!(plugin_id = %plugin_id, "No codec plugin configured with given ID");
-            Err(anyhow!("No codec plugin configured with given ID: {}", plugin_id))
+            Err(anyhow!(
+                "No codec plugin configured with given ID: {}",
+                plugin_id
+            ))
         }
     }
 }
@@ -81,8 +94,19 @@ pub trait Handler {
     fn get_id(&self) -> String;
 
     // Encode downlink
-    async fn encode(&self, f_port: u8, variables: &HashMap<String, String>, obj: &prost_types::Struct) -> Result<Vec<u8>>;
+    async fn encode(
+        &self,
+        f_port: u8,
+        variables: &HashMap<String, String>,
+        obj: &prost_types::Struct,
+    ) -> Result<Vec<u8>>;
 
     // Decode uplink
-    async fn decode(&self, recv_time: DateTime<Utc>, f_port: u8, variables: &HashMap<String, String>, b: &[u8]) -> Result<pbjson_types::Struct>;
+    async fn decode(
+        &self,
+        recv_time: DateTime<Utc>,
+        f_port: u8,
+        variables: &HashMap<String, String>,
+        b: &[u8],
+    ) -> Result<pbjson_types::Struct>;
 }
