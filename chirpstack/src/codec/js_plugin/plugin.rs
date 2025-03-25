@@ -24,9 +24,14 @@ pub struct Plugin {
 
 impl Plugin {
     pub fn new(file_path: &str) -> Result<Self> {
+        let script = fs::read_to_string(file_path).context("Read codec plugin")?;
+
+        Plugin::from_string(script)
+    }
+
+    pub fn from_string(script: String) -> Result<Self> {
         let rt = rquickjs::Runtime::new()?;
         let ctx = rquickjs::Context::full(&rt)?;
-        let script = fs::read_to_string(file_path).context("Read codec plugin")?;
 
         let (id, name) = ctx.with::<_, Result<(String, String)>>(|ctx| {
             let m = rquickjs::Module::declare(ctx, "script", script.clone())
@@ -217,4 +222,281 @@ impl Handler for Plugin {
     }
 }
 
-// TODO: add tests
+pub mod test {
+    use super::*;
+    use chrono::TimeZone;
+
+    #[tokio::test]
+    async fn test_plugin() {
+        let p = Plugin::new("../examples/codec_plugins/plugin_skeleton.js").unwrap();
+
+        assert_eq!("Example plugin", p.get_name());
+        assert_eq!("example_id", p.get_id());
+    }
+
+    #[tokio::test]
+    pub async fn test_decode_timeout() {
+        let script = r#"
+            export function id() {
+                return "test_decode_timeout";
+            }
+
+            export function name() {
+                return "test_decode_timeout";
+            }
+            
+            export function decodeUplink(input) {
+                while (true) {
+
+                }
+            }
+        "#
+        .to_string();
+
+        let p = Plugin::from_string(script).unwrap();
+
+        let vars: HashMap<String, String> = HashMap::new();
+        let out = p.decode(Utc::now(), 10, &vars, &[0x01, 0x02, 0x03]).await;
+
+        assert!(out.is_err());
+    }
+
+    #[tokio::test]
+    pub async fn test_decode_error() {
+        let script = r#"
+            export function id() {
+                return "test_decode_error";
+            }
+
+            export function name() {
+                return "test_decode_error";
+            }
+
+            export function decodeUplink(input) {
+                return foo;
+            }
+        "#
+        .to_string();
+
+        let p = Plugin::from_string(script).unwrap();
+
+        let vars: HashMap<String, String> = HashMap::new();
+        let out = p.decode(Utc::now(), 10, &vars, &[0x01, 0x02, 0x03]).await;
+
+        assert_eq!(
+            "JS error: Error: foo is not defined\n    at decodeUplink (eval_script:3:1)\n    at <eval> (eval_script:8:9)\n",
+            out.err().unwrap().to_string()
+        );
+    }
+
+    #[tokio::test]
+    pub async fn test_decode() {
+        let recv_time = Utc.with_ymd_and_hms(2014, 7, 8, 9, 10, 11).unwrap();
+
+        let script = r#"
+            export function id() {
+                return "test_decode";
+            }
+
+            export function name() {
+                return "test_decode";
+            }
+
+            export function decodeUplink(input) {
+                var buff = new Buffer(input.bytes);
+
+                return {
+                    data: {
+                        f_port: input.fPort,
+                        variables: input.variables,
+                        data_hex: buff.toString('hex'),
+                        data: input.bytes,
+                        recv_time: input.recvTime.toString()
+                    }
+                };
+            }
+        "#
+        .to_string();
+
+        let p = Plugin::from_string(script).unwrap();
+
+        let mut vars: HashMap<String, String> = HashMap::new();
+        vars.insert("foo".into(), "bar".into());
+
+        let out = p.decode(recv_time, 10, &vars, &[0x01, 0x02, 0x03])
+            .await
+            .unwrap();
+
+        let expected = pbjson_types::Struct {
+            fields: [
+                (
+                    "f_port".to_string(),
+                    pbjson_types::Value {
+                        kind: Some(pbjson_types::value::Kind::NumberValue(10.0)),
+                    },
+                ),
+                (
+                    "variables".to_string(),
+                    pbjson_types::Value {
+                        kind: Some(pbjson_types::value::Kind::StructValue(
+                            pbjson_types::Struct {
+                                fields: [(
+                                    "foo".to_string(),
+                                    pbjson_types::Value {
+                                        kind: Some(pbjson_types::value::Kind::StringValue(
+                                            "bar".to_string(),
+                                        )),
+                                    },
+                                )]
+                                .iter()
+                                .cloned()
+                                .collect(),
+                            },
+                        )),
+                    },
+                ),
+                (
+                    "data_hex".to_string(),
+                    pbjson_types::Value {
+                        kind: Some(pbjson_types::value::Kind::StringValue("010203".to_string())),
+                    },
+                ),
+                (
+                    "data".to_string(),
+                    pbjson_types::Value {
+                        kind: Some(pbjson_types::value::Kind::ListValue(
+                            pbjson_types::ListValue {
+                                values: vec![
+                                    pbjson_types::Value {
+                                        kind: Some(pbjson_types::value::Kind::NumberValue(1.0)),
+                                    },
+                                    pbjson_types::Value {
+                                        kind: Some(pbjson_types::value::Kind::NumberValue(2.0)),
+                                    },
+                                    pbjson_types::Value {
+                                        kind: Some(pbjson_types::value::Kind::NumberValue(3.0)),
+                                    },
+                                ],
+                            },
+                        )),
+                    },
+                ),
+                (
+                    "recv_time".to_string(),
+                    pbjson_types::Value {
+                        kind: Some(pbjson_types::value::Kind::StringValue(
+                            "Tue Jul 08 2014 09:10:11 GMT+0000".to_string(),
+                        )),
+                    },
+                ),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
+        };
+
+        assert_eq!(expected, out);
+    }
+
+    #[tokio::test]
+    pub async fn test_encode_timeout() {
+        let encoder = r#"
+            export function id() {
+                return "test_encode_timeout";
+            }
+
+            export function name() {
+                return "test_encode_timeout";
+            }
+
+            export function encodeDownlink(input) {
+                while (true) {
+
+                }
+            }
+        "#
+        .to_string();
+
+        let p = Plugin::from_string(script).unwrap();
+
+        let vars: HashMap<String, String> = HashMap::new();
+
+        let input = prost_types::Struct {
+            ..Default::default()
+        };
+
+        let out = p.encode(10, &vars, &input).await;
+        assert!(out.is_err());
+    }
+
+    #[tokio::test]
+    pub async fn test_encode_error() {
+        let encoder = r#"
+            export function id() {
+                return "test_encode_error";
+            }
+
+            export function name() {
+                return "test_encode_error";
+            }
+
+            export function encodeDownlink(input) {
+                return foo;
+            }
+        "#
+        .to_string();
+
+        let p = Plugin::from_string(script).unwrap();
+
+        let vars: HashMap<String, String> = HashMap::new();
+
+        let input = prost_types::Struct {
+            ..Default::default()
+        };
+
+        let out = p.encode(10, &vars, &input).await;
+        assert_eq!("JS error: Error: foo is not defined\n    at encodeDownlink (eval_script:3:1)\n    at <eval> (eval_script:8:9)\n", out.err().unwrap().to_string());
+    }
+
+    #[tokio::test]
+    pub async fn test_encode() {
+        let encoder = r#"
+            export function id() {
+                return "test_encode";
+            }
+
+            export function name() {
+                return "test_encode";
+            }
+
+            export function encodeDownlink(input) {
+                if (input.data.enabled) {
+                    return {
+                        bytes: [0x01] 
+                    };
+                } else {
+                    return {
+                        bytes: [0x02]
+                    };
+                }
+            }
+        "#
+        .to_string();
+
+        let p = Plugin::from_string(script).unwrap();
+
+        let mut vars: HashMap<String, String> = HashMap::new();
+        vars.insert("foo".into(), "bar".into());
+
+        let mut input = prost_types::Struct::default();
+        input.fields.insert(
+            "enabled".to_string(),
+            prost_types::Value {
+                kind: Some(prost_types::value::Kind::BoolValue(true)),
+            },
+        );
+
+        let out = p.encode(10, &vars, &input).await.unwrap();
+        assert_eq!(vec![1], out);
+    }
+}

@@ -86,5 +86,3 @@ pub trait Handler {
     // Decode uplink
     async fn decode(&self, recv_time: DateTime<Utc>, f_port: u8, variables: &HashMap<String, String>, b: &[u8]) -> Result<pbjson_types::Struct>;
 }
-
-// TODO: add tests
