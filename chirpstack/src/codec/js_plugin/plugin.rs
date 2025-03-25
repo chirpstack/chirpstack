@@ -237,6 +237,10 @@ impl Handler for Plugin {
 }
 
 pub mod test {
+    use super::*;
+    use chrono::TimeZone;
+    use chrono::Utc;
+
     #[tokio::test]
     async fn test_plugin() {
         let p = Plugin::new("../examples/codec_plugins/plugin_skeleton.js").unwrap();
@@ -295,7 +299,7 @@ pub mod test {
         let out = p.decode(Utc::now(), 10, &vars, &[0x01, 0x02, 0x03]).await;
 
         assert_eq!(
-            "JS error: Error: foo is not defined\n    at decodeUplink (eval_script:3:1)\n    at <eval> (eval_script:8:9)\n",
+            "JS error: Error: foo is not defined\n    at decodeUplink (script:10:1)\n",
             out.err().unwrap().to_string()
         );
     }
@@ -412,7 +416,7 @@ pub mod test {
 
     #[tokio::test]
     pub async fn test_encode_timeout() {
-        let encoder = r#"
+        let script = r#"
             export function id() {
                 return "test_encode_timeout";
             }
@@ -443,7 +447,7 @@ pub mod test {
 
     #[tokio::test]
     pub async fn test_encode_error() {
-        let encoder = r#"
+        let script = r#"
             export function id() {
                 return "test_encode_error";
             }
@@ -467,12 +471,15 @@ pub mod test {
         };
 
         let out = p.encode(10, &vars, &input).await;
-        assert_eq!("JS error: Error: foo is not defined\n    at encodeDownlink (eval_script:3:1)\n    at <eval> (eval_script:8:9)\n", out.err().unwrap().to_string());
+        assert_eq!(
+            "JS error: Error: foo is not defined\n    at decodeUplink (script:10:1)\n",
+            out.err().unwrap().to_string()
+        );
     }
 
     #[tokio::test]
     pub async fn test_encode() {
-        let encoder = r#"
+        let script = r#"
             export function id() {
                 return "test_encode";
             }
