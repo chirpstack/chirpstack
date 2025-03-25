@@ -181,7 +181,7 @@ impl Handler for Plugin {
 
         let ctx = rquickjs::Context::full(&rt)?;
 
-        ctx.with::<_, Result<pbjson_types::Struct>>(|ctx| {
+        let out = ctx.with(|ctx| -> Result<pbjson_types::Struct> {
             // We need to export the Buffer class, so it is correctly resolved
             // in called encode/decode functions
             let buff = rquickjs::Module::declare(
@@ -232,7 +232,14 @@ impl Handler for Plugin {
             }
 
             Ok(convert::rquickjs_to_struct(&res))
-        })
+        })?;
+
+        let data = out.fields.get("data").cloned().unwrap_or_default();
+        if let Some(pbjson_types::value::Kind::StructValue(v)) = data.kind {
+            return Ok(v);
+        }
+
+        Err(anyhow!("decodeUplink did not return 'data'"))
     }
 }
 
@@ -472,7 +479,7 @@ pub mod test {
 
         let out = p.encode(10, &vars, &input).await;
         assert_eq!(
-            "JS error: Error: foo is not defined\n    at decodeUplink (script:10:1)\n",
+            "JS error: Error: foo is not defined\n    at encodeDownlink (script:10:1)\n",
             out.err().unwrap().to_string()
         );
     }
