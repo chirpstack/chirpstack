@@ -346,11 +346,11 @@ impl FuotaService for Fuota {
                     started_at: d
                         .started_at
                         .as_ref()
-                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                        .map(helpers::datetime_to_prost_timestamp),
                     completed_at: d
                         .completed_at
                         .as_ref()
-                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                        .map(helpers::datetime_to_prost_timestamp),
                     name: d.name.clone(),
                 })
                 .collect(),
@@ -462,23 +462,23 @@ impl FuotaService for Fuota {
                     completed_at: d
                         .completed_at
                         .as_ref()
-                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                        .map(helpers::datetime_to_prost_timestamp),
                     mc_group_setup_completed_at: d
                         .mc_group_setup_completed_at
                         .as_ref()
-                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                        .map(helpers::datetime_to_prost_timestamp),
                     mc_session_completed_at: d
                         .mc_session_completed_at
                         .as_ref()
-                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                        .map(helpers::datetime_to_prost_timestamp),
                     frag_session_setup_completed_at: d
                         .frag_session_setup_completed_at
                         .as_ref()
-                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                        .map(helpers::datetime_to_prost_timestamp),
                     frag_status_completed_at: d
                         .frag_status_completed_at
                         .as_ref()
-                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                        .map(helpers::datetime_to_prost_timestamp),
                     error_msg: d.error_msg.clone(),
                 })
                 .collect(),
@@ -624,7 +624,7 @@ impl FuotaService for Fuota {
                     completed_at: j
                         .completed_at
                         .as_ref()
-                        .map(|ts| helpers::datetime_to_prost_timestamp(ts)),
+                        .map(helpers::datetime_to_prost_timestamp),
                     max_retry_count: j.max_retry_count as u32,
                     attempt_count: j.attempt_count as u32,
                     scheduler_run_after: Some(helpers::datetime_to_prost_timestamp(

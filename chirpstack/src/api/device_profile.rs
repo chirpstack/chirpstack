@@ -88,7 +88,7 @@ impl DeviceProfileService for DeviceProfile {
                     rx1_delay: req_dp.abp_rx1_delay as u8,
                     rx1_dr_offset: req_dp.abp_rx1_dr_offset as u8,
                     rx2_dr: req_dp.abp_rx2_dr as u8,
-                    rx2_freq: req_dp.abp_rx2_freq as u32,
+                    rx2_freq: req_dp.abp_rx2_freq,
                 })
             },
             class_b_params: if req_dp.supports_class_b {
@@ -96,7 +96,7 @@ impl DeviceProfileService for DeviceProfile {
                     timeout: req_dp.class_b_timeout as u16,
                     ping_slot_nb_k: req_dp.class_b_ping_slot_nb_k as u8,
                     ping_slot_dr: req_dp.class_b_ping_slot_dr as u8,
-                    ping_slot_freq: req_dp.class_b_ping_slot_freq as u32,
+                    ping_slot_freq: req_dp.class_b_ping_slot_freq,
                 })
             } else {
                 None
@@ -116,7 +116,7 @@ impl DeviceProfileService for DeviceProfile {
                     relay_enabled: req_dp.relay_enabled,
                     relay_cad_periodicity: req_dp.relay_cad_periodicity as u8,
                     default_channel_index: req_dp.relay_default_channel_index as u8,
-                    second_channel_freq: req_dp.relay_second_channel_freq as u32,
+                    second_channel_freq: req_dp.relay_second_channel_freq,
                     second_channel_dr: req_dp.relay_second_channel_dr as u8,
                     second_channel_ack_offset: req_dp.relay_second_channel_ack_offset as u8,
                     ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
@@ -344,7 +344,7 @@ impl DeviceProfileService for DeviceProfile {
                     rx1_delay: req_dp.abp_rx1_delay as u8,
                     rx1_dr_offset: req_dp.abp_rx1_dr_offset as u8,
                     rx2_dr: req_dp.abp_rx2_dr as u8,
-                    rx2_freq: req_dp.abp_rx2_freq as u32,
+                    rx2_freq: req_dp.abp_rx2_freq,
                 })
             },
             class_b_params: if req_dp.supports_class_b {
@@ -352,7 +352,7 @@ impl DeviceProfileService for DeviceProfile {
                     timeout: req_dp.class_b_timeout as u16,
                     ping_slot_nb_k: req_dp.class_b_ping_slot_nb_k as u8,
                     ping_slot_dr: req_dp.class_b_ping_slot_dr as u8,
-                    ping_slot_freq: req_dp.class_b_ping_slot_freq as u32,
+                    ping_slot_freq: req_dp.class_b_ping_slot_freq,
                 })
             } else {
                 None
@@ -372,7 +372,7 @@ impl DeviceProfileService for DeviceProfile {
                     relay_enabled: req_dp.relay_enabled,
                     relay_cad_periodicity: req_dp.relay_cad_periodicity as u8,
                     default_channel_index: req_dp.relay_default_channel_index as u8,
-                    second_channel_freq: req_dp.relay_second_channel_freq as u32,
+                    second_channel_freq: req_dp.relay_second_channel_freq,
                     second_channel_dr: req_dp.relay_second_channel_dr as u8,
                     second_channel_ack_offset: req_dp.relay_second_channel_ack_offset as u8,
                     ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
@@ -406,7 +406,6 @@ impl DeviceProfileService for DeviceProfile {
                     ts004_f_port: app_layer_params.ts004_f_port as u8,
                     ts005_version: app_layer_params.ts005_version().from_proto(),
                     ts005_f_port: app_layer_params.ts005_f_port as u8,
-                    ..Default::default()
                 }
             },
             ..Default::default()

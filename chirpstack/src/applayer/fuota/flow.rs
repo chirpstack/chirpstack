@@ -514,7 +514,7 @@ impl Flow {
                 FuotaJob::Enqueue,
                 self.fuota_deployment
                     .multicast_session_start
-                    .unwrap_or_else(|| Utc::now()),
+                    .unwrap_or_else(Utc::now),
             )));
         }
 
@@ -671,7 +671,7 @@ impl Flow {
                 FuotaJob::Enqueue,
                 self.fuota_deployment
                     .multicast_session_start
-                    .unwrap_or_else(|| Utc::now()),
+                    .unwrap_or_else(Utc::now),
             )))
         }
     }
@@ -770,7 +770,7 @@ impl Flow {
                 FuotaJob::DeleteMcGroup,
                 self.fuota_deployment
                     .multicast_session_end
-                    .unwrap_or_else(|| Utc::now()),
+                    .unwrap_or_else(Utc::now),
             ))),
             RequestFragmentationSessionStatus::AfterFragEnqueue => {
                 Ok(Some((FuotaJob::FragStatus, Utc::now())))
@@ -779,7 +779,7 @@ impl Flow {
                 FuotaJob::FragStatus,
                 self.fuota_deployment
                     .multicast_session_end
-                    .unwrap_or_else(|| Utc::now()),
+                    .unwrap_or_else(Utc::now),
             ))),
         }
     }
@@ -866,7 +866,7 @@ impl Flow {
                 FuotaJob::DeleteMcGroup,
                 self.fuota_deployment
                     .multicast_session_end
-                    .unwrap_or_else(|| Utc::now()),
+                    .unwrap_or_else(Utc::now),
             )))
         }
     }

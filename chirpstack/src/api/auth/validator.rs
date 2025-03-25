@@ -2483,7 +2483,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -2491,7 +2491,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -2727,7 +2727,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -2735,21 +2735,21 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_user.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user_other.id.into(),
+            user_id: tenant_user_other.id,
             ..Default::default()
         })
         .await
@@ -3091,7 +3091,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -3099,7 +3099,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_device_admin.id.into(),
+            user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()
         })
@@ -3107,7 +3107,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id.into(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
@@ -3115,7 +3115,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -3538,7 +3538,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -3546,7 +3546,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_device_admin.id.into(),
+            user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()
         })
@@ -3554,7 +3554,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id.into(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
@@ -3562,7 +3562,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -3840,32 +3840,32 @@ pub mod test {
                 .await;
 
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_device_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_gateway_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_user.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -4093,8 +4093,8 @@ pub mod test {
                 .await;
 
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_user.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -4237,7 +4237,7 @@ pub mod test {
         let gw_api_key_tenant = gateway::create(gateway::Gateway {
             name: "test-gw-tenant".into(),
             gateway_id: EUI64::from_str("0202030405060708").unwrap(),
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
             ..Default::default()
         })
         .await
@@ -4245,7 +4245,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -4253,7 +4253,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id.into(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
@@ -4261,7 +4261,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -4513,32 +4513,32 @@ pub mod test {
                 .await;
 
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_device_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_gateway_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_user.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -4901,7 +4901,7 @@ pub mod test {
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
             user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()

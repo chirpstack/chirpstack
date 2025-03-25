@@ -10,16 +10,9 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "postgres", diesel(sql_type = Jsonb))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
 #[serde(default)]
+#[derive(Default)]
 pub struct AppLayerParams {
     pub ts004_session_cnt: [u16; 4],
-}
-
-impl Default for AppLayerParams {
-    fn default() -> Self {
-        Self {
-            ts004_session_cnt: [0, 0, 0, 0],
-        }
-    }
 }
 
 #[cfg(feature = "postgres")]
@@ -33,7 +26,7 @@ impl deserialize::FromSql<Jsonb, Pg> for AppLayerParams {
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for AppLayerParams {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
-        let value = serde_json::to_value(&self)?;
+        let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }

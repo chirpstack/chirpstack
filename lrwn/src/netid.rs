@@ -161,7 +161,7 @@ impl<'de> Deserialize<'de> for NetID {
 struct NetIdVisitor;
 
 #[cfg(feature = "serde")]
-impl<'de> Visitor<'de> for NetIdVisitor {
+impl Visitor<'_> for NetIdVisitor {
     type Value = NetID;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

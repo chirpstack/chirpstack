@@ -2010,7 +2010,7 @@ pub mod test {
         let mut create_req = Request::new(create_req);
         create_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let create_resp = service.create(create_req).await.unwrap();
         let create_resp = create_resp.get_ref();
 
@@ -2021,7 +2021,7 @@ pub mod test {
         let mut get_req = Request::new(get_req);
         get_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Application {
@@ -2045,7 +2045,7 @@ pub mod test {
         let mut up_req = Request::new(up_req);
         up_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let _ = service.update(up_req).await.unwrap();
 
         //get
@@ -2055,7 +2055,7 @@ pub mod test {
         let mut get_req = Request::new(get_req);
         get_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Application {
@@ -2077,7 +2077,7 @@ pub mod test {
         let mut list_req = Request::new(list_req);
         list_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let list_resp = service.list(list_req).await.unwrap();
         assert_eq!(1, list_resp.get_ref().total_count);
         assert_eq!(1, list_resp.get_ref().result.len());
@@ -2089,7 +2089,7 @@ pub mod test {
         let mut del_req = Request::new(del_req);
         del_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let _ = service.delete(del_req).await.unwrap();
 
         let del_req = api::DeleteApplicationRequest {
@@ -2098,7 +2098,7 @@ pub mod test {
         let mut del_req = Request::new(del_req);
         del_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let del_resp = service.delete(del_req).await;
         assert!(del_resp.is_err());
     }

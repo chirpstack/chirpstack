@@ -29,7 +29,7 @@ impl deserialize::FromSql<Jsonb, Pg> for AbpParams {
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for AbpParams {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
-        let value = serde_json::to_value(&self)?;
+        let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
@@ -77,7 +77,7 @@ impl deserialize::FromSql<Jsonb, Pg> for ClassBParams {
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for ClassBParams {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
-        let value = serde_json::to_value(&self)?;
+        let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
@@ -122,7 +122,7 @@ impl deserialize::FromSql<Jsonb, Pg> for ClassCParams {
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for ClassCParams {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
-        let value = serde_json::to_value(&self)?;
+        let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
@@ -189,7 +189,7 @@ impl deserialize::FromSql<Jsonb, Pg> for RelayParams {
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for RelayParams {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
-        let value = serde_json::to_value(&self)?;
+        let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }
@@ -263,14 +263,9 @@ impl Default for AppLayerParams {
 
 impl AppLayerParams {
     pub fn is_app_layer_f_port(&self, f_port: u8) -> bool {
-        if (self.ts003_version.is_some() && self.ts003_f_port == f_port)
+        (self.ts003_version.is_some() && self.ts003_f_port == f_port)
             || (self.ts004_version.is_some() && self.ts004_f_port == f_port)
             || (self.ts005_version.is_some() && self.ts005_f_port == f_port)
-        {
-            true
-        } else {
-            false
-        }
     }
 }
 
@@ -285,7 +280,7 @@ impl deserialize::FromSql<Jsonb, Pg> for AppLayerParams {
 #[cfg(feature = "postgres")]
 impl serialize::ToSql<Jsonb, Pg> for AppLayerParams {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
-        let value = serde_json::to_value(&self)?;
+        let value = serde_json::to_value(self)?;
         <serde_json::Value as serialize::ToSql<Jsonb, Pg>>::to_sql(&value, &mut out.reborrow())
     }
 }

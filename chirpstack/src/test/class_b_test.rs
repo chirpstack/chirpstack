@@ -462,7 +462,7 @@ async fn run_uplink_test(t: &UplinkTest) {
 
     uplink::handle_uplink(
         CommonName::EU868,
-        "eu868".into(),
+        "eu868",
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: t.phy_payload.to_vec().unwrap(),

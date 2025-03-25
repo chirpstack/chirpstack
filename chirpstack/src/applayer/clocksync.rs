@@ -33,11 +33,8 @@ async fn handle_uplink_v100(
 ) -> Result<()> {
     let pl = clocksync::v1::Payload::from_slice(true, data)?;
 
-    match pl {
-        clocksync::v1::Payload::AppTimeReq(pl) => {
-            handle_v1_app_time_req(dev, dp, rx_info, pl).await?
-        }
-        _ => {}
+    if let clocksync::v1::Payload::AppTimeReq(pl) = pl {
+        handle_v1_app_time_req(dev, dp, rx_info, pl).await?
     }
 
     Ok(())
@@ -51,11 +48,8 @@ async fn handle_uplink_v200(
 ) -> Result<()> {
     let pl = clocksync::v2::Payload::from_slice(true, data)?;
 
-    match pl {
-        clocksync::v2::Payload::AppTimeReq(pl) => {
-            handle_v2_app_time_req(dev, dp, rx_info, pl).await?
-        }
-        _ => {}
+    if let clocksync::v2::Payload::AppTimeReq(pl) = pl {
+        handle_v2_app_time_req(dev, dp, rx_info, pl).await?
     }
 
     Ok(())
@@ -181,7 +175,7 @@ mod test {
             Test {
                 name: "device synced".into(),
                 rx_info: gw::UplinkRxInfo {
-                    time_since_gps_epoch: Some(Duration::from_secs(1234).try_into().unwrap()),
+                    time_since_gps_epoch: Some(Duration::from_secs(1234).into()),
                     ..Default::default()
                 },
                 req: clocksync::v1::AppTimeReqPayload {
@@ -196,7 +190,7 @@ mod test {
             Test {
                 name: "device synced - ans required".into(),
                 rx_info: gw::UplinkRxInfo {
-                    time_since_gps_epoch: Some(Duration::from_secs(1234).try_into().unwrap()),
+                    time_since_gps_epoch: Some(Duration::from_secs(1234).into()),
                     ..Default::default()
                 },
                 req: clocksync::v1::AppTimeReqPayload {
@@ -214,7 +208,7 @@ mod test {
             Test {
                 name: "device not synced (positive correction)".into(),
                 rx_info: gw::UplinkRxInfo {
-                    time_since_gps_epoch: Some(Duration::from_secs(1234).try_into().unwrap()),
+                    time_since_gps_epoch: Some(Duration::from_secs(1234).into()),
                     ..Default::default()
                 },
                 req: clocksync::v1::AppTimeReqPayload {
@@ -232,7 +226,7 @@ mod test {
             Test {
                 name: "device not synced (negative correction)".into(),
                 rx_info: gw::UplinkRxInfo {
-                    time_since_gps_epoch: Some(Duration::from_secs(1200).try_into().unwrap()),
+                    time_since_gps_epoch: Some(Duration::from_secs(1200).into()),
                     ..Default::default()
                 },
                 req: clocksync::v1::AppTimeReqPayload {
@@ -330,7 +324,7 @@ mod test {
             Test {
                 name: "device synced".into(),
                 rx_info: gw::UplinkRxInfo {
-                    time_since_gps_epoch: Some(Duration::from_secs(1234).try_into().unwrap()),
+                    time_since_gps_epoch: Some(Duration::from_secs(1234).into()),
                     ..Default::default()
                 },
                 req: clocksync::v2::AppTimeReqPayload {
@@ -345,7 +339,7 @@ mod test {
             Test {
                 name: "device synced - ans required".into(),
                 rx_info: gw::UplinkRxInfo {
-                    time_since_gps_epoch: Some(Duration::from_secs(1234).try_into().unwrap()),
+                    time_since_gps_epoch: Some(Duration::from_secs(1234).into()),
                     ..Default::default()
                 },
                 req: clocksync::v2::AppTimeReqPayload {
@@ -363,7 +357,7 @@ mod test {
             Test {
                 name: "device not synced (positive correction)".into(),
                 rx_info: gw::UplinkRxInfo {
-                    time_since_gps_epoch: Some(Duration::from_secs(1234).try_into().unwrap()),
+                    time_since_gps_epoch: Some(Duration::from_secs(1234).into()),
                     ..Default::default()
                 },
                 req: clocksync::v2::AppTimeReqPayload {
@@ -381,7 +375,7 @@ mod test {
             Test {
                 name: "device not synced (negative correction)".into(),
                 rx_info: gw::UplinkRxInfo {
-                    time_since_gps_epoch: Some(Duration::from_secs(1200).try_into().unwrap()),
+                    time_since_gps_epoch: Some(Duration::from_secs(1200).into()),
                     ..Default::default()
                 },
                 req: clocksync::v2::AppTimeReqPayload {

@@ -266,7 +266,7 @@ impl PayloadCodec for FragSessionSetupReqPayload {
                 mc_group_bit_mask: {
                     let mut mask = [false; 4];
                     for (i, v) in mask.iter_mut().enumerate() {
-                        *v = b[0] & 1 << i != 0;
+                        *v = b[0] & (1 << i) != 0;
                     }
                     mask
                 },

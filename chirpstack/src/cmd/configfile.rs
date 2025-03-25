@@ -1000,7 +1000,7 @@ pub fn run() {
     let conf = config::get();
     println!(
         "{}",
-        reg.render_template(&template, &conf)
+        reg.render_template(template, &conf)
             .expect("render configfile error")
     );
 }

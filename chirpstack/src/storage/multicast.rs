@@ -1012,7 +1012,7 @@ pub mod test {
         // invalid f_port
         assert!(enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id.into(),
+                multicast_group_id: mg.id,
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 0,
@@ -1026,7 +1026,7 @@ pub mod test {
 
         assert!(enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id.into(),
+                multicast_group_id: mg.id,
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 256,
@@ -1041,7 +1041,7 @@ pub mod test {
         // Enqueue (Class-C) (delay)
         let (ids, f_cnt) = enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id.into(),
+                multicast_group_id: mg.id,
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 2,
@@ -1071,7 +1071,7 @@ pub mod test {
         let mut mg = update(mg).await.unwrap();
         let (ids, f_cnt) = enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id.into(),
+                multicast_group_id: mg.id,
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 2,
@@ -1098,7 +1098,7 @@ pub mod test {
         let mg = update(mg).await.unwrap();
         let (ids, f_cnt) = enqueue(
             MulticastGroupQueueItem {
-                multicast_group_id: mg.id.into(),
+                multicast_group_id: mg.id,
                 gateway_id: gw.gateway_id,
                 f_cnt: 1,
                 f_port: 2,

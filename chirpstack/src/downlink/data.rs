@@ -1827,20 +1827,19 @@ impl Data {
             let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::ConfigureFwdLimitReq(
                 lrwn::ConfigureFwdLimitReqPayload {
                     reload_rate: lrwn::FwdLimitReloadRatePL {
-                        overall_reload_rate: relay_params.relay_overall_limit_reload_rate as u8,
+                        overall_reload_rate: relay_params.relay_overall_limit_reload_rate,
                         global_uplink_reload_rate: relay_params
-                            .relay_global_uplink_limit_reload_rate
-                            as u8,
-                        notify_reload_rate: relay_params.relay_notify_limit_reload_rate as u8,
-                        join_req_reload_rate: relay_params.relay_join_req_limit_reload_rate as u8,
+                            .relay_global_uplink_limit_reload_rate,
+                        notify_reload_rate: relay_params.relay_notify_limit_reload_rate,
+                        join_req_reload_rate: relay_params.relay_join_req_limit_reload_rate,
                         reset_limit_counter: lrwn::ResetLimitCounter::NoChange,
                     },
                     load_capacity: lrwn::FwdLimitLoadCapacityPL {
-                        overall_limit_size: relay_params.relay_overall_limit_bucket_size as u8,
-                        global_uplink_limit_size: relay_params.relay_global_uplink_limit_bucket_size
-                            as u8,
-                        notify_limit_size: relay_params.relay_notify_limit_bucket_size as u8,
-                        join_req_limit_size: relay_params.relay_join_req_limit_bucket_size as u8,
+                        overall_limit_size: relay_params.relay_overall_limit_bucket_size,
+                        global_uplink_limit_size: relay_params
+                            .relay_global_uplink_limit_bucket_size,
+                        notify_limit_size: relay_params.relay_notify_limit_bucket_size,
+                        join_req_limit_size: relay_params.relay_join_req_limit_bucket_size,
                     },
                 },
             )]);
@@ -2052,7 +2051,7 @@ impl Data {
         if relay.enabled != relay_params.relay_enabled
             || relay.cad_periodicity != relay_params.relay_cad_periodicity as u32
             || relay.default_channel_index != relay_params.default_channel_index as u32
-            || relay.second_channel_freq != relay_params.second_channel_freq as u32
+            || relay.second_channel_freq != relay_params.second_channel_freq
             || relay.second_channel_dr != relay_params.second_channel_dr as u32
             || relay.second_channel_ack_offset != relay_params.second_channel_ack_offset as u32
         {
@@ -2063,17 +2062,17 @@ impl Data {
                             true => 1,
                             false => 0,
                         },
-                        cad_periodicity: relay_params.relay_cad_periodicity as u8,
-                        default_ch_idx: relay_params.default_channel_index as u8,
+                        cad_periodicity: relay_params.relay_cad_periodicity,
+                        default_ch_idx: relay_params.default_channel_index,
                         second_ch_idx: if relay_params.second_channel_freq > 0 {
                             1
                         } else {
                             0
                         },
-                        second_ch_dr: relay_params.second_channel_dr as u8,
-                        second_ch_ack_offset: relay_params.second_channel_ack_offset as u8,
+                        second_ch_dr: relay_params.second_channel_dr,
+                        second_ch_ack_offset: relay_params.second_channel_ack_offset,
                     },
-                    second_ch_freq: relay_params.second_channel_freq as u32,
+                    second_ch_freq: relay_params.second_channel_freq,
                 },
             )]);
             mac_command::set_pending(&dev_eui, lrwn::CID::RelayConfReq, &set).await?;
@@ -2102,7 +2101,7 @@ impl Data {
         if relay.ed_activation_mode != relay_params.ed_activation_mode.to_u8() as u32
             || relay.ed_smart_enable_level != relay_params.ed_smart_enable_level as u32
             || relay.ed_back_off != relay_params.ed_back_off as u32
-            || relay.second_channel_freq != relay_params.second_channel_freq as u32
+            || relay.second_channel_freq != relay_params.second_channel_freq
             || relay.second_channel_dr != relay_params.second_channel_dr as u32
             || relay.second_channel_ack_offset != relay_params.second_channel_ack_offset as u32
         {
@@ -2110,19 +2109,19 @@ impl Data {
                 lrwn::EndDeviceConfReqPayload {
                     activation_relay_mode: lrwn::ActivationRelayMode {
                         relay_mode_activation: relay_params.ed_activation_mode,
-                        smart_enable_level: relay_params.ed_smart_enable_level as u8,
+                        smart_enable_level: relay_params.ed_smart_enable_level,
                     },
                     channel_settings_ed: lrwn::ChannelSettingsED {
-                        second_ch_ack_offset: relay_params.second_channel_ack_offset as u8,
-                        second_ch_dr: relay_params.second_channel_dr as u8,
+                        second_ch_ack_offset: relay_params.second_channel_ack_offset,
+                        second_ch_dr: relay_params.second_channel_dr,
                         second_ch_idx: if relay_params.second_channel_freq > 0 {
                             1
                         } else {
                             0
                         },
-                        backoff: relay_params.ed_back_off as u8,
+                        backoff: relay_params.ed_back_off,
                     },
-                    second_ch_freq: relay_params.second_channel_freq as u32,
+                    second_ch_freq: relay_params.second_channel_freq,
                 },
             )]);
             mac_command::set_pending(&dev_eui, lrwn::CID::EndDeviceConfReq, &set).await?;

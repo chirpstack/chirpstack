@@ -107,7 +107,7 @@ impl<'a> Integration<'a> {
 }
 
 #[async_trait]
-impl<'a> IntegrationTrait for Integration<'a> {
+impl IntegrationTrait for Integration<'_> {
     async fn uplink_event(
         &self,
         _vars: &HashMap<String, String>,

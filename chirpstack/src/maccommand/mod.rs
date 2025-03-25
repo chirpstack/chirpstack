@@ -33,7 +33,7 @@ pub mod update_uplink_list;
 // This returns the mac-commands which must be sent back to the device as response and a bool
 // indicating if a downlink must be sent. For some mac-commands, no mac-command answer is required,
 // but the device expects a downlink as confirmation, even if the downlink frame is empty.
-pub async fn handle_uplink<'a>(
+pub async fn handle_uplink(
     uplink_frame_set: &UplinkFrameSet,
     cmds: &lrwn::MACCommandSet,
     tenant: &tenant::Tenant,

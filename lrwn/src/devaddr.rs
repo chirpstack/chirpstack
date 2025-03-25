@@ -92,7 +92,7 @@ impl<'de> Deserialize<'de> for DevAddrPrefix {
 struct DevAddrPrefixVisitor;
 
 #[cfg(feature = "serde")]
-impl<'de> Visitor<'de> for DevAddrPrefixVisitor {
+impl Visitor<'_> for DevAddrPrefixVisitor {
     type Value = DevAddrPrefix;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

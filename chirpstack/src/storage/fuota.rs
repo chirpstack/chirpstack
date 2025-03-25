@@ -336,7 +336,7 @@ pub async fn add_devices(fuota_deployment_id: Uuid, dev_euis: Vec<EUI64>) -> Res
     if errors.is_empty() {
         Ok(())
     } else {
-        Err(Error::MultiError(errors))
+        Err(Error::Multi(errors))
     }
 }
 
@@ -552,7 +552,7 @@ pub async fn add_gateways(fuota_deployment_id: Uuid, gateway_ids: Vec<EUI64>) ->
     if errors.is_empty() {
         Ok(())
     } else {
-        Err(Error::MultiError(errors))
+        Err(Error::Multi(errors))
     }
 }
 
@@ -789,7 +789,7 @@ pub fn get_multicast_timeout(d: &FuotaDeployment) -> Result<usize> {
                 conf.network.scheduler.multicast_class_c_margin.as_secs() as usize;
 
             // Multiply by the number of fragments (+1 for additional margin).
-            let mc_class_c_duration_secs = mc_class_c_margin_secs * (total_fragments + 1 as usize);
+            let mc_class_c_duration_secs = mc_class_c_margin_secs * (total_fragments + 1);
 
             // Calculate the timeout value. In case of Class-C, timeout is defined as seconds,
             // where the number of seconds is 2^timeout.

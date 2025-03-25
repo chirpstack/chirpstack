@@ -220,7 +220,7 @@ async fn test_lorawan_10() {
 
     uplink::handle_uplink(
         CommonName::EU868,
-        "eu868".into(),
+        "eu868",
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: phy_relay_jr.to_vec().unwrap(),
@@ -293,8 +293,7 @@ async fn test_lorawan_10() {
                 nb_trans: 1,
                 region_config_id: "eu868".to_string(),
                 ..Default::default()
-            }
-            .into(),
+            },
         ),
         assert::downlink_frame(gw::DownlinkFrame {
             items: vec![

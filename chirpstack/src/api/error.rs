@@ -50,9 +50,9 @@ impl ToStatus for storage::error::Error {
             storage::error::Error::ValidatorValidate(_) => {
                 Status::new(Code::InvalidArgument, format!("{:#}", self))
             }
-            storage::error::Error::MultiError(errors) => {
+            storage::error::Error::Multi(errors) => {
                 let errors = errors
-                    .into_iter()
+                    .iter()
                     .map(|e| e.to_string())
                     .collect::<Vec<String>>()
                     .join(", ");

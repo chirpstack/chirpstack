@@ -34,7 +34,7 @@ pub enum Error {
     NotAllowed(String),
 
     #[error("Multiple errors")]
-    MultiError(Vec<Error>),
+    Multi(Vec<Error>),
 
     #[error(transparent)]
     Diesel(#[from] diesel::result::Error),

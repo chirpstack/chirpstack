@@ -1910,7 +1910,7 @@ impl ChannelSettingsED {
         ChannelSettingsED {
             second_ch_ack_offset: b[0] & 0x07,
             second_ch_dr: (b[0] & 0x78) >> 3,
-            second_ch_idx: (b[0] & 0x80) >> 7 | (b[1] & 0x01) << 1,
+            second_ch_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x01) << 1),
             backoff: (b[1] & 0x7e) >> 1,
         }
     }
@@ -2419,7 +2419,7 @@ impl PowerLevel {
         let wor_snr = (wor_snr + 20) as u8;
         let wor_rssi = -(wor_rssi + 15) as u8;
 
-        [wor_snr | wor_rssi << 5, wor_rssi >> 3]
+        [wor_snr | (wor_rssi << 5), wor_rssi >> 3]
     }
 }
 

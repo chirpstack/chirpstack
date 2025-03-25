@@ -190,7 +190,7 @@ async fn test_fns() {
     // Simulate uplink
     uplink::handle_uplink(
         CommonName::EU868,
-        "eu868".into(),
+        "eu868",
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: jr_phy.to_vec().unwrap(),
