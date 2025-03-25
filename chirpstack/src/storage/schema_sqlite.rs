@@ -60,7 +60,7 @@ diesel::table! {
         join_eui -> Binary,
         secondary_dev_addr -> Nullable<Binary>,
         device_session -> Nullable<Binary>,
-        all_layer_params -> Text,
+        app_layer_params -> Text,
     }
 }
 
