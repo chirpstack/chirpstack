@@ -51,8 +51,8 @@ lazy_static! {
         );
         counter
     };
-    static ref DEDUPLICATE_LOCKED_COUNTER: Family<(), Counter> = {
-        let counter = Family::<(), Counter>::default();
+    static ref DEDUPLICATE_LOCKED_COUNTER: Counter = {
+        let counter = Counter::default();
         prometheus::register(
             "deduplicate_locked_count",
             "Number of times the deduplication function was called and the deduplication was already locked",
@@ -60,8 +60,8 @@ lazy_static! {
         );
         counter
     };
-    static ref DEDUPLICATE_NO_LOCK_COUNTER: Family<(), Counter> = {
-        let counter = Family::<(), Counter>::default();
+    static ref DEDUPLICATE_NO_LOCK_COUNTER: Counter = {
+        let counter = Counter::default();
         prometheus::register(
             "deduplicate_no_lock_count",
             "Number of times the deduplication function was called and it was not yet locked",
@@ -203,12 +203,12 @@ async fn _deduplicate_uplink(
             "Deduplication is already locked by an other process"
         );
 
-        DEDUPLICATE_LOCKED_COUNTER.get_or_create(&()).inc();
+        DEDUPLICATE_LOCKED_COUNTER.inc();
 
         return Ok(());
     }
 
-    DEDUPLICATE_NO_LOCK_COUNTER.get_or_create(&()).inc();
+    DEDUPLICATE_NO_LOCK_COUNTER.inc();
 
     trace!(
         key = key.as_str(),
