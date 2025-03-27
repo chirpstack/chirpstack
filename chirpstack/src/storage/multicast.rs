@@ -675,7 +675,7 @@ pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGr
                                         $2 - make_interval(secs => g.stats_interval_secs * 2) <= g.last_seen_at
                                     )
                                     -- ignore expired messages
-                                    and not (qi.expires_at < $2)
+                                    and not (qi.expires_at is not null and qi.expires_at < $2)
                                 order by
                                     qi.created_at
                                 limit $1
