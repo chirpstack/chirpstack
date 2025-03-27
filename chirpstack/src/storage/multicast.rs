@@ -675,6 +675,7 @@ pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGr
                                 order by
                                     qi.created_at
                                 limit $1
+                                for update skip locked
                             )
                         returning *
                     "#
