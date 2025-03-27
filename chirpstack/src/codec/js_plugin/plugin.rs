@@ -112,7 +112,7 @@ impl Handler for Plugin {
             let (buff, buff_promise) = buff
                 .eval()
                 .catch(&ctx)
-                .map_err(|e| anyhow!("JS error: {}", e))?;
+                .map_err(|e| anyhow!("JS plugin error: {}", e))?;
             () = buff_promise.finish()?;
             let buff: rquickjs::Function = buff.get("Buffer")?;
 
@@ -135,7 +135,7 @@ impl Handler for Plugin {
             let res: rquickjs::Object = func
                 .call((input,))
                 .catch(&ctx)
-                .map_err(|e| anyhow!("JS error: {}", e))?;
+                .map_err(|e| anyhow!("JS plugin error: {}", e))?;
 
             let errors: Result<Vec<String>, rquickjs::Error> = res.get("errors");
             if let Ok(errors) = errors {
@@ -196,7 +196,7 @@ impl Handler for Plugin {
             let (buff, buff_promise) = buff
                 .eval()
                 .catch(&ctx)
-                .map_err(|e| anyhow!("JS error: {}", e))?;
+                .map_err(|e| anyhow!("JS plugin error: {}", e))?;
             () = buff_promise.finish()?;
             let buff: rquickjs::Function = buff.get("Buffer")?;
 
@@ -219,7 +219,7 @@ impl Handler for Plugin {
             let res: rquickjs::Object = func
                 .call((input,))
                 .catch(&ctx)
-                .map_err(|e| anyhow!("JS error: {}", e))?;
+                .map_err(|e| anyhow!("JS plugin error: {}", e))?;
 
             let errors: Result<Vec<String>, rquickjs::Error> = res.get("errors");
             if let Ok(errors) = errors {
@@ -306,7 +306,7 @@ pub mod test {
         let out = p.decode(Utc::now(), 10, &vars, &[0x01, 0x02, 0x03]).await;
 
         assert_eq!(
-            "JS error: Error: foo is not defined\n    at decodeUplink (script:10:1)\n",
+            "JS plugin error: Error: foo is not defined\n    at decodeUplink (script:10:1)\n",
             out.err().unwrap().to_string()
         );
     }
@@ -479,7 +479,7 @@ pub mod test {
 
         let out = p.encode(10, &vars, &input).await;
         assert_eq!(
-            "JS error: Error: foo is not defined\n    at encodeDownlink (script:10:1)\n",
+            "JS plugin error: Error: foo is not defined\n    at encodeDownlink (script:10:1)\n",
             out.err().unwrap().to_string()
         );
     }
