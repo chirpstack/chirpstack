@@ -670,8 +670,10 @@ pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGr
                                     on g.gateway_id = qi.gateway_id
                                 where
                                     qi.scheduler_run_after <= $2
-                                    -- check that the gateway is online, except when the item already has expired
-                                    and ($2 - make_interval(secs => g.stats_interval_secs * 2) <= g.last_seen_at or expires_at <= $2)
+                                    -- check that the gateway is online
+                                    and (
+                                        $2 - make_interval(secs => g.stats_interval_secs * 2) <= g.last_seen_at
+                                    )
                                 order by
                                     qi.created_at
                                 limit $1
