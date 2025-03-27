@@ -5,7 +5,7 @@ use signal_hook_tokio::Signals;
 use tracing::{info, warn};
 
 use crate::gateway;
-use crate::{adr, api, backend, codec, downlink, integration, region, storage};
+use crate::{adr, api, applayer::fuota, codec, backend, downlink, integration, region, storage};
 
 pub async fn run() -> Result<()> {
     info!(
@@ -22,6 +22,7 @@ pub async fn run() -> Result<()> {
     integration::setup().await?;
     gateway::backend::setup().await?;
     downlink::setup().await;
+    fuota::setup().await;
     api::setup().await?;
 
     let mut signals = Signals::new([SIGINT, SIGTERM]).unwrap();

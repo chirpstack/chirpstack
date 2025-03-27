@@ -449,8 +449,8 @@ pub mod test {
         let _d = device::create(device::Device {
             dev_eui: EUI64::from_str("0203040506070809").unwrap(),
             name: "test-device".into(),
-            application_id: a.id.clone(),
-            device_profile_id: dp.id.clone(),
+            application_id: a.id,
+            device_profile_id: dp.id,
             tags: build_tags(&[("common_tag", "value"), ("mytag", "dev_value")]),
             ..Default::default()
         })

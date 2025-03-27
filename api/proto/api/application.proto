@@ -427,6 +427,20 @@ service ApplicationService {
       post : "/api/applications/{application_id}/integrations/mqtt/certificate"
     };
   }
+
+  // List device-profiles used within the given application.
+  rpc ListDeviceProfiles(ListApplicationDeviceProfilesRequest) returns (ListApplicationDeviceProfilesResponse) {
+    option (google.api.http) = {
+      get: "/api/applications/{application_id}/device-profiles"
+    };
+   }
+
+  // List device tags used within the given application.
+  rpc ListDeviceTags(ListApplicationDeviceTagsRequest) returns (ListApplicationDeviceTagsResponse) {
+    option (google.api.http) = {
+      get: "/api/applications/{application_id}/device-tags"
+    };
+  }
 }
 
 enum Encoding {
@@ -529,6 +543,7 @@ message DeleteApplicationRequest {
 
 message ListApplicationsRequest {
   // Max number of applications to return in the result-set.
+  // If not set, it will be treated as 0, and the response will only return the total_count.
   uint32 limit = 1;
 
   // Offset in the result-set (for pagination).
@@ -1097,4 +1112,40 @@ message GenerateMqttIntegrationClientCertificateResponse {
 
   // Expires at defines the expiration date of the certificate.
   google.protobuf.Timestamp expires_at = 4;
+}
+
+message ApplicationDeviceProfileListItem {
+  // Device-profile ID (UUID).
+  string id = 1;
+
+  // Name.
+  string name = 2;
+}
+
+message ListApplicationDeviceProfilesRequest {
+  // Application ID (UUID).
+  string application_id = 1;
+};
+
+message ListApplicationDeviceProfilesResponse {
+  // Device-profiles.
+  repeated ApplicationDeviceProfileListItem result = 1;
+}
+
+message ApplicationDeviceTagListItem {
+  // Tag key.
+  string key = 1;
+
+  // Used values.
+  repeated string values = 2;
+}
+
+message ListApplicationDeviceTagsRequest {
+  // Application ID (UUID).
+  string application_id = 1;
+}
+
+message ListApplicationDeviceTagsResponse {
+  // Device tags.
+  repeated ApplicationDeviceTagListItem result = 1;
 }

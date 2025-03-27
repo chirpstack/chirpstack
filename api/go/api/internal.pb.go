@@ -251,6 +251,7 @@ type ListApiKeysRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Max number of items to return.
+	// If not set, it will be treated as 0, and the response will only return the total_count.
 	Limit uint32 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
 	// Offset in the result-set (for pagination).
 	Offset uint32 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
@@ -630,6 +631,7 @@ type GlobalSearchRequest struct {
 	// Search query.
 	Search string `protobuf:"bytes,1,opt,name=search,proto3" json:"search,omitempty"`
 	// Max number of results to return.
+	// If not set, it will be treated as 0, and the response will only return the total_count.
 	Limit int64 `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	// Offset offset of the result-set (for pagination).
 	Offset int64 `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`

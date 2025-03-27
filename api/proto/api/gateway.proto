@@ -215,6 +215,7 @@ message DeleteGatewayRequest {
 
 message ListGatewaysRequest {
     // Max number of gateways to return in the result-set.
+    // If not set, it will be treated as 0, and the response will only return the total_count.
     uint32 limit = 1;
 
     // Offset in the result-set (for pagination).
@@ -350,6 +351,7 @@ message GetRelayGatewayResponse {
 
 message ListRelayGatewaysRequest {
     // Max number of relay-gateways to return in the result-set.
+    // If not set, it will be treated as 0, and the response will only return the total_count.
     uint32 limit = 1;
 
     // Offset in the result-set (for pagination).

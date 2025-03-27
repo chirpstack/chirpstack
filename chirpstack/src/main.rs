@@ -1,4 +1,3 @@
-// Required by rust::table macro.
 #![recursion_limit = "256"]
 
 #[macro_use]
@@ -20,7 +19,9 @@ use tracing_subscriber::{filter, prelude::*};
 use lrwn::EUI64;
 
 mod adr;
+mod aeskey;
 mod api;
+mod applayer;
 mod backend;
 mod certificate;
 mod cmd;

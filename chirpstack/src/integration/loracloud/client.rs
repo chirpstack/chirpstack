@@ -539,7 +539,7 @@ impl<'de> Deserialize<'de> for Eui64Wrapper {
 
 struct Eui64WrapperVisitor;
 
-impl<'de> Visitor<'de> for Eui64WrapperVisitor {
+impl Visitor<'_> for Eui64WrapperVisitor {
     type Value = Eui64Wrapper;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

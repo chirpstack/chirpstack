@@ -33,6 +33,9 @@ pub enum Error {
     #[error("Not allowed ({0})")]
     NotAllowed(String),
 
+    #[error("Multiple errors")]
+    Multi(Vec<Error>),
+
     #[error(transparent)]
     Diesel(#[from] diesel::result::Error),
 
@@ -50,6 +53,9 @@ pub enum Error {
 
     #[error(transparent)]
     ProstDecode(#[from] prost::DecodeError),
+
+    #[error(transparent)]
+    ValidatorValidate(#[from] validator::ValidationErrors),
 }
 
 impl Error {

@@ -65,7 +65,7 @@ impl Data {
         must_ack: bool,
         mac_commands: Vec<lrwn::MACCommandSet>,
     ) -> Result<()> {
-        let downlink_id: u32 = rand::thread_rng().gen();
+        let downlink_id: u32 = rand::rng().random();
         let span = span!(Level::INFO, "data_down", downlink_id = downlink_id);
 
         match Data::_handle_response(
@@ -107,7 +107,7 @@ impl Data {
         must_ack: bool,
         mac_commands: Vec<lrwn::MACCommandSet>,
     ) -> Result<()> {
-        let downlink_id: u32 = rand::thread_rng().gen();
+        let downlink_id: u32 = rand::rng().random();
         let span = span!(Level::INFO, "data_down", downlink_id = downlink_id);
 
         match Data::_handle_response_relayed(
@@ -138,7 +138,7 @@ impl Data {
     }
 
     pub async fn handle_schedule_next_queue_item(device: device::Device) -> Result<()> {
-        let downlink_id: u32 = rand::thread_rng().gen();
+        let downlink_id: u32 = rand::rng().random();
         let span =
             span!(Level::INFO, "schedule", dev_eui = %device.dev_eui, downlink_id = downlink_id);
 
@@ -643,16 +643,18 @@ impl Data {
         self._set_rx_parameters().await?;
         self._set_tx_parameters().await?;
 
-        if self.device_profile.is_relay {
-            self._update_relay_conf().await?;
-            self._update_filter_list().await?;
-            self._update_uplink_list().await?;
-            self._request_ctrl_uplink_list().await?;
-            self._configure_fwd_limit_req().await?;
-        }
+        if let Some(relay_params) = self.device_profile.relay_params.clone() {
+            if relay_params.is_relay {
+                self._update_relay_conf().await?;
+                self._update_filter_list().await?;
+                self._update_uplink_list().await?;
+                self._request_ctrl_uplink_list().await?;
+                self._configure_fwd_limit_req().await?;
+            }
 
-        if self.device_profile.is_relay_ed {
-            self._update_end_device_conf().await?;
+            if relay_params.is_relay_ed {
+                self._update_end_device_conf().await?;
+            }
         }
 
         let ds = self.device.get_device_session()?;
@@ -1799,6 +1801,7 @@ impl Data {
 
         let dev_eui = self.device.dev_eui;
         let ds = self.device.get_device_session_mut()?;
+        let relay_params = self.device_profile.relay_params.clone().unwrap_or_default();
 
         // Get the current relay state.
         let relay = if let Some(r) = &ds.relay {
@@ -1807,48 +1810,36 @@ impl Data {
             internal::Relay::default()
         };
 
-        if relay.join_req_limit_reload_rate
-            != self.device_profile.relay_join_req_limit_reload_rate as u32
-            || relay.notify_limit_reload_rate
-                != self.device_profile.relay_notify_limit_reload_rate as u32
+        if relay.join_req_limit_reload_rate != relay_params.relay_join_req_limit_reload_rate as u32
+            || relay.notify_limit_reload_rate != relay_params.relay_notify_limit_reload_rate as u32
             || relay.global_uplink_limit_reload_rate
-                != self.device_profile.relay_global_uplink_limit_reload_rate as u32
+                != relay_params.relay_global_uplink_limit_reload_rate as u32
             || relay.overall_limit_reload_rate
-                != self.device_profile.relay_overall_limit_reload_rate as u32
+                != relay_params.relay_overall_limit_reload_rate as u32
             || relay.join_req_limit_bucket_size
-                != self.device_profile.relay_join_req_limit_bucket_size as u32
-            || relay.notify_limit_bucket_size
-                != self.device_profile.relay_notify_limit_bucket_size as u32
+                != relay_params.relay_join_req_limit_bucket_size as u32
+            || relay.notify_limit_bucket_size != relay_params.relay_notify_limit_bucket_size as u32
             || relay.global_uplink_limit_bucket_size
-                != self.device_profile.relay_global_uplink_limit_bucket_size as u32
+                != relay_params.relay_global_uplink_limit_bucket_size as u32
             || relay.overall_limit_bucket_size
-                != self.device_profile.relay_overall_limit_bucket_size as u32
+                != relay_params.relay_overall_limit_bucket_size as u32
         {
             let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::ConfigureFwdLimitReq(
                 lrwn::ConfigureFwdLimitReqPayload {
                     reload_rate: lrwn::FwdLimitReloadRatePL {
-                        overall_reload_rate: self.device_profile.relay_overall_limit_reload_rate
-                            as u8,
-                        global_uplink_reload_rate: self
-                            .device_profile
-                            .relay_global_uplink_limit_reload_rate
-                            as u8,
-                        notify_reload_rate: self.device_profile.relay_notify_limit_reload_rate
-                            as u8,
-                        join_req_reload_rate: self.device_profile.relay_join_req_limit_reload_rate
-                            as u8,
+                        overall_reload_rate: relay_params.relay_overall_limit_reload_rate,
+                        global_uplink_reload_rate: relay_params
+                            .relay_global_uplink_limit_reload_rate,
+                        notify_reload_rate: relay_params.relay_notify_limit_reload_rate,
+                        join_req_reload_rate: relay_params.relay_join_req_limit_reload_rate,
                         reset_limit_counter: lrwn::ResetLimitCounter::NoChange,
                     },
                     load_capacity: lrwn::FwdLimitLoadCapacityPL {
-                        overall_limit_size: self.device_profile.relay_overall_limit_bucket_size
-                            as u8,
-                        global_uplink_limit_size: self
-                            .device_profile
-                            .relay_global_uplink_limit_bucket_size
-                            as u8,
-                        notify_limit_size: self.device_profile.relay_notify_limit_bucket_size as u8,
-                        join_req_limit_size: self.device_profile.relay_join_req_limit_bucket_size
-                            as u8,
+                        overall_limit_size: relay_params.relay_overall_limit_bucket_size,
+                        global_uplink_limit_size: relay_params
+                            .relay_global_uplink_limit_bucket_size,
+                        notify_limit_size: relay_params.relay_notify_limit_bucket_size,
+                        join_req_limit_size: relay_params.relay_join_req_limit_bucket_size,
                     },
                 },
             )]);
@@ -2048,6 +2039,7 @@ impl Data {
 
         let dev_eui = self.device.dev_eui;
         let ds = self.device.get_device_session_mut()?;
+        let relay_params = self.device_profile.relay_params.clone().unwrap_or_default();
 
         // Get the current relay state.
         let relay = if let Some(r) = &ds.relay {
@@ -2056,33 +2048,31 @@ impl Data {
             internal::Relay::default()
         };
 
-        if relay.enabled != self.device_profile.relay_enabled
-            || relay.cad_periodicity != self.device_profile.relay_cad_periodicity as u32
-            || relay.default_channel_index != self.device_profile.relay_default_channel_index as u32
-            || relay.second_channel_freq != self.device_profile.relay_second_channel_freq as u32
-            || relay.second_channel_dr != self.device_profile.relay_second_channel_dr as u32
-            || relay.second_channel_ack_offset
-                != self.device_profile.relay_second_channel_ack_offset as u32
+        if relay.enabled != relay_params.relay_enabled
+            || relay.cad_periodicity != relay_params.relay_cad_periodicity as u32
+            || relay.default_channel_index != relay_params.default_channel_index as u32
+            || relay.second_channel_freq != relay_params.second_channel_freq
+            || relay.second_channel_dr != relay_params.second_channel_dr as u32
+            || relay.second_channel_ack_offset != relay_params.second_channel_ack_offset as u32
         {
             let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::RelayConfReq(
                 lrwn::RelayConfReqPayload {
                     channel_settings_relay: lrwn::ChannelSettingsRelay {
-                        start_stop: match self.device_profile.relay_enabled {
+                        start_stop: match relay_params.relay_enabled {
                             true => 1,
                             false => 0,
                         },
-                        cad_periodicity: self.device_profile.relay_cad_periodicity as u8,
-                        default_ch_idx: self.device_profile.relay_default_channel_index as u8,
-                        second_ch_idx: if self.device_profile.relay_second_channel_freq > 0 {
+                        cad_periodicity: relay_params.relay_cad_periodicity,
+                        default_ch_idx: relay_params.default_channel_index,
+                        second_ch_idx: if relay_params.second_channel_freq > 0 {
                             1
                         } else {
                             0
                         },
-                        second_ch_dr: self.device_profile.relay_second_channel_dr as u8,
-                        second_ch_ack_offset: self.device_profile.relay_second_channel_ack_offset
-                            as u8,
+                        second_ch_dr: relay_params.second_channel_dr,
+                        second_ch_ack_offset: relay_params.second_channel_ack_offset,
                     },
-                    second_ch_freq: self.device_profile.relay_second_channel_freq as u32,
+                    second_ch_freq: relay_params.second_channel_freq,
                 },
             )]);
             mac_command::set_pending(&dev_eui, lrwn::CID::RelayConfReq, &set).await?;
@@ -2099,6 +2089,7 @@ impl Data {
 
         let dev_eui = self.device.dev_eui;
         let ds = self.device.get_device_session_mut()?;
+        let relay_params = self.device_profile.relay_params.clone().unwrap_or_default();
 
         // Get the current relay state.
         let relay = if let Some(r) = &ds.relay {
@@ -2107,32 +2098,30 @@ impl Data {
             internal::Relay::default()
         };
 
-        if relay.ed_activation_mode != self.device_profile.relay_ed_activation_mode.to_u8() as u32
-            || relay.ed_smart_enable_level != self.device_profile.relay_ed_smart_enable_level as u32
-            || relay.ed_back_off != self.device_profile.relay_ed_back_off as u32
-            || relay.second_channel_freq != self.device_profile.relay_second_channel_freq as u32
-            || relay.second_channel_dr != self.device_profile.relay_second_channel_dr as u32
-            || relay.second_channel_ack_offset
-                != self.device_profile.relay_second_channel_ack_offset as u32
+        if relay.ed_activation_mode != relay_params.ed_activation_mode.to_u8() as u32
+            || relay.ed_smart_enable_level != relay_params.ed_smart_enable_level as u32
+            || relay.ed_back_off != relay_params.ed_back_off as u32
+            || relay.second_channel_freq != relay_params.second_channel_freq
+            || relay.second_channel_dr != relay_params.second_channel_dr as u32
+            || relay.second_channel_ack_offset != relay_params.second_channel_ack_offset as u32
         {
             let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::EndDeviceConfReq(
                 lrwn::EndDeviceConfReqPayload {
                     activation_relay_mode: lrwn::ActivationRelayMode {
-                        relay_mode_activation: self.device_profile.relay_ed_activation_mode,
-                        smart_enable_level: self.device_profile.relay_ed_smart_enable_level as u8,
+                        relay_mode_activation: relay_params.ed_activation_mode,
+                        smart_enable_level: relay_params.ed_smart_enable_level,
                     },
                     channel_settings_ed: lrwn::ChannelSettingsED {
-                        second_ch_ack_offset: self.device_profile.relay_second_channel_ack_offset
-                            as u8,
-                        second_ch_dr: self.device_profile.relay_second_channel_dr as u8,
-                        second_ch_idx: if self.device_profile.relay_second_channel_freq > 0 {
+                        second_ch_ack_offset: relay_params.second_channel_ack_offset,
+                        second_ch_dr: relay_params.second_channel_dr,
+                        second_ch_idx: if relay_params.second_channel_freq > 0 {
                             1
                         } else {
                             0
                         },
-                        backoff: self.device_profile.relay_ed_back_off as u8,
+                        backoff: relay_params.ed_back_off,
                     },
-                    second_ch_freq: self.device_profile.relay_second_channel_freq as u32,
+                    second_ch_freq: relay_params.second_channel_freq,
                 },
             )]);
             mac_command::set_pending(&dev_eui, lrwn::CID::EndDeviceConfReq, &set).await?;
@@ -2696,6 +2685,7 @@ fn filter_mac_commands(
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::storage::fields;
     use crate::test;
     use lrwn::{DevAddr, EUI64};
     use tokio::time::sleep;
@@ -2715,7 +2705,10 @@ mod test {
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "dp".into(),
             tenant_id: t.id,
-            is_relay: true,
+            relay_params: Some(fields::RelayParams {
+                is_relay: true,
+                ..Default::default()
+            }),
             ..Default::default()
         })
         .await
@@ -3440,7 +3433,10 @@ mod test {
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
             tenant_id: t.id,
-            is_relay: true,
+            relay_params: Some(fields::RelayParams {
+                is_relay: true,
+                ..Default::default()
+            }),
             ..Default::default()
         })
         .await
@@ -3449,9 +3445,12 @@ mod test {
         let dp_ed = device_profile::create(device_profile::DeviceProfile {
             name: "dp-ed".into(),
             tenant_id: t.id,
-            is_relay_ed: true,
-            relay_ed_uplink_limit_bucket_size: 2,
-            relay_ed_uplink_limit_reload_rate: 1,
+            relay_params: Some(fields::RelayParams {
+                is_relay_ed: true,
+                ed_uplink_limit_bucket_size: 2,
+                ed_uplink_limit_reload_rate: 1,
+                ..Default::default()
+            }),
             ..Default::default()
         })
         .await
@@ -3900,7 +3899,10 @@ mod test {
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
             tenant_id: t.id,
-            is_relay: true,
+            relay_params: Some(fields::RelayParams {
+                is_relay: true,
+                ..Default::default()
+            }),
             ..Default::default()
         })
         .await
@@ -4023,13 +4025,16 @@ mod test {
                     ..Default::default()
                 },
                 device_profile: device_profile::DeviceProfile {
-                    is_relay: true,
-                    relay_enabled: true,
-                    relay_cad_periodicity: 1,
-                    relay_default_channel_index: 0,
-                    relay_second_channel_freq: 868300000,
-                    relay_second_channel_dr: 3,
-                    relay_second_channel_ack_offset: 2,
+                    relay_params: Some(fields::RelayParams {
+                        is_relay: true,
+                        relay_enabled: true,
+                        relay_cad_periodicity: 1,
+                        default_channel_index: 0,
+                        second_channel_freq: 868300000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 2,
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 },
                 expected_mac_commands: vec![],
@@ -4049,13 +4054,16 @@ mod test {
                     ..Default::default()
                 },
                 device_profile: device_profile::DeviceProfile {
-                    is_relay: true,
-                    relay_enabled: true,
-                    relay_cad_periodicity: 1,
-                    relay_default_channel_index: 0,
-                    relay_second_channel_freq: 868500000,
-                    relay_second_channel_dr: 3,
-                    relay_second_channel_ack_offset: 2,
+                    relay_params: Some(fields::RelayParams {
+                        is_relay: true,
+                        relay_enabled: true,
+                        relay_cad_periodicity: 1,
+                        default_channel_index: 0,
+                        second_channel_freq: 868500000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 2,
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 },
                 expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
@@ -4134,12 +4142,15 @@ mod test {
                     ..Default::default()
                 },
                 device_profile: device_profile::DeviceProfile {
-                    relay_ed_activation_mode: lrwn::RelayModeActivation::EnableRelayMode,
-                    relay_ed_smart_enable_level: 1,
-                    relay_ed_back_off: 16,
-                    relay_second_channel_freq: 868100000,
-                    relay_second_channel_dr: 3,
-                    relay_second_channel_ack_offset: 4,
+                    relay_params: Some(fields::RelayParams {
+                        ed_activation_mode: lrwn::RelayModeActivation::EnableRelayMode,
+                        ed_smart_enable_level: 1,
+                        ed_back_off: 16,
+                        second_channel_freq: 868100000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 4,
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 },
                 expected_mac_commands: vec![],
@@ -4159,12 +4170,15 @@ mod test {
                     ..Default::default()
                 },
                 device_profile: device_profile::DeviceProfile {
-                    relay_ed_activation_mode: lrwn::RelayModeActivation::EnableRelayMode,
-                    relay_ed_smart_enable_level: 1,
-                    relay_ed_back_off: 16,
-                    relay_second_channel_freq: 868100000,
-                    relay_second_channel_dr: 3,
-                    relay_second_channel_ack_offset: 4,
+                    relay_params: Some(fields::RelayParams {
+                        ed_activation_mode: lrwn::RelayModeActivation::EnableRelayMode,
+                        ed_smart_enable_level: 1,
+                        ed_back_off: 16,
+                        second_channel_freq: 868100000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 4,
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 },
                 expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
@@ -4247,14 +4261,17 @@ mod test {
                     ..Default::default()
                 },
                 device_profile: device_profile::DeviceProfile {
-                    relay_join_req_limit_reload_rate: 10,
-                    relay_join_req_limit_bucket_size: 0,
-                    relay_notify_limit_reload_rate: 15,
-                    relay_notify_limit_bucket_size: 1,
-                    relay_global_uplink_limit_reload_rate: 20,
-                    relay_global_uplink_limit_bucket_size: 2,
-                    relay_overall_limit_reload_rate: 25,
-                    relay_overall_limit_bucket_size: 3,
+                    relay_params: Some(fields::RelayParams {
+                        relay_join_req_limit_reload_rate: 10,
+                        relay_join_req_limit_bucket_size: 0,
+                        relay_notify_limit_reload_rate: 15,
+                        relay_notify_limit_bucket_size: 1,
+                        relay_global_uplink_limit_reload_rate: 20,
+                        relay_global_uplink_limit_bucket_size: 2,
+                        relay_overall_limit_reload_rate: 25,
+                        relay_overall_limit_bucket_size: 3,
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 },
                 expected_mac_commands: vec![],
@@ -4276,14 +4293,17 @@ mod test {
                     ..Default::default()
                 },
                 device_profile: device_profile::DeviceProfile {
-                    relay_join_req_limit_reload_rate: 10,
-                    relay_join_req_limit_bucket_size: 0,
-                    relay_notify_limit_reload_rate: 15,
-                    relay_notify_limit_bucket_size: 1,
-                    relay_global_uplink_limit_reload_rate: 20,
-                    relay_global_uplink_limit_bucket_size: 2,
-                    relay_overall_limit_reload_rate: 25,
-                    relay_overall_limit_bucket_size: 3,
+                    relay_params: Some(fields::RelayParams {
+                        relay_join_req_limit_reload_rate: 10,
+                        relay_join_req_limit_bucket_size: 0,
+                        relay_notify_limit_reload_rate: 15,
+                        relay_notify_limit_bucket_size: 1,
+                        relay_global_uplink_limit_reload_rate: 20,
+                        relay_global_uplink_limit_bucket_size: 2,
+                        relay_overall_limit_reload_rate: 25,
+                        relay_overall_limit_bucket_size: 3,
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 },
                 expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
@@ -4521,7 +4541,10 @@ mod test {
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
             tenant_id: t.id,
-            is_relay: true,
+            relay_params: Some(fields::RelayParams {
+                is_relay: true,
+                ..Default::default()
+            }),
             ..Default::default()
         })
         .await

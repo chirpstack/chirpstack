@@ -62,8 +62,11 @@ async fn test_lorawan_10() {
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
         supports_otaa: true,
-        is_relay: true,
-        relay_enabled: true,
+        relay_params: Some(fields::RelayParams {
+            is_relay: true,
+            relay_enabled: true,
+            ..Default::default()
+        }),
         ..Default::default()
     })
     .await
@@ -76,7 +79,10 @@ async fn test_lorawan_10() {
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
         supports_otaa: true,
-        is_relay_ed: true,
+        relay_params: Some(fields::RelayParams {
+            is_relay_ed: true,
+            ..Default::default()
+        }),
         ..Default::default()
     })
     .await
@@ -815,7 +821,7 @@ async fn run_test(t: &Test) {
 
     uplink::handle_uplink(
         CommonName::EU868,
-        "eu868".into(),
+        "eu868",
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: t.phy_payload.to_vec().unwrap(),

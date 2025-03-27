@@ -12,7 +12,8 @@ use super::error::Error;
 use crate::api::auth::AuthID;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::schema::{
-    api_key, application, device, device_profile, gateway, multicast_group, tenant_user, user,
+    api_key, application, device, device_profile, fuota_deployment, gateway, multicast_group,
+    tenant_user, user,
 };
 use crate::storage::{fields, get_async_db_conn};
 
@@ -2032,11 +2033,227 @@ impl Validator for ValidateMulticastGroupQueueAccess {
     }
 }
 
+pub struct ValidateFuotaDeploymentsAccess {
+    flag: Flag,
+    application_id: Uuid,
+}
+
+impl ValidateFuotaDeploymentsAccess {
+    pub fn new(flag: Flag, application_id: Uuid) -> Self {
+        ValidateFuotaDeploymentsAccess {
+            flag,
+            application_id,
+        }
+    }
+}
+
+#[async_trait]
+impl Validator for ValidateFuotaDeploymentsAccess {
+    async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(
+                user::dsl::id
+                    .eq(fields::Uuid::from(id))
+                    .and(user::dsl::is_active.eq(true)),
+            )
+            .into_boxed();
+
+        match self.flag {
+            // admin user
+            // tenant admin
+            // tenant device admin
+            Flag::Create => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            application::dsl::application
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    application::dsl::id
+                                        .eq(fields::Uuid::from(self.application_id))
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
+            }
+            // admin user
+            // tenant user
+            Flag::List => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            application::dsl::application
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    application::dsl::id
+                                        .eq(fields::Uuid::from(self.application_id))
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
+            }
+            _ => return Ok(0),
+        }
+
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
+    }
+
+    async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
+            .into_boxed();
+
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Create | Flag::List => {
+                q = q.filter(
+                    api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        application::dsl::application.filter(
+                            application::dsl::id
+                                .eq(fields::Uuid::from(self.application_id))
+                                .and(
+                                    api_key::dsl::tenant_id
+                                        .eq(application::dsl::tenant_id.nullable()),
+                                ),
+                        ),
+                    )),
+                );
+            }
+            _ => {
+                return Ok(0);
+            }
+        }
+
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
+    }
+}
+
+pub struct ValidateFuotaDeploymentAccess {
+    flag: Flag,
+    fuota_deployment_id: Uuid,
+}
+
+impl ValidateFuotaDeploymentAccess {
+    pub fn new(flag: Flag, fuota_deployment_id: Uuid) -> Self {
+        ValidateFuotaDeploymentAccess {
+            flag,
+            fuota_deployment_id,
+        }
+    }
+}
+
+#[async_trait]
+impl Validator for ValidateFuotaDeploymentAccess {
+    async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
+        let mut q = user::dsl::user
+            .select(dsl::count_star())
+            .filter(
+                user::dsl::id
+                    .eq(fields::Uuid::from(id))
+                    .and(user::dsl::is_active.eq(true)),
+            )
+            .into_boxed();
+
+        match self.flag {
+            // admin user
+            // tenant user
+            Flag::Read => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            fuota_deployment::dsl::fuota_deployment
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    fuota_deployment::dsl::id
+                                        .eq(fields::Uuid::from(self.fuota_deployment_id))
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                ),
+                        )),
+                    );
+            }
+            // admin user
+            // tenant admin
+            // tenant device admin
+            Flag::Update | Flag::Delete => {
+                q =
+                    q.filter(
+                        user::dsl::is_admin.eq(true).or(dsl::exists(
+                            fuota_deployment::dsl::fuota_deployment
+                                .inner_join(application::table)
+                                .inner_join(tenant_user::table.on(
+                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
+                                ))
+                                .filter(
+                                    fuota_deployment::dsl::id
+                                        .eq(fields::Uuid::from(self.fuota_deployment_id))
+                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                        .and(
+                                            tenant_user::dsl::is_admin
+                                                .eq(true)
+                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        ),
+                                ),
+                        )),
+                    );
+            }
+            _ => return Ok(0),
+        }
+
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
+    }
+
+    async fn validate_key(&self, id: &Uuid) -> Result<i64, Error> {
+        let mut q = api_key::dsl::api_key
+            .select(dsl::count_star())
+            .filter(api_key::dsl::id.eq(fields::Uuid::from(id)))
+            .into_boxed();
+
+        match self.flag {
+            // admin api key
+            // tenant api key
+            Flag::Read | Flag::Update | Flag::Delete => {
+                q = q.filter(
+                    api_key::dsl::is_admin.eq(true).or(dsl::exists(
+                        fuota_deployment::dsl::fuota_deployment
+                            .inner_join(application::table)
+                            .filter(
+                                fuota_deployment::dsl::id
+                                    .eq(fields::Uuid::from(self.fuota_deployment_id))
+                                    .and(
+                                        api_key::dsl::tenant_id
+                                            .eq(application::dsl::tenant_id.nullable()),
+                                    ),
+                            ),
+                    )),
+                );
+            }
+            _ => return Ok(0),
+        }
+
+        Ok(q.first(&mut get_async_db_conn().await?).await?)
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use super::*;
     use crate::storage::{
-        api_key, application, device, device_profile, gateway, multicast, tenant, user,
+        api_key, application, device, device_profile, fuota, gateway, multicast, tenant, user,
     };
     use crate::test;
     use std::str::FromStr;
@@ -2266,7 +2483,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -2274,7 +2491,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -2510,7 +2727,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -2518,21 +2735,21 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_user.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user_other.id.into(),
+            user_id: tenant_user_other.id,
             ..Default::default()
         })
         .await
@@ -2874,7 +3091,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -2882,7 +3099,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_device_admin.id.into(),
+            user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()
         })
@@ -2890,7 +3107,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id.into(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
@@ -2898,7 +3115,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -3321,7 +3538,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -3329,7 +3546,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_device_admin.id.into(),
+            user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()
         })
@@ -3337,7 +3554,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id.into(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
@@ -3345,7 +3562,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -3623,32 +3840,32 @@ pub mod test {
                 .await;
 
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_device_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_gateway_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_user.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -3876,8 +4093,8 @@ pub mod test {
                 .await;
 
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_user.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -4020,7 +4237,7 @@ pub mod test {
         let gw_api_key_tenant = gateway::create(gateway::Gateway {
             name: "test-gw-tenant".into(),
             gateway_id: EUI64::from_str("0202030405060708").unwrap(),
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
             ..Default::default()
         })
         .await
@@ -4028,7 +4245,7 @@ pub mod test {
 
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_admin.id.into(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
@@ -4036,7 +4253,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id.into(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
@@ -4044,7 +4261,7 @@ pub mod test {
         .unwrap();
         tenant::add_user(tenant::TenantUser {
             tenant_id: tenant_a.id,
-            user_id: tenant_user.id.into(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -4296,32 +4513,32 @@ pub mod test {
                 .await;
 
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_admin.id,
             is_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_device_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_device_admin.id,
             is_device_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_gateway_admin.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_gateway_admin.id,
             is_gateway_admin: true,
             ..Default::default()
         })
         .await
         .unwrap();
         tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap().into(),
-            user_id: tenant_user.id.into(),
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
             ..Default::default()
         })
         .await
@@ -4612,6 +4829,300 @@ pub mod test {
                     ValidateMulticastGroupQueueAccess::new(Flag::Create, mg.id.into()),
                     ValidateMulticastGroupQueueAccess::new(Flag::List, mg.id.into()),
                     ValidateMulticastGroupQueueAccess::new(Flag::Delete, mg.id.into()),
+                ],
+                id: AuthID::Key(api_key_other_tenant.id.into()),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+    }
+
+    #[tokio::test]
+    async fn fuota_deployment() {
+        let _guard = test::prepare().await;
+
+        let user_active = user::User {
+            email: "user@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let user_admin = user::User {
+            email: "admin@user".into(),
+            is_active: true,
+            is_admin: true,
+            ..Default::default()
+        };
+        let tenant_admin = user::User {
+            email: "tenant-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let tenant_device_admin = user::User {
+            email: "tenant-device-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let tenant_gateway_admin = user::User {
+            email: "tenant-gateway-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let tenant_user = user::User {
+            email: "tenant-user@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+
+        for u in [
+            &user_active,
+            &user_admin,
+            &tenant_admin,
+            &tenant_gateway_admin,
+            &tenant_device_admin,
+            &tenant_user,
+        ] {
+            user::create(u.clone()).await.unwrap();
+        }
+
+        let api_key_admin = api_key::test::create_api_key(true, false).await;
+        let api_key_tenant = api_key::test::create_api_key(false, true).await;
+        let api_key_other_tenant = api_key::test::create_api_key(false, true).await;
+
+        let app =
+            application::test::create_application(Some(api_key_tenant.tenant_id.unwrap().into()))
+                .await;
+
+        tenant::add_user(tenant::TenantUser {
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_admin.id,
+            is_admin: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        tenant::add_user(tenant::TenantUser {
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_device_admin.id,
+            is_device_admin: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        tenant::add_user(tenant::TenantUser {
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_gateway_admin.id,
+            is_gateway_admin: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        tenant::add_user(tenant::TenantUser {
+            tenant_id: api_key_tenant.tenant_id.unwrap(),
+            user_id: tenant_user.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // fuota deployments with user
+        let tests = vec![
+            // admin user can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                ],
+                id: AuthID::User(user_admin.id.into()),
+                ok: true,
+            },
+            // tenant admin can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                ],
+                id: AuthID::User(tenant_admin.id.into()),
+                ok: true,
+            },
+            // tenant device admin can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                ],
+                id: AuthID::User(tenant_device_admin.id.into()),
+                ok: true,
+            },
+            // tenant user can list
+            ValidatorTest {
+                validators: vec![ValidateFuotaDeploymentsAccess::new(
+                    Flag::List,
+                    app.id.into(),
+                )],
+                id: AuthID::User(tenant_user.id.into()),
+                ok: true,
+            },
+            // tenant user can not create
+            ValidatorTest {
+                validators: vec![ValidateFuotaDeploymentsAccess::new(
+                    Flag::Create,
+                    app.id.into(),
+                )],
+                id: AuthID::User(tenant_user.id.into()),
+                ok: false,
+            },
+            // other user can not create or list
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                ],
+                id: AuthID::User(user_active.id.into()),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+
+        // fuota deployments with api key
+        let tests = vec![
+            // admin api key can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                ],
+                id: AuthID::Key(api_key_admin.id.into()),
+                ok: true,
+            },
+            // tenant api key can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                ],
+                id: AuthID::Key(api_key_tenant.id.into()),
+                ok: true,
+            },
+            // tenant api key can not create or list for other tenant
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                ],
+                id: AuthID::Key(api_key_other_tenant.id.into()),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: app.tenant_id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let fuota = fuota::create_deployment(fuota::FuotaDeployment {
+            name: "test-fuota".into(),
+            application_id: app.id,
+            device_profile_id: dp.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // fuota deployment with user
+        let tests = vec![
+            // admin user can read, update and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Read, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::User(user_admin.id.into()),
+                ok: true,
+            },
+            // tenant admin can read, update and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Read, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::User(tenant_admin.id.into()),
+                ok: true,
+            },
+            // tenant device admin can read, update and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Read, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::User(tenant_device_admin.id.into()),
+                ok: true,
+            },
+            // tenant user can read
+            ValidatorTest {
+                validators: vec![ValidateFuotaDeploymentAccess::new(
+                    Flag::Read,
+                    fuota.id.into(),
+                )],
+                id: AuthID::User(tenant_user.id.into()),
+                ok: true,
+            },
+            // tenant user can not update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::User(tenant_user.id.into()),
+                ok: false,
+            },
+            // other user can not read, update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Read, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::User(user_active.id.into()),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+
+        // fuota deployment with api key
+        let tests = vec![
+            // admin api key can read, update and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Read, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::Key(api_key_admin.id.into()),
+                ok: true,
+            },
+            // tenant api key can read, update and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Read, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::Key(api_key_admin.id.into()),
+                ok: true,
+            },
+            // other api key can not read, update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Read, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
                 ],
                 id: AuthID::Key(api_key_other_tenant.id.into()),
                 ok: false,

@@ -1899,6 +1899,69 @@ impl ApplicationService for Application {
 
         Ok(resp)
     }
+
+    async fn list_device_profiles(
+        &self,
+        request: Request<api::ListApplicationDeviceProfilesRequest>,
+    ) -> Result<Response<api::ListApplicationDeviceProfilesResponse>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Read, app_id),
+            )
+            .await?;
+
+        let dp_items = application::get_device_profiles(app_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(api::ListApplicationDeviceProfilesResponse {
+            result: dp_items
+                .iter()
+                .map(|v| api::ApplicationDeviceProfileListItem {
+                    id: v.0.to_string(),
+                    name: v.1.clone(),
+                })
+                .collect(),
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
+
+    async fn list_device_tags(
+        &self,
+        request: Request<api::ListApplicationDeviceTagsRequest>,
+    ) -> Result<Response<api::ListApplicationDeviceTagsResponse>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Read, app_id),
+            )
+            .await?;
+
+        let tags = application::get_device_tags(app_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(api::ListApplicationDeviceTagsResponse {
+            result: tags
+                .into_iter()
+                .map(|(k, v)| api::ApplicationDeviceTagListItem { key: k, values: v })
+                .collect(),
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
 }
 
 #[cfg(test)]
@@ -1947,7 +2010,7 @@ pub mod test {
         let mut create_req = Request::new(create_req);
         create_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let create_resp = service.create(create_req).await.unwrap();
         let create_resp = create_resp.get_ref();
 
@@ -1958,7 +2021,7 @@ pub mod test {
         let mut get_req = Request::new(get_req);
         get_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Application {
@@ -1982,7 +2045,7 @@ pub mod test {
         let mut up_req = Request::new(up_req);
         up_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let _ = service.update(up_req).await.unwrap();
 
         //get
@@ -1992,7 +2055,7 @@ pub mod test {
         let mut get_req = Request::new(get_req);
         get_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let get_resp = service.get(get_req).await.unwrap();
         assert_eq!(
             Some(api::Application {
@@ -2014,7 +2077,7 @@ pub mod test {
         let mut list_req = Request::new(list_req);
         list_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let list_resp = service.list(list_req).await.unwrap();
         assert_eq!(1, list_resp.get_ref().total_count);
         assert_eq!(1, list_resp.get_ref().result.len());
@@ -2026,7 +2089,7 @@ pub mod test {
         let mut del_req = Request::new(del_req);
         del_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let _ = service.delete(del_req).await.unwrap();
 
         let del_req = api::DeleteApplicationRequest {
@@ -2035,7 +2098,7 @@ pub mod test {
         let mut del_req = Request::new(del_req);
         del_req
             .extensions_mut()
-            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id).clone()));
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
         let del_resp = service.delete(del_req).await;
         assert!(del_resp.is_err());
     }

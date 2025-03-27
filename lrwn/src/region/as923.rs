@@ -892,7 +892,7 @@ impl Region for Configuration {
             min_dr
         } else {
             dr as u8
-        } as u8;
+        };
 
         Ok(if dr > 5 { 5 } else { dr })
     }

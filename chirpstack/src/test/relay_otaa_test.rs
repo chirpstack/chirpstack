@@ -6,7 +6,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_keys, device_profile, gateway, tenant,
+    device_keys, device_profile, fields, gateway, tenant,
 };
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, internal};
@@ -66,7 +66,10 @@ async fn test_lorawan_10() {
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
         supports_otaa: true,
-        is_relay: true,
+        relay_params: Some(fields::RelayParams {
+            is_relay: true,
+            ..Default::default()
+        }),
         ..Default::default()
     })
     .await
@@ -217,7 +220,7 @@ async fn test_lorawan_10() {
 
     uplink::handle_uplink(
         CommonName::EU868,
-        "eu868".into(),
+        "eu868",
         Uuid::new_v4(),
         gw::UplinkFrameSet {
             phy_payload: phy_relay_jr.to_vec().unwrap(),
@@ -289,10 +292,8 @@ async fn test_lorawan_10() {
                 enabled_uplink_channel_indices: vec![0, 1, 2],
                 nb_trans: 1,
                 region_config_id: "eu868".to_string(),
-                class_b_ping_slot_nb: 1,
                 ..Default::default()
-            }
-            .into(),
+            },
         ),
         assert::downlink_frame(gw::DownlinkFrame {
             items: vec![

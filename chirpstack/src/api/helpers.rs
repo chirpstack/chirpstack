@@ -1,10 +1,13 @@
 use chrono::{DateTime, Utc};
 
-use crate::codec::Codec;
-use crate::storage::fields::{MeasurementKind, MulticastGroupSchedulingType};
-use crate::storage::{device, device::DeviceClass, gateway, metrics::Aggregation};
 use chirpstack_api::{api, common};
 use lrwn::region::{CommonName, MacVersion, Revision};
+
+use crate::codec::Codec;
+use crate::storage::fields::{
+    self, MeasurementKind, MulticastGroupSchedulingType, RequestFragmentationSessionStatus,
+};
+use crate::storage::{device, device::DeviceClass, gateway, metrics::Aggregation};
 
 pub trait FromProto<T> {
     #[allow(clippy::wrong_self_convention)]
@@ -282,6 +285,86 @@ impl FromProto<gateway::OrderBy> for api::list_gateways_request::OrderBy {
             Self::Name => gateway::OrderBy::Name,
             Self::GatewayId => gateway::OrderBy::GatewayId,
             Self::LastSeenAt => gateway::OrderBy::LastSeenAt,
+        }
+    }
+}
+
+impl ToProto<api::Ts003Version> for Option<fields::device_profile::Ts003Version> {
+    fn to_proto(self) -> api::Ts003Version {
+        match self {
+            None => api::Ts003Version::Ts003NotImplemented,
+            Some(fields::device_profile::Ts003Version::V100) => api::Ts003Version::Ts003V100,
+            Some(fields::device_profile::Ts003Version::V200) => api::Ts003Version::Ts003V200,
+        }
+    }
+}
+
+impl FromProto<Option<fields::device_profile::Ts003Version>> for api::Ts003Version {
+    fn from_proto(self) -> Option<fields::device_profile::Ts003Version> {
+        match self {
+            api::Ts003Version::Ts003NotImplemented => None,
+            api::Ts003Version::Ts003V100 => Some(fields::device_profile::Ts003Version::V100),
+            api::Ts003Version::Ts003V200 => Some(fields::device_profile::Ts003Version::V200),
+        }
+    }
+}
+
+impl ToProto<api::Ts004Version> for Option<fields::device_profile::Ts004Version> {
+    fn to_proto(self) -> api::Ts004Version {
+        match self {
+            None => api::Ts004Version::Ts004NotImplemented,
+            Some(fields::device_profile::Ts004Version::V100) => api::Ts004Version::Ts004V100,
+            Some(fields::device_profile::Ts004Version::V200) => api::Ts004Version::Ts004V200,
+        }
+    }
+}
+
+impl FromProto<Option<fields::device_profile::Ts004Version>> for api::Ts004Version {
+    fn from_proto(self) -> Option<fields::device_profile::Ts004Version> {
+        match self {
+            api::Ts004Version::Ts004NotImplemented => None,
+            api::Ts004Version::Ts004V100 => Some(fields::device_profile::Ts004Version::V100),
+            api::Ts004Version::Ts004V200 => Some(fields::device_profile::Ts004Version::V200),
+        }
+    }
+}
+
+impl ToProto<api::Ts005Version> for Option<fields::device_profile::Ts005Version> {
+    fn to_proto(self) -> api::Ts005Version {
+        match self {
+            None => api::Ts005Version::Ts005NotImplemented,
+            Some(fields::device_profile::Ts005Version::V100) => api::Ts005Version::Ts005V100,
+            Some(fields::device_profile::Ts005Version::V200) => api::Ts005Version::Ts005V200,
+        }
+    }
+}
+
+impl FromProto<Option<fields::device_profile::Ts005Version>> for api::Ts005Version {
+    fn from_proto(self) -> Option<fields::device_profile::Ts005Version> {
+        match self {
+            api::Ts005Version::Ts005NotImplemented => None,
+            api::Ts005Version::Ts005V100 => Some(fields::device_profile::Ts005Version::V100),
+            api::Ts005Version::Ts005V200 => Some(fields::device_profile::Ts005Version::V200),
+        }
+    }
+}
+
+impl ToProto<api::RequestFragmentationSessionStatus> for RequestFragmentationSessionStatus {
+    fn to_proto(self) -> api::RequestFragmentationSessionStatus {
+        match self {
+            Self::NoRequest => api::RequestFragmentationSessionStatus::NoRequest,
+            Self::AfterFragEnqueue => api::RequestFragmentationSessionStatus::AfterFragmentEnqueue,
+            Self::AfterSessTimeout => api::RequestFragmentationSessionStatus::AfterSessionTimeout,
+        }
+    }
+}
+
+impl FromProto<RequestFragmentationSessionStatus> for api::RequestFragmentationSessionStatus {
+    fn from_proto(self) -> RequestFragmentationSessionStatus {
+        match self {
+            Self::NoRequest => RequestFragmentationSessionStatus::NoRequest,
+            Self::AfterFragmentEnqueue => RequestFragmentationSessionStatus::AfterFragEnqueue,
+            Self::AfterSessionTimeout => RequestFragmentationSessionStatus::AfterSessTimeout,
         }
     }
 }

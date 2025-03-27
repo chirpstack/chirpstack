@@ -35,15 +35,6 @@ pub struct DeviceProfile {
     pub supports_otaa: bool,
     pub supports_class_b: bool,
     pub supports_class_c: bool,
-    pub class_b_timeout: i32,
-    pub class_b_ping_slot_nb_k: i32,
-    pub class_b_ping_slot_dr: i16,
-    pub class_b_ping_slot_freq: i64,
-    pub class_c_timeout: i32,
-    pub abp_rx1_delay: i16,
-    pub abp_rx1_dr_offset: i16,
-    pub abp_rx2_dr: i16,
-    pub abp_rx2_freq: i64,
     pub tags: fields::KeyValue,
     pub payload_codec_script: String,
     pub flush_queue_on_activate: bool,
@@ -51,30 +42,13 @@ pub struct DeviceProfile {
     pub measurements: fields::Measurements,
     pub auto_detect_measurements: bool,
     pub region_config_id: Option<String>,
-    pub is_relay: bool,
-    pub is_relay_ed: bool,
-    pub relay_ed_relay_only: bool,
-    pub relay_enabled: bool,
-    pub relay_cad_periodicity: i16,
-    pub relay_default_channel_index: i16,
-    pub relay_second_channel_freq: i64,
-    pub relay_second_channel_dr: i16,
-    pub relay_second_channel_ack_offset: i16,
-    pub relay_ed_activation_mode: lrwn::RelayModeActivation,
-    pub relay_ed_smart_enable_level: i16,
-    pub relay_ed_back_off: i16,
-    pub relay_ed_uplink_limit_bucket_size: i16,
-    pub relay_ed_uplink_limit_reload_rate: i16,
-    pub relay_join_req_limit_reload_rate: i16,
-    pub relay_notify_limit_reload_rate: i16,
-    pub relay_global_uplink_limit_reload_rate: i16,
-    pub relay_overall_limit_reload_rate: i16,
-    pub relay_join_req_limit_bucket_size: i16,
-    pub relay_notify_limit_bucket_size: i16,
-    pub relay_global_uplink_limit_bucket_size: i16,
-    pub relay_overall_limit_bucket_size: i16,
     pub allow_roaming: bool,
     pub rx1_delay: i16,
+    pub abp_params: Option<fields::AbpParams>,
+    pub class_b_params: Option<fields::ClassBParams>,
+    pub class_c_params: Option<fields::ClassCParams>,
+    pub relay_params: Option<fields::RelayParams>,
+    pub app_layer_params: fields::AppLayerParams,
 }
 
 impl DeviceProfile {
@@ -115,43 +89,17 @@ impl Default for DeviceProfile {
             supports_otaa: false,
             supports_class_b: false,
             supports_class_c: false,
-            class_b_timeout: 0,
-            class_b_ping_slot_nb_k: 0,
-            class_b_ping_slot_dr: 0,
-            class_b_ping_slot_freq: 0,
-            class_c_timeout: 0,
-            abp_rx1_delay: 0,
-            abp_rx1_dr_offset: 0,
-            abp_rx2_dr: 0,
-            abp_rx2_freq: 0,
             tags: fields::KeyValue::new(HashMap::new()),
             measurements: fields::Measurements::new(HashMap::new()),
             auto_detect_measurements: false,
             region_config_id: None,
-            is_relay: false,
-            is_relay_ed: false,
-            relay_ed_relay_only: false,
-            relay_enabled: false,
-            relay_cad_periodicity: 0,
-            relay_default_channel_index: 0,
-            relay_second_channel_freq: 0,
-            relay_second_channel_dr: 0,
-            relay_second_channel_ack_offset: 0,
-            relay_ed_activation_mode: lrwn::RelayModeActivation::DisableRelayMode,
-            relay_ed_smart_enable_level: 0,
-            relay_ed_back_off: 0,
-            relay_ed_uplink_limit_bucket_size: 0,
-            relay_ed_uplink_limit_reload_rate: 0,
-            relay_join_req_limit_reload_rate: 0,
-            relay_notify_limit_reload_rate: 0,
-            relay_global_uplink_limit_reload_rate: 0,
-            relay_overall_limit_reload_rate: 0,
-            relay_join_req_limit_bucket_size: 0,
-            relay_notify_limit_bucket_size: 0,
-            relay_global_uplink_limit_bucket_size: 0,
-            relay_overall_limit_bucket_size: 0,
             allow_roaming: false,
             rx1_delay: 0,
+            abp_params: None,
+            class_b_params: None,
+            class_c_params: None,
+            relay_params: None,
+            app_layer_params: fields::AppLayerParams::default(),
         }
     }
 }
@@ -159,16 +107,21 @@ impl Default for DeviceProfile {
 impl DeviceProfile {
     pub fn reset_session_to_boot_params(&self, ds: &mut internal::DeviceSession) {
         ds.mac_version = self.mac_version.to_proto().into();
-        ds.class_b_ping_slot_dr = self.class_b_ping_slot_dr as u32;
-        ds.class_b_ping_slot_freq = self.class_b_ping_slot_freq as u32;
-        ds.class_b_ping_slot_nb = 1 << self.class_b_ping_slot_nb_k as u32;
         ds.nb_trans = 1;
 
-        if self.is_relay_ed {
-            ds.relay = Some(internal::Relay {
-                ed_relay_only: self.relay_ed_relay_only,
-                ..Default::default()
-            });
+        if let Some(class_b_params) = &self.class_b_params {
+            ds.class_b_ping_slot_dr = class_b_params.ping_slot_dr as u32;
+            ds.class_b_ping_slot_freq = class_b_params.ping_slot_freq;
+            ds.class_b_ping_slot_nb = 1 << class_b_params.ping_slot_nb_k as u32;
+        }
+
+        if let Some(relay_params) = &self.relay_params {
+            if relay_params.is_relay_ed {
+                ds.relay = Some(internal::Relay {
+                    ed_relay_only: relay_params.ed_relay_only,
+                    ..Default::default()
+                });
+            }
         }
 
         if !self.supports_otaa {
@@ -176,11 +129,14 @@ impl DeviceProfile {
             ds.min_supported_tx_power_index = 0;
             ds.max_supported_tx_power_index = 0;
             ds.extra_uplink_channels = HashMap::new();
-            ds.rx1_delay = self.abp_rx1_delay as u32;
-            ds.rx1_dr_offset = self.abp_rx1_dr_offset as u32;
-            ds.rx2_dr = self.abp_rx2_dr as u32;
-            ds.rx2_frequency = self.abp_rx2_freq as u32;
             ds.enabled_uplink_channel_indices = Vec::new();
+
+            if let Some(abp_params) = &self.abp_params {
+                ds.rx1_delay = abp_params.rx1_delay as u32;
+                ds.rx1_dr_offset = abp_params.rx1_dr_offset as u32;
+                ds.rx2_dr = abp_params.rx2_dr as u32;
+                ds.rx2_frequency = abp_params.rx2_freq;
+            }
         }
     }
 }
@@ -247,49 +203,17 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::supports_otaa.eq(&dp.supports_otaa),
             device_profile::supports_class_b.eq(&dp.supports_class_b),
             device_profile::supports_class_c.eq(&dp.supports_class_c),
-            device_profile::class_b_timeout.eq(&dp.class_b_timeout),
-            device_profile::class_b_ping_slot_nb_k.eq(&dp.class_b_ping_slot_nb_k),
-            device_profile::class_b_ping_slot_dr.eq(&dp.class_b_ping_slot_dr),
-            device_profile::class_b_ping_slot_freq.eq(&dp.class_b_ping_slot_freq),
-            device_profile::class_c_timeout.eq(&dp.class_c_timeout),
-            device_profile::abp_rx1_delay.eq(&dp.abp_rx1_delay),
-            device_profile::abp_rx1_dr_offset.eq(&dp.abp_rx1_dr_offset),
-            device_profile::abp_rx2_dr.eq(&dp.abp_rx2_dr),
-            device_profile::abp_rx2_freq.eq(&dp.abp_rx2_freq),
             device_profile::tags.eq(&dp.tags),
             device_profile::measurements.eq(&dp.measurements),
             device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
             device_profile::region_config_id.eq(&dp.region_config_id),
-            device_profile::is_relay.eq(&dp.is_relay),
-            device_profile::is_relay_ed.eq(&dp.is_relay_ed),
-            device_profile::relay_ed_relay_only.eq(&dp.relay_ed_relay_only),
-            device_profile::relay_enabled.eq(&dp.relay_enabled),
-            device_profile::relay_cad_periodicity.eq(&dp.relay_cad_periodicity),
-            device_profile::relay_default_channel_index.eq(&dp.relay_default_channel_index),
-            device_profile::relay_second_channel_freq.eq(&dp.relay_second_channel_freq),
-            device_profile::relay_second_channel_dr.eq(&dp.relay_second_channel_dr),
-            device_profile::relay_second_channel_ack_offset.eq(&dp.relay_second_channel_ack_offset),
-            device_profile::relay_ed_activation_mode.eq(&dp.relay_ed_activation_mode),
-            device_profile::relay_ed_smart_enable_level.eq(&dp.relay_ed_smart_enable_level),
-            device_profile::relay_ed_back_off.eq(&dp.relay_ed_back_off),
-            device_profile::relay_ed_uplink_limit_bucket_size
-                .eq(&dp.relay_ed_uplink_limit_bucket_size),
-            device_profile::relay_ed_uplink_limit_reload_rate
-                .eq(&dp.relay_ed_uplink_limit_reload_rate),
-            device_profile::relay_join_req_limit_reload_rate
-                .eq(&dp.relay_join_req_limit_reload_rate),
-            device_profile::relay_notify_limit_reload_rate.eq(&dp.relay_notify_limit_reload_rate),
-            device_profile::relay_global_uplink_limit_reload_rate
-                .eq(&dp.relay_global_uplink_limit_reload_rate),
-            device_profile::relay_overall_limit_reload_rate.eq(&dp.relay_overall_limit_reload_rate),
-            device_profile::relay_join_req_limit_bucket_size
-                .eq(&dp.relay_join_req_limit_bucket_size),
-            device_profile::relay_notify_limit_bucket_size.eq(&dp.relay_notify_limit_bucket_size),
-            device_profile::relay_global_uplink_limit_bucket_size
-                .eq(&dp.relay_global_uplink_limit_bucket_size),
-            device_profile::relay_overall_limit_bucket_size.eq(&dp.relay_overall_limit_bucket_size),
             device_profile::allow_roaming.eq(&dp.allow_roaming),
             device_profile::rx1_delay.eq(&dp.rx1_delay),
+            device_profile::abp_params.eq(&dp.abp_params),
+            device_profile::class_b_params.eq(&dp.class_b_params),
+            device_profile::class_c_params.eq(&dp.class_c_params),
+            device_profile::relay_params.eq(&dp.relay_params),
+            device_profile::app_layer_params.eq(&dp.app_layer_params),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await

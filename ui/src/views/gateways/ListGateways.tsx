@@ -15,6 +15,12 @@ import {
   ListMulticastGroupsRequest,
   AddGatewayToMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { ListFuotaDeploymentsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
+import {
+  ListFuotaDeploymentDevicesRequest,
+  AddGatewaysToFuotaDeploymentRequest,
+  ListFuotaDeploymentsRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 
 import type { GetPageCallbackFunc } from "../../components/DataTable";
@@ -22,6 +28,7 @@ import DataTable from "../../components/DataTable";
 import GatewayStore from "../../stores/GatewayStore";
 import ApplicationStore from "../../stores/ApplicationStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
+import FuotaStore from "../../stores/FuotaStore";
 import Admin from "../../components/Admin";
 import { useTitle } from "../helpers";
 
@@ -36,11 +43,21 @@ interface MulticastGroup {
   children: { title: string; value: string }[];
 }
 
+interface FuotaDeployment {
+  title: string;
+  value: string;
+  disabled: boolean;
+  children: { title: string; value: string }[];
+}
+
 function ListGateways(props: IProps) {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [multicastGroups, setMulticastGroups] = useState<MulticastGroup[]>([]);
+  const [fuotaDeployments, setFuotaDeployments] = useState<FuotaDeployment[]>([]);
   const [mgModalVisible, setMgModalVisible] = useState<boolean>(false);
+  const [fuotaModalVisible, setFuotaModalVisible] = useState<boolean>(false);
   const [mgSelected, setMgSelected] = useState<string>("");
+  const [fuotaDeploymentSelected, setFuotaDeploymentSelected] = useState<string>("");
   useTitle("Tenants", props.tenant.getName(), "Gateways");
 
   const columns: ColumnsType<GatewayListItem.AsObject> = [
@@ -124,33 +141,56 @@ function ListGateways(props: IProps) {
     req.setLimit(999);
     req.setTenantId(props.tenant.getId());
 
+    let mgGroups: MulticastGroup[] = [];
+    let fDeployments: FuotaDeployment[] = [];
+
     ApplicationStore.list(req, (resp: ListApplicationsResponse) => {
       for (const app of resp.getResultList()) {
-        const req = new ListMulticastGroupsRequest();
-        req.setLimit(999);
-        req.setApplicationId(app.getId());
-
-        MulticastGroupStore.list(req, (resp: ListMulticastGroupsResponse) => {
-          setMulticastGroups(m => {
-            m.push({
-              title: app.getName(),
-              value: "",
-              disabled: true,
-              children: resp.getResultList().map((mg, i) => ({
-                title: mg.getName(),
-                value: mg.getId(),
-              })),
-            });
-            return m;
+        const mgReq = new ListMulticastGroupsRequest();
+        mgReq.setLimit(999);
+        mgReq.setApplicationId(app.getId());
+        MulticastGroupStore.list(mgReq, (resp: ListMulticastGroupsResponse) => {
+          mgGroups.push({
+            title: app.getName(),
+            value: "",
+            disabled: true,
+            children: resp.getResultList().map((mg, i) => ({
+              title: mg.getName(),
+              value: mg.getId(),
+            })),
           });
+
+          // The above can also be done using setMulticastGroups and a callback
+          // function, but this introduces a race-condition when executed twice.
+          setMulticastGroups(mgGroups);
+        });
+
+        const fuotaReq = new ListFuotaDeploymentsRequest();
+        fuotaReq.setLimit(999);
+        fuotaReq.setApplicationId(app.getId());
+        FuotaStore.listDeployments(fuotaReq, (resp: ListFuotaDeploymentsResponse) => {
+          fDeployments.push({
+            title: app.getName(),
+            value: "",
+            disabled: true,
+            children: resp.getResultList().map((mg, i) => ({
+              title: mg.getName(),
+              value: mg.getId(),
+            })),
+          });
+
+          // The above can also be done using setFuotaDeployments and a callback
+          // function, but this introduces a race-condition when executed twice.
+          setFuotaDeployments(fDeployments);
         });
       }
     });
-  }, [props]);
+  }, [props.tenant]);
 
   const getPage = (
     limit: number,
     offset: number,
+    _filters: object,
     orderBy: string | void,
     orderByDesc: boolean | void,
     callbackFunc: GetPageCallbackFunc,
@@ -183,18 +223,6 @@ function ListGateways(props: IProps) {
     setSelectedRowIds(ids);
   };
 
-  const showMgModal = () => {
-    setMgModalVisible(true);
-  };
-
-  const hideMgModal = () => {
-    setMgModalVisible(false);
-  };
-
-  const onMgSelected = (value: string) => {
-    setMgSelected(value);
-  };
-
   const handleMgModalOk = () => {
     for (const gatewayId of selectedRowIds) {
       const req = new AddGatewayToMulticastGroupRequest();
@@ -207,9 +235,24 @@ function ListGateways(props: IProps) {
     setMgModalVisible(false);
   };
 
+  const handleFuotaModalOk = () => {
+    const req = new AddGatewaysToFuotaDeploymentRequest();
+    req.setFuotaDeploymentId(fuotaDeploymentSelected);
+    req.setGatewayIdsList(selectedRowIds);
+
+    FuotaStore.addGateways(req, () => {
+      setFuotaModalVisible(false);
+    });
+  };
+
   const menu = (
     <Menu>
-      <Menu.Item onClick={showMgModal}>Add to multicast-group</Menu.Item>
+      <Menu.Item key="mg" onClick={() => setMgModalVisible(true)}>
+        Add to multicast-group
+      </Menu.Item>
+      <Menu.Item key="fuota" onClick={() => setFuotaModalVisible(true)}>
+        Add to FUOTA deployment
+      </Menu.Item>
     </Menu>
   );
 
@@ -217,18 +260,34 @@ function ListGateways(props: IProps) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Modal
         title="Add selected gateways to multicast-group"
-        visible={mgModalVisible}
+        open={mgModalVisible}
         onOk={handleMgModalOk}
-        onCancel={hideMgModal}
+        onCancel={() => setMgModalVisible(false)}
         okButtonProps={{ disabled: mgSelected === "" }}
-        bodyStyle={{ height: 300 }}
       >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <TreeSelect
             style={{ width: "100%" }}
             placeholder="Select multicast-group"
             treeData={multicastGroups}
-            onChange={onMgSelected}
+            onChange={v => setMgSelected(v)}
+            treeDefaultExpandAll
+          />
+        </Space>
+      </Modal>
+      <Modal
+        title="Add selected gateways to FUOTA deployment"
+        open={fuotaModalVisible}
+        onOk={handleFuotaModalOk}
+        onCancel={() => setFuotaModalVisible(false)}
+        okButtonProps={{ disabled: fuotaDeploymentSelected === "" }}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          <TreeSelect
+            style={{ width: "100%" }}
+            placeholder="Select FUOTA deployment"
+            treeData={fuotaDeployments}
+            onChange={v => setFuotaDeploymentSelected(v)}
             treeDefaultExpandAll
           />
         </Space>

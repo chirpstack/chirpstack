@@ -60,6 +60,7 @@ diesel::table! {
         join_eui -> Binary,
         secondary_dev_addr -> Nullable<Binary>,
         device_session -> Nullable<Binary>,
+        app_layer_params -> Text,
     }
 }
 
@@ -72,6 +73,7 @@ diesel::table! {
         app_key -> Binary,
         dev_nonces -> Text,
         join_nonce -> Integer,
+        gen_app_key -> Binary,
     }
 }
 
@@ -93,15 +95,6 @@ diesel::table! {
         supports_otaa -> Bool,
         supports_class_b -> Bool,
         supports_class_c -> Bool,
-        class_b_timeout -> Integer,
-        class_b_ping_slot_nb_k -> Integer,
-        class_b_ping_slot_dr -> SmallInt,
-        class_b_ping_slot_freq -> BigInt,
-        class_c_timeout -> Integer,
-        abp_rx1_delay -> SmallInt,
-        abp_rx1_dr_offset -> SmallInt,
-        abp_rx2_dr -> SmallInt,
-        abp_rx2_freq -> BigInt,
         tags -> Text,
         payload_codec_script -> Text,
         flush_queue_on_activate -> Bool,
@@ -109,30 +102,13 @@ diesel::table! {
         measurements -> Text,
         auto_detect_measurements -> Bool,
         region_config_id -> Nullable<Text>,
-        is_relay -> Bool,
-        is_relay_ed -> Bool,
-        relay_ed_relay_only -> Bool,
-        relay_enabled -> Bool,
-        relay_cad_periodicity -> SmallInt,
-        relay_default_channel_index -> SmallInt,
-        relay_second_channel_freq -> BigInt,
-        relay_second_channel_dr -> SmallInt,
-        relay_second_channel_ack_offset -> SmallInt,
-        relay_ed_activation_mode -> SmallInt,
-        relay_ed_smart_enable_level -> SmallInt,
-        relay_ed_back_off -> SmallInt,
-        relay_ed_uplink_limit_bucket_size -> SmallInt,
-        relay_ed_uplink_limit_reload_rate -> SmallInt,
-        relay_join_req_limit_reload_rate -> SmallInt,
-        relay_notify_limit_reload_rate -> SmallInt,
-        relay_global_uplink_limit_reload_rate -> SmallInt,
-        relay_overall_limit_reload_rate -> SmallInt,
-        relay_join_req_limit_bucket_size -> SmallInt,
-        relay_notify_limit_bucket_size -> SmallInt,
-        relay_global_uplink_limit_bucket_size -> SmallInt,
-        relay_overall_limit_bucket_size -> SmallInt,
         allow_roaming -> Bool,
         rx1_delay -> SmallInt,
+        abp_params -> Nullable<Text>,
+        class_b_params -> Nullable<Text>,
+        class_c_params -> Nullable<Text>,
+        relay_params -> Nullable<Text>,
+        app_layer_params -> Text,
     }
 }
 
@@ -186,6 +162,75 @@ diesel::table! {
         timeout_after -> Nullable<TimestamptzSqlite>,
         is_encrypted -> Bool,
         expires_at -> Nullable<TimestamptzSqlite>,
+    }
+}
+
+diesel::table! {
+    fuota_deployment (id) {
+        id -> Text,
+        created_at -> TimestamptzSqlite,
+        updated_at -> TimestamptzSqlite,
+        started_at -> Nullable<TimestamptzSqlite>,
+        completed_at -> Nullable<TimestamptzSqlite>,
+        name -> Text,
+        application_id -> Text,
+        device_profile_id -> Text,
+        multicast_addr -> Binary,
+        multicast_key -> Binary,
+        multicast_group_type -> Text,
+        multicast_class_c_scheduling_type -> Text,
+        multicast_dr -> SmallInt,
+        multicast_class_b_ping_slot_nb_k -> SmallInt,
+        multicast_frequency -> BigInt,
+        multicast_timeout -> SmallInt,
+        multicast_session_start -> Nullable<TimestamptzSqlite>,
+        multicast_session_end -> Nullable<TimestamptzSqlite>,
+        unicast_max_retry_count -> SmallInt,
+        fragmentation_fragment_size -> SmallInt,
+        fragmentation_redundancy_percentage -> SmallInt,
+        fragmentation_session_index -> SmallInt,
+        fragmentation_matrix -> SmallInt,
+        fragmentation_block_ack_delay -> SmallInt,
+        fragmentation_descriptor -> Binary,
+        request_fragmentation_session_status -> Text,
+        payload -> Binary,
+        on_complete_set_device_tags -> Text,
+    }
+}
+
+diesel::table! {
+    fuota_deployment_device (fuota_deployment_id, dev_eui) {
+        fuota_deployment_id -> Text,
+        dev_eui -> Binary,
+        created_at -> TimestamptzSqlite,
+        completed_at -> Nullable<TimestamptzSqlite>,
+        mc_group_setup_completed_at -> Nullable<TimestamptzSqlite>,
+        mc_session_completed_at -> Nullable<TimestamptzSqlite>,
+        frag_session_setup_completed_at -> Nullable<TimestamptzSqlite>,
+        frag_status_completed_at -> Nullable<TimestamptzSqlite>,
+        error_msg -> Text,
+    }
+}
+
+diesel::table! {
+    fuota_deployment_gateway (fuota_deployment_id, gateway_id) {
+        fuota_deployment_id -> Text,
+        gateway_id -> Binary,
+        created_at -> TimestamptzSqlite,
+    }
+}
+
+diesel::table! {
+    fuota_deployment_job (fuota_deployment_id, job) {
+        fuota_deployment_id -> Text,
+        job -> Text,
+        created_at -> TimestamptzSqlite,
+        completed_at -> Nullable<TimestamptzSqlite>,
+        max_retry_count -> SmallInt,
+        attempt_count -> SmallInt,
+        scheduler_run_after -> TimestamptzSqlite,
+        warning_msg -> Text,
+        error_msg -> Text,
     }
 }
 
@@ -332,6 +377,13 @@ diesel::joinable!(device -> device_profile (device_profile_id));
 diesel::joinable!(device_keys -> device (dev_eui));
 diesel::joinable!(device_profile -> tenant (tenant_id));
 diesel::joinable!(device_queue_item -> device (dev_eui));
+diesel::joinable!(fuota_deployment -> application (application_id));
+diesel::joinable!(fuota_deployment -> device_profile (device_profile_id));
+diesel::joinable!(fuota_deployment_device -> device (dev_eui));
+diesel::joinable!(fuota_deployment_device -> fuota_deployment (fuota_deployment_id));
+diesel::joinable!(fuota_deployment_gateway -> fuota_deployment (fuota_deployment_id));
+diesel::joinable!(fuota_deployment_gateway -> gateway (gateway_id));
+diesel::joinable!(fuota_deployment_job -> fuota_deployment (fuota_deployment_id));
 diesel::joinable!(gateway -> tenant (tenant_id));
 diesel::joinable!(multicast_group -> application (application_id));
 diesel::joinable!(multicast_group_device -> device (dev_eui));
@@ -353,6 +405,10 @@ diesel::allow_tables_to_appear_in_same_query!(
     device_profile,
     device_profile_template,
     device_queue_item,
+    fuota_deployment,
+    fuota_deployment_device,
+    fuota_deployment_gateway,
+    fuota_deployment_job,
     gateway,
     multicast_group,
     multicast_group_device,

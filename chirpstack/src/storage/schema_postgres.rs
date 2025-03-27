@@ -65,6 +65,7 @@ diesel::table! {
         join_eui -> Bytea,
         secondary_dev_addr -> Nullable<Bytea>,
         device_session -> Nullable<Bytea>,
+        app_layer_params -> Jsonb,
     }
 }
 
@@ -77,6 +78,7 @@ diesel::table! {
         app_key -> Bytea,
         dev_nonces -> Jsonb,
         join_nonce -> Int4,
+        gen_app_key -> Bytea,
     }
 }
 
@@ -105,15 +107,6 @@ diesel::table! {
         supports_otaa -> Bool,
         supports_class_b -> Bool,
         supports_class_c -> Bool,
-        class_b_timeout -> Int4,
-        class_b_ping_slot_nb_k -> Int4,
-        class_b_ping_slot_dr -> Int2,
-        class_b_ping_slot_freq -> Int8,
-        class_c_timeout -> Int4,
-        abp_rx1_delay -> Int2,
-        abp_rx1_dr_offset -> Int2,
-        abp_rx2_dr -> Int2,
-        abp_rx2_freq -> Int8,
         tags -> Jsonb,
         payload_codec_script -> Text,
         flush_queue_on_activate -> Bool,
@@ -122,30 +115,13 @@ diesel::table! {
         auto_detect_measurements -> Bool,
         #[max_length = 100]
         region_config_id -> Nullable<Varchar>,
-        is_relay -> Bool,
-        is_relay_ed -> Bool,
-        relay_ed_relay_only -> Bool,
-        relay_enabled -> Bool,
-        relay_cad_periodicity -> Int2,
-        relay_default_channel_index -> Int2,
-        relay_second_channel_freq -> Int8,
-        relay_second_channel_dr -> Int2,
-        relay_second_channel_ack_offset -> Int2,
-        relay_ed_activation_mode -> Int2,
-        relay_ed_smart_enable_level -> Int2,
-        relay_ed_back_off -> Int2,
-        relay_ed_uplink_limit_bucket_size -> Int2,
-        relay_ed_uplink_limit_reload_rate -> Int2,
-        relay_join_req_limit_reload_rate -> Int2,
-        relay_notify_limit_reload_rate -> Int2,
-        relay_global_uplink_limit_reload_rate -> Int2,
-        relay_overall_limit_reload_rate -> Int2,
-        relay_join_req_limit_bucket_size -> Int2,
-        relay_notify_limit_bucket_size -> Int2,
-        relay_global_uplink_limit_bucket_size -> Int2,
-        relay_overall_limit_bucket_size -> Int2,
         allow_roaming -> Bool,
         rx1_delay -> Int2,
+        abp_params -> Nullable<Jsonb>,
+        class_b_params -> Nullable<Jsonb>,
+        class_c_params -> Nullable<Jsonb>,
+        relay_params -> Nullable<Jsonb>,
+        app_layer_params -> Jsonb,
     }
 }
 
@@ -208,6 +184,80 @@ diesel::table! {
         timeout_after -> Nullable<Timestamptz>,
         is_encrypted -> Bool,
         expires_at -> Nullable<Timestamptz>,
+    }
+}
+
+diesel::table! {
+    fuota_deployment (id) {
+        id -> Uuid,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        started_at -> Nullable<Timestamptz>,
+        completed_at -> Nullable<Timestamptz>,
+        #[max_length = 100]
+        name -> Varchar,
+        application_id -> Uuid,
+        device_profile_id -> Uuid,
+        multicast_addr -> Bytea,
+        multicast_key -> Bytea,
+        #[max_length = 1]
+        multicast_group_type -> Bpchar,
+        #[max_length = 20]
+        multicast_class_c_scheduling_type -> Varchar,
+        multicast_dr -> Int2,
+        multicast_class_b_ping_slot_nb_k -> Int2,
+        multicast_frequency -> Int8,
+        multicast_timeout -> Int2,
+        multicast_session_start -> Nullable<Timestamptz>,
+        multicast_session_end -> Nullable<Timestamptz>,
+        unicast_max_retry_count -> Int2,
+        fragmentation_fragment_size -> Int2,
+        fragmentation_redundancy_percentage -> Int2,
+        fragmentation_session_index -> Int2,
+        fragmentation_matrix -> Int2,
+        fragmentation_block_ack_delay -> Int2,
+        fragmentation_descriptor -> Bytea,
+        #[max_length = 20]
+        request_fragmentation_session_status -> Varchar,
+        payload -> Bytea,
+        on_complete_set_device_tags -> Jsonb,
+    }
+}
+
+diesel::table! {
+    fuota_deployment_device (fuota_deployment_id, dev_eui) {
+        fuota_deployment_id -> Uuid,
+        dev_eui -> Bytea,
+        created_at -> Timestamptz,
+        completed_at -> Nullable<Timestamptz>,
+        mc_group_setup_completed_at -> Nullable<Timestamptz>,
+        mc_session_completed_at -> Nullable<Timestamptz>,
+        frag_session_setup_completed_at -> Nullable<Timestamptz>,
+        frag_status_completed_at -> Nullable<Timestamptz>,
+        error_msg -> Text,
+    }
+}
+
+diesel::table! {
+    fuota_deployment_gateway (fuota_deployment_id, gateway_id) {
+        fuota_deployment_id -> Uuid,
+        gateway_id -> Bytea,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    fuota_deployment_job (fuota_deployment_id, job) {
+        fuota_deployment_id -> Uuid,
+        #[max_length = 20]
+        job -> Varchar,
+        created_at -> Timestamptz,
+        completed_at -> Nullable<Timestamptz>,
+        max_retry_count -> Int2,
+        attempt_count -> Int2,
+        scheduler_run_after -> Timestamptz,
+        warning_msg -> Text,
+        error_msg -> Text,
     }
 }
 
@@ -363,6 +413,13 @@ diesel::joinable!(device -> device_profile (device_profile_id));
 diesel::joinable!(device_keys -> device (dev_eui));
 diesel::joinable!(device_profile -> tenant (tenant_id));
 diesel::joinable!(device_queue_item -> device (dev_eui));
+diesel::joinable!(fuota_deployment -> application (application_id));
+diesel::joinable!(fuota_deployment -> device_profile (device_profile_id));
+diesel::joinable!(fuota_deployment_device -> device (dev_eui));
+diesel::joinable!(fuota_deployment_device -> fuota_deployment (fuota_deployment_id));
+diesel::joinable!(fuota_deployment_gateway -> fuota_deployment (fuota_deployment_id));
+diesel::joinable!(fuota_deployment_gateway -> gateway (gateway_id));
+diesel::joinable!(fuota_deployment_job -> fuota_deployment (fuota_deployment_id));
 diesel::joinable!(gateway -> tenant (tenant_id));
 diesel::joinable!(multicast_group -> application (application_id));
 diesel::joinable!(multicast_group_device -> device (dev_eui));
@@ -384,6 +441,10 @@ diesel::allow_tables_to_appear_in_same_query!(
     device_profile,
     device_profile_template,
     device_queue_item,
+    fuota_deployment,
+    fuota_deployment_device,
+    fuota_deployment_gateway,
+    fuota_deployment_job,
     gateway,
     multicast_group,
     multicast_group_device,

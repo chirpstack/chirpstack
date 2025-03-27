@@ -250,6 +250,11 @@ impl DeviceService for Device {
         } else {
             Some(Uuid::from_str(&req.multicast_group_id).map_err(|e| e.status())?)
         };
+        let dp_id: Option<Uuid> = if req.device_profile_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req.device_profile_id).map_err(|e| e.status())?)
+        };
 
         self.validator
             .validate(
@@ -270,11 +275,13 @@ impl DeviceService for Device {
         let filters = device::Filters {
             application_id: Some(app_id),
             multicast_group_id: mg_id,
+            device_profile_id: dp_id,
             search: if req.search.is_empty() {
                 None
             } else {
                 Some(req.search.to_string())
             },
+            tags: req.tags.clone(),
         };
 
         let count = device::get_count(&filters).await.map_err(|e| e.status())?;
@@ -315,6 +322,7 @@ impl DeviceService for Device {
                         }),
                         false => None,
                     },
+                    tags: d.tags.into_hashmap(),
                 })
                 .collect(),
         });
@@ -346,11 +354,8 @@ impl DeviceService for Device {
         let dk = device_keys::DeviceKeys {
             dev_eui,
             nwk_key: AES128Key::from_str(&req_dk.nwk_key).map_err(|e| e.status())?,
-            app_key: if !req_dk.app_key.is_empty() {
-                AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?
-            } else {
-                AES128Key::null()
-            },
+            app_key: AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?,
+            gen_app_key: AES128Key::from_str(&req_dk.gen_app_key).map_err(|e| e.status())?,
             ..Default::default()
         };
 
@@ -384,6 +389,7 @@ impl DeviceService for Device {
                 dev_eui: dk.dev_eui.to_string(),
                 nwk_key: dk.nwk_key.to_string(),
                 app_key: dk.app_key.to_string(),
+                gen_app_key: dk.gen_app_key.to_string(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dk.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dk.updated_at)),
@@ -420,11 +426,8 @@ impl DeviceService for Device {
             dev_nonces: dk.dev_nonces,
             join_nonce: dk.join_nonce,
             nwk_key: AES128Key::from_str(&req_dk.nwk_key).map_err(|e| e.status())?,
-            app_key: if !req_dk.app_key.is_empty() {
-                AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?
-            } else {
-                AES128Key::null()
-            },
+            app_key: AES128Key::from_str(&req_dk.app_key).map_err(|e| e.status())?,
+            gen_app_key: AES128Key::from_str(&req_dk.gen_app_key).map_err(|e| e.status())?,
             ..Default::default()
         };
         let _ = device_keys::update(dk).await.map_err(|e| e.status())?;
@@ -1371,6 +1374,7 @@ pub mod test {
                 offset: 0,
                 order_by: api::list_devices_request::OrderBy::Name.into(),
                 order_by_desc: true,
+                ..Default::default()
             },
         );
         let list_resp = service.list(list_req).await.unwrap();
@@ -1385,6 +1389,7 @@ pub mod test {
                     dev_eui: "0102030405060708".into(),
                     nwk_key: "01020304050607080102030405060708".into(),
                     app_key: "02020304050607080202030405060708".into(),
+                    gen_app_key: "03020304050607080202030405060708".into(),
                 }),
             },
         );
@@ -1403,6 +1408,7 @@ pub mod test {
                 dev_eui: "0102030405060708".into(),
                 nwk_key: "01020304050607080102030405060708".into(),
                 app_key: "02020304050607080202030405060708".into(),
+                gen_app_key: "03020304050607080202030405060708".into(),
             }),
             get_keys_resp.get_ref().device_keys
         );
@@ -1415,6 +1421,7 @@ pub mod test {
                     dev_eui: "0102030405060708".into(),
                     nwk_key: "01020304050607080102030405060708".into(),
                     app_key: "03020304050607080302030405060708".into(),
+                    gen_app_key: "03020304050607080202030405060708".into(),
                 }),
             },
         );
@@ -1433,6 +1440,7 @@ pub mod test {
                 dev_eui: "0102030405060708".into(),
                 nwk_key: "01020304050607080102030405060708".into(),
                 app_key: "03020304050607080302030405060708".into(),
+                gen_app_key: "03020304050607080202030405060708".into(),
             }),
             get_keys_resp.get_ref().device_keys
         );

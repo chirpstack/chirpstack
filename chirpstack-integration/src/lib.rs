@@ -203,7 +203,7 @@ impl Integration {
 
             for stream_key in &srr.keys {
                 for stream_id in &stream_key.ids {
-                    redis::cmd("XACK")
+                    let _: () = redis::cmd("XACK")
                         .arg(&key)
                         .arg(&self.consumer_group)
                         .arg(&stream_id.id)

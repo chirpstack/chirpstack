@@ -14,7 +14,6 @@ use crate::storage::{get_async_redis_conn, redis_key};
 use chirpstack_api::{api, integration};
 
 #[allow(clippy::enum_variant_names)]
-
 pub async fn log_event_for_device(typ: &str, dev_eui: &str, b: &[u8]) -> Result<()> {
     let conf = config::get();
 

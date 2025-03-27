@@ -379,7 +379,7 @@ pub mod test {
 
         let tu = TenantUser {
             tenant_id: t.id,
-            user_id: user.id.into(),
+            user_id: user.id,
             is_admin: true,
             ..Default::default()
         };
@@ -480,7 +480,7 @@ pub mod test {
 
         let tu = TenantUser {
             tenant_id: t.id,
-            user_id: user.id.into(),
+            user_id: user.id,
             is_admin: true,
             ..Default::default()
         };

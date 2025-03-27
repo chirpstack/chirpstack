@@ -47,6 +47,17 @@ impl ToStatus for storage::error::Error {
             storage::error::Error::ProstDecode(_) => {
                 Status::new(Code::Internal, format!("{:#}", self))
             }
+            storage::error::Error::ValidatorValidate(_) => {
+                Status::new(Code::InvalidArgument, format!("{:#}", self))
+            }
+            storage::error::Error::Multi(errors) => {
+                let errors = errors
+                    .iter()
+                    .map(|e| e.to_string())
+                    .collect::<Vec<String>>()
+                    .join(", ");
+                Status::new(Code::InvalidArgument, errors)
+            }
         }
     }
 }

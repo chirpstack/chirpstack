@@ -1,6 +1,9 @@
 mod big_decimal;
 mod dev_nonces;
+pub mod device;
+pub mod device_profile;
 mod device_session;
+mod fuota;
 mod key_value;
 mod measurements;
 mod multicast_group_scheduling_type;
@@ -8,7 +11,9 @@ mod uuid;
 
 pub use big_decimal::BigDecimal;
 pub use dev_nonces::DevNonces;
+pub use device_profile::{AbpParams, AppLayerParams, ClassBParams, ClassCParams, RelayParams};
 pub use device_session::DeviceSession;
+pub use fuota::{FuotaJob, RequestFragmentationSessionStatus};
 pub use key_value::KeyValue;
 pub use measurements::*;
 pub use multicast_group_scheduling_type::MulticastGroupSchedulingType;

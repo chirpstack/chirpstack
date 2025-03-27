@@ -40,7 +40,11 @@ impl UplinkMetadata {
         let snr = (snr + 20) as u8;
         let rssi = -(rssi + 15) as u8;
 
-        Ok([self.dr | snr << 4, snr >> 4 | rssi << 1, self.wor_channel])
+        Ok([
+            self.dr | (snr << 4),
+            (snr >> 4) | (rssi << 1),
+            self.wor_channel,
+        ])
     }
 }
 

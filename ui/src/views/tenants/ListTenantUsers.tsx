@@ -68,6 +68,7 @@ function ListTenantUsers(props: IProps) {
   const getPage = (
     limit: number,
     offset: number,
+    _filters: object,
     orderBy: string | void,
     orderByDesc: boolean | void,
     callbackFunc: GetPageCallbackFunc,

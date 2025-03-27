@@ -103,7 +103,7 @@ impl<'de> Deserialize<'de> for EUI64 {
 struct Eui64Visitor;
 
 #[cfg(feature = "serde")]
-impl<'de> Visitor<'de> for Eui64Visitor {
+impl Visitor<'_> for Eui64Visitor {
     type Value = EUI64;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -251,7 +251,7 @@ impl<'de> Deserialize<'de> for EUI64Prefix {
 struct EUI64PrefixVisitor;
 
 #[cfg(feature = "serde")]
-impl<'de> Visitor<'de> for EUI64PrefixVisitor {
+impl Visitor<'_> for EUI64PrefixVisitor {
     type Value = EUI64Prefix;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

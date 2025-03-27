@@ -101,6 +101,39 @@ enum RelayModeActivation {
   END_DEVICE_CONTROLLED = 3;
 }
 
+enum Ts003Version {
+  // Not implemented.
+  TS003_NOT_IMPLEMENTED = 0;
+
+  // v1.0.0.
+  TS003_V100 = 1;
+
+  // v2.0.0
+  TS003_v200 = 2;
+}
+
+enum Ts004Version {
+  // Not implemented.
+  TS004_NOT_IMPLEMENTED = 0;
+
+  // v1.0.0.
+  TS004_V100 = 1;
+
+  // v2.0.0
+  TS004_V200 = 2;
+}
+
+enum Ts005Version {
+  // Not implemented.
+  TS005_NOT_IMPLEMENTED = 0;
+
+  // v1.0.0.
+  TS005_V100 = 1;
+
+  // v2.0.0
+  TS005_V200 = 2;
+}
+
 // DeviceProfileService is the service providing API methods for managing
 // device-profiles.
 service DeviceProfileService {
@@ -433,8 +466,11 @@ message DeviceProfile {
   // Valid options are 1 - 15 (0 = always use system RX1 Delay).
   uint32 rx1_delay = 53;
 
+  // Application Layer parameters.
+  AppLayerParams app_layer_params = 54;
+
   // Payload codec plugin ID.
-  string codec_plugin_id = 54;
+  string codec_plugin_id = 55;
 }
 
 message Measurement {
@@ -443,6 +479,26 @@ message Measurement {
 
   // Kind.
   MeasurementKind kind = 3;
+}
+
+message AppLayerParams {
+  // TS003 version (Application Layer Clock Sync).
+  Ts003Version ts003_version = 1;
+
+  // TS003 fPort.
+  uint32 ts003_f_port = 2;
+
+  // TS004 version (Fragmented Data Block Transport).
+  Ts004Version ts004_version = 3;
+
+  // TS004 fPort.
+  uint32 ts004_f_port = 4;
+
+  // TS005 version (Remote Multicast Setup).
+  Ts005Version ts005_version = 5;
+
+  // TS005 fPort.
+  uint32 ts005_f_port = 6;
 }
 
 message DeviceProfileListItem {
@@ -515,6 +571,7 @@ message DeleteDeviceProfileRequest {
 
 message ListDeviceProfilesRequest {
   // Max number of device-profiles to return in the result-set.
+  // If not set, it will be treated as 0, and the response will only return the total_count.
   uint32 limit = 1;
 
   // Offset in the result-set (for pagination).

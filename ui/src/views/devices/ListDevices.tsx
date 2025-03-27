@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { format } from "date-fns";
-import { Space, Button, Dropdown, Menu, Modal, Select } from "antd";
+import { Space, Button, Dropdown, Menu, Modal, Select, Tag, Popover, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,8 +13,18 @@ import {
   faBatteryThreeQuarters,
 } from "@fortawesome/free-solid-svg-icons";
 
-import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import {
+  Application,
+  ListApplicationDeviceProfilesResponse,
+  ApplicationDeviceProfileListItem,
+  ListApplicationDeviceTagsResponse,
+  ApplicationDeviceTagListItem,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import type { ListDevicesResponse, DeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import {
+  ListApplicationDeviceProfilesRequest,
+  ListApplicationDeviceTagsRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import { ListDevicesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import type {
   ListMulticastGroupsResponse,
@@ -26,11 +36,21 @@ import {
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import type { ListRelaysResponse, RelayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
 import { ListRelaysRequest, AddRelayDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
+import type {
+  ListFuotaDeploymentsResponse,
+  FuotaDeploymentListItem,
+} from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
+import {
+  ListFuotaDeploymentsRequest,
+  AddDevicesToFuotaDeploymentRequest,
+} from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
 
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
+import ApplicationStore from "../../stores/ApplicationStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
+import FuotaStore from "../../stores/FuotaStore";
 import RelayStore from "../../stores/RelayStore";
 import Admin from "../../components/Admin";
 
@@ -42,16 +62,32 @@ function ListDevices(props: IProps) {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [multicastGroups, setMulticastGroups] = useState<MulticastGroupListItem[]>([]);
   const [relays, setRelays] = useState<RelayListItem[]>([]);
+  const [fuotaDeployments, setFuotaDeployments] = useState<FuotaDeploymentListItem[]>([]);
   const [mgModalVisible, setMgModalVisible] = useState<boolean>(false);
+  const [fuotaModalVisible, setFuotaModalVisible] = useState<boolean>(false);
   const [relayModalVisible, setRelayModalVisible] = useState<boolean>(false);
   const [mgSelected, setMgSelected] = useState<string>("");
+  const [fuotaDeploymentSelected, setFuotaDeploymentSelected] = useState<string>("");
   const [relaySelected, setRelaySelected] = useState<string>("");
+  const [applicationDeviceProfiles, setApplicationDeviceProfiles] = useState<ApplicationDeviceProfileListItem[]>([]);
+  const [applicationDeviceTags, setApplicationDeviceTags] = useState<ApplicationDeviceTagListItem[]>([]);
 
   useEffect(() => {
+    const appDpReq = new ListApplicationDeviceProfilesRequest();
+    appDpReq.setApplicationId(props.application.getId());
+    ApplicationStore.listDeviceProfiles(appDpReq, (resp: ListApplicationDeviceProfilesResponse) => {
+      setApplicationDeviceProfiles(resp.getResultList());
+    });
+
+    const appDevTagsReq = new ListApplicationDeviceTagsRequest();
+    appDevTagsReq.setApplicationId(props.application.getId());
+    ApplicationStore.listDeviceTags(appDevTagsReq, (resp: ListApplicationDeviceTagsResponse) => {
+      setApplicationDeviceTags(resp.getResultList());
+    });
+
     const mgReq = new ListMulticastGroupsRequest();
     mgReq.setLimit(999);
     mgReq.setApplicationId(props.application.getId());
-
     MulticastGroupStore.list(mgReq, (resp: ListMulticastGroupsResponse) => {
       setMulticastGroups(resp.getResultList());
     });
@@ -59,9 +95,15 @@ function ListDevices(props: IProps) {
     const relayReq = new ListRelaysRequest();
     relayReq.setLimit(999);
     relayReq.setApplicationId(props.application.getId());
-
     RelayStore.list(relayReq, (resp: ListRelaysResponse) => {
       setRelays(resp.getResultList());
+    });
+
+    const fuotaReq = new ListFuotaDeploymentsRequest();
+    fuotaReq.setLimit(999);
+    fuotaReq.setApplicationId(props.application.getId());
+    FuotaStore.listDeployments(fuotaReq, (resp: ListFuotaDeploymentsResponse) => {
+      setFuotaDeployments(resp.getResultList());
     });
   }, [props]);
 
@@ -71,7 +113,7 @@ function ListDevices(props: IProps) {
       dataIndex: "lastSeenAt",
       key: "lastSeenAt",
       width: 250,
-      render: (text, record) => {
+      render: (_text, record) => {
         if (record.lastSeenAt !== undefined) {
           const ts = new Date(0);
           ts.setUTCSeconds(record.lastSeenAt.seconds);
@@ -106,19 +148,54 @@ function ListDevices(props: IProps) {
     {
       title: "Device profile",
       dataIndex: "deviceProfileName",
-      key: "deviceProfileName",
+      key: "deviceProfileId",
       render: (text, record) => (
         <Link to={`/tenants/${props.application.getTenantId()}/device-profiles/${record.deviceProfileId}/edit`}>
           {text}
         </Link>
       ),
       sorter: true,
+      filterMultiple: false,
+      filters: applicationDeviceProfiles.map(v => {
+        return {
+          text: v.getName(),
+          value: v.getId(),
+        };
+      }),
+    },
+    {
+      title: "Tags",
+      dataIndex: "tagsMap",
+      key: "tags",
+      render: (text, record) => (
+        <>
+          {text.map((v: string[]) => (
+            <Popover content={v[1]}>
+              <Tag>{v[0]}</Tag>
+            </Popover>
+          ))}
+        </>
+      ),
+      filterMultiple: false,
+      filters: applicationDeviceTags.map(v => {
+        return {
+          text: v.getKey(),
+          value: v.getKey(),
+          children: v.getValuesList().map(vv => {
+            return {
+              text: vv,
+              value: `${v.getKey()}=${vv}`,
+            };
+          }),
+        };
+      }),
     },
     {
       title: "Battery",
       dataIndex: "deviceStatus",
       key: "deviceStatus",
-      render: (text, record) => {
+      width: 50,
+      render: (_text, record) => {
         if (record.deviceStatus === undefined) {
           return;
         }
@@ -141,10 +218,13 @@ function ListDevices(props: IProps) {
   const getPage = (
     limit: number,
     offset: number,
+    filters: object,
     orderBy: string | void,
     orderByDesc: boolean | void,
     callbackFunc: GetPageCallbackFunc,
   ) => {
+    let f = filters as any;
+
     function getOrderBy(orderBy: string | void): ListDevicesRequest.OrderBy {
       switch (orderBy) {
         case "lastSeenAt":
@@ -158,12 +238,34 @@ function ListDevices(props: IProps) {
       }
     }
 
+    function getDeviceProfileId(filters: any): string {
+      let dpIdFilter = filters.deviceProfileId;
+      if (Array.isArray(dpIdFilter) && dpIdFilter.length > 0) {
+        return dpIdFilter[0] as string;
+      }
+
+      return "";
+    }
+
     const req = new ListDevicesRequest();
     req.setApplicationId(props.application.getId());
+    req.setDeviceProfileId(getDeviceProfileId(f));
     req.setLimit(limit);
     req.setOffset(offset);
     req.setOrderBy(getOrderBy(orderBy));
     req.setOrderByDesc(orderByDesc || false);
+
+    {
+      let tagsFilter = f.tags;
+      if (Array.isArray(tagsFilter)) {
+        tagsFilter.forEach(v => {
+          const parts = v.split("=");
+          req.getTagsMap().set(parts[0], parts[1]);
+        });
+      }
+    }
+
+    console.log(req.toObject());
 
     DeviceStore.list(req, (resp: ListDevicesResponse) => {
       const obj = resp.toObject();
@@ -223,22 +325,32 @@ function ListDevices(props: IProps) {
     setRelayModalVisible(false);
   };
 
+  const handleFuotaModalOk = () => {
+    const req = new AddDevicesToFuotaDeploymentRequest();
+    req.setFuotaDeploymentId(fuotaDeploymentSelected);
+    req.setDevEuisList(selectedRowIds);
+
+    FuotaStore.addDevices(req, () => {});
+    setFuotaModalVisible(false);
+  };
+
   const menu = (
     <Menu>
       <Menu.Item onClick={showMgModal}>Add to multicast-group</Menu.Item>
+      <Menu.Item onClick={() => setFuotaModalVisible(true)}>Add to FUOTA deployment</Menu.Item>
       <Menu.Item onClick={showRelayModal}>Add to relay</Menu.Item>
     </Menu>
   );
 
-  const mgOptions = multicastGroups.map((mg, i) => <Select.Option value={mg.getId()}>{mg.getName()}</Select.Option>);
-
-  const relayOptions = relays.map((r, i) => <Select.Option value={r.getDevEui()}>{r.getName()}</Select.Option>);
+  const mgOptions = multicastGroups.map(mg => <Select.Option value={mg.getId()}>{mg.getName()}</Select.Option>);
+  const relayOptions = relays.map(r => <Select.Option value={r.getDevEui()}>{r.getName()}</Select.Option>);
+  const fuotaOptions = fuotaDeployments.map(r => <Select.Option value={r.getId()}>{r.getName()}</Select.Option>);
 
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>
       <Modal
         title="Add selected devices to multicast-group"
-        visible={mgModalVisible}
+        open={mgModalVisible}
         onOk={handleMgModalOk}
         onCancel={hideMgModal}
         okButtonProps={{ disabled: mgSelected === "" }}
@@ -250,8 +362,29 @@ function ListDevices(props: IProps) {
         </Space>
       </Modal>
       <Modal
+        title="Add selected devices to FUOTA deployment"
+        open={fuotaModalVisible}
+        onOk={handleFuotaModalOk}
+        onCancel={() => setFuotaModalVisible(false)}
+        okButtonProps={{ disabled: fuotaDeploymentSelected === "" }}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          <Typography.Text>
+            This will add the selected devices to a FUOTA deployment. Devices must have the same device-profile as
+            associated with the FUOTA deployment.
+          </Typography.Text>
+          <Select
+            style={{ width: "100%" }}
+            onChange={v => setFuotaDeploymentSelected(v)}
+            placeholder="Select FUOTA deployment"
+          >
+            {fuotaOptions}
+          </Select>
+        </Space>
+      </Modal>
+      <Modal
         title="Add selected devices to relay"
-        visible={relayModalVisible}
+        open={relayModalVisible}
         onOk={handleRelayModalOk}
         onCancel={hideRelayModal}
         okButtonProps={{ disabled: relaySelected === "" }}

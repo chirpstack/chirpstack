@@ -66,8 +66,8 @@ impl<'a> Integration<'a> {
         // get client id, this will generate a random client_id when no client_id has been
         // configured.
         let client_id = if conf.client_id.is_empty() {
-            let mut rnd = rand::thread_rng();
-            let client_id: u64 = rnd.gen();
+            let mut rnd = rand::rng();
+            let client_id: u64 = rnd.random();
             format!("{:x}", client_id)
         } else {
             conf.client_id.clone()

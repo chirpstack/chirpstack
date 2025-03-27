@@ -15,6 +15,7 @@ import ListRelays from "../relays/ListRelays";
 import EditApplication from "./EditApplication";
 import ListIntegrations from "./ListIntegrations";
 import ListMulticastGroups from "../multicast-groups/ListMulticastGroups";
+import ListFuotaDeployments from "../fuota/ListFuotaDeployments";
 import Admin from "../../components/Admin";
 
 import CreateHttpIntegration from "./integrations/CreateHttpIntegration";
@@ -70,6 +71,9 @@ function ApplicationLayout(props: IProps) {
   const path = location.pathname;
   let tab = "devices";
 
+  if (path.endsWith("/fuota")) {
+    tab = "fuota";
+  }
   if (path.endsWith("/multicast-groups")) {
     tab = "mg";
   }
@@ -128,6 +132,9 @@ function ApplicationLayout(props: IProps) {
           <Menu.Item key="devices">
             <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}`}>Devices</Link>
           </Menu.Item>
+          <Menu.Item key="fuota">
+            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota`}>FUOTA</Link>
+          </Menu.Item>
           <Menu.Item key="mg">
             <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups`}>Multicast groups</Link>
           </Menu.Item>
@@ -148,6 +155,7 @@ function ApplicationLayout(props: IProps) {
           <Route path="/edit" element={<EditApplication application={app} />} />
           <Route path="/integrations" element={<ListIntegrations application={app} />} />
           <Route path="/multicast-groups" element={<ListMulticastGroups application={app} />} />
+          <Route path="/fuota" element={<ListFuotaDeployments application={app} />} />
           <Route path="/relays" element={<ListRelays application={app} />} />
 
           <Route path="/integrations/http/create" element={<CreateHttpIntegration application={app} />} />
