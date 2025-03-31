@@ -978,11 +978,11 @@ dependencies = [
  "tokio-reactor-trait",
  "tokio-stream",
  "toml",
- "tonic",
+ "tonic 0.12.3",
  "tonic-reflection",
  "tonic-web",
  "tower 0.5.2",
- "tower-http 0.6.2",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
  "urlencoding",
@@ -1004,7 +1004,7 @@ dependencies = [
  "rand 0.9.0",
  "serde",
  "tokio",
- "tonic",
+ "tonic 0.12.3",
  "tonic-build",
 ]
 
@@ -5211,6 +5211,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "tonic"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85839f0b32fd242bb3209262371d07feda6d780d16ee9d2bc88581b89da1549b"
+dependencies = [
+ "base64 0.22.1",
+ "bytes",
+ "http 1.3.1",
+ "http-body 1.0.1",
+ "http-body-util",
+ "percent-encoding",
+ "pin-project",
+ "tokio-stream",
+ "tower-layer",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
 name = "tonic-build"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5234,24 +5253,22 @@ dependencies = [
  "prost-types",
  "tokio",
  "tokio-stream",
- "tonic",
+ "tonic 0.12.3",
 ]
 
 [[package]]
 name = "tonic-web"
-version = "0.12.3"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5299dd20801ad736dccb4a5ea0da7376e59cd98f213bf1c3d478cf53f4834b58"
+checksum = "ad8e4a5564e49598cbdefefb5b982c243b11009bdaf36ad59487c2253cb73379"
 dependencies = [
  "base64 0.22.1",
  "bytes",
  "http 1.3.1",
  "http-body 1.0.1",
- "http-body-util",
  "pin-project",
  "tokio-stream",
- "tonic",
- "tower-http 0.5.2",
+ "tonic 0.13.0",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -5291,22 +5308,6 @@ dependencies = [
  "tower-layer",
  "tower-service",
  "tracing",
-]
-
-[[package]]
-name = "tower-http"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e9cd434a998747dd2c4276bc96ee2e0c7a2eadf3cae88e52be55a05fa9053f5"
-dependencies = [
- "bitflags 2.9.0",
- "bytes",
- "http 1.3.1",
- "http-body 1.0.1",
- "http-body-util",
- "pin-project-lite",
- "tower-layer",
- "tower-service",
 ]
 
 [[package]]
