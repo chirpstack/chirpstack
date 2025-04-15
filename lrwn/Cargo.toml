@@ -22,9 +22,6 @@
   thiserror = "2.0"
   anyhow = "1.0"
 
-  # Misc
-  lazy_static = "1.5"
-
 [features]
   default = []
   diesel = ["dep:diesel", "serde"]

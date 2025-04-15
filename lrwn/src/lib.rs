@@ -3,8 +3,6 @@
 extern crate diesel;
 #[macro_use]
 extern crate anyhow;
-#[macro_use]
-extern crate lazy_static;
 
 pub use self::aes128::*;
 pub use self::cflist::*;
@@ -43,26 +41,24 @@ mod relay;
 
 pub const LA_FPORT_RELAY: u8 = 226;
 
-lazy_static! {
-    static ref EIRP_INDEX: Vec<f32> = vec![
-        8.0,  // 0
-        10.0, // 1
-        12.0, // 2
-        13.0, // 3
-        14.0, // 4
-        16.0, // 5
-        18.0, // 6
-        20.0, // 7
-        21.0, // 8
-        24.0, // 9
-        26.0, // 10
-        27.0, // 11
-        29.0, // 12
-        30.0, // 13
-        33.0, // 14
-        36.0, // 15
-    ];
-}
+const EIRP_INDEX: [f32; 16] = [
+    8.0,  // 0
+    10.0, // 1
+    12.0, // 2
+    13.0, // 3
+    14.0, // 4
+    16.0, // 5
+    18.0, // 6
+    20.0, // 7
+    21.0, // 8
+    24.0, // 9
+    26.0, // 10
+    27.0, // 11
+    29.0, // 12
+    30.0, // 13
+    33.0, // 14
+    36.0, // 15
+];
 
 pub fn get_tx_param_setup_eirp_index(eirp: f32) -> u8 {
     let mut out: u8 = 0;
