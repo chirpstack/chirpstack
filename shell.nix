@@ -21,6 +21,7 @@ pkgs.mkShell {
     pkgs.sqlite                 # sqlite binary + library for diesel
     pkgs.postgresql             # psql binary + library for diesel
     pkgs.cargo-cross            # cross-compiling
+    pkgs.cargo-deb              # deb packaging
     pkgs.diesel-cli             # diesel cli
   ];
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";

@@ -6,9 +6,7 @@ dist:
 	cd chirpstack && make dist
 
 # Install dev dependencies
-# TODO: test latest cargo-deb and move it to shell.nix.
 dev-dependencies:
-	cargo install cargo-deb --version 1.43.1 --locked
 	cargo install cargo-generate-rpm --version 0.12.1 --locked
 
 # Set the versions
