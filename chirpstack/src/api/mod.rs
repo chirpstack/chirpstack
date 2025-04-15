@@ -5,7 +5,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use anyhow::Result;
+use anyhow::{Context as AnyhowContext, Result};
 use axum::{response::IntoResponse, routing::get, Router};
 use http::{
     header::{self, HeaderMap, HeaderValue},
@@ -103,7 +103,7 @@ type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 pub async fn setup() -> Result<()> {
     let conf = config::get();
-    let bind = conf.api.bind.parse()?;
+    let bind = conf.api.bind.parse().context("Parse api.bind config")?;
 
     info!(bind = %bind, "Setting up API interface");
 
