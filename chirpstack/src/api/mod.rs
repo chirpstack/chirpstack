@@ -114,7 +114,7 @@ pub async fn setup() -> Result<()> {
         .route("/auth/oauth2/callback", get(oauth2::callback_handler))
         .fallback(service_static_handler)
         .into_service()
-        .map_response(|r| r.map(tonic::body::boxed));
+        .map_response(|r| r.map(tonic::body::Body::new));
 
     let grpc = TonicServer::builder()
         .accept_http1(true)

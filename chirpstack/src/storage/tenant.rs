@@ -325,7 +325,6 @@ pub mod test {
     use crate::storage::user::test::create_user;
     use crate::test;
     use chrono::SubsecRound;
-    use std::str::FromStr;
     use uuid::Uuid;
 
     struct FilterTest<'a> {
