@@ -26,7 +26,7 @@ insert into "user" (
     password_hash,
     note
 ) values (
-    '05244f12-6daf-4e1f-8315-c66783a0ab56',
+    gen_random_uuid(),
     now(),
     now(),
     true,
