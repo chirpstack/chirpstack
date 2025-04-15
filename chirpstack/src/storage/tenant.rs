@@ -357,10 +357,19 @@ pub mod test {
     async fn test_tenant() {
         let _guard = test::prepare().await;
 
-        // delete default tenant
-        delete(&Uuid::from_str("52f14cd4-c6f1-4fbd-8f87-4025e1d49242").unwrap())
-            .await
-            .unwrap();
+        // delete existing tenants.
+        let tenants = list(
+            10,
+            0,
+            &Filters {
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+        for t in &tenants {
+            delete(&t.id).await.unwrap();
+        }
 
         let mut t = create_tenant().await;
 

@@ -63,7 +63,7 @@ insert into "tenant" (
     max_gateway_count,
     private_gateways
 ) values (
-    '52f14cd4-c6f1-4fbd-8f87-4025e1d49242',
+    gen_random_uuid(),
     now(),
     now(),
     'ChirpStack',
