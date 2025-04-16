@@ -524,6 +524,7 @@ pub struct JoinServerServer {
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,
+    pub authorization_header: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]

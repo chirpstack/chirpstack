@@ -29,6 +29,11 @@ pub async fn setup() -> Result<()> {
             tls_key: js.tls_key.clone(),
             async_timeout: js.async_timeout,
             request_log_sender: stream::backend_interfaces::get_log_sender().await,
+            authorization: if js.authorization_header.is_empty() {
+                None
+            } else {
+                Some(js.authorization_header.clone())
+            },
             ..Default::default()
         })?;
 

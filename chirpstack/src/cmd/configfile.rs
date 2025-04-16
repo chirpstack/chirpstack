@@ -797,6 +797,11 @@ pub fn run() {
     #   #
     #   # Set this to enable client-certificate authentication with the join-server.
     #   tls_key="/path/to/tls_key.pem"
+
+    #   # Authorization header.
+    #   #
+    #   # Optional value of the Authorization header, e.g. token or password.
+    #   authorization_header="Bearer sometoken"
     {{#each join_server.servers}}
 
     [[join_server.servers]]
@@ -807,6 +812,7 @@ pub fn run() {
       ca_cert="{{ this.ca_cert }}"
       tls_cert="{{ this.tls_cert }}"
       tls_key="{{ this.tls_key }}"
+      authorization_header="{{ this.authorization_header }}"
     {{/each}}
 
 
