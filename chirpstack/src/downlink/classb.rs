@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use aes::cipher::generic_array::GenericArray;
 use aes::cipher::{BlockEncrypt, KeyInit};
 use aes::{Aes128, Block};
@@ -7,14 +9,11 @@ use tracing::debug;
 
 use lrwn::DevAddr;
 
-lazy_static! {
-    static ref BEACON_PERIOD: Duration = Duration::try_seconds(128).unwrap();
-    static ref BEACON_RESERVED: Duration = Duration::try_milliseconds(2120).unwrap();
-    static ref BEACON_GUARD: Duration = Duration::try_seconds(3).unwrap();
-    static ref BEACON_WINDOW: Duration = Duration::try_milliseconds(122880).unwrap();
-    static ref PING_PERIOD_BASE: usize = 1 << 12;
-    static ref SLOT_LEN: Duration = Duration::try_milliseconds(30).unwrap();
-}
+static BEACON_PERIOD: LazyLock<Duration> = LazyLock::new(|| Duration::try_seconds(128).unwrap());
+static BEACON_RESERVED: LazyLock<Duration> =
+    LazyLock::new(|| Duration::try_milliseconds(2120).unwrap());
+static PING_PERIOD_BASE: usize = 1 << 12;
+static SLOT_LEN: LazyLock<Duration> = LazyLock::new(|| Duration::try_milliseconds(30).unwrap());
 
 pub fn get_beacon_start(ts: Duration) -> Duration {
     Duration::try_seconds(ts.num_seconds() - (ts.num_seconds() % BEACON_PERIOD.num_seconds()))
@@ -26,7 +25,7 @@ pub fn get_ping_offset(beacon_ts: Duration, dev_addr: &DevAddr, ping_nb: usize) 
         return Err(anyhow!("ping_nb must be > 0"));
     }
 
-    let ping_period = *PING_PERIOD_BASE / ping_nb;
+    let ping_period = PING_PERIOD_BASE / ping_nb;
     let beacon_time = (beacon_ts.num_seconds() % (1 << 32)) as u32;
 
     let key_bytes: [u8; 16] = [0x00; 16];
@@ -54,7 +53,7 @@ pub fn get_next_ping_slot_after(
     }
 
     let mut beacon_start_ts = get_beacon_start(after_gps_epoch_ts);
-    let ping_period = *PING_PERIOD_BASE / ping_nb;
+    let ping_period = PING_PERIOD_BASE / ping_nb;
 
     loop {
         let ping_offset = get_ping_offset(beacon_start_ts, dev_addr, ping_nb)?;
@@ -122,7 +121,7 @@ pub mod test {
         for k in 0..8 {
             let mut beacon_ts = Duration::zero();
             let ping_nb: usize = 1 << k;
-            let ping_period = *PING_PERIOD_BASE / ping_nb;
+            let ping_period = PING_PERIOD_BASE / ping_nb;
             let dev_addr = DevAddr::from_be_bytes([0, 0, 0, 0]);
 
             for _ in 0..100000 {

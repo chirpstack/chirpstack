@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use anyhow::Result;
 use tokio::sync::RwLock;
@@ -8,9 +8,8 @@ use crate::{config, stream};
 use backend::{Client, ClientConfig};
 use lrwn::{EUI64Prefix, EUI64};
 
-lazy_static! {
-    static ref CLIENTS: RwLock<Vec<(EUI64Prefix, Arc<Client>)>> = RwLock::new(vec![]);
-}
+static CLIENTS: LazyLock<RwLock<Vec<(EUI64Prefix, Arc<Client>)>>> =
+    LazyLock::new(|| RwLock::new(vec![]));
 
 pub async fn setup() -> Result<()> {
     info!("Setting up Join Server clients");

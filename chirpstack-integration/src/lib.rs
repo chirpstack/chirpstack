@@ -1,8 +1,6 @@
-#[macro_use]
-extern crate lazy_static;
-
 use std::io::Cursor;
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -13,10 +11,8 @@ use tracing_subscriber::{filter, prelude::*};
 
 use chirpstack_api::{integration as integration_pb, prost::Message};
 
-lazy_static! {
-    static ref INTEGRATION: RwLock<Option<Box<dyn IntegrationTrait + Sync + Send>>> =
-        RwLock::new(None);
-}
+static INTEGRATION: LazyLock<RwLock<Option<Box<dyn IntegrationTrait + Sync + Send>>>> =
+    LazyLock::new(|| RwLock::new(None));
 
 #[derive(Default, Deserialize, Clone)]
 #[serde(default)]

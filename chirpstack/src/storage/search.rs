@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 use anyhow::{Context, Result};
 use diesel_async::RunQueryDsl;
@@ -8,9 +9,7 @@ use uuid::Uuid;
 use super::{error::Error, fields, get_async_db_conn};
 use lrwn::EUI64;
 
-lazy_static! {
-    static ref SEARCH_TAG_RE: Regex = Regex::new(r"([^ ]+):([^ ]+)").unwrap();
-}
+static SEARCH_TAG_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"([^ ]+):([^ ]+)").unwrap());
 
 #[derive(QueryableByName, PartialEq, Debug)]
 pub struct SearchResult {

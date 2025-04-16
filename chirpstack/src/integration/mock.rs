@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -8,17 +9,22 @@ use chirpstack_api::integration;
 
 use super::Integration as IntegrationTrait;
 
-lazy_static! {
-    static ref UPLINK_EVENTS: RwLock<Vec<integration::UplinkEvent>> = RwLock::new(Vec::new());
-    static ref JOIN_EVENTS: RwLock<Vec<integration::JoinEvent>> = RwLock::new(Vec::new());
-    static ref ACK_EVENTS: RwLock<Vec<integration::AckEvent>> = RwLock::new(Vec::new());
-    static ref TXACK_EVENTS: RwLock<Vec<integration::TxAckEvent>> = RwLock::new(Vec::new());
-    static ref LOG_EVENTS: RwLock<Vec<integration::LogEvent>> = RwLock::new(Vec::new());
-    static ref STATUS_EVENTS: RwLock<Vec<integration::StatusEvent>> = RwLock::new(Vec::new());
-    static ref LOCATION_EVENTS: RwLock<Vec<integration::LocationEvent>> = RwLock::new(Vec::new());
-    static ref INTEGRATION_EVENTS: RwLock<Vec<integration::IntegrationEvent>> =
-        RwLock::new(Vec::new());
-}
+static UPLINK_EVENTS: LazyLock<RwLock<Vec<integration::UplinkEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static JOIN_EVENTS: LazyLock<RwLock<Vec<integration::JoinEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static ACK_EVENTS: LazyLock<RwLock<Vec<integration::AckEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static TXACK_EVENTS: LazyLock<RwLock<Vec<integration::TxAckEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static LOG_EVENTS: LazyLock<RwLock<Vec<integration::LogEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static STATUS_EVENTS: LazyLock<RwLock<Vec<integration::StatusEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static LOCATION_EVENTS: LazyLock<RwLock<Vec<integration::LocationEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static INTEGRATION_EVENTS: LazyLock<RwLock<Vec<integration::IntegrationEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
 
 pub async fn reset() {
     UPLINK_EVENTS.write().await.drain(..);

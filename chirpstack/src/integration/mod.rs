@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
@@ -33,11 +34,11 @@ mod postgresql;
 mod redis;
 mod thingsboard;
 
-lazy_static! {
-    static ref GLOBAL_INTEGRATIONS: RwLock<Vec<Box<dyn Integration + Sync + Send>>> =
-        RwLock::new(Vec::new());
-    static ref MOCK_INTEGRATION: RwLock<bool> = RwLock::new(false);
-}
+static GLOBAL_INTEGRATIONS: LazyLock<RwLock<Vec<Box<dyn Integration + Sync + Send>>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+
+#[cfg(test)]
+static MOCK_INTEGRATION: LazyLock<RwLock<bool>> = LazyLock::new(|| RwLock::new(false));
 
 pub async fn setup() -> Result<()> {
     info!("Setting up global integrations");

@@ -1,3 +1,4 @@
+use std::sync::LazyLock;
 use std::sync::RwLock;
 use std::time::Instant;
 
@@ -47,19 +48,18 @@ pub mod user;
 
 use crate::monitoring::prometheus;
 
-lazy_static! {
-    static ref ASYNC_REDIS_POOL: TokioRwLock<Option<AsyncRedisPool>> = TokioRwLock::new(None);
-    static ref REDIS_PREFIX: RwLock<String> = RwLock::new("".to_string());
-    static ref STORAGE_REDIS_CONN_GET: Histogram = {
-        let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
-        prometheus::register(
-            "storage_redis_conn_get_duration_seconds",
-            "Time between requesting a Redis connection and the connection-pool returning it",
-            histogram.clone(),
-        );
-        histogram
-    };
-}
+static ASYNC_REDIS_POOL: LazyLock<TokioRwLock<Option<AsyncRedisPool>>> =
+    LazyLock::new(|| TokioRwLock::new(None));
+static REDIS_PREFIX: LazyLock<RwLock<String>> = LazyLock::new(|| RwLock::new("".to_string()));
+static STORAGE_REDIS_CONN_GET: LazyLock<Histogram> = LazyLock::new(|| {
+    let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
+    prometheus::register(
+        "storage_redis_conn_get_duration_seconds",
+        "Time between requesting a Redis connection and the connection-pool returning it",
+        histogram.clone(),
+    );
+    histogram
+});
 
 #[cfg(feature = "postgres")]
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations_postgres");

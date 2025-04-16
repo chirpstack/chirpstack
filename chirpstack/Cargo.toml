@@ -137,7 +137,6 @@
   ] }
 
   # Misc
-  lazy_static = "1.5"
   uuid = { version = "1.16", features = ["v4", "serde"] }
   chrono = "0.4"
   async-trait = "0.1"

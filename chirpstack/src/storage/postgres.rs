@@ -1,4 +1,4 @@
-use std::sync::RwLock;
+use std::sync::{LazyLock, RwLock};
 use std::time::Instant;
 
 use anyhow::Result;
@@ -20,18 +20,16 @@ use crate::helpers::tls::get_root_certs;
 pub type AsyncPgPool = DeadpoolPool<AsyncPgConnection>;
 pub type AsyncPgPoolConnection = DeadpoolObject<AsyncPgConnection>;
 
-lazy_static! {
-    static ref ASYNC_PG_POOL: RwLock<Option<AsyncPgPool>> = RwLock::new(None);
-    static ref STORAGE_PG_CONN_GET: Histogram = {
-        let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
-        prometheus::register(
-            "storage_pg_conn_get_duration_seconds",
-            "Time between requesting a PostgreSQL connection and the connection-pool returning it",
-            histogram.clone(),
-        );
-        histogram
-    };
-}
+static ASYNC_PG_POOL: LazyLock<RwLock<Option<AsyncPgPool>>> = LazyLock::new(|| RwLock::new(None));
+static STORAGE_PG_CONN_GET: LazyLock<Histogram> = LazyLock::new(|| {
+    let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
+    prometheus::register(
+        "storage_pg_conn_get_duration_seconds",
+        "Time between requesting a PostgreSQL connection and the connection-pool returning it",
+        histogram.clone(),
+    );
+    histogram
+});
 
 pub fn setup(conf: &config::Postgresql) -> Result<()> {
     info!("Setting up PostgreSQL connection pool");

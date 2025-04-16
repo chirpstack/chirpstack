@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -14,10 +15,8 @@ pub mod lora_lr_fhss;
 pub mod lr_fhss;
 pub mod plugin;
 
-lazy_static! {
-    static ref ADR_ALGORITHMS: RwLock<HashMap<String, Box<dyn Handler + Sync + Send>>> =
-        RwLock::new(HashMap::new());
-}
+static ADR_ALGORITHMS: LazyLock<RwLock<HashMap<String, Box<dyn Handler + Sync + Send>>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 pub async fn setup() -> Result<()> {
     info!("Setting up adr algorithms");

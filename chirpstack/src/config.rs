@@ -1,5 +1,5 @@
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, LazyLock, Mutex};
 use std::time::Duration;
 use std::{env, fs};
 
@@ -9,9 +9,8 @@ use serde::{Deserialize, Serialize};
 use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddrPrefix, EUI64Prefix, NetID};
 
-lazy_static! {
-    static ref CONFIG: Mutex<Arc<Configuration>> = Mutex::new(Arc::new(Default::default()));
-}
+static CONFIG: LazyLock<Mutex<Arc<Configuration>>> =
+    LazyLock::new(|| Mutex::new(Arc::new(Default::default())));
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 #[serde(default)]

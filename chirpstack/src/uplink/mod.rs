@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::Cursor;
 use std::str::FromStr;
+use std::sync::LazyLock;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
@@ -41,35 +42,33 @@ struct UplinkLabels {
     m_type: String,
 }
 
-lazy_static! {
-    static ref UPLINK_COUNTER: Family<UplinkLabels, Counter> = {
-        let counter = Family::<UplinkLabels, Counter>::default();
-        prometheus::register(
-            "uplink_count",
-            "Number of received uplinks (after deduplication)",
-            counter.clone(),
-        );
-        counter
-    };
-    static ref DEDUPLICATE_LOCKED_COUNTER: Counter = {
-        let counter = Counter::default();
-        prometheus::register(
+static UPLINK_COUNTER: LazyLock<Family<UplinkLabels, Counter>> = LazyLock::new(|| {
+    let counter = Family::<UplinkLabels, Counter>::default();
+    prometheus::register(
+        "uplink_count",
+        "Number of received uplinks (after deduplication)",
+        counter.clone(),
+    );
+    counter
+});
+static DEDUPLICATE_LOCKED_COUNTER: LazyLock<Counter> = LazyLock::new(|| {
+    let counter = Counter::default();
+    prometheus::register(
             "deduplicate_locked_count",
             "Number of times the deduplication function was called and the deduplication was already locked",
             counter.clone(),
         );
-        counter
-    };
-    static ref DEDUPLICATE_NO_LOCK_COUNTER: Counter = {
-        let counter = Counter::default();
-        prometheus::register(
-            "deduplicate_no_lock_count",
-            "Number of times the deduplication function was called and it was not yet locked",
-            counter.clone(),
-        );
-        counter
-    };
-}
+    counter
+});
+static DEDUPLICATE_NO_LOCK_COUNTER: LazyLock<Counter> = LazyLock::new(|| {
+    let counter = Counter::default();
+    prometheus::register(
+        "deduplicate_no_lock_count",
+        "Number of times the deduplication function was called and it was not yet locked",
+        counter.clone(),
+    );
+    counter
+});
 
 #[derive(Clone)]
 pub struct RelayContext {

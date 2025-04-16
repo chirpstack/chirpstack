@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
@@ -11,10 +12,8 @@ use crate::config;
 pub mod mock;
 mod mqtt;
 
-lazy_static! {
-    static ref BACKENDS: RwLock<HashMap<String, Box<dyn GatewayBackend + Sync + Send>>> =
-        RwLock::new(HashMap::new());
-}
+static BACKENDS: LazyLock<RwLock<HashMap<String, Box<dyn GatewayBackend + Sync + Send>>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 #[async_trait]
 pub trait GatewayBackend {
