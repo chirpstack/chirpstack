@@ -1,7 +1,7 @@
 use std::env;
 use std::sync::{LazyLock, Mutex, Once};
 
-use crate::{adr, config, region, storage};
+use crate::{adr, codec, config, region, storage};
 
 mod assert;
 mod class_a_pr_test;
@@ -89,6 +89,9 @@ pub async fn prepare<'a>() -> std::sync::MutexGuard<'a, ()> {
 
     // setup adr
     adr::setup().await.unwrap();
+
+    // setup codec plugins
+    codec::js_plugin::setup().await.unwrap();
 
     guard
 }
