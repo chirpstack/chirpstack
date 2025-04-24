@@ -1,5 +1,3 @@
-// TODO: provide SHA hash of the script so it can be shown in UI? (to ensure CI correctness)
-
 use crate::config;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -7,14 +5,13 @@ use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use tokio::sync::RwLock;
 use tracing::{info, trace, warn};
+use std::sync::LazyLock;
 
 pub mod passthrough;
 pub mod plugin;
 
-lazy_static! {
-    static ref CODEC_PLUGINS: RwLock<HashMap<String, Box<dyn Handler + Sync + Send>>> =
-        RwLock::new(HashMap::new());
-}
+static CODEC_PLUGINS: LazyLock<RwLock<HashMap<String, Box<dyn Handler + Sync + Send>>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 pub async fn setup() -> Result<()> {
     info!("Setting up codec plugins");
