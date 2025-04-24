@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -19,10 +20,8 @@ use chirpstack_api::integration;
 // implement re-connect on error. To reconnect within the Integration struct would require
 // mutability of the Integration struct, which is not possible without changing the
 // IntegrationTrait as we would need to change the (&self, ...) signatures to (&mut self, ...).
-lazy_static! {
-    static ref CONNECTION: RwLock<Option<Connection>> = RwLock::new(None);
-    static ref CHANNEL: RwLock<Option<Channel>> = RwLock::new(None);
-}
+static CONNECTION: LazyLock<RwLock<Option<Connection>>> = LazyLock::new(|| RwLock::new(None));
+static CHANNEL: LazyLock<RwLock<Option<Channel>>> = LazyLock::new(|| RwLock::new(None));
 
 pub struct Integration<'a> {
     templates: Handlebars<'a>,

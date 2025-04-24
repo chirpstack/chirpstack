@@ -26,7 +26,7 @@ insert into "user" (
     password_hash,
     note
 ) values (
-    '05244f12-6daf-4e1f-8315-c66783a0ab56',
+    gen_random_uuid(),
     now(),
     now(),
     true,
@@ -63,7 +63,7 @@ insert into "tenant" (
     max_gateway_count,
     private_gateways
 ) values (
-    '52f14cd4-c6f1-4fbd-8f87-4025e1d49242',
+    gen_random_uuid(),
     now(),
     now(),
     'ChirpStack',

@@ -1,5 +1,5 @@
 use std::env;
-use std::sync::{Mutex, Once};
+use std::sync::{LazyLock, Mutex, Once};
 
 use crate::{adr, config, region, storage};
 
@@ -17,9 +17,7 @@ mod relay_otaa_test;
 
 static TRACING_INIT: Once = Once::new();
 
-lazy_static! {
-    static ref TEST_MUX: Mutex<()> = Mutex::new(());
-}
+static TEST_MUX: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
 pub async fn prepare<'a>() -> std::sync::MutexGuard<'a, ()> {
     dotenv::dotenv().ok();

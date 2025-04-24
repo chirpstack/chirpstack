@@ -1,3 +1,5 @@
+use std::sync::LazyLock;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use tokio::sync::RwLock;
@@ -6,11 +8,10 @@ use chirpstack_api::gw;
 
 use super::GatewayBackend;
 
-lazy_static! {
-    static ref DOWNLINK_FRAMES: RwLock<Vec<gw::DownlinkFrame>> = RwLock::new(Vec::new());
-    static ref GATEWAY_CONFIGURATIONS: RwLock<Vec<gw::GatewayConfiguration>> =
-        RwLock::new(Vec::new());
-}
+static DOWNLINK_FRAMES: LazyLock<RwLock<Vec<gw::DownlinkFrame>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static GATEWAY_CONFIGURATIONS: LazyLock<RwLock<Vec<gw::GatewayConfiguration>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
 
 pub async fn reset() {
     DOWNLINK_FRAMES.write().await.drain(..);

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::io::Cursor;
-use std::sync::RwLock;
+use std::sync::{LazyLock, RwLock};
 use std::time::Duration;
 
 use anyhow::Result;
@@ -38,27 +38,26 @@ struct CommandLabels {
     command: String,
 }
 
-lazy_static! {
-    static ref EVENT_COUNTER: Family<EventLabels, Counter> = {
-        let counter = Family::<EventLabels, Counter>::default();
-        prometheus::register(
-            "gateway_backend_mqtt_events",
-            "Number of events received",
-            counter.clone(),
-        );
-        counter
-    };
-    static ref COMMAND_COUNTER: Family<CommandLabels, Counter> = {
-        let counter = Family::<CommandLabels, Counter>::default();
-        prometheus::register(
-            "gateway_backend_mqtt_commands",
-            "Number of commands sent",
-            counter.clone(),
-        );
-        counter
-    };
-    static ref GATEWAY_JSON: RwLock<HashMap<String, bool>> = RwLock::new(HashMap::new());
-}
+static EVENT_COUNTER: LazyLock<Family<EventLabels, Counter>> = LazyLock::new(|| {
+    let counter = Family::<EventLabels, Counter>::default();
+    prometheus::register(
+        "gateway_backend_mqtt_events",
+        "Number of events received",
+        counter.clone(),
+    );
+    counter
+});
+static COMMAND_COUNTER: LazyLock<Family<CommandLabels, Counter>> = LazyLock::new(|| {
+    let counter = Family::<CommandLabels, Counter>::default();
+    prometheus::register(
+        "gateway_backend_mqtt_commands",
+        "Number of commands sent",
+        counter.clone(),
+    );
+    counter
+});
+static GATEWAY_JSON: LazyLock<RwLock<HashMap<String, bool>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 pub struct MqttBackend<'a> {
     client: AsyncClient,

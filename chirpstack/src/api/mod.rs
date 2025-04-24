@@ -1,3 +1,4 @@
+use std::sync::LazyLock;
 use std::time::{Duration, Instant};
 use std::{
     future::Future,
@@ -5,7 +6,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use anyhow::Result;
+use anyhow::{Context as AnyhowContext, Result};
 use axum::{response::IntoResponse, routing::get, Router};
 use http::{
     header::{self, HeaderMap, HeaderValue},
@@ -67,33 +68,31 @@ pub mod relay;
 pub mod tenant;
 pub mod user;
 
-lazy_static! {
-    static ref GRPC_COUNTER: Family<GrpcLabels, Counter> = {
-        let counter = Family::<GrpcLabels, Counter>::default();
-        prometheus::register(
-            "api_requests_handled",
-            "Number of API requests handled by service, method and status code",
-            counter.clone(),
-        );
-        counter
-    };
-    static ref GRPC_HISTOGRAM: Family<GrpcLabels, Histogram> = {
-        let histogram = Family::<GrpcLabels, Histogram>::new_with_constructor(|| {
-            Histogram::new(
-                [
-                    0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
-                ]
-                .into_iter(),
-            )
-        });
-        prometheus::register(
-            "api_requests_handled_seconds",
-            "Duration of API requests handled by service, method and status code",
-            histogram.clone(),
-        );
-        histogram
-    };
-}
+static GRPC_COUNTER: LazyLock<Family<GrpcLabels, Counter>> = LazyLock::new(|| {
+    let counter = Family::<GrpcLabels, Counter>::default();
+    prometheus::register(
+        "api_requests_handled",
+        "Number of API requests handled by service, method and status code",
+        counter.clone(),
+    );
+    counter
+});
+static GRPC_HISTOGRAM: LazyLock<Family<GrpcLabels, Histogram>> = LazyLock::new(|| {
+    let histogram = Family::<GrpcLabels, Histogram>::new_with_constructor(|| {
+        Histogram::new(
+            [
+                0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
+            ]
+            .into_iter(),
+        )
+    });
+    prometheus::register(
+        "api_requests_handled_seconds",
+        "Duration of API requests handled by service, method and status code",
+        histogram.clone(),
+    );
+    histogram
+});
 
 #[derive(RustEmbed)]
 #[folder = "../ui/build"]
@@ -103,7 +102,7 @@ type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 pub async fn setup() -> Result<()> {
     let conf = config::get();
-    let bind = conf.api.bind.parse()?;
+    let bind = conf.api.bind.parse().context("Parse api.bind config")?;
 
     info!(bind = %bind, "Setting up API interface");
 
@@ -114,7 +113,7 @@ pub async fn setup() -> Result<()> {
         .route("/auth/oauth2/callback", get(oauth2::callback_handler))
         .fallback(service_static_handler)
         .into_service()
-        .map_response(|r| r.map(tonic::body::boxed));
+        .map_response(|r| r.map(tonic::body::Body::new));
 
     let grpc = TonicServer::builder()
         .accept_http1(true)

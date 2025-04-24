@@ -25,7 +25,7 @@ services:
       - "8080:8080"
 
   postgres:
-    image: postgres:11-alpine
+    image: postgres:13-alpine
     volumes:
       - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
     environment:

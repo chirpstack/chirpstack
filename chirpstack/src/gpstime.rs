@@ -1,82 +1,85 @@
+use std::sync::LazyLock;
+
 use chrono::{DateTime, Duration, TimeZone, Utc};
 
-lazy_static! {
-    static ref GPS_EPOCH_TIME: DateTime<Utc> = Utc.with_ymd_and_hms(1980, 1, 6, 0, 0, 0).unwrap();
-    static ref LEAP_SECONDS_TABLE: Vec<(DateTime<Utc>, Duration)> = vec![
+static GPS_EPOCH_TIME: LazyLock<DateTime<Utc>> =
+    LazyLock::new(|| Utc.with_ymd_and_hms(1980, 1, 6, 0, 0, 0).unwrap());
+static LEAP_SECONDS_TABLE: LazyLock<Vec<(DateTime<Utc>, Duration)>> = LazyLock::new(|| {
+    vec![
         (
             Utc.with_ymd_and_hms(1981, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1982, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1983, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1985, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1987, 12, 31, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1989, 12, 31, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1990, 12, 31, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1992, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1993, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1994, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1995, 12, 31, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1997, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(1998, 12, 31, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(2005, 12, 31, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(2008, 12, 31, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(2012, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(2015, 6, 30, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
         (
             Utc.with_ymd_and_hms(2016, 12, 31, 23, 59, 59).unwrap(),
-            Duration::try_seconds(1).unwrap()
+            Duration::try_seconds(1).unwrap(),
         ),
-    ];
-}
+    ]
+});
 
 pub trait ToGpsTime {
     fn to_gps_time(&self) -> Duration;

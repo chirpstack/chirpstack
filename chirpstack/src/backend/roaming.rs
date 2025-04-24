@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::str::FromStr;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use anyhow::Result;
 use chrono::{Duration, DurationRound};
@@ -15,9 +15,8 @@ use backend::{Client, ClientConfig, GWInfoElement, ULMetaData};
 use chirpstack_api::{common, gw};
 use lrwn::{region, DevAddr, NetID, EUI64};
 
-lazy_static! {
-    static ref CLIENTS: RwLock<HashMap<NetID, Arc<Client>>> = RwLock::new(HashMap::new());
-}
+static CLIENTS: LazyLock<RwLock<HashMap<NetID, Arc<Client>>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
 
 pub async fn setup() -> Result<()> {
     info!("Setting up roaming clients");

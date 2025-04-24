@@ -1,4 +1,4 @@
-use std::sync::RwLock;
+use std::sync::{LazyLock, RwLock};
 use std::time::Instant;
 
 use anyhow::Result;
@@ -19,18 +19,17 @@ use crate::config;
 pub type AsyncSqlitePool = DeadpoolPool<SyncConnectionWrapper<SqliteConnection>>;
 pub type AsyncSqlitePoolConnection = DeadpoolObject<SyncConnectionWrapper<SqliteConnection>>;
 
-lazy_static! {
-    static ref ASYNC_SQLITE_POOL: RwLock<Option<AsyncSqlitePool>> = RwLock::new(None);
-    static ref STORAGE_SQLITE_CONN_GET: Histogram = {
-        let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
-        prometheus::register(
-            "storage_sqlite_conn_get_duration_seconds",
-            "Time between requesting a SQLite connection and the connection-pool returning it",
-            histogram.clone(),
-        );
-        histogram
-    };
-}
+static ASYNC_SQLITE_POOL: LazyLock<RwLock<Option<AsyncSqlitePool>>> =
+    LazyLock::new(|| RwLock::new(None));
+static STORAGE_SQLITE_CONN_GET: LazyLock<Histogram> = LazyLock::new(|| {
+    let histogram = Histogram::new(exponential_buckets(0.001, 2.0, 12));
+    prometheus::register(
+        "storage_sqlite_conn_get_duration_seconds",
+        "Time between requesting a SQLite connection and the connection-pool returning it",
+        histogram.clone(),
+    );
+    histogram
+});
 
 pub fn setup(conf: &config::Sqlite) -> Result<()> {
     info!("Setting up SQLite connection pool");
