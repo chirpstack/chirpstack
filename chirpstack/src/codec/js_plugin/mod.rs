@@ -3,9 +3,9 @@ use anyhow::Result;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
+use std::sync::LazyLock;
 use tokio::sync::RwLock;
 use tracing::{info, trace, warn};
-use std::sync::LazyLock;
 
 pub mod passthrough;
 pub mod plugin;

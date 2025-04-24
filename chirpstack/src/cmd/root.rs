@@ -5,7 +5,7 @@ use signal_hook_tokio::Signals;
 use tracing::{info, warn};
 
 use crate::gateway;
-use crate::{adr, api, applayer::fuota, codec, backend, downlink, integration, region, storage};
+use crate::{adr, api, applayer::fuota, backend, codec, downlink, integration, region, storage};
 
 pub async fn run() -> Result<()> {
     info!(
