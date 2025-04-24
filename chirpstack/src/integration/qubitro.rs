@@ -45,11 +45,11 @@ impl Integration {
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
         headers.insert(
-            HeaderName::from_static("x-qubitro-project-id"),
+            HeaderName::from_static("projectId"),
             self.project_id.parse()?,
         );
         headers.insert(
-            HeaderName::from_static("x-qubitro-signing-key"),
+            HeaderName::from_static("webhookSigningKey"),
             self.webhook_signing_key.parse()?,
         );
 
@@ -163,8 +163,8 @@ pub mod test {
         let server = MockServer::start();
 
         let i = Integration {
-            project_id: "test-project".to_string(),
-            webhook_signing_key: "test-key".to_string(),
+            project_id: "eeaff160-1628-490a-b380-fb374dfb6584".to_string(),
+            webhook_signing_key: "229f57f57504ceb9dbfd0d6af8b4ee2c8330ea2bb443cfeb0753d0086773541472ffcfc20affb9d7fc62778beee4159f3a67006fdca0a233d74595500a722e94".to_string(),
         };
 
         // uplink event
@@ -172,8 +172,8 @@ pub mod test {
         let mut mock = server.mock(|when, then| {
             when.method(POST)
                 .path("/")
-                .header("x-qubitro-project-id", "test-project")
-                .header("x-qubitro-signing-key", "test-key")
+                .header("projectId", "eeaff160-1628-490a-b380-fb374dfb6584")
+                .header("webhookSigningKey", "229f57f57504ceb9dbfd0d6af8b4ee2c8330ea2bb443cfeb0753d0086773541472ffcfc20affb9d7fc62778beee4159f3a67006fdca0a233d74595500a722e94")
                 .header("content-type", "application/json")
                 .body(serde_json::to_string(&pl).unwrap());
 
