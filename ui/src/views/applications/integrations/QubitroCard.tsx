@@ -1,55 +1,49 @@
-import { Card, Col, Popconfirm } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-
+import { Card, Space } from "antd";
 import { Link } from "react-router-dom";
 
-import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import DeleteConfirm from "../../../components/DeleteConfirm";
+import ApplicationStore from "../../../stores/ApplicationStore";
 import { DeleteQubitroIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
-import ApplicationStore from "../../../stores/ApplicationStore";
-
 interface IProps {
-  application: Application;
   add?: boolean;
+  applicationId: string;
 }
 
-function QubitroCard(props: IProps) {
-  const onDelete = () => {
+function QubitroCard({ add = false, applicationId }: IProps) {
+  const deleteIntegration = () => {
     const req = new DeleteQubitroIntegrationRequest();
-    req.setApplicationId(props.application.getId());
-    ApplicationStore.deleteQubitroIntegration(req, () => {});
+    req.setApplicationId(applicationId);
+    
+    ApplicationStore.deleteQubitroIntegration(req, () => {
+      // Callback after successful deletion
+    });
   };
 
-  let actions: JSX.Element[] = [];
+  let actions: any[] = [];
 
-  if (props.add) {
-    actions = [
-      <Link to="qubitro/create">
-        <PlusOutlined />
-      </Link>,
-    ];
+  if (add) {
+    actions = [<Link to={`/applications/${applicationId}/integrations/qubitro/create`}>Add</Link>];
   } else {
     actions = [
-      <Link to="qubitro/edit">
-        <EditOutlined />
-      </Link>,
-      <Popconfirm title="Are you sure you want to delete this integration?" onConfirm={onDelete}>
-        <DeleteOutlined />
-      </Popconfirm>,
+      <Link to={`/applications/${applicationId}/integrations/qubitro/edit`}>Edit</Link>,
+      <DeleteConfirm typ="integration" confirm="delete" onConfirm={deleteIntegration} />,
     ];
   }
 
   return (
-    <Col span={8}>
-      <Card
-        title="Qubitro"
-        className="integration-card"
-        cover={<img alt="Qubitro" src="https://static.qubitro.com/landing/qubitro_nav_logo.png" style={{ padding: 1 }} />}
-        actions={actions}
-      >
-        <Card.Meta description="Sync all devices and data from ChirpStack to Qubitro—no code required." />
-      </Card>
-    </Col>
+    <Card
+      title="Qubitro"
+      className="integration-card"
+      cover={<img alt="Qubitro" src="/integrations/qubitro.png" style={{ padding: 1 }} />}
+      actions={actions}
+    >
+      <Space direction="vertical">
+        <p>
+          The Qubitro integration forwards events to your Qubitro project using the Qubitro HTTP API.
+        </p>
+      </Space>
+    </Card>
   );
 }
 

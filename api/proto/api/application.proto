@@ -494,6 +494,7 @@ enum IntegrationKind {
   PILOT_THINGS = 8;
   MQTT_GLOBAL = 9;
   IFTTT = 10;
+  QUBITRO = 11;
 }
 
 message Application {

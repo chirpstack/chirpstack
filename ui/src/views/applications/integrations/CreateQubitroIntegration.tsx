@@ -1,34 +1,45 @@
 import { Card } from "antd";
-import { useNavigate } from "react-router-dom";
-
-import { Application, QubitroIntegration, CreateQubitroIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import { useNavigate, useParams } from "react-router-dom";
 
 import QubitroIntegrationForm from "./QubitroIntegrationForm";
 import ApplicationStore from "../../../stores/ApplicationStore";
+import { QubitroIntegration, CreateQubitroIntegrationRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
-interface IProps {
-  application: Application;
-}
-
-function CreateQubitroIntegration(props: IProps) {
+function CreateQubitroIntegration() {
+  const { applicationId } = useParams();
   const navigate = useNavigate();
 
-  const onFinish = (obj: QubitroIntegration) => {
-    obj.setApplicationId(props.application.getId());
+  const onFinish = async (obj: QubitroIntegration.AsObject) => {
+    try {
+      const integration = new QubitroIntegration();
+      integration.setApplicationId(applicationId!);
+      integration.setProjectId(obj.projectId);
+      integration.setWebhookSigningKey(obj.webhookSigningKey);
 
-    const req = new CreateQubitroIntegrationRequest();
-    req.setIntegration(obj);
+      const request = new CreateQubitroIntegrationRequest();
+      request.setIntegration(integration);
 
-    ApplicationStore.createQubitroIntegration(req, () => {
-      navigate(`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/integrations`);
-    });
+      await new Promise<void>((resolve, reject) => {
+        ApplicationStore.createQubitroIntegration(request, () => {
+          resolve();
+        });
+      });
+
+      navigate(`/applications/${applicationId}/integrations`);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const i = new QubitroIntegration();
+  const initialValues: QubitroIntegration.AsObject = {
+    applicationId: applicationId!,
+    projectId: "",
+    webhookSigningKey: "",
+  };
 
   return (
     <Card title="Add Qubitro integration">
-      <QubitroIntegrationForm initialValues={i} onFinish={onFinish} />
+      <QubitroIntegrationForm initialValues={initialValues} onFinish={onFinish} />
     </Card>
   );
 }
