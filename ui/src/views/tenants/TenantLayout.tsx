@@ -8,6 +8,7 @@ import { DeleteTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/ten
 
 import TenantStore from "../../stores/TenantStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
+import SessionStore from "../../stores/SessionStore";
 import Admin from "../../components/Admin";
 import EditTenant from "./EditTenant";
 import TenantDashboard from "./TenantDashboard";
@@ -23,6 +24,7 @@ function TenantLayout({ tenant }: { tenant: Tenant }) {
     req.setId(tenant.getId());
 
     TenantStore.delete(req, () => {
+      SessionStore.setTenantId("");
       navigate("/tenants");
     });
   };
