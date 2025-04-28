@@ -18,12 +18,12 @@
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "ace-builds": "^1.36.4",
     "antd": "^5.23.3",
     "buffer": "^6.0.3",
     "chart.js": "^4.4.7",
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-chart-matrix": "^2.0.1",
-    "codemirror": "^5.65.16",
     "date-fns": "^3.6.0",
     "events": "^3.3.0",
     "google-palette": "^1.1.1",
@@ -32,8 +32,8 @@
     "leaflet": "^1.9.4",
     "leaflet.awesome-markers": "^2.0.5",
     "react": "^18.3.1",
+    "react-ace": "^13.0.0",
     "react-chartjs-2": "^5.2.0",
-    "react-codemirror2": "^8.0.0",
     "react-dom": "^18.3.1",
     "react-json-tree": "^0.19.0",
     "react-leaflet": "^4.2.1",
@@ -43,7 +43,6 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.6",
-    "@types/codemirror": "^5.60.15",
     "@types/events": "^3.0.3",
     "@types/leaflet": "^1.9.12",
     "@types/leaflet.awesome-markers": "^2.0.28",
@@ -56,7 +55,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "prettier": "^3.3.2",
-    "typescript": "^5.2.2",
+    "typescript": "^5.8.3",
     "vite": "^6.2.6"
   }
 }

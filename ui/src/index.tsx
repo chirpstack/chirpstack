@@ -12,8 +12,6 @@ import "antd/dist/reset.css";
 import "leaflet/dist/leaflet.css";
 import "leaflet.awesome-markers/dist/leaflet.awesome-markers.css";
 import "@fortawesome/fontawesome-free/css/all.css";
-import "codemirror/lib/codemirror.css";
-import "codemirror/theme/base16-light.css";
 import "./index.css";
 
 Chart.register(MatrixController, MatrixElement, ...registerables);
