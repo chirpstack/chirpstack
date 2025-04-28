@@ -73,6 +73,8 @@ pub trait IntegrationTrait {
 
     async fn location_event(&self, pl: &integration_pb::LocationEvent) -> Result<()>;
 
+    async fn gateway_stats_event(&self, pl: &integration_pb::GatewayStatsEvent) -> Result<()>;
+
     async fn integration_event(&self, pl: &integration_pb::IntegrationEvent) -> Result<()>;
 }
 
@@ -263,6 +265,14 @@ impl Integration {
                                         tokio::spawn(location_event(pl));
                                     }
                                 }
+                                "gateway_stats" => {
+                                    if let redis::Value::BulkString(b) = v {
+                                        let pl = integration_pb::GatewayStatsEvent::decode(
+                                            &mut Cursor::new(b),
+                                        )?;
+                                        tokio::spawn(gateway_stats_event(pl));
+                                    }
+                                }
                                 "integration" => {
                                     if let redis::Value::BulkString(b) = v {
                                         let pl = integration_pb::IntegrationEvent::decode(
@@ -366,6 +376,13 @@ async fn location_event(pl: integration_pb::LocationEvent) {
     }
 }
 
+async fn gateway_stats_event(pl: integration_pb::GatewayStatsEvent) {
+    let integration = INTEGRATION.read().await;
+    if let Err(e) = integration.as_ref().unwrap().gateway_stats_event(&pl).await {
+        error!(error = %e, "Gateway stats event error");
+    }
+}
+
 async fn integration_event(pl: integration_pb::IntegrationEvent) {
     let integration = INTEGRATION.read().await;
     if let Err(e) = integration.as_ref().unwrap().integration_event(&pl).await {
@@ -381,6 +398,7 @@ mod test {
 
     use tokio::sync::RwLock;
     use tokio::time::sleep;
+    use lazy_static::lazy_static;
 
     lazy_static! {
         static ref UPLINK_EVENTS: RwLock<Vec<integration_pb::UplinkEvent>> =
@@ -392,6 +410,8 @@ mod test {
         static ref STATUS_EVENTS: RwLock<Vec<integration_pb::StatusEvent>> =
             RwLock::new(Vec::new());
         static ref LOCATION_EVENTS: RwLock<Vec<integration_pb::LocationEvent>> =
+            RwLock::new(Vec::new());
+        static ref GATEWAY_STATS_EVENTS: RwLock<Vec<integration_pb::GatewayStatsEvent>> =
             RwLock::new(Vec::new());
         static ref INTEGRATION_EVENTS: RwLock<Vec<integration_pb::IntegrationEvent>> =
             RwLock::new(Vec::new());
@@ -433,6 +453,11 @@ mod test {
 
         async fn location_event(&self, pl: &integration_pb::LocationEvent) -> Result<()> {
             LOCATION_EVENTS.write().await.push(pl.clone());
+            Ok(())
+        }
+
+        async fn gateway_stats_event(&self, pl: &integration_pb::GatewayStatsEvent) -> Result<()> {
+            GATEWAY_STATS_EVENTS.write().await.push(pl.clone());
             Ok(())
         }
 
@@ -658,6 +683,34 @@ mod test {
             .await
             .drain(0..1)
             .collect::<Vec<integration_pb::LocationEvent>>()
+            .first()
+            .cloned()
+            .unwrap();
+
+        assert_eq!(pl, pl_recv);
+
+        println!("GatewayStats");
+
+        // GatewayStats
+        let pl = integration_pb::GatewayStatsEvent::default();
+        let _: String = redis::cmd("XADD")
+            .arg("device:stream:event")
+            .arg("MAXLEN")
+            .arg(1)
+            .arg("*")
+            .arg("gateway_stats")
+            .arg(pl.encode_to_vec())
+            .query_async(&mut redis_conn)
+            .await
+            .unwrap();
+
+        sleep(Duration::from_millis(100)).await;
+
+        let pl_recv = GATEWAY_STATS_EVENTS
+            .write()
+            .await
+            .drain(0..1)
+            .collect::<Vec<integration_pb::GatewayStatsEvent>>()
             .first()
             .cloned()
             .unwrap();

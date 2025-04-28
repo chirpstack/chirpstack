@@ -945,6 +945,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "chirpstack_api",
+ "lazy_static",
  "redis",
  "serde",
  "serde_json",

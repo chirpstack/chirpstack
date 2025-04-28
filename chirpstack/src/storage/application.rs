@@ -533,6 +533,14 @@ pub async fn delete_integration(application_id: &Uuid, kind: IntegrationKind) ->
     Ok(())
 }
 
+pub async fn get_integrations() -> Result<Vec<Integration>, Error> {
+    let items: Vec<Integration> = application_integration::dsl::application_integration
+        .order_by(application_integration::dsl::kind)
+        .load(&mut get_async_db_conn().await?)
+        .await?;
+    Ok(items)
+}
+
 pub async fn get_integrations_for_application(
     application_id: &Uuid,
 ) -> Result<Vec<Integration>, Error> {

@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{application, device, device_profile, device_queue};
-use crate::{codec, config};
+use crate::{codec, config, storage};
 use chirpstack_api::integration;
 use lrwn::EUI64;
 
@@ -130,12 +130,34 @@ pub trait Integration {
         pl: &integration::LocationEvent,
     ) -> Result<()>;
 
+    // TODO: enable
+    // async fn gateway_stats_event(
+    //     &self,
+    //     vars: &HashMap<String, String>,
+    //     pl: &integration::GatewayStatsEvent,
+    // ) -> Result<()>;
+    
     async fn integration_event(
         &self,
         vars: &HashMap<String, String>,
         pl: &integration::IntegrationEvent,
     ) -> Result<()>;
 }
+
+// Returns a Vec of all integrations.
+async fn all_integrations() -> Result<Vec<Box<dyn Integration + Sync + Send>>> {
+    #[cfg(test)]
+    {
+        let m = MOCK_INTEGRATION.read().await;
+        if *m {
+            return Ok(vec![Box::new(mock::Integration {})]);
+        }
+    }
+
+    let integrations = application::get_integrations().await?;
+    box_integrations(integrations).await
+}
+
 
 // Returns a Vec of integrations for the given Application ID.
 async fn for_application_id(id: Uuid) -> Result<Vec<Box<dyn Integration + Sync + Send>>> {
@@ -147,9 +169,13 @@ async fn for_application_id(id: Uuid) -> Result<Vec<Box<dyn Integration + Sync +
         }
     }
 
-    let mut out: Vec<Box<dyn Integration + Sync + Send>> = Vec::new();
     let integrations = application::get_integrations_for_application(&id).await?;
+    box_integrations(integrations).await
+}
 
+
+async fn box_integrations(integrations: Vec<application::Integration>) -> Result<Vec<Box<dyn Integration + Sync + Send>>> {
+    let mut out: Vec<Box<dyn Integration + Sync + Send>> = Vec::new();
     for app_i in &integrations {
         out.push(match &app_i.configuration {
             application::IntegrationConfiguration::AwsSns(conf) => {
@@ -481,6 +507,47 @@ async fn _location_event(
     for e in join_all(futures).await {
         e?;
     }
+
+    Ok(())
+}
+
+pub async fn gateway_stats_event(
+    vars: &HashMap<String, String>,
+    pl: &integration::GatewayStatsEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _gateway_stats_event(&vars, &pl).await {
+                warn!(error = %err.full(), "Gateway stats event error");
+            }
+        }
+    });
+}
+
+async fn _gateway_stats_event(
+    vars: &HashMap<String, String>,
+    pl: &integration::GatewayStatsEvent,
+) -> Result<()> {
+    let app_ints = all_integrations()
+        .await
+        .context("Get all integrations")?;
+    let global_ints = GLOBAL_INTEGRATIONS.read().await;
+    // let mut futures = Vec::new();
+
+    // TODO
+    // for (i, _) in app_ints.iter().enumerate() {
+    //     futures.push(app_ints[i].gateway_stats_event(vars, pl));
+    // }
+    // for (i, _) in global_ints.iter().enumerate() {
+    //     futures.push(global_ints[i].gateway_stats_event(vars, pl));
+    // }
+
+    // for e in join_all(futures).await {
+    //     e?;
+    // }
 
     Ok(())
 }

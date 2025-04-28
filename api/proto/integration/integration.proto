@@ -314,6 +314,28 @@ message LocationEvent {
   common.Location location = 4;
 }
 
+// StatsEvent is the message sent when a gateway sends its stats.
+message GatewayStatsEvent {
+
+  // Timestamp.
+  google.protobuf.Timestamp time = 1;
+
+  // Gateway ID.
+  string gateway_id = 2;
+
+  // Number of radio packets received.
+  uint32 rx_packets_received = 3;
+
+  // Number of radio packets received with valid PHY CRC.
+  uint32 rx_packets_received_ok = 4;
+
+  // Number of downlink packets received for transmission.
+  uint32 tx_packets_received = 5;
+
+  // Number of downlink packets emitted.
+  uint32 tx_packets_emitted = 6;
+}
+
 // IntegrationEvent is the message that can be sent by an integration.
 // It allows for sending events which are provided by an external integration
 // which are "not native" to ChirpStack.

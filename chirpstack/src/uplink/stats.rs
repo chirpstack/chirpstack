@@ -7,12 +7,12 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
 use tracing::{error, info, span, trace, warn, Instrument, Level};
-
 use crate::gateway::backend as gateway_backend;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{error::Error, fields, gateway, metrics};
-use crate::{config, region};
+use crate::{config, region, integration};
 use chirpstack_api::{common, gw};
+use chirpstack_api::integration::GatewayStatsEvent;
 use lrwn::EUI64;
 
 pub struct Stats {
@@ -56,6 +56,15 @@ impl Stats {
     }
 
     async fn _handle(gateway_id: EUI64, s: gw::GatewayStats) -> Result<()> {
+        let pl = GatewayStatsEvent {
+            time: Some(Utc::now().into()),
+            gateway_id: gateway_id.to_string(),
+            rx_packets_received: s.rx_packets_received,
+            rx_packets_received_ok: s.rx_packets_received_ok,
+            tx_packets_received: s.tx_packets_received,
+            tx_packets_emitted: s.tx_packets_emitted,
+        };
+        
         let mut ctx = Stats {
             gateway_id,
             stats: s,
@@ -66,6 +75,9 @@ impl Stats {
         ctx.save_stats().await?;
         ctx.save_duty_cycle_stats().await?;
         ctx.update_gateway_configuration().await?;
+
+        let gw = ctx.gateway.as_ref().unwrap();
+        integration::gateway_stats_event(&gw.properties, &pl).await;
 
         Ok(())
     }
