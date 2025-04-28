@@ -31,7 +31,7 @@ function CodeEditor(props: IProps) {
     form.setFieldsValue({
       [props.name]: newValue,
     });
-  }
+  };
 
   return (
     <Form.Item label={props.label} name={props.name} tooltip={props.tooltip}>

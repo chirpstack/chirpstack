@@ -168,7 +168,9 @@ function FuotaDeploymentLayout(props: IProps) {
                 description="Are you sure you want to start the deploymen? Once started, you will not be able to make changes."
                 onConfirm={startFuotaDeployment}
               >
-                <Button type="primary" disabled={getFuotaDeploymentResponse.getStartedAt() !== undefined}>Start deployment</Button>
+                <Button type="primary" disabled={getFuotaDeploymentResponse.getStartedAt() !== undefined}>
+                  Start deployment
+                </Button>
               </Popconfirm>
               <DeleteConfirm typ="FUOTA deployment" confirm={d.getName()} onConfirm={deleteFuotaDeployment}>
                 <Button danger type="primary">
