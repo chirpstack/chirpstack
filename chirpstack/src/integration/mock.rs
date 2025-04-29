@@ -23,6 +23,8 @@ static STATUS_EVENTS: LazyLock<RwLock<Vec<integration::StatusEvent>>> =
     LazyLock::new(|| RwLock::new(Vec::new()));
 static LOCATION_EVENTS: LazyLock<RwLock<Vec<integration::LocationEvent>>> =
     LazyLock::new(|| RwLock::new(Vec::new()));
+static GATEWAY_STATS_EVENTS: LazyLock<RwLock<Vec<integration::GatewayStatsEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
 static INTEGRATION_EVENTS: LazyLock<RwLock<Vec<integration::IntegrationEvent>>> =
     LazyLock::new(|| RwLock::new(Vec::new()));
 
@@ -101,6 +103,15 @@ impl IntegrationTrait for Integration {
         pl: &integration::LocationEvent,
     ) -> Result<()> {
         LOCATION_EVENTS.write().await.push(pl.clone());
+        Ok(())
+    }
+
+    async fn gateway_stats_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::GatewayStatsEvent,
+    ) -> Result<()> {
+        GATEWAY_STATS_EVENTS.write().await.push(pl.clone());
         Ok(())
     }
 
@@ -192,6 +203,10 @@ pub async fn get_status_events() -> Vec<integration::StatusEvent> {
 
 pub async fn get_location_events() -> Vec<integration::LocationEvent> {
     LOCATION_EVENTS.write().await.drain(..).collect()
+}
+
+pub async fn get_gateway_stats_events() -> Vec<integration::GatewayStatsEvent> {
+    GATEWAY_STATS_EVENTS.write().await.drain(..).collect()
 }
 
 pub async fn get_integration_events() -> Vec<integration::IntegrationEvent> {

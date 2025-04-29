@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::helpers::errors::PrintFullError;
 use crate::storage::{application, device, device_profile, device_queue};
-use crate::{codec, config, storage};
+use crate::{codec, config};
 use chirpstack_api::integration;
 use lrwn::EUI64;
 
@@ -130,12 +130,11 @@ pub trait Integration {
         pl: &integration::LocationEvent,
     ) -> Result<()>;
 
-    // TODO: enable
-    // async fn gateway_stats_event(
-    //     &self,
-    //     vars: &HashMap<String, String>,
-    //     pl: &integration::GatewayStatsEvent,
-    // ) -> Result<()>;
+    async fn gateway_stats_event(
+        &self,
+        vars: &HashMap<String, String>,
+        pl: &integration::GatewayStatsEvent,
+    ) -> Result<()>;
     
     async fn integration_event(
         &self,
@@ -535,19 +534,18 @@ async fn _gateway_stats_event(
         .await
         .context("Get all integrations")?;
     let global_ints = GLOBAL_INTEGRATIONS.read().await;
-    // let mut futures = Vec::new();
+    let mut futures = Vec::new();
 
-    // TODO
-    // for (i, _) in app_ints.iter().enumerate() {
-    //     futures.push(app_ints[i].gateway_stats_event(vars, pl));
-    // }
-    // for (i, _) in global_ints.iter().enumerate() {
-    //     futures.push(global_ints[i].gateway_stats_event(vars, pl));
-    // }
+    for (i, _) in app_ints.iter().enumerate() {
+        futures.push(app_ints[i].gateway_stats_event(vars, pl));
+    }
+    for (i, _) in global_ints.iter().enumerate() {
+        futures.push(global_ints[i].gateway_stats_event(vars, pl));
+    }
 
-    // for e in join_all(futures).await {
-    //     e?;
-    // }
+    for e in join_all(futures).await {
+        e?;
+    }
 
     Ok(())
 }

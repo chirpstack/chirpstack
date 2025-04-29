@@ -230,6 +230,14 @@ impl IntegrationTrait for Integration {
             .await
     }
 
+    async fn gateway_stats_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        _pl: &integration::GatewayStatsEvent,
+    ) -> Result<()> {
+        Ok(())
+    }
+
     async fn integration_event(
         &self,
         _vars: &HashMap<String, String>,

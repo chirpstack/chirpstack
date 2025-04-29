@@ -66,8 +66,8 @@ impl Integration {
     async fn publish(
         &self,
         event: &str,
-        application_id: &str,
-        dev_eui: &str,
+        application_id: Option<&str>,
+        dev_eui: Option<&str>,
         pl: &str,
     ) -> Result<()> {
         let token = create_sas_token(
@@ -90,16 +90,25 @@ impl Integration {
             HeaderName::try_from("event").unwrap(),
             format!("\"{}\"", event).parse()?,
         );
-        headers.insert(
-            HeaderName::try_from("application_id").unwrap(),
-            format!("\"{}\"", application_id).parse()?,
-        );
-        headers.insert(
-            HeaderName::try_from("dev_eui").unwrap(),
-            format!("\"{}\"", dev_eui).parse()?,
-        );
+        
+        if let Some(application_id) = application_id {
+            headers.insert(
+                HeaderName::try_from("application_id").unwrap(),
+                format!("\"{}\"", application_id).parse()?,
+            );
+        }
+        
+        if let Some(dev_eui) = dev_eui {
+            headers.insert(
+                HeaderName::try_from("dev_eui").unwrap(),
+                format!("\"{}\"", dev_eui).parse()?,
+            );
+            
+            info!(event = %event, dev_eui = %dev_eui, "Publishing event");
+        } else {
+            info!(event = %event, "Publishing event");
+        }
 
-        info!(event = %event, dev_eui = %dev_eui, "Publishing event");
         let res = get_client()
             .post(format!("{}/messages", self.uri))
             .body(pl.to_string())
@@ -125,7 +134,7 @@ impl IntegrationTrait for Integration {
             false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
-        self.publish("up", &di.application_id, &di.dev_eui, &pl)
+        self.publish("up", Some(&di.application_id), Some(&di.dev_eui), &pl)
             .await
     }
 
@@ -140,7 +149,7 @@ impl IntegrationTrait for Integration {
             false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
-        self.publish("join", &di.application_id, &di.dev_eui, &pl)
+        self.publish("join", Some(&di.application_id), Some(&di.dev_eui), &pl)
             .await
     }
 
@@ -155,7 +164,7 @@ impl IntegrationTrait for Integration {
             false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
-        self.publish("ack", &di.application_id, &di.dev_eui, &pl)
+        self.publish("ack", Some(&di.application_id), Some(&di.dev_eui), &pl)
             .await
     }
 
@@ -170,7 +179,7 @@ impl IntegrationTrait for Integration {
             false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
-        self.publish("txack", &di.application_id, &di.dev_eui, &pl)
+        self.publish("txack", Some(&di.application_id), Some(&di.dev_eui), &pl)
             .await
     }
 
@@ -185,7 +194,7 @@ impl IntegrationTrait for Integration {
             false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
-        self.publish("log", &di.application_id, &di.dev_eui, &pl)
+        self.publish("log", Some(&di.application_id), Some(&di.dev_eui), &pl)
             .await
     }
 
@@ -200,7 +209,7 @@ impl IntegrationTrait for Integration {
             false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
-        self.publish("status", &di.application_id, &di.dev_eui, &pl)
+        self.publish("status", Some(&di.application_id), Some(&di.dev_eui), &pl)
             .await
     }
 
@@ -215,8 +224,21 @@ impl IntegrationTrait for Integration {
             false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
-        self.publish("location", &di.application_id, &di.dev_eui, &pl)
+        self.publish("location", Some(&di.application_id), Some(&di.dev_eui), &pl)
             .await
+    }
+
+    async fn gateway_stats_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::GatewayStatsEvent,
+    ) -> Result<()> {
+        let pl = match self.json {
+            true => serde_json::to_string(&pl)?,
+            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
+        };
+
+        self.publish("gateway_stats", None, None, &pl).await
     }
 
     async fn integration_event(
@@ -230,7 +252,7 @@ impl IntegrationTrait for Integration {
             false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
         };
 
-        self.publish("integration", &di.application_id, &di.dev_eui, &pl)
+        self.publish("integration", Some(&di.application_id), Some(&di.dev_eui), &pl)
             .await
     }
 }

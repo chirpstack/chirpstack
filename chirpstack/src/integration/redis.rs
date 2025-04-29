@@ -111,6 +111,14 @@ impl IntegrationTrait for Integration {
         stream::event::log_event_for_device("location", &dev_info.dev_eui, &b).await
     }
 
+    async fn gateway_stats_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        _pl: &integration::GatewayStatsEvent,
+    ) -> Result<()> {
+        Ok(())
+    }
+
     async fn integration_event(
         &self,
         _vars: &HashMap<String, String>,
