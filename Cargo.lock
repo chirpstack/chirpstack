@@ -636,7 +636,7 @@ dependencies = [
 
 [[package]]
 name = "backend"
-version = "4.12.1-test.1"
+version = "4.12.1"
 dependencies = [
  "aes-kw",
  "anyhow",
@@ -838,7 +838,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
 name = "chirpstack"
-version = "4.12.1-test.1"
+version = "4.12.1"
 dependencies = [
  "aes",
  "anyhow",
@@ -930,7 +930,7 @@ dependencies = [
 
 [[package]]
 name = "chirpstack_api"
-version = "4.12.1-test.1"
+version = "4.12.1"
 dependencies = [
  "hex",
  "pbjson",
@@ -947,7 +947,7 @@ dependencies = [
 
 [[package]]
 name = "chirpstack_integration"
-version = "4.12.1-test.1"
+version = "4.12.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2794,7 +2794,7 @@ dependencies = [
 
 [[package]]
 name = "lrwn"
-version = "4.12.1-test.1"
+version = "4.12.1"
 dependencies = [
  "aes",
  "anyhow",
@@ -2807,7 +2807,7 @@ dependencies = [
 
 [[package]]
 name = "lrwn_filters"
-version = "4.12.1-test.1"
+version = "4.12.1"
 dependencies = [
  "hex",
  "lrwn",
