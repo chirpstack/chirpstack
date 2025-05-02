@@ -19,11 +19,9 @@ interface IProps {
 function CodeEditor(props: IProps) {
   const form = Form.useFormInstance();
   const [value, setValue] = useState<string>("");
-  const [reloadKey, setReloadKey] = useState<number>(1);
 
   useEffect(() => {
-    setValue(form.getFieldValue(props.name));
-    setReloadKey(k => k + 1);
+    setValue(form.getFieldValue(props.name) || "");
   }, [form, props]);
 
   const onChange = (newValue: string) => {
@@ -41,7 +39,6 @@ function CodeEditor(props: IProps) {
           theme="github"
           onChange={onChange}
           value={value}
-          name={`code-editor-refresh-${reloadKey}`}
           width="100%"
           height="600px"
           editorProps={{ $blockScrolling: true }}
