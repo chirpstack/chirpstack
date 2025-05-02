@@ -6,11 +6,11 @@ RUN apt-get update && \
     libprotobuf-dev
 
 ENV MUSL_PREFIX=x86_64-linux-musl
-ENV SQLITE_VERSION=3460000
+ENV SQLITE_VERSION=3490100
 
 RUN echo "Building SQLite" && \
   cd /tmp && \
-  curl -fLO "https://sqlite.org/2024/sqlite-autoconf-$SQLITE_VERSION.tar.gz" && \
+  curl -fLO "https://sqlite.org/2025/sqlite-autoconf-$SQLITE_VERSION.tar.gz" && \
   tar xvzf "sqlite-autoconf-$SQLITE_VERSION.tar.gz" && cd "sqlite-autoconf-$SQLITE_VERSION" && \
   env CC=$MUSL_PREFIX-gcc ./configure --enable-static --prefix=/usr/local/$MUSL_PREFIX-target && \
   make && make install && \
