@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::io::Cursor;
 use std::sync::{LazyLock, RwLock};
 use std::time::Duration;
 
@@ -352,7 +351,7 @@ async fn message_callback(
                 .inc();
             let mut event = match json {
                 true => serde_json::from_slice(&p.payload)?,
-                false => chirpstack_api::gw::UplinkFrame::decode(&mut Cursor::new(&p.payload))?,
+                false => chirpstack_api::gw::UplinkFrame::decode(p.payload.as_ref())?,
             };
 
             if v4_migrate {
@@ -377,7 +376,7 @@ async fn message_callback(
                 .inc();
             let mut event = match json {
                 true => serde_json::from_slice(&p.payload)?,
-                false => chirpstack_api::gw::GatewayStats::decode(&mut Cursor::new(&p.payload))?,
+                false => chirpstack_api::gw::GatewayStats::decode(p.payload.as_ref())?,
             };
 
             if v4_migrate {
@@ -401,7 +400,7 @@ async fn message_callback(
                 .inc();
             let mut event = match json {
                 true => serde_json::from_slice(&p.payload)?,
-                false => chirpstack_api::gw::DownlinkTxAck::decode(&mut Cursor::new(&p.payload))?,
+                false => chirpstack_api::gw::DownlinkTxAck::decode(p.payload.as_ref())?,
             };
 
             if v4_migrate {
@@ -410,18 +409,18 @@ async fn message_callback(
 
             set_gateway_json(&event.gateway_id, json);
             tokio::spawn(downlink::tx_ack::TxAck::handle(event));
-        } else if topic.ends_with("/mesh-heartbeat") {
+        } else if topic.ends_with("/mesh") {
             EVENT_COUNTER
                 .get_or_create(&EventLabels {
-                    event: "mesh-heartbeat".to_string(),
+                    event: "mesh".to_string(),
                 })
                 .inc();
             let event = match json {
                 true => serde_json::from_slice(&p.payload)?,
-                false => chirpstack_api::gw::MeshHeartbeat::decode(&mut Cursor::new(&p.payload))?,
+                false => chirpstack_api::gw::Mesh::decode(p.payload.as_ref())?,
             };
 
-            tokio::spawn(uplink::mesh::MeshHeartbeat::handle(event));
+            tokio::spawn(uplink::mesh::Mesh::handle(event));
         } else {
             return Err(anyhow!("Unknown event type"));
         }

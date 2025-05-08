@@ -14,14 +14,15 @@ use crate::storage::{
 };
 use lrwn::EUI64;
 
-pub struct MeshHeartbeat {
+pub struct Mesh {
     gateway_id: EUI64,
     relay_id: RelayId,
-    mesh_stats: gw::MeshHeartbeat,
+    time: DateTime<Utc>,
+    mesh_event: gw::Mesh,
 }
 
-impl MeshHeartbeat {
-    pub async fn handle(s: gw::MeshHeartbeat) {
+impl Mesh {
+    pub async fn handle(s: gw::Mesh) {
         let gateway_id = match EUI64::from_str(&s.gateway_id) {
             Ok(v) => v,
             Err(e) => {
@@ -38,9 +39,9 @@ impl MeshHeartbeat {
             }
         };
 
-        let span = span!(Level::INFO, "mesh_stats", gateway_id = %gateway_id, relay_id = %relay_id);
+        let span = span!(Level::INFO, "mesh", gateway_id = %gateway_id, relay_id = %relay_id);
 
-        if let Err(e) = MeshHeartbeat::_handle(gateway_id, relay_id, s)
+        if let Err(e) = Mesh::_handle(gateway_id, relay_id, s)
             .instrument(span)
             .await
         {
@@ -48,52 +49,61 @@ impl MeshHeartbeat {
                 Some(Error::NotFound(_)) => {
                     let conf = config::get();
                     if !conf.gateway.allow_unknown_gateways {
-                        error!(error = %e.full(), "Handle mesh-stats error");
+                        error!(error = %e.full(), "Handle mesh error");
                     }
                 }
                 Some(_) | None => {
-                    error!(error = %e.full(), "Handle mesh-stats error");
+                    error!(error = %e.full(), "Handle mesh error");
                 }
             }
         }
     }
 
-    async fn _handle(gateway_id: EUI64, relay_id: RelayId, s: gw::MeshHeartbeat) -> Result<()> {
-        let mut ctx = MeshHeartbeat {
+    async fn _handle(gateway_id: EUI64, relay_id: RelayId, s: gw::Mesh) -> Result<()> {
+        let ctx = Mesh {
             gateway_id,
             relay_id,
-            mesh_stats: s,
+            time: s
+                .time
+                .ok_or_else(|| anyhow!("Time field is empty"))?
+                .try_into()
+                .map_err(|e| anyhow!("Covert time error: {}", e))?,
+            mesh_event: s,
         };
 
-        ctx.update_or_create_relay_gateway().await?;
+        ctx.handle_events().await?;
 
         Ok(())
     }
 
-    async fn update_or_create_relay_gateway(&mut self) -> Result<()> {
-        trace!("Getting Border Gateway");
-        let border_gw = gateway::get(&self.gateway_id).await?;
+    async fn handle_events(&self) -> Result<()> {
+        trace!("Handling mesh events");
 
-        let ts: DateTime<Utc> = match &self.mesh_stats.time {
-            Some(v) => (*v)
-                .try_into()
-                .map_err(|e| anyhow!("Convert time error: {}", e))?,
-            None => {
-                warn!("Stats message does not have time field set");
-                return Ok(());
+        for event in &self.mesh_event.events {
+            match &event.event {
+                Some(gw::mesh_event::Event::Proprietary(_)) | None => continue,
+                Some(gw::mesh_event::Event::Heartbeat(v)) => self._handle_heartbeat(v).await?,
             }
-        };
+        }
+
+        Ok(())
+    }
+
+    async fn _handle_heartbeat(&self, _pl: &gw::MeshEventHeartbeat) -> Result<()> {
+        trace!("Handling heartbeat event");
+
+        let border_gw = gateway::get(&self.gateway_id).await?;
 
         match gateway::get_relay_gateway(border_gw.tenant_id.into(), self.relay_id).await {
             Ok(mut v) => {
                 if let Some(last_seen_at) = v.last_seen_at {
-                    if last_seen_at > ts {
-                        warn!("Time is less than last seen timestamp, ignoring stats");
+                    if last_seen_at > self.time {
+                        warn!("Time is less than last seen timestamp, ignoring heartbeat");
                         return Ok(());
                     }
                 }
 
-                v.last_seen_at = Some(ts);
+                v.last_seen_at = Some(self.time);
                 v.region_config_id = border_gw
                     .properties
                     .get("region_config_id")
@@ -106,7 +116,7 @@ impl MeshHeartbeat {
                     tenant_id: border_gw.tenant_id,
                     relay_id: self.relay_id,
                     name: self.relay_id.to_string(),
-                    last_seen_at: Some(ts),
+                    last_seen_at: Some(self.time),
                     ..Default::default()
                 })
                 .await?;
