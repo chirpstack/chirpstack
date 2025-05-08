@@ -104,6 +104,61 @@ enum TxAckStatus {
   DUTY_CYCLE_OVERFLOW = 11;
 }
 
+// Gateway events as reported by the ChirpStack Concentratord ZMQ interface.
+message Event {
+  oneof event {
+    // Uplink frame.
+    UplinkFrame uplink_frame = 1;
+
+    // Gateway stats.
+    GatewayStats gateway_stats = 2;
+
+    // Gateway Mesh Event.
+    Mesh mesh = 3;
+  }
+}
+
+// Commands that can be sent to the ChirpStack Concentratord ZMQ interface.
+message Command {
+  oneof command {
+    // Downlink frame.
+    DownlinkFrame send_downlink_frame = 1;
+
+    // Gateway configuration.
+    GatewayConfiguration set_gateway_configuration = 2;
+
+    // Get Gateway ID.
+    GetGatewayIdRequest get_gateway_id = 3;
+
+    // Get location.
+    GetLocationRequest get_location = 4;
+  }
+}
+
+message Mesh {
+  // Gateway ID (of the Border Gateway).
+  string gateway_id = 1;
+
+  // Relay ID.
+  string relay_id = 2;
+
+  // Timestamp (second precision).
+  google.protobuf.Timestamp time = 3;
+
+  // Mesh events.
+  repeated MeshEvent events = 4;
+}
+
+message MeshEvent {
+  oneof event {
+    // Proprietary Mesh event.
+    MeshEventProprietary proprietary = 1;
+
+    // Mesh heartbeat.
+    MeshEventHeartbeat heartbeat = 2;
+  }
+}
+
 message Modulation {
   oneof parameters {
     // LoRa modulation information.
@@ -611,6 +666,23 @@ message GatewayConfiguration {
   google.protobuf.Duration stats_interval = 4;
 }
 
+message GetGatewayIdRequest {}
+
+message GetGatewayIdResponse {
+  // Gateway ID.
+  string gateway_id = 1;
+}
+
+message GetLocationRequest {}
+
+message GetLocationResponse {
+  // Location.
+  common.Location location = 1;
+
+  // Last updated at.
+  google.protobuf.Timestamp updated_at = 2;
+}
+
 message ChannelConfiguration {
   // Frequency (Hz).
   uint32 frequency = 1;
@@ -751,21 +823,13 @@ message ConnState {
 }
 
 // Gateway Mesh heartbeat (sent periodically by the Relay Gateways).
-message MeshHeartbeat {
-  // Gateway ID (of the Border Gateway).
-  string gateway_id = 1;
-
-  // Relay ID.
-  string relay_id = 2;
-
-  // Timestamp (second precision).
-  google.protobuf.Timestamp time = 3;
+message MeshEventHeartbeat {
 
   // Relay path.
-  repeated MeshHeartbeatRelayPath relay_path = 4;
+  repeated MeshEventHeartbeatRelayPath relay_path = 4;
 }
 
-message MeshHeartbeatRelayPath {
+message MeshEventHeartbeatRelayPath {
   // Relay ID.
   string relay_id = 1;
 
@@ -774,4 +838,13 @@ message MeshHeartbeatRelayPath {
 
   // SNR.
   int32 snr = 3;
+}
+
+// Proprietary mesh event.
+message MeshEventProprietary {
+  // Event type.
+  uint32 event_type = 1;
+
+  // Payload.
+  bytes payload = 2;
 }
