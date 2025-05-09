@@ -402,6 +402,15 @@ impl MACCommandSet {
         MACCommandSet(macs)
     }
 
+    // This reads the CID from the first mac-command in the set. It is assumed
+    // that all mac-commands in the set share the same CID.
+    pub fn cid(&self) -> Result<CID> {
+        self.0
+            .first()
+            .map(|v| v.cid())
+            .ok_or_else(|| anyhow!("Set is empty"))
+    }
+
     pub fn size(&self) -> Result<usize> {
         let b = self.to_vec()?;
         Ok(b.len())

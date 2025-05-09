@@ -142,6 +142,9 @@ message DeviceSession {
 
   // Relay state.
   Relay relay = 41;
+
+  // Pending mac-commands.
+  map<uint32, bytes> mac_command_pending = 43;
 }
 
 message UplinkAdrHistory {

@@ -77,20 +77,13 @@ pub async fn handle_uplink(
             );
 
         // Get pending mac-command block, this could return None.
-        let pending = match mac_command::get_pending(&dev.dev_eui, cid).await {
+        let pending = match mac_command::get_pending(dev.get_device_session_mut()?, cid).await {
             Ok(v) => v,
             Err(e) => {
                 error!(dev_eui = %dev.dev_eui, cid = %cid, error = %e, "Get pending mac-command block error");
                 continue;
             }
         };
-
-        // Delete the pending mac-command.
-        if pending.is_some() {
-            if let Err(e) = mac_command::delete_pending(&dev.dev_eui, cid).await {
-                error!(dev_eui = %dev.dev_eui, cid = %cid, error = %e, "Delete pending mac-command error");
-            }
-        }
 
         // Handle the mac-command, which might return a block to answer the uplink mac-command
         // request.

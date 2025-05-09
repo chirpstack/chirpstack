@@ -4230,33 +4230,30 @@ async fn test_lorawan_10_adr() {
             name: "acknowledgement of pending adr request".into(),
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
-            before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui;
-                Box::pin(async move {
-                    mac_command::set_pending(
-                        &dev_eui,
-                        lrwn::CID::LinkADRReq,
-                        &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
-                            lrwn::LinkADRReqPayload {
-                                dr: 0,
-                                tx_power: 3,
-                                ch_mask: lrwn::ChMask::new([
-                                    true, true, true, false, false, false, false, false, false,
-                                    false, false, false, false, false, false, false,
-                                ]),
-                                redundancy: lrwn::Redundancy {
-                                    ch_mask_cntl: 0,
-                                    nb_rep: 1,
-                                },
-                            },
-                        )]),
-                    )
-                    .await
-                    .unwrap();
-                })
-            })),
+            before_func: None,
             after_func: None,
-            device_session: Some(ds.clone()),
+            device_session: Some({
+                let mut ds = ds.clone();
+                mac_command::set_pending(
+                    &mut ds,
+                    &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
+                        lrwn::LinkADRReqPayload {
+                            dr: 0,
+                            tx_power: 3,
+                            ch_mask: lrwn::ChMask::new([
+                                true, true, true, false, false, false, false, false, false, false,
+                                false, false, false, false, false, false,
+                            ]),
+                            redundancy: lrwn::Redundancy {
+                                ch_mask_cntl: 0,
+                                nb_rep: 1,
+                            },
+                        },
+                    )]),
+                )
+                .unwrap();
+                ds
+            }),
             tx_info: tx_info.clone(),
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
@@ -4298,33 +4295,30 @@ async fn test_lorawan_10_adr() {
             name: "negative acknowledgement of pending adr request".into(),
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
-            before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui;
-                Box::pin(async move {
-                    mac_command::set_pending(
-                        &dev_eui,
-                        lrwn::CID::LinkADRReq,
-                        &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
-                            lrwn::LinkADRReqPayload {
-                                dr: 0,
-                                tx_power: 3,
-                                ch_mask: lrwn::ChMask::new([
-                                    true, true, true, false, false, false, false, false, false,
-                                    false, false, false, false, false, false, false,
-                                ]),
-                                redundancy: lrwn::Redundancy {
-                                    ch_mask_cntl: 0,
-                                    nb_rep: 1,
-                                },
-                            },
-                        )]),
-                    )
-                    .await
-                    .unwrap();
-                })
-            })),
+            before_func: None,
             after_func: None,
-            device_session: Some(ds.clone()),
+            device_session: Some({
+                let mut ds = ds.clone();
+                mac_command::set_pending(
+                    &mut ds,
+                    &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
+                        lrwn::LinkADRReqPayload {
+                            dr: 0,
+                            tx_power: 3,
+                            ch_mask: lrwn::ChMask::new([
+                                true, true, true, false, false, false, false, false, false, false,
+                                false, false, false, false, false, false,
+                            ]),
+                            redundancy: lrwn::Redundancy {
+                                ch_mask_cntl: 0,
+                                nb_rep: 1,
+                            },
+                        },
+                    )]),
+                )
+                .unwrap();
+                ds
+            }),
             tx_info: tx_info.clone(),
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
@@ -4540,33 +4534,30 @@ async fn test_lorawan_10_adr() {
             name: "new channel re-configuration ack-ed".into(),
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
-            before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui;
-                Box::pin(async move {
-                    mac_command::set_pending(
-                        &dev_eui,
-                        lrwn::CID::LinkADRReq,
-                        &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
-                            lrwn::LinkADRReqPayload {
-                                dr: 0,
-                                tx_power: 1,
-                                ch_mask: lrwn::ChMask::new([
-                                    true, true, true, false, false, false, false, false, false,
-                                    false, false, false, false, false, false, false,
-                                ]),
-                                redundancy: lrwn::Redundancy {
-                                    ch_mask_cntl: 0,
-                                    nb_rep: 0,
-                                },
-                            },
-                        )]),
-                    )
-                    .await
-                    .unwrap();
-                })
-            })),
+            before_func: None,
             after_func: None,
-            device_session: Some(ds_7chan.clone()),
+            device_session: Some({
+                let mut ds = ds_7chan.clone();
+                mac_command::set_pending(
+                    &mut ds,
+                    &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
+                        lrwn::LinkADRReqPayload {
+                            dr: 0,
+                            tx_power: 1,
+                            ch_mask: lrwn::ChMask::new([
+                                true, true, true, false, false, false, false, false, false, false,
+                                false, false, false, false, false, false,
+                            ]),
+                            redundancy: lrwn::Redundancy {
+                                ch_mask_cntl: 0,
+                                nb_rep: 0,
+                            },
+                        },
+                    )]),
+                )
+                .unwrap();
+                ds
+            }),
             tx_info: tx_info.clone(),
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
@@ -4606,33 +4597,30 @@ async fn test_lorawan_10_adr() {
             name: "new channel re-configuration not ack-ed".into(),
             dev_eui: dev.dev_eui,
             device_queue_items: vec![],
-            before_func: Some(Box::new(move || {
-                let dev_eui = dev.dev_eui;
-                Box::pin(async move {
-                    mac_command::set_pending(
-                        &dev_eui,
-                        lrwn::CID::LinkADRReq,
-                        &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
-                            lrwn::LinkADRReqPayload {
-                                dr: 0,
-                                tx_power: 1,
-                                ch_mask: lrwn::ChMask::new([
-                                    true, true, true, false, false, false, false, false, false,
-                                    false, false, false, false, false, false, false,
-                                ]),
-                                redundancy: lrwn::Redundancy {
-                                    ch_mask_cntl: 0,
-                                    nb_rep: 0,
-                                },
-                            },
-                        )]),
-                    )
-                    .await
-                    .unwrap();
-                })
-            })),
+            before_func: None,
             after_func: None,
-            device_session: Some(ds_7chan.clone()),
+            device_session: Some({
+                let mut ds = ds_7chan.clone();
+                mac_command::set_pending(
+                    &mut ds,
+                    &lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
+                        lrwn::LinkADRReqPayload {
+                            dr: 0,
+                            tx_power: 1,
+                            ch_mask: lrwn::ChMask::new([
+                                true, true, true, false, false, false, false, false, false, false,
+                                false, false, false, false, false, false,
+                            ]),
+                            redundancy: lrwn::Redundancy {
+                                ch_mask_cntl: 0,
+                                nb_rep: 0,
+                            },
+                        },
+                    )]),
+                )
+                .unwrap();
+                ds
+            }),
             tx_info: tx_info.clone(),
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
