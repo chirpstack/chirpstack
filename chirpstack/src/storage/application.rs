@@ -85,6 +85,7 @@ pub enum IntegrationKind {
     AzureServiceBus,
     PilotThings,
     Ifttt,
+    Qubitro,
 }
 
 impl fmt::Display for IntegrationKind {
@@ -108,6 +109,7 @@ impl FromStr for IntegrationKind {
             "AzureServiceBus" => IntegrationKind::AzureServiceBus,
             "PilotThings" => IntegrationKind::PilotThings,
             "Ifttt" => IntegrationKind::Ifttt,
+            "Qubitro" => IntegrationKind::Qubitro,
             _ => {
                 return Err(anyhow!("Unexpected IntegrationKind: {}", s));
             }
@@ -158,6 +160,7 @@ pub enum IntegrationConfiguration {
     AzureServiceBus(AzureServiceBusConfiguration),
     PilotThings(PilotThingsConfiguration),
     Ifttt(IftttConfiguration),
+    Qubitro(QubitroConfiguration),
 }
 
 #[cfg(feature = "postgres")]
@@ -288,6 +291,12 @@ pub struct IftttConfiguration {
     pub uplink_values: [String; 2], // The first value is reserved for the DevEUI
     pub arbitrary_json: bool,
     pub event_prefix: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct QubitroConfiguration {
+    pub project_id: String,
+    pub webhook_signing_key: String,
 }
 
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
