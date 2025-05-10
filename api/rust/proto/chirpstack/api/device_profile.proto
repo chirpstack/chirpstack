@@ -24,6 +24,9 @@ enum CodecRuntime {
 
   // JavaScript.
   JS = 2;
+
+  // JavaScript plugin.
+  JS_PLUGIN = 3;
 }
 
 enum MeasurementKind {
@@ -176,6 +179,14 @@ service DeviceProfileService {
       returns (ListDeviceProfileAdrAlgorithmsResponse) {
     option (google.api.http) = {
       get : "/api/device-profiles/adr-algorithms"
+    };
+  }
+
+  // List available codec plugins.
+  rpc ListCodecPlugins(google.protobuf.Empty)
+      returns (ListDeviceProfileCodecPluginsResponse) {
+    option (google.api.http) = {
+      get : "/api/device-profiles/codec-plugins"
     };
   }
 }
@@ -457,6 +468,9 @@ message DeviceProfile {
 
   // Application Layer parameters.
   AppLayerParams app_layer_params = 54;
+
+  // Payload codec plugin ID.
+  string codec_plugin_id = 55;
 }
 
 message Measurement {
@@ -591,5 +605,21 @@ message AdrAlgorithmListItem {
   string id = 1;
 
   // Algorithm name.
+  string name = 2;
+}
+
+message ListDeviceProfileCodecPluginsResponse {
+  // Total number of plugins.
+  uint32 total_count = 1;
+
+  // Result-set.
+  repeated CodecPluginListItem result = 2;
+}
+
+message CodecPluginListItem {
+  // Pluigin ID.
+  string id = 1;
+
+  // Plugin name.
   string name = 2;
 }
