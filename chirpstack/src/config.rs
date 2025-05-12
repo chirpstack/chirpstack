@@ -352,6 +352,7 @@ pub struct AmqpIntegration {
     pub url: String,
     pub json: bool,
     pub event_routing_key: String,
+    pub exchange: String,
 }
 
 impl Default for AmqpIntegration {
@@ -361,6 +362,7 @@ impl Default for AmqpIntegration {
             json: true,
             event_routing_key: "application.{{application_id}}.device.{{dev_eui}}.event.{{event}}"
                 .to_string(),
+            exchange: "amq.topic".to_string(),
         }
     }
 }
