@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
-use chrono::{DateTime, Duration, Local, Utc};
+use chrono::{DateTime, Local, Utc};
 use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 
 use super::error::Error;
@@ -126,7 +126,6 @@ impl Data {
         ctx.set_device_info()?;
         ctx.set_device_gateway_rx_info()?;
         ctx.handle_retransmission_reset().await?;
-        ctx.set_scheduler_run_after().await?;
         ctx.decrypt_f_opts_mac_commands()?;
         ctx.decrypt_frm_payload()?;
         ctx.log_uplink_frame_set().await?;
@@ -520,36 +519,6 @@ impl Data {
         }
 
         Err(Error::Abort)
-    }
-
-    // For Class-B and Class-C devices, set the scheduler_run_after timestamp to avoid collisions with
-    // the Class-A downlink and Class-B/C scheduler.
-    async fn set_scheduler_run_after(&mut self) -> Result<()> {
-        let dev = self.device.as_mut().unwrap();
-        let conf = config::get();
-
-        if dev.enabled_class == DeviceClass::B || dev.enabled_class == DeviceClass::C {
-            trace!("Setting scheduler_run_after for device");
-            let scheduler_run_after =
-                Utc::now() + Duration::from_std(conf.network.scheduler.class_a_lock_duration)?;
-
-            // Only set the new scheduler_run_after if it is currently None
-            // or when the current value is before the calculated scheduler_run_after.
-            if dev.scheduler_run_after.is_none()
-                || scheduler_run_after > dev.scheduler_run_after.unwrap()
-            {
-                *dev = device::partial_update(
-                    dev.dev_eui,
-                    &device::DeviceChangeset {
-                        scheduler_run_after: Some(Some(scheduler_run_after)),
-                        ..Default::default()
-                    },
-                )
-                .await?;
-            }
-        }
-
-        Ok(())
     }
 
     async fn filter_rx_info_by_tenant(&mut self) -> Result<()> {

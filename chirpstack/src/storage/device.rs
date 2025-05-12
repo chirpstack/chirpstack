@@ -327,6 +327,15 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
         return Err(Error::InvalidPayload("MacPayload".to_string()));
     };
 
+    // We calculate the scheduler_run_after timestamp, such that we can update
+    // it directly when updating the device-session (to update the frame-counter).
+    // This way, we limit the risk of overlapping Class-A downlinks with Class-B / -C
+    // downlinks.
+    let conf = config::get();
+    let scheduler_run_after = Utc::now()
+        + Duration::from_std(conf.network.scheduler.class_a_lock_duration)
+            .map_err(anyhow::Error::new)?;
+
     let mut c = get_async_db_conn().await?;
 
     db_transaction::<ValidationStatus, Error, _>(&mut c, |c| {
@@ -427,10 +436,20 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                             let ds_f_cnt_up = ds.f_cnt_up;
                             ds.f_cnt_up = full_f_cnt + 1;
 
-                            let _ = diesel::update(device::dsl::device.find(d.dev_eui))
-                                .set(device::device_session.eq(&ds.clone()))
-                                .execute(c)
-                                .await?;
+                            if scheduler_run_after > d.scheduler_run_after.unwrap_or_default() {
+                                let _ = diesel::update(device::dsl::device.find(d.dev_eui))
+                                    .set((
+                                        device::device_session.eq(&ds.clone()),
+                                        device::scheduler_run_after.eq(&scheduler_run_after),
+                                    ))
+                                    .execute(c)
+                                    .await?;
+                            } else {
+                                let _ = diesel::update(device::dsl::device.find(d.dev_eui))
+                                    .set(device::device_session.eq(&ds.clone()))
+                                    .execute(c)
+                                    .await?;
+                            }
 
                             // We do return the device-session with original frame-counter
                             ds.f_cnt_up = ds_f_cnt_up;
