@@ -3,10 +3,10 @@ use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
 use anyhow::Result;
-use chrono::{DateTime, Utc};
-
+use chrono::{DateTime, TimeDelta, Utc};
+use tracing::info;
 use crate::gpstime::ToDateTime;
-use crate::region;
+use crate::{config, region};
 use chirpstack_api::{common, gw};
 
 pub fn get_uplink_dr(
@@ -98,6 +98,15 @@ pub fn get_rx_timestamp_chrono(rx_info: &[gw::UplinkRxInfo]) -> DateTime<Utc> {
         if let Some(ts) = &rxi.gw_time {
             let ts: Result<DateTime<Utc>> = (*ts).try_into().map_err(anyhow::Error::msg);
             if let Ok(ts) = ts {
+                let now = Utc::now();
+                let diff: TimeDelta = ts - now;
+                
+                let max_diff = TimeDelta::from_std(config::get().network.device_time_req_fallback_threshold).unwrap();
+                if (diff > max_diff) {
+                    info!(diff = %diff, maxDiff = %max_diff, "Time delta to high falling back to system time");
+                    return now
+                }
+
                 return ts;
             }
         }
