@@ -417,7 +417,7 @@ async fn message_callback(
                 .inc();
             let event = match json {
                 true => serde_json::from_slice(&p.payload)?,
-                false => chirpstack_api::gw::Mesh::decode(p.payload.as_ref())?,
+                false => chirpstack_api::gw::MeshEvent::decode(p.payload.as_ref())?,
             };
 
             tokio::spawn(uplink::mesh::Mesh::handle(event));

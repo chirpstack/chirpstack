@@ -18,11 +18,11 @@ pub struct Mesh {
     gateway_id: EUI64,
     relay_id: RelayId,
     time: DateTime<Utc>,
-    mesh_event: gw::Mesh,
+    mesh_event: gw::MeshEvent,
 }
 
 impl Mesh {
-    pub async fn handle(s: gw::Mesh) {
+    pub async fn handle(s: gw::MeshEvent) {
         let gateway_id = match EUI64::from_str(&s.gateway_id) {
             Ok(v) => v,
             Err(e) => {
@@ -59,7 +59,7 @@ impl Mesh {
         }
     }
 
-    async fn _handle(gateway_id: EUI64, relay_id: RelayId, s: gw::Mesh) -> Result<()> {
+    async fn _handle(gateway_id: EUI64, relay_id: RelayId, s: gw::MeshEvent) -> Result<()> {
         let ctx = Mesh {
             gateway_id,
             relay_id,
@@ -81,8 +81,8 @@ impl Mesh {
 
         for event in &self.mesh_event.events {
             match &event.event {
-                Some(gw::mesh_event::Event::Proprietary(_)) | None => continue,
-                Some(gw::mesh_event::Event::Heartbeat(v)) => self._handle_heartbeat(v).await?,
+                Some(gw::mesh_event_item::Event::Proprietary(_)) | None => continue,
+                Some(gw::mesh_event_item::Event::Heartbeat(v)) => self._handle_heartbeat(v).await?,
             }
         }
 

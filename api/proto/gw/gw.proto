@@ -114,7 +114,7 @@ message Event {
     GatewayStats gateway_stats = 2;
 
     // Gateway Mesh Event.
-    Mesh mesh = 3;
+    MeshEvent mesh = 3;
   }
 }
 
@@ -132,10 +132,13 @@ message Command {
 
     // Get location.
     GetLocationRequest get_location = 4;
+
+    // Gateway Mesh Command.
+    MeshCommand mesh = 5;
   }
 }
 
-message Mesh {
+message MeshEvent {
   // Gateway ID (of the Border Gateway).
   string gateway_id = 1;
 
@@ -146,16 +149,37 @@ message Mesh {
   google.protobuf.Timestamp time = 3;
 
   // Mesh events.
-  repeated MeshEvent events = 4;
+  repeated MeshEventItem events = 4;
 }
 
-message MeshEvent {
+message MeshEventItem {
   oneof event {
     // Proprietary Mesh event.
     MeshEventProprietary proprietary = 1;
 
     // Mesh heartbeat.
     MeshEventHeartbeat heartbeat = 2;
+  }
+}
+
+message MeshCommand {
+    // Gateway ID (of the Border Gateway).
+  string gateway_id = 1;
+
+  // Relay ID.
+  string relay_id = 2;
+
+  // Timestamp (second precision).
+  google.protobuf.Timestamp time = 3;
+
+  // Mesh events.
+  repeated MeshCommandItem commands = 4;
+}
+
+message MeshCommandItem {
+  oneof command {
+    // Proprietary Mesh command.
+    MeshCommandProprietary proprietary = 1;
   }
 }
 
@@ -844,6 +868,15 @@ message MeshEventHeartbeatRelayPath {
 message MeshEventProprietary {
   // Event type.
   uint32 event_type = 1;
+
+  // Payload.
+  bytes payload = 2;
+}
+
+// Proprietary mesh command.
+message MeshCommandProprietary {
+  // Command type.
+  uint32 command_type = 1;
 
   // Payload.
   bytes payload = 2;
