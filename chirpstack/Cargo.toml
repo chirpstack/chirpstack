@@ -34,7 +34,7 @@
   tokio-postgres = { version = "0.7", optional = true }
   tokio-postgres-rustls = { version = "0.13", optional = true }
   bigdecimal = "0.4"
-  redis = { version = "0.29", features = ["tls-rustls", "tokio-rustls-comp"] }
+  redis = { version = "0.31", features = ["tls-rustls", "tokio-rustls-comp"] }
   deadpool-redis = { version = "0.20", features = ["cluster", "serde"] }
 
   # Logging
