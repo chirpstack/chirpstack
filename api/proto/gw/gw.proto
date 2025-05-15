@@ -169,11 +169,8 @@ message MeshCommand {
   // Relay ID.
   string relay_id = 2;
 
-  // Timestamp (second precision).
-  google.protobuf.Timestamp time = 3;
-
   // Mesh events.
-  repeated MeshCommandItem commands = 4;
+  repeated MeshCommandItem commands = 3;
 }
 
 message MeshCommandItem {
