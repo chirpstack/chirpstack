@@ -27,6 +27,7 @@ pub struct Integration<'a> {
     templates: Handlebars<'a>,
     json: bool,
     url: String,
+    exchange: String,
 }
 
 #[derive(Serialize)]
@@ -49,6 +50,7 @@ impl<'a> Integration<'a> {
             templates,
             url: conf.url.clone(),
             json: conf.json,
+            exchange: conf.exchange.clone(),
         };
         i.connect().await?;
 
@@ -90,7 +92,7 @@ impl<'a> Integration<'a> {
                 .as_ref()
                 .unwrap()
                 .basic_publish(
-                    "amq.topic",
+                    &self.exchange,
                     &routing_key,
                     BasicPublishOptions::default(),
                     b,
