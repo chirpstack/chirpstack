@@ -25,8 +25,10 @@ pub async fn save(df: &internal::DownlinkFrame) -> Result<()> {
 pub async fn get_and_del(id: u32) -> Result<internal::DownlinkFrame, Error> {
     let key = redis_key(format!("frame:{}", id));
     let (v, _): (Vec<u8>, u8) = redis::pipe()
-        .cmd("GET").arg(key.clone())
-        .cmd("DEL").arg(key)
+        .cmd("GET")
+        .arg(key.clone())
+        .cmd("DEL")
+        .arg(key)
         .query_async(&mut get_async_redis_conn().await?)
         .await?;
     if v.is_empty() {
