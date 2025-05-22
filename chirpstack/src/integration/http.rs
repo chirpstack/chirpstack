@@ -20,6 +20,7 @@ fn get_client() -> Client {
         .get_or_init(|| {
             Client::builder()
                 .timeout(Duration::from_secs(5))
+                .use_rustls_tls()
                 .build()
                 .unwrap()
         })
