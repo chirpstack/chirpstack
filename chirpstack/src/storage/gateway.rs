@@ -365,16 +365,36 @@ pub async fn list(
         true => match order_by {
             OrderBy::Name => q.order_by(gateway::dsl::name.desc()),
             OrderBy::GatewayId => q.order_by(gateway::dsl::gateway_id.desc()),
-            OrderBy::LastSeenAt => q
-                .order_by(gateway::dsl::last_seen_at.desc())
-                .then_order_by(gateway::dsl::name),
+            OrderBy::LastSeenAt => {
+                #[cfg(feature = "postgres")]
+                {
+                    q.order_by(gateway::dsl::last_seen_at.desc().nulls_last())
+                        .then_order_by(gateway::dsl::name)
+                }
+
+                #[cfg(feature = "sqlite")]
+                {
+                    q.order_by(gateway::dsl::last_seen_at.desc())
+                        .then_order_by(gateway::dsl::name)
+                }
+            }
         },
         false => match order_by {
             OrderBy::Name => q.order_by(gateway::dsl::name),
             OrderBy::GatewayId => q.order_by(gateway::dsl::gateway_id),
-            OrderBy::LastSeenAt => q
-                .order_by(gateway::dsl::last_seen_at)
-                .then_order_by(gateway::dsl::name),
+            OrderBy::LastSeenAt => {
+                #[cfg(feature = "postgres")]
+                {
+                    q.order_by(gateway::dsl::last_seen_at.asc().nulls_first())
+                        .then_order_by(gateway::dsl::name)
+                }
+
+                #[cfg(feature = "sqlite")]
+                {
+                    q.order_by(gateway::dsl::last_seen_at.asc())
+                        .then_order_by(gateway::dsl::name)
+                }
+            }
         },
     };
 

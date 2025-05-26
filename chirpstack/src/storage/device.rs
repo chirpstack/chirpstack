@@ -730,17 +730,37 @@ pub async fn list(
         true => match order_by {
             OrderBy::Name => q.order_by(device::dsl::name.desc()),
             OrderBy::DevEui => q.order_by(device::dsl::dev_eui.desc()),
-            OrderBy::LastSeenAt => q
-                .order_by(device::dsl::last_seen_at.desc())
-                .then_order_by(device::dsl::name),
+            OrderBy::LastSeenAt => {
+                #[cfg(feature = "postgres")]
+                {
+                    q.order_by(device::dsl::last_seen_at.desc().nulls_last())
+                        .then_order_by(device::dsl::name)
+                }
+
+                #[cfg(feature = "sqlite")]
+                {
+                    q.order_by(device::dsl::last_seen_at.desc())
+                        .then_order_by(device::dsl::name)
+                }
+            }
             OrderBy::DeviceProfileName => q.order_by(device_profile::dsl::name.desc()),
         },
         false => match order_by {
             OrderBy::Name => q.order_by(device::dsl::name),
             OrderBy::DevEui => q.order_by(device::dsl::dev_eui),
-            OrderBy::LastSeenAt => q
-                .order_by(device::dsl::last_seen_at)
-                .then_order_by(device::dsl::name),
+            OrderBy::LastSeenAt => {
+                #[cfg(feature = "postgres")]
+                {
+                    q.order_by(device::dsl::last_seen_at.asc().nulls_first())
+                        .then_order_by(device::dsl::name)
+                }
+
+                #[cfg(feature = "sqlite")]
+                {
+                    q.order_by(device::dsl::last_seen_at.asc())
+                        .then_order_by(device::dsl::name)
+                }
+            }
             OrderBy::DeviceProfileName => q.order_by(device_profile::dsl::name),
         },
     };
