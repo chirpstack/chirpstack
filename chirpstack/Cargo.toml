@@ -34,8 +34,8 @@
   tokio-postgres = { version = "0.7", optional = true }
   tokio-postgres-rustls = { version = "0.13", optional = true }
   bigdecimal = "0.4"
-  redis = { version = "0.29", features = ["tls-rustls", "tokio-rustls-comp"] }
-  deadpool-redis = { version = "0.20", features = ["cluster", "serde"] }
+  redis = { version = "0.31", features = ["tls-rustls", "tokio-rustls-comp"] }
+  deadpool-redis = { version = "0.21", features = ["cluster", "serde"] }
 
   # Logging
   tracing = "0.1"
@@ -137,7 +137,7 @@
   ] }
 
   # Misc
-  uuid = { version = "1.16", features = ["v4", "serde"] }
+  uuid = { version = "1.17", features = ["v4", "serde"] }
   chrono = "0.4"
   async-trait = "0.1"
   aes = "0.8"
