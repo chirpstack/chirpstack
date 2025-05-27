@@ -157,6 +157,9 @@ message DeviceProfileTemplate {
     // keys of the decoded payload. In cases where the decoded payload contains
     // random keys in the data, you want to set this to false.
     bool auto_detect_measurements = 29;
+
+    // Payload codec plugin ID.
+    string codec_plugin_id = 30;
 }
 
 message DeviceProfileTemplateListItem {
