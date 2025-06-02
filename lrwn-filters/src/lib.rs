@@ -30,9 +30,9 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
     }
 
     let mhdr = phy_payload[0];
-    let m_type = mhdr >> 5;
+    let f_type = mhdr >> 5;
 
-    let dev_addr: Option<[u8; 4]> = match m_type {
+    let dev_addr: Option<[u8; 4]> = match f_type {
         // DataUp
         0x02 | 0x04 => {
             // MHDR + DevAddr
@@ -48,7 +48,7 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
         _ => None,
     };
 
-    let join_eui: Option<[u8; 8]> = match m_type {
+    let join_eui: Option<[u8; 8]> = match f_type {
         // JoinRequest
         0x00 => {
             // MHDR + JoinEUI + DevEUI
@@ -362,7 +362,7 @@ mod test {
             println!("> {}", test.name);
             let phy = lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -382,7 +382,7 @@ mod test {
 
             let phy = lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::ConfirmedDataUp,
+                    f_type: lrwn::FType::ConfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -457,7 +457,7 @@ mod test {
             println!("> {}", test.name);
             let phy = lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::JoinRequest,
+                    f_type: lrwn::FType::JoinRequest,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
