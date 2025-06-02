@@ -106,7 +106,7 @@ pub mod test {
             ch: 0,
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {

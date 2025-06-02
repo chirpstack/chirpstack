@@ -6,7 +6,7 @@ use chrono::{DateTime, Local, Utc};
 use tracing::{error, info, span, trace, warn, Instrument, Level};
 
 use lrwn::{
-    keys, AES128Key, CFList, DLSettings, JoinAcceptPayload, JoinRequestPayload, JoinType, MType,
+    keys, AES128Key, CFList, DLSettings, FType, JoinAcceptPayload, JoinRequestPayload, JoinType,
     Major, Payload, PhyPayload, MHDR,
 };
 
@@ -636,7 +636,7 @@ impl JoinRequest {
 
         let mut phy = PhyPayload {
             mhdr: MHDR {
-                m_type: MType::JoinAccept,
+                f_type: FType::JoinAccept,
                 major: Major::LoRaWANR1,
             },
             payload: Payload::JoinAccept(JoinAcceptPayload {
@@ -757,7 +757,7 @@ impl JoinRequest {
             dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
             rx_info: self.uplink_frame_set.rx_info_set.clone(),
-            message_type: common::MType::JoinRequest.into(),
+            frame_type: common::FType::JoinRequest.into(),
             phy_payload_byte_count: self.uplink_frame_set.phy_payload.to_vec()?.len() as u32,
             ..Default::default()
         };

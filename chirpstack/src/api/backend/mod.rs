@@ -252,7 +252,7 @@ async fn _handle_pr_start_req(b: &[u8]) -> Result<backend::PRStartAnsPayload> {
     let pl: backend::PRStartReqPayload = serde_json::from_slice(b)?;
     let phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
 
-    if phy.mhdr.m_type == lrwn::MType::JoinRequest {
+    if phy.mhdr.f_type == lrwn::FType::JoinRequest {
         _handle_pr_start_req_join(pl, phy).await
     } else {
         _handle_pr_start_req_data(pl, phy).await

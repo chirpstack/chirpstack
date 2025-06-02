@@ -7,17 +7,17 @@ include!(concat!(env!("OUT_DIR"), "/common/common.rs"));
 include!(concat!(env!("OUT_DIR"), "/common/common.serde.rs"));
 
 #[allow(clippy::from_over_into)]
-impl Into<String> for MType {
+impl Into<String> for FType {
     fn into(self) -> String {
         match self {
-            MType::JoinRequest => "JoinRequest",
-            MType::JoinAccept => "JoinAccept",
-            MType::UnconfirmedDataUp => "UnconfirmedDataUp",
-            MType::UnconfirmedDataDown => "UnconfirmedDataDown",
-            MType::ConfirmedDataUp => "ConfirmedDataUp",
-            MType::ConfirmedDataDown => "ConfirmedDataDown",
-            MType::RejoinRequest => "RejoinRequest",
-            MType::Proprietary => "Proprietary",
+            FType::JoinRequest => "JoinRequest",
+            FType::JoinAccept => "JoinAccept",
+            FType::UnconfirmedDataUp => "UnconfirmedDataUp",
+            FType::UnconfirmedDataDown => "UnconfirmedDataDown",
+            FType::ConfirmedDataUp => "ConfirmedDataUp",
+            FType::ConfirmedDataDown => "ConfirmedDataDown",
+            FType::RejoinRequest => "RejoinRequest",
+            FType::Proprietary => "Proprietary",
         }
         .to_string()
     }

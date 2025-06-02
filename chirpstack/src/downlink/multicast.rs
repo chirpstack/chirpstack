@@ -199,7 +199,7 @@ impl Multicast {
 
         let mut phy = lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataDown,
+                f_type: lrwn::FType::UnconfirmedDataDown,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {

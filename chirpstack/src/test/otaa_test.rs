@@ -134,7 +134,7 @@ async fn test_gateway_filtering() {
 
     let mut jr_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinRequest,
+            f_type: lrwn::FType::JoinRequest,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
@@ -291,7 +291,7 @@ async fn test_lorawan_10() {
 
     let mut jr_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinRequest,
+            f_type: lrwn::FType::JoinRequest,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
@@ -305,7 +305,7 @@ async fn test_lorawan_10() {
 
     let mut ja_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinAccept,
+            f_type: lrwn::FType::JoinAccept,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinAccept(lrwn::JoinAcceptPayload {
@@ -334,7 +334,7 @@ async fn test_lorawan_10() {
 
     let mut ja_cflist_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinAccept,
+            f_type: lrwn::FType::JoinAccept,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinAccept(lrwn::JoinAcceptPayload {
@@ -561,7 +561,7 @@ async fn test_lorawan_10() {
                     tx_info: Some(tx_info.clone()),
                     rx_info: vec![rx_info.clone()],
                     phy_payload_byte_count: 23,
-                    message_type: common::MType::JoinRequest.into(),
+                    frame_type: common::FType::JoinRequest.into(),
                     ..Default::default()
                 }),
             ],
@@ -942,7 +942,7 @@ async fn test_lorawan_11() {
 
     let mut jr_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinRequest,
+            f_type: lrwn::FType::JoinRequest,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
@@ -956,7 +956,7 @@ async fn test_lorawan_11() {
 
     let mut ja_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinAccept,
+            f_type: lrwn::FType::JoinAccept,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinAccept(lrwn::JoinAcceptPayload {

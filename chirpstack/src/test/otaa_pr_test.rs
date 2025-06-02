@@ -84,7 +84,7 @@ async fn test_fns() {
 
     let mut jr_phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinRequest,
+            f_type: lrwn::FType::JoinRequest,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
@@ -319,7 +319,7 @@ async fn test_sns() {
 
     let mut jr_phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinRequest,
+            f_type: lrwn::FType::JoinRequest,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
@@ -504,7 +504,7 @@ async fn test_sns_roaming_not_allowed() {
 
     let mut jr_phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinRequest,
+            f_type: lrwn::FType::JoinRequest,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {

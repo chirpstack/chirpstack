@@ -24,8 +24,8 @@ message UplinkFrameLog {
   // RX meta-data.
   repeated gw.UplinkRxInfo rx_info = 3;
 
-  // Message type.
-  common.MType m_type = 4;
+  // Frame type.
+  common.FType f_type = 4;
 
   // Device address (optional).
   string dev_addr = 5;
@@ -59,8 +59,8 @@ message DownlinkFrameLog {
   // Gateway ID (EUI64).
   string gateway_id = 5;
 
-  // Message type.
-  common.MType m_type = 6;
+  // Frame type.
+  common.FType f_type = 6;
 
   // Device address (optional).
   string dev_addr = 7;

@@ -431,7 +431,7 @@ impl JoinRequest {
 
         let mut phy = lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::JoinAccept,
+                f_type: lrwn::FType::JoinAccept,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::JoinAccept(lrwn::JoinAcceptPayload {
@@ -552,7 +552,7 @@ impl JoinRequest {
             dev_eui: self.device.as_ref().unwrap().dev_eui.to_string(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
             rx_info: self.uplink_frame_set.rx_info_set.clone(),
-            message_type: common::MType::JoinRequest.into(),
+            frame_type: common::FType::JoinRequest.into(),
             phy_payload_byte_count: self.uplink_frame_set.phy_payload.to_vec()?.len() as u32,
             ..Default::default()
         };

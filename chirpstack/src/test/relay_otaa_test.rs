@@ -138,7 +138,7 @@ async fn test_lorawan_10() {
 
     let mut jr_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinRequest,
+            f_type: lrwn::FType::JoinRequest,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
@@ -152,7 +152,7 @@ async fn test_lorawan_10() {
 
     let mut ja_pl = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinAccept,
+            f_type: lrwn::FType::JoinAccept,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinAccept(lrwn::JoinAcceptPayload {
@@ -181,7 +181,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_jr = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -233,7 +233,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_ja = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataDown,
+            f_type: lrwn::FType::UnconfirmedDataDown,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {

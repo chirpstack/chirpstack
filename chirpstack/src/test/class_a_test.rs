@@ -150,7 +150,7 @@ async fn test_gateway_filtering() {
             rx_info: rx_info_a.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -177,7 +177,7 @@ async fn test_gateway_filtering() {
             rx_info: rx_info_b.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -292,7 +292,7 @@ async fn test_lorawan_10_errors() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -325,7 +325,7 @@ async fn test_lorawan_10_errors() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -357,7 +357,7 @@ async fn test_lorawan_10_errors() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -379,7 +379,7 @@ async fn test_lorawan_10_errors() {
                     rx_info: vec![rx_info.clone()],
                     dev_eui: "0000000000000000".into(),
                     dev_addr: "01020304".into(),
-                    m_type: common::MType::UnconfirmedDataUp.into(),
+                    f_type: common::FType::UnconfirmedDataUp.into(),
                     ..Default::default()
                 }),
             ],
@@ -489,7 +489,7 @@ async fn test_lorawan_11_errors() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -516,7 +516,7 @@ async fn test_lorawan_11_errors() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -633,7 +633,7 @@ async fn test_lorawan_10_skip_f_cnt() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -683,7 +683,7 @@ async fn test_lorawan_10_skip_f_cnt() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -821,7 +821,7 @@ async fn test_lorawan_10_device_disabled() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataUp,
+                f_type: lrwn::FType::UnconfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -949,7 +949,7 @@ async fn test_lorawan_10_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1022,7 +1022,7 @@ async fn test_lorawan_10_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1081,7 +1081,7 @@ async fn test_lorawan_10_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1154,7 +1154,7 @@ async fn test_lorawan_10_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1206,7 +1206,7 @@ async fn test_lorawan_10_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::ConfirmedDataUp,
+                    f_type: lrwn::FType::ConfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1319,7 +1319,7 @@ async fn test_lorawan_10_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::ConfirmedDataUp,
+                    f_type: lrwn::FType::ConfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1457,7 +1457,7 @@ async fn test_lorawan_10_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1597,7 +1597,7 @@ async fn test_lorawan_10_end_to_end_enc() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1649,7 +1649,7 @@ async fn test_lorawan_10_end_to_end_enc() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1712,7 +1712,7 @@ async fn test_lorawan_10_end_to_end_enc() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1761,7 +1761,7 @@ async fn test_lorawan_10_end_to_end_enc() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1781,7 +1781,7 @@ async fn test_lorawan_10_end_to_end_enc() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1912,7 +1912,7 @@ async fn test_lorawan_11_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -1971,7 +1971,7 @@ async fn test_lorawan_11_uplink() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2145,7 +2145,7 @@ async fn test_lorawan_10_rx_delay() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::ConfirmedDataUp,
+                f_type: lrwn::FType::ConfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2267,7 +2267,7 @@ async fn test_lorawan_10_rx_delay() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::ConfirmedDataUp,
+                f_type: lrwn::FType::ConfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2389,7 +2389,7 @@ async fn test_lorawan_10_rx_delay() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::ConfirmedDataUp,
+                f_type: lrwn::FType::ConfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2431,7 +2431,7 @@ async fn test_lorawan_10_rx_delay() {
             assert::downlink_phy_payloads(vec![
                 lrwn::PhyPayload {
                     mhdr: lrwn::MHDR {
-                        m_type: lrwn::MType::UnconfirmedDataDown,
+                        f_type: lrwn::FType::UnconfirmedDataDown,
                         major: lrwn::Major::LoRaWANR1,
                     },
                     payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2455,7 +2455,7 @@ async fn test_lorawan_10_rx_delay() {
                 },
                 lrwn::PhyPayload {
                     mhdr: lrwn::MHDR {
-                        m_type: lrwn::MType::UnconfirmedDataDown,
+                        f_type: lrwn::FType::UnconfirmedDataDown,
                         major: lrwn::Major::LoRaWANR1,
                     },
                     payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2602,7 +2602,7 @@ async fn test_lorawan_10_mac_commands() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2622,7 +2622,7 @@ async fn test_lorawan_10_mac_commands() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2645,7 +2645,7 @@ async fn test_lorawan_10_mac_commands() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2701,7 +2701,7 @@ async fn test_lorawan_10_mac_commands() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2721,7 +2721,7 @@ async fn test_lorawan_10_mac_commands() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2744,7 +2744,7 @@ async fn test_lorawan_10_mac_commands() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2779,7 +2779,7 @@ async fn test_lorawan_10_mac_commands() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2803,7 +2803,7 @@ async fn test_lorawan_10_mac_commands() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2823,7 +2823,7 @@ async fn test_lorawan_10_mac_commands() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2937,7 +2937,7 @@ async fn test_lorawan_11_mac_commands() {
 
     let mut phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -2984,7 +2984,7 @@ async fn test_lorawan_11_mac_commands() {
             assert::downlink_phy_payloads(vec![
                 lrwn::PhyPayload {
                     mhdr: lrwn::MHDR {
-                        m_type: lrwn::MType::UnconfirmedDataDown,
+                        f_type: lrwn::FType::UnconfirmedDataDown,
                         major: lrwn::Major::LoRaWANR1,
                     },
                     payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3008,7 +3008,7 @@ async fn test_lorawan_11_mac_commands() {
                 },
                 lrwn::PhyPayload {
                     mhdr: lrwn::MHDR {
-                        m_type: lrwn::MType::UnconfirmedDataDown,
+                        f_type: lrwn::FType::UnconfirmedDataDown,
                         major: lrwn::Major::LoRaWANR1,
                     },
                     payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3141,7 +3141,7 @@ async fn test_lorawan_10_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3161,7 +3161,7 @@ async fn test_lorawan_10_device_queue() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3181,7 +3181,7 @@ async fn test_lorawan_10_device_queue() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3228,7 +3228,7 @@ async fn test_lorawan_10_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3248,7 +3248,7 @@ async fn test_lorawan_10_device_queue() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3270,7 +3270,7 @@ async fn test_lorawan_10_device_queue() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3311,7 +3311,7 @@ async fn test_lorawan_10_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3331,7 +3331,7 @@ async fn test_lorawan_10_device_queue() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::ConfirmedDataDown,
+                            f_type: lrwn::FType::ConfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3351,7 +3351,7 @@ async fn test_lorawan_10_device_queue() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::ConfirmedDataDown,
+                            f_type: lrwn::FType::ConfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3389,7 +3389,7 @@ async fn test_lorawan_10_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3426,7 +3426,7 @@ async fn test_lorawan_10_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3450,7 +3450,7 @@ async fn test_lorawan_10_device_queue() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3476,7 +3476,7 @@ async fn test_lorawan_10_device_queue() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3613,7 +3613,7 @@ async fn test_lorawan_11_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3633,7 +3633,7 @@ async fn test_lorawan_11_device_queue() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3653,7 +3653,7 @@ async fn test_lorawan_11_device_queue() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3700,7 +3700,7 @@ async fn test_lorawan_11_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3720,7 +3720,7 @@ async fn test_lorawan_11_device_queue() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3742,7 +3742,7 @@ async fn test_lorawan_11_device_queue() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3783,7 +3783,7 @@ async fn test_lorawan_11_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3803,7 +3803,7 @@ async fn test_lorawan_11_device_queue() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::ConfirmedDataDown,
+                            f_type: lrwn::FType::ConfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3823,7 +3823,7 @@ async fn test_lorawan_11_device_queue() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::ConfirmedDataDown,
+                            f_type: lrwn::FType::ConfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3861,7 +3861,7 @@ async fn test_lorawan_11_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3898,7 +3898,7 @@ async fn test_lorawan_11_device_queue() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3924,7 +3924,7 @@ async fn test_lorawan_11_device_queue() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -3950,7 +3950,7 @@ async fn test_lorawan_11_device_queue() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4099,7 +4099,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4123,7 +4123,7 @@ async fn test_lorawan_10_adr() {
                 assert::downlink_phy_payloads_decoded_f_opts(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4157,7 +4157,7 @@ async fn test_lorawan_10_adr() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4203,7 +4203,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4258,7 +4258,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4323,7 +4323,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4367,7 +4367,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4392,7 +4392,7 @@ async fn test_lorawan_10_adr() {
                 assert::downlink_phy_payloads(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4412,7 +4412,7 @@ async fn test_lorawan_10_adr() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4444,7 +4444,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4464,7 +4464,7 @@ async fn test_lorawan_10_adr() {
                 assert::downlink_phy_payloads_decoded_f_opts(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4496,7 +4496,7 @@ async fn test_lorawan_10_adr() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4562,7 +4562,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4625,7 +4625,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4666,7 +4666,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4691,7 +4691,7 @@ async fn test_lorawan_10_adr() {
                 assert::downlink_phy_payloads_decoded_f_opts(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4723,7 +4723,7 @@ async fn test_lorawan_10_adr() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4768,7 +4768,7 @@ async fn test_lorawan_10_adr() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4911,7 +4911,7 @@ async fn test_lorawan_10_device_status_request() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4930,7 +4930,7 @@ async fn test_lorawan_10_device_status_request() {
                 assert::downlink_phy_payloads_decoded_f_opts(vec![
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4953,7 +4953,7 @@ async fn test_lorawan_10_device_status_request() {
                     },
                     lrwn::PhyPayload {
                         mhdr: lrwn::MHDR {
-                            m_type: lrwn::MType::UnconfirmedDataDown,
+                            f_type: lrwn::FType::UnconfirmedDataDown,
                             major: lrwn::Major::LoRaWANR1,
                         },
                         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -4988,7 +4988,7 @@ async fn test_lorawan_10_device_status_request() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -5019,7 +5019,7 @@ async fn test_lorawan_10_device_status_request() {
             rx_info: rx_info.clone(),
             phy_payload: lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataUp,
+                    f_type: lrwn::FType::UnconfirmedDataUp,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -5181,7 +5181,7 @@ async fn test_lorawan_11_receive_window_selection() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataUp,
+                f_type: lrwn::FType::UnconfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -5251,7 +5251,7 @@ async fn test_lorawan_11_receive_window_selection() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataUp,
+                f_type: lrwn::FType::UnconfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -5321,7 +5321,7 @@ async fn test_lorawan_11_receive_window_selection() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataUp,
+                f_type: lrwn::FType::UnconfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -5420,7 +5420,7 @@ async fn test_lorawan_11_receive_window_selection() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataUp,
+                f_type: lrwn::FType::UnconfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {

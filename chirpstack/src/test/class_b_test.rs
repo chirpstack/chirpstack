@@ -133,7 +133,7 @@ async fn test_uplink() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataUp,
+                f_type: lrwn::FType::UnconfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -168,7 +168,7 @@ async fn test_uplink() {
         rx_info: rx_info.clone(),
         phy_payload: lrwn::PhyPayload {
             mhdr: lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataUp,
+                f_type: lrwn::FType::UnconfirmedDataUp,
                 major: lrwn::Major::LoRaWANR1,
             },
             payload: lrwn::Payload::MACPayload(lrwn::MACPayload {

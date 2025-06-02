@@ -3,7 +3,7 @@ use chrono::{Duration, Utc};
 use tracing::{error, info, span, trace, Instrument, Level};
 use uuid::Uuid;
 
-use lrwn::{AES128Key, MType, Payload, PhyPayload, EUI64};
+use lrwn::{AES128Key, FType, Payload, PhyPayload, EUI64};
 
 use crate::api::helpers::ToProto;
 use crate::storage::{
@@ -589,13 +589,13 @@ impl TxAck {
             tx_info: dfi.tx_info.clone(),
             downlink_id: gw_df.downlink_id,
             gateway_id: gw_df.gateway_id.clone(),
-            m_type: match &phy.mhdr.m_type {
-                MType::JoinAccept => common::MType::JoinAccept,
-                MType::UnconfirmedDataDown => common::MType::UnconfirmedDataDown,
-                MType::ConfirmedDataDown => common::MType::ConfirmedDataDown,
-                MType::Proprietary => common::MType::Proprietary,
+            f_type: match &phy.mhdr.f_type {
+                FType::JoinAccept => common::FType::JoinAccept,
+                FType::UnconfirmedDataDown => common::FType::UnconfirmedDataDown,
+                FType::ConfirmedDataDown => common::FType::ConfirmedDataDown,
+                FType::Proprietary => common::FType::Proprietary,
                 _ => {
-                    return Err(anyhow!("Unepxected MType: {}", phy.mhdr.m_type));
+                    return Err(anyhow!("Unepxected FType: {}", phy.mhdr.f_type));
                 }
             }
             .into(),
@@ -658,7 +658,7 @@ impl TxAck {
             tx_info: dfl.tx_info.clone(),
             downlink_id: dfl.downlink_id,
             gateway_id: dfl.gateway_id.clone(),
-            m_type: dfl.m_type,
+            f_type: dfl.f_type,
             dev_addr: dfl.dev_addr.clone(),
             dev_eui: dfl.dev_eui.clone(),
             plaintext_f_opts: true,
@@ -719,7 +719,7 @@ impl TxAck {
             } else {
                 0
             } as u32,
-            message_type: phy.mhdr.m_type.to_proto().into(),
+            frame_type: phy.mhdr.f_type.to_proto().into(),
             gateway_id: df.downlink_frame.as_ref().unwrap().gateway_id.clone(),
         };
 
@@ -803,15 +803,15 @@ impl TxAck {
     }
 
     fn is_unconfirmed_downlink(&self) -> bool {
-        if self.phy_payload.as_ref().unwrap().mhdr.m_type == lrwn::MType::UnconfirmedDataDown {
+        if self.phy_payload.as_ref().unwrap().mhdr.f_type == lrwn::FType::UnconfirmedDataDown {
             return true;
         }
         false
     }
 
     fn is_unconfirmed_downlink_relayed(&self) -> bool {
-        if self.phy_payload_relayed.as_ref().unwrap().mhdr.m_type
-            == lrwn::MType::UnconfirmedDataDown
+        if self.phy_payload_relayed.as_ref().unwrap().mhdr.f_type
+            == lrwn::FType::UnconfirmedDataDown
         {
             return true;
         }
@@ -819,14 +819,14 @@ impl TxAck {
     }
 
     fn is_confirmed_downlink(&self) -> bool {
-        if self.phy_payload.as_ref().unwrap().mhdr.m_type == lrwn::MType::ConfirmedDataDown {
+        if self.phy_payload.as_ref().unwrap().mhdr.f_type == lrwn::FType::ConfirmedDataDown {
             return true;
         }
         false
     }
 
     fn is_confirmed_downlink_relayed(&self) -> bool {
-        if self.phy_payload_relayed.as_ref().unwrap().mhdr.m_type == lrwn::MType::ConfirmedDataDown
+        if self.phy_payload_relayed.as_ref().unwrap().mhdr.f_type == lrwn::FType::ConfirmedDataDown
         {
             return true;
         }

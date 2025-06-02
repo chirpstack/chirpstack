@@ -24,7 +24,7 @@ use crate::storage::{
 use crate::stream;
 use chirpstack_api::{common, gw, stream as stream_pb};
 use lrwn::region::CommonName;
-use lrwn::{ForwardUplinkReq, MType, PhyPayload, EUI64};
+use lrwn::{FType, ForwardUplinkReq, PhyPayload, EUI64};
 
 mod data;
 mod data_fns;
@@ -39,7 +39,7 @@ pub mod stats;
 
 #[derive(Clone, Hash, PartialEq, Eq, EncodeLabelSet, Debug)]
 struct UplinkLabels {
-    m_type: String,
+    f_type: String,
 }
 
 static UPLINK_COUNTER: LazyLock<Family<UplinkLabels, Counter>> = LazyLock::new(|| {
@@ -105,16 +105,16 @@ impl TryFrom<&UplinkFrameSet> for stream_pb::UplinkFrameLog {
             phy_payload: ufs.phy_payload.to_vec()?,
             tx_info: Some(ufs.tx_info.clone()),
             rx_info: ufs.rx_info_set.clone(),
-            m_type: match ufs.phy_payload.mhdr.m_type {
-                lrwn::MType::JoinRequest => common::MType::JoinRequest,
-                lrwn::MType::RejoinRequest => common::MType::RejoinRequest,
-                lrwn::MType::UnconfirmedDataUp => common::MType::UnconfirmedDataUp,
-                lrwn::MType::ConfirmedDataUp => common::MType::ConfirmedDataUp,
-                lrwn::MType::Proprietary => common::MType::Proprietary,
+            f_type: match ufs.phy_payload.mhdr.f_type {
+                lrwn::FType::JoinRequest => common::FType::JoinRequest,
+                lrwn::FType::RejoinRequest => common::FType::RejoinRequest,
+                lrwn::FType::UnconfirmedDataUp => common::FType::UnconfirmedDataUp,
+                lrwn::FType::ConfirmedDataUp => common::FType::ConfirmedDataUp,
+                lrwn::FType::Proprietary => common::FType::Proprietary,
                 _ => {
                     return Err(anyhow!(
-                        "Unexpected m_type: {}",
-                        ufs.phy_payload.mhdr.m_type
+                        "Unexpected f_type: {}",
+                        ufs.phy_payload.mhdr.f_type
                     ));
                 }
             }
@@ -324,7 +324,7 @@ pub async fn handle_uplink(
 
     UPLINK_COUNTER
         .get_or_create(&UplinkLabels {
-            m_type: uplink.phy_payload.mhdr.m_type.to_string(),
+            f_type: uplink.phy_payload.mhdr.f_type.to_string(),
         })
         .inc();
 
@@ -336,7 +336,7 @@ pub async fn handle_uplink(
     )?;
 
     info!(
-        m_type = %uplink.phy_payload.mhdr.m_type,
+        f_type = %uplink.phy_payload.mhdr.f_type,
         "Uplink received"
     );
 
@@ -351,13 +351,13 @@ pub async fn handle_uplink(
         .await
         .context("Log uplink for gateways")?;
 
-    match uplink.phy_payload.mhdr.m_type {
-        MType::JoinRequest => join::JoinRequest::handle(uplink).await,
-        MType::UnconfirmedDataUp | MType::ConfirmedDataUp => data::Data::handle(uplink).await,
+    match uplink.phy_payload.mhdr.f_type {
+        FType::JoinRequest => join::JoinRequest::handle(uplink).await,
+        FType::UnconfirmedDataUp | FType::ConfirmedDataUp => data::Data::handle(uplink).await,
         _ => {
             return Err(anyhow!(
-                "Unexpected m_type: {}",
-                uplink.phy_payload.mhdr.m_type
+                "Unexpected f_type: {}",
+                uplink.phy_payload.mhdr.f_type
             ))
         }
     }

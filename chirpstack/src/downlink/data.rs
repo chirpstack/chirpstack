@@ -736,7 +736,7 @@ impl Data {
 
             // LoRaWAN MHDR
             let mut mhdr = lrwn::MHDR {
-                m_type: lrwn::MType::UnconfirmedDataDown,
+                f_type: lrwn::FType::UnconfirmedDataDown,
                 major: lrwn::Major::LoRaWANR1,
             };
 
@@ -794,7 +794,7 @@ impl Data {
                         mac_pl.frm_payload = Some(lrwn::FRMPayload::Raw(qi.data.clone()));
 
                         if qi.confirmed {
-                            mhdr.m_type = lrwn::MType::ConfirmedDataDown;
+                            mhdr.f_type = lrwn::FType::ConfirmedDataDown;
                         }
 
                         item.remaining_payload_size -= qi.data.len();
@@ -867,7 +867,7 @@ impl Data {
         for item in self.downlink_frame.items.iter_mut() {
             let mut relay_phy = lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataDown,
+                    f_type: lrwn::FType::UnconfirmedDataDown,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -915,7 +915,7 @@ impl Data {
         for item in self.downlink_frame_items.iter_mut() {
             let mut relay_phy = lrwn::PhyPayload {
                 mhdr: lrwn::MHDR {
-                    m_type: lrwn::MType::UnconfirmedDataDown,
+                    f_type: lrwn::FType::UnconfirmedDataDown,
                     major: lrwn::Major::LoRaWANR1,
                 },
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {

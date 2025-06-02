@@ -193,17 +193,17 @@ impl FromProto<Aggregation> for common::Aggregation {
     }
 }
 
-impl ToProto<common::MType> for lrwn::MType {
-    fn to_proto(self) -> common::MType {
+impl ToProto<common::FType> for lrwn::FType {
+    fn to_proto(self) -> common::FType {
         match self {
-            lrwn::MType::JoinRequest => common::MType::JoinRequest,
-            lrwn::MType::JoinAccept => common::MType::JoinAccept,
-            lrwn::MType::UnconfirmedDataUp => common::MType::UnconfirmedDataUp,
-            lrwn::MType::UnconfirmedDataDown => common::MType::UnconfirmedDataDown,
-            lrwn::MType::ConfirmedDataUp => common::MType::ConfirmedDataUp,
-            lrwn::MType::ConfirmedDataDown => common::MType::ConfirmedDataDown,
-            lrwn::MType::RejoinRequest => common::MType::RejoinRequest,
-            lrwn::MType::Proprietary => common::MType::Proprietary,
+            lrwn::FType::JoinRequest => common::FType::JoinRequest,
+            lrwn::FType::JoinAccept => common::FType::JoinAccept,
+            lrwn::FType::UnconfirmedDataUp => common::FType::UnconfirmedDataUp,
+            lrwn::FType::UnconfirmedDataDown => common::FType::UnconfirmedDataDown,
+            lrwn::FType::ConfirmedDataUp => common::FType::ConfirmedDataUp,
+            lrwn::FType::ConfirmedDataDown => common::FType::ConfirmedDataDown,
+            lrwn::FType::RejoinRequest => common::FType::RejoinRequest,
+            lrwn::FType::Proprietary => common::FType::Proprietary,
         }
     }
 }

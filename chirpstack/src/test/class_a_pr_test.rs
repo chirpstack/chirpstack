@@ -80,7 +80,7 @@ async fn test_fns_uplink() {
 
     let data_phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -266,7 +266,7 @@ async fn test_sns_uplink() {
 
     let mut data_phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -508,7 +508,7 @@ async fn test_sns_roaming_not_allowed() {
 
     let mut data_phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -631,7 +631,7 @@ async fn test_sns_dev_not_found() {
 
     let data_phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {

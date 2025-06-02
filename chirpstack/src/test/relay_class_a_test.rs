@@ -164,7 +164,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_ed_unconfirmed_up = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -196,7 +196,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_ed_confirmed_up = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::ConfirmedDataUp,
+            f_type: lrwn::FType::ConfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -228,7 +228,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_unconfirmed_up = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -267,7 +267,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_unconfirmed_up_adr_ack_req = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -310,7 +310,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_confirmed_up = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataUp,
+            f_type: lrwn::FType::UnconfirmedDataUp,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -349,7 +349,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_ed_unconfirmed_down_ack = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataDown,
+            f_type: lrwn::FType::UnconfirmedDataDown,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -378,7 +378,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_unconfirmed_down_ack = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataDown,
+            f_type: lrwn::FType::UnconfirmedDataDown,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
@@ -413,7 +413,7 @@ async fn test_lorawan_10() {
 
     let mut phy_relay_unconfirmed_down_empty = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::UnconfirmedDataDown,
+            f_type: lrwn::FType::UnconfirmedDataDown,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::MACPayload(lrwn::MACPayload {

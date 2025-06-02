@@ -9,7 +9,7 @@ use crate::eui64::EUI64;
 use crate::fhdr::FCtrl;
 use crate::fhdr::FHDR;
 use crate::maccommand::MACCommandSet;
-use crate::mhdr::MType;
+use crate::mhdr::FType;
 use crate::netid::NetID;
 use crate::relay::{ForwardDownlinkReq, ForwardUplinkReq};
 
@@ -50,15 +50,15 @@ pub enum JoinType {
 }
 
 impl Payload {
-    pub fn from_slice(m_type: MType, b: &[u8]) -> Result<Self> {
-        Ok(match m_type {
-            MType::JoinRequest => Payload::JoinRequest(JoinRequestPayload::from_slice(b)?),
-            MType::JoinAccept => Payload::Raw(b.to_vec()), // the join-accept is encrypted
-            MType::UnconfirmedDataUp
-            | MType::ConfirmedDataUp
-            | MType::UnconfirmedDataDown
-            | MType::ConfirmedDataDown => Payload::MACPayload(MACPayload::from_slice(b)?),
-            MType::RejoinRequest => {
+    pub fn from_slice(f_type: FType, b: &[u8]) -> Result<Self> {
+        Ok(match f_type {
+            FType::JoinRequest => Payload::JoinRequest(JoinRequestPayload::from_slice(b)?),
+            FType::JoinAccept => Payload::Raw(b.to_vec()), // the join-accept is encrypted
+            FType::UnconfirmedDataUp
+            | FType::ConfirmedDataUp
+            | FType::UnconfirmedDataDown
+            | FType::ConfirmedDataDown => Payload::MACPayload(MACPayload::from_slice(b)?),
+            FType::RejoinRequest => {
                 if b.is_empty() {
                     return Err(anyhow!("RejoinRequest payload is empty"));
                 }
@@ -73,7 +73,7 @@ impl Payload {
                     }
                 }
             }
-            MType::Proprietary => Payload::Raw(b.to_vec()),
+            FType::Proprietary => Payload::Raw(b.to_vec()),
         })
     }
 
@@ -453,7 +453,7 @@ mod tests {
             assert_eq!(tst.bytes, tst.pl.to_vec().unwrap());
             assert_eq!(
                 tst.pl,
-                Payload::from_slice(MType::JoinRequest, &tst.bytes).unwrap()
+                Payload::from_slice(FType::JoinRequest, &tst.bytes).unwrap()
             );
         }
     }
@@ -464,7 +464,7 @@ mod tests {
         // before it can be decoded
         assert_eq!(
             Payload::Raw(vec![0x01, 0x02, 0x03]),
-            Payload::from_slice(MType::JoinAccept, &[0x01, 0x02, 0x03]).unwrap()
+            Payload::from_slice(FType::JoinAccept, &[0x01, 0x02, 0x03]).unwrap()
         );
 
         // test decoding the (decrypted) join-accept payload
@@ -611,7 +611,7 @@ mod tests {
             assert_eq!(tst.bytes, tst.pl.to_vec().unwrap());
             assert_eq!(
                 tst.pl,
-                Payload::from_slice(MType::UnconfirmedDataUp, &tst.bytes).unwrap()
+                Payload::from_slice(FType::UnconfirmedDataUp, &tst.bytes).unwrap()
             );
         }
     }
@@ -661,7 +661,7 @@ mod tests {
             assert_eq!(tst.bytes, tst.pl.to_vec().unwrap());
             assert_eq!(
                 tst.pl,
-                Payload::from_slice(MType::RejoinRequest, &tst.bytes).unwrap()
+                Payload::from_slice(FType::RejoinRequest, &tst.bytes).unwrap()
             );
         }
     }
@@ -677,7 +677,7 @@ mod tests {
             assert_eq!(tst.bytes, tst.pl.to_vec().unwrap());
             assert_eq!(
                 tst.pl,
-                Payload::from_slice(MType::Proprietary, &tst.bytes).unwrap()
+                Payload::from_slice(FType::Proprietary, &tst.bytes).unwrap()
             );
         }
     }

@@ -85,7 +85,7 @@ async fn test_js() {
 
     let phy = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinRequest,
+            f_type: lrwn::FType::JoinRequest,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
@@ -98,7 +98,7 @@ async fn test_js() {
 
     let phy_ja = lrwn::PhyPayload {
         mhdr: lrwn::MHDR {
-            m_type: lrwn::MType::JoinAccept,
+            f_type: lrwn::FType::JoinAccept,
             major: lrwn::Major::LoRaWANR1,
         },
         payload: lrwn::Payload::JoinAccept(lrwn::JoinAcceptPayload {

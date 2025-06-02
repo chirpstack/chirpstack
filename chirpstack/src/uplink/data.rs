@@ -716,7 +716,7 @@ impl Data {
                         0
                     }
                 } as u32,
-                message_type: self.phy_payload.mhdr.m_type.to_proto().into(),
+                frame_type: self.phy_payload.mhdr.f_type.to_proto().into(),
             };
 
             stream::meta::log_uplink(&um).await?;
@@ -907,7 +907,7 @@ impl Data {
             dr: self.uplink_frame_set.dr as u32,
             f_cnt: self.f_cnt_up_full,
             f_port: mac.f_port.unwrap_or(0) as u32,
-            confirmed: self.phy_payload.mhdr.m_type == lrwn::MType::ConfirmedDataUp,
+            confirmed: self.phy_payload.mhdr.f_type == lrwn::FType::ConfirmedDataUp,
             data: match &mac.frm_payload {
                 Some(lrwn::FRMPayload::Raw(b)) => b.clone(),
                 _ => Vec::new(),
@@ -1288,7 +1288,7 @@ impl Data {
                 self.device_profile.as_ref().cloned().unwrap(),
                 self.device.as_ref().cloned().unwrap(),
                 pl.fhdr.f_ctrl.adr_ack_req || self.must_send_downlink,
-                self.phy_payload.mhdr.m_type == lrwn::MType::ConfirmedDataUp,
+                self.phy_payload.mhdr.f_type == lrwn::FType::ConfirmedDataUp,
                 self.downlink_mac_commands.clone(),
             )
             .await?;
@@ -1331,7 +1331,7 @@ impl Data {
                 self.device_profile.as_ref().cloned().unwrap(),
                 self.device.as_ref().cloned().unwrap(),
                 pl.fhdr.f_ctrl.adr_ack_req || self.must_send_downlink,
-                self.phy_payload.mhdr.m_type == lrwn::MType::ConfirmedDataUp,
+                self.phy_payload.mhdr.f_type == lrwn::FType::ConfirmedDataUp,
                 self.downlink_mac_commands.clone(),
             )
             .await?;
@@ -1345,29 +1345,29 @@ impl Data {
 
         if let lrwn::Payload::MACPayload(relay_pl) = &self.phy_payload.payload {
             if let Some(lrwn::FRMPayload::ForwardUplinkReq(pl)) = &relay_pl.frm_payload {
-                match pl.payload.mhdr.m_type {
-                    lrwn::MType::JoinRequest => {
+                match pl.payload.mhdr.f_type {
+                    lrwn::FType::JoinRequest => {
                         super::join::JoinRequest::handle_relayed(
                             super::RelayContext {
                                 req: pl.clone(),
                                 device: self.device.as_ref().unwrap().clone(),
                                 device_profile: self.device_profile.as_ref().unwrap().clone(),
-                                must_ack: self.phy_payload.mhdr.m_type
-                                    == lrwn::MType::ConfirmedDataUp,
+                                must_ack: self.phy_payload.mhdr.f_type
+                                    == lrwn::FType::ConfirmedDataUp,
                                 must_send_downlink: relay_pl.fhdr.f_ctrl.adr_ack_req,
                             },
                             self.uplink_frame_set.clone(),
                         )
                         .await
                     }
-                    lrwn::MType::UnconfirmedDataUp | lrwn::MType::ConfirmedDataUp => {
+                    lrwn::FType::UnconfirmedDataUp | lrwn::FType::ConfirmedDataUp => {
                         Data::handle_relayed(
                             super::RelayContext {
                                 req: pl.clone(),
                                 device: self.device.as_ref().unwrap().clone(),
                                 device_profile: self.device_profile.as_ref().unwrap().clone(),
-                                must_ack: self.phy_payload.mhdr.m_type
-                                    == lrwn::MType::ConfirmedDataUp,
+                                must_ack: self.phy_payload.mhdr.f_type
+                                    == lrwn::FType::ConfirmedDataUp,
                                 must_send_downlink: relay_pl.fhdr.f_ctrl.adr_ack_req,
                             },
                             self.device_gateway_rx_info.as_ref().unwrap().clone(),
@@ -1377,8 +1377,8 @@ impl Data {
                     }
                     _ => {
                         return Err(anyhow!(
-                            "Handling ForwardUplinkReq for MType {} supported",
-                            pl.payload.mhdr.m_type
+                            "Handling ForwardUplinkReq for FType {} supported",
+                            pl.payload.mhdr.f_type
                         ));
                     }
                 }

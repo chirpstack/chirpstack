@@ -32,8 +32,8 @@ message UplinkMeta {
   // Application payload byte count.
   uint32 application_payload_byte_count = 6;
 
-  // Message type.
-  common.MType message_type = 7;
+  // Frame type.
+  common.FType frame_type = 7;
 }
 
 message DownlinkMeta {
@@ -55,8 +55,8 @@ message DownlinkMeta {
   // Application payload byte count.
   uint32 application_payload_byte_count = 6;
 
-  // Message type.
-  common.MType message_type = 7;
+  // Frame type.
+  common.FType frame_type = 7;
 
   // Gateway ID (EUI64).
   string gateway_id = 8;

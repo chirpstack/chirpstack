@@ -27,7 +27,7 @@ pub async fn log_uplink_for_gateways(ufl: &stream::UplinkFrameLog) -> Result<()>
             phy_payload: ufl.phy_payload.clone(),
             tx_info: ufl.tx_info.clone(),
             rx_info: vec![rx_info.clone()],
-            m_type: ufl.m_type,
+            f_type: ufl.f_type,
             dev_addr: ufl.dev_addr.clone(),
             dev_eui: ufl.dev_eui.clone(),
             time: ufl.time,
@@ -299,7 +299,7 @@ async fn handle_stream(
                         seconds: t.seconds,
                         nanos: t.nanos,
                     }),
-                    description: pl.m_type().into(),
+                    description: pl.f_type().into(),
                     body: json!({
                         "phy_payload": phy,
                         "tx_info": pl.tx_info,
@@ -340,7 +340,7 @@ async fn handle_stream(
                         seconds: t.seconds,
                         nanos: t.nanos,
                     }),
-                    description: pl.m_type().into(),
+                    description: pl.f_type().into(),
                     body: json!({
                         "phy_payload": phy,
                         "tx_info": pl.tx_info,

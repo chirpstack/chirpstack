@@ -10,7 +10,7 @@ use cmac::{Cmac, Mac};
 use serde::Serialize;
 
 use super::maccommand::{MACCommand, MACCommandSet};
-use super::mhdr::{MType, MHDR};
+use super::mhdr::{FType, MHDR};
 use super::payload::{FRMPayload, MACPayload, Payload};
 #[cfg(feature = "crypto")]
 use super::{
@@ -40,7 +40,7 @@ pub enum MACVersion {
 ///
 /// let mut phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::JoinRequest,
+///         f_type: FType::JoinRequest,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::JoinRequest(JoinRequestPayload {
@@ -73,7 +73,7 @@ pub enum MACVersion {
 ///
 /// let mut phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::JoinAccept,
+///         f_type: FType::JoinAccept,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::JoinAccept(JoinAcceptPayload {
@@ -105,7 +105,7 @@ pub enum MACVersion {
 ///
 /// assert_eq!(PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::JoinAccept,
+///         f_type: FType::JoinAccept,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::JoinAccept(JoinAcceptPayload {
@@ -135,7 +135,7 @@ pub enum MACVersion {
 ///
 /// let mut phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::JoinAccept,
+///         f_type: FType::JoinAccept,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::JoinAccept(JoinAcceptPayload {
@@ -167,7 +167,7 @@ pub enum MACVersion {
 ///
 /// assert_eq!(PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::JoinAccept,
+///         f_type: FType::JoinAccept,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::JoinAccept(JoinAcceptPayload {
@@ -196,7 +196,7 @@ pub enum MACVersion {
 ///
 /// let mut phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::ConfirmedDataUp,
+///         f_type: FType::ConfirmedDataUp,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::MACPayload(MACPayload{
@@ -250,7 +250,7 @@ pub enum MACVersion {
 ///
 /// let mut phy = PhyPayload {
 ///     mhdr: MHDR{
-///         m_type: MType::UnconfirmedDataDown,
+///         f_type: FType::UnconfirmedDataDown,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::MACPayload(MACPayload{
@@ -309,7 +309,7 @@ pub enum MACVersion {
 ///
 /// let phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::Proprietary,
+///         f_type: FType::Proprietary,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::Raw(vec![0x01, 0x02, 0x03]),
@@ -332,7 +332,7 @@ pub enum MACVersion {
 /// let ed_app_key = AES128Key::from_str("01020304050607080102030405060708").unwrap();
 /// let mut ed_phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::JoinRequest,
+///         f_type: FType::JoinRequest,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::JoinRequest(JoinRequestPayload {
@@ -349,7 +349,7 @@ pub enum MACVersion {
 /// let relay_nwk_s_key = AES128Key::from_str("08070605040302010807060504030201").unwrap();
 /// let mut relay_phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::UnconfirmedDataUp,
+///         f_type: FType::UnconfirmedDataUp,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::MACPayload(MACPayload {
@@ -384,7 +384,7 @@ pub enum MACVersion {
 /// relay_phy_decoded.decrypt_frm_payload(&relay_nwk_s_key).unwrap();
 /// assert_eq!(PhyPayload{
 ///     mhdr: MHDR {
-///         m_type: MType::UnconfirmedDataUp,
+///         f_type: FType::UnconfirmedDataUp,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::MACPayload(MACPayload {
@@ -420,7 +420,7 @@ pub enum MACVersion {
 /// let ed_dev_nonce = 258;
 /// let mut ed_phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::JoinAccept,
+///         f_type: FType::JoinAccept,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::JoinAccept(JoinAcceptPayload {
@@ -445,7 +445,7 @@ pub enum MACVersion {
 /// let relay_nwk_s_key = AES128Key::from_str("08070605040302010807060504030201").unwrap();
 /// let mut relay_phy = PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::UnconfirmedDataDown,
+///         f_type: FType::UnconfirmedDataDown,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::MACPayload(MACPayload {
@@ -473,7 +473,7 @@ pub enum MACVersion {
 /// relay_phy_decoded.decrypt_frm_payload(&relay_nwk_s_key).unwrap();
 /// assert_eq!(PhyPayload {
 ///     mhdr: MHDR {
-///         m_type: MType::UnconfirmedDataDown,
+///         f_type: FType::UnconfirmedDataDown,
 ///         major: Major::LoRaWANR1,
 ///     },
 ///     payload: Payload::MACPayload(MACPayload {
@@ -526,10 +526,10 @@ impl PhyPayload {
             MHDR::from_le_bytes(mhdr)?
         };
 
-        if mhdr.m_type == MType::Proprietary {
+        if mhdr.f_type == FType::Proprietary {
             return Ok(PhyPayload {
                 mhdr,
-                payload: Payload::from_slice(MType::Proprietary, &b[1..])?,
+                payload: Payload::from_slice(FType::Proprietary, &b[1..])?,
                 mic: None,
             });
         }
@@ -541,13 +541,13 @@ impl PhyPayload {
             ));
         }
 
-        let m_type = mhdr.m_type;
+        let f_type = mhdr.f_type;
         let mut mic: [u8; 4] = [0; 4];
         mic.clone_from_slice(&b[b_len - 4..]);
 
         Ok(PhyPayload {
             mhdr,
-            payload: Payload::from_slice(m_type, &b[1..b_len - 4])?,
+            payload: Payload::from_slice(f_type, &b[1..b_len - 4])?,
             mic: Some(mic),
         })
     }
@@ -808,7 +808,7 @@ impl PhyPayload {
                 return Ok(());
             }
 
-            let uplink = is_uplink(self.mhdr.m_type);
+            let uplink = is_uplink(self.mhdr.f_type);
 
             // a_fcnt_down is used on downlink when f_port > 0
             let a_fcnt_down = !uplink && pl.f_port.is_some() && pl.f_port.unwrap() > 0;
@@ -842,7 +842,7 @@ impl PhyPayload {
     /// Decode f_opts to mac-commands.
     pub fn decode_f_opts_to_mac_commands(&mut self) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
-            let uplink = is_uplink(self.mhdr.m_type);
+            let uplink = is_uplink(self.mhdr.f_type);
             pl.fhdr.f_opts.decode_from_raw(uplink)?;
         }
         Ok(())
@@ -858,7 +858,7 @@ impl PhyPayload {
     /// Note that this requires a decrypted frm_payload.
     pub fn decode_frm_payload(&mut self) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
-            let uplink = is_uplink(self.mhdr.m_type);
+            let uplink = is_uplink(self.mhdr.f_type);
             let f_port = pl.f_port.unwrap_or(0);
             let b = match &pl.frm_payload {
                 Some(FRMPayload::Raw(v)) => v.clone(),
@@ -883,7 +883,7 @@ impl PhyPayload {
                 return Ok(());
             }
 
-            let uplink = is_uplink(self.mhdr.m_type);
+            let uplink = is_uplink(self.mhdr.f_type);
             let data = pl.frm_payload.as_ref().unwrap().to_vec()?;
             let data = encrypt_frm_payload(key, uplink, &pl.fhdr.devaddr, pl.fhdr.f_cnt, &data)?;
 
@@ -905,7 +905,7 @@ impl PhyPayload {
                 return Ok(());
             }
 
-            let uplink = is_uplink(self.mhdr.m_type);
+            let uplink = is_uplink(self.mhdr.f_type);
             let data = pl.frm_payload.as_ref().unwrap().to_vec()?;
             let data = encrypt_frm_payload(key, uplink, &pl.fhdr.devaddr, pl.fhdr.f_cnt, &data)?;
 
@@ -1210,14 +1210,14 @@ pub fn encrypt_frm_payload(
     Ok(data[0..data_len].to_vec())
 }
 
-fn is_uplink(m_type: MType) -> bool {
-    match m_type {
-        MType::JoinRequest
-        | MType::UnconfirmedDataUp
-        | MType::ConfirmedDataUp
-        | MType::RejoinRequest => true,
-        MType::JoinAccept | MType::UnconfirmedDataDown | MType::ConfirmedDataDown => false,
-        MType::Proprietary => false,
+fn is_uplink(f_type: FType) -> bool {
+    match f_type {
+        FType::JoinRequest
+        | FType::UnconfirmedDataUp
+        | FType::ConfirmedDataUp
+        | FType::RejoinRequest => true,
+        FType::JoinAccept | FType::UnconfirmedDataDown | FType::ConfirmedDataDown => false,
+        FType::Proprietary => false,
     }
 }
 
@@ -1261,7 +1261,7 @@ mod tests {
             PhyPayloadTest {
                 phy: PhyPayload {
                     mhdr: MHDR {
-                        m_type: MType::Proprietary,
+                        f_type: FType::Proprietary,
                         major: Major::LoRaWANR1,
                     },
                     payload: Payload::Raw(vec![]),
@@ -1272,7 +1272,7 @@ mod tests {
             PhyPayloadTest {
                 phy: PhyPayload {
                     mhdr: MHDR {
-                        m_type: MType::Proprietary,
+                        f_type: FType::Proprietary,
                         major: Major::LoRaWANR1,
                     },
                     payload: Payload::Raw(vec![0x01, 0x02, 0x03]),
@@ -1294,7 +1294,7 @@ mod tests {
         let tests = vec![PhyPayloadTest {
             phy: PhyPayload {
                 mhdr: MHDR {
-                    m_type: MType::JoinRequest,
+                    f_type: FType::JoinRequest,
                     major: Major::LoRaWANR1,
                 },
                 payload: Payload::JoinRequest(JoinRequestPayload {

@@ -112,7 +112,7 @@ mod test {
             frequency: 868100000,
             payload: Box::new(PhyPayload {
                 mhdr: MHDR {
-                    m_type: MType::Proprietary,
+                    f_type: FType::Proprietary,
                     major: Major::LoRaWANR1,
                 },
                 payload: Payload::Raw(vec![0x01, 0x02, 0x03]),
@@ -132,7 +132,7 @@ mod test {
         let req = ForwardDownlinkReq {
             payload: Box::new(PhyPayload {
                 mhdr: MHDR {
-                    m_type: MType::Proprietary,
+                    f_type: FType::Proprietary,
                     major: Major::LoRaWANR1,
                 },
                 payload: Payload::Raw(vec![0x01, 0x02, 0x03]),

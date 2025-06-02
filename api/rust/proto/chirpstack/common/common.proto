@@ -67,7 +67,7 @@ enum Region {
   ISM2400 = 11;
 }
 
-enum MType {
+enum FType {
   // JoinRequest.
   JOIN_REQUEST = 0;
 

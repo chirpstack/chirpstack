@@ -6,7 +6,7 @@ use serde::Serialize;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
-pub enum MType {
+pub enum FType {
     JoinRequest,
     JoinAccept,
     UnconfirmedDataUp,
@@ -17,7 +17,7 @@ pub enum MType {
     Proprietary,
 }
 
-impl fmt::Display for MType {
+impl fmt::Display for FType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
@@ -32,22 +32,22 @@ pub enum Major {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct MHDR {
-    pub m_type: MType,
+    pub f_type: FType,
     pub major: Major,
 }
 
 impl MHDR {
     pub fn from_le_bytes(b: [u8; 1]) -> Result<Self> {
         Ok(MHDR {
-            m_type: match b[0] >> 5 {
-                0x00 => MType::JoinRequest,
-                0x01 => MType::JoinAccept,
-                0x02 => MType::UnconfirmedDataUp,
-                0x03 => MType::UnconfirmedDataDown,
-                0x04 => MType::ConfirmedDataUp,
-                0x05 => MType::ConfirmedDataDown,
-                0x06 => MType::RejoinRequest,
-                0x07 => MType::Proprietary,
+            f_type: match b[0] >> 5 {
+                0x00 => FType::JoinRequest,
+                0x01 => FType::JoinAccept,
+                0x02 => FType::UnconfirmedDataUp,
+                0x03 => FType::UnconfirmedDataDown,
+                0x04 => FType::ConfirmedDataUp,
+                0x05 => FType::ConfirmedDataDown,
+                0x06 => FType::RejoinRequest,
+                0x07 => FType::Proprietary,
                 _ => return Err(anyhow!("unexpected mtype")),
             },
             major: match b[0] & 0x03 {
@@ -58,15 +58,15 @@ impl MHDR {
     }
 
     pub fn to_le_bytes(&self) -> [u8; 1] {
-        let mut mhdr = match self.m_type {
-            MType::JoinRequest => 0x00,
-            MType::JoinAccept => 0x01,
-            MType::UnconfirmedDataUp => 0x02,
-            MType::UnconfirmedDataDown => 0x03,
-            MType::ConfirmedDataUp => 0x04,
-            MType::ConfirmedDataDown => 0x05,
-            MType::RejoinRequest => 0x06,
-            MType::Proprietary => 0x07,
+        let mut mhdr = match self.f_type {
+            FType::JoinRequest => 0x00,
+            FType::JoinAccept => 0x01,
+            FType::UnconfirmedDataUp => 0x02,
+            FType::UnconfirmedDataDown => 0x03,
+            FType::ConfirmedDataUp => 0x04,
+            FType::ConfirmedDataDown => 0x05,
+            FType::RejoinRequest => 0x06,
+            FType::Proprietary => 0x07,
         };
 
         mhdr = (mhdr << 5)
@@ -85,7 +85,7 @@ mod tests {
     #[test]
     fn test_to_le_bytes() {
         let mhdr = MHDR {
-            m_type: MType::Proprietary,
+            f_type: FType::Proprietary,
             major: Major::LoRaWANR1,
         };
 
@@ -98,7 +98,7 @@ mod tests {
         assert_eq!(
             mhdr,
             MHDR {
-                m_type: MType::Proprietary,
+                f_type: FType::Proprietary,
                 major: Major::LoRaWANR1,
             }
         );
