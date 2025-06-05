@@ -165,15 +165,15 @@ message MulticastGroup {
     // Frequency (Hz).
     uint32 frequency = 11;
 
-    // Ping-slot period (only for Class-B).
-    // Deprecated: use class_b_ping_slot_nb_k.
-    uint32 class_b_ping_slot_period = 12;
-
-    // Class-B ping-slots per beacon period (only for Class-B).
-    // Valid options are: 0 - 7;
+    // Class-B ping-slot periodicity (only for Class-B).
+    // Valid options are: 0 - 7.
     //
-    // The actual number of ping-slots per beacon period equals to 2^k.
-    uint32 class_b_ping_slot_nb_k = 14;
+    // Number of ping-slots per beacon-period:
+    // pingNb = 2^(7-periodicity)
+    //
+    // Periodicity: 0 = 128 ping-slots per beacon period = ~ every 1 sec
+    // Periodicity: 7 = 1 ping-slot per beacon period = ~ every 128 sec
+    uint32 class_b_ping_slot_periodicity = 14;
 
     // Scheduling type (only for Class-C).
     MulticastGroupSchedulingType class_c_scheduling_type = 13;

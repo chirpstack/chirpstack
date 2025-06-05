@@ -201,7 +201,7 @@ diesel::table! {
         #[max_length = 20]
         multicast_class_c_scheduling_type -> Varchar,
         multicast_dr -> Int2,
-        multicast_class_b_ping_slot_nb_k -> Int2,
+        multicast_class_b_ping_slot_periodicity -> Int2,
         multicast_frequency -> Int8,
         multicast_timeout -> Int2,
         multicast_session_start -> Nullable<Timestamptz>,
@@ -295,7 +295,7 @@ diesel::table! {
         group_type -> Bpchar,
         dr -> Int2,
         frequency -> Int8,
-        class_b_ping_slot_nb_k -> Int2,
+        class_b_ping_slot_periodicity -> Int2,
         #[max_length = 20]
         class_c_scheduling_type -> Varchar,
     }

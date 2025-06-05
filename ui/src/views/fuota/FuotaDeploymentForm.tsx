@@ -67,7 +67,7 @@ function FuotaDeploymentForm(props: IProps) {
     d.setDeviceProfileId(v.deviceProfileId);
     d.setUnicastMaxRetryCount(v.unicastMaxRetryCount);
     d.setMulticastGroupType(v.multicastGroupType);
-    d.setMulticastClassBPingSlotNbK(v.multicastClassBPingSlotNbK);
+    d.setMulticastClassBPingSlotPeriodicity(v.multicastClassBPingSlotPeriodicity);
     d.setMulticastClassCSchedulingType(v.multicastClassCSchedulingType);
     d.setMulticastDr(v.multicastDr);
     d.setMulticastFrequency(v.multicastFrequency);
@@ -199,7 +199,7 @@ function FuotaDeploymentForm(props: IProps) {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item label="Class-B ping-slot periodicity" name="multicastClassBPingSlotNbK">
+              <Form.Item label="Class-B ping-slot periodicity" name="multicastClassBPingSlotPeriodicity">
                 <Select disabled={!isMulticastClassB || props.disabled}>
                   <Select.Option value={0}>Every second</Select.Option>
                   <Select.Option value={1}>Every 2 seconds</Select.Option>

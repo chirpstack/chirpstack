@@ -104,7 +104,14 @@ message FuotaDeployment {
   uint32 multicast_dr = 7;
 
   // Multicast ping-slot period (Class-B only).
-  uint32 multicast_class_b_ping_slot_nb_k = 8;
+  // Valid options are: 0 - 7.
+  //
+  // Number of ping-slots per beacon-period:
+  // pingNb = 2^(7-periodicity)
+  //
+  // Periodicity: 0 = 128 ping-slots per beacon period = ~ every 1 sec
+  // Periodicity: 7 = 1 ping-slot per beacon period = ~ every 128 sec
+  uint32 multicast_class_b_ping_slot_periodicity = 8;
 
   // Multicast frequency (Hz).
   uint32 multicast_frequency = 9;
