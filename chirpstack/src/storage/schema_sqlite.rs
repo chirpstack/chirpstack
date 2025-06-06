@@ -133,7 +133,7 @@ diesel::table! {
         supports_class_b -> Bool,
         supports_class_c -> Bool,
         class_b_timeout -> Integer,
-        class_b_ping_slot_nb_k -> Integer,
+        class_b_ping_slot_periodicity -> Integer,
         class_b_ping_slot_dr -> SmallInt,
         class_b_ping_slot_freq -> BigInt,
         class_c_timeout -> Integer,

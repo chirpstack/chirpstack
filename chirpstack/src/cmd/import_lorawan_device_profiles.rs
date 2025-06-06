@@ -94,7 +94,7 @@ pub struct ProfileAbp {
 #[derive(Default, Deserialize)]
 pub struct ProfileClassB {
     pub timeout_secs: usize,
-    pub ping_slot_nb_k: usize,
+    pub ping_slot_periodicity: usize,
     pub ping_slot_dr: usize,
     pub ping_slot_freq: usize,
 }
@@ -239,7 +239,7 @@ async fn handle_profile(
         supports_class_b: profile_conf.profile.supports_class_b,
         supports_class_c: profile_conf.profile.supports_class_c,
         class_b_timeout: profile_conf.profile.class_b.timeout_secs as i32,
-        class_b_ping_slot_nb_k: profile_conf.profile.class_b.ping_slot_nb_k as i32,
+        class_b_ping_slot_periodicity: profile_conf.profile.class_b.ping_slot_periodicity as i32,
         class_b_ping_slot_dr: profile_conf.profile.class_b.ping_slot_dr as i16,
         class_b_ping_slot_freq: profile_conf.profile.class_b.ping_slot_freq as i64,
         class_c_timeout: profile_conf.profile.class_c.timeout_secs as i32,

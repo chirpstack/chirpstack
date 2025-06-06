@@ -110,7 +110,7 @@ impl DeviceProfile {
         if let Some(class_b_params) = &self.class_b_params {
             ds.class_b_ping_slot_dr = class_b_params.ping_slot_dr as u32;
             ds.class_b_ping_slot_freq = class_b_params.ping_slot_freq;
-            ds.class_b_ping_slot_nb = 1 << class_b_params.ping_slot_nb_k as u32;
+            ds.class_b_ping_slot_nb = 1 << (7 - class_b_params.ping_slot_periodicity) as u32;
         }
 
         if let Some(relay_params) = &self.relay_params {

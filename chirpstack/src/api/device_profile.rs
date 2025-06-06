@@ -94,7 +94,7 @@ impl DeviceProfileService for DeviceProfile {
             class_b_params: if req_dp.supports_class_b {
                 Some(fields::ClassBParams {
                     timeout: req_dp.class_b_timeout as u16,
-                    ping_slot_nb_k: req_dp.class_b_ping_slot_nb_k as u8,
+                    ping_slot_periodicity: req_dp.class_b_ping_slot_periodicity as u8,
                     ping_slot_dr: req_dp.class_b_ping_slot_dr as u8,
                     ping_slot_freq: req_dp.class_b_ping_slot_freq,
                 })
@@ -205,7 +205,7 @@ impl DeviceProfileService for DeviceProfile {
                 supports_class_b: dp.supports_class_b,
                 supports_class_c: dp.supports_class_c,
                 class_b_timeout: class_b_params.timeout as u32,
-                class_b_ping_slot_nb_k: class_b_params.ping_slot_nb_k as u32,
+                class_b_ping_slot_periodicity: class_b_params.ping_slot_periodicity as u32,
                 class_b_ping_slot_dr: class_b_params.ping_slot_dr as u32,
                 class_b_ping_slot_freq: class_b_params.ping_slot_freq as u32,
                 class_c_timeout: class_c_params.timeout as u32,
@@ -350,7 +350,7 @@ impl DeviceProfileService for DeviceProfile {
             class_b_params: if req_dp.supports_class_b {
                 Some(fields::ClassBParams {
                     timeout: req_dp.class_b_timeout as u16,
-                    ping_slot_nb_k: req_dp.class_b_ping_slot_nb_k as u8,
+                    ping_slot_periodicity: req_dp.class_b_ping_slot_periodicity as u8,
                     ping_slot_dr: req_dp.class_b_ping_slot_dr as u8,
                     ping_slot_freq: req_dp.class_b_ping_slot_freq,
                 })

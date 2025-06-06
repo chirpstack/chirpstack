@@ -61,7 +61,8 @@ impl serialize::ToSql<Text, Sqlite> for AbpParams {
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
 pub struct ClassBParams {
     pub timeout: u16,
-    pub ping_slot_nb_k: u8,
+    #[serde(alias = "ping_slot_nb_k")]
+    pub ping_slot_periodicity: u8,
     pub ping_slot_dr: u8,
     pub ping_slot_freq: u32,
 }
