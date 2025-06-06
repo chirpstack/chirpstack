@@ -1962,6 +1962,130 @@ impl ApplicationService for Application {
 
         Ok(resp)
     }
+
+    async fn create_qubitro_integration(
+        &self,
+        request: Request<api::CreateQubitroIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_int = match &request.get_ref().integration {
+            Some(v) => v,
+            None => {
+                return Err(Status::invalid_argument("integration is missing"));
+            }
+        };
+        let app_id = Uuid::from_str(&req_int.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        let _ = application::create_qubitro_integration(application::QubitroConfiguration {
+            application_id: app_id.into(),
+            project_id: req_int.project_id.clone(),
+            webhook_signing_key: req_int.webhook_signing_key.clone(),
+        })
+        .await
+        .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req_int.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
+
+    async fn get_qubitro_integration(
+        &self,
+        request: Request<api::GetQubitroIntegrationRequest>,
+    ) -> Result<Response<api::GetQubitroIntegrationResponse>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Read, app_id),
+            )
+            .await?;
+
+        let i = application::get_qubitro_integration(&app_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(api::GetQubitroIntegrationResponse {
+            integration: Some(api::QubitroIntegration {
+                application_id: i.application_id.to_string(),
+                project_id: i.project_id,
+                webhook_signing_key: i.webhook_signing_key,
+            }),
+        });
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
+
+    async fn update_qubitro_integration(
+        &self,
+        request: Request<api::UpdateQubitroIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_int = match &request.get_ref().integration {
+            Some(v) => v,
+            None => {
+                return Err(Status::invalid_argument("integration is missing"));
+            }
+        };
+        let app_id = Uuid::from_str(&req_int.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        let _ = application::update_qubitro_integration(application::QubitroConfiguration {
+            application_id: app_id.into(),
+            project_id: req_int.project_id.clone(),
+            webhook_signing_key: req_int.webhook_signing_key.clone(),
+        })
+        .await
+        .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req_int.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
+
+    async fn delete_qubitro_integration(
+        &self,
+        request: Request<api::DeleteQubitroIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        application::delete_qubitro_integration(&app_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
 }
 
 #[cfg(test)]
@@ -3541,6 +3665,137 @@ pub mod test {
             },
         );
         let _ = service.delete_ifttt_integration(del_req).await.unwrap();
+
+        // list
+        let list_req = get_request(
+            &u.id,
+            api::ListIntegrationsRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let list_resp = service.list_integrations(list_req).await.unwrap();
+        let list_resp = list_resp.get_ref();
+        assert_eq!(
+            &api::ListIntegrationsResponse {
+                total_count: 1,
+                result: vec![api::IntegrationListItem {
+                    kind: api::IntegrationKind::MqttGlobal.into(),
+                },],
+            },
+            list_resp
+        );
+    }
+
+    #[tokio::test]
+    async fn test_qubitro_integration() {
+        let _guard = test::prepare().await;
+        let app = get_application().await;
+        let u = get_user().await;
+        let service = Application::new(RequestValidator::new());
+
+        // create
+        let create_req = get_request(
+            &u.id,
+            api::CreateQubitroIntegrationRequest {
+                integration: Some(api::QubitroIntegration {
+                    application_id: app.id.to_string(),
+                    project_id: "test-project".into(),
+                    webhook_signing_key: "test-key".into(),
+                }),
+            },
+        );
+        let _ = service
+            .create_qubitro_integration(create_req)
+            .await
+            .unwrap();
+
+        // get
+        let get_req = get_request(
+            &u.id,
+            api::GetQubitroIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let get_resp = service.get_qubitro_integration(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(
+            Some(api::QubitroIntegration {
+                application_id: app.id.to_string(),
+                project_id: "test-project".into(),
+                webhook_signing_key: "test-key".into(),
+            }),
+            get_resp.integration
+        );
+
+        // update
+        let update_req = get_request(
+            &u.id,
+            api::UpdateQubitroIntegrationRequest {
+                integration: Some(api::QubitroIntegration {
+                    application_id: app.id.to_string(),
+                    project_id: "test-project-updated".into(),
+                    webhook_signing_key: "test-key-updated".into(),
+                }),
+            },
+        );
+        let _ = service
+            .update_qubitro_integration(update_req)
+            .await
+            .unwrap();
+
+        // get
+        let get_req = get_request(
+            &u.id,
+            api::GetQubitroIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let get_resp = service.get_qubitro_integration(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(
+            Some(api::QubitroIntegration {
+                application_id: app.id.to_string(),
+                project_id: "test-project-updated".into(),
+                webhook_signing_key: "test-key-updated".into(),
+            }),
+            get_resp.integration
+        );
+
+        // list
+        let list_req = get_request(
+            &u.id,
+            api::ListIntegrationsRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let list_resp = service.list_integrations(list_req).await.unwrap();
+        let list_resp = list_resp.get_ref();
+        assert_eq!(
+            &api::ListIntegrationsResponse {
+                total_count: 2,
+                result: vec![
+                    api::IntegrationListItem {
+                        kind: api::IntegrationKind::Qubitro.into(),
+                    },
+                    api::IntegrationListItem {
+                        kind: api::IntegrationKind::MqttGlobal.into(),
+                    }
+                ],
+            },
+            list_resp
+        );
+
+        // delete
+        let del_req = get_request(
+            &u.id,
+            api::DeleteQubitroIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let _ = service
+            .delete_qubitro_integration(del_req)
+            .await
+            .unwrap();
 
         // list
         let list_req = get_request(
