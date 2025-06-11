@@ -33,7 +33,7 @@ pub struct FuotaDeployment {
     pub multicast_group_type: String,
     pub multicast_class_c_scheduling_type: fields::MulticastGroupSchedulingType,
     pub multicast_dr: i16,
-    pub multicast_class_b_ping_slot_nb_k: i16,
+    pub multicast_class_b_ping_slot_periodicity: i16,
     pub multicast_frequency: i64,
     pub multicast_timeout: i16,
     pub multicast_session_start: Option<DateTime<Utc>>,
@@ -68,7 +68,7 @@ impl Default for FuotaDeployment {
             multicast_group_type: "".into(),
             multicast_class_c_scheduling_type: fields::MulticastGroupSchedulingType::DELAY,
             multicast_dr: 0,
-            multicast_class_b_ping_slot_nb_k: 0,
+            multicast_class_b_ping_slot_periodicity: 0,
             multicast_frequency: 0,
             multicast_timeout: 0,
             multicast_session_start: None,
@@ -222,8 +222,8 @@ pub async fn update_deployment(d: FuotaDeployment) -> Result<FuotaDeployment, Er
             fuota_deployment::multicast_class_c_scheduling_type
                 .eq(&d.multicast_class_c_scheduling_type),
             fuota_deployment::multicast_dr.eq(&d.multicast_dr),
-            fuota_deployment::multicast_class_b_ping_slot_nb_k
-                .eq(&d.multicast_class_b_ping_slot_nb_k),
+            fuota_deployment::multicast_class_b_ping_slot_periodicity
+                .eq(&d.multicast_class_b_ping_slot_periodicity),
             fuota_deployment::multicast_frequency.eq(&d.multicast_frequency),
             fuota_deployment::multicast_timeout.eq(&d.multicast_timeout),
             fuota_deployment::multicast_session_start.eq(&d.multicast_session_start),
@@ -765,7 +765,7 @@ pub fn get_multicast_timeout(d: &FuotaDeployment) -> Result<usize> {
     match d.multicast_group_type.as_ref() {
         "B" => {
             // Calculate number of ping-slots per beacon period.
-            let nb_ping_slots = 1 << (d.multicast_class_b_ping_slot_nb_k as usize);
+            let nb_ping_slots = 1 << (7 - d.multicast_class_b_ping_slot_periodicity as usize);
 
             // Calculate number of beacon-periods needed.
             // One beacon period is added as the first ping-slot might be in the next beacon-period.
@@ -1221,7 +1221,7 @@ mod test {
                 name: "Class-B - 1 / beacon period - 15 fragments".into(),
                 deployment: FuotaDeployment {
                     multicast_group_type: "B".into(),
-                    multicast_class_b_ping_slot_nb_k: 0,
+                    multicast_class_b_ping_slot_periodicity: 7,
                     fragmentation_fragment_size: 10,
                     fragmentation_redundancy_percentage: 50,
                     payload: vec![0; 100],
@@ -1234,7 +1234,7 @@ mod test {
                 name: "Class-B - 1 / beacon period - 16 fragments".into(),
                 deployment: FuotaDeployment {
                     multicast_group_type: "B".into(),
-                    multicast_class_b_ping_slot_nb_k: 0,
+                    multicast_class_b_ping_slot_periodicity: 7,
                     fragmentation_fragment_size: 10,
                     fragmentation_redundancy_percentage: 60,
                     payload: vec![0; 100],
@@ -1247,7 +1247,7 @@ mod test {
                 name: "Class-B - 16 / beacon period - 16 fragments".into(),
                 deployment: FuotaDeployment {
                     multicast_group_type: "B".into(),
-                    multicast_class_b_ping_slot_nb_k: 4,
+                    multicast_class_b_ping_slot_periodicity: 3,
                     fragmentation_fragment_size: 10,
                     fragmentation_redundancy_percentage: 60,
                     payload: vec![0; 100],
@@ -1260,7 +1260,7 @@ mod test {
                 name: "Class-B - 16 / beacon period - 17 fragments".into(),
                 deployment: FuotaDeployment {
                     multicast_group_type: "B".into(),
-                    multicast_class_b_ping_slot_nb_k: 4,
+                    multicast_class_b_ping_slot_periodicity: 3,
                     fragmentation_fragment_size: 10,
                     fragmentation_redundancy_percentage: 70,
                     payload: vec![0; 100],

@@ -47,7 +47,7 @@ function MulticastGroupForm(props: IProps) {
     mg.setFrequency(v.frequency);
     mg.setRegion(v.region);
     mg.setGroupType(v.groupType);
-    mg.setClassBPingSlotNbK(v.classBPingSlotNbK);
+    mg.setClassBPingSlotPeriodicity(v.classBPingSlotPeriodicity);
     mg.setClassCSchedulingType(v.classCSchedulingType);
 
     props.onFinish(mg);
@@ -146,7 +146,7 @@ function MulticastGroupForm(props: IProps) {
           </Form.Item>
         </Col>
         <Col span={8}>
-          <Form.Item label="Class-B ping-slot periodicity" name="classBPingSlotNbK">
+          <Form.Item label="Class-B ping-slot periodicity" name="classBPingSlotPeriodicity">
             <Select disabled={!selectPingSlotPeriod || props.disabled}>
               <Select.Option value={0}>Every second</Select.Option>
               <Select.Option value={1}>Every 2 seconds</Select.Option>

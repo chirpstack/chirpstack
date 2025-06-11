@@ -70,7 +70,7 @@ function DeviceProfileTemplateForm(props: IProps) {
     // class-b
     dp.setSupportsClassB(v.supportsClassB);
     dp.setClassBTimeout(v.classBTimeout);
-    dp.setClassBPingSlotNbK(v.classBPingSlotNbK);
+    dp.setClassBPingSlotPeriodicity(v.classBPingSlotPeriodicity);
     dp.setClassBPingSlotDr(v.classBPingSlotDr);
     dp.setClassBPingSlotFreq(v.classBPingSlotFreq);
 
@@ -351,7 +351,7 @@ function DeviceProfileTemplateForm(props: IProps) {
                   <Form.Item
                     label="Class-B ping-slot periodicity"
                     tooltip="This value must match the ping-slot periodicity of the device. Please refer to the device documentation."
-                    name="classBPingSlotNbK"
+                    name="classBPingSlotPeriodicity"
                     rules={[
                       {
                         required: true,

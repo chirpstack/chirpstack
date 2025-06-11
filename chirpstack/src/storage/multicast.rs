@@ -33,7 +33,7 @@ pub struct MulticastGroup {
     pub group_type: String,
     pub dr: i16,
     pub frequency: i64,
-    pub class_b_ping_slot_nb_k: i16,
+    pub class_b_ping_slot_periodicity: i16,
     pub class_c_scheduling_type: fields::MulticastGroupSchedulingType,
 }
 
@@ -64,7 +64,7 @@ impl Default for MulticastGroup {
             group_type: "".into(),
             dr: 0,
             frequency: 0,
-            class_b_ping_slot_nb_k: 0,
+            class_b_ping_slot_periodicity: 0,
             class_c_scheduling_type: fields::MulticastGroupSchedulingType::DELAY,
         }
     }
@@ -167,7 +167,7 @@ pub async fn update(mg: MulticastGroup) -> Result<MulticastGroup, Error> {
             multicast_group::group_type.eq(&mg.group_type),
             multicast_group::dr.eq(&mg.dr),
             multicast_group::frequency.eq(&mg.frequency),
-            multicast_group::class_b_ping_slot_nb_k.eq(&mg.class_b_ping_slot_nb_k),
+            multicast_group::class_b_ping_slot_periodicity.eq(&mg.class_b_ping_slot_periodicity),
             multicast_group::class_c_scheduling_type.eq(&mg.class_c_scheduling_type),
         ))
         .get_result(&mut get_async_db_conn().await?)
@@ -429,7 +429,7 @@ pub async fn enqueue(
             match mg.group_type.as_ref() {
                 "B" => {
                     // get ping nb
-                    let ping_nb = 1 << mg.class_b_ping_slot_nb_k as usize;
+                    let ping_nb = 1 << (7 - mg.class_b_ping_slot_periodicity) as usize;
 
                     // get max. gps epoch time.
                     let res: Option<i64> =
@@ -746,7 +746,7 @@ pub mod test {
             group_type: "C".into(),
             dr: 1,
             frequency: 868100000,
-            class_b_ping_slot_nb_k: 1,
+            class_b_ping_slot_periodicity: 1,
             ..Default::default()
         })
         .await
@@ -759,7 +759,7 @@ pub mod test {
         // update
         mg.name = "test-mg-updated".into();
         mg.group_type = "B".into();
-        mg.class_b_ping_slot_nb_k = 4;
+        mg.class_b_ping_slot_periodicity = 4;
         mg = update(mg).await.unwrap();
         let mg_get = get(&mg.id.into()).await.unwrap();
         assert_eq!(mg, mg_get);
@@ -884,7 +884,7 @@ pub mod test {
             group_type: "C".into(),
             dr: 1,
             frequency: 868100000,
-            class_b_ping_slot_nb_k: 1,
+            class_b_ping_slot_periodicity: 1,
             ..Default::default()
         })
         .await
@@ -942,7 +942,7 @@ pub mod test {
             group_type: "C".into(),
             dr: 1,
             frequency: 868100000,
-            class_b_ping_slot_nb_k: 1,
+            class_b_ping_slot_periodicity: 1,
             ..Default::default()
         })
         .await
@@ -1002,7 +1002,7 @@ pub mod test {
             group_type: "C".into(),
             dr: 1,
             frequency: 868100000,
-            class_b_ping_slot_nb_k: 1,
+            class_b_ping_slot_periodicity: 1,
             class_c_scheduling_type: fields::MulticastGroupSchedulingType::DELAY,
             ..Default::default()
         })

@@ -265,7 +265,7 @@ async fn import_device(
                     supports_class_b: prof.supports_class_b,
                     supports_class_c: prof.supports_class_c,
                     class_b_timeout: prof.class_b_timeout as i32,
-                    class_b_ping_slot_nb_k: match prof.ping_slot_period {
+                    class_b_ping_slot_periodicity: match prof.ping_slot_period {
                         128 => 7,
                         64 => 6,
                         32 => 5,

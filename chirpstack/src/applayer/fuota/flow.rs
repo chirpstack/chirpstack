@@ -149,7 +149,9 @@ impl Flow {
             group_type: self.fuota_deployment.multicast_group_type.clone(),
             frequency: self.fuota_deployment.multicast_frequency,
             dr: self.fuota_deployment.multicast_dr,
-            class_b_ping_slot_nb_k: self.fuota_deployment.multicast_class_b_ping_slot_nb_k,
+            class_b_ping_slot_periodicity: self
+                .fuota_deployment
+                .multicast_class_b_ping_slot_periodicity,
             class_c_scheduling_type: self.fuota_deployment.multicast_class_c_scheduling_type,
             ..Default::default()
         })
@@ -577,7 +579,7 @@ impl Flow {
                                 time_out_periodicity:
                                     multicastsetup::v1::McClassBSessionReqPayloadTimeOutPeriodicity {
                                         time_out: self.fuota_deployment.multicast_timeout as u8,
-                                        periodicity: self.fuota_deployment.multicast_class_b_ping_slot_nb_k
+                                        periodicity: self.fuota_deployment.multicast_class_b_ping_slot_periodicity
                                             as u8,
                                     },
                                 dl_frequ: self.fuota_deployment.multicast_frequency as u32,
@@ -619,7 +621,7 @@ impl Flow {
                                 time_out_periodicity:
                                     multicastsetup::v2::McClassBSessionReqPayloadTimeOutPeriodicity {
                                         time_out: self.fuota_deployment.multicast_timeout as u8,
-                                        periodicity: self.fuota_deployment.multicast_class_b_ping_slot_nb_k
+                                        periodicity: self.fuota_deployment.multicast_class_b_ping_slot_periodicity
                                             as u8,
                                     },
                                 dl_frequ: self.fuota_deployment.multicast_frequency as u32,

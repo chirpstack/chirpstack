@@ -80,7 +80,7 @@ pub mod test {
             class_b_params: Some(fields::ClassBParams {
                 ping_slot_dr: 2,
                 ping_slot_freq: 868100000,
-                ping_slot_nb_k: 1,
+                ping_slot_periodicity: 6,
                 timeout: 0,
             }),
             ..Default::default()
