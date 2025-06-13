@@ -3,11 +3,11 @@ use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
 use anyhow::Result;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, TimeDelta, Utc};
 
-use crate::gpstime::ToDateTime;
-use crate::region;
 use chirpstack_api::{common, gw};
+
+use crate::{config, gpstime::ToDateTime, region};
 
 pub fn get_uplink_dr(
     region_config_id: &str,
@@ -54,6 +54,9 @@ pub fn get_uplink_ch(region_config_id: &str, frequency: u32, dr: u8) -> Result<u
 }
 
 pub fn get_rx_timestamp(rx_info: &[gw::UplinkRxInfo]) -> SystemTime {
+    let conf = config::get();
+    let rx_timestamp_max_drift = conf.gateway.rx_timestamp_max_drift;
+
     // First search for time_since_gps_epoch.
     for rxi in rx_info {
         if let Some(gps_time) = &rxi.time_since_gps_epoch {
@@ -71,7 +74,14 @@ pub fn get_rx_timestamp(rx_info: &[gw::UplinkRxInfo]) -> SystemTime {
         if let Some(ts) = &rxi.gw_time {
             let ts: Result<DateTime<Utc>> = (*ts).try_into().map_err(anyhow::Error::msg);
             if let Ok(ts) = ts {
-                return ts.into();
+                let mut delta = Utc::now() - ts;
+                if delta < TimeDelta::default() {
+                    delta = -delta;
+                }
+                let delta = delta.to_std().unwrap_or_default();
+                if delta < rx_timestamp_max_drift {
+                    return ts.into();
+                }
             }
         }
     }
@@ -81,6 +91,9 @@ pub fn get_rx_timestamp(rx_info: &[gw::UplinkRxInfo]) -> SystemTime {
 }
 
 pub fn get_rx_timestamp_chrono(rx_info: &[gw::UplinkRxInfo]) -> DateTime<Utc> {
+    let conf = config::get();
+    let rx_timestamp_max_drift = conf.gateway.rx_timestamp_max_drift;
+
     // First search for time_since_gps_epoch.
     for rxi in rx_info {
         if let Some(gps_time) = &rxi.time_since_gps_epoch {
@@ -98,7 +111,14 @@ pub fn get_rx_timestamp_chrono(rx_info: &[gw::UplinkRxInfo]) -> DateTime<Utc> {
         if let Some(ts) = &rxi.gw_time {
             let ts: Result<DateTime<Utc>> = (*ts).try_into().map_err(anyhow::Error::msg);
             if let Ok(ts) = ts {
-                return ts;
+                let mut delta = Utc::now() - ts;
+                if delta < TimeDelta::default() {
+                    delta = -delta;
+                }
+                let delta = delta.to_std().unwrap_or_default();
+                if delta < rx_timestamp_max_drift {
+                    return ts;
+                }
             }
         }
     }
@@ -187,4 +207,75 @@ pub fn set_uplink_modulation(
     });
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_get_rx_timestamp_no_drift() {
+        let now = Utc::now();
+        let rx_info = gw::UplinkRxInfo {
+            gw_time: Some(now.try_into().unwrap()),
+            ..Default::default()
+        };
+
+        let res: DateTime<Utc> = get_rx_timestamp(&[rx_info]).into();
+        assert_eq!(res, now);
+    }
+
+    #[test]
+    fn test_get_rx_timestamp_drift() {
+        let now = Utc::now() - chrono::Duration::seconds(60);
+        let rx_info = gw::UplinkRxInfo {
+            gw_time: Some(now.try_into().unwrap()),
+            ..Default::default()
+        };
+
+        let res: DateTime<Utc> = get_rx_timestamp(&[rx_info]).into();
+        assert_ne!(res, now);
+
+        let now = Utc::now() + chrono::Duration::seconds(60);
+        let rx_info = gw::UplinkRxInfo {
+            gw_time: Some(now.try_into().unwrap()),
+            ..Default::default()
+        };
+
+        let res: DateTime<Utc> = get_rx_timestamp(&[rx_info]).into();
+        assert_ne!(res, now);
+    }
+
+    #[test]
+    fn test_get_rx_timestamp_chrono_no_drift() {
+        let now = Utc::now();
+        let rx_info = gw::UplinkRxInfo {
+            gw_time: Some(now.try_into().unwrap()),
+            ..Default::default()
+        };
+
+        let res = get_rx_timestamp_chrono(&[rx_info]);
+        assert_eq!(res, now);
+    }
+
+    #[test]
+    fn test_get_rx_timestamp_chrono_drift() {
+        let now = Utc::now() - chrono::Duration::seconds(60);
+        let rx_info = gw::UplinkRxInfo {
+            gw_time: Some(now.try_into().unwrap()),
+            ..Default::default()
+        };
+
+        let res = get_rx_timestamp_chrono(&[rx_info]);
+        assert_ne!(res, now);
+
+        let now = Utc::now() + chrono::Duration::seconds(60);
+        let rx_info = gw::UplinkRxInfo {
+            gw_time: Some(now.try_into().unwrap()),
+            ..Default::default()
+        };
+
+        let res = get_rx_timestamp_chrono(&[rx_info]);
+        assert_ne!(res, now);
+    }
 }

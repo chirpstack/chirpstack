@@ -172,6 +172,15 @@ pub fn run() {
   # ChirpStack will be allowed.
   allow_unknown_gateways={{ gateway.allow_unknown_gateways }}
 
+  # RX timestamp max. drift.
+  #
+  # If the delta between the gateway reported RX timestamp vs ChirpStack
+  # server time is bigger than the configured value, then ChirpStack will
+  # ignore it. ChirpStack will then use the RX timestamp from the other
+  # receiving gateways, or failing that, will fall back onto the current
+  # server time.
+  rx_timestamp_max_drift="{{ gateway.rx_timestamp_max_drift }}"
+
 
 # Network related configuration.
 [network]
