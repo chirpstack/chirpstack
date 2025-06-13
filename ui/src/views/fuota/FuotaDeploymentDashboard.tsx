@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { Spin, Button, Space, Timeline, Row, Col, TimelineProps, Card, Tag, Popover, Table } from "antd";
-import { LoadingOutlined, ReloadOutlined } from "@ant-design/icons";
+import { LoadingOutlined, ReloadOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { format } from "date-fns";
 
@@ -23,17 +23,25 @@ interface IProps {
 
 function FuotaDeploymentDashboard(props: IProps) {
   const [fuotaJobs, setFuotaJobs] = useState<FuotaDeploymentJob.AsObject[]>([]);
+  const [now, setNow] = useState<Date>(new Date());
 
   useEffect(() => {
     getFuotaJobs();
 
-    const interval = setInterval(() => {
+    const getFuotaJobsInterval = setInterval(() => {
       if (!props.getFuotaDeploymentResponse.getCompletedAt()) {
         getFuotaJobs();
       }
     }, 10000);
 
-    return () => clearInterval(interval);
+    const getNowInterval = setInterval(() => {
+      setNow(new Date());
+    });
+
+    return () => {
+      clearInterval(getFuotaJobsInterval);
+      clearInterval(getNowInterval);
+    };
   }, [props.getFuotaDeploymentResponse]);
 
   const jobs: Record<string, string> = {
@@ -62,6 +70,15 @@ function FuotaDeploymentDashboard(props: IProps) {
             </Popover>
           );
         } else if (!record.completedAt) {
+          if (record.schedulerRunAfter) {
+            const schedulerRunAfter = new Date(0);
+            schedulerRunAfter.setUTCSeconds(record.schedulerRunAfter.seconds);
+
+            if (schedulerRunAfter > now) {
+              return <ClockCircleOutlined />;
+            }
+          }
+
           return <Spin indicator={<LoadingOutlined spin />} size="small" />;
         } else if (record.warningMsg !== "") {
           return (
@@ -86,6 +103,13 @@ function FuotaDeploymentDashboard(props: IProps) {
       dataIndex: "createdAt",
       key: "createdAt",
       render: (_text, record) => format_dt_from_secs(record.createdAt?.seconds),
+      width: 250,
+    },
+    {
+      title: "Run at",
+      dataIndex: "schedulerRunAfter",
+      key: "schedulerRunAfter",
+      render: (_text, record) => format_dt_from_secs(record.schedulerRunAfter?.seconds),
       width: 250,
     },
     {
