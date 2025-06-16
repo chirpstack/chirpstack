@@ -475,10 +475,14 @@ impl JoinRequest {
                                 level: integration_pb::LogLevel::Error.into(),
                                 code: integration_pb::LogCode::Otaa.into(),
                                 description: "DevNonce has already been used".into(),
-                                context: [(
-                                    "deduplication_id".to_string(),
-                                    self.uplink_frame_set.uplink_set_id.to_string(),
-                                )]
+                                context: [
+                                    (
+                                        "deduplication_id".to_string(),
+                                        self.uplink_frame_set.uplink_set_id.to_string(),
+                                    ),
+                                    ("join_eui".to_string(), join_request.join_eui.to_string()),
+                                    ("dev_nonce".to_string(), join_request.dev_nonce.to_string()),
+                                ]
                                 .iter()
                                 .cloned()
                                 .collect(),
