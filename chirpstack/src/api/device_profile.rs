@@ -11,6 +11,7 @@ use super::error::ToStatus;
 use super::helpers;
 use super::helpers::{FromProto, ToProto};
 use crate::adr;
+use crate::codec;
 use crate::storage::{device_profile, fields};
 
 pub struct DeviceProfile {
@@ -52,6 +53,7 @@ impl DeviceProfileService for DeviceProfile {
             mac_version: req_dp.mac_version().from_proto(),
             reg_params_revision: req_dp.reg_params_revision().from_proto(),
             adr_algorithm_id: req_dp.adr_algorithm_id.clone(),
+            codec_plugin_id: req_dp.codec_plugin_id.clone(),
             payload_codec_runtime: req_dp.payload_codec_runtime().from_proto(),
             payload_codec_script: req_dp.payload_codec_script.clone(),
             flush_queue_on_activate: req_dp.flush_queue_on_activate,
@@ -196,6 +198,7 @@ impl DeviceProfileService for DeviceProfile {
                 mac_version: dp.mac_version.to_proto().into(),
                 reg_params_revision: dp.reg_params_revision.to_proto().into(),
                 adr_algorithm_id: dp.adr_algorithm_id,
+                codec_plugin_id: dp.codec_plugin_id,
                 payload_codec_runtime: dp.payload_codec_runtime.to_proto().into(),
                 payload_codec_script: dp.payload_codec_script,
                 flush_queue_on_activate: dp.flush_queue_on_activate,
@@ -308,6 +311,7 @@ impl DeviceProfileService for DeviceProfile {
             mac_version: req_dp.mac_version().from_proto(),
             reg_params_revision: req_dp.reg_params_revision().from_proto(),
             adr_algorithm_id: req_dp.adr_algorithm_id.clone(),
+            codec_plugin_id: req_dp.codec_plugin_id.clone(),
             payload_codec_runtime: req_dp.payload_codec_runtime().from_proto(),
             payload_codec_script: req_dp.payload_codec_script.clone(),
             flush_queue_on_activate: req_dp.flush_queue_on_activate,
@@ -525,6 +529,33 @@ impl DeviceProfileService for DeviceProfile {
             result,
         }))
     }
+
+    async fn list_codec_plugins(
+        &self,
+        request: Request<()>,
+    ) -> Result<Response<api::ListDeviceProfileCodecPluginsResponse>, Status> {
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateActiveUserOrKey::new(),
+            )
+            .await?;
+
+        let items = codec::js_plugin::get_plugins().await;
+        let mut result: Vec<api::CodecPluginListItem> = items
+            .iter()
+            .map(|(k, v)| api::CodecPluginListItem {
+                id: k.clone(),
+                name: v.clone(),
+            })
+            .collect();
+        result.sort_by(|a, b| a.name.cmp(&b.name));
+
+        Ok(Response::new(api::ListDeviceProfileCodecPluginsResponse {
+            total_count: items.len() as u32,
+            result,
+        }))
+    }
 }
 
 #[cfg(test)]
@@ -574,6 +605,7 @@ pub mod test {
                     mac_version: common::MacVersion::Lorawan103.into(),
                     reg_params_revision: common::RegParamsRevision::A.into(),
                     adr_algorithm_id: "default".into(),
+                    codec_plugin_id: "passthrough".into(),
                     ..Default::default()
                 }),
             },
@@ -606,6 +638,7 @@ pub mod test {
                     ts005_version: api::Ts005Version::Ts005NotImplemented.into(),
                     ts005_f_port: 200,
                 }),
+                codec_plugin_id: "passthrough".into(),
                 ..Default::default()
             }),
             get_resp.get_ref().device_profile
@@ -623,6 +656,7 @@ pub mod test {
                     mac_version: common::MacVersion::Lorawan103.into(),
                     reg_params_revision: common::RegParamsRevision::A.into(),
                     adr_algorithm_id: "default".into(),
+                    codec_plugin_id: "passthrough".into(),
                     ..Default::default()
                 }),
             },
@@ -647,6 +681,7 @@ pub mod test {
                 reg_params_revision: common::RegParamsRevision::A.into(),
                 adr_algorithm_id: "default".into(),
                 app_layer_params: Some(api::AppLayerParams::default()),
+                codec_plugin_id: "passthrough".into(),
                 ..Default::default()
             }),
             get_resp.get_ref().device_profile
@@ -697,6 +732,17 @@ pub mod test {
         assert_eq!("default", list_adr_algs_resp.result[0].id);
         assert_eq!("lr_fhss", list_adr_algs_resp.result[1].id);
         assert_eq!("lora_lr_fhss", list_adr_algs_resp.result[2].id);
+
+        // list codec plugins
+        let list_codec_plugins_req = get_request(&u.id, ());
+        let list_codec_plugins_resp = service
+            .list_codec_plugins(list_codec_plugins_req)
+            .await
+            .unwrap();
+        let list_codec_plugins_resp = list_codec_plugins_resp.get_ref();
+        assert_eq!(1, list_codec_plugins_resp.total_count);
+        assert_eq!(1, list_codec_plugins_resp.result.len());
+        assert_eq!("passthrough", list_codec_plugins_resp.result[0].id);
     }
 
     fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {

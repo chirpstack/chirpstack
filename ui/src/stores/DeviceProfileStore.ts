@@ -12,6 +12,7 @@ import type {
   ListDeviceProfilesRequest,
   ListDeviceProfilesResponse,
   ListDeviceProfileAdrAlgorithmsResponse,
+  ListDeviceProfileCodecPluginsResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import SessionStore from "./SessionStore";
@@ -97,6 +98,17 @@ class DeviceProfileStore extends EventEmitter {
 
   listAdrAlgorithms = (callbackFunc: (resp: ListDeviceProfileAdrAlgorithmsResponse) => void) => {
     this.client.listAdrAlgorithms(new google_protobuf_empty_pb.Empty(), SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  listCodecPlugins = (callbackFunc: (resp: ListDeviceProfileCodecPluginsResponse) => void) => {
+    this.client.listCodecPlugins(new google_protobuf_empty_pb.Empty(), SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;
