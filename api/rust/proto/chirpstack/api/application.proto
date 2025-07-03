@@ -96,6 +96,40 @@ service ApplicationService {
     };
   }
 
+  // Create Qubitro integration.
+  rpc CreateQubitroIntegration(CreateQubitroIntegrationRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/applications/{integration.application_id}/integrations/qubitro"
+      body : "*"
+    };
+  }
+
+  // Get Qubitro integration.
+  rpc GetQubitroIntegration(GetQubitroIntegrationRequest)
+      returns (GetQubitroIntegrationResponse) {
+    option (google.api.http) = {
+      get : "/api/applications/{application_id}/integrations/qubitro"
+    };
+  }
+
+  // Update Qubitro integration.
+  rpc UpdateQubitroIntegration(UpdateQubitroIntegrationRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/api/applications/{integration.application_id}/integrations/qubitro"
+      body : "*"
+    };
+  }
+
+  // Delete Qubitro integration.
+  rpc DeleteQubitroIntegration(DeleteQubitroIntegrationRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/api/applications/{application_id}/integrations/qubitro"
+    };
+  }
+
   // Create InfluxDb integration.
   rpc CreateInfluxDbIntegration(CreateInfluxDbIntegrationRequest)
       returns (google.protobuf.Empty) {
@@ -1148,4 +1182,40 @@ message ListApplicationDeviceTagsRequest {
 message ListApplicationDeviceTagsResponse {
   // Device tags.
   repeated ApplicationDeviceTagListItem result = 1;
+}
+
+message QubitroIntegration {
+  // Application ID (UUID).
+  string application_id = 1;
+
+  // Qubitro Project ID.
+  string project_id = 2;
+
+  // Qubitro Webhook Signing Key.
+  string webhook_signing_key = 3;
+}
+
+message CreateQubitroIntegrationRequest {
+  // Integration object to create.
+  QubitroIntegration integration = 1;
+}
+
+message GetQubitroIntegrationRequest {
+  // Application ID (UUID).
+  string application_id = 1;
+}
+
+message GetQubitroIntegrationResponse {
+  // Integration object.
+  QubitroIntegration integration = 1;
+}
+
+message UpdateQubitroIntegrationRequest {
+  // Integration object to update.
+  QubitroIntegration integration = 1;
+}
+
+message DeleteQubitroIntegrationRequest {
+  // Application ID (UUID).
+  string application_id = 1;
 }
