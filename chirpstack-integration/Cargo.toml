@@ -10,7 +10,7 @@
 
 [dependencies]
   chirpstack_api = { path = "../api/rust", version = "4.13.0" }
-  redis = { version = "0.31", features = [
+  redis = { version = "0.32", features = [
     "cluster-async",
     "tokio-rustls-comp",
   ] }
