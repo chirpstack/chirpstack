@@ -68,6 +68,11 @@ import type {
   ListApplicationDeviceProfilesResponse,
   ListApplicationDeviceTagsRequest,
   ListApplicationDeviceTagsResponse,
+  CreateQubitroIntegrationRequest,
+  GetQubitroIntegrationRequest,
+  GetQubitroIntegrationResponse,
+  UpdateQubitroIntegrationRequest,
+  DeleteQubitroIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import SessionStore from "./SessionStore";
@@ -830,6 +835,66 @@ class ApplicationStore extends EventEmitter {
       }
 
       callbackFunc(resp);
+    });
+  };
+
+  createQubitroIntegration = (req: CreateQubitroIntegrationRequest, callbackFunc: () => void) => {
+    this.client.createQubitroIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Qubitro integration created",
+        duration: 3,
+      });
+
+      callbackFunc();
+    });
+  };
+
+  getQubitroIntegration = (req: GetQubitroIntegrationRequest, callbackFunc: (resp: GetQubitroIntegrationResponse) => void) => {
+    this.client.getQubitroIntegration(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  updateQubitroIntegration = (req: UpdateQubitroIntegrationRequest, callbackFunc: () => void) => {
+    this.client.updateQubitroIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Qubitro integration updated",
+        duration: 3,
+      });
+
+      callbackFunc();
+    });
+  };
+
+  deleteQubitroIntegration = (req: DeleteQubitroIntegrationRequest, callbackFunc: () => void) => {
+    this.client.deleteQubitroIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Qubitro integration deleted",
+        duration: 3,
+      });
+
+      this.emit("integration.delete");
+      callbackFunc();
     });
   };
 }
