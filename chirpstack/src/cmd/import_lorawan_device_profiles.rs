@@ -4,6 +4,7 @@ use std::path::Path;
 use anyhow::Result;
 use serde::Deserialize;
 use tracing::{info, span, Instrument, Level};
+use uuid::Uuid;
 
 use crate::codec::Codec;
 use crate::storage::{self, device_profile_template};
@@ -53,6 +54,8 @@ pub struct ProfileConfig {
 #[derive(Deserialize)]
 #[serde(default)]
 pub struct Profile {
+    pub id: Uuid,
+    pub vendor_profile_id: usize,
     pub region: region::CommonName,
     pub mac_version: region::MacVersion,
     pub reg_params_revision: region::Revision,
@@ -69,6 +72,8 @@ pub struct Profile {
 impl Default for Profile {
     fn default() -> Self {
         Self {
+            id: Uuid::nil(),
+            vendor_profile_id: 0,
             region: region::CommonName::EU868,
             mac_version: region::MacVersion::LORAWAN_1_0_4,
             reg_params_revision: region::Revision::RP002_1_0_4,
@@ -84,6 +89,7 @@ impl Default for Profile {
 }
 
 #[derive(Default, Deserialize)]
+#[serde(default)]
 pub struct ProfileAbp {
     pub rx1_delay: usize,
     pub rx1_dr_offset: usize,
@@ -92,6 +98,7 @@ pub struct ProfileAbp {
 }
 
 #[derive(Default, Deserialize)]
+#[serde(default)]
 pub struct ProfileClassB {
     pub timeout_secs: usize,
     pub ping_slot_periodicity: usize,
@@ -100,6 +107,7 @@ pub struct ProfileClassB {
 }
 
 #[derive(Default, Deserialize)]
+#[serde(default)]
 pub struct ProfileClassC {
     pub timeout_secs: usize,
 }
@@ -207,15 +215,8 @@ async fn handle_profile(
 
     let profile_conf: ProfileConfig = toml::from_str(&fs::read_to_string(profile_path)?)?;
 
-    let id_regex = regex::Regex::new(r"[^a-zA-Z0-9\-]+").unwrap();
-    let id = format!(
-        "{}-{}-{}-{}",
-        vendor.slug, device.slug, firmware.version, profile_conf.profile.region
-    );
-    let id = id_regex.replace_all(&id, "-").to_string();
-
     let dpt = device_profile_template::DeviceProfileTemplate {
-        id,
+        id: profile_conf.profile.id.to_string(),
         name: device.name.clone(),
         description: device.description.clone(),
         vendor: vendor.name.clone(),
