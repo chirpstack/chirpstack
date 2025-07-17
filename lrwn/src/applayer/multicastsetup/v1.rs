@@ -7,6 +7,7 @@ use aes::{
 use anyhow::Result;
 
 use crate::applayer::PayloadCodec;
+use crate::helpers::{decode_freq, encode_freq};
 use crate::{AES128Key, DevAddr};
 
 pub enum Cid {
@@ -495,11 +496,7 @@ impl PayloadCodec for McClassCSessionReqPayload {
             session_time_out: McClassCSessionReqPayloadSessionTimeOut {
                 time_out: b[5] & 0x0f,
             },
-            dl_frequ: {
-                let mut bytes = [0; 4];
-                bytes[0..3].copy_from_slice(&b[6..9]);
-                u32::from_le_bytes(bytes) * 100
-            },
+            dl_frequ: decode_freq(&b[6..9])?,
             dr: b[9],
         })
     }
@@ -513,15 +510,11 @@ impl PayloadCodec for McClassCSessionReqPayload {
             return Err(anyhow!("Max time_out value is 15"));
         }
 
-        if self.dl_frequ % 100 != 0 {
-            return Err(anyhow!("dl_frequ must be a multiple of 100"));
-        }
-
         let mut b = Vec::with_capacity(10);
         b.push(self.mc_group_id_header.mc_group_id);
         b.extend_from_slice(&self.session_time.to_le_bytes());
         b.push(self.session_time_out.time_out);
-        b.extend_from_slice(&(self.dl_frequ / 100).to_le_bytes()[0..3]);
+        b.extend_from_slice(&encode_freq(self.dl_frequ)?);
         b.push(self.dr);
 
         Ok(b)
@@ -638,11 +631,7 @@ impl PayloadCodec for McClassBSessionReqPayload {
                 time_out: b[5] & 0x0f,
                 periodicity: (b[5] >> 4) & 0x07,
             },
-            dl_frequ: {
-                let mut bytes = [0; 4];
-                bytes[0..3].copy_from_slice(&b[6..9]);
-                u32::from_le_bytes(bytes) * 100
-            },
+            dl_frequ: decode_freq(&b[6..9])?,
             dr: b[9],
         })
     }
@@ -664,7 +653,7 @@ impl PayloadCodec for McClassBSessionReqPayload {
         b.push(self.mc_group_id_header.mc_group_id);
         b.extend_from_slice(&self.session_time.to_le_bytes());
         b.push((self.time_out_periodicity.periodicity << 4) | self.time_out_periodicity.time_out);
-        b.extend_from_slice(&(self.dl_frequ / 100).to_le_bytes()[0..3]);
+        b.extend_from_slice(&encode_freq(self.dl_frequ)?);
         b.push(self.dr);
 
         Ok(b)
