@@ -38,6 +38,7 @@ api:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/gateway.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/multicast_group.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/relay.proto
+	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/fuota.proto
 
 integration:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/integration/integration.proto
