@@ -72,7 +72,7 @@
   lapin = { version = "2.5", default-features = false }
   tokio-executor-trait = "2.1"
   tokio-reactor-trait = "1.1"
-  rdkafka = { version = "0.37", default-features = false, features = [
+  rdkafka = { version = "0.38", default-features = false, features = [
     "tokio",
     "cmake-build",
   ] }
