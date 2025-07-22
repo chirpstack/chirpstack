@@ -27,20 +27,25 @@ impl Plugin {
                 .eval()
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Evaluate script: JS error: {}", e))?;
-            () = m_promise.finish()
+            () = m_promise
+                .finish()
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Evaluate script: JS error: {}", e))?;
-            let id_func: rquickjs::Function = m.get("id")
+            let id_func: rquickjs::Function = m
+                .get("id")
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Get id function: JS error: {}", e))?;
-            let name_func: rquickjs::Function = m.get("name")
+            let name_func: rquickjs::Function = m
+                .get("name")
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Get name function: JS error: {}", e))?;
 
-            let id: String = id_func.call(())
+            let id: String = id_func
+                .call(())
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Call id function: JS error: {}", e))?;
-            let name: String = name_func.call(())
+            let name: String = name_func
+                .call(())
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Call name function: JS error: {}", e))?;
 
@@ -76,7 +81,8 @@ impl Handler for Plugin {
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Eval script: JS error: {}", e))?;
             () = m_promise.finish()?;
-            let func: rquickjs::Function = m.get("handle")
+            let func: rquickjs::Function = m
+                .get("handle")
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Get handle function: JS error: {}", e))?;
 
@@ -117,18 +123,22 @@ impl Handler for Plugin {
 
             input.set("uplinkHistory", uplink_history)?;
 
-            let res: rquickjs::Object = func.call((input,))
+            let res: rquickjs::Object = func
+                .call((input,))
                 .catch(&ctx)
                 .map_err(|e| anyhow!("Call handle function: JS error: {}", e))?;
 
             Ok(Response {
-                dr: res.get("dr")
+                dr: res
+                    .get("dr")
                     .catch(&ctx)
                     .map_err(|e| anyhow!("Get dr response: JS error: {}", e))?,
-                tx_power_index: res.get("txPowerIndex")
+                tx_power_index: res
+                    .get("txPowerIndex")
                     .catch(&ctx)
                     .map_err(|e| anyhow!("Get txPowerIndex response: JS error: {}", e))?,
-                nb_trans: res.get("nbTrans")
+                nb_trans: res
+                    .get("nbTrans")
                     .catch(&ctx)
                     .map_err(|e| anyhow!("Get nbTrans response: JS error: {}", e))?,
             })
