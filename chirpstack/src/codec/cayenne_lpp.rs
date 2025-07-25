@@ -13,7 +13,7 @@ const LPP_TEMPERATURE_SENSOR: u8 = 103;
 const LPP_HUMIDITY_SENSOR: u8 = 104;
 const LPP_ACCELEROMETER: u8 = 113;
 const LPP_BAROMETER: u8 = 115;
-const LPP_DISTANCE: u8 = 130  
+const LPP_DISTANCE: u8 = 130;
 const LPP_GYROMETER: u8 = 134;
 const LPP_GPS_LOCATION: u8 = 136;
 
@@ -798,7 +798,7 @@ impl CayenneLpp {
 
         Ok(())
     }
-    
+
     fn set_distance(&mut self, channel: u8, cur: &mut Cursor<&[u8]>) -> Result<()> {
         let mut buf: [u8; 4] = [0; 4];
         cur.read_exact(&mut buf)?;
@@ -819,8 +819,6 @@ impl CayenneLpp {
 
         Ok(())
     }
-
-
 
     fn set_gyrometer(&mut self, channel: u8, cur: &mut Cursor<&[u8]>) -> Result<()> {
         let mut buf_x: [u8; 2] = [0; 2];
@@ -966,7 +964,7 @@ pub mod test {
             3, 104, 41, 5, 104, 150, // humidity sensors
             3, 113, 0, 1, 0, 2, 0, 3, 5, 113, 3, 234, 7, 211, 11, 187, // accelerometers
             3, 115, 4, 31, 5, 115, 9, 196, // barometers
-            3, 130, 4, 31, 5, 130, 9, 196, // distance
+            3, 130, 0, 0, 1, 16, 5, 130, 1, 2, 3, 4, // distance
             3, 134, 0, 1, 0, 2, 0, 3, 5, 134, 3, 233, 7, 210, 11, 187, // gyrometers
             1, 136, 6, 118, 95, 242, 150, 10, 0, 3, 232, // gps location
         ];
@@ -1276,6 +1274,7 @@ pub mod test {
                         })),
                     },
                 ),
+                (
                     "distance".to_string(),
                     prost_types::Value {
                         kind: Some(prost_types::value::Kind::StructValue(prost_types::Struct {
@@ -1283,13 +1282,13 @@ pub mod test {
                                 (
                                     "3".to_string(),
                                     prost_types::Value {
-                                        kind: Some(prost_types::value::Kind::NumberValue(105.5)),
+                                        kind: Some(prost_types::value::Kind::NumberValue(0.272)),
                                     },
                                 ),
                                 (
                                     "5".to_string(),
                                     prost_types::Value {
-                                        kind: Some(prost_types::value::Kind::NumberValue(250.0)),
+                                        kind: Some(prost_types::value::Kind::NumberValue(16909.060)),
                                     },
                                 ),
                             ]
@@ -1790,14 +1789,14 @@ pub mod test {
                                     (
                                         "3".to_string(),
                                         pbjson_types::Value {
-                                            kind: Some(pbjson_types::value::Kind::NumberValue(105.5)),
+                                            kind: Some(pbjson_types::value::Kind::NumberValue(0.272)),
                                         },
                                     ),
                                     (
                                         "5".to_string(),
                                         pbjson_types::Value {
                                             kind: Some(pbjson_types::value::Kind::NumberValue(
-                                              250.0,
+                                              16909.060,
                                             )),
                                         },
                                     ),
