@@ -18,3 +18,5 @@ from .user_pb2 import *
 from .user_pb2_grpc import *
 from .relay_pb2 import *
 from .relay_pb2_grpc import *
+from .fuota_pb2 import *
+from .fuota_pb2_grpc import *

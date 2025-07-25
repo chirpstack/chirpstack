@@ -23,6 +23,7 @@ pkgs.mkShell {
     pkgs.cargo-cross            # cross-compiling
     pkgs.cargo-deb              # deb packaging
     pkgs.diesel-cli             # diesel cli
+    pkgs.jq                     # json query cli tool
   ];
   LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
   BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.llvmPackages.libclang.lib}/lib/clang/${pkgs.llvmPackages.libclang.version}/include";
