@@ -13,6 +13,7 @@ const LPP_TEMPERATURE_SENSOR: u8 = 103;
 const LPP_HUMIDITY_SENSOR: u8 = 104;
 const LPP_ACCELEROMETER: u8 = 113;
 const LPP_BAROMETER: u8 = 115;
+const LPP_DISTANCE: u8 = 130;
 const LPP_GYROMETER: u8 = 134;
 const LPP_GPS_LOCATION: u8 = 136;
 
@@ -56,6 +57,7 @@ struct CayenneLpp {
     humidity_sensor: BTreeMap<u8, f64>,
     accelerometer: BTreeMap<u8, Accelerometer>,
     barometer: BTreeMap<u8, f64>,
+    distance: BTreeMap<u8, f64>,
     gyrometer: BTreeMap<u8, Gyrometer>,
     gps_location: BTreeMap<u8, GpsLocation>,
 }
@@ -82,6 +84,7 @@ impl CayenneLpp {
                 LPP_HUMIDITY_SENSOR => lpp.set_humidity_sensor(buf[0], &mut cur)?,
                 LPP_ACCELEROMETER => lpp.set_accelerometer(buf[0], &mut cur)?,
                 LPP_BAROMETER => lpp.set_barometer(buf[0], &mut cur)?,
+                LPP_DISTANCE => lpp.set_distance(buf[0], &mut cur)?,
                 LPP_GYROMETER => lpp.set_gyrometer(buf[0], &mut cur)?,
                 LPP_GPS_LOCATION => lpp.set_gps_location(buf[0], &mut cur)?,
                 _ => {
@@ -124,6 +127,7 @@ impl CayenneLpp {
                     .set_accelerometer_from_value(v)
                     .context("accelerometer")?,
                 "barometer" => lpp.set_barometer_from_value(v).context("barometer")?,
+                "distance" => lpp.set_distance_from_value(v).context("distance")?,
                 "gyrometer" => lpp.set_gyrometer_from_value(v).context("gyrometer")?,
                 "gpsLocation" => lpp.set_gps_location_from_value(v).context("gpsLocation")?,
                 _ => {
@@ -211,6 +215,14 @@ impl CayenneLpp {
             out.extend([*k, LPP_BAROMETER]);
 
             let val = (*v * 10.0) as u16;
+            out.extend(val.to_be_bytes());
+        }
+
+        // distance
+        for (k, v) in &self.distance {
+            out.extend([*k, LPP_DISTANCE]);
+
+            let val = (*v * 1000.0) as u32;
             out.extend(val.to_be_bytes());
         }
 
@@ -439,6 +451,24 @@ impl CayenneLpp {
             }
             out.fields.insert(
                 "barometer".to_string(),
+                pbjson_types::Value {
+                    kind: Some(pbjson_types::value::Kind::StructValue(val)),
+                },
+            );
+        }
+
+        if !self.distance.is_empty() {
+            let mut val: pbjson_types::Struct = Default::default();
+            for (k, v) in &self.distance {
+                val.fields.insert(
+                    format!("{}", k),
+                    pbjson_types::Value {
+                        kind: Some(pbjson_types::value::Kind::NumberValue(*v)),
+                    },
+                );
+            }
+            out.fields.insert(
+                "distance".to_string(),
                 pbjson_types::Value {
                     kind: Some(pbjson_types::value::Kind::StructValue(val)),
                 },
@@ -769,6 +799,27 @@ impl CayenneLpp {
         Ok(())
     }
 
+    fn set_distance(&mut self, channel: u8, cur: &mut Cursor<&[u8]>) -> Result<()> {
+        let mut buf: [u8; 4] = [0; 4];
+        cur.read_exact(&mut buf)?;
+        let val = u32::from_be_bytes(buf);
+        self.distance.insert(channel, (val as f64) / 1000.0);
+        Ok(())
+    }
+
+    fn set_distance_from_value(&mut self, v: &prost_types::Value) -> Result<()> {
+        if let Some(prost_types::value::Kind::StructValue(s)) = &v.kind {
+            for (k, v) in &s.fields {
+                let c: u8 = k.parse()?;
+                if let Some(prost_types::value::Kind::NumberValue(v)) = &v.kind {
+                    self.distance.insert(c, *v);
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     fn set_gyrometer(&mut self, channel: u8, cur: &mut Cursor<&[u8]>) -> Result<()> {
         let mut buf_x: [u8; 2] = [0; 2];
         let mut buf_y: [u8; 2] = [0; 2];
@@ -913,6 +964,7 @@ pub mod test {
             3, 104, 41, 5, 104, 150, // humidity sensors
             3, 113, 0, 1, 0, 2, 0, 3, 5, 113, 3, 234, 7, 211, 11, 187, // accelerometers
             3, 115, 4, 31, 5, 115, 9, 196, // barometers
+            3, 130, 0, 0, 1, 16, 5, 130, 1, 2, 3, 4, // distance
             3, 134, 0, 1, 0, 2, 0, 3, 5, 134, 3, 233, 7, 210, 11, 187, // gyrometers
             1, 136, 6, 118, 95, 242, 150, 10, 0, 3, 232, // gps location
         ];
@@ -1213,6 +1265,30 @@ pub mod test {
                                     "5".to_string(),
                                     prost_types::Value {
                                         kind: Some(prost_types::value::Kind::NumberValue(250.0)),
+                                    },
+                                ),
+                            ]
+                            .iter()
+                            .cloned()
+                            .collect(),
+                        })),
+                    },
+                ),
+                (
+                    "distance".to_string(),
+                    prost_types::Value {
+                        kind: Some(prost_types::value::Kind::StructValue(prost_types::Struct {
+                            fields: [
+                                (
+                                    "3".to_string(),
+                                    prost_types::Value {
+                                        kind: Some(prost_types::value::Kind::NumberValue(0.272)),
+                                    },
+                                ),
+                                (
+                                    "5".to_string(),
+                                    prost_types::Value {
+                                        kind: Some(prost_types::value::Kind::NumberValue(16909.060)),
                                     },
                                 ),
                             ]
@@ -1693,6 +1769,34 @@ pub mod test {
                                         pbjson_types::Value {
                                             kind: Some(pbjson_types::value::Kind::NumberValue(
                                               250.0,
+                                            )),
+                                        },
+                                    ),
+                                ]
+                                .iter()
+                                .cloned()
+                                .collect(),
+                            },
+                        )),
+                    },
+                ),
+                (
+                    "distance".to_string(),
+                    pbjson_types::Value {
+                        kind: Some(pbjson_types::value::Kind::StructValue(
+                            pbjson_types::Struct {
+                                fields: [
+                                    (
+                                        "3".to_string(),
+                                        pbjson_types::Value {
+                                            kind: Some(pbjson_types::value::Kind::NumberValue(0.272)),
+                                        },
+                                    ),
+                                    (
+                                        "5".to_string(),
+                                        pbjson_types::Value {
+                                            kind: Some(pbjson_types::value::Kind::NumberValue(
+                                              16909.060,
                                             )),
                                         },
                                     ),
