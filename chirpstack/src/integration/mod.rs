@@ -23,7 +23,6 @@ mod http;
 mod ifttt;
 mod influxdb;
 mod kafka;
-mod loracloud;
 #[cfg(test)]
 pub mod mock;
 mod mqtt;
@@ -166,9 +165,6 @@ async fn for_application_id(id: Uuid) -> Result<Vec<Box<dyn Integration + Sync +
             }
             application::IntegrationConfiguration::InfluxDb(conf) => {
                 Box::new(influxdb::Integration::new(conf)?)
-            }
-            application::IntegrationConfiguration::LoraCloud(conf) => {
-                Box::new(loracloud::Integration::new(conf))
             }
             application::IntegrationConfiguration::MyDevices(conf) => {
                 Box::new(mydevices::Integration::new(conf))

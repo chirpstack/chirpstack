@@ -47,11 +47,6 @@ import type {
   GetPilotThingsIntegrationResponse,
   UpdatePilotThingsIntegrationRequest,
   DeletePilotThingsIntegrationRequest,
-  CreateLoraCloudIntegrationRequest,
-  GetLoraCloudIntegrationRequest,
-  GetLoraCloudIntegrationResponse,
-  UpdateLoraCloudIntegrationRequest,
-  DeleteLoraCloudIntegrationRequest,
   CreateThingsBoardIntegrationRequest,
   GetThingsBoardIntegrationRequest,
   GetThingsBoardIntegrationResponse,
@@ -594,69 +589,6 @@ class ApplicationStore extends EventEmitter {
 
       notification.success({
         message: "Pilot Things interation deleted",
-        duration: 3,
-      });
-
-      this.emit("integration.delete");
-      callbackFunc();
-    });
-  };
-
-  createLoraCloudIntegration = (req: CreateLoraCloudIntegrationRequest, callbackFunc: () => void) => {
-    this.client.createLoraCloudIntegration(req, SessionStore.getMetadata(), err => {
-      if (err !== null) {
-        HandleError(err);
-        return;
-      }
-
-      notification.success({
-        message: "LoRa Cloud interation created",
-        duration: 3,
-      });
-
-      callbackFunc();
-    });
-  };
-
-  getLoraCloudIntegration = (
-    req: GetLoraCloudIntegrationRequest,
-    callbackFunc: (resp: GetLoraCloudIntegrationResponse) => void,
-  ) => {
-    this.client.getLoraCloudIntegration(req, SessionStore.getMetadata(), (err, resp) => {
-      if (err !== null) {
-        HandleError(err);
-        return;
-      }
-
-      callbackFunc(resp);
-    });
-  };
-
-  updateLoraCloudIntegration = (req: UpdateLoraCloudIntegrationRequest, callbackFunc: () => void) => {
-    this.client.updateLoraCloudIntegration(req, SessionStore.getMetadata(), err => {
-      if (err !== null) {
-        HandleError(err);
-        return;
-      }
-
-      notification.success({
-        message: "LoRa Cloud integration updated",
-        duration: 3,
-      });
-
-      callbackFunc();
-    });
-  };
-
-  deleteLoraCloudIntegration = (req: DeleteLoraCloudIntegrationRequest, callbackFunc: () => void) => {
-    this.client.deleteLoraCloudIntegration(req, SessionStore.getMetadata(), err => {
-      if (err !== null) {
-        HandleError(err);
-        return;
-      }
-
-      notification.success({
-        message: "LoRa Cloud integration deleted",
         duration: 3,
       });
 

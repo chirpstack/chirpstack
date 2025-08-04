@@ -204,42 +204,6 @@ service ApplicationService {
     };
   }
 
-  // Create LoRaCloud integration.
-  rpc CreateLoraCloudIntegration(CreateLoraCloudIntegrationRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/api/applications/{integration.application_id}/integrations/"
-             "loracloud"
-      body : "*"
-    };
-  }
-
-  // Get LoRaCloud integration.
-  rpc GetLoraCloudIntegration(GetLoraCloudIntegrationRequest)
-      returns (GetLoraCloudIntegrationResponse) {
-    option (google.api.http) = {
-      get : "/api/applications/{application_id}/integrations/loracloud"
-    };
-  }
-
-  // Update LoRaCloud integration.
-  rpc UpdateLoraCloudIntegration(UpdateLoraCloudIntegrationRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      put : "/api/applications/{integration.application_id}/integrations/"
-            "loracloud"
-      body : "*"
-    };
-  }
-
-  // Delete LoRaCloud integration.
-  rpc DeleteLoraCloudIntegration(DeleteLoraCloudIntegrationRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/applications/{application_id}/integrations/loracloud"
-    };
-  }
-
   // Create GCP Pub/Sub integration.
   rpc CreateGcpPubSubIntegration(CreateGcpPubSubIntegrationRequest)
       returns (google.protobuf.Empty) {
@@ -453,7 +417,6 @@ enum IntegrationKind {
   INFLUX_DB = 1;
   THINGS_BOARD = 2;
   MY_DEVICES = 3;
-  LORA_CLOUD = 4;
   GCP_PUB_SUB = 5;
   AWS_SNS = 6;
   AZURE_SERVICE_BUS = 7;
@@ -760,110 +723,6 @@ message UpdateMyDevicesIntegrationRequest {
 }
 
 message DeleteMyDevicesIntegrationRequest {
-  // Application ID (UUID).
-  string application_id = 1;
-}
-
-message LoraCloudIntegration {
-  // Application ID (UUID).
-  string application_id = 1;
-
-  // Modem & Geolocation Services configuration.
-  LoraCloudModemGeolocationServices modem_geolocation_services = 2;
-}
-
-message LoraCloudModemGeolocationServices {
-  // API token.
-  string token = 1;
-
-  // Device implements Modem / Modem-E stack.
-  bool modem_enabled = 2;
-
-  // Forward FPorts.
-  // Forward uplink messages matching the given FPorts to the MGS.
-  repeated uint32 forward_f_ports = 16;
-
-  // Use rx time for GNSS resolving.
-  // In case this is set to true, the MGS resolver will use the RX time of the
-  // network instead of the timestamp included in the LR1110 payload.
-  bool gnss_use_rx_time = 5;
-
-  // Use gateway location for GNSS resolving.
-  // In the case this is set to true, ChirpStack will provide the location of
-  // one of the gateways to the MGS resolver to aid the resolving process.
-  // Disable this in case the gateway location is not accurate / incorrectly
-  // configured as an incorrect location will cause the resolver to return an
-  // error.
-  bool gnss_use_gateway_location = 17;
-
-  // Parse TLV records.
-  // If enabled, stream records (expected in TLV format) are scanned for GNSS
-  // data (0x06 or 0x07). If found, ChirpStack will make an additional
-  // geolocation call to the MGS API for resolving the location of the detected
-  // payload.
-  bool parse_tlv = 6;
-
-  // Geolocation buffer TTL (in seconds).
-  // If > 0, uplink RX meta-data will be stored in a buffer so that
-  // the meta-data of multiple uplinks can be used for geolocation.
-  uint32 geolocation_buffer_ttl = 7;
-
-  // Geolocation minimum buffer size.
-  // If > 0, geolocation will only be performed when the buffer has
-  // at least the given size.
-  uint32 geolocation_min_buffer_size = 8;
-
-  // TDOA based geolocation is enabled.
-  bool geolocation_tdoa = 9;
-
-  // RSSI based geolocation is enabled.
-  bool geolocation_rssi = 10;
-
-  // GNSS based geolocation is enabled (LR1110).
-  bool geolocation_gnss = 11;
-
-  // GNSS payload field.
-  // This holds the name of the field in the decoded payload object which
-  // contains the GNSS payload bytes (as HEX string).
-  string geolocation_gnss_payload_field = 12;
-
-  // GNSS use RX time.
-  // In case this is set to true, the resolver will use the RX time of the
-  // network instead of the timestamp included in the LR1110 payload.
-  bool geolocation_gnss_use_rx_time = 13;
-
-  // Wifi based geolocation is enabled.
-  bool geolocation_wifi = 14;
-
-  // Wifi payload field.
-  // This holds the name of the field in the decoded payload object which
-  // contains an array of objects with the following fields:
-  // * macAddress - e.g. 01:23:45:67:89:ab
-  // * signalStrength - e.g. -51 (optional)
-  string geolocation_wifi_payload_field = 15;
-}
-
-message CreateLoraCloudIntegrationRequest {
-  // Integration object to create.
-  LoraCloudIntegration integration = 1;
-}
-
-message GetLoraCloudIntegrationRequest {
-  // Application ID (UUID).
-  string application_id = 1;
-}
-
-message GetLoraCloudIntegrationResponse {
-  // Integration object.
-  LoraCloudIntegration integration = 1;
-}
-
-message UpdateLoraCloudIntegrationRequest {
-  // Integration object to update.
-  LoraCloudIntegration integration = 1;
-}
-
-message DeleteLoraCloudIntegrationRequest {
   // Application ID (UUID).
   string application_id = 1;
 }

@@ -77,7 +77,6 @@ const (
 	IntegrationKind_INFLUX_DB         IntegrationKind = 1
 	IntegrationKind_THINGS_BOARD      IntegrationKind = 2
 	IntegrationKind_MY_DEVICES        IntegrationKind = 3
-	IntegrationKind_LORA_CLOUD        IntegrationKind = 4
 	IntegrationKind_GCP_PUB_SUB       IntegrationKind = 5
 	IntegrationKind_AWS_SNS           IntegrationKind = 6
 	IntegrationKind_AZURE_SERVICE_BUS IntegrationKind = 7
@@ -93,7 +92,6 @@ var (
 		1:  "INFLUX_DB",
 		2:  "THINGS_BOARD",
 		3:  "MY_DEVICES",
-		4:  "LORA_CLOUD",
 		5:  "GCP_PUB_SUB",
 		6:  "AWS_SNS",
 		7:  "AZURE_SERVICE_BUS",
@@ -106,7 +104,6 @@ var (
 		"INFLUX_DB":         1,
 		"THINGS_BOARD":      2,
 		"MY_DEVICES":        3,
-		"LORA_CLOUD":        4,
 		"GCP_PUB_SUB":       5,
 		"AWS_SNS":           6,
 		"AZURE_SERVICE_BUS": 7,
@@ -2201,480 +2198,6 @@ func (x *DeleteMyDevicesIntegrationRequest) GetApplicationId() string {
 	return ""
 }
 
-type LoraCloudIntegration struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Application ID (UUID).
-	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	// Modem & Geolocation Services configuration.
-	ModemGeolocationServices *LoraCloudModemGeolocationServices `protobuf:"bytes,2,opt,name=modem_geolocation_services,json=modemGeolocationServices,proto3" json:"modem_geolocation_services,omitempty"`
-	unknownFields            protoimpl.UnknownFields
-	sizeCache                protoimpl.SizeCache
-}
-
-func (x *LoraCloudIntegration) Reset() {
-	*x = LoraCloudIntegration{}
-	mi := &file_api_application_proto_msgTypes[37]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LoraCloudIntegration) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LoraCloudIntegration) ProtoMessage() {}
-
-func (x *LoraCloudIntegration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[37]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LoraCloudIntegration.ProtoReflect.Descriptor instead.
-func (*LoraCloudIntegration) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{37}
-}
-
-func (x *LoraCloudIntegration) GetApplicationId() string {
-	if x != nil {
-		return x.ApplicationId
-	}
-	return ""
-}
-
-func (x *LoraCloudIntegration) GetModemGeolocationServices() *LoraCloudModemGeolocationServices {
-	if x != nil {
-		return x.ModemGeolocationServices
-	}
-	return nil
-}
-
-type LoraCloudModemGeolocationServices struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// API token.
-	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	// Device implements Modem / Modem-E stack.
-	ModemEnabled bool `protobuf:"varint,2,opt,name=modem_enabled,json=modemEnabled,proto3" json:"modem_enabled,omitempty"`
-	// Forward FPorts.
-	// Forward uplink messages matching the given FPorts to the MGS.
-	ForwardFPorts []uint32 `protobuf:"varint,16,rep,packed,name=forward_f_ports,json=forwardFPorts,proto3" json:"forward_f_ports,omitempty"`
-	// Use rx time for GNSS resolving.
-	// In case this is set to true, the MGS resolver will use the RX time of the
-	// network instead of the timestamp included in the LR1110 payload.
-	GnssUseRxTime bool `protobuf:"varint,5,opt,name=gnss_use_rx_time,json=gnssUseRxTime,proto3" json:"gnss_use_rx_time,omitempty"`
-	// Use gateway location for GNSS resolving.
-	// In the case this is set to true, ChirpStack will provide the location of
-	// one of the gateways to the MGS resolver to aid the resolving process.
-	// Disable this in case the gateway location is not accurate / incorrectly
-	// configured as an incorrect location will cause the resolver to return an
-	// error.
-	GnssUseGatewayLocation bool `protobuf:"varint,17,opt,name=gnss_use_gateway_location,json=gnssUseGatewayLocation,proto3" json:"gnss_use_gateway_location,omitempty"`
-	// Parse TLV records.
-	// If enabled, stream records (expected in TLV format) are scanned for GNSS
-	// data (0x06 or 0x07). If found, ChirpStack will make an additional
-	// geolocation call to the MGS API for resolving the location of the detected
-	// payload.
-	ParseTlv bool `protobuf:"varint,6,opt,name=parse_tlv,json=parseTlv,proto3" json:"parse_tlv,omitempty"`
-	// Geolocation buffer TTL (in seconds).
-	// If > 0, uplink RX meta-data will be stored in a buffer so that
-	// the meta-data of multiple uplinks can be used for geolocation.
-	GeolocationBufferTtl uint32 `protobuf:"varint,7,opt,name=geolocation_buffer_ttl,json=geolocationBufferTtl,proto3" json:"geolocation_buffer_ttl,omitempty"`
-	// Geolocation minimum buffer size.
-	// If > 0, geolocation will only be performed when the buffer has
-	// at least the given size.
-	GeolocationMinBufferSize uint32 `protobuf:"varint,8,opt,name=geolocation_min_buffer_size,json=geolocationMinBufferSize,proto3" json:"geolocation_min_buffer_size,omitempty"`
-	// TDOA based geolocation is enabled.
-	GeolocationTdoa bool `protobuf:"varint,9,opt,name=geolocation_tdoa,json=geolocationTdoa,proto3" json:"geolocation_tdoa,omitempty"`
-	// RSSI based geolocation is enabled.
-	GeolocationRssi bool `protobuf:"varint,10,opt,name=geolocation_rssi,json=geolocationRssi,proto3" json:"geolocation_rssi,omitempty"`
-	// GNSS based geolocation is enabled (LR1110).
-	GeolocationGnss bool `protobuf:"varint,11,opt,name=geolocation_gnss,json=geolocationGnss,proto3" json:"geolocation_gnss,omitempty"`
-	// GNSS payload field.
-	// This holds the name of the field in the decoded payload object which
-	// contains the GNSS payload bytes (as HEX string).
-	GeolocationGnssPayloadField string `protobuf:"bytes,12,opt,name=geolocation_gnss_payload_field,json=geolocationGnssPayloadField,proto3" json:"geolocation_gnss_payload_field,omitempty"`
-	// GNSS use RX time.
-	// In case this is set to true, the resolver will use the RX time of the
-	// network instead of the timestamp included in the LR1110 payload.
-	GeolocationGnssUseRxTime bool `protobuf:"varint,13,opt,name=geolocation_gnss_use_rx_time,json=geolocationGnssUseRxTime,proto3" json:"geolocation_gnss_use_rx_time,omitempty"`
-	// Wifi based geolocation is enabled.
-	GeolocationWifi bool `protobuf:"varint,14,opt,name=geolocation_wifi,json=geolocationWifi,proto3" json:"geolocation_wifi,omitempty"`
-	// Wifi payload field.
-	// This holds the name of the field in the decoded payload object which
-	// contains an array of objects with the following fields:
-	// * macAddress - e.g. 01:23:45:67:89:ab
-	// * signalStrength - e.g. -51 (optional)
-	GeolocationWifiPayloadField string `protobuf:"bytes,15,opt,name=geolocation_wifi_payload_field,json=geolocationWifiPayloadField,proto3" json:"geolocation_wifi_payload_field,omitempty"`
-	unknownFields               protoimpl.UnknownFields
-	sizeCache                   protoimpl.SizeCache
-}
-
-func (x *LoraCloudModemGeolocationServices) Reset() {
-	*x = LoraCloudModemGeolocationServices{}
-	mi := &file_api_application_proto_msgTypes[38]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LoraCloudModemGeolocationServices) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LoraCloudModemGeolocationServices) ProtoMessage() {}
-
-func (x *LoraCloudModemGeolocationServices) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[38]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LoraCloudModemGeolocationServices.ProtoReflect.Descriptor instead.
-func (*LoraCloudModemGeolocationServices) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{38}
-}
-
-func (x *LoraCloudModemGeolocationServices) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
-}
-
-func (x *LoraCloudModemGeolocationServices) GetModemEnabled() bool {
-	if x != nil {
-		return x.ModemEnabled
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetForwardFPorts() []uint32 {
-	if x != nil {
-		return x.ForwardFPorts
-	}
-	return nil
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGnssUseRxTime() bool {
-	if x != nil {
-		return x.GnssUseRxTime
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGnssUseGatewayLocation() bool {
-	if x != nil {
-		return x.GnssUseGatewayLocation
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetParseTlv() bool {
-	if x != nil {
-		return x.ParseTlv
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationBufferTtl() uint32 {
-	if x != nil {
-		return x.GeolocationBufferTtl
-	}
-	return 0
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationMinBufferSize() uint32 {
-	if x != nil {
-		return x.GeolocationMinBufferSize
-	}
-	return 0
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationTdoa() bool {
-	if x != nil {
-		return x.GeolocationTdoa
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationRssi() bool {
-	if x != nil {
-		return x.GeolocationRssi
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationGnss() bool {
-	if x != nil {
-		return x.GeolocationGnss
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationGnssPayloadField() string {
-	if x != nil {
-		return x.GeolocationGnssPayloadField
-	}
-	return ""
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationGnssUseRxTime() bool {
-	if x != nil {
-		return x.GeolocationGnssUseRxTime
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationWifi() bool {
-	if x != nil {
-		return x.GeolocationWifi
-	}
-	return false
-}
-
-func (x *LoraCloudModemGeolocationServices) GetGeolocationWifiPayloadField() string {
-	if x != nil {
-		return x.GeolocationWifiPayloadField
-	}
-	return ""
-}
-
-type CreateLoraCloudIntegrationRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Integration object to create.
-	Integration   *LoraCloudIntegration `protobuf:"bytes,1,opt,name=integration,proto3" json:"integration,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateLoraCloudIntegrationRequest) Reset() {
-	*x = CreateLoraCloudIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[39]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateLoraCloudIntegrationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateLoraCloudIntegrationRequest) ProtoMessage() {}
-
-func (x *CreateLoraCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[39]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateLoraCloudIntegrationRequest.ProtoReflect.Descriptor instead.
-func (*CreateLoraCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{39}
-}
-
-func (x *CreateLoraCloudIntegrationRequest) GetIntegration() *LoraCloudIntegration {
-	if x != nil {
-		return x.Integration
-	}
-	return nil
-}
-
-type GetLoraCloudIntegrationRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Application ID (UUID).
-	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetLoraCloudIntegrationRequest) Reset() {
-	*x = GetLoraCloudIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[40]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetLoraCloudIntegrationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetLoraCloudIntegrationRequest) ProtoMessage() {}
-
-func (x *GetLoraCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[40]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetLoraCloudIntegrationRequest.ProtoReflect.Descriptor instead.
-func (*GetLoraCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{40}
-}
-
-func (x *GetLoraCloudIntegrationRequest) GetApplicationId() string {
-	if x != nil {
-		return x.ApplicationId
-	}
-	return ""
-}
-
-type GetLoraCloudIntegrationResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Integration object.
-	Integration   *LoraCloudIntegration `protobuf:"bytes,1,opt,name=integration,proto3" json:"integration,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetLoraCloudIntegrationResponse) Reset() {
-	*x = GetLoraCloudIntegrationResponse{}
-	mi := &file_api_application_proto_msgTypes[41]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetLoraCloudIntegrationResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetLoraCloudIntegrationResponse) ProtoMessage() {}
-
-func (x *GetLoraCloudIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[41]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetLoraCloudIntegrationResponse.ProtoReflect.Descriptor instead.
-func (*GetLoraCloudIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{41}
-}
-
-func (x *GetLoraCloudIntegrationResponse) GetIntegration() *LoraCloudIntegration {
-	if x != nil {
-		return x.Integration
-	}
-	return nil
-}
-
-type UpdateLoraCloudIntegrationRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Integration object to update.
-	Integration   *LoraCloudIntegration `protobuf:"bytes,1,opt,name=integration,proto3" json:"integration,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateLoraCloudIntegrationRequest) Reset() {
-	*x = UpdateLoraCloudIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[42]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateLoraCloudIntegrationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateLoraCloudIntegrationRequest) ProtoMessage() {}
-
-func (x *UpdateLoraCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[42]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateLoraCloudIntegrationRequest.ProtoReflect.Descriptor instead.
-func (*UpdateLoraCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{42}
-}
-
-func (x *UpdateLoraCloudIntegrationRequest) GetIntegration() *LoraCloudIntegration {
-	if x != nil {
-		return x.Integration
-	}
-	return nil
-}
-
-type DeleteLoraCloudIntegrationRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Application ID (UUID).
-	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteLoraCloudIntegrationRequest) Reset() {
-	*x = DeleteLoraCloudIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[43]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteLoraCloudIntegrationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteLoraCloudIntegrationRequest) ProtoMessage() {}
-
-func (x *DeleteLoraCloudIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[43]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteLoraCloudIntegrationRequest.ProtoReflect.Descriptor instead.
-func (*DeleteLoraCloudIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{43}
-}
-
-func (x *DeleteLoraCloudIntegrationRequest) GetApplicationId() string {
-	if x != nil {
-		return x.ApplicationId
-	}
-	return ""
-}
-
 type GcpPubSubIntegration struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Application ID (UUID).
@@ -2697,7 +2220,7 @@ type GcpPubSubIntegration struct {
 
 func (x *GcpPubSubIntegration) Reset() {
 	*x = GcpPubSubIntegration{}
-	mi := &file_api_application_proto_msgTypes[44]
+	mi := &file_api_application_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2709,7 +2232,7 @@ func (x *GcpPubSubIntegration) String() string {
 func (*GcpPubSubIntegration) ProtoMessage() {}
 
 func (x *GcpPubSubIntegration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[44]
+	mi := &file_api_application_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2722,7 +2245,7 @@ func (x *GcpPubSubIntegration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GcpPubSubIntegration.ProtoReflect.Descriptor instead.
 func (*GcpPubSubIntegration) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{44}
+	return file_api_application_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *GcpPubSubIntegration) GetApplicationId() string {
@@ -2770,7 +2293,7 @@ type CreateGcpPubSubIntegrationRequest struct {
 
 func (x *CreateGcpPubSubIntegrationRequest) Reset() {
 	*x = CreateGcpPubSubIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[45]
+	mi := &file_api_application_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2782,7 +2305,7 @@ func (x *CreateGcpPubSubIntegrationRequest) String() string {
 func (*CreateGcpPubSubIntegrationRequest) ProtoMessage() {}
 
 func (x *CreateGcpPubSubIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[45]
+	mi := &file_api_application_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2795,7 +2318,7 @@ func (x *CreateGcpPubSubIntegrationRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use CreateGcpPubSubIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*CreateGcpPubSubIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{45}
+	return file_api_application_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *CreateGcpPubSubIntegrationRequest) GetIntegration() *GcpPubSubIntegration {
@@ -2815,7 +2338,7 @@ type GetGcpPubSubIntegrationRequest struct {
 
 func (x *GetGcpPubSubIntegrationRequest) Reset() {
 	*x = GetGcpPubSubIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[46]
+	mi := &file_api_application_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2827,7 +2350,7 @@ func (x *GetGcpPubSubIntegrationRequest) String() string {
 func (*GetGcpPubSubIntegrationRequest) ProtoMessage() {}
 
 func (x *GetGcpPubSubIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[46]
+	mi := &file_api_application_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2840,7 +2363,7 @@ func (x *GetGcpPubSubIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGcpPubSubIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*GetGcpPubSubIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{46}
+	return file_api_application_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *GetGcpPubSubIntegrationRequest) GetApplicationId() string {
@@ -2860,7 +2383,7 @@ type GetGcpPubSubIntegrationResponse struct {
 
 func (x *GetGcpPubSubIntegrationResponse) Reset() {
 	*x = GetGcpPubSubIntegrationResponse{}
-	mi := &file_api_application_proto_msgTypes[47]
+	mi := &file_api_application_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2872,7 +2395,7 @@ func (x *GetGcpPubSubIntegrationResponse) String() string {
 func (*GetGcpPubSubIntegrationResponse) ProtoMessage() {}
 
 func (x *GetGcpPubSubIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[47]
+	mi := &file_api_application_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2885,7 +2408,7 @@ func (x *GetGcpPubSubIntegrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGcpPubSubIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*GetGcpPubSubIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{47}
+	return file_api_application_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetGcpPubSubIntegrationResponse) GetIntegration() *GcpPubSubIntegration {
@@ -2905,7 +2428,7 @@ type UpdateGcpPubSubIntegrationRequest struct {
 
 func (x *UpdateGcpPubSubIntegrationRequest) Reset() {
 	*x = UpdateGcpPubSubIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[48]
+	mi := &file_api_application_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2917,7 +2440,7 @@ func (x *UpdateGcpPubSubIntegrationRequest) String() string {
 func (*UpdateGcpPubSubIntegrationRequest) ProtoMessage() {}
 
 func (x *UpdateGcpPubSubIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[48]
+	mi := &file_api_application_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2930,7 +2453,7 @@ func (x *UpdateGcpPubSubIntegrationRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use UpdateGcpPubSubIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateGcpPubSubIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{48}
+	return file_api_application_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *UpdateGcpPubSubIntegrationRequest) GetIntegration() *GcpPubSubIntegration {
@@ -2950,7 +2473,7 @@ type DeleteGcpPubSubIntegrationRequest struct {
 
 func (x *DeleteGcpPubSubIntegrationRequest) Reset() {
 	*x = DeleteGcpPubSubIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[49]
+	mi := &file_api_application_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2962,7 +2485,7 @@ func (x *DeleteGcpPubSubIntegrationRequest) String() string {
 func (*DeleteGcpPubSubIntegrationRequest) ProtoMessage() {}
 
 func (x *DeleteGcpPubSubIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[49]
+	mi := &file_api_application_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2975,7 +2498,7 @@ func (x *DeleteGcpPubSubIntegrationRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use DeleteGcpPubSubIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteGcpPubSubIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{49}
+	return file_api_application_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *DeleteGcpPubSubIntegrationRequest) GetApplicationId() string {
@@ -3005,7 +2528,7 @@ type AwsSnsIntegration struct {
 
 func (x *AwsSnsIntegration) Reset() {
 	*x = AwsSnsIntegration{}
-	mi := &file_api_application_proto_msgTypes[50]
+	mi := &file_api_application_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3017,7 +2540,7 @@ func (x *AwsSnsIntegration) String() string {
 func (*AwsSnsIntegration) ProtoMessage() {}
 
 func (x *AwsSnsIntegration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[50]
+	mi := &file_api_application_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3030,7 +2553,7 @@ func (x *AwsSnsIntegration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AwsSnsIntegration.ProtoReflect.Descriptor instead.
 func (*AwsSnsIntegration) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{50}
+	return file_api_application_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *AwsSnsIntegration) GetApplicationId() string {
@@ -3085,7 +2608,7 @@ type CreateAwsSnsIntegrationRequest struct {
 
 func (x *CreateAwsSnsIntegrationRequest) Reset() {
 	*x = CreateAwsSnsIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[51]
+	mi := &file_api_application_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3097,7 +2620,7 @@ func (x *CreateAwsSnsIntegrationRequest) String() string {
 func (*CreateAwsSnsIntegrationRequest) ProtoMessage() {}
 
 func (x *CreateAwsSnsIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[51]
+	mi := &file_api_application_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3110,7 +2633,7 @@ func (x *CreateAwsSnsIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAwsSnsIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*CreateAwsSnsIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{51}
+	return file_api_application_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *CreateAwsSnsIntegrationRequest) GetIntegration() *AwsSnsIntegration {
@@ -3130,7 +2653,7 @@ type GetAwsSnsIntegrationRequest struct {
 
 func (x *GetAwsSnsIntegrationRequest) Reset() {
 	*x = GetAwsSnsIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[52]
+	mi := &file_api_application_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3142,7 +2665,7 @@ func (x *GetAwsSnsIntegrationRequest) String() string {
 func (*GetAwsSnsIntegrationRequest) ProtoMessage() {}
 
 func (x *GetAwsSnsIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[52]
+	mi := &file_api_application_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3155,7 +2678,7 @@ func (x *GetAwsSnsIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAwsSnsIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*GetAwsSnsIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{52}
+	return file_api_application_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *GetAwsSnsIntegrationRequest) GetApplicationId() string {
@@ -3175,7 +2698,7 @@ type GetAwsSnsIntegrationResponse struct {
 
 func (x *GetAwsSnsIntegrationResponse) Reset() {
 	*x = GetAwsSnsIntegrationResponse{}
-	mi := &file_api_application_proto_msgTypes[53]
+	mi := &file_api_application_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3187,7 +2710,7 @@ func (x *GetAwsSnsIntegrationResponse) String() string {
 func (*GetAwsSnsIntegrationResponse) ProtoMessage() {}
 
 func (x *GetAwsSnsIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[53]
+	mi := &file_api_application_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3200,7 +2723,7 @@ func (x *GetAwsSnsIntegrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAwsSnsIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*GetAwsSnsIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{53}
+	return file_api_application_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *GetAwsSnsIntegrationResponse) GetIntegration() *AwsSnsIntegration {
@@ -3220,7 +2743,7 @@ type UpdateAwsSnsIntegrationRequest struct {
 
 func (x *UpdateAwsSnsIntegrationRequest) Reset() {
 	*x = UpdateAwsSnsIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[54]
+	mi := &file_api_application_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3232,7 +2755,7 @@ func (x *UpdateAwsSnsIntegrationRequest) String() string {
 func (*UpdateAwsSnsIntegrationRequest) ProtoMessage() {}
 
 func (x *UpdateAwsSnsIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[54]
+	mi := &file_api_application_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3245,7 +2768,7 @@ func (x *UpdateAwsSnsIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateAwsSnsIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateAwsSnsIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{54}
+	return file_api_application_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *UpdateAwsSnsIntegrationRequest) GetIntegration() *AwsSnsIntegration {
@@ -3265,7 +2788,7 @@ type DeleteAwsSnsIntegrationRequest struct {
 
 func (x *DeleteAwsSnsIntegrationRequest) Reset() {
 	*x = DeleteAwsSnsIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[55]
+	mi := &file_api_application_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3277,7 +2800,7 @@ func (x *DeleteAwsSnsIntegrationRequest) String() string {
 func (*DeleteAwsSnsIntegrationRequest) ProtoMessage() {}
 
 func (x *DeleteAwsSnsIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[55]
+	mi := &file_api_application_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3290,7 +2813,7 @@ func (x *DeleteAwsSnsIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAwsSnsIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAwsSnsIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{55}
+	return file_api_application_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *DeleteAwsSnsIntegrationRequest) GetApplicationId() string {
@@ -3317,7 +2840,7 @@ type AzureServiceBusIntegration struct {
 
 func (x *AzureServiceBusIntegration) Reset() {
 	*x = AzureServiceBusIntegration{}
-	mi := &file_api_application_proto_msgTypes[56]
+	mi := &file_api_application_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3329,7 +2852,7 @@ func (x *AzureServiceBusIntegration) String() string {
 func (*AzureServiceBusIntegration) ProtoMessage() {}
 
 func (x *AzureServiceBusIntegration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[56]
+	mi := &file_api_application_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3342,7 +2865,7 @@ func (x *AzureServiceBusIntegration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AzureServiceBusIntegration.ProtoReflect.Descriptor instead.
 func (*AzureServiceBusIntegration) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{56}
+	return file_api_application_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *AzureServiceBusIntegration) GetApplicationId() string {
@@ -3383,7 +2906,7 @@ type CreateAzureServiceBusIntegrationRequest struct {
 
 func (x *CreateAzureServiceBusIntegrationRequest) Reset() {
 	*x = CreateAzureServiceBusIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[57]
+	mi := &file_api_application_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3395,7 +2918,7 @@ func (x *CreateAzureServiceBusIntegrationRequest) String() string {
 func (*CreateAzureServiceBusIntegrationRequest) ProtoMessage() {}
 
 func (x *CreateAzureServiceBusIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[57]
+	mi := &file_api_application_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3408,7 +2931,7 @@ func (x *CreateAzureServiceBusIntegrationRequest) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use CreateAzureServiceBusIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*CreateAzureServiceBusIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{57}
+	return file_api_application_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *CreateAzureServiceBusIntegrationRequest) GetIntegration() *AzureServiceBusIntegration {
@@ -3428,7 +2951,7 @@ type GetAzureServiceBusIntegrationRequest struct {
 
 func (x *GetAzureServiceBusIntegrationRequest) Reset() {
 	*x = GetAzureServiceBusIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[58]
+	mi := &file_api_application_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3440,7 +2963,7 @@ func (x *GetAzureServiceBusIntegrationRequest) String() string {
 func (*GetAzureServiceBusIntegrationRequest) ProtoMessage() {}
 
 func (x *GetAzureServiceBusIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[58]
+	mi := &file_api_application_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3453,7 +2976,7 @@ func (x *GetAzureServiceBusIntegrationRequest) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use GetAzureServiceBusIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*GetAzureServiceBusIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{58}
+	return file_api_application_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *GetAzureServiceBusIntegrationRequest) GetApplicationId() string {
@@ -3473,7 +2996,7 @@ type GetAzureServiceBusIntegrationResponse struct {
 
 func (x *GetAzureServiceBusIntegrationResponse) Reset() {
 	*x = GetAzureServiceBusIntegrationResponse{}
-	mi := &file_api_application_proto_msgTypes[59]
+	mi := &file_api_application_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3485,7 +3008,7 @@ func (x *GetAzureServiceBusIntegrationResponse) String() string {
 func (*GetAzureServiceBusIntegrationResponse) ProtoMessage() {}
 
 func (x *GetAzureServiceBusIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[59]
+	mi := &file_api_application_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3498,7 +3021,7 @@ func (x *GetAzureServiceBusIntegrationResponse) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use GetAzureServiceBusIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*GetAzureServiceBusIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{59}
+	return file_api_application_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *GetAzureServiceBusIntegrationResponse) GetIntegration() *AzureServiceBusIntegration {
@@ -3518,7 +3041,7 @@ type UpdateAzureServiceBusIntegrationRequest struct {
 
 func (x *UpdateAzureServiceBusIntegrationRequest) Reset() {
 	*x = UpdateAzureServiceBusIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[60]
+	mi := &file_api_application_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3530,7 +3053,7 @@ func (x *UpdateAzureServiceBusIntegrationRequest) String() string {
 func (*UpdateAzureServiceBusIntegrationRequest) ProtoMessage() {}
 
 func (x *UpdateAzureServiceBusIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[60]
+	mi := &file_api_application_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3543,7 +3066,7 @@ func (x *UpdateAzureServiceBusIntegrationRequest) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use UpdateAzureServiceBusIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateAzureServiceBusIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{60}
+	return file_api_application_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *UpdateAzureServiceBusIntegrationRequest) GetIntegration() *AzureServiceBusIntegration {
@@ -3563,7 +3086,7 @@ type DeleteAzureServiceBusIntegrationRequest struct {
 
 func (x *DeleteAzureServiceBusIntegrationRequest) Reset() {
 	*x = DeleteAzureServiceBusIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[61]
+	mi := &file_api_application_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3575,7 +3098,7 @@ func (x *DeleteAzureServiceBusIntegrationRequest) String() string {
 func (*DeleteAzureServiceBusIntegrationRequest) ProtoMessage() {}
 
 func (x *DeleteAzureServiceBusIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[61]
+	mi := &file_api_application_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3588,7 +3111,7 @@ func (x *DeleteAzureServiceBusIntegrationRequest) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use DeleteAzureServiceBusIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAzureServiceBusIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{61}
+	return file_api_application_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *DeleteAzureServiceBusIntegrationRequest) GetApplicationId() string {
@@ -3612,7 +3135,7 @@ type PilotThingsIntegration struct {
 
 func (x *PilotThingsIntegration) Reset() {
 	*x = PilotThingsIntegration{}
-	mi := &file_api_application_proto_msgTypes[62]
+	mi := &file_api_application_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3624,7 +3147,7 @@ func (x *PilotThingsIntegration) String() string {
 func (*PilotThingsIntegration) ProtoMessage() {}
 
 func (x *PilotThingsIntegration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[62]
+	mi := &file_api_application_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3637,7 +3160,7 @@ func (x *PilotThingsIntegration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PilotThingsIntegration.ProtoReflect.Descriptor instead.
 func (*PilotThingsIntegration) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{62}
+	return file_api_application_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *PilotThingsIntegration) GetApplicationId() string {
@@ -3671,7 +3194,7 @@ type CreatePilotThingsIntegrationRequest struct {
 
 func (x *CreatePilotThingsIntegrationRequest) Reset() {
 	*x = CreatePilotThingsIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[63]
+	mi := &file_api_application_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3683,7 +3206,7 @@ func (x *CreatePilotThingsIntegrationRequest) String() string {
 func (*CreatePilotThingsIntegrationRequest) ProtoMessage() {}
 
 func (x *CreatePilotThingsIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[63]
+	mi := &file_api_application_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3696,7 +3219,7 @@ func (x *CreatePilotThingsIntegrationRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use CreatePilotThingsIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*CreatePilotThingsIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{63}
+	return file_api_application_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *CreatePilotThingsIntegrationRequest) GetIntegration() *PilotThingsIntegration {
@@ -3716,7 +3239,7 @@ type GetPilotThingsIntegrationRequest struct {
 
 func (x *GetPilotThingsIntegrationRequest) Reset() {
 	*x = GetPilotThingsIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[64]
+	mi := &file_api_application_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3728,7 +3251,7 @@ func (x *GetPilotThingsIntegrationRequest) String() string {
 func (*GetPilotThingsIntegrationRequest) ProtoMessage() {}
 
 func (x *GetPilotThingsIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[64]
+	mi := &file_api_application_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3741,7 +3264,7 @@ func (x *GetPilotThingsIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPilotThingsIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*GetPilotThingsIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{64}
+	return file_api_application_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *GetPilotThingsIntegrationRequest) GetApplicationId() string {
@@ -3761,7 +3284,7 @@ type GetPilotThingsIntegrationResponse struct {
 
 func (x *GetPilotThingsIntegrationResponse) Reset() {
 	*x = GetPilotThingsIntegrationResponse{}
-	mi := &file_api_application_proto_msgTypes[65]
+	mi := &file_api_application_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3773,7 +3296,7 @@ func (x *GetPilotThingsIntegrationResponse) String() string {
 func (*GetPilotThingsIntegrationResponse) ProtoMessage() {}
 
 func (x *GetPilotThingsIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[65]
+	mi := &file_api_application_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3786,7 +3309,7 @@ func (x *GetPilotThingsIntegrationResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use GetPilotThingsIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*GetPilotThingsIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{65}
+	return file_api_application_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *GetPilotThingsIntegrationResponse) GetIntegration() *PilotThingsIntegration {
@@ -3806,7 +3329,7 @@ type UpdatePilotThingsIntegrationRequest struct {
 
 func (x *UpdatePilotThingsIntegrationRequest) Reset() {
 	*x = UpdatePilotThingsIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[66]
+	mi := &file_api_application_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3818,7 +3341,7 @@ func (x *UpdatePilotThingsIntegrationRequest) String() string {
 func (*UpdatePilotThingsIntegrationRequest) ProtoMessage() {}
 
 func (x *UpdatePilotThingsIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[66]
+	mi := &file_api_application_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3831,7 +3354,7 @@ func (x *UpdatePilotThingsIntegrationRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use UpdatePilotThingsIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePilotThingsIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{66}
+	return file_api_application_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *UpdatePilotThingsIntegrationRequest) GetIntegration() *PilotThingsIntegration {
@@ -3851,7 +3374,7 @@ type DeletePilotThingsIntegrationRequest struct {
 
 func (x *DeletePilotThingsIntegrationRequest) Reset() {
 	*x = DeletePilotThingsIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[67]
+	mi := &file_api_application_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3863,7 +3386,7 @@ func (x *DeletePilotThingsIntegrationRequest) String() string {
 func (*DeletePilotThingsIntegrationRequest) ProtoMessage() {}
 
 func (x *DeletePilotThingsIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[67]
+	mi := &file_api_application_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3876,7 +3399,7 @@ func (x *DeletePilotThingsIntegrationRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use DeletePilotThingsIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*DeletePilotThingsIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{67}
+	return file_api_application_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *DeletePilotThingsIntegrationRequest) GetApplicationId() string {
@@ -3924,7 +3447,7 @@ type IftttIntegration struct {
 
 func (x *IftttIntegration) Reset() {
 	*x = IftttIntegration{}
-	mi := &file_api_application_proto_msgTypes[68]
+	mi := &file_api_application_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3936,7 +3459,7 @@ func (x *IftttIntegration) String() string {
 func (*IftttIntegration) ProtoMessage() {}
 
 func (x *IftttIntegration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[68]
+	mi := &file_api_application_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3949,7 +3472,7 @@ func (x *IftttIntegration) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IftttIntegration.ProtoReflect.Descriptor instead.
 func (*IftttIntegration) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{68}
+	return file_api_application_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *IftttIntegration) GetApplicationId() string {
@@ -3997,7 +3520,7 @@ type CreateIftttIntegrationRequest struct {
 
 func (x *CreateIftttIntegrationRequest) Reset() {
 	*x = CreateIftttIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[69]
+	mi := &file_api_application_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4009,7 +3532,7 @@ func (x *CreateIftttIntegrationRequest) String() string {
 func (*CreateIftttIntegrationRequest) ProtoMessage() {}
 
 func (x *CreateIftttIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[69]
+	mi := &file_api_application_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4022,7 +3545,7 @@ func (x *CreateIftttIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateIftttIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*CreateIftttIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{69}
+	return file_api_application_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *CreateIftttIntegrationRequest) GetIntegration() *IftttIntegration {
@@ -4042,7 +3565,7 @@ type GetIftttIntegrationRequest struct {
 
 func (x *GetIftttIntegrationRequest) Reset() {
 	*x = GetIftttIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[70]
+	mi := &file_api_application_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4054,7 +3577,7 @@ func (x *GetIftttIntegrationRequest) String() string {
 func (*GetIftttIntegrationRequest) ProtoMessage() {}
 
 func (x *GetIftttIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[70]
+	mi := &file_api_application_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4067,7 +3590,7 @@ func (x *GetIftttIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetIftttIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*GetIftttIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{70}
+	return file_api_application_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *GetIftttIntegrationRequest) GetApplicationId() string {
@@ -4087,7 +3610,7 @@ type GetIftttIntegrationResponse struct {
 
 func (x *GetIftttIntegrationResponse) Reset() {
 	*x = GetIftttIntegrationResponse{}
-	mi := &file_api_application_proto_msgTypes[71]
+	mi := &file_api_application_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4099,7 +3622,7 @@ func (x *GetIftttIntegrationResponse) String() string {
 func (*GetIftttIntegrationResponse) ProtoMessage() {}
 
 func (x *GetIftttIntegrationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[71]
+	mi := &file_api_application_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4112,7 +3635,7 @@ func (x *GetIftttIntegrationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetIftttIntegrationResponse.ProtoReflect.Descriptor instead.
 func (*GetIftttIntegrationResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{71}
+	return file_api_application_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *GetIftttIntegrationResponse) GetIntegration() *IftttIntegration {
@@ -4132,7 +3655,7 @@ type UpdateIftttIntegrationRequest struct {
 
 func (x *UpdateIftttIntegrationRequest) Reset() {
 	*x = UpdateIftttIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[72]
+	mi := &file_api_application_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4144,7 +3667,7 @@ func (x *UpdateIftttIntegrationRequest) String() string {
 func (*UpdateIftttIntegrationRequest) ProtoMessage() {}
 
 func (x *UpdateIftttIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[72]
+	mi := &file_api_application_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4157,7 +3680,7 @@ func (x *UpdateIftttIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateIftttIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateIftttIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{72}
+	return file_api_application_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *UpdateIftttIntegrationRequest) GetIntegration() *IftttIntegration {
@@ -4177,7 +3700,7 @@ type DeleteIftttIntegrationRequest struct {
 
 func (x *DeleteIftttIntegrationRequest) Reset() {
 	*x = DeleteIftttIntegrationRequest{}
-	mi := &file_api_application_proto_msgTypes[73]
+	mi := &file_api_application_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4189,7 +3712,7 @@ func (x *DeleteIftttIntegrationRequest) String() string {
 func (*DeleteIftttIntegrationRequest) ProtoMessage() {}
 
 func (x *DeleteIftttIntegrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[73]
+	mi := &file_api_application_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4202,7 +3725,7 @@ func (x *DeleteIftttIntegrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteIftttIntegrationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteIftttIntegrationRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{73}
+	return file_api_application_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *DeleteIftttIntegrationRequest) GetApplicationId() string {
@@ -4222,7 +3745,7 @@ type GenerateMqttIntegrationClientCertificateRequest struct {
 
 func (x *GenerateMqttIntegrationClientCertificateRequest) Reset() {
 	*x = GenerateMqttIntegrationClientCertificateRequest{}
-	mi := &file_api_application_proto_msgTypes[74]
+	mi := &file_api_application_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4234,7 +3757,7 @@ func (x *GenerateMqttIntegrationClientCertificateRequest) String() string {
 func (*GenerateMqttIntegrationClientCertificateRequest) ProtoMessage() {}
 
 func (x *GenerateMqttIntegrationClientCertificateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[74]
+	mi := &file_api_application_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4247,7 +3770,7 @@ func (x *GenerateMqttIntegrationClientCertificateRequest) ProtoReflect() protore
 
 // Deprecated: Use GenerateMqttIntegrationClientCertificateRequest.ProtoReflect.Descriptor instead.
 func (*GenerateMqttIntegrationClientCertificateRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{74}
+	return file_api_application_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *GenerateMqttIntegrationClientCertificateRequest) GetApplicationId() string {
@@ -4273,7 +3796,7 @@ type GenerateMqttIntegrationClientCertificateResponse struct {
 
 func (x *GenerateMqttIntegrationClientCertificateResponse) Reset() {
 	*x = GenerateMqttIntegrationClientCertificateResponse{}
-	mi := &file_api_application_proto_msgTypes[75]
+	mi := &file_api_application_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4285,7 +3808,7 @@ func (x *GenerateMqttIntegrationClientCertificateResponse) String() string {
 func (*GenerateMqttIntegrationClientCertificateResponse) ProtoMessage() {}
 
 func (x *GenerateMqttIntegrationClientCertificateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[75]
+	mi := &file_api_application_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4298,7 +3821,7 @@ func (x *GenerateMqttIntegrationClientCertificateResponse) ProtoReflect() protor
 
 // Deprecated: Use GenerateMqttIntegrationClientCertificateResponse.ProtoReflect.Descriptor instead.
 func (*GenerateMqttIntegrationClientCertificateResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{75}
+	return file_api_application_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *GenerateMqttIntegrationClientCertificateResponse) GetTlsCert() string {
@@ -4341,7 +3864,7 @@ type ApplicationDeviceProfileListItem struct {
 
 func (x *ApplicationDeviceProfileListItem) Reset() {
 	*x = ApplicationDeviceProfileListItem{}
-	mi := &file_api_application_proto_msgTypes[76]
+	mi := &file_api_application_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4353,7 +3876,7 @@ func (x *ApplicationDeviceProfileListItem) String() string {
 func (*ApplicationDeviceProfileListItem) ProtoMessage() {}
 
 func (x *ApplicationDeviceProfileListItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[76]
+	mi := &file_api_application_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4366,7 +3889,7 @@ func (x *ApplicationDeviceProfileListItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationDeviceProfileListItem.ProtoReflect.Descriptor instead.
 func (*ApplicationDeviceProfileListItem) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{76}
+	return file_api_application_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *ApplicationDeviceProfileListItem) GetId() string {
@@ -4393,7 +3916,7 @@ type ListApplicationDeviceProfilesRequest struct {
 
 func (x *ListApplicationDeviceProfilesRequest) Reset() {
 	*x = ListApplicationDeviceProfilesRequest{}
-	mi := &file_api_application_proto_msgTypes[77]
+	mi := &file_api_application_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4405,7 +3928,7 @@ func (x *ListApplicationDeviceProfilesRequest) String() string {
 func (*ListApplicationDeviceProfilesRequest) ProtoMessage() {}
 
 func (x *ListApplicationDeviceProfilesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[77]
+	mi := &file_api_application_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4418,7 +3941,7 @@ func (x *ListApplicationDeviceProfilesRequest) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use ListApplicationDeviceProfilesRequest.ProtoReflect.Descriptor instead.
 func (*ListApplicationDeviceProfilesRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{77}
+	return file_api_application_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *ListApplicationDeviceProfilesRequest) GetApplicationId() string {
@@ -4438,7 +3961,7 @@ type ListApplicationDeviceProfilesResponse struct {
 
 func (x *ListApplicationDeviceProfilesResponse) Reset() {
 	*x = ListApplicationDeviceProfilesResponse{}
-	mi := &file_api_application_proto_msgTypes[78]
+	mi := &file_api_application_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4450,7 +3973,7 @@ func (x *ListApplicationDeviceProfilesResponse) String() string {
 func (*ListApplicationDeviceProfilesResponse) ProtoMessage() {}
 
 func (x *ListApplicationDeviceProfilesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[78]
+	mi := &file_api_application_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4463,7 +3986,7 @@ func (x *ListApplicationDeviceProfilesResponse) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use ListApplicationDeviceProfilesResponse.ProtoReflect.Descriptor instead.
 func (*ListApplicationDeviceProfilesResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{78}
+	return file_api_application_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *ListApplicationDeviceProfilesResponse) GetResult() []*ApplicationDeviceProfileListItem {
@@ -4485,7 +4008,7 @@ type ApplicationDeviceTagListItem struct {
 
 func (x *ApplicationDeviceTagListItem) Reset() {
 	*x = ApplicationDeviceTagListItem{}
-	mi := &file_api_application_proto_msgTypes[79]
+	mi := &file_api_application_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4497,7 +4020,7 @@ func (x *ApplicationDeviceTagListItem) String() string {
 func (*ApplicationDeviceTagListItem) ProtoMessage() {}
 
 func (x *ApplicationDeviceTagListItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[79]
+	mi := &file_api_application_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4510,7 +4033,7 @@ func (x *ApplicationDeviceTagListItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationDeviceTagListItem.ProtoReflect.Descriptor instead.
 func (*ApplicationDeviceTagListItem) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{79}
+	return file_api_application_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *ApplicationDeviceTagListItem) GetKey() string {
@@ -4537,7 +4060,7 @@ type ListApplicationDeviceTagsRequest struct {
 
 func (x *ListApplicationDeviceTagsRequest) Reset() {
 	*x = ListApplicationDeviceTagsRequest{}
-	mi := &file_api_application_proto_msgTypes[80]
+	mi := &file_api_application_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4549,7 +4072,7 @@ func (x *ListApplicationDeviceTagsRequest) String() string {
 func (*ListApplicationDeviceTagsRequest) ProtoMessage() {}
 
 func (x *ListApplicationDeviceTagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[80]
+	mi := &file_api_application_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4562,7 +4085,7 @@ func (x *ListApplicationDeviceTagsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListApplicationDeviceTagsRequest.ProtoReflect.Descriptor instead.
 func (*ListApplicationDeviceTagsRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{80}
+	return file_api_application_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *ListApplicationDeviceTagsRequest) GetApplicationId() string {
@@ -4582,7 +4105,7 @@ type ListApplicationDeviceTagsResponse struct {
 
 func (x *ListApplicationDeviceTagsResponse) Reset() {
 	*x = ListApplicationDeviceTagsResponse{}
-	mi := &file_api_application_proto_msgTypes[81]
+	mi := &file_api_application_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4594,7 +4117,7 @@ func (x *ListApplicationDeviceTagsResponse) String() string {
 func (*ListApplicationDeviceTagsResponse) ProtoMessage() {}
 
 func (x *ListApplicationDeviceTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[81]
+	mi := &file_api_application_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4607,7 +4130,7 @@ func (x *ListApplicationDeviceTagsResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use ListApplicationDeviceTagsResponse.ProtoReflect.Descriptor instead.
 func (*ListApplicationDeviceTagsResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{81}
+	return file_api_application_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *ListApplicationDeviceTagsResponse) GetResult() []*ApplicationDeviceTagListItem {
@@ -4739,36 +4262,6 @@ const file_api_application_proto_rawDesc = "" +
 	"!UpdateMyDevicesIntegrationRequest\x12;\n" +
 	"\vintegration\x18\x01 \x01(\v2\x19.api.MyDevicesIntegrationR\vintegration\"J\n" +
 	"!DeleteMyDevicesIntegrationRequest\x12%\n" +
-	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\"\xa3\x01\n" +
-	"\x14LoraCloudIntegration\x12%\n" +
-	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\x12d\n" +
-	"\x1amodem_geolocation_services\x18\x02 \x01(\v2&.api.LoraCloudModemGeolocationServicesR\x18modemGeolocationServices\"\xf2\x05\n" +
-	"!LoraCloudModemGeolocationServices\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\x12#\n" +
-	"\rmodem_enabled\x18\x02 \x01(\bR\fmodemEnabled\x12&\n" +
-	"\x0fforward_f_ports\x18\x10 \x03(\rR\rforwardFPorts\x12'\n" +
-	"\x10gnss_use_rx_time\x18\x05 \x01(\bR\rgnssUseRxTime\x129\n" +
-	"\x19gnss_use_gateway_location\x18\x11 \x01(\bR\x16gnssUseGatewayLocation\x12\x1b\n" +
-	"\tparse_tlv\x18\x06 \x01(\bR\bparseTlv\x124\n" +
-	"\x16geolocation_buffer_ttl\x18\a \x01(\rR\x14geolocationBufferTtl\x12=\n" +
-	"\x1bgeolocation_min_buffer_size\x18\b \x01(\rR\x18geolocationMinBufferSize\x12)\n" +
-	"\x10geolocation_tdoa\x18\t \x01(\bR\x0fgeolocationTdoa\x12)\n" +
-	"\x10geolocation_rssi\x18\n" +
-	" \x01(\bR\x0fgeolocationRssi\x12)\n" +
-	"\x10geolocation_gnss\x18\v \x01(\bR\x0fgeolocationGnss\x12C\n" +
-	"\x1egeolocation_gnss_payload_field\x18\f \x01(\tR\x1bgeolocationGnssPayloadField\x12>\n" +
-	"\x1cgeolocation_gnss_use_rx_time\x18\r \x01(\bR\x18geolocationGnssUseRxTime\x12)\n" +
-	"\x10geolocation_wifi\x18\x0e \x01(\bR\x0fgeolocationWifi\x12C\n" +
-	"\x1egeolocation_wifi_payload_field\x18\x0f \x01(\tR\x1bgeolocationWifiPayloadField\"`\n" +
-	"!CreateLoraCloudIntegrationRequest\x12;\n" +
-	"\vintegration\x18\x01 \x01(\v2\x19.api.LoraCloudIntegrationR\vintegration\"G\n" +
-	"\x1eGetLoraCloudIntegrationRequest\x12%\n" +
-	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\"^\n" +
-	"\x1fGetLoraCloudIntegrationResponse\x12;\n" +
-	"\vintegration\x18\x01 \x01(\v2\x19.api.LoraCloudIntegrationR\vintegration\"`\n" +
-	"!UpdateLoraCloudIntegrationRequest\x12;\n" +
-	"\vintegration\x18\x01 \x01(\v2\x19.api.LoraCloudIntegrationR\vintegration\"J\n" +
-	"!DeleteLoraCloudIntegrationRequest\x12%\n" +
 	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\"\xd1\x01\n" +
 	"\x14GcpPubSubIntegration\x12%\n" +
 	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\x12)\n" +
@@ -4874,15 +4367,13 @@ const file_api_application_proto_rawDesc = "" +
 	"\x06result\x18\x01 \x03(\v2!.api.ApplicationDeviceTagListItemR\x06result*\"\n" +
 	"\bEncoding\x12\b\n" +
 	"\x04JSON\x10\x00\x12\f\n" +
-	"\bPROTOBUF\x10\x01*\xbf\x01\n" +
+	"\bPROTOBUF\x10\x01*\xaf\x01\n" +
 	"\x0fIntegrationKind\x12\b\n" +
 	"\x04HTTP\x10\x00\x12\r\n" +
 	"\tINFLUX_DB\x10\x01\x12\x10\n" +
 	"\fTHINGS_BOARD\x10\x02\x12\x0e\n" +
 	"\n" +
-	"MY_DEVICES\x10\x03\x12\x0e\n" +
-	"\n" +
-	"LORA_CLOUD\x10\x04\x12\x0f\n" +
+	"MY_DEVICES\x10\x03\x12\x0f\n" +
 	"\vGCP_PUB_SUB\x10\x05\x12\v\n" +
 	"\aAWS_SNS\x10\x06\x12\x15\n" +
 	"\x11AZURE_SERVICE_BUS\x10\a\x12\x10\n" +
@@ -4901,7 +4392,7 @@ const file_api_application_proto_rawDesc = "" +
 	"\n" +
 	"INFLUXDB_1\x10\x00\x12\x0e\n" +
 	"\n" +
-	"INFLUXDB_2\x10\x012\xfc>\n" +
+	"INFLUXDB_2\x10\x012\xce9\n" +
 	"\x12ApplicationService\x12e\n" +
 	"\x06Create\x12\x1d.api.CreateApplicationRequest\x1a\x1e.api.CreateApplicationResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/api/applications\x12^\n" +
 	"\x03Get\x12\x1a.api.GetApplicationRequest\x1a\x1b.api.GetApplicationResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/applications/{id}\x12n\n" +
@@ -4924,11 +4415,7 @@ const file_api_application_proto_rawDesc = "" +
 	"\x1aCreateMyDevicesIntegration\x12&.api.CreateMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"P\x82\xd3\xe4\x93\x02J:\x01*\"E/api/applications/{integration.application_id}/integrations/mydevices\x12\xa7\x01\n" +
 	"\x17GetMyDevicesIntegration\x12#.api.GetMyDevicesIntegrationRequest\x1a$.api.GetMyDevicesIntegrationResponse\"A\x82\xd3\xe4\x93\x02;\x129/api/applications/{application_id}/integrations/mydevices\x12\xae\x01\n" +
 	"\x1aUpdateMyDevicesIntegration\x12&.api.UpdateMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"P\x82\xd3\xe4\x93\x02J:\x01*\x1aE/api/applications/{integration.application_id}/integrations/mydevices\x12\x9f\x01\n" +
-	"\x1aDeleteMyDevicesIntegration\x12&.api.DeleteMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"A\x82\xd3\xe4\x93\x02;*9/api/applications/{application_id}/integrations/mydevices\x12\xae\x01\n" +
-	"\x1aCreateLoraCloudIntegration\x12&.api.CreateLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"P\x82\xd3\xe4\x93\x02J:\x01*\"E/api/applications/{integration.application_id}/integrations/loracloud\x12\xa7\x01\n" +
-	"\x17GetLoraCloudIntegration\x12#.api.GetLoraCloudIntegrationRequest\x1a$.api.GetLoraCloudIntegrationResponse\"A\x82\xd3\xe4\x93\x02;\x129/api/applications/{application_id}/integrations/loracloud\x12\xae\x01\n" +
-	"\x1aUpdateLoraCloudIntegration\x12&.api.UpdateLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"P\x82\xd3\xe4\x93\x02J:\x01*\x1aE/api/applications/{integration.application_id}/integrations/loracloud\x12\x9f\x01\n" +
-	"\x1aDeleteLoraCloudIntegration\x12&.api.DeleteLoraCloudIntegrationRequest\x1a\x16.google.protobuf.Empty\"A\x82\xd3\xe4\x93\x02;*9/api/applications/{application_id}/integrations/loracloud\x12\xb0\x01\n" +
+	"\x1aDeleteMyDevicesIntegration\x12&.api.DeleteMyDevicesIntegrationRequest\x1a\x16.google.protobuf.Empty\"A\x82\xd3\xe4\x93\x02;*9/api/applications/{application_id}/integrations/mydevices\x12\xb0\x01\n" +
 	"\x1aCreateGcpPubSubIntegration\x12&.api.CreateGcpPubSubIntegrationRequest\x1a\x16.google.protobuf.Empty\"R\x82\xd3\xe4\x93\x02L:\x01*\"G/api/applications/{integration.application_id}/integrations/gcp-pub-sub\x12\xa9\x01\n" +
 	"\x17GetGcpPubSubIntegration\x12#.api.GetGcpPubSubIntegrationRequest\x1a$.api.GetGcpPubSubIntegrationResponse\"C\x82\xd3\xe4\x93\x02=\x12;/api/applications/{application_id}/integrations/gcp-pub-sub\x12\xb0\x01\n" +
 	"\x1aUpdateGcpPubSubIntegration\x12&.api.UpdateGcpPubSubIntegrationRequest\x1a\x16.google.protobuf.Empty\"R\x82\xd3\xe4\x93\x02L:\x01*\x1aG/api/applications/{integration.application_id}/integrations/gcp-pub-sub\x12\xa1\x01\n" +
@@ -4967,7 +4454,7 @@ func file_api_application_proto_rawDescGZIP() []byte {
 }
 
 var file_api_application_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_api_application_proto_msgTypes = make([]protoimpl.MessageInfo, 84)
+var file_api_application_proto_msgTypes = make([]protoimpl.MessageInfo, 77)
 var file_api_application_proto_goTypes = []any{
 	(Encoding)(0),                                            // 0: api.Encoding
 	(IntegrationKind)(0),                                     // 1: api.IntegrationKind
@@ -5010,212 +4497,193 @@ var file_api_application_proto_goTypes = []any{
 	(*GetMyDevicesIntegrationResponse)(nil),                  // 38: api.GetMyDevicesIntegrationResponse
 	(*UpdateMyDevicesIntegrationRequest)(nil),                // 39: api.UpdateMyDevicesIntegrationRequest
 	(*DeleteMyDevicesIntegrationRequest)(nil),                // 40: api.DeleteMyDevicesIntegrationRequest
-	(*LoraCloudIntegration)(nil),                             // 41: api.LoraCloudIntegration
-	(*LoraCloudModemGeolocationServices)(nil),                // 42: api.LoraCloudModemGeolocationServices
-	(*CreateLoraCloudIntegrationRequest)(nil),                // 43: api.CreateLoraCloudIntegrationRequest
-	(*GetLoraCloudIntegrationRequest)(nil),                   // 44: api.GetLoraCloudIntegrationRequest
-	(*GetLoraCloudIntegrationResponse)(nil),                  // 45: api.GetLoraCloudIntegrationResponse
-	(*UpdateLoraCloudIntegrationRequest)(nil),                // 46: api.UpdateLoraCloudIntegrationRequest
-	(*DeleteLoraCloudIntegrationRequest)(nil),                // 47: api.DeleteLoraCloudIntegrationRequest
-	(*GcpPubSubIntegration)(nil),                             // 48: api.GcpPubSubIntegration
-	(*CreateGcpPubSubIntegrationRequest)(nil),                // 49: api.CreateGcpPubSubIntegrationRequest
-	(*GetGcpPubSubIntegrationRequest)(nil),                   // 50: api.GetGcpPubSubIntegrationRequest
-	(*GetGcpPubSubIntegrationResponse)(nil),                  // 51: api.GetGcpPubSubIntegrationResponse
-	(*UpdateGcpPubSubIntegrationRequest)(nil),                // 52: api.UpdateGcpPubSubIntegrationRequest
-	(*DeleteGcpPubSubIntegrationRequest)(nil),                // 53: api.DeleteGcpPubSubIntegrationRequest
-	(*AwsSnsIntegration)(nil),                                // 54: api.AwsSnsIntegration
-	(*CreateAwsSnsIntegrationRequest)(nil),                   // 55: api.CreateAwsSnsIntegrationRequest
-	(*GetAwsSnsIntegrationRequest)(nil),                      // 56: api.GetAwsSnsIntegrationRequest
-	(*GetAwsSnsIntegrationResponse)(nil),                     // 57: api.GetAwsSnsIntegrationResponse
-	(*UpdateAwsSnsIntegrationRequest)(nil),                   // 58: api.UpdateAwsSnsIntegrationRequest
-	(*DeleteAwsSnsIntegrationRequest)(nil),                   // 59: api.DeleteAwsSnsIntegrationRequest
-	(*AzureServiceBusIntegration)(nil),                       // 60: api.AzureServiceBusIntegration
-	(*CreateAzureServiceBusIntegrationRequest)(nil),          // 61: api.CreateAzureServiceBusIntegrationRequest
-	(*GetAzureServiceBusIntegrationRequest)(nil),             // 62: api.GetAzureServiceBusIntegrationRequest
-	(*GetAzureServiceBusIntegrationResponse)(nil),            // 63: api.GetAzureServiceBusIntegrationResponse
-	(*UpdateAzureServiceBusIntegrationRequest)(nil),          // 64: api.UpdateAzureServiceBusIntegrationRequest
-	(*DeleteAzureServiceBusIntegrationRequest)(nil),          // 65: api.DeleteAzureServiceBusIntegrationRequest
-	(*PilotThingsIntegration)(nil),                           // 66: api.PilotThingsIntegration
-	(*CreatePilotThingsIntegrationRequest)(nil),              // 67: api.CreatePilotThingsIntegrationRequest
-	(*GetPilotThingsIntegrationRequest)(nil),                 // 68: api.GetPilotThingsIntegrationRequest
-	(*GetPilotThingsIntegrationResponse)(nil),                // 69: api.GetPilotThingsIntegrationResponse
-	(*UpdatePilotThingsIntegrationRequest)(nil),              // 70: api.UpdatePilotThingsIntegrationRequest
-	(*DeletePilotThingsIntegrationRequest)(nil),              // 71: api.DeletePilotThingsIntegrationRequest
-	(*IftttIntegration)(nil),                                 // 72: api.IftttIntegration
-	(*CreateIftttIntegrationRequest)(nil),                    // 73: api.CreateIftttIntegrationRequest
-	(*GetIftttIntegrationRequest)(nil),                       // 74: api.GetIftttIntegrationRequest
-	(*GetIftttIntegrationResponse)(nil),                      // 75: api.GetIftttIntegrationResponse
-	(*UpdateIftttIntegrationRequest)(nil),                    // 76: api.UpdateIftttIntegrationRequest
-	(*DeleteIftttIntegrationRequest)(nil),                    // 77: api.DeleteIftttIntegrationRequest
-	(*GenerateMqttIntegrationClientCertificateRequest)(nil),  // 78: api.GenerateMqttIntegrationClientCertificateRequest
-	(*GenerateMqttIntegrationClientCertificateResponse)(nil), // 79: api.GenerateMqttIntegrationClientCertificateResponse
-	(*ApplicationDeviceProfileListItem)(nil),                 // 80: api.ApplicationDeviceProfileListItem
-	(*ListApplicationDeviceProfilesRequest)(nil),             // 81: api.ListApplicationDeviceProfilesRequest
-	(*ListApplicationDeviceProfilesResponse)(nil),            // 82: api.ListApplicationDeviceProfilesResponse
-	(*ApplicationDeviceTagListItem)(nil),                     // 83: api.ApplicationDeviceTagListItem
-	(*ListApplicationDeviceTagsRequest)(nil),                 // 84: api.ListApplicationDeviceTagsRequest
-	(*ListApplicationDeviceTagsResponse)(nil),                // 85: api.ListApplicationDeviceTagsResponse
-	nil,                           // 86: api.Application.TagsEntry
-	nil,                           // 87: api.HttpIntegration.HeadersEntry
-	(*timestamppb.Timestamp)(nil), // 88: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),         // 89: google.protobuf.Empty
+	(*GcpPubSubIntegration)(nil),                             // 41: api.GcpPubSubIntegration
+	(*CreateGcpPubSubIntegrationRequest)(nil),                // 42: api.CreateGcpPubSubIntegrationRequest
+	(*GetGcpPubSubIntegrationRequest)(nil),                   // 43: api.GetGcpPubSubIntegrationRequest
+	(*GetGcpPubSubIntegrationResponse)(nil),                  // 44: api.GetGcpPubSubIntegrationResponse
+	(*UpdateGcpPubSubIntegrationRequest)(nil),                // 45: api.UpdateGcpPubSubIntegrationRequest
+	(*DeleteGcpPubSubIntegrationRequest)(nil),                // 46: api.DeleteGcpPubSubIntegrationRequest
+	(*AwsSnsIntegration)(nil),                                // 47: api.AwsSnsIntegration
+	(*CreateAwsSnsIntegrationRequest)(nil),                   // 48: api.CreateAwsSnsIntegrationRequest
+	(*GetAwsSnsIntegrationRequest)(nil),                      // 49: api.GetAwsSnsIntegrationRequest
+	(*GetAwsSnsIntegrationResponse)(nil),                     // 50: api.GetAwsSnsIntegrationResponse
+	(*UpdateAwsSnsIntegrationRequest)(nil),                   // 51: api.UpdateAwsSnsIntegrationRequest
+	(*DeleteAwsSnsIntegrationRequest)(nil),                   // 52: api.DeleteAwsSnsIntegrationRequest
+	(*AzureServiceBusIntegration)(nil),                       // 53: api.AzureServiceBusIntegration
+	(*CreateAzureServiceBusIntegrationRequest)(nil),          // 54: api.CreateAzureServiceBusIntegrationRequest
+	(*GetAzureServiceBusIntegrationRequest)(nil),             // 55: api.GetAzureServiceBusIntegrationRequest
+	(*GetAzureServiceBusIntegrationResponse)(nil),            // 56: api.GetAzureServiceBusIntegrationResponse
+	(*UpdateAzureServiceBusIntegrationRequest)(nil),          // 57: api.UpdateAzureServiceBusIntegrationRequest
+	(*DeleteAzureServiceBusIntegrationRequest)(nil),          // 58: api.DeleteAzureServiceBusIntegrationRequest
+	(*PilotThingsIntegration)(nil),                           // 59: api.PilotThingsIntegration
+	(*CreatePilotThingsIntegrationRequest)(nil),              // 60: api.CreatePilotThingsIntegrationRequest
+	(*GetPilotThingsIntegrationRequest)(nil),                 // 61: api.GetPilotThingsIntegrationRequest
+	(*GetPilotThingsIntegrationResponse)(nil),                // 62: api.GetPilotThingsIntegrationResponse
+	(*UpdatePilotThingsIntegrationRequest)(nil),              // 63: api.UpdatePilotThingsIntegrationRequest
+	(*DeletePilotThingsIntegrationRequest)(nil),              // 64: api.DeletePilotThingsIntegrationRequest
+	(*IftttIntegration)(nil),                                 // 65: api.IftttIntegration
+	(*CreateIftttIntegrationRequest)(nil),                    // 66: api.CreateIftttIntegrationRequest
+	(*GetIftttIntegrationRequest)(nil),                       // 67: api.GetIftttIntegrationRequest
+	(*GetIftttIntegrationResponse)(nil),                      // 68: api.GetIftttIntegrationResponse
+	(*UpdateIftttIntegrationRequest)(nil),                    // 69: api.UpdateIftttIntegrationRequest
+	(*DeleteIftttIntegrationRequest)(nil),                    // 70: api.DeleteIftttIntegrationRequest
+	(*GenerateMqttIntegrationClientCertificateRequest)(nil),  // 71: api.GenerateMqttIntegrationClientCertificateRequest
+	(*GenerateMqttIntegrationClientCertificateResponse)(nil), // 72: api.GenerateMqttIntegrationClientCertificateResponse
+	(*ApplicationDeviceProfileListItem)(nil),                 // 73: api.ApplicationDeviceProfileListItem
+	(*ListApplicationDeviceProfilesRequest)(nil),             // 74: api.ListApplicationDeviceProfilesRequest
+	(*ListApplicationDeviceProfilesResponse)(nil),            // 75: api.ListApplicationDeviceProfilesResponse
+	(*ApplicationDeviceTagListItem)(nil),                     // 76: api.ApplicationDeviceTagListItem
+	(*ListApplicationDeviceTagsRequest)(nil),                 // 77: api.ListApplicationDeviceTagsRequest
+	(*ListApplicationDeviceTagsResponse)(nil),                // 78: api.ListApplicationDeviceTagsResponse
+	nil,                           // 79: api.Application.TagsEntry
+	nil,                           // 80: api.HttpIntegration.HeadersEntry
+	(*timestamppb.Timestamp)(nil), // 81: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),         // 82: google.protobuf.Empty
 }
 var file_api_application_proto_depIdxs = []int32{
-	86,  // 0: api.Application.tags:type_name -> api.Application.TagsEntry
-	88,  // 1: api.ApplicationListItem.created_at:type_name -> google.protobuf.Timestamp
-	88,  // 2: api.ApplicationListItem.updated_at:type_name -> google.protobuf.Timestamp
-	4,   // 3: api.CreateApplicationRequest.application:type_name -> api.Application
-	4,   // 4: api.GetApplicationResponse.application:type_name -> api.Application
-	88,  // 5: api.GetApplicationResponse.created_at:type_name -> google.protobuf.Timestamp
-	88,  // 6: api.GetApplicationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	4,   // 7: api.UpdateApplicationRequest.application:type_name -> api.Application
-	5,   // 8: api.ListApplicationsResponse.result:type_name -> api.ApplicationListItem
-	1,   // 9: api.IntegrationListItem.kind:type_name -> api.IntegrationKind
-	15,  // 10: api.ListIntegrationsResponse.result:type_name -> api.IntegrationListItem
-	87,  // 11: api.HttpIntegration.headers:type_name -> api.HttpIntegration.HeadersEntry
-	0,   // 12: api.HttpIntegration.encoding:type_name -> api.Encoding
-	17,  // 13: api.CreateHttpIntegrationRequest.integration:type_name -> api.HttpIntegration
-	17,  // 14: api.GetHttpIntegrationResponse.integration:type_name -> api.HttpIntegration
-	17,  // 15: api.UpdateHttpIntegrationRequest.integration:type_name -> api.HttpIntegration
-	2,   // 16: api.InfluxDbIntegration.precision:type_name -> api.InfluxDbPrecision
-	3,   // 17: api.InfluxDbIntegration.version:type_name -> api.InfluxDbVersion
-	23,  // 18: api.CreateInfluxDbIntegrationRequest.integration:type_name -> api.InfluxDbIntegration
-	23,  // 19: api.GetInfluxDbIntegrationResponse.integration:type_name -> api.InfluxDbIntegration
-	23,  // 20: api.UpdateInfluxDbIntegrationRequest.integration:type_name -> api.InfluxDbIntegration
-	29,  // 21: api.CreateThingsBoardIntegrationRequest.integration:type_name -> api.ThingsBoardIntegration
-	29,  // 22: api.GetThingsBoardIntegrationResponse.integration:type_name -> api.ThingsBoardIntegration
-	29,  // 23: api.UpdateThingsBoardIntegrationRequest.integration:type_name -> api.ThingsBoardIntegration
-	35,  // 24: api.CreateMyDevicesIntegrationRequest.integration:type_name -> api.MyDevicesIntegration
-	35,  // 25: api.GetMyDevicesIntegrationResponse.integration:type_name -> api.MyDevicesIntegration
-	35,  // 26: api.UpdateMyDevicesIntegrationRequest.integration:type_name -> api.MyDevicesIntegration
-	42,  // 27: api.LoraCloudIntegration.modem_geolocation_services:type_name -> api.LoraCloudModemGeolocationServices
-	41,  // 28: api.CreateLoraCloudIntegrationRequest.integration:type_name -> api.LoraCloudIntegration
-	41,  // 29: api.GetLoraCloudIntegrationResponse.integration:type_name -> api.LoraCloudIntegration
-	41,  // 30: api.UpdateLoraCloudIntegrationRequest.integration:type_name -> api.LoraCloudIntegration
-	0,   // 31: api.GcpPubSubIntegration.encoding:type_name -> api.Encoding
-	48,  // 32: api.CreateGcpPubSubIntegrationRequest.integration:type_name -> api.GcpPubSubIntegration
-	48,  // 33: api.GetGcpPubSubIntegrationResponse.integration:type_name -> api.GcpPubSubIntegration
-	48,  // 34: api.UpdateGcpPubSubIntegrationRequest.integration:type_name -> api.GcpPubSubIntegration
-	0,   // 35: api.AwsSnsIntegration.encoding:type_name -> api.Encoding
-	54,  // 36: api.CreateAwsSnsIntegrationRequest.integration:type_name -> api.AwsSnsIntegration
-	54,  // 37: api.GetAwsSnsIntegrationResponse.integration:type_name -> api.AwsSnsIntegration
-	54,  // 38: api.UpdateAwsSnsIntegrationRequest.integration:type_name -> api.AwsSnsIntegration
-	0,   // 39: api.AzureServiceBusIntegration.encoding:type_name -> api.Encoding
-	60,  // 40: api.CreateAzureServiceBusIntegrationRequest.integration:type_name -> api.AzureServiceBusIntegration
-	60,  // 41: api.GetAzureServiceBusIntegrationResponse.integration:type_name -> api.AzureServiceBusIntegration
-	60,  // 42: api.UpdateAzureServiceBusIntegrationRequest.integration:type_name -> api.AzureServiceBusIntegration
-	66,  // 43: api.CreatePilotThingsIntegrationRequest.integration:type_name -> api.PilotThingsIntegration
-	66,  // 44: api.GetPilotThingsIntegrationResponse.integration:type_name -> api.PilotThingsIntegration
-	66,  // 45: api.UpdatePilotThingsIntegrationRequest.integration:type_name -> api.PilotThingsIntegration
-	72,  // 46: api.CreateIftttIntegrationRequest.integration:type_name -> api.IftttIntegration
-	72,  // 47: api.GetIftttIntegrationResponse.integration:type_name -> api.IftttIntegration
-	72,  // 48: api.UpdateIftttIntegrationRequest.integration:type_name -> api.IftttIntegration
-	88,  // 49: api.GenerateMqttIntegrationClientCertificateResponse.expires_at:type_name -> google.protobuf.Timestamp
-	80,  // 50: api.ListApplicationDeviceProfilesResponse.result:type_name -> api.ApplicationDeviceProfileListItem
-	83,  // 51: api.ListApplicationDeviceTagsResponse.result:type_name -> api.ApplicationDeviceTagListItem
-	6,   // 52: api.ApplicationService.Create:input_type -> api.CreateApplicationRequest
-	8,   // 53: api.ApplicationService.Get:input_type -> api.GetApplicationRequest
-	10,  // 54: api.ApplicationService.Update:input_type -> api.UpdateApplicationRequest
-	11,  // 55: api.ApplicationService.Delete:input_type -> api.DeleteApplicationRequest
-	12,  // 56: api.ApplicationService.List:input_type -> api.ListApplicationsRequest
-	14,  // 57: api.ApplicationService.ListIntegrations:input_type -> api.ListIntegrationsRequest
-	18,  // 58: api.ApplicationService.CreateHttpIntegration:input_type -> api.CreateHttpIntegrationRequest
-	19,  // 59: api.ApplicationService.GetHttpIntegration:input_type -> api.GetHttpIntegrationRequest
-	21,  // 60: api.ApplicationService.UpdateHttpIntegration:input_type -> api.UpdateHttpIntegrationRequest
-	22,  // 61: api.ApplicationService.DeleteHttpIntegration:input_type -> api.DeleteHttpIntegrationRequest
-	24,  // 62: api.ApplicationService.CreateInfluxDbIntegration:input_type -> api.CreateInfluxDbIntegrationRequest
-	25,  // 63: api.ApplicationService.GetInfluxDbIntegration:input_type -> api.GetInfluxDbIntegrationRequest
-	27,  // 64: api.ApplicationService.UpdateInfluxDbIntegration:input_type -> api.UpdateInfluxDbIntegrationRequest
-	28,  // 65: api.ApplicationService.DeleteInfluxDbIntegration:input_type -> api.DeleteInfluxDbIntegrationRequest
-	30,  // 66: api.ApplicationService.CreateThingsBoardIntegration:input_type -> api.CreateThingsBoardIntegrationRequest
-	31,  // 67: api.ApplicationService.GetThingsBoardIntegration:input_type -> api.GetThingsBoardIntegrationRequest
-	33,  // 68: api.ApplicationService.UpdateThingsBoardIntegration:input_type -> api.UpdateThingsBoardIntegrationRequest
-	34,  // 69: api.ApplicationService.DeleteThingsBoardIntegration:input_type -> api.DeleteThingsBoardIntegrationRequest
-	36,  // 70: api.ApplicationService.CreateMyDevicesIntegration:input_type -> api.CreateMyDevicesIntegrationRequest
-	37,  // 71: api.ApplicationService.GetMyDevicesIntegration:input_type -> api.GetMyDevicesIntegrationRequest
-	39,  // 72: api.ApplicationService.UpdateMyDevicesIntegration:input_type -> api.UpdateMyDevicesIntegrationRequest
-	40,  // 73: api.ApplicationService.DeleteMyDevicesIntegration:input_type -> api.DeleteMyDevicesIntegrationRequest
-	43,  // 74: api.ApplicationService.CreateLoraCloudIntegration:input_type -> api.CreateLoraCloudIntegrationRequest
-	44,  // 75: api.ApplicationService.GetLoraCloudIntegration:input_type -> api.GetLoraCloudIntegrationRequest
-	46,  // 76: api.ApplicationService.UpdateLoraCloudIntegration:input_type -> api.UpdateLoraCloudIntegrationRequest
-	47,  // 77: api.ApplicationService.DeleteLoraCloudIntegration:input_type -> api.DeleteLoraCloudIntegrationRequest
-	49,  // 78: api.ApplicationService.CreateGcpPubSubIntegration:input_type -> api.CreateGcpPubSubIntegrationRequest
-	50,  // 79: api.ApplicationService.GetGcpPubSubIntegration:input_type -> api.GetGcpPubSubIntegrationRequest
-	52,  // 80: api.ApplicationService.UpdateGcpPubSubIntegration:input_type -> api.UpdateGcpPubSubIntegrationRequest
-	53,  // 81: api.ApplicationService.DeleteGcpPubSubIntegration:input_type -> api.DeleteGcpPubSubIntegrationRequest
-	55,  // 82: api.ApplicationService.CreateAwsSnsIntegration:input_type -> api.CreateAwsSnsIntegrationRequest
-	56,  // 83: api.ApplicationService.GetAwsSnsIntegration:input_type -> api.GetAwsSnsIntegrationRequest
-	58,  // 84: api.ApplicationService.UpdateAwsSnsIntegration:input_type -> api.UpdateAwsSnsIntegrationRequest
-	59,  // 85: api.ApplicationService.DeleteAwsSnsIntegration:input_type -> api.DeleteAwsSnsIntegrationRequest
-	61,  // 86: api.ApplicationService.CreateAzureServiceBusIntegration:input_type -> api.CreateAzureServiceBusIntegrationRequest
-	62,  // 87: api.ApplicationService.GetAzureServiceBusIntegration:input_type -> api.GetAzureServiceBusIntegrationRequest
-	64,  // 88: api.ApplicationService.UpdateAzureServiceBusIntegration:input_type -> api.UpdateAzureServiceBusIntegrationRequest
-	65,  // 89: api.ApplicationService.DeleteAzureServiceBusIntegration:input_type -> api.DeleteAzureServiceBusIntegrationRequest
-	67,  // 90: api.ApplicationService.CreatePilotThingsIntegration:input_type -> api.CreatePilotThingsIntegrationRequest
-	68,  // 91: api.ApplicationService.GetPilotThingsIntegration:input_type -> api.GetPilotThingsIntegrationRequest
-	70,  // 92: api.ApplicationService.UpdatePilotThingsIntegration:input_type -> api.UpdatePilotThingsIntegrationRequest
-	71,  // 93: api.ApplicationService.DeletePilotThingsIntegration:input_type -> api.DeletePilotThingsIntegrationRequest
-	73,  // 94: api.ApplicationService.CreateIftttIntegration:input_type -> api.CreateIftttIntegrationRequest
-	74,  // 95: api.ApplicationService.GetIftttIntegration:input_type -> api.GetIftttIntegrationRequest
-	76,  // 96: api.ApplicationService.UpdateIftttIntegration:input_type -> api.UpdateIftttIntegrationRequest
-	77,  // 97: api.ApplicationService.DeleteIftttIntegration:input_type -> api.DeleteIftttIntegrationRequest
-	78,  // 98: api.ApplicationService.GenerateMqttIntegrationClientCertificate:input_type -> api.GenerateMqttIntegrationClientCertificateRequest
-	81,  // 99: api.ApplicationService.ListDeviceProfiles:input_type -> api.ListApplicationDeviceProfilesRequest
-	84,  // 100: api.ApplicationService.ListDeviceTags:input_type -> api.ListApplicationDeviceTagsRequest
-	7,   // 101: api.ApplicationService.Create:output_type -> api.CreateApplicationResponse
-	9,   // 102: api.ApplicationService.Get:output_type -> api.GetApplicationResponse
-	89,  // 103: api.ApplicationService.Update:output_type -> google.protobuf.Empty
-	89,  // 104: api.ApplicationService.Delete:output_type -> google.protobuf.Empty
-	13,  // 105: api.ApplicationService.List:output_type -> api.ListApplicationsResponse
-	16,  // 106: api.ApplicationService.ListIntegrations:output_type -> api.ListIntegrationsResponse
-	89,  // 107: api.ApplicationService.CreateHttpIntegration:output_type -> google.protobuf.Empty
-	20,  // 108: api.ApplicationService.GetHttpIntegration:output_type -> api.GetHttpIntegrationResponse
-	89,  // 109: api.ApplicationService.UpdateHttpIntegration:output_type -> google.protobuf.Empty
-	89,  // 110: api.ApplicationService.DeleteHttpIntegration:output_type -> google.protobuf.Empty
-	89,  // 111: api.ApplicationService.CreateInfluxDbIntegration:output_type -> google.protobuf.Empty
-	26,  // 112: api.ApplicationService.GetInfluxDbIntegration:output_type -> api.GetInfluxDbIntegrationResponse
-	89,  // 113: api.ApplicationService.UpdateInfluxDbIntegration:output_type -> google.protobuf.Empty
-	89,  // 114: api.ApplicationService.DeleteInfluxDbIntegration:output_type -> google.protobuf.Empty
-	89,  // 115: api.ApplicationService.CreateThingsBoardIntegration:output_type -> google.protobuf.Empty
-	32,  // 116: api.ApplicationService.GetThingsBoardIntegration:output_type -> api.GetThingsBoardIntegrationResponse
-	89,  // 117: api.ApplicationService.UpdateThingsBoardIntegration:output_type -> google.protobuf.Empty
-	89,  // 118: api.ApplicationService.DeleteThingsBoardIntegration:output_type -> google.protobuf.Empty
-	89,  // 119: api.ApplicationService.CreateMyDevicesIntegration:output_type -> google.protobuf.Empty
-	38,  // 120: api.ApplicationService.GetMyDevicesIntegration:output_type -> api.GetMyDevicesIntegrationResponse
-	89,  // 121: api.ApplicationService.UpdateMyDevicesIntegration:output_type -> google.protobuf.Empty
-	89,  // 122: api.ApplicationService.DeleteMyDevicesIntegration:output_type -> google.protobuf.Empty
-	89,  // 123: api.ApplicationService.CreateLoraCloudIntegration:output_type -> google.protobuf.Empty
-	45,  // 124: api.ApplicationService.GetLoraCloudIntegration:output_type -> api.GetLoraCloudIntegrationResponse
-	89,  // 125: api.ApplicationService.UpdateLoraCloudIntegration:output_type -> google.protobuf.Empty
-	89,  // 126: api.ApplicationService.DeleteLoraCloudIntegration:output_type -> google.protobuf.Empty
-	89,  // 127: api.ApplicationService.CreateGcpPubSubIntegration:output_type -> google.protobuf.Empty
-	51,  // 128: api.ApplicationService.GetGcpPubSubIntegration:output_type -> api.GetGcpPubSubIntegrationResponse
-	89,  // 129: api.ApplicationService.UpdateGcpPubSubIntegration:output_type -> google.protobuf.Empty
-	89,  // 130: api.ApplicationService.DeleteGcpPubSubIntegration:output_type -> google.protobuf.Empty
-	89,  // 131: api.ApplicationService.CreateAwsSnsIntegration:output_type -> google.protobuf.Empty
-	57,  // 132: api.ApplicationService.GetAwsSnsIntegration:output_type -> api.GetAwsSnsIntegrationResponse
-	89,  // 133: api.ApplicationService.UpdateAwsSnsIntegration:output_type -> google.protobuf.Empty
-	89,  // 134: api.ApplicationService.DeleteAwsSnsIntegration:output_type -> google.protobuf.Empty
-	89,  // 135: api.ApplicationService.CreateAzureServiceBusIntegration:output_type -> google.protobuf.Empty
-	63,  // 136: api.ApplicationService.GetAzureServiceBusIntegration:output_type -> api.GetAzureServiceBusIntegrationResponse
-	89,  // 137: api.ApplicationService.UpdateAzureServiceBusIntegration:output_type -> google.protobuf.Empty
-	89,  // 138: api.ApplicationService.DeleteAzureServiceBusIntegration:output_type -> google.protobuf.Empty
-	89,  // 139: api.ApplicationService.CreatePilotThingsIntegration:output_type -> google.protobuf.Empty
-	69,  // 140: api.ApplicationService.GetPilotThingsIntegration:output_type -> api.GetPilotThingsIntegrationResponse
-	89,  // 141: api.ApplicationService.UpdatePilotThingsIntegration:output_type -> google.protobuf.Empty
-	89,  // 142: api.ApplicationService.DeletePilotThingsIntegration:output_type -> google.protobuf.Empty
-	89,  // 143: api.ApplicationService.CreateIftttIntegration:output_type -> google.protobuf.Empty
-	75,  // 144: api.ApplicationService.GetIftttIntegration:output_type -> api.GetIftttIntegrationResponse
-	89,  // 145: api.ApplicationService.UpdateIftttIntegration:output_type -> google.protobuf.Empty
-	89,  // 146: api.ApplicationService.DeleteIftttIntegration:output_type -> google.protobuf.Empty
-	79,  // 147: api.ApplicationService.GenerateMqttIntegrationClientCertificate:output_type -> api.GenerateMqttIntegrationClientCertificateResponse
-	82,  // 148: api.ApplicationService.ListDeviceProfiles:output_type -> api.ListApplicationDeviceProfilesResponse
-	85,  // 149: api.ApplicationService.ListDeviceTags:output_type -> api.ListApplicationDeviceTagsResponse
-	101, // [101:150] is the sub-list for method output_type
-	52,  // [52:101] is the sub-list for method input_type
-	52,  // [52:52] is the sub-list for extension type_name
-	52,  // [52:52] is the sub-list for extension extendee
-	0,   // [0:52] is the sub-list for field type_name
+	79, // 0: api.Application.tags:type_name -> api.Application.TagsEntry
+	81, // 1: api.ApplicationListItem.created_at:type_name -> google.protobuf.Timestamp
+	81, // 2: api.ApplicationListItem.updated_at:type_name -> google.protobuf.Timestamp
+	4,  // 3: api.CreateApplicationRequest.application:type_name -> api.Application
+	4,  // 4: api.GetApplicationResponse.application:type_name -> api.Application
+	81, // 5: api.GetApplicationResponse.created_at:type_name -> google.protobuf.Timestamp
+	81, // 6: api.GetApplicationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	4,  // 7: api.UpdateApplicationRequest.application:type_name -> api.Application
+	5,  // 8: api.ListApplicationsResponse.result:type_name -> api.ApplicationListItem
+	1,  // 9: api.IntegrationListItem.kind:type_name -> api.IntegrationKind
+	15, // 10: api.ListIntegrationsResponse.result:type_name -> api.IntegrationListItem
+	80, // 11: api.HttpIntegration.headers:type_name -> api.HttpIntegration.HeadersEntry
+	0,  // 12: api.HttpIntegration.encoding:type_name -> api.Encoding
+	17, // 13: api.CreateHttpIntegrationRequest.integration:type_name -> api.HttpIntegration
+	17, // 14: api.GetHttpIntegrationResponse.integration:type_name -> api.HttpIntegration
+	17, // 15: api.UpdateHttpIntegrationRequest.integration:type_name -> api.HttpIntegration
+	2,  // 16: api.InfluxDbIntegration.precision:type_name -> api.InfluxDbPrecision
+	3,  // 17: api.InfluxDbIntegration.version:type_name -> api.InfluxDbVersion
+	23, // 18: api.CreateInfluxDbIntegrationRequest.integration:type_name -> api.InfluxDbIntegration
+	23, // 19: api.GetInfluxDbIntegrationResponse.integration:type_name -> api.InfluxDbIntegration
+	23, // 20: api.UpdateInfluxDbIntegrationRequest.integration:type_name -> api.InfluxDbIntegration
+	29, // 21: api.CreateThingsBoardIntegrationRequest.integration:type_name -> api.ThingsBoardIntegration
+	29, // 22: api.GetThingsBoardIntegrationResponse.integration:type_name -> api.ThingsBoardIntegration
+	29, // 23: api.UpdateThingsBoardIntegrationRequest.integration:type_name -> api.ThingsBoardIntegration
+	35, // 24: api.CreateMyDevicesIntegrationRequest.integration:type_name -> api.MyDevicesIntegration
+	35, // 25: api.GetMyDevicesIntegrationResponse.integration:type_name -> api.MyDevicesIntegration
+	35, // 26: api.UpdateMyDevicesIntegrationRequest.integration:type_name -> api.MyDevicesIntegration
+	0,  // 27: api.GcpPubSubIntegration.encoding:type_name -> api.Encoding
+	41, // 28: api.CreateGcpPubSubIntegrationRequest.integration:type_name -> api.GcpPubSubIntegration
+	41, // 29: api.GetGcpPubSubIntegrationResponse.integration:type_name -> api.GcpPubSubIntegration
+	41, // 30: api.UpdateGcpPubSubIntegrationRequest.integration:type_name -> api.GcpPubSubIntegration
+	0,  // 31: api.AwsSnsIntegration.encoding:type_name -> api.Encoding
+	47, // 32: api.CreateAwsSnsIntegrationRequest.integration:type_name -> api.AwsSnsIntegration
+	47, // 33: api.GetAwsSnsIntegrationResponse.integration:type_name -> api.AwsSnsIntegration
+	47, // 34: api.UpdateAwsSnsIntegrationRequest.integration:type_name -> api.AwsSnsIntegration
+	0,  // 35: api.AzureServiceBusIntegration.encoding:type_name -> api.Encoding
+	53, // 36: api.CreateAzureServiceBusIntegrationRequest.integration:type_name -> api.AzureServiceBusIntegration
+	53, // 37: api.GetAzureServiceBusIntegrationResponse.integration:type_name -> api.AzureServiceBusIntegration
+	53, // 38: api.UpdateAzureServiceBusIntegrationRequest.integration:type_name -> api.AzureServiceBusIntegration
+	59, // 39: api.CreatePilotThingsIntegrationRequest.integration:type_name -> api.PilotThingsIntegration
+	59, // 40: api.GetPilotThingsIntegrationResponse.integration:type_name -> api.PilotThingsIntegration
+	59, // 41: api.UpdatePilotThingsIntegrationRequest.integration:type_name -> api.PilotThingsIntegration
+	65, // 42: api.CreateIftttIntegrationRequest.integration:type_name -> api.IftttIntegration
+	65, // 43: api.GetIftttIntegrationResponse.integration:type_name -> api.IftttIntegration
+	65, // 44: api.UpdateIftttIntegrationRequest.integration:type_name -> api.IftttIntegration
+	81, // 45: api.GenerateMqttIntegrationClientCertificateResponse.expires_at:type_name -> google.protobuf.Timestamp
+	73, // 46: api.ListApplicationDeviceProfilesResponse.result:type_name -> api.ApplicationDeviceProfileListItem
+	76, // 47: api.ListApplicationDeviceTagsResponse.result:type_name -> api.ApplicationDeviceTagListItem
+	6,  // 48: api.ApplicationService.Create:input_type -> api.CreateApplicationRequest
+	8,  // 49: api.ApplicationService.Get:input_type -> api.GetApplicationRequest
+	10, // 50: api.ApplicationService.Update:input_type -> api.UpdateApplicationRequest
+	11, // 51: api.ApplicationService.Delete:input_type -> api.DeleteApplicationRequest
+	12, // 52: api.ApplicationService.List:input_type -> api.ListApplicationsRequest
+	14, // 53: api.ApplicationService.ListIntegrations:input_type -> api.ListIntegrationsRequest
+	18, // 54: api.ApplicationService.CreateHttpIntegration:input_type -> api.CreateHttpIntegrationRequest
+	19, // 55: api.ApplicationService.GetHttpIntegration:input_type -> api.GetHttpIntegrationRequest
+	21, // 56: api.ApplicationService.UpdateHttpIntegration:input_type -> api.UpdateHttpIntegrationRequest
+	22, // 57: api.ApplicationService.DeleteHttpIntegration:input_type -> api.DeleteHttpIntegrationRequest
+	24, // 58: api.ApplicationService.CreateInfluxDbIntegration:input_type -> api.CreateInfluxDbIntegrationRequest
+	25, // 59: api.ApplicationService.GetInfluxDbIntegration:input_type -> api.GetInfluxDbIntegrationRequest
+	27, // 60: api.ApplicationService.UpdateInfluxDbIntegration:input_type -> api.UpdateInfluxDbIntegrationRequest
+	28, // 61: api.ApplicationService.DeleteInfluxDbIntegration:input_type -> api.DeleteInfluxDbIntegrationRequest
+	30, // 62: api.ApplicationService.CreateThingsBoardIntegration:input_type -> api.CreateThingsBoardIntegrationRequest
+	31, // 63: api.ApplicationService.GetThingsBoardIntegration:input_type -> api.GetThingsBoardIntegrationRequest
+	33, // 64: api.ApplicationService.UpdateThingsBoardIntegration:input_type -> api.UpdateThingsBoardIntegrationRequest
+	34, // 65: api.ApplicationService.DeleteThingsBoardIntegration:input_type -> api.DeleteThingsBoardIntegrationRequest
+	36, // 66: api.ApplicationService.CreateMyDevicesIntegration:input_type -> api.CreateMyDevicesIntegrationRequest
+	37, // 67: api.ApplicationService.GetMyDevicesIntegration:input_type -> api.GetMyDevicesIntegrationRequest
+	39, // 68: api.ApplicationService.UpdateMyDevicesIntegration:input_type -> api.UpdateMyDevicesIntegrationRequest
+	40, // 69: api.ApplicationService.DeleteMyDevicesIntegration:input_type -> api.DeleteMyDevicesIntegrationRequest
+	42, // 70: api.ApplicationService.CreateGcpPubSubIntegration:input_type -> api.CreateGcpPubSubIntegrationRequest
+	43, // 71: api.ApplicationService.GetGcpPubSubIntegration:input_type -> api.GetGcpPubSubIntegrationRequest
+	45, // 72: api.ApplicationService.UpdateGcpPubSubIntegration:input_type -> api.UpdateGcpPubSubIntegrationRequest
+	46, // 73: api.ApplicationService.DeleteGcpPubSubIntegration:input_type -> api.DeleteGcpPubSubIntegrationRequest
+	48, // 74: api.ApplicationService.CreateAwsSnsIntegration:input_type -> api.CreateAwsSnsIntegrationRequest
+	49, // 75: api.ApplicationService.GetAwsSnsIntegration:input_type -> api.GetAwsSnsIntegrationRequest
+	51, // 76: api.ApplicationService.UpdateAwsSnsIntegration:input_type -> api.UpdateAwsSnsIntegrationRequest
+	52, // 77: api.ApplicationService.DeleteAwsSnsIntegration:input_type -> api.DeleteAwsSnsIntegrationRequest
+	54, // 78: api.ApplicationService.CreateAzureServiceBusIntegration:input_type -> api.CreateAzureServiceBusIntegrationRequest
+	55, // 79: api.ApplicationService.GetAzureServiceBusIntegration:input_type -> api.GetAzureServiceBusIntegrationRequest
+	57, // 80: api.ApplicationService.UpdateAzureServiceBusIntegration:input_type -> api.UpdateAzureServiceBusIntegrationRequest
+	58, // 81: api.ApplicationService.DeleteAzureServiceBusIntegration:input_type -> api.DeleteAzureServiceBusIntegrationRequest
+	60, // 82: api.ApplicationService.CreatePilotThingsIntegration:input_type -> api.CreatePilotThingsIntegrationRequest
+	61, // 83: api.ApplicationService.GetPilotThingsIntegration:input_type -> api.GetPilotThingsIntegrationRequest
+	63, // 84: api.ApplicationService.UpdatePilotThingsIntegration:input_type -> api.UpdatePilotThingsIntegrationRequest
+	64, // 85: api.ApplicationService.DeletePilotThingsIntegration:input_type -> api.DeletePilotThingsIntegrationRequest
+	66, // 86: api.ApplicationService.CreateIftttIntegration:input_type -> api.CreateIftttIntegrationRequest
+	67, // 87: api.ApplicationService.GetIftttIntegration:input_type -> api.GetIftttIntegrationRequest
+	69, // 88: api.ApplicationService.UpdateIftttIntegration:input_type -> api.UpdateIftttIntegrationRequest
+	70, // 89: api.ApplicationService.DeleteIftttIntegration:input_type -> api.DeleteIftttIntegrationRequest
+	71, // 90: api.ApplicationService.GenerateMqttIntegrationClientCertificate:input_type -> api.GenerateMqttIntegrationClientCertificateRequest
+	74, // 91: api.ApplicationService.ListDeviceProfiles:input_type -> api.ListApplicationDeviceProfilesRequest
+	77, // 92: api.ApplicationService.ListDeviceTags:input_type -> api.ListApplicationDeviceTagsRequest
+	7,  // 93: api.ApplicationService.Create:output_type -> api.CreateApplicationResponse
+	9,  // 94: api.ApplicationService.Get:output_type -> api.GetApplicationResponse
+	82, // 95: api.ApplicationService.Update:output_type -> google.protobuf.Empty
+	82, // 96: api.ApplicationService.Delete:output_type -> google.protobuf.Empty
+	13, // 97: api.ApplicationService.List:output_type -> api.ListApplicationsResponse
+	16, // 98: api.ApplicationService.ListIntegrations:output_type -> api.ListIntegrationsResponse
+	82, // 99: api.ApplicationService.CreateHttpIntegration:output_type -> google.protobuf.Empty
+	20, // 100: api.ApplicationService.GetHttpIntegration:output_type -> api.GetHttpIntegrationResponse
+	82, // 101: api.ApplicationService.UpdateHttpIntegration:output_type -> google.protobuf.Empty
+	82, // 102: api.ApplicationService.DeleteHttpIntegration:output_type -> google.protobuf.Empty
+	82, // 103: api.ApplicationService.CreateInfluxDbIntegration:output_type -> google.protobuf.Empty
+	26, // 104: api.ApplicationService.GetInfluxDbIntegration:output_type -> api.GetInfluxDbIntegrationResponse
+	82, // 105: api.ApplicationService.UpdateInfluxDbIntegration:output_type -> google.protobuf.Empty
+	82, // 106: api.ApplicationService.DeleteInfluxDbIntegration:output_type -> google.protobuf.Empty
+	82, // 107: api.ApplicationService.CreateThingsBoardIntegration:output_type -> google.protobuf.Empty
+	32, // 108: api.ApplicationService.GetThingsBoardIntegration:output_type -> api.GetThingsBoardIntegrationResponse
+	82, // 109: api.ApplicationService.UpdateThingsBoardIntegration:output_type -> google.protobuf.Empty
+	82, // 110: api.ApplicationService.DeleteThingsBoardIntegration:output_type -> google.protobuf.Empty
+	82, // 111: api.ApplicationService.CreateMyDevicesIntegration:output_type -> google.protobuf.Empty
+	38, // 112: api.ApplicationService.GetMyDevicesIntegration:output_type -> api.GetMyDevicesIntegrationResponse
+	82, // 113: api.ApplicationService.UpdateMyDevicesIntegration:output_type -> google.protobuf.Empty
+	82, // 114: api.ApplicationService.DeleteMyDevicesIntegration:output_type -> google.protobuf.Empty
+	82, // 115: api.ApplicationService.CreateGcpPubSubIntegration:output_type -> google.protobuf.Empty
+	44, // 116: api.ApplicationService.GetGcpPubSubIntegration:output_type -> api.GetGcpPubSubIntegrationResponse
+	82, // 117: api.ApplicationService.UpdateGcpPubSubIntegration:output_type -> google.protobuf.Empty
+	82, // 118: api.ApplicationService.DeleteGcpPubSubIntegration:output_type -> google.protobuf.Empty
+	82, // 119: api.ApplicationService.CreateAwsSnsIntegration:output_type -> google.protobuf.Empty
+	50, // 120: api.ApplicationService.GetAwsSnsIntegration:output_type -> api.GetAwsSnsIntegrationResponse
+	82, // 121: api.ApplicationService.UpdateAwsSnsIntegration:output_type -> google.protobuf.Empty
+	82, // 122: api.ApplicationService.DeleteAwsSnsIntegration:output_type -> google.protobuf.Empty
+	82, // 123: api.ApplicationService.CreateAzureServiceBusIntegration:output_type -> google.protobuf.Empty
+	56, // 124: api.ApplicationService.GetAzureServiceBusIntegration:output_type -> api.GetAzureServiceBusIntegrationResponse
+	82, // 125: api.ApplicationService.UpdateAzureServiceBusIntegration:output_type -> google.protobuf.Empty
+	82, // 126: api.ApplicationService.DeleteAzureServiceBusIntegration:output_type -> google.protobuf.Empty
+	82, // 127: api.ApplicationService.CreatePilotThingsIntegration:output_type -> google.protobuf.Empty
+	62, // 128: api.ApplicationService.GetPilotThingsIntegration:output_type -> api.GetPilotThingsIntegrationResponse
+	82, // 129: api.ApplicationService.UpdatePilotThingsIntegration:output_type -> google.protobuf.Empty
+	82, // 130: api.ApplicationService.DeletePilotThingsIntegration:output_type -> google.protobuf.Empty
+	82, // 131: api.ApplicationService.CreateIftttIntegration:output_type -> google.protobuf.Empty
+	68, // 132: api.ApplicationService.GetIftttIntegration:output_type -> api.GetIftttIntegrationResponse
+	82, // 133: api.ApplicationService.UpdateIftttIntegration:output_type -> google.protobuf.Empty
+	82, // 134: api.ApplicationService.DeleteIftttIntegration:output_type -> google.protobuf.Empty
+	72, // 135: api.ApplicationService.GenerateMqttIntegrationClientCertificate:output_type -> api.GenerateMqttIntegrationClientCertificateResponse
+	75, // 136: api.ApplicationService.ListDeviceProfiles:output_type -> api.ListApplicationDeviceProfilesResponse
+	78, // 137: api.ApplicationService.ListDeviceTags:output_type -> api.ListApplicationDeviceTagsResponse
+	93, // [93:138] is the sub-list for method output_type
+	48, // [48:93] is the sub-list for method input_type
+	48, // [48:48] is the sub-list for extension type_name
+	48, // [48:48] is the sub-list for extension extendee
+	0,  // [0:48] is the sub-list for field type_name
 }
 
 func init() { file_api_application_proto_init() }
@@ -5229,7 +4697,7 @@ func file_api_application_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_application_proto_rawDesc), len(file_api_application_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   84,
+			NumMessages:   77,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

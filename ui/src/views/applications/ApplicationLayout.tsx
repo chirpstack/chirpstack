@@ -32,8 +32,6 @@ import CreateMyDevicesIntegration from "./integrations/CreateMyDevicesIntegratio
 import EditMyDevicesIntegration from "./integrations/EditMyDevicesIntegration";
 import CreatePilotThingsIntegration from "./integrations/CreatePilotThingsIntegration";
 import EditPilotThingsIntegration from "./integrations/EditPilotThingsIntegration";
-import CreateLoRaCloudIntegration from "./integrations/CreateLoRaCloudIntegration";
-import EditLoRaCloudIntegration from "./integrations/EditLoRaCloudIntegration";
 import CreateThingsBoardIntegration from "./integrations/CreateThingsBoardIntegration";
 import EditThingsBoardIntegration from "./integrations/EditThingsBoardIntegration";
 import GenerateMqttCertificate from "./integrations/GenerateMqttCertificate";
@@ -184,8 +182,6 @@ function ApplicationLayout(props: IProps) {
             element={<CreatePilotThingsIntegration application={app} />}
           />
           <Route path="/integrations/pilot-things/edit" element={<EditPilotThingsIntegration application={app} />} />
-          <Route path="/integrations/loracloud/create" element={<CreateLoRaCloudIntegration application={app} />} />
-          <Route path="/integrations/loracloud/edit" element={<EditLoRaCloudIntegration application={app} />} />
           <Route path="/integrations/thingsboard/create" element={<CreateThingsBoardIntegration application={app} />} />
           <Route path="/integrations/thingsboard/edit" element={<EditThingsBoardIntegration application={app} />} />
           <Route path="/integrations/mqtt/certificate" element={<GenerateMqttCertificate application={app} />} />

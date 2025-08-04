@@ -18,7 +18,6 @@ import AzureServiceBusCard from "./integrations/AzureServiceBusCard";
 import GcpPubSubCard from "./integrations/GcpPubSubCard";
 import InfluxdbCard from "./integrations/InfluxdbCard";
 import PilotThingsCard from "./integrations/PilotThingsCard";
-import LoRaCloudCard from "./integrations/LoRaCloudCard";
 import ThingsBoardCard from "./integrations/ThingsBoardCard";
 import IftttCard from "./integrations/IftttCard";
 
@@ -108,13 +107,6 @@ function ListIntegrations(props: IProps) {
           configured.push(<PilotThingsCard application={props.application} />);
         } else {
           available.push(<PilotThingsCard application={props.application} add />);
-        }
-
-        // Semtech LoRa Cloud
-        if (includes(resp.getResultList(), IntegrationKind.LORA_CLOUD)) {
-          configured.push(<LoRaCloudCard application={props.application} />);
-        } else {
-          available.push(<LoRaCloudCard application={props.application} add />);
         }
 
         // ThingsBoard

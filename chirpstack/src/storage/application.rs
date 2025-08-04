@@ -79,7 +79,6 @@ pub enum IntegrationKind {
     InfluxDb,
     ThingsBoard,
     MyDevices,
-    LoraCloud,
     GcpPubSub,
     AwsSns,
     AzureServiceBus,
@@ -102,7 +101,6 @@ impl FromStr for IntegrationKind {
             "InfluxDb" => IntegrationKind::InfluxDb,
             "ThingsBoard" => IntegrationKind::ThingsBoard,
             "MyDevices" => IntegrationKind::MyDevices,
-            "LoraCloud" => IntegrationKind::LoraCloud,
             "GcpPubSub" => IntegrationKind::GcpPubSub,
             "AwsSns" => IntegrationKind::AwsSns,
             "AzureServiceBus" => IntegrationKind::AzureServiceBus,
@@ -152,7 +150,6 @@ pub enum IntegrationConfiguration {
     InfluxDb(InfluxDbConfiguration),
     ThingsBoard(ThingsBoardConfiguration),
     MyDevices(MyDevicesConfiguration),
-    LoraCloud(LoraCloudConfiguration),
     GcpPubSub(GcpPubSubConfiguration),
     AwsSns(AwsSnsConfiguration),
     AzureServiceBus(AzureServiceBusConfiguration),
@@ -222,33 +219,6 @@ pub struct ThingsBoardConfiguration {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MyDevicesConfiguration {
     pub endpoint: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct LoraCloudConfiguration {
-    pub modem_geolocation_services: LoraCloudModemGeolocationServices,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default)]
-pub struct LoraCloudModemGeolocationServices {
-    pub token: String,
-    pub modem_enabled: bool,
-    pub modem_port: u32,
-    pub gnss_port: u32,
-    pub forward_f_ports: Vec<u32>,
-    pub gnss_use_rx_time: bool,
-    pub gnss_use_gateway_location: bool,
-    pub parse_tlv: bool,
-    pub geolocation_buffer_ttl: u32,
-    pub geolocation_min_buffer_size: u32,
-    pub geolocation_tdoa: bool,
-    pub geolocation_rssi: bool,
-    pub geolocation_gnss: bool,
-    pub geolocation_gnss_payload_field: String,
-    pub geolocation_gnss_use_rx_time: bool,
-    pub geolocation_wifi: bool,
-    pub geolocation_wifi_payload_field: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -468,7 +438,7 @@ pub async fn get_integration(
     application_id: &Uuid,
     kind: IntegrationKind,
 ) -> Result<Integration, Error> {
-    let mut i: Integration = application_integration::dsl::application_integration
+    let i: Integration = application_integration::dsl::application_integration
         .filter(
             application_integration::dsl::application_id
                 .eq(fields::Uuid::from(application_id))
@@ -477,18 +447,6 @@ pub async fn get_integration(
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, application_id.to_string()))?;
-
-    // For backwards compatibiliy
-    if let IntegrationConfiguration::LoraCloud(conf) = &mut i.configuration {
-        if conf.modem_geolocation_services.forward_f_ports.is_empty() {
-            conf.modem_geolocation_services.forward_f_ports = vec![
-                conf.modem_geolocation_services.modem_port,
-                conf.modem_geolocation_services.gnss_port,
-                197,
-                192,
-            ];
-        }
-    }
 
     Ok(i)
 }

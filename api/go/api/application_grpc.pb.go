@@ -42,10 +42,6 @@ const (
 	ApplicationService_GetMyDevicesIntegration_FullMethodName                  = "/api.ApplicationService/GetMyDevicesIntegration"
 	ApplicationService_UpdateMyDevicesIntegration_FullMethodName               = "/api.ApplicationService/UpdateMyDevicesIntegration"
 	ApplicationService_DeleteMyDevicesIntegration_FullMethodName               = "/api.ApplicationService/DeleteMyDevicesIntegration"
-	ApplicationService_CreateLoraCloudIntegration_FullMethodName               = "/api.ApplicationService/CreateLoraCloudIntegration"
-	ApplicationService_GetLoraCloudIntegration_FullMethodName                  = "/api.ApplicationService/GetLoraCloudIntegration"
-	ApplicationService_UpdateLoraCloudIntegration_FullMethodName               = "/api.ApplicationService/UpdateLoraCloudIntegration"
-	ApplicationService_DeleteLoraCloudIntegration_FullMethodName               = "/api.ApplicationService/DeleteLoraCloudIntegration"
 	ApplicationService_CreateGcpPubSubIntegration_FullMethodName               = "/api.ApplicationService/CreateGcpPubSubIntegration"
 	ApplicationService_GetGcpPubSubIntegration_FullMethodName                  = "/api.ApplicationService/GetGcpPubSubIntegration"
 	ApplicationService_UpdateGcpPubSubIntegration_FullMethodName               = "/api.ApplicationService/UpdateGcpPubSubIntegration"
@@ -122,14 +118,6 @@ type ApplicationServiceClient interface {
 	UpdateMyDevicesIntegration(ctx context.Context, in *UpdateMyDevicesIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Delete myDevices integration.
 	DeleteMyDevicesIntegration(ctx context.Context, in *DeleteMyDevicesIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Create LoRaCloud integration.
-	CreateLoraCloudIntegration(ctx context.Context, in *CreateLoraCloudIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Get LoRaCloud integration.
-	GetLoraCloudIntegration(ctx context.Context, in *GetLoraCloudIntegrationRequest, opts ...grpc.CallOption) (*GetLoraCloudIntegrationResponse, error)
-	// Update LoRaCloud integration.
-	UpdateLoraCloudIntegration(ctx context.Context, in *UpdateLoraCloudIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Delete LoRaCloud integration.
-	DeleteLoraCloudIntegration(ctx context.Context, in *DeleteLoraCloudIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Create GCP Pub/Sub integration.
 	CreateGcpPubSubIntegration(ctx context.Context, in *CreateGcpPubSubIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Get GCP Pub/Sub integration.
@@ -400,46 +388,6 @@ func (c *applicationServiceClient) DeleteMyDevicesIntegration(ctx context.Contex
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, ApplicationService_DeleteMyDevicesIntegration_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *applicationServiceClient) CreateLoraCloudIntegration(ctx context.Context, in *CreateLoraCloudIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, ApplicationService_CreateLoraCloudIntegration_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *applicationServiceClient) GetLoraCloudIntegration(ctx context.Context, in *GetLoraCloudIntegrationRequest, opts ...grpc.CallOption) (*GetLoraCloudIntegrationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetLoraCloudIntegrationResponse)
-	err := c.cc.Invoke(ctx, ApplicationService_GetLoraCloudIntegration_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *applicationServiceClient) UpdateLoraCloudIntegration(ctx context.Context, in *UpdateLoraCloudIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, ApplicationService_UpdateLoraCloudIntegration_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *applicationServiceClient) DeleteLoraCloudIntegration(ctx context.Context, in *DeleteLoraCloudIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, ApplicationService_DeleteLoraCloudIntegration_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -727,14 +675,6 @@ type ApplicationServiceServer interface {
 	UpdateMyDevicesIntegration(context.Context, *UpdateMyDevicesIntegrationRequest) (*emptypb.Empty, error)
 	// Delete myDevices integration.
 	DeleteMyDevicesIntegration(context.Context, *DeleteMyDevicesIntegrationRequest) (*emptypb.Empty, error)
-	// Create LoRaCloud integration.
-	CreateLoraCloudIntegration(context.Context, *CreateLoraCloudIntegrationRequest) (*emptypb.Empty, error)
-	// Get LoRaCloud integration.
-	GetLoraCloudIntegration(context.Context, *GetLoraCloudIntegrationRequest) (*GetLoraCloudIntegrationResponse, error)
-	// Update LoRaCloud integration.
-	UpdateLoraCloudIntegration(context.Context, *UpdateLoraCloudIntegrationRequest) (*emptypb.Empty, error)
-	// Delete LoRaCloud integration.
-	DeleteLoraCloudIntegration(context.Context, *DeleteLoraCloudIntegrationRequest) (*emptypb.Empty, error)
 	// Create GCP Pub/Sub integration.
 	CreateGcpPubSubIntegration(context.Context, *CreateGcpPubSubIntegrationRequest) (*emptypb.Empty, error)
 	// Get GCP Pub/Sub integration.
@@ -856,18 +796,6 @@ func (UnimplementedApplicationServiceServer) UpdateMyDevicesIntegration(context.
 }
 func (UnimplementedApplicationServiceServer) DeleteMyDevicesIntegration(context.Context, *DeleteMyDevicesIntegrationRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMyDevicesIntegration not implemented")
-}
-func (UnimplementedApplicationServiceServer) CreateLoraCloudIntegration(context.Context, *CreateLoraCloudIntegrationRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateLoraCloudIntegration not implemented")
-}
-func (UnimplementedApplicationServiceServer) GetLoraCloudIntegration(context.Context, *GetLoraCloudIntegrationRequest) (*GetLoraCloudIntegrationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLoraCloudIntegration not implemented")
-}
-func (UnimplementedApplicationServiceServer) UpdateLoraCloudIntegration(context.Context, *UpdateLoraCloudIntegrationRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateLoraCloudIntegration not implemented")
-}
-func (UnimplementedApplicationServiceServer) DeleteLoraCloudIntegration(context.Context, *DeleteLoraCloudIntegrationRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteLoraCloudIntegration not implemented")
 }
 func (UnimplementedApplicationServiceServer) CreateGcpPubSubIntegration(context.Context, *CreateGcpPubSubIntegrationRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGcpPubSubIntegration not implemented")
@@ -1351,78 +1279,6 @@ func _ApplicationService_DeleteMyDevicesIntegration_Handler(srv interface{}, ctx
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ApplicationServiceServer).DeleteMyDevicesIntegration(ctx, req.(*DeleteMyDevicesIntegrationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ApplicationService_CreateLoraCloudIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateLoraCloudIntegrationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ApplicationServiceServer).CreateLoraCloudIntegration(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ApplicationService_CreateLoraCloudIntegration_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).CreateLoraCloudIntegration(ctx, req.(*CreateLoraCloudIntegrationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ApplicationService_GetLoraCloudIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLoraCloudIntegrationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ApplicationServiceServer).GetLoraCloudIntegration(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ApplicationService_GetLoraCloudIntegration_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).GetLoraCloudIntegration(ctx, req.(*GetLoraCloudIntegrationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ApplicationService_UpdateLoraCloudIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateLoraCloudIntegrationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ApplicationServiceServer).UpdateLoraCloudIntegration(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ApplicationService_UpdateLoraCloudIntegration_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).UpdateLoraCloudIntegration(ctx, req.(*UpdateLoraCloudIntegrationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ApplicationService_DeleteLoraCloudIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteLoraCloudIntegrationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ApplicationServiceServer).DeleteLoraCloudIntegration(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ApplicationService_DeleteLoraCloudIntegration_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).DeleteLoraCloudIntegration(ctx, req.(*DeleteLoraCloudIntegrationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1935,22 +1791,6 @@ var ApplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteMyDevicesIntegration",
 			Handler:    _ApplicationService_DeleteMyDevicesIntegration_Handler,
-		},
-		{
-			MethodName: "CreateLoraCloudIntegration",
-			Handler:    _ApplicationService_CreateLoraCloudIntegration_Handler,
-		},
-		{
-			MethodName: "GetLoraCloudIntegration",
-			Handler:    _ApplicationService_GetLoraCloudIntegration_Handler,
-		},
-		{
-			MethodName: "UpdateLoraCloudIntegration",
-			Handler:    _ApplicationService_UpdateLoraCloudIntegration_Handler,
-		},
-		{
-			MethodName: "DeleteLoraCloudIntegration",
-			Handler:    _ApplicationService_DeleteLoraCloudIntegration_Handler,
 		},
 		{
 			MethodName: "CreateGcpPubSubIntegration",
