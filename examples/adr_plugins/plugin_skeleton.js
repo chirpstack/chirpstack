@@ -42,7 +42,8 @@ export function id() {
 //  ]
 // }
 //
-// This function must return an object, example:
+// This function must return an object. For example, the default ADR algorithm
+// would return:
 // {
 //  dr: 5,
 //  txPowerIndex: 1,
