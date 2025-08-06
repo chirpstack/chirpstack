@@ -391,10 +391,17 @@ impl Flow {
                         frag_size: fragment_size as u8,
                         padding: padding as u8,
                         control: fragmentation::v1::FragSessionSetuReqPayloadControl {
-                            block_ack_delay: 0,
-                            fragmentation_matrix: 0,
+                            block_ack_delay: self.fuota_deployment.fragmentation_block_ack_delay
+                                as u8,
+                            fragmentation_matrix: self.fuota_deployment.fragmentation_matrix as u8,
                         },
-                        descriptor: [0, 0, 0, 0],
+                        descriptor: {
+                            let mut d = [0u8; 4];
+                            if self.fuota_deployment.fragmentation_descriptor.len() == 4 {
+                                d.copy_from_slice(&self.fuota_deployment.fragmentation_descriptor);
+                            }
+                            d
+                        },
                     },
                 )
                 .to_vec()?,
@@ -444,11 +451,20 @@ impl Flow {
                             frag_size: fragment_size as u8,
                             padding: padding as u8,
                             control: fragmentation::v2::FragSessionSetuReqPayloadControl {
-                                block_ack_delay: 0,
+                                block_ack_delay: self.fuota_deployment.fragmentation_block_ack_delay
+                                    as u8,
                                 frag_algo: 0,
                                 ack_reception: false,
                             },
-                            descriptor: [0, 0, 0, 0],
+                            descriptor: {
+                                let mut d = [0u8; 4];
+                                if self.fuota_deployment.fragmentation_descriptor.len() == 4 {
+                                    d.copy_from_slice(
+                                        &self.fuota_deployment.fragmentation_descriptor,
+                                    );
+                                }
+                                d
+                            },
                             mic,
                             session_cnt,
                         },
