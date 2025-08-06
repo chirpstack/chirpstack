@@ -44,7 +44,7 @@ export function id() {
 //
 // This function must return an object, example:
 // {
-//  dr: 2,
+//  dr: 5,
 //  txPowerIndex: 1,
 //  nbTrans: 1
 // }
