@@ -1246,7 +1246,10 @@ type DownlinkCommand struct {
 	Data []byte `protobuf:"bytes,5,opt,name=data,proto3" json:"data,omitempty"`
 	// Only use this when a codec has been configured that can encode this
 	// object to bytes.
-	Object        *structpb.Struct `protobuf:"bytes,6,opt,name=object,proto3" json:"object,omitempty"`
+	Object *structpb.Struct `protobuf:"bytes,6,opt,name=object,proto3" json:"object,omitempty"`
+	// Expires at (optional).
+	// Expired queue-items will be automatically removed from the queue.
+	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1319,6 +1322,13 @@ func (x *DownlinkCommand) GetData() []byte {
 func (x *DownlinkCommand) GetObject() *structpb.Struct {
 	if x != nil {
 		return x.Object
+	}
+	return nil
+}
+
+func (x *DownlinkCommand) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
 	}
 	return nil
 }
@@ -1438,14 +1448,16 @@ const file_integration_integration_proto_rawDesc = "" +
 	"\x10integration_name\x18\x04 \x01(\tR\x0fintegrationName\x12\x1d\n" +
 	"\n" +
 	"event_type\x18\x05 \x01(\tR\teventType\x12/\n" +
-	"\x06object\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06object\"\xb4\x01\n" +
+	"\x06object\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06object\"\xef\x01\n" +
 	"\x0fDownlinkCommand\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\adev_eui\x18\x02 \x01(\tR\x06devEui\x12\x1c\n" +
 	"\tconfirmed\x18\x03 \x01(\bR\tconfirmed\x12\x15\n" +
 	"\x06f_port\x18\x04 \x01(\rR\x05fPort\x12\x12\n" +
 	"\x04data\x18\x05 \x01(\fR\x04data\x12/\n" +
-	"\x06object\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06object*,\n" +
+	"\x06object\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06object\x129\n" +
+	"\n" +
+	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt*,\n" +
 	"\bLogLevel\x12\b\n" +
 	"\x04INFO\x10\x00\x12\v\n" +
 	"\aWARNING\x10\x01\x12\t\n" +
@@ -1540,11 +1552,12 @@ var file_integration_integration_proto_depIdxs = []int32{
 	2,  // 29: integration.IntegrationEvent.device_info:type_name -> integration.DeviceInfo
 	17, // 30: integration.IntegrationEvent.object:type_name -> google.protobuf.Struct
 	17, // 31: integration.DownlinkCommand.object:type_name -> google.protobuf.Struct
-	32, // [32:32] is the sub-list for method output_type
-	32, // [32:32] is the sub-list for method input_type
-	32, // [32:32] is the sub-list for extension type_name
-	32, // [32:32] is the sub-list for extension extendee
-	0,  // [0:32] is the sub-list for field type_name
+	16, // 32: integration.DownlinkCommand.expires_at:type_name -> google.protobuf.Timestamp
+	33, // [33:33] is the sub-list for method output_type
+	33, // [33:33] is the sub-list for method input_type
+	33, // [33:33] is the sub-list for extension type_name
+	33, // [33:33] is the sub-list for extension extendee
+	0,  // [0:33] is the sub-list for field type_name
 }
 
 func init() { file_integration_integration_proto_init() }

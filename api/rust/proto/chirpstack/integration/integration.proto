@@ -360,4 +360,8 @@ message DownlinkCommand {
   // Only use this when a codec has been configured that can encode this
   // object to bytes.
   google.protobuf.Struct object = 6;
+
+  // Expires at (optional).
+  // Expired queue-items will be automatically removed from the queue.
+  google.protobuf.Timestamp expires_at = 7;
 }

@@ -561,6 +561,15 @@ async fn handle_down_command(application_id: String, pl: integration::DownlinkCo
             confirmed: pl.confirmed,
             data,
             dev_eui,
+            expires_at: if let Some(expires_at) = pl.expires_at {
+                Some(
+                    expires_at
+                        .try_into()
+                        .map_err(|e| anyhow!("Parse expires_at error: {}", e))?,
+                )
+            } else {
+                None
+            },
             ..Default::default()
         };
 
