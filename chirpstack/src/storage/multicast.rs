@@ -84,6 +84,7 @@ pub struct MulticastGroupListItem {
 pub struct Filters {
     pub application_id: Option<Uuid>,
     pub search: Option<String>,
+    pub dev_eui: Option<EUI64>,
 }
 
 #[derive(Clone, Queryable, QueryableByName, Insertable, AsChangeset, Debug, PartialEq, Eq)]
@@ -197,6 +198,16 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         q = q.filter(multicast_group::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
+    if let Some(dev_eui) = &filters.dev_eui {
+        q = q.filter(
+            multicast_group::dsl::id.eq_any(
+                multicast_group_device::dsl::multicast_group_device
+                    .select(multicast_group_device::dsl::multicast_group_id)
+                    .filter(multicast_group_device::dsl::dev_eui.eq(dev_eui)),
+            ),
+        );
+    }
+
     if let Some(search) = &filters.search {
         #[cfg(feature = "postgres")]
         {
@@ -231,6 +242,16 @@ pub async fn list(
 
     if let Some(application_id) = &filters.application_id {
         q = q.filter(multicast_group::dsl::application_id.eq(fields::Uuid::from(application_id)));
+    }
+
+    if let Some(dev_eui) = &filters.dev_eui {
+        q = q.filter(
+            multicast_group::dsl::id.eq_any(
+                multicast_group_device::dsl::multicast_group_device
+                    .select(multicast_group_device::dsl::multicast_group_id)
+                    .filter(multicast_group_device::dsl::dev_eui.eq(dev_eui)),
+            ),
+        );
     }
 
     if let Some(search) = &filters.search {

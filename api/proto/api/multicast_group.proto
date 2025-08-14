@@ -248,6 +248,9 @@ message ListMulticastGroupsRequest {
 
     // Application ID to list the multicast groups for.
     string application_id = 4;
+
+    // Device EUI (HEX encoded).
+    string dev_eui = 5;
 }
 
 message ListMulticastGroupsResponse {
