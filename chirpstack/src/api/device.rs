@@ -1075,6 +1075,7 @@ impl DeviceService for Device {
             .await?;
 
         let mut data = req_qi.data.clone();
+        let mut f_port = req_qi.f_port as u8;
 
         if let Some(obj) = &req_qi.object {
             let dev = device::get(&dev_eui).await.map_err(|e| e.status())?;
@@ -1082,7 +1083,7 @@ impl DeviceService for Device {
                 .await
                 .map_err(|e| e.status())?;
 
-            data = codec::struct_to_binary(
+            (f_port, data) = codec::struct_to_binary(
                 dp.payload_codec_runtime,
                 req_qi.f_port as u8,
                 &dev.variables,
@@ -1096,7 +1097,7 @@ impl DeviceService for Device {
         let qi = device_queue::DeviceQueueItem {
             id: Uuid::new_v4().into(),
             dev_eui,
-            f_port: req_qi.f_port as i16,
+            f_port: f_port as i16,
             confirmed: req_qi.confirmed,
             is_encrypted: req_qi.is_encrypted,
             f_cnt_down: if req_qi.is_encrypted {

@@ -543,6 +543,8 @@ message DeviceQueueItem {
   bool confirmed = 3;
 
   // FPort (must be > 0).
+  // On enqueue and if using a JavaScript codec, this value might be
+  // automatically set by the codec function.
   uint32 f_port = 4;
 
   // Data.

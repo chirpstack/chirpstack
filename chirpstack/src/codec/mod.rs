@@ -97,10 +97,13 @@ pub async fn struct_to_binary(
     variables: &HashMap<String, String>,
     encoder_config: &str,
     obj: &prost_types::Struct,
-) -> Result<Vec<u8>> {
+) -> Result<(u8, Vec<u8>)> {
     Ok(match codec {
-        Codec::NONE => Vec::new(),
-        Codec::CAYENNE_LPP => cayenne_lpp::encode(obj).context("CayenneLpp encode")?,
+        Codec::NONE => (f_port, Vec::new()),
+        Codec::CAYENNE_LPP => (
+            f_port,
+            cayenne_lpp::encode(obj).context("CayenneLpp encode")?,
+        ),
         Codec::JS => js::encode(f_port, variables, encoder_config, obj).await?,
     })
 }

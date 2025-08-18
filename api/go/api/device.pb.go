@@ -1918,6 +1918,8 @@ type DeviceQueueItem struct {
 	// Confirmed.
 	Confirmed bool `protobuf:"varint,3,opt,name=confirmed,proto3" json:"confirmed,omitempty"`
 	// FPort (must be > 0).
+	// On enqueue and if using a JavaScript codec, this value might be
+	// automatically set by the codec function.
 	FPort uint32 `protobuf:"varint,4,opt,name=f_port,json=fPort,proto3" json:"f_port,omitempty"`
 	// Data.
 	// Or use the json_object field when a codec has been configured.
