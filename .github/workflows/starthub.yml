@@ -1,0 +1,12 @@
+name: Sleep Test
+
+on:
+  workflow_dispatch:   # allows manual or API-triggered runs
+
+jobs:
+  sleep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run a sleeping container
+        run: |
+          docker run --rm alpine sh -c "echo 'Sleeping...' && sleep 10 && echo 'Done.'"
