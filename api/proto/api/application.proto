@@ -383,6 +383,40 @@ service ApplicationService {
     };
   }
 
+  // Create Blynk integration.
+  rpc CreateBlynkIntegration(CreateBlynkIntegrationRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/api/applications/{integration.application_id}/integrations/blynk"
+      body : "*"
+    };
+  }
+
+  // Get Blynk integration.
+  rpc GetBlynkIntegration(GetBlynkIntegrationRequest)
+      returns (GetBlynkIntegrationResponse) {
+    option (google.api.http) = {
+      get : "/api/applications/{application_id}/integrations/blynk"
+    };
+  }
+
+  // Update Blynk integration.
+  rpc UpdateBlynkIntegration(UpdateBlynkIntegrationRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/api/applications/{integration.application_id}/integrations/blynk"
+      body : "*"
+    };
+  }
+
+  // Delete Blynk integration.
+  rpc DeleteBlynkIntegration(DeleteBlynkIntegrationRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/api/applications/{application_id}/integrations/blynk"
+    };
+  }
+
   // Generates application ID specific client-certificate.
   rpc GenerateMqttIntegrationClientCertificate(
       GenerateMqttIntegrationClientCertificateRequest)
@@ -423,6 +457,7 @@ enum IntegrationKind {
   PILOT_THINGS = 8;
   MQTT_GLOBAL = 9;
   IFTTT = 10;
+  BLYNK = 11;
 }
 
 message Application {
@@ -950,6 +985,39 @@ message UpdateIftttIntegrationRequest {
 }
 
 message DeleteIftttIntegrationRequest {
+  // Application ID (UUID).
+  string application_id = 1;
+}
+
+message BlynkIntegration {
+  // Application ID (UUID).
+  string application_id = 1;
+
+  // Blynk integration token.
+  string token = 2;
+}
+
+message CreateBlynkIntegrationRequest {
+  // Integration object to create.
+  BlynkIntegration integration = 1;
+}
+
+message GetBlynkIntegrationRequest {
+  // Application ID (UUID).
+  string application_id = 1;
+}
+
+message GetBlynkIntegrationResponse {
+  // Integration object.
+  BlynkIntegration integration = 1;
+}
+
+message UpdateBlynkIntegrationRequest {
+  // Integration object to update.
+  BlynkIntegration integration = 1;
+}
+
+message DeleteBlynkIntegrationRequest {
   // Application ID (UUID).
   string application_id = 1;
 }
