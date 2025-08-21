@@ -3810,11 +3810,13 @@ dependencies = [
 
 [[package]]
 name = "reactor-trait"
-version = "2.0.0"
+version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b2eb4ff39ed91c79034b2856a73b07bc8afd752c981bc4433bcbeff531e275a"
+checksum = "51d05d2072db44c9e2769ee9e700ec5e56330500b1753ab114d4eeeecacf81db"
 dependencies = [
  "async-trait",
+ "executor-trait",
+ "flume",
  "futures-core",
  "futures-io",
 ]
@@ -5069,9 +5071,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-reactor-trait"
-version = "2.0.0"
+version = "3.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "890b2de29a909d511eaaabb0405f72d5c4df3ce35a24aeaf94974037699b5a81"
+checksum = "a342ef9732e1c59a80093a47dc8a9831ca66fab2b3d2f1fb17498dde72a4c731"
 dependencies = [
  "async-trait",
  "futures-core",

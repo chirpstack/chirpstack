@@ -74,7 +74,7 @@
     "rustls-native-certs",
   ] }
   tokio-executor-trait = "2.1"
-  tokio-reactor-trait = "2.0"
+  tokio-reactor-trait = "3.8"
   rdkafka = { version = "0.38", default-features = false, features = [
     "tokio",
     "cmake-build",
