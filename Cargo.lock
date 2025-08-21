@@ -2578,7 +2578,7 @@ dependencies = [
  "flume",
  "futures-core",
  "futures-io",
- "reactor-trait",
+ "reactor-trait 2.7.0",
  "tracing",
  "waker-fn",
 ]
@@ -3813,6 +3813,19 @@ name = "reactor-trait"
 version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51d05d2072db44c9e2769ee9e700ec5e56330500b1753ab114d4eeeecacf81db"
+dependencies = [
+ "async-trait",
+ "executor-trait",
+ "flume",
+ "futures-core",
+ "futures-io",
+]
+
+[[package]]
+name = "reactor-trait"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ca7ed32322a65b7d117313b73e6adef5ae225d71349a4d4330cd0a084dcd1a8"
 dependencies = [
  "async-trait",
  "executor-trait",
@@ -5071,14 +5084,14 @@ dependencies = [
 
 [[package]]
 name = "tokio-reactor-trait"
-version = "3.8.0"
+version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a342ef9732e1c59a80093a47dc8a9831ca66fab2b3d2f1fb17498dde72a4c731"
+checksum = "545088c25943d4f1c5c141386606a1905c91dcc2a151afcad053a6df11bddcfc"
 dependencies = [
  "async-trait",
  "futures-core",
  "futures-io",
- "reactor-trait",
+ "reactor-trait 3.1.0",
  "tokio",
  "tokio-stream",
  "tokio-util",
