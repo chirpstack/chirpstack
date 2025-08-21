@@ -702,6 +702,7 @@ pub mod test {
             f_port: 10,
             data: vec![1, 2, 3],
             object: None,
+            expires_at: None,
         };
         let down_cmd_json = serde_json::to_string(&down_cmd).unwrap();
         client
