@@ -57,6 +57,11 @@ import type {
   GetIftttIntegrationResponse,
   UpdateIftttIntegrationRequest,
   DeleteIftttIntegrationRequest,
+  CreateBlynkIntegrationRequest,
+  GetBlynkIntegrationRequest,
+  GetBlynkIntegrationResponse,
+  UpdateBlynkIntegrationRequest,
+  DeleteBlynkIntegrationRequest,
   GenerateMqttIntegrationClientCertificateRequest,
   GenerateMqttIntegrationClientCertificateResponse,
   ListApplicationDeviceProfilesRequest,
@@ -67,6 +72,7 @@ import type {
 
 import SessionStore from "./SessionStore";
 import { HandleError } from "./helpers";
+import { callback } from "chart.js/helpers";
 
 class ApplicationStore extends EventEmitter {
   client: ApplicationServiceClient;
@@ -715,6 +721,69 @@ class ApplicationStore extends EventEmitter {
 
       notification.success({
         message: "IFTTT integration deleted",
+        duration: 3,
+      });
+
+      this.emit("integration.delete");
+      callbackFunc();
+    });
+  };
+
+  createBlynkIntegration = (req: CreateBlynkIntegrationRequest, callbackFunc: () => void) => {
+    this.client.createBlynkIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Blynk integration created",
+        duration: 3,
+      });
+
+      callbackFunc();
+    });
+  };
+
+  getBlynkIntegration = (
+    req: GetBlynkIntegrationRequest,
+    callbackFunc: (resp: GetBlynkIntegrationResponse) => void,
+  ) => {
+    this.client.getBlynkIntegration(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  updateBlynkIntegration = (req: UpdateBlynkIntegrationRequest, callbackFunc: () => void) => {
+    this.client.updateBlynkIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Blynk integration updated",
+        duration: 3,
+      });
+
+      callbackFunc();
+    });
+  };
+
+  deleteBlynkIntegration = (req: DeleteBlynkIntegrationRequest, callbackFunc: () => void) => {
+    this.client.deleteBlynkIntegration(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Blynk integration deleted",
         duration: 3,
       });
 

@@ -37,6 +37,8 @@ import EditThingsBoardIntegration from "./integrations/EditThingsBoardIntegratio
 import GenerateMqttCertificate from "./integrations/GenerateMqttCertificate";
 import CreateIftttIntegration from "./integrations/CreateIftttIntegration";
 import EditIftttIntegration from "./integrations/EditIftttIntegration";
+import CreateBlynkIntegration from "./integrations/CreateBlynkIntegration";
+import EditBlynkIntegration from "./integrations/EditBlynkIntegration";
 import { useTitle } from "../helpers";
 
 interface IProps {
@@ -193,6 +195,8 @@ function ApplicationLayout(props: IProps) {
             path="/integrations/ifttt/edit"
             element={<EditIftttIntegration application={app} measurementKeys={props.measurementKeys} />}
           />
+          <Route path="/integrations/blynk/create" element={<CreateBlynkIntegration application={app} />} />
+          <Route path="/integrations/blynk/edit" element={<EditBlynkIntegration application={app} />} />
         </Routes>
       </Card>
     </Space>
