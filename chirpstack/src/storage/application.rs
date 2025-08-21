@@ -84,6 +84,7 @@ pub enum IntegrationKind {
     AzureServiceBus,
     PilotThings,
     Ifttt,
+    Blynk,
 }
 
 impl fmt::Display for IntegrationKind {
@@ -106,6 +107,7 @@ impl FromStr for IntegrationKind {
             "AzureServiceBus" => IntegrationKind::AzureServiceBus,
             "PilotThings" => IntegrationKind::PilotThings,
             "Ifttt" => IntegrationKind::Ifttt,
+            "Blynk" => IntegrationKind::Blynk,
             _ => {
                 return Err(anyhow!("Unexpected IntegrationKind: {}", s));
             }
@@ -155,6 +157,7 @@ pub enum IntegrationConfiguration {
     AzureServiceBus(AzureServiceBusConfiguration),
     PilotThings(PilotThingsConfiguration),
     Ifttt(IftttConfiguration),
+    Blynk(BlynkConfiguration),
 }
 
 #[cfg(feature = "postgres")]
@@ -258,6 +261,12 @@ pub struct IftttConfiguration {
     pub uplink_values: [String; 2], // The first value is reserved for the DevEUI
     pub arbitrary_json: bool,
     pub event_prefix: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BlynkConfiguration {
+    pub token: String,
 }
 
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]

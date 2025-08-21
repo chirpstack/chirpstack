@@ -239,6 +239,7 @@ impl ApplicationService for Application {
                     }
                     application::IntegrationKind::PilotThings => api::IntegrationKind::PilotThings,
                     application::IntegrationKind::Ifttt => api::IntegrationKind::Ifttt,
+                    application::IntegrationKind::Blynk => api::IntegrationKind::Blynk,
                 }
                 .into(),
             })
@@ -1633,6 +1634,147 @@ impl ApplicationService for Application {
             .await?;
 
         application::delete_integration(&app_id, application::IntegrationKind::Ifttt)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+        Ok(resp)
+    }
+
+    async fn create_blynk_integration(
+        &self,
+        request: Request<api::CreateBlynkIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_int = match &request.get_ref().integration {
+            Some(v) => v,
+            None => {
+                return Err(Status::invalid_argument("integration is missing"));
+            }
+        };
+        let app_id = Uuid::from_str(&req_int.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        let _ = application::create_integration(application::Integration {
+            application_id: app_id.into(),
+            kind: application::IntegrationKind::Blynk,
+            configuration: application::IntegrationConfiguration::Blynk(
+                application::BlynkConfiguration {
+                    token: req_int.token.clone(),
+                },
+            ),
+            ..Default::default()
+        })
+        .await
+        .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
+    }
+
+    async fn get_blynk_integration(
+        &self,
+        request: Request<api::GetBlynkIntegrationRequest>,
+    ) -> Result<Response<api::GetBlynkIntegrationResponse>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Read, app_id),
+            )
+            .await?;
+
+        let i = application::get_integration(&app_id, application::IntegrationKind::Blynk)
+            .await
+            .map_err(|e| e.status())?;
+
+        if let application::IntegrationConfiguration::Blynk(conf) = &i.configuration {
+            let mut resp = Response::new(api::GetBlynkIntegrationResponse {
+                integration: Some(api::BlynkIntegration {
+                    application_id: app_id.to_string(),
+                    token: conf.token.clone(),
+                }),
+            });
+            resp.metadata_mut()
+                .insert("x-log-application_id", req.application_id.parse().unwrap());
+
+            Ok(resp)
+        } else {
+            Err(Status::internal("Integration has no Blynk configuration"))
+        }
+    }
+
+    async fn update_blynk_integration(
+        &self,
+        request: Request<api::UpdateBlynkIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req_int = match &request.get_ref().integration {
+            Some(v) => v,
+            None => {
+                return Err(Status::invalid_argument("integration is missing"));
+            }
+        };
+        let app_id = Uuid::from_str(&req_int.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        let _ = application::update_integration(application::Integration {
+            application_id: app_id.into(),
+            kind: application::IntegrationKind::Blynk,
+            configuration: application::IntegrationConfiguration::Blynk(
+                application::BlynkConfiguration {
+                    token: req_int.token.clone(),
+                },
+            ),
+            ..Default::default()
+        })
+        .await
+        .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut().insert(
+            "x-log-application_id",
+            req_int.application_id.parse().unwrap(),
+        );
+
+        Ok(resp)
+    }
+
+    async fn delete_blynk_integration(
+        &self,
+        request: Request<api::DeleteBlynkIntegrationRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req = request.get_ref();
+        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateApplicationAccess::new(validator::Flag::Update, app_id),
+            )
+            .await?;
+
+        application::delete_integration(&app_id, application::IntegrationKind::Blynk)
             .await
             .map_err(|e| e.status())?;
 
@@ -3127,6 +3269,124 @@ pub mod test {
             },
         );
         let _ = service.delete_ifttt_integration(del_req).await.unwrap();
+
+        // list
+        let list_req = get_request(
+            &u.id,
+            api::ListIntegrationsRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let list_resp = service.list_integrations(list_req).await.unwrap();
+        let list_resp = list_resp.get_ref();
+        assert_eq!(
+            &api::ListIntegrationsResponse {
+                total_count: 1,
+                result: vec![api::IntegrationListItem {
+                    kind: api::IntegrationKind::MqttGlobal.into(),
+                },],
+            },
+            list_resp
+        );
+    }
+
+    #[tokio::test]
+    async fn test_blynk_integration() {
+        let _guard = test::prepare().await;
+        let app = get_application().await;
+        let u = get_user().await;
+        let service = Application::new(RequestValidator::new());
+
+        // create
+        let create_req = get_request(
+            &u.id,
+            api::CreateBlynkIntegrationRequest {
+                integration: Some(api::BlynkIntegration {
+                    application_id: app.id.to_string(),
+                    token: "foobartoken".into(),
+                }),
+            },
+        );
+        let _ = service.create_blynk_integration(create_req).await.unwrap();
+
+        // get
+        let get_req = get_request(
+            &u.id,
+            api::GetBlynkIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let get_resp = service.get_blynk_integration(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(
+            Some(api::BlynkIntegration {
+                application_id: app.id.to_string(),
+                token: "foobartoken".into(),
+            }),
+            get_resp.integration
+        );
+
+        // update
+        let update_req = get_request(
+            &u.id,
+            api::UpdateBlynkIntegrationRequest {
+                integration: Some(api::BlynkIntegration {
+                    application_id: app.id.to_string(),
+                    token: "someothertoken".into(),
+                }),
+            },
+        );
+        let _ = service.update_blynk_integration(update_req).await.unwrap();
+
+        // get
+        let get_req = get_request(
+            &u.id,
+            api::GetBlynkIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let get_resp = service.get_blynk_integration(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(
+            Some(api::BlynkIntegration {
+                application_id: app.id.to_string(),
+                token: "someothertoken".into(),
+            }),
+            get_resp.integration
+        );
+
+        // list
+        let list_req = get_request(
+            &u.id,
+            api::ListIntegrationsRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let list_resp = service.list_integrations(list_req).await.unwrap();
+        let list_resp = list_resp.get_ref();
+        assert_eq!(
+            &api::ListIntegrationsResponse {
+                total_count: 2,
+                result: vec![
+                    api::IntegrationListItem {
+                        kind: api::IntegrationKind::Blynk.into(),
+                    },
+                    api::IntegrationListItem {
+                        kind: api::IntegrationKind::MqttGlobal.into(),
+                    }
+                ],
+            },
+            list_resp
+        );
+
+        // delete
+        let del_req = get_request(
+            &u.id,
+            api::DeleteBlynkIntegrationRequest {
+                application_id: app.id.to_string(),
+            },
+        );
+        let _ = service.delete_blynk_integration(del_req).await.unwrap();
 
         // list
         let list_req = get_request(
