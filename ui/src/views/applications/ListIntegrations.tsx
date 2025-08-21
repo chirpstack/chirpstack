@@ -20,6 +20,7 @@ import InfluxdbCard from "./integrations/InfluxdbCard";
 import PilotThingsCard from "./integrations/PilotThingsCard";
 import ThingsBoardCard from "./integrations/ThingsBoardCard";
 import IftttCard from "./integrations/IftttCard";
+import BlynkCard from "./integrations/BlynkCard";
 
 interface IProps {
   application: Application;
@@ -60,6 +61,13 @@ function ListIntegrations(props: IProps) {
           configured.push(<AzureServiceBusCard application={props.application} />);
         } else {
           available.push(<AzureServiceBusCard application={props.application} add />);
+        }
+
+        // Blynk
+        if (includes(resp.getResultList(), IntegrationKind.BLYNK)) {
+          configured.push(<BlynkCard application={props.application} />);
+        } else {
+          available.push(<BlynkCard application={props.application} add />);
         }
 
         // GCP Pub/Sub
