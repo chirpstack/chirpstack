@@ -18,6 +18,7 @@ use lrwn::EUI64;
 mod amqp;
 mod aws_sns;
 mod azure_service_bus;
+mod blynk;
 mod gcp_pub_sub;
 mod http;
 mod ifttt;
@@ -177,6 +178,9 @@ async fn for_application_id(id: Uuid) -> Result<Vec<Box<dyn Integration + Sync +
             }
             application::IntegrationConfiguration::Ifttt(conf) => {
                 Box::new(ifttt::Integration::new(conf))
+            }
+            application::IntegrationConfiguration::Blynk(conf) => {
+                Box::new(blynk::Integration::new(conf))
             }
             _ => {
                 continue;
