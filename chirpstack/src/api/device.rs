@@ -1088,6 +1088,7 @@ impl DeviceService for Device {
                 req_qi.f_port as u8,
                 &dev.variables,
                 &dp.payload_codec_script,
+                &dp.codec_plugin_id,
                 obj,
             )
             .await
