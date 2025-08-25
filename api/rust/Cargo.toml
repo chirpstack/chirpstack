@@ -24,7 +24,7 @@
     "prost",
   ], default-features = false, optional = true }
   tokio = { version = "1.44", features = ["macros"], optional = true }
-  pbjson = { version = "0.7", optional = true }
+  pbjson = { version = "0.8", optional = true }
   pbjson-types = { version = "0.7", optional = true }
   serde = { version = "1.0", optional = true }
 
