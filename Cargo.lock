@@ -75,7 +75,7 @@ dependencies = [
  "amq-protocol-uri",
  "async-trait",
  "cfg-if",
- "executor-trait",
+ "executor-trait 2.1.2",
  "reactor-trait 2.8.0",
  "tcp-stream",
  "tracing",
@@ -201,27 +201,11 @@ dependencies = [
 
 [[package]]
 name = "asn1-rs"
-version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5493c3bedbacf7fd7382c6346bbd66687d12bbaad3a89a2d2c303ee6cf20b048"
-dependencies = [
- "asn1-rs-derive 0.5.1",
- "asn1-rs-impl",
- "displaydoc",
- "nom 7.1.3",
- "num-traits",
- "rusticata-macros",
- "thiserror 1.0.69",
- "time",
-]
-
-[[package]]
-name = "asn1-rs"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56624a96882bb8c26d61312ae18cb45868e5a9992ea73c58e45c3101e56a1e60"
 dependencies = [
- "asn1-rs-derive 0.6.0",
+ "asn1-rs-derive",
  "asn1-rs-impl",
  "displaydoc",
  "nom 7.1.3",
@@ -229,18 +213,6 @@ dependencies = [
  "rusticata-macros",
  "thiserror 2.0.16",
  "time",
-]
-
-[[package]]
-name = "asn1-rs-derive"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "965c2d33e53cb6b267e148a4cb0760bc01f4904c1cd4bb4002a085bb016d1490"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.106",
- "synstructure",
 ]
 
 [[package]]
@@ -857,7 +829,7 @@ dependencies = [
  "signal-hook-tokio",
  "thiserror 2.0.16",
  "tokio",
- "tokio-executor-trait",
+ "tokio-executor-trait 3.1.0",
  "tokio-postgres",
  "tokio-postgres-rustls",
  "tokio-reactor-trait",
@@ -872,7 +844,7 @@ dependencies = [
  "urlencoding",
  "uuid",
  "validator",
- "x509-parser 0.17.0",
+ "x509-parser",
 ]
 
 [[package]]
@@ -1267,25 +1239,11 @@ dependencies = [
 
 [[package]]
 name = "der-parser"
-version = "9.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cd0a5c643689626bec213c4d8bd4d96acc8ffdb4ad4bb6bc16abf27d5f4b553"
-dependencies = [
- "asn1-rs 0.6.2",
- "displaydoc",
- "nom 7.1.3",
- "num-bigint",
- "num-traits",
- "rusticata-macros",
-]
-
-[[package]]
-name = "der-parser"
 version = "10.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07da5016415d5a3c4dd39b11ed26f915f52fc4e0dc197d87908bc916e51bc1a6"
 dependencies = [
- "asn1-rs 0.7.1",
+ "asn1-rs",
  "displaydoc",
  "nom 7.1.3",
  "num-bigint",
@@ -1630,6 +1588,15 @@ name = "executor-trait"
 version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13c39dff9342e4e0e16ce96be751eb21a94e94a87bb2f6e63ad1961c2ce109bf"
+dependencies = [
+ "async-trait",
+]
+
+[[package]]
+name = "executor-trait"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57d6a1fc6700fa12782770cb344a29172ae940ea41d5fd5049fdf236dd6eaa92"
 dependencies = [
  "async-trait",
 ]
@@ -2583,7 +2550,7 @@ checksum = "bad5ae535873471fc68e6e25a90f92ab0a65f5bd10979b9f1c407ab4a3aaeaa3"
 dependencies = [
  "amq-protocol",
  "async-trait",
- "executor-trait",
+ "executor-trait 2.1.2",
  "flume",
  "futures-core",
  "futures-io",
@@ -2988,20 +2955,11 @@ dependencies = [
 
 [[package]]
 name = "oid-registry"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8d8034d9489cdaf79228eb9f6a3b8d7bb32ba00d6645ebd48eef4077ceb5bd9"
-dependencies = [
- "asn1-rs 0.6.2",
-]
-
-[[package]]
-name = "oid-registry"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12f40cff3dde1b6087cc5d5f5d4d65712f34016a03ed60e9c08dcc392736b5b7"
 dependencies = [
- "asn1-rs 0.7.1",
+ "asn1-rs",
 ]
 
 [[package]]
@@ -3088,7 +3046,7 @@ dependencies = [
  "sha1",
  "sha2",
  "thiserror 2.0.16",
- "x509-parser 0.17.0",
+ "x509-parser",
 ]
 
 [[package]]
@@ -3563,9 +3521,9 @@ dependencies = [
 
 [[package]]
 name = "prometheus-client"
-version = "0.23.1"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf41c1a7c32ed72abe5082fb19505b969095c12da9f5732a4bc9878757fd087c"
+checksum = "e4500adecd7af8e0e9f4dbce15cfee07ce913fbf6ad605cc468b83f2d531ee94"
 dependencies = [
  "dtoa",
  "itoa",
@@ -3575,9 +3533,9 @@ dependencies = [
 
 [[package]]
 name = "prometheus-client-derive-encode"
-version = "0.4.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "440f724eba9f6996b75d63681b0a92b06947f1457076d503a4d2e2c8f56442b8"
+checksum = "9adf1691c04c0a5ff46ff8f262b58beb07b0dbb61f96f9f54f6cbd82106ed87f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3776,15 +3734,15 @@ dependencies = [
 
 [[package]]
 name = "rcgen"
-version = "0.13.2"
+version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75e669e5202259b5314d1ea5397316ad400819437857b90861765f24c4cf80a2"
+checksum = "0068c5b3cab1d4e271e0bb6539c87563c43411cad90b057b15c79958fbeb41f7"
 dependencies = [
  "pem",
  "ring",
  "rustls-pki-types",
  "time",
- "x509-parser 0.16.0",
+ "x509-parser",
  "yasna",
 ]
 
@@ -3835,7 +3793,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b1c85237926dd82e8bc3634240ecf2236ea81e904b3d83cdb1df974af9af293"
 dependencies = [
  "async-trait",
- "executor-trait",
+ "executor-trait 2.1.2",
  "flume",
  "futures-core",
  "futures-io",
@@ -5037,8 +4995,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6278565f9fd60c2d205dfbc827e8bb1236c2b1a57148708e95861eff7a6b3bad"
 dependencies = [
  "async-trait",
- "executor-trait",
+ "executor-trait 2.1.2",
  "tokio",
+]
+
+[[package]]
+name = "tokio-executor-trait"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a7fe39b60ffe238db070f2e66fab42c3c2967482e2fbf754afd7e65525cf0da"
+dependencies = [
+ "async-trait",
+ "executor-trait 2.1.2",
+ "executor-trait 3.1.0",
+ "tokio",
+ "tokio-executor-trait 2.4.0",
 ]
 
 [[package]]
@@ -5095,14 +5066,14 @@ dependencies = [
 
 [[package]]
 name = "tokio-reactor-trait"
-version = "3.9.0"
+version = "4.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "910df5b7ec6f1ac0b06ae5500382ffb4785b7fef218ddf065f18ca3fb67bc7fc"
+checksum = "e5410ef3f06b4ca0b3868bebeb24e19fef3a05e2ad086f2b8230f2bdf4052cdf"
 dependencies = [
  "async-trait",
  "futures-core",
  "futures-io",
- "reactor-trait 2.8.0",
+ "reactor-trait 3.1.1",
  "tokio",
  "tokio-stream",
  "tokio-util",
@@ -6061,34 +6032,17 @@ dependencies = [
 
 [[package]]
 name = "x509-parser"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcbc162f30700d6f3f82a24bf7cc62ffe7caea42c0b2cba8bf7f3ae50cf51f69"
-dependencies = [
- "asn1-rs 0.6.2",
- "data-encoding",
- "der-parser 9.0.0",
- "lazy_static",
- "nom 7.1.3",
- "oid-registry 0.7.1",
- "ring",
- "rusticata-macros",
- "thiserror 1.0.69",
- "time",
-]
-
-[[package]]
-name = "x509-parser"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4569f339c0c402346d4a75a9e39cf8dad310e287eef1ff56d4c68e5067f53460"
 dependencies = [
- "asn1-rs 0.7.1",
+ "asn1-rs",
  "data-encoding",
- "der-parser 10.0.0",
+ "der-parser",
  "lazy_static",
  "nom 7.1.3",
- "oid-registry 0.8.1",
+ "oid-registry",
+ "ring",
  "rusticata-macros",
  "thiserror 2.0.16",
  "time",

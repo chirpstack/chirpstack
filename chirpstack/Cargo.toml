@@ -73,12 +73,12 @@
   urlencoding = "2.1"
   geohash = "0.13"
   gcp_auth = "0.12"
-  lapin = { version = "3.1", default-features = false, features = [
+  lapin = { version = "3.2", default-features = false, features = [
     "rustls--ring",
     "rustls-native-certs",
   ] }
-  tokio-executor-trait = "2.1"
-  tokio-reactor-trait = "3.8"
+  tokio-executor-trait = "3.1"
+  tokio-reactor-trait = "4.1"
   rdkafka = { version = "0.38", default-features = false, features = [
     "tokio",
     "cmake-build",
@@ -123,12 +123,10 @@
   pem = "3.0"
   x509-parser = "0.17"
   rsa = "0.9"
-  sec1 = { version = "0.7.3", features = ["alloc", "pem", "pkcs8"] }
-  rcgen = { version = "0.13.1", features = ["x509-parser"] }
+  sec1 = { version = "0.7", features = ["alloc", "pem", "pkcs8"] }
+  rcgen = { version = "0.14", features = ["x509-parser"] }
   oauth2 = "5.0.0"
-  openidconnect = { version = "4.0.0", features = [
-    "accept-rfc3339-timestamps",
-  ] }
+  openidconnect = { version = "4.0", features = ["accept-rfc3339-timestamps"] }
 
   # MQTT
   rumqttc = { version = "0.24", features = ["url"] }
@@ -143,7 +141,7 @@
   ] }
 
   # Misc
-  uuid = { version = "1.17", features = ["v4", "serde"] }
+  uuid = { version = "1.18", features = ["v4", "serde"] }
   chrono = "0.4"
   async-trait = "0.1"
   aes = "0.8"
@@ -152,7 +150,7 @@
   async-recursion = "1.1"
   regex = "1.11"
   petgraph = "0.8"
-  prometheus-client = "0.23"
+  prometheus-client = "0.24"
   pin-project = "1.1"
   scoped-futures = { version = "0.1", features = ["std"] }
   signal-hook = "0.3"
