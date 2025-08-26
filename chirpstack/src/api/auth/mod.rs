@@ -1,6 +1,7 @@
-use crate::config;
-use tonic::{Request, Status};
+use chirpstack_api::tonic::{Request, Status};
 use uuid::Uuid;
+
+use crate::config;
 
 pub mod claims;
 pub mod error;

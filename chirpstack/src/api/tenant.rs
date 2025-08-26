@@ -1,10 +1,9 @@
 use std::str::FromStr;
 
-use tonic::{Request, Response, Status};
-use uuid::Uuid;
-
 use chirpstack_api::api;
 use chirpstack_api::api::tenant_service_server::TenantService;
+use chirpstack_api::tonic::{self, Request, Response, Status};
+use uuid::Uuid;
 
 use super::auth::{validator, AuthID};
 use super::error::ToStatus;

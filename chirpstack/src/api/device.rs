@@ -4,13 +4,12 @@ use std::str::FromStr;
 use std::time::SystemTime;
 
 use bigdecimal::ToPrimitive;
-use chrono::{DateTime, Local, Utc};
-use tonic::{Request, Response, Status};
-use uuid::Uuid;
-
 use chirpstack_api::api::device_service_server::DeviceService;
+use chirpstack_api::tonic::{self, Request, Response, Status};
 use chirpstack_api::{api, common, internal};
+use chrono::{DateTime, Local, Utc};
 use lrwn::{AES128Key, DevAddr, EUI64};
+use uuid::Uuid;
 
 use super::auth::validator;
 use super::error::ToStatus;

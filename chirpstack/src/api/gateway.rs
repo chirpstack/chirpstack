@@ -2,13 +2,12 @@ use std::collections::HashSet;
 use std::str::FromStr;
 use std::time::SystemTime;
 
-use chrono::{DateTime, Duration, Local, Utc};
-use tonic::{Request, Response, Status};
-use uuid::Uuid;
-
 use chirpstack_api::api::gateway_service_server::GatewayService;
+use chirpstack_api::tonic::{self, Request, Response, Status};
 use chirpstack_api::{api, common};
+use chrono::{DateTime, Duration, Local, Utc};
 use lrwn::EUI64;
+use uuid::Uuid;
 
 use super::auth::validator;
 use super::error::ToStatus;

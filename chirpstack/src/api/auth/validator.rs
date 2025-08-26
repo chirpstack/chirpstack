@@ -1,12 +1,11 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use chirpstack_api::tonic::{Extensions, Status};
 use diesel::{dsl, prelude::*};
 use diesel_async::RunQueryDsl;
-use tonic::{Extensions, Status};
+use lrwn::EUI64;
 use tracing::error;
 use uuid::Uuid;
-
-use lrwn::EUI64;
 
 use super::error::Error;
 use crate::api::auth::AuthID;

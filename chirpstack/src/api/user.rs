@@ -1,11 +1,10 @@
 use std::str::FromStr;
 
-use chrono::Utc;
-use tonic::{Request, Response, Status};
-use uuid::Uuid;
-
 use chirpstack_api::api;
 use chirpstack_api::api::user_service_server::UserService;
+use chirpstack_api::tonic::{self, Request, Response, Status};
+use chrono::Utc;
+use uuid::Uuid;
 
 use super::auth::{validator, AuthID};
 use super::error::ToStatus;

@@ -1,12 +1,11 @@
 use std::str::FromStr;
 
-use chrono::Utc;
-use tonic::{Request, Response, Status};
-use uuid::Uuid;
-
 use chirpstack_api::api;
 use chirpstack_api::api::fuota_service_server::FuotaService;
+use chirpstack_api::tonic::{self, Request, Response, Status};
+use chrono::Utc;
 use lrwn::EUI64;
+use uuid::Uuid;
 
 use crate::aeskey::get_random_aes_key;
 use crate::api::auth::validator;

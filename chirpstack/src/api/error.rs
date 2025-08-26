@@ -1,4 +1,4 @@
-use tonic::{Code, Status};
+use chirpstack_api::tonic::{Code, Status};
 
 use crate::storage;
 

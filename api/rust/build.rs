@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let well_known_types_path = "::prost_types";
 
     // common
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .out_dir(out_dir.join("common"))
         .file_descriptor_set_path(out_dir.join("common").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // gw
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .out_dir(out_dir.join("gw"))
         .file_descriptor_set_path(out_dir.join("gw").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
@@ -75,7 +75,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // internal
     {
         #[allow(unused_mut)]
-        let mut builder = tonic_build::configure()
+        let mut builder = tonic_prost_build::configure()
             .out_dir(out_dir.join("internal"))
             .file_descriptor_set_path(out_dir.join("internal").join("proto_descriptor.bin"))
             .compile_well_known_types(true)
@@ -107,7 +107,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // integration
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .out_dir(out_dir.join("integration"))
         .file_descriptor_set_path(out_dir.join("integration").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
@@ -141,7 +141,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // streams
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .out_dir(out_dir.join("stream"))
         .file_descriptor_set_path(out_dir.join("stream").join("proto_descriptor.bin"))
         .compile_well_known_types(true)
@@ -182,7 +182,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // api
-    tonic_build::configure()
+    tonic_prost_build::configure()
         .out_dir(out_dir.join("api"))
         .file_descriptor_set_path(out_dir.join("api").join("proto_descriptor.bin"))
         .extern_path(".common", "crate::common")

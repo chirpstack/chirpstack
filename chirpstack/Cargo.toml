@@ -46,7 +46,11 @@
   ], default-features = true }
 
   # ChirpStack API definitions
-  chirpstack_api = { path = "../api/rust", features = ["default", "internal"] }
+  chirpstack_api = { path = "../api/rust", features = [
+    "default",
+    "internal",
+    "server",
+  ] }
   lrwn = { path = "../lrwn", features = [
     "serde",
     "diesel",
@@ -81,14 +85,13 @@
   ] }
 
   # gRPC and Protobuf
-  tonic = "0.13"
-  tonic-web = "0.13"
-  tonic-reflection = "0.13"
+  tonic-web = "0.14"
+  tonic-reflection = "0.14"
   tokio = { version = "1.47", features = ["macros", "rt-multi-thread"] }
   tokio-stream = "0.1"
-  prost-types = "0.13"
-  prost = "0.13"
-  pbjson-types = "0.7"
+  prost-types = "0.14"
+  prost = "0.14"
+  pbjson-types = "0.8"
 
   # gRPC and HTTP multiplexing
   axum = "0.8"

@@ -8,27 +8,6 @@ use std::{
 
 use anyhow::{Context as AnyhowContext, Result};
 use axum::{response::IntoResponse, routing::get, Router};
-use http::{
-    header::{self, HeaderMap, HeaderValue},
-    Request, StatusCode, Uri,
-};
-use pin_project::pin_project;
-use prometheus_client::encoding::EncodeLabelSet;
-use prometheus_client::metrics::counter::Counter;
-use prometheus_client::metrics::family::Family;
-use prometheus_client::metrics::histogram::Histogram;
-use rust_embed::RustEmbed;
-use tokio::task;
-use tokio::try_join;
-use tonic::transport::Server as TonicServer;
-use tonic::Code;
-use tonic_reflection::server::Builder as TonicReflectionBuilder;
-use tonic_web::GrpcWebLayer;
-use tower::util::ServiceExt;
-use tower::Service;
-use tower_http::trace::TraceLayer;
-use tracing::{error, info};
-
 use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
 use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateServiceServer;
@@ -41,6 +20,25 @@ use chirpstack_api::api::relay_service_server::RelayServiceServer;
 use chirpstack_api::api::tenant_service_server::TenantServiceServer;
 use chirpstack_api::api::user_service_server::UserServiceServer;
 use chirpstack_api::stream as stream_pb;
+use chirpstack_api::tonic::{self, transport::Server as TonicServer, Code};
+use http::{
+    header::{self, HeaderMap, HeaderValue},
+    Request, StatusCode, Uri,
+};
+use pin_project::pin_project;
+use prometheus_client::encoding::EncodeLabelSet;
+use prometheus_client::metrics::counter::Counter;
+use prometheus_client::metrics::family::Family;
+use prometheus_client::metrics::histogram::Histogram;
+use rust_embed::RustEmbed;
+use tokio::task;
+use tokio::try_join;
+use tonic_reflection::server::Builder as TonicReflectionBuilder;
+use tonic_web::GrpcWebLayer;
+use tower::util::ServiceExt;
+use tower::Service;
+use tower_http::trace::TraceLayer;
+use tracing::{error, info};
 
 use super::config;
 use crate::api::auth::validator;

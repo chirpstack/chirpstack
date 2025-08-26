@@ -10,26 +10,32 @@
 
 [features]
   default = ["api", "json"]
-  api = ["tonic/transport", "tonic-build/transport", "tokio"]
+  api = [
+    "tonic-prost",
+    "tonic-prost-build/transport",
+    "tonic/transport",
+    "tonic-build/transport",
+    "tokio",
+  ]
+  server = ["tonic/router"]
   json = ["pbjson", "pbjson-types", "serde"]
   internal = []
 
 [dependencies]
-  prost = "0.13"
-  prost-types = "0.13"
+  prost = "0.14"
+  prost-types = "0.14"
   hex = "0.4"
   rand = "0.9"
-  tonic = { version = "0.13", features = [
+  tonic = { version = "0.14", features = [
     "codegen",
-    "prost",
   ], default-features = false, optional = true }
-  tokio = { version = "1.44", features = ["macros"], optional = true }
-  pbjson = { version = "0.7", optional = true }
-  pbjson-types = { version = "0.7", optional = true }
+  tonic-prost = { version = "0.14", optional = true }
+  tokio = { version = "1.47", features = ["macros"], optional = true }
+  pbjson = { version = "0.8", optional = true }
+  pbjson-types = { version = "0.8", optional = true }
   serde = { version = "1.0", optional = true }
 
 [build-dependencies]
-  tonic-build = { version = "0.13", features = [
-    "prost",
-  ], default-features = false }
-  pbjson-build = "0.7"
+  tonic-build = { version = "0.14", default-features = false }
+  tonic-prost-build = { version = "0.14", default-features = false }
+  pbjson-build = "0.8"

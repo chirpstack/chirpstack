@@ -1,12 +1,11 @@
 use std::collections::HashSet;
 use std::str::FromStr;
 
-use tonic::{Request, Response, Status};
-use uuid::Uuid;
-
 use chirpstack_api::api;
 use chirpstack_api::api::multicast_group_service_server::MulticastGroupService;
+use chirpstack_api::tonic::{self, Request, Response, Status};
 use lrwn::{AES128Key, DevAddr, EUI64};
+use uuid::Uuid;
 
 use super::auth::validator;
 use super::error::ToStatus;

@@ -1,7 +1,6 @@
-use tonic::{Request, Response, Status};
-
 use chirpstack_api::api;
 use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateService;
+use chirpstack_api::tonic::{self, Request, Response, Status};
 
 use super::auth::validator;
 use super::error::ToStatus;
