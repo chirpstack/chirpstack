@@ -1058,13 +1058,28 @@ impl DeviceService for Device {
         &self,
         request: Request<api::EnqueueDeviceQueueItemRequest>,
     ) -> Result<Response<api::EnqueueDeviceQueueItemResponse>, Status> {
-        let req_qi = match &request.get_ref().queue_item {
+        let req = request.get_ref();
+
+        let req_qi = match &req.queue_item {
             Some(v) => v,
             None => {
                 return Err(Status::invalid_argument("queue_item is missing"));
             }
         };
         let dev_eui = EUI64::from_str(&req_qi.dev_eui).map_err(|e| e.status())?;
+
+        if req.flush_queue {
+            self.validator
+                .validate(
+                    request.extensions(),
+                    validator::ValidateDeviceQueueAccess::new(validator::Flag::Delete, dev_eui),
+                )
+                .await?;
+
+            device_queue::flush_for_dev_eui(&dev_eui)
+                .await
+                .map_err(|e| e.status())?;
+        }
 
         self.validator
             .validate(
@@ -1664,6 +1679,7 @@ pub mod test {
                     data: vec![3, 2, 1],
                     ..Default::default()
                 }),
+                ..Default::default()
             },
         );
         let _ = service.enqueue(enqueue_req).await.unwrap();
@@ -1680,6 +1696,7 @@ pub mod test {
                     is_encrypted: true,
                     ..Default::default()
                 }),
+                ..Default::default()
             },
         );
         let _ = service.enqueue(enqueue_req).await.unwrap();
@@ -1715,6 +1732,38 @@ pub mod test {
             .await
             .unwrap();
         assert_eq!(11, get_next_f_cnt_resp.get_ref().f_cnt_down);
+
+        // enqueue with flush_queue
+        let enqueue_req = get_request(
+            &u.id,
+            api::EnqueueDeviceQueueItemRequest {
+                queue_item: Some(api::DeviceQueueItem {
+                    dev_eui: "0102030405060708".into(),
+                    confirmed: true,
+                    f_port: 2,
+                    f_cnt_down: 10,
+                    data: vec![4, 5, 6],
+                    is_encrypted: true,
+                    ..Default::default()
+                }),
+                flush_queue: true,
+            },
+        );
+        let _ = service.enqueue(enqueue_req).await.unwrap();
+
+        // get queue
+        let get_queue_req = get_request(
+            &u.id,
+            api::GetDeviceQueueItemsRequest {
+                dev_eui: "0102030405060708".into(),
+                count_only: false,
+            },
+        );
+        let get_queue_resp = service.get_queue(get_queue_req).await.unwrap();
+        let get_queue_resp = get_queue_resp.get_ref();
+        assert_eq!(1, get_queue_resp.total_count);
+        assert_eq!(1, get_queue_resp.result.len());
+        assert_eq!(vec![4, 5, 6], get_queue_resp.result[0].data);
 
         // flush queue
         let flush_queue_req = get_request(

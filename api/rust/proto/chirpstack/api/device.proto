@@ -576,7 +576,13 @@ message DeviceQueueItem {
   google.protobuf.Timestamp expires_at = 10;
 }
 
-message EnqueueDeviceQueueItemRequest { DeviceQueueItem queue_item = 1; }
+message EnqueueDeviceQueueItemRequest {
+  // Item to enqueue.
+  DeviceQueueItem queue_item = 1;
+
+  // Flush queue before enqueue.
+  bool flush_queue = 2;
+}
 
 message EnqueueDeviceQueueItemResponse {
   // ID (UUID).

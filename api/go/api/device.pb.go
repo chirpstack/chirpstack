@@ -2048,8 +2048,11 @@ func (x *DeviceQueueItem) GetExpiresAt() *timestamppb.Timestamp {
 }
 
 type EnqueueDeviceQueueItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	QueueItem     *DeviceQueueItem       `protobuf:"bytes,1,opt,name=queue_item,json=queueItem,proto3" json:"queue_item,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Item to enqueue.
+	QueueItem *DeviceQueueItem `protobuf:"bytes,1,opt,name=queue_item,json=queueItem,proto3" json:"queue_item,omitempty"`
+	// Flush queue before enqueue.
+	FlushQueue    bool `protobuf:"varint,2,opt,name=flush_queue,json=flushQueue,proto3" json:"flush_queue,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2089,6 +2092,13 @@ func (x *EnqueueDeviceQueueItemRequest) GetQueueItem() *DeviceQueueItem {
 		return x.QueueItem
 	}
 	return nil
+}
+
+func (x *EnqueueDeviceQueueItemRequest) GetFlushQueue() bool {
+	if x != nil {
+		return x.FlushQueue
+	}
+	return false
 }
 
 type EnqueueDeviceQueueItemResponse struct {
@@ -2602,10 +2612,12 @@ const file_api_device_proto_rawDesc = "" +
 	"\fis_encrypted\x18\t \x01(\bR\visEncrypted\x129\n" +
 	"\n" +
 	"expires_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"T\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"u\n" +
 	"\x1dEnqueueDeviceQueueItemRequest\x123\n" +
 	"\n" +
-	"queue_item\x18\x01 \x01(\v2\x14.api.DeviceQueueItemR\tqueueItem\"0\n" +
+	"queue_item\x18\x01 \x01(\v2\x14.api.DeviceQueueItemR\tqueueItem\x12\x1f\n" +
+	"\vflush_queue\x18\x02 \x01(\bR\n" +
+	"flushQueue\"0\n" +
 	"\x1eEnqueueDeviceQueueItemResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"2\n" +
 	"\x17FlushDeviceQueueRequest\x12\x17\n" +
