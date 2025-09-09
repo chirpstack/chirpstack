@@ -47,7 +47,7 @@ function BlynkCard(props: IProps) {
         cover={<img alt="Blynk" src="/integrations/blynk.png" style={{ padding: 1 }} />}
         actions={actions}
       >
-        <Card.Meta description="The Blynk integration forwards events to the Blynk platform." />
+        <Card.Meta description="The Blynk integration forwards events to Blynk’s low-code cloud to apps platform." />
       </Card>
     </Col>
   );
