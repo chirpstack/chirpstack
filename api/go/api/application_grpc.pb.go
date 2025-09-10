@@ -62,6 +62,10 @@ const (
 	ApplicationService_GetIftttIntegration_FullMethodName                      = "/api.ApplicationService/GetIftttIntegration"
 	ApplicationService_UpdateIftttIntegration_FullMethodName                   = "/api.ApplicationService/UpdateIftttIntegration"
 	ApplicationService_DeleteIftttIntegration_FullMethodName                   = "/api.ApplicationService/DeleteIftttIntegration"
+	ApplicationService_CreateBlynkIntegration_FullMethodName                   = "/api.ApplicationService/CreateBlynkIntegration"
+	ApplicationService_GetBlynkIntegration_FullMethodName                      = "/api.ApplicationService/GetBlynkIntegration"
+	ApplicationService_UpdateBlynkIntegration_FullMethodName                   = "/api.ApplicationService/UpdateBlynkIntegration"
+	ApplicationService_DeleteBlynkIntegration_FullMethodName                   = "/api.ApplicationService/DeleteBlynkIntegration"
 	ApplicationService_GenerateMqttIntegrationClientCertificate_FullMethodName = "/api.ApplicationService/GenerateMqttIntegrationClientCertificate"
 	ApplicationService_ListDeviceProfiles_FullMethodName                       = "/api.ApplicationService/ListDeviceProfiles"
 	ApplicationService_ListDeviceTags_FullMethodName                           = "/api.ApplicationService/ListDeviceTags"
@@ -158,6 +162,14 @@ type ApplicationServiceClient interface {
 	UpdateIftttIntegration(ctx context.Context, in *UpdateIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Delete IFTTT integration.
 	DeleteIftttIntegration(ctx context.Context, in *DeleteIftttIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Create Blynk integration.
+	CreateBlynkIntegration(ctx context.Context, in *CreateBlynkIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Get Blynk integration.
+	GetBlynkIntegration(ctx context.Context, in *GetBlynkIntegrationRequest, opts ...grpc.CallOption) (*GetBlynkIntegrationResponse, error)
+	// Update Blynk integration.
+	UpdateBlynkIntegration(ctx context.Context, in *UpdateBlynkIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Delete Blynk integration.
+	DeleteBlynkIntegration(ctx context.Context, in *DeleteBlynkIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Generates application ID specific client-certificate.
 	GenerateMqttIntegrationClientCertificate(ctx context.Context, in *GenerateMqttIntegrationClientCertificateRequest, opts ...grpc.CallOption) (*GenerateMqttIntegrationClientCertificateResponse, error)
 	// List device-profiles used within the given application.
@@ -594,6 +606,46 @@ func (c *applicationServiceClient) DeleteIftttIntegration(ctx context.Context, i
 	return out, nil
 }
 
+func (c *applicationServiceClient) CreateBlynkIntegration(ctx context.Context, in *CreateBlynkIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, ApplicationService_CreateBlynkIntegration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationServiceClient) GetBlynkIntegration(ctx context.Context, in *GetBlynkIntegrationRequest, opts ...grpc.CallOption) (*GetBlynkIntegrationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBlynkIntegrationResponse)
+	err := c.cc.Invoke(ctx, ApplicationService_GetBlynkIntegration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationServiceClient) UpdateBlynkIntegration(ctx context.Context, in *UpdateBlynkIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, ApplicationService_UpdateBlynkIntegration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationServiceClient) DeleteBlynkIntegration(ctx context.Context, in *DeleteBlynkIntegrationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, ApplicationService_DeleteBlynkIntegration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *applicationServiceClient) GenerateMqttIntegrationClientCertificate(ctx context.Context, in *GenerateMqttIntegrationClientCertificateRequest, opts ...grpc.CallOption) (*GenerateMqttIntegrationClientCertificateResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GenerateMqttIntegrationClientCertificateResponse)
@@ -715,6 +767,14 @@ type ApplicationServiceServer interface {
 	UpdateIftttIntegration(context.Context, *UpdateIftttIntegrationRequest) (*emptypb.Empty, error)
 	// Delete IFTTT integration.
 	DeleteIftttIntegration(context.Context, *DeleteIftttIntegrationRequest) (*emptypb.Empty, error)
+	// Create Blynk integration.
+	CreateBlynkIntegration(context.Context, *CreateBlynkIntegrationRequest) (*emptypb.Empty, error)
+	// Get Blynk integration.
+	GetBlynkIntegration(context.Context, *GetBlynkIntegrationRequest) (*GetBlynkIntegrationResponse, error)
+	// Update Blynk integration.
+	UpdateBlynkIntegration(context.Context, *UpdateBlynkIntegrationRequest) (*emptypb.Empty, error)
+	// Delete Blynk integration.
+	DeleteBlynkIntegration(context.Context, *DeleteBlynkIntegrationRequest) (*emptypb.Empty, error)
 	// Generates application ID specific client-certificate.
 	GenerateMqttIntegrationClientCertificate(context.Context, *GenerateMqttIntegrationClientCertificateRequest) (*GenerateMqttIntegrationClientCertificateResponse, error)
 	// List device-profiles used within the given application.
@@ -856,6 +916,18 @@ func (UnimplementedApplicationServiceServer) UpdateIftttIntegration(context.Cont
 }
 func (UnimplementedApplicationServiceServer) DeleteIftttIntegration(context.Context, *DeleteIftttIntegrationRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteIftttIntegration not implemented")
+}
+func (UnimplementedApplicationServiceServer) CreateBlynkIntegration(context.Context, *CreateBlynkIntegrationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateBlynkIntegration not implemented")
+}
+func (UnimplementedApplicationServiceServer) GetBlynkIntegration(context.Context, *GetBlynkIntegrationRequest) (*GetBlynkIntegrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBlynkIntegration not implemented")
+}
+func (UnimplementedApplicationServiceServer) UpdateBlynkIntegration(context.Context, *UpdateBlynkIntegrationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateBlynkIntegration not implemented")
+}
+func (UnimplementedApplicationServiceServer) DeleteBlynkIntegration(context.Context, *DeleteBlynkIntegrationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteBlynkIntegration not implemented")
 }
 func (UnimplementedApplicationServiceServer) GenerateMqttIntegrationClientCertificate(context.Context, *GenerateMqttIntegrationClientCertificateRequest) (*GenerateMqttIntegrationClientCertificateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateMqttIntegrationClientCertificate not implemented")
@@ -1643,6 +1715,78 @@ func _ApplicationService_DeleteIftttIntegration_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ApplicationService_CreateBlynkIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateBlynkIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).CreateBlynkIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ApplicationService_CreateBlynkIntegration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).CreateBlynkIntegration(ctx, req.(*CreateBlynkIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ApplicationService_GetBlynkIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBlynkIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).GetBlynkIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ApplicationService_GetBlynkIntegration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).GetBlynkIntegration(ctx, req.(*GetBlynkIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ApplicationService_UpdateBlynkIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateBlynkIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).UpdateBlynkIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ApplicationService_UpdateBlynkIntegration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).UpdateBlynkIntegration(ctx, req.(*UpdateBlynkIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ApplicationService_DeleteBlynkIntegration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteBlynkIntegrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).DeleteBlynkIntegration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ApplicationService_DeleteBlynkIntegration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).DeleteBlynkIntegration(ctx, req.(*DeleteBlynkIntegrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ApplicationService_GenerateMqttIntegrationClientCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GenerateMqttIntegrationClientCertificateRequest)
 	if err := dec(in); err != nil {
@@ -1871,6 +2015,22 @@ var ApplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteIftttIntegration",
 			Handler:    _ApplicationService_DeleteIftttIntegration_Handler,
+		},
+		{
+			MethodName: "CreateBlynkIntegration",
+			Handler:    _ApplicationService_CreateBlynkIntegration_Handler,
+		},
+		{
+			MethodName: "GetBlynkIntegration",
+			Handler:    _ApplicationService_GetBlynkIntegration_Handler,
+		},
+		{
+			MethodName: "UpdateBlynkIntegration",
+			Handler:    _ApplicationService_UpdateBlynkIntegration_Handler,
+		},
+		{
+			MethodName: "DeleteBlynkIntegration",
+			Handler:    _ApplicationService_DeleteBlynkIntegration_Handler,
 		},
 		{
 			MethodName: "GenerateMqttIntegrationClientCertificate",

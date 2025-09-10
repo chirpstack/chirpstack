@@ -83,6 +83,7 @@ const (
 	IntegrationKind_PILOT_THINGS      IntegrationKind = 8
 	IntegrationKind_MQTT_GLOBAL       IntegrationKind = 9
 	IntegrationKind_IFTTT             IntegrationKind = 10
+	IntegrationKind_BLYNK             IntegrationKind = 11
 )
 
 // Enum value maps for IntegrationKind.
@@ -98,6 +99,7 @@ var (
 		8:  "PILOT_THINGS",
 		9:  "MQTT_GLOBAL",
 		10: "IFTTT",
+		11: "BLYNK",
 	}
 	IntegrationKind_value = map[string]int32{
 		"HTTP":              0,
@@ -110,6 +112,7 @@ var (
 		"PILOT_THINGS":      8,
 		"MQTT_GLOBAL":       9,
 		"IFTTT":             10,
+		"BLYNK":             11,
 	}
 )
 
@@ -3735,6 +3738,285 @@ func (x *DeleteIftttIntegrationRequest) GetApplicationId() string {
 	return ""
 }
 
+type BlynkIntegration struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Application ID (UUID).
+	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	// Blynk integration token.
+	Token         string `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BlynkIntegration) Reset() {
+	*x = BlynkIntegration{}
+	mi := &file_api_application_proto_msgTypes[67]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BlynkIntegration) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlynkIntegration) ProtoMessage() {}
+
+func (x *BlynkIntegration) ProtoReflect() protoreflect.Message {
+	mi := &file_api_application_proto_msgTypes[67]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlynkIntegration.ProtoReflect.Descriptor instead.
+func (*BlynkIntegration) Descriptor() ([]byte, []int) {
+	return file_api_application_proto_rawDescGZIP(), []int{67}
+}
+
+func (x *BlynkIntegration) GetApplicationId() string {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return ""
+}
+
+func (x *BlynkIntegration) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type CreateBlynkIntegrationRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Integration object to create.
+	Integration   *BlynkIntegration `protobuf:"bytes,1,opt,name=integration,proto3" json:"integration,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateBlynkIntegrationRequest) Reset() {
+	*x = CreateBlynkIntegrationRequest{}
+	mi := &file_api_application_proto_msgTypes[68]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateBlynkIntegrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateBlynkIntegrationRequest) ProtoMessage() {}
+
+func (x *CreateBlynkIntegrationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_application_proto_msgTypes[68]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateBlynkIntegrationRequest.ProtoReflect.Descriptor instead.
+func (*CreateBlynkIntegrationRequest) Descriptor() ([]byte, []int) {
+	return file_api_application_proto_rawDescGZIP(), []int{68}
+}
+
+func (x *CreateBlynkIntegrationRequest) GetIntegration() *BlynkIntegration {
+	if x != nil {
+		return x.Integration
+	}
+	return nil
+}
+
+type GetBlynkIntegrationRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Application ID (UUID).
+	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetBlynkIntegrationRequest) Reset() {
+	*x = GetBlynkIntegrationRequest{}
+	mi := &file_api_application_proto_msgTypes[69]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBlynkIntegrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBlynkIntegrationRequest) ProtoMessage() {}
+
+func (x *GetBlynkIntegrationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_application_proto_msgTypes[69]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBlynkIntegrationRequest.ProtoReflect.Descriptor instead.
+func (*GetBlynkIntegrationRequest) Descriptor() ([]byte, []int) {
+	return file_api_application_proto_rawDescGZIP(), []int{69}
+}
+
+func (x *GetBlynkIntegrationRequest) GetApplicationId() string {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return ""
+}
+
+type GetBlynkIntegrationResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Integration object.
+	Integration   *BlynkIntegration `protobuf:"bytes,1,opt,name=integration,proto3" json:"integration,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetBlynkIntegrationResponse) Reset() {
+	*x = GetBlynkIntegrationResponse{}
+	mi := &file_api_application_proto_msgTypes[70]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBlynkIntegrationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBlynkIntegrationResponse) ProtoMessage() {}
+
+func (x *GetBlynkIntegrationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_application_proto_msgTypes[70]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBlynkIntegrationResponse.ProtoReflect.Descriptor instead.
+func (*GetBlynkIntegrationResponse) Descriptor() ([]byte, []int) {
+	return file_api_application_proto_rawDescGZIP(), []int{70}
+}
+
+func (x *GetBlynkIntegrationResponse) GetIntegration() *BlynkIntegration {
+	if x != nil {
+		return x.Integration
+	}
+	return nil
+}
+
+type UpdateBlynkIntegrationRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Integration object to update.
+	Integration   *BlynkIntegration `protobuf:"bytes,1,opt,name=integration,proto3" json:"integration,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateBlynkIntegrationRequest) Reset() {
+	*x = UpdateBlynkIntegrationRequest{}
+	mi := &file_api_application_proto_msgTypes[71]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateBlynkIntegrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateBlynkIntegrationRequest) ProtoMessage() {}
+
+func (x *UpdateBlynkIntegrationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_application_proto_msgTypes[71]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateBlynkIntegrationRequest.ProtoReflect.Descriptor instead.
+func (*UpdateBlynkIntegrationRequest) Descriptor() ([]byte, []int) {
+	return file_api_application_proto_rawDescGZIP(), []int{71}
+}
+
+func (x *UpdateBlynkIntegrationRequest) GetIntegration() *BlynkIntegration {
+	if x != nil {
+		return x.Integration
+	}
+	return nil
+}
+
+type DeleteBlynkIntegrationRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Application ID (UUID).
+	ApplicationId string `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteBlynkIntegrationRequest) Reset() {
+	*x = DeleteBlynkIntegrationRequest{}
+	mi := &file_api_application_proto_msgTypes[72]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteBlynkIntegrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteBlynkIntegrationRequest) ProtoMessage() {}
+
+func (x *DeleteBlynkIntegrationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_application_proto_msgTypes[72]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteBlynkIntegrationRequest.ProtoReflect.Descriptor instead.
+func (*DeleteBlynkIntegrationRequest) Descriptor() ([]byte, []int) {
+	return file_api_application_proto_rawDescGZIP(), []int{72}
+}
+
+func (x *DeleteBlynkIntegrationRequest) GetApplicationId() string {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return ""
+}
+
 type GenerateMqttIntegrationClientCertificateRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Application ID (UUID).
@@ -3745,7 +4027,7 @@ type GenerateMqttIntegrationClientCertificateRequest struct {
 
 func (x *GenerateMqttIntegrationClientCertificateRequest) Reset() {
 	*x = GenerateMqttIntegrationClientCertificateRequest{}
-	mi := &file_api_application_proto_msgTypes[67]
+	mi := &file_api_application_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3757,7 +4039,7 @@ func (x *GenerateMqttIntegrationClientCertificateRequest) String() string {
 func (*GenerateMqttIntegrationClientCertificateRequest) ProtoMessage() {}
 
 func (x *GenerateMqttIntegrationClientCertificateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[67]
+	mi := &file_api_application_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3770,7 +4052,7 @@ func (x *GenerateMqttIntegrationClientCertificateRequest) ProtoReflect() protore
 
 // Deprecated: Use GenerateMqttIntegrationClientCertificateRequest.ProtoReflect.Descriptor instead.
 func (*GenerateMqttIntegrationClientCertificateRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{67}
+	return file_api_application_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *GenerateMqttIntegrationClientCertificateRequest) GetApplicationId() string {
@@ -3796,7 +4078,7 @@ type GenerateMqttIntegrationClientCertificateResponse struct {
 
 func (x *GenerateMqttIntegrationClientCertificateResponse) Reset() {
 	*x = GenerateMqttIntegrationClientCertificateResponse{}
-	mi := &file_api_application_proto_msgTypes[68]
+	mi := &file_api_application_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3808,7 +4090,7 @@ func (x *GenerateMqttIntegrationClientCertificateResponse) String() string {
 func (*GenerateMqttIntegrationClientCertificateResponse) ProtoMessage() {}
 
 func (x *GenerateMqttIntegrationClientCertificateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[68]
+	mi := &file_api_application_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3821,7 +4103,7 @@ func (x *GenerateMqttIntegrationClientCertificateResponse) ProtoReflect() protor
 
 // Deprecated: Use GenerateMqttIntegrationClientCertificateResponse.ProtoReflect.Descriptor instead.
 func (*GenerateMqttIntegrationClientCertificateResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{68}
+	return file_api_application_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *GenerateMqttIntegrationClientCertificateResponse) GetTlsCert() string {
@@ -3864,7 +4146,7 @@ type ApplicationDeviceProfileListItem struct {
 
 func (x *ApplicationDeviceProfileListItem) Reset() {
 	*x = ApplicationDeviceProfileListItem{}
-	mi := &file_api_application_proto_msgTypes[69]
+	mi := &file_api_application_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3876,7 +4158,7 @@ func (x *ApplicationDeviceProfileListItem) String() string {
 func (*ApplicationDeviceProfileListItem) ProtoMessage() {}
 
 func (x *ApplicationDeviceProfileListItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[69]
+	mi := &file_api_application_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3889,7 +4171,7 @@ func (x *ApplicationDeviceProfileListItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationDeviceProfileListItem.ProtoReflect.Descriptor instead.
 func (*ApplicationDeviceProfileListItem) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{69}
+	return file_api_application_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *ApplicationDeviceProfileListItem) GetId() string {
@@ -3916,7 +4198,7 @@ type ListApplicationDeviceProfilesRequest struct {
 
 func (x *ListApplicationDeviceProfilesRequest) Reset() {
 	*x = ListApplicationDeviceProfilesRequest{}
-	mi := &file_api_application_proto_msgTypes[70]
+	mi := &file_api_application_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3928,7 +4210,7 @@ func (x *ListApplicationDeviceProfilesRequest) String() string {
 func (*ListApplicationDeviceProfilesRequest) ProtoMessage() {}
 
 func (x *ListApplicationDeviceProfilesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[70]
+	mi := &file_api_application_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3941,7 +4223,7 @@ func (x *ListApplicationDeviceProfilesRequest) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use ListApplicationDeviceProfilesRequest.ProtoReflect.Descriptor instead.
 func (*ListApplicationDeviceProfilesRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{70}
+	return file_api_application_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *ListApplicationDeviceProfilesRequest) GetApplicationId() string {
@@ -3961,7 +4243,7 @@ type ListApplicationDeviceProfilesResponse struct {
 
 func (x *ListApplicationDeviceProfilesResponse) Reset() {
 	*x = ListApplicationDeviceProfilesResponse{}
-	mi := &file_api_application_proto_msgTypes[71]
+	mi := &file_api_application_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3973,7 +4255,7 @@ func (x *ListApplicationDeviceProfilesResponse) String() string {
 func (*ListApplicationDeviceProfilesResponse) ProtoMessage() {}
 
 func (x *ListApplicationDeviceProfilesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[71]
+	mi := &file_api_application_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3986,7 +4268,7 @@ func (x *ListApplicationDeviceProfilesResponse) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use ListApplicationDeviceProfilesResponse.ProtoReflect.Descriptor instead.
 func (*ListApplicationDeviceProfilesResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{71}
+	return file_api_application_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *ListApplicationDeviceProfilesResponse) GetResult() []*ApplicationDeviceProfileListItem {
@@ -4008,7 +4290,7 @@ type ApplicationDeviceTagListItem struct {
 
 func (x *ApplicationDeviceTagListItem) Reset() {
 	*x = ApplicationDeviceTagListItem{}
-	mi := &file_api_application_proto_msgTypes[72]
+	mi := &file_api_application_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4020,7 +4302,7 @@ func (x *ApplicationDeviceTagListItem) String() string {
 func (*ApplicationDeviceTagListItem) ProtoMessage() {}
 
 func (x *ApplicationDeviceTagListItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[72]
+	mi := &file_api_application_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4033,7 +4315,7 @@ func (x *ApplicationDeviceTagListItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationDeviceTagListItem.ProtoReflect.Descriptor instead.
 func (*ApplicationDeviceTagListItem) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{72}
+	return file_api_application_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *ApplicationDeviceTagListItem) GetKey() string {
@@ -4060,7 +4342,7 @@ type ListApplicationDeviceTagsRequest struct {
 
 func (x *ListApplicationDeviceTagsRequest) Reset() {
 	*x = ListApplicationDeviceTagsRequest{}
-	mi := &file_api_application_proto_msgTypes[73]
+	mi := &file_api_application_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4072,7 +4354,7 @@ func (x *ListApplicationDeviceTagsRequest) String() string {
 func (*ListApplicationDeviceTagsRequest) ProtoMessage() {}
 
 func (x *ListApplicationDeviceTagsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[73]
+	mi := &file_api_application_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4085,7 +4367,7 @@ func (x *ListApplicationDeviceTagsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListApplicationDeviceTagsRequest.ProtoReflect.Descriptor instead.
 func (*ListApplicationDeviceTagsRequest) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{73}
+	return file_api_application_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *ListApplicationDeviceTagsRequest) GetApplicationId() string {
@@ -4105,7 +4387,7 @@ type ListApplicationDeviceTagsResponse struct {
 
 func (x *ListApplicationDeviceTagsResponse) Reset() {
 	*x = ListApplicationDeviceTagsResponse{}
-	mi := &file_api_application_proto_msgTypes[74]
+	mi := &file_api_application_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4117,7 +4399,7 @@ func (x *ListApplicationDeviceTagsResponse) String() string {
 func (*ListApplicationDeviceTagsResponse) ProtoMessage() {}
 
 func (x *ListApplicationDeviceTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_application_proto_msgTypes[74]
+	mi := &file_api_application_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4130,7 +4412,7 @@ func (x *ListApplicationDeviceTagsResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use ListApplicationDeviceTagsResponse.ProtoReflect.Descriptor instead.
 func (*ListApplicationDeviceTagsResponse) Descriptor() ([]byte, []int) {
-	return file_api_application_proto_rawDescGZIP(), []int{74}
+	return file_api_application_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *ListApplicationDeviceTagsResponse) GetResult() []*ApplicationDeviceTagListItem {
@@ -4342,6 +4624,19 @@ const file_api_application_proto_rawDesc = "" +
 	"\x1dUpdateIftttIntegrationRequest\x127\n" +
 	"\vintegration\x18\x01 \x01(\v2\x15.api.IftttIntegrationR\vintegration\"F\n" +
 	"\x1dDeleteIftttIntegrationRequest\x12%\n" +
+	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\"O\n" +
+	"\x10BlynkIntegration\x12%\n" +
+	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\x12\x14\n" +
+	"\x05token\x18\x02 \x01(\tR\x05token\"X\n" +
+	"\x1dCreateBlynkIntegrationRequest\x127\n" +
+	"\vintegration\x18\x01 \x01(\v2\x15.api.BlynkIntegrationR\vintegration\"C\n" +
+	"\x1aGetBlynkIntegrationRequest\x12%\n" +
+	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\"V\n" +
+	"\x1bGetBlynkIntegrationResponse\x127\n" +
+	"\vintegration\x18\x01 \x01(\v2\x15.api.BlynkIntegrationR\vintegration\"X\n" +
+	"\x1dUpdateBlynkIntegrationRequest\x127\n" +
+	"\vintegration\x18\x01 \x01(\v2\x15.api.BlynkIntegrationR\vintegration\"F\n" +
+	"\x1dDeleteBlynkIntegrationRequest\x12%\n" +
 	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\"X\n" +
 	"/GenerateMqttIntegrationClientCertificateRequest\x12%\n" +
 	"\x0eapplication_id\x18\x01 \x01(\tR\rapplicationId\"\xba\x01\n" +
@@ -4367,7 +4662,7 @@ const file_api_application_proto_rawDesc = "" +
 	"\x06result\x18\x01 \x03(\v2!.api.ApplicationDeviceTagListItemR\x06result*\"\n" +
 	"\bEncoding\x12\b\n" +
 	"\x04JSON\x10\x00\x12\f\n" +
-	"\bPROTOBUF\x10\x01*\xaf\x01\n" +
+	"\bPROTOBUF\x10\x01*\xba\x01\n" +
 	"\x0fIntegrationKind\x12\b\n" +
 	"\x04HTTP\x10\x00\x12\r\n" +
 	"\tINFLUX_DB\x10\x01\x12\x10\n" +
@@ -4380,7 +4675,8 @@ const file_api_application_proto_rawDesc = "" +
 	"\fPILOT_THINGS\x10\b\x12\x0f\n" +
 	"\vMQTT_GLOBAL\x10\t\x12\t\n" +
 	"\x05IFTTT\x10\n" +
-	"*?\n" +
+	"\x12\t\n" +
+	"\x05BLYNK\x10\v*?\n" +
 	"\x11InfluxDbPrecision\x12\x06\n" +
 	"\x02NS\x10\x00\x12\x05\n" +
 	"\x01U\x10\x01\x12\x06\n" +
@@ -4392,7 +4688,7 @@ const file_api_application_proto_rawDesc = "" +
 	"\n" +
 	"INFLUXDB_1\x10\x00\x12\x0e\n" +
 	"\n" +
-	"INFLUXDB_2\x10\x012\xce9\n" +
+	"INFLUXDB_2\x10\x012\xc8>\n" +
 	"\x12ApplicationService\x12e\n" +
 	"\x06Create\x12\x1d.api.CreateApplicationRequest\x1a\x1e.api.CreateApplicationResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/api/applications\x12^\n" +
 	"\x03Get\x12\x1a.api.GetApplicationRequest\x1a\x1b.api.GetApplicationResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/applications/{id}\x12n\n" +
@@ -4435,7 +4731,11 @@ const file_api_application_proto_rawDesc = "" +
 	"\x16CreateIftttIntegration\x12\".api.CreateIftttIntegrationRequest\x1a\x16.google.protobuf.Empty\"L\x82\xd3\xe4\x93\x02F:\x01*\"A/api/applications/{integration.application_id}/integrations/ifttt\x12\x97\x01\n" +
 	"\x13GetIftttIntegration\x12\x1f.api.GetIftttIntegrationRequest\x1a .api.GetIftttIntegrationResponse\"=\x82\xd3\xe4\x93\x027\x125/api/applications/{application_id}/integrations/ifttt\x12\xa2\x01\n" +
 	"\x16UpdateIftttIntegration\x12\".api.UpdateIftttIntegrationRequest\x1a\x16.google.protobuf.Empty\"L\x82\xd3\xe4\x93\x02F:\x01*\x1aA/api/applications/{integration.application_id}/integrations/ifttt\x12\x93\x01\n" +
-	"\x16DeleteIftttIntegration\x12\".api.DeleteIftttIntegrationRequest\x1a\x16.google.protobuf.Empty\"=\x82\xd3\xe4\x93\x027*5/api/applications/{application_id}/integrations/ifttt\x12\xe1\x01\n" +
+	"\x16DeleteIftttIntegration\x12\".api.DeleteIftttIntegrationRequest\x1a\x16.google.protobuf.Empty\"=\x82\xd3\xe4\x93\x027*5/api/applications/{application_id}/integrations/ifttt\x12\xa2\x01\n" +
+	"\x16CreateBlynkIntegration\x12\".api.CreateBlynkIntegrationRequest\x1a\x16.google.protobuf.Empty\"L\x82\xd3\xe4\x93\x02F:\x01*\"A/api/applications/{integration.application_id}/integrations/blynk\x12\x97\x01\n" +
+	"\x13GetBlynkIntegration\x12\x1f.api.GetBlynkIntegrationRequest\x1a .api.GetBlynkIntegrationResponse\"=\x82\xd3\xe4\x93\x027\x125/api/applications/{application_id}/integrations/blynk\x12\xa2\x01\n" +
+	"\x16UpdateBlynkIntegration\x12\".api.UpdateBlynkIntegrationRequest\x1a\x16.google.protobuf.Empty\"L\x82\xd3\xe4\x93\x02F:\x01*\x1aA/api/applications/{integration.application_id}/integrations/blynk\x12\x93\x01\n" +
+	"\x16DeleteBlynkIntegration\x12\".api.DeleteBlynkIntegrationRequest\x1a\x16.google.protobuf.Empty\"=\x82\xd3\xe4\x93\x027*5/api/applications/{application_id}/integrations/blynk\x12\xe1\x01\n" +
 	"(GenerateMqttIntegrationClientCertificate\x124.api.GenerateMqttIntegrationClientCertificateRequest\x1a5.api.GenerateMqttIntegrationClientCertificateResponse\"H\x82\xd3\xe4\x93\x02B\"@/api/applications/{application_id}/integrations/mqtt/certificate\x12\xa7\x01\n" +
 	"\x12ListDeviceProfiles\x12).api.ListApplicationDeviceProfilesRequest\x1a*.api.ListApplicationDeviceProfilesResponse\":\x82\xd3\xe4\x93\x024\x122/api/applications/{application_id}/device-profiles\x12\x97\x01\n" +
 	"\x0eListDeviceTags\x12%.api.ListApplicationDeviceTagsRequest\x1a&.api.ListApplicationDeviceTagsResponse\"6\x82\xd3\xe4\x93\x020\x12./api/applications/{application_id}/device-tagsB\x96\x01\n" +
@@ -4454,7 +4754,7 @@ func file_api_application_proto_rawDescGZIP() []byte {
 }
 
 var file_api_application_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_api_application_proto_msgTypes = make([]protoimpl.MessageInfo, 77)
+var file_api_application_proto_msgTypes = make([]protoimpl.MessageInfo, 83)
 var file_api_application_proto_goTypes = []any{
 	(Encoding)(0),                                            // 0: api.Encoding
 	(IntegrationKind)(0),                                     // 1: api.IntegrationKind
@@ -4527,163 +4827,180 @@ var file_api_application_proto_goTypes = []any{
 	(*GetIftttIntegrationResponse)(nil),                      // 68: api.GetIftttIntegrationResponse
 	(*UpdateIftttIntegrationRequest)(nil),                    // 69: api.UpdateIftttIntegrationRequest
 	(*DeleteIftttIntegrationRequest)(nil),                    // 70: api.DeleteIftttIntegrationRequest
-	(*GenerateMqttIntegrationClientCertificateRequest)(nil),  // 71: api.GenerateMqttIntegrationClientCertificateRequest
-	(*GenerateMqttIntegrationClientCertificateResponse)(nil), // 72: api.GenerateMqttIntegrationClientCertificateResponse
-	(*ApplicationDeviceProfileListItem)(nil),                 // 73: api.ApplicationDeviceProfileListItem
-	(*ListApplicationDeviceProfilesRequest)(nil),             // 74: api.ListApplicationDeviceProfilesRequest
-	(*ListApplicationDeviceProfilesResponse)(nil),            // 75: api.ListApplicationDeviceProfilesResponse
-	(*ApplicationDeviceTagListItem)(nil),                     // 76: api.ApplicationDeviceTagListItem
-	(*ListApplicationDeviceTagsRequest)(nil),                 // 77: api.ListApplicationDeviceTagsRequest
-	(*ListApplicationDeviceTagsResponse)(nil),                // 78: api.ListApplicationDeviceTagsResponse
-	nil,                           // 79: api.Application.TagsEntry
-	nil,                           // 80: api.HttpIntegration.HeadersEntry
-	(*timestamppb.Timestamp)(nil), // 81: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),         // 82: google.protobuf.Empty
+	(*BlynkIntegration)(nil),                                 // 71: api.BlynkIntegration
+	(*CreateBlynkIntegrationRequest)(nil),                    // 72: api.CreateBlynkIntegrationRequest
+	(*GetBlynkIntegrationRequest)(nil),                       // 73: api.GetBlynkIntegrationRequest
+	(*GetBlynkIntegrationResponse)(nil),                      // 74: api.GetBlynkIntegrationResponse
+	(*UpdateBlynkIntegrationRequest)(nil),                    // 75: api.UpdateBlynkIntegrationRequest
+	(*DeleteBlynkIntegrationRequest)(nil),                    // 76: api.DeleteBlynkIntegrationRequest
+	(*GenerateMqttIntegrationClientCertificateRequest)(nil),  // 77: api.GenerateMqttIntegrationClientCertificateRequest
+	(*GenerateMqttIntegrationClientCertificateResponse)(nil), // 78: api.GenerateMqttIntegrationClientCertificateResponse
+	(*ApplicationDeviceProfileListItem)(nil),                 // 79: api.ApplicationDeviceProfileListItem
+	(*ListApplicationDeviceProfilesRequest)(nil),             // 80: api.ListApplicationDeviceProfilesRequest
+	(*ListApplicationDeviceProfilesResponse)(nil),            // 81: api.ListApplicationDeviceProfilesResponse
+	(*ApplicationDeviceTagListItem)(nil),                     // 82: api.ApplicationDeviceTagListItem
+	(*ListApplicationDeviceTagsRequest)(nil),                 // 83: api.ListApplicationDeviceTagsRequest
+	(*ListApplicationDeviceTagsResponse)(nil),                // 84: api.ListApplicationDeviceTagsResponse
+	nil,                           // 85: api.Application.TagsEntry
+	nil,                           // 86: api.HttpIntegration.HeadersEntry
+	(*timestamppb.Timestamp)(nil), // 87: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),         // 88: google.protobuf.Empty
 }
 var file_api_application_proto_depIdxs = []int32{
-	79, // 0: api.Application.tags:type_name -> api.Application.TagsEntry
-	81, // 1: api.ApplicationListItem.created_at:type_name -> google.protobuf.Timestamp
-	81, // 2: api.ApplicationListItem.updated_at:type_name -> google.protobuf.Timestamp
-	4,  // 3: api.CreateApplicationRequest.application:type_name -> api.Application
-	4,  // 4: api.GetApplicationResponse.application:type_name -> api.Application
-	81, // 5: api.GetApplicationResponse.created_at:type_name -> google.protobuf.Timestamp
-	81, // 6: api.GetApplicationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	4,  // 7: api.UpdateApplicationRequest.application:type_name -> api.Application
-	5,  // 8: api.ListApplicationsResponse.result:type_name -> api.ApplicationListItem
-	1,  // 9: api.IntegrationListItem.kind:type_name -> api.IntegrationKind
-	15, // 10: api.ListIntegrationsResponse.result:type_name -> api.IntegrationListItem
-	80, // 11: api.HttpIntegration.headers:type_name -> api.HttpIntegration.HeadersEntry
-	0,  // 12: api.HttpIntegration.encoding:type_name -> api.Encoding
-	17, // 13: api.CreateHttpIntegrationRequest.integration:type_name -> api.HttpIntegration
-	17, // 14: api.GetHttpIntegrationResponse.integration:type_name -> api.HttpIntegration
-	17, // 15: api.UpdateHttpIntegrationRequest.integration:type_name -> api.HttpIntegration
-	2,  // 16: api.InfluxDbIntegration.precision:type_name -> api.InfluxDbPrecision
-	3,  // 17: api.InfluxDbIntegration.version:type_name -> api.InfluxDbVersion
-	23, // 18: api.CreateInfluxDbIntegrationRequest.integration:type_name -> api.InfluxDbIntegration
-	23, // 19: api.GetInfluxDbIntegrationResponse.integration:type_name -> api.InfluxDbIntegration
-	23, // 20: api.UpdateInfluxDbIntegrationRequest.integration:type_name -> api.InfluxDbIntegration
-	29, // 21: api.CreateThingsBoardIntegrationRequest.integration:type_name -> api.ThingsBoardIntegration
-	29, // 22: api.GetThingsBoardIntegrationResponse.integration:type_name -> api.ThingsBoardIntegration
-	29, // 23: api.UpdateThingsBoardIntegrationRequest.integration:type_name -> api.ThingsBoardIntegration
-	35, // 24: api.CreateMyDevicesIntegrationRequest.integration:type_name -> api.MyDevicesIntegration
-	35, // 25: api.GetMyDevicesIntegrationResponse.integration:type_name -> api.MyDevicesIntegration
-	35, // 26: api.UpdateMyDevicesIntegrationRequest.integration:type_name -> api.MyDevicesIntegration
-	0,  // 27: api.GcpPubSubIntegration.encoding:type_name -> api.Encoding
-	41, // 28: api.CreateGcpPubSubIntegrationRequest.integration:type_name -> api.GcpPubSubIntegration
-	41, // 29: api.GetGcpPubSubIntegrationResponse.integration:type_name -> api.GcpPubSubIntegration
-	41, // 30: api.UpdateGcpPubSubIntegrationRequest.integration:type_name -> api.GcpPubSubIntegration
-	0,  // 31: api.AwsSnsIntegration.encoding:type_name -> api.Encoding
-	47, // 32: api.CreateAwsSnsIntegrationRequest.integration:type_name -> api.AwsSnsIntegration
-	47, // 33: api.GetAwsSnsIntegrationResponse.integration:type_name -> api.AwsSnsIntegration
-	47, // 34: api.UpdateAwsSnsIntegrationRequest.integration:type_name -> api.AwsSnsIntegration
-	0,  // 35: api.AzureServiceBusIntegration.encoding:type_name -> api.Encoding
-	53, // 36: api.CreateAzureServiceBusIntegrationRequest.integration:type_name -> api.AzureServiceBusIntegration
-	53, // 37: api.GetAzureServiceBusIntegrationResponse.integration:type_name -> api.AzureServiceBusIntegration
-	53, // 38: api.UpdateAzureServiceBusIntegrationRequest.integration:type_name -> api.AzureServiceBusIntegration
-	59, // 39: api.CreatePilotThingsIntegrationRequest.integration:type_name -> api.PilotThingsIntegration
-	59, // 40: api.GetPilotThingsIntegrationResponse.integration:type_name -> api.PilotThingsIntegration
-	59, // 41: api.UpdatePilotThingsIntegrationRequest.integration:type_name -> api.PilotThingsIntegration
-	65, // 42: api.CreateIftttIntegrationRequest.integration:type_name -> api.IftttIntegration
-	65, // 43: api.GetIftttIntegrationResponse.integration:type_name -> api.IftttIntegration
-	65, // 44: api.UpdateIftttIntegrationRequest.integration:type_name -> api.IftttIntegration
-	81, // 45: api.GenerateMqttIntegrationClientCertificateResponse.expires_at:type_name -> google.protobuf.Timestamp
-	73, // 46: api.ListApplicationDeviceProfilesResponse.result:type_name -> api.ApplicationDeviceProfileListItem
-	76, // 47: api.ListApplicationDeviceTagsResponse.result:type_name -> api.ApplicationDeviceTagListItem
-	6,  // 48: api.ApplicationService.Create:input_type -> api.CreateApplicationRequest
-	8,  // 49: api.ApplicationService.Get:input_type -> api.GetApplicationRequest
-	10, // 50: api.ApplicationService.Update:input_type -> api.UpdateApplicationRequest
-	11, // 51: api.ApplicationService.Delete:input_type -> api.DeleteApplicationRequest
-	12, // 52: api.ApplicationService.List:input_type -> api.ListApplicationsRequest
-	14, // 53: api.ApplicationService.ListIntegrations:input_type -> api.ListIntegrationsRequest
-	18, // 54: api.ApplicationService.CreateHttpIntegration:input_type -> api.CreateHttpIntegrationRequest
-	19, // 55: api.ApplicationService.GetHttpIntegration:input_type -> api.GetHttpIntegrationRequest
-	21, // 56: api.ApplicationService.UpdateHttpIntegration:input_type -> api.UpdateHttpIntegrationRequest
-	22, // 57: api.ApplicationService.DeleteHttpIntegration:input_type -> api.DeleteHttpIntegrationRequest
-	24, // 58: api.ApplicationService.CreateInfluxDbIntegration:input_type -> api.CreateInfluxDbIntegrationRequest
-	25, // 59: api.ApplicationService.GetInfluxDbIntegration:input_type -> api.GetInfluxDbIntegrationRequest
-	27, // 60: api.ApplicationService.UpdateInfluxDbIntegration:input_type -> api.UpdateInfluxDbIntegrationRequest
-	28, // 61: api.ApplicationService.DeleteInfluxDbIntegration:input_type -> api.DeleteInfluxDbIntegrationRequest
-	30, // 62: api.ApplicationService.CreateThingsBoardIntegration:input_type -> api.CreateThingsBoardIntegrationRequest
-	31, // 63: api.ApplicationService.GetThingsBoardIntegration:input_type -> api.GetThingsBoardIntegrationRequest
-	33, // 64: api.ApplicationService.UpdateThingsBoardIntegration:input_type -> api.UpdateThingsBoardIntegrationRequest
-	34, // 65: api.ApplicationService.DeleteThingsBoardIntegration:input_type -> api.DeleteThingsBoardIntegrationRequest
-	36, // 66: api.ApplicationService.CreateMyDevicesIntegration:input_type -> api.CreateMyDevicesIntegrationRequest
-	37, // 67: api.ApplicationService.GetMyDevicesIntegration:input_type -> api.GetMyDevicesIntegrationRequest
-	39, // 68: api.ApplicationService.UpdateMyDevicesIntegration:input_type -> api.UpdateMyDevicesIntegrationRequest
-	40, // 69: api.ApplicationService.DeleteMyDevicesIntegration:input_type -> api.DeleteMyDevicesIntegrationRequest
-	42, // 70: api.ApplicationService.CreateGcpPubSubIntegration:input_type -> api.CreateGcpPubSubIntegrationRequest
-	43, // 71: api.ApplicationService.GetGcpPubSubIntegration:input_type -> api.GetGcpPubSubIntegrationRequest
-	45, // 72: api.ApplicationService.UpdateGcpPubSubIntegration:input_type -> api.UpdateGcpPubSubIntegrationRequest
-	46, // 73: api.ApplicationService.DeleteGcpPubSubIntegration:input_type -> api.DeleteGcpPubSubIntegrationRequest
-	48, // 74: api.ApplicationService.CreateAwsSnsIntegration:input_type -> api.CreateAwsSnsIntegrationRequest
-	49, // 75: api.ApplicationService.GetAwsSnsIntegration:input_type -> api.GetAwsSnsIntegrationRequest
-	51, // 76: api.ApplicationService.UpdateAwsSnsIntegration:input_type -> api.UpdateAwsSnsIntegrationRequest
-	52, // 77: api.ApplicationService.DeleteAwsSnsIntegration:input_type -> api.DeleteAwsSnsIntegrationRequest
-	54, // 78: api.ApplicationService.CreateAzureServiceBusIntegration:input_type -> api.CreateAzureServiceBusIntegrationRequest
-	55, // 79: api.ApplicationService.GetAzureServiceBusIntegration:input_type -> api.GetAzureServiceBusIntegrationRequest
-	57, // 80: api.ApplicationService.UpdateAzureServiceBusIntegration:input_type -> api.UpdateAzureServiceBusIntegrationRequest
-	58, // 81: api.ApplicationService.DeleteAzureServiceBusIntegration:input_type -> api.DeleteAzureServiceBusIntegrationRequest
-	60, // 82: api.ApplicationService.CreatePilotThingsIntegration:input_type -> api.CreatePilotThingsIntegrationRequest
-	61, // 83: api.ApplicationService.GetPilotThingsIntegration:input_type -> api.GetPilotThingsIntegrationRequest
-	63, // 84: api.ApplicationService.UpdatePilotThingsIntegration:input_type -> api.UpdatePilotThingsIntegrationRequest
-	64, // 85: api.ApplicationService.DeletePilotThingsIntegration:input_type -> api.DeletePilotThingsIntegrationRequest
-	66, // 86: api.ApplicationService.CreateIftttIntegration:input_type -> api.CreateIftttIntegrationRequest
-	67, // 87: api.ApplicationService.GetIftttIntegration:input_type -> api.GetIftttIntegrationRequest
-	69, // 88: api.ApplicationService.UpdateIftttIntegration:input_type -> api.UpdateIftttIntegrationRequest
-	70, // 89: api.ApplicationService.DeleteIftttIntegration:input_type -> api.DeleteIftttIntegrationRequest
-	71, // 90: api.ApplicationService.GenerateMqttIntegrationClientCertificate:input_type -> api.GenerateMqttIntegrationClientCertificateRequest
-	74, // 91: api.ApplicationService.ListDeviceProfiles:input_type -> api.ListApplicationDeviceProfilesRequest
-	77, // 92: api.ApplicationService.ListDeviceTags:input_type -> api.ListApplicationDeviceTagsRequest
-	7,  // 93: api.ApplicationService.Create:output_type -> api.CreateApplicationResponse
-	9,  // 94: api.ApplicationService.Get:output_type -> api.GetApplicationResponse
-	82, // 95: api.ApplicationService.Update:output_type -> google.protobuf.Empty
-	82, // 96: api.ApplicationService.Delete:output_type -> google.protobuf.Empty
-	13, // 97: api.ApplicationService.List:output_type -> api.ListApplicationsResponse
-	16, // 98: api.ApplicationService.ListIntegrations:output_type -> api.ListIntegrationsResponse
-	82, // 99: api.ApplicationService.CreateHttpIntegration:output_type -> google.protobuf.Empty
-	20, // 100: api.ApplicationService.GetHttpIntegration:output_type -> api.GetHttpIntegrationResponse
-	82, // 101: api.ApplicationService.UpdateHttpIntegration:output_type -> google.protobuf.Empty
-	82, // 102: api.ApplicationService.DeleteHttpIntegration:output_type -> google.protobuf.Empty
-	82, // 103: api.ApplicationService.CreateInfluxDbIntegration:output_type -> google.protobuf.Empty
-	26, // 104: api.ApplicationService.GetInfluxDbIntegration:output_type -> api.GetInfluxDbIntegrationResponse
-	82, // 105: api.ApplicationService.UpdateInfluxDbIntegration:output_type -> google.protobuf.Empty
-	82, // 106: api.ApplicationService.DeleteInfluxDbIntegration:output_type -> google.protobuf.Empty
-	82, // 107: api.ApplicationService.CreateThingsBoardIntegration:output_type -> google.protobuf.Empty
-	32, // 108: api.ApplicationService.GetThingsBoardIntegration:output_type -> api.GetThingsBoardIntegrationResponse
-	82, // 109: api.ApplicationService.UpdateThingsBoardIntegration:output_type -> google.protobuf.Empty
-	82, // 110: api.ApplicationService.DeleteThingsBoardIntegration:output_type -> google.protobuf.Empty
-	82, // 111: api.ApplicationService.CreateMyDevicesIntegration:output_type -> google.protobuf.Empty
-	38, // 112: api.ApplicationService.GetMyDevicesIntegration:output_type -> api.GetMyDevicesIntegrationResponse
-	82, // 113: api.ApplicationService.UpdateMyDevicesIntegration:output_type -> google.protobuf.Empty
-	82, // 114: api.ApplicationService.DeleteMyDevicesIntegration:output_type -> google.protobuf.Empty
-	82, // 115: api.ApplicationService.CreateGcpPubSubIntegration:output_type -> google.protobuf.Empty
-	44, // 116: api.ApplicationService.GetGcpPubSubIntegration:output_type -> api.GetGcpPubSubIntegrationResponse
-	82, // 117: api.ApplicationService.UpdateGcpPubSubIntegration:output_type -> google.protobuf.Empty
-	82, // 118: api.ApplicationService.DeleteGcpPubSubIntegration:output_type -> google.protobuf.Empty
-	82, // 119: api.ApplicationService.CreateAwsSnsIntegration:output_type -> google.protobuf.Empty
-	50, // 120: api.ApplicationService.GetAwsSnsIntegration:output_type -> api.GetAwsSnsIntegrationResponse
-	82, // 121: api.ApplicationService.UpdateAwsSnsIntegration:output_type -> google.protobuf.Empty
-	82, // 122: api.ApplicationService.DeleteAwsSnsIntegration:output_type -> google.protobuf.Empty
-	82, // 123: api.ApplicationService.CreateAzureServiceBusIntegration:output_type -> google.protobuf.Empty
-	56, // 124: api.ApplicationService.GetAzureServiceBusIntegration:output_type -> api.GetAzureServiceBusIntegrationResponse
-	82, // 125: api.ApplicationService.UpdateAzureServiceBusIntegration:output_type -> google.protobuf.Empty
-	82, // 126: api.ApplicationService.DeleteAzureServiceBusIntegration:output_type -> google.protobuf.Empty
-	82, // 127: api.ApplicationService.CreatePilotThingsIntegration:output_type -> google.protobuf.Empty
-	62, // 128: api.ApplicationService.GetPilotThingsIntegration:output_type -> api.GetPilotThingsIntegrationResponse
-	82, // 129: api.ApplicationService.UpdatePilotThingsIntegration:output_type -> google.protobuf.Empty
-	82, // 130: api.ApplicationService.DeletePilotThingsIntegration:output_type -> google.protobuf.Empty
-	82, // 131: api.ApplicationService.CreateIftttIntegration:output_type -> google.protobuf.Empty
-	68, // 132: api.ApplicationService.GetIftttIntegration:output_type -> api.GetIftttIntegrationResponse
-	82, // 133: api.ApplicationService.UpdateIftttIntegration:output_type -> google.protobuf.Empty
-	82, // 134: api.ApplicationService.DeleteIftttIntegration:output_type -> google.protobuf.Empty
-	72, // 135: api.ApplicationService.GenerateMqttIntegrationClientCertificate:output_type -> api.GenerateMqttIntegrationClientCertificateResponse
-	75, // 136: api.ApplicationService.ListDeviceProfiles:output_type -> api.ListApplicationDeviceProfilesResponse
-	78, // 137: api.ApplicationService.ListDeviceTags:output_type -> api.ListApplicationDeviceTagsResponse
-	93, // [93:138] is the sub-list for method output_type
-	48, // [48:93] is the sub-list for method input_type
-	48, // [48:48] is the sub-list for extension type_name
-	48, // [48:48] is the sub-list for extension extendee
-	0,  // [0:48] is the sub-list for field type_name
+	85,  // 0: api.Application.tags:type_name -> api.Application.TagsEntry
+	87,  // 1: api.ApplicationListItem.created_at:type_name -> google.protobuf.Timestamp
+	87,  // 2: api.ApplicationListItem.updated_at:type_name -> google.protobuf.Timestamp
+	4,   // 3: api.CreateApplicationRequest.application:type_name -> api.Application
+	4,   // 4: api.GetApplicationResponse.application:type_name -> api.Application
+	87,  // 5: api.GetApplicationResponse.created_at:type_name -> google.protobuf.Timestamp
+	87,  // 6: api.GetApplicationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	4,   // 7: api.UpdateApplicationRequest.application:type_name -> api.Application
+	5,   // 8: api.ListApplicationsResponse.result:type_name -> api.ApplicationListItem
+	1,   // 9: api.IntegrationListItem.kind:type_name -> api.IntegrationKind
+	15,  // 10: api.ListIntegrationsResponse.result:type_name -> api.IntegrationListItem
+	86,  // 11: api.HttpIntegration.headers:type_name -> api.HttpIntegration.HeadersEntry
+	0,   // 12: api.HttpIntegration.encoding:type_name -> api.Encoding
+	17,  // 13: api.CreateHttpIntegrationRequest.integration:type_name -> api.HttpIntegration
+	17,  // 14: api.GetHttpIntegrationResponse.integration:type_name -> api.HttpIntegration
+	17,  // 15: api.UpdateHttpIntegrationRequest.integration:type_name -> api.HttpIntegration
+	2,   // 16: api.InfluxDbIntegration.precision:type_name -> api.InfluxDbPrecision
+	3,   // 17: api.InfluxDbIntegration.version:type_name -> api.InfluxDbVersion
+	23,  // 18: api.CreateInfluxDbIntegrationRequest.integration:type_name -> api.InfluxDbIntegration
+	23,  // 19: api.GetInfluxDbIntegrationResponse.integration:type_name -> api.InfluxDbIntegration
+	23,  // 20: api.UpdateInfluxDbIntegrationRequest.integration:type_name -> api.InfluxDbIntegration
+	29,  // 21: api.CreateThingsBoardIntegrationRequest.integration:type_name -> api.ThingsBoardIntegration
+	29,  // 22: api.GetThingsBoardIntegrationResponse.integration:type_name -> api.ThingsBoardIntegration
+	29,  // 23: api.UpdateThingsBoardIntegrationRequest.integration:type_name -> api.ThingsBoardIntegration
+	35,  // 24: api.CreateMyDevicesIntegrationRequest.integration:type_name -> api.MyDevicesIntegration
+	35,  // 25: api.GetMyDevicesIntegrationResponse.integration:type_name -> api.MyDevicesIntegration
+	35,  // 26: api.UpdateMyDevicesIntegrationRequest.integration:type_name -> api.MyDevicesIntegration
+	0,   // 27: api.GcpPubSubIntegration.encoding:type_name -> api.Encoding
+	41,  // 28: api.CreateGcpPubSubIntegrationRequest.integration:type_name -> api.GcpPubSubIntegration
+	41,  // 29: api.GetGcpPubSubIntegrationResponse.integration:type_name -> api.GcpPubSubIntegration
+	41,  // 30: api.UpdateGcpPubSubIntegrationRequest.integration:type_name -> api.GcpPubSubIntegration
+	0,   // 31: api.AwsSnsIntegration.encoding:type_name -> api.Encoding
+	47,  // 32: api.CreateAwsSnsIntegrationRequest.integration:type_name -> api.AwsSnsIntegration
+	47,  // 33: api.GetAwsSnsIntegrationResponse.integration:type_name -> api.AwsSnsIntegration
+	47,  // 34: api.UpdateAwsSnsIntegrationRequest.integration:type_name -> api.AwsSnsIntegration
+	0,   // 35: api.AzureServiceBusIntegration.encoding:type_name -> api.Encoding
+	53,  // 36: api.CreateAzureServiceBusIntegrationRequest.integration:type_name -> api.AzureServiceBusIntegration
+	53,  // 37: api.GetAzureServiceBusIntegrationResponse.integration:type_name -> api.AzureServiceBusIntegration
+	53,  // 38: api.UpdateAzureServiceBusIntegrationRequest.integration:type_name -> api.AzureServiceBusIntegration
+	59,  // 39: api.CreatePilotThingsIntegrationRequest.integration:type_name -> api.PilotThingsIntegration
+	59,  // 40: api.GetPilotThingsIntegrationResponse.integration:type_name -> api.PilotThingsIntegration
+	59,  // 41: api.UpdatePilotThingsIntegrationRequest.integration:type_name -> api.PilotThingsIntegration
+	65,  // 42: api.CreateIftttIntegrationRequest.integration:type_name -> api.IftttIntegration
+	65,  // 43: api.GetIftttIntegrationResponse.integration:type_name -> api.IftttIntegration
+	65,  // 44: api.UpdateIftttIntegrationRequest.integration:type_name -> api.IftttIntegration
+	71,  // 45: api.CreateBlynkIntegrationRequest.integration:type_name -> api.BlynkIntegration
+	71,  // 46: api.GetBlynkIntegrationResponse.integration:type_name -> api.BlynkIntegration
+	71,  // 47: api.UpdateBlynkIntegrationRequest.integration:type_name -> api.BlynkIntegration
+	87,  // 48: api.GenerateMqttIntegrationClientCertificateResponse.expires_at:type_name -> google.protobuf.Timestamp
+	79,  // 49: api.ListApplicationDeviceProfilesResponse.result:type_name -> api.ApplicationDeviceProfileListItem
+	82,  // 50: api.ListApplicationDeviceTagsResponse.result:type_name -> api.ApplicationDeviceTagListItem
+	6,   // 51: api.ApplicationService.Create:input_type -> api.CreateApplicationRequest
+	8,   // 52: api.ApplicationService.Get:input_type -> api.GetApplicationRequest
+	10,  // 53: api.ApplicationService.Update:input_type -> api.UpdateApplicationRequest
+	11,  // 54: api.ApplicationService.Delete:input_type -> api.DeleteApplicationRequest
+	12,  // 55: api.ApplicationService.List:input_type -> api.ListApplicationsRequest
+	14,  // 56: api.ApplicationService.ListIntegrations:input_type -> api.ListIntegrationsRequest
+	18,  // 57: api.ApplicationService.CreateHttpIntegration:input_type -> api.CreateHttpIntegrationRequest
+	19,  // 58: api.ApplicationService.GetHttpIntegration:input_type -> api.GetHttpIntegrationRequest
+	21,  // 59: api.ApplicationService.UpdateHttpIntegration:input_type -> api.UpdateHttpIntegrationRequest
+	22,  // 60: api.ApplicationService.DeleteHttpIntegration:input_type -> api.DeleteHttpIntegrationRequest
+	24,  // 61: api.ApplicationService.CreateInfluxDbIntegration:input_type -> api.CreateInfluxDbIntegrationRequest
+	25,  // 62: api.ApplicationService.GetInfluxDbIntegration:input_type -> api.GetInfluxDbIntegrationRequest
+	27,  // 63: api.ApplicationService.UpdateInfluxDbIntegration:input_type -> api.UpdateInfluxDbIntegrationRequest
+	28,  // 64: api.ApplicationService.DeleteInfluxDbIntegration:input_type -> api.DeleteInfluxDbIntegrationRequest
+	30,  // 65: api.ApplicationService.CreateThingsBoardIntegration:input_type -> api.CreateThingsBoardIntegrationRequest
+	31,  // 66: api.ApplicationService.GetThingsBoardIntegration:input_type -> api.GetThingsBoardIntegrationRequest
+	33,  // 67: api.ApplicationService.UpdateThingsBoardIntegration:input_type -> api.UpdateThingsBoardIntegrationRequest
+	34,  // 68: api.ApplicationService.DeleteThingsBoardIntegration:input_type -> api.DeleteThingsBoardIntegrationRequest
+	36,  // 69: api.ApplicationService.CreateMyDevicesIntegration:input_type -> api.CreateMyDevicesIntegrationRequest
+	37,  // 70: api.ApplicationService.GetMyDevicesIntegration:input_type -> api.GetMyDevicesIntegrationRequest
+	39,  // 71: api.ApplicationService.UpdateMyDevicesIntegration:input_type -> api.UpdateMyDevicesIntegrationRequest
+	40,  // 72: api.ApplicationService.DeleteMyDevicesIntegration:input_type -> api.DeleteMyDevicesIntegrationRequest
+	42,  // 73: api.ApplicationService.CreateGcpPubSubIntegration:input_type -> api.CreateGcpPubSubIntegrationRequest
+	43,  // 74: api.ApplicationService.GetGcpPubSubIntegration:input_type -> api.GetGcpPubSubIntegrationRequest
+	45,  // 75: api.ApplicationService.UpdateGcpPubSubIntegration:input_type -> api.UpdateGcpPubSubIntegrationRequest
+	46,  // 76: api.ApplicationService.DeleteGcpPubSubIntegration:input_type -> api.DeleteGcpPubSubIntegrationRequest
+	48,  // 77: api.ApplicationService.CreateAwsSnsIntegration:input_type -> api.CreateAwsSnsIntegrationRequest
+	49,  // 78: api.ApplicationService.GetAwsSnsIntegration:input_type -> api.GetAwsSnsIntegrationRequest
+	51,  // 79: api.ApplicationService.UpdateAwsSnsIntegration:input_type -> api.UpdateAwsSnsIntegrationRequest
+	52,  // 80: api.ApplicationService.DeleteAwsSnsIntegration:input_type -> api.DeleteAwsSnsIntegrationRequest
+	54,  // 81: api.ApplicationService.CreateAzureServiceBusIntegration:input_type -> api.CreateAzureServiceBusIntegrationRequest
+	55,  // 82: api.ApplicationService.GetAzureServiceBusIntegration:input_type -> api.GetAzureServiceBusIntegrationRequest
+	57,  // 83: api.ApplicationService.UpdateAzureServiceBusIntegration:input_type -> api.UpdateAzureServiceBusIntegrationRequest
+	58,  // 84: api.ApplicationService.DeleteAzureServiceBusIntegration:input_type -> api.DeleteAzureServiceBusIntegrationRequest
+	60,  // 85: api.ApplicationService.CreatePilotThingsIntegration:input_type -> api.CreatePilotThingsIntegrationRequest
+	61,  // 86: api.ApplicationService.GetPilotThingsIntegration:input_type -> api.GetPilotThingsIntegrationRequest
+	63,  // 87: api.ApplicationService.UpdatePilotThingsIntegration:input_type -> api.UpdatePilotThingsIntegrationRequest
+	64,  // 88: api.ApplicationService.DeletePilotThingsIntegration:input_type -> api.DeletePilotThingsIntegrationRequest
+	66,  // 89: api.ApplicationService.CreateIftttIntegration:input_type -> api.CreateIftttIntegrationRequest
+	67,  // 90: api.ApplicationService.GetIftttIntegration:input_type -> api.GetIftttIntegrationRequest
+	69,  // 91: api.ApplicationService.UpdateIftttIntegration:input_type -> api.UpdateIftttIntegrationRequest
+	70,  // 92: api.ApplicationService.DeleteIftttIntegration:input_type -> api.DeleteIftttIntegrationRequest
+	72,  // 93: api.ApplicationService.CreateBlynkIntegration:input_type -> api.CreateBlynkIntegrationRequest
+	73,  // 94: api.ApplicationService.GetBlynkIntegration:input_type -> api.GetBlynkIntegrationRequest
+	75,  // 95: api.ApplicationService.UpdateBlynkIntegration:input_type -> api.UpdateBlynkIntegrationRequest
+	76,  // 96: api.ApplicationService.DeleteBlynkIntegration:input_type -> api.DeleteBlynkIntegrationRequest
+	77,  // 97: api.ApplicationService.GenerateMqttIntegrationClientCertificate:input_type -> api.GenerateMqttIntegrationClientCertificateRequest
+	80,  // 98: api.ApplicationService.ListDeviceProfiles:input_type -> api.ListApplicationDeviceProfilesRequest
+	83,  // 99: api.ApplicationService.ListDeviceTags:input_type -> api.ListApplicationDeviceTagsRequest
+	7,   // 100: api.ApplicationService.Create:output_type -> api.CreateApplicationResponse
+	9,   // 101: api.ApplicationService.Get:output_type -> api.GetApplicationResponse
+	88,  // 102: api.ApplicationService.Update:output_type -> google.protobuf.Empty
+	88,  // 103: api.ApplicationService.Delete:output_type -> google.protobuf.Empty
+	13,  // 104: api.ApplicationService.List:output_type -> api.ListApplicationsResponse
+	16,  // 105: api.ApplicationService.ListIntegrations:output_type -> api.ListIntegrationsResponse
+	88,  // 106: api.ApplicationService.CreateHttpIntegration:output_type -> google.protobuf.Empty
+	20,  // 107: api.ApplicationService.GetHttpIntegration:output_type -> api.GetHttpIntegrationResponse
+	88,  // 108: api.ApplicationService.UpdateHttpIntegration:output_type -> google.protobuf.Empty
+	88,  // 109: api.ApplicationService.DeleteHttpIntegration:output_type -> google.protobuf.Empty
+	88,  // 110: api.ApplicationService.CreateInfluxDbIntegration:output_type -> google.protobuf.Empty
+	26,  // 111: api.ApplicationService.GetInfluxDbIntegration:output_type -> api.GetInfluxDbIntegrationResponse
+	88,  // 112: api.ApplicationService.UpdateInfluxDbIntegration:output_type -> google.protobuf.Empty
+	88,  // 113: api.ApplicationService.DeleteInfluxDbIntegration:output_type -> google.protobuf.Empty
+	88,  // 114: api.ApplicationService.CreateThingsBoardIntegration:output_type -> google.protobuf.Empty
+	32,  // 115: api.ApplicationService.GetThingsBoardIntegration:output_type -> api.GetThingsBoardIntegrationResponse
+	88,  // 116: api.ApplicationService.UpdateThingsBoardIntegration:output_type -> google.protobuf.Empty
+	88,  // 117: api.ApplicationService.DeleteThingsBoardIntegration:output_type -> google.protobuf.Empty
+	88,  // 118: api.ApplicationService.CreateMyDevicesIntegration:output_type -> google.protobuf.Empty
+	38,  // 119: api.ApplicationService.GetMyDevicesIntegration:output_type -> api.GetMyDevicesIntegrationResponse
+	88,  // 120: api.ApplicationService.UpdateMyDevicesIntegration:output_type -> google.protobuf.Empty
+	88,  // 121: api.ApplicationService.DeleteMyDevicesIntegration:output_type -> google.protobuf.Empty
+	88,  // 122: api.ApplicationService.CreateGcpPubSubIntegration:output_type -> google.protobuf.Empty
+	44,  // 123: api.ApplicationService.GetGcpPubSubIntegration:output_type -> api.GetGcpPubSubIntegrationResponse
+	88,  // 124: api.ApplicationService.UpdateGcpPubSubIntegration:output_type -> google.protobuf.Empty
+	88,  // 125: api.ApplicationService.DeleteGcpPubSubIntegration:output_type -> google.protobuf.Empty
+	88,  // 126: api.ApplicationService.CreateAwsSnsIntegration:output_type -> google.protobuf.Empty
+	50,  // 127: api.ApplicationService.GetAwsSnsIntegration:output_type -> api.GetAwsSnsIntegrationResponse
+	88,  // 128: api.ApplicationService.UpdateAwsSnsIntegration:output_type -> google.protobuf.Empty
+	88,  // 129: api.ApplicationService.DeleteAwsSnsIntegration:output_type -> google.protobuf.Empty
+	88,  // 130: api.ApplicationService.CreateAzureServiceBusIntegration:output_type -> google.protobuf.Empty
+	56,  // 131: api.ApplicationService.GetAzureServiceBusIntegration:output_type -> api.GetAzureServiceBusIntegrationResponse
+	88,  // 132: api.ApplicationService.UpdateAzureServiceBusIntegration:output_type -> google.protobuf.Empty
+	88,  // 133: api.ApplicationService.DeleteAzureServiceBusIntegration:output_type -> google.protobuf.Empty
+	88,  // 134: api.ApplicationService.CreatePilotThingsIntegration:output_type -> google.protobuf.Empty
+	62,  // 135: api.ApplicationService.GetPilotThingsIntegration:output_type -> api.GetPilotThingsIntegrationResponse
+	88,  // 136: api.ApplicationService.UpdatePilotThingsIntegration:output_type -> google.protobuf.Empty
+	88,  // 137: api.ApplicationService.DeletePilotThingsIntegration:output_type -> google.protobuf.Empty
+	88,  // 138: api.ApplicationService.CreateIftttIntegration:output_type -> google.protobuf.Empty
+	68,  // 139: api.ApplicationService.GetIftttIntegration:output_type -> api.GetIftttIntegrationResponse
+	88,  // 140: api.ApplicationService.UpdateIftttIntegration:output_type -> google.protobuf.Empty
+	88,  // 141: api.ApplicationService.DeleteIftttIntegration:output_type -> google.protobuf.Empty
+	88,  // 142: api.ApplicationService.CreateBlynkIntegration:output_type -> google.protobuf.Empty
+	74,  // 143: api.ApplicationService.GetBlynkIntegration:output_type -> api.GetBlynkIntegrationResponse
+	88,  // 144: api.ApplicationService.UpdateBlynkIntegration:output_type -> google.protobuf.Empty
+	88,  // 145: api.ApplicationService.DeleteBlynkIntegration:output_type -> google.protobuf.Empty
+	78,  // 146: api.ApplicationService.GenerateMqttIntegrationClientCertificate:output_type -> api.GenerateMqttIntegrationClientCertificateResponse
+	81,  // 147: api.ApplicationService.ListDeviceProfiles:output_type -> api.ListApplicationDeviceProfilesResponse
+	84,  // 148: api.ApplicationService.ListDeviceTags:output_type -> api.ListApplicationDeviceTagsResponse
+	100, // [100:149] is the sub-list for method output_type
+	51,  // [51:100] is the sub-list for method input_type
+	51,  // [51:51] is the sub-list for extension type_name
+	51,  // [51:51] is the sub-list for extension extendee
+	0,   // [0:51] is the sub-list for field type_name
 }
 
 func init() { file_api_application_proto_init() }
@@ -4697,7 +5014,7 @@ func file_api_application_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_application_proto_rawDesc), len(file_api_application_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   77,
+			NumMessages:   83,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

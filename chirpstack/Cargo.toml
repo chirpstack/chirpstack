@@ -3,7 +3,7 @@
   description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
   repository = "https://github.com/chirpstack/chirpstack"
   homepage = "https://www.chirpstack.io/"
-  version = "4.14.1"
+  version = "4.15.0-test.1"
   authors = ["Orne Brocaar <info@brocaar.com>"]
   edition = "2021"
   publish = false
@@ -103,6 +103,7 @@
   http-body = "1.0"
   rust-embed = "8.7"
   mime_guess = "2.0"
+  url = "2.5"
   tower-http = { version = "0.6", features = ["trace", "auth"] }
 
   # Error handling
