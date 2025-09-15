@@ -122,12 +122,6 @@ pub fn run() {
   # Redis connection pool.
   max_open_connections={{ redis.max_open_connections }}
 
-  # Min idle connections.
-  #
-  # This sets the min. number of idle connections in the Redis connection
-  # pool (0 = equal to max_open_connections).
-  min_idle_connections={{ redis.min_idle_connections }}
-
 
 # API interface configuration.
 [api]

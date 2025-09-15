@@ -75,7 +75,6 @@ pub struct Redis {
     pub cluster: bool,
     pub key_prefix: String,
     pub max_open_connections: u32,
-    pub min_idle_connections: u32,
 }
 
 impl Default for Redis {
@@ -85,7 +84,6 @@ impl Default for Redis {
             cluster: false,
             key_prefix: "".into(),
             max_open_connections: 100,
-            min_idle_connections: 0,
         }
     }
 }
