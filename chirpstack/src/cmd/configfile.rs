@@ -19,6 +19,9 @@ pub fn run() {
 
   # Log as JSON.
   json={{ logging.json }}
+  
+  # Flatten JSON logs
+  json={{ logging.flatten_json }}
 
 
 # PostgreSQL configuration.

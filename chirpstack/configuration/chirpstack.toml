@@ -5,9 +5,6 @@
   #
   # Options are: trace, debug, info, warn error.
   level = "info"
-  json = false
-  flatten_json = false
-
 
 # PostgreSQL configuration.
 [postgresql]
