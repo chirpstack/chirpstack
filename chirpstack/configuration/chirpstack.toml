@@ -6,6 +6,7 @@
   # Options are: trace, debug, info, warn error.
   level = "info"
 
+
 # PostgreSQL configuration.
 [postgresql]
 
