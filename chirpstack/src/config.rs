@@ -39,6 +39,7 @@ pub struct Configuration {
 pub struct Logging {
     pub level: String,
     pub json: bool,
+    pub flatten_json: bool,
 }
 
 impl Default for Logging {
@@ -46,6 +47,7 @@ impl Default for Logging {
         Logging {
             level: "info".into(),
             json: false,
+            flatten_json: false,
         }
     }
 }

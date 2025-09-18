@@ -100,10 +100,13 @@ async fn main() -> Result<()> {
         ("backend", Level::from_str(&conf.logging.level).unwrap()),
         ("lrwn", Level::from_str(&conf.logging.level).unwrap()),
     ]);
-
     if conf.logging.json {
         tracing_subscriber::registry()
-            .with(tracing_subscriber::fmt::layer().json())
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .json()
+                    .flatten_event(conf.logging.flatten_json),
+            )
             .with(filter)
             .init();
     } else {
