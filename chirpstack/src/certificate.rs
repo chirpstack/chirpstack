@@ -2,8 +2,8 @@ use std::time::SystemTime;
 
 use anyhow::{Context, Result};
 use rcgen::{
-    Certificate, CertificateParams, DnType, ExtendedKeyUsagePurpose, KeyPair, KeyUsagePurpose,
-    SignatureAlgorithm,
+    Certificate, CertificateParams, DnType, ExtendedKeyUsagePurpose, Issuer, KeyPair,
+    KeyUsagePurpose, SignatureAlgorithm,
 };
 use tokio::fs;
 use uuid::Uuid;
@@ -16,8 +16,7 @@ fn gen_client_cert(
     id: &str,
     not_before: SystemTime,
     not_after: SystemTime,
-    issuer: &Certificate,
-    issuer_key: &KeyPair,
+    issuer: &Issuer<'static, KeyPair>,
 ) -> Result<(Certificate, KeyPair)> {
     let mut params = CertificateParams::new(vec![id.to_string()])?;
     params
@@ -32,10 +31,13 @@ fn gen_client_cert(
         .push(ExtendedKeyUsagePurpose::ClientAuth);
 
     let kp = KeyPair::generate()?;
-    Ok((params.signed_by(&kp, issuer, issuer_key)?, kp))
+    Ok((params.signed_by(&kp, issuer)?, kp))
 }
 
-async fn get_ca_cert(ca_cert_file: &str, ca_key_file: &str) -> Result<(Certificate, KeyPair)> {
+async fn get_ca_cert(
+    ca_cert_file: &str,
+    ca_key_file: &str,
+) -> Result<(String, Issuer<'static, KeyPair>)> {
     let ca_cert_s = fs::read_to_string(ca_cert_file)
         .await
         .context("Read gateway ca_cert")?;
@@ -47,10 +49,11 @@ async fn get_ca_cert(ca_cert_file: &str, ca_key_file: &str) -> Result<(Certifica
 
     let ca_key =
         KeyPair::from_pem_and_sign_algo(&ca_key_s, ca_key_algo).context("Parse gateway CA key")?;
-    let params =
-        CertificateParams::from_ca_cert_pem(&ca_cert_s).context("Parse gateway CA certificate")?;
 
-    Ok((params.self_signed(&ca_key)?, ca_key))
+    Ok((
+        ca_cert_s.clone(),
+        Issuer::from_ca_cert_pem(&ca_cert_s, ca_key)?,
+    ))
 }
 
 // This returns the CA, certificate and private-key as PEM encoded strings.
@@ -58,33 +61,23 @@ pub async fn client_cert_for_gateway_id(
     gateway_id: &EUI64,
 ) -> Result<(SystemTime, String, String, String)> {
     let conf = config::get();
-    let (ca_cert, ca_key) = get_ca_cert(&conf.gateway.ca_cert, &conf.gateway.ca_key)
+    let (ca_cert, ca_issuer) = get_ca_cert(&conf.gateway.ca_cert, &conf.gateway.ca_key)
         .await
         .context("Get CA cert")?;
     let not_before = SystemTime::now();
     let not_after = SystemTime::now() + conf.gateway.client_cert_lifetime;
-    let (gw_cert, gw_key) = gen_client_cert(
-        &gateway_id.to_string(),
-        not_before,
-        not_after,
-        &ca_cert,
-        &ca_key,
-    )
-    .context("Generate client certificate")?;
+    let (gw_cert, gw_key) =
+        gen_client_cert(&gateway_id.to_string(), not_before, not_after, &ca_issuer)
+            .context("Generate client certificate")?;
 
-    Ok((
-        not_after,
-        ca_cert.pem(),
-        gw_cert.pem(),
-        gw_key.serialize_pem(),
-    ))
+    Ok((not_after, ca_cert, gw_cert.pem(), gw_key.serialize_pem()))
 }
 
 pub async fn client_cert_for_application_id(
     application_id: &Uuid,
 ) -> Result<(SystemTime, String, String, String)> {
     let conf = config::get();
-    let (ca_cert, ca_key) = get_ca_cert(
+    let (ca_cert, ca_issuer) = get_ca_cert(
         &conf.integration.mqtt.client.ca_cert,
         &conf.integration.mqtt.client.ca_key,
     )
@@ -95,16 +88,10 @@ pub async fn client_cert_for_application_id(
         &application_id.to_string(),
         not_before,
         not_after,
-        &ca_cert,
-        &ca_key,
+        &ca_issuer,
     )?;
 
-    Ok((
-        not_after,
-        ca_cert.pem(),
-        app_cert.pem(),
-        app_key.serialize_pem(),
-    ))
+    Ok((not_after, ca_cert, app_cert.pem(), app_key.serialize_pem()))
 }
 
 // we are using String here, because else we run into lifetime issues.
