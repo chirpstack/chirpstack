@@ -845,7 +845,7 @@ dependencies = [
  "urlencoding",
  "uuid",
  "validator",
- "x509-parser 0.17.0",
+ "x509-parser 0.18.0",
 ]
 
 [[package]]
