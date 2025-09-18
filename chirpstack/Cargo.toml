@@ -73,7 +73,7 @@
   urlencoding = "2.1"
   geohash = "0.13"
   gcp_auth = "0.12"
-  lapin = { version = "3.2", default-features = false, features = [
+  lapin = { version = "3.5", default-features = false, features = [
     "rustls--ring",
     "rustls-native-certs",
   ] }
