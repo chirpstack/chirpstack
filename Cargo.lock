@@ -562,6 +562,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "backon"
+version = "1.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "592277618714fbcecda9a02ba7a8781f319d26532a88553bbacc77ba5d2b3a8d"
+dependencies = [
+ "fastrand",
+]
+
+[[package]]
 name = "backtrace"
 version = "0.3.75"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2545,12 +2554,13 @@ dependencies = [
 
 [[package]]
 name = "lapin"
-version = "3.2.1"
+version = "3.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bad5ae535873471fc68e6e25a90f92ab0a65f5bd10979b9f1c407ab4a3aaeaa3"
+checksum = "54935678f50cd37e6f3eeece6d1d9197fcb0c1718ee6dc5d75654c573a5aa62d"
 dependencies = [
  "amq-protocol",
  "async-trait",
+ "backon",
  "executor-trait 2.1.2",
  "flume",
  "futures-core",
