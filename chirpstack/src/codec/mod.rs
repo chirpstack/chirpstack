@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 mod cayenne_lpp;
 pub mod convert;
 mod js;
+pub mod js_plugin;
 
 #[derive(Deserialize, Serialize, Copy, Clone, Debug, Eq, PartialEq, AsExpression, FromSqlRow)]
 #[allow(non_camel_case_types, clippy::upper_case_acronyms)]
@@ -24,6 +25,7 @@ pub enum Codec {
     NONE,
     CAYENNE_LPP,
     JS,
+    JS_PLUGIN,
 }
 
 impl fmt::Display for Codec {
@@ -69,6 +71,7 @@ impl FromStr for Codec {
             "" | "NONE" => Codec::NONE,
             "CAYENNE_LPP" => Codec::CAYENNE_LPP,
             "JS" => Codec::JS,
+            "JS_PLUGIN" => Codec::JS_PLUGIN,
             _ => {
                 return Err(anyhow!("Unexpected codec: {}", s));
             }
@@ -82,12 +85,16 @@ pub async fn binary_to_struct(
     f_port: u8,
     variables: &HashMap<String, String>,
     decoder_config: &str,
+    codec_plugin_id: &str,
     b: &[u8],
 ) -> Result<Option<pbjson_types::Struct>> {
     Ok(match codec {
         Codec::NONE => None,
         Codec::CAYENNE_LPP => Some(cayenne_lpp::decode(b).context("CayenneLpp decode")?),
         Codec::JS => Some(js::decode(recv_time, f_port, variables, decoder_config, b).await?),
+        Codec::JS_PLUGIN => {
+            Some(js_plugin::decode(codec_plugin_id, recv_time, f_port, variables, b).await?)
+        }
     })
 }
 
@@ -96,6 +103,7 @@ pub async fn struct_to_binary(
     f_port: u8,
     variables: &HashMap<String, String>,
     encoder_config: &str,
+    codec_plugin_id: &str,
     obj: &prost_types::Struct,
 ) -> Result<(u8, Vec<u8>)> {
     Ok(match codec {
@@ -105,6 +113,7 @@ pub async fn struct_to_binary(
             cayenne_lpp::encode(obj).context("CayenneLpp encode")?,
         ),
         Codec::JS => js::encode(f_port, variables, encoder_config, obj).await?,
+        Codec::JS_PLUGIN => js_plugin::encode(codec_plugin_id, f_port, variables, obj).await?,
     })
 }
 
