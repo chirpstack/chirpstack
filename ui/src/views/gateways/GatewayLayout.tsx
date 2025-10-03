@@ -41,6 +41,8 @@ function GatewayLayout(props: IProps) {
 
       if (resp.getLastSeenAt() !== undefined) {
         setLastSeenAt(resp.getLastSeenAt()!.toDate());
+      } else {
+        setLastSeenAt(undefined);
       }
     });
   }, [props, gatewayId]);
