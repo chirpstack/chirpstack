@@ -50,6 +50,9 @@ impl ToStatus for storage::error::Error {
             storage::error::Error::ValidatorValidate(_) => {
                 Status::new(Code::InvalidArgument, format!("{:#}", self))
             }
+            &storage::error::Error::FCntUpAlreadyUpdated(_) => {
+                Status::new(Code::Internal, format!("{:#}", self))
+            }
             storage::error::Error::Multi(errors) => {
                 let errors = errors
                     .iter()

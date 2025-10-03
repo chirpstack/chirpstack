@@ -61,6 +61,7 @@ diesel::table! {
         secondary_dev_addr -> Nullable<Binary>,
         device_session -> Nullable<Binary>,
         app_layer_params -> Text,
+        f_cnt_up -> BigInt,
     }
 }
 

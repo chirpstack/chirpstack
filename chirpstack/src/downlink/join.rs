@@ -533,7 +533,7 @@ impl JoinAccept<'_> {
         // this is not an ACK, then DownlinkDataMIC will zero out ConfFCnt.
         relay_phy.set_downlink_data_mic(
             relay_ds.mac_version().from_proto(),
-            relay_ds.f_cnt_up - 1,
+            (relay_ctx.device.f_cnt_up as u32) - 1,
             &lrwn::AES128Key::from_slice(&relay_ds.s_nwk_s_int_key)?,
         )?;
 

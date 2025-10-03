@@ -661,6 +661,7 @@ impl JoinRequest {
                             DeviceClass::A
                         },
                     ),
+                    f_cnt_up: Some(0),
                     ..Default::default()
                 },
             )

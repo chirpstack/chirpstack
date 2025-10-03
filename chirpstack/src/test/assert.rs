@@ -27,8 +27,7 @@ pub fn f_cnt_up(dev_eui: EUI64, f_cnt: u32) -> Validator {
         let dev_eui = dev_eui;
         Box::pin(async move {
             let d = device::get(&dev_eui).await.unwrap();
-            let ds = d.get_device_session().unwrap();
-            assert_eq!(f_cnt, ds.f_cnt_up);
+            assert_eq!(f_cnt, d.f_cnt_up as u32);
         })
     })
 }

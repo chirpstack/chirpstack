@@ -66,6 +66,7 @@ diesel::table! {
         secondary_dev_addr -> Nullable<Bytea>,
         device_session -> Nullable<Bytea>,
         app_layer_params -> Jsonb,
+        f_cnt_up -> Int8,
     }
 }
 

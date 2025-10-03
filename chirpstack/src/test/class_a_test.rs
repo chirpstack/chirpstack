@@ -96,6 +96,7 @@ async fn test_gateway_filtering() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 7,
         device_session: Some(
             internal::DeviceSession {
                 mac_version: common::MacVersion::Lorawan102.into(),
@@ -103,7 +104,6 @@ async fn test_gateway_filtering() {
                 f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                 s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                 nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-                f_cnt_up: 7,
                 n_f_cnt_down: 5,
                 enabled_uplink_channel_indices: vec![0, 1, 2],
                 rx1_delay: 1,
@@ -196,6 +196,15 @@ async fn test_gateway_filtering() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -248,6 +257,7 @@ async fn test_lorawan_10_errors() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -271,7 +281,6 @@ async fn test_lorawan_10_errors() {
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
@@ -387,6 +396,15 @@ async fn test_lorawan_10_errors() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -439,6 +457,7 @@ async fn test_lorawan_11_errors() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -468,7 +487,6 @@ async fn test_lorawan_11_errors() {
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
@@ -535,6 +553,15 @@ async fn test_lorawan_11_errors() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -588,6 +615,7 @@ async fn test_lorawan_10_skip_f_cnt() {
         enabled_class: DeviceClass::A,
         skip_fcnt_check: true,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -611,7 +639,6 @@ async fn test_lorawan_10_skip_f_cnt() {
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
@@ -725,6 +752,15 @@ async fn test_lorawan_10_skip_f_cnt() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -778,6 +814,7 @@ async fn test_lorawan_10_device_disabled() {
         enabled_class: DeviceClass::A,
         is_disabled: true,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 7,
         ..Default::default()
     })
     .await
@@ -801,7 +838,6 @@ async fn test_lorawan_10_device_disabled() {
         f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        f_cnt_up: 7,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
@@ -895,6 +931,7 @@ async fn test_lorawan_10_uplink() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -928,7 +965,6 @@ async fn test_lorawan_10_uplink() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
@@ -1480,6 +1516,15 @@ async fn test_lorawan_10_uplink() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -1532,6 +1577,7 @@ async fn test_lorawan_10_end_to_end_enc() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -1557,7 +1603,6 @@ async fn test_lorawan_10_end_to_end_enc() {
         nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         app_s_key: None,
         js_session_key_id: vec![1, 2, 3],
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
@@ -1576,7 +1621,6 @@ async fn test_lorawan_10_end_to_end_enc() {
             kek_label: "kek-label".into(),
             aes_key: vec![1, 2, 3],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
@@ -1805,6 +1849,15 @@ async fn test_lorawan_10_end_to_end_enc() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -1857,6 +1910,7 @@ async fn test_lorawan_11_uplink() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -1890,7 +1944,6 @@ async fn test_lorawan_11_uplink() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         conf_f_cnt: 4,
         enabled_uplink_channel_indices: vec![0, 1, 2],
@@ -2036,6 +2089,15 @@ async fn test_lorawan_11_uplink() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -2092,6 +2154,7 @@ async fn test_lorawan_10_rx_delay() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -2125,7 +2188,6 @@ async fn test_lorawan_10_rx_delay() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
@@ -2248,6 +2310,15 @@ async fn test_lorawan_10_rx_delay() {
     }];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 
@@ -2370,6 +2441,15 @@ async fn test_lorawan_10_rx_delay() {
     }];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 
@@ -2482,6 +2562,15 @@ async fn test_lorawan_10_rx_delay() {
     }];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -2534,6 +2623,7 @@ async fn test_lorawan_10_mac_commands() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -2567,7 +2657,6 @@ async fn test_lorawan_10_mac_commands() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
@@ -2847,6 +2936,15 @@ async fn test_lorawan_10_mac_commands() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -2899,6 +2997,7 @@ async fn test_lorawan_11_mac_commands() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -2926,7 +3025,6 @@ async fn test_lorawan_11_mac_commands() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
@@ -3035,6 +3133,15 @@ async fn test_lorawan_11_mac_commands() {
     }];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -3087,6 +3194,7 @@ async fn test_lorawan_10_device_queue() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -3114,7 +3222,6 @@ async fn test_lorawan_10_device_queue() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx1_delay: 1,
@@ -3506,6 +3613,15 @@ async fn test_lorawan_10_device_queue() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -3558,6 +3674,7 @@ async fn test_lorawan_11_device_queue() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -3585,7 +3702,6 @@ async fn test_lorawan_11_device_queue() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         a_f_cnt_down: 3,
         enabled_uplink_channel_indices: vec![0, 1, 2],
@@ -3980,6 +4096,15 @@ async fn test_lorawan_11_device_queue() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -4033,6 +4158,7 @@ async fn test_lorawan_10_adr() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -4060,7 +4186,6 @@ async fn test_lorawan_10_adr() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
@@ -4805,6 +4930,15 @@ async fn test_lorawan_10_adr() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -4858,6 +4992,7 @@ async fn test_lorawan_10_device_status_request() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -4885,7 +5020,6 @@ async fn test_lorawan_10_device_status_request() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
@@ -5065,6 +5199,15 @@ async fn test_lorawan_10_device_status_request() {
     ];
 
     for tst in &tests {
+        let _ = device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(dev.f_cnt_up),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
         run_test(tst).await;
     }
 }
@@ -5117,6 +5260,7 @@ async fn test_lorawan_11_receive_window_selection() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -5150,7 +5294,6 @@ async fn test_lorawan_11_receive_window_selection() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         conf_f_cnt: 4,
         enabled_uplink_channel_indices: vec![0, 1, 2],
@@ -5230,6 +5373,16 @@ async fn test_lorawan_11_receive_window_selection() {
     })
     .await;
 
+    let _ = device::partial_update(
+        dev.dev_eui,
+        &device::DeviceChangeset {
+            f_cnt_up: Some(dev.f_cnt_up),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
+
     let mut conf = (*config::get()).clone();
     conf.regions[0].network.rx_window = 2;
     config::set(conf);
@@ -5299,6 +5452,16 @@ async fn test_lorawan_11_receive_window_selection() {
         ],
     })
     .await;
+
+    let _ = device::partial_update(
+        dev.dev_eui,
+        &device::DeviceChangeset {
+            f_cnt_up: Some(dev.f_cnt_up),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     let mut conf = (*config::get()).clone();
     conf.regions[0].network.rx_window = 0;
@@ -5400,6 +5563,16 @@ async fn test_lorawan_11_receive_window_selection() {
         ],
     })
     .await;
+
+    let _ = device::partial_update(
+        dev.dev_eui,
+        &device::DeviceChangeset {
+            f_cnt_up: Some(dev.f_cnt_up),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 5).unwrap();
 

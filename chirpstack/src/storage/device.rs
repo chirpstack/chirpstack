@@ -117,6 +117,7 @@ pub struct Device {
     pub secondary_dev_addr: Option<DevAddr>,
     pub device_session: Option<fields::DeviceSession>,
     pub app_layer_params: fields::device::AppLayerParams,
+    pub f_cnt_up: i64,
 }
 
 #[derive(AsChangeset, Debug, Clone, Default)]
@@ -135,6 +136,7 @@ pub struct DeviceChangeset {
     pub scheduler_run_after: Option<Option<DateTime<Utc>>>,
     pub is_disabled: Option<bool>,
     pub app_layer_params: Option<fields::device::AppLayerParams>,
+    pub f_cnt_up: Option<i64>,
 }
 
 impl Device {
@@ -193,6 +195,7 @@ impl Default for Device {
             secondary_dev_addr: None,
             device_session: None,
             app_layer_params: Default::default(),
+            f_cnt_up: 0,
         }
     }
 }
@@ -332,155 +335,178 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
     // This way, we limit the risk of overlapping Class-A downlinks with Class-B / -C
     // downlinks.
     let conf = config::get();
-    let scheduler_run_after = Utc::now()
+    let mut scheduler_run_after = Utc::now()
         + Duration::from_std(conf.network.scheduler.class_a_lock_duration)
             .map_err(anyhow::Error::new)?;
 
-    let mut c = get_async_db_conn().await?;
+    let mut devices: Vec<Device> = device::dsl::device
+        .filter(
+            device::dsl::dev_addr
+                .eq(&dev_addr)
+                .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
+        )
+        .filter(device::dsl::is_disabled.eq(false))
+        .load(&mut get_async_db_conn().await?)
+        .await?;
 
-    db_transaction::<ValidationStatus, Error, _>(&mut c, |c| {
-        Box::pin(async move {
-            let query = device::dsl::device
-                .filter(
-                    device::dsl::dev_addr
-                        .eq(&dev_addr)
-                        .or(device::dsl::secondary_dev_addr.eq(&dev_addr)),
-                )
-                .filter(device::dsl::is_disabled.eq(false));
-            #[cfg(feature = "postgres")]
-            let query = query.for_update();
-            let mut devices: Vec<Device> = query.load(c).await?;
+    if devices.is_empty() {
+        return Err(Error::NotFound(dev_addr.to_string()));
+    }
 
-            if devices.is_empty() {
-                return Err(Error::NotFound(dev_addr.to_string()));
+    for d in &mut devices {
+        let mut sessions = vec![];
+
+        if let Some(ds) = &d.device_session {
+            sessions.push(ds.clone());
+            if let Some(ds) = &ds.pending_rejoin_device_session {
+                sessions.push(ds.as_ref().into());
+            }
+        }
+
+        for ds in &mut sessions {
+            // Set the region_config_id if it is empty, e.g. after a ChirpStack v3 to
+            // ChirpStack v4 migration.
+            if ds.region_config_id.is_empty() {
+                ds.region_config_id = region_config_id.into();
             }
 
-            for d in &mut devices {
-                let mut sessions = vec![];
+            // Set the d.f_cnt_up if it is 0.
+            if d.f_cnt_up == 0 {
+                d.f_cnt_up = ds.deprecated_f_cnt_up.into();
+            }
 
-                if let Some(ds) = &d.device_session {
-                    sessions.push(ds.clone());
-                    if let Some(ds) = &ds.pending_rejoin_device_session {
-                        sessions.push(ds.as_ref().into());
-                    }
+            // Check that the DevAddr and region_config_id are equal.
+            // The latter is needed because we must assure that the uplink was received
+            // under the same region as the device was activated. In case the uplink was
+            // received under two region configurations, this will start two uplink flows,
+            // each with their own region_config_id associated.
+            if ds.region_config_id != region_config_id || ds.dev_addr != dev_addr.to_vec() {
+                continue;
+            }
+
+            // Get the full 32bit frame-counter.
+            let full_f_cnt = get_full_f_cnt_up(d.f_cnt_up as u32, f_cnt_orig);
+            let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
+            let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
+
+            // Check both the full frame-counter and the received frame-counter
+            // truncated to the 16LSB.
+            // The latter is needed in case of a frame-counter reset as the
+            // GetFullFCntUp will think the 16LSB has rolled over and will
+            // increment the 16MSB bit.
+            let mut mic_ok = false;
+            for f_cnt in [full_f_cnt, f_cnt_orig] {
+                // Set the full f_cnt.
+                if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                    pl.fhdr.f_cnt = f_cnt;
                 }
 
-                for ds in &mut sessions {
-                    // Set the region_config_id if it is empty, e.g. after a ChirpStack v3 to
-                    // ChirpStack v4 migration.
-                    if ds.region_config_id.is_empty() {
-                        ds.region_config_id = region_config_id.into();
-                    }
-                    // Check that the DevAddr and region_config_id are equal.
-                    // The latter is needed because we must assure that the uplink was received
-                    // under the same region as the device was activated. In case the uplink was
-                    // received under two region configurations, this will start two uplink flows,
-                    // each with their own region_config_id associated.
-                    if ds.region_config_id != region_config_id || ds.dev_addr != dev_addr.to_vec() {
-                        continue;
-                    }
+                mic_ok = phy
+                    .validate_uplink_data_mic(
+                        ds.mac_version().from_proto(),
+                        ds.conf_f_cnt,
+                        tx_dr,
+                        tx_ch,
+                        &f_nwk_s_int_key,
+                        &s_nwk_s_int_key,
+                    )
+                    .context("Validate MIC")?;
 
-                    // Get the full 32bit frame-counter.
-                    let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
-                    let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
-                    let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
-
-                    // Check both the full frame-counter and the received frame-counter
-                    // truncated to the 16LSB.
-                    // The latter is needed in case of a frame-counter reset as the
-                    // GetFullFCntUp will think the 16LSB has rolled over and will
-                    // increment the 16MSB bit.
-                    let mut mic_ok = false;
-                    for f_cnt in [full_f_cnt, f_cnt_orig] {
-                        // Set the full f_cnt.
-                        if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-                            pl.fhdr.f_cnt = f_cnt;
-                        }
-
-                        mic_ok = phy
-                            .validate_uplink_data_mic(
-                                ds.mac_version().from_proto(),
-                                ds.conf_f_cnt,
-                                tx_dr,
-                                tx_ch,
-                                &f_nwk_s_int_key,
-                                &s_nwk_s_int_key,
-                            )
-                            .context("Validate MIC")?;
-
-                        if mic_ok {
-                            break;
-                        }
-                    }
-
-                    if mic_ok {
-                        let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
-                            pl.fhdr.f_cnt
-                        } else {
-                            0
-                        };
-
-                        if let Some(relay) = &ds.relay {
-                            if !relayed && relay.ed_relay_only {
-                                info!(
-                                    dev_eui = %d.dev_eui,
-                                    "Only communication through relay is allowed"
-                                );
-                                return Err(Error::NotFound(dev_addr.to_string()));
-                            }
-                        }
-
-                        if full_f_cnt >= ds.f_cnt_up {
-                            // We immediately save the device-session to make sure that concurrent calls for
-                            // the same uplink will fail on the frame-counter validation.
-                            let ds_f_cnt_up = ds.f_cnt_up;
-                            ds.f_cnt_up = full_f_cnt + 1;
-
-                            if scheduler_run_after > d.scheduler_run_after.unwrap_or_default() {
-                                let _ = diesel::update(device::dsl::device.find(d.dev_eui))
-                                    .set((
-                                        device::device_session.eq(&ds.clone()),
-                                        device::scheduler_run_after.eq(&scheduler_run_after),
-                                    ))
-                                    .execute(c)
-                                    .await?;
-                            } else {
-                                let _ = diesel::update(device::dsl::device.find(d.dev_eui))
-                                    .set(device::device_session.eq(&ds.clone()))
-                                    .execute(c)
-                                    .await?;
-                            }
-
-                            // We do return the device-session with original frame-counter
-                            ds.f_cnt_up = ds_f_cnt_up;
-                            d.device_session = Some(ds.clone());
-                            return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
-                        } else if ds.skip_f_cnt_check {
-                            // re-transmission or frame-counter reset
-                            ds.f_cnt_up = 0;
-                            d.device_session = Some(ds.clone());
-                            return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
-                        } else if full_f_cnt == (ds.f_cnt_up - 1) {
-                            // re-transmission, the frame-counter did not increment
-                            d.device_session = Some(ds.clone());
-                            return Ok(ValidationStatus::Retransmission(full_f_cnt, d.clone()));
-                        } else {
-                            d.device_session = Some(ds.clone());
-                            return Ok(ValidationStatus::Reset(full_f_cnt, d.clone()));
-                        }
-                    }
-
-                    // Restore the original f_cnt.
-                    if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
-                        pl.fhdr.f_cnt = f_cnt_orig;
-                    }
+                if mic_ok {
+                    break;
                 }
             }
 
-            Err(Error::InvalidMIC)
-        })
-    })
-    .await
+            if mic_ok {
+                let full_f_cnt = if let lrwn::Payload::MACPayload(pl) = &phy.payload {
+                    pl.fhdr.f_cnt
+                } else {
+                    0
+                };
+
+                if let Some(relay) = &ds.relay {
+                    if !relayed && relay.ed_relay_only {
+                        info!(
+                            dev_eui = %d.dev_eui,
+                            "Only communication through relay is allowed"
+                        );
+                        return Err(Error::NotFound(dev_addr.to_string()));
+                    }
+                }
+
+                // Update DevAddr in case of context switch + reset frame-counter.
+                let mut context_switch = false;
+                if d.dev_addr != Some(dev_addr) {
+                    d.dev_addr = Some(dev_addr);
+                    d.secondary_dev_addr = None;
+                    d.f_cnt_up = 0;
+                    context_switch = true;
+                }
+
+                if full_f_cnt >= d.f_cnt_up as u32 {
+                    // Make sure we do not set the scheduler_run_after to an earlier timestamp.
+                    if d.scheduler_run_after.unwrap_or_default() > scheduler_run_after {
+                        scheduler_run_after = d.scheduler_run_after.unwrap_or_default();
+                    }
+
+                    // We immediately increment the device frame-counter to make sure that concurrent
+                    // calls for the same uplink will fail on the frame-counter validation.
+                    let mut update_query = diesel::update(device::table)
+                        .set((
+                            device::dsl::f_cnt_up.eq(full_f_cnt as i64 + 1),
+                            device::scheduler_run_after.eq(&scheduler_run_after),
+                        ))
+                        .filter(device::dsl::dev_eui.eq(d.dev_eui))
+                        .into_boxed();
+
+                    if context_switch {
+                        // In case of a context switch (pending rejoin-request), we do not
+                        // expect the f_cnt_up to be 0.
+                        update_query =
+                            update_query.filter(device::dsl::f_cnt_up.gt(full_f_cnt as i64));
+                    } else {
+                        // We expect that the full_f_cnt is greater than the device f_cnt_up.
+                        update_query =
+                            update_query.filter(device::dsl::f_cnt_up.le(full_f_cnt as i64));
+                    }
+
+                    let updated_rows = update_query
+                        .execute(&mut get_async_db_conn().await?)
+                        .await?;
+
+                    // If the above update statement does not update any rows, it means we
+                    // are processing two uplinks in parallel.
+                    if updated_rows == 0 {
+                        return Err(Error::FCntUpAlreadyUpdated(dev_addr.to_string()));
+                    }
+
+                    // We do return the device with original frame-counter.
+                    d.f_cnt_up = full_f_cnt.into();
+                    d.device_session = Some(ds.clone());
+                    return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
+                } else if ds.skip_f_cnt_check {
+                    // re-transmission or frame-counter reset
+                    d.f_cnt_up = 0;
+                    d.device_session = Some(ds.clone());
+                    return Ok(ValidationStatus::Ok(full_f_cnt, d.clone()));
+                } else if full_f_cnt == (d.f_cnt_up as u32 - 1) {
+                    // re-transmission, the frame-counter did not increment
+                    d.device_session = Some(ds.clone());
+                    return Ok(ValidationStatus::Retransmission(full_f_cnt, d.clone()));
+                } else {
+                    d.device_session = Some(ds.clone());
+                    return Ok(ValidationStatus::Reset(full_f_cnt, d.clone()));
+                }
+            }
+
+            // Restore the original f_cnt.
+            if let lrwn::Payload::MACPayload(pl) = &mut phy.payload {
+                pl.fhdr.f_cnt = f_cnt_orig;
+            }
+        }
+    }
+
+    Err(Error::InvalidMIC)
 }
 
 pub async fn get_for_phypayload(
@@ -495,7 +521,7 @@ pub async fn get_for_phypayload(
         return Err(Error::InvalidPayload("MacPayload".to_string()));
     };
 
-    let devices: Vec<Device> = device::dsl::device
+    let mut devices: Vec<Device> = device::dsl::device
         .filter(
             device::dsl::dev_addr
                 .eq(&dev_addr)
@@ -509,7 +535,7 @@ pub async fn get_for_phypayload(
         return Err(Error::NotFound(dev_addr.to_string()));
     }
 
-    for d in &devices {
+    for d in &mut devices {
         let mut sessions = vec![];
 
         if let Some(ds) = &d.device_session {
@@ -520,12 +546,18 @@ pub async fn get_for_phypayload(
         }
 
         for ds in &mut sessions {
+            // Set the d.f_cnt_up if it is 0.
+            if d.f_cnt_up == 0 {
+                d.f_cnt_up = ds.deprecated_f_cnt_up.into();
+            }
+
+            // TODO: Also validate region_config_id?
             if ds.dev_addr != dev_addr.to_vec() {
                 continue;
             }
 
             // Get the full 32bit frame-counter.
-            let full_f_cnt = get_full_f_cnt_up(ds.f_cnt_up, f_cnt_orig);
+            let full_f_cnt = get_full_f_cnt_up(d.f_cnt_up as u32, f_cnt_orig);
             let f_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.f_nwk_s_int_key)?;
             let s_nwk_s_int_key = lrwn::AES128Key::from_slice(&ds.s_nwk_s_int_key)?;
 
@@ -545,7 +577,7 @@ pub async fn get_for_phypayload(
                 )
                 .context("Validate MIC")?;
 
-            if mic_ok && full_f_cnt >= ds.f_cnt_up {
+            if mic_ok && full_f_cnt >= d.f_cnt_up as u32 {
                 return Ok(d.clone());
             }
 
@@ -1391,6 +1423,7 @@ pub mod test {
                 name: "0101010101010101".into(),
                 dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+                f_cnt_up: 100,
                 device_session: Some(
                     internal::DeviceSession {
                         region_config_id: "eu868".into(),
@@ -1407,7 +1440,6 @@ pub mod test {
                             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
                             0x01, 0x01, 0x01, 0x01,
                         ],
-                        f_cnt_up: 100,
                         skip_f_cnt_check: true,
                         ..Default::default()
                     }
@@ -1421,6 +1453,7 @@ pub mod test {
                 name: "0202020202020202".into(),
                 dev_eui: EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+                f_cnt_up: 200,
                 device_session: Some(
                     internal::DeviceSession {
                         region_config_id: "eu868".into(),
@@ -1437,7 +1470,6 @@ pub mod test {
                             0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
                             0x02, 0x02, 0x02, 0x02,
                         ],
-                        f_cnt_up: 200,
                         ..Default::default()
                     }
                     .into(),
@@ -1451,6 +1483,7 @@ pub mod test {
                 dev_eui: EUI64::from_be_bytes([3, 3, 3, 3, 3, 3, 3, 3]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
                 secondary_dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
+                f_cnt_up: 300,
                 device_session: Some(
                     internal::DeviceSession {
                         region_config_id: "eu868".into(),
@@ -1467,7 +1500,6 @@ pub mod test {
                             0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
                             0x03, 0x03, 0x03, 0x03,
                         ],
-                        f_cnt_up: 300,
                         pending_rejoin_device_session: Some(Box::new(internal::DeviceSession {
                             region_config_id: "eu868".into(),
                             dev_addr: vec![0x04, 0x03, 0x02, 0x01],
@@ -1483,7 +1515,6 @@ pub mod test {
                                 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
                                 0x04, 0x04, 0x04, 0x04, 0x04,
                             ],
-                            f_cnt_up: 0,
                             ..Default::default()
                         })),
                         ..Default::default()
@@ -1498,6 +1529,7 @@ pub mod test {
                 name: "0505050505050505".into(),
                 dev_eui: EUI64::from_be_bytes([5, 5, 5, 5, 5, 5, 5, 5]),
                 dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+                f_cnt_up: (1 << 16) + 1,
                 device_session: Some(
                     internal::DeviceSession {
                         region_config_id: "eu868".into(),
@@ -1514,7 +1546,6 @@ pub mod test {
                             0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
                             0x05, 0x05, 0x05, 0x05,
                         ],
-                        f_cnt_up: (1 << 16) + 1,
                         ..Default::default()
                     }
                     .into(),
@@ -1553,10 +1584,10 @@ pub mod test {
                     &devices[0].get_device_session().unwrap().s_nwk_s_int_key,
                 )
                 .unwrap(),
-                f_cnt: devices[0].get_device_session().unwrap().f_cnt_up,
+                f_cnt: devices[0].f_cnt_up as u32,
                 expected_retransmission: false,
                 expected_reset: false,
-                expected_fcnt_up: devices[0].get_device_session().unwrap().f_cnt_up,
+                expected_fcnt_up: devices[0].f_cnt_up as u32,
                 expected_dev_eui: devices[0].dev_eui,
                 expected_error: None,
             },
@@ -1571,10 +1602,10 @@ pub mod test {
                     &devices[1].get_device_session().unwrap().s_nwk_s_int_key,
                 )
                 .unwrap(),
-                f_cnt: devices[1].get_device_session().unwrap().f_cnt_up,
+                f_cnt: devices[1].f_cnt_up as u32,
                 expected_retransmission: false,
                 expected_reset: false,
-                expected_fcnt_up: devices[1].get_device_session().unwrap().f_cnt_up,
+                expected_fcnt_up: devices[1].f_cnt_up as u32,
                 expected_dev_eui: devices[1].dev_eui,
                 expected_error: None,
             },
@@ -1623,7 +1654,7 @@ pub mod test {
                     &devices[0].get_device_session().unwrap().s_nwk_s_int_key,
                 )
                 .unwrap(),
-                f_cnt: devices[0].get_device_session().unwrap().f_cnt_up,
+                f_cnt: devices[0].f_cnt_up as u32,
                 expected_error: Some("Object does not exist (id: 01010101)".to_string()),
                 ..Default::default()
             },
@@ -1636,7 +1667,7 @@ pub mod test {
                 s_nwk_s_int_key: AES128Key::from_bytes([
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
                 ]),
-                f_cnt: devices[0].get_device_session().unwrap().f_cnt_up,
+                f_cnt: devices[0].f_cnt_up as u32,
                 expected_error: Some("Invalid MIC".to_string()),
                 ..Default::default()
             },
