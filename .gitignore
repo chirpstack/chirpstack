@@ -3,6 +3,7 @@
 !/chirpstack/.rpm
 !/.cargo
 !/.env
+!/.docker-compose
 !.npmignore
 
 # Log files
