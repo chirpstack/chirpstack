@@ -27,6 +27,9 @@ pub enum Error {
     #[error("Invalid DevNonce")]
     InvalidDevNonce,
 
+    #[error("FCntUp already updated (dev_addr: {0})")]
+    FCntUpAlreadyUpdated(String),
+
     #[error("Validation error: {0}")]
     Validation(String),
 

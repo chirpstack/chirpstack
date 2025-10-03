@@ -892,6 +892,7 @@ impl JoinRequest {
                 secondary_dev_addr: Some(None),
                 join_eui: Some(req.join_eui),
                 device_session: Some(d.device_session.clone()),
+                f_cnt_up: Some(0),
                 ..Default::default()
             },
         )

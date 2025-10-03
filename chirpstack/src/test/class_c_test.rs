@@ -73,6 +73,7 @@ async fn test_downlink_scheduler() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::C,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -97,7 +98,6 @@ async fn test_downlink_scheduler() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
@@ -105,10 +105,16 @@ async fn test_downlink_scheduler() {
         ..Default::default()
     };
 
-    let ds_no_uplink = internal::DeviceSession {
-        f_cnt_up: 0,
-        ..ds.clone()
-    };
+    // set fcnt to 0
+    let _ = device::partial_update(
+        dev.dev_eui,
+        &device::DeviceChangeset {
+            f_cnt_up: Some(0),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     run_scheduler_test(&DownlinkTest {
         name: "device has not yet sent an uplink".into(),
@@ -120,17 +126,18 @@ async fn test_downlink_scheduler() {
             data: vec![1, 2, 3],
             ..Default::default()
         }],
-        device_session: Some(ds_no_uplink.clone()),
+        device_session: Some(ds.clone()),
         device_gateway_rx_info: Some(device_gateway_rx_info.clone()),
         assert: vec![assert::no_downlink_frame()],
     })
     .await;
 
-    // remove the schedule run after
+    // remove the schedule run after + reset fcnt
     device::partial_update(
         dev.dev_eui,
         &device::DeviceChangeset {
             scheduler_run_after: Some(None),
+            f_cnt_up: Some(dev.f_cnt_up),
             ..Default::default()
         },
     )
@@ -200,11 +207,12 @@ async fn test_downlink_scheduler() {
     })
     .await;
 
-    // remove the schedule run after
+    // remove the schedule run after + reset fcnt
     device::partial_update(
         dev.dev_eui,
         &device::DeviceChangeset {
             scheduler_run_after: Some(None),
+            f_cnt_up: Some(dev.f_cnt_up),
             ..Default::default()
         },
     )
@@ -261,11 +269,12 @@ async fn test_downlink_scheduler() {
     })
     .await;
 
-    // remove the schedule run after
+    // remove the schedule run after + reset fcnt
     device::partial_update(
         dev.dev_eui,
         &device::DeviceChangeset {
             scheduler_run_after: Some(None),
+            f_cnt_up: Some(dev.f_cnt_up),
             ..Default::default()
         },
     )

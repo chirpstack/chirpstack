@@ -84,6 +84,7 @@ async fn test_uplink() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::A,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -110,7 +111,6 @@ async fn test_uplink() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
@@ -157,6 +157,16 @@ async fn test_uplink() {
         ],
     })
     .await;
+
+    let _ = device::partial_update(
+        dev.dev_eui,
+        &device::DeviceChangeset {
+            f_cnt_up: Some(dev.f_cnt_up),
+            ..Default::default()
+        },
+    )
+    .await
+    .unwrap();
 
     // trigger beacon unlocked
     run_uplink_test(&UplinkTest {
@@ -243,6 +253,7 @@ async fn test_downlink_scheduler() {
         dev_eui: EUI64::from_be_bytes([2, 2, 3, 4, 5, 6, 7, 8]),
         enabled_class: DeviceClass::B,
         dev_addr: Some(DevAddr::from_be_bytes([1, 2, 3, 4])),
+        f_cnt_up: 8,
         ..Default::default()
     })
     .await
@@ -258,7 +269,6 @@ async fn test_downlink_scheduler() {
             kek_label: "".into(),
             aes_key: vec![16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
         }),
-        f_cnt_up: 8,
         n_f_cnt_down: 5,
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,

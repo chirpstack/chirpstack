@@ -81,6 +81,7 @@ async fn test_lorawan_10() {
         device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
         enabled_class: DeviceClass::A,
+        f_cnt_up: 10,
         ..Default::default()
     })
     .await
@@ -108,7 +109,6 @@ async fn test_lorawan_10() {
                 f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                 s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                 nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-                f_cnt_up: 10,
                 n_f_cnt_down: 5,
                 rx1_delay: 1,
                 rx2_frequency: 869525000,
@@ -295,6 +295,7 @@ async fn test_lorawan_10() {
                 ..Default::default()
             },
         ),
+        assert::f_cnt_up(dev.dev_eui, 0),
         assert::downlink_frame(gw::DownlinkFrame {
             items: vec![
                 gw::DownlinkFrameItem {

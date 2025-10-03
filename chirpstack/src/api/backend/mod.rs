@@ -365,7 +365,7 @@ async fn _handle_pr_start_req_data(
         },
         f_nwk_s_int_key,
         nwk_s_key,
-        f_cnt_up: Some(ds.f_cnt_up),
+        f_cnt_up: Some(d.f_cnt_up as u32),
         ..Default::default()
     })
 }

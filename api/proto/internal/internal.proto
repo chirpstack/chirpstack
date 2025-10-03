@@ -29,7 +29,9 @@ message DeviceSession {
   bytes js_session_key_id = 42;
 
   // Uplink frame-counter.
-  uint32 f_cnt_up = 9;
+  // Deprecated: This has been moved to the device record to make the
+  // de-duplication more efficient.
+  uint32 deprecated_f_cnt_up = 9;
 
   // Downlink frame-counter (ns).
   uint32 n_f_cnt_down = 10;

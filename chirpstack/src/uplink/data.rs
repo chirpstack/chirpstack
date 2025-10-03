@@ -530,14 +530,14 @@ impl Data {
         ) {
             Ok(_) => Ok(()),
             Err(v) => {
-                // Restore the device-session in case of an error (no gateways available).
-                // This is because during the fcnt validation, we immediately store the
-                // device-session with incremented fcnt to avoid race conditions.
+                // In case of error (e.g. the filter-set is empty), we restore the original
+                // FCntUp of the device. To avoid race-conditions, the frame-counter is
+                // incremented during the deduplication process.
                 let d = self.device.as_ref().unwrap();
                 device::partial_update(
                     d.dev_eui,
                     &device::DeviceChangeset {
-                        device_session: Some(d.device_session.clone()),
+                        f_cnt_up: Some(d.f_cnt_up),
                         ..Default::default()
                     },
                 )
@@ -1084,9 +1084,7 @@ impl Data {
     // required.
     fn sync_uplink_f_cnt(&mut self) -> Result<()> {
         trace!("Syncing uplink frame-counter");
-        let d = self.device.as_mut().unwrap();
-        let ds = d.get_device_session_mut()?;
-        ds.f_cnt_up = self.f_cnt_up_full + 1;
+        self.device_changeset.f_cnt_up = Some((self.f_cnt_up_full + 1).into());
         Ok(())
     }
 
