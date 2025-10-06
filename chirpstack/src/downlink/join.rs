@@ -13,7 +13,7 @@ use crate::api::helpers::FromProto;
 use crate::gateway::backend::send_downlink;
 use crate::storage::{device, downlink_frame, tenant};
 use crate::uplink::{RelayContext, UplinkFrameSet};
-use crate::{config, region};
+use crate::{config, region, sensitivity};
 use chirpstack_api::{gw, internal};
 
 pub struct JoinAccept<'a> {
@@ -197,12 +197,28 @@ impl JoinAccept<'_> {
     fn set_tx_info(&mut self) -> Result<()> {
         trace!("Setting tx-info");
 
-        if self.network_conf.rx_window == 0 || self.network_conf.rx_window == 1 {
-            self.set_tx_info_for_rx1()?;
+        let mut prefer_rx2_over_rx1 = self._prefer_rx2_dr()?;
+        if self.network_conf.rx2_prefer_on_link_budget {
+            prefer_rx2_over_rx1 = prefer_rx2_over_rx1 || self._prefer_rx2_link_budget()?;
         }
 
-        if self.network_conf.rx_window == 0 || self.network_conf.rx_window == 2 {
+        // RX2 is prefered and the RX window is set to automatic.
+        if prefer_rx2_over_rx1 && self.network_conf.rx_window == 0 {
+            // RX2
             self.set_tx_info_for_rx2()?;
+
+            // RX1
+            self.set_tx_info_for_rx1()?;
+        } else {
+            // RX1
+            if [0, 1].contains(&self.network_conf.rx_window) {
+                self.set_tx_info_for_rx1()?;
+            }
+
+            // RX2
+            if [0, 2].contains(&self.network_conf.rx_window) {
+                self.set_tx_info_for_rx2()?;
+            }
         }
 
         Ok(())
@@ -211,12 +227,28 @@ impl JoinAccept<'_> {
     fn set_tx_info_relayed(&mut self) -> Result<()> {
         trace!("Setting tx-info for relay");
 
-        if self.network_conf.rx_window == 0 || self.network_conf.rx_window == 1 {
-            self.set_tx_info_for_rx1_relayed()?;
+        let mut prefer_rx2_over_rx1 = self._prefer_rx2_dr()?;
+        if self.network_conf.rx2_prefer_on_link_budget {
+            prefer_rx2_over_rx1 = prefer_rx2_over_rx1 || self._prefer_rx2_link_budget()?;
         }
 
-        if self.network_conf.rx_window == 0 || self.network_conf.rx_window == 2 {
+        // RX2 is prefered and the RX window is set to automatic.
+        if prefer_rx2_over_rx1 && self.network_conf.rx_window == 0 {
+            // RX2
             self.set_tx_info_for_rx2_relayed()?;
+
+            // RX1
+            self.set_tx_info_for_rx1_relayed()?;
+        } else {
+            // RX1
+            if [0, 1].contains(&self.network_conf.rx_window) {
+                self.set_tx_info_for_rx1_relayed()?;
+            }
+
+            // RX2
+            if [0, 2].contains(&self.network_conf.rx_window) {
+                self.set_tx_info_for_rx2_relayed()?;
+            }
         }
 
         Ok(())
@@ -561,5 +593,92 @@ impl JoinAccept<'_> {
 
         downlink_frame::save(&df).await?;
         Ok(())
+    }
+
+    fn _prefer_rx2_dr(&self) -> Result<bool> {
+        let ds = self.device.get_device_session()?;
+
+        // The device has not yet been updated to the network-server RX2 parameters
+        // (using mac-commands). Do not prefer RX2 over RX1 in this case.
+        if ds.rx2_frequency != self.network_conf.rx2_frequency
+            || ds.rx2_dr != self.network_conf.rx2_dr as u32
+            || ds.rx1_dr_offset != self.network_conf.rx1_dr_offset as u32
+            || ds.rx1_delay != self.network_conf.rx1_delay as u32
+        {
+            return Ok(false);
+        }
+
+        // get rx1 data-rate
+        let dr_rx1 = self
+            .region_conf
+            .get_rx1_data_rate_index(self.uplink_frame_set.dr, ds.rx1_dr_offset as usize)?;
+
+        if dr_rx1 < self.network_conf.rx2_prefer_on_rx1_dr_lt {
+            return Ok(true);
+        }
+
+        Ok(false)
+    }
+
+    fn _prefer_rx2_link_budget(&self) -> Result<bool> {
+        let ds = self.device.get_device_session()?;
+
+        // The device has not yet been updated to the network-server RX2 parameters
+        // (using mac-commands). Do not prefer RX2 over RX1 in this case.
+        if ds.rx2_frequency != self.network_conf.rx2_frequency
+            || ds.rx2_dr != self.network_conf.rx2_dr as u32
+            || ds.rx1_dr_offset != self.network_conf.rx1_dr_offset as u32
+            || ds.rx1_delay != self.network_conf.rx1_delay as u32
+        {
+            return Ok(false);
+        }
+
+        // get rx1 data-rate
+        let dr_rx1_index = self
+            .region_conf
+            .get_rx1_data_rate_index(self.uplink_frame_set.dr, ds.rx1_dr_offset as usize)?;
+
+        let rx1_dr = self.region_conf.get_data_rate(dr_rx1_index)?;
+        let rx2_dr = self.region_conf.get_data_rate(ds.rx2_dr as u8)?;
+
+        // the calculation below only applies for LORA modulation
+        if let lrwn::region::DataRateModulation::Lora(rx1_dr) = rx1_dr {
+            if let lrwn::region::DataRateModulation::Lora(rx2_dr) = rx2_dr {
+                let tx_power_rx1 = if self.network_conf.downlink_tx_power != -1 {
+                    self.network_conf.downlink_tx_power
+                } else {
+                    self.region_conf.get_downlink_tx_power_eirp(
+                        self.region_conf.get_rx1_frequency_for_uplink_frequency(
+                            self.uplink_frame_set.tx_info.frequency,
+                        )?,
+                    ) as i32
+                };
+
+                let tx_power_rx2 = if self.network_conf.downlink_tx_power != -1 {
+                    self.network_conf.downlink_tx_power
+                } else {
+                    self.region_conf
+                        .get_downlink_tx_power_eirp(ds.rx2_frequency) as i32
+                };
+
+                let link_budget_rx1 = sensitivity::calculate_link_budget(
+                    rx1_dr.bandwidth,
+                    6.0,
+                    config::get_required_snr_for_sf(rx1_dr.spreading_factor)?,
+                    tx_power_rx1 as f32,
+                );
+
+                let link_budget_rx2 = sensitivity::calculate_link_budget(
+                    rx2_dr.bandwidth,
+                    6.0,
+                    config::get_required_snr_for_sf(rx2_dr.spreading_factor)?,
+                    tx_power_rx2 as f32,
+                );
+
+                return Ok(link_budget_rx2 > link_budget_rx1);
+            }
+        }
+
+        Ok(false)
     }
 }
