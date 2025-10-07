@@ -49,7 +49,7 @@ pub fn setup(conf: &config::Sqlite) -> Result<()> {
 
 fn sqlite_establish_connection(
     url: &str,
-) -> BoxFuture<ConnectionResult<SyncConnectionWrapper<SqliteConnection>>> {
+) -> BoxFuture<'_, ConnectionResult<SyncConnectionWrapper<SqliteConnection>>> {
     let url = url.to_string();
     tokio::task::spawn_blocking(
         move || -> ConnectionResult<SyncConnectionWrapper<SqliteConnection>> {
@@ -64,7 +64,7 @@ fn sqlite_establish_connection(
                 .map(|p| format!("PRAGMA {};", p))
                 .collect::<Vec<String>>()
                 .join("");
-            conn.batch_execute(&pragmas)
+            conn.batch_execute(pragmas)
                 .map_err(|err| ConnectionError::BadConnection(err.to_string()))?;
             Ok(SyncConnectionWrapper::new(conn))
         },

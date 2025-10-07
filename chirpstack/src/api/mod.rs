@@ -77,12 +77,9 @@ static GRPC_COUNTER: LazyLock<Family<GrpcLabels, Counter>> = LazyLock::new(|| {
 });
 static GRPC_HISTOGRAM: LazyLock<Family<GrpcLabels, Histogram>> = LazyLock::new(|| {
     let histogram = Family::<GrpcLabels, Histogram>::new_with_constructor(|| {
-        Histogram::new(
-            [
-                0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
-            ]
-            .into_iter(),
-        )
+        Histogram::new([
+            0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
+        ])
     });
     prometheus::register(
         "api_requests_handled_seconds",

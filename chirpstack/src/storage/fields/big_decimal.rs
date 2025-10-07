@@ -72,7 +72,7 @@ where
         let bd_val =
             <f64 as deserialize::FromSql<diesel::sql_types::Double, Sqlite>>::from_sql(value)?;
         let bd = bigdecimal::BigDecimal::from_f64(bd_val)
-            .ok_or_else(|| format!("Unrepresentable BigDecimal from f64 value"))?;
+            .ok_or_else(|| "Unrepresentable BigDecimal from f64 value".to_string())?;
         Ok(BigDecimal(bd))
     }
 }
@@ -84,7 +84,7 @@ impl serialize::ToSql<Double, Sqlite> for BigDecimal {
         let value = self
             .0
             .to_f64()
-            .ok_or_else(|| format!("Unrepresentable f64 value as BigDecimal"))?;
+            .ok_or_else(|| "Unrepresentable f64 value as BigDecimal".to_string())?;
         out.set_value(value);
         Ok(serialize::IsNull::No)
     }

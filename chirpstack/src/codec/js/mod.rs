@@ -189,7 +189,7 @@ pub async fn encode(
         let b: Vec<u8> = b.iter().map(|v| *v as u8).collect();
 
         // Get fPort, or else fallback on provided fPort.
-        let f_port: f64 = res.get("fPort").unwrap_or_else(|_| f_port as f64);
+        let f_port: f64 = res.get("fPort").unwrap_or(f_port as f64);
         let f_port = f_port as u8;
 
         Ok((f_port, b))

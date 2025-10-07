@@ -71,7 +71,7 @@ impl From<integration::UplinkEvent> for UplinkEvent {
     fn from(value: integration::UplinkEvent) -> Self {
         UplinkEvent {
             device_info: value.device_info.map(|v| v.into()),
-            time: value.time.clone(),
+            time: value.time,
             object: value.object.clone(),
         }
     }
@@ -87,7 +87,7 @@ impl From<integration::JoinEvent> for JoinEvent {
     fn from(value: integration::JoinEvent) -> Self {
         JoinEvent {
             device_info: value.device_info.map(|v| v.into()),
-            time: value.time.clone(),
+            time: value.time,
         }
     }
 }
