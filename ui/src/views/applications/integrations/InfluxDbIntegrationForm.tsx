@@ -60,6 +60,7 @@ function InfluxDbIntegrationForm(props: IProps) {
         <Select onChange={onVersionChange}>
           <Select.Option value={InfluxDbVersion.INFLUXDB_1}>InfluxDB v1</Select.Option>
           <Select.Option value={InfluxDbVersion.INFLUXDB_2}>InfluxDB v2</Select.Option>
+          <Select.Option value={InfluxDbVersion.INFLUXDB_3}>InfluxDB v3</Select.Option>
         </Select>
       </Form.Item>
       <Form.Item
@@ -67,7 +68,7 @@ function InfluxDbIntegrationForm(props: IProps) {
         name="endpoint"
         rules={[{ required: true, message: "Please enter an endpoint!" }]}
       >
-        <Input placeholder="http://localhost:8086/api/v2/write" />
+        <Input placeholder="http://localhost:8181/api/v3/write_lp" />
       </Form.Item>
       {selectedVersion === InfluxDbVersion.INFLUXDB_1 && (
         <Form.Item label="Username" name="username">
@@ -79,7 +80,7 @@ function InfluxDbIntegrationForm(props: IProps) {
           <Input.Password />
         </Form.Item>
       )}
-      {selectedVersion === InfluxDbVersion.INFLUXDB_1 && (
+      {(selectedVersion === InfluxDbVersion.INFLUXDB_1 || selectedVersion === InfluxDbVersion.INFLUXDB_3) && (
         <Form.Item label="Database name" name="db" rules={[{ required: true, message: "Please enter database name!" }]}>
           <Input />
         </Form.Item>
@@ -93,15 +94,13 @@ function InfluxDbIntegrationForm(props: IProps) {
           <Input />
         </Form.Item>
       )}
-      {selectedVersion === InfluxDbVersion.INFLUXDB_1 && (
+      {(selectedVersion === InfluxDbVersion.INFLUXDB_1 || selectedVersion === InfluxDbVersion.INFLUXDB_3) && (
         <Form.Item label="Select timestamp precision" name="precision">
           <Select>
             <Select.Option value={InfluxDbPrecision.NS}>Nanosecond</Select.Option>
             <Select.Option value={InfluxDbPrecision.U}>Microsecond</Select.Option>
             <Select.Option value={InfluxDbPrecision.MS}>Millisecond</Select.Option>
             <Select.Option value={InfluxDbPrecision.S}>Second</Select.Option>
-            <Select.Option value={InfluxDbPrecision.M}>Minute</Select.Option>
-            <Select.Option value={InfluxDbPrecision.H}>Hour</Select.Option>
           </Select>
         </Form.Item>
       )}
@@ -115,7 +114,7 @@ function InfluxDbIntegrationForm(props: IProps) {
           <Input />
         </Form.Item>
       )}
-      {selectedVersion === InfluxDbVersion.INFLUXDB_2 && (
+      {(selectedVersion === InfluxDbVersion.INFLUXDB_2 || selectedVersion === InfluxDbVersion.INFLUXDB_3) && (
         <Form.Item label="Token" name="token">
           <Input.Password />
         </Form.Item>

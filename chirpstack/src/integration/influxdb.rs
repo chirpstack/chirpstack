@@ -31,17 +31,14 @@ pub struct Integration {
     endpoint: String,
     version: InfluxDbVersion,
 
-    // v1
-    db: String,
-    username: String,
-    password: String,
-    retention_policy_name: String,
-    precision: String,
-
-    // v2
-    token: String,
-    organization: String,
-    bucket: String,
+    db: String,                    // v1 + v3
+    username: String,              // v1
+    password: String,              // v1
+    retention_policy_name: String, // v1
+    precision: InfluxDbPrecision,  // v1 + v3
+    token: String,                 // v2 + v3
+    organization: String,          // v2
+    bucket: String,                // v2
 }
 
 impl Integration {
@@ -56,17 +53,8 @@ impl Integration {
             username: conf.username.clone(),
             password: conf.password.clone(),
             retention_policy_name: conf.retention_policy_name.clone(),
-            precision: match InfluxDbPrecision::try_from(conf.precision)
-                .map_err(|_| anyhow!("Invalid precision"))?
-            {
-                InfluxDbPrecision::Ns => "ns",
-                InfluxDbPrecision::U => "u",
-                InfluxDbPrecision::Ms => "ms",
-                InfluxDbPrecision::S => "s",
-                InfluxDbPrecision::M => "m",
-                InfluxDbPrecision::H => "h",
-            }
-            .to_string(),
+            precision: InfluxDbPrecision::try_from(conf.precision)
+                .map_err(|_| anyhow!("Invalid precision"))?,
             token: conf.token.clone(),
             organization: conf.organization.clone(),
             bucket: conf.bucket.clone(),
@@ -83,17 +71,45 @@ impl Integration {
         if self.version == InfluxDbVersion::Influxdb2 {
             headers.insert(AUTHORIZATION, format!("Token {}", self.token).parse()?);
         }
+        if self.version == InfluxDbVersion::Influxdb3 {
+            headers.insert(AUTHORIZATION, format!("Bearer {}", self.token).parse()?);
+        }
 
         let mut query: Vec<(String, String)> = Vec::new();
         match self.version {
             InfluxDbVersion::Influxdb1 => {
                 query.push(("db".into(), self.db.clone()));
-                query.push(("precision".into(), self.precision.clone()));
+                query.push((
+                    "precision".into(),
+                    match self.precision {
+                        InfluxDbPrecision::Ns => "ns",
+                        InfluxDbPrecision::U => "u",
+                        InfluxDbPrecision::Ms => "ms",
+                        InfluxDbPrecision::S => "s",
+                        InfluxDbPrecision::M => "m",
+                        InfluxDbPrecision::H => "h",
+                    }
+                    .into(),
+                ));
                 query.push(("rp".into(), self.retention_policy_name.clone()));
             }
             InfluxDbVersion::Influxdb2 => {
                 query.push(("org".into(), self.organization.clone()));
                 query.push(("bucket".into(), self.bucket.clone()));
+            }
+            InfluxDbVersion::Influxdb3 => {
+                query.push(("db".into(), self.db.clone()));
+                query.push((
+                    "precision".into(),
+                    match self.precision {
+                        InfluxDbPrecision::Ns => "nanosecond",
+                        InfluxDbPrecision::U => "microsecond",
+                        InfluxDbPrecision::Ms => "millisecond",
+                        InfluxDbPrecision::S => "second",
+                        _ => "auto",
+                    }
+                    .into(),
+                ));
             }
         }
 
@@ -493,7 +509,7 @@ pub mod test {
             username: "foo".into(),
             password: "bar".into(),
             retention_policy_name: "DEFAULT".into(),
-            precision: "s".into(),
+            precision: InfluxDbPrecision::S,
             token: "".into(),
             organization: "".into(),
             bucket: "".into(),
@@ -847,7 +863,7 @@ device_uplink,application_name=test-app,dev_eui=0102030405060708,device_name=tes
             username: "".into(),
             password: "".into(),
             retention_policy_name: "".into(),
-            precision: "".into(),
+            precision: InfluxDbPrecision::default(),
             token: "testtoken".into(),
             organization: "testorg".into(),
             bucket: "testbucket".into(),
@@ -860,6 +876,58 @@ device_uplink,application_name=test-app,dev_eui=0102030405060708,device_name=tes
                 .query_param("org", "testorg")
                 .query_param("bucket", "testbucket")
                 .header("Authorization", "Token testtoken")
+                .body(r#"device_status_battery_level,application_name=test-app,dev_eui=0102030405060708,device_name=test-device,foo=bar value=48.430000
+device_status_margin,application_name=test-app,dev_eui=0102030405060708,device_name=test-device,foo=bar value=10i"#);
+            then.status(200);
+        });
+        i.status_event(
+            &HashMap::new(),
+            &integration::StatusEvent {
+                device_info: Some(integration::DeviceInfo {
+                    application_name: "test-app".into(),
+                    device_name: "test-device".into(),
+                    dev_eui: "0102030405060708".into(),
+                    tags: [("foo".to_string(), "bar".to_string())]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                    ..Default::default()
+                }),
+                battery_level: 48.43,
+                margin: 10,
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+        mock.assert();
+        mock.delete();
+    }
+
+    #[tokio::test]
+    async fn test_v3() {
+        let server = MockServer::start();
+
+        let i = Integration {
+            endpoint: server.url("/api/v3/write_lp"),
+            version: InfluxDbVersion::Influxdb3,
+            db: "test-db".into(),
+            username: "".into(),
+            password: "".into(),
+            retention_policy_name: "".into(),
+            precision: InfluxDbPrecision::Ms,
+            token: "test-token".into(),
+            organization: "".into(),
+            bucket: "".into(),
+        };
+
+        // status
+        let mut mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/api/v3/write_lp")
+                .query_param("db", "test-db")
+                .query_param("precision", "millisecond")
+                .header("Authorization", "Bearer test-token")
                 .body(r#"device_status_battery_level,application_name=test-app,dev_eui=0102030405060708,device_name=test-device,foo=bar value=48.430000
 device_status_margin,application_name=test-app,dev_eui=0102030405060708,device_name=test-device,foo=bar value=10i"#);
             then.status(200);

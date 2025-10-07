@@ -206,6 +206,7 @@ type InfluxDbVersion int32
 const (
 	InfluxDbVersion_INFLUXDB_1 InfluxDbVersion = 0
 	InfluxDbVersion_INFLUXDB_2 InfluxDbVersion = 1
+	InfluxDbVersion_INFLUXDB_3 InfluxDbVersion = 2
 )
 
 // Enum value maps for InfluxDbVersion.
@@ -213,10 +214,12 @@ var (
 	InfluxDbVersion_name = map[int32]string{
 		0: "INFLUXDB_1",
 		1: "INFLUXDB_2",
+		2: "INFLUXDB_3",
 	}
 	InfluxDbVersion_value = map[string]int32{
 		"INFLUXDB_1": 0,
 		"INFLUXDB_2": 1,
+		"INFLUXDB_3": 2,
 	}
 )
 
@@ -4683,12 +4686,14 @@ const file_api_application_proto_rawDesc = "" +
 	"\x02MS\x10\x02\x12\x05\n" +
 	"\x01S\x10\x03\x12\x05\n" +
 	"\x01M\x10\x04\x12\x05\n" +
-	"\x01H\x10\x05*1\n" +
+	"\x01H\x10\x05*A\n" +
 	"\x0fInfluxDbVersion\x12\x0e\n" +
 	"\n" +
 	"INFLUXDB_1\x10\x00\x12\x0e\n" +
 	"\n" +
-	"INFLUXDB_2\x10\x012\xc8>\n" +
+	"INFLUXDB_2\x10\x01\x12\x0e\n" +
+	"\n" +
+	"INFLUXDB_3\x10\x022\xc8>\n" +
 	"\x12ApplicationService\x12e\n" +
 	"\x06Create\x12\x1d.api.CreateApplicationRequest\x1a\x1e.api.CreateApplicationResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/api/applications\x12^\n" +
 	"\x03Get\x12\x1a.api.GetApplicationRequest\x1a\x1b.api.GetApplicationResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/applications/{id}\x12n\n" +

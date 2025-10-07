@@ -4,6 +4,7 @@ import { Card } from "antd";
 
 import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import {
+  InfluxDbVersion,
   InfluxDbIntegration,
   CreateInfluxDbIntegrationRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -30,6 +31,7 @@ function CreateInfluxDbIntegration(props: IProps) {
   };
 
   const i = new InfluxDbIntegration();
+  i.setVersion(InfluxDbVersion.INFLUXDB_3);
 
   return (
     <Card title="Add InfluxDB integration">
