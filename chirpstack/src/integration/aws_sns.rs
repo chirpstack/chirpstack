@@ -229,19 +229,4 @@ impl IntegrationTrait for Integration {
         self.publish("location", &di.application_id, &di.dev_eui, &pl)
             .await
     }
-
-    async fn integration_event(
-        &self,
-        _vars: &HashMap<String, String>,
-        pl: &integration::IntegrationEvent,
-    ) -> Result<()> {
-        let di = pl.device_info.as_ref().unwrap();
-        let pl = match self.json {
-            true => serde_json::to_string(&pl)?,
-            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
-        };
-
-        self.publish("integration", &di.application_id, &di.dev_eui, &pl)
-            .await
-    }
 }

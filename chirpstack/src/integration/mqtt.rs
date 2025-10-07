@@ -376,26 +376,6 @@ impl IntegrationTrait for Integration<'_> {
 
         self.publish_event(&topic, b).await
     }
-
-    async fn integration_event(
-        &self,
-        _vars: &HashMap<String, String>,
-        pl: &integration::IntegrationEvent,
-    ) -> Result<()> {
-        let dev_info = pl
-            .device_info
-            .as_ref()
-            .ok_or_else(|| anyhow!("device_info is None"))?;
-
-        let topic =
-            self.get_event_topic(&dev_info.application_id, &dev_info.dev_eui, "integration")?;
-        let b = match self.json {
-            true => serde_json::to_vec(&pl)?,
-            false => pl.encode_to_vec(),
-        };
-
-        self.publish_event(&topic, b).await
-    }
 }
 
 async fn message_callback(

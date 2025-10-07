@@ -314,29 +314,6 @@ message LocationEvent {
   common.Location location = 4;
 }
 
-// IntegrationEvent is the message that can be sent by an integration.
-// It allows for sending events which are provided by an external integration
-// which are "not native" to ChirpStack.
-message IntegrationEvent {
-  // Deduplication ID (UUID).
-  string deduplication_id = 1;
-
-  // Timestamp.
-  google.protobuf.Timestamp time = 2;
-
-  // Device info.
-  DeviceInfo device_info = 3;
-
-  // Integration name.
-  string integration_name = 4;
-
-  // Event type.
-  string event_type = 5;
-
-  // Struct containing the event object.
-  google.protobuf.Struct object = 6;
-}
-
 // DownlinkCommand is the command to enqueue a downlink payload for the given
 // device.
 message DownlinkCommand {

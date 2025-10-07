@@ -269,30 +269,6 @@ async fn handle_stream(
                 channel.send(pl).await?;
             }
         }
-        "integration" => {
-            trace!(key = %k, id=%stream_id, "Event-log received from stream");
-            if let redis::Value::BulkString(b) = v {
-                let pl = integration::IntegrationEvent::decode(&mut Cursor::new(b))?;
-                let pl = api::LogItem {
-                    id: stream_id.to_string(),
-                    time: pl.time.as_ref().map(|v| prost_types::Timestamp {
-                        seconds: v.seconds,
-                        nanos: v.nanos,
-                    }),
-                    description: k.to_string(),
-                    body: serde_json::to_string(&pl)?,
-                    properties: [
-                        ("Integration".into(), pl.integration_name.clone()),
-                        ("Event".into(), pl.event_type.clone()),
-                    ]
-                    .iter()
-                    .cloned()
-                    .collect(),
-                };
-
-                channel.send(pl).await?;
-            }
-        }
         _ => {
             error!(key = %k, "Unexpected key in in event-log stream");
         }

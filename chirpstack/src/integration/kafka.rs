@@ -205,20 +205,6 @@ impl IntegrationTrait for Integration<'_> {
         };
         self.publish_event("location", key, &b).await
     }
-
-    async fn integration_event(
-        &self,
-        _vars: &HashMap<String, String>,
-        pl: &integration::IntegrationEvent,
-    ) -> Result<()> {
-        let di = pl.device_info.as_ref().unwrap();
-        let key = self.get_event_key(&di.application_id, &di.dev_eui, "integration")?;
-        let b = match self.json {
-            true => serde_json::to_vec(&pl)?,
-            false => pl.encode_to_vec(),
-        };
-        self.publish_event("integration", key, &b).await
-    }
 }
 
 #[cfg(all(test, feature = "test-integration-kafka"))]

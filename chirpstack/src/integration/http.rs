@@ -181,19 +181,6 @@ impl IntegrationTrait for Integration {
 
         self.post_event("location", b).await
     }
-
-    async fn integration_event(
-        &self,
-        _vars: &HashMap<String, String>,
-        pl: &integration::IntegrationEvent,
-    ) -> Result<()> {
-        let b = match self.json {
-            true => serde_json::to_vec(&pl)?,
-            false => pl.encode_to_vec(),
-        };
-
-        self.post_event("integration", b).await
-    }
 }
 
 #[cfg(test)]
@@ -338,21 +325,6 @@ pub mod test {
             then.status(200);
         });
         i.location_event(&HashMap::new(), &pl).await.unwrap();
-        mock.assert();
-        mock.delete();
-
-        // integration event
-        let pl: integration::IntegrationEvent = Default::default();
-        let mut mock = server.mock(|when, then| {
-            when.method(POST)
-                .path("/")
-                .query_param("event", "integration")
-                .header("Foo", "Bar")
-                .body(serde_json::to_string(&pl).unwrap());
-
-            then.status(200);
-        });
-        i.integration_event(&HashMap::new(), &pl).await.unwrap();
         mock.assert();
         mock.delete();
     }

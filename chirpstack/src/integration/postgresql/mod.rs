@@ -512,39 +512,4 @@ impl IntegrationTrait for Integration {
             .await?;
         Ok(())
     }
-
-    async fn integration_event(
-        &self,
-        _vars: &HashMap<String, String>,
-        pl: &integration::IntegrationEvent,
-    ) -> Result<()> {
-        let di = pl.device_info.as_ref().unwrap();
-        info!(dev_eui = %di.dev_eui, event = "integration", "Inserting event");
-
-        let e = EventIntegration {
-            deduplication_id: Uuid::from_str(&pl.deduplication_id)?,
-            time: (*pl.time.as_ref().unwrap())
-                .try_into()
-                .map_err(anyhow::Error::msg)?,
-            tenant_id: Uuid::from_str(&di.tenant_id)?,
-            tenant_name: di.tenant_name.clone(),
-            application_id: Uuid::from_str(&di.application_id)?,
-            application_name: di.application_name.clone(),
-            device_profile_id: Uuid::from_str(&di.device_profile_id)?,
-            device_profile_name: di.device_profile_name.clone(),
-            device_name: di.device_name.clone(),
-            dev_eui: di.dev_eui.clone(),
-            tags: serde_json::to_value(&di.tags)?,
-            integration_name: pl.integration_name.clone(),
-            event_type: pl.event_type.clone(),
-            object: serde_json::to_value(&pl.object)?,
-        };
-        let mut c = self.pg_pool.get().await?;
-
-        diesel::insert_into(event_integration::table)
-            .values(&e)
-            .execute(&mut c)
-            .await?;
-        Ok(())
-    }
 }

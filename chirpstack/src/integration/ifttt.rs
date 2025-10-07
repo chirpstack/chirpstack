@@ -184,14 +184,6 @@ impl IntegrationTrait for Integration {
     ) -> Result<()> {
         Ok(())
     }
-
-    async fn integration_event(
-        &self,
-        _vars: &HashMap<String, String>,
-        _pl: &integration::IntegrationEvent,
-    ) -> Result<()> {
-        Ok(())
-    }
 }
 
 fn kind_to_string(k: &pbjson_types::value::Kind) -> String {

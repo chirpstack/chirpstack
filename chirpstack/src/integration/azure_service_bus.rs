@@ -218,21 +218,6 @@ impl IntegrationTrait for Integration {
         self.publish("location", &di.application_id, &di.dev_eui, &pl)
             .await
     }
-
-    async fn integration_event(
-        &self,
-        _vars: &HashMap<String, String>,
-        pl: &integration::IntegrationEvent,
-    ) -> Result<()> {
-        let di = pl.device_info.as_ref().unwrap();
-        let pl = match self.json {
-            true => serde_json::to_string(&pl)?,
-            false => general_purpose::STANDARD.encode(pl.encode_to_vec()),
-        };
-
-        self.publish("integration", &di.application_id, &di.dev_eui, &pl)
-            .await
-    }
 }
 
 type HmacSha256 = Hmac<Sha256>;
@@ -489,30 +474,6 @@ pub mod test {
         });
 
         i.location_event(&HashMap::new(), &pl).await.unwrap();
-        mock.assert();
-        mock.delete();
-
-        // integration
-        let pl = integration::IntegrationEvent {
-            device_info: Some(integration::DeviceInfo {
-                application_id: Uuid::nil().to_string(),
-                dev_eui: "0102030405060708".to_string(),
-                ..Default::default()
-            }),
-            ..Default::default()
-        };
-        let mut mock = server.mock(|when, then| {
-            when.method(POST)
-                .path("/messages")
-                .header_exists("Authorization")
-                .header("Content-Type", "application/json")
-                .header("event", "\"integration\"")
-                .body(serde_json::to_string(&pl).unwrap());
-
-            then.status(200);
-        });
-
-        i.integration_event(&HashMap::new(), &pl).await.unwrap();
         mock.assert();
         mock.delete();
     }

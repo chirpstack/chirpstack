@@ -110,19 +110,6 @@ impl IntegrationTrait for Integration {
         let b = pl.encode_to_vec();
         stream::event::log_event_for_device("location", &dev_info.dev_eui, &b).await
     }
-
-    async fn integration_event(
-        &self,
-        _vars: &HashMap<String, String>,
-        pl: &integration::IntegrationEvent,
-    ) -> Result<()> {
-        let dev_info = pl
-            .device_info
-            .as_ref()
-            .ok_or_else(|| anyhow!("device_info is None"))?;
-        let b = pl.encode_to_vec();
-        stream::event::log_event_for_device("integration", &dev_info.dev_eui, &b).await
-    }
 }
 
 #[cfg(test)]
@@ -223,18 +210,6 @@ pub mod test {
         };
         i.location_event(&HashMap::new(), &pl).await.unwrap();
         last_id = assert_reply(&last_id, "location", &pl.encode_to_vec()).await;
-
-        // integration
-        let pl = integration::IntegrationEvent {
-            device_info: Some(integration::DeviceInfo {
-                application_id: Uuid::nil().to_string(),
-                dev_eui: "0102030405060708".to_string(),
-                ..Default::default()
-            }),
-            ..Default::default()
-        };
-        i.integration_event(&HashMap::new(), &pl).await.unwrap();
-        let _ = assert_reply(&last_id, "integration", &pl.encode_to_vec()).await;
     }
 
     async fn assert_reply(last_id: &str, event: &str, b: &[u8]) -> String {

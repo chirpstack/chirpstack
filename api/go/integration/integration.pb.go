@@ -1135,99 +1135,6 @@ func (x *LocationEvent) GetLocation() *common.Location {
 	return nil
 }
 
-// IntegrationEvent is the message that can be sent by an integration.
-// It allows for sending events which are provided by an external integration
-// which are "not native" to ChirpStack.
-type IntegrationEvent struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Deduplication ID (UUID).
-	DeduplicationId string `protobuf:"bytes,1,opt,name=deduplication_id,json=deduplicationId,proto3" json:"deduplication_id,omitempty"`
-	// Timestamp.
-	Time *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=time,proto3" json:"time,omitempty"`
-	// Device info.
-	DeviceInfo *DeviceInfo `protobuf:"bytes,3,opt,name=device_info,json=deviceInfo,proto3" json:"device_info,omitempty"`
-	// Integration name.
-	IntegrationName string `protobuf:"bytes,4,opt,name=integration_name,json=integrationName,proto3" json:"integration_name,omitempty"`
-	// Event type.
-	EventType string `protobuf:"bytes,5,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
-	// Struct containing the event object.
-	Object        *structpb.Struct `protobuf:"bytes,6,opt,name=object,proto3" json:"object,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *IntegrationEvent) Reset() {
-	*x = IntegrationEvent{}
-	mi := &file_integration_integration_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *IntegrationEvent) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IntegrationEvent) ProtoMessage() {}
-
-func (x *IntegrationEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_integration_integration_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IntegrationEvent.ProtoReflect.Descriptor instead.
-func (*IntegrationEvent) Descriptor() ([]byte, []int) {
-	return file_integration_integration_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *IntegrationEvent) GetDeduplicationId() string {
-	if x != nil {
-		return x.DeduplicationId
-	}
-	return ""
-}
-
-func (x *IntegrationEvent) GetTime() *timestamppb.Timestamp {
-	if x != nil {
-		return x.Time
-	}
-	return nil
-}
-
-func (x *IntegrationEvent) GetDeviceInfo() *DeviceInfo {
-	if x != nil {
-		return x.DeviceInfo
-	}
-	return nil
-}
-
-func (x *IntegrationEvent) GetIntegrationName() string {
-	if x != nil {
-		return x.IntegrationName
-	}
-	return ""
-}
-
-func (x *IntegrationEvent) GetEventType() string {
-	if x != nil {
-		return x.EventType
-	}
-	return ""
-}
-
-func (x *IntegrationEvent) GetObject() *structpb.Struct {
-	if x != nil {
-		return x.Object
-	}
-	return nil
-}
-
 // DownlinkCommand is the command to enqueue a downlink payload for the given
 // device.
 type DownlinkCommand struct {
@@ -1256,7 +1163,7 @@ type DownlinkCommand struct {
 
 func (x *DownlinkCommand) Reset() {
 	*x = DownlinkCommand{}
-	mi := &file_integration_integration_proto_msgTypes[10]
+	mi := &file_integration_integration_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1268,7 +1175,7 @@ func (x *DownlinkCommand) String() string {
 func (*DownlinkCommand) ProtoMessage() {}
 
 func (x *DownlinkCommand) ProtoReflect() protoreflect.Message {
-	mi := &file_integration_integration_proto_msgTypes[10]
+	mi := &file_integration_integration_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1281,7 +1188,7 @@ func (x *DownlinkCommand) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownlinkCommand.ProtoReflect.Descriptor instead.
 func (*DownlinkCommand) Descriptor() ([]byte, []int) {
-	return file_integration_integration_proto_rawDescGZIP(), []int{10}
+	return file_integration_integration_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DownlinkCommand) GetId() string {
@@ -1439,16 +1346,7 @@ const file_integration_integration_proto_rawDesc = "" +
 	"\x04time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x04time\x128\n" +
 	"\vdevice_info\x18\x03 \x01(\v2\x17.integration.DeviceInfoR\n" +
 	"deviceInfo\x12,\n" +
-	"\blocation\x18\x04 \x01(\v2\x10.common.LocationR\blocation\"\xa2\x02\n" +
-	"\x10IntegrationEvent\x12)\n" +
-	"\x10deduplication_id\x18\x01 \x01(\tR\x0fdeduplicationId\x12.\n" +
-	"\x04time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x04time\x128\n" +
-	"\vdevice_info\x18\x03 \x01(\v2\x17.integration.DeviceInfoR\n" +
-	"deviceInfo\x12)\n" +
-	"\x10integration_name\x18\x04 \x01(\tR\x0fintegrationName\x12\x1d\n" +
-	"\n" +
-	"event_type\x18\x05 \x01(\tR\teventType\x12/\n" +
-	"\x06object\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06object\"\xef\x01\n" +
+	"\blocation\x18\x04 \x01(\v2\x10.common.LocationR\blocation\"\xef\x01\n" +
 	"\x0fDownlinkCommand\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\adev_eui\x18\x02 \x01(\tR\x06devEui\x12\x1c\n" +
@@ -1493,7 +1391,7 @@ func file_integration_integration_proto_rawDescGZIP() []byte {
 }
 
 var file_integration_integration_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_integration_integration_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_integration_integration_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_integration_integration_proto_goTypes = []any{
 	(LogLevel)(0),                    // 0: integration.LogLevel
 	(LogCode)(0),                     // 1: integration.LogCode
@@ -1506,58 +1404,54 @@ var file_integration_integration_proto_goTypes = []any{
 	(*LogEvent)(nil),                 // 8: integration.LogEvent
 	(*StatusEvent)(nil),              // 9: integration.StatusEvent
 	(*LocationEvent)(nil),            // 10: integration.LocationEvent
-	(*IntegrationEvent)(nil),         // 11: integration.IntegrationEvent
-	(*DownlinkCommand)(nil),          // 12: integration.DownlinkCommand
-	nil,                              // 13: integration.DeviceInfo.TagsEntry
-	nil,                              // 14: integration.LogEvent.ContextEntry
-	(common.DeviceClass)(0),          // 15: common.DeviceClass
-	(*timestamppb.Timestamp)(nil),    // 16: google.protobuf.Timestamp
-	(*structpb.Struct)(nil),          // 17: google.protobuf.Struct
-	(*gw.UplinkRxInfo)(nil),          // 18: gw.UplinkRxInfo
-	(*gw.UplinkTxInfo)(nil),          // 19: gw.UplinkTxInfo
-	(*common.JoinServerContext)(nil), // 20: common.JoinServerContext
-	(*gw.DownlinkTxInfo)(nil),        // 21: gw.DownlinkTxInfo
-	(*common.Location)(nil),          // 22: common.Location
+	(*DownlinkCommand)(nil),          // 11: integration.DownlinkCommand
+	nil,                              // 12: integration.DeviceInfo.TagsEntry
+	nil,                              // 13: integration.LogEvent.ContextEntry
+	(common.DeviceClass)(0),          // 14: common.DeviceClass
+	(*timestamppb.Timestamp)(nil),    // 15: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),          // 16: google.protobuf.Struct
+	(*gw.UplinkRxInfo)(nil),          // 17: gw.UplinkRxInfo
+	(*gw.UplinkTxInfo)(nil),          // 18: gw.UplinkTxInfo
+	(*common.JoinServerContext)(nil), // 19: common.JoinServerContext
+	(*gw.DownlinkTxInfo)(nil),        // 20: gw.DownlinkTxInfo
+	(*common.Location)(nil),          // 21: common.Location
 }
 var file_integration_integration_proto_depIdxs = []int32{
-	15, // 0: integration.DeviceInfo.device_class_enabled:type_name -> common.DeviceClass
-	13, // 1: integration.DeviceInfo.tags:type_name -> integration.DeviceInfo.TagsEntry
-	16, // 2: integration.UplinkEvent.time:type_name -> google.protobuf.Timestamp
+	14, // 0: integration.DeviceInfo.device_class_enabled:type_name -> common.DeviceClass
+	12, // 1: integration.DeviceInfo.tags:type_name -> integration.DeviceInfo.TagsEntry
+	15, // 2: integration.UplinkEvent.time:type_name -> google.protobuf.Timestamp
 	2,  // 3: integration.UplinkEvent.device_info:type_name -> integration.DeviceInfo
-	17, // 4: integration.UplinkEvent.object:type_name -> google.protobuf.Struct
-	18, // 5: integration.UplinkEvent.rx_info:type_name -> gw.UplinkRxInfo
-	19, // 6: integration.UplinkEvent.tx_info:type_name -> gw.UplinkTxInfo
+	16, // 4: integration.UplinkEvent.object:type_name -> google.protobuf.Struct
+	17, // 5: integration.UplinkEvent.rx_info:type_name -> gw.UplinkRxInfo
+	18, // 6: integration.UplinkEvent.tx_info:type_name -> gw.UplinkTxInfo
 	3,  // 7: integration.UplinkEvent.relay_rx_info:type_name -> integration.UplinkRelayRxInfo
-	20, // 8: integration.UplinkEvent.join_server_context:type_name -> common.JoinServerContext
-	16, // 9: integration.JoinEvent.time:type_name -> google.protobuf.Timestamp
+	19, // 8: integration.UplinkEvent.join_server_context:type_name -> common.JoinServerContext
+	15, // 9: integration.JoinEvent.time:type_name -> google.protobuf.Timestamp
 	2,  // 10: integration.JoinEvent.device_info:type_name -> integration.DeviceInfo
 	3,  // 11: integration.JoinEvent.relay_rx_info:type_name -> integration.UplinkRelayRxInfo
-	20, // 12: integration.JoinEvent.join_server_context:type_name -> common.JoinServerContext
-	16, // 13: integration.AckEvent.time:type_name -> google.protobuf.Timestamp
+	19, // 12: integration.JoinEvent.join_server_context:type_name -> common.JoinServerContext
+	15, // 13: integration.AckEvent.time:type_name -> google.protobuf.Timestamp
 	2,  // 14: integration.AckEvent.device_info:type_name -> integration.DeviceInfo
-	16, // 15: integration.TxAckEvent.time:type_name -> google.protobuf.Timestamp
+	15, // 15: integration.TxAckEvent.time:type_name -> google.protobuf.Timestamp
 	2,  // 16: integration.TxAckEvent.device_info:type_name -> integration.DeviceInfo
-	21, // 17: integration.TxAckEvent.tx_info:type_name -> gw.DownlinkTxInfo
-	16, // 18: integration.LogEvent.time:type_name -> google.protobuf.Timestamp
+	20, // 17: integration.TxAckEvent.tx_info:type_name -> gw.DownlinkTxInfo
+	15, // 18: integration.LogEvent.time:type_name -> google.protobuf.Timestamp
 	2,  // 19: integration.LogEvent.device_info:type_name -> integration.DeviceInfo
 	0,  // 20: integration.LogEvent.level:type_name -> integration.LogLevel
 	1,  // 21: integration.LogEvent.code:type_name -> integration.LogCode
-	14, // 22: integration.LogEvent.context:type_name -> integration.LogEvent.ContextEntry
-	16, // 23: integration.StatusEvent.time:type_name -> google.protobuf.Timestamp
+	13, // 22: integration.LogEvent.context:type_name -> integration.LogEvent.ContextEntry
+	15, // 23: integration.StatusEvent.time:type_name -> google.protobuf.Timestamp
 	2,  // 24: integration.StatusEvent.device_info:type_name -> integration.DeviceInfo
-	16, // 25: integration.LocationEvent.time:type_name -> google.protobuf.Timestamp
+	15, // 25: integration.LocationEvent.time:type_name -> google.protobuf.Timestamp
 	2,  // 26: integration.LocationEvent.device_info:type_name -> integration.DeviceInfo
-	22, // 27: integration.LocationEvent.location:type_name -> common.Location
-	16, // 28: integration.IntegrationEvent.time:type_name -> google.protobuf.Timestamp
-	2,  // 29: integration.IntegrationEvent.device_info:type_name -> integration.DeviceInfo
-	17, // 30: integration.IntegrationEvent.object:type_name -> google.protobuf.Struct
-	17, // 31: integration.DownlinkCommand.object:type_name -> google.protobuf.Struct
-	16, // 32: integration.DownlinkCommand.expires_at:type_name -> google.protobuf.Timestamp
-	33, // [33:33] is the sub-list for method output_type
-	33, // [33:33] is the sub-list for method input_type
-	33, // [33:33] is the sub-list for extension type_name
-	33, // [33:33] is the sub-list for extension extendee
-	0,  // [0:33] is the sub-list for field type_name
+	21, // 27: integration.LocationEvent.location:type_name -> common.Location
+	16, // 28: integration.DownlinkCommand.object:type_name -> google.protobuf.Struct
+	15, // 29: integration.DownlinkCommand.expires_at:type_name -> google.protobuf.Timestamp
+	30, // [30:30] is the sub-list for method output_type
+	30, // [30:30] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_integration_integration_proto_init() }
@@ -1571,7 +1465,7 @@ func file_integration_integration_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_integration_integration_proto_rawDesc), len(file_integration_integration_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   13,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
