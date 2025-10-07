@@ -6,24 +6,31 @@
   publish = false
 
 [dependencies]
-  serde = { version = "1.0", features = ["derive", "rc"] }
-  serde_json = "1.0"
-  thiserror = "2.0"
-  anyhow = "1.0"
-  tracing = "0.1"
-  hex = "0.4"
-  rand = "0.9"
-  aes-kw = "0.2"
-  reqwest = { version = "0.12", features = [
-    "json",
-    "rustls-tls",
-  ], default-features = false }
-  chrono = { version = "0.4", features = ["serde"] }
-  tokio = { version = "1.44", features = ["macros"] }
   chirpstack_api = { path = "../api/rust", default-features = false, features = [
     "json",
   ] }
 
+  # Encoding
+  serde = { workspace = true }
+  serde_json = { workspace = true }
+  hex = { workspace = true }
+
+  # Error
+  thiserror = { workspace = true }
+  anyhow = { workspace = true }
+
+  # Logging
+  tracing = { workspace = true }
+
+  # Crypto
+  rand = { workspace = true }
+  aes-kw = { workspace = true }
+
+  # HTTP
+  reqwest = { workspace = true }
+  chrono = { workspace = true }
+  tokio = { workspace = true }
+
 # Development and testing
 [dev-dependencies]
-  httpmock = "0.7.0"
+  httpmock = { workspace = true }

@@ -10,19 +10,12 @@
 
 [dependencies]
   chirpstack_api = { path = "../api/rust", version = "4.15.0-test.1" }
-  redis = { version = "0.32", features = [
-    "cluster-async",
-    "tokio-rustls-comp",
-  ] }
-  anyhow = "1.0"
-  tracing = "0.1"
-  tracing-subscriber = { version = "0.3", features = [
-    "fmt",
-    "ansi",
-    "json",
-  ], default-features = true }
-  async-trait = "0.1"
-  serde = { version = "1.0", features = ["derive"] }
-  tokio = { version = "1.44", features = ["macros", "rt-multi-thread"] }
-  serde_json = "1.0"
-  toml = "0.9"
+  redis = { workspace = true, features = ["cluster-async"] }
+  anyhow = { workspace = true }
+  tracing = { workspace = true }
+  tracing-subscriber = { workspace = true }
+  async-trait = { workspace = true }
+  serde = { workspace = true }
+  tokio = { workspace = true, features = ["rt-multi-thread"] }
+  serde_json = { workspace = true }
+  toml = { workspace = true }

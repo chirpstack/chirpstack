@@ -22,20 +22,18 @@
   internal = []
 
 [dependencies]
-  prost = "0.14"
-  prost-types = "0.14"
-  hex = "0.4"
-  rand = "0.9"
-  tonic = { version = "0.14", features = [
-    "codegen",
-  ], default-features = false, optional = true }
-  tonic-prost = { version = "0.14", optional = true }
-  tokio = { version = "1.47", features = ["macros"], optional = true }
-  pbjson = { version = "0.8", optional = true }
-  pbjson-types = { version = "0.8", optional = true }
-  serde = { version = "1.0", optional = true }
+  prost = { workspace = true }
+  prost-types = { workspace = true }
+  hex = { workspace = true }
+  rand = { workspace = true }
+  tonic = { workspace = true, features = ["codegen"], optional = true }
+  tonic-prost = { workspace = true, optional = true }
+  tokio = { workspace = true, optional = true }
+  pbjson = { workspace = true, optional = true }
+  pbjson-types = { workspace = true, optional = true }
+  serde = { workspace = true, optional = true }
 
 [build-dependencies]
-  tonic-build = { version = "0.14", default-features = false }
-  tonic-prost-build = { version = "0.14", default-features = false }
-  pbjson-build = "0.8"
+  tonic-build = { workspace = true }
+  tonic-prost-build = { workspace = true }
+  pbjson-build = { workspace = true }

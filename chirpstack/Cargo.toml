@@ -11,39 +11,32 @@
 
 [dependencies]
   # CLI interface
-  clap = { version = "4.5", features = ["derive"] }
+  clap = { workspace = true }
 
   # Configuration
-  serde = { version = "1.0", features = ["derive", "rc"] }
-  serde_yaml = "0.9"
-  serde_json = "1.0"
-  serde_urlencoded = "0.7"
-  humantime-serde = "1.1"
-  toml = "0.9"
-  handlebars = "6.3"
-  validator = { version = "0.20", features = ["derive"] }
+  serde = { workspace = true }
+  serde_yaml = { workspace = true }
+  serde_json = { workspace = true }
+  serde_urlencoded = { workspace = true }
+  humantime-serde = { workspace = true }
+  toml = { workspace = true }
+  handlebars = { workspace = true }
+  validator = { workspace = true }
 
   # Database
-  email_address = "0.2"
-  diesel = { version = "2.2", features = ["chrono", "numeric"] }
-  diesel_migrations = { version = "2.2" }
-  diesel-async = { version = "0.6", features = [
-    "deadpool",
-    "async-connection-wrapper",
-  ] }
-  tokio-postgres = { version = "0.7", optional = true }
-  tokio-postgres-rustls = { version = "0.13", optional = true }
-  bigdecimal = "0.4"
-  redis = { version = "0.32", features = ["tls-rustls", "tokio-rustls-comp"] }
-  deadpool-redis = { version = "0.22", features = ["cluster", "serde"] }
+  email_address = { workspace = true }
+  diesel = { workspace = true, features = ["chrono", "numeric"] }
+  diesel_migrations = { workspace = true }
+  diesel-async = { workspace = true }
+  tokio-postgres = { workspace = true, optional = true }
+  tokio-postgres-rustls = { workspace = true, optional = true }
+  bigdecimal = { workspace = true }
+  redis = { workspace = true }
+  deadpool-redis = { workspace = true }
 
   # Logging
-  tracing = "0.1"
-  tracing-subscriber = { version = "0.3", features = [
-    "fmt",
-    "ansi",
-    "json",
-  ], default-features = true }
+  tracing = { workspace = true }
+  tracing-subscriber = { workspace = true }
 
   # ChirpStack API definitions
   chirpstack_api = { path = "../api/rust", features = [
@@ -61,107 +54,88 @@
   backend = { path = "../backend" }
 
   # HTTP
-  reqwest = { version = "0.12", features = [
-    "json",
-    "rustls-tls-native-roots",
-  ], default-features = false }
+  reqwest = { workspace = true }
 
   # Integrations
-  aws-sign-v4 = "0.3"
-  hmac = "0.12"
-  sha2 = "0.10"
-  urlencoding = "2.1"
-  geohash = "0.13"
-  gcp_auth = "0.12"
-  lapin = { version = "3.2", default-features = false, features = [
-    "rustls--ring",
-    "rustls-native-certs",
-  ] }
-  tokio-executor-trait = "3.1"
-  tokio-reactor-trait = "4.1"
-  rdkafka = { version = "0.38", default-features = false, features = [
-    "tokio",
-    "cmake-build",
-  ] }
+  aws-sign-v4 = { workspace = true }
+  hmac = { workspace = true }
+  sha2 = { workspace = true }
+  urlencoding = { workspace = true }
+  geohash = { workspace = true }
+  gcp_auth = { workspace = true }
+  lapin = { workspace = true }
+  tokio-executor-trait = { workspace = true }
+  tokio-reactor-trait = { workspace = true }
+  rdkafka = { workspace = true }
 
   # gRPC and Protobuf
-  tonic-web = "0.14"
-  tonic-reflection = "0.14"
-  tokio = { version = "1.47", features = ["macros", "rt-multi-thread"] }
-  tokio-stream = "0.1"
-  prost-types = "0.14"
-  prost = "0.14"
-  pbjson-types = "0.8"
+  tonic-web = { workspace = true }
+  tonic-reflection = { workspace = true }
+  tokio = { workspace = true, features = ["rt-multi-thread"] }
+  tokio-stream = { workspace = true }
+  prost-types = { workspace = true }
+  prost = { workspace = true }
+  pbjson-types = { workspace = true }
 
   # gRPC and HTTP multiplexing
-  axum = "0.8"
-  axum-server = { version = "0.7", features = ["tls-rustls-no-provider"] }
-  tower = { version = "0.5", features = ["util"] }
-  futures = "0.3"
-  futures-util = "0.3"
-  http = "1.3"
-  http-body = "1.0"
-  rust-embed = "8.7"
-  mime_guess = "2.0"
-  url = "2.5"
-  tower-http = { version = "0.6", features = ["trace", "auth"] }
+  axum = { workspace = true }
+  axum-server = { workspace = true }
+  tower = { workspace = true }
+  futures = { workspace = true }
+  futures-util = { workspace = true }
+  http = { workspace = true }
+  http-body = { workspace = true }
+  rust-embed = { workspace = true }
+  mime_guess = { workspace = true }
+  url = { workspace = true }
+  tower-http = { workspace = true }
 
   # Error handling
-  thiserror = "2.0"
-  anyhow = "1.0"
+  thiserror = { workspace = true }
+  anyhow = { workspace = true }
 
   # Authentication
-  pbkdf2 = { version = "0.12", features = ["simple"] }
-  jsonwebtoken = "9.3"
-  rustls = { version = "0.23", default-features = false, features = [
-    "logging",
-    "std",
-    "tls12",
-    "ring",
-  ] }
-  rustls-native-certs = "0.8"
-  rustls-pemfile = "2.2"
-  pem = "3.0"
-  x509-parser = "0.17"
-  rsa = "0.9"
-  sec1 = { version = "0.7", features = ["alloc", "pem", "pkcs8"] }
-  rcgen = { version = "0.14", features = ["x509-parser"] }
-  oauth2 = "5.0.0"
-  openidconnect = { version = "4.0", features = ["accept-rfc3339-timestamps"] }
+  pbkdf2 = { workspace = true }
+  jsonwebtoken = { workspace = true }
+  rustls = { workspace = true }
+  rustls-native-certs = { workspace = true }
+  rustls-pemfile = { workspace = true }
+  pem = { workspace = true }
+  x509-parser = { workspace = true }
+  rsa = { workspace = true }
+  sec1 = { workspace = true }
+  rcgen = { workspace = true }
+  oauth2 = { workspace = true }
+  openidconnect = { workspace = true }
 
   # MQTT
-  rumqttc = { version = "0.24", features = ["url"] }
-  hex = "0.4"
+  rumqttc = { workspace = true }
+  hex = { workspace = true }
 
   # Codecs
-  rquickjs = { version = "0.9", features = [
-    "bindgen",
-    "loader",
-    "array-buffer",
-    "chrono",
-  ] }
+  rquickjs = { workspace = true }
 
   # Misc
-  uuid = { version = "1.18", features = ["v4", "serde"] }
-  chrono = "0.4"
-  async-trait = "0.1"
-  aes = "0.8"
-  rand = "0.9"
-  base64 = "0.22"
-  async-recursion = "1.1"
-  regex = "1.11"
-  petgraph = "0.8"
-  prometheus-client = "0.24"
-  pin-project = "1.1"
-  scoped-futures = { version = "0.1", features = ["std"] }
-  signal-hook = "0.3"
-  signal-hook-tokio = { version = "0.3", features = ["futures-v0_3"] }
+  uuid = { workspace = true }
+  chrono = { workspace = true }
+  async-trait = { workspace = true }
+  aes = { workspace = true }
+  rand = { workspace = true }
+  base64 = { workspace = true }
+  async-recursion = { workspace = true }
+  regex = { workspace = true }
+  petgraph = { workspace = true }
+  prometheus-client = { workspace = true }
+  pin-project = { workspace = true }
+  scoped-futures = { workspace = true }
+  signal-hook = { workspace = true }
+  signal-hook-tokio = { workspace = true }
 
 # Development and testing
 [dev-dependencies]
-  httpmock = "0.7.0"
-  bytes = "1.10"
-  dotenv = "0.15"
+  httpmock = { workspace = true }
+  bytes = { workspace = true }
+  dotenv = { workspace = true }
 
 [features]
   default = ["postgres"]

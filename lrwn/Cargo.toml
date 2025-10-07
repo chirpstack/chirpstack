@@ -12,15 +12,20 @@
     all-features = true
 
 [dependencies]
-  hex = "0.4"
-  cmac = { version = "0.7", optional = true }
-  aes = { version = "0.8", optional = true }
-  serde = { version = "1.0", features = ["derive"], optional = true }
-  diesel = { version = "2.2", optional = true }
+  # Encoding
+  hex = { workspace = true }
+  serde = { workspace = true, optional = true }
+
+  # Crypto
+  cmac = { workspace = true, optional = true }
+  aes = { workspace = true, optional = true }
+
+  # Database
+  diesel = { workspace = true, optional = true }
 
   # Error handling
-  thiserror = "2.0"
-  anyhow = "1.0"
+  thiserror = { workspace = true }
+  anyhow = { workspace = true }
 
 [features]
   default = []
