@@ -5,7 +5,7 @@ use std::time::{Duration, SystemTime};
 use anyhow::Result;
 use chrono::{DateTime, TimeDelta, Utc};
 
-use chirpstack_api::{common, gw};
+use chirpstack_api::gw;
 
 use crate::{config, gpstime::ToDateTime, region};
 
@@ -138,29 +138,6 @@ pub fn get_time_since_gps_epoch(rx_info: &[gw::UplinkRxInfo]) -> Option<Duration
     }
 
     None
-}
-
-pub fn get_time_since_gps_epoch_chrono(rx_info: &[gw::UplinkRxInfo]) -> Option<chrono::Duration> {
-    for rxi in rx_info {
-        if let Some(gps_time) = &rxi.time_since_gps_epoch {
-            return Some(
-                chrono::Duration::try_seconds(gps_time.seconds).unwrap_or_default()
-                    + chrono::Duration::nanoseconds(gps_time.nanos as i64),
-            );
-        }
-    }
-
-    None
-}
-
-pub fn get_start_location(rx_info: &[gw::UplinkRxInfo]) -> Option<common::Location> {
-    let mut with_loc: Vec<gw::UplinkRxInfo> = rx_info
-        .iter()
-        .filter(|&i| i.location.is_some())
-        .cloned()
-        .collect();
-    with_loc.sort_by(|a, b| a.snr.partial_cmp(&b.snr).unwrap());
-    with_loc.first().map(|i| *i.location.as_ref().unwrap())
 }
 
 #[cfg(test)]
