@@ -7,7 +7,7 @@ dist:
 
 # Install dev dependencies
 dev-dependencies:
-	cargo install cargo-generate-rpm --version 0.12.1 --locked
+	cargo install cargo-generate-rpm --version 0.19.0 --locked
 
 # Set the versions
 version:
