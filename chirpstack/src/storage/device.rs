@@ -465,7 +465,8 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                         update_query =
                             update_query.filter(device::dsl::f_cnt_up.gt(full_f_cnt as i64));
                     } else {
-                        // We expect that the full_f_cnt is greater than the device f_cnt_up.
+                        // As the f_cnt_up fields holds the next expected frame-counter,
+                        // we expect that f_cnt_up <= full_f_cnt.
                         update_query =
                             update_query.filter(device::dsl::f_cnt_up.le(full_f_cnt as i64));
                     }
