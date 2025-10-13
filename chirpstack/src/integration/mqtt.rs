@@ -654,26 +654,6 @@ pub mod test {
             String::from_utf8(msg.payload.to_vec()).unwrap()
         );
 
-        // integration event
-        let pl = integration::IntegrationEvent {
-            device_info: Some(integration::DeviceInfo {
-                application_id: Uuid::nil().to_string(),
-                dev_eui: "0102030405060708".to_string(),
-                ..Default::default()
-            }),
-            ..Default::default()
-        };
-        i.integration_event(&HashMap::new(), &pl).await.unwrap();
-        let msg = mqtt_rx.recv().await.unwrap();
-        assert_eq!(
-            "application/00000000-0000-0000-0000-000000000000/device/0102030405060708/event/integration",
-            String::from_utf8(msg.topic.to_vec()).unwrap()
-        );
-        assert_eq!(
-            serde_json::to_string(&pl).unwrap(),
-            String::from_utf8(msg.payload.to_vec()).unwrap()
-        );
-
         // downlink command
         let down_cmd = integration::DownlinkCommand {
             id: Uuid::new_v4().to_string(),
