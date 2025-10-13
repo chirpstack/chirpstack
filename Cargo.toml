@@ -41,7 +41,7 @@
     rustls-native-certs = "0.8"
     rustls-pemfile = "2.2"
     pem = "3.0"
-    x509-parser = "0.17"
+    x509-parser = "0.18"
     rsa = "0.9"
     sec1 = { version = "0.7", features = ["alloc", "pem", "pkcs8"] }
     rcgen = { version = "0.14", features = ["x509-parser"] }
@@ -143,7 +143,7 @@
     dotenv = "0.15"
 
     # Integrations
-    lapin = { version = "3.2", default-features = false, features = [
+    lapin = { version = "3.7", default-features = false, features = [
       "rustls--ring",
       "rustls-native-certs",
     ] }
