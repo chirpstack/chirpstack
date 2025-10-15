@@ -562,7 +562,7 @@ impl Default for BasePayload {
             protocol_version: PROTOCOL_VERSION.into(),
             sender_id: "".into(),
             receiver_id: "".into(),
-            transaction_id: rand::random(),
+            transaction_id: getrandom::u32().unwrap_or_default(),
             message_type: MessageType::default(),
             sender_token: vec![],
             receiver_token: vec![],

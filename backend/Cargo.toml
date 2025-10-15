@@ -23,7 +23,7 @@
   tracing = { workspace = true }
 
   # Crypto
-  rand = { workspace = true }
+  getrandom = { workspace = true }
   aes-kw = { workspace = true }
 
   # HTTP

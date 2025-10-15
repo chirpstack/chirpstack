@@ -25,7 +25,7 @@
   prost = { workspace = true }
   prost-types = { workspace = true }
   hex = { workspace = true }
-  rand = { workspace = true }
+  getrandom = { workspace = true }
   tonic = { workspace = true, features = ["codegen"], optional = true }
   tonic-prost = { workspace = true, optional = true }
   tokio = { workspace = true, optional = true }

@@ -536,9 +536,9 @@ dependencies = [
  "anyhow",
  "chirpstack_api",
  "chrono",
+ "getrandom 0.3.3",
  "hex",
  "httpmock",
- "rand 0.9.2",
  "reqwest",
  "serde",
  "serde_json",
@@ -848,13 +848,13 @@ dependencies = [
 name = "chirpstack_api"
 version = "4.15.0"
 dependencies = [
+ "getrandom 0.3.3",
  "hex",
  "pbjson",
  "pbjson-build",
  "pbjson-types",
  "prost",
  "prost-types",
- "rand 0.9.2",
  "serde",
  "tokio",
  "tonic",
