@@ -135,7 +135,7 @@
       "chrono",
     ] }
     uuid = { version = "1.18", features = ["v4", "serde"] }
-    regex = "1.11"
+    regex = "1.12"
     petgraph = "0.8"
     pin-project = "1.1"
     signal-hook = "0.3"
