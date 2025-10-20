@@ -32,7 +32,7 @@
     hmac = "0.12"
     sha2 = "0.10"
     pbkdf2 = { version = "0.12", features = ["simple"] }
-    jsonwebtoken = "9.3"
+    jsonwebtoken = "10.1"
     rustls = { version = "0.23", default-features = false, features = [
       "logging",
       "std",
