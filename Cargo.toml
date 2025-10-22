@@ -32,7 +32,7 @@
     hmac = "0.12"
     sha2 = "0.10"
     pbkdf2 = { version = "0.12", features = ["simple"] }
-    jsonwebtoken = "9.3"
+    jsonwebtoken = { version = "10.1", features = ["rust_crypto"] }
     rustls = { version = "0.23", default-features = false, features = [
       "logging",
       "std",
@@ -89,7 +89,7 @@
     chrono = { version = "0.4", features = ["serde"] }
 
     # Async
-    tokio = { version = "1.44", features = ["macros"] }
+    tokio = { version = "1.48", features = ["macros"] }
     tokio-executor-trait = "3.1"
     tokio-reactor-trait = "4.1"
     tokio-stream = "0.1"
@@ -126,7 +126,7 @@
     validator = { version = "0.20", features = ["derive"] }
     aws-sign-v4 = "0.3"
     gcp_auth = "0.12"
-    rust-embed = "8.7"
+    rust-embed = "8.8"
     mime_guess = "2.0"
     rquickjs = { version = "0.9", features = [
       "bindgen",
