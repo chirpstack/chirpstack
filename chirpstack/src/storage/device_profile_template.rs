@@ -235,6 +235,8 @@ pub async fn update(dp: DeviceProfileTemplate) -> Result<DeviceProfileTemplate, 
                 device_profile_template::abp_rx2_dr.eq(&dp.abp_rx2_dr),
                 device_profile_template::abp_rx2_freq.eq(&dp.abp_rx2_freq),
                 device_profile_template::tags.eq(&dp.tags),
+                device_profile_template::measurements.eq(&dp.measurements),
+                device_profile_template::auto_detect_measurements.eq(&dp.auto_detect_measurements),
             ))
             .get_result(&mut get_async_db_conn().await?)
             .await
