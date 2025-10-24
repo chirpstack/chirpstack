@@ -203,7 +203,11 @@ impl MulticastGroupService for MulticastGroup {
     ) -> Result<Response<api::ListMulticastGroupsResponse>, Status> {
         let req = request.get_ref();
         let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
-        let dev_eui = EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?;
+        let dev_eui = if req.dev_eui.is_empty() {
+            None
+        } else {
+            Some(EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?)
+        };
 
         self.validator
             .validate(
