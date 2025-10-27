@@ -218,7 +218,7 @@ impl MulticastGroupService for MulticastGroup {
 
         let filters = multicast::Filters {
             application_id: Some(app_id),
-            dev_eui: Some(dev_eui),
+            dev_eui,
             search: if req.search.is_empty() {
                 None
             } else {
