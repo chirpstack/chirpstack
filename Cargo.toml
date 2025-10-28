@@ -160,7 +160,7 @@
       "tokio",
       "cmake-build",
     ] }
-    rumqttc = { version = "0.24", features = ["url"] }
+    rumqttc = { version = "0.25", features = ["url"] }
 
 
 [profile.release]
