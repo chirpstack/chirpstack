@@ -136,7 +136,7 @@
     gcp_auth = "0.12"
     rust-embed = "8.8"
     mime_guess = "2.0"
-    rquickjs = { version = "0.9", features = [
+    rquickjs = { version = "0.10", features = [
       "bindgen",
       "loader",
       "array-buffer",
