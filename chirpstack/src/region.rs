@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, RwLock};
 
 use anyhow::{Context, Result};
-use tracing::{info, span, trace, Level};
+use tracing::{Level, info, span, trace};
 
 use crate::config;
 use lrwn::region;

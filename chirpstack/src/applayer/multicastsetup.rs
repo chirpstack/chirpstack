@@ -127,7 +127,8 @@ async fn handle_v1_mc_class_b_session_ans(
             "McClassBSessionAns contains errors"
         );
 
-        fuota_dev.error_msg= format!("Error: McClassBSessionAns response dr_error: {}, freq_error: {}, mc_group_undefined: {}",
+        fuota_dev.error_msg = format!(
+            "Error: McClassBSessionAns response dr_error: {}, freq_error: {}, mc_group_undefined: {}",
             pl.status_and_mc_group_id.dr_error,
             pl.status_and_mc_group_id.freq_error,
             pl.status_and_mc_group_id.mc_group_undefined,
@@ -166,7 +167,8 @@ async fn handle_v2_mc_class_b_session_ans(
             "McClassBSessionAns contains errors"
         );
 
-        fuota_dev.error_msg= format!("Error: McClassBSessionAns response dr_error: {}, freq_error: {}, mc_group_undefined: {}, start_missed: {}",
+        fuota_dev.error_msg = format!(
+            "Error: McClassBSessionAns response dr_error: {}, freq_error: {}, mc_group_undefined: {}, start_missed: {}",
             pl.status_and_mc_group_id.dr_error,
             pl.status_and_mc_group_id.freq_error,
             pl.status_and_mc_group_id.mc_group_undefined,
@@ -204,7 +206,8 @@ async fn handle_v1_mc_class_c_session_ans(
             "McClassCSessionAns contains errors"
         );
 
-        fuota_dev.error_msg = format!("Error: McClassCSessionAns response dr_error: {}, freq_error: {}, mc_group_undefined: {}",
+        fuota_dev.error_msg = format!(
+            "Error: McClassCSessionAns response dr_error: {}, freq_error: {}, mc_group_undefined: {}",
             pl.status_and_mc_group_id.dr_error,
             pl.status_and_mc_group_id.freq_error,
             pl.status_and_mc_group_id.mc_group_undefined,
@@ -243,7 +246,8 @@ async fn handle_v2_mc_class_c_session_ans(
             "McClassCSessionAns contains errors"
         );
 
-        fuota_dev.error_msg = format!("Error: McClassCSessionAns response dr_error: {}, freq_error: {}, mc_group_undefined: {}, start_missed: {}",
+        fuota_dev.error_msg = format!(
+            "Error: McClassCSessionAns response dr_error: {}, freq_error: {}, mc_group_undefined: {}, start_missed: {}",
             pl.status_and_mc_group_id.dr_error,
             pl.status_and_mc_group_id.freq_error,
             pl.status_and_mc_group_id.mc_group_undefined,

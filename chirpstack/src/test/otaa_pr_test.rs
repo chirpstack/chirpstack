@@ -18,7 +18,7 @@ use crate::storage::{
 use crate::{config, storage::fields, test, uplink};
 use chirpstack_api::gw;
 use lrwn::region::CommonName;
-use lrwn::{AES128Key, EUI64Prefix, NetID, EUI64};
+use lrwn::{AES128Key, EUI64, EUI64Prefix, NetID};
 
 #[tokio::test]
 async fn test_fns() {

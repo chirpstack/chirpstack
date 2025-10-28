@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
-use tracing::{span, trace, Instrument, Level};
+use tracing::{Instrument, Level, span, trace};
 
-use super::{error::Error, helpers, UplinkFrameSet};
+use super::{UplinkFrameSet, error::Error, helpers};
 use crate::api::helpers::ToProto;
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::{
@@ -18,7 +18,7 @@ use crate::storage::{
 use crate::{config, devaddr::get_random_dev_addr, integration, region, stream};
 use backend::{PRStartAnsPayload, PRStartReqPayload};
 use chirpstack_api::{common, integration as integration_pb, internal, stream as stream_pb};
-use lrwn::{keys, AES128Key, DevAddr, NetID};
+use lrwn::{AES128Key, DevAddr, NetID, keys};
 
 pub struct JoinRequest {
     uplink_frame_set: UplinkFrameSet,

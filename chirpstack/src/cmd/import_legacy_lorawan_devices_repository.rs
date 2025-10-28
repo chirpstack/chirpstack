@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::fs::{read_to_string, File};
+use std::fs::{File, read_to_string};
 use std::path::Path;
 use std::str::FromStr;
 

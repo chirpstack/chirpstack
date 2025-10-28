@@ -887,8 +887,10 @@ pub mod test {
         delete_relay_gateway(relay.tenant_id.into(), relay.relay_id)
             .await
             .unwrap();
-        assert!(delete_relay_gateway(relay.tenant_id.into(), relay.relay_id)
-            .await
-            .is_err());
+        assert!(
+            delete_relay_gateway(relay.tenant_id.into(), relay.relay_id)
+                .await
+                .is_err()
+        );
     }
 }

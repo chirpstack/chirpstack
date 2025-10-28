@@ -13,7 +13,7 @@ use diesel::{
     {deserialize, serialize},
 };
 #[cfg(feature = "serde")]
-use serde::{de, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de};
 
 use crate::{
     CFList, CFListChannelMasks, CFListChannels, ChMask, DevAddr, LinkADRReqPayload, Redundancy,

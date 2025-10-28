@@ -3,7 +3,7 @@ use std::path::Path;
 
 use anyhow::Result;
 use serde::Deserialize;
-use tracing::{info, span, Instrument, Level};
+use tracing::{Instrument, Level, info, span};
 use uuid::Uuid;
 
 use crate::codec::Codec;

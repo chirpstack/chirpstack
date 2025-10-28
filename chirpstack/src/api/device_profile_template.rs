@@ -300,8 +300,8 @@ impl DeviceProfileTemplateService for DeviceProfileTemplate {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
+    use crate::api::auth::validator::RequestValidator;
     use crate::storage::user;
     use crate::test;
     use chirpstack_api::common;

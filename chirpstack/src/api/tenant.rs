@@ -5,7 +5,7 @@ use chirpstack_api::api::tenant_service_server::TenantService;
 use chirpstack_api::tonic::{self, Request, Response, Status};
 use uuid::Uuid;
 
-use super::auth::{validator, AuthID};
+use super::auth::{AuthID, validator};
 use super::error::ToStatus;
 use super::helpers;
 use crate::storage::{fields, tenant, user};
@@ -448,8 +448,8 @@ impl TenantService for Tenant {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
+    use crate::api::auth::validator::RequestValidator;
     use crate::test;
 
     #[tokio::test]

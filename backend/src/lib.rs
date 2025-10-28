@@ -8,12 +8,12 @@ use std::time::Duration;
 use aes_kw::Kek;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
-use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderMap};
 use reqwest::{Certificate, Identity};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 use tokio::sync::oneshot::Receiver;
-use tracing::{debug, error, info, span, trace, Instrument, Level};
+use tracing::{Instrument, Level, debug, error, info, span, trace};
 
 use chirpstack_api::stream;
 
@@ -1527,10 +1527,11 @@ pub mod test {
             then.status(500);
         });
 
-        assert!(c
-            .home_ns_req(vec![1, 2, 3, 4, 5, 6, 7, 8], &mut req, None)
-            .await
-            .is_err());
+        assert!(
+            c.home_ns_req(vec![1, 2, 3, 4, 5, 6, 7, 8], &mut req, None)
+                .await
+                .is_err()
+        );
         mock.assert();
         mock.delete();
 

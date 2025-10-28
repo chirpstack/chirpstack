@@ -371,7 +371,10 @@ pub mod test {
         };
 
         let out = encode(10, &vars, &encoder, &input).await;
-        assert_eq!("JS error: Error: foo is not defined\n    at encodeDownlink (eval_script:3:1)\n    at <eval> (eval_script:8:24)\n", out.err().unwrap().to_string());
+        assert_eq!(
+            "JS error: Error: foo is not defined\n    at encodeDownlink (eval_script:3:1)\n    at <eval> (eval_script:8:24)\n",
+            out.err().unwrap().to_string()
+        );
     }
 
     #[tokio::test]

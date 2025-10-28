@@ -9,7 +9,7 @@ use crate::{
 };
 use chirpstack_api::{common, gw, integration as integration_pb, internal};
 use lrwn::region::CommonName;
-use lrwn::{DevAddr, EUI64Prefix, EUI64};
+use lrwn::{DevAddr, EUI64, EUI64Prefix};
 
 struct Test {
     name: String,

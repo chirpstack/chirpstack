@@ -5,7 +5,7 @@ use tracing::info;
 use crate::api::helpers::ToProto;
 use crate::integration;
 use crate::storage::{application, device, device_profile, fields, tenant};
-use crate::uplink::{helpers, UplinkFrameSet};
+use crate::uplink::{UplinkFrameSet, helpers};
 use chirpstack_api::integration as integration_pb;
 
 pub async fn handle(

@@ -6,7 +6,7 @@ use tracing::info;
 
 use crate::{config, stream};
 use backend::{Client, ClientConfig};
-use lrwn::{EUI64Prefix, EUI64};
+use lrwn::{EUI64, EUI64Prefix};
 
 type EuiClientList = Vec<(EUI64Prefix, Arc<Client>)>;
 

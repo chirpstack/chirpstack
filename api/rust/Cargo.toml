@@ -1,12 +1,12 @@
 [package]
   name = "chirpstack_api"
   description = "ChirpStack Protobuf / gRPC API definitions."
-  version = "4.15.0"
-  authors = ["Orne Brocaar <info@brocaar.com>"]
-  license = "MIT"
-  homepage = "https://www.chirpstack.io"
-  repository = "https://github.com/chirpstack/chirpstack"
-  edition = "2021"
+  homepage.workspace = true
+  license.workspace = true
+  version.workspace = true
+  authors.workspace = true
+  edition.workspace = true
+  repository.workspace = true
 
 [features]
   default = ["api", "json"]
@@ -22,10 +22,10 @@
   internal = []
 
 [dependencies]
-  prost = { workspace = true }
-  prost-types = { workspace = true }
-  hex = { workspace = true }
-  getrandom = { workspace = true }
+  prost.workspace = true
+  prost-types.workspace = true
+  hex.workspace = true
+  getrandom.workspace = true
   tonic = { workspace = true, features = ["codegen"], optional = true }
   tonic-prost = { workspace = true, optional = true }
   tokio = { workspace = true, optional = true }
@@ -34,6 +34,6 @@
   serde = { workspace = true, optional = true }
 
 [build-dependencies]
-  tonic-build = { workspace = true }
-  tonic-prost-build = { workspace = true }
-  pbjson-build = { workspace = true }
+  tonic-build.workspace = true
+  tonic-prost-build.workspace = true
+  pbjson-build.workspace = true

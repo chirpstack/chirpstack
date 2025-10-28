@@ -1055,9 +1055,11 @@ mod test {
         .unwrap();
 
         // adding gateteway from other tenant fails
-        assert!(add_gateways(d.id.into(), vec![gw2.gateway_id])
-            .await
-            .is_err());
+        assert!(
+            add_gateways(d.id.into(), vec![gw2.gateway_id])
+                .await
+                .is_err()
+        );
 
         // add gateway
         add_gateways(d.id.into(), vec![gw.gateway_id])

@@ -32,7 +32,9 @@ pub async fn save(ds: &internal::PassiveRoamingDeviceSession) -> Result<()> {
 
     let lifetime = lifetime - Utc::now();
     if lifetime <= Duration::zero() {
-        debug!("Not saving passive-roaming device-session, lifetime of passive-roaming session expired");
+        debug!(
+            "Not saving passive-roaming device-session, lifetime of passive-roaming session expired"
+        );
         return Ok(());
     }
 

@@ -39,7 +39,7 @@ impl TryFrom<&str> for RequestFragmentationSessionStatus {
                 return Err(anyhow!(
                     "Invalid RequestFragmentationSessionStatus value: {}",
                     value
-                ))
+                ));
             }
         })
     }

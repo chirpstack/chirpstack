@@ -984,8 +984,8 @@ pub mod test {
     use std::collections::HashMap;
 
     use super::*;
-    use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
+    use crate::api::auth::validator::RequestValidator;
     use crate::storage::metrics;
     use crate::storage::{tenant, user};
     use crate::test;

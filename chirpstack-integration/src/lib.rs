@@ -6,7 +6,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use serde::Deserialize;
 use tokio::sync::RwLock;
-use tracing::{error, info, warn, Level};
+use tracing::{Level, error, info, warn};
 use tracing_subscriber::{filter, prelude::*};
 
 use chirpstack_api::{integration as integration_pb, prost::Message};

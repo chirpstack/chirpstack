@@ -6,7 +6,7 @@ use chirpstack_api::tonic::{self, Request, Response, Status};
 use chrono::Utc;
 use uuid::Uuid;
 
-use super::auth::{validator, AuthID};
+use super::auth::{AuthID, validator};
 use super::error::ToStatus;
 use super::helpers;
 use crate::storage::{tenant, user};
@@ -257,8 +257,8 @@ impl UserService for User {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
+    use crate::api::auth::validator::RequestValidator;
     use crate::test;
 
     #[tokio::test]

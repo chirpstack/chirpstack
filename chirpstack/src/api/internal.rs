@@ -8,8 +8,8 @@ use chirpstack_api::api;
 use chirpstack_api::api::internal_service_server::InternalService;
 use chirpstack_api::tonic::{self, Request, Response, Status};
 use futures::Stream;
-use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::Client;
+use reqwest::header::{CONTENT_TYPE, HeaderMap};
 use serde::Serialize;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
@@ -17,7 +17,7 @@ use tracing::{debug, error, trace};
 use uuid::Uuid;
 
 use super::auth::claims;
-use super::auth::{validator, AuthID};
+use super::auth::{AuthID, validator};
 use super::error::ToStatus;
 use super::helpers::ToProto;
 use super::{helpers, oauth2, oidc};

@@ -1,15 +1,15 @@
 #[cfg(feature = "crypto")]
 use aes::{
+    Aes128, Block,
     cipher::generic_array::GenericArray,
     cipher::{BlockEncrypt, KeyInit},
-    Aes128, Block,
 };
 use anyhow::Result;
 #[cfg(feature = "crypto")]
 use cmac::{Cmac, Mac};
 
-use crate::applayer::PayloadCodec;
 use crate::AES128Key;
+use crate::applayer::PayloadCodec;
 
 pub enum Cid {
     PackageVersionReq,

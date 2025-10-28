@@ -3,7 +3,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 use futures::ready;
-use http::{header::CONTENT_TYPE, Request, Response};
+use http::{Request, Response, header::CONTENT_TYPE};
 use http_body::Body;
 use pin_project::pin_project;
 use tower::{Layer, Service};

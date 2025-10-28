@@ -5,8 +5,8 @@ use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use reqwest::header::{HeaderMap, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::Client;
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderMap};
 use tracing::{info, trace};
 
 use super::Integration as IntegrationTrait;

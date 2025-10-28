@@ -1,7 +1,7 @@
 use anyhow::Result;
-use tracing::{span, Instrument, Level};
+use tracing::{Instrument, Level, span};
 
-use super::{data, UplinkFrameSet};
+use super::{UplinkFrameSet, data};
 
 pub struct Data {}
 

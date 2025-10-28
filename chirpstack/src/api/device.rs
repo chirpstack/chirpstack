@@ -1255,8 +1255,8 @@ impl DeviceService for Device {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
+    use crate::api::auth::validator::RequestValidator;
     use crate::storage::{application, device, tenant, user};
     use crate::test;
     use lrwn::NetID;

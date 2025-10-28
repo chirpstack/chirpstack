@@ -4,8 +4,8 @@ use diesel::{dsl, prelude::*};
 use diesel_async::RunQueryDsl;
 use email_address::EmailAddress;
 use pbkdf2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Algorithm, Pbkdf2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
 use tracing::info;
 use uuid::Uuid;
@@ -244,7 +244,10 @@ pub mod test {
     fn test_verify_password() {
         // this is the ChirpStack Application Server default admin hash, with == removed
         // to test the compatibility betweeh the two pbkdf2 implementations.
-        assert!(verify_password("admin", "$pbkdf2-sha512$i=1,l=64$l8zGKtxRESq3PA2kFhHRWA$H3lGMxOt55wjwoc+myeOoABofJY9oDpldJa7fhqdjbh700V6FLPML75UmBOt9J5VFNjAL1AvqCozA1HJM0QVGA"));
+        assert!(verify_password(
+            "admin",
+            "$pbkdf2-sha512$i=1,l=64$l8zGKtxRESq3PA2kFhHRWA$H3lGMxOt55wjwoc+myeOoABofJY9oDpldJa7fhqdjbh700V6FLPML75UmBOt9J5VFNjAL1AvqCozA1HJM0QVGA"
+        ));
     }
 
     #[tokio::test]
@@ -265,9 +268,11 @@ pub mod test {
         assert_eq!(user, user_get);
 
         // get_by_email_and_pw
-        assert!(get_by_email_and_pw("test@example.com", "bar")
-            .await
-            .is_err());
+        assert!(
+            get_by_email_and_pw("test@example.com", "bar")
+                .await
+                .is_err()
+        );
         let user_get = get_by_email_and_pw("test@example.com", "password!")
             .await
             .unwrap();

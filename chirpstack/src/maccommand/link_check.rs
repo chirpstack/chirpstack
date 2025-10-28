@@ -42,11 +42,7 @@ pub fn handle(
             }
 
             let margin = max_snr - required_snr;
-            if margin < 0.0 {
-                0.0
-            } else {
-                margin
-            }
+            if margin < 0.0 { 0.0 } else { margin }
         }
         _ => {
             warn!("Modulation does not provide margin to LinkCheckReq");

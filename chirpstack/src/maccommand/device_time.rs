@@ -6,7 +6,7 @@ use tracing::{info, warn};
 
 use crate::gpstime::ToGpsTime;
 use crate::storage::device;
-use crate::uplink::{helpers, UplinkFrameSet};
+use crate::uplink::{UplinkFrameSet, helpers};
 
 pub fn handle(
     uplink_frame_set: &UplinkFrameSet,

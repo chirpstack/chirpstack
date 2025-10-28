@@ -213,10 +213,10 @@ pub mod test {
 
     use super::*;
     use crate::test;
-    use rdkafka::consumer::stream_consumer::StreamConsumer;
-    use rdkafka::consumer::Consumer;
-    use rdkafka::message::Headers;
     use rdkafka::Message;
+    use rdkafka::consumer::Consumer;
+    use rdkafka::consumer::stream_consumer::StreamConsumer;
+    use rdkafka::message::Headers;
     use std::time::Duration;
     use tokio::time::sleep;
     use tracing::trace;

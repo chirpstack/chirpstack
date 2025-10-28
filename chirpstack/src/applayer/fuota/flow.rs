@@ -12,8 +12,8 @@ use crate::config;
 use crate::downlink;
 use crate::gpstime::ToGpsTime;
 use crate::storage::fields::{
-    device_profile::Ts004Version, device_profile::Ts005Version, FuotaJob,
-    RequestFragmentationSessionStatus,
+    FuotaJob, RequestFragmentationSessionStatus, device_profile::Ts004Version,
+    device_profile::Ts005Version,
 };
 use crate::storage::{device, device_keys, device_profile, device_queue, fuota, multicast};
 

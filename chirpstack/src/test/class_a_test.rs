@@ -350,7 +350,7 @@ async fn test_lorawan_10_errors() {
             },
             assert: vec![
                 assert::integration_log(vec![
-                    "Frame-counter reset or rollover detected".to_string()
+                    "Frame-counter reset or rollover detected".to_string(),
                 ]),
                 assert::no_uplink_event(),
             ],

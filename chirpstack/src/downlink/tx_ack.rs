@@ -1,9 +1,9 @@
 use anyhow::Result;
 use chrono::{Duration, Utc};
-use tracing::{error, info, span, trace, Instrument, Level};
+use tracing::{Instrument, Level, error, info, span, trace};
 use uuid::Uuid;
 
-use lrwn::{AES128Key, FType, Payload, PhyPayload, EUI64};
+use lrwn::{AES128Key, EUI64, FType, Payload, PhyPayload};
 
 use crate::api::helpers::ToProto;
 use crate::storage::{

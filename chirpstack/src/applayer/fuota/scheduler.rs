@@ -1,6 +1,6 @@
 use anyhow::Result;
 use tokio::time::sleep;
-use tracing::{error, span, trace, Instrument, Level};
+use tracing::{Instrument, Level, error, span, trace};
 
 use crate::applayer::fuota::flow;
 use crate::config;

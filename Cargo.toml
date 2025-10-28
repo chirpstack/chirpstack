@@ -9,6 +9,14 @@
     "api/rust",
   ]
 
+  [workspace.package]
+    version = "4.15.0"
+    homepage = "https://www.chirpstack.io"
+    license = "MIT"
+    authors = ["Orne Brocaar <info@brocaar.com>"]
+    edition = "2024"
+    repository = "https://github.com/chirpstack/chirpstack"
+
   [workspace.dependencies]
     # Encoding
     hex = "0.4"

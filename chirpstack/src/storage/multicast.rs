@@ -1010,33 +1010,37 @@ pub mod test {
         .unwrap();
 
         // invalid f_port
-        assert!(enqueue(
-            MulticastGroupQueueItem {
-                multicast_group_id: mg.id,
-                gateway_id: gw.gateway_id,
-                f_cnt: 1,
-                f_port: 0,
-                data: vec![3, 2, 1],
-                ..Default::default()
-            },
-            &[gw.gateway_id],
-        )
-        .await
-        .is_err());
+        assert!(
+            enqueue(
+                MulticastGroupQueueItem {
+                    multicast_group_id: mg.id,
+                    gateway_id: gw.gateway_id,
+                    f_cnt: 1,
+                    f_port: 0,
+                    data: vec![3, 2, 1],
+                    ..Default::default()
+                },
+                &[gw.gateway_id],
+            )
+            .await
+            .is_err()
+        );
 
-        assert!(enqueue(
-            MulticastGroupQueueItem {
-                multicast_group_id: mg.id,
-                gateway_id: gw.gateway_id,
-                f_cnt: 1,
-                f_port: 256,
-                data: vec![3, 2, 1],
-                ..Default::default()
-            },
-            &[gw.gateway_id],
-        )
-        .await
-        .is_err());
+        assert!(
+            enqueue(
+                MulticastGroupQueueItem {
+                    multicast_group_id: mg.id,
+                    gateway_id: gw.gateway_id,
+                    f_cnt: 1,
+                    f_port: 256,
+                    data: vec![3, 2, 1],
+                    ..Default::default()
+                },
+                &[gw.gateway_id],
+            )
+            .await
+            .is_err()
+        );
 
         // Enqueue (Class-C) (delay)
         let (ids, f_cnt) = enqueue(

@@ -11,7 +11,7 @@ use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool a
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::sync_connection_wrapper::SyncConnectionWrapper;
 use futures::future::{BoxFuture, FutureExt, TryFutureExt};
-use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
+use prometheus_client::metrics::histogram::{Histogram, exponential_buckets};
 use scoped_futures::ScopedBoxFuture;
 
 use crate::config;

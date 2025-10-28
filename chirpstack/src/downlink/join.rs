@@ -4,9 +4,9 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use rand::Rng;
-use tracing::{span, trace, Instrument, Level};
+use tracing::{Instrument, Level, span, trace};
 
-use lrwn::{PhyPayload, EUI64};
+use lrwn::{EUI64, PhyPayload};
 
 use super::helpers;
 use crate::api::helpers::FromProto;

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use tracing::{span, warn, Instrument, Level};
+use tracing::{Instrument, Level, span, warn};
 
 use crate::storage::{device, device_profile};
 use chirpstack_api::gw;

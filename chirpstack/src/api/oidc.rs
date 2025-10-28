@@ -11,7 +11,7 @@ use openidconnect::core::{
     CoreClient, CoreGenderClaim, CoreIdTokenClaims, CoreIdTokenVerifier, CoreProviderMetadata,
     CoreResponseType,
 };
-use openidconnect::{reqwest, AdditionalClaims, UserInfoClaims};
+use openidconnect::{AdditionalClaims, UserInfoClaims, reqwest};
 use openidconnect::{
     AuthenticationFlow, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EndpointMaybeSet,
     EndpointNotSet, EndpointSet, IssuerUrl, Nonce, OAuth2TokenResponse, RedirectUrl, Scope,

@@ -7,13 +7,13 @@ use anyhow::Result;
 use chrono::{Duration, DurationRound};
 use prost::Message;
 use tokio::sync::RwLock;
-use tracing::{debug, info, span, Level};
+use tracing::{Level, debug, info, span};
 
 use crate::gpstime::ToGpsTime;
 use crate::{config, stream};
 use backend::{Client, ClientConfig, GWInfoElement, ULMetaData};
 use chirpstack_api::{common, gw};
-use lrwn::{region, DevAddr, NetID, EUI64};
+use lrwn::{DevAddr, EUI64, NetID, region};
 
 static CLIENTS: LazyLock<RwLock<HashMap<NetID, Arc<Client>>>> =
     LazyLock::new(|| RwLock::new(HashMap::new()));

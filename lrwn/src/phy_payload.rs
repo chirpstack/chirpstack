@@ -1,7 +1,7 @@
 #[cfg(feature = "crypto")]
 use aes::{
-    cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt},
     Aes128, Block,
+    cipher::{BlockDecrypt, BlockEncrypt, generic_array::GenericArray},
 };
 use anyhow::Result;
 #[cfg(feature = "crypto")]
@@ -19,8 +19,8 @@ use super::{
     eui64::EUI64,
     payload::{JoinAcceptPayload, JoinType},
 };
-use crate::relay::{ForwardDownlinkReq, ForwardUplinkReq};
 use crate::LA_FPORT_RELAY;
+use crate::relay::{ForwardDownlinkReq, ForwardUplinkReq};
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize))]

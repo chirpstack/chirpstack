@@ -1,12 +1,12 @@
-use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
-use tracing::{error, info, span, trace, warn, Instrument, Level};
+use tracing::{Instrument, Level, error, info, span, trace, warn};
 
 use crate::gateway::backend as gateway_backend;
 use crate::helpers::errors::PrintFullError;

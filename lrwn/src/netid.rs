@@ -8,8 +8,8 @@ use serde::{
     {Deserialize, Deserializer, Serialize, Serializer},
 };
 
-use crate::devaddr::DevAddrPrefix;
 use crate::Error;
+use crate::devaddr::DevAddrPrefix;
 
 #[derive(Default, PartialEq, Clone, Copy, Hash, Eq)]
 pub struct NetID([u8; 3]);

@@ -6,21 +6,21 @@ use std::time::Duration;
 
 use anyhow::Result;
 use axum::{
+    Router,
     body::Bytes,
     response::{IntoResponse, Json, Response},
-    Router,
 };
 use chrono::Utc;
 use http::StatusCode;
 use redis::streams::StreamReadReply;
 use rustls::{
-    server::{NoClientAuth, WebPkiClientVerifier},
     ServerConfig,
+    server::{NoClientAuth, WebPkiClientVerifier},
 };
 use serde::Serialize;
 use tokio::sync::oneshot;
 use tokio::task;
-use tracing::{error, info, span, warn, Instrument, Level};
+use tracing::{Instrument, Level, error, info, span, warn};
 use uuid::Uuid;
 
 use crate::backend::{joinserver, keywrap, roaming};
@@ -31,13 +31,13 @@ use crate::storage::{
     device, error::Error as StorageError, get_async_redis_conn, passive_roaming, redis_key,
 };
 use crate::uplink::{
-    data_sns, error::Error as UplinkError, helpers, join_sns, RoamingMetaData, UplinkFrameSet,
+    RoamingMetaData, UplinkFrameSet, data_sns, error::Error as UplinkError, helpers, join_sns,
 };
 use crate::{config, region, stream};
 use backend::{BasePayload, BasePayloadResultProvider, MessageType};
 use chirpstack_api::stream as stream_pb;
 use lrwn::region::CommonName;
-use lrwn::{AES128Key, NetID, EUI64};
+use lrwn::{AES128Key, EUI64, NetID};
 
 pub async fn setup() -> Result<()> {
     let conf = config::get();

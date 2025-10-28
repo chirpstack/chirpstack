@@ -62,9 +62,9 @@ pub async fn load_key(key_file: &str) -> Result<PrivateKeyDer<'static>> {
 pub fn private_key_to_pkcs8(pem: &str) -> Result<String> {
     if pem.contains("RSA PRIVATE KEY") {
         use rsa::{
+            RsaPrivateKey,
             pkcs1::DecodeRsaPrivateKey,
             pkcs8::{EncodePrivateKey, LineEnding},
-            RsaPrivateKey,
         };
 
         let pkey = RsaPrivateKey::from_pkcs1_pem(pem).context("Read RSA PKCS#1")?;
@@ -72,9 +72,9 @@ pub fn private_key_to_pkcs8(pem: &str) -> Result<String> {
         Ok(pkcs8_pem.as_str().to_owned())
     } else if pem.contains("EC PRIVATE KEY") {
         use sec1::{
+            EcPrivateKey, LineEnding,
             der::{Decode, Encode, EncodePem},
             pkcs8::{AlgorithmIdentifierRef, PrivateKeyInfo},
-            EcPrivateKey, LineEnding,
         };
 
         // Get a SEC1 ECPrivateKey from the PEM string input

@@ -5,7 +5,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use handlebars::Handlebars;
 use lapin::{
-    options::BasicPublishOptions, BasicProperties, Channel, Connection, ConnectionProperties,
+    BasicProperties, Channel, Connection, ConnectionProperties, options::BasicPublishOptions,
 };
 use prost::Message;
 use serde::Serialize;

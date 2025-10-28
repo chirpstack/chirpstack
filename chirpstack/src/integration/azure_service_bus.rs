@@ -4,11 +4,11 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
 use async_trait::async_trait;
-use base64::{engine::general_purpose, Engine as _};
+use base64::{Engine as _, engine::general_purpose};
 use hmac::{Hmac, Mac};
 use prost::Message;
-use reqwest::header::{HeaderMap, HeaderName, AUTHORIZATION, CONTENT_TYPE};
 use reqwest::Client;
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderMap, HeaderName};
 use sha2::Sha256;
 use tracing::{info, trace};
 
@@ -277,12 +277,17 @@ pub mod test {
         )
         .unwrap();
 
-        assert_eq!("SharedAccessSignature sig=VPMESaZwz0wSdvzJXET0DgZMBpKh95yjP988pUt6Qo4%3D&se=10&skn=MyKey&sr=https%3A%2F%2Fchirpstack-tst.servicebus.windows.net%2F", token);
+        assert_eq!(
+            "SharedAccessSignature sig=VPMESaZwz0wSdvzJXET0DgZMBpKh95yjP988pUt6Qo4%3D&se=10&skn=MyKey&sr=https%3A%2F%2Fchirpstack-tst.servicebus.windows.net%2F",
+            token
+        );
     }
 
     #[test]
     fn test_parse_connection_string() {
-        let kv = parse_connection_string("Endpoint=sb://chirpstack-tst.servicebus.windows.net/;SharedAccessKeyName=TestKeyName;SharedAccessKey=TestKey");
+        let kv = parse_connection_string(
+            "Endpoint=sb://chirpstack-tst.servicebus.windows.net/;SharedAccessKeyName=TestKeyName;SharedAccessKey=TestKey",
+        );
         let expected: HashMap<String, String> = [
             (
                 "Endpoint".to_string(),

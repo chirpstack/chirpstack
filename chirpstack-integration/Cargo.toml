@@ -1,21 +1,21 @@
 [package]
   name = "chirpstack_integration"
   description = "Library for building external ChirpStack integrations"
-  homepage = "https://www.chirpstack.io/"
-  license = "MIT"
-  version = "4.15.0"
-  authors = ["Orne Brocaar <info@brocaar.com>"]
-  edition = "2021"
-  repository = "https://github.com/chirpstack/chirpstack"
+  homepage.workspace = true
+  license.workspace = true
+  version.workspace = true
+  authors.workspace = true
+  edition.workspace = true
+  repository.workspace = true
 
 [dependencies]
   chirpstack_api = { path = "../api/rust", version = "4.15.0" }
   redis = { workspace = true, features = ["cluster-async"] }
-  anyhow = { workspace = true }
-  tracing = { workspace = true }
-  tracing-subscriber = { workspace = true }
-  async-trait = { workspace = true }
-  serde = { workspace = true }
+  anyhow.workspace = true
+  tracing.workspace = true
+  tracing-subscriber.workspace = true
+  async-trait.workspace = true
+  serde.workspace = true
   tokio = { workspace = true, features = ["rt-multi-thread"] }
-  serde_json = { workspace = true }
-  toml = { workspace = true }
+  serde_json.workspace = true
+  toml.workspace = true

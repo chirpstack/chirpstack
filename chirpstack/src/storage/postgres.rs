@@ -9,8 +9,8 @@ use diesel::{ConnectionError, ConnectionResult};
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
 use diesel_async::{AsyncConnection, AsyncPgConnection};
-use futures::{future::BoxFuture, FutureExt};
-use prometheus_client::metrics::histogram::{exponential_buckets, Histogram};
+use futures::{FutureExt, future::BoxFuture};
+use prometheus_client::metrics::histogram::{Histogram, exponential_buckets};
 use scoped_futures::ScopedBoxFuture;
 
 use crate::config;

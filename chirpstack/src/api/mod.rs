@@ -7,7 +7,7 @@ use std::{
 };
 
 use anyhow::{Context as AnyhowContext, Result};
-use axum::{response::IntoResponse, routing::get, Router};
+use axum::{Router, response::IntoResponse, routing::get};
 use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
 use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateServiceServer;
@@ -20,10 +20,10 @@ use chirpstack_api::api::relay_service_server::RelayServiceServer;
 use chirpstack_api::api::tenant_service_server::TenantServiceServer;
 use chirpstack_api::api::user_service_server::UserServiceServer;
 use chirpstack_api::stream as stream_pb;
-use chirpstack_api::tonic::{self, transport::Server as TonicServer, Code};
+use chirpstack_api::tonic::{self, Code, transport::Server as TonicServer};
 use http::{
-    header::{self, HeaderMap, HeaderValue},
     Request, StatusCode, Uri,
+    header::{self, HeaderMap, HeaderValue},
 };
 use pin_project::pin_project;
 use prometheus_client::encoding::EncodeLabelSet;
@@ -35,8 +35,8 @@ use tokio::task;
 use tokio::try_join;
 use tonic_reflection::server::Builder as TonicReflectionBuilder;
 use tonic_web::GrpcWebLayer;
-use tower::util::ServiceExt;
 use tower::Service;
+use tower::util::ServiceExt;
 use tower_http::trace::TraceLayer;
 use tracing::{error, info};
 

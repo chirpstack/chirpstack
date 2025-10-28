@@ -179,8 +179,8 @@ impl RelayService for Relay {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::api::auth::validator::RequestValidator;
     use crate::api::auth::AuthID;
+    use crate::api::auth::validator::RequestValidator;
     use crate::storage::{application, device, device_profile, fields, tenant, user};
     use crate::test;
 

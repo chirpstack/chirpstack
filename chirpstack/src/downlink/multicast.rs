@@ -6,7 +6,7 @@ use petgraph::algo::min_spanning_tree;
 use petgraph::data::FromElements;
 use petgraph::graph::{DefaultIx, Graph, NodeIndex, UnGraph};
 use rand::Rng;
-use tracing::{span, trace, warn, Instrument, Level};
+use tracing::{Instrument, Level, span, trace, warn};
 
 use crate::downlink::{error::Error, helpers};
 use crate::gateway::backend as gateway_backend;

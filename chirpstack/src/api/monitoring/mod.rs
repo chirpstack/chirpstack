@@ -2,9 +2,9 @@ use std::net::SocketAddr;
 
 use anyhow::{Context, Result};
 use axum::{
+    Router,
     response::{IntoResponse, Response},
     routing::get,
-    Router,
 };
 use diesel_async::RunQueryDsl;
 use http::StatusCode;

@@ -8,10 +8,10 @@ use handlebars::Handlebars;
 use prost::Message;
 use rand::Rng;
 use regex::Regex;
+use rumqttc::Transport;
 use rumqttc::tokio_rustls::rustls;
 use rumqttc::v5::mqttbytes::v5::{ConnectReturnCode, Publish};
-use rumqttc::v5::{mqttbytes::QoS, AsyncClient, Event, Incoming, MqttOptions};
-use rumqttc::Transport;
+use rumqttc::v5::{AsyncClient, Event, Incoming, MqttOptions, mqttbytes::QoS};
 use serde::Serialize;
 use tokio::sync::mpsc;
 use tokio::time::sleep;
@@ -434,7 +434,7 @@ pub mod test {
     use crate::test;
     use lrwn::EUI64;
     use tokio::sync::mpsc;
-    use tokio::time::{sleep, Duration};
+    use tokio::time::{Duration, sleep};
     use uuid::Uuid;
 
     #[tokio::test]

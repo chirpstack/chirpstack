@@ -6,7 +6,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use rand::Rng;
-use tracing::{debug, span, trace, warn, Instrument, Level};
+use tracing::{Instrument, Level, debug, span, trace, warn};
 
 use crate::api::backend::get_async_receiver;
 use crate::api::helpers::{FromProto, ToProto};
@@ -24,7 +24,7 @@ use crate::storage::{
 use crate::uplink::{RelayContext, UplinkFrameSet};
 use crate::{adr, config, gateway, integration, maccommand, region, sensitivity};
 use chirpstack_api::{gw, integration as integration_pb, internal};
-use lrwn::{keys, AES128Key, NetID};
+use lrwn::{AES128Key, NetID, keys};
 
 struct DownlinkFrameItem {
     downlink_frame_item: gw::DownlinkFrameItem,

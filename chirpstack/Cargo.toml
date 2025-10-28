@@ -1,42 +1,42 @@
 [package]
   name = "chirpstack"
   description = "ChirpStack is an open-source LoRaWAN(TM) Network Server"
-  repository = "https://github.com/chirpstack/chirpstack"
-  homepage = "https://www.chirpstack.io/"
-  version = "4.15.0"
-  authors = ["Orne Brocaar <info@brocaar.com>"]
-  edition = "2021"
   publish = false
-  license = "MIT"
+  homepage.workspace = true
+  license.workspace = true
+  version.workspace = true
+  authors.workspace = true
+  edition.workspace = true
+  repository.workspace = true
 
 [dependencies]
   # CLI interface
-  clap = { workspace = true }
+  clap.workspace = true
 
   # Configuration
-  serde = { workspace = true }
-  serde_yaml = { workspace = true }
-  serde_json = { workspace = true }
-  serde_urlencoded = { workspace = true }
-  humantime-serde = { workspace = true }
-  toml = { workspace = true }
-  handlebars = { workspace = true }
-  validator = { workspace = true }
+  serde.workspace = true
+  serde_yaml.workspace = true
+  serde_json.workspace = true
+  serde_urlencoded.workspace = true
+  humantime-serde.workspace = true
+  toml.workspace = true
+  handlebars.workspace = true
+  validator.workspace = true
 
   # Database
-  email_address = { workspace = true }
+  email_address.workspace = true
   diesel = { workspace = true, features = ["chrono", "numeric"] }
-  diesel_migrations = { workspace = true }
-  diesel-async = { workspace = true }
+  diesel_migrations.workspace = true
+  diesel-async.workspace = true
   tokio-postgres = { workspace = true, optional = true }
   tokio-postgres-rustls = { workspace = true, optional = true }
-  bigdecimal = { workspace = true }
-  redis = { workspace = true }
-  deadpool-redis = { workspace = true }
+  bigdecimal.workspace = true
+  redis.workspace = true
+  deadpool-redis.workspace = true
 
   # Logging
-  tracing = { workspace = true }
-  tracing-subscriber = { workspace = true }
+  tracing.workspace = true
+  tracing-subscriber.workspace = true
 
   # ChirpStack API definitions
   chirpstack_api = { path = "../api/rust", features = [
@@ -54,88 +54,88 @@
   backend = { path = "../backend" }
 
   # HTTP
-  reqwest = { workspace = true }
+  reqwest.workspace = true
 
   # Integrations
-  aws-sign-v4 = { workspace = true }
-  hmac = { workspace = true }
-  sha2 = { workspace = true }
-  urlencoding = { workspace = true }
-  geohash = { workspace = true }
-  gcp_auth = { workspace = true }
-  lapin = { workspace = true }
-  tokio-executor-trait = { workspace = true }
-  tokio-reactor-trait = { workspace = true }
-  rdkafka = { workspace = true }
+  aws-sign-v4.workspace = true
+  hmac.workspace = true
+  sha2.workspace = true
+  urlencoding.workspace = true
+  geohash.workspace = true
+  gcp_auth.workspace = true
+  lapin.workspace = true
+  tokio-executor-trait.workspace = true
+  tokio-reactor-trait.workspace = true
+  rdkafka.workspace = true
 
   # gRPC and Protobuf
-  tonic-web = { workspace = true }
-  tonic-reflection = { workspace = true }
+  tonic-web.workspace = true
+  tonic-reflection.workspace = true
   tokio = { workspace = true, features = ["rt-multi-thread"] }
-  tokio-stream = { workspace = true }
-  prost-types = { workspace = true }
-  prost = { workspace = true }
-  pbjson-types = { workspace = true }
+  tokio-stream.workspace = true
+  prost-types.workspace = true
+  prost.workspace = true
+  pbjson-types.workspace = true
 
   # gRPC and HTTP multiplexing
-  axum = { workspace = true }
-  axum-server = { workspace = true }
-  tower = { workspace = true }
-  futures = { workspace = true }
-  futures-util = { workspace = true }
-  http = { workspace = true }
-  http-body = { workspace = true }
-  rust-embed = { workspace = true }
-  mime_guess = { workspace = true }
-  url = { workspace = true }
-  tower-http = { workspace = true }
+  axum.workspace = true
+  axum-server.workspace = true
+  tower.workspace = true
+  futures.workspace = true
+  futures-util.workspace = true
+  http.workspace = true
+  http-body.workspace = true
+  rust-embed.workspace = true
+  mime_guess.workspace = true
+  url.workspace = true
+  tower-http.workspace = true
 
   # Error handling
-  thiserror = { workspace = true }
-  anyhow = { workspace = true }
+  thiserror.workspace = true
+  anyhow.workspace = true
 
   # Authentication
-  pbkdf2 = { workspace = true }
-  jsonwebtoken = { workspace = true }
-  rustls = { workspace = true }
-  rustls-native-certs = { workspace = true }
-  rustls-pemfile = { workspace = true }
-  pem = { workspace = true }
-  x509-parser = { workspace = true }
-  rsa = { workspace = true }
-  sec1 = { workspace = true }
-  rcgen = { workspace = true }
-  oauth2 = { workspace = true }
-  openidconnect = { workspace = true }
+  pbkdf2.workspace = true
+  jsonwebtoken.workspace = true
+  rustls.workspace = true
+  rustls-native-certs.workspace = true
+  rustls-pemfile.workspace = true
+  pem.workspace = true
+  x509-parser.workspace = true
+  rsa.workspace = true
+  sec1.workspace = true
+  rcgen.workspace = true
+  oauth2.workspace = true
+  openidconnect.workspace = true
 
   # MQTT
-  rumqttc = { workspace = true }
-  hex = { workspace = true }
+  rumqttc.workspace = true
+  hex.workspace = true
 
   # Codecs
-  rquickjs = { workspace = true }
+  rquickjs.workspace = true
 
   # Misc
-  uuid = { workspace = true }
-  chrono = { workspace = true }
-  async-trait = { workspace = true }
-  aes = { workspace = true }
-  rand = { workspace = true }
-  base64 = { workspace = true }
-  async-recursion = { workspace = true }
-  regex = { workspace = true }
-  petgraph = { workspace = true }
-  prometheus-client = { workspace = true }
-  pin-project = { workspace = true }
-  scoped-futures = { workspace = true }
-  signal-hook = { workspace = true }
-  signal-hook-tokio = { workspace = true }
+  uuid.workspace = true
+  chrono.workspace = true
+  async-trait.workspace = true
+  aes.workspace = true
+  rand.workspace = true
+  base64.workspace = true
+  async-recursion.workspace = true
+  regex.workspace = true
+  petgraph.workspace = true
+  prometheus-client.workspace = true
+  pin-project.workspace = true
+  scoped-futures.workspace = true
+  signal-hook.workspace = true
+  signal-hook-tokio.workspace = true
 
 # Development and testing
 [dev-dependencies]
-  httpmock = { workspace = true }
-  bytes = { workspace = true }
-  dotenv = { workspace = true }
+  httpmock.workspace = true
+  bytes.workspace = true
+  dotenv.workspace = true
 
 [features]
   default = ["postgres"]

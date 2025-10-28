@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use tracing::{error, span, trace, warn, Instrument, Level};
+use tracing::{Instrument, Level, error, span, trace, warn};
 
 use chirpstack_api::gw;
 

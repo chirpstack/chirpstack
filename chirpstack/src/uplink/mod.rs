@@ -12,7 +12,7 @@ use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prost::Message;
 use tokio::time::sleep;
-use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
+use tracing::{Instrument, Level, debug, error, info, span, trace, warn};
 use uuid::Uuid;
 
 use crate::config;
@@ -24,7 +24,7 @@ use crate::storage::{
 use crate::stream;
 use chirpstack_api::{common, gw, stream as stream_pb};
 use lrwn::region::CommonName;
-use lrwn::{FType, ForwardUplinkReq, PhyPayload, EUI64};
+use lrwn::{EUI64, FType, ForwardUplinkReq, PhyPayload};
 
 mod data;
 mod data_fns;
@@ -54,10 +54,10 @@ static UPLINK_COUNTER: LazyLock<Family<UplinkLabels, Counter>> = LazyLock::new(|
 static DEDUPLICATE_LOCKED_COUNTER: LazyLock<Counter> = LazyLock::new(|| {
     let counter = Counter::default();
     prometheus::register(
-            "deduplicate_locked_count",
-            "Number of times the deduplication function was called and the deduplication was already locked",
-            counter.clone(),
-        );
+        "deduplicate_locked_count",
+        "Number of times the deduplication function was called and the deduplication was already locked",
+        counter.clone(),
+    );
     counter
 });
 static DEDUPLICATE_NO_LOCK_COUNTER: LazyLock<Counter> = LazyLock::new(|| {
@@ -358,7 +358,7 @@ pub async fn handle_uplink(
             return Err(anyhow!(
                 "Unexpected f_type: {}",
                 uplink.phy_payload.mhdr.f_type
-            ))
+            ));
         }
     }
 

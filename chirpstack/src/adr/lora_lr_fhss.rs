@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 
-use super::{default, lr_fhss};
 use super::{Handler, Request, Response};
+use super::{default, lr_fhss};
 use crate::region;
 
 pub struct Algorithm {}

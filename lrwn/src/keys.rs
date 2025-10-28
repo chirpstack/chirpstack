@@ -1,8 +1,8 @@
-use aes::cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit};
+use aes::cipher::{BlockEncrypt, KeyInit, generic_array::GenericArray};
 use aes::{Aes128, Block};
 use anyhow::Result;
 
-use crate::{AES128Key, NetID, EUI64};
+use crate::{AES128Key, EUI64, NetID};
 
 /// For LoRaWAN 1.0: SNwkSIntKey = NwkSEncKey = FNwkSIntKey = NwkSKey
 pub fn get_f_nwk_s_int_key(

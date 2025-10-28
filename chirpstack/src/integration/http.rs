@@ -5,8 +5,8 @@ use std::time::Duration;
 use anyhow::Result;
 use async_trait::async_trait;
 use prost::Message;
-use reqwest::header::{HeaderMap, HeaderName, CONTENT_TYPE};
 use reqwest::Client;
+use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderName};
 use tracing::{info, trace, warn};
 
 use super::Integration as IntegrationTrait;

@@ -41,7 +41,9 @@ pub async fn handle(
         .collect();
 
     if req_pls.len() != ans_pls.len() {
-        return Err(anyhow!("CtrlUplinkListAns mac-command count does not equal CtrlUplinkListReq mac-command count"));
+        return Err(anyhow!(
+            "CtrlUplinkListAns mac-command count does not equal CtrlUplinkListReq mac-command count"
+        ));
     }
 
     for (req_pl, ans_pl) in zip(req_pls, ans_pls) {
