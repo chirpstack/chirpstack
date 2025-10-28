@@ -689,6 +689,7 @@ pub mod test {
             api::ListMulticastGroupsRequest {
                 search: "updated".into(),
                 application_id: app.id.to_string(),
+                dev_eui: "".to_string(),
                 limit: 10,
                 offset: 0,
             },
