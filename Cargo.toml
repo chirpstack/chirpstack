@@ -108,7 +108,7 @@
     scoped-futures = { version = "0.1", features = ["std"] }
 
     # Testing
-    httpmock = "0.7.0"
+    httpmock = "0.8.2"
 
     # API
     prost = "0.14"
