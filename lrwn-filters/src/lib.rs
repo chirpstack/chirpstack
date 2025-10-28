@@ -17,6 +17,13 @@ pub struct Filters {
 
     /// JoinEUIs.
     pub join_eui_prefixes: Vec<EuiPrefix>,
+
+    /// LoRaWAN only.
+    ///
+    /// If set to true, frames that can not be identified as LoRaWAN will be
+    /// discarded. If set to false, frames will not be filtered if not
+    /// identified as LoRaWAN.
+    pub lorawan_only: bool,
 }
 
 /// Returns true if the given PhyPayload matches the given filters
@@ -26,7 +33,7 @@ pub struct Filters {
 /// PhyPayloads that can't be filtered will pass the filter.
 pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
     if phy_payload.is_empty() {
-        return true;
+        return !config.lorawan_only;
     }
 
     let mhdr = phy_payload[0];
@@ -65,9 +72,9 @@ pub fn matches(phy_payload: &[u8], config: &Filters) -> bool {
     };
 
     // We could not extract the DevAddr or JoinEUI from the PhyPayload. In this case we let the
-    // message pass.
+    // message pass if lorawan_only is false.
     if dev_addr.is_none() && join_eui.is_none() {
-        return true;
+        return !config.lorawan_only;
     }
 
     if let Some(dev_addr) = dev_addr {
@@ -308,6 +315,37 @@ mod test {
     use super::*;
 
     #[test]
+    fn test_non_lorawan() {
+        let phy = vec![0xff, 0xff, 0xff];
+
+        // test lorawan_only = false
+        assert_eq!(
+            true,
+            matches(
+                &phy,
+                &Filters {
+                    dev_addr_prefixes: vec![],
+                    join_eui_prefixes: vec![],
+                    lorawan_only: false,
+                }
+            )
+        );
+
+        // test lorawan_only = true
+        assert_eq!(
+            false,
+            matches(
+                &phy,
+                &Filters {
+                    dev_addr_prefixes: vec![],
+                    join_eui_prefixes: vec![],
+                    lorawan_only: true,
+                }
+            )
+        );
+    }
+
+    #[test]
     fn test_dev_addr() {
         struct Test {
             name: String,
@@ -318,10 +356,11 @@ mod test {
 
         let tests = vec![
             Test {
-                name: "empty filters".to_string(),
+                name: "empty filters lorawan_only = true".to_string(),
                 filters: Filters {
                     dev_addr_prefixes: vec![],
                     join_eui_prefixes: vec![],
+                    lorawan_only: true,
                 },
                 dev_addr: lrwn::DevAddr::from_str("01020304").unwrap(),
                 passes: true,
@@ -331,6 +370,7 @@ mod test {
                 filters: Filters {
                     dev_addr_prefixes: vec![DevAddrPrefix::from_str("01000000/8").unwrap()],
                     join_eui_prefixes: vec![],
+                    lorawan_only: true,
                 },
                 dev_addr: lrwn::DevAddr::from_str("01020304").unwrap(),
                 passes: true,
@@ -340,6 +380,7 @@ mod test {
                 filters: Filters {
                     dev_addr_prefixes: vec![DevAddrPrefix::from_str("01000000/16").unwrap()],
                     join_eui_prefixes: vec![],
+                    lorawan_only: true,
                 },
                 dev_addr: lrwn::DevAddr::from_str("01020304").unwrap(),
                 passes: false,
@@ -352,6 +393,7 @@ mod test {
                         DevAddrPrefix::from_str("01000000/8").unwrap(),
                     ],
                     join_eui_prefixes: vec![],
+                    lorawan_only: true,
                 },
                 dev_addr: lrwn::DevAddr::from_str("01020304").unwrap(),
                 passes: true,
@@ -417,6 +459,7 @@ mod test {
                 filters: Filters {
                     dev_addr_prefixes: vec![],
                     join_eui_prefixes: vec![],
+                    lorawan_only: true,
                 },
                 join_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
                 passes: true,
@@ -426,6 +469,7 @@ mod test {
                 filters: Filters {
                     dev_addr_prefixes: vec![],
                     join_eui_prefixes: vec![EuiPrefix::from_str("0100000000000000/8").unwrap()],
+                    lorawan_only: true,
                 },
                 join_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
                 passes: true,
@@ -435,6 +479,7 @@ mod test {
                 filters: Filters {
                     dev_addr_prefixes: vec![],
                     join_eui_prefixes: vec![EuiPrefix::from_str("0100000000000000/16").unwrap()],
+                    lorawan_only: true,
                 },
                 join_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
                 passes: false,
@@ -447,6 +492,7 @@ mod test {
                         EuiPrefix::from_str("0100000000000000/16").unwrap(),
                         EuiPrefix::from_str("0100000000000000/8").unwrap(),
                     ],
+                    lorawan_only: true,
                 },
                 join_eui: lrwn::EUI64::from_str("0102030405060708").unwrap(),
                 passes: true,
