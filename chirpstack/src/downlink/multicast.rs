@@ -123,7 +123,7 @@ impl Multicast {
         let mg = self.multicast_group.as_ref().unwrap();
         let region_conf = region::get(&self.region_config_id)?;
 
-        let max_pl_size = region_conf.get_max_payload_size(
+        let max_pl_size = region_conf.get_max_dl_payload_size(
             lrwn::region::MacVersion::Latest,
             lrwn::region::Revision::Latest,
             mg.dr as u8,
@@ -149,7 +149,7 @@ impl Multicast {
         let network_conf = config::get_region_network(&self.region_config_id)?;
         let region_conf = region::get(&self.region_config_id)?;
         let mg = self.multicast_group.as_ref().unwrap();
-        let mc_dr = region_conf.get_data_rate(mg.dr as u8)?;
+        let mc_dr = region_conf.get_data_rate(false, mg.dr as u8)?;
 
         let mut tx_info = gw::DownlinkTxInfo {
             frequency: mg.frequency as u32,

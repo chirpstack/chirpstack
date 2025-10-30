@@ -296,7 +296,7 @@ pub fn ul_meta_data_to_tx_info(ul_meta_data: &ULMetaData) -> Result<gw::UplinkTx
             return Err(anyhow!("ULFreq is not set"));
         }
     };
-    let params = region_conf.get_data_rate(dr)?;
+    let params = region_conf.get_data_rate(true, dr)?;
 
     Ok(gw::UplinkTxInfo {
         frequency: freq,

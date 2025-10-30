@@ -145,6 +145,7 @@ pub enum Revision {
     RP002_1_0_2,
     RP002_1_0_3,
     RP002_1_0_4,
+    RP002_1_0_5,
 }
 
 impl Revision {
@@ -156,7 +157,8 @@ impl Revision {
             Revision::RP002_1_0_1 => "RP002-1.0.1".to_string(),
             Revision::RP002_1_0_2 => "RP002-1.0.2".to_string(),
             Revision::RP002_1_0_3 => "RP002-1.0.3".to_string(),
-            Revision::RP002_1_0_4 | Revision::Latest => "RP002-1.0.4".to_string(),
+            Revision::RP002_1_0_4 => "RP002-1.0.4".to_string(),
+            Revision::RP002_1_0_5 | Revision::Latest => "RP002-1.0.5".to_string(),
         }
     }
 }
@@ -185,6 +187,7 @@ impl FromStr for Revision {
             "RP002-1.0.2" => Revision::RP002_1_0_2,
             "RP002-1.0.3" => Revision::RP002_1_0_3,
             "RP002-1.0.4" => Revision::RP002_1_0_4,
+            "RP002-1.0.5" => Revision::RP002_1_0_5,
             _ => {
                 return Err(anyhow!("Unexpected Revision: {}", s));
             }
@@ -409,13 +412,13 @@ pub trait Region {
     fn get_data_rate_index(&self, uplink: bool, modulation: &DataRateModulation) -> Result<u8>;
 
     /// Returns the modulation parameters given the data-rate.
-    fn get_data_rate(&self, dr: u8) -> Result<DataRateModulation>;
+    fn get_data_rate(&self, uplink: bool, dr_index: u8) -> Result<DataRateModulation>;
 
-    /// Returns the max-payload size for the given data-rate index, protocol version
+    /// Returns the max downlink payload-size for the given data-rate index, protocol version
     /// and regional-parameters revision.
     /// When the version or revision is unknown, it will return the most recent
     /// implemented revision values.
-    fn get_max_payload_size(
+    fn get_max_dl_payload_size(
         &self,
         mac_version: MacVersion,
         reg_params_revision: Revision,
@@ -522,8 +525,8 @@ struct RegionBaseConfig {
     supports_user_channels: bool,
     cf_list_min_dr: u8,
     cf_list_max_dr: u8,
-    data_rates: HashMap<u8, DataRate>,
-    max_payload_size_per_dr: HashMap<MacVersion, HashMap<Revision, HashMap<u8, MaxPayloadSize>>>,
+    data_rates: Vec<(u8, DataRate)>,
+    max_dl_payload_size_per_dr: HashMap<MacVersion, HashMap<Revision, HashMap<u8, MaxPayloadSize>>>,
     rx1_data_rate_table: HashMap<u8, Vec<u8>>,
     tx_power_offsets: Vec<isize>,
     uplink_channels: Vec<Channel>,
@@ -545,25 +548,34 @@ impl RegionBaseConfig {
         Err(anyhow!("Unknown data-rate: {:?}", modulation))
     }
 
-    fn get_data_rate(&self, dr: u8) -> Result<DataRateModulation> {
-        Ok(self
-            .data_rates
-            .get(&dr)
-            .ok_or_else(|| anyhow!("Unknown data-rate index"))?
-            .modulation
-            .clone())
+    fn get_data_rate(&self, uplink: bool, dr_index: u8) -> Result<DataRateModulation> {
+        for (i, dr) in &self.data_rates {
+            if uplink != dr.uplink && uplink == dr.downlink {
+                continue;
+            }
+
+            if *i == dr_index {
+                return Ok(dr.modulation.clone());
+            }
+        }
+
+        Err(anyhow!(
+            "Unknown data-rate index, uplink {}, dr: {}",
+            uplink,
+            dr_index
+        ))
     }
 
-    fn get_max_payload_size(
+    fn get_max_dl_payload_size(
         &self,
         mac_version: MacVersion,
         reg_params_revision: Revision,
         dr: u8,
     ) -> Result<MaxPayloadSize> {
-        let reg_params_map = match self.max_payload_size_per_dr.get(&mac_version) {
+        let reg_params_map = match self.max_dl_payload_size_per_dr.get(&mac_version) {
             Some(v) => v,
             None => self
-                .max_payload_size_per_dr
+                .max_dl_payload_size_per_dr
                 .get(&MacVersion::Latest)
                 .ok_or_else(|| anyhow!("Unknown mac-version"))?,
         };

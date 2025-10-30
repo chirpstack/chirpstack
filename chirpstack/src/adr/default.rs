@@ -147,7 +147,7 @@ impl Handler for Algorithm {
             .get_enabled_uplink_data_rates()
             .into_iter()
             .filter(|dr| {
-                let dr = region_conf.get_data_rate(*dr).unwrap();
+                let dr = region_conf.get_data_rate(true, *dr).unwrap();
                 if let lrwn::region::DataRateModulation::Lora(l) = dr {
                     l.bandwidth == 125000
                 } else {

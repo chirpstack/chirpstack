@@ -147,7 +147,7 @@ pub fn set_uplink_modulation(
     dr: u8,
 ) -> Result<()> {
     let region_conf = region::get(region_config_id)?;
-    let params = region_conf.get_data_rate(dr)?;
+    let params = region_conf.get_data_rate(true, dr)?;
 
     tx_info.modulation = Some(gw::Modulation {
         parameters: Some(match params {

@@ -743,7 +743,7 @@ pub async fn get_max_fragment_size(d: &FuotaDeployment) -> Result<usize> {
     let dp = device_profile::get(&d.device_profile_id).await?;
     let region_conf = lrwn::region::get(dp.region, false, false);
     let max_pl_size = region_conf
-        .get_max_payload_size(dp.mac_version, dp.reg_params_revision, d.multicast_dr as u8)?
+        .get_max_dl_payload_size(dp.mac_version, dp.reg_params_revision, d.multicast_dr as u8)?
         .n
         - 3;
 

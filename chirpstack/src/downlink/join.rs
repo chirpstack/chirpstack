@@ -269,7 +269,7 @@ impl JoinAccept<'_> {
         let rx1_dr_index = self
             .region_conf
             .get_rx1_data_rate_index(self.uplink_frame_set.dr, 0)?;
-        let rx1_dr = self.region_conf.get_data_rate(rx1_dr_index)?;
+        let rx1_dr = self.region_conf.get_data_rate(false, rx1_dr_index)?;
 
         // set DR to tx_info.
         helpers::set_tx_info_data_rate(&mut tx_info, &rx1_dr)?;
@@ -329,7 +329,7 @@ impl JoinAccept<'_> {
         let rx1_dr_index = self
             .region_conf
             .get_rx1_data_rate_index(self.uplink_frame_set.dr, rx1_dr_offset)?;
-        let rx1_dr = self.region_conf.get_data_rate(rx1_dr_index)?;
+        let rx1_dr = self.region_conf.get_data_rate(false, rx1_dr_index)?;
 
         // set DR to tx_info.
         helpers::set_tx_info_data_rate(&mut tx_info, &rx1_dr)?;
@@ -388,7 +388,7 @@ impl JoinAccept<'_> {
 
         // get RX2 DR
         let rx2_dr_index = self.region_conf.get_defaults().rx2_dr;
-        let rx2_dr = self.region_conf.get_data_rate(rx2_dr_index)?;
+        let rx2_dr = self.region_conf.get_data_rate(false, rx2_dr_index)?;
 
         // set DR to tx_info
         helpers::set_tx_info_data_rate(&mut tx_info, &rx2_dr)?;
@@ -442,7 +442,7 @@ impl JoinAccept<'_> {
 
         // get RX2 DR
         let rx2_dr_index = relay_ds.rx2_dr as u8;
-        let rx2_dr = self.region_conf.get_data_rate(rx2_dr_index)?;
+        let rx2_dr = self.region_conf.get_data_rate(false, rx2_dr_index)?;
 
         // set DR to tx_info
         helpers::set_tx_info_data_rate(&mut tx_info, &rx2_dr)?;
@@ -638,8 +638,8 @@ impl JoinAccept<'_> {
             .region_conf
             .get_rx1_data_rate_index(self.uplink_frame_set.dr, ds.rx1_dr_offset as usize)?;
 
-        let rx1_dr = self.region_conf.get_data_rate(dr_rx1_index)?;
-        let rx2_dr = self.region_conf.get_data_rate(ds.rx2_dr as u8)?;
+        let rx1_dr = self.region_conf.get_data_rate(false, dr_rx1_index)?;
+        let rx2_dr = self.region_conf.get_data_rate(false, ds.rx2_dr as u8)?;
 
         // the calculation below only applies for LORA modulation
         if let lrwn::region::DataRateModulation::Lora(rx1_dr) = rx1_dr {

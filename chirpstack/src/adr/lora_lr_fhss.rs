@@ -34,7 +34,7 @@ impl Handler for Algorithm {
 
         // For SF < 10, LoRa is a better option, for SF >= 10 use LR-FHSS.
         let lora_dr = region_conf
-            .get_data_rate(default_resp.dr)
+            .get_data_rate(true, default_resp.dr)
             .context("Get data-rate")?;
         if let lrwn::region::DataRateModulation::Lora(dr) = lora_dr {
             if dr.spreading_factor < 10 {

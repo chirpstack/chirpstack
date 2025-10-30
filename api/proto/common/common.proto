@@ -110,6 +110,7 @@ enum RegParamsRevision {
   RP002_1_0_2 = 4;
   RP002_1_0_3 = 5;
   RP002_1_0_4 = 6;
+  RP002_1_0_5 = 7;
 }
 
 enum LocationSource {

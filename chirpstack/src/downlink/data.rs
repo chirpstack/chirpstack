@@ -1255,7 +1255,7 @@ impl Data {
 
         let dr = self
             .region_conf
-            .get_data_rate(self.uplink_frame_set.as_ref().unwrap().dr)?;
+            .get_data_rate(true, self.uplink_frame_set.as_ref().unwrap().dr)?;
 
         let ufs = self.uplink_frame_set.as_ref().unwrap();
         let dev_eui = self.device.dev_eui;
@@ -2122,7 +2122,7 @@ impl Data {
             self.uplink_frame_set.as_ref().unwrap().dr,
             ds.rx1_dr_offset as usize,
         )?;
-        let rx1_dr = self.region_conf.get_data_rate(rx1_dr_index)?;
+        let rx1_dr = self.region_conf.get_data_rate(false, rx1_dr_index)?;
 
         // set DR to tx_info.
         helpers::set_tx_info_data_rate(&mut tx_info, &rx1_dr)?;
@@ -2154,7 +2154,7 @@ impl Data {
         });
 
         // get remaining payload size
-        let max_pl_size = self.region_conf.get_max_payload_size(
+        let max_pl_size = self.region_conf.get_max_dl_payload_size(
             ds.mac_version().from_proto(),
             self.device_profile.reg_params_revision,
             rx1_dr_index,
@@ -2191,7 +2191,7 @@ impl Data {
             self.uplink_frame_set.as_ref().unwrap().dr,
             relay_ds.rx1_dr_offset as usize,
         )?;
-        let rx1_dr_relay = self.region_conf.get_data_rate(rx1_dr_index_relay)?;
+        let rx1_dr_relay = self.region_conf.get_data_rate(false, rx1_dr_index_relay)?;
 
         // set DR to tx_info.
         helpers::set_tx_info_data_rate(&mut tx_info, &rx1_dr_relay)?;
@@ -2223,7 +2223,7 @@ impl Data {
         });
 
         // get remaining payload size (relay)
-        let max_pl_size_relay = self.region_conf.get_max_payload_size(
+        let max_pl_size_relay = self.region_conf.get_max_dl_payload_size(
             relay_ds.mac_version().from_proto(),
             relay_ctx.device_profile.reg_params_revision,
             rx1_dr_index_relay,
@@ -2233,7 +2233,7 @@ impl Data {
         let rx1_dr_index_ed = self
             .region_conf
             .get_rx1_data_rate_index(relay_ctx.req.metadata.dr, ds.rx1_dr_offset as usize)?;
-        let max_pl_size_ed = self.region_conf.get_max_payload_size(
+        let max_pl_size_ed = self.region_conf.get_max_dl_payload_size(
             ds.mac_version().from_proto(),
             self.device_profile.reg_params_revision,
             rx1_dr_index_ed,
@@ -2276,7 +2276,7 @@ impl Data {
         };
 
         // Set DR to tx-info.
-        let rx2_dr = self.region_conf.get_data_rate(ds.rx2_dr as u8)?;
+        let rx2_dr = self.region_conf.get_data_rate(false, ds.rx2_dr as u8)?;
         helpers::set_tx_info_data_rate(&mut tx_info, &rx2_dr)?;
 
         // set tx power
@@ -2312,7 +2312,7 @@ impl Data {
         }
 
         // get remaining payload size
-        let max_pl_size = self.region_conf.get_max_payload_size(
+        let max_pl_size = self.region_conf.get_max_dl_payload_size(
             ds.mac_version().from_proto(),
             self.device_profile.reg_params_revision,
             ds.rx2_dr as u8,
@@ -2346,7 +2346,9 @@ impl Data {
         };
 
         // Set DR to tx-info.
-        let rx2_dr_relay = self.region_conf.get_data_rate(relay_ds.rx2_dr as u8)?;
+        let rx2_dr_relay = self
+            .region_conf
+            .get_data_rate(false, relay_ds.rx2_dr as u8)?;
         helpers::set_tx_info_data_rate(&mut tx_info, &rx2_dr_relay)?;
 
         // set tx power
@@ -2382,14 +2384,14 @@ impl Data {
         }
 
         // get remaining payload size (relay).
-        let max_pl_size_relay = self.region_conf.get_max_payload_size(
+        let max_pl_size_relay = self.region_conf.get_max_dl_payload_size(
             relay_ds.mac_version().from_proto(),
             relay_ctx.device_profile.reg_params_revision,
             relay_ds.rx2_dr as u8,
         )?;
 
         // get remaining payload size (end-device).
-        let max_pl_size_ed = self.region_conf.get_max_payload_size(
+        let max_pl_size_ed = self.region_conf.get_max_dl_payload_size(
             ds.mac_version().from_proto(),
             self.device_profile.reg_params_revision,
             ds.rx2_dr as u8,
@@ -2450,7 +2452,7 @@ impl Data {
         // Set DR to tx-info.
         let ping_dr = self
             .region_conf
-            .get_data_rate(ds.class_b_ping_slot_dr as u8)?;
+            .get_data_rate(false, ds.class_b_ping_slot_dr as u8)?;
         helpers::set_tx_info_data_rate(&mut tx_info, &ping_dr)?;
 
         // set tx power
@@ -2499,7 +2501,7 @@ impl Data {
         }
 
         // get remaining payload size
-        let max_pl_size = self.region_conf.get_max_payload_size(
+        let max_pl_size = self.region_conf.get_max_dl_payload_size(
             ds.mac_version().from_proto(),
             self.device_profile.reg_params_revision,
             ds.class_b_ping_slot_dr as u8,
@@ -2563,8 +2565,8 @@ impl Data {
             ds.rx1_dr_offset as usize,
         )?;
 
-        let rx1_dr = self.region_conf.get_data_rate(dr_rx1_index)?;
-        let rx2_dr = self.region_conf.get_data_rate(ds.rx2_dr as u8)?;
+        let rx1_dr = self.region_conf.get_data_rate(false, dr_rx1_index)?;
+        let rx2_dr = self.region_conf.get_data_rate(false, ds.rx2_dr as u8)?;
 
         // the calculation below only applies for LORA modulation
         if let lrwn::region::DataRateModulation::Lora(rx1_dr) = rx1_dr {

@@ -123,6 +123,7 @@ impl Into<String> for RegParamsRevision {
             RegParamsRevision::Rp002102 => "RP002_1.0.2",
             RegParamsRevision::Rp002103 => "RP002_1.0.3",
             RegParamsRevision::Rp002104 => "RP002_1.0.4",
+            RegParamsRevision::Rp002105 => "RP002_1.0.5",
         }
         .to_string()
     }
@@ -140,6 +141,7 @@ impl FromStr for RegParamsRevision {
             "RP002_1.0.2" => RegParamsRevision::Rp002102,
             "RP002_1.0.3" => RegParamsRevision::Rp002103,
             "RP002_1.0.4" => RegParamsRevision::Rp002104,
+            "RP002_1.0.5" => RegParamsRevision::Rp002105,
             _ => {
                 return Err("invalid reg param revision".into());
             }

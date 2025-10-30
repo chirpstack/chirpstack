@@ -39,7 +39,9 @@ impl Handler for Algorithm {
             region::get(&req.region_config_id).context("Get region config for region")?;
 
         // Get current DR info.
-        let current_dr = region_conf.get_data_rate(req.dr).context("Get data-rate")?;
+        let current_dr = region_conf
+            .get_data_rate(true, req.dr)
+            .context("Get data-rate")?;
 
         // If we are already at the highest LR-FHSS data-rate, there is nothing to do.
         // Note that we only differentiate between coding-rate. The OCW doesn't change
@@ -68,7 +70,7 @@ impl Handler for Algorithm {
             .into_iter()
             .filter(|dr_i| {
                 let dr_i = *dr_i;
-                let dr = region_conf.get_data_rate(dr_i).unwrap();
+                let dr = region_conf.get_data_rate(true, dr_i).unwrap();
                 if let lrwn::region::DataRateModulation::LrFhss(_) = dr {
                     dr_i <= req.max_dr
                 } else {
@@ -95,7 +97,7 @@ impl Handler for Algorithm {
                     .iter()
                     .cloned()
                     .filter(|dr| {
-                        let dr = region_conf.get_data_rate(*dr).unwrap();
+                        let dr = region_conf.get_data_rate(true, *dr).unwrap();
                         if let lrwn::region::DataRateModulation::LrFhss(dr) = dr {
                             dr.coding_rate == "4/6"
                         } else {
@@ -114,7 +116,7 @@ impl Handler for Algorithm {
                     .iter()
                     .cloned()
                     .filter(|dr| {
-                        let dr = region_conf.get_data_rate(*dr).unwrap();
+                        let dr = region_conf.get_data_rate(true, *dr).unwrap();
                         if let lrwn::region::DataRateModulation::LrFhss(dr) = dr {
                             dr.coding_rate == "2/6"
                         } else {
