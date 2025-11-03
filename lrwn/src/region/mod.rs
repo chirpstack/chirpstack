@@ -414,6 +414,14 @@ pub trait Region {
     /// Returns the modulation parameters given the data-rate.
     fn get_data_rate(&self, uplink: bool, dr_index: u8) -> Result<DataRateModulation>;
 
+    /// Returns the NewChannelReq data-rate range for the given data-rates.
+    /// Notes:
+    /// * It is expected that the provided range is sorted.
+    /// * By default this returns the first item as min_dr and the last item
+    ///   as max_dr. For some regions, there can be gaps in the range and a
+    ///   special encoding is used (e.g. in case of EU868).
+    fn get_new_channel_req_dr_range(&self, data_rates: &[u8]) -> Result<(u8, u8)>;
+
     /// Returns the max downlink payload-size for the given data-rate index, protocol version
     /// and regional-parameters revision.
     /// When the version or revision is unknown, it will return the most recent
@@ -564,6 +572,14 @@ impl RegionBaseConfig {
             uplink,
             dr_index
         ))
+    }
+
+    fn get_new_channel_req_dr_range(&self, data_rates: &[u8]) -> Result<(u8, u8)> {
+        if data_rates.is_empty() {
+            return Err(anyhow!("data_rates can not be empty"));
+        }
+
+        Ok((data_rates[0], data_rates[data_rates.len() - 1]))
     }
 
     fn get_max_dl_payload_size(

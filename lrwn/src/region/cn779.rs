@@ -464,6 +464,10 @@ impl Region for Configuration {
         self.base.get_data_rate(uplink, dr_index)
     }
 
+    fn get_new_channel_req_dr_range(&self, data_rates: &[u8]) -> Result<(u8, u8)> {
+        self.base.get_new_channel_req_dr_range(data_rates)
+    }
+
     fn get_max_dl_payload_size(
         &self,
         mac_version: MacVersion,

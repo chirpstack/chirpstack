@@ -508,6 +508,10 @@ impl Region for Configuration {
         self.base.add_channel(frequency, min_dr, max_dr)
     }
 
+    fn get_new_channel_req_dr_range(&self, data_rates: &[u8]) -> Result<(u8, u8)> {
+        self.base.get_new_channel_req_dr_range(data_rates)
+    }
+
     fn get_uplink_channel(&self, channel: usize) -> Result<Channel> {
         self.base.get_uplink_channel(channel)
     }

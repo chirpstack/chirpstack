@@ -781,6 +781,31 @@ impl Region for Configuration {
         self.base.get_data_rate(uplink, dr_index)
     }
 
+    fn get_new_channel_req_dr_range(&self, data_rates: &[u8]) -> Result<(u8, u8)> {
+        let dr_min = *data_rates
+            .first()
+            .ok_or_else(|| anyhow!("Can not get first data-rate"))?;
+        let dr_max = *data_rates
+            .last()
+            .ok_or_else(|| anyhow!("Can not get last data-rate"))?;
+
+        if dr_max - dr_min == (data_rates.len() - 1) as u8 {
+            // In case data_rates is a consecutive range.
+            Ok((dr_min, dr_max))
+        } else {
+            // Use special encoding as specified by RP002.
+            match data_rates {
+                [0, 1, 2, 3, 4, 5, 12, 13] => Ok((1, 0)),
+                [1, 2, 3, 4, 5, 12, 13] => Ok((2, 0)),
+                [2, 3, 4, 5, 12, 13] => Ok((3, 0)),
+                [3, 4, 5, 12, 13] => Ok((4, 0)),
+                [4, 5, 12, 13] => Ok((5, 0)),
+                [5, 12, 13] => Ok((6, 0)),
+                _ => Err(anyhow!("Unsupported data-rate range: {:?}", data_rates)),
+            }
+        }
+    }
+
     fn get_max_dl_payload_size(
         &self,
         mac_version: MacVersion,
@@ -985,6 +1010,20 @@ mod tests {
 
         for t in &tests {
             assert_eq!(t.2, c.get_data_rate_index(t.0, &t.1).unwrap());
+        }
+    }
+
+    #[test]
+    fn get_new_channel_req_dr_range() {
+        let c = Configuration::new(false);
+        let tests: Vec<(Vec<u8>, (u8, u8))> = vec![
+            (vec![0, 1, 2, 3, 4, 5], (0, 5)),
+            (vec![0, 1, 2, 3, 4, 5, 12, 13], (1, 0)),
+            (vec![5, 12, 13], (6, 0)),
+        ];
+
+        for t in &tests {
+            assert_eq!(t.1, c.get_new_channel_req_dr_range(&t.0).unwrap());
         }
     }
 
