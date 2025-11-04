@@ -634,8 +634,8 @@ impl MACCommandSet {
         }
 
         // in any other case there must be exactly one MACCommand::Raw.
-        if self.0.len() == 1 {
-            if let MACCommand::Raw(b) = &self.0[0] {
+        if self.0.len() == 1
+            && let MACCommand::Raw(b) = &self.0[0] {
                 let mut cur = Cursor::new(b.clone());
                 let mut commands = vec![];
                 let mut b = [0; 1];
@@ -796,7 +796,6 @@ impl MACCommandSet {
                 // Overwrite with decoded mac-commands.
                 self.0 = commands;
             }
-        }
 
         Ok(())
     }

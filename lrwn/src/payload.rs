@@ -277,13 +277,12 @@ impl MACPayload {
             }
 
             // mac-commands must have f_port=0
-            if let FRMPayload::MACCommandSet(_) = &self.frm_payload.as_ref().unwrap() {
-                if self.f_port.unwrap() != 0 {
+            if let FRMPayload::MACCommandSet(_) = &self.frm_payload.as_ref().unwrap()
+                && self.f_port.unwrap() != 0 {
                     return Err(anyhow!(
                         "f_port must be set to 0 for mac-commands in frm_payload"
                     ));
                 }
-            }
         }
 
         let mut b = Vec::new();
