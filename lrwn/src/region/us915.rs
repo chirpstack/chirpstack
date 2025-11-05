@@ -741,6 +741,15 @@ impl Region for Configuration {
         self.base.get_new_channel_req_dr_range(data_rates)
     }
 
+    fn get_data_rates_for_new_channel_req_dr_range(
+        &self,
+        min_dr: u8,
+        max_dr: u8,
+    ) -> Result<Vec<u8>> {
+        self.base
+            .get_data_rates_for_new_channel_req_dr_range(min_dr, max_dr)
+    }
+
     fn get_max_dl_payload_size(
         &self,
         mac_version: MacVersion,

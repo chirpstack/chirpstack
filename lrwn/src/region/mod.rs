@@ -423,6 +423,13 @@ pub trait Region {
     ///   special encoding is used (e.g. in case of EU868).
     fn get_new_channel_req_dr_range(&self, data_rates: &[u8]) -> Result<(u8, u8)>;
 
+    /// Returns the data-rates, given a min_dr / max_dr.
+    fn get_data_rates_for_new_channel_req_dr_range(
+        &self,
+        min_dr: u8,
+        max_dr: u8,
+    ) -> Result<Vec<u8>>;
+
     /// Returns the max downlink payload-size for the given data-rate index, protocol version
     /// and regional-parameters revision.
     /// When the version or revision is unknown, it will return the most recent
@@ -581,6 +588,18 @@ impl RegionBaseConfig {
         }
 
         Ok((data_rates[0], data_rates[data_rates.len() - 1]))
+    }
+
+    fn get_data_rates_for_new_channel_req_dr_range(
+        &self,
+        min_dr: u8,
+        max_dr: u8,
+    ) -> Result<Vec<u8>> {
+        if max_dr < min_dr {
+            return Err(anyhow!("Invalid min_dr and / or max_dr, max_dr < min_dr"));
+        }
+
+        Ok((min_dr..=max_dr).collect())
     }
 
     fn get_max_dl_payload_size(

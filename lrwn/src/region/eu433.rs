@@ -723,6 +723,31 @@ impl Region for Configuration {
         }
     }
 
+    fn get_data_rates_for_new_channel_req_dr_range(
+        &self,
+        min_dr: u8,
+        max_dr: u8,
+    ) -> Result<Vec<u8>> {
+        if max_dr < min_dr {
+            match (min_dr, max_dr) {
+                (1, 0) => Ok(vec![0, 1, 2, 3, 4, 5, 12, 13]),
+                (2, 0) => Ok(vec![1, 2, 3, 4, 5, 12, 13]),
+                (3, 0) => Ok(vec![2, 3, 4, 5, 12, 13]),
+                (4, 0) => Ok(vec![3, 4, 5, 12, 13]),
+                (5, 0) => Ok(vec![4, 5, 12, 13]),
+                (6, 0) => Ok(vec![5, 12, 13]),
+                _ => Err(anyhow!(
+                    "Unsupported data-rate range, min_dr: {}, max_dr: {}",
+                    min_dr,
+                    max_dr
+                )),
+            }
+        } else {
+            self.base
+                .get_data_rates_for_new_channel_req_dr_range(min_dr, max_dr)
+        }
+    }
+
     fn get_max_dl_payload_size(
         &self,
         mac_version: MacVersion,
