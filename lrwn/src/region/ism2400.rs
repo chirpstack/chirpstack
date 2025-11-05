@@ -195,22 +195,19 @@ impl Configuration {
                 uplink_channels: vec![
                     Channel {
                         frequency: 2403000000,
-                        min_dr: 0,
-                        max_dr: 7,
+                        data_rates: vec![0, 1, 2, 3, 4, 5, 6, 7],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 2425000000,
-                        min_dr: 0,
-                        max_dr: 7,
+                        data_rates: vec![0, 1, 2, 3, 4, 5, 6, 7],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 2479000000,
-                        min_dr: 0,
-                        max_dr: 7,
+                        data_rates: vec![0, 1, 2, 3, 4, 5, 6, 7],
                         enabled: true,
                         user_defined: false,
                     },
@@ -218,22 +215,19 @@ impl Configuration {
                 downlink_channels: vec![
                     Channel {
                         frequency: 2403000000,
-                        min_dr: 0,
-                        max_dr: 7,
+                        data_rates: vec![0, 1, 2, 3, 4, 5, 6, 7],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 2425000000,
-                        min_dr: 0,
-                        max_dr: 7,
+                        data_rates: vec![0, 1, 2, 3, 4, 5, 6, 7],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 2479000000,
-                        min_dr: 0,
-                        max_dr: 7,
+                        data_rates: vec![0, 1, 2, 3, 4, 5, 6, 7],
                         enabled: true,
                         user_defined: false,
                     },
@@ -314,8 +308,8 @@ impl Region for Configuration {
         self.base.get_tx_power_offset(tx_power)
     }
 
-    fn add_channel(&mut self, frequency: u32, min_dr: u8, max_dr: u8) -> Result<()> {
-        self.base.add_channel(frequency, min_dr, max_dr)
+    fn add_channel(&mut self, frequency: u32, data_rates: Vec<u8>) -> Result<()> {
+        self.base.add_channel(frequency, data_rates)
     }
 
     fn get_uplink_channel(&self, channel: usize) -> Result<Channel> {
@@ -400,11 +394,11 @@ mod test {
 
     fn config_user_channels() -> Configuration {
         let mut c = Configuration::new(false);
-        c.add_channel(2426000000, 0, 7).unwrap();
-        c.add_channel(2427000000, 0, 7).unwrap();
-        c.add_channel(2428000000, 0, 7).unwrap();
-        c.add_channel(2429000000, 0, 7).unwrap();
-        c.add_channel(2430000000, 0, 7).unwrap();
+        c.add_channel(2426000000, (0..=7).collect()).unwrap();
+        c.add_channel(2427000000, (0..=7).collect()).unwrap();
+        c.add_channel(2428000000, (0..=7).collect()).unwrap();
+        c.add_channel(2429000000, (0..=7).collect()).unwrap();
+        c.add_channel(2430000000, (0..=7).collect()).unwrap();
         c
     }
 

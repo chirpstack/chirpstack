@@ -400,8 +400,7 @@ pub struct MaxPayloadSize {
 #[derive(Clone, Default)]
 pub struct Channel {
     pub frequency: u32,
-    pub min_dr: u8,
-    pub max_dr: u8,
+    pub data_rates: Vec<u8>,
     pub enabled: bool,
     pub user_defined: bool,
 }
@@ -443,7 +442,7 @@ pub trait Region {
 
     /// Add an extra (user-configured) uplink / downlink channel.
     /// Note: this is not supported by every region.
-    fn add_channel(&mut self, frequency: u32, min_dr: u8, max_dr: u8) -> Result<()>;
+    fn add_channel(&mut self, frequency: u32, data_rates: Vec<u8>) -> Result<()>;
 
     /// Returns the uplink channel for the given index.
     fn get_uplink_channel(&self, channel: usize) -> Result<Channel>;
@@ -629,7 +628,7 @@ impl RegionBaseConfig {
             .ok_or_else(|| anyhow!("Invalid tx-power"))?)
     }
 
-    fn add_channel(&mut self, frequency: u32, min_dr: u8, max_dr: u8) -> Result<()> {
+    fn add_channel(&mut self, frequency: u32, data_rates: Vec<u8>) -> Result<()> {
         if !self.supports_user_channels {
             return Err(anyhow!(
                 "User defined channels are not supported for this band"
@@ -638,8 +637,7 @@ impl RegionBaseConfig {
 
         let c = Channel {
             frequency,
-            min_dr,
-            max_dr,
+            data_rates,
             user_defined: true,
             enabled: frequency != 0,
         };
@@ -668,7 +666,7 @@ impl RegionBaseConfig {
         Err(anyhow!("Unknown channel for frequency: {}", frequency))
     }
 
-    fn get_uplink_channel_index_for_freq_dr(&self, frequency: u32, dr: u8) -> Result<usize> {
+    fn get_uplink_channel_index_for_freq_dr(&self, frequency: u32, uplink_dr: u8) -> Result<usize> {
         for user_defined in &[true, false] {
             let i = match self.get_uplink_channel_index(frequency, *user_defined) {
                 Ok(v) => v,
@@ -683,7 +681,7 @@ impl RegionBaseConfig {
             // eg EU868:
             //  channel 1 (868.3 DR 0-5)
             //  channel x (868.3 DR 6)
-            if c.min_dr <= dr && c.max_dr >= dr {
+            if c.data_rates.contains(&uplink_dr) {
                 return Ok(i);
             }
         }
@@ -691,7 +689,7 @@ impl RegionBaseConfig {
         Err(anyhow!(
             "No channel found for frequency: {}, dr: {}",
             frequency,
-            dr
+            uplink_dr,
         ))
     }
 
@@ -772,10 +770,7 @@ impl RegionBaseConfig {
     fn get_enabled_uplink_data_rates(&self) -> Vec<u8> {
         let mut out: HashSet<u8> = HashSet::new();
         for uc in &self.uplink_channels {
-            // ..=max_dr: inclusive range, we want to include max_dr
-            for dr in uc.min_dr..=uc.max_dr {
-                out.insert(dr);
-            }
+            out.extend(uc.data_rates.iter());
         }
 
         let mut out: Vec<u8> = out.iter().cloned().collect();
@@ -809,8 +804,8 @@ impl RegionBaseConfig {
         for c in &self.uplink_channels {
             if c.user_defined
                 && i < channels.len()
-                && c.min_dr == self.cf_list_min_dr
-                && c.max_dr == self.cf_list_max_dr
+                && c.data_rates.first().cloned().unwrap_or_default() == self.cf_list_min_dr
+                && c.data_rates.last().cloned().unwrap_or_default() == self.cf_list_max_dr
             {
                 channels[i] = c.frequency;
                 i += 1;

@@ -651,8 +651,7 @@ impl Configuration {
         for i in 0..64 {
             c.base.uplink_channels.push(Channel {
                 frequency: 902300000 + (i * 200000),
-                min_dr: 0,
-                max_dr: 3,
+                data_rates: vec![0, 1, 2, 3],
                 enabled: true,
                 user_defined: false,
             });
@@ -662,8 +661,7 @@ impl Configuration {
         for i in 0..8 {
             c.base.uplink_channels.push(Channel {
                 frequency: 903000000 + (i * 1600000),
-                min_dr: 4,
-                max_dr: 6,
+                data_rates: vec![4, 5, 6],
                 enabled: true,
                 user_defined: false,
             });
@@ -673,8 +671,7 @@ impl Configuration {
         for i in 0..8 {
             c.base.downlink_channels.push(Channel {
                 frequency: 923300000 + (i * 600000),
-                min_dr: 8,
-                max_dr: 13,
+                data_rates: vec![8, 9, 10, 11, 12, 13],
                 enabled: true,
                 user_defined: false,
             });
@@ -762,8 +759,8 @@ impl Region for Configuration {
         self.base.get_tx_power_offset(tx_power)
     }
 
-    fn add_channel(&mut self, frequency: u32, min_dr: u8, max_dr: u8) -> Result<()> {
-        self.base.add_channel(frequency, min_dr, max_dr)
+    fn add_channel(&mut self, frequency: u32, data_rates: Vec<u8>) -> Result<()> {
+        self.base.add_channel(frequency, data_rates)
     }
 
     fn get_uplink_channel(&self, channel: usize) -> Result<Channel> {
@@ -977,42 +974,36 @@ pub mod test {
         struct Test {
             channel: usize,
             freq: u32,
-            min_dr: u8,
-            max_dr: u8,
+            data_rates: Vec<u8>,
         }
 
         let tests = vec![
             Test {
                 channel: 0,
                 freq: 902300000,
-                min_dr: 0,
-                max_dr: 3,
+                data_rates: vec![0, 1, 2, 3],
             },
             Test {
                 channel: 63,
                 freq: 914900000,
-                min_dr: 0,
-                max_dr: 3,
+                data_rates: vec![0, 1, 2, 3],
             },
             Test {
                 channel: 64,
                 freq: 903000000,
-                min_dr: 4,
-                max_dr: 6,
+                data_rates: vec![4, 5, 6],
             },
             Test {
                 channel: 71,
                 freq: 914200000,
-                min_dr: 4,
-                max_dr: 6,
+                data_rates: vec![4, 5, 6],
             },
         ];
 
         for tst in &tests {
             let chan = c.get_uplink_channel(tst.channel).unwrap();
             assert_eq!(tst.freq, chan.frequency);
-            assert_eq!(tst.min_dr, chan.min_dr);
-            assert_eq!(tst.max_dr, chan.max_dr);
+            assert_eq!(tst.data_rates, chan.data_rates);
         }
     }
 

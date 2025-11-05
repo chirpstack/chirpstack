@@ -477,15 +477,13 @@ impl Configuration {
                 uplink_channels: vec![
                     Channel {
                         frequency: 868900000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 869100000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
@@ -493,15 +491,13 @@ impl Configuration {
                 downlink_channels: vec![
                     Channel {
                         frequency: 868900000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 869100000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
@@ -603,8 +599,8 @@ impl Region for Configuration {
         self.base.get_tx_power_offset(tx_power)
     }
 
-    fn add_channel(&mut self, frequency: u32, min_dr: u8, max_dr: u8) -> Result<()> {
-        self.base.add_channel(frequency, min_dr, max_dr)
+    fn add_channel(&mut self, frequency: u32, data_rates: Vec<u8>) -> Result<()> {
+        self.base.add_channel(frequency, data_rates)
     }
 
     fn get_uplink_channel(&self, channel: usize) -> Result<Channel> {
@@ -689,11 +685,11 @@ mod test {
 
     fn config_user_channels() -> Configuration {
         let mut c = Configuration::new(false);
-        c.add_channel(864100000, 0, 5).unwrap();
-        c.add_channel(864300000, 0, 5).unwrap();
-        c.add_channel(864500000, 0, 5).unwrap();
-        c.add_channel(864700000, 0, 5).unwrap();
-        c.add_channel(864900000, 0, 5).unwrap();
+        c.add_channel(864100000, (0..=5).collect()).unwrap();
+        c.add_channel(864300000, (0..=5).collect()).unwrap();
+        c.add_channel(864500000, (0..=5).collect()).unwrap();
+        c.add_channel(864700000, (0..=5).collect()).unwrap();
+        c.add_channel(864900000, (0..=5).collect()).unwrap();
         c
     }
 
