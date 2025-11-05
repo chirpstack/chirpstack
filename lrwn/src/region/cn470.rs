@@ -471,6 +471,8 @@ impl Region for Configuration {
             rx2_delay: Duration::from_secs(2),
             join_accept_delay1: Duration::from_secs(5),
             join_accept_delay2: Duration::from_secs(6),
+            min_ul_dr: 0,
+            max_ul_dr: 5,
         }
     }
 

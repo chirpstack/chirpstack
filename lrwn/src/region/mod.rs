@@ -385,6 +385,8 @@ pub struct Defaults {
     pub rx2_delay: Duration,
     pub join_accept_delay1: Duration,
     pub join_accept_delay2: Duration,
+    pub min_ul_dr: u8,
+    pub max_ul_dr: u8,
 }
 
 #[derive(Clone)]
