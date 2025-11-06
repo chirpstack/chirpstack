@@ -50,6 +50,7 @@ impl DeviceProfileTemplateService for DeviceProfileTemplate {
             mac_version: req_dp.mac_version().from_proto(),
             reg_params_revision: req_dp.reg_params_revision().from_proto(),
             adr_algorithm_id: req_dp.adr_algorithm_id.clone(),
+            codec_plugin_id: req_dp.codec_plugin_id.clone(),
             payload_codec_runtime: req_dp.payload_codec_runtime().from_proto(),
             payload_codec_script: req_dp.payload_codec_script.clone(),
             flush_queue_on_activate: req_dp.flush_queue_on_activate,
@@ -122,6 +123,7 @@ impl DeviceProfileTemplateService for DeviceProfileTemplate {
                 mac_version: dp.mac_version.to_proto().into(),
                 reg_params_revision: dp.reg_params_revision.to_proto().into(),
                 adr_algorithm_id: dp.adr_algorithm_id,
+                codec_plugin_id: dp.codec_plugin_id,
                 payload_codec_runtime: dp.payload_codec_runtime.to_proto().into(),
                 payload_codec_script: dp.payload_codec_script,
                 flush_queue_on_activate: dp.flush_queue_on_activate,
@@ -191,6 +193,7 @@ impl DeviceProfileTemplateService for DeviceProfileTemplate {
             mac_version: req_dp.mac_version().from_proto(),
             reg_params_revision: req_dp.reg_params_revision().from_proto(),
             adr_algorithm_id: req_dp.adr_algorithm_id.clone(),
+            codec_plugin_id: req_dp.codec_plugin_id.clone(),
             payload_codec_runtime: req_dp.payload_codec_runtime().from_proto(),
             payload_codec_script: req_dp.payload_codec_script.clone(),
             flush_queue_on_activate: req_dp.flush_queue_on_activate,
@@ -337,6 +340,7 @@ pub mod test {
                     mac_version: common::MacVersion::Lorawan103.into(),
                     reg_params_revision: common::RegParamsRevision::A.into(),
                     adr_algorithm_id: "default".into(),
+                    codec_plugin_id: "passthrough".into(),
                     ..Default::default()
                 }),
             },
@@ -361,6 +365,7 @@ pub mod test {
                 mac_version: common::MacVersion::Lorawan103.into(),
                 reg_params_revision: common::RegParamsRevision::A.into(),
                 adr_algorithm_id: "default".into(),
+                codec_plugin_id: "passthrough".into(),
                 ..Default::default()
             }),
             get_resp.get_ref().device_profile_template
@@ -379,6 +384,7 @@ pub mod test {
                     mac_version: common::MacVersion::Lorawan103.into(),
                     reg_params_revision: common::RegParamsRevision::A.into(),
                     adr_algorithm_id: "default".into(),
+                    codec_plugin_id: "passthrough".into(),
                     ..Default::default()
                 }),
             },
@@ -403,6 +409,7 @@ pub mod test {
                 mac_version: common::MacVersion::Lorawan103.into(),
                 reg_params_revision: common::RegParamsRevision::A.into(),
                 adr_algorithm_id: "default".into(),
+                codec_plugin_id: "passthrough".into(),
                 ..Default::default()
             }),
             get_resp.get_ref().device_profile_template
