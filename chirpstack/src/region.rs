@@ -1,15 +1,16 @@
 use std::collections::HashMap;
-use std::sync::{Arc, LazyLock, RwLock};
+use std::sync::{Arc, RwLock};
 
 use anyhow::{Context, Result};
-use tracing::{Level, info, span, trace};
+use tracing::{info, span, trace, Level};
 
 use crate::config;
 use lrwn::region;
 
-type RegionSet = HashMap<String, Arc<Box<dyn region::Region + Sync + Send>>>;
-
-static REGIONS: LazyLock<RwLock<RegionSet>> = LazyLock::new(|| RwLock::new(RegionSet::new()));
+lazy_static! {
+    static ref REGIONS: RwLock<HashMap<String, Arc<Box<dyn region::Region + Sync + Send>>>> =
+        RwLock::new(HashMap::new());
+}
 
 pub fn setup() -> Result<()> {
     info!("Setting up regions");
