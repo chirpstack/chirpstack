@@ -571,9 +571,10 @@ impl PayloadCodec for McClassCSessionAnsPayload {
         }
 
         if let Some(v) = self.time_to_start
-            && v >= (1 << 24) {
-                return Err(anyhow!("Max time_to_start is 1^24 - 1"));
-            }
+            && v >= (1 << 24)
+        {
+            return Err(anyhow!("Max time_to_start is 1^24 - 1"));
+        }
 
         let mut b = Vec::with_capacity(4);
         b.push(self.status_and_mc_group_id.mc_group_id);
@@ -715,9 +716,10 @@ impl PayloadCodec for McClassBSessionAnsPayload {
         }
 
         if let Some(v) = self.time_to_start
-            && v >= (1 << 24) {
-                return Err(anyhow!("Max time_to_start is 1^24 - 1"));
-            }
+            && v >= (1 << 24)
+        {
+            return Err(anyhow!("Max time_to_start is 1^24 - 1"));
+        }
 
         let mut b = Vec::with_capacity(4);
         b.push(self.status_and_mc_group_id.mc_group_id);

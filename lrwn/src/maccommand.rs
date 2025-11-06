@@ -635,167 +635,166 @@ impl MACCommandSet {
 
         // in any other case there must be exactly one MACCommand::Raw.
         if self.0.len() == 1
-            && let MACCommand::Raw(b) = &self.0[0] {
-                let mut cur = Cursor::new(b.clone());
-                let mut commands = vec![];
-                let mut b = [0; 1];
+            && let MACCommand::Raw(b) = &self.0[0]
+        {
+            let mut cur = Cursor::new(b.clone());
+            let mut commands = vec![];
+            let mut b = [0; 1];
 
-                loop {
-                    // Try to read one byte to get the CID.
-                    if cur.read_exact(&mut b).is_err() {
-                        break;
-                    }
-
-                    let cid = match CID::from_u8(uplink, b[0]) {
-                        Ok(v) => v,
-                        Err(_) => {
-                            let mut b = b.to_vec();
-                            cur.read_to_end(&mut b)?;
-                            commands.push(MACCommand::Raw(b));
-                            break;
-                        }
-                    };
-
-                    match cid {
-                        CID::ResetInd => {
-                            commands.push(MACCommand::ResetInd(ResetIndPayload::decode(&mut cur)?))
-                        }
-                        CID::ResetConf => commands
-                            .push(MACCommand::ResetConf(ResetConfPayload::decode(&mut cur)?)),
-                        CID::LinkCheckReq => commands.push(MACCommand::LinkCheckReq),
-                        CID::LinkCheckAns => commands.push(MACCommand::LinkCheckAns(
-                            LinkCheckAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::LinkADRReq => commands
-                            .push(MACCommand::LinkADRReq(LinkADRReqPayload::decode(&mut cur)?)),
-                        CID::LinkADRAns => commands
-                            .push(MACCommand::LinkADRAns(LinkADRAnsPayload::decode(&mut cur)?)),
-                        CID::DutyCycleReq => commands.push(MACCommand::DutyCycleReq(
-                            DutyCycleReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::DutyCycleAns => commands.push(MACCommand::DutyCycleAns),
-                        CID::RxParamSetupReq => commands.push(MACCommand::RxParamSetupReq(
-                            RxParamSetupReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::RxParamSetupAns => commands.push(MACCommand::RxParamSetupAns(
-                            RxParamSetupAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::DevStatusReq => commands.push(MACCommand::DevStatusReq),
-                        CID::DevStatusAns => commands.push(MACCommand::DevStatusAns(
-                            DevStatusAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::NewChannelReq => commands.push(MACCommand::NewChannelReq(
-                            NewChannelReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::NewChannelAns => commands.push(MACCommand::NewChannelAns(
-                            NewChannelAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::RxTimingSetupReq => commands.push(MACCommand::RxTimingSetupReq(
-                            RxTimingSetupReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::RxTimingSetupAns => commands.push(MACCommand::RxTimingSetupAns),
-                        CID::TxParamSetupReq => commands.push(MACCommand::TxParamSetupReq(
-                            TxParamSetupReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::TxParamSetupAns => commands.push(MACCommand::TxParamSetupAns),
-                        CID::DlChannelReq => commands.push(MACCommand::DlChannelReq(
-                            DlChannelReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::DlChannelAns => commands.push(MACCommand::DlChannelAns(
-                            DlChannelAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::RekeyConf => commands
-                            .push(MACCommand::RekeyConf(RekeyConfPayload::decode(&mut cur)?)),
-                        CID::RekeyInd => {
-                            commands.push(MACCommand::RekeyInd(RekeyIndPayload::decode(&mut cur)?))
-                        }
-                        CID::ADRParamSetupReq => commands.push(MACCommand::ADRParamSetupReq(
-                            ADRParamSetupReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::ADRParamSetupAns => commands.push(MACCommand::ADRParamSetupAns),
-                        CID::DeviceTimeReq => commands.push(MACCommand::DeviceTimeReq),
-                        CID::DeviceTimeAns => commands.push(MACCommand::DeviceTimeAns(
-                            DeviceTimeAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::ForceRejoinReq => commands.push(MACCommand::ForceRejoinReq(
-                            ForceRejoinReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::RejoinParamSetupReq => commands.push(MACCommand::RejoinParamSetupReq(
-                            RejoinParamSetupReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::RejoinParamSetupAns => commands.push(MACCommand::RejoinParamSetupAns(
-                            RejoinParamSetupAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::PingSlotInfoReq => commands.push(MACCommand::PingSlotInfoReq(
-                            PingSlotInfoReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::PingSlotInfoAns => commands.push(MACCommand::PingSlotInfoAns),
-                        CID::PingSlotChannelReq => commands.push(MACCommand::PingSlotChannelReq(
-                            PingSlotChannelReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::PingSlotChannelAns => commands.push(MACCommand::PingSlotChannelAns(
-                            PingSlotChannelAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::BeaconFreqReq => commands.push(MACCommand::BeaconFreqReq(
-                            BeaconFreqReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::BeaconFreqAns => commands.push(MACCommand::BeaconFreqAns(
-                            BeaconFreqAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::DeviceModeInd => commands.push(MACCommand::DeviceModeInd(
-                            DeviceModeIndPayload::decode(&mut cur)?,
-                        )),
-                        CID::DeviceModeConf => commands.push(MACCommand::DeviceModeConf(
-                            DeviceModeConfPayload::decode(&mut cur)?,
-                        )),
-                        CID::RelayConfReq => commands.push(MACCommand::RelayConfReq(
-                            RelayConfReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::RelayConfAns => commands.push(MACCommand::RelayConfAns(
-                            RelayConfAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::EndDeviceConfReq => commands.push(MACCommand::EndDeviceConfReq(
-                            EndDeviceConfReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::EndDeviceConfAns => commands.push(MACCommand::EndDeviceConfAns(
-                            EndDeviceConfAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::FilterListReq => commands.push(MACCommand::FilterListReq(
-                            FilterListReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::FilterListAns => commands.push(MACCommand::FilterListAns(
-                            FilterListAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::UpdateUplinkListReq => commands.push(MACCommand::UpdateUplinkListReq(
-                            UpdateUplinkListReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::UpdateUplinkListAns => commands.push(MACCommand::UpdateUplinkListAns),
-                        CID::CtrlUplinkListReq => commands.push(MACCommand::CtrlUplinkListReq(
-                            CtrlUplinkListReqPayload::decode(&mut cur)?,
-                        )),
-                        CID::CtrlUplinkListAns => commands.push(MACCommand::CtrlUplinkListAns(
-                            CtrlUplinkListAnsPayload::decode(&mut cur)?,
-                        )),
-                        CID::ConfigureFwdLimitReq => {
-                            commands.push(MACCommand::ConfigureFwdLimitReq(
-                                ConfigureFwdLimitReqPayload::decode(&mut cur)?,
-                            ))
-                        }
-                        CID::ConfigureFwdLimitAns => {
-                            commands.push(MACCommand::ConfigureFwdLimitAns)
-                        }
-                        CID::NotifyNewEndDeviceReq => {
-                            commands.push(MACCommand::NotifyNewEndDeviceReq(
-                                NotifyNewEndDeviceReqPayload::decode(&mut cur)?,
-                            ))
-                        }
-                        CID::Raw => {}
-                    }
+            loop {
+                // Try to read one byte to get the CID.
+                if cur.read_exact(&mut b).is_err() {
+                    break;
                 }
 
-                // Overwrite with decoded mac-commands.
-                self.0 = commands;
+                let cid = match CID::from_u8(uplink, b[0]) {
+                    Ok(v) => v,
+                    Err(_) => {
+                        let mut b = b.to_vec();
+                        cur.read_to_end(&mut b)?;
+                        commands.push(MACCommand::Raw(b));
+                        break;
+                    }
+                };
+
+                match cid {
+                    CID::ResetInd => {
+                        commands.push(MACCommand::ResetInd(ResetIndPayload::decode(&mut cur)?))
+                    }
+                    CID::ResetConf => {
+                        commands.push(MACCommand::ResetConf(ResetConfPayload::decode(&mut cur)?))
+                    }
+                    CID::LinkCheckReq => commands.push(MACCommand::LinkCheckReq),
+                    CID::LinkCheckAns => commands.push(MACCommand::LinkCheckAns(
+                        LinkCheckAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::LinkADRReq => {
+                        commands.push(MACCommand::LinkADRReq(LinkADRReqPayload::decode(&mut cur)?))
+                    }
+                    CID::LinkADRAns => {
+                        commands.push(MACCommand::LinkADRAns(LinkADRAnsPayload::decode(&mut cur)?))
+                    }
+                    CID::DutyCycleReq => commands.push(MACCommand::DutyCycleReq(
+                        DutyCycleReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::DutyCycleAns => commands.push(MACCommand::DutyCycleAns),
+                    CID::RxParamSetupReq => commands.push(MACCommand::RxParamSetupReq(
+                        RxParamSetupReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::RxParamSetupAns => commands.push(MACCommand::RxParamSetupAns(
+                        RxParamSetupAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::DevStatusReq => commands.push(MACCommand::DevStatusReq),
+                    CID::DevStatusAns => commands.push(MACCommand::DevStatusAns(
+                        DevStatusAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::NewChannelReq => commands.push(MACCommand::NewChannelReq(
+                        NewChannelReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::NewChannelAns => commands.push(MACCommand::NewChannelAns(
+                        NewChannelAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::RxTimingSetupReq => commands.push(MACCommand::RxTimingSetupReq(
+                        RxTimingSetupReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::RxTimingSetupAns => commands.push(MACCommand::RxTimingSetupAns),
+                    CID::TxParamSetupReq => commands.push(MACCommand::TxParamSetupReq(
+                        TxParamSetupReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::TxParamSetupAns => commands.push(MACCommand::TxParamSetupAns),
+                    CID::DlChannelReq => commands.push(MACCommand::DlChannelReq(
+                        DlChannelReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::DlChannelAns => commands.push(MACCommand::DlChannelAns(
+                        DlChannelAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::RekeyConf => {
+                        commands.push(MACCommand::RekeyConf(RekeyConfPayload::decode(&mut cur)?))
+                    }
+                    CID::RekeyInd => {
+                        commands.push(MACCommand::RekeyInd(RekeyIndPayload::decode(&mut cur)?))
+                    }
+                    CID::ADRParamSetupReq => commands.push(MACCommand::ADRParamSetupReq(
+                        ADRParamSetupReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::ADRParamSetupAns => commands.push(MACCommand::ADRParamSetupAns),
+                    CID::DeviceTimeReq => commands.push(MACCommand::DeviceTimeReq),
+                    CID::DeviceTimeAns => commands.push(MACCommand::DeviceTimeAns(
+                        DeviceTimeAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::ForceRejoinReq => commands.push(MACCommand::ForceRejoinReq(
+                        ForceRejoinReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::RejoinParamSetupReq => commands.push(MACCommand::RejoinParamSetupReq(
+                        RejoinParamSetupReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::RejoinParamSetupAns => commands.push(MACCommand::RejoinParamSetupAns(
+                        RejoinParamSetupAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::PingSlotInfoReq => commands.push(MACCommand::PingSlotInfoReq(
+                        PingSlotInfoReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::PingSlotInfoAns => commands.push(MACCommand::PingSlotInfoAns),
+                    CID::PingSlotChannelReq => commands.push(MACCommand::PingSlotChannelReq(
+                        PingSlotChannelReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::PingSlotChannelAns => commands.push(MACCommand::PingSlotChannelAns(
+                        PingSlotChannelAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::BeaconFreqReq => commands.push(MACCommand::BeaconFreqReq(
+                        BeaconFreqReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::BeaconFreqAns => commands.push(MACCommand::BeaconFreqAns(
+                        BeaconFreqAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::DeviceModeInd => commands.push(MACCommand::DeviceModeInd(
+                        DeviceModeIndPayload::decode(&mut cur)?,
+                    )),
+                    CID::DeviceModeConf => commands.push(MACCommand::DeviceModeConf(
+                        DeviceModeConfPayload::decode(&mut cur)?,
+                    )),
+                    CID::RelayConfReq => commands.push(MACCommand::RelayConfReq(
+                        RelayConfReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::RelayConfAns => commands.push(MACCommand::RelayConfAns(
+                        RelayConfAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::EndDeviceConfReq => commands.push(MACCommand::EndDeviceConfReq(
+                        EndDeviceConfReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::EndDeviceConfAns => commands.push(MACCommand::EndDeviceConfAns(
+                        EndDeviceConfAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::FilterListReq => commands.push(MACCommand::FilterListReq(
+                        FilterListReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::FilterListAns => commands.push(MACCommand::FilterListAns(
+                        FilterListAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::UpdateUplinkListReq => commands.push(MACCommand::UpdateUplinkListReq(
+                        UpdateUplinkListReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::UpdateUplinkListAns => commands.push(MACCommand::UpdateUplinkListAns),
+                    CID::CtrlUplinkListReq => commands.push(MACCommand::CtrlUplinkListReq(
+                        CtrlUplinkListReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::CtrlUplinkListAns => commands.push(MACCommand::CtrlUplinkListAns(
+                        CtrlUplinkListAnsPayload::decode(&mut cur)?,
+                    )),
+                    CID::ConfigureFwdLimitReq => commands.push(MACCommand::ConfigureFwdLimitReq(
+                        ConfigureFwdLimitReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::ConfigureFwdLimitAns => commands.push(MACCommand::ConfigureFwdLimitAns),
+                    CID::NotifyNewEndDeviceReq => commands.push(MACCommand::NotifyNewEndDeviceReq(
+                        NotifyNewEndDeviceReqPayload::decode(&mut cur)?,
+                    )),
+                    CID::Raw => {}
+                }
             }
+
+            // Overwrite with decoded mac-commands.
+            self.0 = commands;
+        }
 
         Ok(())
     }
