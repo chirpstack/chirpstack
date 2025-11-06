@@ -130,7 +130,6 @@
     handlebars = "6.3"
 
     # Utilities
-    email_address = "0.2"
     validator = { version = "0.20", features = ["derive"] }
     aws-sign-v4 = "0.3"
     gcp_auth = "0.12"
