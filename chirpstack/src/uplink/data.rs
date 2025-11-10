@@ -489,10 +489,13 @@ impl Data {
                 code: integration_pb::LogCode::UplinkFCntRetransmission.into(),
                 description:
                     "Uplink was flagged as re-transmission / frame-counter did not increment".into(),
-                context: [(
-                    "deduplication_id".to_string(),
-                    self.uplink_frame_set.uplink_set_id.to_string(),
-                )]
+                context: [
+                    (
+                        "deduplication_id".to_string(),
+                        self.uplink_frame_set.uplink_set_id.to_string(),
+                    ),
+                    ("f_cnt_up".to_string(), self.f_cnt_up_full.to_string()),
+                ]
                 .iter()
                 .cloned()
                 .collect(),
@@ -507,10 +510,13 @@ impl Data {
                 level: integration_pb::LogLevel::Warning.into(),
                 code: integration_pb::LogCode::UplinkFCntReset.into(),
                 description: "Frame-counter reset or rollover detected".into(),
-                context: [(
-                    "deduplication_id".to_string(),
-                    self.uplink_frame_set.uplink_set_id.to_string(),
-                )]
+                context: [
+                    (
+                        "deduplication_id".to_string(),
+                        self.uplink_frame_set.uplink_set_id.to_string(),
+                    ),
+                    ("f_cnt_up".to_string(), self.f_cnt_up_full.to_string()),
+                ]
                 .iter()
                 .cloned()
                 .collect(),
