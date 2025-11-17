@@ -939,6 +939,7 @@ impl Data {
                 mac.f_port.unwrap_or(0),
                 &dev.variables,
                 &dp.payload_codec_script,
+                &dp.codec_plugin_id,
                 &pl.data,
             )
             .await
