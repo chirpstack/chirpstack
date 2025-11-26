@@ -515,7 +515,9 @@ impl Default for OAuth2 {
 #[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(default)]
 pub struct JoinServer {
+    pub resolve_join_eui_domain_suffix: String,
     pub servers: Vec<JoinServerServer>,
+    pub default: JoinServerServerDefault,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -526,6 +528,19 @@ pub struct JoinServerServer {
     pub server: String,
     #[serde(with = "humantime_serde")]
     pub async_timeout: Duration,
+    pub ca_cert: String,
+    pub tls_cert: String,
+    pub tls_key: String,
+    pub authorization_header: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone)]
+#[serde(default)]
+pub struct JoinServerServerDefault {
+    pub enabled: bool,
+    #[serde(with = "humantime_serde")]
+    pub async_timeout: Duration,
+    pub server: String,
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,

@@ -759,6 +759,45 @@ pub fn run() {
 # Join Server configuration.
 [join_server]
 
+    # Resolve JoinEUI domain suffix.
+    resolve_join_eui_domain_suffix="{{ join_server.resolve_join_eui_domain_suffix }}"
+
+
+    # Default join-server.
+    [join_server.default]
+
+      # Enable default join-server.
+      enabled={{join_server.default.enabled}}
+
+      # Async timeout (set to 0 to disable async interface).
+      async_timeout="{{join_server.default.async_timeout}}"
+
+      # Server.
+      #
+      # If set, this will bypass the DNS resolving of the server.
+      server="{{join_server.default.server}}"
+ 
+      # Use target role suffix.
+      #
+      # Depending the context of the remote server, this will add
+      # the /sns or /fns path to the server endpoint.
+      use_target_role_suffix={{join_server.default.use_target_role_suffix}}
+ 
+      # CA certificate (path).
+      ca_cert="{{join_server.default.ca_cert}}"
+ 
+      # TLS certificate (path).
+      tls_cert="{{join_server.default.tls_cert}}"
+ 
+      # TLS key (PKCS#8) (path).
+      tls_key="{{join_server.default.tls_key}}"
+
+      # Authorization header.
+      #
+      # Optional value of the Authorization header, e.g. token or password.
+      authorization_header="{{join_server.default.authorization_header}}"
+
+
     # Per Join Server configuration (this can be repeated).
     #
     # ChirpStack will try to match the Join-Request JoinEUI against each
