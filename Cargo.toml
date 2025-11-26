@@ -60,9 +60,9 @@
     ] }
 
     # Database
-    diesel = "2.2"
-    diesel_migrations = { version = "2.2" }
-    diesel-async = { version = "0.6", features = [
+    diesel = "2.3"
+    diesel_migrations = { version = "2.3" }
+    diesel-async = { version = "0.7", features = [
       "deadpool",
       "async-connection-wrapper",
     ] }
@@ -159,7 +159,10 @@
       "tokio",
       "cmake-build",
     ] }
-    rumqttc = { version = "0.24", features = ["url"] }
+    rumqttc = { version = "0.25", default-features = false, features = [
+      "url",
+      "use-rustls-no-provider",
+    ] }
 
 
 [profile.release]
