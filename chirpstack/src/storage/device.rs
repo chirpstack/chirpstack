@@ -1038,7 +1038,7 @@ pub mod test {
             let dp = storage::device_profile::get(&device_profile_id)
                 .await
                 .unwrap();
-            dp.tenant_id
+            dp.tenant_id.unwrap()
         };
 
         let application_id = match application_id {
@@ -1403,7 +1403,7 @@ pub mod test {
 
         let dp = storage::device_profile::create(storage::device_profile::DeviceProfile {
             name: "test-dp".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             ..Default::default()
         })
         .await

@@ -58,7 +58,7 @@ async fn test_multicast() {
     // device-profile
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "test-dp".into(),
-        tenant_id: t.id,
+        tenant_id: Some(t.id),
         ..Default::default()
     })
     .await

@@ -209,7 +209,7 @@ pub mod test {
             ..Default::default()
         };
         i.location_event(&HashMap::new(), &pl).await.unwrap();
-        last_id = assert_reply(&last_id, "location", &pl.encode_to_vec()).await;
+        _ = assert_reply(&last_id, "location", &pl.encode_to_vec()).await;
     }
 
     async fn assert_reply(last_id: &str, event: &str, b: &[u8]) -> String {
