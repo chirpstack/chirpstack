@@ -71,13 +71,6 @@ enum Commands {
         dir: String,
     },
 
-    /// Import legacy lorawan-devices repository.
-    ImportLegacyLorawanDevicesRepository {
-        /// Path to repository root.
-        #[arg(short, long, value_name = "DIR")]
-        dir: String,
-    },
-
     /// Create global API key.
     CreateApiKey {
         /// Name.
@@ -124,11 +117,6 @@ async fn main() -> Result<()> {
         }
         Some(Commands::ImportLorawanDeviceProfiles { dir }) => {
             cmd::import_lorawan_device_profiles::run(Path::new(&dir))
-                .await
-                .unwrap()
-        }
-        Some(Commands::ImportLegacyLorawanDevicesRepository { dir }) => {
-            cmd::import_legacy_lorawan_devices_repository::run(Path::new(&dir))
                 .await
                 .unwrap()
         }

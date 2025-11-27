@@ -14,7 +14,6 @@
     <Protobuf Include="../proto/api/tenant.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
     <Protobuf Include="../proto/api/application.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
     <Protobuf Include="../proto/api/device_profile.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
-    <Protobuf Include="../proto/api/device_profile_template.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
     <Protobuf Include="../proto/api/device.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
     <Protobuf Include="../proto/api/gateway.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />
     <Protobuf Include="../proto/api/multicast_group.proto" ProtoRoot="../proto/" OutputDir="Chirpstack/" CompileOutputs="false" AdditionalImportDirs="/googleproto" />

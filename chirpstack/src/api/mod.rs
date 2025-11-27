@@ -10,7 +10,6 @@ use anyhow::{Context as AnyhowContext, Result};
 use axum::{Router, response::IntoResponse, routing::get};
 use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
-use chirpstack_api::api::device_profile_template_service_server::DeviceProfileTemplateServiceServer;
 use chirpstack_api::api::device_service_server::DeviceServiceServer;
 use chirpstack_api::api::fuota_service_server::FuotaServiceServer;
 use chirpstack_api::api::gateway_service_server::GatewayServiceServer;
@@ -51,7 +50,6 @@ pub mod auth;
 pub mod backend;
 pub mod device;
 pub mod device_profile;
-pub mod device_profile_template;
 pub mod error;
 pub mod fuota;
 pub mod gateway;
@@ -142,10 +140,6 @@ pub async fn setup() -> Result<()> {
         ))
         .add_service(DeviceProfileServiceServer::with_interceptor(
             device_profile::DeviceProfile::new(validator::RequestValidator::new()),
-            auth::auth_interceptor,
-        ))
-        .add_service(DeviceProfileTemplateServiceServer::with_interceptor(
-            device_profile_template::DeviceProfileTemplate::new(validator::RequestValidator::new()),
             auth::auth_interceptor,
         ))
         .add_service(TenantServiceServer::with_interceptor(

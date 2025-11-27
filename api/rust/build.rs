@@ -202,11 +202,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .join("device_profile.proto")
                     .to_str()
                     .unwrap(),
-                cs_dir
-                    .join("api")
-                    .join("device_profile_template.proto")
-                    .to_str()
-                    .unwrap(),
                 cs_dir.join("api").join("device.proto").to_str().unwrap(),
                 cs_dir.join("api").join("gateway.proto").to_str().unwrap(),
                 cs_dir

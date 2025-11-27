@@ -25,6 +25,10 @@ const (
 	DeviceProfileService_Update_FullMethodName            = "/api.DeviceProfileService/Update"
 	DeviceProfileService_Delete_FullMethodName            = "/api.DeviceProfileService/Delete"
 	DeviceProfileService_List_FullMethodName              = "/api.DeviceProfileService/List"
+	DeviceProfileService_ListVendors_FullMethodName       = "/api.DeviceProfileService/ListVendors"
+	DeviceProfileService_DeleteVendor_FullMethodName      = "/api.DeviceProfileService/DeleteVendor"
+	DeviceProfileService_ListDevices_FullMethodName       = "/api.DeviceProfileService/ListDevices"
+	DeviceProfileService_DeleteDevice_FullMethodName      = "/api.DeviceProfileService/DeleteDevice"
 	DeviceProfileService_ListAdrAlgorithms_FullMethodName = "/api.DeviceProfileService/ListAdrAlgorithms"
 )
 
@@ -45,6 +49,14 @@ type DeviceProfileServiceClient interface {
 	Delete(ctx context.Context, in *DeleteDeviceProfileRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// List the available device-profiles.
 	List(ctx context.Context, in *ListDeviceProfilesRequest, opts ...grpc.CallOption) (*ListDeviceProfilesResponse, error)
+	// List the available device-profile vendors.
+	ListVendors(ctx context.Context, in *ListDeviceProfileVendorsRequest, opts ...grpc.CallOption) (*ListDeviceProfileVendorsResponse, error)
+	// Delete the given device-profile vendor.
+	DeleteVendor(ctx context.Context, in *DeleteDeviceProfileVendorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// List the available device-profile devices.
+	ListDevices(ctx context.Context, in *ListDeviceProfileDevicesRequest, opts ...grpc.CallOption) (*ListDeviceProfileDevicesResponse, error)
+	// Delete the given device-profile device.
+	DeleteDevice(ctx context.Context, in *DeleteDeviceProfileDeviceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// List available ADR algorithms.
 	ListAdrAlgorithms(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListDeviceProfileAdrAlgorithmsResponse, error)
 }
@@ -107,6 +119,46 @@ func (c *deviceProfileServiceClient) List(ctx context.Context, in *ListDevicePro
 	return out, nil
 }
 
+func (c *deviceProfileServiceClient) ListVendors(ctx context.Context, in *ListDeviceProfileVendorsRequest, opts ...grpc.CallOption) (*ListDeviceProfileVendorsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDeviceProfileVendorsResponse)
+	err := c.cc.Invoke(ctx, DeviceProfileService_ListVendors_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *deviceProfileServiceClient) DeleteVendor(ctx context.Context, in *DeleteDeviceProfileVendorRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, DeviceProfileService_DeleteVendor_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *deviceProfileServiceClient) ListDevices(ctx context.Context, in *ListDeviceProfileDevicesRequest, opts ...grpc.CallOption) (*ListDeviceProfileDevicesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDeviceProfileDevicesResponse)
+	err := c.cc.Invoke(ctx, DeviceProfileService_ListDevices_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *deviceProfileServiceClient) DeleteDevice(ctx context.Context, in *DeleteDeviceProfileDeviceRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, DeviceProfileService_DeleteDevice_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *deviceProfileServiceClient) ListAdrAlgorithms(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListDeviceProfileAdrAlgorithmsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListDeviceProfileAdrAlgorithmsResponse)
@@ -134,6 +186,14 @@ type DeviceProfileServiceServer interface {
 	Delete(context.Context, *DeleteDeviceProfileRequest) (*emptypb.Empty, error)
 	// List the available device-profiles.
 	List(context.Context, *ListDeviceProfilesRequest) (*ListDeviceProfilesResponse, error)
+	// List the available device-profile vendors.
+	ListVendors(context.Context, *ListDeviceProfileVendorsRequest) (*ListDeviceProfileVendorsResponse, error)
+	// Delete the given device-profile vendor.
+	DeleteVendor(context.Context, *DeleteDeviceProfileVendorRequest) (*emptypb.Empty, error)
+	// List the available device-profile devices.
+	ListDevices(context.Context, *ListDeviceProfileDevicesRequest) (*ListDeviceProfileDevicesResponse, error)
+	// Delete the given device-profile device.
+	DeleteDevice(context.Context, *DeleteDeviceProfileDeviceRequest) (*emptypb.Empty, error)
 	// List available ADR algorithms.
 	ListAdrAlgorithms(context.Context, *emptypb.Empty) (*ListDeviceProfileAdrAlgorithmsResponse, error)
 	mustEmbedUnimplementedDeviceProfileServiceServer()
@@ -160,6 +220,18 @@ func (UnimplementedDeviceProfileServiceServer) Delete(context.Context, *DeleteDe
 }
 func (UnimplementedDeviceProfileServiceServer) List(context.Context, *ListDeviceProfilesRequest) (*ListDeviceProfilesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (UnimplementedDeviceProfileServiceServer) ListVendors(context.Context, *ListDeviceProfileVendorsRequest) (*ListDeviceProfileVendorsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListVendors not implemented")
+}
+func (UnimplementedDeviceProfileServiceServer) DeleteVendor(context.Context, *DeleteDeviceProfileVendorRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteVendor not implemented")
+}
+func (UnimplementedDeviceProfileServiceServer) ListDevices(context.Context, *ListDeviceProfileDevicesRequest) (*ListDeviceProfileDevicesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDevices not implemented")
+}
+func (UnimplementedDeviceProfileServiceServer) DeleteDevice(context.Context, *DeleteDeviceProfileDeviceRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDevice not implemented")
 }
 func (UnimplementedDeviceProfileServiceServer) ListAdrAlgorithms(context.Context, *emptypb.Empty) (*ListDeviceProfileAdrAlgorithmsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAdrAlgorithms not implemented")
@@ -275,6 +347,78 @@ func _DeviceProfileService_List_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DeviceProfileService_ListVendors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDeviceProfileVendorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceProfileServiceServer).ListVendors(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeviceProfileService_ListVendors_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceProfileServiceServer).ListVendors(ctx, req.(*ListDeviceProfileVendorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DeviceProfileService_DeleteVendor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDeviceProfileVendorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceProfileServiceServer).DeleteVendor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeviceProfileService_DeleteVendor_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceProfileServiceServer).DeleteVendor(ctx, req.(*DeleteDeviceProfileVendorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DeviceProfileService_ListDevices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDeviceProfileDevicesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceProfileServiceServer).ListDevices(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeviceProfileService_ListDevices_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceProfileServiceServer).ListDevices(ctx, req.(*ListDeviceProfileDevicesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DeviceProfileService_DeleteDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDeviceProfileDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceProfileServiceServer).DeleteDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeviceProfileService_DeleteDevice_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceProfileServiceServer).DeleteDevice(ctx, req.(*DeleteDeviceProfileDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _DeviceProfileService_ListAdrAlgorithms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -319,6 +463,22 @@ var DeviceProfileService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "List",
 			Handler:    _DeviceProfileService_List_Handler,
+		},
+		{
+			MethodName: "ListVendors",
+			Handler:    _DeviceProfileService_ListVendors_Handler,
+		},
+		{
+			MethodName: "DeleteVendor",
+			Handler:    _DeviceProfileService_DeleteVendor_Handler,
+		},
+		{
+			MethodName: "ListDevices",
+			Handler:    _DeviceProfileService_ListDevices_Handler,
+		},
+		{
+			MethodName: "DeleteDevice",
+			Handler:    _DeviceProfileService_DeleteDevice_Handler,
 		},
 		{
 			MethodName: "ListAdrAlgorithms",
