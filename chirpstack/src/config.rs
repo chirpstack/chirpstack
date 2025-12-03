@@ -58,6 +58,7 @@ pub struct Postgresql {
     pub dsn: String,
     pub max_open_connections: u32,
     pub ca_cert: String,
+    pub connection_recycling_method: String,
 }
 
 impl Default for Postgresql {
@@ -66,6 +67,7 @@ impl Default for Postgresql {
             dsn: "postgresql://chirpstack:chirpstack@localhost/chirpstack?sslmode=disable".into(),
             max_open_connections: 10,
             ca_cert: "".into(),
+            connection_recycling_method: "verified".into(),
         }
     }
 }
@@ -885,4 +887,18 @@ pub fn get_required_snr_for_sf(sf: u8) -> Result<f32> {
             return Err(anyhow!("Unknown sf {} for get_required_snr_for_sf", sf));
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_postgresql_connection_recycling_method_default() {
+        let conf = Postgresql::default();
+        assert_eq!(
+            conf.connection_recycling_method, "verified",
+            "Default connection_recycling_method should be 'verified' for backwards compatibility"
+        );
+    }
 }
