@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card } from "antd";
+import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import {
@@ -19,159 +19,11 @@ import {
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 import type { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import type {
-  ListDeviceProfileTemplatesResponse,
-  GetDeviceProfileTemplateResponse,
-  DeviceProfileTemplateListItem,
-  DeviceProfileTemplate,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
-import {
-  ListDeviceProfileTemplatesRequest,
-  GetDeviceProfileTemplateRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
 
 import { getEnumName, onFinishFailed } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
-import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
 import CodeEditor from "../../components/CodeEditor";
-
-interface ModalProps {
-  onOk: (dp: DeviceProfileTemplate) => void;
-  onCancel: () => void;
-  visible: boolean;
-}
-
-interface Option {
-  value: string;
-  label: string;
-  children?: Option[];
-}
-
-function TemplateModal(props: ModalProps) {
-  const [templates, setTemplates] = useState<DeviceProfileTemplateListItem[]>([]);
-  const [templatesLoaded, setTemplatesLoaded] = useState<boolean>(false);
-  const [templateId, setTemplateId] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (props.visible) {
-      setTemplatesLoaded(false);
-
-      const req = new ListDeviceProfileTemplatesRequest();
-      req.setLimit(99999);
-
-      DeviceProfileTemplateStore.list(req, (resp: ListDeviceProfileTemplatesResponse) => {
-        setTemplatesLoaded(true);
-        setTemplates(resp.getResultList());
-      });
-    }
-  }, [props]);
-
-  const onChange = (value: (string | number)[]) => {
-    setTemplateId(value.at(-1)! as string);
-  };
-
-  const onOk = () => {
-    if (templateId) {
-      const req = new GetDeviceProfileTemplateRequest();
-      req.setId(templateId);
-
-      DeviceProfileTemplateStore.get(req, (resp: GetDeviceProfileTemplateResponse) => {
-        const dp = resp.getDeviceProfileTemplate();
-        if (dp) {
-          props.onOk(dp);
-        }
-      });
-    }
-  };
-
-  const options: Option[] = [];
-  let vendor = "";
-  let device = "";
-  let firmware = "";
-  let region = "";
-
-  for (const item of templates) {
-    if (vendor !== item.getVendor()) {
-      options.push({
-        value: item.getId(),
-        label: item.getVendor(),
-        children: [],
-      });
-
-      vendor = item.getVendor();
-      device = "";
-      firmware = "";
-      region = "";
-    }
-
-    if (device !== item.getName()) {
-      options.at(-1)!.children!.push({
-        value: item.getId(),
-        label: item.getName(),
-        children: [],
-      });
-
-      device = item.getName();
-      firmware = "";
-      region = "";
-    }
-
-    if (firmware !== item.getFirmware()) {
-      options
-        .at(-1)!
-        .children!.at(-1)!
-        .children!.push({
-          value: item.getId(),
-          label: "FW version: " + item.getFirmware(),
-          children: [],
-        });
-
-      firmware = item.getFirmware();
-      region = "";
-    }
-
-    if (region !== getEnumName(Region, item.getRegion())) {
-      options
-        .at(-1)!
-        .children!.at(-1)!
-        .children!.at(-1)!
-        .children!.push({
-          value: item.getId(),
-          label: getEnumName(Region, item.getRegion()),
-          children: [],
-        });
-
-      region = getEnumName(Region, item.getRegion());
-    }
-  }
-
-  return (
-    <Modal
-      title="Select device-profile template"
-      visible={props.visible}
-      width="80%"
-      bodyStyle={{ height: 300 }}
-      onOk={onOk}
-      onCancel={props.onCancel}
-      okButtonProps={{ disabled: !templateId }}
-    >
-      {!templatesLoaded && (
-        <div className="spinner">
-          <Spin />
-        </div>
-      )}
-      {templatesLoaded && (
-        <Cascader
-          style={{ width: "100%" }}
-          placeholder="Select a device-profile template"
-          options={options}
-          onChange={onChange}
-        />
-      )}
-    </Modal>
-  );
-}
 
 interface IProps {
   initialValues: DeviceProfile;
@@ -191,7 +43,6 @@ function DeviceProfileForm(props: IProps) {
   const [adrAlgorithms, setAdrAlgorithms] = useState<[string, string][]>([]);
   const [regionConfigurations, setRegionConfigurations] = useState<RegionListItem[]>([]);
   const [regionConfigurationsFiltered, setRegionConfigurationsFiltered] = useState<[string, string][]>([]);
-  const [templateModalVisible, setTemplateModalVisible] = useState<boolean>(false);
   const [tabActive, setTabActive] = useState<string>("1");
 
   useEffect(() => {
@@ -352,51 +203,6 @@ function DeviceProfileForm(props: IProps) {
     setIsRelayEd(checked);
   };
 
-  const showTemplateModal = () => {
-    setTemplateModalVisible(true);
-  };
-
-  const onTemplateModalOk = (dp: DeviceProfileTemplate) => {
-    setTemplateModalVisible(false);
-
-    form.setFieldsValue({
-      name: dp.getName(),
-      description: dp.getDescription(),
-      region: dp.getRegion(),
-      macVersion: dp.getMacVersion(),
-      regParamsRevision: dp.getRegParamsRevision(),
-      adrAlgorithmId: dp.getAdrAlgorithmId(),
-      payloadCodecRuntime: dp.getPayloadCodecRuntime(),
-      payloadCodecScript: dp.getPayloadCodecScript(),
-      flushQueueOnActivate: dp.getFlushQueueOnActivate(),
-      uplinkInterval: dp.getUplinkInterval(),
-      deviceStatusReqInterval: dp.getDeviceStatusReqInterval(),
-      supportsOtaa: dp.getSupportsOtaa(),
-      supportsClassB: dp.getSupportsClassB(),
-      supportsClassC: dp.getSupportsClassC(),
-      classCTimeout: dp.getClassCTimeout(),
-      classBTimeout: dp.getClassBTimeout(),
-      classBPingSlotPeriodicity: dp.getClassBPingSlotPeriodicity(),
-      classBPingSlotDr: dp.getClassBPingSlotDr(),
-      classBPingSlotFreq: dp.getClassBPingSlotFreq(),
-      abpRx1Delay: dp.getAbpRx1Delay(),
-      abpRx2Dr: dp.getAbpRx2Dr(),
-      abpRx2Freq: dp.getAbpRx2Freq(),
-      abpRx1DrOffset: dp.getAbpRx1DrOffset(),
-      tagsMap: dp.toObject().tagsMap,
-      measurementsMap: dp.toObject().measurementsMap,
-    });
-
-    setSupportsOtaa(dp.getSupportsOtaa());
-    setSupportsClassB(dp.getSupportsClassB());
-    setSupportsClassC(dp.getSupportsClassC());
-    setPayloadCodecRuntime(dp.getPayloadCodecRuntime());
-  };
-
-  const onTemplateModalCancel = () => {
-    setTemplateModalVisible(false);
-  };
-
   const onRegionChange = (region: Region) => {
     const regionConfigurationsFiltered: [string, string][] = [];
     for (const r of regionConfigurations) {
@@ -417,11 +223,6 @@ function DeviceProfileForm(props: IProps) {
     .map(v => v.getRegion())
     .filter((v, i, a) => a.indexOf(v) === i)
     .map(v => <Select.Option value={v}>{getEnumName(Region, v).replace("_", "-")}</Select.Option>);
-  const operations = (
-    <Button type="primary" onClick={showTemplateModal}>
-      Select device-profile template
-    </Button>
-  );
 
   return (
     <Form
@@ -431,8 +232,7 @@ function DeviceProfileForm(props: IProps) {
       onFinishFailed={onFinishFailed}
       form={form}
     >
-      <TemplateModal visible={templateModalVisible} onOk={onTemplateModalOk} onCancel={onTemplateModalCancel} />
-      <Tabs tabBarExtraContent={operations} activeKey={tabActive} onChange={onTabChange}>
+      <Tabs activeKey={tabActive} onChange={onTabChange}>
         <Tabs.TabPane tab="General" key="1" forceRender>
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
             <Input disabled={props.disabled} />

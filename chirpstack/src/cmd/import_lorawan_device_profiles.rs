@@ -231,10 +231,11 @@ async fn handle_profile(
     info!(path = ?profile_path, "Reading profile configuration");
     let profile_conf: ProfileConfig = toml::from_str(&fs::read_to_string(profile_path)?)?;
 
-    info!(id = %profile_conf.profile.id, "Upserting device-profile");
-    let _ = device_profile::upsert(device_profile::DeviceProfile {
-        id: profile_conf.profile.id.into(),
-        name: device.name.clone(),
+    let mut dp = device_profile::DeviceProfile {
+        name: format!(
+            "{} (region: {}, firmware: {})",
+            device.name, profile_conf.profile.region, firmware.version
+        ),
         region: profile_conf.profile.region,
         mac_version: profile_conf.profile.mac_version,
         reg_params_revision: profile_conf.profile.reg_params_revision,
@@ -282,8 +283,23 @@ async fn handle_profile(
         firmware_version: firmware.version.clone(),
         vendor_profile_id: profile_conf.profile.vendor_profile_id as i32,
         ..Default::default()
-    })
-    .await?;
+    };
+
+    if let Ok(dp_existing) = device_profile::get_for_device_id_region_and_fw(
+        device.id,
+        profile_conf.profile.region,
+        &firmware.version,
+    )
+    .await
+    {
+        info!(id = %dp_existing.id, "Updating existing device-profile");
+        dp.id = dp_existing.id;
+        dp.created_at = dp_existing.created_at;
+        device_profile::update(dp).await?;
+    } else {
+        info!("Creating new device-profile");
+        device_profile::create(dp).await?;
+    }
 
     Ok(())
 }

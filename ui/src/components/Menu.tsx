@@ -190,9 +190,9 @@ function SideMenu() {
           label: <Link to="/api-keys">API Keys</Link>,
         },
         {
-          key: "ns-device-profile-templates",
+          key: "ns-device-profile",
           icon: <ControlOutlined />,
-          label: <Link to="/device-profile-templates">Device Profile Templates</Link>,
+          label: <Link to="/device-profiles">Device Profiles</Link>,
         },
         {
           key: "ns-regions",

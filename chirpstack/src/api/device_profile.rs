@@ -273,6 +273,8 @@ impl DeviceProfileService for DeviceProfile {
                     ts005_version: dp.app_layer_params.ts005_version.to_proto().into(),
                     ts005_f_port: dp.app_layer_params.ts005_f_port as u32,
                 }),
+                device_id: dp.device_id.map(|v| v.to_string()).unwrap_or_default(),
+                firmware_version: dp.firmware_version.clone(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -479,6 +481,7 @@ impl DeviceProfileService for DeviceProfile {
 
         let filters = device_profile::Filters {
             global_only: req.global_only,
+            tenant_only: req.tenant_only,
             tenant_id: if !req.global_only { tenant_id } else { None },
             device_id: if req.global_only { device_id } else { None },
             search: if req.search.is_empty() {
@@ -510,6 +513,11 @@ impl DeviceProfileService for DeviceProfile {
                     supports_otaa: dp.supports_otaa,
                     supports_class_b: dp.supports_class_b,
                     supports_class_c: dp.supports_class_c,
+                    vendor_id: dp.vendor_id.map(|v| v.to_string()).unwrap_or_default(),
+                    vendor_name: dp.vendor_name.clone().unwrap_or_default(),
+                    device_id: dp.device_id.map(|v| v.to_string()).unwrap_or_default(),
+                    device_name: dp.device_name.clone().unwrap_or_default(),
+                    firmware_version: dp.firmware_version.clone(),
                 })
                 .collect(),
         });
@@ -557,6 +565,47 @@ impl DeviceProfileService for DeviceProfile {
         }))
     }
 
+    async fn get_vendor(
+        &self,
+        request: Request<api::GetDeviceProfileVendorRequest>,
+    ) -> Result<Response<api::GetDeviceProfileVendorResponse>, Status> {
+        let req = request.get_ref();
+        let vendor_id = Uuid::from_str(&req.id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceProfileVendorAccess::new(validator::Flag::Read),
+            )
+            .await?;
+
+        let v = device_profile::get_vendor(vendor_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(api::GetDeviceProfileVendorResponse {
+            vendor: Some(api::DeviceProfileVendor {
+                id: v.id.to_string(),
+                name: v.name.clone(),
+                vendor_id: v.vendor_id as u32,
+                ouis: v
+                    .ouis
+                    .iter()
+                    .cloned()
+                    .map(|v| v.unwrap_or_default())
+                    .collect(),
+                metadata: v.metadata.into_hashmap(),
+            }),
+            created_at: Some(helpers::datetime_to_prost_timestamp(&v.created_at)),
+            updated_at: Some(helpers::datetime_to_prost_timestamp(&v.updated_at)),
+        });
+
+        resp.metadata_mut()
+            .insert("x-log-vendor_id", req.id.parse().unwrap());
+
+        Ok(resp)
+    }
+
     async fn delete_vendor(
         &self,
         request: Request<api::DeleteDeviceProfileVendorRequest>,
@@ -580,6 +629,41 @@ impl DeviceProfileService for DeviceProfile {
         resp.metadata_mut()
             .insert("x-log-vendor_id", req.id.parse().unwrap());
 
+        Ok(resp)
+    }
+
+    async fn get_device(
+        &self,
+        request: Request<api::GetDeviceProfileDeviceRequest>,
+    ) -> Result<Response<api::GetDeviceProfileDeviceResponse>, Status> {
+        let req = request.get_ref();
+        let device_id = Uuid::from_str(&req.id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceProfileDeviceAccess::new(validator::Flag::Read),
+            )
+            .await?;
+
+        let d = device_profile::get_device(device_id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(api::GetDeviceProfileDeviceResponse {
+            device: Some(api::DeviceProfileDevice {
+                id: d.id.to_string(),
+                vendor_id: d.vendor_id.to_string(),
+                name: d.name.clone(),
+                description: d.description.clone(),
+                metadata: d.metadata.into_hashmap(),
+            }),
+            created_at: Some(helpers::datetime_to_prost_timestamp(&d.created_at)),
+            updated_at: Some(helpers::datetime_to_prost_timestamp(&d.updated_at)),
+        });
+
+        resp.metadata_mut()
+            .insert("x-log-device_id", req.id.parse().unwrap());
         Ok(resp)
     }
 
@@ -870,6 +954,17 @@ pub mod test {
         assert_eq!("test-vendor", list_resp.result[0].name);
         let dp_vendor_id = list_resp.result[0].id.clone();
 
+        // get vendor
+        let get_req = get_request(
+            &u.id,
+            api::GetDeviceProfileVendorRequest {
+                id: dp_vendor_id.clone(),
+            },
+        );
+        let get_resp = service.get_vendor(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(get_resp.vendor.as_ref().unwrap().id, dp_vendor_id);
+
         // list devices
         let list_req = get_request(
             &u.id,
@@ -882,6 +977,17 @@ pub mod test {
         assert_eq!(1, list_resp.total_count);
         assert_eq!("test-device", list_resp.result[0].name);
         let dp_device_id = list_resp.result[0].id.clone();
+
+        // get device
+        let get_req = get_request(
+            &u.id,
+            api::GetDeviceProfileDeviceRequest {
+                id: dp_device_id.clone(),
+            },
+        );
+        let get_resp = service.get_device(get_req).await.unwrap();
+        let get_resp = get_resp.get_ref();
+        assert_eq!(get_resp.device.as_ref().unwrap().id, dp_device_id);
 
         // delete device
         let del_req = get_request(

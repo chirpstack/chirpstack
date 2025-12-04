@@ -8,6 +8,7 @@ create table device_profile_vendor (
     metadata jsonb not null
 );
 
+create index idx_device_profile_vendor_name_trgm on device_profile_vendor using gin (name gin_trgm_ops);
 create index idx_device_profile_vendor_ouis on device_profile_vendor(ouis);
 create index idx_device_profile_vendor_vendor_id on device_profile_vendor(vendor_id);
 
@@ -22,6 +23,7 @@ create table device_profile_device (
 );
 
 create index idx_device_profile_device_vendor_id on device_profile_device(vendor_id);
+create index idx_device_profile_device_name_trgm on device_profile_device using gin (name gin_trgm_ops);
 
 alter table device_profile
     alter column tenant_id drop not null,

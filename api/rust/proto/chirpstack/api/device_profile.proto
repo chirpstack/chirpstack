@@ -170,6 +170,11 @@ service DeviceProfileService {
     option (google.api.http) = {get: "/api/device-profiles/vendors"};
   }
 
+  // Get the device-profile vendor.
+  rpc GetVendor(GetDeviceProfileVendorRequest) returns (GetDeviceProfileVendorResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/vendors/{id}"};
+  }
+
   // Delete the given device-profile vendor.
   rpc DeleteVendor(DeleteDeviceProfileVendorRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete: "/api/device-profiles/vendors/{id}"};
@@ -178,6 +183,11 @@ service DeviceProfileService {
   // List the available device-profile devices.
   rpc ListDevices(ListDeviceProfileDevicesRequest) returns (ListDeviceProfileDevicesResponse) {
     option (google.api.http) = {get: "/api/device-profiles/devices"};
+  }
+
+  // Get the device-profile device.
+  rpc GetDevice(GetDeviceProfileDeviceRequest) returns (GetDeviceProfileDeviceResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/{id}"};
   }
 
   // Delete the given device-profile device.
@@ -472,6 +482,12 @@ message DeviceProfile {
 
   // Application Layer parameters.
   AppLayerParams app_layer_params = 54;
+
+  // Device-profile device ID (UUID) (optiona).
+  string device_id = 55;
+
+  // Firmware version.
+  string firmware_version = 56;
 }
 
 message Measurement {
@@ -532,6 +548,25 @@ message DeviceProfileListItem {
 
   // Supports Class-C.
   bool supports_class_c = 10;
+
+  // Vendor ID.
+  // This value is only available for global device-profiles.
+  string vendor_id = 11;
+
+  // Vendor name.
+  // This value is only available for global device-profiles.
+  string vendor_name = 12;
+
+  // Device ID.
+  // This value is only available for global device-profiles.
+  string device_id = 13;
+
+  // Device name.
+  // This value is only available for global device-profiles.
+  string device_name = 14;
+
+  // Firmware version.
+  string firmware_version = 15;
 }
 
 message CreateDeviceProfileRequest {
@@ -582,16 +617,22 @@ message ListDeviceProfilesRequest {
   string search = 3;
 
   // Tenant ID to list the device-profiles for.
-  // This value must be set, unless global_only is set to true.
+  // This value must be set, unless global_only is set to true. The result will
+  // be the list of device-profiles matching the tenant_id and global tenants.
+  // If you only wish to list the device-profiles matching the tenant_id, you
+  // must set tenant_only to true.
   string tenant_id = 4;
-
-  // Only list global (non-tenant) device-profiles.
-  bool global_only = 5;
 
   // Device-profile device ID.
   // Note that his is the device-profile ID, not the DevEUI.
   // This value requires global_only to be set to true.
-  string device_id = 6;
+  string device_id = 5;
+
+  // Only list global (non-tenant) device-profiles.
+  bool global_only = 6;
+
+  // Only list device-profiles matching the tenant_id.
+  bool tenant_only = 7;
 }
 
 message ListDeviceProfilesResponse {
@@ -610,6 +651,39 @@ message ListDeviceProfileVendorsResponse {
 
   // Result-set.
   repeated DeviceProfileVendorListItem result = 2;
+}
+
+message GetDeviceProfileVendorRequest {
+  // Vendor ID (UUID).
+  string id = 1;
+}
+
+message DeviceProfileVendor {
+  // Vendor ID (UUID).
+  string id = 1;
+
+  // Name.
+  string name = 4;
+
+  // LoRa Alliance Vendor ID.
+  uint32 vendor_id = 5;
+
+  // OUIs.
+  repeated string ouis = 6;
+
+  // Metadata.
+  map<string, string> metadata = 7;
+}
+
+message GetDeviceProfileVendorResponse {
+  // Vendor object.
+  DeviceProfileVendor vendor = 1;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 3;
 }
 
 message DeleteDeviceProfileVendorRequest {
@@ -652,6 +726,39 @@ message ListDeviceProfileDevicesResponse {
 
   // Result-set.
   repeated DeviceProfileDeviceListItem result = 2;
+}
+
+message GetDeviceProfileDeviceRequest {
+  // Device-profile device ID.
+  string id = 1;
+}
+
+message DeviceProfileDevice {
+  // Device ID (UUID).
+  string id = 1;
+
+  // Vendor ID (UUID).
+  string vendor_id = 2;
+
+  // Name.
+  string name = 3;
+
+  // Description.
+  string description = 4;
+
+  // Metadata.
+  map<string, string> metadata = 5;
+}
+
+message GetDeviceProfileDeviceResponse {
+  // Device object.
+  DeviceProfileDevice device = 1;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 3;
 }
 
 message DeleteDeviceProfileDeviceRequest {

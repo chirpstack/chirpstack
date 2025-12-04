@@ -12,6 +12,12 @@ import type {
   ListDeviceProfilesRequest,
   ListDeviceProfilesResponse,
   ListDeviceProfileAdrAlgorithmsResponse,
+  ListDeviceProfileVendorsRequest,
+  ListDeviceProfileVendorsResponse,
+  ListDeviceProfileDevicesResponse,
+  ListDeviceProfileDevicesRequest,
+  GetDeviceProfileDeviceRequest,
+  GetDeviceProfileDeviceResponse,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import SessionStore from "./SessionStore";
@@ -86,6 +92,45 @@ class DeviceProfileStore extends EventEmitter {
 
   list = (req: ListDeviceProfilesRequest, callbackFunc: (resp: ListDeviceProfilesResponse) => void) => {
     this.client.list(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  listVendors = (
+    req: ListDeviceProfileVendorsRequest,
+    callbackFunc: (resp: ListDeviceProfileVendorsResponse) => void,
+  ) => {
+    this.client.listVendors(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  getDevice = (req: GetDeviceProfileDeviceRequest, callbackFunc: (resp: GetDeviceProfileDeviceResponse) => void) => {
+    this.client.getDevice(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  listDevices = (
+    req: ListDeviceProfileDevicesRequest,
+    callbackFunc: (resp: ListDeviceProfileDevicesResponse) => void,
+  ) => {
+    this.client.listDevices(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;

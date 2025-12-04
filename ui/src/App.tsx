@@ -30,11 +30,6 @@ import TenantLoader from "./views/tenants/TenantLoader";
 import ListAdminApiKeys from "./views/api-keys/ListAdminApiKeys";
 import CreateAdminApiKey from "./views/api-keys/CreateAdminApiKey";
 
-// device-profile templates
-import ListDeviceProfileTemplates from "./views/device-profile-templates/ListDeviceProfileTemplates";
-import CreateDeviceProfileTemplate from "./views/device-profile-templates/CreateDeviceProfileTemplate";
-import EditDeviceProfileTemplate from "./views/device-profile-templates/EditDeviceProfileTemplate";
-
 // regions
 import ListRegions from "./views/regions/ListRegions";
 import RegionDetails from "./views/regions/RegionDetails";
@@ -98,12 +93,9 @@ function App() {
                   <Route path="/api-keys" element={<ListAdminApiKeys />} />
                   <Route path="/api-keys/create" element={<CreateAdminApiKey />} />
 
-                  <Route path="/device-profile-templates" element={<ListDeviceProfileTemplates />} />
-                  <Route path="/device-profile-templates/create" element={<CreateDeviceProfileTemplate />} />
-                  <Route
-                    path="/device-profile-templates/:deviceProfileTemplateId/edit"
-                    element={<EditDeviceProfileTemplate />}
-                  />
+                  <Route path="/device-profiles" element={<div />} />
+                  <Route path="/device-profiles/create" element={<div />} />
+                  <Route path="/device-profiles/:deviceProfileId/edit" element={<div />} />
 
                   <Route path="/regions" element={<ListRegions />} />
                   <Route path="/regions/:id" element={<RegionDetails />} />

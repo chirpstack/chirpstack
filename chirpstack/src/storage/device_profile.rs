@@ -198,6 +198,11 @@ pub struct DeviceProfileListItem {
     pub supports_otaa: bool,
     pub supports_class_b: bool,
     pub supports_class_c: bool,
+    pub vendor_id: Option<fields::Uuid>,
+    pub vendor_name: Option<String>,
+    pub device_id: Option<fields::Uuid>,
+    pub device_name: Option<String>,
+    pub firmware_version: String,
 }
 
 #[derive(Default, Clone)]
@@ -206,6 +211,7 @@ pub struct Filters {
     pub search: Option<String>,
     pub device_id: Option<Uuid>,
     pub global_only: bool,
+    pub tenant_only: bool,
 }
 
 pub async fn create(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
@@ -230,50 +236,21 @@ pub async fn get(id: &Uuid) -> Result<DeviceProfile, Error> {
     Ok(dp)
 }
 
-pub async fn upsert(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
-    dp.validate()
-        .map_err(|e| Error::Validation(e.to_string()))?;
-
-    let dp: DeviceProfile = diesel::insert_into(device_profile::table)
-        .values(&dp)
-        .on_conflict(device_profile::id)
-        .do_update()
-        .set((
-            device_profile::updated_at.eq(Utc::now()),
-            device_profile::name.eq(&dp.name),
-            device_profile::description.eq(&dp.description),
-            device_profile::region.eq(&dp.region),
-            device_profile::mac_version.eq(&dp.mac_version),
-            device_profile::reg_params_revision.eq(&dp.reg_params_revision),
-            device_profile::adr_algorithm_id.eq(&dp.adr_algorithm_id),
-            device_profile::payload_codec_runtime.eq(&dp.payload_codec_runtime),
-            device_profile::payload_codec_script.eq(&dp.payload_codec_script),
-            device_profile::flush_queue_on_activate.eq(&dp.flush_queue_on_activate),
-            device_profile::uplink_interval.eq(&dp.uplink_interval),
-            device_profile::device_status_req_interval.eq(&dp.device_status_req_interval),
-            device_profile::supports_otaa.eq(&dp.supports_otaa),
-            device_profile::supports_class_b.eq(&dp.supports_class_b),
-            device_profile::supports_class_c.eq(&dp.supports_class_c),
-            device_profile::tags.eq(&dp.tags),
-            device_profile::measurements.eq(&dp.measurements),
-            device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
-            device_profile::region_config_id.eq(&dp.region_config_id),
-            device_profile::allow_roaming.eq(&dp.allow_roaming),
-            device_profile::rx1_delay.eq(&dp.rx1_delay),
-            device_profile::abp_params.eq(&dp.abp_params),
-            device_profile::class_b_params.eq(&dp.class_b_params),
-            device_profile::class_c_params.eq(&dp.class_c_params),
-            device_profile::relay_params.eq(&dp.relay_params),
-            device_profile::app_layer_params.eq(&dp.app_layer_params),
-            device_profile::device_id.eq(&dp.device_id),
-            device_profile::firmware_version.eq(&dp.firmware_version),
-            device_profile::vendor_profile_id.eq(&dp.vendor_profile_id),
-        ))
-        .get_result(&mut get_async_db_conn().await?)
+pub async fn get_for_device_id_region_and_fw(
+    device_id: Uuid,
+    region: CommonName,
+    firmware_version: &str,
+) -> Result<DeviceProfile, Error> {
+    let dp = device_profile::table
+        .filter(
+            device_profile::device_id
+                .eq(device_id)
+                .and(device_profile::region.eq(region))
+                .and(device_profile::firmware_version.eq(firmware_version)),
+        )
+        .first(&mut get_async_db_conn().await?)
         .await
-        .map_err(|e| Error::from_diesel(e, dp.id.to_string()))?;
-
-    info!(id = %dp.id, "Device-profile upserted");
+        .map_err(|e| Error::from_diesel(e, device_id.to_string()))?;
 
     Ok(dp)
 }
@@ -345,26 +322,63 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    let mut q = device_profile::dsl::device_profile
+    let mut q = device_profile::table
+        .left_join(
+            device_profile_device::table.on(device_profile::device_id
+                .assume_not_null()
+                .eq(device_profile_device::id)),
+        )
+        .left_join(
+            device_profile_vendor::table
+                .on(device_profile_device::vendor_id.eq(device_profile_vendor::id)),
+        )
         .select(dsl::count_star())
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
+        if filters.tenant_only {
+            q = q.filter(device_profile::tenant_id.eq(fields::Uuid::from(tenant_id)));
+        } else {
+            q = q.filter(
+                device_profile::tenant_id
+                    .eq(fields::Uuid::from(tenant_id))
+                    .or(device_profile::tenant_id.is_null()),
+            );
+        }
+    } else {
+        if filters.tenant_only {
+            q = q.filter(device_profile::tenant_id.is_not_null());
+        }
     }
 
     if let Some(device_id) = &filters.device_id {
-        q = q.filter(device_profile::dsl::device_id.eq(fields::Uuid::from(device_id)));
+        q = q.filter(device_profile::device_id.eq(fields::Uuid::from(device_id)));
+    }
+
+    if filters.global_only {
+        q = q.filter(device_profile::tenant_id.is_null());
     }
 
     if let Some(search) = &filters.search {
         #[cfg(feature = "postgres")]
         {
-            q = q.filter(device_profile::dsl::name.ilike(format!("%{}%", search)));
+            q = q.filter(
+                device_profile::name
+                    .ilike(format!("%{}%", search))
+                    .or(device_profile_vendor::name
+                        .ilike(format!("%{}%", search))
+                        .or(device_profile_device::name.ilike(format!("%{}%", search)))),
+            );
         }
         #[cfg(feature = "sqlite")]
         {
-            q = q.filter(device_profile::dsl::name.like(format!("%{}%", search)));
+            q = q.filter(
+                device_profile::name
+                    .like(format!("%{}%", search))
+                    .or(device_profile_vendor::name
+                        .like(format!("%{}%", search))
+                        .or(device_profile_device::name.like(format!("%{}%", search)))),
+            );
         }
     }
 
@@ -376,7 +390,16 @@ pub async fn list(
     offset: i64,
     filters: &Filters,
 ) -> Result<Vec<DeviceProfileListItem>, Error> {
-    let mut q = device_profile::dsl::device_profile
+    let mut q = device_profile::table
+        .left_join(
+            device_profile_device::table.on(device_profile::device_id
+                .assume_not_null()
+                .eq(device_profile_device::id)),
+        )
+        .left_join(
+            device_profile_vendor::table
+                .on(device_profile_device::vendor_id.eq(device_profile_vendor::id)),
+        )
         .select((
             device_profile::id,
             device_profile::created_at,
@@ -388,30 +411,67 @@ pub async fn list(
             device_profile::supports_otaa,
             device_profile::supports_class_b,
             device_profile::supports_class_c,
+            device_profile_vendor::id.nullable(),
+            device_profile_vendor::name.nullable(),
+            device_profile_device::id.nullable(),
+            device_profile_device::name.nullable(),
+            device_profile::firmware_version,
         ))
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
+        if filters.tenant_only {
+            q = q.filter(device_profile::tenant_id.eq(fields::Uuid::from(tenant_id)));
+        } else {
+            q = q.filter(
+                device_profile::tenant_id
+                    .eq(fields::Uuid::from(tenant_id))
+                    .or(device_profile::tenant_id.is_null()),
+            );
+        }
+    } else {
+        if filters.tenant_only {
+            q = q.filter(device_profile::tenant_id.is_not_null());
+        }
     }
 
     if let Some(device_id) = &filters.device_id {
-        q = q.filter(device_profile::dsl::device_id.eq(fields::Uuid::from(device_id)));
+        q = q.filter(device_profile::device_id.eq(fields::Uuid::from(device_id)));
+    }
+
+    if filters.global_only {
+        q = q.filter(device_profile::tenant_id.is_null());
     }
 
     if let Some(search) = &filters.search {
         #[cfg(feature = "postgres")]
         {
-            q = q.filter(device_profile::dsl::name.ilike(format!("%{}%", search)));
+            q = q.filter(
+                device_profile::name
+                    .ilike(format!("%{}%", search))
+                    .or(device_profile_vendor::name
+                        .ilike(format!("%{}%", search))
+                        .or(device_profile_device::name.ilike(format!("%{}%", search)))),
+            );
         }
         #[cfg(feature = "sqlite")]
         {
-            q = q.filter(device_profile::dsl::name.like(format!("%{}%", search)));
+            q = q.filter(
+                device_profile::name
+                    .like(format!("%{}%", search))
+                    .or(device_profile_vendor::name
+                        .like(format!("%{}%", search))
+                        .or(device_profile_device::name.like(format!("%{}%", search)))),
+            );
         }
     }
 
     let items = q
-        .order_by(device_profile::dsl::name)
+        .order_by((
+            device_profile_vendor::name,
+            device_profile_device::name,
+            device_profile::name,
+        ))
         .limit(limit)
         .offset(offset)
         .load(&mut get_async_db_conn().await?)
@@ -453,6 +513,24 @@ pub async fn list_devices(vendor_id: Uuid) -> Result<Vec<Device>, Error> {
         .order_by(device_profile_device::name)
         .load(&mut get_async_db_conn().await?)
         .await?)
+}
+
+pub async fn get_device(id: Uuid) -> Result<Device, Error> {
+    let d = device_profile_device::table
+        .find(&fields::Uuid::from(id))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    Ok(d)
+}
+
+pub async fn get_vendor(id: Uuid) -> Result<Vendor, Error> {
+    let v = device_profile_vendor::table
+        .find(&fields::Uuid::from(id))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+    Ok(v)
 }
 
 pub async fn delete_vendor(id: uuid::Uuid) -> Result<(), Error> {
@@ -559,6 +637,50 @@ pub mod test {
         let dp_get = get(&dp.id).await.unwrap();
         assert_eq!(dp, dp_get);
 
+        // create vendor
+        let vendor = upsert_vendor(Vendor {
+            name: "test-vendor".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // get vendor
+        let vendor_get = get_vendor(vendor.id.into()).await.unwrap();
+        assert_eq!(vendor, vendor_get);
+
+        // list vendors
+        let vendors = list_vendors().await.unwrap();
+        assert_eq!(1, vendors.len());
+        assert_eq!(vendor, vendors[0]);
+
+        // create device
+        let device = upsert_device(Device {
+            name: "test-device".into(),
+            vendor_id: vendor.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // get device
+        let device_get = get_device(device.id.into()).await.unwrap();
+        assert_eq!(device, device_get);
+
+        // list devices
+        let devices = list_devices(vendor.id.into()).await.unwrap();
+        assert_eq!(1, devices.len());
+        assert_eq!(device, devices[0]);
+
+        // create Device-profile
+        let vendor_dp = create(DeviceProfile {
+            name: "vendor-dp".into(),
+            device_id: Some(device.id),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
         // get count and list
         let tests = vec![
             FilterTest {
@@ -567,8 +689,35 @@ pub mod test {
                     search: None,
                     device_id: None,
                     global_only: false,
+                    tenant_only: false,
+                },
+                dps: vec![&vendor_dp, &dp],
+                count: 2,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    search: None,
+                    device_id: None,
+                    global_only: false,
+                    tenant_only: true,
                 },
                 dps: vec![&dp],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    search: None,
+                    device_id: None,
+                    global_only: true,
+                    tenant_only: false,
+                },
+                dps: vec![&vendor_dp],
                 count: 1,
                 limit: 10,
                 offset: 0,
@@ -579,6 +728,7 @@ pub mod test {
                     search: Some("proof".into()),
                     device_id: None,
                     global_only: false,
+                    tenant_only: false,
                 },
                 dps: vec![],
                 count: 0,
@@ -591,6 +741,7 @@ pub mod test {
                     search: Some("prof".into()),
                     device_id: None,
                     global_only: false,
+                    tenant_only: false,
                 },
                 dps: vec![&dp],
                 count: 1,
@@ -603,8 +754,35 @@ pub mod test {
                     search: None,
                     device_id: None,
                     global_only: false,
+                    tenant_only: false,
+                },
+                dps: vec![&vendor_dp, &dp],
+                count: 2,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: Some(dp.tenant_id.unwrap().into()),
+                    search: None,
+                    device_id: None,
+                    global_only: false,
+                    tenant_only: true,
                 },
                 dps: vec![&dp],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
+                    search: None,
+                    device_id: Some(device.id.into()),
+                    global_only: false,
+                    tenant_only: false,
+                },
+                dps: vec![&vendor_dp],
                 count: 1,
                 limit: 10,
                 offset: 0,
@@ -615,6 +793,20 @@ pub mod test {
                     search: None,
                     device_id: None,
                     global_only: false,
+                    tenant_only: false,
+                },
+                dps: vec![&vendor_dp],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: Some(Uuid::new_v4()),
+                    search: None,
+                    device_id: None,
+                    global_only: false,
+                    tenant_only: true,
                 },
                 dps: vec![],
                 count: 0,
@@ -643,5 +835,13 @@ pub mod test {
         // delete
         delete(&dp.id).await.unwrap();
         assert!(delete(&dp.id).await.is_err());
+
+        // delete device
+        delete_device(device.id.into()).await.unwrap();
+        assert!(delete_device(device.id.into()).await.is_err());
+
+        // delete vendor
+        delete_vendor(vendor.id.into()).await.unwrap();
+        assert!(delete_vendor(vendor.id.into()).await.is_err());
     }
 }
