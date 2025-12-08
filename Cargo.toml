@@ -87,7 +87,7 @@
       "rustls-tls-native-roots",
     ], default-features = false }
     axum = "0.8"
-    axum-server = { version = "0.7", features = ["tls-rustls-no-provider"] }
+    axum-server = { version = "0.8", features = ["tls-rustls-no-provider"] }
     tower = { version = "0.5", features = ["util"] }
     tower-http = { version = "0.6", features = ["trace", "auth"] }
     http = "1.3"
