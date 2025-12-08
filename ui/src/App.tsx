@@ -34,6 +34,10 @@ import CreateAdminApiKey from "./views/api-keys/CreateAdminApiKey";
 import ListRegions from "./views/regions/ListRegions";
 import RegionDetails from "./views/regions/RegionDetails";
 
+// device-profiles
+import ListDeviceProfileVendors from "./views/device-profiles/ListVendors";
+import VendorLoader from "./views/device-profiles/VendorLoader";
+
 // stores
 import SessionStore from "./stores/SessionStore";
 
@@ -93,9 +97,8 @@ function App() {
                   <Route path="/api-keys" element={<ListAdminApiKeys />} />
                   <Route path="/api-keys/create" element={<CreateAdminApiKey />} />
 
-                  <Route path="/device-profiles" element={<div />} />
-                  <Route path="/device-profiles/create" element={<div />} />
-                  <Route path="/device-profiles/:deviceProfileId/edit" element={<div />} />
+                  <Route path="/device-profiles/vendors" element={<ListDeviceProfileVendors />} />
+                  <Route path="/device-profiles/vendors/:vendorId/*" element={<VendorLoader />} />
 
                   <Route path="/regions" element={<ListRegions />} />
                   <Route path="/regions/:id" element={<RegionDetails />} />

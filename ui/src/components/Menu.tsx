@@ -97,8 +97,8 @@ function SideMenu() {
     }
 
     // ns device-profile templates
-    if (/\/device-profile-templates(\/([\w-]{36}\/edit|create))?/g.exec(path)) {
-      setSelectedKey("ns-device-profile-templates");
+    if (/\/device-profiles\/vendors.*/g.exec(path)) {
+      setSelectedKey("ns-device-profiles");
     }
 
     if (/\/regions.*/g.exec(path)) {
@@ -190,9 +190,9 @@ function SideMenu() {
           label: <Link to="/api-keys">API Keys</Link>,
         },
         {
-          key: "ns-device-profile",
+          key: "ns-device-profiles",
           icon: <ControlOutlined />,
-          label: <Link to="/device-profiles">Device Profiles</Link>,
+          label: <Link to="/device-profiles/vendors">Device Profiles</Link>,
         },
         {
           key: "ns-regions",

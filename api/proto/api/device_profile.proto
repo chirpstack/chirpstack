@@ -643,7 +643,14 @@ message ListDeviceProfilesResponse {
   repeated DeviceProfileListItem result = 2;
 }
 
-message ListDeviceProfileVendorsRequest {}
+message ListDeviceProfileVendorsRequest {
+  // Max number of device-profile vendors to return in the result-set.
+  // If not set, it will be treated as 0, and the response will only return the total_count.
+  uint32 limit = 1;
+
+  // Offset in the result-set (for pagination).
+  uint32 offset = 2;
+}
 
 message ListDeviceProfileVendorsResponse {
   // Total number of vendors.
@@ -715,9 +722,15 @@ message DeviceProfileVendorListItem {
 }
 
 message ListDeviceProfileDevicesRequest {
+  // Max number of device-profile vendors to return in the result-set.
+  // If not set, it will be treated as 0, and the response will only return the total_count.
+  uint32 limit = 1;
+
+  // Offset in the result-set (for pagination).
+  uint32 offset = 2;
+
   // Vendor ID (UUID).
-  // This field is mandatory.
-  string vendor_id = 1;
+  string vendor_id = 3;
 }
 
 message ListDeviceProfileDevicesResponse {

@@ -18,6 +18,10 @@ import type {
   ListDeviceProfileDevicesRequest,
   GetDeviceProfileDeviceRequest,
   GetDeviceProfileDeviceResponse,
+  GetDeviceProfileVendorRequest,
+  GetDeviceProfileVendorResponse,
+  DeleteDeviceProfileVendorRequest,
+  DeleteDeviceProfileDeviceRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import SessionStore from "./SessionStore";
@@ -112,6 +116,49 @@ class DeviceProfileStore extends EventEmitter {
       }
 
       callbackFunc(resp);
+    });
+  };
+
+  getVendor = (req: GetDeviceProfileVendorRequest, callbackFunc: (resp: GetDeviceProfileVendorResponse) => void) => {
+    this.client.getVendor(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  deleteVendor = (req: DeleteDeviceProfileVendorRequest, callbackFunc: () => void) => {
+    this.client.deleteVendor(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Vendor deleted",
+        duration: 3,
+      });
+
+      callbackFunc();
+    });
+  };
+
+  deleteDevice = (req: DeleteDeviceProfileDeviceRequest, callbackFunc: () => void) => {
+    this.client.deleteDevice(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "Device deleted",
+        duration: 3,
+      });
+
+      callbackFunc();
     });
   };
 

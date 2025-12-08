@@ -214,6 +214,11 @@ pub struct Filters {
     pub tenant_only: bool,
 }
 
+#[derive(Default, Clone)]
+pub struct DeviceFilters {
+    pub vendor_id: Option<Uuid>,
+}
+
 pub async fn create(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
     dp.validate()
         .map_err(|e| Error::Validation(e.to_string()))?;
@@ -500,17 +505,48 @@ pub async fn upsert_vendor(v: Vendor) -> Result<Vendor, Error> {
     Ok(v)
 }
 
-pub async fn list_vendors() -> Result<Vec<Vendor>, Error> {
+pub async fn get_vendor_count() -> Result<i64, Error> {
+    Ok(device_profile_vendor::table
+        .select(dsl::count_star())
+        .first(&mut get_async_db_conn().await?)
+        .await?)
+}
+
+pub async fn list_vendors(limit: i64, offset: i64) -> Result<Vec<Vendor>, Error> {
     Ok(device_profile_vendor::table
         .order_by(device_profile_vendor::name)
+        .limit(limit)
+        .offset(offset)
         .load(&mut get_async_db_conn().await?)
         .await?)
 }
 
-pub async fn list_devices(vendor_id: Uuid) -> Result<Vec<Device>, Error> {
-    Ok(device_profile_device::table
-        .filter(device_profile_device::vendor_id.eq(fields::Uuid::from(vendor_id)))
-        .order_by(device_profile_device::name)
+pub async fn get_device_count(filters: &DeviceFilters) -> Result<i64, Error> {
+    let mut q = device_profile_device::table
+        .select(dsl::count_star())
+        .into_boxed();
+
+    if let Some(vendor_id) = filters.vendor_id {
+        q = q.filter(device_profile_device::vendor_id.eq(fields::Uuid::from(vendor_id)));
+    }
+
+    Ok(q.first(&mut get_async_db_conn().await?).await?)
+}
+
+pub async fn list_devices(
+    limit: i64,
+    offset: i64,
+    filters: &DeviceFilters,
+) -> Result<Vec<Device>, Error> {
+    let mut q = device_profile_device::table.into_boxed();
+
+    if let Some(vendor_id) = filters.vendor_id {
+        q = q.filter(device_profile_device::vendor_id.eq(fields::Uuid::from(vendor_id)));
+    }
+
+    Ok(q.order_by(device_profile_device::name)
+        .limit(limit)
+        .offset(offset)
         .load(&mut get_async_db_conn().await?)
         .await?)
 }
@@ -650,7 +686,7 @@ pub mod test {
         assert_eq!(vendor, vendor_get);
 
         // list vendors
-        let vendors = list_vendors().await.unwrap();
+        let vendors = list_vendors(10, 0).await.unwrap();
         assert_eq!(1, vendors.len());
         assert_eq!(vendor, vendors[0]);
 
@@ -668,7 +704,16 @@ pub mod test {
         assert_eq!(device, device_get);
 
         // list devices
-        let devices = list_devices(vendor.id.into()).await.unwrap();
+        let devices = list_devices(
+            10,
+            0,
+            &DeviceFilters {
+                vendor_id: Some(vendor.id.into()),
+            },
+        )
+        .await
+        .unwrap();
+
         assert_eq!(1, devices.len());
         assert_eq!(device, devices[0]);
 

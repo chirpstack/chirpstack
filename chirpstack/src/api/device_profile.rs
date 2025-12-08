@@ -531,7 +531,7 @@ impl DeviceProfileService for DeviceProfile {
         &self,
         request: Request<api::ListDeviceProfileVendorsRequest>,
     ) -> Result<Response<api::ListDeviceProfileVendorsResponse>, Status> {
-        let _ = request.get_ref();
+        let req = request.get_ref();
 
         self.validator
             .validate(
@@ -540,12 +540,15 @@ impl DeviceProfileService for DeviceProfile {
             )
             .await?;
 
-        let items = device_profile::list_vendors()
+        let count = device_profile::get_vendor_count()
+            .await
+            .map_err(|e| e.status())?;
+        let items = device_profile::list_vendors(req.limit as i64, req.offset as i64)
             .await
             .map_err(|e| e.status())?;
 
         Ok(Response::new(api::ListDeviceProfileVendorsResponse {
-            total_count: items.len() as u32,
+            total_count: count as u32,
             result: items
                 .iter()
                 .map(|v| api::DeviceProfileVendorListItem {
@@ -672,7 +675,12 @@ impl DeviceProfileService for DeviceProfile {
         request: Request<api::ListDeviceProfileDevicesRequest>,
     ) -> Result<Response<api::ListDeviceProfileDevicesResponse>, Status> {
         let req = request.get_ref();
-        let vendor_id = Uuid::from_str(&req.vendor_id).map_err(|e| e.status())?;
+
+        let vendor_id = if req.vendor_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req.vendor_id).map_err(|e| e.status())?)
+        };
 
         self.validator
             .validate(
@@ -681,12 +689,18 @@ impl DeviceProfileService for DeviceProfile {
             )
             .await?;
 
-        let items = device_profile::list_devices(vendor_id)
+        let filters = device_profile::DeviceFilters { vendor_id };
+
+        let count = device_profile::get_device_count(&filters)
             .await
             .map_err(|e| e.status())?;
 
-        let mut resp = Response::new(api::ListDeviceProfileDevicesResponse {
-            total_count: items.len() as u32,
+        let items = device_profile::list_devices(req.limit as i64, req.offset as i64, &filters)
+            .await
+            .map_err(|e| e.status())?;
+
+        Ok(Response::new(api::ListDeviceProfileDevicesResponse {
+            total_count: count as u32,
             result: items
                 .iter()
                 .map(|v| api::DeviceProfileDeviceListItem {
@@ -696,12 +710,7 @@ impl DeviceProfileService for DeviceProfile {
                     name: v.name.clone(),
                 })
                 .collect(),
-        });
-
-        resp.metadata_mut()
-            .insert("x-log-vendor_id", req.vendor_id.parse().unwrap());
-
-        Ok(resp)
+        }))
     }
 
     async fn delete_device(
@@ -947,7 +956,13 @@ pub mod test {
         assert_eq!("lora_lr_fhss", list_adr_algs_resp.result[2].id);
 
         // list vendors
-        let list_req = get_request(&u.id, api::ListDeviceProfileVendorsRequest {});
+        let list_req = get_request(
+            &u.id,
+            api::ListDeviceProfileVendorsRequest {
+                limit: 10,
+                offset: 0,
+            },
+        );
         let list_resp = service.list_vendors(list_req).await.unwrap();
         let list_resp = list_resp.get_ref();
         assert_eq!(1, list_resp.total_count);
@@ -969,6 +984,8 @@ pub mod test {
         let list_req = get_request(
             &u.id,
             api::ListDeviceProfileDevicesRequest {
+                limit: 10,
+                offset: 0,
                 vendor_id: dp_vendor_id.clone(),
             },
         );
@@ -998,6 +1015,8 @@ pub mod test {
         let list_req = get_request(
             &u.id,
             api::ListDeviceProfileDevicesRequest {
+                limit: 10,
+                offset: 0,
                 vendor_id: dp_vendor_id.clone(),
             },
         );
@@ -1011,7 +1030,13 @@ pub mod test {
             api::DeleteDeviceProfileVendorRequest { id: dp_vendor_id },
         );
         let _ = service.delete_vendor(del_req).await.unwrap();
-        let list_req = get_request(&u.id, api::ListDeviceProfileVendorsRequest {});
+        let list_req = get_request(
+            &u.id,
+            api::ListDeviceProfileVendorsRequest {
+                limit: 10,
+                offset: 0,
+            },
+        );
         let list_resp = service.list_vendors(list_req).await.unwrap();
         let list_resp = list_resp.get_ref();
         assert_eq!(0, list_resp.total_count);

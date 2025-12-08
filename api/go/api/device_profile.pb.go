@@ -1910,7 +1910,12 @@ func (x *ListDeviceProfilesResponse) GetResult() []*DeviceProfileListItem {
 }
 
 type ListDeviceProfileVendorsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Max number of device-profile vendors to return in the result-set.
+	// If not set, it will be treated as 0, and the response will only return the total_count.
+	Limit uint32 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	// Offset in the result-set (for pagination).
+	Offset        uint32 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1943,6 +1948,20 @@ func (x *ListDeviceProfileVendorsRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListDeviceProfileVendorsRequest.ProtoReflect.Descriptor instead.
 func (*ListDeviceProfileVendorsRequest) Descriptor() ([]byte, []int) {
 	return file_api_device_profile_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ListDeviceProfileVendorsRequest) GetLimit() uint32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListDeviceProfileVendorsRequest) GetOffset() uint32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
 }
 
 type ListDeviceProfileVendorsResponse struct {
@@ -2334,9 +2353,14 @@ func (x *DeviceProfileVendorListItem) GetMetadata() map[string]string {
 
 type ListDeviceProfileDevicesRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// Max number of device-profile vendors to return in the result-set.
+	// If not set, it will be treated as 0, and the response will only return the total_count.
+	Limit uint32 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	// Offset in the result-set (for pagination).
+	Offset uint32 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
 	// Vendor ID (UUID).
 	// This field is mandatory.
-	VendorId      string `protobuf:"bytes,1,opt,name=vendor_id,json=vendorId,proto3" json:"vendor_id,omitempty"`
+	VendorId      string `protobuf:"bytes,3,opt,name=vendor_id,json=vendorId,proto3" json:"vendor_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2369,6 +2393,20 @@ func (x *ListDeviceProfileDevicesRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListDeviceProfileDevicesRequest.ProtoReflect.Descriptor instead.
 func (*ListDeviceProfileDevicesRequest) Descriptor() ([]byte, []int) {
 	return file_api_device_profile_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListDeviceProfileDevicesRequest) GetLimit() uint32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListDeviceProfileDevicesRequest) GetOffset() uint32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
 }
 
 func (x *ListDeviceProfileDevicesRequest) GetVendorId() string {
@@ -2982,8 +3020,10 @@ const file_api_device_profile_proto_rawDesc = "" +
 	"\x1aListDeviceProfilesResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
 	"totalCount\x122\n" +
-	"\x06result\x18\x02 \x03(\v2\x1a.api.DeviceProfileListItemR\x06result\"!\n" +
-	"\x1fListDeviceProfileVendorsRequest\"}\n" +
+	"\x06result\x18\x02 \x03(\v2\x1a.api.DeviceProfileListItemR\x06result\"O\n" +
+	"\x1fListDeviceProfileVendorsRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\rR\x05limit\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\rR\x06offset\"}\n" +
 	" ListDeviceProfileVendorsResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
 	"totalCount\x128\n" +
@@ -3019,9 +3059,11 @@ const file_api_device_profile_proto_rawDesc = "" +
 	"\bmetadata\x18\a \x03(\v2..api.DeviceProfileVendorListItem.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\">\n" +
-	"\x1fListDeviceProfileDevicesRequest\x12\x1b\n" +
-	"\tvendor_id\x18\x01 \x01(\tR\bvendorId\"}\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"l\n" +
+	"\x1fListDeviceProfileDevicesRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\rR\x05limit\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\rR\x06offset\x12\x1b\n" +
+	"\tvendor_id\x18\x03 \x01(\tR\bvendorId\"}\n" +
 	" ListDeviceProfileDevicesResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
 	"totalCount\x128\n" +
