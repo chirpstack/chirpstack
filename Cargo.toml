@@ -141,7 +141,7 @@
       "array-buffer",
       "chrono",
     ] }
-    uuid = { version = "1.18", features = ["v4", "serde"] }
+    uuid = { version = "1.19", features = ["v4", "serde"] }
     regex = "1.11"
     petgraph = "0.8"
     pin-project = "1.1"
