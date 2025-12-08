@@ -151,12 +151,14 @@ async fn handle_vendor(dir: &Path) -> Result<()> {
         id: vendor_conf.vendor.id.into(),
         name: vendor_conf.vendor.name.clone(),
         vendor_id: vendor_conf.vendor.vendor_id,
-        ouis: vendor_conf
-            .vendor
-            .ouis
-            .iter()
-            .map(|v| Some(v.clone()))
-            .collect(),
+        ouis: fields::StringVec::new(
+            vendor_conf
+                .vendor
+                .ouis
+                .iter()
+                .map(|v| Some(v.clone()))
+                .collect(),
+        ),
         metadata: fields::KeyValue::new(vendor_conf.vendor.metadata.clone()),
         ..Default::default()
     })

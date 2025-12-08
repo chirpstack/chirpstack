@@ -25,7 +25,7 @@ pub struct Vendor {
     pub updated_at: DateTime<Utc>,
     pub name: String,
     pub vendor_id: i32,
-    pub ouis: Vec<Option<String>>,
+    pub ouis: fields::StringVec,
     pub metadata: fields::KeyValue,
 }
 
@@ -37,7 +37,7 @@ impl Default for Vendor {
             updated_at: Utc::now(),
             name: "".into(),
             vendor_id: 0,
-            ouis: vec![],
+            ouis: fields::StringVec::default(),
             metadata: fields::KeyValue::new(HashMap::new()),
         }
     }
@@ -249,7 +249,7 @@ pub async fn get_for_device_id_region_and_fw(
     let dp = device_profile::table
         .filter(
             device_profile::device_id
-                .eq(device_id)
+                .eq(&fields::Uuid::from(device_id))
                 .and(device_profile::region.eq(region))
                 .and(device_profile::firmware_version.eq(firmware_version)),
         )
@@ -471,12 +471,23 @@ pub async fn list(
         }
     }
 
+    #[cfg(feature = "postgres")]
+    {
+        q = q
+            .order_by(device_profile_vendor::name.asc().nulls_first())
+            .then_order_by(device_profile_device::name.asc().nulls_first())
+            .then_order_by(device_profile::name);
+    }
+
+    #[cfg(feature = "sqlite")]
+    {
+        q = q
+            .order_by(device_profile_vendor::name)
+            .then_order_by(device_profile_device::name)
+            .then_order_by(device_profile::name);
+    }
+
     let items = q
-        .order_by((
-            device_profile_vendor::name,
-            device_profile_device::name,
-            device_profile::name,
-        ))
         .limit(limit)
         .offset(offset)
         .load(&mut get_async_db_conn().await?)
@@ -736,7 +747,7 @@ pub mod test {
                     global_only: false,
                     tenant_only: false,
                 },
-                dps: vec![&vendor_dp, &dp],
+                dps: vec![&dp, &vendor_dp],
                 count: 2,
                 limit: 10,
                 offset: 0,
@@ -801,7 +812,7 @@ pub mod test {
                     global_only: false,
                     tenant_only: false,
                 },
-                dps: vec![&vendor_dp, &dp],
+                dps: vec![&dp, &vendor_dp],
                 count: 2,
                 limit: 10,
                 offset: 0,
@@ -860,7 +871,8 @@ pub mod test {
             },
         ];
 
-        for tst in tests {
+        for (i, tst) in tests.iter().enumerate() {
+            println!("TEST: {}", i);
             let count = get_count(&tst.filters).await.unwrap() as usize;
             assert_eq!(tst.count, count);
 
