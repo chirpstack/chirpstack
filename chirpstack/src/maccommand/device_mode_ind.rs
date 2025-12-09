@@ -57,7 +57,7 @@ pub mod test {
         .await
         .unwrap();
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: tenant.id,
+            tenant_id: Some(tenant.id),
             name: "test-dp".into(),
             ..Default::default()
         })

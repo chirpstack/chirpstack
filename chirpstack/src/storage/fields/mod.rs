@@ -7,6 +7,7 @@ mod fuota;
 mod key_value;
 mod measurements;
 mod multicast_group_scheduling_type;
+mod string_vec;
 mod uuid;
 
 pub use big_decimal::BigDecimal;
@@ -17,6 +18,7 @@ pub use fuota::{FuotaJob, RequestFragmentationSessionStatus};
 pub use key_value::KeyValue;
 pub use measurements::*;
 pub use multicast_group_scheduling_type::MulticastGroupSchedulingType;
+pub use string_vec::StringVec;
 pub use uuid::Uuid;
 
 #[cfg(feature = "postgres")]

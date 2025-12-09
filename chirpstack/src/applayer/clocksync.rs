@@ -261,7 +261,7 @@ mod test {
 
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "test-dp".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             app_layer_params: fields::AppLayerParams {
                 ts003_version: Some(Ts003Version::V100),
                 ..Default::default()
@@ -410,7 +410,7 @@ mod test {
 
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "test-dp".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             app_layer_params: fields::AppLayerParams {
                 ts003_version: Some(Ts003Version::V200),
                 ..Default::default()

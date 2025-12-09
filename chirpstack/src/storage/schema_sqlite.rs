@@ -81,7 +81,7 @@ diesel::table! {
 diesel::table! {
     device_profile (id) {
         id -> Text,
-        tenant_id -> Text,
+        tenant_id -> Nullable<Text>,
         created_at -> TimestamptzSqlite,
         updated_at -> TimestamptzSqlite,
         name -> Text,
@@ -109,6 +109,21 @@ diesel::table! {
         class_c_params -> Nullable<Text>,
         relay_params -> Nullable<Text>,
         app_layer_params -> Text,
+        device_id -> Nullable<Text>,
+        firmware_version -> Text,
+        vendor_profile_id -> Integer,
+    }
+}
+
+diesel::table! {
+    device_profile_device (id) {
+        id -> Text,
+        vendor_id -> Text,
+        created_at -> TimestamptzSqlite,
+        updated_at -> TimestamptzSqlite,
+        name -> Text,
+        description -> Text,
+        metadata -> Text,
     }
 }
 
@@ -145,6 +160,18 @@ diesel::table! {
         tags -> Text,
         measurements -> Text,
         auto_detect_measurements -> Bool,
+    }
+}
+
+diesel::table! {
+    device_profile_vendor (id) {
+        id -> Text,
+        created_at -> TimestamptzSqlite,
+        updated_at -> TimestamptzSqlite,
+        name -> Text,
+        vendor_id -> Integer,
+        ouis -> Text,
+        metadata -> Text,
     }
 }
 
@@ -374,7 +401,9 @@ diesel::joinable!(application_integration -> application (application_id));
 diesel::joinable!(device -> application (application_id));
 diesel::joinable!(device -> device_profile (device_profile_id));
 diesel::joinable!(device_keys -> device (dev_eui));
+diesel::joinable!(device_profile -> device_profile_device (device_id));
 diesel::joinable!(device_profile -> tenant (tenant_id));
+diesel::joinable!(device_profile_device -> device_profile_vendor (vendor_id));
 diesel::joinable!(device_queue_item -> device (dev_eui));
 diesel::joinable!(fuota_deployment -> application (application_id));
 diesel::joinable!(fuota_deployment -> device_profile (device_profile_id));
@@ -402,7 +431,9 @@ diesel::allow_tables_to_appear_in_same_query!(
     device,
     device_keys,
     device_profile,
+    device_profile_device,
     device_profile_template,
+    device_profile_vendor,
     device_queue_item,
     fuota_deployment,
     fuota_deployment_device,

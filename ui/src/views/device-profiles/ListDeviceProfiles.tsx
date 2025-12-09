@@ -112,6 +112,7 @@ function ListDeviceProfiles(props: IProps) {
   ) => {
     const req = new ListDeviceProfilesRequest();
     req.setTenantId(props.tenant.getId());
+    req.setTenantOnly(true);
     req.setLimit(limit);
     req.setOffset(offset);
 

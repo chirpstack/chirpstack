@@ -33,7 +33,6 @@ api:
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/tenant.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/application.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/device_profile.proto
-	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/device_profile_template.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/device.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/gateway.proto
 	$(PROTOC) ${PROTOC_ARGS} chirpstack-api/api/multicast_group.proto

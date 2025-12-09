@@ -2677,7 +2677,7 @@ mod test {
 
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "dp".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay: true,
                 ..Default::default()
@@ -3405,7 +3405,7 @@ mod test {
 
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay: true,
                 ..Default::default()
@@ -3417,7 +3417,7 @@ mod test {
 
         let dp_ed = device_profile::create(device_profile::DeviceProfile {
             name: "dp-ed".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay_ed: true,
                 ed_uplink_limit_bucket_size: 2,
@@ -3871,7 +3871,7 @@ mod test {
 
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay: true,
                 ..Default::default()
@@ -3883,7 +3883,7 @@ mod test {
 
         let dp_ed = device_profile::create(device_profile::DeviceProfile {
             name: "dp-ed".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             ..Default::default()
         })
         .await
@@ -4513,7 +4513,7 @@ mod test {
 
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay: true,
                 ..Default::default()
@@ -4525,7 +4525,7 @@ mod test {
 
         let dp_ed = device_profile::create(device_profile::DeviceProfile {
             name: "dp-ed".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             ..Default::default()
         })
         .await
