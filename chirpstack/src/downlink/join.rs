@@ -642,41 +642,41 @@ impl JoinAccept<'_> {
         let rx2_dr = self.region_conf.get_data_rate(false, ds.rx2_dr as u8)?;
 
         // the calculation below only applies for LORA modulation
-        if let lrwn::region::DataRateModulation::Lora(rx1_dr) = rx1_dr {
-            if let lrwn::region::DataRateModulation::Lora(rx2_dr) = rx2_dr {
-                let tx_power_rx1 = if self.network_conf.downlink_tx_power != -1 {
-                    self.network_conf.downlink_tx_power
-                } else {
-                    self.region_conf.get_downlink_tx_power_eirp(
-                        self.region_conf.get_rx1_frequency_for_uplink_frequency(
-                            self.uplink_frame_set.tx_info.frequency,
-                        )?,
-                    ) as i32
-                };
+        if let lrwn::region::DataRateModulation::Lora(rx1_dr) = rx1_dr
+            && let lrwn::region::DataRateModulation::Lora(rx2_dr) = rx2_dr
+        {
+            let tx_power_rx1 = if self.network_conf.downlink_tx_power != -1 {
+                self.network_conf.downlink_tx_power
+            } else {
+                self.region_conf.get_downlink_tx_power_eirp(
+                    self.region_conf.get_rx1_frequency_for_uplink_frequency(
+                        self.uplink_frame_set.tx_info.frequency,
+                    )?,
+                ) as i32
+            };
 
-                let tx_power_rx2 = if self.network_conf.downlink_tx_power != -1 {
-                    self.network_conf.downlink_tx_power
-                } else {
-                    self.region_conf
-                        .get_downlink_tx_power_eirp(ds.rx2_frequency) as i32
-                };
+            let tx_power_rx2 = if self.network_conf.downlink_tx_power != -1 {
+                self.network_conf.downlink_tx_power
+            } else {
+                self.region_conf
+                    .get_downlink_tx_power_eirp(ds.rx2_frequency) as i32
+            };
 
-                let link_budget_rx1 = sensitivity::calculate_link_budget(
-                    rx1_dr.bandwidth,
-                    6.0,
-                    config::get_required_snr_for_sf(rx1_dr.spreading_factor)?,
-                    tx_power_rx1 as f32,
-                );
+            let link_budget_rx1 = sensitivity::calculate_link_budget(
+                rx1_dr.bandwidth,
+                6.0,
+                config::get_required_snr_for_sf(rx1_dr.spreading_factor)?,
+                tx_power_rx1 as f32,
+            );
 
-                let link_budget_rx2 = sensitivity::calculate_link_budget(
-                    rx2_dr.bandwidth,
-                    6.0,
-                    config::get_required_snr_for_sf(rx2_dr.spreading_factor)?,
-                    tx_power_rx2 as f32,
-                );
+            let link_budget_rx2 = sensitivity::calculate_link_budget(
+                rx2_dr.bandwidth,
+                6.0,
+                config::get_required_snr_for_sf(rx2_dr.spreading_factor)?,
+                tx_power_rx2 as f32,
+            );
 
-                return Ok(link_budget_rx2 > link_budget_rx1);
-            }
+            return Ok(link_budget_rx2 > link_budget_rx1);
         }
 
         Ok(false)

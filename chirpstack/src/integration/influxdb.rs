@@ -385,16 +385,16 @@ fn struct_values_to_location(
     let mut latitude: Option<f64> = None;
     let mut longitude: Option<f64> = None;
 
-    if let Some(v) = v.get("latitude") {
-        if let Some(pbjson_types::value::Kind::NumberValue(n)) = &v.kind {
-            latitude = Some(*n);
-        }
+    if let Some(v) = v.get("latitude")
+        && let Some(pbjson_types::value::Kind::NumberValue(n)) = &v.kind
+    {
+        latitude = Some(*n);
     }
 
-    if let Some(v) = v.get("longitude") {
-        if let Some(pbjson_types::value::Kind::NumberValue(n)) = &v.kind {
-            longitude = Some(*n);
-        }
+    if let Some(v) = v.get("longitude")
+        && let Some(pbjson_types::value::Kind::NumberValue(n)) = &v.kind
+    {
+        longitude = Some(*n);
     }
 
     if let (Some(lat), Some(lon)) = (latitude, longitude) {

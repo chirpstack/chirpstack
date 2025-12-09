@@ -160,13 +160,13 @@ impl DeviceProfile {
             ds.class_b_ping_slot_nb = 1 << (7 - class_b_params.ping_slot_periodicity) as u32;
         }
 
-        if let Some(relay_params) = &self.relay_params {
-            if relay_params.is_relay_ed {
-                ds.relay = Some(internal::Relay {
-                    ed_relay_only: relay_params.ed_relay_only,
-                    ..Default::default()
-                });
-            }
+        if let Some(relay_params) = &self.relay_params
+            && relay_params.is_relay_ed
+        {
+            ds.relay = Some(internal::Relay {
+                ed_relay_only: relay_params.ed_relay_only,
+                ..Default::default()
+            });
         }
 
         if !self.supports_otaa {
@@ -350,10 +350,8 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
                     .or(device_profile::tenant_id.is_null()),
             );
         }
-    } else {
-        if filters.tenant_only {
-            q = q.filter(device_profile::tenant_id.is_not_null());
-        }
+    } else if filters.tenant_only {
+        q = q.filter(device_profile::tenant_id.is_not_null());
     }
 
     if let Some(device_id) = &filters.device_id {
@@ -434,10 +432,8 @@ pub async fn list(
                     .or(device_profile::tenant_id.is_null()),
             );
         }
-    } else {
-        if filters.tenant_only {
-            q = q.filter(device_profile::tenant_id.is_not_null());
-        }
+    } else if filters.tenant_only {
+        q = q.filter(device_profile::tenant_id.is_not_null());
     }
 
     if let Some(device_id) = &filters.device_id {

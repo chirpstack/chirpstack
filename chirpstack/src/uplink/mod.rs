@@ -372,12 +372,12 @@ async fn update_gateway_metadata(ufs: &mut UplinkFrameSet) -> Result<()> {
         let gw_meta = match gateway::get_meta(&gw_id).await {
             Ok(v) => v,
             Err(e) => {
-                if conf.gateway.allow_unknown_gateways {
-                    if let StorageError::NotFound(_) = e {
-                        ufs.gateway_private_up_map.insert(gw_id, false);
-                        ufs.gateway_private_down_map.insert(gw_id, false);
-                        continue;
-                    }
+                if conf.gateway.allow_unknown_gateways
+                    && let StorageError::NotFound(_) = e
+                {
+                    ufs.gateway_private_up_map.insert(gw_id, false);
+                    ufs.gateway_private_down_map.insert(gw_id, false);
+                    continue;
                 }
 
                 error!(

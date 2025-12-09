@@ -85,13 +85,13 @@ pub async fn decode(
             .map_err(|e| anyhow!("JS error: {}", e))?;
 
         let errors: Result<Vec<String>, rquickjs::Error> = res.get("errors");
-        if let Ok(errors) = errors {
-            if !errors.is_empty() {
-                return Err(anyhow!(
-                    "decodeUplink returned errors: {}",
-                    errors.join(", ")
-                ));
-            }
+        if let Ok(errors) = errors
+            && !errors.is_empty()
+        {
+            return Err(anyhow!(
+                "decodeUplink returned errors: {}",
+                errors.join(", ")
+            ));
         }
 
         Ok(convert::rquickjs_to_struct(&res))
@@ -174,13 +174,13 @@ pub async fn encode(
             .map_err(|e| anyhow!("JS error: {}", e))?;
 
         let errors: Result<Vec<String>, rquickjs::Error> = res.get("errors");
-        if let Ok(errors) = errors {
-            if !errors.is_empty() {
-                return Err(anyhow!(
-                    "encodeDownlink returned errors: {}",
-                    errors.join(", ")
-                ));
-            }
+        if let Ok(errors) = errors
+            && !errors.is_empty()
+        {
+            return Err(anyhow!(
+                "encodeDownlink returned errors: {}",
+                errors.join(", ")
+            ));
         }
 
         // Directly into u8 can result into the following error:

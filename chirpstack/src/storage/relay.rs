@@ -233,10 +233,10 @@ pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(
             }
 
             // Validate that the device is not a relay.
-            if let Some(relay_params) = &dp.relay_params {
-                if relay_params.is_relay {
-                    return Err(Error::Validation("Can not add relay to a relay".into()));
-                }
+            if let Some(relay_params) = &dp.relay_params
+                && relay_params.is_relay
+            {
+                return Err(Error::Validation("Can not add relay to a relay".into()));
             }
 
             // Validate max. number of devices.

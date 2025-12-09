@@ -825,13 +825,13 @@ pub fn load(config_dir: &Path) -> Result<()> {
     for path in paths {
         let path = path.unwrap().path();
 
-        if let Some(ext) = path.extension() {
-            if ext == "toml" {
-                content.push_str(
-                    &fs::read_to_string(&path)
-                        .context(format!("Read config file: {}", path.display()))?,
-                );
-            }
+        if let Some(ext) = path.extension()
+            && ext == "toml"
+        {
+            content.push_str(
+                &fs::read_to_string(&path)
+                    .context(format!("Read config file: {}", path.display()))?,
+            );
         }
     }
 

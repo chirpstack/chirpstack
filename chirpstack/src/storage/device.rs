@@ -424,14 +424,15 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                     0
                 };
 
-                if let Some(relay) = &ds.relay {
-                    if !relayed && relay.ed_relay_only {
-                        info!(
-                            dev_eui = %d.dev_eui,
-                            "Only communication through relay is allowed"
-                        );
-                        return Err(Error::NotFound(dev_addr.to_string()));
-                    }
+                if let Some(relay) = &ds.relay
+                    && !relayed
+                    && relay.ed_relay_only
+                {
+                    info!(
+                        dev_eui = %d.dev_eui,
+                        "Only communication through relay is allowed"
+                    );
+                    return Err(Error::NotFound(dev_addr.to_string()));
                 }
 
                 // Update DevAddr in case of context switch + reset frame-counter.

@@ -64,10 +64,10 @@ pub fn select_downlink_gateway(
 
     let mut new_items = Vec::new();
     for item in &rx_info.items {
-        if let Some(required_snr) = required_snr {
-            if item.lora_snr - required_snr >= min_snr_margin {
-                new_items.push(item.clone());
-            }
+        if let Some(required_snr) = required_snr
+            && item.lora_snr - required_snr >= min_snr_margin
+        {
+            new_items.push(item.clone());
         }
     }
 

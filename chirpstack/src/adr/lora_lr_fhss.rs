@@ -36,10 +36,10 @@ impl Handler for Algorithm {
         let lora_dr = region_conf
             .get_data_rate(true, default_resp.dr)
             .context("Get data-rate")?;
-        if let lrwn::region::DataRateModulation::Lora(dr) = lora_dr {
-            if dr.spreading_factor < 10 {
-                return Ok(default_resp);
-            }
+        if let lrwn::region::DataRateModulation::Lora(dr) = lora_dr
+            && dr.spreading_factor < 10
+        {
+            return Ok(default_resp);
         }
 
         Ok(lr_fhss_resp)
