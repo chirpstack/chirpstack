@@ -22,6 +22,18 @@ jobs:
       DATABASE: ${{ matrix.database }}
     steps:
       -
+        name: Remove pre-installed software
+        run: |
+          echo "Before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet \
+                       /usr/local/lib/android \
+                       /opt/ghc \
+                       /usr/local/share/boost \
+                       "$AGENT_TOOLSDIRECTORY"
+          echo "After cleanup:"
+          df -h
+      -
         name: Checkout
         uses: actions/checkout@v4
       - 
@@ -62,6 +74,18 @@ jobs:
     env:
       DATABASE: ${{ matrix.database }}
     steps:
+      -
+        name: Remove pre-installed software
+        run: |
+          echo "Before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet \
+                       /usr/local/lib/android \
+                       /opt/ghc \
+                       /usr/local/share/boost \
+                       "$AGENT_TOOLSDIRECTORY"
+          echo "After cleanup:"
+          df -h
       -
         name: Checkout
         uses: actions/checkout@v4
