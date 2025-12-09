@@ -70,11 +70,13 @@ function DeviceForm(props: IProps) {
             // Get all device-profile devices for this tenant
             const req = new ListDeviceProfileDevicesRequest();
             req.setVendorId(dev.getVendorId());
+            req.setLimit(9999);
             DeviceProfileStore.listDevices(req, (resp: ListDeviceProfileDevicesResponse) => {
               const devices = resp.getResultList();
 
               // Get all device-profile vendors
               const req = new ListDeviceProfileVendorsRequest();
+              req.setLimit(9999);
               DeviceProfileStore.listVendors(req, (resp: ListDeviceProfileVendorsResponse) => {
                 const vendors = resp.getResultList();
 
@@ -201,6 +203,7 @@ function DeviceForm(props: IProps) {
 
     if (targetOption.type === "init" && targetOption.value === "vendor") {
       const req = new ListDeviceProfileVendorsRequest();
+      req.setLimit(9999);
 
       DeviceProfileStore.listVendors(req, (resp: ListDeviceProfileVendorsResponse) => {
         targetOption.children = resp.getResultList().map(v => {
@@ -234,6 +237,7 @@ function DeviceForm(props: IProps) {
       });
     } else if (targetOption.type === "vendor") {
       const req = new ListDeviceProfileDevicesRequest();
+      req.setLimit(9999);
       if (typeof targetOption.value === "string") {
         req.setVendorId(targetOption.value);
       }
