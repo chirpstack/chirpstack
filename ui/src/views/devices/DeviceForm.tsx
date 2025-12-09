@@ -4,6 +4,7 @@ import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
+import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type {
   ListDeviceProfilesResponse,
   ListDeviceProfileVendorsResponse,
@@ -19,7 +20,7 @@ import {
   GetDeviceProfileDeviceRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
-import { onFinishFailed } from "../helpers";
+import { onFinishFailed, getEnumName } from "../helpers";
 import EuiInput from "../../components/EuiInput";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 
@@ -106,7 +107,7 @@ function DeviceForm(props: IProps) {
                               children: profiles.map(p => {
                                 return {
                                   type: "profile",
-                                  label: p.getName(),
+                                  label: `${p.getName()} (region: ${getEnumName(Region, p.getRegion())}, firmware: ${p.getFirmwareVersion()})`,
                                   value: p.getId(),
                                   isLeaf: true,
                                 };
@@ -267,7 +268,7 @@ function DeviceForm(props: IProps) {
         targetOption.children = resp.getResultList().map(v => {
           return {
             type: "profile",
-            label: v.getName(),
+            label: `${v.getName()} (region: ${getEnumName(Region, v.getRegion())}, firmware: ${v.getFirmwareVersion()})`,
             value: v.getId(),
             isLeaf: true,
           };

@@ -234,10 +234,7 @@ async fn handle_profile(
     let profile_conf: ProfileConfig = toml::from_str(&fs::read_to_string(profile_path)?)?;
 
     let mut dp = device_profile::DeviceProfile {
-        name: format!(
-            "{} (region: {}, firmware: {})",
-            device.name, profile_conf.profile.region, firmware.version
-        ),
+        name: device.name.clone(),
         region: profile_conf.profile.region,
         mac_version: profile_conf.profile.mac_version,
         reg_params_revision: profile_conf.profile.reg_params_revision,
