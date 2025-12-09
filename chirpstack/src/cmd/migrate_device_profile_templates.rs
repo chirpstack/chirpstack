@@ -148,7 +148,12 @@ pub async fn run() -> Result<()> {
                     relay_params: None,
                     app_layer_params: fields::AppLayerParams::default(),
                     device_id: Some(d.id),
-                    firmware_version: dp.firmware.clone(),
+                    firmware_version: {
+                        let mut fw = dp.firmware.clone();
+                        // this could panic in case of multi-byte characters
+                        fw.truncate(20);
+                        fw
+                    },
                     ..Default::default()
                 })
                 .await?;
