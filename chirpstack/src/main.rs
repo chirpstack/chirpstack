@@ -80,6 +80,9 @@ enum Commands {
 
     /// Migrate device-sessions from Redis to PostgreSQL.
     MigrateDeviceSessionsToPostgres {},
+
+    /// Migrate device-profile templates to device profiles.
+    MigrateDeviceProfileTemplates {},
 }
 
 #[tokio::main]
@@ -122,6 +125,9 @@ async fn main() -> Result<()> {
         }
         Some(Commands::CreateApiKey { name }) => cmd::create_api_key::run(name).await?,
         Some(Commands::MigrateDeviceSessionsToPostgres {}) => cmd::migrate_ds_to_pg::run().await?,
+        Some(Commands::MigrateDeviceProfileTemplates {}) => {
+            cmd::migrate_device_profile_templates::run().await?
+        }
         None => cmd::root::run().await?,
     }
 
