@@ -64,8 +64,8 @@ enum Commands {
         dev_eui: String,
     },
 
-    /// Import lorawan-device-profiles repository.
-    ImportLorawanDeviceProfiles {
+    /// Import device-profiles repository.
+    ImportDeviceProfiles {
         /// Path to repository root.
         #[arg(short, long, value_name = "DIR")]
         dir: String,
@@ -115,8 +115,8 @@ async fn main() -> Result<()> {
             let dev_eui = EUI64::from_str(dev_eui).unwrap();
             cmd::print_ds::run(&dev_eui).await.unwrap();
         }
-        Some(Commands::ImportLorawanDeviceProfiles { dir }) => {
-            cmd::import_lorawan_device_profiles::run(Path::new(&dir))
+        Some(Commands::ImportDeviceProfiles { dir }) => {
+            cmd::import_device_profiles::run(Path::new(&dir))
                 .await
                 .unwrap()
         }
