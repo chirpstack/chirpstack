@@ -69,7 +69,10 @@ function RegionDetails() {
                   <List.Item>
                     <List.Item.Meta
                       title={`${item.getFrequency()} Hz`}
-                      description={`Min DR: ${item.getDrMin()}, max DR: ${item.getDrMax()}`}
+                      description={item
+                        .getDataRatesList()
+                        .map(v => `DR${v}`)
+                        .join(", ")}
                     />
                   </List.Item>
                 )}
