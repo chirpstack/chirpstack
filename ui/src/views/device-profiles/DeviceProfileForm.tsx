@@ -31,6 +31,28 @@ interface IProps {
   disabled?: boolean;
 }
 
+const dataRates: {
+  label: string;
+  value: number;
+}[] = [
+  { label: "DR0", value: 0 },
+  { label: "DR1", value: 1 },
+  { label: "DR2", value: 2 },
+  { label: "DR3", value: 3 },
+  { label: "DR4", value: 4 },
+  { label: "DR5", value: 5 },
+  { label: "DR6", value: 6 },
+  { label: "DR7", value: 7 },
+  { label: "DR8", value: 8 },
+  { label: "DR9", value: 9 },
+  { label: "DR10", value: 10 },
+  { label: "DR11", value: 11 },
+  { label: "DR12", value: 12 },
+  { label: "DR13", value: 13 },
+  { label: "DR14", value: 14 },
+  { label: "DR15", value: 15 },
+];
+
 function DeviceProfileForm(props: IProps) {
   const [form] = Form.useForm();
 
@@ -99,6 +121,7 @@ function DeviceProfileForm(props: IProps) {
     dp.setUplinkInterval(v.uplinkInterval);
     dp.setDeviceStatusReqInterval(v.deviceStatusReqInterval);
     dp.setRx1Delay(v.rx1Delay);
+    dp.setSupportedUplinkDataRatesList(v.supportedUplinkDataRatesList);
 
     // join otaa /abp
     dp.setSupportsOtaa(v.supportsOtaa);
@@ -333,7 +356,7 @@ function DeviceProfileForm(props: IProps) {
             </Col>
           </Row>
           <Row>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label="Expected uplink interval (secs)"
                 tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
@@ -348,7 +371,7 @@ function DeviceProfileForm(props: IProps) {
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label="Device-status request frequency (req/day)"
                 tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
@@ -357,13 +380,24 @@ function DeviceProfileForm(props: IProps) {
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+          </Row>
+          <Row>
+            <Col span={12}>
               <Form.Item
                 label="RX1 Delay (0 = use system default)"
                 tooltip="This option makes it possible to set a higher RX1 Delay for devices using this device-profile. Note that a lower value than the system default will be ignored. If configured and incremented, then ChirpStack will increase the downlink data delay with the same increment."
                 name="rx1Delay"
               >
                 <InputNumber min={0} max={15} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Supported data-rates"
+                tooltip="If not set, the default region data-rates will be used (which is most likely what you want). Only set this value if you know what you are doing."
+                name="supportedUplinkDataRatesList"
+              >
+                <Select mode="multiple" options={dataRates} disabled={props.disabled} allowClear />
               </Form.Item>
             </Col>
           </Row>
