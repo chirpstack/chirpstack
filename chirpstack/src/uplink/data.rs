@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
@@ -48,6 +49,7 @@ pub struct Data {
     downlink_mac_commands: Vec<lrwn::MACCommandSet>,
     device_gateway_rx_info: Option<internal::DeviceGatewayRxInfo>,
     device_changeset: device::DeviceChangeset,
+    region_conf: Option<Arc<Box<dyn lrwn::region::Region + Sync + Send>>>,
 }
 
 impl Data {
@@ -107,11 +109,13 @@ impl Data {
             downlink_mac_commands: Vec::new(),
             device_gateway_rx_info: None,
             device_changeset: Default::default(),
+            region_conf: None,
         };
 
         ctx.handle_passive_roaming_device().await?;
         ctx.get_device_for_phy_payload().await?;
         ctx.get_device_data().await?;
+        ctx.set_region_config()?;
         ctx.check_roaming_allowed()?;
 
         // Add dev_eui to span
@@ -124,6 +128,7 @@ impl Data {
             ctx.filter_rx_info_by_tenant().await?;
         }
         ctx.set_device_info()?;
+        ctx.set_region_config()?;
         ctx.set_device_gateway_rx_info()?;
         ctx.handle_retransmission_reset().await?;
         ctx.decrypt_f_opts_mac_commands()?;
@@ -145,7 +150,6 @@ impl Data {
         }
         ctx.detect_and_save_measurements().await?;
         ctx.sync_uplink_f_cnt()?;
-        ctx.set_region_config_id()?;
         ctx.update_device().await?;
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics().await?;
@@ -182,11 +186,13 @@ impl Data {
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
             device_changeset: Default::default(),
+            region_conf: None,
         };
 
         ctx.get_device_for_phy_payload_relayed().await?;
         ctx.get_device_data().await?;
         ctx.set_device_info()?;
+        ctx.set_region_config()?;
         ctx.set_relay_rx_info()?;
         ctx.handle_retransmission_reset().await?;
         ctx.decrypt_f_opts_mac_commands()?;
@@ -200,7 +206,6 @@ impl Data {
         ctx.send_uplink_event().await?;
         ctx.detect_and_save_measurements().await?;
         ctx.sync_uplink_f_cnt()?;
-        ctx.set_region_config_id()?;
         ctx.update_device().await?;
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics_relayed().await?;
@@ -363,6 +368,21 @@ impl Data {
         self.tenant = Some(t);
         self.application = Some(app);
         self.device_profile = Some(dp);
+
+        Ok(())
+    }
+
+    fn set_region_config(&mut self) -> Result<()> {
+        trace!("Setting region_config");
+        let d = self.device.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
+        ds.region_config_id
+            .clone_from(&self.uplink_frame_set.region_config_id);
+
+        let region_conf =
+            region::get(&ds.region_config_id).context("Get region config for region_config_id")?;
+
+        self.region_conf = Some(region_conf);
 
         Ok(())
     }
@@ -774,6 +794,7 @@ impl Data {
                     self.application.as_ref().unwrap(),
                     self.device_profile.as_ref().unwrap(),
                     self.device.as_mut().unwrap(),
+                    self.region_conf.as_ref().unwrap().clone(),
                 )
                 .await
                 .context("Handle uplink mac-commands")?;
@@ -791,6 +812,7 @@ impl Data {
                     self.application.as_ref().unwrap(),
                     self.device_profile.as_ref().unwrap(),
                     self.device.as_mut().unwrap(),
+                    self.region_conf.as_ref().unwrap().clone(),
                 )
                 .await
                 .context("Handle uplink mac-commands")?;
@@ -1091,18 +1113,6 @@ impl Data {
     fn sync_uplink_f_cnt(&mut self) -> Result<()> {
         trace!("Syncing uplink frame-counter");
         self.device_changeset.f_cnt_up = Some((self.f_cnt_up_full + 1).into());
-        Ok(())
-    }
-
-    // This is called on every uplink as the device might switch between different regions (e.g.
-    // US915 8 channels to US915 16 channels). As well with ABP devices on ABP activation this is
-    // value is not set initially.
-    fn set_region_config_id(&mut self) -> Result<()> {
-        trace!("Setting region_config_id to device-session");
-        let d = self.device.as_mut().unwrap();
-        let ds = d.get_device_session_mut()?;
-        ds.region_config_id
-            .clone_from(&self.uplink_frame_set.region_config_id);
         Ok(())
     }
 

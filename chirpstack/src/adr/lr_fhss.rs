@@ -188,8 +188,8 @@ pub mod test {
             .extra_channels
             .push(config::ExtraChannel {
                 frequency: 867300000,
-                min_dr: 10,
-                max_dr: 11,
+                data_rates: vec![10, 11],
+                ..Default::default()
             });
         config::set(conf);
         region::setup().unwrap();

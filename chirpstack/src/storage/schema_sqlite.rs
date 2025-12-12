@@ -112,6 +112,7 @@ diesel::table! {
         device_id -> Nullable<Text>,
         firmware_version -> Text,
         vendor_profile_id -> Integer,
+        supported_uplink_data_rates -> Text,
     }
 }
 

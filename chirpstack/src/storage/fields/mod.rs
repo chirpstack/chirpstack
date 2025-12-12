@@ -1,4 +1,5 @@
 mod big_decimal;
+mod data_rates;
 mod dev_nonces;
 pub mod device;
 pub mod device_profile;
@@ -11,6 +12,7 @@ mod string_vec;
 mod uuid;
 
 pub use big_decimal::BigDecimal;
+pub use data_rates::DataRates;
 pub use dev_nonces::DevNonces;
 pub use device_profile::{AbpParams, AppLayerParams, ClassBParams, ClassCParams, RelayParams};
 pub use device_session::DeviceSession;

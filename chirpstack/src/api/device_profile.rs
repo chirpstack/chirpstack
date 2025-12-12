@@ -153,6 +153,13 @@ impl DeviceProfileService for DeviceProfile {
                     ..Default::default()
                 }
             },
+            supported_uplink_data_rates: fields::DataRates::new(
+                req_dp
+                    .supported_uplink_data_rates
+                    .iter()
+                    .map(|&v| Some(v as i16))
+                    .collect(),
+            ),
             ..Default::default()
         };
 
@@ -275,6 +282,11 @@ impl DeviceProfileService for DeviceProfile {
                 }),
                 device_id: dp.device_id.map(|v| v.to_string()).unwrap_or_default(),
                 firmware_version: dp.firmware_version.clone(),
+                supported_uplink_data_rates: dp
+                    .supported_uplink_data_rates
+                    .iter()
+                    .filter_map(|&v| v.map(|v| v as u32))
+                    .collect(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -413,6 +425,13 @@ impl DeviceProfileService for DeviceProfile {
                     ts005_f_port: app_layer_params.ts005_f_port as u8,
                 }
             },
+            supported_uplink_data_rates: fields::DataRates::new(
+                req_dp
+                    .supported_uplink_data_rates
+                    .iter()
+                    .map(|&v| Some(v as i16))
+                    .collect(),
+            ),
             ..Default::default()
         })
         .await

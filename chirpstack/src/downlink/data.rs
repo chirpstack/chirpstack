@@ -1,5 +1,5 @@
 use std::cmp;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -1161,12 +1161,42 @@ impl Data {
         let mut wanted_channels: HashMap<usize, lrwn::region::Channel> = HashMap::new();
         let ds = self.device.get_device_session_mut()?;
 
+        // Get the data-rates supported by the device, or else fallback onto
+        // the default min / max DR values.
+        let supported_ul_drs: HashSet<u8> =
+            if self.device_profile.supported_uplink_data_rates.is_empty() {
+                (self.region_conf.get_defaults().min_ul_dr
+                    ..=self.region_conf.get_defaults().max_ul_dr)
+                    .collect()
+            } else {
+                self.device_profile
+                    .supported_uplink_data_rates
+                    .iter()
+                    .filter_map(|&v| v.map(|v| v as u8))
+                    .collect()
+            };
+
         for i in self.region_conf.get_user_defined_uplink_channel_indices() {
-            let c = self.region_conf.get_uplink_channel(i)?;
-            wanted_channels.insert(i, c);
+            // We calculate the data-rates that the channel and device have
+            // in common. It could be that the device only supports a sub-set
+            // of the data-rates provided by the channel. E.g. the channel
+            // might support DR0-5 + DR12-13, but the device might only support
+            // DR0-5.
+            let mut channel = self.region_conf.get_uplink_channel(i)?;
+            let channel_drs: HashSet<u8> = channel.data_rates.into_iter().collect();
+            let mut common_drs: Vec<u8> = channel_drs
+                .intersection(&supported_ul_drs)
+                .cloned()
+                .collect();
+            common_drs.sort();
+
+            if !common_drs.is_empty() {
+                channel.data_rates = common_drs;
+                wanted_channels.insert(i, channel);
+            }
         }
 
-        // cleanup channels that do not exist anydmore
+        // cleanup channels that do not exist anymore
         // these will be disabled by the LinkADRReq channel-mask reconfiguration
         let ds_keys: Vec<usize> = ds
             .extra_uplink_channels
@@ -1188,17 +1218,23 @@ impl Data {
                     *k as usize,
                     lrwn::region::Channel {
                         frequency: v.frequency,
-                        min_dr: v.min_dr as u8,
-                        max_dr: v.max_dr as u8,
+                        data_rates: if v.data_rates.is_empty() {
+                            (v.min_dr..=v.max_dr).map(|v| v as u8).collect()
+                        } else {
+                            v.data_rates.iter().map(|&v| v as u8).collect()
+                        },
                         ..Default::default()
                     },
                 )
             })
             .collect();
 
-        if let Some(block) =
-            maccommand::new_channel::request(3, &current_channels, &wanted_channels)
-        {
+        if let Some(block) = maccommand::new_channel::request(
+            3,
+            &current_channels,
+            &wanted_channels,
+            self.region_conf.clone(),
+        )? {
             self.mac_commands.push(block);
         }
 

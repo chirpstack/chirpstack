@@ -5,6 +5,7 @@ use std::{env, fs};
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
+use tracing::warn;
 
 use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddrPrefix, EUI64Prefix, NetID};
@@ -711,6 +712,7 @@ pub struct ExtraChannel {
     pub frequency: u32,
     pub min_dr: u8,
     pub max_dr: u8,
+    pub data_rates: Vec<u8>,
 }
 
 #[derive(Default, Serialize, Deserialize, Clone)]
@@ -840,7 +842,26 @@ pub fn load(config_dir: &Path) -> Result<()> {
         content = content.replace(&format!("${}", k), &v);
     }
 
-    let conf: Configuration = toml::from_str(&content)?;
+    let mut conf: Configuration = toml::from_str(&content)?;
+
+    // Backfill extra-channel data-rates.
+    for region in &mut conf.regions {
+        for extra_channel in &mut region.network.extra_channels {
+            if !extra_channel.data_rates.is_empty() {
+                continue;
+            }
+
+            warn!(
+                region = region.id,
+                "Using min_dr / max_dr for extra-channel configuration is deprecated, use data_rates instead!"
+            );
+
+            extra_channel
+                .data_rates
+                .extend(extra_channel.min_dr..=extra_channel.max_dr);
+        }
+    }
+
     set(conf);
 
     Ok(())

@@ -1038,8 +1038,8 @@ async fn test_lorawan_10_uplink() {
                         .extra_channels
                         .push(config::ExtraChannel {
                             frequency: 867300000,
-                            min_dr: 10,
-                            max_dr: 11,
+                            data_rates: vec![10, 11],
+                            ..Default::default()
                         });
                     config::set(conf);
                     region::setup().unwrap();

@@ -125,6 +125,7 @@ diesel::table! {
         #[max_length = 20]
         firmware_version -> Varchar,
         vendor_profile_id -> Int4,
+        supported_uplink_data_rates -> Array<Nullable<Int2>>,
     }
 }
 

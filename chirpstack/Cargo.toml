@@ -24,7 +24,11 @@
   validator.workspace = true
 
   # Database
-  diesel = { workspace = true, features = ["chrono", "numeric"] }
+  diesel = { workspace = true, features = [
+    "chrono",
+    "numeric",
+    "64-column-tables",
+  ] }
   diesel_migrations.workspace = true
   diesel-async.workspace = true
   tokio-postgres = { workspace = true, optional = true }

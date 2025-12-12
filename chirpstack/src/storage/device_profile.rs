@@ -106,6 +106,21 @@ pub struct DeviceProfile {
     pub device_id: Option<fields::Uuid>,
     pub firmware_version: String,
     pub vendor_profile_id: i32,
+    pub supported_uplink_data_rates: fields::DataRates,
+}
+
+impl DeviceProfile {
+    fn validate(&self) -> Result<(), Error> {
+        if self.name.is_empty() {
+            return Err(Error::Validation("name is not set".into()));
+        }
+
+        if self.rx1_delay < 0 || self.rx1_delay > 15 {
+            return Err(Error::Validation("RX1 Delay must be between 0 - 15".into()));
+        }
+
+        Ok(())
+    }
 }
 
 impl Default for DeviceProfile {
@@ -145,6 +160,7 @@ impl Default for DeviceProfile {
             device_id: None,
             firmware_version: "".into(),
             vendor_profile_id: 0,
+            supported_uplink_data_rates: fields::DataRates::default(),
         }
     }
 }
@@ -295,6 +311,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
             device_profile::device_id.eq(&dp.device_id),
             device_profile::firmware_version.eq(&dp.firmware_version),
             device_profile::vendor_profile_id.eq(&dp.vendor_profile_id),
+            device_profile::supported_uplink_data_rates.eq(&dp.supported_uplink_data_rates),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await

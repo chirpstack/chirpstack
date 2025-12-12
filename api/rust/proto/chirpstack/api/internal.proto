@@ -2,18 +2,18 @@ syntax = "proto3";
 
 package api;
 
+import "api/user.proto";
+import "common/common.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Chirpstack.Api";
 option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
-option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "InternalProto";
-option csharp_namespace = "Chirpstack.Api";
-option php_namespace = "Chirpstack\\Api";
+option java_package = "io.chirpstack.api";
 option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
-
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
-import "common/common.proto";
-import "api/user.proto";
+option php_namespace = "Chirpstack\\Api";
 
 // InternalService is the service providing API endpoints for internal usage.
 service InternalService {
@@ -39,23 +39,19 @@ service InternalService {
   rpc Settings(google.protobuf.Empty) returns (SettingsResponse) {}
 
   // OpenId Connect login.
-  rpc OpenIdConnectLogin(OpenIdConnectLoginRequest)
-      returns (OpenIdConnectLoginResponse) {}
+  rpc OpenIdConnectLogin(OpenIdConnectLoginRequest) returns (OpenIdConnectLoginResponse) {}
 
   // OAuth2 login.
   rpc OAuth2Login(OAuth2LoginRequest) returns (OAuth2LoginResponse) {}
 
   // GetDevicesSummary returns an aggregated summary of the devices.
-  rpc GetDevicesSummary(GetDevicesSummaryRequest)
-      returns (GetDevicesSummaryResponse) {}
+  rpc GetDevicesSummary(GetDevicesSummaryRequest) returns (GetDevicesSummaryResponse) {}
 
   // GetGatewaysSummary returns an aggregated summary of the gateways.
-  rpc GetGatewaysSummary(GetGatewaysSummaryRequest)
-      returns (GetGatewaysSummaryResponse) {}
+  rpc GetGatewaysSummary(GetGatewaysSummaryRequest) returns (GetGatewaysSummaryResponse) {}
 
   // Stream frame for the given Gateway ID.
-  rpc StreamGatewayFrames(StreamGatewayFramesRequest) returns (stream LogItem) {
-  }
+  rpc StreamGatewayFrames(StreamGatewayFramesRequest) returns (stream LogItem) {}
 
   // Stream frames for the given Device EUI.
   rpc StreamDeviceFrames(StreamDeviceFramesRequest) returns (stream LogItem) {}
@@ -185,7 +181,9 @@ message GlobalSearchRequest {
   int64 offset = 3;
 }
 
-message GlobalSearchResponse { repeated GlobalSearchResult result = 1; }
+message GlobalSearchResponse {
+  repeated GlobalSearchResult result = 1;
+}
 
 message GlobalSearchResult {
   // Record kind.
@@ -421,11 +419,8 @@ message RegionChannel {
   // Frequency (Hz).
   uint32 frequency = 1;
 
-  // Min DR.
-  uint32 dr_min = 2;
-
-  // Max DR.
-  uint32 dr_max = 3;
+  // Data-rates.
+  repeated uint32 data_rates = 4;
 }
 
 message GetVersionResponse {

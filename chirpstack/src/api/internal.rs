@@ -957,8 +957,7 @@ impl InternalService for Internal {
             let ch = reg.get_uplink_channel(i).map_err(|e| e.status())?;
             out.uplink_channels.push(api::RegionChannel {
                 frequency: ch.frequency,
-                dr_min: ch.min_dr as u32,
-                dr_max: ch.max_dr as u32,
+                data_rates: ch.data_rates.into_iter().map(|v| v as u32).collect(),
             });
         }
 

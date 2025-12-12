@@ -827,8 +827,8 @@ impl JoinRequest {
                         i as u32,
                         internal::DeviceSessionChannel {
                             frequency: c.frequency,
-                            min_dr: c.min_dr as u32,
-                            max_dr: c.max_dr as u32,
+                            data_rates: c.data_rates.into_iter().map(|v| v as u32).collect(),
+                            ..Default::default()
                         },
                     );
                 }

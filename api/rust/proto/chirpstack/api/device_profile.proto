@@ -488,6 +488,15 @@ message DeviceProfile {
 
   // Firmware version.
   string firmware_version = 56;
+
+  // Supported uplink data-rates.
+  //
+  // This option configures the data-rates that are supported by the devices
+  // using this device-profile. If not set, the default min / max data-rates
+  // will be used.
+  // Example: In case you would like to use also SF5 and SF6 in EU868, you would
+  // set this option to: 0, 1, 2, 3, 4, 5, 6, 7, 12, 13.
+  repeated uint32 supported_uplink_data_rates = 57;
 }
 
 message Measurement {
