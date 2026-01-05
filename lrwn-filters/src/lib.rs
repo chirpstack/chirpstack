@@ -218,8 +218,6 @@ impl EuiPrefix {
     pub fn is_match(&self, eui_le: [u8; 8]) -> bool {
         let eui = u64::from_le_bytes(eui_le);
         let prefix = u64::from_be_bytes(self.prefix());
-        println!("EUI: {}", eui >> (64 - self.size()));
-        println!("PREFIX: {}", prefix >> (64 - self.size()));
         eui >> (64 - self.size()) == prefix >> (64 - self.size())
     }
 
