@@ -716,8 +716,16 @@ type DeviceProfile struct {
 	DeviceId string `protobuf:"bytes,55,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
 	// Firmware version.
 	FirmwareVersion string `protobuf:"bytes,56,opt,name=firmware_version,json=firmwareVersion,proto3" json:"firmware_version,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// Supported uplink data-rates.
+	//
+	// This option configures the data-rates that are supported by the devices
+	// using this device-profile. If not set, the default min / max data-rates
+	// will be used.
+	// Example: In case you would like to use also SF5 and SF6 in EU868, you would
+	// set this option to: 0, 1, 2, 3, 4, 5, 6, 7, 12, 13.
+	SupportedUplinkDataRates []uint32 `protobuf:"varint,57,rep,packed,name=supported_uplink_data_rates,json=supportedUplinkDataRates,proto3" json:"supported_uplink_data_rates,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
 }
 
 func (x *DeviceProfile) Reset() {
@@ -1140,6 +1148,13 @@ func (x *DeviceProfile) GetFirmwareVersion() string {
 		return x.FirmwareVersion
 	}
 	return ""
+}
+
+func (x *DeviceProfile) GetSupportedUplinkDataRates() []uint32 {
+	if x != nil {
+		return x.SupportedUplinkDataRates
+	}
+	return nil
 }
 
 type Measurement struct {
@@ -2359,7 +2374,6 @@ type ListDeviceProfileDevicesRequest struct {
 	// Offset in the result-set (for pagination).
 	Offset uint32 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
 	// Vendor ID (UUID).
-	// This field is mandatory.
 	VendorId      string `protobuf:"bytes,3,opt,name=vendor_id,json=vendorId,proto3" json:"vendor_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2888,7 +2902,7 @@ var File_api_device_profile_proto protoreflect.FileDescriptor
 
 const file_api_device_profile_proto_rawDesc = "" +
 	"\n" +
-	"\x18api/device_profile.proto\x12\x03api\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x86\x18\n" +
+	"\x18api/device_profile.proto\x12\x03api\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc5\x18\n" +
 	"\rDeviceProfile\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x12\n" +
@@ -2949,7 +2963,8 @@ const file_api_device_profile_proto_rawDesc = "" +
 	"\trx1_delay\x185 \x01(\rR\brx1Delay\x12=\n" +
 	"\x10app_layer_params\x186 \x01(\v2\x13.api.AppLayerParamsR\x0eappLayerParams\x12\x1b\n" +
 	"\tdevice_id\x187 \x01(\tR\bdeviceId\x12)\n" +
-	"\x10firmware_version\x188 \x01(\tR\x0ffirmwareVersion\x1a7\n" +
+	"\x10firmware_version\x188 \x01(\tR\x0ffirmwareVersion\x12=\n" +
+	"\x1bsupported_uplink_data_rates\x189 \x03(\rR\x18supportedUplinkDataRates\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1aQ\n" +
