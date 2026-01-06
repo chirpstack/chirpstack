@@ -69,7 +69,7 @@ impl Payload {
                     }
                     0x01 => Payload::RejoinRequestType1(RejoinRequestType1Payload::from_slice(b)?),
                     _ => {
-                        return Err(anyhow!("invalid RejoinType"));
+                        return Err(anyhow!("Invalid RejoinType: {}", b[0]));
                     }
                 }
             }
@@ -327,7 +327,7 @@ impl RejoinRequestType02Payload {
                 0x00 => JoinType::RejoinType0,
                 0x02 => JoinType::RejoinType2,
                 _ => {
-                    return Err(anyhow!("invalid rejoin_type"));
+                    return Err(anyhow!("Invalid RejoinType: {}", b[0]));
                 }
             },
             netid: {
