@@ -135,7 +135,7 @@
     gcp_auth = "0.12"
     rust-embed = "8.8"
     mime_guess = "2.0"
-    rquickjs = { version = "0.10", features = [
+    rquickjs = { version = "0.11", features = [
       "bindgen",
       "loader",
       "array-buffer",
@@ -145,8 +145,8 @@
     regex = "1.11"
     petgraph = "0.8"
     pin-project = "1.1"
-    signal-hook = "0.3"
-    signal-hook-tokio = { version = "0.3", features = ["futures-v0_3"] }
+    signal-hook = "0.4"
+    signal-hook-tokio = { version = "0.4", features = ["futures-v0_3"] }
     bytes = "1.10"
     dotenv = "0.15"
 
