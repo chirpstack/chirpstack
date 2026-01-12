@@ -23,7 +23,6 @@ pub struct Vendor {
     pub name: String,
     pub vendor_id: i32,
     pub ouis: Vec<String>,
-    pub devices: Vec<String>,
     pub metadata: HashMap<String, String>,
 }
 
@@ -139,8 +138,6 @@ pub async fn run(dir: &Path) -> Result<()> {
 }
 
 async fn handle_vendor(dir: &Path) -> Result<()> {
-    // vendor_conf.vendor.slug = dir.file_name().unwrap().to_str().unwrap().to_string();
-    //
     let vendor_conf = dir.join("vendor.toml");
     info!(path = ?vendor_conf, "Reading vendor configuration");
     let vendor_conf: VendorConfig = toml::from_str(&fs::read_to_string(vendor_conf)?)?;
@@ -164,11 +161,24 @@ async fn handle_vendor(dir: &Path) -> Result<()> {
     })
     .await?;
 
-    for device in &vendor_conf.vendor.devices {
+    handle_devices(dir, &vendor_conf.vendor).await?;
+
+    Ok(())
+}
+
+async fn handle_devices(dir: &Path, vendor: &Vendor) -> Result<()> {
+    info!(id = %vendor.id, "Upserting vendor devices");
+
+    let devices_dir = dir.join("devices");
+    let devices = fs::read_dir(devices_dir)?;
+
+    for device in devices.flatten() {
+        let device = device
+            .file_name()
+            .into_string()
+            .map_err(|e| anyhow!("{:?}", e))?;
         let span = span!(Level::INFO, "", device = %device);
-        handle_device(dir, &vendor_conf.vendor, device)
-            .instrument(span)
-            .await?;
+        handle_device(dir, vendor, &device).instrument(span).await?;
     }
 
     Ok(())
