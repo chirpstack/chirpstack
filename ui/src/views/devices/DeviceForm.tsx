@@ -1,12 +1,22 @@
-import { Form, Input, Row, Col, Button, Tabs, Switch } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { useState } from "react";
 
+import { Form, Input, Row, Col, Button, Tabs, Switch, Modal, Space, notification } from "antd";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { Scanner } from "@yudiel/react-qr-scanner";
+import type { IDetectedBarcode } from "@yudiel/react-qr-scanner";
+
+import { GetDeviceProfileByProfileIdRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import {
+  GetDeviceProfileByProfileIdResponse,
+  DeviceProfile,
+} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import { onFinishFailed } from "../helpers";
 import EuiInput from "../../components/EuiInput";
 import DeviceProfileSelect from "../../components/DeviceProfileSelect";
+import DeviceProfileStore from "../../stores/DeviceProfileStore";
 
 interface IProps {
   tenant: Tenant;
@@ -17,6 +27,8 @@ interface IProps {
 
 function DeviceForm(props: IProps) {
   const [form] = Form.useForm();
+  const [showScanner, setShowScanner] = useState(false);
+  const [deviceProfileId, setDeviceProfileId] = useState<string | null>(null);
 
   const onFinish = (values: Device.AsObject) => {
     const v = Object.assign(props.initialValues.toObject(), values);
@@ -44,6 +56,48 @@ function DeviceForm(props: IProps) {
     props.onFinish(d);
   };
 
+  const onScannerError = (e: any) => {
+    notification.error({
+      message: "Error",
+      description: e,
+      duration: 3,
+    });
+  };
+
+  const onScannerScan = (v: IDetectedBarcode[]) => {
+    if (v.length === 0) {
+      return;
+    }
+    setShowScanner(false);
+
+    const barcode = v[0].rawValue;
+    const barcodeBits = barcode.split(":");
+    if (!barcode.startsWith("LW:D0") || barcodeBits.length < 5) {
+      notification.error({
+        message: "Error",
+        description: "Invalid QR code",
+        duration: 3,
+      });
+    }
+
+    form.setFieldsValue({
+      devEui: barcodeBits[3],
+      joinEui: barcodeBits[2],
+    });
+
+    if (form.getFieldValue("name") === "") {
+      form.setFieldValue("name", barcodeBits[3]);
+    }
+
+    const req = new GetDeviceProfileByProfileIdRequest();
+    req.setVendorId(Number("0x" + barcodeBits[4].slice(0, 4)));
+    req.setVendorProfileId(Number("0x" + barcodeBits[4].slice(4, 8)));
+    DeviceProfileStore.getByProfileId(req, (resp: GetDeviceProfileByProfileIdResponse) => {
+      const dp = resp.getDeviceProfile()!;
+      setDeviceProfileId(dp.getId());
+    });
+  };
+
   return (
     <Form
       layout="vertical"
@@ -52,7 +106,24 @@ function DeviceForm(props: IProps) {
       onFinishFailed={onFinishFailed}
       form={form}
     >
-      <Tabs>
+      <Modal
+        title="Scan QR-code"
+        open={showScanner}
+        onClose={() => setShowScanner(false)}
+        onCancel={() => setShowScanner(false)}
+        okButtonProps={{ style: { display: "none" } }}
+      >
+        <Space direction="vertical">
+          <Scanner onScan={onScannerScan} onError={onScannerError} />
+        </Space>
+      </Modal>
+      <Tabs
+        tabBarExtraContent={
+          <Button type="primary" disabled={props.update} onClick={() => setShowScanner(true)}>
+            Scan QR-code
+          </Button>
+        }
+      >
         <Tabs.TabPane tab="Device" key="1">
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
             <Input />
@@ -62,19 +133,12 @@ function DeviceForm(props: IProps) {
           </Form.Item>
           <Row gutter={24}>
             <Col span={12}>
-              <EuiInput
-                label="Device EUI (EUI64)"
-                name="devEui"
-                value={props.initialValues.getDevEui()}
-                disabled={props.update}
-                required
-              />
+              <EuiInput label="Device EUI (EUI64)" name="devEui" disabled={props.update} required />
             </Col>
             <Col span={12}>
               <EuiInput
                 label="Join EUI (EUI64)"
                 name="joinEui"
-                value={props.initialValues.getJoinEui()}
                 tooltip="The Join EUI will be automatically set / updated on OTAA. However, in some cases this field must be configured before OTAA (e.g. OTAA using a Relay)."
               />
             </Col>
@@ -82,7 +146,7 @@ function DeviceForm(props: IProps) {
           <DeviceProfileSelect
             label="Device profile"
             name="deviceProfileId"
-            value={props.initialValues.getDeviceProfileId()}
+            value={deviceProfileId || props.initialValues.getDeviceProfileId()}
             required
             tenant={props.tenant}
           />

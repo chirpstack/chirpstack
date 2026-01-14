@@ -147,6 +147,11 @@ service DeviceProfileService {
     option (google.api.http) = {get: "/api/device-profiles/{id}"};
   }
 
+  // GetByProfileId tries to get the device-profile for the given ProfileID (see TR0005).
+  rpc GetByProfileId(GetDeviceProfileByProfileIdRequest) returns (GetDeviceProfileByProfileIdResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/{vendor_id}/{vendor_profile_id}"};
+  }
+
   // Update the given device-profile.
   rpc Update(UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
@@ -594,6 +599,25 @@ message GetDeviceProfileRequest {
 }
 
 message GetDeviceProfileResponse {
+  // Device-profile object.
+  DeviceProfile device_profile = 1;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message GetDeviceProfileByProfileIdRequest {
+  // Vendor ID.
+  uint32 vendor_id = 1;
+
+  // Vendor Profile ID.
+  uint32 vendor_profile_id = 2;
+}
+
+message GetDeviceProfileByProfileIdResponse {
   // Device-profile object.
   DeviceProfile device_profile = 1;
 

@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	DeviceProfileService_Create_FullMethodName            = "/api.DeviceProfileService/Create"
 	DeviceProfileService_Get_FullMethodName               = "/api.DeviceProfileService/Get"
+	DeviceProfileService_GetByProfileId_FullMethodName    = "/api.DeviceProfileService/GetByProfileId"
 	DeviceProfileService_Update_FullMethodName            = "/api.DeviceProfileService/Update"
 	DeviceProfileService_Delete_FullMethodName            = "/api.DeviceProfileService/Delete"
 	DeviceProfileService_List_FullMethodName              = "/api.DeviceProfileService/List"
@@ -45,6 +46,8 @@ type DeviceProfileServiceClient interface {
 	Create(ctx context.Context, in *CreateDeviceProfileRequest, opts ...grpc.CallOption) (*CreateDeviceProfileResponse, error)
 	// Get the device-profile for the given ID.
 	Get(ctx context.Context, in *GetDeviceProfileRequest, opts ...grpc.CallOption) (*GetDeviceProfileResponse, error)
+	// GetByProfileId tries to get the device-profile for the given ProfileID (see TR0005).
+	GetByProfileId(ctx context.Context, in *GetDeviceProfileByProfileIdRequest, opts ...grpc.CallOption) (*GetDeviceProfileByProfileIdResponse, error)
 	// Update the given device-profile.
 	Update(ctx context.Context, in *UpdateDeviceProfileRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Delete the device-profile with the given ID.
@@ -89,6 +92,16 @@ func (c *deviceProfileServiceClient) Get(ctx context.Context, in *GetDeviceProfi
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetDeviceProfileResponse)
 	err := c.cc.Invoke(ctx, DeviceProfileService_Get_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *deviceProfileServiceClient) GetByProfileId(ctx context.Context, in *GetDeviceProfileByProfileIdRequest, opts ...grpc.CallOption) (*GetDeviceProfileByProfileIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDeviceProfileByProfileIdResponse)
+	err := c.cc.Invoke(ctx, DeviceProfileService_GetByProfileId_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -206,6 +219,8 @@ type DeviceProfileServiceServer interface {
 	Create(context.Context, *CreateDeviceProfileRequest) (*CreateDeviceProfileResponse, error)
 	// Get the device-profile for the given ID.
 	Get(context.Context, *GetDeviceProfileRequest) (*GetDeviceProfileResponse, error)
+	// GetByProfileId tries to get the device-profile for the given ProfileID (see TR0005).
+	GetByProfileId(context.Context, *GetDeviceProfileByProfileIdRequest) (*GetDeviceProfileByProfileIdResponse, error)
 	// Update the given device-profile.
 	Update(context.Context, *UpdateDeviceProfileRequest) (*emptypb.Empty, error)
 	// Delete the device-profile with the given ID.
@@ -241,6 +256,9 @@ func (UnimplementedDeviceProfileServiceServer) Create(context.Context, *CreateDe
 }
 func (UnimplementedDeviceProfileServiceServer) Get(context.Context, *GetDeviceProfileRequest) (*GetDeviceProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedDeviceProfileServiceServer) GetByProfileId(context.Context, *GetDeviceProfileByProfileIdRequest) (*GetDeviceProfileByProfileIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByProfileId not implemented")
 }
 func (UnimplementedDeviceProfileServiceServer) Update(context.Context, *UpdateDeviceProfileRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
@@ -325,6 +343,24 @@ func _DeviceProfileService_Get_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DeviceProfileServiceServer).Get(ctx, req.(*GetDeviceProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DeviceProfileService_GetByProfileId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceProfileByProfileIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceProfileServiceServer).GetByProfileId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeviceProfileService_GetByProfileId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceProfileServiceServer).GetByProfileId(ctx, req.(*GetDeviceProfileByProfileIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -523,6 +559,10 @@ var DeviceProfileService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Get",
 			Handler:    _DeviceProfileService_Get_Handler,
+		},
+		{
+			MethodName: "GetByProfileId",
+			Handler:    _DeviceProfileService_GetByProfileId_Handler,
 		},
 		{
 			MethodName: "Update",

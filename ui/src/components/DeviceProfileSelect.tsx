@@ -161,7 +161,7 @@ function DeviceProfileSelect(props: IProps) {
         }
       });
     }
-  }, [props.name, props.tenant, form]);
+  }, [props.name, props.value, props.tenant, form]);
 
   const loadDeviceProfileData = (selectedOptions: CascaderOption[]) => {
     if (selectedOptions.length === 0) {

@@ -297,6 +297,133 @@ impl DeviceProfileService for DeviceProfile {
         Ok(resp)
     }
 
+    async fn get_by_profile_id(
+        &self,
+        request: Request<api::GetDeviceProfileByProfileIdRequest>,
+    ) -> Result<Response<api::GetDeviceProfileByProfileIdResponse>, Status> {
+        let req = request.get_ref();
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceProfilesAccess::new(validator::Flag::List, None, true),
+            )
+            .await?;
+
+        let dp =
+            device_profile::get_by_profile_id(req.vendor_id as i32, req.vendor_profile_id as i32)
+                .await
+                .map_err(|e| e.status())?;
+        let abp_params = dp.abp_params.clone().unwrap_or_default();
+        let class_b_params = dp.class_b_params.clone().unwrap_or_default();
+        let class_c_params = dp.class_c_params.clone().unwrap_or_default();
+        let relay_params = dp.relay_params.clone().unwrap_or_default();
+
+        let mut resp = Response::new(api::GetDeviceProfileByProfileIdResponse {
+            device_profile: Some(api::DeviceProfile {
+                id: dp.id.to_string(),
+                tenant_id: dp.tenant_id.map(|v| v.to_string()).unwrap_or_default(),
+                name: dp.name,
+                description: dp.description,
+                region: dp.region.to_proto().into(),
+                mac_version: dp.mac_version.to_proto().into(),
+                reg_params_revision: dp.reg_params_revision.to_proto().into(),
+                adr_algorithm_id: dp.adr_algorithm_id,
+                payload_codec_runtime: dp.payload_codec_runtime.to_proto().into(),
+                payload_codec_script: dp.payload_codec_script,
+                flush_queue_on_activate: dp.flush_queue_on_activate,
+                uplink_interval: dp.uplink_interval as u32,
+                device_status_req_interval: dp.device_status_req_interval as u32,
+                supports_otaa: dp.supports_otaa,
+                supports_class_b: dp.supports_class_b,
+                supports_class_c: dp.supports_class_c,
+                class_b_timeout: class_b_params.timeout as u32,
+                class_b_ping_slot_periodicity: class_b_params.ping_slot_periodicity as u32,
+                class_b_ping_slot_dr: class_b_params.ping_slot_dr as u32,
+                class_b_ping_slot_freq: class_b_params.ping_slot_freq as u32,
+                class_c_timeout: class_c_params.timeout as u32,
+                abp_rx1_delay: abp_params.rx1_delay as u32,
+                abp_rx1_dr_offset: abp_params.rx1_dr_offset as u32,
+                abp_rx2_dr: abp_params.rx2_dr as u32,
+                abp_rx2_freq: abp_params.rx2_freq as u32,
+                tags: dp.tags.into_hashmap(),
+                measurements: dp
+                    .measurements
+                    .into_hashmap()
+                    .iter()
+                    .map(|(k, v)| {
+                        (
+                            k.to_string(),
+                            api::Measurement {
+                                name: v.name.clone(),
+                                kind: v.kind.to_proto().into(),
+                            },
+                        )
+                    })
+                    .collect(),
+                auto_detect_measurements: dp.auto_detect_measurements,
+                region_config_id: dp.region_config_id.clone().unwrap_or_default(),
+                is_relay: relay_params.is_relay,
+                is_relay_ed: relay_params.is_relay_ed,
+                relay_ed_relay_only: relay_params.ed_relay_only,
+                relay_enabled: relay_params.relay_enabled,
+                relay_cad_periodicity: relay_params.relay_cad_periodicity as i32,
+                relay_default_channel_index: relay_params.default_channel_index as u32,
+                relay_second_channel_freq: relay_params.second_channel_freq as u32,
+                relay_second_channel_dr: relay_params.second_channel_dr as u32,
+                relay_second_channel_ack_offset: relay_params.second_channel_ack_offset as i32,
+                relay_ed_activation_mode: relay_params.ed_activation_mode.to_proto().into(),
+                relay_ed_smart_enable_level: relay_params.ed_smart_enable_level as u32,
+                relay_ed_back_off: relay_params.ed_back_off as u32,
+                relay_ed_uplink_limit_bucket_size: relay_params.ed_uplink_limit_bucket_size as u32,
+                relay_ed_uplink_limit_reload_rate: relay_params.ed_uplink_limit_reload_rate as u32,
+                relay_join_req_limit_reload_rate: relay_params.relay_join_req_limit_reload_rate
+                    as u32,
+                relay_notify_limit_reload_rate: relay_params.relay_notify_limit_reload_rate as u32,
+                relay_global_uplink_limit_reload_rate: relay_params
+                    .relay_global_uplink_limit_reload_rate
+                    as u32,
+                relay_overall_limit_reload_rate: relay_params.relay_overall_limit_reload_rate
+                    as u32,
+                relay_join_req_limit_bucket_size: relay_params.relay_join_req_limit_bucket_size
+                    as u32,
+                relay_notify_limit_bucket_size: relay_params.relay_notify_limit_bucket_size as u32,
+                relay_global_uplink_limit_bucket_size: relay_params
+                    .relay_global_uplink_limit_bucket_size
+                    as u32,
+                relay_overall_limit_bucket_size: relay_params.relay_overall_limit_bucket_size
+                    as u32,
+                allow_roaming: dp.allow_roaming,
+                rx1_delay: dp.rx1_delay as u32,
+                app_layer_params: Some(api::AppLayerParams {
+                    ts003_version: dp.app_layer_params.ts003_version.to_proto().into(),
+                    ts003_f_port: dp.app_layer_params.ts003_f_port as u32,
+                    ts004_version: dp.app_layer_params.ts004_version.to_proto().into(),
+                    ts004_f_port: dp.app_layer_params.ts004_f_port as u32,
+                    ts005_version: dp.app_layer_params.ts005_version.to_proto().into(),
+                    ts005_f_port: dp.app_layer_params.ts005_f_port as u32,
+                }),
+                device_id: dp.device_id.map(|v| v.to_string()).unwrap_or_default(),
+                firmware_version: dp.firmware_version.clone(),
+                supported_uplink_data_rates: dp
+                    .supported_uplink_data_rates
+                    .iter()
+                    .filter_map(|&v| v.map(|v| v as u32))
+                    .collect(),
+            }),
+            created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
+            updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
+        });
+        resp.metadata_mut()
+            .insert("x-log-device_profile_vendor_id", req.vendor_id.into());
+        resp.metadata_mut().insert(
+            "x-log-device_profile_vendor_profile_id",
+            req.vendor_profile_id.into(),
+        );
+
+        Ok(resp)
+    }
+
     async fn update(
         &self,
         request: Request<api::UpdateDeviceProfileRequest>,
@@ -822,15 +949,26 @@ pub mod test {
         // create dp vendor
         let dp_vendor = device_profile::upsert_vendor(device_profile::Vendor {
             name: "test-vendor".into(),
+            vendor_id: 123,
             ..Default::default()
         })
         .await
         .unwrap();
 
         // create dp device
-        let _dp_device = device_profile::upsert_device(device_profile::Device {
+        let dp_device = device_profile::upsert_device(device_profile::Device {
             name: "test-device".into(),
             vendor_id: dp_vendor.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // create
+        let dp_vendor = device_profile::create(device_profile::DeviceProfile {
+            name: "test-vendor-dp".into(),
+            device_id: Some(dp_device.id),
+            vendor_profile_id: 456,
             ..Default::default()
         })
         .await
@@ -885,6 +1023,20 @@ pub mod test {
                 ..Default::default()
             }),
             get_resp.get_ref().device_profile
+        );
+
+        // get_by_profile_id
+        let get_req = get_request(
+            &u.id,
+            api::GetDeviceProfileByProfileIdRequest {
+                vendor_id: 123,
+                vendor_profile_id: 456,
+            },
+        );
+        let get_resp = service.get_by_profile_id(get_req).await.unwrap();
+        assert_eq!(
+            dp_vendor.id.to_string(),
+            get_resp.get_ref().device_profile.clone().unwrap().id
         );
 
         // update

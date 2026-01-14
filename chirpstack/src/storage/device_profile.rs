@@ -257,6 +257,41 @@ pub async fn get(id: &Uuid) -> Result<DeviceProfile, Error> {
     Ok(dp)
 }
 
+pub async fn get_by_profile_id(
+    vendor_id: i32,
+    vendor_profile_id: i32,
+) -> Result<DeviceProfile, Error> {
+    let dp = device_profile::table
+        .inner_join(
+            device_profile_device::table.on(device_profile::device_id
+                .assume_not_null()
+                .eq(device_profile_device::id)),
+        )
+        .inner_join(
+            device_profile_vendor::table
+                .on(device_profile_device::vendor_id.eq(device_profile_vendor::id)),
+        )
+        .select(device_profile::all_columns)
+        .filter(
+            device_profile_vendor::vendor_id
+                .eq(&vendor_id)
+                .and(device_profile::vendor_profile_id.eq(&vendor_profile_id)),
+        )
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| {
+            Error::from_diesel(
+                e,
+                format!(
+                    "Vendor ID: {}, Vendor Profile ID: {}",
+                    vendor_id, vendor_profile_id
+                ),
+            )
+        })?;
+
+    Ok(dp)
+}
+
 pub async fn get_for_device_id_region_and_fw(
     device_id: Uuid,
     region: CommonName,
@@ -700,6 +735,7 @@ pub mod test {
         // create vendor
         let vendor = upsert_vendor(Vendor {
             name: "test-vendor".into(),
+            vendor_id: 123,
             ..Default::default()
         })
         .await
@@ -745,6 +781,7 @@ pub mod test {
         let vendor_dp = create(DeviceProfile {
             name: "vendor-dp".into(),
             device_id: Some(device.id),
+            vendor_profile_id: 456,
             ..Default::default()
         })
         .await
@@ -901,6 +938,11 @@ pub mod test {
                     .collect::<String>()
             );
         }
+
+        // get by vendor id and vendor profile id.
+        let dp = get_by_profile_id(123, 456).await.unwrap();
+        assert_eq!(vendor_dp.id, dp.id);
+        assert!(get_by_profile_id(456, 123).await.is_err());
 
         // delete
         delete(&dp.id).await.unwrap();

@@ -22,6 +22,8 @@ import type {
   GetDeviceProfileVendorResponse,
   DeleteDeviceProfileVendorRequest,
   DeleteDeviceProfileDeviceRequest,
+  GetDeviceProfileByProfileIdResponse,
+  GetDeviceProfileByProfileIdRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import SessionStore from "./SessionStore";
@@ -53,6 +55,20 @@ class DeviceProfileStore extends EventEmitter {
 
   get = (req: GetDeviceProfileRequest, callbackFunc: (resp: GetDeviceProfileResponse) => void) => {
     this.client.get(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
+  getByProfileId = (
+    req: GetDeviceProfileByProfileIdRequest,
+    callbackFunc: (resp: GetDeviceProfileByProfileIdResponse) => void,
+  ) => {
+    this.client.getByProfileId(req, SessionStore.getMetadata(), (err, resp) => {
       if (err !== null) {
         HandleError(err);
         return;
