@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from "react";
-
-import { notification, Input, Select, Button, Space, Form, Dropdown, Menu } from "antd";
+import { notification, Input, Button, Space, Form, Dropdown, Menu } from "antd";
 import { ReloadOutlined, CopyOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
 

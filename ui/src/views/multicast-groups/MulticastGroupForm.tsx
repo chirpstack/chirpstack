@@ -73,28 +73,9 @@ function MulticastGroupForm(props: IProps) {
       <Form.Item label="Multicast-group name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
         <Input disabled={props.disabled} />
       </Form.Item>
-      <DevAddrInput
-        label="Multicast address"
-        name="mcAddr"
-        value={props.initialValues.getMcAddr()}
-        devEui=""
-        disabled={props.disabled}
-        required
-      />
-      <AesKeyInput
-        label="Multicast network session key"
-        name="mcNwkSKey"
-        value={props.initialValues.getMcNwkSKey()}
-        disabled={props.disabled}
-        required
-      />
-      <AesKeyInput
-        label="Multicast application session key"
-        name="mcAppSKey"
-        value={props.initialValues.getMcAppSKey()}
-        disabled={props.disabled}
-        required
-      />
+      <DevAddrInput label="Multicast address" name="mcAddr" devEui="" disabled={props.disabled} required />
+      <AesKeyInput label="Multicast network session key" name="mcNwkSKey" disabled={props.disabled} required />
+      <AesKeyInput label="Multicast application session key" name="mcAppSKey" disabled={props.disabled} required />
       <Row gutter={24}>
         <Col span={8}>
           <Form.Item label="Region" name="region" rules={[{ required: true, message: "Please select a region!" }]}>
