@@ -78,7 +78,7 @@ pub fn get(region_config_id: &str) -> Result<Arc<Box<dyn region::Region + Sync +
         .get(region_config_id)
         .ok_or_else(|| {
             anyhow!(
-                "region_config_id {} does not exist in REGIONS",
+                "region_config_id '{}' does not exist in REGIONS",
                 region_config_id
             )
         })?

@@ -105,6 +105,11 @@ impl Data {
         trace!("Forwarding uplink for passive-roaming sessions");
 
         for ds in &self.pr_device_sessions {
+            let rf_region = self
+                .uplink_frame_set
+                .region_common_name
+                .to_string()
+                .replace('_', "-");
             let mut req = backend::XmitDataReqPayload {
                 phy_payload: self.uplink_frame_set.phy_payload.to_vec()?,
                 ul_meta_data: Some(backend::ULMetaData {
@@ -112,13 +117,12 @@ impl Data {
                     data_rate: Some(self.uplink_frame_set.dr),
                     ul_freq: Some((self.uplink_frame_set.tx_info.frequency as f64) / 1_000_000.0),
                     recv_time: helpers::get_rx_timestamp_chrono(&self.uplink_frame_set.rx_info_set),
-                    rf_region: self
-                        .uplink_frame_set
-                        .region_common_name
-                        .to_string()
-                        .replace('_', "-"),
+                    rf_region: rf_region.clone(),
                     gw_cnt: Some(self.uplink_frame_set.rx_info_set.len()),
-                    gw_info: roaming::rx_info_to_gw_info(&self.uplink_frame_set.rx_info_set)?,
+                    gw_info: roaming::rx_info_to_gw_info(
+                        &rf_region,
+                        &self.uplink_frame_set.rx_info_set,
+                    )?,
                     ..Default::default()
                 }),
                 ..Default::default()
@@ -159,6 +163,11 @@ impl Data {
         net_id: NetID,
     ) -> Result<internal::PassiveRoamingDeviceSession> {
         info!(net_id = %net_id, dev_addr = %self.mac_payload.fhdr.devaddr, "Starting passive-roaming session");
+        let rf_region = self
+            .uplink_frame_set
+            .region_common_name
+            .to_string()
+            .replace('_', "-");
 
         let mut pr_req = backend::PRStartReqPayload {
             phy_payload: self.uplink_frame_set.phy_payload.to_vec()?,
@@ -166,13 +175,12 @@ impl Data {
                 ul_freq: Some((self.uplink_frame_set.tx_info.frequency as f64) / 1_000_000.0),
                 data_rate: Some(self.uplink_frame_set.dr),
                 recv_time: helpers::get_rx_timestamp_chrono(&self.uplink_frame_set.rx_info_set),
-                rf_region: self
-                    .uplink_frame_set
-                    .region_common_name
-                    .to_string()
-                    .replace('_', "-"),
+                rf_region: rf_region.clone(),
                 gw_cnt: Some(self.uplink_frame_set.rx_info_set.len()),
-                gw_info: roaming::rx_info_to_gw_info(&self.uplink_frame_set.rx_info_set)?,
+                gw_info: roaming::rx_info_to_gw_info(
+                    &rf_region,
+                    &self.uplink_frame_set.rx_info_set,
+                )?,
                 ..Default::default()
             },
             ..Default::default()

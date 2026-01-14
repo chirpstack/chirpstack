@@ -222,10 +222,18 @@ pub fn get_net_ids_for_dev_addr(dev_addr: DevAddr) -> Vec<NetID> {
     out
 }
 
-pub fn rx_info_to_gw_info(rx_info_set: &[gw::UplinkRxInfo]) -> Result<Vec<GWInfoElement>> {
+pub fn rx_info_to_gw_info(
+    rf_region: &str,
+    rx_info_set: &[gw::UplinkRxInfo],
+) -> Result<Vec<GWInfoElement>> {
     let mut out: Vec<GWInfoElement> = Vec::new();
 
     for rx_info in rx_info_set {
+        let mut rx_info = rx_info.clone();
+        rx_info
+            .metadata
+            .insert("rf_region".to_string(), rf_region.to_string());
+
         let gw_id = EUI64::from_str(&rx_info.gateway_id)?;
 
         out.push(GWInfoElement {
@@ -234,7 +242,7 @@ pub fn rx_info_to_gw_info(rx_info_set: &[gw::UplinkRxInfo]) -> Result<Vec<GWInfo
                 .fine_time_since_gps_epoch
                 .as_ref()
                 .map(|v| v.nanos as usize),
-            rf_region: "".to_string(),
+            rf_region: rf_region.to_string(),
             rssi: Some(rx_info.rssi as isize),
             snr: Some(rx_info.snr),
             lat: rx_info.location.as_ref().map(|v| v.latitude),
