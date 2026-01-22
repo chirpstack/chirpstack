@@ -1,6 +1,6 @@
 import { useNavigate, useParams, Link } from "react-router-dom";
 
-import { Space, Breadcrumb, Button, Card } from "antd";
+import { Space, Breadcrumb, Button, Card, Popconfirm } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
 import { GetDeviceProfileRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
@@ -10,13 +10,16 @@ import {
   GetDeviceProfileResponse,
   DeviceProfile,
   DeleteDeviceProfileRequest,
+  CreateDeviceProfileRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
+import type { CreateDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 
 import { useTitle } from "../helpers";
 import { useEffect, useState } from "react";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceProfileForm from "./DeviceProfileForm";
 import DeleteConfirm from "../../components/DeleteConfirm";
+import sessionStore from "../../stores/SessionStore";
 
 interface IProps {
   vendor: DeviceProfileVendor;
@@ -59,6 +62,20 @@ function ShowDeviceProfile(props: IProps) {
     return null;
   }
 
+  const copyDeviceProfile = () => {
+    const dp = deviceProfile.clone();
+    dp.setId("");
+    dp.setDeviceId("");
+    dp.setTenantId(sessionStore.getTenantId());
+
+    const req = new CreateDeviceProfileRequest();
+    req.setDeviceProfile(dp);
+
+    DeviceProfileStore.create(req, (resp: CreateDeviceProfileResponse) => {
+      navigate(`/tenants/${sessionStore.getTenantId()}/device-profiles/${resp.getId()}/edit`);
+    });
+  };
+
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
@@ -94,6 +111,14 @@ function ShowDeviceProfile(props: IProps) {
         )}
         title={deviceProfile.getName()}
         extra={[
+          <Popconfirm
+            placement="left"
+            title="Copy device profile"
+            description="This will copy the device profile to the selected tenant such that it can be modified. Would you like to proceed?"
+            onConfirm={copyDeviceProfile}
+          >
+            <Button type="primary">Copy device profile</Button>
+          </Popconfirm>,
           <DeleteConfirm typ="device profile" confirm={deviceProfile.getName()} onConfirm={deleteDeviceProfile}>
             <Button danger type="primary">
               Delete device profile
