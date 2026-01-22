@@ -192,7 +192,7 @@ service DeviceProfileService {
 
   // Get the device-profile device.
   rpc GetDevice(GetDeviceProfileDeviceRequest) returns (GetDeviceProfileDeviceResponse) {
-    option (google.api.http) = {get: "/api/device-profiles/{id}"};
+    option (google.api.http) = {get: "/api/device-profiles/devices/{id}"};
   }
 
   // Delete the given device-profile device.
