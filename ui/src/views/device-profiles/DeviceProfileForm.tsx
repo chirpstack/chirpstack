@@ -321,6 +321,7 @@ function DeviceProfileForm(props: IProps) {
                   <Select.Option value={RegParamsRevision.RP002_1_0_2}>RP002-1.0.2</Select.Option>
                   <Select.Option value={RegParamsRevision.RP002_1_0_3}>RP002-1.0.3</Select.Option>
                   <Select.Option value={RegParamsRevision.RP002_1_0_4}>RP002-1.0.4</Select.Option>
+                  <Select.Option value={RegParamsRevision.RP002_1_0_5}>RP002-1.0.5</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
