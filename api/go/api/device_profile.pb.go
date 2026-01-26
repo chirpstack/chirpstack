@@ -3292,7 +3292,7 @@ const file_api_device_profile_proto_rawDesc = "" +
 	"\n" +
 	"TS005_V100\x10\x01\x12\x0e\n" +
 	"\n" +
-	"TS005_V200\x10\x022\xd0\f\n" +
+	"TS005_V200\x10\x022\xd8\f\n" +
 	"\x14DeviceProfileService\x12l\n" +
 	"\x06Create\x12\x1f.api.CreateDeviceProfileRequest\x1a .api.CreateDeviceProfileResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/api/device-profiles\x12e\n" +
 	"\x03Get\x12\x1c.api.GetDeviceProfileRequest\x1a\x1d.api.GetDeviceProfileResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/device-profiles/{id}\x12\xa1\x01\n" +
@@ -3303,8 +3303,8 @@ const file_api_device_profile_proto_rawDesc = "" +
 	"\vListVendors\x12$.api.ListDeviceProfileVendorsRequest\x1a%.api.ListDeviceProfileVendorsResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/device-profiles/vendors\x12\x7f\n" +
 	"\tGetVendor\x12\".api.GetDeviceProfileVendorRequest\x1a#.api.GetDeviceProfileVendorResponse\")\x82\xd3\xe4\x93\x02#\x12!/api/device-profiles/vendors/{id}\x12x\n" +
 	"\fDeleteVendor\x12%.api.DeleteDeviceProfileVendorRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#*!/api/device-profiles/vendors/{id}\x12\x80\x01\n" +
-	"\vListDevices\x12$.api.ListDeviceProfileDevicesRequest\x1a%.api.ListDeviceProfileDevicesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/device-profiles/devices\x12w\n" +
-	"\tGetDevice\x12\".api.GetDeviceProfileDeviceRequest\x1a#.api.GetDeviceProfileDeviceResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/api/device-profiles/{id}\x12x\n" +
+	"\vListDevices\x12$.api.ListDeviceProfileDevicesRequest\x1a%.api.ListDeviceProfileDevicesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/device-profiles/devices\x12\x7f\n" +
+	"\tGetDevice\x12\".api.GetDeviceProfileDeviceRequest\x1a#.api.GetDeviceProfileDeviceResponse\")\x82\xd3\xe4\x93\x02#\x12!/api/device-profiles/devices/{id}\x12x\n" +
 	"\fDeleteDevice\x12%.api.DeleteDeviceProfileDeviceRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#*!/api/device-profiles/devices/{id}\x12\x85\x01\n" +
 	"\x11ListAdrAlgorithms\x12\x16.google.protobuf.Empty\x1a+.api.ListDeviceProfileAdrAlgorithmsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/api/device-profiles/adr-algorithmsB\x98\x01\n" +
 	"\x11io.chirpstack.apiB\x12DeviceProfileProtoP\x01Z.github.com/chirpstack/chirpstack/api/go/v4/api\xaa\x02\x0eChirpstack.Api\xca\x02\x0eChirpstack\\Api\xe2\x02\x1aGPBMetadata\\Chirpstack\\Apib\x06proto3"
