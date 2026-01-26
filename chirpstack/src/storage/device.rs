@@ -579,7 +579,7 @@ pub async fn get_for_phypayload(
                 )
                 .context("Validate MIC")?;
 
-            if mic_ok && full_f_cnt >= d.f_cnt_up as u32 {
+            if mic_ok {
                 return Ok(d.clone());
             }
 
