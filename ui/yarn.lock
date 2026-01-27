@@ -130,7 +130,7 @@
   version "4.16.1"
   dependencies:
     "@types/google-protobuf" "^3.15.12"
-    google-protobuf "^4.0.1"
+    google-protobuf "^3.21.4"
     grpc-web "^2.0.2"
 
 "@ctrl/tinycolor@^3.4.0":
@@ -1539,10 +1539,10 @@ google-palette@^1.1.1:
   resolved "https://registry.yarnpkg.com/google-palette/-/google-palette-1.1.1.tgz#671b3b932c8393271b67da908ccd7f2c48e84cc7"
   integrity sha512-yZiM5oLl8lCZzf06IMOGdDkxqvCMd9HNFcCiOMqWgGGiGzC22vWBVhKJNvykXXbeC0NAElNH97jA/y0bq6TCrA==
 
-google-protobuf@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-4.0.1.tgz#9e5935307ead0e32714e33f33a3caac9bd9b49b4"
-  integrity sha512-0I4mx3UtAwpcc8l9Ds5gHcwV2FyPdwvxxBcor8LusE4b6PjoFxEngZRBepjvuQ4B0eZ2iu/Vezh8oRsnpJ9UGA==
+google-protobuf@^3.21.4:
+  version "3.21.4"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.21.4.tgz#2f933e8b6e5e9f8edde66b7be0024b68f77da6c9"
+  integrity sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==
 
 graphemer@^1.4.0:
   version "1.4.0"

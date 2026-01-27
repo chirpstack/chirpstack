@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@types/google-protobuf": "^3.15.12",
-    "google-protobuf": "^4.0.1",
+    "google-protobuf": "^3.21.4",
     "grpc-web": "^2.0.2"
   }
 }
