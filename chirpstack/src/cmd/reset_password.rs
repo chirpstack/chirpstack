@@ -1,7 +1,6 @@
 use anyhow::{Context, Result};
 use tracing::info;
 
-use crate::config;
 use crate::storage::user;
 
 /// Reset a user's password from the command-line.
@@ -21,9 +20,6 @@ pub async fn run(email: &str, password_file: &Option<String>, stdin: bool) -> Re
 
     // Validate password strength (NIST 800-63b guidelines)
     validate_password_strength(&password)?;
-
-    // Load configuration
-    let _conf = config::get();
 
     // Setup database connection
     crate::storage::setup()
@@ -51,13 +47,17 @@ fn get_password(password_file: &Option<String>, stdin: bool) -> Result<String> {
 
     // File input - only trim trailing newlines that commonly come from echo/file writes
     if let Some(path) = password_file {
-        if path != "-" {
-            let pw =
-                std::fs::read_to_string(path.as_str()).context("Failed to read password file")?;
-            // Trim only trailing newline/carriage return (common when echo "pass" > file)
-            let trimmed = pw.trim_end_matches(&['\n', '\r'][..]);
-            return Ok(trimmed.to_string());
+        if path == "-" {
+            // Read from stdin when "-" is specified
+            let input =
+                rpassword::read_password().context("Failed to read password from stdin")?;
+            return Ok(input);
         }
+        let pw =
+            std::fs::read_to_string(path.as_str()).context("Failed to read password file")?;
+        // Trim only trailing newline/carriage return (common when echo "pass" > file)
+        let trimmed = pw.trim_end_matches(&['\n', '\r'][..]);
+        return Ok(trimmed.to_string());
     }
 
     // Interactive prompt

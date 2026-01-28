@@ -148,12 +148,16 @@ pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
     Ok(u)
 }
 
+/// Number of PBKDF2 iterations for password hashing.
+/// Matches the API default for consistent security across all password operations.
+const PASSWORD_HASH_ITERATIONS: u32 = 10_000;
+
 /// Reset a user's password by email address.
 ///
 /// This function is intended for CLI use where API authentication is not available.
 /// It allows emergency password recovery without verifying the current password.
 pub async fn reset_password_by_email(email: &str, new_password: &str) -> Result<User, Error> {
-    let hash = hash_password(new_password, 1)?;
+    let hash = hash_password(new_password, PASSWORD_HASH_ITERATIONS)?;
 
     let u: User = diesel::update(user::dsl::user.filter(user::dsl::email.eq(email)))
         .set(user::password_hash.eq(&hash))
