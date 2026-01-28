@@ -148,6 +148,23 @@ pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
     Ok(u)
 }
 
+/// Reset a user's password by email address.
+///
+/// This function is intended for CLI use where API authentication is not available.
+/// It allows emergency password recovery without verifying the current password.
+pub async fn reset_password_by_email(email: &str, new_password: &str) -> Result<User, Error> {
+    let hash = hash_password(new_password, 1)?;
+
+    let u: User = diesel::update(user::dsl::user.filter(user::dsl::email.eq(email)))
+        .set(user::password_hash.eq(&hash))
+        .get_result(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, email.to_string()))?;
+
+    info!(email = %email, "Password reset via CLI");
+    Ok(u)
+}
+
 pub async fn delete(id: &Uuid) -> Result<(), Error> {
     let ra = diesel::delete(user::dsl::user.find(&fields::Uuid::from(id)))
         .execute(&mut get_async_db_conn().await?)
@@ -274,5 +291,49 @@ pub mod test {
         // delete
         delete(&user.id).await.unwrap();
         assert!(delete(&user.id).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_reset_password_by_email() {
+        let _guard = test::prepare().await;
+
+        // Create user with initial password
+        let mut user = User {
+            email: "reset@example.com".into(),
+            is_admin: true,
+            is_active: true,
+            ..Default::default()
+        };
+        user.set_password_hash("initialpassword", 1).unwrap();
+        user = create(user).await.unwrap();
+
+        // Verify old password works
+        assert!(
+            get_by_email_and_pw("reset@example.com", "initialpassword")
+                .await
+                .is_ok()
+        );
+
+        // Reset password via CLI method
+        reset_password_by_email("reset@example.com", "newpassword123")
+            .await
+            .unwrap();
+
+        // Verify old password no longer works
+        assert!(
+            get_by_email_and_pw("reset@example.com", "initialpassword")
+                .await
+                .is_err()
+        );
+
+        // Verify new password works
+        assert!(
+            get_by_email_and_pw("reset@example.com", "newpassword123")
+                .await
+                .is_ok()
+        );
+
+        // Cleanup
+        delete(&user.id).await.unwrap();
     }
 }

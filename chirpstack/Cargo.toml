@@ -133,6 +133,7 @@
   scoped-futures.workspace = true
   signal-hook.workspace = true
   signal-hook-tokio.workspace = true
+  rpassword.workspace = true
 
 # Development and testing
 [dev-dependencies]
