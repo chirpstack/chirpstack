@@ -78,6 +78,21 @@ enum Commands {
         name: String,
     },
 
+    /// Reset user password.
+    ResetPassword {
+        /// User email address.
+        #[arg(short, long, value_name = "EMAIL")]
+        email: String,
+
+        /// Path to file containing the new password (use "-" for stdin).
+        #[arg(short, long, value_name = "FILE")]
+        password_file: Option<String>,
+
+        /// Read password from stdin.
+        #[arg(long)]
+        stdin: bool,
+    },
+
     /// Migrate device-sessions from Redis to PostgreSQL.
     MigrateDeviceSessionsToPostgres {},
 
@@ -124,6 +139,11 @@ async fn main() -> Result<()> {
                 .unwrap()
         }
         Some(Commands::CreateApiKey { name }) => cmd::create_api_key::run(name).await?,
+        Some(Commands::ResetPassword {
+            email,
+            password_file,
+            stdin,
+        }) => cmd::reset_password::run(email, password_file, *stdin).await?,
         Some(Commands::MigrateDeviceSessionsToPostgres {}) => cmd::migrate_ds_to_pg::run().await?,
         Some(Commands::MigrateDeviceProfileTemplates {}) => {
             cmd::migrate_device_profile_templates::run().await?
