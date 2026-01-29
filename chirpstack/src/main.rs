@@ -87,10 +87,6 @@ enum Commands {
         /// Path to file containing the new password (use "-" for stdin).
         #[arg(short, long, value_name = "FILE")]
         password_file: Option<String>,
-
-        /// Read password from stdin.
-        #[arg(long)]
-        stdin: bool,
     },
 
     /// Migrate device-sessions from Redis to PostgreSQL.
@@ -142,8 +138,7 @@ async fn main() -> Result<()> {
         Some(Commands::ResetPassword {
             email,
             password_file,
-            stdin,
-        }) => cmd::reset_password::run(email, password_file, *stdin).await?,
+        }) => cmd::reset_password::run(email, password_file).await?,
         Some(Commands::MigrateDeviceSessionsToPostgres {}) => cmd::migrate_ds_to_pg::run().await?,
         Some(Commands::MigrateDeviceProfileTemplates {}) => {
             cmd::migrate_device_profile_templates::run().await?

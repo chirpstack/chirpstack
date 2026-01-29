@@ -148,6 +148,27 @@ pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
     Ok(u)
 }
 
+/// Validate password against security requirements.
+///
+/// Follows NIST 800-63b guidelines:
+/// - Minimum 8 characters
+/// - No complexity requirements (users choose better passwords)
+/// - Maximum length to prevent DoS attacks
+pub fn validate_password_strength(password: &str) -> Result<()> {
+    if password.len() < 8 {
+        anyhow::bail!("Password must be at least 8 characters");
+    }
+
+    // NIST guidelines suggest NOT requiring special characters,
+    // uppercase, lowercase, numbers, etc. as this leads to weaker passwords.
+    // However, a maximum length prevents DoS attacks.
+    if password.len() > 128 {
+        anyhow::bail!("Password must not exceed 128 characters");
+    }
+
+    Ok(())
+}
+
 /// Number of PBKDF2 iterations for password hashing.
 /// Matches the API default for consistent security across all password operations.
 const PASSWORD_HASH_ITERATIONS: u32 = 10_000;
@@ -165,7 +186,7 @@ pub async fn reset_password_by_email(email: &str, new_password: &str) -> Result<
         .await
         .map_err(|e| Error::from_diesel(e, email.to_string()))?;
 
-    info!(email = %email, "Password reset via CLI");
+    info!(email = %email, "Password reset");
     Ok(u)
 }
 
