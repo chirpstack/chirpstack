@@ -34,19 +34,11 @@ function CreateAdminApiKey() {
       <PageHeader
         title="Add API key"
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to="/api-keys">API keys</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Add</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb items={[
+            { title: "Network Server" },
+            { title: <Link to="/api-keys">API keys</Link> },
+            { title: "Add" }
+          ]} />
         )}
       />
       <Card>

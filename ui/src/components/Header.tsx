@@ -142,8 +142,8 @@ function Header({ user }: { user: User }) {
       <div className="actions">
         <div className="search">
           <AutoComplete
-            dropdownClassName="search-dropdown"
-            dropdownMatchSelectWidth={500}
+            popupClassName="search-dropdown"
+            popupMatchSelectWidth={500}
             options={options}
             onSearch={onSearch}
           >

@@ -243,14 +243,10 @@ function Dashboard() {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Dashboard</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb items={[
+            { title: "Network Server" },
+            { title: "Dashboard" }
+          ]} />
         )}
         title="Dashboard"
       />
