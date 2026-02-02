@@ -15,6 +15,7 @@ const renderTitle = (title: string) => <span>{title}</span>;
 
 const renderItem = (title: string, url: string) => ({
   value: title,
+  url,
   label: <Link to={url}>{title}</Link>,
 });
 
@@ -42,6 +43,13 @@ function Header({ user }: { user: User }) {
     InternalStore.globalSearch(req, (resp: GlobalSearchResponse) => {
       setSearchResult(resp);
     });
+  };
+
+  // this type assertion is needed because of a bug in antd's AutoComplete typings
+  const onSelect = (_: unknown, _option: (typeof options)[number]) => {
+      const option = _option as unknown as ReturnType<typeof renderItem>;
+      
+      navigate(option.url);
   };
 
   const onLogout = () => {
@@ -142,10 +150,11 @@ function Header({ user }: { user: User }) {
       <div className="actions">
         <div className="search">
           <AutoComplete
-            popupClassName="search-dropdown"
+            classNames={{ popup: { root: "search-dropdown" } }}
             popupMatchSelectWidth={500}
             options={options}
             onSearch={onSearch}
+            onSelect={onSelect}
           >
             <Input.Search placeholder="Search..." style={{ width: 500, marginTop: -5 }} />
           </AutoComplete>
