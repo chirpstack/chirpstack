@@ -109,7 +109,6 @@ function DeviceForm(props: IProps) {
       <Modal
         title="Scan QR-code"
         open={showScanner}
-        onClose={() => setShowScanner(false)}
         onCancel={() => setShowScanner(false)}
         okButtonProps={{ style: { display: "none" } }}
       >

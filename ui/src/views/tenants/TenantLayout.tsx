@@ -38,14 +38,10 @@ function TenantLayout({ tenant }: { tenant: Tenant }) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{tenant.getName()}</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb items={[
+            { title: "Tenants" },
+            { title: tenant.getName() }
+          ]} />
         )}
         title={tenant.getName()}
         subTitle={`tenant id: ${tenant.getId()}`}
