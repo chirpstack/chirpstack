@@ -84,6 +84,7 @@ pub struct MulticastGroupListItem {
 pub struct Filters {
     pub application_id: Option<Uuid>,
     pub search: Option<String>,
+    pub dev_eui: Option<EUI64>,
 }
 
 #[derive(Clone, Queryable, QueryableByName, Insertable, AsChangeset, Debug, PartialEq, Eq)]
@@ -197,6 +198,16 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         q = q.filter(multicast_group::dsl::application_id.eq(fields::Uuid::from(application_id)));
     }
 
+    if let Some(dev_eui) = &filters.dev_eui {
+        q = q.filter(
+            multicast_group::dsl::id.eq_any(
+                multicast_group_device::dsl::multicast_group_device
+                    .select(multicast_group_device::dsl::multicast_group_id)
+                    .filter(multicast_group_device::dsl::dev_eui.eq(dev_eui)),
+            ),
+        );
+    }
+
     if let Some(search) = &filters.search {
         #[cfg(feature = "postgres")]
         {
@@ -231,6 +242,16 @@ pub async fn list(
 
     if let Some(application_id) = &filters.application_id {
         q = q.filter(multicast_group::dsl::application_id.eq(fields::Uuid::from(application_id)));
+    }
+
+    if let Some(dev_eui) = &filters.dev_eui {
+        q = q.filter(
+            multicast_group::dsl::id.eq_any(
+                multicast_group_device::dsl::multicast_group_device
+                    .select(multicast_group_device::dsl::multicast_group_id)
+                    .filter(multicast_group_device::dsl::dev_eui.eq(dev_eui)),
+            ),
+        );
     }
 
     if let Some(search) = &filters.search {
@@ -752,9 +773,34 @@ pub mod test {
         .await
         .unwrap();
 
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: t.id,
+            name: "test-dp".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d = device::create(device::Device {
+            application_id: app.id,
+            device_profile_id: dp.id,
+            name: "test-device".into(),
+            dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
         // get
         let mg_get = get(&mg.id.into()).await.unwrap();
         assert_eq!(mg, mg_get);
+
+        // add device
+        add_device(&mg.id.into(), &d.dev_eui).await.unwrap();
+
+        // get group deveuis
+        let dev_euis = get_dev_euis(&mg.id.into()).await.unwrap();
+        assert_eq!(vec![d.dev_eui], dev_euis);
 
         // update
         mg.name = "test-mg-updated".into();
@@ -769,6 +815,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     application_id: None,
+                    dev_eui: None,
                     search: None,
                 },
                 groups: vec![&mg],
@@ -779,6 +826,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     application_id: None,
+                    dev_eui: None,
                     search: Some("teest".into()),
                 },
                 groups: vec![],
@@ -789,6 +837,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     application_id: None,
+                    dev_eui: None,
                     search: Some("upd".into()),
                 },
                 groups: vec![&mg],
@@ -799,6 +848,7 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     application_id: Some(app.id.into()),
+                    dev_eui: None,
                     search: None,
                 },
                 groups: vec![&mg],
@@ -809,10 +859,33 @@ pub mod test {
             FilterTest {
                 filters: Filters {
                     application_id: Some(Uuid::new_v4()),
+                    dev_eui: None,
                     search: None,
                 },
                 groups: vec![],
                 count: 0,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    application_id: None,
+                    dev_eui: Some(EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1])),
+                    search: None,
+                },
+                groups: vec![],
+                count: 0,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    application_id: None,
+                    dev_eui: Some(d.dev_eui.into()),
+                    search: None,
+                },
+                groups: vec![&mg],
+                count: 1,
                 limit: 10,
                 offset: 0,
             },
