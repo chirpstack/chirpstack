@@ -29,7 +29,6 @@ create index idx_device_profile_device_name_trgm on device_profile_device (name)
 -- We can not alter the tenant_id column to drop the 'not null'.
 -- Therefore, we create a new table where tenant_id is nullable and then copy 
 -- over the data.
-pragma foreign_keys = off;
 create table device_profile_new (
   id text not null primary key,
   tenant_id text null references tenant on delete cascade,
@@ -64,7 +63,6 @@ create table device_profile_new (
 insert into device_profile_new select * from device_profile;
 drop table device_profile;
 alter table device_profile_new rename to device_profile;
-pragma foreign_keys = on;
 
 alter table device_profile
   add column device_id text null references device_profile_device on delete cascade;
