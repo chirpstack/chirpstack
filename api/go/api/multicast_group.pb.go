@@ -677,6 +677,8 @@ type ListMulticastGroupsRequest struct {
 	Search string `protobuf:"bytes,3,opt,name=search,proto3" json:"search,omitempty"`
 	// Application ID to list the multicast groups for.
 	ApplicationId string `protobuf:"bytes,4,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	// Device EUI (optional, HEX encoded EUI64).
+	DevEui        string `protobuf:"bytes,5,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -735,6 +737,13 @@ func (x *ListMulticastGroupsRequest) GetSearch() string {
 func (x *ListMulticastGroupsRequest) GetApplicationId() string {
 	if x != nil {
 		return x.ApplicationId
+	}
+	return ""
+}
+
+func (x *ListMulticastGroupsRequest) GetDevEui() string {
+	if x != nil {
+		return x.DevEui
 	}
 	return ""
 }
@@ -1362,12 +1371,13 @@ const file_api_multicast_group_proto_rawDesc = "" +
 	"\x1bUpdateMulticastGroupRequest\x12<\n" +
 	"\x0fmulticast_group\x18\x01 \x01(\v2\x13.api.MulticastGroupR\x0emulticastGroup\"-\n" +
 	"\x1bDeleteMulticastGroupRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x89\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xa2\x01\n" +
 	"\x1aListMulticastGroupsRequest\x12\x14\n" +
 	"\x05limit\x18\x01 \x01(\rR\x05limit\x12\x16\n" +
 	"\x06offset\x18\x02 \x01(\rR\x06offset\x12\x16\n" +
 	"\x06search\x18\x03 \x01(\tR\x06search\x12%\n" +
-	"\x0eapplication_id\x18\x04 \x01(\tR\rapplicationId\"s\n" +
+	"\x0eapplication_id\x18\x04 \x01(\tR\rapplicationId\x12\x17\n" +
+	"\adev_eui\x18\x05 \x01(\tR\x06devEui\"s\n" +
 	"\x1bListMulticastGroupsResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
 	"totalCount\x123\n" +
