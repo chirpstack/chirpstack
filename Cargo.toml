@@ -133,7 +133,7 @@
     validator = { version = "0.20", features = ["derive"] }
     aws-sign-v4 = "0.3"
     gcp_auth = "0.12"
-    rust-embed = "8.8"
+    rust-embed = "8.11"
     mime_guess = "2.0"
     rquickjs = { version = "0.11", features = [
       "bindgen",
