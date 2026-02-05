@@ -13,15 +13,11 @@ use crate::storage::{tenant, user};
 
 pub struct User {
     validator: validator::RequestValidator,
-    pw_hash_iterations: u32,
 }
 
 impl User {
     pub fn new(validator: validator::RequestValidator) -> Self {
-        User {
-            validator,
-            pw_hash_iterations: 10_000,
-        }
+        User { validator }
     }
 }
 
@@ -54,8 +50,7 @@ impl UserService for User {
             ..Default::default()
         };
 
-        u.set_password_hash(&req.password, self.pw_hash_iterations)
-            .map_err(|e| e.status())?;
+        u.set_password_hash(&req.password).map_err(|e| e.status())?;
 
         u = user::create(u).await.map_err(|e| e.status())?;
 
@@ -238,8 +233,7 @@ impl UserService for User {
 
         // set password
         u.updated_at = Utc::now();
-        u.set_password_hash(&req.password, self.pw_hash_iterations)
-            .map_err(|e| e.status())?;
+        u.set_password_hash(&req.password).map_err(|e| e.status())?;
 
         // update
         let _ = user::set_password_hash(&u.id, &u.password_hash)
@@ -280,7 +274,7 @@ pub mod test {
 
         // create
         let create_req = api::CreateUserRequest {
-            password: "secret".into(),
+            password: "VerySecret123!".into(),
             tenants: vec![],
             user: Some(api::User {
                 is_admin: true,

@@ -14,6 +14,9 @@ use super::error::Error;
 use super::schema::user;
 use super::{fields, get_async_db_conn};
 
+/// Number of PBKDF2 iterations for password hashing.
+const PASSWORD_HASH_ITERATIONS: u32 = 10_000;
+
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone, Validate)]
 #[diesel(table_name = user)]
 pub struct User {
@@ -50,8 +53,9 @@ impl Default for User {
 }
 
 impl User {
-    pub fn set_password_hash(&mut self, pw: &str, rounds: u32) -> Result<(), Error> {
-        self.password_hash = hash_password(pw, rounds)?;
+    pub fn set_password_hash(&mut self, pw: &str) -> Result<(), Error> {
+        validate_password_strength(pw)?;
+        self.password_hash = hash_password(pw, PASSWORD_HASH_ITERATIONS)?;
         Ok(())
     }
 }
@@ -144,7 +148,44 @@ pub async fn set_password_hash(id: &Uuid, hash: &str) -> Result<User, Error> {
         .get_result(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, id.to_string()))?;
-    info!(id = %id, "Password set");
+    info!(id = %id, "User password has been updated");
+    Ok(u)
+}
+
+// Validate password against security requirements.
+//
+// Follows NIST 800-63b guidelines:
+// - Minimum 8 characters
+// - No complexity requirements (users choose better passwords)
+// - Maximum length to prevent DoS attacks
+fn validate_password_strength(password: &str) -> Result<(), Error> {
+    if password.len() < 8 {
+        return Err(Error::PasswordTooShort);
+    }
+
+    // NIST guidelines suggest NOT requiring special characters,
+    // uppercase, lowercase, numbers, etc. as this leads to weaker passwords.
+    // However, a maximum length prevents DoS attacks.
+    if password.len() > 128 {
+        return Err(Error::PasswordTooLong);
+    }
+
+    Ok(())
+}
+
+// Set password by user e-mail.
+pub async fn set_password_by_email(email: &str, new_password: &str) -> Result<User, Error> {
+    validate_password_strength(new_password)?;
+
+    let hash = hash_password(new_password, PASSWORD_HASH_ITERATIONS)?;
+
+    let u: User = diesel::update(user::dsl::user.filter(user::dsl::email.eq(email)))
+        .set(user::password_hash.eq(&hash))
+        .get_result(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, email.to_string()))?;
+
+    info!(email = %email, "User password has been updated");
     Ok(u)
 }
 
@@ -224,7 +265,7 @@ pub mod test {
             email_verified: true,
             ..Default::default()
         };
-        user.set_password_hash("password!", 1).unwrap();
+        user.set_password_hash("password!").unwrap();
         create(user).await.unwrap()
     }
 
@@ -274,5 +315,49 @@ pub mod test {
         // delete
         delete(&user.id).await.unwrap();
         assert!(delete(&user.id).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_reset_password_by_email() {
+        let _guard = test::prepare().await;
+
+        // Create user with initial password
+        let mut user = User {
+            email: "reset@example.com".into(),
+            is_admin: true,
+            is_active: true,
+            ..Default::default()
+        };
+        user.set_password_hash("initialpassword").unwrap();
+        user = create(user).await.unwrap();
+
+        // Verify old password works
+        assert!(
+            get_by_email_and_pw("reset@example.com", "initialpassword")
+                .await
+                .is_ok()
+        );
+
+        // Reset password via CLI method
+        set_password_by_email("reset@example.com", "newpassword123")
+            .await
+            .unwrap();
+
+        // Verify old password no longer works
+        assert!(
+            get_by_email_and_pw("reset@example.com", "initialpassword")
+                .await
+                .is_err()
+        );
+
+        // Verify new password works
+        assert!(
+            get_by_email_and_pw("reset@example.com", "newpassword123")
+                .await
+                .is_ok()
+        );
+
+        // Cleanup
+        delete(&user.id).await.unwrap();
     }
 }

@@ -5,3 +5,4 @@ pub mod migrate_device_profile_templates;
 pub mod migrate_ds_to_pg;
 pub mod print_ds;
 pub mod root;
+pub mod set_password;

@@ -25,13 +25,25 @@ function PasswordForm(props: IProps) {
 
   return (
     <Form layout="vertical" onFinish={onFinish} onFinishFailed={onFinishFailed}>
-      <Form.Item label="Password" name="password" rules={[{ required: true, message: "Please enter a password!" }]}>
+      <Form.Item
+        label="Password"
+        name="password"
+        rules={[
+          { required: true, message: "Please enter a password!" },
+          { min: 8, message: "The minimum length is 8" },
+          { max: 128, message: "The maximum length is 128" },
+        ]}
+      >
         <Input type="password" />
       </Form.Item>
       <Form.Item
         label="Confirm password"
         name="passwordConfirm"
-        rules={[{ required: true, message: "Please enter a password!" }]}
+        rules={[
+          { required: true, message: "Please enter a password!" },
+          { min: 8, message: "The minimum length is 8" },
+          { max: 128, message: "The maximum length is 128" },
+        ]}
       >
         <Input type="password" />
       </Form.Item>
