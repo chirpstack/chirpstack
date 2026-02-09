@@ -946,6 +946,12 @@ pub fn run() {
   #  # NetID of the roaming server.
   #  net_id="010203"
   #
+  #  # Secondary NetIDs.
+  #  #
+  #  # Additional NetIDs matching this roaming agreement.
+  #  secondary_net_ids=["010204", "010205"]
+  #
+  #
   #  # Async timeout (set to 0 to disable async interface).
   #  async_timeout="0s"
   #
@@ -956,7 +962,7 @@ pub fn run() {
   #  #
   #  # If set, the session-keys will be encrypted using the given KEK.
   #  passive_roaming_kek_label=""
-
+  #
   #  # Passive-roaming validate MIC.
   #  #
   #  # If set ChirpStack will validate the MIC (for non-stateless roaming
@@ -992,6 +998,11 @@ pub fn run() {
 
   [[roaming.servers]]
     net_id="{{ this.net_id }}"
+    secondary_net_ids=[
+      {{#each this.secondary_net_ids}}
+      "{{this}}",
+      {{/each}}
+    ]
     async_timeout="{{ this.async_timeout }}"
     passive_roaming_lifetime="{{ this.passive_roaming_lifetime }}"
     passive_roaming_kek_label="{{ this.passive_roaming_kek_label }}"

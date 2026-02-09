@@ -571,6 +571,7 @@ pub struct BackendInterfaces {
 #[serde(default)]
 pub struct RoamingServer {
     pub net_id: NetID,
+    pub secondary_net_ids: Vec<NetID>,
     #[serde(with = "humantime_serde")]
     pub async_timeout: Duration,
     #[serde(with = "humantime_serde")]
