@@ -1,6 +1,6 @@
 import { Route, Routes, Link, useNavigate, useLocation } from "react-router-dom";
 
-import { Space, Breadcrumb, Card, Button, Menu } from "antd";
+import { Space, Breadcrumb, Card, Button, Menu, MenuProps } from "antd";
 import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -92,6 +92,32 @@ function ApplicationLayout(props: IProps) {
     SessionStore.isTenantAdmin(tenant.getId()) ||
     SessionStore.isTenantDeviceAdmin(tenant.getId());
 
+  let menuItems: MenuProps["items"] = [
+    { key: "devices", label: <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}`}>Devices</Link> },
+    { key: "fuota", label: <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota`}>FUOTA</Link> },
+    {
+      key: "mg",
+      label: (
+        <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups`}>Multicast groups</Link>
+      ),
+    },
+    {
+      key: "relay",
+      label: <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/relays`}>Relays</Link>,
+    },
+    {
+      key: "edit",
+      label: <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/edit`}>Application configuration</Link>,
+    },
+  ];
+
+  if (showIntegrations) {
+    menuItems.push({
+      key: "integrations",
+      label: <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/integrations`}>Integrations</Link>,
+    });
+  }
+
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
@@ -127,29 +153,9 @@ function ApplicationLayout(props: IProps) {
           </Admin>,
         ]}
       />
+
       <Card>
-        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-          <Menu.Item key="devices">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}`}>Devices</Link>
-          </Menu.Item>
-          <Menu.Item key="fuota">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota`}>FUOTA</Link>
-          </Menu.Item>
-          <Menu.Item key="mg">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups`}>Multicast groups</Link>
-          </Menu.Item>
-          <Menu.Item key="relay">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/relays`}>Relays</Link>
-          </Menu.Item>
-          <Menu.Item key="edit">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/edit`}>Application configuration</Link>
-          </Menu.Item>
-          {showIntegrations && (
-            <Menu.Item key="integrations">
-              <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/integrations`}>Integrations</Link>
-            </Menu.Item>
-          )}
-        </Menu>
+        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }} items={menuItems}></Menu>
         <Routes>
           <Route path="/" element={<ListDevices application={app} />} />
           <Route path="/edit" element={<EditApplication application={app} />} />

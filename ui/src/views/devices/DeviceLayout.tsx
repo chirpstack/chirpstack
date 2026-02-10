@@ -165,45 +165,68 @@ function DeviceLayout(props: IProps) {
         ]}
       />
       <Card>
-        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-          <Menu.Item key="dashboard">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}`}>
-              Dashboard
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="edit">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/edit`}>
-              Configuration
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="keys" disabled={!dp.getSupportsOtaa()}>
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/keys`}>
-              OTAA keys
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="activation">
-            <Link
-              to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/activation`}
-            >
-              Activation
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="queue">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/queue`}>
-              Queue
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="events">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/events`}>
-              Events
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="frames">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/frames`}>
-              LoRaWAN frames
-            </Link>
-          </Menu.Item>
-        </Menu>
+        <Menu
+          mode="horizontal"
+          selectedKeys={[tab]}
+          style={{ marginBottom: 24 }}
+          items={[
+            {
+              key: "dashboard",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}`}>
+                  Dashboard
+                </Link>
+              ),
+            },
+            {
+              key: "edit",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/edit`}>
+                  Configuration
+                </Link>
+              ),
+            },
+            {
+              key: "keys",
+              disabled: !dp.getSupportsOtaa(),
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/keys`}>
+                  OTAA keys
+                </Link>
+              ),
+            },
+            {
+              key: "activation",
+              label: (
+                <Link
+                  to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/activation`}
+                >
+                  Activation
+                </Link>
+              ),
+            },
+            {
+              key: "events",
+              label: (
+                <Link
+                  to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/events`}
+                >
+                  Events
+                </Link>
+              ),
+            },
+            {
+              key: "frames",
+              label: (
+                <Link
+                  to={`/tenants/${tenant.getId()}/applications/${app.getId()}/devices/${device.getDevEui()}/frames`}
+                >
+                  LoRaWAN frames
+                </Link>
+              ),
+            },
+          ]}
+        />
         <Routes>
           <Route path="/" element={<DeviceDashboard device={device} lastSeenAt={lastSeenAt} deviceProfile={dp} />} />
           <Route path="/edit" element={<EditDevice device={device} application={app} tenant={tenant} />} />

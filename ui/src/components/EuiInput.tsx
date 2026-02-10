@@ -1,6 +1,7 @@
 import { notification, Input, Button, Space, Form, Dropdown, Menu } from "antd";
 import { ReloadOutlined, CopyOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
+import { MenuProps } from "antd/lib";
 
 interface IProps {
   label: string;
@@ -93,35 +94,27 @@ function EuiInput(props: IProps) {
     }
   };
 
-  const copyMenu = (
-    <Menu
-      items={[
-        {
-          key: "1",
-          label: (
-            <Button type="text" onClick={copyToClipboard}>
-              HEX string
-            </Button>
-          ),
-        },
-        {
-          key: "2",
-          label: (
-            <Button type="text" onClick={copyToClipboardHexArray}>
-              HEX array
-            </Button>
-          ),
-        },
-      ]}
-    />
-  );
+  const copyMenu: MenuProps = {
+    items: [
+      {
+        key: "1",
+        label: "HEX string",
+        onClick: copyToClipboard,
+      },
+      {
+        key: "2",
+        label: "HEX array",
+        onClick: copyToClipboardHexArray,
+      },
+    ],
+  };
 
   const addon = (
     <Space size="large">
       <Button type="text" size="small" onClick={generateRandom} disabled={props.disabled}>
         <ReloadOutlined />
       </Button>
-      <Dropdown overlay={copyMenu}>
+      <Dropdown menu={copyMenu}>
         <Button type="text" size="small">
           <CopyOutlined />
         </Button>

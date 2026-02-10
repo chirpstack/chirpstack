@@ -44,7 +44,8 @@ function CreateTenantApiKey(props: IProps) {
               { title: <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link> },
               { title: <Link to={`/tenants/${props.tenant.getId()}/api-keys`}>API Keys</Link> },
               { title: "Add" },
-            ]} />
+            ]}
+          />
         )}
         title="Add API key"
       />

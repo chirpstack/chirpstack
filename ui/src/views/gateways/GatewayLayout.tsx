@@ -116,22 +116,32 @@ function GatewayLayout(props: IProps) {
         ]}
       />
       <Card>
-        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-          <Menu.Item key="dashboard">
-            <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}`}>Dashboard</Link>
-          </Menu.Item>
-          <Menu.Item key="edit">
-            <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/edit`}>Configuration</Link>
-          </Menu.Item>
-          {isGatewayAdmin && (
-            <Menu.Item key="cert">
-              <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/certificate`}>TLS certificate</Link>
-            </Menu.Item>
-          )}
-          <Menu.Item key="frames">
-            <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/frames`}>LoRaWAN frames</Link>
-          </Menu.Item>
-        </Menu>
+        <Menu
+          mode="horizontal"
+          selectedKeys={[tab]}
+          style={{ marginBottom: 24 }}
+          items={[
+            {
+              key: "dashboard",
+              label: <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}`}>Dashboard</Link>,
+            },
+            {
+              key: "edit",
+              label: <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/edit`}>Configuration</Link>,
+            },
+            {
+              key: "cert",
+              disabled: !isGatewayAdmin,
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/certificate`}>TLS certificate</Link>
+              ),
+            },
+            {
+              key: "frames",
+              label: <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/frames`}>LoRaWAN frames</Link>,
+            },
+          ]}
+        />
         <Routes>
           <Route path="/" element={<GatewayDashboard gateway={gw} lastSeenAt={lastSeenAt} />} />
           <Route path="/edit" element={<EditGateway gateway={gw} />} />

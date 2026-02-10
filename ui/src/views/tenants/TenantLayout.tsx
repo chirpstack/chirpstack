@@ -37,12 +37,7 @@ function TenantLayout({ tenant }: { tenant: Tenant }) {
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
-        breadcrumbRender={() => (
-          <Breadcrumb items={[
-            { title: "Tenants" },
-            { title: tenant.getName() }
-          ]} />
-        )}
+        breadcrumbRender={() => <Breadcrumb items={[{ title: "Tenants" }, { title: tenant.getName() }]} />}
         title={tenant.getName()}
         subTitle={`tenant id: ${tenant.getId()}`}
         extra={[
@@ -57,14 +52,18 @@ function TenantLayout({ tenant }: { tenant: Tenant }) {
       />
 
       <Card>
-        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-          <Menu.Item key="dashboard">
-            <Link to={`/tenants/${tenant.getId()}`}>Dashboard</Link>
-          </Menu.Item>
-          <Menu.Item key="edit">
-            <Link to={`/tenants/${tenant.getId()}/edit`}>Configuration</Link>
-          </Menu.Item>
-        </Menu>
+        <Menu
+          mode="horizontal"
+          selectedKeys={[tab]}
+          style={{ marginBottom: 24 }}
+          items={[
+            { key: "dashboard", label: <Link to={`/tenants/${tenant.getId()}`}>Dashboard</Link> },
+            {
+              key: "edit",
+              label: <Link to={`/tenants/${tenant.getId()}/edit`}>Configuration</Link>,
+            },
+          ]}
+        />
         <Routes>
           <Route path="/" element={<TenantDashboard tenant={tenant} />} />
           <Route path="/edit" element={<EditTenant tenant={tenant} />} />

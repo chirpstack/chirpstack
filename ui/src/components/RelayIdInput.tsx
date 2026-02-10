@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { notification, Input, Select, Button, Space, Form, Dropdown, Menu } from "antd";
 import { ReloadOutlined, CopyOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
+import { MenuProps } from "antd/lib";
 
 interface IProps {
   label: string;
@@ -132,28 +133,12 @@ function RelayIdInput(props: IProps) {
     }
   };
 
-  const copyMenu = (
-    <Menu
-      items={[
-        {
-          key: "1",
-          label: (
-            <Button type="text" onClick={copyToClipboard}>
-              HEX string
-            </Button>
-          ),
-        },
-        {
-          key: "2",
-          label: (
-            <Button type="text" onClick={copyToClipboardHexArray}>
-              HEX array
-            </Button>
-          ),
-        },
-      ]}
-    />
-  );
+  const copyMenu: MenuProps = {
+    items: [
+      { key: "1", label: "HEX string", onClick: copyToClipboard },
+      { key: "2", label: "HEX array", onClick: copyToClipboardHexArray },
+    ],
+  };
 
   const addon = (
     <Space size="large">
@@ -164,7 +149,7 @@ function RelayIdInput(props: IProps) {
       <Button type="text" size="small" onClick={generateRandom}>
         <ReloadOutlined />
       </Button>
-      <Dropdown overlay={copyMenu}>
+      <Dropdown menu={copyMenu}>
         <Button type="text" size="small">
           <CopyOutlined />
         </Button>

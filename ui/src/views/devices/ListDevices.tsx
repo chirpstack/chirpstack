@@ -53,6 +53,7 @@ import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import FuotaStore from "../../stores/FuotaStore";
 import RelayStore from "../../stores/RelayStore";
 import Admin from "../../components/Admin";
+import { MenuProps } from "antd/lib";
 
 interface IProps {
   application: Application;
@@ -334,13 +335,13 @@ function ListDevices(props: IProps) {
     setFuotaModalVisible(false);
   };
 
-  const menu = (
-    <Menu>
-      <Menu.Item onClick={showMgModal}>Add to multicast-group</Menu.Item>
-      <Menu.Item onClick={() => setFuotaModalVisible(true)}>Add to FUOTA deployment</Menu.Item>
-      <Menu.Item onClick={showRelayModal}>Add to relay</Menu.Item>
-    </Menu>
-  );
+  const menu: MenuProps = {
+    items: [
+      { key: "1", label: "Add to multicast group", onClick: showMgModal },
+      { key: "2", label: "Add to FUOTA deployment", onClick: () => setFuotaModalVisible(true) },
+      { key: "3", label: "Add to relay", onClick: showRelayModal },
+    ],
+  };
 
   const mgOptions = multicastGroups.map(mg => <Select.Option value={mg.getId()}>{mg.getName()}</Select.Option>);
   const relayOptions = relays.map(r => <Select.Option value={r.getDevEui()}>{r.getName()}</Select.Option>);
@@ -404,7 +405,7 @@ function ListDevices(props: IProps) {
               Add device
             </Link>
           </Button>
-          <Dropdown placement="bottomRight" overlay={menu} trigger={["click"]} disabled={selectedRowIds.length === 0}>
+          <Dropdown placement="bottomRight" menu={menu} trigger={["click"]} disabled={selectedRowIds.length === 0}>
             <Button>Selected devices</Button>
           </Dropdown>
         </Space>

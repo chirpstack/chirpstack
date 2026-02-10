@@ -128,28 +128,49 @@ function MulticastGroupLayout(props: IProps) {
         ]}
       />
       <Card>
-        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-          <Menu.Item key="devices">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}`}>
-              Devices
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="gateways">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/gateways`}>
-              Gateways
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="edit">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/edit`}>
-              Configuration
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="queue">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/queue`}>
-              Queue
-            </Link>
-          </Menu.Item>
-        </Menu>
+        <Menu
+          mode="horizontal"
+          selectedKeys={[tab]}
+          style={{ marginBottom: 24 }}
+          items={[
+            {
+              key: "devices",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}`}>
+                  Devices
+                </Link>
+              ),
+            },
+            {
+              key: "gateways",
+              label: (
+                <Link
+                  to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/gateways`}
+                >
+                  Gateways
+                </Link>
+              ),
+            },
+            {
+              key: "edit",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/edit`}>
+                  Configuration
+                </Link>
+              ),
+            },
+            {
+              key: "queue",
+              label: (
+                <Link
+                  to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/queue`}
+                >
+                  Queue
+                </Link>
+              ),
+            },
+          ]}
+        />
         <Routes>
           <Route path="/" element={<ListMulticastGroupDevices multicastGroup={mg} />} />
           <Route path="/gateways" element={<ListMulticastGroupGateways multicastGroup={mg} application={app} />} />

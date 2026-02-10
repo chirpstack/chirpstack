@@ -68,7 +68,7 @@ function AutoComplete({ placeholder, className, value, getOption, getOptions, on
     <Select
       showSearch
       options={options}
-      onDropdownVisibleChange={onVisibleChange}
+      onOpenChange={onVisibleChange}
       onSearch={onSearch}
       onSelect={onSelectFn}
       filterOption={false}
