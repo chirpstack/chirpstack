@@ -101,22 +101,14 @@ function ListRelayGateways(props: IProps) {
       <PageHeader
         title="Relay Gateways"
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Gateway Mesh</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Relay Gateways</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Tenants" },
+              { title: <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link> },
+              { title: "Gateway Mesh" },
+              { title: "Relay Gateways" },
+            ]}
+          />
         )}
       />
       <DataTable columns={columns} getPage={getPage} rowKey="relayId" />

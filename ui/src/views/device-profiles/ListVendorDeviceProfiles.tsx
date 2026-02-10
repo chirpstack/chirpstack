@@ -151,27 +151,19 @@ function ListVendorDeviceProfiles(props: IProps) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Device Profiles</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/device-profiles/vendors`}>Vendors</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/device-profiles/vendors/${props.vendor.getId()}/devices`}>{props.vendor.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{props.device.getName()}</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Network Server" },
+              { title: "Device Profiles" },
+              { title: <Link to={`/device-profiles/vendors`}>Vendors</Link> },
+              {
+                title: (
+                  <Link to={`/device-profiles/vendors/${props.vendor.getId()}/devices`}>{props.vendor.getName()}</Link>
+                ),
+              },
+              { title: props.device.getName() },
+            ]}
+          />
         )}
         title={props.device.getName()}
         extra={[

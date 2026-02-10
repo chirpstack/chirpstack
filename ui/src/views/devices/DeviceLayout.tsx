@@ -121,36 +121,26 @@ function DeviceLayout(props: IProps) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications/${props.application.getId()}`}>
-                  {props.application.getName()}
-                </Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications/${props.application.getId()}`}>Devices</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{device.getName()}</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Tenants" },
+              { title: <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link> },
+              { title: <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link> },
+              {
+                title: (
+                  <Link to={`/tenants/${props.tenant.getId()}/applications/${props.application.getId()}`}>
+                    {props.application.getName()}
+                  </Link>
+                ),
+              },
+              {
+                title: (
+                  <Link to={`/tenants/${props.tenant.getId()}/applications/${props.application.getId()}`}>Devices</Link>
+                ),
+              },
+              { title: device.getName() },
+            ]}
+          />
         )}
         title={device.getName()}
         subTitle={`device eui: ${device.getDevEui()}`}

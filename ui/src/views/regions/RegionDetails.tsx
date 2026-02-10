@@ -36,19 +36,13 @@ function RegionDetails() {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to="/regions">Regions</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{region.getDescription()}</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Network Server" },
+              { title: <Link to="/regions">Regions</Link> },
+              { title: region.getDescription() },
+            ]}
+          />
         )}
         title={region.getDescription()}
         subTitle={`id: ${id}, common-name: ${getEnumName(Region, region.getRegion())}`}

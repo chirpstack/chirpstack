@@ -43,17 +43,7 @@ function ChangeUserPassword() {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Users</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{user.getEmail()}</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Change password</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb items={[{ title: "Users" }, { title: user.getEmail() }, { title: "Change password" }]} />
         )}
         title={user.getEmail()}
         subTitle={`user id: ${user.getId()}`}

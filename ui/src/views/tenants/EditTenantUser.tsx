@@ -65,24 +65,14 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${tenant.getId()}`}>{tenant.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${tenant.getId()}/users`}>Tenant users</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{tu.getEmail()}</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Tenants" },
+              { title: <Link to={`/tenants/${tenant.getId()}`}>{tenant.getName()}</Link> },
+              { title: <Link to={`/tenants/${tenant.getId()}/users`}>Tenant users</Link> },
+              { title: tu.getEmail() },
+            ]}
+          />
         )}
         title={tu.getEmail()}
         subTitle={`user id: ${tu.getUserId()}`}

@@ -51,17 +51,7 @@ function ListDeviceProfileVendors() {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Device Profiles</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Vendors</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb items={[{ title: "Network Server" }, { title: "Device Profiles" }, { title: "Vendors" }]} />
         )}
         title="Vendors"
         extra={[

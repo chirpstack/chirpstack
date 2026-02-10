@@ -57,19 +57,9 @@ function EditUser() {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to="/users">Users</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{user.getEmail()}</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[{ title: "Network Server" }, { title: <Link to="/users">Users</Link> }, { title: user.getEmail() }]}
+          />
         )}
         title={user.getEmail()}
         subTitle={`user id: ${user.getId()}`}
