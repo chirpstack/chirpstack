@@ -74,7 +74,7 @@ function ListUsers() {
         breadcrumbRender={() => <Breadcrumb items={[{ title: "Network Server" }, { title: "Users" }]} />}
         title="Users"
         extra={[
-          <Button type="primary">
+          <Button type="primary" key="add-user">
             <Link to="/users/create">Add user</Link>
           </Button>,
         ]}

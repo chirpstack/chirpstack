@@ -77,7 +77,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
         title={tu.getEmail()}
         subTitle={`user id: ${tu.getUserId()}`}
         extra={[
-          <Admin tenantId={tenant.getId()} isTenantAdmin>
+          <Admin tenantId={tenant.getId()} isTenantAdmin key="delete-tenant-user">
             <DeleteConfirm typ="tenant user" confirm={tu.getEmail()} onConfirm={deleteTenantUser}>
               <Button danger type="primary">
                 Delete tenant user

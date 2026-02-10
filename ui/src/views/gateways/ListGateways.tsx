@@ -300,7 +300,7 @@ function ListGateways(props: IProps) {
           />
         )}
         extra={[
-          <Admin tenantId={props.tenant.getId()} isGatewayAdmin>
+          <Admin tenantId={props.tenant.getId()} isGatewayAdmin key="add-gateway">
             <Space direction="horizontal" style={{ float: "right" }}>
               <Button type="primary">
                 <Link to={`/tenants/${props.tenant.getId()}/gateways/create`}>Add gateway</Link>

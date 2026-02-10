@@ -116,7 +116,7 @@ function ListTenants() {
         breadcrumbRender={() => <Breadcrumb items={[{ title: "Network Server" }, { title: "Tenants" }]} />}
         title="Tenants"
         extra={[
-          <Button type="primary">
+          <Button type="primary" key="add-tenants">
             <Link to="/tenants/create">Add tenant</Link>
           </Button>,
         ]}

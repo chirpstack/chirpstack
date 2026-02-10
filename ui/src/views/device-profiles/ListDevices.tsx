@@ -82,7 +82,7 @@ function ListDeviceProfileDevices(props: IProps) {
         )}
         title={props.vendor.getName()}
         extra={[
-          <Space>
+          <Space key="add-device-delete-vendor">
             <a href="https://github.com/chirpstack/chirpstack-device-profiles" target="_blank">
               <Button type="primary">Add device</Button>
             </a>

@@ -41,7 +41,7 @@ function TenantLayout({ tenant }: { tenant: Tenant }) {
         title={tenant.getName()}
         subTitle={`tenant id: ${tenant.getId()}`}
         extra={[
-          <Admin>
+          <Admin key="delete-tenant">
             <DeleteConfirm confirm={tenant.getName()} typ="tenant" onConfirm={deleteTenant}>
               <Button danger type="primary">
                 Delete tenant

@@ -152,7 +152,7 @@ function FuotaDeploymentLayout(props: IProps) {
         title={d.getName()}
         subTitle={`FUOTA deployment id: ${d.getId()}`}
         extra={[
-          <Admin tenantId={tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={tenant.getId()} isDeviceAdmin key="start-delete-fuota-deployment">
             <Space direction="horizontal" style={{ float: "right" }}>
               <Popconfirm
                 placement="left"

@@ -55,7 +55,7 @@ function ListDeviceProfileVendors() {
         )}
         title="Vendors"
         extra={[
-          <a href="https://github.com/chirpstack/chirpstack-device-profiles" target="_blank">
+          <a key="add-vendor" href="https://github.com/chirpstack/chirpstack-device-profiles" target="_blank">
             <Button type="primary">Add vendor</Button>
           </a>,
         ]}

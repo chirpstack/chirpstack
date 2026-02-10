@@ -97,7 +97,7 @@ function ListTenantApiKeys(props: IProps) {
         )}
         title="API keys"
         extra={[
-          <Admin tenantId={props.tenant.getId()} isTenantAdmin>
+          <Admin tenantId={props.tenant.getId()} isTenantAdmin key="add-api-key">
             <Button type="primary">
               <Link to={`/tenants/${props.tenant.getId()}/api-keys/create`}>Add API key</Link>
             </Button>

@@ -37,6 +37,7 @@ function ListRegions() {
         loading={regions === undefined}
         pagination={false}
         dataSource={items}
+        rowKey="id"
         columns={[
           {
             title: "ID",

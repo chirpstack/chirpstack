@@ -88,7 +88,7 @@ function EditDeviceProfile(props: IProps) {
         title={dp.getName()}
         subTitle={`device profile id: ${dp.getId()}`}
         extra={[
-          <Admin tenantId={props.tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={props.tenant.getId()} isDeviceAdmin key="delete-device-profile">
             <DeleteConfirm typ="device profile" confirm={dp.getName()} onConfirm={deleteDeviceProfile}>
               <Button danger type="primary">
                 Delete device profile

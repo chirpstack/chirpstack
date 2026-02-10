@@ -71,7 +71,7 @@ function ListApplications(props: IProps) {
         )}
         title="Applications"
         extra={[
-          <Admin tenantId={props.tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={props.tenant.getId()} isDeviceAdmin key="add-application">
             <Button type="primary">
               <Link to={`/tenants/${props.tenant.getId()}/applications/create`}>Add application</Link>
             </Button>

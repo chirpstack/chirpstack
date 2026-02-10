@@ -81,7 +81,7 @@ function ListAdminApiKeys() {
         breadcrumbRender={() => <Breadcrumb items={[{ title: "Network Server" }, { title: "API Keys" }]} />}
         title="API keys"
         extra={[
-          <Button type="primary">
+          <Button type="primary" key="add-api-key">
             <Link to="/api-keys/create">Add API key</Link>
           </Button>,
         ]}

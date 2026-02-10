@@ -136,7 +136,7 @@ function ListDeviceProfiles(props: IProps) {
         )}
         title="Device profiles"
         extra={[
-          <Admin tenantId={props.tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={props.tenant.getId()} isDeviceAdmin key="add-device-profile">
             <Button type="primary">
               <Link to={`/tenants/${props.tenant.getId()}/device-profiles/create`}>Add device profile</Link>
             </Button>

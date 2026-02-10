@@ -64,10 +64,10 @@ function EditUser() {
         title={user.getEmail()}
         subTitle={`user id: ${user.getId()}`}
         extra={[
-          <Button>
+          <Button key="change-password">
             <Link to={`/users/${user.getId()}/password`}>Change password</Link>
           </Button>,
-          <DeleteConfirm typ="user" confirm={user.getEmail()} onConfirm={deleteUser}>
+          <DeleteConfirm typ="user" confirm={user.getEmail()} onConfirm={deleteUser} key="delete-user">
             <Button danger type="primary">
               Delete user
             </Button>

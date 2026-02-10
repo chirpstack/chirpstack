@@ -96,7 +96,7 @@ function GatewayLayout(props: IProps) {
         title={gw.getName()}
         subTitle={`gateway id: ${gw.getGatewayId()}`}
         extra={[
-          <Admin tenantId={props.tenant.getId()} isGatewayAdmin>
+          <Admin tenantId={props.tenant.getId()} isGatewayAdmin key="delete-gateway">
             <DeleteConfirm confirm={gw.getName()} typ="gateway" onConfirm={deleteGateway}>
               <Button danger type="primary">
                 Delete gateway

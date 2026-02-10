@@ -145,7 +145,7 @@ function DeviceLayout(props: IProps) {
         title={device.getName()}
         subTitle={`device eui: ${device.getDevEui()}`}
         extra={[
-          <Admin tenantId={props.tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={props.tenant.getId()} isDeviceAdmin key="delete-device">
             <DeleteConfirm typ="device" confirm={device.getName()} onConfirm={deleteDevice}>
               <Button danger type="primary">
                 Delete device

@@ -98,7 +98,7 @@ function ListTenantUsers(props: IProps) {
         )}
         title="Tenant users"
         extra={[
-          <Admin tenantId={props.tenant.getId()} isTenantAdmin>
+          <Admin tenantId={props.tenant.getId()} isTenantAdmin key="add-tenant-user">
             <Button type="primary">
               <Link to={`/tenants/${props.tenant.getId()}/users/create`}>Add tenant user</Link>
             </Button>

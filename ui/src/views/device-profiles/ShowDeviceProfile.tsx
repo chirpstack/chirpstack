@@ -110,10 +110,16 @@ function ShowDeviceProfile(props: IProps) {
             title="Copy device profile"
             description="This will copy the device profile to the selected tenant such that it can be modified. Would you like to proceed?"
             onConfirm={copyDeviceProfile}
+            key="copy-device-profile"
           >
             <Button type="primary">Copy device profile</Button>
           </Popconfirm>,
-          <DeleteConfirm typ="device profile" confirm={deviceProfile.getName()} onConfirm={deleteDeviceProfile}>
+          <DeleteConfirm
+            typ="device profile"
+            confirm={deviceProfile.getName()}
+            onConfirm={deleteDeviceProfile}
+            key="delete-device-profile"
+          >
             <Button danger type="primary">
               Delete device profile
             </Button>

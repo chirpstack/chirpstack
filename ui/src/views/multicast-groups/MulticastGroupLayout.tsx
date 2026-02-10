@@ -108,7 +108,7 @@ function MulticastGroupLayout(props: IProps) {
         title={mg.getName()}
         subTitle={`multicast-group id: ${mg.getId()}`}
         extra={[
-          <Admin tenantId={tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={tenant.getId()} isDeviceAdmin key="delete-multicast-group">
             <DeleteConfirm typ="multicast-group" confirm={mg.getName()} onConfirm={deleteMulticastGroup}>
               <Button danger type="primary">
                 Delete multicast-group

@@ -171,7 +171,7 @@ function ListDevices(props: IProps) {
       render: (text, record) => (
         <>
           {text.map((v: string[]) => (
-            <Popover content={v[1]}>
+            <Popover content={v[1]} key={v[0]}>
               <Tag>{v[0]}</Tag>
             </Popover>
           ))}
@@ -186,6 +186,7 @@ function ListDevices(props: IProps) {
             return {
               text: vv,
               value: `${v.getKey()}=${vv}`,
+              key: v.getKey(),
             };
           }),
         };
@@ -266,8 +267,6 @@ function ListDevices(props: IProps) {
       }
     }
 
-    console.log(req.toObject());
-
     DeviceStore.list(req, (resp: ListDevicesResponse) => {
       const obj = resp.toObject();
       callbackFunc(obj.totalCount, obj.resultList);
@@ -343,9 +342,21 @@ function ListDevices(props: IProps) {
     ],
   };
 
-  const mgOptions = multicastGroups.map(mg => <Select.Option value={mg.getId()}>{mg.getName()}</Select.Option>);
-  const relayOptions = relays.map(r => <Select.Option value={r.getDevEui()}>{r.getName()}</Select.Option>);
-  const fuotaOptions = fuotaDeployments.map(r => <Select.Option value={r.getId()}>{r.getName()}</Select.Option>);
+  const mgOptions = multicastGroups.map(mg => (
+    <Select.Option value={mg.getId()} key={mg.getId()}>
+      {mg.getName()}
+    </Select.Option>
+  ));
+  const relayOptions = relays.map(r => (
+    <Select.Option value={r.getDevEui()} key={r.getDevEui()}>
+      {r.getName()}
+    </Select.Option>
+  ));
+  const fuotaOptions = fuotaDeployments.map(r => (
+    <Select.Option value={r.getId()} key={r.getId()}>
+      {r.getName()}
+    </Select.Option>
+  ));
 
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>

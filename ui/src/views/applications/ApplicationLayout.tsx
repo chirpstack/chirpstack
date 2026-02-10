@@ -134,7 +134,7 @@ function ApplicationLayout(props: IProps) {
         title={app.getName()}
         subTitle={`application id: ${app.getId()}`}
         extra={[
-          <Admin tenantId={props.tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={props.tenant.getId()} isDeviceAdmin key="delete-application">
             <DeleteConfirm confirm={app.getName()} typ="application" onConfirm={deleteApplication}>
               <Button danger type="primary">
                 Delete application
