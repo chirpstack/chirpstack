@@ -15,7 +15,7 @@ pub const SCRIPT: &str = r#"
 'use strict'
 
 import * as base64 from "base64-js";
-import "ieee754";
+import * as ieee754 from "ieee754";
 
 const customInspectSymbol =
   (typeof Symbol === 'function' && typeof Symbol['for'] === 'function') // eslint-disable-line dot-notation
