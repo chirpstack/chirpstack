@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { format } from "date-fns";
-import { Space, Breadcrumb, Button, Badge, Menu, Modal, TreeSelect, Dropdown } from "antd";
+import { Space, Breadcrumb, Button, Badge, MenuProps, Modal, TreeSelect, Dropdown } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
@@ -245,16 +245,12 @@ function ListGateways(props: IProps) {
     });
   };
 
-  const menu = (
-    <Menu>
-      <Menu.Item key="mg" onClick={() => setMgModalVisible(true)}>
-        Add to multicast-group
-      </Menu.Item>
-      <Menu.Item key="fuota" onClick={() => setFuotaModalVisible(true)}>
-        Add to FUOTA deployment
-      </Menu.Item>
-    </Menu>
-  );
+  const menu: MenuProps = {
+    items: [
+      { key: "mg", label: "Add to multicast group", onClick: () => setMgModalVisible(true) },
+      { key: "fuota", label: "Add to FUOTA deployment", onClick: () => setFuotaModalVisible(true) },
+    ],
+  };
 
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
@@ -295,32 +291,21 @@ function ListGateways(props: IProps) {
       <PageHeader
         title="Gateways"
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Gateways</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Tenants" },
+              { title: <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link> },
+              { title: "Gateways" },
+            ]}
+          />
         )}
         extra={[
-          <Admin tenantId={props.tenant.getId()} isGatewayAdmin>
+          <Admin tenantId={props.tenant.getId()} isGatewayAdmin key="add-gateway">
             <Space direction="horizontal" style={{ float: "right" }}>
               <Button type="primary">
                 <Link to={`/tenants/${props.tenant.getId()}/gateways/create`}>Add gateway</Link>
               </Button>
-              <Dropdown
-                placement="bottomRight"
-                overlay={menu}
-                trigger={["click"]}
-                disabled={selectedRowIds.length === 0}
-              >
+              <Dropdown placement="bottomRight" menu={menu} trigger={["click"]} disabled={selectedRowIds.length === 0}>
                 <Button>Selected gateways</Button>
               </Dropdown>
             </Space>

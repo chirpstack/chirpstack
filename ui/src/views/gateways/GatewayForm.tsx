@@ -115,7 +115,6 @@ function GatewayForm(props: IProps) {
               <EuiInput
                 label="Gateway ID (EUI64)"
                 name="gatewayId"
-                value={props.initialValues.getGatewayId()}
                 disabled={props.update || props.disabled}
                 required
               />

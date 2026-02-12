@@ -1,39 +1,18 @@
-import React, { useState, useEffect } from "react";
-
-import { notification, Input, Select, Button, Space, Form, Dropdown, Menu } from "antd";
+import { notification, Input, Button, Space, Form, Dropdown, Menu } from "antd";
 import { ReloadOutlined, CopyOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
+import { MenuProps } from "antd/lib";
 
 interface IProps {
   label: string;
   name: string;
   required?: boolean;
-  value?: string;
   disabled?: boolean;
   tooltip?: string;
 }
 
 function AesKeyInput(props: IProps) {
   const form = Form.useFormInstance();
-  const [byteOrder, setByteOrder] = useState<string>("msb");
-  const [value, setValue] = useState<string>("");
-
-  useEffect(() => {
-    if (props.value) {
-      setValue(props.value);
-    }
-  }, [props]);
-
-  const updateField = (v: string) => {
-    if (byteOrder === "lsb") {
-      const bytes = v.match(/[A-Fa-f0-9]{2}/g) || [];
-      v = bytes.reverse().join("");
-    }
-
-    form.setFieldsValue({
-      [props.name]: v,
-    });
-  };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
@@ -48,23 +27,7 @@ function AesKeyInput(props: IProps) {
       }
     }
 
-    setValue(value);
-    updateField(value);
-  };
-
-  const onByteOrderSelect = (v: string) => {
-    if (v === byteOrder) {
-      return;
-    }
-
-    setByteOrder(v);
-
-    const current = value;
-    const bytes = current.match(/[A-Fa-f0-9]{2}/g) || [];
-    const vv = bytes.reverse().join("");
-
-    setValue(vv);
-    updateField(vv);
+    form.setFieldValue(props.name, value);
   };
 
   const generateRandom = () => {
@@ -73,12 +36,11 @@ function AesKeyInput(props: IProps) {
     cryptoObj.getRandomValues(b);
 
     const key = Buffer.from(b).toString("hex");
-    setValue(key);
-    updateField(key);
+    form.setFieldValue(props.name, key);
   };
 
   const copyToClipboard = () => {
-    const bytes = value.match(/[A-Fa-f0-9]{2}/g);
+    const bytes = form.getFieldValue(props.name).match(/[A-Fa-f0-9]{2}/g);
 
     if (bytes !== null && navigator.clipboard !== undefined) {
       navigator.clipboard
@@ -106,7 +68,7 @@ function AesKeyInput(props: IProps) {
   };
 
   const copyToClipboardHexArray = () => {
-    const bytes = value.match(/[A-Fa-f0-9]{2}/g);
+    const bytes = form.getFieldValue(props.name).match(/[A-Fa-f0-9]{2}/g);
 
     if (bytes !== null && navigator.clipboard !== undefined) {
       navigator.clipboard
@@ -132,39 +94,27 @@ function AesKeyInput(props: IProps) {
     }
   };
 
-  const copyMenu = (
-    <Menu
-      items={[
-        {
-          key: "1",
-          label: (
-            <Button type="text" onClick={copyToClipboard}>
-              HEX string
-            </Button>
-          ),
-        },
-        {
-          key: "2",
-          label: (
-            <Button type="text" onClick={copyToClipboardHexArray}>
-              HEX array
-            </Button>
-          ),
-        },
-      ]}
-    />
-  );
+  const copyMenu: MenuProps = {
+    items: [
+      {
+        key: "1",
+        label: "HEX string",
+        onClick: copyToClipboard,
+      },
+      {
+        key: "2",
+        label: "HEX array",
+        onClick: copyToClipboardHexArray,
+      },
+    ],
+  };
 
   const addon = (
     <Space size="large">
-      <Select value={byteOrder} onChange={onByteOrderSelect}>
-        <Select.Option value="msb">MSB</Select.Option>
-        <Select.Option value="lsb">LSB</Select.Option>
-      </Select>
-      <Button type="text" size="small" onClick={generateRandom}>
+      <Button type="text" size="small" onClick={generateRandom} disabled={props.disabled}>
         <ReloadOutlined />
       </Button>
-      <Dropdown overlay={copyMenu}>
+      <Dropdown menu={copyMenu}>
         <Button type="text" size="small">
           <CopyOutlined />
         </Button>
@@ -185,15 +135,7 @@ function AesKeyInput(props: IProps) {
       name={props.name}
       tooltip={props.tooltip}
     >
-      <Input hidden />
-      <Input
-        id={`${props.name}Render`}
-        onChange={onChange}
-        addonAfter={!props.disabled && addon}
-        className="input-code"
-        value={value}
-        disabled={props.disabled}
-      />
+      <Input onChange={onChange} addonAfter={addon} className="input-code" disabled={props.disabled} />
     </Form.Item>
   );
 }

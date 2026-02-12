@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use anyhow::Result;
 use tracing::{info, warn};
@@ -11,7 +12,8 @@ pub fn request(
     max_channels: usize,
     current_channels: &HashMap<usize, Channel>,
     wanted_channels: &HashMap<usize, Channel>,
-) -> Option<lrwn::MACCommandSet> {
+    region_conf: Arc<Box<dyn lrwn::region::Region + Send + Sync>>,
+) -> Result<Option<lrwn::MACCommandSet>> {
     let mut out: Vec<lrwn::MACCommand> = Vec::new();
 
     let mut wanted_channel_numbers: Vec<usize> = wanted_channels.keys().cloned().collect();
@@ -19,19 +21,19 @@ pub fn request(
 
     for i in &wanted_channel_numbers {
         let wanted = wanted_channels.get(i).unwrap(); // we already know the key is in the map
+        let (min_dr, max_dr) = region_conf.get_new_channel_req_dr_range(&wanted.data_rates)?;
+
         match current_channels.get(i) {
             Some(current) => {
                 // Channel needs to be updated.
-                if current.frequency != wanted.frequency
-                    || current.min_dr != wanted.min_dr
-                    || current.max_dr != wanted.max_dr
+                if current.frequency != wanted.frequency || current.data_rates != wanted.data_rates
                 {
                     out.push(lrwn::MACCommand::NewChannelReq(
                         lrwn::NewChannelReqPayload {
                             ch_index: *i as u8,
                             freq: wanted.frequency,
-                            min_dr: wanted.min_dr,
-                            max_dr: wanted.max_dr,
+                            min_dr,
+                            max_dr,
                         },
                     ));
                 }
@@ -42,8 +44,8 @@ pub fn request(
                     lrwn::NewChannelReqPayload {
                         ch_index: *i as u8,
                         freq: wanted.frequency,
-                        min_dr: wanted.min_dr,
-                        max_dr: wanted.max_dr,
+                        min_dr,
+                        max_dr,
                     },
                 ));
             }
@@ -55,16 +57,17 @@ pub fn request(
     }
 
     if out.is_empty() {
-        return None;
+        return Ok(None);
     }
 
-    Some(lrwn::MACCommandSet::new(out))
+    Ok(Some(lrwn::MACCommandSet::new(out)))
 }
 
 pub fn handle(
     dev: &mut device::Device,
     block: &lrwn::MACCommandSet,
     pending: Option<&lrwn::MACCommandSet>,
+    region_conf: Arc<Box<dyn lrwn::region::Region + Send + Sync>>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
     let dev_eui = dev.dev_eui;
     let ds = dev.get_device_session_mut()?;
@@ -100,12 +103,15 @@ pub fn handle(
             ds.mac_command_error_count
                 .remove(&(lrwn::CID::NewChannelReq.to_u8() as u32));
 
+            let data_rates = region_conf
+                .get_data_rates_for_new_channel_req_dr_range(req_pl.min_dr, req_pl.max_dr)?;
+
             ds.extra_uplink_channels.insert(
                 req_pl.ch_index as u32,
                 internal::DeviceSessionChannel {
                     frequency: req_pl.freq,
-                    min_dr: req_pl.min_dr as u32,
-                    max_dr: req_pl.max_dr as u32,
+                    data_rates: data_rates.into_iter().map(|v| v as u32).collect(),
+                    ..Default::default()
                 },
             );
 
@@ -170,8 +176,7 @@ pub mod test {
                         3,
                         Channel {
                             frequency: 868600000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -179,8 +184,7 @@ pub mod test {
                         4,
                         Channel {
                             frequency: 868700000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -188,8 +192,7 @@ pub mod test {
                         5,
                         Channel {
                             frequency: 868800000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -202,8 +205,7 @@ pub mod test {
                         3,
                         Channel {
                             frequency: 868600000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -211,8 +213,7 @@ pub mod test {
                         4,
                         Channel {
                             frequency: 868700000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -220,8 +221,7 @@ pub mod test {
                         5,
                         Channel {
                             frequency: 868800000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -229,8 +229,7 @@ pub mod test {
                         6,
                         Channel {
                             frequency: 868900000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -238,8 +237,7 @@ pub mod test {
                         7,
                         Channel {
                             frequency: 869000000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -269,8 +267,7 @@ pub mod test {
                         3,
                         Channel {
                             frequency: 868600000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -278,8 +275,7 @@ pub mod test {
                         4,
                         Channel {
                             frequency: 868700000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -287,8 +283,7 @@ pub mod test {
                         5,
                         Channel {
                             frequency: 868800000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -301,8 +296,7 @@ pub mod test {
                         3,
                         Channel {
                             frequency: 868600000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -310,8 +304,7 @@ pub mod test {
                         4,
                         Channel {
                             frequency: 868650000,
-                            min_dr: 2,
-                            max_dr: 4,
+                            data_rates: vec![2, 3, 4],
                             ..Default::default()
                         },
                     ),
@@ -319,8 +312,7 @@ pub mod test {
                         5,
                         Channel {
                             frequency: 868800000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
                             ..Default::default()
                         },
                     ),
@@ -337,11 +329,92 @@ pub mod test {
                     }),
                 ])),
             },
+            RequestTest {
+                name: "add SF12 - SF5 channel".into(),
+                current_channels: [
+                    (
+                        3,
+                        Channel {
+                            frequency: 868600000,
+                            data_rates: vec![0, 1, 2, 3, 4, 5],
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        4,
+                        Channel {
+                            frequency: 868700000,
+                            data_rates: vec![0, 1, 2, 3, 4, 5],
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        5,
+                        Channel {
+                            frequency: 868800000,
+                            data_rates: vec![0, 1, 2, 3, 4, 5],
+                            ..Default::default()
+                        },
+                    ),
+                ]
+                .iter()
+                .cloned()
+                .collect(),
+                wanted_channels: [
+                    (
+                        3,
+                        Channel {
+                            frequency: 868600000,
+                            data_rates: vec![0, 1, 2, 3, 4, 5],
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        4,
+                        Channel {
+                            frequency: 868700000,
+                            data_rates: vec![0, 1, 2, 3, 4, 5],
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        5,
+                        Channel {
+                            frequency: 868800000,
+                            data_rates: vec![0, 1, 2, 3, 4, 5],
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        6,
+                        Channel {
+                            frequency: 868900000,
+                            data_rates: vec![0, 1, 2, 3, 4, 5, 12, 13],
+                            ..Default::default()
+                        },
+                    ),
+                ]
+                .iter()
+                .cloned()
+                .collect(),
+                expected_mac_commands: Some(lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::NewChannelReq(lrwn::NewChannelReqPayload {
+                        ch_index: 6,
+                        freq: 868900000,
+                        min_dr: 1,
+                        max_dr: 0,
+                    }),
+                ])),
+            },
         ];
 
         for tst in &tests {
+            let region_conf = lrwn::region::get(lrwn::region::CommonName::EU868, false, false);
+            let region_conf = Arc::new(region_conf);
+
             println!("> {}", tst.name);
-            let resp = request(3, &tst.current_channels, &tst.wanted_channels);
+            let resp =
+                request(3, &tst.current_channels, &tst.wanted_channels, region_conf).unwrap();
             assert_eq!(tst.expected_mac_commands, resp);
         }
     }
@@ -379,8 +452,8 @@ pub mod test {
                         3,
                         internal::DeviceSessionChannel {
                             frequency: 868600000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
+                            ..Default::default()
                         },
                     )]
                     .iter()
@@ -428,8 +501,8 @@ pub mod test {
                         3,
                         internal::DeviceSessionChannel {
                             frequency: 868700000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
+                            ..Default::default()
                         },
                     )]
                     .iter()
@@ -457,8 +530,8 @@ pub mod test {
                         3,
                         internal::DeviceSessionChannel {
                             frequency: 868600000,
-                            min_dr: 3,
-                            max_dr: 5,
+                            data_rates: vec![3, 4, 5],
+                            ..Default::default()
                         },
                     )]
                     .iter()
@@ -476,7 +549,15 @@ pub mod test {
                 ..Default::default()
             };
 
-            let res = handle(&mut dev, &tst.new_channel_ans, tst.new_channel_req.as_ref());
+            let region_config = lrwn::region::get(lrwn::region::CommonName::EU868, false, false);
+            let region_config = Arc::new(region_config);
+
+            let res = handle(
+                &mut dev,
+                &tst.new_channel_ans,
+                tst.new_channel_req.as_ref(),
+                region_config,
+            );
 
             if let Some(e) = &tst.expected_error {
                 assert!(res.is_err(), "{}", tst.name);

@@ -46,10 +46,10 @@ impl Handler for Algorithm {
         // If we are already at the highest LR-FHSS data-rate, there is nothing to do.
         // Note that we only differentiate between coding-rate. The OCW doesn't change
         // the speed.
-        if let lrwn::region::DataRateModulation::LrFhss(dr) = &current_dr {
-            if dr.coding_rate == "4/6" {
-                return Ok(resp);
-            }
+        if let lrwn::region::DataRateModulation::LrFhss(dr) = &current_dr
+            && dr.coding_rate == "4/6"
+        {
+            return Ok(resp);
         }
 
         // Get median RSSI.
@@ -57,10 +57,11 @@ impl Handler for Algorithm {
 
         // If the median RSSI is below -130, coding-rate 2/6 is recommended,
         // if we are on this coding-rate already, there is nothing to do.
-        if let lrwn::region::DataRateModulation::LrFhss(dr) = &current_dr {
-            if med_rssi < -130 && dr.coding_rate == "2/6" {
-                return Ok(resp);
-            }
+        if let lrwn::region::DataRateModulation::LrFhss(dr) = &current_dr
+            && med_rssi < -130
+            && dr.coding_rate == "2/6"
+        {
+            return Ok(resp);
         }
 
         // Find out which LR-FHSS data-rates are enabled (note that not all
@@ -187,8 +188,8 @@ pub mod test {
             .extra_channels
             .push(config::ExtraChannel {
                 frequency: 867300000,
-                min_dr: 10,
-                max_dr: 11,
+                data_rates: vec![10, 11],
+                ..Default::default()
             });
         config::set(conf);
         region::setup().unwrap();

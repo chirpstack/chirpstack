@@ -29,19 +29,9 @@ function CreateTenant() {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to="/tenants">Tenants</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Add</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[{ title: "Network Server" }, { title: <Link to="/tenants">Tenants</Link> }, { title: "Add" }]}
+          />
         )}
         title="Add tenant"
       />

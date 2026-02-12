@@ -93,6 +93,7 @@ function LogTable(props: IProps) {
         </Space>
       )}
       <Table
+        rowKey="id"
         showHeader={false}
         loading={items.length === 0}
         dataSource={items}

@@ -84,29 +84,19 @@ function GatewayLayout(props: IProps) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/gateways`}>Gateways</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{gw.getName()}</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Tenants" },
+              { title: <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link> },
+              { title: <Link to={`/tenants/${props.tenant.getId()}/gateways`}>Gateways</Link> },
+              { title: gw.getName() },
+            ]}
+          />
         )}
         title={gw.getName()}
         subTitle={`gateway id: ${gw.getGatewayId()}`}
         extra={[
-          <Admin tenantId={props.tenant.getId()} isGatewayAdmin>
+          <Admin tenantId={props.tenant.getId()} isGatewayAdmin key="delete-gateway">
             <DeleteConfirm confirm={gw.getName()} typ="gateway" onConfirm={deleteGateway}>
               <Button danger type="primary">
                 Delete gateway
@@ -116,22 +106,32 @@ function GatewayLayout(props: IProps) {
         ]}
       />
       <Card>
-        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-          <Menu.Item key="dashboard">
-            <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}`}>Dashboard</Link>
-          </Menu.Item>
-          <Menu.Item key="edit">
-            <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/edit`}>Configuration</Link>
-          </Menu.Item>
-          {isGatewayAdmin && (
-            <Menu.Item key="cert">
-              <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/certificate`}>TLS certificate</Link>
-            </Menu.Item>
-          )}
-          <Menu.Item key="frames">
-            <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/frames`}>LoRaWAN frames</Link>
-          </Menu.Item>
-        </Menu>
+        <Menu
+          mode="horizontal"
+          selectedKeys={[tab]}
+          style={{ marginBottom: 24 }}
+          items={[
+            {
+              key: "dashboard",
+              label: <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}`}>Dashboard</Link>,
+            },
+            {
+              key: "edit",
+              label: <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/edit`}>Configuration</Link>,
+            },
+            {
+              key: "cert",
+              disabled: !isGatewayAdmin,
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/certificate`}>TLS certificate</Link>
+              ),
+            },
+            {
+              key: "frames",
+              label: <Link to={`/tenants/${tenant.getId()}/gateways/${gw.getGatewayId()}/frames`}>LoRaWAN frames</Link>,
+            },
+          ]}
+        />
         <Routes>
           <Route path="/" element={<GatewayDashboard gateway={gw} lastSeenAt={lastSeenAt} />} />
           <Route path="/edit" element={<EditGateway gateway={gw} />} />

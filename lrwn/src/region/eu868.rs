@@ -680,22 +680,19 @@ impl Configuration {
                 uplink_channels: vec![
                     Channel {
                         frequency: 868100000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 868300000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 868500000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
@@ -703,22 +700,19 @@ impl Configuration {
                 downlink_channels: vec![
                     Channel {
                         frequency: 868100000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 868300000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 868500000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
@@ -766,6 +760,8 @@ impl Region for Configuration {
             rx2_delay: Duration::from_secs(2),
             join_accept_delay1: Duration::from_secs(5),
             join_accept_delay2: Duration::from_secs(6),
+            min_ul_dr: 0,
+            max_ul_dr: 5,
         }
     }
 
@@ -806,6 +802,31 @@ impl Region for Configuration {
         }
     }
 
+    fn get_data_rates_for_new_channel_req_dr_range(
+        &self,
+        min_dr: u8,
+        max_dr: u8,
+    ) -> Result<Vec<u8>> {
+        if max_dr < min_dr {
+            match (min_dr, max_dr) {
+                (1, 0) => Ok(vec![0, 1, 2, 3, 4, 5, 12, 13]),
+                (2, 0) => Ok(vec![1, 2, 3, 4, 5, 12, 13]),
+                (3, 0) => Ok(vec![2, 3, 4, 5, 12, 13]),
+                (4, 0) => Ok(vec![3, 4, 5, 12, 13]),
+                (5, 0) => Ok(vec![4, 5, 12, 13]),
+                (6, 0) => Ok(vec![5, 12, 13]),
+                _ => Err(anyhow!(
+                    "Unsupported data-rate range, min_dr: {}, max_dr: {}",
+                    min_dr,
+                    max_dr
+                )),
+            }
+        } else {
+            self.base
+                .get_data_rates_for_new_channel_req_dr_range(min_dr, max_dr)
+        }
+    }
+
     fn get_max_dl_payload_size(
         &self,
         mac_version: MacVersion,
@@ -824,8 +845,8 @@ impl Region for Configuration {
         self.base.get_tx_power_offset(tx_power)
     }
 
-    fn add_channel(&mut self, frequency: u32, min_dr: u8, max_dr: u8) -> Result<()> {
-        self.base.add_channel(frequency, min_dr, max_dr)
+    fn add_channel(&mut self, frequency: u32, data_rates: Vec<u8>) -> Result<()> {
+        self.base.add_channel(frequency, data_rates)
     }
 
     fn get_uplink_channel(&self, channel: usize) -> Result<Channel> {
@@ -906,11 +927,11 @@ mod tests {
 
     fn config_with_user_channels() -> Configuration {
         let mut c = Configuration::new(false);
-        c.add_channel(867100000, 0, 5).unwrap();
-        c.add_channel(867300000, 0, 5).unwrap();
-        c.add_channel(867500000, 0, 5).unwrap();
-        c.add_channel(867700000, 0, 5).unwrap();
-        c.add_channel(867900000, 0, 5).unwrap();
+        c.add_channel(867100000, (0..=5).collect()).unwrap();
+        c.add_channel(867300000, (0..=5).collect()).unwrap();
+        c.add_channel(867500000, (0..=5).collect()).unwrap();
+        c.add_channel(867700000, (0..=5).collect()).unwrap();
+        c.add_channel(867900000, (0..=5).collect()).unwrap();
         c
     }
 
@@ -1024,6 +1045,24 @@ mod tests {
 
         for t in &tests {
             assert_eq!(t.1, c.get_new_channel_req_dr_range(&t.0).unwrap());
+        }
+    }
+
+    #[test]
+    fn get_data_rates_for_new_channel_req_dr_range() {
+        let c = Configuration::new(false);
+        let tests: Vec<((u8, u8), Vec<u8>)> = vec![
+            ((0, 5), vec![0, 1, 2, 3, 4, 5]),
+            ((1, 0), vec![0, 1, 2, 3, 4, 5, 12, 13]),
+            ((6, 0), vec![5, 12, 13]),
+        ];
+
+        for t in &tests {
+            assert_eq!(
+                t.1,
+                c.get_data_rates_for_new_channel_req_dr_range(t.0.0, t.0.1)
+                    .unwrap()
+            );
         }
     }
 

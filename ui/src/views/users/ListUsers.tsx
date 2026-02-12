@@ -71,19 +71,10 @@ function ListUsers() {
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
-        breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Users</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
-        )}
+        breadcrumbRender={() => <Breadcrumb items={[{ title: "Network Server" }, { title: "Users" }]} />}
         title="Users"
         extra={[
-          <Button type="primary">
+          <Button type="primary" key="add-user">
             <Link to="/users/create">Add user</Link>
           </Button>,
         ]}

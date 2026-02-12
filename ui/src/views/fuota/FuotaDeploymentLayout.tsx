@@ -130,37 +130,29 @@ function FuotaDeploymentLayout(props: IProps) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications/${app.getId()}`}>{app.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications/${app.getId()}/fuota`}>FUOTA deployments</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>{d.getName()}</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Tenants" },
+              { title: <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link> },
+              { title: <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link> },
+              {
+                title: <Link to={`/tenants/${props.tenant.getId()}/applications/${app.getId()}`}>{app.getName()}</Link>,
+              },
+              {
+                title: (
+                  <Link to={`/tenants/${props.tenant.getId()}/applications/${app.getId()}/fuota`}>
+                    FUOTA deployments
+                  </Link>
+                ),
+              },
+              { title: d.getName() },
+            ]}
+          />
         )}
         title={d.getName()}
         subTitle={`FUOTA deployment id: ${d.getId()}`}
         extra={[
-          <Admin tenantId={tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={tenant.getId()} isDeviceAdmin key="start-delete-fuota-deployment">
             <Space direction="horizontal" style={{ float: "right" }}>
               <Popconfirm
                 placement="left"
@@ -184,26 +176,43 @@ function FuotaDeploymentLayout(props: IProps) {
         <Descriptions items={descriptionsItems} />
       </PageHeader>
       <Card>
-        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-          <Menu.Item key="dashboard">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota/${d.getId()}`}>Dashboard</Link>
-          </Menu.Item>
-          <Menu.Item key="edit">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota/${d.getId()}/edit`}>
-              Configuration
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="devices">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota/${d.getId()}/devices`}>
-              Devices
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="gateways">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota/${d.getId()}/gateways`}>
-              Gateways
-            </Link>
-          </Menu.Item>
-        </Menu>
+        <Menu
+          mode="horizontal"
+          selectedKeys={[tab]}
+          style={{ marginBottom: 24 }}
+          items={[
+            {
+              key: "dashboard",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota/${d.getId()}`}>Dashboard</Link>
+              ),
+            },
+            {
+              key: "edit",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota/${d.getId()}/edit`}>
+                  Configuration
+                </Link>
+              ),
+            },
+            {
+              key: "devices",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota/${d.getId()}/devices`}>
+                  Devices
+                </Link>
+              ),
+            },
+            {
+              key: "gateways",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/fuota/${d.getId()}/gateways`}>
+                  Gateways
+                </Link>
+              ),
+            },
+          ]}
+        />
         <Routes>
           <Route
             path="/"

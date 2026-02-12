@@ -1,17 +1,17 @@
 {
   "name": "@chirpstack/chirpstack-api",
-  "version": "4.15.0",
+  "version": "4.16.1",
   "description": "Chirpstack JS and TS API",
   "license": "MIT",
   "devDependencies": {
-    "grpc-tools": "^1.13.0",
+    "grpc-tools": "^1.13.1",
     "ts-protoc-gen": "^0.15.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.13.3",
-    "@mapbox/node-pre-gyp": "^1.0.11",
+    "@grpc/grpc-js": "^1.14.3",
+    "@mapbox/node-pre-gyp": "^2.0.3",
     "@types/google-protobuf": "^3.15.12",
-    "google-protobuf": "^3.21.4"
+    "google-protobuf": "^4.0.1"
   }
 }

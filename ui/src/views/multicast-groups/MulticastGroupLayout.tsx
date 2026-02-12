@@ -86,39 +86,29 @@ function MulticastGroupLayout(props: IProps) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications/${app.getId()}`}>{app.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}/applications/${app.getId()}/multicast-groups`}>
-                  Multicast-groups
-                </Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>{mg.getName()}</Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Tenants" },
+              { title: <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link> },
+              { title: <Link to={`/tenants/${props.tenant.getId()}/applications`}>Applications</Link> },
+              {
+                title: <Link to={`/tenants/${props.tenant.getId()}/applications/${app.getId()}`}>{app.getName()}</Link>,
+              },
+              {
+                title: (
+                  <Link to={`/tenants/${props.tenant.getId()}/applications/${app.getId()}/multicast-groups`}>
+                    Multicast-groups
+                  </Link>
+                ),
+              },
+              { title: mg.getName() },
+            ]}
+          />
         )}
         title={mg.getName()}
         subTitle={`multicast-group id: ${mg.getId()}`}
         extra={[
-          <Admin tenantId={tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={tenant.getId()} isDeviceAdmin key="delete-multicast-group">
             <DeleteConfirm typ="multicast-group" confirm={mg.getName()} onConfirm={deleteMulticastGroup}>
               <Button danger type="primary">
                 Delete multicast-group
@@ -128,28 +118,49 @@ function MulticastGroupLayout(props: IProps) {
         ]}
       />
       <Card>
-        <Menu mode="horizontal" selectedKeys={[tab]} style={{ marginBottom: 24 }}>
-          <Menu.Item key="devices">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}`}>
-              Devices
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="gateways">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/gateways`}>
-              Gateways
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="edit">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/edit`}>
-              Configuration
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="queue">
-            <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/queue`}>
-              Queue
-            </Link>
-          </Menu.Item>
-        </Menu>
+        <Menu
+          mode="horizontal"
+          selectedKeys={[tab]}
+          style={{ marginBottom: 24 }}
+          items={[
+            {
+              key: "devices",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}`}>
+                  Devices
+                </Link>
+              ),
+            },
+            {
+              key: "gateways",
+              label: (
+                <Link
+                  to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/gateways`}
+                >
+                  Gateways
+                </Link>
+              ),
+            },
+            {
+              key: "edit",
+              label: (
+                <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/edit`}>
+                  Configuration
+                </Link>
+              ),
+            },
+            {
+              key: "queue",
+              label: (
+                <Link
+                  to={`/tenants/${tenant.getId()}/applications/${app.getId()}/multicast-groups/${mg.getId()}/queue`}
+                >
+                  Queue
+                </Link>
+              ),
+            },
+          ]}
+        />
         <Routes>
           <Route path="/" element={<ListMulticastGroupDevices multicastGroup={mg} />} />
           <Route path="/gateways" element={<ListMulticastGroupGateways multicastGroup={mg} application={app} />} />

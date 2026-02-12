@@ -30,14 +30,13 @@ import TenantLoader from "./views/tenants/TenantLoader";
 import ListAdminApiKeys from "./views/api-keys/ListAdminApiKeys";
 import CreateAdminApiKey from "./views/api-keys/CreateAdminApiKey";
 
-// device-profile templates
-import ListDeviceProfileTemplates from "./views/device-profile-templates/ListDeviceProfileTemplates";
-import CreateDeviceProfileTemplate from "./views/device-profile-templates/CreateDeviceProfileTemplate";
-import EditDeviceProfileTemplate from "./views/device-profile-templates/EditDeviceProfileTemplate";
-
 // regions
 import ListRegions from "./views/regions/ListRegions";
 import RegionDetails from "./views/regions/RegionDetails";
+
+// device-profiles
+import ListDeviceProfileVendors from "./views/device-profiles/ListVendors";
+import VendorLoader from "./views/device-profiles/VendorLoader";
 
 // stores
 import SessionStore from "./stores/SessionStore";
@@ -98,12 +97,8 @@ function App() {
                   <Route path="/api-keys" element={<ListAdminApiKeys />} />
                   <Route path="/api-keys/create" element={<CreateAdminApiKey />} />
 
-                  <Route path="/device-profile-templates" element={<ListDeviceProfileTemplates />} />
-                  <Route path="/device-profile-templates/create" element={<CreateDeviceProfileTemplate />} />
-                  <Route
-                    path="/device-profile-templates/:deviceProfileTemplateId/edit"
-                    element={<EditDeviceProfileTemplate />}
-                  />
+                  <Route path="/device-profiles/vendors" element={<ListDeviceProfileVendors />} />
+                  <Route path="/device-profiles/vendors/:vendorId/*" element={<VendorLoader />} />
 
                   <Route path="/regions" element={<ListRegions />} />
                   <Route path="/regions/:id" element={<RegionDetails />} />

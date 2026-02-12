@@ -55,7 +55,7 @@ async fn test_downlink_scheduler() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id,
+        tenant_id: Some(t.id),
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,

@@ -57,27 +57,17 @@ function EditUser() {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to="/users">Users</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>{user.getEmail()}</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[{ title: "Network Server" }, { title: <Link to="/users">Users</Link> }, { title: user.getEmail() }]}
+          />
         )}
         title={user.getEmail()}
         subTitle={`user id: ${user.getId()}`}
         extra={[
-          <Button>
+          <Button key="change-password">
             <Link to={`/users/${user.getId()}/password`}>Change password</Link>
           </Button>,
-          <DeleteConfirm typ="user" confirm={user.getEmail()} onConfirm={deleteUser}>
+          <DeleteConfirm typ="user" confirm={user.getEmail()} onConfirm={deleteUser} key="delete-user">
             <Button danger type="primary">
               Delete user
             </Button>

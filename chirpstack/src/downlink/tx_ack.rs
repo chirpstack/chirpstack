@@ -564,10 +564,10 @@ impl TxAck {
         }
         phy.decrypt_frm_payload(&nwk_s_enc_key)?;
 
-        if let Payload::MACPayload(pl) = phy.payload {
-            if let Some(lrwn::FRMPayload::ForwardDownlinkReq(pl)) = pl.frm_payload {
-                self.phy_payload_relayed = Some(*pl.payload);
-            }
+        if let Payload::MACPayload(pl) = phy.payload
+            && let Some(lrwn::FRMPayload::ForwardDownlinkReq(pl)) = pl.frm_payload
+        {
+            self.phy_payload_relayed = Some(*pl.payload);
         }
 
         Ok(())
@@ -737,10 +737,10 @@ impl TxAck {
             return false;
         }
 
-        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.as_ref().unwrap().payload {
-            if pl.f_port.unwrap_or(0) != 0 {
-                return true;
-            }
+        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.as_ref().unwrap().payload
+            && pl.f_port.unwrap_or(0) != 0
+        {
+            return true;
         }
         false
     }
@@ -750,20 +750,20 @@ impl TxAck {
             return false;
         }
 
-        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload_relayed.as_ref().unwrap().payload {
-            if pl.f_port.unwrap_or(0) != 0 {
-                return true;
-            }
+        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload_relayed.as_ref().unwrap().payload
+            && pl.f_port.unwrap_or(0) != 0
+        {
+            return true;
         }
 
         false
     }
 
     fn is_relay_payload(&self) -> bool {
-        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.as_ref().unwrap().payload {
-            if pl.f_port.unwrap_or(0) == lrwn::LA_FPORT_RELAY {
-                return true;
-            }
+        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.as_ref().unwrap().payload
+            && pl.f_port.unwrap_or(0) == lrwn::LA_FPORT_RELAY
+        {
+            return true;
         }
         false
     }
@@ -773,10 +773,10 @@ impl TxAck {
             return false;
         }
 
-        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.as_ref().unwrap().payload {
-            if pl.f_port.unwrap_or(0) == 0 {
-                return true;
-            }
+        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.as_ref().unwrap().payload
+            && pl.f_port.unwrap_or(0) == 0
+        {
+            return true;
         }
         false
     }
@@ -786,10 +786,10 @@ impl TxAck {
             return false;
         }
 
-        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload_relayed.as_ref().unwrap().payload {
-            if pl.f_port.unwrap_or(0) == 0 {
-                return true;
-            }
+        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload_relayed.as_ref().unwrap().payload
+            && pl.f_port.unwrap_or(0) == 0
+        {
+            return true;
         }
         false
     }

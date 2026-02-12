@@ -54,25 +54,9 @@ function LW10DeviceActivationForm(props: FormProps) {
       onFinishFailed={onFinishFailed}
       form={form}
     >
-      <DevAddrInput
-        label="Device address"
-        name="devAddr"
-        value={props.initialValues.getDevAddr()}
-        devEui={props.device.getDevEui()}
-        required
-      />
-      <AesKeyInput
-        label="Network session key (LoRaWAN 1.0)"
-        name="nwkSEncKey"
-        value={props.initialValues.getNwkSEncKey()}
-        required
-      />
-      <AesKeyInput
-        label="Application session key (LoRaWAN 1.0)"
-        name="appSKey"
-        value={props.initialValues.getAppSKey()}
-        required
-      />
+      <DevAddrInput label="Device address" name="devAddr" devEui={props.device.getDevEui()} required />
+      <AesKeyInput label="Network session key (LoRaWAN 1.0)" name="nwkSEncKey" required />
+      <AesKeyInput label="Application session key (LoRaWAN 1.0)" name="appSKey" required />
       <Row gutter={24}>
         <Col span={6}>
           <Form.Item label="Uplink frame-counter" name="fCntUp">
@@ -121,32 +105,11 @@ function LW11DeviceActivationForm(props: FormProps) {
       onFinishFailed={onFinishFailed}
       form={form}
     >
-      <DevAddrInput
-        label="Device address"
-        name="devAddr"
-        value={props.initialValues.getDevAddr()}
-        devEui={props.device.getDevEui()}
-        required
-      />
-      <AesKeyInput
-        label="Network session encryption key"
-        name="nwkSEncKey"
-        value={props.initialValues.getNwkSEncKey()}
-        required
-      />
-      <AesKeyInput
-        label="Serving network session integrity key"
-        name="sNwkSIntKey"
-        value={props.initialValues.getSNwkSIntKey()}
-        required
-      />
-      <AesKeyInput
-        label="Forwarding network session integrity key"
-        name="fNwkSIntKey"
-        value={props.initialValues.getFNwkSIntKey()}
-        required
-      />
-      <AesKeyInput label="Application session key" name="appSKey" value={props.initialValues.getAppSKey()} required />
+      <DevAddrInput label="Device address" name="devAddr" devEui={props.device.getDevEui()} required />
+      <AesKeyInput label="Network session encryption key" name="nwkSEncKey" required />
+      <AesKeyInput label="Serving network session integrity key" name="sNwkSIntKey" required />
+      <AesKeyInput label="Forwarding network session integrity key" name="fNwkSIntKey" required />
+      <AesKeyInput label="Application session key" name="appSKey" required />
       <Row gutter={24}>
         <Col span={6}>
           <Form.Item label="Uplink frame-counter" name="fCntUp">

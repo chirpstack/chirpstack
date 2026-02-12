@@ -292,10 +292,15 @@ message DeviceSessionChannel {
   uint32 frequency = 1;
 
   // Min. data-rate.
+  // Deprecated: use data_rates.
   uint32 min_dr = 2;
 
   // Max. data-rate.
+  // Deprecated: use data_rates.
   uint32 max_dr = 3;
+
+  // Data-rates.
+  repeated uint32 data_rates = 4;
 }
 
 message DeviceGatewayRxInfo {

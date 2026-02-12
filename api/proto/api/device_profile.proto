@@ -2,18 +2,18 @@ syntax = "proto3";
 
 package api;
 
+import "common/common.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Chirpstack.Api";
 option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
-option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "DeviceProfileProto";
-option csharp_namespace = "Chirpstack.Api";
-option php_namespace = "Chirpstack\\Api";
+option java_package = "io.chirpstack.api";
 option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
-
-import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
-import "common/common.proto";
+option php_namespace = "Chirpstack\\Api";
 
 enum CodecRuntime {
   // None.
@@ -137,46 +137,72 @@ service DeviceProfileService {
   // Create the given device-profile.
   rpc Create(CreateDeviceProfileRequest) returns (CreateDeviceProfileResponse) {
     option (google.api.http) = {
-      post : "/api/device-profiles"
-      body : "*"
+      post: "/api/device-profiles"
+      body: "*"
     };
   }
 
   // Get the device-profile for the given ID.
   rpc Get(GetDeviceProfileRequest) returns (GetDeviceProfileResponse) {
-    option (google.api.http) = {
-      get : "/api/device-profiles/{id}"
-    };
+    option (google.api.http) = {get: "/api/device-profiles/{id}"};
+  }
+
+  // GetByProfileId tries to get the device-profile for the given ProfileID (see TR0005).
+  rpc GetByProfileId(GetDeviceProfileByProfileIdRequest) returns (GetDeviceProfileByProfileIdResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/{vendor_id}/{vendor_profile_id}"};
   }
 
   // Update the given device-profile.
   rpc Update(UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/api/device-profiles/{device_profile.id}"
-      body : "*"
+      put: "/api/device-profiles/{device_profile.id}"
+      body: "*"
     };
   }
 
   // Delete the device-profile with the given ID.
   rpc Delete(DeleteDeviceProfileRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/device-profiles/{id}"
-    };
+    option (google.api.http) = {delete: "/api/device-profiles/{id}"};
   }
 
   // List the available device-profiles.
   rpc List(ListDeviceProfilesRequest) returns (ListDeviceProfilesResponse) {
-    option (google.api.http) = {
-      get : "/api/device-profiles"
-    };
+    option (google.api.http) = {get: "/api/device-profiles"};
+  }
+
+  // List the available device-profile vendors.
+  rpc ListVendors(ListDeviceProfileVendorsRequest) returns (ListDeviceProfileVendorsResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/vendors"};
+  }
+
+  // Get the device-profile vendor.
+  rpc GetVendor(GetDeviceProfileVendorRequest) returns (GetDeviceProfileVendorResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/vendors/{id}"};
+  }
+
+  // Delete the given device-profile vendor.
+  rpc DeleteVendor(DeleteDeviceProfileVendorRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/device-profiles/vendors/{id}"};
+  }
+
+  // List the available device-profile devices.
+  rpc ListDevices(ListDeviceProfileDevicesRequest) returns (ListDeviceProfileDevicesResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/devices"};
+  }
+
+  // Get the device-profile device.
+  rpc GetDevice(GetDeviceProfileDeviceRequest) returns (GetDeviceProfileDeviceResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/devices/{id}"};
+  }
+
+  // Delete the given device-profile device.
+  rpc DeleteDevice(DeleteDeviceProfileDeviceRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/device-profiles/devices/{id}"};
   }
 
   // List available ADR algorithms.
-  rpc ListAdrAlgorithms(google.protobuf.Empty)
-      returns (ListDeviceProfileAdrAlgorithmsResponse) {
-    option (google.api.http) = {
-      get : "/api/device-profiles/adr-algorithms"
-    };
+  rpc ListAdrAlgorithms(google.protobuf.Empty) returns (ListDeviceProfileAdrAlgorithmsResponse) {
+    option (google.api.http) = {get: "/api/device-profiles/adr-algorithms"};
   }
 }
 
@@ -461,6 +487,21 @@ message DeviceProfile {
 
   // Application Layer parameters.
   AppLayerParams app_layer_params = 54;
+
+  // Device-profile device ID (UUID) (optiona).
+  string device_id = 55;
+
+  // Firmware version.
+  string firmware_version = 56;
+
+  // Supported uplink data-rates.
+  //
+  // This option configures the data-rates that are supported by the devices
+  // using this device-profile. If not set, the default min / max data-rates
+  // will be used.
+  // Example: In case you would like to use also SF5 and SF6 in EU868, you would
+  // set this option to: 0, 1, 2, 3, 4, 5, 6, 7, 12, 13.
+  repeated uint32 supported_uplink_data_rates = 57;
 }
 
 message Measurement {
@@ -521,6 +562,25 @@ message DeviceProfileListItem {
 
   // Supports Class-C.
   bool supports_class_c = 10;
+
+  // Vendor ID.
+  // This value is only available for global device-profiles.
+  string vendor_id = 11;
+
+  // Vendor name.
+  // This value is only available for global device-profiles.
+  string vendor_name = 12;
+
+  // Device ID.
+  // This value is only available for global device-profiles.
+  string device_id = 13;
+
+  // Device name.
+  // This value is only available for global device-profiles.
+  string device_name = 14;
+
+  // Firmware version.
+  string firmware_version = 15;
 }
 
 message CreateDeviceProfileRequest {
@@ -539,6 +599,25 @@ message GetDeviceProfileRequest {
 }
 
 message GetDeviceProfileResponse {
+  // Device-profile object.
+  DeviceProfile device_profile = 1;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message GetDeviceProfileByProfileIdRequest {
+  // Vendor ID.
+  uint32 vendor_id = 1;
+
+  // Vendor Profile ID.
+  uint32 vendor_profile_id = 2;
+}
+
+message GetDeviceProfileByProfileIdResponse {
   // Device-profile object.
   DeviceProfile device_profile = 1;
 
@@ -571,7 +650,22 @@ message ListDeviceProfilesRequest {
   string search = 3;
 
   // Tenant ID to list the device-profiles for.
+  // This value must be set, unless global_only is set to true. The result will
+  // be the list of device-profiles matching the tenant_id and global tenants.
+  // If you only wish to list the device-profiles matching the tenant_id, you
+  // must set tenant_only to true.
   string tenant_id = 4;
+
+  // Device-profile device ID.
+  // Note that his is the device-profile ID, not the DevEUI.
+  // This value requires global_only to be set to true.
+  string device_id = 5;
+
+  // Only list global (non-tenant) device-profiles.
+  bool global_only = 6;
+
+  // Only list device-profiles matching the tenant_id.
+  bool tenant_only = 7;
 }
 
 message ListDeviceProfilesResponse {
@@ -580,6 +674,156 @@ message ListDeviceProfilesResponse {
 
   // Result-set.
   repeated DeviceProfileListItem result = 2;
+}
+
+message ListDeviceProfileVendorsRequest {
+  // Max number of device-profile vendors to return in the result-set.
+  // If not set, it will be treated as 0, and the response will only return the total_count.
+  uint32 limit = 1;
+
+  // Offset in the result-set (for pagination).
+  uint32 offset = 2;
+}
+
+message ListDeviceProfileVendorsResponse {
+  // Total number of vendors.
+  uint32 total_count = 1;
+
+  // Result-set.
+  repeated DeviceProfileVendorListItem result = 2;
+}
+
+message GetDeviceProfileVendorRequest {
+  // Vendor ID (UUID).
+  string id = 1;
+}
+
+message DeviceProfileVendor {
+  // Vendor ID (UUID).
+  string id = 1;
+
+  // Name.
+  string name = 4;
+
+  // LoRa Alliance Vendor ID.
+  uint32 vendor_id = 5;
+
+  // OUIs.
+  repeated string ouis = 6;
+
+  // Metadata.
+  map<string, string> metadata = 7;
+}
+
+message GetDeviceProfileVendorResponse {
+  // Vendor object.
+  DeviceProfileVendor vendor = 1;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message DeleteDeviceProfileVendorRequest {
+  // Vendor ID (UUID).
+  string id = 1;
+}
+
+message DeviceProfileVendorListItem {
+  // Vendor ID (UUID).
+  string id = 1;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 3;
+
+  // Name.
+  string name = 4;
+
+  // LoRa Alliance Vendor ID.
+  uint32 vendor_id = 5;
+
+  // OUIs.
+  repeated string ouis = 6;
+
+  // Metadata.
+  map<string, string> metadata = 7;
+}
+
+message ListDeviceProfileDevicesRequest {
+  // Max number of device-profile vendors to return in the result-set.
+  // If not set, it will be treated as 0, and the response will only return the total_count.
+  uint32 limit = 1;
+
+  // Offset in the result-set (for pagination).
+  uint32 offset = 2;
+
+  // Vendor ID (UUID).
+  string vendor_id = 3;
+}
+
+message ListDeviceProfileDevicesResponse {
+  // Total number of devices.
+  uint32 total_count = 1;
+
+  // Result-set.
+  repeated DeviceProfileDeviceListItem result = 2;
+}
+
+message GetDeviceProfileDeviceRequest {
+  // Device-profile device ID.
+  string id = 1;
+}
+
+message DeviceProfileDevice {
+  // Device ID (UUID).
+  string id = 1;
+
+  // Vendor ID (UUID).
+  string vendor_id = 2;
+
+  // Name.
+  string name = 3;
+
+  // Description.
+  string description = 4;
+
+  // Metadata.
+  map<string, string> metadata = 5;
+}
+
+message GetDeviceProfileDeviceResponse {
+  // Device object.
+  DeviceProfileDevice device = 1;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message DeleteDeviceProfileDeviceRequest {
+  // Device ID (UUID).
+  string id = 1;
+}
+
+message DeviceProfileDeviceListItem {
+  // Device ID (UUID).
+  string id = 1;
+
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 2;
+
+  // Last update timestamp.
+  google.protobuf.Timestamp updated_at = 3;
+
+  // Name.
+  string name = 4;
 }
 
 message ListDeviceProfileAdrAlgorithmsResponse {

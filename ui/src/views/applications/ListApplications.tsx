@@ -61,23 +61,17 @@ function ListApplications(props: IProps) {
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Tenants</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>
-                <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link>
-              </span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Applications</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
+          <Breadcrumb
+            items={[
+              { title: "Tenants" },
+              { title: <Link to={`/tenants/${props.tenant.getId()}`}>{props.tenant.getName()}</Link> },
+              { title: "Applications" },
+            ]}
+          />
         )}
         title="Applications"
         extra={[
-          <Admin tenantId={props.tenant.getId()} isDeviceAdmin>
+          <Admin tenantId={props.tenant.getId()} isDeviceAdmin key="add-application">
             <Button type="primary">
               <Link to={`/tenants/${props.tenant.getId()}/applications/create`}>Add application</Link>
             </Button>

@@ -477,15 +477,13 @@ impl Configuration {
                 uplink_channels: vec![
                     Channel {
                         frequency: 868900000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 869100000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
@@ -493,15 +491,13 @@ impl Configuration {
                 downlink_channels: vec![
                     Channel {
                         frequency: 868900000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
                     Channel {
                         frequency: 869100000,
-                        min_dr: 0,
-                        max_dr: 5,
+                        data_rates: vec![0, 1, 2, 3, 4, 5],
                         enabled: true,
                         user_defined: false,
                     },
@@ -543,6 +539,8 @@ impl Region for Configuration {
             rx2_delay: Duration::from_secs(2),
             join_accept_delay1: Duration::from_secs(5),
             join_accept_delay2: Duration::from_secs(6),
+            min_ul_dr: 0,
+            max_ul_dr: 5,
         }
     }
 
@@ -583,6 +581,31 @@ impl Region for Configuration {
         }
     }
 
+    fn get_data_rates_for_new_channel_req_dr_range(
+        &self,
+        min_dr: u8,
+        max_dr: u8,
+    ) -> Result<Vec<u8>> {
+        if max_dr < min_dr {
+            match (min_dr, max_dr) {
+                (1, 0) => Ok(vec![0, 1, 2, 3, 4, 5, 12, 13]),
+                (2, 0) => Ok(vec![1, 2, 3, 4, 5, 12, 13]),
+                (3, 0) => Ok(vec![2, 3, 4, 5, 12, 13]),
+                (4, 0) => Ok(vec![3, 4, 5, 12, 13]),
+                (5, 0) => Ok(vec![4, 5, 12, 13]),
+                (6, 0) => Ok(vec![5, 12, 13]),
+                _ => Err(anyhow!(
+                    "Unsupported data-rate range, min_dr: {}, max_dr: {}",
+                    min_dr,
+                    max_dr
+                )),
+            }
+        } else {
+            self.base
+                .get_data_rates_for_new_channel_req_dr_range(min_dr, max_dr)
+        }
+    }
+
     fn get_max_dl_payload_size(
         &self,
         mac_version: MacVersion,
@@ -601,8 +624,8 @@ impl Region for Configuration {
         self.base.get_tx_power_offset(tx_power)
     }
 
-    fn add_channel(&mut self, frequency: u32, min_dr: u8, max_dr: u8) -> Result<()> {
-        self.base.add_channel(frequency, min_dr, max_dr)
+    fn add_channel(&mut self, frequency: u32, data_rates: Vec<u8>) -> Result<()> {
+        self.base.add_channel(frequency, data_rates)
     }
 
     fn get_uplink_channel(&self, channel: usize) -> Result<Channel> {
@@ -687,11 +710,11 @@ mod test {
 
     fn config_user_channels() -> Configuration {
         let mut c = Configuration::new(false);
-        c.add_channel(864100000, 0, 5).unwrap();
-        c.add_channel(864300000, 0, 5).unwrap();
-        c.add_channel(864500000, 0, 5).unwrap();
-        c.add_channel(864700000, 0, 5).unwrap();
-        c.add_channel(864900000, 0, 5).unwrap();
+        c.add_channel(864100000, (0..=5).collect()).unwrap();
+        c.add_channel(864300000, (0..=5).collect()).unwrap();
+        c.add_channel(864500000, (0..=5).collect()).unwrap();
+        c.add_channel(864700000, (0..=5).collect()).unwrap();
+        c.add_channel(864900000, (0..=5).collect()).unwrap();
         c
     }
 

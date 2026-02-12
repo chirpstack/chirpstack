@@ -36,10 +36,10 @@ impl Handler for Algorithm {
         let lora_dr = region_conf
             .get_data_rate(true, default_resp.dr)
             .context("Get data-rate")?;
-        if let lrwn::region::DataRateModulation::Lora(dr) = lora_dr {
-            if dr.spreading_factor < 10 {
-                return Ok(default_resp);
-            }
+        if let lrwn::region::DataRateModulation::Lora(dr) = lora_dr
+            && dr.spreading_factor < 10
+        {
+            return Ok(default_resp);
         }
 
         Ok(lr_fhss_resp)
@@ -70,8 +70,8 @@ pub mod test {
             .extra_channels
             .push(config::ExtraChannel {
                 frequency: 867300000,
-                min_dr: 10,
-                max_dr: 11,
+                data_rates: vec![10, 11],
+                ..Default::default()
             });
         config::set(conf);
         region::setup().unwrap();

@@ -12,6 +12,12 @@ pub enum Error {
     #[error("Invalid email address format")]
     InvalidEmail,
 
+    #[error("Password must be at least 8 characters")]
+    PasswordTooShort,
+
+    #[error("Password must not exceed 128 characters")]
+    PasswordTooLong,
+
     #[error("Hash password error (error: {0})")]
     HashPassword(String),
 

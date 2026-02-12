@@ -104,15 +104,15 @@ impl Multicast {
 
     async fn validate_expiration(&self) -> Result<(), Error> {
         trace!("Validating expires_at");
-        if let Some(expires_at) = self.multicast_group_queue_item.expires_at {
-            if Utc::now() > expires_at {
-                warn!(
-                    expires_at = %expires_at,
-                    "Discarding multicast-group queue item because it has expired"
-                );
-                multicast::delete_queue_item(&self.multicast_group_queue_item.id).await?;
-                return Err(Error::Abort);
-            }
+        if let Some(expires_at) = self.multicast_group_queue_item.expires_at
+            && Utc::now() > expires_at
+        {
+            warn!(
+                expires_at = %expires_at,
+                "Discarding multicast-group queue item because it has expired"
+            );
+            multicast::delete_queue_item(&self.multicast_group_queue_item.id).await?;
+            return Err(Error::Abort);
         }
 
         Ok(())

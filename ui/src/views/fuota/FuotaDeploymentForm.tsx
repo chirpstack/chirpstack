@@ -18,9 +18,10 @@ import {
   MulticastGroupSchedulingType,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
-import { onFinishFailed, getEnumName } from "../helpers";
+import { onFinishFailed } from "../helpers";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import AutocompleteInput from "../../components/AutocompleteInput";
+import DeviceProfileSelect from "../../components/DeviceProfileSelect";
 import type { OptionsCallbackFunc, OptionCallbackFunc } from "../../components/Autocomplete";
 
 interface IProps {
@@ -64,7 +65,7 @@ function FuotaDeploymentForm(props: IProps) {
     d.setApplicationId(v.applicationId);
 
     d.setName(v.name);
-    d.setDeviceProfileId(v.deviceProfileId);
+    d.setDeviceProfileId(v.deviceProfileId[v.deviceProfileId.length - 1]);
     d.setUnicastMaxRetryCount(v.unicastMaxRetryCount);
     d.setMulticastGroupType(v.multicastGroupType);
     d.setMulticastClassBPingSlotPeriodicity(v.multicastClassBPingSlotPeriodicity);
@@ -164,13 +165,13 @@ function FuotaDeploymentForm(props: IProps) {
           </Form.Item>
           <Row gutter={24}>
             <Col span={16}>
-              <AutocompleteInput
+              <DeviceProfileSelect
                 label="Device profile"
                 name="deviceProfileId"
-                getOption={getDeviceProfileOption}
-                getOptions={getDeviceProfileOptions}
-                disabled={props.disabled || props.update}
+                value={props.initialValues.getDeviceProfileId()}
+                tenant={props.tenant}
                 required
+                disabled={props.disabled || props.update}
               />
             </Col>
             <Col span={8}>

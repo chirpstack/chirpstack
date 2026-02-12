@@ -45,7 +45,7 @@ function Admin(props: PropsWithChildren<IProps>) {
   }, [props]);
 
   if (admin) {
-    return <div>{props.children}</div>;
+    return <>{props.children}</>;
   }
 
   return null;

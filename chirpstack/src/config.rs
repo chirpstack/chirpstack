@@ -5,6 +5,7 @@ use std::{env, fs};
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
+use tracing::warn;
 
 use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddrPrefix, EUI64Prefix, NetID};
@@ -57,6 +58,7 @@ pub struct Postgresql {
     pub dsn: String,
     pub max_open_connections: u32,
     pub ca_cert: String,
+    pub connection_recycling_method: String,
 }
 
 impl Default for Postgresql {
@@ -65,6 +67,7 @@ impl Default for Postgresql {
             dsn: "postgresql://chirpstack:chirpstack@localhost/chirpstack?sslmode=disable".into(),
             max_open_connections: 10,
             ca_cert: "".into(),
+            connection_recycling_method: "verified".into(),
         }
     }
 }
@@ -511,7 +514,9 @@ impl Default for OAuth2 {
 #[derive(Serialize, Deserialize, Default, Clone)]
 #[serde(default)]
 pub struct JoinServer {
+    pub resolve_join_eui_domain_suffix: String,
     pub servers: Vec<JoinServerServer>,
+    pub default: JoinServerServerDefault,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -525,6 +530,19 @@ pub struct JoinServerServer {
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,
+}
+
+#[derive(Serialize, Deserialize, Default, Clone)]
+#[serde(default)]
+pub struct JoinServerServerDefault {
+    pub enabled: bool,
+    #[serde(with = "humantime_serde")]
+    pub async_timeout: Duration,
+    pub server: String,
+    pub ca_cert: String,
+    pub tls_cert: String,
+    pub tls_key: String,
+    pub authorization_header: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]
@@ -548,6 +566,7 @@ pub struct BackendInterfaces {
 #[serde(default)]
 pub struct RoamingServer {
     pub net_id: NetID,
+    pub secondary_net_ids: Vec<NetID>,
     #[serde(with = "humantime_serde")]
     pub async_timeout: Duration,
     #[serde(with = "humantime_serde")]
@@ -689,6 +708,7 @@ pub struct ExtraChannel {
     pub frequency: u32,
     pub min_dr: u8,
     pub max_dr: u8,
+    pub data_rates: Vec<u8>,
 }
 
 #[derive(Default, Serialize, Deserialize, Clone)]
@@ -803,13 +823,13 @@ pub fn load(config_dir: &Path) -> Result<()> {
     for path in paths {
         let path = path.unwrap().path();
 
-        if let Some(ext) = path.extension() {
-            if ext == "toml" {
-                content.push_str(
-                    &fs::read_to_string(&path)
-                        .context(format!("Read config file: {}", path.display()))?,
-                );
-            }
+        if let Some(ext) = path.extension()
+            && ext == "toml"
+        {
+            content.push_str(
+                &fs::read_to_string(&path)
+                    .context(format!("Read config file: {}", path.display()))?,
+            );
         }
     }
 
@@ -818,7 +838,26 @@ pub fn load(config_dir: &Path) -> Result<()> {
         content = content.replace(&format!("${}", k), &v);
     }
 
-    let conf: Configuration = toml::from_str(&content)?;
+    let mut conf: Configuration = toml::from_str(&content)?;
+
+    // Backfill extra-channel data-rates.
+    for region in &mut conf.regions {
+        for extra_channel in &mut region.network.extra_channels {
+            if !extra_channel.data_rates.is_empty() {
+                continue;
+            }
+
+            warn!(
+                region = region.id,
+                "Using min_dr / max_dr for extra-channel configuration is deprecated, use data_rates instead!"
+            );
+
+            extra_channel
+                .data_rates
+                .extend(extra_channel.min_dr..=extra_channel.max_dr);
+        }
+    }
+
     set(conf);
 
     Ok(())
@@ -880,4 +919,18 @@ pub fn get_required_snr_for_sf(sf: u8) -> Result<f32> {
             return Err(anyhow!("Unknown sf {} for get_required_snr_for_sf", sf));
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_postgresql_connection_recycling_method_default() {
+        let conf = Postgresql::default();
+        assert_eq!(
+            conf.connection_recycling_method, "verified",
+            "Default connection_recycling_method should be 'verified' for backwards compatibility"
+        );
+    }
 }

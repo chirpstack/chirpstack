@@ -24,8 +24,11 @@
   validator.workspace = true
 
   # Database
-  email_address.workspace = true
-  diesel = { workspace = true, features = ["chrono", "numeric"] }
+  diesel = { workspace = true, features = [
+    "chrono",
+    "numeric",
+    "64-column-tables",
+  ] }
   diesel_migrations.workspace = true
   diesel-async.workspace = true
   tokio-postgres = { workspace = true, optional = true }
@@ -130,6 +133,7 @@
   scoped-futures.workspace = true
   signal-hook.workspace = true
   signal-hook-tokio.workspace = true
+  rpassword.workspace = true
 
 # Development and testing
 [dev-dependencies]

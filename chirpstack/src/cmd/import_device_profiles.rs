@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
@@ -7,7 +8,7 @@ use tracing::{Instrument, Level, info, span};
 use uuid::Uuid;
 
 use crate::codec::Codec;
-use crate::storage::{self, device_profile_template};
+use crate::storage::{self, device_profile, fields};
 use lrwn::region;
 
 #[derive(Deserialize)]
@@ -18,11 +19,11 @@ struct VendorConfig {
 #[derive(Default, Deserialize)]
 #[serde(default)]
 pub struct Vendor {
-    pub slug: String,
+    pub id: Uuid,
     pub name: String,
-    pub id: usize,
+    pub vendor_id: i32,
     pub ouis: Vec<String>,
-    pub devices: Vec<String>,
+    pub metadata: HashMap<String, String>,
 }
 
 #[derive(Deserialize)]
@@ -33,10 +34,11 @@ pub struct DeviceConfig {
 #[derive(Default, Deserialize)]
 #[serde(default)]
 pub struct Device {
-    pub slug: String,
+    pub id: Uuid,
     pub name: String,
     pub description: String,
     pub firmware: Vec<DeviceFirmware>,
+    pub metadata: HashMap<String, String>,
 }
 
 #[derive(Deserialize)]
@@ -138,15 +140,45 @@ pub async fn run(dir: &Path) -> Result<()> {
 async fn handle_vendor(dir: &Path) -> Result<()> {
     let vendor_conf = dir.join("vendor.toml");
     info!(path = ?vendor_conf, "Reading vendor configuration");
-
-    let mut vendor_conf: VendorConfig = toml::from_str(&fs::read_to_string(vendor_conf)?)?;
-    vendor_conf.vendor.slug = dir.file_name().unwrap().to_str().unwrap().to_string();
+    let vendor_conf: VendorConfig = toml::from_str(&fs::read_to_string(vendor_conf)?)?;
     info!(vendor_name = %vendor_conf.vendor.name, "Vendor loaded");
-    for device in &vendor_conf.vendor.devices {
+
+    info!(id = %vendor_conf.vendor.id, "Upserting vendor");
+    let _ = device_profile::upsert_vendor(device_profile::Vendor {
+        id: vendor_conf.vendor.id.into(),
+        name: vendor_conf.vendor.name.clone(),
+        vendor_id: vendor_conf.vendor.vendor_id,
+        ouis: fields::StringVec::new(
+            vendor_conf
+                .vendor
+                .ouis
+                .iter()
+                .map(|v| Some(v.clone()))
+                .collect(),
+        ),
+        metadata: fields::KeyValue::new(vendor_conf.vendor.metadata.clone()),
+        ..Default::default()
+    })
+    .await?;
+
+    handle_devices(dir, &vendor_conf.vendor).await?;
+
+    Ok(())
+}
+
+async fn handle_devices(dir: &Path, vendor: &Vendor) -> Result<()> {
+    info!(id = %vendor.id, "Upserting vendor devices");
+
+    let devices_dir = dir.join("devices");
+    let devices = fs::read_dir(devices_dir)?;
+
+    for device in devices.flatten() {
+        let device = device
+            .file_name()
+            .into_string()
+            .map_err(|e| anyhow!("{:?}", e))?;
         let span = span!(Level::INFO, "", device = %device);
-        handle_device(dir, &vendor_conf.vendor, device)
-            .instrument(span)
-            .await?;
+        handle_device(dir, vendor, &device).instrument(span).await?;
     }
 
     Ok(())
@@ -154,22 +186,24 @@ async fn handle_vendor(dir: &Path) -> Result<()> {
 
 async fn handle_device(dir: &Path, vendor: &Vendor, device: &str) -> Result<()> {
     let device_conf = dir.join("devices").join(device);
-    info!(path = ?device_conf, "Reading device configuration");
 
-    let mut device_conf: DeviceConfig = toml::from_str(&fs::read_to_string(device_conf)?)?;
-    device_conf.device.slug = dir
-        .join("devices")
-        .join(device)
-        .file_stem()
-        .unwrap()
-        .to_str()
-        .unwrap()
-        .to_string();
+    info!(path = ?device_conf, "Reading device configuration");
+    let device_conf: DeviceConfig = toml::from_str(&fs::read_to_string(device_conf)?)?;
     info!(device_name = %device_conf.device.name, "Device loaded");
+
+    let _ = device_profile::upsert_device(device_profile::Device {
+        id: device_conf.device.id.into(),
+        vendor_id: vendor.id.into(),
+        name: device_conf.device.name.clone(),
+        description: device_conf.device.description.clone(),
+        metadata: fields::KeyValue::new(device_conf.device.metadata.clone()),
+        ..Default::default()
+    })
+    .await?;
 
     for firmware in &device_conf.device.firmware {
         let span = span!(Level::INFO, "", firmware = %firmware.version);
-        handle_firmware(dir, vendor, &device_conf.device, firmware)
+        handle_firmware(dir, &device_conf.device, firmware)
             .instrument(span)
             .await?;
     }
@@ -177,12 +211,7 @@ async fn handle_device(dir: &Path, vendor: &Vendor, device: &str) -> Result<()> 
     Ok(())
 }
 
-async fn handle_firmware(
-    dir: &Path,
-    vendor: &Vendor,
-    device: &Device,
-    firmware: &DeviceFirmware,
-) -> Result<()> {
+async fn handle_firmware(dir: &Path, device: &Device, firmware: &DeviceFirmware) -> Result<()> {
     let codec = if let Some(codec) = &firmware.codec {
         let codec_path = dir.join("codecs").join(codec);
         info!(path = ?codec_path, "Reading codec file");
@@ -194,7 +223,7 @@ async fn handle_firmware(
 
     for profile in &firmware.profiles {
         let span = span!(Level::INFO, "", profile = %profile);
-        handle_profile(dir, vendor, device, firmware, &codec, profile)
+        handle_profile(dir, device, firmware, &codec, profile)
             .instrument(span)
             .await?;
     }
@@ -204,23 +233,18 @@ async fn handle_firmware(
 
 async fn handle_profile(
     dir: &Path,
-    vendor: &Vendor,
     device: &Device,
     firmware: &DeviceFirmware,
     codec: &Option<String>,
     profile: &str,
 ) -> Result<()> {
     let profile_path = dir.join("profiles").join(profile);
-    info!(path = ?profile_path, "Reading profile configuration");
 
+    info!(path = ?profile_path, "Reading profile configuration");
     let profile_conf: ProfileConfig = toml::from_str(&fs::read_to_string(profile_path)?)?;
 
-    let dpt = device_profile_template::DeviceProfileTemplate {
-        id: profile_conf.profile.id.to_string(),
+    let mut dp = device_profile::DeviceProfile {
         name: device.name.clone(),
-        description: device.description.clone(),
-        vendor: vendor.name.clone(),
-        firmware: firmware.version.clone(),
         region: profile_conf.profile.region,
         mac_version: profile_conf.profile.mac_version,
         reg_params_revision: profile_conf.profile.reg_params_revision,
@@ -229,30 +253,62 @@ async fn handle_profile(
             Some(_) => Codec::JS,
             None => Codec::NONE,
         },
-        payload_codec_script: match codec {
-            Some(v) => v.into(),
-            None => "".into(),
-        },
         uplink_interval: 60 * 60,
         device_status_req_interval: 1,
-        flush_queue_on_activate: true,
         supports_otaa: profile_conf.profile.supports_otaa,
         supports_class_b: profile_conf.profile.supports_class_b,
         supports_class_c: profile_conf.profile.supports_class_c,
-        class_b_timeout: profile_conf.profile.class_b.timeout_secs as i32,
-        class_b_ping_slot_periodicity: profile_conf.profile.class_b.ping_slot_periodicity as i32,
-        class_b_ping_slot_dr: profile_conf.profile.class_b.ping_slot_dr as i16,
-        class_b_ping_slot_freq: profile_conf.profile.class_b.ping_slot_freq as i64,
-        class_c_timeout: profile_conf.profile.class_c.timeout_secs as i32,
-        abp_rx1_delay: profile_conf.profile.abp.rx1_delay as i16,
-        abp_rx1_dr_offset: profile_conf.profile.abp.rx1_dr_offset as i16,
-        abp_rx2_dr: profile_conf.profile.abp.rx2_dr as i16,
-        abp_rx2_freq: profile_conf.profile.abp.rx2_freq as i64,
+        payload_codec_script: codec.clone().unwrap_or_default(),
+        flush_queue_on_activate: true,
+        description: device.description.clone(),
+        abp_params: if !profile_conf.profile.supports_otaa {
+            Some(fields::AbpParams {
+                rx1_delay: profile_conf.profile.abp.rx1_delay as u8,
+                rx1_dr_offset: profile_conf.profile.abp.rx1_dr_offset as u8,
+                rx2_dr: profile_conf.profile.abp.rx2_dr as u8,
+                rx2_freq: profile_conf.profile.abp.rx2_freq as u32,
+            })
+        } else {
+            None
+        },
+        class_b_params: if profile_conf.profile.supports_class_b {
+            Some(fields::ClassBParams {
+                timeout: profile_conf.profile.class_b.timeout_secs as u16,
+                ping_slot_periodicity: profile_conf.profile.class_b.ping_slot_periodicity as u8,
+                ping_slot_dr: profile_conf.profile.class_b.ping_slot_dr as u8,
+                ping_slot_freq: profile_conf.profile.class_b.ping_slot_freq as u32,
+            })
+        } else {
+            None
+        },
+        class_c_params: if profile_conf.profile.supports_class_c {
+            Some(fields::ClassCParams {
+                timeout: profile_conf.profile.class_c.timeout_secs as u16,
+            })
+        } else {
+            None
+        },
+        device_id: Some(device.id.into()),
+        firmware_version: firmware.version.clone(),
+        vendor_profile_id: profile_conf.profile.vendor_profile_id as i32,
         ..Default::default()
     };
 
-    info!(id = %dpt.id, "Creating or updating device-profile template");
-    device_profile_template::upsert(dpt).await?;
+    if let Ok(dp_existing) = device_profile::get_for_device_id_region_and_fw(
+        device.id,
+        profile_conf.profile.region,
+        &firmware.version,
+    )
+    .await
+    {
+        info!(id = %dp_existing.id, "Updating existing device-profile");
+        dp.id = dp_existing.id;
+        dp.created_at = dp_existing.created_at;
+        device_profile::update(dp).await?;
+    } else {
+        info!("Creating new device-profile");
+        device_profile::create(dp).await?;
+    }
 
     Ok(())
 }

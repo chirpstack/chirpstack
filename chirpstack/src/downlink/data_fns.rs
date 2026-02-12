@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{Context, Result};
 use rand::Rng;
 use tracing::{Instrument, Level, span, trace};
@@ -7,6 +9,7 @@ use crate::backend::roaming;
 use crate::storage::downlink_frame;
 use crate::{gateway, region};
 use chirpstack_api::{gw, internal};
+use lrwn::region::CommonName;
 
 pub struct Data {
     region_config_id: String,
@@ -42,11 +45,13 @@ impl Data {
             return Err(anyhow!("DLMetaData is not set"));
         }
 
-        let region_config_id = uplink_rx_info[0]
+        let rf_region = uplink_rx_info[0]
             .metadata
-            .get("region_config_id")
+            .get("rf_region")
             .cloned()
             .unwrap_or_default();
+        let region_common_name = CommonName::from_str(&rf_region)?;
+        let region_config_id = region::get_region_config_id(region_common_name)?;
 
         let mut ctx = Data {
             region_config_id,

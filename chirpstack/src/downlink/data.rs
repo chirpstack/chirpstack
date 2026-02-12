@@ -1,5 +1,5 @@
 use std::cmp;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -529,31 +529,30 @@ impl Data {
             }
 
             // Handle expired payload.
-            if let Some(expires_at) = qi.expires_at {
-                if expires_at < Utc::now() {
-                    device_queue::delete_item(&qi.id)
-                        .await
-                        .context("Delete device queue-item")?;
+            if let Some(expires_at) = qi.expires_at
+                && expires_at < Utc::now()
+            {
+                device_queue::delete_item(&qi.id)
+                    .await
+                    .context("Delete device queue-item")?;
 
-                    let pl = integration_pb::LogEvent {
-                        time: Some(Utc::now().into()),
-                        device_info: Some(device_info.clone()),
-                        level: integration_pb::LogLevel::Error.into(),
-                        code: integration_pb::LogCode::Expired.into(),
-                        description: "Device queue-item discarded because it has expired"
-                            .to_string(),
-                        context: [("queue_item_id".to_string(), qi.id.to_string())]
-                            .iter()
-                            .cloned()
-                            .collect(),
-                    };
+                let pl = integration_pb::LogEvent {
+                    time: Some(Utc::now().into()),
+                    device_info: Some(device_info.clone()),
+                    level: integration_pb::LogLevel::Error.into(),
+                    code: integration_pb::LogCode::Expired.into(),
+                    description: "Device queue-item discarded because it has expired".to_string(),
+                    context: [("queue_item_id".to_string(), qi.id.to_string())]
+                        .iter()
+                        .cloned()
+                        .collect(),
+                };
 
-                    integration::log_event(self.application.id.into(), &self.device.variables, &pl)
-                        .await;
-                    warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because it has expired");
+                integration::log_event(self.application.id.into(), &self.device.variables, &pl)
+                    .await;
+                warn!(dev_eui = %self.device.dev_eui, device_queue_item_id = %qi.id, "Device queue-item discarded because it has expired");
 
-                    continue;
-                }
+                continue;
             }
 
             // Handle payload size.
@@ -1162,12 +1161,42 @@ impl Data {
         let mut wanted_channels: HashMap<usize, lrwn::region::Channel> = HashMap::new();
         let ds = self.device.get_device_session_mut()?;
 
+        // Get the data-rates supported by the device, or else fallback onto
+        // the default min / max DR values.
+        let supported_ul_drs: HashSet<u8> =
+            if self.device_profile.supported_uplink_data_rates.is_empty() {
+                (self.region_conf.get_defaults().min_ul_dr
+                    ..=self.region_conf.get_defaults().max_ul_dr)
+                    .collect()
+            } else {
+                self.device_profile
+                    .supported_uplink_data_rates
+                    .iter()
+                    .filter_map(|&v| v.map(|v| v as u8))
+                    .collect()
+            };
+
         for i in self.region_conf.get_user_defined_uplink_channel_indices() {
-            let c = self.region_conf.get_uplink_channel(i)?;
-            wanted_channels.insert(i, c);
+            // We calculate the data-rates that the channel and device have
+            // in common. It could be that the device only supports a sub-set
+            // of the data-rates provided by the channel. E.g. the channel
+            // might support DR0-5 + DR12-13, but the device might only support
+            // DR0-5.
+            let mut channel = self.region_conf.get_uplink_channel(i)?;
+            let channel_drs: HashSet<u8> = channel.data_rates.into_iter().collect();
+            let mut common_drs: Vec<u8> = channel_drs
+                .intersection(&supported_ul_drs)
+                .cloned()
+                .collect();
+            common_drs.sort();
+
+            if !common_drs.is_empty() {
+                channel.data_rates = common_drs;
+                wanted_channels.insert(i, channel);
+            }
         }
 
-        // cleanup channels that do not exist anydmore
+        // cleanup channels that do not exist anymore
         // these will be disabled by the LinkADRReq channel-mask reconfiguration
         let ds_keys: Vec<usize> = ds
             .extra_uplink_channels
@@ -1189,17 +1218,23 @@ impl Data {
                     *k as usize,
                     lrwn::region::Channel {
                         frequency: v.frequency,
-                        min_dr: v.min_dr as u8,
-                        max_dr: v.max_dr as u8,
+                        data_rates: if v.data_rates.is_empty() {
+                            (v.min_dr..=v.max_dr).map(|v| v as u8).collect()
+                        } else {
+                            v.data_rates.iter().map(|&v| v as u8).collect()
+                        },
                         ..Default::default()
                     },
                 )
             })
             .collect();
 
-        if let Some(block) =
-            maccommand::new_channel::request(3, &current_channels, &wanted_channels)
-        {
+        if let Some(block) = maccommand::new_channel::request(
+            3,
+            &current_channels,
+            &wanted_channels,
+            self.region_conf.clone(),
+        )? {
             self.mac_commands.push(block);
         }
 
@@ -1914,22 +1949,22 @@ impl Data {
                 });
             }
 
-            if let Some(filter) = relay.filters.first() {
-                if !filter.provisioned {
-                    let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
-                        lrwn::FilterListReqPayload {
-                            filter_list_idx: 0,
-                            filter_list_action: lrwn::FilterListAction::Filter,
-                            filter_list_eui: vec![],
-                        },
-                    )]);
-                    self.mac_commands.push(set);
+            if let Some(filter) = relay.filters.first()
+                && !filter.provisioned
+            {
+                let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
+                    lrwn::FilterListReqPayload {
+                        filter_list_idx: 0,
+                        filter_list_action: lrwn::FilterListAction::Filter,
+                        filter_list_eui: vec![],
+                    },
+                )]);
+                self.mac_commands.push(set);
 
-                    // Return because we can't add multiple sets and if we would combine
-                    // multiple commands as a single set, it might not fit in a single
-                    // downlink.
-                    return Ok(());
-                }
+                // Return because we can't add multiple sets and if we would combine
+                // multiple commands as a single set, it might not fit in a single
+                // downlink.
+                return Ok(());
             }
         }
 
@@ -2569,41 +2604,41 @@ impl Data {
         let rx2_dr = self.region_conf.get_data_rate(false, ds.rx2_dr as u8)?;
 
         // the calculation below only applies for LORA modulation
-        if let lrwn::region::DataRateModulation::Lora(rx1_dr) = rx1_dr {
-            if let lrwn::region::DataRateModulation::Lora(rx2_dr) = rx2_dr {
-                let tx_power_rx1 = if self.network_conf.downlink_tx_power != -1 {
-                    self.network_conf.downlink_tx_power
-                } else {
-                    self.region_conf.get_downlink_tx_power_eirp(
-                        self.region_conf.get_rx1_frequency_for_uplink_frequency(
-                            self.uplink_frame_set.as_ref().unwrap().tx_info.frequency,
-                        )?,
-                    ) as i32
-                };
+        if let lrwn::region::DataRateModulation::Lora(rx1_dr) = rx1_dr
+            && let lrwn::region::DataRateModulation::Lora(rx2_dr) = rx2_dr
+        {
+            let tx_power_rx1 = if self.network_conf.downlink_tx_power != -1 {
+                self.network_conf.downlink_tx_power
+            } else {
+                self.region_conf.get_downlink_tx_power_eirp(
+                    self.region_conf.get_rx1_frequency_for_uplink_frequency(
+                        self.uplink_frame_set.as_ref().unwrap().tx_info.frequency,
+                    )?,
+                ) as i32
+            };
 
-                let tx_power_rx2 = if self.network_conf.downlink_tx_power != -1 {
-                    self.network_conf.downlink_tx_power
-                } else {
-                    self.region_conf
-                        .get_downlink_tx_power_eirp(ds.rx2_frequency) as i32
-                };
+            let tx_power_rx2 = if self.network_conf.downlink_tx_power != -1 {
+                self.network_conf.downlink_tx_power
+            } else {
+                self.region_conf
+                    .get_downlink_tx_power_eirp(ds.rx2_frequency) as i32
+            };
 
-                let link_budget_rx1 = sensitivity::calculate_link_budget(
-                    rx1_dr.bandwidth,
-                    6.0,
-                    config::get_required_snr_for_sf(rx1_dr.spreading_factor)?,
-                    tx_power_rx1 as f32,
-                );
+            let link_budget_rx1 = sensitivity::calculate_link_budget(
+                rx1_dr.bandwidth,
+                6.0,
+                config::get_required_snr_for_sf(rx1_dr.spreading_factor)?,
+                tx_power_rx1 as f32,
+            );
 
-                let link_budget_rx2 = sensitivity::calculate_link_budget(
-                    rx2_dr.bandwidth,
-                    6.0,
-                    config::get_required_snr_for_sf(rx2_dr.spreading_factor)?,
-                    tx_power_rx2 as f32,
-                );
+            let link_budget_rx2 = sensitivity::calculate_link_budget(
+                rx2_dr.bandwidth,
+                6.0,
+                config::get_required_snr_for_sf(rx2_dr.spreading_factor)?,
+                tx_power_rx2 as f32,
+            );
 
-                return Ok(link_budget_rx2 > link_budget_rx1);
-            }
+            return Ok(link_budget_rx2 > link_budget_rx1);
         }
 
         Ok(false)
@@ -2677,7 +2712,7 @@ mod test {
 
         let dp = device_profile::create(device_profile::DeviceProfile {
             name: "dp".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay: true,
                 ..Default::default()
@@ -3405,7 +3440,7 @@ mod test {
 
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay: true,
                 ..Default::default()
@@ -3417,7 +3452,7 @@ mod test {
 
         let dp_ed = device_profile::create(device_profile::DeviceProfile {
             name: "dp-ed".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay_ed: true,
                 ed_uplink_limit_bucket_size: 2,
@@ -3871,7 +3906,7 @@ mod test {
 
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay: true,
                 ..Default::default()
@@ -3883,7 +3918,7 @@ mod test {
 
         let dp_ed = device_profile::create(device_profile::DeviceProfile {
             name: "dp-ed".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             ..Default::default()
         })
         .await
@@ -4513,7 +4548,7 @@ mod test {
 
         let dp_relay = device_profile::create(device_profile::DeviceProfile {
             name: "dp-relay".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             relay_params: Some(fields::RelayParams {
                 is_relay: true,
                 ..Default::default()
@@ -4525,7 +4560,7 @@ mod test {
 
         let dp_ed = device_profile::create(device_profile::DeviceProfile {
             name: "dp-ed".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             ..Default::default()
         })
         .await

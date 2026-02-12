@@ -687,7 +687,7 @@ mod test {
 
         // create dp
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             name: "test-dp".into(),
             ..Default::default()
         })

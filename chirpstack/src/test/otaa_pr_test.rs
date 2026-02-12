@@ -152,7 +152,7 @@ async fn test_fns() {
                     recv_time,
                     rf_region: "EU868".to_string(),
                     gw_cnt: Some(1),
-                    gw_info: roaming::rx_info_to_gw_info(&[rx_info.clone()]).unwrap(),
+                    gw_info: roaming::rx_info_to_gw_info("EU868", &[rx_info.clone()]).unwrap(),
                     ..Default::default()
                 },
             });
@@ -286,7 +286,7 @@ async fn test_sns() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id,
+        tenant_id: Some(t.id),
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -341,10 +341,7 @@ async fn test_sns() {
     };
     rx_info
         .metadata
-        .insert("region_config_id".to_string(), "eu868".to_string());
-    rx_info
-        .metadata
-        .insert("region_common_name".to_string(), "EU868".to_string());
+        .insert("rf_region".to_string(), "EU868".to_string());
 
     let mut tx_info = gw::UplinkTxInfo {
         frequency: 868100000,
@@ -368,7 +365,7 @@ async fn test_sns() {
             recv_time,
             rf_region: "EU868".to_string(),
             gw_cnt: Some(1),
-            gw_info: roaming::rx_info_to_gw_info(&[rx_info.clone()]).unwrap(),
+            gw_info: roaming::rx_info_to_gw_info("EU868", &[rx_info.clone()]).unwrap(),
             ..Default::default()
         },
     };
@@ -472,7 +469,7 @@ async fn test_sns_roaming_not_allowed() {
 
     let dp = device_profile::create(device_profile::DeviceProfile {
         name: "dp".into(),
-        tenant_id: t.id,
+        tenant_id: Some(t.id),
         region: lrwn::region::CommonName::EU868,
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
         reg_params_revision: lrwn::region::Revision::A,
@@ -553,7 +550,7 @@ async fn test_sns_roaming_not_allowed() {
             recv_time,
             rf_region: "EU868".to_string(),
             gw_cnt: Some(1),
-            gw_info: roaming::rx_info_to_gw_info(&[rx_info.clone()]).unwrap(),
+            gw_info: roaming::rx_info_to_gw_info("EU868", &[rx_info.clone()]).unwrap(),
             ..Default::default()
         },
     };

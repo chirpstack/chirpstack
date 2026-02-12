@@ -96,11 +96,11 @@ impl Mesh {
 
         match gateway::get_relay_gateway(border_gw.tenant_id.into(), self.relay_id).await {
             Ok(mut v) => {
-                if let Some(last_seen_at) = v.last_seen_at {
-                    if last_seen_at > self.time {
-                        warn!("Time is less than last seen timestamp, ignoring heartbeat");
-                        return Ok(());
-                    }
+                if let Some(last_seen_at) = v.last_seen_at
+                    && last_seen_at > self.time
+                {
+                    warn!("Time is less than last seen timestamp, ignoring heartbeat");
+                    return Ok(());
                 }
 
                 v.last_seen_at = Some(self.time);

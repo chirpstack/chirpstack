@@ -18,7 +18,7 @@ function DeleteConfirmContent(props: IProps) {
   return (
     <Space direction="vertical">
       <Typography.Text>
-        Enter '{props.confirm}' to confirm you want to delete this {props.typ}:
+        Enter '{props.confirm}' to confirm you want to delete this {props.typ} (and all depending objects):
       </Typography.Text>
       <Input placeholder={props.confirm} onChange={onChange} />
       <Button onClick={props.onConfirm} disabled={confirm !== props.confirm} style={{ float: "right" }}>

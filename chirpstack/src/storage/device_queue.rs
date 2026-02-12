@@ -128,12 +128,11 @@ pub async fn get_next_for_dev_eui(dev_eui: &EUI64) -> Result<(DeviceQueueItem, b
 
     // In case the transmission is pending and hasn't timed-out yet, do not
     // return it.
-    if items[0].is_pending {
-        if let Some(timeout_after) = &items[0].timeout_after {
-            if timeout_after > &Utc::now() {
-                return Err(Error::NotFound(dev_eui.to_string()));
-            }
-        }
+    if items[0].is_pending
+        && let Some(timeout_after) = &items[0].timeout_after
+        && timeout_after > &Utc::now()
+    {
+        return Err(Error::NotFound(dev_eui.to_string()));
     }
 
     // Return first item and bool indicating if there are more items in the queue.

@@ -282,15 +282,15 @@ async fn handle_stream(
             if let redis::Value::BulkString(b) = v {
                 let pl = stream::UplinkFrameLog::decode(&mut Cursor::new(b))?;
                 let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
-                if pl.plaintext_f_opts {
-                    if let Err(e) = phy.decode_f_opts_to_mac_commands() {
-                        warn!(error = %e.full(), "Decode f_opts to mac-commands error");
-                    }
+                if pl.plaintext_f_opts
+                    && let Err(e) = phy.decode_f_opts_to_mac_commands()
+                {
+                    warn!(error = %e.full(), "Decode f_opts to mac-commands error");
                 }
-                if pl.plaintext_frm_payload {
-                    if let Err(e) = phy.decode_frm_payload() {
-                        warn!(error = %e.full(), "Decode frm_payload error");
-                    }
+                if pl.plaintext_frm_payload
+                    && let Err(e) = phy.decode_frm_payload()
+                {
+                    warn!(error = %e.full(), "Decode frm_payload error");
                 }
 
                 let pl = api::LogItem {
@@ -323,15 +323,15 @@ async fn handle_stream(
             if let redis::Value::BulkString(b) = v {
                 let pl = stream::DownlinkFrameLog::decode(&mut Cursor::new(b))?;
                 let mut phy = lrwn::PhyPayload::from_slice(&pl.phy_payload)?;
-                if pl.plaintext_f_opts {
-                    if let Err(e) = phy.decode_f_opts_to_mac_commands() {
-                        warn!(error = %e.full(), "Decode f_opts to mac-commands error");
-                    }
+                if pl.plaintext_f_opts
+                    && let Err(e) = phy.decode_f_opts_to_mac_commands()
+                {
+                    warn!(error = %e.full(), "Decode f_opts to mac-commands error");
                 }
-                if pl.plaintext_frm_payload {
-                    if let Err(e) = phy.decode_frm_payload() {
-                        warn!(error = %e.full(), "Decode frm_payload error");
-                    }
+                if pl.plaintext_frm_payload
+                    && let Err(e) = phy.decode_frm_payload()
+                {
+                    warn!(error = %e.full(), "Decode frm_payload error");
                 }
 
                 let pl = api::LogItem {

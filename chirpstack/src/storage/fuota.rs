@@ -183,12 +183,15 @@ impl Default for FuotaDeploymentJob {
 pub async fn create_deployment(d: FuotaDeployment) -> Result<FuotaDeployment, Error> {
     d.validate()?;
 
-    let app = storage::application::get(&d.application_id).await?;
     let dp = device_profile::get(&d.device_profile_id).await?;
-    if app.tenant_id != dp.tenant_id {
-        return Err(Error::Validation(
-            "The application and device-profile must be under the samen tenant".into(),
-        ));
+
+    if let Some(tenant_id) = dp.tenant_id {
+        let app = storage::application::get(&d.application_id).await?;
+        if app.tenant_id != tenant_id {
+            return Err(Error::Validation(
+                "The application and device-profile must be under the same tenant".into(),
+            ));
+        }
     }
 
     let d: FuotaDeployment = diesel::insert_into(fuota_deployment::table)
@@ -832,7 +835,7 @@ mod test {
         .unwrap();
 
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             name: "test-dp".into(),
             ..Default::default()
         })
@@ -905,7 +908,7 @@ mod test {
         .unwrap();
 
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             name: "test-dp".into(),
             ..Default::default()
         })
@@ -913,7 +916,7 @@ mod test {
         .unwrap();
 
         let dp2 = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             name: "test-dp".into(),
             ..Default::default()
         })
@@ -1020,7 +1023,7 @@ mod test {
         .unwrap();
 
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             name: "test-dp".into(),
             ..Default::default()
         })
@@ -1099,7 +1102,7 @@ mod test {
         .unwrap();
 
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             name: "test-dp".into(),
             ..Default::default()
         })
@@ -1185,7 +1188,7 @@ mod test {
         .unwrap();
 
         let dp = device_profile::create(device_profile::DeviceProfile {
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             name: "test-dp".into(),
             ..Default::default()
         })

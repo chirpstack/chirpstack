@@ -54,14 +54,12 @@ function LW10DeviceKeysForm(props: FormProps) {
         label="Application key"
         name="nwkKey"
         tooltip="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
-        value={props.initialValues.getNwkKey()}
         required
       />
       <AesKeyInput
         label="Gen App Key (for Remote Multicast Setup)"
         name="genAppKey"
         tooltip="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
-        value={props.initialValues.getGenAppKey()}
       />
       <Form.Item>
         <Button type="primary" htmlType="submit">
@@ -98,14 +96,12 @@ function LW11DeviceKeysForm(props: FormProps) {
         label="Application key"
         tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
         name="appKey"
-        value={props.initialValues.getAppKey()}
         required
       />
       <AesKeyInput
         label="Network key"
         tooltip="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
         name="nwkKey"
-        value={props.initialValues.getNwkKey()}
         required
       />
       <Form.Item>

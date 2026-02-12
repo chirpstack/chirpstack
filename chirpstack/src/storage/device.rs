@@ -424,14 +424,15 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
                     0
                 };
 
-                if let Some(relay) = &ds.relay {
-                    if !relayed && relay.ed_relay_only {
-                        info!(
-                            dev_eui = %d.dev_eui,
-                            "Only communication through relay is allowed"
-                        );
-                        return Err(Error::NotFound(dev_addr.to_string()));
-                    }
+                if let Some(relay) = &ds.relay
+                    && !relayed
+                    && relay.ed_relay_only
+                {
+                    info!(
+                        dev_eui = %d.dev_eui,
+                        "Only communication through relay is allowed"
+                    );
+                    return Err(Error::NotFound(dev_addr.to_string()));
                 }
 
                 // Update DevAddr in case of context switch + reset frame-counter.
@@ -578,7 +579,7 @@ pub async fn get_for_phypayload(
                 )
                 .context("Validate MIC")?;
 
-            if mic_ok && full_f_cnt >= d.f_cnt_up as u32 {
+            if mic_ok {
                 return Ok(d.clone());
             }
 
@@ -1038,7 +1039,7 @@ pub mod test {
             let dp = storage::device_profile::get(&device_profile_id)
                 .await
                 .unwrap();
-            dp.tenant_id
+            dp.tenant_id.unwrap()
         };
 
         let application_id = match application_id {
@@ -1403,7 +1404,7 @@ pub mod test {
 
         let dp = storage::device_profile::create(storage::device_profile::DeviceProfile {
             name: "test-dp".into(),
-            tenant_id: t.id,
+            tenant_id: Some(t.id),
             ..Default::default()
         })
         .await

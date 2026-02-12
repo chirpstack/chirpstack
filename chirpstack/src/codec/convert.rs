@@ -1,8 +1,8 @@
 pub fn rquickjs_to_struct(val: &rquickjs::Value) -> pbjson_types::Struct {
-    if val.type_of() == rquickjs::Type::Object {
-        if let Some(pbjson_types::value::Kind::StructValue(v)) = _rquickjs_to_struct_val(val) {
-            return v;
-        }
+    if val.type_of() == rquickjs::Type::Object
+        && let Some(pbjson_types::value::Kind::StructValue(v)) = _rquickjs_to_struct_val(val)
+    {
+        return v;
     }
 
     Default::default()

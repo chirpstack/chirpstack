@@ -37,12 +37,11 @@ pub fn setup() -> Result<()> {
         for ec in &r.network.extra_channels {
             trace!(
                 frequency = ec.frequency,
-                min_dr = ec.min_dr,
-                max_dr = ec.max_dr,
+                data_rates = ?ec.data_rates,
                 "Adding extra channel"
             );
             region_conf
-                .add_channel(ec.frequency, ec.min_dr, ec.max_dr)
+                .add_channel(ec.frequency, ec.data_rates.clone())
                 .context("Add channel")?;
         }
 
@@ -80,7 +79,7 @@ pub fn get(region_config_id: &str) -> Result<Arc<Box<dyn region::Region + Sync +
         .get(region_config_id)
         .ok_or_else(|| {
             anyhow!(
-                "region_config_id {} does not exist in REGIONS",
+                "region_config_id '{}' does not exist in REGIONS",
                 region_config_id
             )
         })?

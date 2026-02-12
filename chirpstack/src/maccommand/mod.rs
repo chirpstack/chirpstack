@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use anyhow::Result;
 use tracing::{error, warn};
@@ -40,6 +41,7 @@ pub async fn handle_uplink(
     app: &application::Application,
     dp: &device_profile::DeviceProfile,
     dev: &mut device::Device,
+    region_conf: Arc<Box<dyn lrwn::region::Region + Send + Sync>>,
 ) -> Result<(Vec<lrwn::MACCommandSet>, bool)> {
     let conf = config::get();
     if conf.network.mac_commands_disabled {
@@ -96,6 +98,7 @@ pub async fn handle_uplink(
             app,
             dp,
             dev,
+            region_conf.clone(),
         )
         .await
         {
@@ -124,6 +127,7 @@ async fn handle(
     app: &application::Application,
     dp: &device_profile::DeviceProfile,
     dev: &mut device::Device,
+    region_conf: Arc<Box<dyn lrwn::region::Region + Send + Sync>>,
 ) -> Result<Option<lrwn::MACCommandSet>> {
     match cid {
         lrwn::CID::DevStatusAns => {
@@ -133,7 +137,7 @@ async fn handle(
         lrwn::CID::DeviceTimeReq => device_time::handle(uplink_frame_set, dev, block),
         lrwn::CID::LinkADRAns => link_adr::handle(uplink_frame_set, dev, block, pending_block),
         lrwn::CID::LinkCheckReq => link_check::handle(uplink_frame_set, dev, block),
-        lrwn::CID::NewChannelAns => new_channel::handle(dev, block, pending_block),
+        lrwn::CID::NewChannelAns => new_channel::handle(dev, block, pending_block, region_conf),
         lrwn::CID::PingSlotChannelAns => ping_slot_channel::handle(dev, block, pending_block),
         lrwn::CID::PingSlotInfoReq => ping_slot_info::handle(dev, block),
         lrwn::CID::RejoinParamSetupAns => rejoin_param_setup::handle(dev, block, pending_block),
@@ -169,6 +173,9 @@ pub mod test {
 
     #[tokio::test]
     async fn test_handle_uplink() {
+        let region_conf = lrwn::region::get(lrwn::region::CommonName::EU868, false, false);
+        let region_conf = Arc::new(region_conf);
+
         let upfs = UplinkFrameSet {
             uplink_set_id: Uuid::nil(),
             dr: 0,
@@ -212,9 +219,10 @@ pub mod test {
         // must respond
         let cmds = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::RxTimingSetupAns]);
 
-        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &mut dev)
-            .await
-            .unwrap();
+        let (resp, must_respond) =
+            handle_uplink(&upfs, &cmds, &t, &app, &dp, &mut dev, region_conf.clone())
+                .await
+                .unwrap();
         assert_eq!(0, resp.len());
         assert!(must_respond);
 
@@ -223,9 +231,10 @@ pub mod test {
         conf.network.mac_commands_disabled = true;
         config::set(conf);
 
-        let (resp, must_respond) = handle_uplink(&upfs, &cmds, &t, &app, &dp, &mut dev)
-            .await
-            .unwrap();
+        let (resp, must_respond) =
+            handle_uplink(&upfs, &cmds, &t, &app, &dp, &mut dev, region_conf.clone())
+                .await
+                .unwrap();
         assert_eq!(0, resp.len());
         assert!(!must_respond); // must_respond is false as mac-command is ignored
     }

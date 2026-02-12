@@ -78,19 +78,10 @@ function ListAdminApiKeys() {
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
-        breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>API keys</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
-        )}
+        breadcrumbRender={() => <Breadcrumb items={[{ title: "Network Server" }, { title: "API Keys" }]} />}
         title="API keys"
         extra={[
-          <Button type="primary">
+          <Button type="primary" key="add-api-key">
             <Link to="/api-keys/create">Add API key</Link>
           </Button>,
         ]}

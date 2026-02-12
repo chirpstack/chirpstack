@@ -40,10 +40,22 @@
 
   # CA certificate (optional).
   #
-  # Set this to the path of the CA certificate in case you are using TLS and
-  # the server-certificate is not signed by a CA in the platform certificate
-  # store.
-  ca_cert=""
+  # This sets the min. number of idle connections in the PostgreSQL connection
+  # pool (0 = equal to max_open_connections).
+  min_idle_connections = 0
+
+  # Connection recycling method.
+  #
+  # This controls how connections are validated when returned to the connection pool.
+  # Options:
+  #  * verified - Run a validation query (SELECT 1) when recycling connections (safer, slightly slower)
+  #  * fast - Skip validation query when recycling connections (faster, but may return stale connections)
+  #
+  # The 'verified' method is recommended for production use to ensure connection health.
+  # Use 'fast' when using an external connection pooler (PgBouncer, AWS RDS Proxy,
+  # GCP Cloud SQL Connection Pooling) that already handles connection validation.
+  connection_recycling_method = "verified"
+
 
 # Redis configuration.
 [redis]

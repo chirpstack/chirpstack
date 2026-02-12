@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Modal, Spin, Cascader, Card } from "antd";
+import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import {
@@ -19,165 +19,39 @@ import {
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 import type { ListDeviceProfileAdrAlgorithmsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
-import type {
-  ListDeviceProfileTemplatesResponse,
-  GetDeviceProfileTemplateResponse,
-  DeviceProfileTemplateListItem,
-  DeviceProfileTemplate,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
-import {
-  ListDeviceProfileTemplatesRequest,
-  GetDeviceProfileTemplateRequest,
-} from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_template_pb";
 
 import { getEnumName, onFinishFailed } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
-import DeviceProfileTemplateStore from "../../stores/DeviceProfileTemplateStore";
 import CodeEditor from "../../components/CodeEditor";
-
-interface ModalProps {
-  onOk: (dp: DeviceProfileTemplate) => void;
-  onCancel: () => void;
-  visible: boolean;
-}
-
-interface Option {
-  value: string;
-  label: string;
-  children?: Option[];
-}
-
-function TemplateModal(props: ModalProps) {
-  const [templates, setTemplates] = useState<DeviceProfileTemplateListItem[]>([]);
-  const [templatesLoaded, setTemplatesLoaded] = useState<boolean>(false);
-  const [templateId, setTemplateId] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (props.visible) {
-      setTemplatesLoaded(false);
-
-      const req = new ListDeviceProfileTemplatesRequest();
-      req.setLimit(99999);
-
-      DeviceProfileTemplateStore.list(req, (resp: ListDeviceProfileTemplatesResponse) => {
-        setTemplatesLoaded(true);
-        setTemplates(resp.getResultList());
-      });
-    }
-  }, [props]);
-
-  const onChange = (value: (string | number)[]) => {
-    setTemplateId(value.at(-1)! as string);
-  };
-
-  const onOk = () => {
-    if (templateId) {
-      const req = new GetDeviceProfileTemplateRequest();
-      req.setId(templateId);
-
-      DeviceProfileTemplateStore.get(req, (resp: GetDeviceProfileTemplateResponse) => {
-        const dp = resp.getDeviceProfileTemplate();
-        if (dp) {
-          props.onOk(dp);
-        }
-      });
-    }
-  };
-
-  const options: Option[] = [];
-  let vendor = "";
-  let device = "";
-  let firmware = "";
-  let region = "";
-
-  for (const item of templates) {
-    if (vendor !== item.getVendor()) {
-      options.push({
-        value: item.getId(),
-        label: item.getVendor(),
-        children: [],
-      });
-
-      vendor = item.getVendor();
-      device = "";
-      firmware = "";
-      region = "";
-    }
-
-    if (device !== item.getName()) {
-      options.at(-1)!.children!.push({
-        value: item.getId(),
-        label: item.getName(),
-        children: [],
-      });
-
-      device = item.getName();
-      firmware = "";
-      region = "";
-    }
-
-    if (firmware !== item.getFirmware()) {
-      options
-        .at(-1)!
-        .children!.at(-1)!
-        .children!.push({
-          value: item.getId(),
-          label: "FW version: " + item.getFirmware(),
-          children: [],
-        });
-
-      firmware = item.getFirmware();
-      region = "";
-    }
-
-    if (region !== getEnumName(Region, item.getRegion())) {
-      options
-        .at(-1)!
-        .children!.at(-1)!
-        .children!.at(-1)!
-        .children!.push({
-          value: item.getId(),
-          label: getEnumName(Region, item.getRegion()),
-          children: [],
-        });
-
-      region = getEnumName(Region, item.getRegion());
-    }
-  }
-
-  return (
-    <Modal
-      title="Select device-profile template"
-      visible={props.visible}
-      width="80%"
-      bodyStyle={{ height: 300 }}
-      onOk={onOk}
-      onCancel={props.onCancel}
-      okButtonProps={{ disabled: !templateId }}
-    >
-      {!templatesLoaded && (
-        <div className="spinner">
-          <Spin />
-        </div>
-      )}
-      {templatesLoaded && (
-        <Cascader
-          style={{ width: "100%" }}
-          placeholder="Select a device-profile template"
-          options={options}
-          onChange={onChange}
-        />
-      )}
-    </Modal>
-  );
-}
 
 interface IProps {
   initialValues: DeviceProfile;
   onFinish: (obj: DeviceProfile) => void;
   disabled?: boolean;
 }
+
+const dataRates: {
+  label: string;
+  value: number;
+}[] = [
+  { label: "DR0", value: 0 },
+  { label: "DR1", value: 1 },
+  { label: "DR2", value: 2 },
+  { label: "DR3", value: 3 },
+  { label: "DR4", value: 4 },
+  { label: "DR5", value: 5 },
+  { label: "DR6", value: 6 },
+  { label: "DR7", value: 7 },
+  { label: "DR8", value: 8 },
+  { label: "DR9", value: 9 },
+  { label: "DR10", value: 10 },
+  { label: "DR11", value: 11 },
+  { label: "DR12", value: 12 },
+  { label: "DR13", value: 13 },
+  { label: "DR14", value: 14 },
+  { label: "DR15", value: 15 },
+];
 
 function DeviceProfileForm(props: IProps) {
   const [form] = Form.useForm();
@@ -191,7 +65,6 @@ function DeviceProfileForm(props: IProps) {
   const [adrAlgorithms, setAdrAlgorithms] = useState<[string, string][]>([]);
   const [regionConfigurations, setRegionConfigurations] = useState<RegionListItem[]>([]);
   const [regionConfigurationsFiltered, setRegionConfigurationsFiltered] = useState<[string, string][]>([]);
-  const [templateModalVisible, setTemplateModalVisible] = useState<boolean>(false);
   const [tabActive, setTabActive] = useState<string>("1");
 
   useEffect(() => {
@@ -248,6 +121,7 @@ function DeviceProfileForm(props: IProps) {
     dp.setUplinkInterval(v.uplinkInterval);
     dp.setDeviceStatusReqInterval(v.deviceStatusReqInterval);
     dp.setRx1Delay(v.rx1Delay);
+    dp.setSupportedUplinkDataRatesList(v.supportedUplinkDataRatesList);
 
     // join otaa /abp
     dp.setSupportsOtaa(v.supportsOtaa);
@@ -352,51 +226,6 @@ function DeviceProfileForm(props: IProps) {
     setIsRelayEd(checked);
   };
 
-  const showTemplateModal = () => {
-    setTemplateModalVisible(true);
-  };
-
-  const onTemplateModalOk = (dp: DeviceProfileTemplate) => {
-    setTemplateModalVisible(false);
-
-    form.setFieldsValue({
-      name: dp.getName(),
-      description: dp.getDescription(),
-      region: dp.getRegion(),
-      macVersion: dp.getMacVersion(),
-      regParamsRevision: dp.getRegParamsRevision(),
-      adrAlgorithmId: dp.getAdrAlgorithmId(),
-      payloadCodecRuntime: dp.getPayloadCodecRuntime(),
-      payloadCodecScript: dp.getPayloadCodecScript(),
-      flushQueueOnActivate: dp.getFlushQueueOnActivate(),
-      uplinkInterval: dp.getUplinkInterval(),
-      deviceStatusReqInterval: dp.getDeviceStatusReqInterval(),
-      supportsOtaa: dp.getSupportsOtaa(),
-      supportsClassB: dp.getSupportsClassB(),
-      supportsClassC: dp.getSupportsClassC(),
-      classCTimeout: dp.getClassCTimeout(),
-      classBTimeout: dp.getClassBTimeout(),
-      classBPingSlotPeriodicity: dp.getClassBPingSlotPeriodicity(),
-      classBPingSlotDr: dp.getClassBPingSlotDr(),
-      classBPingSlotFreq: dp.getClassBPingSlotFreq(),
-      abpRx1Delay: dp.getAbpRx1Delay(),
-      abpRx2Dr: dp.getAbpRx2Dr(),
-      abpRx2Freq: dp.getAbpRx2Freq(),
-      abpRx1DrOffset: dp.getAbpRx1DrOffset(),
-      tagsMap: dp.toObject().tagsMap,
-      measurementsMap: dp.toObject().measurementsMap,
-    });
-
-    setSupportsOtaa(dp.getSupportsOtaa());
-    setSupportsClassB(dp.getSupportsClassB());
-    setSupportsClassC(dp.getSupportsClassC());
-    setPayloadCodecRuntime(dp.getPayloadCodecRuntime());
-  };
-
-  const onTemplateModalCancel = () => {
-    setTemplateModalVisible(false);
-  };
-
   const onRegionChange = (region: Region) => {
     const regionConfigurationsFiltered: [string, string][] = [];
     for (const r of regionConfigurations) {
@@ -417,11 +246,6 @@ function DeviceProfileForm(props: IProps) {
     .map(v => v.getRegion())
     .filter((v, i, a) => a.indexOf(v) === i)
     .map(v => <Select.Option value={v}>{getEnumName(Region, v).replace("_", "-")}</Select.Option>);
-  const operations = (
-    <Button type="primary" onClick={showTemplateModal}>
-      Select device-profile template
-    </Button>
-  );
 
   return (
     <Form
@@ -431,8 +255,7 @@ function DeviceProfileForm(props: IProps) {
       onFinishFailed={onFinishFailed}
       form={form}
     >
-      <TemplateModal visible={templateModalVisible} onOk={onTemplateModalOk} onCancel={onTemplateModalCancel} />
-      <Tabs tabBarExtraContent={operations} activeKey={tabActive} onChange={onTabChange}>
+      <Tabs activeKey={tabActive} onChange={onTabChange}>
         <Tabs.TabPane tab="General" key="1" forceRender>
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
             <Input disabled={props.disabled} />
@@ -498,6 +321,7 @@ function DeviceProfileForm(props: IProps) {
                   <Select.Option value={RegParamsRevision.RP002_1_0_2}>RP002-1.0.2</Select.Option>
                   <Select.Option value={RegParamsRevision.RP002_1_0_3}>RP002-1.0.3</Select.Option>
                   <Select.Option value={RegParamsRevision.RP002_1_0_4}>RP002-1.0.4</Select.Option>
+                  <Select.Option value={RegParamsRevision.RP002_1_0_5}>RP002-1.0.5</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -533,7 +357,7 @@ function DeviceProfileForm(props: IProps) {
             </Col>
           </Row>
           <Row>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label="Expected uplink interval (secs)"
                 tooltip="The expected interval in seconds in which the device sends uplink messages. This is used to determine if a device is active or inactive."
@@ -548,7 +372,7 @@ function DeviceProfileForm(props: IProps) {
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label="Device-status request frequency (req/day)"
                 tooltip="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
@@ -557,13 +381,24 @@ function DeviceProfileForm(props: IProps) {
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+          </Row>
+          <Row>
+            <Col span={12}>
               <Form.Item
                 label="RX1 Delay (0 = use system default)"
                 tooltip="This option makes it possible to set a higher RX1 Delay for devices using this device-profile. Note that a lower value than the system default will be ignored. If configured and incremented, then ChirpStack will increase the downlink data delay with the same increment."
                 name="rx1Delay"
               >
                 <InputNumber min={0} max={15} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Supported data-rates"
+                tooltip="If not set, the default region data-rates will be used (which is most likely what you want). Only set this value if you know what you are doing."
+                name="supportedUplinkDataRatesList"
+              >
+                <Select mode="multiple" options={dataRates} disabled={props.disabled} allowClear />
               </Form.Item>
             </Col>
           </Row>

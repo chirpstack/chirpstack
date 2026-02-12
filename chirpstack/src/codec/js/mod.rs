@@ -39,59 +39,50 @@ pub async fn decode(
 
     let script = format!(
         r#"
+        import {{ Buffer }} from "buffer";
+
         {}
 
-        decodeUplink(chirpstack_input)
+        export default decodeUplink(chirpstack_input);
         "#,
         decode_config
     );
     let b = b.to_vec();
 
     let out = ctx.with(|ctx| -> Result<pbjson_types::Struct> {
-        // We need to export the Buffer class, as eval / eval_with_options
-        // does not allow using import statement.
-        let buff = rquickjs::Module::declare(
-            ctx.clone(),
-            "b",
-            r#"
-            import { Buffer } from "buffer";
-            export { Buffer }
-            "#,
-        )
-        .context("Declare script")?;
-        let (buff, buff_promise) = buff
-            .eval()
-            .catch(&ctx)
-            .map_err(|e| anyhow!("JS error: {}", e))?;
-        () = buff_promise.finish()?;
-        let buff: rquickjs::Function = buff.get("Buffer")?;
-
         let input = rquickjs::Object::new(ctx.clone())?;
         input.set("bytes", b.into_js(&ctx)?)?;
         input.set("fPort", f_port.into_js(&ctx)?)?;
         input.set("recvTime", recv_time.into_js(&ctx)?)?;
         input.set("variables", variables.into_js(&ctx)?)?;
+        ctx.globals().set("chirpstack_input", input)?;
 
-        let globals = ctx.globals();
-        globals.set("chirpstack_input", input)?;
-        globals.set("Buffer", buff)?;
+        let module = rquickjs::Module::declare(ctx.clone(), "main", script)
+            .catch(&ctx)
+            .map_err(|e| anyhow!("JS error: {}", e))?;
 
-        let mut eval_options = rquickjs::context::EvalOptions::default();
-        eval_options.strict = false;
+        let (module, promise) = module
+            .eval()
+            .catch(&ctx)
+            .map_err(|e| anyhow!("JS error: {}", e))?;
+        () = promise
+            .finish()
+            .catch(&ctx)
+            .map_err(|e| anyhow!("JS error: {}", e))?;
 
-        let res: rquickjs::Object = ctx
-            .eval_with_options(script, eval_options)
+        let res: rquickjs::Object = module
+            .get("default")
             .catch(&ctx)
             .map_err(|e| anyhow!("JS error: {}", e))?;
 
         let errors: Result<Vec<String>, rquickjs::Error> = res.get("errors");
-        if let Ok(errors) = errors {
-            if !errors.is_empty() {
-                return Err(anyhow!(
-                    "decodeUplink returned errors: {}",
-                    errors.join(", ")
-                ));
-            }
+        if let Ok(errors) = errors
+            && !errors.is_empty()
+        {
+            return Err(anyhow!(
+                "decodeUplink returned errors: {}",
+                errors.join(", ")
+            ));
         }
 
         Ok(convert::rquickjs_to_struct(&res))
@@ -131,56 +122,47 @@ pub async fn encode(
 
     let script = format!(
         r#"
+        import {{ Buffer }} from "buffer";
+
         {}
 
-        encodeDownlink(chirpstack_input)
+        export default encodeDownlink(chirpstack_input);
         "#,
         encode_config,
     );
 
     ctx.with(|ctx| {
-        // We need to export the Buffer class, as eval / eval_with_options
-        // does not allow using import statement.
-        let buff = rquickjs::Module::declare(
-            ctx.clone(),
-            "b",
-            r#"
-            import { Buffer } from "buffer";
-            export { Buffer }
-            "#,
-        )
-        .context("Declare script")?;
-        let (buff, buff_promise) = buff
-            .eval()
-            .catch(&ctx)
-            .map_err(|e| anyhow!("JS error: {}", e))?;
-        () = buff_promise.finish()?;
-        let buff: rquickjs::Function = buff.get("Buffer")?;
-
         let input = rquickjs::Object::new(ctx.clone())?;
         input.set("variables", variables.into_js(&ctx)?)?;
         input.set("data", convert::struct_to_rquickjs(&ctx, s))?;
+        ctx.globals().set("chirpstack_input", input)?;
 
-        let globals = ctx.globals();
-        globals.set("chirpstack_input", input)?;
-        globals.set("Buffer", buff)?;
+        let module = rquickjs::Module::declare(ctx.clone(), "main", script)
+            .catch(&ctx)
+            .map_err(|e| anyhow!("JS error: {}", e))?;
 
-        let mut eval_options = rquickjs::context::EvalOptions::default();
-        eval_options.strict = false;
+        let (module, promise) = module
+            .eval()
+            .catch(&ctx)
+            .map_err(|e| anyhow!("JS error: {}", e))?;
+        () = promise
+            .finish()
+            .catch(&ctx)
+            .map_err(|e| anyhow!("JS error: {}", e))?;
 
-        let res: rquickjs::Object = ctx
-            .eval_with_options(script, eval_options)
+        let res: rquickjs::Object = module
+            .get("default")
             .catch(&ctx)
             .map_err(|e| anyhow!("JS error: {}", e))?;
 
         let errors: Result<Vec<String>, rquickjs::Error> = res.get("errors");
-        if let Ok(errors) = errors {
-            if !errors.is_empty() {
-                return Err(anyhow!(
-                    "encodeDownlink returned errors: {}",
-                    errors.join(", ")
-                ));
-            }
+        if let Ok(errors) = errors
+            && !errors.is_empty()
+        {
+            return Err(anyhow!(
+                "encodeDownlink returned errors: {}",
+                errors.join(", ")
+            ));
         }
 
         // Directly into u8 can result into the following error:
@@ -230,9 +212,34 @@ pub mod test {
         let out = decode(Utc::now(), 10, &vars, &decoder, &[0x01, 0x02, 0x03]).await;
 
         assert_eq!(
-            "JS error: Error: foo is not defined\n    at decodeUplink (eval_script:3:1)\n    at <eval> (eval_script:8:22)\n",
+            "JS error: Error: foo is not defined\n    at decodeUplink (main:5:1)\n    at <anonymous> (main:10:37)\n",
             out.err().unwrap().to_string()
         );
+    }
+
+    #[tokio::test]
+    pub async fn test_decode_buffer_ieee754() {
+        let recv_time = Utc.with_ymd_and_hms(2014, 7, 8, 9, 10, 11).unwrap();
+
+        let decoder = r#"
+            function decodeUplink(input) {
+                var buf = new Buffer(input.bytes);
+
+                return {
+                    data: {
+                        temp: buf.readFloatBE(0).toFixed(3),
+                    }
+                };
+            }
+        "#
+        .to_string();
+
+        let vars: HashMap<String, String> = HashMap::new();
+
+        // This tests that the buffer module correctly resolves the ieee754 module.
+        let _ = decode(recv_time, 10, &vars, &decoder, &[0x00, 0x00, 0x00, 0x00])
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
@@ -372,7 +379,7 @@ pub mod test {
 
         let out = encode(10, &vars, &encoder, &input).await;
         assert_eq!(
-            "JS error: Error: foo is not defined\n    at encodeDownlink (eval_script:3:1)\n    at <eval> (eval_script:8:24)\n",
+            "JS error: Error: foo is not defined\n    at encodeDownlink (main:5:1)\n    at <anonymous> (main:10:39)\n",
             out.err().unwrap().to_string()
         );
     }

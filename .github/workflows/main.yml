@@ -22,13 +22,25 @@ jobs:
       DATABASE: ${{ matrix.database }}
     steps:
       -
+        name: Remove pre-installed software
+        run: |
+          echo "Before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet \
+                       /usr/local/lib/android \
+                       /opt/ghc \
+                       /usr/local/share/boost \
+                       "$AGENT_TOOLSDIRECTORY"
+          echo "After cleanup:"
+          df -h
+      -
         name: Checkout
         uses: actions/checkout@v4
       - 
         name: Install Nix
         uses: cachix/install-nix-action@v27
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-25.11
       -
         name: Cargo cache
         uses: actions/cache@v4
@@ -63,13 +75,25 @@ jobs:
       DATABASE: ${{ matrix.database }}
     steps:
       -
+        name: Remove pre-installed software
+        run: |
+          echo "Before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet \
+                       /usr/local/lib/android \
+                       /opt/ghc \
+                       /usr/local/share/boost \
+                       "$AGENT_TOOLSDIRECTORY"
+          echo "After cleanup:"
+          df -h
+      -
         name: Checkout
         uses: actions/checkout@v4
       - 
         name: Install Nix
         uses: cachix/install-nix-action@v27
         with:
-          nix_path: nixpkgs=channel:nixos-25.05
+          nix_path: nixpkgs=channel:nixos-25.11
       -
         name: Cargo cache
         uses: actions/cache@v4

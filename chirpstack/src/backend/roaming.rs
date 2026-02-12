@@ -217,15 +217,29 @@ pub fn get_net_ids_for_dev_addr(dev_addr: DevAddr) -> Vec<NetID> {
         if dev_addr.is_net_id(agreement.net_id) {
             out.push(agreement.net_id);
         }
+
+        for secondary_net_id in &agreement.secondary_net_ids {
+            if dev_addr.is_net_id(*secondary_net_id) {
+                out.push(agreement.net_id);
+            }
+        }
     }
 
     out
 }
 
-pub fn rx_info_to_gw_info(rx_info_set: &[gw::UplinkRxInfo]) -> Result<Vec<GWInfoElement>> {
+pub fn rx_info_to_gw_info(
+    rf_region: &str,
+    rx_info_set: &[gw::UplinkRxInfo],
+) -> Result<Vec<GWInfoElement>> {
     let mut out: Vec<GWInfoElement> = Vec::new();
 
     for rx_info in rx_info_set {
+        let mut rx_info = rx_info.clone();
+        rx_info
+            .metadata
+            .insert("rf_region".to_string(), rf_region.to_string());
+
         let gw_id = EUI64::from_str(&rx_info.gateway_id)?;
 
         out.push(GWInfoElement {
@@ -234,7 +248,7 @@ pub fn rx_info_to_gw_info(rx_info_set: &[gw::UplinkRxInfo]) -> Result<Vec<GWInfo
                 .fine_time_since_gps_epoch
                 .as_ref()
                 .map(|v| v.nanos as usize),
-            rf_region: "".to_string(),
+            rf_region: rf_region.to_string(),
             rssi: Some(rx_info.rssi as isize),
             snr: Some(rx_info.snr),
             lat: rx_info.location.as_ref().map(|v| v.latitude),
@@ -408,6 +422,58 @@ mod test {
             config::set(conf);
 
             assert_eq!(tst.is_roaming, is_roaming_dev_addr(tst.dev_addr));
+        }
+    }
+
+    #[test]
+    fn test_get_net_ids_for_dev_addr() {
+        struct Test {
+            dev_addr: DevAddr,
+            net_id: NetID,
+            secondary_net_ids: Vec<NetID>,
+            expected: Vec<NetID>,
+        }
+
+        let tests = vec![
+            Test {
+                dev_addr: {
+                    let mut dev_addr = DevAddr::from_be_bytes([1, 2, 3, 4]);
+                    dev_addr.set_dev_addr_prefix(NetID::from_be_bytes([1, 2, 3]).dev_addr_prefix());
+                    dev_addr
+                },
+                net_id: NetID::from_be_bytes([1, 2, 3]),
+                secondary_net_ids: vec![],
+                expected: vec![NetID::from_be_bytes([1, 2, 3])],
+            },
+            Test {
+                dev_addr: {
+                    let mut dev_addr = DevAddr::from_be_bytes([1, 2, 3, 4]);
+                    dev_addr.set_dev_addr_prefix(NetID::from_be_bytes([2, 2, 3]).dev_addr_prefix());
+                    dev_addr
+                },
+                net_id: NetID::from_be_bytes([1, 2, 3]),
+                secondary_net_ids: vec![],
+                expected: vec![],
+            },
+            Test {
+                dev_addr: {
+                    let mut dev_addr = DevAddr::from_be_bytes([1, 2, 3, 4]);
+                    dev_addr.set_dev_addr_prefix(NetID::from_be_bytes([2, 2, 3]).dev_addr_prefix());
+                    dev_addr
+                },
+                net_id: NetID::from_be_bytes([1, 2, 3]),
+                secondary_net_ids: vec![NetID::from_be_bytes([2, 2, 3])],
+                expected: vec![NetID::from_be_bytes([1, 2, 3])],
+            },
+        ];
+
+        for tst in &tests {
+            let mut conf = config::Configuration::default();
+            conf.roaming.servers = vec![config::RoamingServer {
+                net_id: tst.net_id,
+                secondary_net_ids: tst.secondary_net_ids.clone(),
+                ..Default::default()
+            }];
         }
     }
 }

@@ -70,7 +70,7 @@ function GatewaysMap() {
     }
 
     markers.push(
-      <Marker position={[pos[0], pos[1]]} faIcon="wifi" color={color}>
+      <Marker position={[pos[0], pos[1]]} faIcon="wifi" color={color} key={item.getGatewayId()}>
         <Popup>
           <Link to={`/tenants/${item.getTenantId()}/gateways/${item.getGatewayId()}`}>{item.getName()}</Link>
           <br />
@@ -242,16 +242,7 @@ function Dashboard() {
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
-        breadcrumbRender={() => (
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              <span>Network Server</span>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <span>Dashboard</span>
-            </Breadcrumb.Item>
-          </Breadcrumb>
-        )}
+        breadcrumbRender={() => <Breadcrumb items={[{ title: "Network Server" }, { title: "Dashboard" }]} />}
         title="Dashboard"
       />
       <Row gutter={24}>

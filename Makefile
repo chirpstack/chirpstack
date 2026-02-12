@@ -12,7 +12,7 @@ dev-dependencies:
 # Set the versions
 version:
 	test -n "$(VERSION)"
-	sed -i 's/^  version.*/  version = "$(VERSION)"/g' ./Cargo.toml
+	sed -i 's/^    version.*/    version = "$(VERSION)"/g' ./Cargo.toml
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./ui/package.json
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/grpc-web/package.json
 	sed -i 's/"version.*/"version": "$(VERSION)",/g' ./api/js/package.json

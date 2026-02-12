@@ -16,6 +16,12 @@ impl ToStatus for storage::error::Error {
             storage::error::Error::InvalidEmail => {
                 Status::new(Code::InvalidArgument, format!("{:#}", self))
             }
+            storage::error::Error::PasswordTooShort => {
+                Status::new(Code::InvalidArgument, format!("{:#}", self))
+            }
+            storage::error::Error::PasswordTooLong => {
+                Status::new(Code::InvalidArgument, format!("{:#}", self))
+            }
             storage::error::Error::HashPassword(_) => {
                 Status::new(Code::InvalidArgument, format!("{:#}", self))
             }

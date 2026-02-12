@@ -380,12 +380,12 @@ impl TenantService for Tenant {
             .await?;
 
         let auth_id = request.extensions().get::<AuthID>().unwrap();
-        if let AuthID::User(id) = auth_id {
-            if id == &user_id {
-                return Err(Status::invalid_argument(
-                    "you can not delete yourself from the user",
-                ));
-            }
+        if let AuthID::User(id) = auth_id
+            && id == &user_id
+        {
+            return Err(Status::invalid_argument(
+                "you can not delete yourself from the user",
+            ));
         }
 
         tenant::delete_user(&tenant_id, &user_id)

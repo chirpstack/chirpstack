@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { Button, Menu, Dropdown, Input, AutoComplete } from "antd";
+import { Button, Dropdown, Input, AutoComplete } from "antd";
 import { UserOutlined, DownOutlined, QuestionOutlined } from "@ant-design/icons";
 
 import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
@@ -10,11 +10,13 @@ import { GlobalSearchRequest } from "@chirpstack/chirpstack-api-grpc-web/api/int
 
 import InternalStore from "../stores/InternalStore";
 import SessionStore from "../stores/SessionStore";
+import { MenuProps } from "antd/lib";
 
 const renderTitle = (title: string) => <span>{title}</span>;
 
 const renderItem = (title: string, url: string) => ({
   value: title,
+  url,
   label: <Link to={url}>{title}</Link>,
 });
 
@@ -42,6 +44,13 @@ function Header({ user }: { user: User }) {
     InternalStore.globalSearch(req, (resp: GlobalSearchResponse) => {
       setSearchResult(resp);
     });
+  };
+
+  // this type assertion is needed because of a bug in antd's AutoComplete typings
+  const onSelect = (_: unknown, _option: (typeof options)[number]) => {
+    const option = _option as unknown as ReturnType<typeof renderItem>;
+
+    navigate(option.url);
   };
 
   const onLogout = () => {
@@ -74,16 +83,22 @@ function Header({ user }: { user: User }) {
   const oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
   const oAuth2Enabled = settings!.getOauth2()!.getEnabled();
 
-  const menu = (
-    <Menu>
-      {!(oidcEnabled || oAuth2Enabled) && (
-        <Menu.Item>
-          <Link to={`/users/${user.getId()}/password`}>Change password</Link>
-        </Menu.Item>
-      )}
-      <Menu.Item onClick={onLogout}>Logout</Menu.Item>
-    </Menu>
-  );
+  let menu: MenuProps = {};
+
+  if (!(oidcEnabled || oAuth2Enabled)) {
+    menu.items = [
+      {
+        key: "change-pw",
+        label: <Link to={`/users/${user.getId()}/password`}>Change password</Link>,
+      },
+    ];
+  }
+
+  menu.items?.push({
+    key: "logout",
+    label: "Logout",
+    onClick: onLogout,
+  });
 
   const options: {
     label: JSX.Element;
@@ -142,10 +157,11 @@ function Header({ user }: { user: User }) {
       <div className="actions">
         <div className="search">
           <AutoComplete
-            dropdownClassName="search-dropdown"
-            dropdownMatchSelectWidth={500}
+            classNames={{ popup: { root: "search-dropdown" } }}
+            popupMatchSelectWidth={500}
             options={options}
             onSearch={onSearch}
+            onSelect={onSelect}
           >
             <Input.Search placeholder="Search..." style={{ width: 500, marginTop: -5 }} />
           </AutoComplete>
@@ -156,7 +172,7 @@ function Header({ user }: { user: User }) {
           </a>
         </div>
         <div className="user">
-          <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
+          <Dropdown menu={menu} placement="bottomRight" trigger={["click"]}>
             <Button type="primary" icon={<UserOutlined />}>
               {user.getEmail()} <DownOutlined />
             </Button>
