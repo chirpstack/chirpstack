@@ -1,5 +1,5 @@
 use std::path::Path;
-use std::sync::{Arc, LazyLock, Mutex};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{env, fs};
 
@@ -10,8 +10,9 @@ use tracing::warn;
 use lrwn::region::CommonName;
 use lrwn::{AES128Key, DevAddrPrefix, EUI64Prefix, NetID};
 
-static CONFIG: LazyLock<Mutex<Arc<Configuration>>> =
-    LazyLock::new(|| Mutex::new(Arc::new(Default::default())));
+lazy_static! {
+    static ref CONFIG: Mutex<Arc<Configuration>> = Mutex::new(Arc::new(Default::default()));
+}
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 #[serde(default)]
@@ -40,7 +41,6 @@ pub struct Configuration {
 pub struct Logging {
     pub level: String,
     pub json: bool,
-    pub flatten_json: bool,
 }
 
 impl Default for Logging {
@@ -48,7 +48,6 @@ impl Default for Logging {
         Logging {
             level: "info".into(),
             json: false,
-            flatten_json: false,
         }
     }
 }
@@ -80,6 +79,7 @@ pub struct Redis {
     pub cluster: bool,
     pub key_prefix: String,
     pub max_open_connections: u32,
+    pub min_idle_connections: u32,
 }
 
 impl Default for Redis {
@@ -89,6 +89,7 @@ impl Default for Redis {
             cluster: false,
             key_prefix: "".into(),
             max_open_connections: 100,
+            min_idle_connections: 0,
         }
     }
 }
@@ -140,8 +141,6 @@ pub struct Gateway {
     pub ca_cert: String,
     pub ca_key: String,
     pub allow_unknown_gateways: bool,
-    #[serde(with = "humantime_serde")]
-    pub rx_timestamp_max_drift: Duration,
 }
 
 impl Default for Gateway {
@@ -151,7 +150,6 @@ impl Default for Gateway {
             ca_cert: "".to_string(),
             ca_key: "".to_string(),
             allow_unknown_gateways: false,
-            rx_timestamp_max_drift: Duration::from_secs(30),
         }
     }
 }
@@ -358,7 +356,6 @@ pub struct AmqpIntegration {
     pub url: String,
     pub json: bool,
     pub event_routing_key: String,
-    pub exchange: String,
 }
 
 impl Default for AmqpIntegration {
@@ -368,7 +365,6 @@ impl Default for AmqpIntegration {
             json: true,
             event_routing_key: "application.{{application_id}}.device.{{dev_eui}}.event.{{event}}"
                 .to_string(),
-            exchange: "amq.topic".to_string(),
         }
     }
 }
@@ -534,7 +530,6 @@ pub struct JoinServerServer {
     pub ca_cert: String,
     pub tls_cert: String,
     pub tls_key: String,
-    pub authorization_header: String,
 }
 
 #[derive(Serialize, Deserialize, Default, Clone)]

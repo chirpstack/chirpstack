@@ -65,9 +65,12 @@ enum Region {
 
   // ISM2400 (LoRaWAN 2.4 GHz)
   ISM2400 = 11;
+
+  // KZ868
+  KZ868 = 15;
 }
 
-enum FType {
+enum MType {
   // JoinRequest.
   JOIN_REQUEST = 0;
 
@@ -110,7 +113,6 @@ enum RegParamsRevision {
   RP002_1_0_2 = 4;
   RP002_1_0_3 = 5;
   RP002_1_0_4 = 6;
-  RP002_1_0_5 = 7;
 }
 
 enum LocationSource {

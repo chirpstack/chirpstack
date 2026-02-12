@@ -7,17 +7,17 @@ include!(concat!(env!("OUT_DIR"), "/common/common.rs"));
 include!(concat!(env!("OUT_DIR"), "/common/common.serde.rs"));
 
 #[allow(clippy::from_over_into)]
-impl Into<String> for FType {
+impl Into<String> for MType {
     fn into(self) -> String {
         match self {
-            FType::JoinRequest => "JoinRequest",
-            FType::JoinAccept => "JoinAccept",
-            FType::UnconfirmedDataUp => "UnconfirmedDataUp",
-            FType::UnconfirmedDataDown => "UnconfirmedDataDown",
-            FType::ConfirmedDataUp => "ConfirmedDataUp",
-            FType::ConfirmedDataDown => "ConfirmedDataDown",
-            FType::RejoinRequest => "RejoinRequest",
-            FType::Proprietary => "Proprietary",
+            MType::JoinRequest => "JoinRequest",
+            MType::JoinAccept => "JoinAccept",
+            MType::UnconfirmedDataUp => "UnconfirmedDataUp",
+            MType::UnconfirmedDataDown => "UnconfirmedDataDown",
+            MType::ConfirmedDataUp => "ConfirmedDataUp",
+            MType::ConfirmedDataDown => "ConfirmedDataDown",
+            MType::RejoinRequest => "RejoinRequest",
+            MType::Proprietary => "Proprietary",
         }
         .to_string()
     }
@@ -41,6 +41,7 @@ impl Into<String> for Region {
             Region::In865 => "IN865",
             Region::Ru864 => "RU864",
             Region::Ism2400 => "ISM2400",
+            Region::Kz868 => "KZ868",
         }
         .to_string()
     }
@@ -65,6 +66,7 @@ impl FromStr for Region {
             "IN865" => Region::In865,
             "RU864" => Region::Ru864,
             "ISM2400" => Region::Ism2400,
+            "KZ868" => Region::Kz868,
             _ => {
                 return Err("invalid region".into());
             }
@@ -123,7 +125,6 @@ impl Into<String> for RegParamsRevision {
             RegParamsRevision::Rp002102 => "RP002_1.0.2",
             RegParamsRevision::Rp002103 => "RP002_1.0.3",
             RegParamsRevision::Rp002104 => "RP002_1.0.4",
-            RegParamsRevision::Rp002105 => "RP002_1.0.5",
         }
         .to_string()
     }
@@ -141,7 +142,6 @@ impl FromStr for RegParamsRevision {
             "RP002_1.0.2" => RegParamsRevision::Rp002102,
             "RP002_1.0.3" => RegParamsRevision::Rp002103,
             "RP002_1.0.4" => RegParamsRevision::Rp002104,
-            "RP002_1.0.5" => RegParamsRevision::Rp002105,
             _ => {
                 return Err("invalid reg param revision".into());
             }
