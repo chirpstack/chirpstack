@@ -138,7 +138,7 @@ impl Data {
         ctx.set_uplink_data_rate().await?;
         ctx.handle_class_b_beacon_locked().await?;
         ctx.log_uplink_meta().await?;
-        ctx.reset_channels_on_adr_ack_req()?;
+        ctx.reset_channels_on_activation_or_adr_ack_req()?;
         ctx.handle_mac_commands().await?;
         if !ctx._is_roaming() {
             ctx.save_device_gateway_rx_info().await?;
@@ -200,7 +200,7 @@ impl Data {
         ctx.set_adr()?;
         ctx.set_uplink_data_rate_relayed().await?;
         ctx.handle_class_b_beacon_locked().await?;
-        ctx.reset_channels_on_adr_ack_req()?;
+        ctx.reset_channels_on_activation_or_adr_ack_req()?;
         ctx.handle_mac_commands().await?;
         ctx.append_meta_data_to_uplink_history_relayed()?;
         ctx.send_uplink_event().await?;
@@ -756,15 +756,15 @@ impl Data {
     // this happens. This way, we make sure that the channels are always in sync, although it could
     // lead to a small bit of overhead (e.g. re-sending the channels / channel-mask even if the
     // device did not reset these).
-    fn reset_channels_on_adr_ack_req(&mut self) -> Result<()> {
+    fn reset_channels_on_activation_or_adr_ack_req(&mut self) -> Result<()> {
         trace!("Reset channels on adr ack req");
         let d = self.device.as_mut().unwrap();
+        let ds = d.get_device_session_mut()?;
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.payload
-            && pl.fhdr.f_ctrl.adr_ack_req
+            && (pl.fhdr.f_ctrl.adr_ack_req || ds.enabled_uplink_channel_indices.is_empty())
         {
             let region_conf = region::get(&self.uplink_frame_set.region_config_id)?;
-            let ds = d.get_device_session_mut()?;
 
             // We reset the device-session enabled_uplink_channel_indices and
             // extra_uplink_channels. On the downlink path, the mac-command handling will
