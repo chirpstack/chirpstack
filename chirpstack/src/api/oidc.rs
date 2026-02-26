@@ -14,7 +14,8 @@ use openidconnect::core::{
 use openidconnect::{AdditionalClaims, UserInfoClaims, reqwest};
 use openidconnect::{
     AuthenticationFlow, AuthorizationCode, ClientId, ClientSecret, CsrfToken, EndpointMaybeSet,
-    EndpointNotSet, EndpointSet, IssuerUrl, Nonce, OAuth2TokenResponse, RedirectUrl, Scope,
+    EndpointNotSet, EndpointSet, IssuerUrl, Nonce, OAuth2TokenResponse, PkceCodeChallenge,
+    PkceCodeVerifier, RedirectUrl, Scope,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -58,6 +59,8 @@ pub async fn login_handler() -> Response {
         }
     };
 
+    let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
+
     let conf = config::get();
     let mut request = client.authorize_url(
         AuthenticationFlow::<CoreResponseType>::AuthorizationCode,
@@ -67,10 +70,18 @@ pub async fn login_handler() -> Response {
     for scope in &conf.user_authentication.openid_connect.scopes {
         request = request.add_scope(Scope::new(scope.to_string()))
     }
+
+    request = request.set_pkce_challenge(pkce_challenge);
+
     let (auth_url, csrf_state, nonce) = request.url();
 
     if let Err(e) = store_nonce(&csrf_state, &nonce).await {
         error!(error = %e.full(), "Store nonce error");
+        return (StatusCode::INTERNAL_SERVER_ERROR, "Internal error").into_response();
+    }
+
+    if let Err(e) = store_verifier(&csrf_state, &pkce_verifier).await {
+        error!(error = %e.full(), "Store PKCE verifier error");
         return (StatusCode::INTERNAL_SERVER_ERROR, "Internal error").into_response();
     }
 
@@ -86,6 +97,7 @@ pub async fn callback_handler(args: Query<CallbackArgs>) -> Response {
 pub async fn get_user(code: &str, state: &str) -> Result<User> {
     let state = CsrfToken::new(state.to_string());
     let nonce = get_nonce(&state).await?;
+    let pkce_verifier = get_verifier(&state).await?;
     let client = get_client().await?;
 
     let http_client = reqwest::ClientBuilder::new()
@@ -94,6 +106,7 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
 
     let token_response = client
         .exchange_code(AuthorizationCode::new(code.to_string()))?
+        .set_pkce_verifier(pkce_verifier)
         .request_async(&http_client)
         .await?;
 
@@ -140,6 +153,33 @@ async fn get_nonce(state: &CsrfToken) -> Result<Nonce> {
         .context("Get nonce")?;
 
     Ok(Nonce::new(v))
+}
+
+async fn store_verifier(state: &CsrfToken, verifier: &PkceCodeVerifier) -> Result<()> {
+    trace!("Storing PKCE verifier");
+    let key = redis_key(format!("auth:oidc:pkce:{}", state.secret()));
+
+    () = redis::cmd("PSETEX")
+        .arg(key)
+        .arg(Duration::try_minutes(5).unwrap().num_milliseconds())
+        .arg(verifier.secret())
+        .query_async(&mut get_async_redis_conn().await?)
+        .await?;
+
+    Ok(())
+}
+
+async fn get_verifier(state: &CsrfToken) -> Result<PkceCodeVerifier> {
+    trace!("Getting PKCE verifier");
+    let key = redis_key(format!("auth:oidc:pkce:{}", state.secret()));
+
+    let v: String = redis::cmd("GET")
+        .arg(&key)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await
+        .context("Get PKCE verifier")?;
+
+    Ok(PkceCodeVerifier::new(v))
 }
 
 async fn get_client() -> Result<Client> {
