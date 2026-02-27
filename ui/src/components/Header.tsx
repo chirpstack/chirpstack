@@ -83,18 +83,16 @@ function Header({ user }: { user: User }) {
   const oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
   const oAuth2Enabled = settings!.getOauth2()!.getEnabled();
 
-  let menu: MenuProps = {};
+  let menu: MenuProps = { items: [] };
 
   if (!(oidcEnabled || oAuth2Enabled)) {
-    menu.items = [
-      {
-        key: "change-pw",
-        label: <Link to={`/users/${user.getId()}/password`}>Change password</Link>,
-      },
-    ];
+    menu.items!.push({
+      key: "change-pw",
+      label: <Link to={`/users/${user.getId()}/password`}>Change password</Link>,
+    });
   }
 
-  menu.items?.push({
+  menu.items!.push({
     key: "logout",
     label: "Logout",
     onClick: onLogout,
