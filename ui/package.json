@@ -38,7 +38,7 @@
     "react-dom": "^18.3.1",
     "react-json-tree": "^0.19.0",
     "react-leaflet": "^4.2.1",
-    "react-markdown": "^9.1.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^6.30.3",
     "web-vitals": "^5.1.0"
   },
