@@ -161,7 +161,7 @@
       "rustls--ring",
       "rustls-native-certs",
     ] }
-    rdkafka = { version = "0.38", default-features = false, features = [
+    rdkafka = { version = "0.39", default-features = false, features = [
       "tokio",
       "cmake-build",
     ] }
