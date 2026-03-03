@@ -285,6 +285,13 @@ pub fn run() {
     # downlink capacity load on the gateway.
     class_c_lock_duration="{{ network.scheduler.class_c_lock_duration }}"
 
+    # Scheduler lock duration.
+    #
+    # This defines the duration the scheduler locks the device or multicast
+    # queue-item when it was selected for downlink transmission. This is set
+    # to avoid concurrency issues.
+    scheduler_lock_duration="{{ network.scheduler.scheduler_lock_duration }}"
+
     # Multicast Class-C margin.
     #
     # This defines the minimum margin between scheduling multiple multicast downlinks

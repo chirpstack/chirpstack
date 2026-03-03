@@ -696,6 +696,7 @@ pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGr
                                 order by
                                     qi.created_at
                                 limit $1
+                                for update skip locked
                             )
                         returning *
                     "#
@@ -703,7 +704,7 @@ pub async fn get_schedulable_queue_items(limit: usize) -> Result<Vec<MulticastGr
                 .bind::<diesel::sql_types::Integer, _>(limit as i32)
                 .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
                 .bind::<fields::sql_types::Timestamptz, _>(
-                    Utc::now() + Duration::from_std(2 * conf.network.scheduler.interval).unwrap(),
+                    Utc::now() + Duration::from_std(conf.network.scheduler.scheduler_lock_duration).unwrap(),
                 )
                 .load(c)
                 .await
