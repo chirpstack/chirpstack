@@ -57,11 +57,14 @@ function InfluxDbIntegrationForm(props: IProps) {
         name="version"
         rules={[{ required: true, message: "Please select an InfluxDB version!" }]}
       >
-        <Select onChange={onVersionChange}>
-          <Select.Option value={InfluxDbVersion.INFLUXDB_1}>InfluxDB v1</Select.Option>
-          <Select.Option value={InfluxDbVersion.INFLUXDB_2}>InfluxDB v2</Select.Option>
-          <Select.Option value={InfluxDbVersion.INFLUXDB_3}>InfluxDB v3</Select.Option>
-        </Select>
+        <Select
+          onChange={onVersionChange}
+          options={[
+            { value: InfluxDbVersion.INFLUXDB_1, label: "InfluxDB v1" },
+            { value: InfluxDbVersion.INFLUXDB_2, label: "InfluxDB v2" },
+            { value: InfluxDbVersion.INFLUXDB_3, label: "InfluxDB v3" },
+          ]}
+        />
       </Form.Item>
       <Form.Item
         label="API endpoint (write)"
@@ -96,12 +99,14 @@ function InfluxDbIntegrationForm(props: IProps) {
       )}
       {(selectedVersion === InfluxDbVersion.INFLUXDB_1 || selectedVersion === InfluxDbVersion.INFLUXDB_3) && (
         <Form.Item label="Select timestamp precision" name="precision">
-          <Select>
-            <Select.Option value={InfluxDbPrecision.NS}>Nanosecond</Select.Option>
-            <Select.Option value={InfluxDbPrecision.U}>Microsecond</Select.Option>
-            <Select.Option value={InfluxDbPrecision.MS}>Millisecond</Select.Option>
-            <Select.Option value={InfluxDbPrecision.S}>Second</Select.Option>
-          </Select>
+          <Select
+            options={[
+              { value: InfluxDbPrecision.NS, label: "Nanosecond" },
+              { value: InfluxDbPrecision.U, label: "Microsecond" },
+              { value: InfluxDbPrecision.MS, label: "Millisecond" },
+              { value: InfluxDbPrecision.S, label: "Second" },
+            ]}
+          />
         </Form.Item>
       )}
       {selectedVersion === InfluxDbVersion.INFLUXDB_2 && (

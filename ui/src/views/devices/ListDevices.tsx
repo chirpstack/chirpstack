@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { format } from "date-fns";
 import { Space, Button, Dropdown, Menu, Modal, Select, Tag, Popover, Typography } from "antd";
+import type { SelectProps } from "antd/lib";
 import type { ColumnsType } from "antd/es/table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -342,21 +343,15 @@ function ListDevices(props: IProps) {
     ],
   };
 
-  const mgOptions = multicastGroups.map(mg => (
-    <Select.Option value={mg.getId()} key={mg.getId()}>
-      {mg.getName()}
-    </Select.Option>
-  ));
-  const relayOptions = relays.map(r => (
-    <Select.Option value={r.getDevEui()} key={r.getDevEui()}>
-      {r.getName()}
-    </Select.Option>
-  ));
-  const fuotaOptions = fuotaDeployments.map(r => (
-    <Select.Option value={r.getId()} key={r.getId()}>
-      {r.getName()}
-    </Select.Option>
-  ));
+  const mgOptions: SelectProps["options"] = multicastGroups.map(mg => {
+    return { value: mg.getId(), label: mg.getName() };
+  });
+  const relayOptions: SelectProps["options"] = relays.map(r => {
+    return { value: r.getDevEui(), label: r.getName() };
+  });
+  const fuotaOptions: SelectProps["options"] = fuotaDeployments.map(r => {
+    return { value: r.getId(), label: r.getName() };
+  });
 
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>
@@ -368,9 +363,12 @@ function ListDevices(props: IProps) {
         okButtonProps={{ disabled: mgSelected === "" }}
       >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          <Select style={{ width: "100%" }} onChange={onMgSelected} placeholder="Select Multicast-group">
-            {mgOptions}
-          </Select>
+          <Select
+            style={{ width: "100%" }}
+            onChange={onMgSelected}
+            placeholder="Select Multicast-group"
+            options={mgOptions}
+          />
         </Space>
       </Modal>
       <Modal
@@ -389,9 +387,8 @@ function ListDevices(props: IProps) {
             style={{ width: "100%" }}
             onChange={v => setFuotaDeploymentSelected(v)}
             placeholder="Select FUOTA deployment"
-          >
-            {fuotaOptions}
-          </Select>
+            options={fuotaOptions}
+          />
         </Space>
       </Modal>
       <Modal
@@ -402,9 +399,12 @@ function ListDevices(props: IProps) {
         okButtonProps={{ disabled: relaySelected === "" }}
       >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          <Select style={{ width: "100%" }} onChange={onRelaySelected} placeholder="Select Relay">
-            {relayOptions}
-          </Select>
+          <Select
+            style={{ width: "100%" }}
+            onChange={onRelaySelected}
+            placeholder="Select Relay"
+            options={relayOptions}
+          />
         </Space>
       </Modal>
       <Admin tenantId={props.application.getTenantId()} isDeviceAdmin>

@@ -142,10 +142,14 @@ function RelayIdInput(props: IProps) {
 
   const addon = (
     <Space size="large">
-      <Select value={byteOrder} onChange={onByteOrderSelect}>
-        <Select.Option value="msb">MSB</Select.Option>
-        <Select.Option value="lsb">LSB</Select.Option>
-      </Select>
+      <Select
+        value={byteOrder}
+        onChange={onByteOrderSelect}
+        options={[
+          { value: "msb", label: "MSB" },
+          { value: "lsb", label: "LSB" },
+        ]}
+      />
       <Button type="text" size="small" onClick={generateRandom}>
         <ReloadOutlined />
       </Button>

@@ -60,7 +60,12 @@ function MulticastGroupForm(props: IProps) {
   const regConfs = regionConfigurations
     .map(v => v.getRegion())
     .filter((v, i, a) => a.indexOf(v) === i)
-    .map(v => <Select.Option value={v}>{getEnumName(Region, v).replace("_", "-")}</Select.Option>);
+    .map(v => {
+      return {
+        value: v,
+        label: getEnumName(Region, v).replace("_", "-"),
+      };
+    });
 
   return (
     <Form
@@ -79,7 +84,7 @@ function MulticastGroupForm(props: IProps) {
       <Row gutter={24}>
         <Col span={8}>
           <Form.Item label="Region" name="region" rules={[{ required: true, message: "Please select a region!" }]}>
-            <Select disabled={props.disabled}>{regConfs}</Select>
+            <Select disabled={props.disabled} options={regConfs} />
           </Form.Item>
         </Col>
         <Col span={4}>
@@ -120,24 +125,31 @@ function MulticastGroupForm(props: IProps) {
             tooltip="The multicast-group type defines the way how multicast frames are scheduled by the network-server."
             rules={[{ required: true, message: "Please select a group-type!" }]}
           >
-            <Select onChange={onGroupTypeChange} disabled={props.disabled}>
-              <Select.Option value={MulticastGroupType.CLASS_C}>Class-C</Select.Option>
-              <Select.Option value={MulticastGroupType.CLASS_B}>Class-B</Select.Option>
-            </Select>
+            <Select
+              onChange={onGroupTypeChange}
+              disabled={props.disabled}
+              options={[
+                { value: MulticastGroupType.CLASS_C, label: "Class-C" },
+                { value: MulticastGroupType.CLASS_B, label: "Class-B" },
+              ]}
+            />
           </Form.Item>
         </Col>
         <Col span={8}>
           <Form.Item label="Class-B ping-slot periodicity" name="classBPingSlotPeriodicity">
-            <Select disabled={!selectPingSlotPeriod || props.disabled}>
-              <Select.Option value={0}>Every second</Select.Option>
-              <Select.Option value={1}>Every 2 seconds</Select.Option>
-              <Select.Option value={2}>Every 4 seconds</Select.Option>
-              <Select.Option value={3}>Every 8 seconds</Select.Option>
-              <Select.Option value={4}>Every 16 seconds</Select.Option>
-              <Select.Option value={5}>Every 32 seconds</Select.Option>
-              <Select.Option value={6}>Every 64 seconds</Select.Option>
-              <Select.Option value={7}>Every 128 seconds</Select.Option>
-            </Select>
+            <Select
+              disabled={!selectPingSlotPeriod || props.disabled}
+              options={[
+                { value: 0, label: "Every second" },
+                { value: 1, label: "Every 2 seconds" },
+                { value: 2, label: "Every 4 seconds" },
+                { value: 3, label: "Every 8 seconds" },
+                { value: 4, label: "Every 16 seconds" },
+                { value: 5, label: "Every 32 seconds" },
+                { value: 6, label: "Every 64 seconds" },
+                { value: 7, label: "Every 128 seconds" },
+              ]}
+            />
           </Form.Item>
         </Col>
         <Col span={8}>
@@ -146,10 +158,13 @@ function MulticastGroupForm(props: IProps) {
             name="classCSchedulingType"
             tooltip="In order to reach all devices, it might be needed to transmit a downlink through multiple gateways. In case of Delay each gateway will transmit one by one, in case of GPS Time all required gateways will transmit at the same GPS time."
           >
-            <Select disabled={selectPingSlotPeriod || props.disabled}>
-              <Select.Option value={MulticastGroupSchedulingType.DELAY}>Delay</Select.Option>
-              <Select.Option value={MulticastGroupSchedulingType.GPS_TIME}>GPS Time</Select.Option>
-            </Select>
+            <Select
+              disabled={selectPingSlotPeriod || props.disabled}
+              options={[
+                { value: MulticastGroupSchedulingType.DELAY, label: "Delay" },
+                { value: MulticastGroupSchedulingType.GPS_TIME, label: "GPS Time" },
+              ]}
+            />
           </Form.Item>
         </Col>
       </Row>

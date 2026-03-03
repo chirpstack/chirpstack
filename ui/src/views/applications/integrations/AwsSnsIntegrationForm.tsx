@@ -29,10 +29,12 @@ function AwsSnsIntegrationForm(props: IProps) {
         name="encoding"
         rules={[{ required: true, message: "Please select an encoding!" }]}
       >
-        <Select>
-          <Select.Option value={Encoding.JSON}>JSON</Select.Option>
-          <Select.Option value={Encoding.PROTOBUF}>Protobuf (binary)</Select.Option>
-        </Select>
+        <Select
+          options={[
+            { value: Encoding.JSON, label: "JSON" },
+            { value: Encoding.PROTOBUF, label: "Protobuf (binary)" },
+          ]}
+        />
       </Form.Item>
       <Form.Item label="AWS region" name="region" rules={[{ required: true, message: "Please enter a region!" }]}>
         <Input />
