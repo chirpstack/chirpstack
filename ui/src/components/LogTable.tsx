@@ -39,11 +39,11 @@ function LogTable(props: IProps) {
   };
 
   const downloadFrames = () => {
-    const items = props.logs.map((l, i) => JSON.parse(l.getBody()));
+    const items = props.logs.map((l, _i) => JSON.parse(l.getBody()));
     fileDownload(JSON.stringify(items, null, 4), "log.json");
   };
 
-  const items = props.logs.map((l, i) => l.toObject());
+  const items = props.logs.map((l, _i) => l.toObject());
   const bodyJson = JSON.parse(body!);
 
   const theme = {
@@ -74,7 +74,7 @@ function LogTable(props: IProps) {
         placement="right"
         width={650}
         onClose={onDrawerClose}
-        visible={drawerOpen}
+        open={drawerOpen}
         extra={<Button onClick={downloadSingleFrame}>Download</Button>}
       >
         <JSONTreeOriginal
@@ -104,7 +104,7 @@ function LogTable(props: IProps) {
             dataIndex: "time",
             key: "time",
             width: 200,
-            render: (text, obj) => {
+            render: (_text, obj) => {
               const ts = new Date(0);
               ts.setUTCSeconds(obj.time!.seconds);
               return format(ts, "yyyy-MM-dd HH:mm:ss");
@@ -131,11 +131,11 @@ function LogTable(props: IProps) {
             title: "Properties",
             dataIndex: "properties",
             key: "properties",
-            render: (text, obj) =>
-              obj.propertiesMap.map((p, i) => {
+            render: (_text, obj) =>
+              obj.propertiesMap.map((p, _i) => {
                 if (p[1] !== "") {
                   return (
-                    <Tag>
+                    <Tag key={p[0]}>
                       <pre>
                         {p[0]}: {p[1]}
                       </pre>
