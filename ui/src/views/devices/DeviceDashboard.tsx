@@ -178,7 +178,7 @@ function DeviceDashboard(props: IProps) {
 
   const tabItems: TabsProps["items"] = [
     {
-      key: 1,
+      key: "1",
       label: "Link metrics",
       children: (
         <Space direction="vertical" style={{ width: "100%" }} size="large">
