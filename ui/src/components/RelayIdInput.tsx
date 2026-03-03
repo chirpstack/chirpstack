@@ -174,7 +174,7 @@ function RelayIdInput(props: IProps) {
       <Input
         id={`${props.name}Render`}
         onChange={onChange}
-        addonAfter={!props.disabled && addon}
+        suffix={!props.disabled && addon}
         className="input-code"
         value={value}
         disabled={props.disabled}

@@ -1,4 +1,5 @@
 import { Form, Input, InputNumber, Switch, Row, Col, Button, Tabs } from "antd";
+import type { TabsProps } from "antd/lib";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -33,15 +34,12 @@ function TenantForm(props: IProps) {
     props.onFinish(tenant);
   };
 
-  return (
-    <Form
-      layout="vertical"
-      initialValues={props.initialValues.toObject()}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-    >
-      <Tabs>
-        <Tabs.TabPane tab="General" key="1">
+  const tabItems: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "General",
+      children: (
+        <>
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
             <Input disabled={props.disabled} />
           </Form.Item>
@@ -101,52 +99,65 @@ function TenantForm(props: IProps) {
               </Form.Item>
             </Col>
           </Row>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Tags" key="2">
-          <Form.List name="tagsMap">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 0]}
-                        fieldKey={[name, 0]}
-                        rules={[{ required: true, message: "Please enter a key!" }]}
-                      >
-                        <Input placeholder="Key" disabled={props.disabled} />
-                      </Form.Item>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Tags",
+      children: (
+        <Form.List name="tagsMap">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row gutter={24} key={key}>
+                  <Col span={6}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 0]}
+                      rules={[{ required: true, message: "Please enter a key!" }]}
+                    >
+                      <Input placeholder="Key" disabled={props.disabled} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={16}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 1]}
+                      rules={[{ required: true, message: "Please enter a value!" }]}
+                    >
+                      <Input placeholder="Value" disabled={props.disabled} />
+                    </Form.Item>
+                  </Col>
+                  {!props.disabled && (
+                    <Col span={2}>
+                      <MinusCircleOutlined onClick={() => remove(name)} />
                     </Col>
-                    <Col span={16}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 1]}
-                        fieldKey={[name, 1]}
-                        rules={[{ required: true, message: "Please enter a value!" }]}
-                      >
-                        <Input placeholder="Value" disabled={props.disabled} />
-                      </Form.Item>
-                    </Col>
-                    {!props.disabled && (
-                      <Col span={2}>
-                        <MinusCircleOutlined onClick={() => remove(name)} />
-                      </Col>
-                    )}
-                  </Row>
-                ))}
-                {!props.disabled && (
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                      Add tag
-                    </Button>
-                  </Form.Item>
-                )}
-              </>
-            )}
-          </Form.List>
-        </Tabs.TabPane>
-      </Tabs>
+                  )}
+                </Row>
+              ))}
+              {!props.disabled && (
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                    Add tag
+                  </Button>
+                </Form.Item>
+              )}
+            </>
+          )}
+        </Form.List>
+      ),
+    },
+  ];
+
+  return (
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+    >
+      <Tabs items={tabItems} />
       <Form.Item>
         <Button type="primary" htmlType="submit" disabled={props.disabled}>
           Submit

@@ -135,7 +135,7 @@ function EuiInput(props: IProps) {
       name={props.name}
       tooltip={props.tooltip}
     >
-      <Input addonAfter={addon} className="input-code" disabled={props.disabled} onChange={onChange} />
+      <Input suffix={addon} className="input-code" disabled={props.disabled} onChange={onChange} />
     </Form.Item>
   );
 }

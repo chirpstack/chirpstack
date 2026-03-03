@@ -135,7 +135,7 @@ function AesKeyInput(props: IProps) {
       name={props.name}
       tooltip={props.tooltip}
     >
-      <Input onChange={onChange} addonAfter={addon} className="input-code" disabled={props.disabled} />
+      <Input onChange={onChange} suffix={addon} className="input-code" disabled={props.disabled} />
     </Form.Item>
   );
 }

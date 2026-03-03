@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { Children, useState } from "react";
 
 import { Form, Input, Row, Col, Button, Tabs, Switch, Modal, Space, notification } from "antd";
+import type { TabsProps } from "antd/lib";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import type { IDetectedBarcode } from "@yudiel/react-qr-scanner";
@@ -98,32 +99,12 @@ function DeviceForm(props: IProps) {
     });
   };
 
-  return (
-    <Form
-      layout="vertical"
-      initialValues={props.initialValues.toObject()}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      form={form}
-    >
-      <Modal
-        title="Scan QR-code"
-        open={showScanner}
-        onCancel={() => setShowScanner(false)}
-        okButtonProps={{ style: { display: "none" } }}
-      >
-        <Space direction="vertical">
-          <Scanner onScan={onScannerScan} onError={onScannerError} />
-        </Space>
-      </Modal>
-      <Tabs
-        tabBarExtraContent={
-          <Button type="primary" disabled={props.update} onClick={() => setShowScanner(true)}>
-            Scan QR-code
-          </Button>
-        }
-      >
-        <Tabs.TabPane tab="Device" key="1">
+  const tabItems: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "Device",
+      children: (
+        <>
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
             <Input />
           </Form.Item>
@@ -171,84 +152,121 @@ function DeviceForm(props: IProps) {
               </Form.Item>
             </Col>
           </Row>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Tags" key="2">
-          <Form.List name="tagsMap">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 0]}
-                        rules={[{ required: true, message: "Please enter a key!" }]}
-                      >
-                        <Input placeholder="Key" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={16}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 1]}
-                        rules={[{ required: true, message: "Please enter a value!" }]}
-                      >
-                        <Input placeholder="Value" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={2}>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
-                    </Col>
-                  </Row>
-                ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                    Add tag
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Variables" key="3">
-          <Form.List name="variablesMap">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 0]}
-                        rules={[{ required: true, message: "Please enter a key!" }]}
-                      >
-                        <Input placeholder="Key" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={16}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 1]}
-                        rules={[{ required: true, message: "Please enter a value!" }]}
-                      >
-                        <Input placeholder="Value" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={2}>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
-                    </Col>
-                  </Row>
-                ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                    Add variable
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </Tabs.TabPane>
-      </Tabs>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Tags",
+      children: (
+        <Form.List name="tagsMap">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row gutter={24} key={key}>
+                  <Col span={6}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 0]}
+                      rules={[{ required: true, message: "Please enter a key!" }]}
+                    >
+                      <Input placeholder="Key" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={16}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 1]}
+                      rules={[{ required: true, message: "Please enter a value!" }]}
+                    >
+                      <Input placeholder="Value" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={2}>
+                    <MinusCircleOutlined onClick={() => remove(name)} />
+                  </Col>
+                </Row>
+              ))}
+              <Form.Item>
+                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                  Add tag
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+      ),
+    },
+    {
+      key: "3",
+      label: "Variables",
+      children: (
+        <Form.List name="variablesMap">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row gutter={24} key={key}>
+                  <Col span={6}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 0]}
+                      rules={[{ required: true, message: "Please enter a key!" }]}
+                    >
+                      <Input placeholder="Key" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={16}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 1]}
+                      rules={[{ required: true, message: "Please enter a value!" }]}
+                    >
+                      <Input placeholder="Value" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={2}>
+                    <MinusCircleOutlined onClick={() => remove(name)} />
+                  </Col>
+                </Row>
+              ))}
+              <Form.Item>
+                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                  Add variable
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+      ),
+    },
+  ];
+
+  return (
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      form={form}
+    >
+      <Modal
+        title="Scan QR-code"
+        open={showScanner}
+        onCancel={() => setShowScanner(false)}
+        okButtonProps={{ style: { display: "none" } }}
+      >
+        <Space direction="vertical">
+          <Scanner onScan={onScannerScan} onError={onScannerError} />
+        </Space>
+      </Modal>
+      <Tabs
+        items={tabItems}
+        tabBarExtraContent={
+          <Button type="primary" disabled={props.update} onClick={() => setShowScanner(true)}>
+            Scan QR-code
+          </Button>
+        }
+      />
       <Form.Item>
         <Button type="primary" htmlType="submit">
           Submit

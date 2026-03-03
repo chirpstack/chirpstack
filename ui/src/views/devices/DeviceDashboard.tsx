@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { format, sub } from "date-fns";
 import { ReloadOutlined } from "@ant-design/icons";
-import type { RadioChangeEvent } from "antd";
+import type { RadioChangeEvent, TabsProps } from "antd";
 import { Descriptions, Space, Card, Statistic, Row, Col, Tabs, Radio, Button, Spin } from "antd";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
@@ -176,6 +176,58 @@ function DeviceDashboard(props: IProps) {
     </Space>
   );
 
+  const tabItems: TabsProps["items"] = [
+    {
+      key: 1,
+      label: "Link metrics",
+      children: (
+        <Space direction="vertical" style={{ width: "100%" }} size="large">
+          <Row gutter={24}>
+            <Col span={8}>
+              <MetricChart metric={deviceLinkMetrics.getRxPackets()!} aggregation={metricsAggregation} />
+            </Col>
+            <Col span={8}>
+              <MetricChart metric={deviceLinkMetrics.getGwRssi()!} aggregation={metricsAggregation} zeroToNull />
+            </Col>
+            <Col span={8}>
+              <MetricChart metric={deviceLinkMetrics.getGwSnr()!} aggregation={metricsAggregation} zeroToNull />
+            </Col>
+          </Row>
+          <Row gutter={24}>
+            <Col span={8}>
+              <MetricHeatmap
+                metric={deviceLinkMetrics.getRxPacketsPerFreq()!}
+                aggregation={metricsAggregation}
+                fromColor="rgb(227, 242, 253)"
+                toColor="rgb(33, 150, 243, 1)"
+              />
+            </Col>
+            <Col span={8}>
+              <MetricHeatmap
+                metric={deviceLinkMetrics.getRxPacketsPerDr()!}
+                aggregation={metricsAggregation}
+                fromColor="rgb(227, 242, 253)"
+                toColor="rgb(33, 150, 243, 1)"
+              />
+            </Col>
+            <Col span={8}>
+              <MetricBar metric={deviceLinkMetrics.getErrors()!} aggregation={metricsAggregation} />
+            </Col>
+          </Row>
+        </Space>
+      ),
+    },
+    {
+      key: "2",
+      label: "Device metrics",
+      children: (
+        <Space direction="vertical" style={{ width: "100%" }} size="large">
+          {dm}
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Card>
@@ -192,49 +244,7 @@ function DeviceDashboard(props: IProps) {
           <Descriptions.Item label="Description">{props.device.getDescription()}</Descriptions.Item>
         </Descriptions>
       </Card>
-      <Tabs tabBarExtraContent={aggregations}>
-        <Tabs.TabPane tab="Link metrics" key="1">
-          <Space direction="vertical" style={{ width: "100%" }} size="large">
-            <Row gutter={24}>
-              <Col span={8}>
-                <MetricChart metric={deviceLinkMetrics.getRxPackets()!} aggregation={metricsAggregation} />
-              </Col>
-              <Col span={8}>
-                <MetricChart metric={deviceLinkMetrics.getGwRssi()!} aggregation={metricsAggregation} zeroToNull />
-              </Col>
-              <Col span={8}>
-                <MetricChart metric={deviceLinkMetrics.getGwSnr()!} aggregation={metricsAggregation} zeroToNull />
-              </Col>
-            </Row>
-            <Row gutter={24}>
-              <Col span={8}>
-                <MetricHeatmap
-                  metric={deviceLinkMetrics.getRxPacketsPerFreq()!}
-                  aggregation={metricsAggregation}
-                  fromColor="rgb(227, 242, 253)"
-                  toColor="rgb(33, 150, 243, 1)"
-                />
-              </Col>
-              <Col span={8}>
-                <MetricHeatmap
-                  metric={deviceLinkMetrics.getRxPacketsPerDr()!}
-                  aggregation={metricsAggregation}
-                  fromColor="rgb(227, 242, 253)"
-                  toColor="rgb(33, 150, 243, 1)"
-                />
-              </Col>
-              <Col span={8}>
-                <MetricBar metric={deviceLinkMetrics.getErrors()!} aggregation={metricsAggregation} />
-              </Col>
-            </Row>
-          </Space>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Device metrics" key="2">
-          <Space direction="vertical" style={{ width: "100%" }} size="large">
-            {dm}
-          </Space>
-        </Tabs.TabPane>
-      </Tabs>
+      <Tabs items={tabItems} tabBarExtraContent={aggregations} />
     </Space>
   );
 }

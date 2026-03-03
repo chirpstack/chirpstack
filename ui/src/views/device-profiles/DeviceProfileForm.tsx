@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import { Form, Input, Select, InputNumber, Switch, Row, Col, Button, Tabs, Card } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import type { TabsProps } from "antd/lib";
 
 import {
   DeviceProfile,
@@ -247,16 +248,12 @@ function DeviceProfileForm(props: IProps) {
     .filter((v, i, a) => a.indexOf(v) === i)
     .map(v => <Select.Option value={v}>{getEnumName(Region, v).replace("_", "-")}</Select.Option>);
 
-  return (
-    <Form
-      layout="vertical"
-      initialValues={props.initialValues.toObject()}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      form={form}
-    >
-      <Tabs activeKey={tabActive} onChange={onTabChange}>
-        <Tabs.TabPane tab="General" key="1" forceRender>
+  const tabItems: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "General",
+      children: (
+        <>
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
             <Input disabled={props.disabled} />
           </Form.Item>
@@ -402,8 +399,14 @@ function DeviceProfileForm(props: IProps) {
               </Form.Item>
             </Col>
           </Row>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Join (OTAA / ABP)" key="2" forceRender>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Join (OTAA / ABP)",
+      children: (
+        <>
           <Form.Item label="Device supports OTAA" name="supportsOtaa" valuePropName="checked">
             <Switch onChange={onSupportsOtaaChange} disabled={props.disabled} />
           </Form.Item>
@@ -470,8 +473,14 @@ function DeviceProfileForm(props: IProps) {
               </Col>
             </Row>
           )}
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Class-B" key="3" forceRender>
+        </>
+      ),
+    },
+    {
+      key: "3",
+      label: "Class B",
+      children: (
+        <>
           <Form.Item label="Device supports Class-B" name="supportsClassB" valuePropName="checked">
             <Switch onChange={onSupportsClassBChnage} disabled={props.disabled} />
           </Form.Item>
@@ -552,8 +561,14 @@ function DeviceProfileForm(props: IProps) {
               </Row>
             </>
           )}
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Class-C" key="4" forceRender>
+        </>
+      ),
+    },
+    {
+      key: "4",
+      label: "Class-C",
+      children: (
+        <>
           <Form.Item label="Device supports Class-C" name="supportsClassC" valuePropName="checked">
             <Switch onChange={onSupportsClassCChange} disabled={props.disabled} />
           </Form.Item>
@@ -572,8 +587,14 @@ function DeviceProfileForm(props: IProps) {
               <InputNumber min={0} disabled={props.disabled} />
             </Form.Item>
           )}
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Codec" key="5" forceRender>
+        </>
+      ),
+    },
+    {
+      key: "5",
+      label: "Payload codec",
+      children: (
+        <>
           <Form.Item
             label="Payload codec"
             name="payloadCodecRuntime"
@@ -588,8 +609,14 @@ function DeviceProfileForm(props: IProps) {
           {payloadCodecRuntime === CodecRuntime.JS && (
             <CodeEditor label="Codec functions" name="payloadCodecScript" disabled={props.disabled} />
           )}
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Relay" key="6" forceRender>
+        </>
+      ),
+    },
+    {
+      key: "6",
+      label: "Relay",
+      children: (
+        <>
           <Row gutter={24}>
             <Col span={12}>
               <Form.Item
@@ -900,8 +927,14 @@ function DeviceProfileForm(props: IProps) {
               </Col>
             </Row>
           )}
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Application layer" key="7" forceRender>
+        </>
+      ),
+    },
+    {
+      key: "7",
+      label: "Application layer",
+      children: (
+        <>
           <Row gutter={24}>
             <Col span={12}>
               <Form.Item
@@ -962,49 +995,57 @@ function DeviceProfileForm(props: IProps) {
               </Form.Item>
             </Col>
           </Row>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Tags" key="8" forceRender>
-          <Form.List name="tagsMap">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 0]}
-                        fieldKey={[name, 0]}
-                        rules={[{ required: true, message: "Please enter a key!" }]}
-                      >
-                        <Input placeholder="Key" disabled={props.disabled} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={16}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 1]}
-                        fieldKey={[name, 1]}
-                        rules={[{ required: true, message: "Please enter a value!" }]}
-                      >
-                        <Input placeholder="Value" disabled={props.disabled} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={2}>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
-                    </Col>
-                  </Row>
-                ))}
-                <Form.Item>
-                  <Button disabled={props.disabled} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                    Add tag
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Measurements" key="9" forceRender>
-          <Card bordered={false}>
+        </>
+      ),
+    },
+    {
+      key: "8",
+      label: "Tags",
+      children: (
+        <Form.List name="tagsMap">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row gutter={24} key={key}>
+                  <Col span={6}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 0]}
+                      rules={[{ required: true, message: "Please enter a key!" }]}
+                    >
+                      <Input placeholder="Key" disabled={props.disabled} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={16}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 1]}
+                      rules={[{ required: true, message: "Please enter a value!" }]}
+                    >
+                      <Input placeholder="Value" disabled={props.disabled} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={2}>
+                    <MinusCircleOutlined onClick={() => remove(name)} />
+                  </Col>
+                </Row>
+              ))}
+              <Form.Item>
+                <Button disabled={props.disabled} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                  Add tag
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+      ),
+    },
+    {
+      key: "9",
+      label: "Measurements",
+      children: (
+        <>
+          <Card variant="borderless">
             <p>
               ChirpStack can aggregate and visualize decoded device measurements in the device dashboard. To setup the
               aggregation of device measurements, you must configure the key, kind of measurement and name
@@ -1041,12 +1082,11 @@ function DeviceProfileForm(props: IProps) {
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
+                  <Row gutter={24} key={key}>
                     <Col span={6}>
                       <Form.Item
                         {...restField}
                         name={[name, 0]}
-                        fieldKey={[name, 0]}
                         rules={[{ required: true, message: "Please enter a key!" }]}
                       >
                         <Input placeholder="Measurement key" disabled={props.disabled} />
@@ -1056,7 +1096,6 @@ function DeviceProfileForm(props: IProps) {
                       <Form.Item
                         {...restField}
                         name={[name, 1, "kind"]}
-                        fieldKey={[name, 1, "kind"]}
                         rules={[{ required: true, message: "Please select a kind!" }]}
                       >
                         <Select disabled={props.disabled} placeholder="Measurement kind">
@@ -1069,7 +1108,7 @@ function DeviceProfileForm(props: IProps) {
                       </Form.Item>
                     </Col>
                     <Col span={10}>
-                      <Form.Item {...restField} name={[name, 1, "name"]} fieldKey={[name, 1, "name"]}>
+                      <Form.Item {...restField} name={[name, 1, "name"]}>
                         <Input placeholder="Measurement name" disabled={props.disabled} />
                       </Form.Item>
                     </Col>
@@ -1086,8 +1125,20 @@ function DeviceProfileForm(props: IProps) {
               </>
             )}
           </Form.List>
-        </Tabs.TabPane>
-      </Tabs>
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      form={form}
+    >
+      <Tabs activeKey={tabActive} onChange={onTabChange} items={tabItems} />
       <Form.Item>
         <Button type="primary" htmlType="submit" disabled={props.disabled}>
           Submit

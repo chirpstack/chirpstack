@@ -1,5 +1,6 @@
 import { notification, Input, Button, Space, Form, Dropdown, Menu } from "antd";
 import { ReloadOutlined, CopyOutlined } from "@ant-design/icons";
+import type { MenuProps } from "antd";
 
 import type { GetRandomDevAddrResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { GetRandomDevAddrRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
@@ -97,35 +98,27 @@ function DevAddrInput(props: IProps) {
     }
   };
 
-  const copyMenu = (
-    <Menu
-      items={[
-        {
-          key: "1",
-          label: (
-            <Button type="text" onClick={copyToClipboard}>
-              HEX string
-            </Button>
-          ),
-        },
-        {
-          key: "2",
-          label: (
-            <Button type="text" onClick={copyToClipboardHexArray}>
-              HEX array
-            </Button>
-          ),
-        },
-      ]}
-    />
-  );
+  const copyMenu: MenuProps = {
+    items: [
+      {
+        key: "1",
+        label: "HEX string",
+        onClick: copyToClipboard,
+      },
+      {
+        key: "2",
+        label: "HEX array",
+        onClick: copyToClipboardHexArray,
+      },
+    ],
+  };
 
   const addon = (
     <Space size="large">
       <Button type="text" size="small" onClick={generateRandom} disabled={props.disabled}>
         <ReloadOutlined />
       </Button>
-      <Dropdown overlay={copyMenu}>
+      <Dropdown menu={copyMenu}>
         <Button type="text" size="small">
           <CopyOutlined />
         </Button>
@@ -145,7 +138,7 @@ function DevAddrInput(props: IProps) {
       label={props.label}
       name={props.name}
     >
-      <Input onChange={onChange} addonAfter={addon} className="input-code" disabled={props.disabled} />
+      <Input onChange={onChange} suffix={addon} className="input-code" disabled={props.disabled} />
     </Form.Item>
   );
 }

@@ -5,6 +5,7 @@ import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
 import type { DatePickerProps } from "antd";
 import { Button, Tabs, Space, Card, Row, Form, Input, InputNumber, Popconfirm, DatePicker } from "antd";
+import type { TabsProps } from "antd/lib";
 import type { ColumnsType } from "antd/es/table";
 import { RedoOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Buffer } from "buffer";
@@ -134,6 +135,27 @@ function MulticastGroupQueue(props: IProps) {
     });
   };
 
+  const tabItems: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "HEX",
+      children: (
+        <Form.Item name="hex">
+          <Input />
+        </Form.Item>
+      ),
+    },
+    {
+      key: "2",
+      label: "BASE64",
+      children: (
+        <Form.Item name="base64">
+          <Input />
+        </Form.Item>
+      ),
+    },
+  ];
+
   return (
     <Space direction="vertical" style={{ width: "100%" }} size="large">
       <Card title="Enqueue">
@@ -158,18 +180,7 @@ function MulticastGroupQueue(props: IProps) {
               </Form.Item>
             </Space>
           </Row>
-          <Tabs defaultActiveKey="1">
-            <Tabs.TabPane tab="HEX" key="1">
-              <Form.Item name="hex">
-                <Input />
-              </Form.Item>
-            </Tabs.TabPane>
-            <Tabs.TabPane tab="BASE64" key="2">
-              <Form.Item name="base64">
-                <Input />
-              </Form.Item>
-            </Tabs.TabPane>
-          </Tabs>
+          <Tabs defaultActiveKey="1" items={tabItems} />
           <Button type="primary" htmlType="submit">
             Enqueue
           </Button>

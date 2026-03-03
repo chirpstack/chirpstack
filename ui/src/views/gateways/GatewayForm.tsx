@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 import { Form, Input, InputNumber, Row, Col, Button, Tabs, Space, Card } from "antd";
+import type { TabsProps } from "antd/lib";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { Location } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
@@ -94,16 +95,12 @@ function GatewayForm(props: IProps) {
 
   const location: [number, number] = [latValue, lonValue];
 
-  return (
-    <Form
-      layout="vertical"
-      initialValues={props.initialValues.toObject()}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      form={form}
-    >
-      <Tabs>
-        <Tabs.TabPane tab="General" key="1">
+  const tabItems: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "General",
+      children: (
+        <>
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
             <Input disabled={props.disabled} />
           </Form.Item>
@@ -152,49 +149,57 @@ function GatewayForm(props: IProps) {
               </Button>
             </Space>
           </Form.Item>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Tags" key="2">
-          <Form.List name="tagsMap">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 0]}
-                        fieldKey={[name, 0]}
-                        rules={[{ required: true, message: "Please enter a key!" }]}
-                      >
-                        <Input placeholder="Key" disabled={props.disabled} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={16}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 1]}
-                        fieldKey={[name, 1]}
-                        rules={[{ required: true, message: "Please enter a value!" }]}
-                      >
-                        <Input placeholder="Value" disabled={props.disabled} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={2}>
-                      <MinusCircleOutlined onClick={() => remove(name)} disabled={props.disabled} />
-                    </Col>
-                  </Row>
-                ))}
-                <Form.Item>
-                  <Button type="dashed" disabled={props.disabled} onClick={() => add()} block icon={<PlusOutlined />}>
-                    Add tag
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Metadata" key="3">
-          <Card bordered={false}>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Tags",
+      children: (
+        <Form.List name="tagsMap">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row gutter={24} key={key}>
+                  <Col span={6}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 0]}
+                      rules={[{ required: true, message: "Please enter a key!" }]}
+                    >
+                      <Input placeholder="Key" disabled={props.disabled} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={16}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 1]}
+                      rules={[{ required: true, message: "Please enter a value!" }]}
+                    >
+                      <Input placeholder="Value" disabled={props.disabled} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={2}>
+                    <MinusCircleOutlined onClick={() => remove(name)} disabled={props.disabled} />
+                  </Col>
+                </Row>
+              ))}
+              <Form.Item>
+                <Button type="dashed" disabled={props.disabled} onClick={() => add()} block icon={<PlusOutlined />}>
+                  Add tag
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+      ),
+    },
+    {
+      key: "3",
+      label: "Metadata",
+      children: (
+        <>
+          <Card variant="borderless">
             <p>
               Metadata is pushed by the gateway on every stats update and can be used to expose information about the
               gateway like ip / hostname, serial number, HAL version.
@@ -204,14 +209,14 @@ function GatewayForm(props: IProps) {
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
+                  <Row gutter={24} key={key}>
                     <Col span={6}>
-                      <Form.Item {...restField} name={[name, 0]} fieldKey={[name, 0]}>
+                      <Form.Item {...restField} name={[name, 0]}>
                         <Input placeholder="Key" disabled />
                       </Form.Item>
                     </Col>
                     <Col span={18}>
-                      <Form.Item {...restField} name={[name, 1]} fieldKey={[name, 1]}>
+                      <Form.Item {...restField} name={[name, 1]}>
                         <Input placeholder="Value" disabled />
                       </Form.Item>
                     </Col>
@@ -220,8 +225,20 @@ function GatewayForm(props: IProps) {
               </>
             )}
           </Form.List>
-        </Tabs.TabPane>
-      </Tabs>
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      form={form}
+    >
+      <Tabs items={tabItems} />
       <Form.Item>
         <Button type="primary" htmlType="submit" disabled={props.disabled}>
           Submit

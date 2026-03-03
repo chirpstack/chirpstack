@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Tabs, Form, Input, InputNumber, Select, Row, Col, Button, Upload, UploadFile, Switch } from "antd";
+import type { TabsProps } from "antd/lib";
 import { UploadOutlined, MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -20,7 +21,6 @@ import {
 
 import { onFinishFailed } from "../helpers";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
-import AutocompleteInput from "../../components/AutocompleteInput";
 import DeviceProfileSelect from "../../components/DeviceProfileSelect";
 import type { OptionsCallbackFunc, OptionCallbackFunc } from "../../components/Autocomplete";
 
@@ -150,16 +150,12 @@ function FuotaDeploymentForm(props: IProps) {
     });
   };
 
-  return (
-    <Form
-      layout="vertical"
-      initialValues={props.initialValues.toObject()}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      form={form}
-    >
-      <Tabs>
-        <Tabs.TabPane tab="Deployment" key="1">
+  const tabItems: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "Deployment",
+      children: (
+        <>
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
             <Input disabled={props.disabled} />
           </Form.Item>
@@ -234,7 +230,7 @@ function FuotaDeploymentForm(props: IProps) {
                 rules={[{ required: true, message: "Please enter a multicast data-rate!" }]}
                 tooltip="The data-rate to use when transmitting the multicast frames. Please refer to the LoRaWAN Regional Parameters specification for valid values."
               >
-                <InputNumber min={0} max={15} disabled={props.disabled} style={{ width: "100%" }} addonBefore="DR" />
+                <InputNumber min={0} max={15} disabled={props.disabled} style={{ width: "100%" }} prefix="DR" />
               </Form.Item>
             </Col>
             <Col span={8}>
@@ -244,12 +240,12 @@ function FuotaDeploymentForm(props: IProps) {
                 tooltip="The frequency to use when transmitting the multicast frames. Please refer to the LoRaWAN Regional Parameters specification for valid values."
                 rules={[{ required: true, message: "Please enter a frequency!" }]}
               >
-                <InputNumber min={0} disabled={props.disabled} style={{ width: "100%" }} addonAfter="Hz" />
+                <InputNumber min={0} disabled={props.disabled} style={{ width: "100%" }} suffix="Hz" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item label="Fragmentation redundancy (%)" name="fragmentationRedundancyPercentage">
-                <InputNumber min={0} max={100} addonAfter="%" style={{ width: "100%" }} disabled={props.disabled} />
+                <InputNumber min={0} max={100} suffix="%" style={{ width: "100%" }} disabled={props.disabled} />
               </Form.Item>
             </Col>
           </Row>
@@ -342,7 +338,7 @@ function FuotaDeploymentForm(props: IProps) {
                   max={255}
                   disabled={props.disabled || calculateFragmentationFragmentSize}
                   style={{ width: "100%" }}
-                  addonAfter="Bytes"
+                  suffix="Bytes"
                 />
               </Form.Item>
             </Col>
@@ -360,48 +356,62 @@ function FuotaDeploymentForm(props: IProps) {
               </Button>
             </Upload>
           </Form.Item>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Set device tags (on complete)" key="2">
-          <Form.List name="onCompleteSetDeviceTagsMap">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row gutter={24}>
-                    <Col span={6}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 0]}
-                        fieldKey={[name, 0]}
-                        rules={[{ required: true, message: "Please enter a key!" }]}
-                      >
-                        <Input placeholder="Key" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={16}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 1]}
-                        fieldKey={[name, 1]}
-                        rules={[{ required: true, message: "Please enter a value!" }]}
-                      >
-                        <Input placeholder="Value" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={2}>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
-                    </Col>
-                  </Row>
-                ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                    Add tag
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </Tabs.TabPane>
-      </Tabs>
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Set device tags (on clomplete)",
+      children: (
+        <Form.List name="onCompleteSetDeviceTagsMap">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row gutter={24} key={key}>
+                  <Col span={6}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 0]}
+                      rules={[{ required: true, message: "Please enter a key!" }]}
+                    >
+                      <Input placeholder="Key" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={16}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 1]}
+                      rules={[{ required: true, message: "Please enter a value!" }]}
+                    >
+                      <Input placeholder="Value" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={2}>
+                    <MinusCircleOutlined onClick={() => remove(name)} />
+                  </Col>
+                </Row>
+              ))}
+              <Form.Item>
+                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                  Add tag
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+      ),
+    },
+  ];
+
+  return (
+    <Form
+      layout="vertical"
+      initialValues={props.initialValues.toObject()}
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      form={form}
+    >
+      <Tabs items={tabItems} />
       <Form.Item>
         <Button type="primary" htmlType="submit" disabled={props.disabled}>
           Submit
