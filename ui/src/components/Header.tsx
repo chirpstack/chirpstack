@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Dropdown, Input, AutoComplete } from "antd";
+import type { AutoCompleteProps } from "antd";
 import { UserOutlined, DownOutlined, QuestionOutlined } from "@ant-design/icons";
 
 import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
@@ -15,6 +16,7 @@ import { MenuProps } from "antd/lib";
 const renderTitle = (title: string) => <span>{title}</span>;
 
 const renderItem = (title: string, url: string) => ({
+  key: url,
   value: title,
   url,
   label: <Link to={url}>{title}</Link>,
@@ -44,13 +46,6 @@ function Header({ user }: { user: User }) {
     InternalStore.globalSearch(req, (resp: GlobalSearchResponse) => {
       setSearchResult(resp);
     });
-  };
-
-  // this type assertion is needed because of a bug in antd's AutoComplete typings
-  const onSelect = (_: unknown, _option: (typeof options)[number]) => {
-    const option = _option as unknown as ReturnType<typeof renderItem>;
-
-    navigate(option.url);
   };
 
   const onLogout = () => {
@@ -98,10 +93,7 @@ function Header({ user }: { user: User }) {
     onClick: onLogout,
   });
 
-  const options: {
-    label: JSX.Element;
-    options: ReturnType<typeof renderItem>[];
-  }[] = [
+  let options: AutoCompleteProps["options"] = [
     {
       label: renderTitle("Tenants"),
       options: [],
@@ -159,9 +151,9 @@ function Header({ user }: { user: User }) {
             popupMatchSelectWidth={500}
             options={options}
             onSearch={onSearch}
-            onSelect={onSelect}
+            style={{ width: 500, lineHeight: "32px" }}
           >
-            <Input.Search placeholder="Search..." style={{ width: 500, marginTop: -5 }} />
+            <Input.Search size="medium" placeholder="Search..." />
           </AutoComplete>
         </div>
         <div className="help">

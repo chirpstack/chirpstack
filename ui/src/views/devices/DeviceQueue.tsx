@@ -175,7 +175,7 @@ function DeviceQueue(props: IProps) {
     item.setIsEncrypted(values.isEncrypted);
     item.setFCntDown(values.fCntDown);
 
-    if (values.expiresAt !== null && values.expiresAt !== undefined) {
+    if (values.expiresAt !== null && values.expiresAt !== undefined && !Array.isArray(values.expiresAt)) {
       item.setExpiresAt(Timestamp.fromDate(values.expiresAt.toDate()));
     }
 

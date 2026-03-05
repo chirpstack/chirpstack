@@ -1,3 +1,4 @@
+import { ReactElement } from "react";
 import { Link } from "react-router-dom";
 
 import { Col, Card, Popconfirm } from "antd";
@@ -21,7 +22,7 @@ function AwsSns(props: IProps) {
     ApplicationStore.deleteAwsSnsIntegration(req, () => {});
   };
 
-  let actions: JSX.Element[] = [];
+  let actions: ReactElement[] = [];
 
   if (props.add) {
     actions = [

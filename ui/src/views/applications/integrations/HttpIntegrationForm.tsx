@@ -65,7 +65,6 @@ function HttpIntegrationForm(props: IProps) {
                     <Form.Item
                       {...restField}
                       name={[name, 0]}
-                      fieldKey={[name, 0]}
                       rules={[{ required: true, message: "Please enter a key!" }]}
                     >
                       <Input placeholder="Key" />
@@ -75,7 +74,6 @@ function HttpIntegrationForm(props: IProps) {
                     <Form.Item
                       {...restField}
                       name={[name, 1]}
-                      fieldKey={[name, 1]}
                       rules={[{ required: true, message: "Please enter a value!" }]}
                     >
                       <Input placeholder="Value" />

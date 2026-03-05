@@ -115,7 +115,7 @@ function MulticastGroupQueue(props: IProps) {
     item.setMulticastGroupId(props.multicastGroup.getId());
     item.setFPort(values.fPort);
 
-    if (values.expiresAt !== null && values.expiresAt !== undefined) {
+    if (values.expiresAt !== null && values.expiresAt !== undefined && !Array.isArray(values.expiresAt)) {
       item.setExpiresAt(Timestamp.fromDate(values.expiresAt.toDate()));
     }
 

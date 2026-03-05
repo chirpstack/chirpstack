@@ -1,3 +1,4 @@
+import React, { ReactElement } from "react";
 import { Link } from "react-router-dom";
 
 import { Col, Card, Popconfirm } from "antd";
@@ -20,7 +21,7 @@ function AzureServiceBusCard(props: IProps) {
     ApplicationStore.deleteAzureServiceBusIntegration(req, () => {});
   };
 
-  let actions: JSX.Element[] = [];
+  let actions: ReactElement[] = [];
 
   if (props.add) {
     actions = [

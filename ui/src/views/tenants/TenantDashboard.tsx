@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { presetPalettes } from "@ant-design/colors";
@@ -44,7 +44,7 @@ function GatewaysMap(props: GatewaysMapProps) {
   };
 
   const bounds: LatLngTuple[] = [];
-  const markers: JSX.Element[] = [];
+  const markers: ReactElement[] = [];
 
   for (const item of props.items) {
     if (item.getLocation() === undefined) {

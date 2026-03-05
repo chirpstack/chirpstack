@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactElement } from "react";
 
 import { Row } from "antd";
 
@@ -27,8 +27,8 @@ interface IProps {
 }
 
 function ListIntegrations(props: IProps) {
-  const [configured, setConfigured] = useState<JSX.Element[]>([]);
-  const [available, setAvailable] = useState<JSX.Element[]>([]);
+  const [configured, setConfigured] = useState<ReactElement[]>([]);
+  const [available, setAvailable] = useState<ReactElement[]>([]);
 
   useEffect(() => {
     const loadIntegrations = () => {
@@ -36,8 +36,8 @@ function ListIntegrations(props: IProps) {
       req.setApplicationId(props.application.getId());
 
       ApplicationStore.listIntegrations(req, (resp: ListIntegrationsResponse) => {
-        const configured: JSX.Element[] = [];
-        const available: JSX.Element[] = [];
+        const configured: ReactElement[] = [];
+        const available: ReactElement[] = [];
 
         const includes = (integrations: IntegrationListItem[], kind: IntegrationKind) => {
           for (const x of integrations) {

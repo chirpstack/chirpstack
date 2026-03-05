@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactElement } from "react";
 import { Link } from "react-router-dom";
 
 import { presetPalettes } from "@ant-design/colors";
@@ -50,7 +50,7 @@ function GatewaysMap() {
   };
 
   const bounds: LatLngTuple[] = [];
-  const markers: JSX.Element[] = [];
+  const markers: ReactElement[] = [];
 
   for (const item of items) {
     const pos: LatLngTuple = [item.getLocation()!.getLatitude(), item.getLocation()!.getLongitude()];
