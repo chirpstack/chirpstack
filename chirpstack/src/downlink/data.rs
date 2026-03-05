@@ -11,7 +11,7 @@ use tracing::{Instrument, Level, debug, span, trace, warn};
 use crate::api::backend::get_async_receiver;
 use crate::api::helpers::{FromProto, ToProto};
 use crate::backend::roaming;
-use crate::downlink::{classb, error::Error, helpers, tx_ack};
+use crate::downlink::{classb, error::Error, helpers, record_downlink_mac_commands, tx_ack};
 use crate::gpstime::{ToDateTime, ToGpsTime};
 use crate::storage;
 use crate::storage::{
@@ -1041,6 +1041,8 @@ impl Data {
             .await
             .context("Send downlink frame")?;
 
+        record_downlink_mac_commands(self.mac_commands.clone());
+        
         Ok(())
     }
 
