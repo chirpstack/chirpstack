@@ -70,6 +70,7 @@
   tokio-executor-trait.workspace = true
   tokio-reactor-trait.workspace = true
   rdkafka.workspace = true
+  rdkafka-sys.workspace = true
 
   # gRPC and Protobuf
   tonic-web.workspace = true

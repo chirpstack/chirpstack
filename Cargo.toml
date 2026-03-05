@@ -156,7 +156,7 @@
     dotenv = "0.15"
 
     # Integrations
-    lapin = { version = "4.0", default-features = false, features = [
+    lapin = { version = "4.1", default-features = false, features = [
       "tokio",
       "rustls--ring",
       "rustls-native-certs",
@@ -165,6 +165,8 @@
       "tokio",
       "cmake-build",
     ] }
+    # Needed until this issue has been solved: https://github.com/fede1024/rust-rdkafka/issues/829
+    rdkafka-sys = "~4.9.0"
     rumqttc = { version = "0.25", default-features = false, features = [
       "url",
       "use-rustls-no-provider",
