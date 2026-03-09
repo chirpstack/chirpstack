@@ -51,77 +51,77 @@ function ListIntegrations(props: IProps) {
 
         // AWS SNS
         if (includes(resp.getResultList(), IntegrationKind.AWS_SNS)) {
-          configured.push(<AwsSnsCard application={props.application} />);
+          configured.push(<AwsSnsCard application={props.application} key="AWS SNS" />);
         } else {
-          available.push(<AwsSnsCard application={props.application} add />);
+          available.push(<AwsSnsCard application={props.application} add key="AWS SNS" />);
         }
 
         // Azure Service-Bus
         if (includes(resp.getResultList(), IntegrationKind.AZURE_SERVICE_BUS)) {
-          configured.push(<AzureServiceBusCard application={props.application} />);
+          configured.push(<AzureServiceBusCard application={props.application} key="Azure Service-Bus" />);
         } else {
-          available.push(<AzureServiceBusCard application={props.application} add />);
+          available.push(<AzureServiceBusCard application={props.application} add key="Azure Service-Bus" />);
         }
 
         // Blynk
         if (includes(resp.getResultList(), IntegrationKind.BLYNK)) {
-          configured.push(<BlynkCard application={props.application} />);
+          configured.push(<BlynkCard application={props.application} key="Blynk" />);
         } else {
-          available.push(<BlynkCard application={props.application} add />);
+          available.push(<BlynkCard application={props.application} add key="Blynk" />);
         }
 
         // GCP Pub/Sub
         if (includes(resp.getResultList(), IntegrationKind.GCP_PUB_SUB)) {
-          configured.push(<GcpPubSubCard application={props.application} />);
+          configured.push(<GcpPubSubCard application={props.application} key="GCP Pub/Sub" />);
         } else {
-          available.push(<GcpPubSubCard application={props.application} add />);
+          available.push(<GcpPubSubCard application={props.application} add key="GCP Pub/Sub" />);
         }
 
         // HTTP
         if (includes(resp.getResultList(), IntegrationKind.HTTP)) {
-          configured.push(<HttpCard application={props.application} />);
+          configured.push(<HttpCard application={props.application} key="HTTP" />);
         } else {
-          available.push(<HttpCard application={props.application} add />);
+          available.push(<HttpCard application={props.application} add key="HTTP" />);
         }
 
         // IFTTT
         if (includes(resp.getResultList(), IntegrationKind.IFTTT)) {
-          configured.push(<IftttCard application={props.application} />);
+          configured.push(<IftttCard application={props.application} key="IFTTT" />);
         } else {
-          available.push(<IftttCard application={props.application} add />);
+          available.push(<IftttCard application={props.application} add key="IFTTT" />);
         }
 
         // InfluxDB
         if (includes(resp.getResultList(), IntegrationKind.INFLUX_DB)) {
-          configured.push(<InfluxdbCard application={props.application} />);
+          configured.push(<InfluxdbCard application={props.application} key="InfluxDB" />);
         } else {
-          available.push(<InfluxdbCard application={props.application} add />);
+          available.push(<InfluxdbCard application={props.application} add key="InfluxDB" />);
         }
 
         // MQTT
         if (includes(resp.getResultList(), IntegrationKind.MQTT_GLOBAL)) {
-          configured.push(<MqttCard application={props.application} />);
+          configured.push(<MqttCard application={props.application} key="MQTT" />);
         }
 
         // myDevices
         if (includes(resp.getResultList(), IntegrationKind.MY_DEVICES)) {
-          configured.push(<MyDevicesCard application={props.application} />);
+          configured.push(<MyDevicesCard application={props.application} key="myDevices" />);
         } else {
-          available.push(<MyDevicesCard application={props.application} add />);
+          available.push(<MyDevicesCard application={props.application} add key="myDevices" />);
         }
 
         // Pilot Things
         if (includes(resp.getResultList(), IntegrationKind.PILOT_THINGS)) {
-          configured.push(<PilotThingsCard application={props.application} />);
+          configured.push(<PilotThingsCard application={props.application} key="Pilot Things" />);
         } else {
-          available.push(<PilotThingsCard application={props.application} add />);
+          available.push(<PilotThingsCard application={props.application} add key="Pilot Things" />);
         }
 
         // ThingsBoard
         if (includes(resp.getResultList(), IntegrationKind.THINGS_BOARD)) {
-          configured.push(<ThingsBoardCard application={props.application} />);
+          configured.push(<ThingsBoardCard application={props.application} key="ThingsBoard" />);
         } else {
-          available.push(<ThingsBoardCard application={props.application} add />);
+          available.push(<ThingsBoardCard application={props.application} add key="ThingsBoard" />);
         }
 
         setConfigured(configured);
