@@ -156,7 +156,7 @@
     dotenv = "0.15"
 
     # Integrations
-    lapin = { version = "4.1", default-features = false, features = [
+    lapin = { version = "4.2", default-features = false, features = [
       "tokio",
       "rustls--ring",
       "rustls-native-certs",
