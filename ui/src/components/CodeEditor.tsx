@@ -14,7 +14,7 @@ interface IProps {
   required?: boolean;
   disabled?: boolean;
   tooltip?: string;
-  mode?: 'javascript' | 'json';
+  mode?: "javascript" | "json";
 }
 
 function CodeEditor(props: IProps) {
@@ -45,7 +45,7 @@ function CodeEditor(props: IProps) {
           editorProps={{ $blockScrolling: true }}
           enableBasicAutocompletion={true}
           setOptions={{
-            useWorker: false
+            useWorker: false,
           }}
         />
       </div>
