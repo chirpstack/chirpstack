@@ -135,3 +135,7 @@ pre {
 .input-code input {
   font-family: monospace !important;
 }
+
+.css-var-root.ant-btn {
+  --ant-button-padding-inline-sm: 12px !important;
+}
