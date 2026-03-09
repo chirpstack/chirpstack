@@ -131,20 +131,23 @@ function LogTable(props: IProps) {
             title: "Properties",
             dataIndex: "properties",
             key: "properties",
-            render: (_text, obj) =>
-              obj.propertiesMap.map((p, _i) => {
-                if (p[1] !== "") {
-                  return (
-                    <Tag key={p[0]}>
-                      <pre>
-                        {p[0]}: {p[1]}
-                      </pre>
-                    </Tag>
-                  );
-                }
+            render: (_text, obj) => (
+              <Space orientation="horizontal" size="small">
+                {obj.propertiesMap.map((p, _i) => {
+                  if (p[1] !== "") {
+                    return (
+                      <Tag key={p[0]} variant="outlined">
+                        <pre>
+                          {p[0]}: {p[1]}
+                        </pre>
+                      </Tag>
+                    );
+                  }
 
-                return null;
-              }),
+                  return null;
+                })}
+              </Space>
+            ),
           },
         ]}
       />
