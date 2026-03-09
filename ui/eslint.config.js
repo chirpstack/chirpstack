@@ -14,6 +14,7 @@ export default defineConfig({
     react.configs.flat.recommended,
     react.configs.flat["jsx-runtime"],
   ],
+  files: ["**/*.{ts,tsx}"],
   ignores: ["build/**"],
   settings: {
     react: {
