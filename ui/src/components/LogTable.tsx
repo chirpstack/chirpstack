@@ -72,7 +72,7 @@ function LogTable(props: IProps) {
       <Drawer
         title={`Details: ${drawerTitle}`}
         placement="right"
-        width={650}
+        size={650}
         onClose={onDrawerClose}
         open={drawerOpen}
         extra={<Button onClick={downloadSingleFrame}>Download</Button>}
