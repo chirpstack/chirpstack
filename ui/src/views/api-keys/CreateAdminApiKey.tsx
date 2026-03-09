@@ -30,7 +30,7 @@ function CreateAdminApiKey() {
   const apiKey = new ApiKey();
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         title="Add API key"
         breadcrumbRender={() => (

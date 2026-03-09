@@ -54,7 +54,7 @@ function HttpIntegrationForm(props: IProps) {
       >
         <Input />
       </Form.Item>
-      <Space direction="vertical" style={{ width: "100%" }}>
+      <Space orientation="vertical" style={{ width: "100%" }}>
         <Typography.Text>Headers</Typography.Text>
         <Form.List name="headersMap">
           {(fields, { add, remove }) => (

@@ -16,7 +16,7 @@ function DeleteConfirmContent(props: IProps) {
   };
 
   return (
-    <Space direction="vertical">
+    <Space orientation="vertical">
       <Typography.Text>
         Enter '{props.confirm}' to confirm you want to delete this {props.typ} (and all depending objects):
       </Typography.Text>

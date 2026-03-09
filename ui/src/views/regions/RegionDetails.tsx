@@ -33,7 +33,7 @@ function RegionDetails() {
   }
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
           <Breadcrumb
@@ -54,7 +54,7 @@ function RegionDetails() {
       )}
       <Row gutter={24}>
         <Col span={12}>
-          <Space direction="vertical" style={{ width: "100%" }} size="large">
+          <Space orientation="vertical" style={{ width: "100%" }} size="large">
             <Card title="Uplink channels">
               <List
                 itemLayout="horizontal"
@@ -75,7 +75,7 @@ function RegionDetails() {
           </Space>
         </Col>
         <Col span={12}>
-          <Space direction="vertical" style={{ width: "100%" }} size="large">
+          <Space orientation="vertical" style={{ width: "100%" }} size="large">
             <Card title="Downlink">
               <List
                 dataSource={[

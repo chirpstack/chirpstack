@@ -255,7 +255,7 @@ function DeviceForm(props: IProps) {
         onCancel={() => setShowScanner(false)}
         okButtonProps={{ style: { display: "none" } }}
       >
-        <Space direction="vertical">
+        <Space orientation="vertical">
           <Scanner onScan={onScannerScan} onError={onScannerError} />
         </Space>
       </Modal>

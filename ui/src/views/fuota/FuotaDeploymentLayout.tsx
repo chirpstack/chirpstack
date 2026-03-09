@@ -127,7 +127,7 @@ function FuotaDeploymentLayout(props: IProps) {
   }
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
           <Breadcrumb
@@ -153,7 +153,7 @@ function FuotaDeploymentLayout(props: IProps) {
         subTitle={`FUOTA deployment id: ${d.getId()}`}
         extra={[
           <Admin tenantId={tenant.getId()} isDeviceAdmin key="start-delete-fuota-deployment">
-            <Space direction="horizontal" style={{ float: "right" }}>
+            <Space orientation="horizontal" style={{ float: "right" }}>
               <Popconfirm
                 placement="left"
                 title="Start deployment"

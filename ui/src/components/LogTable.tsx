@@ -68,7 +68,7 @@ function LogTable(props: IProps) {
   };
 
   return (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
+    <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Drawer
         title={`Details: ${drawerTitle}`}
         placement="right"
@@ -87,7 +87,7 @@ function LogTable(props: IProps) {
         />
       </Drawer>
       {items.length !== 0 && (
-        <Space direction="horizontal" style={{ float: "right" }} size="large">
+        <Space orientation="horizontal" style={{ float: "right" }} size="large">
           <Spin size="small" />
           <Button onClick={downloadFrames}>Download</Button>
         </Space>

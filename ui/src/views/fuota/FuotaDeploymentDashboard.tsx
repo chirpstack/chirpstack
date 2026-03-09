@@ -150,7 +150,7 @@ function FuotaDeploymentDashboard(props: IProps) {
   }
 
   return (
-    <Space style={{ width: "100%" }} direction="vertical">
+    <Space style={{ width: "100%" }} orientation="vertical">
       <Table loading={loadingProps} dataSource={fuotaJobs} columns={columns} pagination={false} rowKey="job" />
     </Space>
   );

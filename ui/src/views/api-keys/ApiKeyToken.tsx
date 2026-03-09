@@ -10,7 +10,7 @@ interface IProps {
 
 function ApiKeyToken(props: IProps) {
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space orientation="vertical" style={{ width: "100%" }}>
       <Typography>
         <Typography.Paragraph>
           Use the following API token when making API requests. This token can be revoked at any time by deleting it.

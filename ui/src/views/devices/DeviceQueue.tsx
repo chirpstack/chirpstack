@@ -240,7 +240,7 @@ function DeviceQueue(props: IProps) {
   ];
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <Card title="Enqueue">
         <Form
           layout="horizontal"
@@ -250,7 +250,7 @@ function DeviceQueue(props: IProps) {
           initialValues={{ fPort: 1 }}
         >
           <Row>
-            <Space direction="horizontal" style={{ width: "100%" }} size="large">
+            <Space orientation="horizontal" style={{ width: "100%" }} size="large">
               <Form.Item name="confirmed" label="Confirmed" valuePropName="checked">
                 <Switch />
               </Form.Item>
@@ -290,7 +290,7 @@ function DeviceQueue(props: IProps) {
         </Form>
       </Card>
       <Row justify="end">
-        <Space direction="horizontal" size="large">
+        <Space orientation="horizontal" size="large">
           <Button icon={<RedoOutlined />} onClick={refreshQueue}>
             Reload
           </Button>
