@@ -5,10 +5,10 @@
   "license": "MIT",
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
-    "@types/google-protobuf": "^3.15.12",
-    "google-protobuf": "^4.0.1"
+    "google-protobuf": "^4.0.2"
   },
   "devDependencies": {
+    "@types/google-protobuf": "^3.15.12",
     "grpc-tools": "^1.13.1",
     "ts-protoc-gen": "^0.15.0",
     "typescript": "^5.9.3"

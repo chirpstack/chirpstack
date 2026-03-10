@@ -10,10 +10,10 @@ With npm:
 npm install @chirpstack/chirpstack-api --save
 ```
 
-Or with yarn:
+Or with pnpm:
 
 ```sh
-yarn add @chirpstack/chirpstack-api
+pnpm add @chirpstack/chirpstack-api
 ```
 
 ## Usage

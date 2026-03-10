@@ -1,0 +1,2 @@
+allowBuilds:
+  grpc-tools: true

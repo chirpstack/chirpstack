@@ -9,7 +9,7 @@ PROTOC_GRPC_ARGS := $(PROTOC_ARGS) --grpc_out=grpc_js:.
 all: requirements common gw api integration stream google-api
 
 requirements:
-	yarn install
+	pnpm install
 
 common:
 	$(PROTOC_PATH) $(PROTOC_ARGS) ../proto/common/common.proto

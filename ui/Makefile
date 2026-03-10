@@ -1,17 +1,16 @@
 .PHONY: build server dependencies clean
 
 build: dependencies
-	yarn build
+	pnpm build
 
 server: dependencies
-	yarn start
+	pnpm start
 
 dependencies:
-	yarn install
-	yarn add file:../api/grpc-web
+	pnpm install
 
 clean:
 	rm -rf build
 
 format:
-	./node_modules/.bin/prettier --write .
+	pnpm format
