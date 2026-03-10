@@ -5,6 +5,7 @@
 !/.env
 !/.docker-compose
 !.npmignore
+!.yarnrc
 
 # Log files
 *.log
