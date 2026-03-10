@@ -1,0 +1,3 @@
+allowBuilds:
+  grpc-tools: true
+  protobufjs: false
