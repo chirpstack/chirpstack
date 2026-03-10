@@ -11,13 +11,13 @@ importers:
       '@grpc/grpc-js':
         specifier: ^1.14.3
         version: 1.14.3
-      '@types/google-protobuf':
-        specifier: ^3.15.12
-        version: 3.15.12
       google-protobuf:
         specifier: ^4.0.2
         version: 4.0.2
     devDependencies:
+      '@types/google-protobuf':
+        specifier: ^3.15.12
+        version: 3.15.12
       grpc-tools:
         specifier: ^1.13.1
         version: 1.13.1
