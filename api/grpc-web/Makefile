@@ -7,7 +7,7 @@ PROTOC_ARGS := -I=../proto --js_out=import_style=commonjs:. --grpc-web_out=impor
 all: requirements common gw api integration google-api
 
 requirements:
-	yarn install
+	pnpm install
 
 common:
 	mkdir -p common
