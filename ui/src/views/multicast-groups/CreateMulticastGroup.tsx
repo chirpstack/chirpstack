@@ -39,7 +39,7 @@ function CreateMulticastGroup(props: IProps) {
   multicastGroup.setApplicationId(props.application.getId());
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
           <Breadcrumb

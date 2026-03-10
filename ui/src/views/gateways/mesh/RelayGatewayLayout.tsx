@@ -57,7 +57,7 @@ function RelayGatewayLayout(props: IProps) {
     SessionStore.isTenantGatewayAdmin(props.tenant.getId());
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
           <Breadcrumb

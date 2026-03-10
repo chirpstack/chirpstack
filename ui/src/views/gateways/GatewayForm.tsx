@@ -134,7 +134,7 @@ function GatewayForm(props: IProps) {
             <Form.Item name={["location", "longitude"]} noStyle>
               <Input hidden />
             </Form.Item>
-            <Space direction="vertical" style={{ width: "100%" }}>
+            <Space orientation="vertical" style={{ width: "100%" }}>
               <Map height={500} center={location}>
                 <Marker
                   position={location}

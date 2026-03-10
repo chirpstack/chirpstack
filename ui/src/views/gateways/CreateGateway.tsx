@@ -33,7 +33,7 @@ function CreateGateway(props: IProps) {
   gateway.setStatsInterval(30);
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         title="Add gateway"
         breadcrumbRender={() => (

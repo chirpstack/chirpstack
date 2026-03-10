@@ -5,7 +5,8 @@ import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-json";
-import "ace-builds/src-noconflict/theme-github";
+import "ace-builds/src-noconflict/theme-xcode";
+import "ace-builds/src-noconflict/ext-language_tools";
 
 interface IProps {
   label?: string;
@@ -13,7 +14,7 @@ interface IProps {
   required?: boolean;
   disabled?: boolean;
   tooltip?: string;
-  mode?: string;
+  mode?: "javascript" | "json";
 }
 
 function CodeEditor(props: IProps) {
@@ -36,12 +37,16 @@ function CodeEditor(props: IProps) {
       <div style={{ border: "1px solid #cccccc" }}>
         <AceEditor
           mode={props.mode || "javascript"}
-          theme="github"
+          theme="xcode"
           onChange={onChange}
           value={value}
           width="100%"
           height="600px"
           editorProps={{ $blockScrolling: true }}
+          enableBasicAutocompletion={true}
+          setOptions={{
+            useWorker: false,
+          }}
         />
       </div>
     </Form.Item>

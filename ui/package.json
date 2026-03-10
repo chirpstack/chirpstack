@@ -6,8 +6,9 @@
   "scripts": {
     "start": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "lint": "eslint . --max-warnings 0",
+    "preview": "vite preview",
+    "type-check": "tsc -b --noEmit"
   },
   "dependencies": {
     "@ant-design/colors": "^8.0.1",
@@ -43,20 +44,20 @@
     "web-vitals": "^5.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/events": "^3.0.3",
     "@types/leaflet": "^1.9.21",
     "@types/leaflet.awesome-markers": "^2.0.29",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@typescript-eslint/eslint-plugin": "^8.56.1",
-    "@typescript-eslint/parser": "^8.56.1",
     "@vitejs/plugin-react-swc": "^4.2.3",
     "eslint": "^9.39.3",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1"
   }
 }

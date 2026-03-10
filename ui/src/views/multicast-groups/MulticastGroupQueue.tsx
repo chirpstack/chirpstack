@@ -157,7 +157,7 @@ function MulticastGroupQueue(props: IProps) {
   ];
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <Card title="Enqueue">
         <Form
           layout="horizontal"
@@ -167,7 +167,7 @@ function MulticastGroupQueue(props: IProps) {
           initialValues={{ fPort: 1 }}
         >
           <Row>
-            <Space direction="horizontal" style={{ width: "100%" }} size="large">
+            <Space orientation="horizontal" style={{ width: "100%" }} size="large">
               <Form.Item name="fPort" label="FPort">
                 <InputNumber min={1} max={254} />
               </Form.Item>
@@ -187,7 +187,7 @@ function MulticastGroupQueue(props: IProps) {
         </Form>
       </Card>
       <Row justify="end">
-        <Space direction="horizontal" size="large">
+        <Space orientation="horizontal" size="large">
           <Button icon={<RedoOutlined />} onClick={refreshQueue}>
             Reload
           </Button>

@@ -145,8 +145,8 @@ function FuotaDeploymentDevices(props: IProps) {
   };
 
   return (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
-      <Space direction="horizontal" style={{ float: "right" }}>
+    <Space orientation="vertical" size="large" style={{ width: "100%" }}>
+      <Space orientation="horizontal" style={{ float: "right" }}>
         <Popconfirm
           title="Remove devices"
           description="Are you sure you want to remove the selected devices from the FUOTA deployment?"

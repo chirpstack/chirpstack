@@ -89,7 +89,7 @@ function ListAdminApiKeys() {
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => <Breadcrumb items={[{ title: "Network Server" }, { title: "API Keys" }]} />}
         title="API keys"

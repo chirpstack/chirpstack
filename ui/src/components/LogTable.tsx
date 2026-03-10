@@ -68,11 +68,11 @@ function LogTable(props: IProps) {
   };
 
   return (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
+    <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Drawer
         title={`Details: ${drawerTitle}`}
         placement="right"
-        width={650}
+        size={650}
         onClose={onDrawerClose}
         open={drawerOpen}
         extra={<Button onClick={downloadSingleFrame}>Download</Button>}
@@ -87,7 +87,7 @@ function LogTable(props: IProps) {
         />
       </Drawer>
       {items.length !== 0 && (
-        <Space direction="horizontal" style={{ float: "right" }} size="large">
+        <Space orientation="horizontal" style={{ float: "right" }} size="large">
           <Spin size="small" />
           <Button onClick={downloadFrames}>Download</Button>
         </Space>
@@ -131,20 +131,23 @@ function LogTable(props: IProps) {
             title: "Properties",
             dataIndex: "properties",
             key: "properties",
-            render: (_text, obj) =>
-              obj.propertiesMap.map((p, _i) => {
-                if (p[1] !== "") {
-                  return (
-                    <Tag key={p[0]}>
-                      <pre>
-                        {p[0]}: {p[1]}
-                      </pre>
-                    </Tag>
-                  );
-                }
+            render: (_text, obj) => (
+              <Space orientation="horizontal" size="small">
+                {obj.propertiesMap.map((p, _i) => {
+                  if (p[1] !== "") {
+                    return (
+                      <Tag key={p[0]} variant="outlined">
+                        <pre>
+                          {p[0]}: {p[1]}
+                        </pre>
+                      </Tag>
+                    );
+                  }
 
-                return null;
-              }),
+                  return null;
+                })}
+              </Space>
+            ),
           },
         ]}
       />

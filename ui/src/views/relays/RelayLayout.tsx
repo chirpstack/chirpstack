@@ -50,7 +50,7 @@ function RelayLayout(props: IProps) {
   const tab = "devices";
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => (
           <Breadcrumb

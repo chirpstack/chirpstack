@@ -87,8 +87,8 @@ function ListMulticastGroupDevices(props: IProps) {
   };
 
   return (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
-      <Space direction="horizontal" style={{ float: "right" }}>
+    <Space orientation="vertical" size="large" style={{ width: "100%" }}>
+      <Space orientation="horizontal" style={{ float: "right" }}>
         <Button onClick={removeDevicesFromMulticastGroup} disabled={selectedRowIds.length === 0}>
           Remove from multicast-group
         </Button>

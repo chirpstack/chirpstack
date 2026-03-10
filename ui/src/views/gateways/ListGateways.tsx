@@ -253,7 +253,7 @@ function ListGateways(props: IProps) {
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <Modal
         title="Add selected gateways to multicast-group"
         open={mgModalVisible}
@@ -261,7 +261,7 @@ function ListGateways(props: IProps) {
         onCancel={() => setMgModalVisible(false)}
         okButtonProps={{ disabled: mgSelected === "" }}
       >
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Space orientation="vertical" size="large" style={{ width: "100%" }}>
           <TreeSelect
             style={{ width: "100%" }}
             placeholder="Select multicast-group"
@@ -278,7 +278,7 @@ function ListGateways(props: IProps) {
         onCancel={() => setFuotaModalVisible(false)}
         okButtonProps={{ disabled: fuotaDeploymentSelected === "" }}
       >
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Space orientation="vertical" size="large" style={{ width: "100%" }}>
           <TreeSelect
             style={{ width: "100%" }}
             placeholder="Select FUOTA deployment"
@@ -301,7 +301,7 @@ function ListGateways(props: IProps) {
         )}
         extra={[
           <Admin tenantId={props.tenant.getId()} isGatewayAdmin key="add-gateway">
-            <Space direction="horizontal" style={{ float: "right" }}>
+            <Space orientation="horizontal" style={{ float: "right" }}>
               <Button type="primary">
                 <Link to={`/tenants/${props.tenant.getId()}/gateways/create`}>Add gateway</Link>
               </Button>

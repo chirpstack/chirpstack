@@ -270,7 +270,7 @@ function TenantDashboard({ tenant }: { tenant: Tenant }) {
   }, [tenant]);
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <Row gutter={24}>
         <Col span={8}>
           <Card title="Active devices">

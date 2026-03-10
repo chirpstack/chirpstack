@@ -354,7 +354,7 @@ function ListDevices(props: IProps) {
   });
 
   return (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
+    <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Modal
         title="Add selected devices to multicast-group"
         open={mgModalVisible}
@@ -362,7 +362,7 @@ function ListDevices(props: IProps) {
         onCancel={hideMgModal}
         okButtonProps={{ disabled: mgSelected === "" }}
       >
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Space orientation="vertical" size="large" style={{ width: "100%" }}>
           <Select
             style={{ width: "100%" }}
             onChange={onMgSelected}
@@ -378,7 +378,7 @@ function ListDevices(props: IProps) {
         onCancel={() => setFuotaModalVisible(false)}
         okButtonProps={{ disabled: fuotaDeploymentSelected === "" }}
       >
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Space orientation="vertical" size="large" style={{ width: "100%" }}>
           <Typography.Text>
             This will add the selected devices to a FUOTA deployment. Devices must have the same device-profile as
             associated with the FUOTA deployment.
@@ -398,7 +398,7 @@ function ListDevices(props: IProps) {
         onCancel={hideRelayModal}
         okButtonProps={{ disabled: relaySelected === "" }}
       >
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Space orientation="vertical" size="large" style={{ width: "100%" }}>
           <Select
             style={{ width: "100%" }}
             onChange={onRelaySelected}
@@ -408,7 +408,7 @@ function ListDevices(props: IProps) {
         </Space>
       </Modal>
       <Admin tenantId={props.application.getTenantId()} isDeviceAdmin>
-        <Space direction="horizontal" style={{ float: "right" }}>
+        <Space orientation="horizontal" style={{ float: "right" }}>
           <Button type="primary">
             <Link
               to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/devices/create`}

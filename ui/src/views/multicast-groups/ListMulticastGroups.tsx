@@ -80,7 +80,7 @@ function ListMulticastGroups(props: IProps) {
   };
 
   return (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
+    <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Admin tenantId={props.application.getTenantId()} isDeviceAdmin>
         <Button type="primary" style={{ float: "right" }}>
           <Link

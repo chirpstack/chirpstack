@@ -28,7 +28,7 @@ function ListRegions() {
   }
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <PageHeader
         breadcrumbRender={() => <Breadcrumb items={[{ title: "Network Server" }, { title: "Regions" }]} />}
         title="Regions"

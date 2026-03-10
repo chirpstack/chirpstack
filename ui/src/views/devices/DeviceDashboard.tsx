@@ -159,7 +159,7 @@ function DeviceDashboard(props: IProps) {
   const loading = !deviceLinkMetricsLoaded || !deviceMetrics;
 
   const aggregations = (
-    <Space direction="horizontal">
+    <Space orientation="horizontal">
       {loading && <Spin size="small" />}
       <Radio.Group value={metricsAggregation} onChange={onMetricsAggregationChange} size="small">
         <Radio.Button value={Aggregation.HOUR} disabled={loading}>
@@ -181,7 +181,7 @@ function DeviceDashboard(props: IProps) {
       key: "1",
       label: "Link metrics",
       children: (
-        <Space direction="vertical" style={{ width: "100%" }} size="large">
+        <Space orientation="vertical" style={{ width: "100%" }} size="large">
           <Row gutter={24}>
             <Col span={8}>
               <MetricChart metric={deviceLinkMetrics.getRxPackets()!} aggregation={metricsAggregation} />
@@ -221,7 +221,7 @@ function DeviceDashboard(props: IProps) {
       key: "2",
       label: "Device metrics",
       children: (
-        <Space direction="vertical" style={{ width: "100%" }} size="large">
+        <Space orientation="vertical" style={{ width: "100%" }} size="large">
           {dm}
         </Space>
       ),
@@ -229,7 +229,7 @@ function DeviceDashboard(props: IProps) {
   ];
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="large">
+    <Space orientation="vertical" style={{ width: "100%" }} size="large">
       <Card>
         <Descriptions>
           <Descriptions.Item label="Last seen">{lastSeenAt}</Descriptions.Item>
