@@ -10,7 +10,7 @@
   ]
 
   [workspace.package]
-    version = "4.17.0-test.2"
+    version = "4.17.0-test.3"
     homepage = "https://www.chirpstack.io"
     license = "MIT"
     authors = ["Orne Brocaar <info@brocaar.com>"]
