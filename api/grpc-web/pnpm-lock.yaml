@@ -12,8 +12,8 @@ importers:
         specifier: ^3.21.4
         version: 3.21.4
       grpc-web:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^2.0.2
+        version: 2.0.2
     devDependencies:
       '@types/google-protobuf':
         specifier: ^3.15.12
@@ -78,8 +78,8 @@ packages:
     resolution: {integrity: sha512-0sttMUxThNIkCTJq5qI0xXMz5zWqV2u3yG1kR3Sj9OokGIoyRBFjoInK9NyW7x5fH7knj48Roh1gq5xbl0VoDQ==}
     hasBin: true
 
-  grpc-web@1.5.0:
-    resolution: {integrity: sha512-y1tS3BBIoiVSzKTDF3Hm7E8hV2n7YY7pO0Uo7depfWJqKzWE+SKr0jvHNIJsJJYILQlpYShpi/DRJJMbosgDMQ==}
+  grpc-web@2.0.2:
+    resolution: {integrity: sha512-bvBP0/d5jyVM3eGxxffJhRLAPpH6eXhJeUzBT+bSIEgUKkG4a/BotEimVeW3phP0WLnsJnkRl8uQdRf2yDLaVA==}
 
   https-proxy-agent@7.0.6:
     resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
@@ -185,7 +185,7 @@ snapshots:
       - encoding
       - supports-color
 
-  grpc-web@1.5.0: {}
+  grpc-web@2.0.2: {}
 
   https-proxy-agent@7.0.6:
     dependencies:
