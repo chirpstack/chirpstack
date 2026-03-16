@@ -47,7 +47,7 @@
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.4",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/events": "^3.0.3",
     "@types/google-protobuf": "^3.15.12",
