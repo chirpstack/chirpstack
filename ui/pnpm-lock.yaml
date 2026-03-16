@@ -63,8 +63,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
       google-protobuf:
-        specifier: ^4.0.2
-        version: 4.0.2
+        specifier: ^3.21.4
+        version: 3.21.4
       history:
         specifier: ^5.3.0
         version: 5.3.0
@@ -1688,15 +1688,12 @@ packages:
   google-protobuf@3.21.4:
     resolution: {integrity: sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==}
 
-  google-protobuf@4.0.2:
-    resolution: {integrity: sha512-yD2fqbNgvJPuQwdKJiPdbUcXveNRxgqy070gzsBsCyFJA8Qdj9oxa9xtkddb/JEhcDk0RD5SfGUWg+nhINfMxA==}
-
   gopd@1.2.0:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
 
-  grpc-web@2.0.2:
-    resolution: {integrity: sha512-bvBP0/d5jyVM3eGxxffJhRLAPpH6eXhJeUzBT+bSIEgUKkG4a/BotEimVeW3phP0WLnsJnkRl8uQdRf2yDLaVA==}
+  grpc-web@1.5.0:
+    resolution: {integrity: sha512-y1tS3BBIoiVSzKTDF3Hm7E8hV2n7YY7pO0Uo7depfWJqKzWE+SKr0jvHNIJsJJYILQlpYShpi/DRJJMbosgDMQ==}
 
   has-bigints@1.1.0:
     resolution: {integrity: sha512-R3pbpkcIqv2Pm3dUwgjclDRVmWpTJW2DcMzcIhEXEx1oh/CEMObMm3KLmRJOdvhM7o4uQBnwr8pzRK2sJWIqfg==}
@@ -2888,7 +2885,7 @@ snapshots:
   '@chirpstack/chirpstack-api-grpc-web@file:../api/grpc-web':
     dependencies:
       google-protobuf: 3.21.4
-      grpc-web: 2.0.2
+      grpc-web: 1.5.0
 
   '@ctrl/tinycolor@3.6.1': {}
 
@@ -4398,11 +4395,9 @@ snapshots:
 
   google-protobuf@3.21.4: {}
 
-  google-protobuf@4.0.2: {}
-
   gopd@1.2.0: {}
 
-  grpc-web@2.0.2: {}
+  grpc-web@1.5.0: {}
 
   has-bigints@1.1.0: {}
 
