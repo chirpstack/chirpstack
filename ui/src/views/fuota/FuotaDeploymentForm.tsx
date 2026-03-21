@@ -174,7 +174,7 @@ function FuotaDeploymentForm(props: IProps) {
               <Form.Item
                 label="Unicast retry count (max)"
                 name="unicastMaxRetryCount"
-                tooltip="This defines how many times ChirpStack will retry unicast commands in case not acknowledged by the end-device."
+                tooltip="This defines how many times ioX-Bridge will retry unicast commands in case not acknowledged by the end-device."
                 required
               >
                 <InputNumber min={0} max={5} disabled={props.disabled} style={{ width: "100%" }} />
@@ -285,7 +285,7 @@ function FuotaDeploymentForm(props: IProps) {
               <Form.Item
                 label="Calculate multicast-timeout"
                 name="calculateMulticastTimeout"
-                tooltip="If checked, ChirpStack will calculate the multicast-timeout."
+                tooltip="If checked, ioX-Bridge will calculate the multicast-timeout."
               >
                 <Switch onChange={(v: boolean) => setCalculateMulticastTimeout(v)} disabled={props.disabled} />
               </Form.Item>
@@ -344,7 +344,7 @@ function FuotaDeploymentForm(props: IProps) {
               <Form.Item
                 label="Calculate fragment size"
                 name="calculateFragmentationFragmentSize"
-                tooltip="If checked, ChirpStack will calculate the fragment size for fragmentation."
+                tooltip="If checked, ioX-Bridge will calculate the fragment size for fragmentation."
               >
                 <Switch onChange={(v: boolean) => setCalculateFragmentationFragmentSize(v)} disabled={props.disabled} />
               </Form.Item>

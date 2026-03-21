@@ -397,7 +397,7 @@ function DeviceProfileForm(props: IProps) {
             <Col span={12}>
               <Form.Item
                 label="RX1 Delay (0 = use system default)"
-                tooltip="This option makes it possible to set a higher RX1 Delay for devices using this device-profile. Note that a lower value than the system default will be ignored. If configured and incremented, then ChirpStack will increase the downlink data delay with the same increment."
+                tooltip="This option makes it possible to set a higher RX1 Delay for devices using this device-profile. Note that a lower value than the system default will be ignored. If configured and incremented, then ioX-Bridge will increase the downlink data delay with the same increment."
                 name="rx1Delay"
               >
                 <InputNumber min={0} max={15} disabled={props.disabled} />
@@ -615,7 +615,7 @@ function DeviceProfileForm(props: IProps) {
           <Form.Item
             label="Payload codec"
             name="payloadCodecRuntime"
-            tooltip="By defining a payload codec, ChirpStack can encode and decode the binary device payload for you."
+            tooltip="By defining a payload codec, ioX-Bridge can encode and decode the binary device payload for you."
           >
             <Select
               onChange={onPayloadCodecRuntimeChange}
@@ -679,7 +679,7 @@ function DeviceProfileForm(props: IProps) {
                   label="Only use Relay (end-device)"
                   name="relayEdRelayOnly"
                   valuePropName="checked"
-                  tooltip="If enabled, device(s) under this profile will only be able to communicate through a Relay device. Uplink messages received directly by ChirpStack will be discarded. Enabling this feature can be helpful for testing the Relay communication."
+                  tooltip="If enabled, device(s) under this profile will only be able to communicate through a Relay device. Uplink messages received directly by ioX-Bridge will be discarded. Enabling this feature can be helpful for testing the Relay communication."
                 >
                   <Switch disabled={props.disabled} />
                 </Form.Item>
@@ -986,7 +986,7 @@ function DeviceProfileForm(props: IProps) {
               <Form.Item
                 label="Clock sync version (TS003)"
                 name={["appLayerParams", "ts003Version"]}
-                tooltip="If an implemented version is selected, ChirpStack will handle payloads received on the matching fPort"
+                tooltip="If an implemented version is selected, ioX-Bridge will handle payloads received on the matching fPort"
               >
                 <Select
                   disabled={props.disabled}
@@ -1009,7 +1009,7 @@ function DeviceProfileForm(props: IProps) {
               <Form.Item
                 label="Fragmented data block transport (TS004)"
                 name={["appLayerParams", "ts004Version"]}
-                tooltip="If an implemented version is selected, ChirpStack will handle payloads received on the matching fPort"
+                tooltip="If an implemented version is selected, ioX-Bridge will handle payloads received on the matching fPort"
               >
                 <Select
                   disabled={props.disabled}
@@ -1032,7 +1032,7 @@ function DeviceProfileForm(props: IProps) {
               <Form.Item
                 label="Remote multicast setup version (TS005)"
                 name={["appLayerParams", "ts005Version"]}
-                tooltip="If an implemented version is selected, ChirpStack will handle payloads received on the matching fPort"
+                tooltip="If an implemented version is selected, ioX-Bridge will handle payloads received on the matching fPort"
               >
                 <Select
                   disabled={props.disabled}
@@ -1102,7 +1102,7 @@ function DeviceProfileForm(props: IProps) {
         <>
           <Card variant="borderless">
             <p>
-              ChirpStack can aggregate and visualize decoded device measurements in the device dashboard. To setup the
+              ioX-Bridge can aggregate and visualize decoded device measurements in the device dashboard. To setup the
               aggregation of device measurements, you must configure the key, kind of measurement and name
               (user-defined). The following measurement-kinds can be selected:
             </p>
