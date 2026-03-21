@@ -49,7 +49,7 @@ function HttpIntegrationForm(props: IProps) {
       <Form.Item
         label="Event endpoint URL(s)"
         name="eventEndpointUrl"
-        tooltip="ChirpStack will make a POST request to this URL(s) with 'event' as query parameter. Multiple URLs can be defined as a comma separated list. Whitespace will be automatically removed."
+        tooltip="ioX-Bridge will make a POST request to this URL(s) with 'event' as query parameter. Multiple URLs can be defined as a comma separated list. Whitespace will be automatically removed."
         rules={[{ required: true, message: "Please enter an event endpoint URL!" }]}
       >
         <Input />

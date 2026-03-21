@@ -1,0 +1,40 @@
+<svg width="820" height="250" viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .wm { font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; font-size: 72px; letter-spacing: -1px; }
+      .tag { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 400; letter-spacing: 3px; fill: #55556a; }
+    </style>
+    <clipPath id="cl-left"><rect x="0" y="0" width="119" height="250"/></clipPath>
+    <clipPath id="cl-right"><rect x="119" y="0" width="120" height="250"/></clipPath>
+  </defs>
+
+  <!-- No background rect - transparent -->
+
+  <!-- Connector links -->
+  <line x1="56"  y1="98"  x2="84"  y2="125" stroke="#cc4700" stroke-width="5" stroke-linecap="round"/>
+  <line x1="56"  y1="152" x2="84"  y2="125" stroke="#cc4700" stroke-width="5" stroke-linecap="round"/>
+  <line x1="84"  y1="125" x2="118" y2="125" stroke="#cc4700" stroke-width="5" stroke-linecap="round"/>
+  <line x1="182" y1="98"  x2="154" y2="125" stroke="#062887" stroke-width="5" stroke-linecap="round"/>
+  <line x1="182" y1="152" x2="154" y2="125" stroke="#062887" stroke-width="5" stroke-linecap="round"/>
+  <line x1="154" y1="125" x2="118" y2="125" stroke="#062887" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Left cluster nodes (orange) -->
+  <circle cx="56"  cy="98"  r="13" fill="#ff5900"/>
+  <circle cx="56"  cy="152" r="13" fill="#cc4700"/>
+  <circle cx="84"  cy="125" r="15" fill="#ff5900"/>
+
+  <!-- Right cluster nodes (blue) -->
+  <circle cx="182" cy="98"  r="13" fill="#1a4fd6"/>
+  <circle cx="182" cy="152" r="13" fill="#062887"/>
+  <circle cx="154" cy="125" r="15" fill="#1a4fd6"/>
+
+  <!-- Center handshake node -->
+  <circle cx="119" cy="125" r="18" fill="#ff5900" clip-path="url(#cl-left)"/>
+  <circle cx="119" cy="125" r="18" fill="#062887" clip-path="url(#cl-right)"/>
+
+  <!-- Wordmark - white ioX for use on dark backgrounds -->
+  <text y="152" class="wm" x="214">
+    <tspan fill="#ffffff">ioX</tspan><tspan fill="#8a8a96" font-weight="300">-</tspan><tspan fill="#ff5900">Bridge</tspan>
+  </text>
+  <text x="215" y="174" class="tag">LORAWAN  ·  CLOUD IOT  ·  M2M</text>
+</svg>

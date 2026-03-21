@@ -143,7 +143,7 @@ function Header({ user }: { user: User }) {
 
   return (
     <div>
-      <img className="logo" alt="ChirpStack" src="/logo.png" />
+      <img className="logo" alt="ioX-Bridge" src="/logo.svg" />
       <div className="actions">
         <div className="search">
           <AutoComplete

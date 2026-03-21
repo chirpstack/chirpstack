@@ -69,7 +69,7 @@ export function onFinishFailed() {
  * Sets the Document Title in Reverse Order
  * @example
  * ```
- * useTitle("Tenants", "Tenant", "Edit"); // Edit | Tenant | Tenants | ChirpStack LoRaWAN® Network-Server
+ * useTitle("Tenants", "Tenant", "Edit"); // Edit | Tenant | Tenants | ioX-Bridge LoRaWAN® Network-Server
  * ```
  */
 export function useTitle(...v: unknown[]) {
@@ -78,14 +78,14 @@ export function useTitle(...v: unknown[]) {
   useEffect(() => {
     if (!documentDefined) return;
 
-    const title = ["ChirpStack LoRaWAN® Network-Server", ...v].reverse().join(" | ");
+    const title = ["ioX-Bridge LoRaWAN® Network-Server", ...v].reverse().join(" | ");
 
     if (document.title !== title) {
       document.title = title;
     }
 
     return () => {
-      document.title = "ChirpStack LoRaWAN® Network-Server";
+      document.title = "ioX-Bridge LoRaWAN® Network-Server";
     };
   }, [documentDefined, v]);
 }
