@@ -2,8 +2,6 @@ module github.com/chirpstack/chirpstack/api/go/v4
 
 go 1.24.0
 
-toolchain go1.24.1
-
 require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20260122232226-8e98ce8d340d
 	google.golang.org/grpc v1.78.0
