@@ -78,10 +78,13 @@ pub struct MulticastGroupListItem {
     pub name: String,
     pub region: CommonName,
     pub group_type: String,
+    pub application_id: fields::Uuid,
+    pub application_name: String,
 }
 
 #[derive(Default, Clone)]
 pub struct Filters {
+    pub tenant_id: Option<Uuid>,
     pub application_id: Option<Uuid>,
     pub search: Option<String>,
     pub dev_eui: Option<EUI64>,
@@ -190,20 +193,25 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    let mut q = multicast_group::dsl::multicast_group
+    let mut q = multicast_group::table
+        .inner_join(application::table)
         .select(dsl::count_star())
         .into_boxed();
 
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(application::tenant_id.eq(tenant_id));
+    }
+
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(multicast_group::dsl::application_id.eq(fields::Uuid::from(application_id)));
+        q = q.filter(multicast_group::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     if let Some(dev_eui) = &filters.dev_eui {
         q = q.filter(
-            multicast_group::dsl::id.eq_any(
-                multicast_group_device::dsl::multicast_group_device
-                    .select(multicast_group_device::dsl::multicast_group_id)
-                    .filter(multicast_group_device::dsl::dev_eui.eq(dev_eui)),
+            multicast_group::id.eq_any(
+                multicast_group_device::table
+                    .select(multicast_group_device::multicast_group_id)
+                    .filter(multicast_group_device::dev_eui.eq(dev_eui)),
             ),
         );
     }
@@ -229,7 +237,8 @@ pub async fn list(
     offset: i64,
     filters: &Filters,
 ) -> Result<Vec<MulticastGroupListItem>, Error> {
-    let mut q = multicast_group::dsl::multicast_group
+    let mut q = multicast_group::table
+        .inner_join(application::table)
         .select((
             multicast_group::id,
             multicast_group::created_at,
@@ -237,19 +246,25 @@ pub async fn list(
             multicast_group::name,
             multicast_group::region,
             multicast_group::group_type,
+            application::id,
+            application::name,
         ))
         .into_boxed();
 
+    if let Some(tenant_id) = &filters.tenant_id {
+        q = q.filter(application::tenant_id.eq(tenant_id));
+    }
+
     if let Some(application_id) = &filters.application_id {
-        q = q.filter(multicast_group::dsl::application_id.eq(fields::Uuid::from(application_id)));
+        q = q.filter(multicast_group::application_id.eq(fields::Uuid::from(application_id)));
     }
 
     if let Some(dev_eui) = &filters.dev_eui {
         q = q.filter(
-            multicast_group::dsl::id.eq_any(
-                multicast_group_device::dsl::multicast_group_device
-                    .select(multicast_group_device::dsl::multicast_group_id)
-                    .filter(multicast_group_device::dsl::dev_eui.eq(dev_eui)),
+            multicast_group::id.eq_any(
+                multicast_group_device::table
+                    .select(multicast_group_device::multicast_group_id)
+                    .filter(multicast_group_device::dev_eui.eq(dev_eui)),
             ),
         );
     }
@@ -815,6 +830,7 @@ pub mod test {
         let tests = vec![
             FilterTest {
                 filters: Filters {
+                    tenant_id: None,
                     application_id: None,
                     dev_eui: None,
                     search: None,
@@ -826,6 +842,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    tenant_id: None,
                     application_id: None,
                     dev_eui: None,
                     search: Some("teest".into()),
@@ -837,6 +854,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    tenant_id: None,
                     application_id: None,
                     dev_eui: None,
                     search: Some("upd".into()),
@@ -848,6 +866,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    tenant_id: None,
                     application_id: Some(app.id.into()),
                     dev_eui: None,
                     search: None,
@@ -859,6 +878,19 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    tenant_id: Some(t.id.into()),
+                    application_id: None,
+                    dev_eui: None,
+                    search: None,
+                },
+                groups: vec![&mg],
+                count: 1,
+                limit: 10,
+                offset: 0,
+            },
+            FilterTest {
+                filters: Filters {
+                    tenant_id: None,
                     application_id: Some(Uuid::new_v4()),
                     dev_eui: None,
                     search: None,
@@ -870,6 +902,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    tenant_id: None,
                     application_id: None,
                     dev_eui: Some(EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1])),
                     search: None,
@@ -881,6 +914,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    tenant_id: None,
                     application_id: None,
                     dev_eui: Some(d.dev_eui.into()),
                     search: None,

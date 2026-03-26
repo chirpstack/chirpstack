@@ -10,14 +10,16 @@ import type { ListGatewaysResponse, GatewayListItem } from "@chirpstack/chirpsta
 import { ListGatewaysRequest, GatewayState } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import type { ListApplicationsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import { ListApplicationsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import type { ListMulticastGroupsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type {
+  ListMulticastGroupsResponse,
+  MulticastGroupListItem,
+} from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import {
   ListMulticastGroupsRequest,
   AddGatewayToMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import type { ListFuotaDeploymentsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
 import {
-  ListFuotaDeploymentDevicesRequest,
   AddGatewaysToFuotaDeploymentRequest,
   ListFuotaDeploymentsRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
@@ -137,11 +139,48 @@ function ListGateways(props: IProps) {
   ];
 
   useEffect(() => {
+    const mgReq = new ListMulticastGroupsRequest();
+    mgReq.setLimit(999);
+    mgReq.setTenantId(props.tenant.getId());
+    MulticastGroupStore.list(mgReq, (resp: ListMulticastGroupsResponse) => {
+      interface McGrouped {
+        [key: string]: MulticastGroupListItem[];
+      }
+      let mgGrouped: McGrouped = {};
+
+      for (const mg of resp.getResultList()) {
+        if (mgGrouped[mg.getApplicationName()]) {
+          mgGrouped[mg.getApplicationName()].push(mg);
+        } else {
+          mgGrouped[mg.getApplicationName()] = [mg];
+        }
+      }
+
+      let mgGroups: MulticastGroup[] = [];
+      const sortedKeys = Object.keys(mgGrouped).sort();
+      sortedKeys.forEach(key => {
+        mgGroups.push({
+          title: key,
+          value: "",
+          disabled: true,
+          children: mgGrouped[key].map(mg => ({
+            title: mg.getName(),
+            value: mg.getId(),
+            disabled: false,
+            children: [],
+          })),
+        });
+      });
+
+      // The above can also be done using setMulticastGroups and a callback
+      // function, but this introduces a race-condition when executed twice.
+      setMulticastGroups(mgGroups);
+    });
+
     const req = new ListApplicationsRequest();
     req.setLimit(999);
     req.setTenantId(props.tenant.getId());
 
-    let mgGroups: MulticastGroup[] = [];
     let fDeployments: FuotaDeployment[] = [];
 
     ApplicationStore.list(req, (resp: ListApplicationsResponse) => {
@@ -149,22 +188,6 @@ function ListGateways(props: IProps) {
         const mgReq = new ListMulticastGroupsRequest();
         mgReq.setLimit(999);
         mgReq.setApplicationId(app.getId());
-        MulticastGroupStore.list(mgReq, (resp: ListMulticastGroupsResponse) => {
-          mgGroups.push({
-            title: app.getName(),
-            value: "",
-            disabled: true,
-            children: resp.getResultList().map((mg, i) => ({
-              title: mg.getName(),
-              value: mg.getId(),
-            })),
-          });
-
-          // The above can also be done using setMulticastGroups and a callback
-          // function, but this introduces a race-condition when executed twice.
-          setMulticastGroups(mgGroups);
-        });
-
         const fuotaReq = new ListFuotaDeploymentsRequest();
         fuotaReq.setLimit(999);
         fuotaReq.setApplicationId(app.getId());

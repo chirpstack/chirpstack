@@ -41,7 +41,11 @@ impl MulticastGroupService for MulticastGroup {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateMulticastGroupsAccess::new(validator::Flag::Create, app_id),
+                validator::ValidateMulticastGroupsAccess::new(
+                    validator::Flag::Create,
+                    None,
+                    Some(app_id),
+                ),
             )
             .await?;
 
@@ -201,7 +205,16 @@ impl MulticastGroupService for MulticastGroup {
         request: Request<api::ListMulticastGroupsRequest>,
     ) -> Result<Response<api::ListMulticastGroupsResponse>, Status> {
         let req = request.get_ref();
-        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+        let tenant_id = if req.tenant_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req.tenant_id).map_err(|e| e.status())?)
+        };
+        let app_id = if req.application_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req.application_id).map_err(|e| e.status())?)
+        };
         let dev_eui = if req.dev_eui.is_empty() {
             None
         } else {
@@ -211,12 +224,17 @@ impl MulticastGroupService for MulticastGroup {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateMulticastGroupsAccess::new(validator::Flag::List, app_id),
+                validator::ValidateMulticastGroupsAccess::new(
+                    validator::Flag::List,
+                    tenant_id,
+                    app_id,
+                ),
             )
             .await?;
 
         let filters = multicast::Filters {
-            application_id: Some(app_id),
+            tenant_id: None,
+            application_id: app_id,
             dev_eui,
             search: if req.search.is_empty() {
                 None
@@ -248,6 +266,8 @@ impl MulticastGroupService for MulticastGroup {
                         _ => api::MulticastGroupType::ClassC,
                     }
                     .into(),
+                    application_id: mg.application_id.to_string(),
+                    application_name: mg.application_name.clone(),
                 })
                 .collect(),
         });
@@ -687,6 +707,7 @@ pub mod test {
             &u.id,
             api::ListMulticastGroupsRequest {
                 search: "updated".into(),
+                tenant_id: "".into(),
                 application_id: app.id.to_string(),
                 dev_eui: "".to_string(),
                 limit: 10,
