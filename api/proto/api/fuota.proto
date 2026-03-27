@@ -2,19 +2,19 @@ syntax = "proto3";
 
 package api;
 
+import "api/multicast_group.proto";
+import "common/common.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Chirpstack.Api";
 option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
-option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "FuotaProto";
-option csharp_namespace = "Chirpstack.Api";
-option php_namespace = "Chirpstack\\Api";
+option java_package = "io.chirpstack.api";
 option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
-
-import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
-import "common/common.proto";
-import "api/multicast_group.proto";
+option php_namespace = "Chirpstack\\Api";
 
 // FuotaService is the service providing API methods for FUOTA deployments.
 service FuotaService {
@@ -50,7 +50,7 @@ service FuotaService {
   // gateways needed to cover all devices within the multicast-group. Setting
   // the gateways manually overrides this behaviour.
   rpc AddGateways(AddGatewaysToFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
-  
+
   // List the gateways added to the FUOTA deployment.
   rpc ListGateways(ListFuotaDeploymentGatewaysRequest) returns (ListFuotaDeploymentGatewaysResponse) {}
 
@@ -77,7 +77,6 @@ enum RequestFragmentationSessionStatus {
   // devices as selecting AFTER_FRAGMENT_ENQUEUE will likely cause the NS
   // to schedule the downlink frame during the FUOTA multicast-session.
   AFTER_SESSION_TIMEOUT = 2;
-
 }
 
 message FuotaDeployment {
@@ -186,6 +185,12 @@ message FuotaDeploymentListItem {
 
   // Name.
   string name = 6;
+
+  // Application ID.
+  string application_id = 7;
+
+  // Application name.
+  string application_name = 8;
 }
 
 message FuotaDeploymentDeviceListItem {
@@ -284,8 +289,12 @@ message ListFuotaDeploymentsRequest {
   uint32 offset = 2;
 
   // Application ID to list the FUOTA Deployments for.
-  // This filter is mandatory.
+  // This must be set, unelss tenant_id is set.
   string application_id = 3;
+
+  // Tenant ID to list the FUOTA deployments for.
+  // This must be set, unless application_id is set.
+  string tenant_id = 4;
 }
 
 message ListFuotaDeploymentsResponse {

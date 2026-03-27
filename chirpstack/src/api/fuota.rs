@@ -43,7 +43,11 @@ impl FuotaService for Fuota {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateFuotaDeploymentsAccess::new(validator::Flag::Create, app_id),
+                validator::ValidateFuotaDeploymentsAccess::new(
+                    validator::Flag::Create,
+                    None,
+                    Some(app_id),
+                ),
             )
             .await?;
 
@@ -321,19 +325,32 @@ impl FuotaService for Fuota {
         request: Request<api::ListFuotaDeploymentsRequest>,
     ) -> Result<Response<api::ListFuotaDeploymentsResponse>, Status> {
         let req = request.get_ref();
-        let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
+        let tenant_id = if req.tenant_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req.tenant_id).map_err(|e| e.status())?)
+        };
+        let app_id = if req.application_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req.application_id).map_err(|e| e.status())?)
+        };
 
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateFuotaDeploymentsAccess::new(validator::Flag::List, app_id),
+                validator::ValidateFuotaDeploymentsAccess::new(
+                    validator::Flag::List,
+                    tenant_id,
+                    app_id,
+                ),
             )
             .await?;
 
-        let count = fuota::get_deployment_count(app_id)
+        let count = fuota::get_deployment_count(tenant_id, app_id)
             .await
             .map_err(|e| e.status())?;
-        let items = fuota::list_deployments(app_id, req.limit as i64, req.offset as i64)
+        let items = fuota::list_deployments(tenant_id, app_id, req.limit as i64, req.offset as i64)
             .await
             .map_err(|e| e.status())?;
 
@@ -354,6 +371,8 @@ impl FuotaService for Fuota {
                         .as_ref()
                         .map(helpers::datetime_to_prost_timestamp),
                     name: d.name.clone(),
+                    application_id: d.application_id.to_string(),
+                    application_name: d.application_name.clone(),
                 })
                 .collect(),
         });
@@ -789,6 +808,7 @@ mod test {
         let list_req = get_request(
             &u.id,
             api::ListFuotaDeploymentsRequest {
+                tenant_id: "".to_string(),
                 application_id: app.id.to_string(),
                 limit: 10,
                 offset: 0,

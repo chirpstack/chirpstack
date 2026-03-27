@@ -199,7 +199,7 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(application::tenant_id.eq(tenant_id));
+        q = q.filter(application::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(application_id) = &filters.application_id {
@@ -252,7 +252,7 @@ pub async fn list(
         .into_boxed();
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(application::tenant_id.eq(tenant_id));
+        q = q.filter(application::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(application_id) = &filters.application_id {

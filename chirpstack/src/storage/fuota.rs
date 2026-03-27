@@ -96,6 +96,8 @@ pub struct FuotaDeploymentListItem {
     pub started_at: Option<DateTime<Utc>>,
     pub completed_at: Option<DateTime<Utc>>,
     pub name: String,
+    pub application_id: fields::Uuid,
+    pub application_name: String,
 }
 
 #[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
@@ -263,21 +265,36 @@ pub async fn delete_deployment(id: Uuid) -> Result<(), Error> {
     Ok(())
 }
 
-pub async fn get_deployment_count(application_id: Uuid) -> Result<i64, Error> {
-    fuota_deployment::dsl::fuota_deployment
+pub async fn get_deployment_count(
+    tenant_id: Option<Uuid>,
+    application_id: Option<Uuid>,
+) -> Result<i64, Error> {
+    let mut q = fuota_deployment::table
+        .inner_join(application::table)
         .select(dsl::count_star())
-        .filter(fuota_deployment::dsl::application_id.eq(fields::Uuid::from(application_id)))
-        .first(&mut get_async_db_conn().await?)
+        .into_boxed();
+
+    if let Some(tenant_id) = tenant_id {
+        q = q.filter(application::tenant_id.eq(fields::Uuid::from(tenant_id)));
+    }
+
+    if let Some(application_id) = application_id {
+        q = q.filter(fuota_deployment::application_id.eq(fields::Uuid::from(application_id)));
+    }
+
+    q.first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
 pub async fn list_deployments(
-    application_id: Uuid,
+    tenant_id: Option<Uuid>,
+    application_id: Option<Uuid>,
     limit: i64,
     offset: i64,
 ) -> Result<Vec<FuotaDeploymentListItem>, Error> {
-    fuota_deployment::dsl::fuota_deployment
+    let mut q = fuota_deployment::dsl::fuota_deployment
+        .inner_join(application::table)
         .select((
             fuota_deployment::id,
             fuota_deployment::created_at,
@@ -285,9 +302,20 @@ pub async fn list_deployments(
             fuota_deployment::started_at,
             fuota_deployment::completed_at,
             fuota_deployment::name,
+            application::id,
+            application::name,
         ))
-        .filter(fuota_deployment::dsl::application_id.eq(fields::Uuid::from(application_id)))
-        .order_by(fuota_deployment::dsl::name)
+        .into_boxed();
+
+    if let Some(tenant_id) = tenant_id {
+        q = q.filter(application::tenant_id.eq(fields::Uuid::from(tenant_id)));
+    }
+
+    if let Some(application_id) = application_id {
+        q = q.filter(fuota_deployment::application_id.eq(fields::Uuid::from(application_id)));
+    }
+
+    q.order_by((application::name, fuota_deployment::dsl::name))
         .limit(limit)
         .offset(offset)
         .load(&mut get_async_db_conn().await?)
@@ -862,7 +890,12 @@ mod test {
         let d = update_deployment(d).await.unwrap();
 
         // count
-        assert_eq!(1, get_deployment_count(app.id.into()).await.unwrap());
+        assert_eq!(
+            1,
+            get_deployment_count(None, Some(app.id.into()))
+                .await
+                .unwrap()
+        );
 
         // list
         assert_eq!(
@@ -873,8 +906,27 @@ mod test {
                 started_at: None,
                 completed_at: None,
                 name: d.name.clone(),
+                application_id: app.id,
+                application_name: app.name.clone(),
             }],
-            list_deployments(app.id.into(), 10, 0).await.unwrap()
+            list_deployments(None, Some(app.id.into()), 10, 0)
+                .await
+                .unwrap()
+        );
+        assert_eq!(
+            vec![FuotaDeploymentListItem {
+                id: d.id,
+                created_at: d.created_at,
+                updated_at: d.updated_at,
+                started_at: None,
+                completed_at: None,
+                name: d.name.clone(),
+                application_id: app.id,
+                application_name: app.name.clone(),
+            }],
+            list_deployments(Some(app.tenant_id.into()), None, 10, 0)
+                .await
+                .unwrap()
         );
 
         // delete

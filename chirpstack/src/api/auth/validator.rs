@@ -2079,7 +2079,9 @@ impl Validator for ValidateMulticastGroupsAccess {
                             .filter(
                                 application::id
                                     .eq(fields::Uuid::from(self.application_id.unwrap_or_default()))
-                                    .or(api_key::tenant_id.eq(self.tenant_id.unwrap_or_default())),
+                                    .or(api_key::tenant_id.eq(fields::Uuid::from(
+                                        self.tenant_id.unwrap_or_default(),
+                                    ))),
                             )
                             .filter(api_key::tenant_id.eq(application::tenant_id.nullable())),
                     )),
@@ -2356,13 +2358,15 @@ impl Validator for ValidateMulticastGroupQueueAccess {
 
 pub struct ValidateFuotaDeploymentsAccess {
     flag: Flag,
-    application_id: Uuid,
+    tenant_id: Option<Uuid>,
+    application_id: Option<Uuid>,
 }
 
 impl ValidateFuotaDeploymentsAccess {
-    pub fn new(flag: Flag, application_id: Uuid) -> Self {
+    pub fn new(flag: Flag, tenant_id: Option<Uuid>, application_id: Option<Uuid>) -> Self {
         ValidateFuotaDeploymentsAccess {
             flag,
+            tenant_id,
             application_id,
         }
     }
@@ -2371,12 +2375,12 @@ impl ValidateFuotaDeploymentsAccess {
 #[async_trait]
 impl Validator for ValidateFuotaDeploymentsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
@@ -2385,43 +2389,46 @@ impl Validator for ValidateFuotaDeploymentsAccess {
             // tenant admin
             // tenant device admin
             Flag::Create => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            application::dsl::application
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    application::dsl::id
-                                        .eq(fields::Uuid::from(self.application_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                        ),
-                                ),
-                        )),
-                    );
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        application::table
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                application::id
+                                    .eq(fields::Uuid::from(self.application_id.unwrap_or_default()))
+                                    .and(tenant_user::user_id.eq(user::id))
+                                    .and(
+                                        tenant_user::is_admin
+                                            .eq(true)
+                                            .or(tenant_user::is_device_admin.eq(true)),
+                                    ),
+                            ),
+                    )),
+                );
             }
             // admin user
             // tenant user
             Flag::List => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            application::dsl::application
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    application::dsl::id
-                                        .eq(fields::Uuid::from(self.application_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                        )),
-                    );
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        application::table
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                application::id
+                                    .eq(fields::Uuid::from(self.application_id.unwrap_or_default()))
+                                    .or(application::tenant_id.eq(fields::Uuid::from(
+                                        self.tenant_id.unwrap_or_default(),
+                                    ))),
+                            )
+                            .filter(tenant_user::user_id.eq(user::id)),
+                    )),
+                );
             }
             _ => return Ok(0),
         }
@@ -2442,11 +2449,11 @@ impl Validator for ValidateFuotaDeploymentsAccess {
                 q = q
                     .filter(
                         api_key::is_admin.eq(true).or(dsl::exists(
-                            application::table.filter(
-                                application::id
-                                    .eq(fields::Uuid::from(self.application_id))
-                                    .and(api_key::tenant_id.eq(application::tenant_id.nullable())),
-                            ),
+                            application::table
+                                .filter(application::id.eq(fields::Uuid::from(
+                                    self.application_id.unwrap_or_default(),
+                                )))
+                                .filter(api_key::tenant_id.eq(application::tenant_id.nullable())),
                         )),
                     )
                     .filter(api_key::is_read_only.eq(false));
@@ -2456,11 +2463,15 @@ impl Validator for ValidateFuotaDeploymentsAccess {
             Flag::List => {
                 q = q.filter(
                     api_key::is_admin.eq(true).or(dsl::exists(
-                        application::table.filter(
-                            application::id
-                                .eq(fields::Uuid::from(self.application_id))
-                                .and(api_key::tenant_id.eq(application::tenant_id.nullable())),
-                        ),
+                        application::table
+                            .filter(
+                                application::id
+                                    .eq(fields::Uuid::from(self.application_id.unwrap_or_default()))
+                                    .or(application::tenant_id.eq(fields::Uuid::from(
+                                        self.tenant_id.unwrap_or_default(),
+                                    ))),
+                            )
+                            .filter(api_key::tenant_id.eq(application::tenant_id.nullable())),
                     )),
                 );
             }
@@ -5905,8 +5916,13 @@ pub mod test {
             // admin user can create and list
             ValidatorTest {
                 validators: vec![
-                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
-                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
                 ],
                 id: AuthID::User(user_admin.id.into()),
                 ok: true,
@@ -5914,8 +5930,13 @@ pub mod test {
             // tenant admin can create and list
             ValidatorTest {
                 validators: vec![
-                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
-                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
                 ],
                 id: AuthID::User(tenant_admin.id.into()),
                 ok: true,
@@ -5923,18 +5944,27 @@ pub mod test {
             // tenant device admin can create and list
             ValidatorTest {
                 validators: vec![
-                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
-                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
                 ],
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
             // tenant user can list
             ValidatorTest {
-                validators: vec![ValidateFuotaDeploymentsAccess::new(
-                    Flag::List,
-                    app.id.into(),
-                )],
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
+                ],
                 id: AuthID::User(tenant_user.id.into()),
                 ok: true,
             },
@@ -5942,7 +5972,8 @@ pub mod test {
             ValidatorTest {
                 validators: vec![ValidateFuotaDeploymentsAccess::new(
                     Flag::Create,
-                    app.id.into(),
+                    None,
+                    Some(app.id.into()),
                 )],
                 id: AuthID::User(tenant_user.id.into()),
                 ok: false,
@@ -5950,8 +5981,13 @@ pub mod test {
             // other user can not create or list
             ValidatorTest {
                 validators: vec![
-                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
-                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
                 ],
                 id: AuthID::User(user_active.id.into()),
                 ok: false,
@@ -5964,8 +6000,13 @@ pub mod test {
             // admin api key can create and list
             ValidatorTest {
                 validators: vec![
-                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
-                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
                 ],
                 id: AuthID::Key(api_key_admin.id.into()),
                 ok: true,
@@ -5973,8 +6014,13 @@ pub mod test {
             // tenant api key can create and list
             ValidatorTest {
                 validators: vec![
-                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
-                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
                 ],
                 id: AuthID::Key(api_key_tenant.id.into()),
                 ok: true,
@@ -5983,7 +6029,8 @@ pub mod test {
             ValidatorTest {
                 validators: vec![ValidateFuotaDeploymentsAccess::new(
                     Flag::Create,
-                    app.id.into(),
+                    None,
+                    Some(app.id.into()),
                 )],
                 id: AuthID::Key(api_key_admin_ro.id.into()),
                 ok: false,
@@ -5992,7 +6039,8 @@ pub mod test {
             ValidatorTest {
                 validators: vec![ValidateFuotaDeploymentsAccess::new(
                     Flag::Create,
-                    app.id.into(),
+                    None,
+                    Some(app.id.into()),
                 )],
                 id: AuthID::Key(api_key_tenant_ro.id.into()),
                 ok: false,
@@ -6000,8 +6048,13 @@ pub mod test {
             // tenant api key can not create or list for other tenant
             ValidatorTest {
                 validators: vec![
-                    ValidateFuotaDeploymentsAccess::new(Flag::Create, app.id.into()),
-                    ValidateFuotaDeploymentsAccess::new(Flag::List, app.id.into()),
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
                 ],
                 id: AuthID::Key(api_key_other_tenant.id.into()),
                 ok: false,

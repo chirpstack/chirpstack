@@ -2,14 +2,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { format } from "date-fns";
-import { Space, Breadcrumb, Button, Badge, MenuProps, Modal, TreeSelect, Dropdown } from "antd";
+import { Space, Breadcrumb, Button, Badge, MenuProps, Modal, TreeSelect, TreeSelectProps, Dropdown } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PageHeader } from "@ant-design/pro-layout";
 
 import type { ListGatewaysResponse, GatewayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { ListGatewaysRequest, GatewayState } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
-import type { ListApplicationsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
-import { ListApplicationsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import type {
   ListMulticastGroupsResponse,
   MulticastGroupListItem,
@@ -18,7 +16,10 @@ import {
   ListMulticastGroupsRequest,
   AddGatewayToMulticastGroupRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
-import type { ListFuotaDeploymentsResponse } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
+import type {
+  ListFuotaDeploymentsResponse,
+  FuotaDeploymentListItem,
+} from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
 import {
   AddGatewaysToFuotaDeploymentRequest,
   ListFuotaDeploymentsRequest,
@@ -28,7 +29,6 @@ import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import GatewayStore from "../../stores/GatewayStore";
-import ApplicationStore from "../../stores/ApplicationStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import FuotaStore from "../../stores/FuotaStore";
 import Admin from "../../components/Admin";
@@ -38,24 +38,10 @@ interface IProps {
   tenant: Tenant;
 }
 
-interface MulticastGroup {
-  title: string;
-  value: string;
-  disabled: boolean;
-  children: { title: string; value: string }[];
-}
-
-interface FuotaDeployment {
-  title: string;
-  value: string;
-  disabled: boolean;
-  children: { title: string; value: string }[];
-}
-
 function ListGateways(props: IProps) {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
-  const [multicastGroups, setMulticastGroups] = useState<MulticastGroup[]>([]);
-  const [fuotaDeployments, setFuotaDeployments] = useState<FuotaDeployment[]>([]);
+  const [multicastGroups, setMulticastGroups] = useState<TreeSelectProps["treeData"]>([]);
+  const [fuotaDeployments, setFuotaDeployments] = useState<TreeSelectProps["treeData"]>([]);
   const [mgModalVisible, setMgModalVisible] = useState<boolean>(false);
   const [fuotaModalVisible, setFuotaModalVisible] = useState<boolean>(false);
   const [mgSelected, setMgSelected] = useState<string>("");
@@ -156,12 +142,12 @@ function ListGateways(props: IProps) {
         }
       }
 
-      let mgGroups: MulticastGroup[] = [];
+      let mgGroups: TreeSelectProps["treeData"] = [];
       const sortedKeys = Object.keys(mgGrouped).sort();
       sortedKeys.forEach(key => {
         mgGroups.push({
+          value: key,
           title: key,
-          value: "",
           disabled: true,
           children: mgGrouped[key].map(mg => ({
             title: mg.getName(),
@@ -172,41 +158,43 @@ function ListGateways(props: IProps) {
         });
       });
 
-      // The above can also be done using setMulticastGroups and a callback
-      // function, but this introduces a race-condition when executed twice.
       setMulticastGroups(mgGroups);
     });
 
-    const req = new ListApplicationsRequest();
-    req.setLimit(999);
-    req.setTenantId(props.tenant.getId());
-
-    let fDeployments: FuotaDeployment[] = [];
-
-    ApplicationStore.list(req, (resp: ListApplicationsResponse) => {
-      for (const app of resp.getResultList()) {
-        const mgReq = new ListMulticastGroupsRequest();
-        mgReq.setLimit(999);
-        mgReq.setApplicationId(app.getId());
-        const fuotaReq = new ListFuotaDeploymentsRequest();
-        fuotaReq.setLimit(999);
-        fuotaReq.setApplicationId(app.getId());
-        FuotaStore.listDeployments(fuotaReq, (resp: ListFuotaDeploymentsResponse) => {
-          fDeployments.push({
-            title: app.getName(),
-            value: "",
-            disabled: true,
-            children: resp.getResultList().map((mg, i) => ({
-              title: mg.getName(),
-              value: mg.getId(),
-            })),
-          });
-
-          // The above can also be done using setFuotaDeployments and a callback
-          // function, but this introduces a race-condition when executed twice.
-          setFuotaDeployments(fDeployments);
-        });
+    const fuotaReq = new ListFuotaDeploymentsRequest();
+    fuotaReq.setLimit(999);
+    fuotaReq.setTenantId(props.tenant.getId());
+    FuotaStore.listDeployments(fuotaReq, (resp: ListFuotaDeploymentsResponse) => {
+      interface FuotaGrouped {
+        [key: string]: FuotaDeploymentListItem[];
       }
+      let fuotaGrouped: FuotaGrouped = {};
+
+      for (const fd of resp.getResultList()) {
+        if (fuotaGrouped[fd.getApplicationName()]) {
+          fuotaGrouped[fd.getApplicationName()].push(fd);
+        } else {
+          fuotaGrouped[fd.getApplicationName()] = [fd];
+        }
+      }
+
+      let fuotaDeployments: TreeSelectProps["treeData"] = [];
+      const sortedKeys = Object.keys(fuotaGrouped).sort();
+      sortedKeys.forEach(key => {
+        fuotaDeployments.push({
+          value: key,
+          title: key,
+          disabled: true,
+          children: fuotaGrouped[key].map(fd => ({
+            title: fd.getName(),
+            value: fd.getId(),
+            disabled: false,
+            children: [],
+          })),
+        });
+      });
+
+      setFuotaDeployments(fuotaDeployments);
     });
   }, [props.tenant]);
 
