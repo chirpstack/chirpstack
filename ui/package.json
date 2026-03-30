@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@ant-design/colors": "^8.0.1",
-    "@ant-design/icons": "^6.1.0",
+    "@ant-design/icons": "^6.1.1",
     "@ant-design/pro-layout": "^7.22.7",
     "@chirpstack/chirpstack-api-grpc-web": "file:../api/grpc-web",
     "@fortawesome/fontawesome-free": "^7.1.0",
