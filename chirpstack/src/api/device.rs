@@ -1076,7 +1076,7 @@ impl DeviceService for Device {
                 )
                 .await?;
 
-            device_queue::flush_for_dev_eui(&dev_eui)
+            device_queue::flush_non_pending_for_dev_eui(&dev_eui)
                 .await
                 .map_err(|e| e.status())?;
         }
