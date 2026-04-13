@@ -1,8 +1,7 @@
 #[cfg(feature = "crypto")]
 use aes::{
     Aes128, Block,
-    cipher::generic_array::GenericArray,
-    cipher::{BlockEncrypt, KeyInit},
+    cipher::{BlockCipherEncrypt, KeyInit, array::Array},
 };
 use anyhow::Result;
 #[cfg(feature = "crypto")]
@@ -666,16 +665,16 @@ fn matrix_line(n: usize, m: usize) -> Vec<usize> {
 }
 
 pub fn get_data_block_int_key(app_key: AES128Key) -> Result<AES128Key> {
-    let mut b: [u8; 16] = [0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let b: [u8; 16] = [0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     let key_bytes = app_key.to_bytes();
-    let key = GenericArray::from_slice(&key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(key_bytes);
+    let cipher = Aes128::new(&key);
 
-    let block = Block::from_mut_slice(&mut b);
-    cipher.encrypt_block(block);
+    let mut block = Block::from(b);
+    cipher.encrypt_block(&mut block);
 
-    Ok(AES128Key::from_slice(block)?)
+    Ok(AES128Key::from_slice(&block)?)
 }
 
 pub fn calculate_mic(
@@ -692,7 +691,7 @@ pub fn calculate_mic(
     b0[4..8].clone_from_slice(&descriptor);
     b0[12..16].clone_from_slice(&(data.len() as u32).to_le_bytes());
 
-    let mut mac = <Cmac<Aes128> as Mac>::new_from_slice(&data_block_int_key.to_bytes()).unwrap();
+    let mut mac = Cmac::<Aes128>::new_from_slice(&data_block_int_key.to_bytes()).unwrap();
     mac.update(&b0);
     mac.update(data);
 

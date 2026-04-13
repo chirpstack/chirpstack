@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::Read;
 use std::time::Duration;
 
-use aes_kw::Kek;
+use aes_kw::{KeyInit, KwAes128};
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderMap};
@@ -615,9 +615,9 @@ impl KeyEnvelope {
             });
         }
 
-        let kek = Kek::from(*kek.unwrap());
+        let kek = KwAes128::new(kek.unwrap().into());
         let mut cipher: Vec<u8> = vec![0; 16 + 8];
-        kek.wrap(key, &mut cipher)
+        kek.wrap_key(key, &mut cipher)
             .map_err(|e| anyhow!("KEK wrap failed: {}", e))?;
 
         Ok(KeyEnvelope {
@@ -627,9 +627,9 @@ impl KeyEnvelope {
     }
 
     pub fn unwrap(&self, kek: &[u8; 16]) -> Result<[u8; 16]> {
-        let kek = Kek::from(*kek);
+        let kek = KwAes128::new(kek.into());
         let mut out: [u8; 16] = [0; 16];
-        kek.unwrap(&self.aes_key, &mut out)
+        kek.unwrap_key(&self.aes_key, &mut out)
             .map_err(|e| anyhow!("KEK unwrap failed: {}", e))?;
         Ok(out)
     }

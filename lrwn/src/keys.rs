@@ -1,4 +1,4 @@
-use aes::cipher::{BlockEncrypt, KeyInit, generic_array::GenericArray};
+use aes::cipher::{BlockCipherEncrypt, KeyInit, array::Array};
 use aes::{Aes128, Block};
 use anyhow::Result;
 
@@ -68,15 +68,15 @@ pub fn get_js_int_key(dev_eui: &EUI64, nwk_key: &AES128Key) -> Result<AES128Key>
 /// Note: For LoRaWAN 1.0.x, use the NwkSKey as nwk_s_enc_key.
 pub fn get_root_wor_s_key(nwk_s_enc_key: &AES128Key) -> Result<AES128Key> {
     let key_bytes = nwk_s_enc_key.to_bytes();
-    let key = GenericArray::from_slice(&key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(key_bytes);
+    let cipher = Aes128::new(&key);
 
     let mut b: [u8; 16] = [0; 16];
     b[0] = 0x01;
 
-    let block = Block::from_mut_slice(&mut b);
-    cipher.encrypt_block(block);
-    Ok(AES128Key::from_slice(block)?)
+    let mut block = Block::from(b);
+    cipher.encrypt_block(&mut block);
+    Ok(AES128Key::from_slice(&block)?)
 }
 
 fn get_s_key(
@@ -89,8 +89,8 @@ fn get_s_key(
     dev_nonce: u16,
 ) -> Result<AES128Key> {
     let key_bytes = nwk_key.to_bytes();
-    let key = GenericArray::from_slice(&key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(key_bytes);
+    let cipher = Aes128::new(&key);
 
     let mut b: [u8; 16] = [0; 16];
 
@@ -105,25 +105,25 @@ fn get_s_key(
         b[7..9].clone_from_slice(&dev_nonce.to_le_bytes()[0..2]);
     }
 
-    let block = Block::from_mut_slice(&mut b);
-    cipher.encrypt_block(block);
+    let mut block = Block::from(b);
+    cipher.encrypt_block(&mut block);
 
-    Ok(AES128Key::from_slice(block)?)
+    Ok(AES128Key::from_slice(&block)?)
 }
 
 fn get_js_key(typ: u8, dev_eui: &EUI64, nwk_key: &AES128Key) -> Result<AES128Key> {
     let key_bytes = nwk_key.to_bytes();
-    let key = GenericArray::from_slice(&key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(key_bytes);
+    let cipher = Aes128::new(&key);
 
     let mut b: [u8; 16] = [0; 16];
     b[0] = typ;
     b[1..9].clone_from_slice(&dev_eui.to_le_bytes());
 
-    let block = Block::from_mut_slice(&mut b);
-    cipher.encrypt_block(block);
+    let mut block = Block::from(b);
+    cipher.encrypt_block(&mut block);
 
-    Ok(AES128Key::from_slice(block)?)
+    Ok(AES128Key::from_slice(&block)?)
 }
 
 #[cfg(test)]

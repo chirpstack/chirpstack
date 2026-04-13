@@ -1,8 +1,7 @@
 #[cfg(feature = "crypto")]
 use aes::{
     Aes128, Block,
-    cipher::BlockDecrypt,
-    cipher::{BlockEncrypt, KeyInit, generic_array::GenericArray},
+    cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit, array::Array},
 };
 use anyhow::Result;
 
@@ -780,27 +779,26 @@ pub fn get_mc_net_s_key(mc_key: AES128Key, mc_addr: DevAddr) -> Result<AES128Key
 
 pub fn encrypt_mc_key(mc_ke_key: AES128Key, mc_key: AES128Key) -> [u8; 16] {
     let mc_ke_key_bytes = mc_ke_key.to_bytes();
-    let mut mc_key_bytes = mc_key.to_bytes();
+    let mc_key_bytes = mc_key.to_bytes();
 
-    let key = GenericArray::from_slice(&mc_ke_key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(mc_ke_key_bytes);
+    let cipher = Aes128::new(&key);
 
-    let block = Block::from_mut_slice(&mut mc_key_bytes);
-    cipher.decrypt_block(block);
+    let mut block = Block::from(mc_key_bytes);
+    cipher.decrypt_block(&mut block);
 
-    mc_key_bytes
+    block.into()
 }
 
 fn get_key(key: AES128Key, b: [u8; 16]) -> Result<AES128Key> {
     let key_bytes = key.to_bytes();
-    let key = GenericArray::from_slice(&key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(key_bytes);
+    let cipher = Aes128::new(&key);
 
-    let mut b = b;
-    let block = Block::from_mut_slice(&mut b);
-    cipher.encrypt_block(block);
+    let mut block = Block::from(b);
+    cipher.encrypt_block(&mut block);
 
-    Ok(AES128Key::from_slice(block)?)
+    Ok(AES128Key::from_slice(&block)?)
 }
 
 #[cfg(test)]

@@ -1,7 +1,7 @@
 #[cfg(feature = "crypto")]
 use aes::{
     Aes128, Block,
-    cipher::{BlockDecrypt, BlockEncrypt, generic_array::GenericArray},
+    cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit, array::Array},
 };
 use anyhow::Result;
 #[cfg(feature = "crypto")]
@@ -729,15 +729,15 @@ impl PhyPayload {
             }
 
             let key_bytes = key.to_bytes();
-            let key = GenericArray::from_slice(&key_bytes);
-            let cipher = Aes128::new(key);
+            let key = Array::from(key_bytes);
+            let cipher = Aes128::new(&key);
 
             let mut ct = Vec::new();
 
             for i in 0..(pt.len() / 16) {
                 let index = i * 16;
 
-                let mut block = Block::clone_from_slice(&pt[index..index + 16]);
+                let mut block = Block::try_from(&pt[index..index + 16])?;
                 cipher.decrypt_block(&mut block);
                 ct.extend_from_slice(block.as_slice());
             }
@@ -775,15 +775,15 @@ impl PhyPayload {
             }
 
             let key_bytes = key.to_bytes();
-            let key = GenericArray::from_slice(&key_bytes);
-            let cipher = Aes128::new(key);
+            let key = Array::from(key_bytes);
+            let cipher = Aes128::new(&key);
 
             let mut pt = Vec::new();
 
             for i in 0..(ct.len() / 16) {
                 let index = i * 16;
 
-                let mut block = Block::clone_from_slice(&ct[index..index + 16]);
+                let mut block = Block::try_from(&ct[index..index + 16])?;
                 cipher.encrypt_block(&mut block);
                 pt.extend_from_slice(block.as_slice());
             }
@@ -1133,10 +1133,10 @@ pub fn encrypt_f_opts(
     }
 
     let key_bytes = nwk_s_enc_key.to_bytes();
-    let key = GenericArray::from_slice(&key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(key_bytes);
+    let cipher = Aes128::new(&key);
 
-    let mut a = vec![0; 16];
+    let mut a = [0u8; 16];
     a[0] = 0x01;
     if a_fcnt_down {
         a[4] = 0x02;
@@ -1152,8 +1152,8 @@ pub fn encrypt_f_opts(
     a[10..14].clone_from_slice(&f_cnt.to_le_bytes());
     a[15] = 0x01;
 
-    let block = Block::from_mut_slice(&mut a);
-    cipher.encrypt_block(block);
+    let mut block = Block::from(a);
+    cipher.encrypt_block(&mut block);
 
     let mut out = vec![0; data.len()];
     for i in 0..data.len() {
@@ -1184,10 +1184,10 @@ pub fn encrypt_frm_payload(
     }
 
     let key_bytes = key.to_bytes();
-    let key = GenericArray::from_slice(&key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(key_bytes);
+    let cipher = Aes128::new(&key);
 
-    let mut a = vec![0; 16];
+    let mut a = [0u8; 16];
     a[0] = 0x01;
     if !uplink {
         a[5] = 0x01;
@@ -1199,7 +1199,7 @@ pub fn encrypt_frm_payload(
     for i in 0..(data.len() / 16) {
         a[15] = (i + 1) as u8;
 
-        let mut block = Block::clone_from_slice(&a);
+        let mut block = Block::from(a);
         cipher.encrypt_block(&mut block);
 
         for j in 0..16 {

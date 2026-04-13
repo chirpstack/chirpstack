@@ -1,7 +1,6 @@
 use std::sync::LazyLock;
 
-use aes::cipher::generic_array::GenericArray;
-use aes::cipher::{BlockEncrypt, KeyInit};
+use aes::cipher::{BlockCipherEncrypt, KeyInit, array::Array};
 use aes::{Aes128, Block};
 use anyhow::Result;
 use chrono::Duration;
@@ -29,14 +28,14 @@ pub fn get_ping_offset(beacon_ts: Duration, dev_addr: &DevAddr, ping_nb: usize) 
     let beacon_time = (beacon_ts.num_seconds() % (1 << 32)) as u32;
 
     let key_bytes: [u8; 16] = [0x00; 16];
-    let key = GenericArray::from_slice(&key_bytes);
-    let cipher = Aes128::new(key);
+    let key = Array::from(key_bytes);
+    let cipher = Aes128::new(&key);
 
     let mut b: [u8; 16] = [0x00; 16];
     b[0..4].clone_from_slice(&beacon_time.to_le_bytes());
     b[4..8].clone_from_slice(&dev_addr.to_le_bytes());
 
-    let mut block = Block::clone_from_slice(&b);
+    let mut block = Block::from(b);
     cipher.encrypt_block(&mut block);
     let rand = block.as_slice();
 
