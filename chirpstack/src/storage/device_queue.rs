@@ -160,6 +160,21 @@ pub async fn flush_for_dev_eui(dev_eui: &EUI64) -> Result<(), Error> {
     Ok(())
 }
 
+pub async fn flush_non_pending_for_dev_eui(dev_eui: &EUI64) -> Result<(), Error> {
+    let count: usize = diesel::delete(
+        device_queue_item::dsl::device_queue_item.filter(
+            device_queue_item::dev_eui
+                .eq(&dev_eui)
+                .and(device_queue_item::is_pending.eq(false)),
+        ),
+    )
+    .execute(&mut get_async_db_conn().await?)
+    .await
+    .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+    info!(dev_eui = %dev_eui, count = count, "Device queue flushed of non-pending items");
+    Ok(())
+}
+
 pub async fn get_pending_for_dev_eui(dev_eui: &EUI64) -> Result<DeviceQueueItem, Error> {
     let qi = device_queue_item::dsl::device_queue_item
         .filter(
@@ -271,6 +286,32 @@ pub mod test {
         // flush
         flush_for_dev_eui(&d.dev_eui).await.unwrap();
         assert!(delete_item(&qi.id).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_flush_queue_non_pending() {
+        let _guard = test::prepare().await;
+        let dp = storage::device_profile::test::create_device_profile(None).await;
+        let d = storage::device::test::create_device(
+            EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            dp.id.into(),
+            None,
+        )
+        .await;
+
+        // create
+        let mut qi = DeviceQueueItem {
+            dev_eui: d.dev_eui,
+            f_port: 10,
+            data: vec![0x01, 0x02, 0x03],
+            is_pending: true,
+            ..Default::default()
+        };
+        qi = enqueue_item(qi).await.unwrap();
+
+        // flush
+        flush_non_pending_for_dev_eui(&d.dev_eui).await.unwrap();
+        assert!(delete_item(&qi.id).await.is_ok());
     }
 
     #[tokio::test]
