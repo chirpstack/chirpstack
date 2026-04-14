@@ -91,7 +91,7 @@ async fn test_multicast() {
     })
     .await
     .unwrap();
-    multicast::add_device(&mg.id.into(), &d.dev_eui)
+    multicast::add_device(&mg.id.into(), &d.dev_eui, None)
         .await
         .unwrap();
 

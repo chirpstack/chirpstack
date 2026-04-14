@@ -395,6 +395,17 @@ pub async fn get_devices(
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
+pub async fn get_device(
+    fuota_deployment_id: Uuid,
+    dev_eui: EUI64,
+) -> Result<FuotaDeploymentDevice, Error> {
+    fuota_deployment_device::dsl::fuota_deployment_device
+        .find((fields::Uuid::from(fuota_deployment_id), dev_eui))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, format!("{}:{}", fuota_deployment_id, dev_eui)))
+}
+
 pub async fn get_latest_device_by_dev_eui(dev_eui: EUI64) -> Result<FuotaDeploymentDevice, Error> {
     fuota_deployment_device::dsl::fuota_deployment_device
         .filter(fuota_deployment_device::dsl::dev_eui.eq(&dev_eui))

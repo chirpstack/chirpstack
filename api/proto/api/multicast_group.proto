@@ -138,6 +138,10 @@ message MulticastGroup {
   // Multicast application session key (HEX encoded AES128 key).
   string mc_app_s_key = 7;
 
+  // Multicast key (HEX encoded AES128 key).
+  // This is required for Remote Multicast Setup (TS005).
+  string mc_key = 12;
+
   // Frame-counter.
   uint32 f_cnt = 8;
 

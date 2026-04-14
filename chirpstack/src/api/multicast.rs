@@ -10,8 +10,9 @@ use uuid::Uuid;
 use super::auth::validator;
 use super::error::ToStatus;
 use super::helpers::{self, FromProto, ToProto};
+use crate::applayer::multicastsetup as app_multicastsetup;
 use crate::downlink;
-use crate::storage::multicast;
+use crate::storage::{device, device_keys, device_profile, device_queue, multicast};
 
 pub struct MulticastGroup {
     validator: validator::RequestValidator,
@@ -49,6 +50,12 @@ impl MulticastGroupService for MulticastGroup {
             )
             .await?;
 
+        let mc_key = if req_mg.mc_key.is_empty() {
+            None
+        } else {
+            Some(AES128Key::from_str(&req_mg.mc_key).map_err(|e| e.status())?)
+        };
+
         let mg = multicast::MulticastGroup {
             application_id: app_id.into(),
             name: req_mg.name.clone(),
@@ -56,6 +63,7 @@ impl MulticastGroupService for MulticastGroup {
             mc_addr: DevAddr::from_str(&req_mg.mc_addr).map_err(|e| e.status())?,
             mc_nwk_s_key: AES128Key::from_str(&req_mg.mc_nwk_s_key).map_err(|e| e.status())?,
             mc_app_s_key: AES128Key::from_str(&req_mg.mc_app_s_key).map_err(|e| e.status())?,
+            mc_key,
             f_cnt: req_mg.f_cnt as i64,
             group_type: match req_mg.group_type() {
                 api::MulticastGroupType::ClassB => "B",
@@ -106,6 +114,7 @@ impl MulticastGroupService for MulticastGroup {
                 mc_addr: mg.mc_addr.to_string(),
                 mc_nwk_s_key: mg.mc_nwk_s_key.to_string(),
                 mc_app_s_key: mg.mc_app_s_key.to_string(),
+                mc_key: mg.mc_key.map(|v| v.to_string()).unwrap_or_default(),
                 f_cnt: mg.f_cnt as u32,
                 group_type: match mg.group_type.as_ref() {
                     "B" => api::MulticastGroupType::ClassB,
@@ -148,6 +157,12 @@ impl MulticastGroupService for MulticastGroup {
             )
             .await?;
 
+        let mc_key = if req_mg.mc_key.is_empty() {
+            None
+        } else {
+            Some(AES128Key::from_str(&req_mg.mc_key).map_err(|e| e.status())?)
+        };
+
         let _ = multicast::update(multicast::MulticastGroup {
             id: mg_id.into(),
             name: req_mg.name.clone(),
@@ -155,6 +170,7 @@ impl MulticastGroupService for MulticastGroup {
             mc_addr: DevAddr::from_str(&req_mg.mc_addr).map_err(|e| e.status())?,
             mc_nwk_s_key: AES128Key::from_str(&req_mg.mc_nwk_s_key).map_err(|e| e.status())?,
             mc_app_s_key: AES128Key::from_str(&req_mg.mc_app_s_key).map_err(|e| e.status())?,
+            mc_key,
             f_cnt: req_mg.f_cnt as i64,
             group_type: match req_mg.group_type() {
                 api::MulticastGroupType::ClassB => "B",
@@ -292,9 +308,80 @@ impl MulticastGroupService for MulticastGroup {
             )
             .await?;
 
-        multicast::add_device(&mg_id, &dev_eui)
+        let mg = multicast::get(&mg_id).await.map_err(|e| e.status())?;
+        let dev = device::get(&dev_eui).await.map_err(|e| e.status())?;
+        let dp = device_profile::get(&dev.device_profile_id)
             .await
             .map_err(|e| e.status())?;
+
+        let ts005_enabled = matches!(
+            (dp.app_layer_params.ts005_version, mg.mc_key),
+            (Some(_), Some(_))
+        );
+
+        if let (Some(ts005_version), Some(mc_key)) = (dp.app_layer_params.ts005_version, mg.mc_key)
+        {
+            let (mc_app_s_key, mc_nwk_s_key) =
+                app_multicastsetup::derive_mc_keys(ts005_version, mc_key, mg.mc_addr)
+                    .map_err(|e| e.status())?;
+
+            if mc_app_s_key != mg.mc_app_s_key || mc_nwk_s_key != mg.mc_nwk_s_key {
+                return Err(Status::invalid_argument(
+                    "mc_key does not match multicast session keys for TS005",
+                ));
+            }
+        }
+
+        let mgd = if ts005_enabled {
+            multicast::add_device_with_next_mc_group_id(&mg_id, &dev_eui)
+                .await
+                .map_err(|e| e.status())?
+        } else {
+            multicast::add_device(&mg_id, &dev_eui, None)
+                .await
+                .map_err(|e| e.status())?
+        };
+
+        if let (Some(ts005_version), Some(mc_key), Some(mc_group_id)) = (
+            dp.app_layer_params.ts005_version,
+            mg.mc_key,
+            mgd.mc_group_id,
+        ) {
+            let dev_keys = match device_keys::get(&dev_eui).await {
+                Ok(v) => v,
+                Err(e) => {
+                    let _ = multicast::remove_device(&mg_id, &dev_eui).await;
+                    return Err(e.status());
+                }
+            };
+
+            let pl = match app_multicastsetup::build_mc_group_setup_req(
+                ts005_version,
+                dp.mac_version,
+                mc_group_id as u8,
+                mg.mc_addr,
+                mc_key,
+                &dev_keys,
+            ) {
+                Ok(v) => v,
+                Err(e) => {
+                    let _ = multicast::remove_device(&mg_id, &dev_eui).await;
+                    return Err(e.status());
+                }
+            };
+
+            if let Err(e) = device_queue::enqueue_item(device_queue::DeviceQueueItem {
+                dev_eui,
+                f_port: dp.app_layer_params.ts005_f_port.into(),
+                data: pl,
+                ..Default::default()
+            })
+            .await
+            {
+                let _ = multicast::remove_device(&mg_id, &dev_eui).await;
+                return Err(e.status());
+            }
+        }
 
         let mut resp = Response::new(());
         resp.metadata_mut().insert(
@@ -322,9 +409,68 @@ impl MulticastGroupService for MulticastGroup {
             )
             .await?;
 
-        multicast::remove_device(&mg_id, &dev_eui)
+        let mg = multicast::get(&mg_id).await.map_err(|e| e.status())?;
+        let dev = device::get(&dev_eui).await.map_err(|e| e.status())?;
+        let dp = device_profile::get(&dev.device_profile_id)
             .await
             .map_err(|e| e.status())?;
+
+        let mut mgd = multicast::get_device(&mg_id, &dev_eui)
+            .await
+            .map_err(|e| e.status())?;
+
+        if let (Some(ts005_version), Some(_mc_key), Some(mc_group_id)) = (
+            dp.app_layer_params.ts005_version,
+            mg.mc_key,
+            mgd.mc_group_id,
+        ) {
+            if mgd.pending_delete {
+                let mut resp = Response::new(());
+                resp.metadata_mut().insert(
+                    "x-log-multicast_group_id",
+                    req.multicast_group_id.parse().unwrap(),
+                );
+                resp.metadata_mut()
+                    .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+                return Ok(resp);
+            }
+
+            if !mgd.pending_delete {
+                mgd.pending_delete = true;
+                mgd = multicast::update_device(mgd)
+                    .await
+                    .map_err(|e| e.status())?;
+            }
+
+            let pl = match app_multicastsetup::build_mc_group_delete_req(
+                ts005_version,
+                mc_group_id as u8,
+            ) {
+                Ok(v) => v,
+                Err(e) => {
+                    mgd.pending_delete = false;
+                    let _ = multicast::update_device(mgd).await;
+                    return Err(e.status());
+                }
+            };
+
+            if let Err(e) = device_queue::enqueue_item(device_queue::DeviceQueueItem {
+                dev_eui,
+                f_port: dp.app_layer_params.ts005_f_port.into(),
+                data: pl,
+                ..Default::default()
+            })
+            .await
+            {
+                mgd.pending_delete = false;
+                let _ = multicast::update_device(mgd).await;
+                return Err(e.status());
+            }
+        } else {
+            multicast::remove_device(&mg_id, &dev_eui)
+                .await
+                .map_err(|e| e.status())?;
+        }
 
         let mut resp = Response::new(());
         resp.metadata_mut().insert(
@@ -642,6 +788,7 @@ pub mod test {
                 mc_addr: "01020304".into(),
                 mc_nwk_s_key: "01020304050607080102030405060708".into(),
                 mc_app_s_key: "02020304050607080102030405060708".into(),
+                mc_key: "".into(),
                 f_cnt: 20,
                 group_type: api::MulticastGroupType::ClassC.into(),
                 dr: 3,
@@ -664,6 +811,7 @@ pub mod test {
                     mc_addr: "02020304".into(),
                     mc_nwk_s_key: "02020304050607080102030405060708".into(),
                     mc_app_s_key: "03020304050607080102030405060708".into(),
+                    mc_key: "".into(),
                     f_cnt: 30,
                     group_type: api::MulticastGroupType::ClassB.into(),
                     dr: 2,
@@ -692,6 +840,7 @@ pub mod test {
                 mc_addr: "02020304".into(),
                 mc_nwk_s_key: "02020304050607080102030405060708".into(),
                 mc_app_s_key: "03020304050607080102030405060708".into(),
+                mc_key: "".into(),
                 f_cnt: 30,
                 group_type: api::MulticastGroupType::ClassB.into(),
                 dr: 2,
