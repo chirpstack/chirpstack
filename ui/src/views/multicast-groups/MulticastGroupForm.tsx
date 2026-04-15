@@ -42,7 +42,6 @@ function MulticastGroupForm(props: IProps) {
     mg.setMcAddr(v.mcAddr);
     mg.setMcNwkSKey(v.mcNwkSKey);
     mg.setMcAppSKey(v.mcAppSKey);
-    mg.setMcKey(v.mcKey);
     mg.setDr(v.dr);
     mg.setFCnt(v.fCnt);
     mg.setFrequency(v.frequency);
@@ -82,11 +81,6 @@ function MulticastGroupForm(props: IProps) {
       <DevAddrInput label="Multicast address" name="mcAddr" devEui="" disabled={props.disabled} required />
       <AesKeyInput label="Multicast network session key" name="mcNwkSKey" disabled={props.disabled} required />
       <AesKeyInput label="Multicast application session key" name="mcAppSKey" disabled={props.disabled} required />
-      <AesKeyInput
-        label="Multicast key (for Remote Multicast Setup)"
-        name="mcKey"
-        disabled={props.disabled}
-      />
       <Row gutter={24}>
         <Col span={8}>
           <Form.Item label="Region" name="region" rules={[{ required: true, message: "Please select a region!" }]}>

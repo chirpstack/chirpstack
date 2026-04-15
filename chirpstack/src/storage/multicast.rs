@@ -223,6 +223,16 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
     Ok(())
 }
 
+pub async fn get_remote_device_count(group_id: &Uuid) -> Result<i64, Error> {
+    multicast_group_device::dsl::multicast_group_device
+        .select(dsl::count_star())
+        .filter(multicast_group_device::multicast_group_id.eq(fields::Uuid::from(group_id)))
+        .filter(multicast_group_device::mc_group_id.is_not_null())
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, group_id.to_string()))
+}
+
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
     let mut q = multicast_group::table
         .inner_join(application::table)

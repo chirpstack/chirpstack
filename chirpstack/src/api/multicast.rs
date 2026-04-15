@@ -10,6 +10,7 @@ use uuid::Uuid;
 use super::auth::validator;
 use super::error::ToStatus;
 use super::helpers::{self, FromProto, ToProto};
+use crate::aeskey::get_random_aes_key;
 use crate::applayer::multicastsetup as app_multicastsetup;
 use crate::downlink;
 use crate::storage::{device, device_keys, device_profile, device_queue, multicast};
@@ -50,12 +51,6 @@ impl MulticastGroupService for MulticastGroup {
             )
             .await?;
 
-        let mc_key = if req_mg.mc_key.is_empty() {
-            None
-        } else {
-            Some(AES128Key::from_str(&req_mg.mc_key).map_err(|e| e.status())?)
-        };
-
         let mg = multicast::MulticastGroup {
             application_id: app_id.into(),
             name: req_mg.name.clone(),
@@ -63,7 +58,7 @@ impl MulticastGroupService for MulticastGroup {
             mc_addr: DevAddr::from_str(&req_mg.mc_addr).map_err(|e| e.status())?,
             mc_nwk_s_key: AES128Key::from_str(&req_mg.mc_nwk_s_key).map_err(|e| e.status())?,
             mc_app_s_key: AES128Key::from_str(&req_mg.mc_app_s_key).map_err(|e| e.status())?,
-            mc_key,
+            mc_key: None,
             f_cnt: req_mg.f_cnt as i64,
             group_type: match req_mg.group_type() {
                 api::MulticastGroupType::ClassB => "B",
@@ -114,7 +109,6 @@ impl MulticastGroupService for MulticastGroup {
                 mc_addr: mg.mc_addr.to_string(),
                 mc_nwk_s_key: mg.mc_nwk_s_key.to_string(),
                 mc_app_s_key: mg.mc_app_s_key.to_string(),
-                mc_key: mg.mc_key.map(|v| v.to_string()).unwrap_or_default(),
                 f_cnt: mg.f_cnt as u32,
                 group_type: match mg.group_type.as_ref() {
                     "B" => api::MulticastGroupType::ClassB,
@@ -128,6 +122,7 @@ impl MulticastGroupService for MulticastGroup {
                 frequency: mg.frequency as u32,
                 class_b_ping_slot_periodicity: mg.class_b_ping_slot_periodicity as u32,
                 class_c_scheduling_type: mg.class_c_scheduling_type.to_proto().into(),
+                ..Default::default()
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&mg.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&mg.updated_at)),
@@ -157,20 +152,19 @@ impl MulticastGroupService for MulticastGroup {
             )
             .await?;
 
-        let mc_key = if req_mg.mc_key.is_empty() {
-            None
-        } else {
-            Some(AES128Key::from_str(&req_mg.mc_key).map_err(|e| e.status())?)
-        };
+        let current_mg = multicast::get(&mg_id).await.map_err(|e| e.status())?;
+        let remote_device_count = multicast::get_remote_device_count(&mg_id)
+            .await
+            .map_err(|e| e.status())?;
 
-        let _ = multicast::update(multicast::MulticastGroup {
+        let mut mg = multicast::MulticastGroup {
             id: mg_id.into(),
             name: req_mg.name.clone(),
             region: req_mg.region().from_proto(),
             mc_addr: DevAddr::from_str(&req_mg.mc_addr).map_err(|e| e.status())?,
             mc_nwk_s_key: AES128Key::from_str(&req_mg.mc_nwk_s_key).map_err(|e| e.status())?,
             mc_app_s_key: AES128Key::from_str(&req_mg.mc_app_s_key).map_err(|e| e.status())?,
-            mc_key,
+            mc_key: current_mg.mc_key,
             f_cnt: req_mg.f_cnt as i64,
             group_type: match req_mg.group_type() {
                 api::MulticastGroupType::ClassB => "B",
@@ -182,7 +176,32 @@ impl MulticastGroupService for MulticastGroup {
             class_b_ping_slot_periodicity: req_mg.class_b_ping_slot_periodicity as i16,
             class_c_scheduling_type: req_mg.class_c_scheduling_type().from_proto(),
             ..Default::default()
-        })
+        };
+
+        let keys_changed = current_mg.mc_addr != mg.mc_addr
+            || current_mg.mc_nwk_s_key != mg.mc_nwk_s_key
+            || current_mg.mc_app_s_key != mg.mc_app_s_key;
+        let group_changed = current_mg.name != mg.name
+            || current_mg.region != mg.region
+            || keys_changed
+            || current_mg.f_cnt != mg.f_cnt
+            || current_mg.group_type != mg.group_type
+            || current_mg.dr != mg.dr
+            || current_mg.frequency != mg.frequency
+            || current_mg.class_b_ping_slot_periodicity != mg.class_b_ping_slot_periodicity
+            || current_mg.class_c_scheduling_type != mg.class_c_scheduling_type;
+
+        if remote_device_count > 0 && group_changed {
+            return Err(Status::failed_precondition(
+                "Remove TS005 devices from the multicast-group before modifying it",
+            ));
+        }
+
+        if remote_device_count == 0 && keys_changed {
+            mg.mc_key = None;
+        }
+
+        let _ = multicast::update(mg)
         .await
         .map_err(|e| e.status())?;
 
@@ -206,6 +225,15 @@ impl MulticastGroupService for MulticastGroup {
                 validator::ValidateMulticastGroupAccess::new(validator::Flag::Delete, mg_id),
             )
             .await?;
+
+        let remote_device_count = multicast::get_remote_device_count(&mg_id)
+            .await
+            .map_err(|e| e.status())?;
+        if remote_device_count > 0 {
+            return Err(Status::failed_precondition(
+                "Remove TS005 devices from the multicast-group before deleting it",
+            ));
+        }
 
         multicast::delete(&mg_id).await.map_err(|e| e.status())?;
 
@@ -308,19 +336,35 @@ impl MulticastGroupService for MulticastGroup {
             )
             .await?;
 
-        let mg = multicast::get(&mg_id).await.map_err(|e| e.status())?;
+        let mut mg = multicast::get(&mg_id).await.map_err(|e| e.status())?;
         let dev = device::get(&dev_eui).await.map_err(|e| e.status())?;
         let dp = device_profile::get(&dev.device_profile_id)
             .await
             .map_err(|e| e.status())?;
 
-        let ts005_enabled = matches!(
-            (dp.app_layer_params.ts005_version, mg.mc_key),
-            (Some(_), Some(_))
-        );
+        if let Some(ts005_version) = dp.app_layer_params.ts005_version {
+            if mg.mc_key.is_none() {
+                let dev_euis = multicast::get_dev_euis(&mg_id).await.map_err(|e| e.status())?;
+                if !dev_euis.is_empty() {
+                    return Err(Status::failed_precondition(
+                        "Multicast-group must be empty before enabling TS005 remote multicast setup",
+                    ));
+                }
 
-        if let (Some(ts005_version), Some(mc_key)) = (dp.app_layer_params.ts005_version, mg.mc_key)
-        {
+                let mc_key = get_random_aes_key();
+                let (mc_app_s_key, mc_nwk_s_key) =
+                    app_multicastsetup::derive_mc_keys(ts005_version, mc_key, mg.mc_addr)
+                        .map_err(|e| e.status())?;
+
+                mg.mc_key = Some(mc_key);
+                mg.mc_app_s_key = mc_app_s_key;
+                mg.mc_nwk_s_key = mc_nwk_s_key;
+                mg = multicast::update(mg).await.map_err(|e| e.status())?;
+            }
+
+            let mc_key = mg.mc_key.ok_or_else(|| {
+                Status::internal("Expected mc_key to be set for TS005 multicast-group")
+            })?;
             let (mc_app_s_key, mc_nwk_s_key) =
                 app_multicastsetup::derive_mc_keys(ts005_version, mc_key, mg.mc_addr)
                     .map_err(|e| e.status())?;
@@ -330,23 +374,13 @@ impl MulticastGroupService for MulticastGroup {
                     "mc_key does not match multicast session keys for TS005",
                 ));
             }
-        }
 
-        let mgd = if ts005_enabled {
-            multicast::add_device_with_next_mc_group_id(&mg_id, &dev_eui)
+            let mgd = multicast::add_device_with_next_mc_group_id(&mg_id, &dev_eui)
                 .await
-                .map_err(|e| e.status())?
-        } else {
-            multicast::add_device(&mg_id, &dev_eui, None)
-                .await
-                .map_err(|e| e.status())?
-        };
-
-        if let (Some(ts005_version), Some(mc_key), Some(mc_group_id)) = (
-            dp.app_layer_params.ts005_version,
-            mg.mc_key,
-            mgd.mc_group_id,
-        ) {
+                .map_err(|e| e.status())?;
+            let mc_group_id = mgd.mc_group_id.ok_or_else(|| {
+                Status::internal("Expected mc_group_id to be allocated for TS005 multicast-group")
+            })?;
             let dev_keys = match device_keys::get(&dev_eui).await {
                 Ok(v) => v,
                 Err(e) => {
@@ -381,6 +415,10 @@ impl MulticastGroupService for MulticastGroup {
                 let _ = multicast::remove_device(&mg_id, &dev_eui).await;
                 return Err(e.status());
             }
+        } else {
+            multicast::add_device(&mg_id, &dev_eui, None)
+                .await
+                .map_err(|e| e.status())?;
         }
 
         let mut resp = Response::new(());
@@ -419,11 +457,12 @@ impl MulticastGroupService for MulticastGroup {
             .await
             .map_err(|e| e.status())?;
 
-        if let (Some(ts005_version), Some(_mc_key), Some(mc_group_id)) = (
-            dp.app_layer_params.ts005_version,
-            mg.mc_key,
-            mgd.mc_group_id,
-        ) {
+        if let (Some(_mc_key), Some(mc_group_id)) = (mg.mc_key, mgd.mc_group_id) {
+            let ts005_version = dp.app_layer_params.ts005_version.ok_or_else(|| {
+                Status::failed_precondition(
+                    "Device-profile must keep TS005 enabled while TS005 devices are assigned to the multicast-group",
+                )
+            })?;
             if mgd.pending_delete {
                 let mut resp = Response::new(());
                 resp.metadata_mut().insert(
@@ -668,10 +707,12 @@ pub mod test {
     use crate::api::auth::AuthID;
     use crate::api::auth::validator::RequestValidator;
     use crate::storage::{
-        application, device, device_gateway, device_profile, gateway, multicast, tenant, user,
+        application, device, device_gateway, device_keys, device_profile, device_queue, fields,
+        gateway, multicast, tenant, user,
     };
     use crate::test;
     use chirpstack_api::{common, internal};
+    use lrwn::region::{CommonName, MacVersion, Revision};
 
     #[tokio::test]
     async fn test_multicast_group() {
@@ -788,13 +829,13 @@ pub mod test {
                 mc_addr: "01020304".into(),
                 mc_nwk_s_key: "01020304050607080102030405060708".into(),
                 mc_app_s_key: "02020304050607080102030405060708".into(),
-                mc_key: "".into(),
                 f_cnt: 20,
                 group_type: api::MulticastGroupType::ClassC.into(),
                 dr: 3,
                 frequency: 868300000,
                 class_b_ping_slot_periodicity: 1,
                 class_c_scheduling_type: api::MulticastGroupSchedulingType::GpsTime.into(),
+                ..Default::default()
             }),
             get_resp.get_ref().multicast_group
         );
@@ -811,13 +852,13 @@ pub mod test {
                     mc_addr: "02020304".into(),
                     mc_nwk_s_key: "02020304050607080102030405060708".into(),
                     mc_app_s_key: "03020304050607080102030405060708".into(),
-                    mc_key: "".into(),
                     f_cnt: 30,
                     group_type: api::MulticastGroupType::ClassB.into(),
                     dr: 2,
                     frequency: 868200000,
                     class_b_ping_slot_periodicity: 2,
                     class_c_scheduling_type: api::MulticastGroupSchedulingType::Delay.into(),
+                    ..Default::default()
                 }),
             },
         );
@@ -840,13 +881,13 @@ pub mod test {
                 mc_addr: "02020304".into(),
                 mc_nwk_s_key: "02020304050607080102030405060708".into(),
                 mc_app_s_key: "03020304050607080102030405060708".into(),
-                mc_key: "".into(),
                 f_cnt: 30,
                 group_type: api::MulticastGroupType::ClassB.into(),
                 dr: 2,
                 frequency: 868200000,
                 class_b_ping_slot_periodicity: 2,
                 class_c_scheduling_type: api::MulticastGroupSchedulingType::Delay.into(),
+                ..Default::default()
             }),
             get_resp.get_ref().multicast_group
         );
@@ -1038,6 +1079,149 @@ pub mod test {
         );
         let del_resp = service.delete(del_req).await;
         assert!(del_resp.is_err());
+
+        let remote_mg = multicast::create(multicast::MulticastGroup {
+            application_id: app.id,
+            name: "test-ts005-mg".into(),
+            region: CommonName::EU868,
+            mc_addr: DevAddr::from_be_bytes([3, 2, 3, 4]),
+            mc_nwk_s_key: AES128Key::from_bytes([1, 1, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
+            mc_app_s_key: AES128Key::from_bytes([2, 1, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
+            mc_key: Some(AES128Key::from_bytes([
+                9, 8, 7, 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2,
+            ])),
+            f_cnt: 10,
+            group_type: "C".into(),
+            dr: 1,
+            frequency: 868300000,
+            class_b_ping_slot_periodicity: 1,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        multicast::add_device_with_next_mc_group_id(&remote_mg.id.into(), &d.dev_eui)
+            .await
+            .unwrap();
+
+        let update_req = get_request(
+            &u.id,
+            api::UpdateMulticastGroupRequest {
+                multicast_group: Some(api::MulticastGroup {
+                    id: remote_mg.id.to_string(),
+                    name: "test-ts005-mg-updated".into(),
+                    application_id: app.id.to_string(),
+                    region: common::Region::Eu868.into(),
+                    mc_addr: remote_mg.mc_addr.to_string(),
+                    mc_nwk_s_key: remote_mg.mc_nwk_s_key.to_string(),
+                    mc_app_s_key: remote_mg.mc_app_s_key.to_string(),
+                    f_cnt: remote_mg.f_cnt as u32,
+                    group_type: api::MulticastGroupType::ClassC.into(),
+                    dr: remote_mg.dr as u32,
+                    frequency: remote_mg.frequency as u32,
+                    class_b_ping_slot_periodicity: remote_mg.class_b_ping_slot_periodicity as u32,
+                    class_c_scheduling_type: api::MulticastGroupSchedulingType::Delay.into(),
+                    ..Default::default()
+                }),
+            },
+        );
+        let err = service.update(update_req).await.unwrap_err();
+        assert_eq!(tonic::Code::FailedPrecondition, err.code());
+
+        let del_req = get_request(
+            &u.id,
+            api::DeleteMulticastGroupRequest {
+                id: remote_mg.id.to_string(),
+            },
+        );
+        let err = service.delete(del_req).await.unwrap_err();
+        assert_eq!(tonic::Code::FailedPrecondition, err.code());
+
+        let ts005_dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: Some(t.id),
+            name: "test-ts005-dp".into(),
+            region: CommonName::EU868,
+            mac_version: MacVersion::LORAWAN_1_0_2,
+            reg_params_revision: Revision::B,
+            adr_algorithm_id: "default".into(),
+            uplink_interval: 60,
+            supports_otaa: true,
+            supports_class_c: true,
+            class_c_params: Some(fields::ClassCParams { timeout: 10 }),
+            app_layer_params: fields::AppLayerParams {
+                ts005_version: Some(fields::device_profile::Ts005Version::V100),
+                ts005_f_port: 200,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let ts005_dev = device::create(device::Device {
+            application_id: app.id,
+            device_profile_id: ts005_dp.id,
+            dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 9]),
+            name: "test-ts005-dev".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let _ = device_keys::create(device_keys::DeviceKeys {
+            dev_eui: ts005_dev.dev_eui,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let create_req = get_request(
+            &u.id,
+            api::CreateMulticastGroupRequest {
+                multicast_group: Some(api::MulticastGroup {
+                    name: "test-ts005-auto-key".into(),
+                    application_id: app.id.to_string(),
+                    region: common::Region::Eu868.into(),
+                    mc_addr: "04020304".into(),
+                    mc_nwk_s_key: "11111111111111111111111111111111".into(),
+                    mc_app_s_key: "22222222222222222222222222222222".into(),
+                    f_cnt: 0,
+                    group_type: api::MulticastGroupType::ClassC.into(),
+                    dr: 3,
+                    frequency: 868500000,
+                    class_b_ping_slot_periodicity: 1,
+                    class_c_scheduling_type: api::MulticastGroupSchedulingType::Delay.into(),
+                    ..Default::default()
+                }),
+            },
+        );
+        let create_resp = service.create(create_req).await.unwrap();
+        let create_resp = create_resp.get_ref();
+
+        let add_dev_req = get_request(
+            &u.id,
+            api::AddDeviceToMulticastGroupRequest {
+                dev_eui: ts005_dev.dev_eui.to_string(),
+                multicast_group_id: create_resp.id.clone(),
+            },
+        );
+        let _ = service.add_device(add_dev_req).await.unwrap();
+
+        let mg = multicast::get(&Uuid::from_str(&create_resp.id).unwrap())
+            .await
+            .unwrap();
+        let mc_key = mg.mc_key.expect("mc_key must be generated automatically");
+        let (mc_app_s_key, mc_nwk_s_key) = app_multicastsetup::derive_mc_keys(
+            fields::device_profile::Ts005Version::V100,
+            mc_key,
+            mg.mc_addr,
+        )
+        .unwrap();
+        assert_eq!(mc_app_s_key, mg.mc_app_s_key);
+        assert_eq!(mc_nwk_s_key, mg.mc_nwk_s_key);
+
+        let queue = device_queue::get_for_dev_eui(&ts005_dev.dev_eui)
+            .await
+            .unwrap();
+        assert_eq!(1, queue.len());
+        assert_eq!(ts005_dp.app_layer_params.ts005_f_port as i16, queue[0].f_port);
     }
 
     fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {
