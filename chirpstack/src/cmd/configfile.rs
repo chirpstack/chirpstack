@@ -52,6 +52,18 @@ pub fn run() {
   # store.
   ca_cert="{{ postgresql.ca_cert }}"
 
+  # Connection recycling method.
+  #
+  # This controls how connections are validated when returned to the connection pool.
+  # Options:
+  #  * verified - Run a validation query (SELECT 1) when recycling connections (safer, slightly slower)
+  #  * fast - Skip validation query when recycling connections (faster, but may return stale connections)
+  #
+  # The 'verified' method is recommended for production use to ensure connection health.
+  # Use 'fast' when using an external connection pooler (PgBouncer, AWS RDS Proxy,
+  # GCP Cloud SQL Connection Pooling) that already handles connection validation.
+  connection_recycling_method = "{{ postgresql.connection_recycling_method }}"
+
 
 # SQLite configuration.
 #
