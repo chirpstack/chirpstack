@@ -23,7 +23,7 @@
     "@fortawesome/react-fontawesome": "^3.3.0",
     "@yudiel/react-qr-scanner": "^2.5.1",
     "ace-builds": "^1.43.6",
-    "antd": "^6.3.5",
+    "antd": "^6.3.6",
     "buffer": "^6.0.3",
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",
