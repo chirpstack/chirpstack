@@ -24,9 +24,9 @@ const LPP_POWER: u8 = 128; // 2 byte, 1W, unsigned
 const LPP_DISTANCE: u8 = 130; // 4 byte, 0.001m, unsigned
 const LPP_ENERGY: u8 = 131; // 4 byte, 0.001kWh, unsigned
 const LPP_DIRECTION: u8 = 132; // 2 bytes, 1deg, unsigned
-const LPP_UNIXTIME: u8 = 133; // 4 bytes, unsigned
+const LPP_UNIX_TIME: u8 = 133; // 4 bytes, unsigned
 const LPP_GYROMETER: u8 = 134; // 2 bytes per axis, 0.01 °/s
-const LPP_COLOUR: u8 = 135; // 1 byte per RGB Color
+const LPP_COLOR: u8 = 135; // 1 byte per RGB Color
 const LPP_GPS_LOCATION: u8 = 136; // 3 byte lon/lat 0.0001 °, 3 bytes alt 0.01 meter
 const LPP_SWITCH: u8 = 142; // 1 byte, 0/1
 
@@ -58,7 +58,7 @@ struct GpsLocation {
     altitude: f64,
 }
 
-struct Colour {
+struct Color {
     r: u8,
     g: u8,
     b: u8,
@@ -87,9 +87,9 @@ struct CayenneLpp {
     distance: BTreeMap<u8, f64>,
     energy: BTreeMap<u8, f64>,
     direction: BTreeMap<u8, u16>,
-    unixtime: BTreeMap<u8, u32>,
+    unix_time: BTreeMap<u8, u32>,
     gyrometer: BTreeMap<u8, Gyrometer>,
-    colour: BTreeMap<u8, Colour>,
+    color: BTreeMap<u8, Color>,
     gps_location: BTreeMap<u8, GpsLocation>,
     switch: BTreeMap<u8, u8>,
 }
@@ -127,9 +127,9 @@ impl CayenneLpp {
                 LPP_DISTANCE => lpp.set_distance(buf[0], &mut cur)?,
                 LPP_ENERGY => lpp.set_energy(buf[0], &mut cur)?,
                 LPP_DIRECTION => lpp.set_direction(buf[0], &mut cur)?,
-                LPP_UNIXTIME => lpp.set_unixtime(buf[0], &mut cur)?,
+                LPP_UNIX_TIME => lpp.set_unix_time(buf[0], &mut cur)?,
                 LPP_GYROMETER => lpp.set_gyrometer(buf[0], &mut cur)?,
-                LPP_COLOUR => lpp.set_colour(buf[0], &mut cur)?,
+                LPP_COLOR => lpp.set_color(buf[0], &mut cur)?,
                 LPP_GPS_LOCATION => lpp.set_gps_location(buf[0], &mut cur)?,
                 LPP_SWITCH => lpp.set_switch(buf[0], &mut cur)?,
                 _ => {
@@ -187,9 +187,9 @@ impl CayenneLpp {
                 "distance" => lpp.set_distance_from_value(v).context("distance")?,
                 "energy" => lpp.set_energy_from_value(v).context("energy")?,
                 "direction" => lpp.set_direction_from_value(v).context("direction")?,
-                "unixtime" => lpp.set_unixtime_from_value(v).context("unixtime")?,
+                "unix_time" => lpp.set_unix_time_from_value(v).context("unix_time")?,
                 "gyrometer" => lpp.set_gyrometer_from_value(v).context("gyrometer")?,
-                "colour" => lpp.set_colour_from_value(v).context("colour")?,
+                "color" => lpp.set_color_from_value(v).context("color")?,
                 "gpsLocation" => lpp.set_gps_location_from_value(v).context("gpsLocation")?,
                 "switch" => lpp.set_switch_from_value(v).context("switch")?,
                 _ => {
@@ -368,9 +368,9 @@ impl CayenneLpp {
             out.extend(val.to_be_bytes());
         }
 
-        // unixtime
-        for (k, v) in &self.unixtime {
-            out.extend([*k, LPP_UNIXTIME]);
+        // unix_time
+        for (k, v) in &self.unix_time {
+            out.extend([*k, LPP_UNIX_TIME]);
 
             let val = *v;
             out.extend(val.to_be_bytes());
@@ -388,9 +388,9 @@ impl CayenneLpp {
             out.extend(z.to_be_bytes());
         }
 
-        // colour
-        for (k, v) in &self.colour {
-            out.extend([*k, LPP_COLOUR]);
+        // color
+        for (k, v) in &self.color {
+            out.extend([*k, LPP_COLOR]);
 
             let r = v.r;
             let g = v.g;
@@ -822,9 +822,9 @@ impl CayenneLpp {
             );
         }
 
-        if !self.unixtime.is_empty() {
+        if !self.unix_time.is_empty() {
             let mut val: pbjson_types::Struct = Default::default();
-            for (k, v) in &self.unixtime {
+            for (k, v) in &self.unix_time {
                 val.fields.insert(
                     format!("{}", k),
                     pbjson_types::Value {
@@ -833,7 +833,7 @@ impl CayenneLpp {
                 );
             }
             out.fields.insert(
-                "unixtime".to_string(),
+                "unix_time".to_string(),
                 pbjson_types::Value {
                     kind: Some(pbjson_types::value::Kind::StructValue(val)),
                 },
@@ -878,9 +878,9 @@ impl CayenneLpp {
             );
         }
 
-        if !self.colour.is_empty() {
+        if !self.color.is_empty() {
             let mut val: pbjson_types::Struct = Default::default();
-            for (k, v) in &self.colour {
+            for (k, v) in &self.color {
                 let mut item: pbjson_types::Struct = Default::default();
                 item.fields.insert(
                     "r".to_string(),
@@ -909,7 +909,7 @@ impl CayenneLpp {
                 );
             }
             out.fields.insert(
-                "colour".to_string(),
+                "color".to_string(),
                 pbjson_types::Value {
                     kind: Some(pbjson_types::value::Kind::StructValue(val)),
                 },
@@ -1450,20 +1450,20 @@ impl CayenneLpp {
         Ok(())
     }
 
-    fn set_unixtime(&mut self, channel: u8, cur: &mut Cursor<&[u8]>) -> Result<()> {
+    fn set_unix_time(&mut self, channel: u8, cur: &mut Cursor<&[u8]>) -> Result<()> {
         let mut buf: [u8; 4] = [0; 4];
         cur.read_exact(&mut buf)?;
         let val = u32::from_be_bytes(buf);
-        self.unixtime.insert(channel, val);
+        self.unix_time.insert(channel, val);
         Ok(())
     }
 
-    fn set_unixtime_from_value(&mut self, v: &prost_types::Value) -> Result<()> {
+    fn set_unix_time_from_value(&mut self, v: &prost_types::Value) -> Result<()> {
         if let Some(prost_types::value::Kind::StructValue(s)) = &v.kind {
             for (k, v) in &s.fields {
                 let c: u8 = k.parse()?;
                 if let Some(prost_types::value::Kind::NumberValue(v)) = &v.kind {
-                    self.unixtime.insert(c, *v as u32);
+                    self.unix_time.insert(c, *v as u32);
                 }
             }
         }
@@ -1531,29 +1531,25 @@ impl CayenneLpp {
         Ok(())
     }
 
-    fn set_colour(&mut self, channel: u8, cur: &mut Cursor<&[u8]>) -> Result<()> {
-        let mut buf_r: [u8; 1] = [0; 1];
-        let mut buf_g: [u8; 1] = [0; 1];
-        let mut buf_b: [u8; 1] = [0; 1];
-        cur.read_exact(&mut buf_r)?;
-        cur.read_exact(&mut buf_g)?;
-        cur.read_exact(&mut buf_b)?;
-        self.colour.insert(
+    fn set_color(&mut self, channel: u8, cur: &mut Cursor<&[u8]>) -> Result<()> {
+        let mut buf_rgb: [u8; 3] = [0; 3];
+        cur.read_exact(&mut buf_rgb)?;
+        self.color.insert(
             channel,
-            Colour {
-                r: (buf_r[0]),
-                g: (buf_g[0]),
-                b: (buf_b[0]),
+            Color {
+                r: (buf_rgb[0]),
+                g: (buf_rgb[1]),
+                b: (buf_rgb[2]),
             },
         );
         Ok(())
     }
 
-    fn set_colour_from_value(&mut self, v: &prost_types::Value) -> Result<()> {
+    fn set_color_from_value(&mut self, v: &prost_types::Value) -> Result<()> {
         if let Some(prost_types::value::Kind::StructValue(s)) = &v.kind {
             for (k, v) in &s.fields {
                 let c: u8 = k.parse()?;
-                let mut item = Colour { r: 0, g: 0, b: 0 };
+                let mut item = Color { r: 0, g: 0, b: 0 };
 
                 if let Some(prost_types::value::Kind::StructValue(s)) = &v.kind {
                     let r = s
@@ -1580,7 +1576,7 @@ impl CayenneLpp {
                     }
                 }
 
-                self.colour.insert(c, item);
+                self.color.insert(c, item);
             }
         }
 
@@ -1702,9 +1698,9 @@ pub mod test {
             3, 130, 0, 0, 1, 16, 5, 130, 1, 2, 3, 4, // distance
             3, 131, 0, 0, 0, 12, 5, 131, 255, 254, 253, 254, // energy
             3, 132, 0, 9, 5, 132, 255, 252, //direction
-            3, 133, 0, 0, 0, 13, 5, 133, 255, 254, 253, 253, // unixtime
+            3, 133, 0, 0, 0, 13, 5, 133, 255, 254, 253, 253, // unix_time
             3, 134, 0, 1, 0, 2, 0, 3, 5, 134, 3, 233, 7, 210, 11, 187, // gyrometers
-            3, 135, 100, 150, 200, 5, 135, 250, 190, 0, // rgb-colour
+            3, 135, 100, 150, 200, 5, 135, 250, 190, 0, // rgb-color
             1, 136, 6, 118, 95, 242, 150, 10, 0, 3, 232, // gps location
             3, 142, 0, 5, 142, 1, //switch
         ];
@@ -2279,7 +2275,7 @@ pub mod test {
                     },
                 ),
                 (
-                    "unixtime".to_string(),
+                    "unix_time".to_string(),
                     prost_types::Value {
                         kind: Some(prost_types::value::Kind::StructValue(prost_types::Struct {
                             fields: [
@@ -2391,7 +2387,7 @@ pub mod test {
                     },
                 ),
                 (
-                    "colour".to_string(),
+                    "color".to_string(),
                     prost_types::Value {
                         kind: Some(prost_types::value::Kind::StructValue(prost_types::Struct {
                             fields: [
@@ -3205,7 +3201,7 @@ pub mod test {
                     },
                 ),
                 (
-                    "unixtime".to_string(),
+                    "unix_time".to_string(),
                     pbjson_types::Value {
                         kind: Some(pbjson_types::value::Kind::StructValue(
                             pbjson_types::Struct {
@@ -3321,7 +3317,7 @@ pub mod test {
                     },
                 ),
                 (
-                    "colour".to_string(),
+                    "color".to_string(),
                     pbjson_types::Value {
                         kind: Some(pbjson_types::value::Kind::StructValue(pbjson_types::Struct {
                             fields: [
