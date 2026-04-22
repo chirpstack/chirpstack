@@ -293,6 +293,7 @@ pub struct MqttIntegration {
     #[serde(with = "humantime_serde")]
     pub keep_alive_interval: Duration,
     pub share_name: String,
+    pub channel_capacity: usize,
 }
 
 impl Default for MqttIntegration {
@@ -314,6 +315,7 @@ impl Default for MqttIntegration {
             tls_key: "".into(),
             keep_alive_interval: Duration::from_secs(30),
             share_name: "chirpstack".into(),
+            channel_capacity: 100,
         }
     }
 }
@@ -753,6 +755,7 @@ pub struct GatewayBackendMqtt {
     pub keep_alive_interval: Duration,
     pub v4_migrate: bool,
     pub share_name: String,
+    pub channel_capacity: usize,
 }
 
 impl Default for GatewayBackendMqtt {
@@ -773,6 +776,7 @@ impl Default for GatewayBackendMqtt {
             keep_alive_interval: Duration::from_secs(30),
             v4_migrate: false,
             share_name: "chirpstack".into(),
+            channel_capacity: 100,
         }
     }
 }

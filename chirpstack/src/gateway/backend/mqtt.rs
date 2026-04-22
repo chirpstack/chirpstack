@@ -155,7 +155,7 @@ impl<'a> MqttBackend<'a> {
             mqtt_opts.set_transport(Transport::tls_with_config(client_conf.into()));
         }
 
-        let (client, mut eventloop) = AsyncClient::new(mqtt_opts, 100);
+        let (client, mut eventloop) = AsyncClient::new(mqtt_opts, conf.channel_capacity);
 
         let b = MqttBackend {
             client,

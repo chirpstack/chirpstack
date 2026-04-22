@@ -482,6 +482,14 @@ pub fn run() {
     # TLS key file (PKCS#8) (optional)
     tls_key="{{ integration.mqtt.tls_key }}"
 
+    # Channel capacity.
+    #
+    # This defines the size of the MQTT client channel capacity. This channel
+    # is the buffer in which the client stores the incoming messages before
+    # these are consumed from the channel by ChirpStack. Under very high load,
+    # or when dealing with peaks, you might want to increase this value.
+    channel_capacity={{ integration.mqtt.channel_capacity }}
+
 
     # Configuration for MQTT clients.
     [integration.mqtt.client]
