@@ -1,13 +1,14 @@
 use std::ops::DerefMut;
 use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use chrono::{DateTime, TimeDelta, Utc};
 use tracing::info;
 
-use lrwn::applayer::{fragmentation, multicastsetup};
+use lrwn::applayer::fragmentation;
 use lrwn::region::MacVersion;
 
+use crate::applayer::multicastsetup as app_multicastsetup;
 use crate::config;
 use crate::downlink;
 use crate::gpstime::ToGpsTime;
@@ -114,26 +115,11 @@ impl Flow {
         // Get McAppSKey + McNwkSKey.
         let (mc_app_s_key, mc_nwk_s_key) = match self.device_profile.app_layer_params.ts005_version
         {
-            Some(Ts005Version::V100) => (
-                multicastsetup::v1::get_mc_app_s_key(
-                    self.fuota_deployment.multicast_key,
-                    self.fuota_deployment.multicast_addr,
-                )?,
-                multicastsetup::v1::get_mc_net_s_key(
-                    self.fuota_deployment.multicast_key,
-                    self.fuota_deployment.multicast_addr,
-                )?,
-            ),
-            Some(Ts005Version::V200) => (
-                multicastsetup::v2::get_mc_app_s_key(
-                    self.fuota_deployment.multicast_key,
-                    self.fuota_deployment.multicast_addr,
-                )?,
-                multicastsetup::v2::get_mc_net_s_key(
-                    self.fuota_deployment.multicast_key,
-                    self.fuota_deployment.multicast_addr,
-                )?,
-            ),
+            Some(ts005_version) => app_multicastsetup::derive_mc_keys(
+                ts005_version,
+                self.fuota_deployment.multicast_key,
+                self.fuota_deployment.multicast_addr,
+            )?,
             None => return Err(anyhow!("Device-profile does not support TS005")),
         };
 
@@ -145,6 +131,7 @@ impl Flow {
             mc_addr: self.fuota_deployment.multicast_addr,
             mc_nwk_s_key,
             mc_app_s_key,
+            mc_key: Some(self.fuota_deployment.multicast_key),
             f_cnt: 0,
             group_type: self.fuota_deployment.multicast_group_type.clone(),
             frequency: self.fuota_deployment.multicast_frequency,
@@ -173,7 +160,9 @@ impl Flow {
 
         let fuota_devices = fuota::get_devices(self.job.fuota_deployment_id.into(), -1, 0).await?;
         for fuota_d in fuota_devices {
-            multicast::add_device(&fuota_d.fuota_deployment_id, &fuota_d.dev_eui).await?;
+            let multicast_group_id = fuota_d.fuota_deployment_id.into();
+            multicast::add_device_with_next_mc_group_id(&multicast_group_id, &fuota_d.dev_eui)
+                .await?;
         }
 
         Ok(Some((FuotaJob::AddGwsToMcGroup, Utc::now())))
@@ -233,80 +222,26 @@ impl Flow {
 
         for fuota_dev in &fuota_devices {
             let dev_keys = device_keys::get(&fuota_dev.dev_eui).await?;
+            let multicast_group_id = self.job.fuota_deployment_id.into();
+            let mgd = multicast::get_device(&multicast_group_id, &fuota_dev.dev_eui).await?;
+            let mc_group_id = mgd
+                .mc_group_id
+                .ok_or_else(|| anyhow!("FUOTA multicast-group device is missing mc_group_id"))?;
 
-            let pl = match self.device_profile.app_layer_params.ts005_version {
-                Some(Ts005Version::V100) => {
-                    let mc_root_key = match self.device_profile.mac_version {
-                        MacVersion::LORAWAN_1_0_0
-                        | MacVersion::LORAWAN_1_0_1
-                        | MacVersion::LORAWAN_1_0_2
-                        | MacVersion::LORAWAN_1_0_3
-                        | MacVersion::LORAWAN_1_0_4 => {
-                            multicastsetup::v1::get_mc_root_key_for_gen_app_key(
-                                dev_keys.gen_app_key,
-                            )?
-                        }
-                        MacVersion::LORAWAN_1_1_0 | MacVersion::Latest => {
-                            multicastsetup::v1::get_mc_root_key_for_app_key(dev_keys.app_key)?
-                        }
-                    };
-                    let mc_ke_key = multicastsetup::v1::get_mc_ke_key(mc_root_key)?;
-                    let mc_key_encrypted = multicastsetup::v1::encrypt_mc_key(
-                        mc_ke_key,
-                        self.fuota_deployment.multicast_key,
-                    );
+            let ts005_version = self
+                .device_profile
+                .app_layer_params
+                .ts005_version
+                .ok_or_else(|| anyhow!("Device-profile does not support TS005"))?;
 
-                    multicastsetup::v1::Payload::McGroupSetupReq(
-                        multicastsetup::v1::McGroupSetupReqPayload {
-                            mc_group_id_header:
-                                multicastsetup::v1::McGroupSetupReqPayloadMcGroupIdHeader {
-                                    mc_group_id: 0,
-                                },
-                            mc_addr: self.fuota_deployment.multicast_addr,
-                            mc_key_encrypted,
-                            min_mc_f_count: 0,
-                            max_mc_f_count: u32::MAX,
-                        },
-                    )
-                    .to_vec()?
-                }
-                Some(Ts005Version::V200) => {
-                    let mc_root_key = match self.device_profile.mac_version {
-                        MacVersion::LORAWAN_1_0_0
-                        | MacVersion::LORAWAN_1_0_1
-                        | MacVersion::LORAWAN_1_0_2
-                        | MacVersion::LORAWAN_1_0_3
-                        | MacVersion::LORAWAN_1_0_4 => {
-                            multicastsetup::v2::get_mc_root_key_for_gen_app_key(
-                                dev_keys.gen_app_key,
-                            )?
-                        }
-                        MacVersion::LORAWAN_1_1_0 | MacVersion::Latest => {
-                            multicastsetup::v2::get_mc_root_key_for_app_key(dev_keys.app_key)?
-                        }
-                    };
-                    let mc_ke_key = multicastsetup::v2::get_mc_ke_key(mc_root_key)?;
-                    let mc_key_encrypted = multicastsetup::v2::encrypt_mc_key(
-                        mc_ke_key,
-                        self.fuota_deployment.multicast_key,
-                    );
-
-                    multicastsetup::v2::Payload::McGroupSetupReq(
-                        multicastsetup::v2::McGroupSetupReqPayload {
-                            mc_group_id_header:
-                                multicastsetup::v2::McGroupSetupReqPayloadMcGroupIdHeader {
-                                    mc_group_id: 0,
-                                },
-                            mc_addr: self.fuota_deployment.multicast_addr,
-                            mc_key_encrypted,
-                            min_mc_f_count: 0,
-                            max_mc_f_count: u32::MAX,
-                        },
-                    )
-                    .to_vec()?
-                }
-                None => return Err(anyhow!("Device-profile does not support TS005")),
-            };
+            let pl = app_multicastsetup::build_mc_group_setup_req(
+                ts005_version,
+                self.device_profile.mac_version,
+                mc_group_id as u8,
+                self.fuota_deployment.multicast_addr,
+                self.fuota_deployment.multicast_key,
+                &dev_keys,
+            )?;
 
             let _ = device_queue::enqueue_item(device_queue::DeviceQueueItem {
                 dev_eui: fuota_dev.dev_eui,
@@ -380,11 +315,18 @@ impl Flow {
             (fragment_size - (self.fuota_deployment.payload.len() % fragment_size)) % fragment_size;
 
         for fuota_dev in &fuota_devices {
+            let multicast_group_id = self.job.fuota_deployment_id.into();
+            let mgd = multicast::get_device(&multicast_group_id, &fuota_dev.dev_eui).await?;
+            let mc_group_id = mgd
+                .mc_group_id
+                .ok_or_else(|| anyhow!("FUOTA multicast-group device is missing mc_group_id"))?;
+            let mc_group_bit_mask = mc_group_bit_mask(mc_group_id)?;
+
             let pl = match self.device_profile.app_layer_params.ts004_version {
                 Some(Ts004Version::V100) => fragmentation::v1::Payload::FragSessionSetupReq(
                     fragmentation::v1::FragSessionSetupReqPayload {
                         frag_session: fragmentation::v1::FragSessionSetuReqPayloadFragSession {
-                            mc_group_bit_mask: [true, false, false, false],
+                            mc_group_bit_mask,
                             frag_index: 0,
                         },
                         nb_frag: fragments as u16,
@@ -444,7 +386,7 @@ impl Flow {
                     fragmentation::v2::Payload::FragSessionSetupReq(
                         fragmentation::v2::FragSessionSetupReqPayload {
                             frag_session: fragmentation::v2::FragSessionSetuReqPayloadFragSession {
-                                mc_group_bit_mask: [true, false, false, false],
+                                mc_group_bit_mask,
                                 frag_index: 0,
                             },
                             nb_frag: fragments as u16,
@@ -582,93 +524,28 @@ impl Flow {
             % (1 << 32);
 
         for fuota_dev in &fuota_devices {
-            let pl = match self.device_profile.app_layer_params.ts005_version {
-                Some(Ts005Version::V100) => {
-                    match self.fuota_deployment.multicast_group_type.as_ref() {
-                        "B" => multicastsetup::v1::Payload::McClassBSessionReq(
-                            multicastsetup::v1::McClassBSessionReqPayload {
-                                mc_group_id_header:
-                                    multicastsetup::v1::McClassBSessionReqPayloadMcGroupIdHeader {
-                                        mc_group_id: 0,
-                                    },
-                                session_time: (session_start - (session_start % 128)) as u32,
-                                time_out_periodicity:
-                                    multicastsetup::v1::McClassBSessionReqPayloadTimeOutPeriodicity {
-                                        time_out: self.fuota_deployment.multicast_timeout as u8,
-                                        periodicity: self.fuota_deployment.multicast_class_b_ping_slot_periodicity
-                                            as u8,
-                                    },
-                                dl_frequ: self.fuota_deployment.multicast_frequency as u32,
-                                dr: self.fuota_deployment.multicast_dr as u8,
-                            },
-                        ).to_vec()?,
-                        "C" => multicastsetup::v1::Payload::McClassCSessionReq(
-                            multicastsetup::v1::McClassCSessionReqPayload {
-                                mc_group_id_header:
-                                    multicastsetup::v1::McClassCSessionReqPayloadMcGroupIdHeader {
-                                        mc_group_id: 0,
-                                    },
-                                session_time: session_start as u32,
-                                session_time_out:
-                                    multicastsetup::v1::McClassCSessionReqPayloadSessionTimeOut {
-                                        time_out: self.fuota_deployment.multicast_timeout as u8,
-                                    },
-                                dl_frequ: self.fuota_deployment.multicast_frequency as u32,
-                                dr: self.fuota_deployment.multicast_dr as u8,
-                            },
-                        ).to_vec()?,
-                        _ => {
-                            return Err(anyhow!(
-                                "Unsupported group-type: {}",
-                                self.fuota_deployment.multicast_group_type
-                            ))
-                        }
-                    }
-                }
-                Some(Ts005Version::V200) => {
-                    match self.fuota_deployment.multicast_group_type.as_ref() {
-                        "B" => multicastsetup::v2::Payload::McClassBSessionReq(
-                            multicastsetup::v2::McClassBSessionReqPayload {
-                                mc_group_id_header:
-                                    multicastsetup::v2::McClassBSessionReqPayloadMcGroupIdHeader {
-                                        mc_group_id: 0,
-                                    },
-                                session_time: (session_start - (session_start % 128)) as u32,
-                                time_out_periodicity:
-                                    multicastsetup::v2::McClassBSessionReqPayloadTimeOutPeriodicity {
-                                        time_out: self.fuota_deployment.multicast_timeout as u8,
-                                        periodicity: self.fuota_deployment.multicast_class_b_ping_slot_periodicity
-                                            as u8,
-                                    },
-                                dl_frequ: self.fuota_deployment.multicast_frequency as u32,
-                                dr: self.fuota_deployment.multicast_dr as u8,
-                            },
-                        ).to_vec()?,
-                        "C" => multicastsetup::v2::Payload::McClassCSessionReq(
-                            multicastsetup::v2::McClassCSessionReqPayload {
-                                mc_group_id_header:
-                                    multicastsetup::v2::McClassCSessionReqPayloadMcGroupIdHeader {
-                                        mc_group_id: 0,
-                                    },
-                                session_time: session_start as u32,
-                                session_time_out:
-                                    multicastsetup::v2::McClassCSessionReqPayloadSessionTimeOut {
-                                        time_out: self.fuota_deployment.multicast_timeout as u8,
-                                    },
-                                dl_frequ: self.fuota_deployment.multicast_frequency as u32,
-                                dr: self.fuota_deployment.multicast_dr as u8,
-                            },
-                        ).to_vec()?,
-                        _ => {
-                            return Err(anyhow!(
-                                "Unsupported group-type: {}",
-                                self.fuota_deployment.multicast_group_type
-                            ))
-                        }
-                    }
-                }
-                None => return Err(anyhow!("Device-profile does not support TS005")),
-            };
+            let multicast_group_id = self.job.fuota_deployment_id.into();
+            let mgd = multicast::get_device(&multicast_group_id, &fuota_dev.dev_eui).await?;
+            let mc_group_id = mgd
+                .mc_group_id
+                .ok_or_else(|| anyhow!("FUOTA multicast-group device is missing mc_group_id"))?;
+            let ts005_version = self
+                .device_profile
+                .app_layer_params
+                .ts005_version
+                .ok_or_else(|| anyhow!("Device-profile does not support TS005"))?;
+
+            let pl = app_multicastsetup::build_mc_session_req(
+                ts005_version,
+                self.fuota_deployment.multicast_group_type.as_ref(),
+                mc_group_id as u8,
+                session_start as u32,
+                self.fuota_deployment.multicast_timeout as u8,
+                self.fuota_deployment
+                    .multicast_class_b_ping_slot_periodicity as u8,
+                self.fuota_deployment.multicast_frequency as u32,
+                self.fuota_deployment.multicast_dr as u8,
+            )?;
 
             device_queue::enqueue_item(device_queue::DeviceQueueItem {
                 dev_eui: fuota_dev.dev_eui,
@@ -950,4 +827,17 @@ impl Flow {
 
         Ok(None)
     }
+}
+
+fn mc_group_bit_mask(mc_group_id: i16) -> Result<[bool; 4]> {
+    if !(0..=3).contains(&mc_group_id) {
+        return Err(anyhow!(
+            "FUOTA multicast-group device has invalid mc_group_id: {}",
+            mc_group_id
+        ));
+    }
+
+    let mut out = [false; 4];
+    out[mc_group_id as usize] = true;
+    Ok(out)
 }

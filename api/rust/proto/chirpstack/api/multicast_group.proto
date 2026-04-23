@@ -138,6 +138,11 @@ message MulticastGroup {
   // Multicast application session key (HEX encoded AES128 key).
   string mc_app_s_key = 7;
 
+  // Reserved.
+  // The TS005 multicast key is server-managed and not part of the public API.
+  reserved 12;
+  reserved "mc_key";
+
   // Frame-counter.
   uint32 f_cnt = 8;
 

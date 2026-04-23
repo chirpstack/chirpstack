@@ -322,6 +322,7 @@ diesel::table! {
         mc_addr -> Bytea,
         mc_nwk_s_key -> Bytea,
         mc_app_s_key -> Bytea,
+        mc_key -> Nullable<Bytea>,
         f_cnt -> Int8,
         #[max_length = 1]
         group_type -> Bpchar,
@@ -338,6 +339,11 @@ diesel::table! {
         multicast_group_id -> Uuid,
         dev_eui -> Bytea,
         created_at -> Timestamptz,
+        mc_group_id -> Nullable<Int2>,
+        mc_group_setup_completed_at -> Nullable<Timestamptz>,
+        mc_session_completed_at -> Nullable<Timestamptz>,
+        error_msg -> Text,
+        pending_delete -> Bool,
     }
 }
 
