@@ -13,6 +13,9 @@
   # PostgreSQL DSN.
   #
   # Format example: postgres://<USERNAME>:<PASSWORD>@<HOSTNAME>/<DATABASE>?sslmode=<SSLMODE>.
+  # Unix socket example:
+  #   postgresql:///chirpstack?user=chirpstack&host=/var/run/postgresql&sslmode=disable
+  # When sslmode=disable, ChirpStack connects without TLS.
   #
   # SSL mode options:
   #  * disable - no SSL

@@ -4,7 +4,7 @@ use std::str::FromStr;
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use diesel::{ConnectionError, ConnectionResult};
+use diesel::ConnectionResult;
 use diesel_async::async_connection_wrapper::AsyncConnectionWrapper;
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
@@ -12,12 +12,12 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use futures_util::FutureExt;
 use futures_util::future::BoxFuture;
-use tracing::{error, info};
+use tracing::info;
 use uuid::Uuid;
 
 use super::Integration as IntegrationTrait;
 use crate::config::{self, PostgresqlIntegration as Config};
-use crate::helpers::tls::get_root_certs;
+use crate::helpers::postgresql::establish_connection;
 use chirpstack_api::integration;
 use schema::{
     event_ack, event_integration, event_join, event_location, event_log, event_status,
@@ -232,26 +232,12 @@ impl Integration {
 fn pg_establish_connection(config: &str) -> BoxFuture<'_, ConnectionResult<AsyncPgConnection>> {
     let fut = async {
         let conf = config::get();
-
-        let root_certs = get_root_certs(if conf.integration.postgresql.ca_cert.is_empty() {
+        let ca_cert = if conf.integration.postgresql.ca_cert.is_empty() {
             None
         } else {
             Some(conf.integration.postgresql.ca_cert.clone())
-        })
-        .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
-        let rustls_config = rustls::ClientConfig::builder()
-            .with_root_certificates(root_certs)
-            .with_no_client_auth();
-        let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
-        let (client, conn) = tokio_postgres::connect(config, tls)
-            .await
-            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
-        tokio::spawn(async move {
-            if let Err(e) = conn.await {
-                error!(error = %e, "PostgreSQL connection error");
-            }
-        });
-        AsyncPgConnection::try_from(client).await
+        };
+        establish_connection(config, ca_cert).await
     };
     fut.boxed()
 }
