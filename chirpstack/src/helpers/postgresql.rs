@@ -16,10 +16,20 @@ pub async fn establish_connection(config: &str, ca_cert: Option<String>) -> Conn
     let parsed = tokio_postgres::Config::from_str(config).map_err(bad_connection)?;
     let ssl_mode = parsed.get_ssl_mode();
 
-    let (client, conn) = match ssl_mode {
-        SslMode::Disable => tokio_postgres::connect(config, NoTls)
-            .await
-            .map_err(bad_connection)?,
+    match ssl_mode {
+        SslMode::Disable => {
+            let (client, conn) = tokio_postgres::connect(config, NoTls)
+                .await
+                .map_err(bad_connection)?;
+
+            tokio::spawn(async move {
+                if let Err(e) = conn.await {
+                    error!(error = %e, "PostgreSQL connection error");
+                }
+            });
+
+            AsyncPgConnection::try_from(client).await
+        }
         _ => {
             let root_certs =
                 get_root_certs(ca_cert.filter(|v| !v.is_empty())).map_err(bad_connection)?;
@@ -27,18 +37,17 @@ pub async fn establish_connection(config: &str, ca_cert: Option<String>) -> Conn
                 .with_root_certificates(root_certs)
                 .with_no_client_auth();
             let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
-
-            tokio_postgres::connect(config, tls)
+            let (client, conn) = tokio_postgres::connect(config, tls)
                 .await
-                .map_err(bad_connection)?
-        }
-    };
+                .map_err(bad_connection)?;
 
-    tokio::spawn(async move {
-        if let Err(e) = conn.await {
-            error!(error = %e, "PostgreSQL connection error");
-        }
-    });
+            tokio::spawn(async move {
+                if let Err(e) = conn.await {
+                    error!(error = %e, "PostgreSQL connection error");
+                }
+            });
 
-    AsyncPgConnection::try_from(client).await
+            AsyncPgConnection::try_from(client).await
+        }
+    }
 }
