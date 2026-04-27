@@ -101,7 +101,7 @@
     chrono = { version = "0.4", features = ["serde"] }
 
     # Async
-    tokio = { version = "1.51", features = ["macros"] }
+    tokio = { version = "1.52", features = ["macros"] }
     tokio-executor-trait = "3.1"
     tokio-reactor-trait = "4.1"
     tokio-stream = "0.1"
