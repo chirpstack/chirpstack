@@ -380,6 +380,13 @@ impl Flow {
             (fragment_size - (self.fuota_deployment.payload.len() % fragment_size)) % fragment_size;
 
         for fuota_dev in &fuota_devices {
+            let descriptor = {
+                let mut d = [0u8; 4];
+                if self.fuota_deployment.fragmentation_descriptor.len() == 4 {
+                    d.copy_from_slice(&self.fuota_deployment.fragmentation_descriptor);
+                }
+                d
+            };
             let pl = match self.device_profile.app_layer_params.ts004_version {
                 Some(Ts004Version::V100) => fragmentation::v1::Payload::FragSessionSetupReq(
                     fragmentation::v1::FragSessionSetupReqPayload {
@@ -395,13 +402,7 @@ impl Flow {
                                 as u8,
                             fragmentation_matrix: self.fuota_deployment.fragmentation_matrix as u8,
                         },
-                        descriptor: {
-                            let mut d = [0u8; 4];
-                            if self.fuota_deployment.fragmentation_descriptor.len() == 4 {
-                                d.copy_from_slice(&self.fuota_deployment.fragmentation_descriptor);
-                            }
-                            d
-                        },
+                        descriptor: descriptor.clone(),
                     },
                 )
                 .to_vec()?,
@@ -437,7 +438,7 @@ impl Flow {
                         data_block_int_key,
                         session_cnt,
                         0,
-                        [0, 0, 0, 0],
+                        descriptor.clone(),
                         &self.fuota_deployment.payload,
                     )?;
 
@@ -456,15 +457,7 @@ impl Flow {
                                 frag_algo: 0,
                                 ack_reception: false,
                             },
-                            descriptor: {
-                                let mut d = [0u8; 4];
-                                if self.fuota_deployment.fragmentation_descriptor.len() == 4 {
-                                    d.copy_from_slice(
-                                        &self.fuota_deployment.fragmentation_descriptor,
-                                    );
-                                }
-                                d
-                            },
+                            descriptor,
                             mic,
                             session_cnt,
                         },
