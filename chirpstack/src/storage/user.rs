@@ -3,8 +3,9 @@ use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
 use diesel_async::RunQueryDsl;
 use pbkdf2::{
-    Algorithm, Pbkdf2,
-    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
+    Algorithm, Params, Pbkdf2,
+    password_hash::{PasswordHasher, PasswordVerifier},
+    phc::PasswordHash,
 };
 use tracing::info;
 use uuid::Uuid;
@@ -55,7 +56,7 @@ impl Default for User {
 impl User {
     pub fn set_password_hash(&mut self, pw: &str) -> Result<(), Error> {
         validate_password_strength(pw)?;
-        self.password_hash = hash_password(pw, PASSWORD_HASH_ITERATIONS)?;
+        self.password_hash = hash_password(pw)?;
         Ok(())
     }
 }
@@ -177,7 +178,7 @@ fn validate_password_strength(password: &str) -> Result<(), Error> {
 pub async fn set_password_by_email(email: &str, new_password: &str) -> Result<User, Error> {
     validate_password_strength(new_password)?;
 
-    let hash = hash_password(new_password, PASSWORD_HASH_ITERATIONS)?;
+    let hash = hash_password(new_password)?;
 
     let u: User = diesel::update(user::dsl::user.filter(user::dsl::email.eq(email)))
         .set(user::password_hash.eq(&hash))
@@ -222,23 +223,15 @@ pub async fn list(limit: i64, offset: i64) -> Result<Vec<User>, Error> {
 
 // The output format is documented here:
 // https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md#specification
-fn hash_password(pw: &str, rounds: u32) -> Result<String, Error> {
-    let salt = SaltString::generate(&mut OsRng);
-    let hash_resp = Pbkdf2.hash_password_customized(
-        pw.as_bytes(),
-        Some(Algorithm::Pbkdf2Sha512.ident()),
-        None,
-        pbkdf2::Params {
-            rounds,
-            ..Default::default()
-        },
-        salt.as_salt(),
+fn hash_password(pw: &str) -> Result<String, Error> {
+    let pbkdf2 = Pbkdf2::new(
+        Algorithm::Pbkdf2Sha512,
+        Params::new(PASSWORD_HASH_ITERATIONS).map_err(|e| Error::HashPassword(format!("{}", e)))?,
     );
-
-    match hash_resp {
-        Ok(v) => Ok(v.to_string()),
-        Err(e) => Err(Error::HashPassword(format!("{}", e))),
-    }
+    let pwhash: PasswordHash = pbkdf2
+        .hash_password(pw.as_bytes())
+        .map_err(|e| Error::HashPassword(format!("{}", e)))?;
+    Ok(pwhash.to_string())
 }
 
 fn verify_password(pw: &str, hash: &str) -> bool {
@@ -249,7 +242,8 @@ fn verify_password(pw: &str, hash: &str) -> bool {
         }
     };
 
-    Pbkdf2.verify_password(pw.as_bytes(), &parsed).is_ok()
+    let pbkdf2 = Pbkdf2::SHA512;
+    pbkdf2.verify_password(pw.as_bytes(), &parsed).is_ok()
 }
 
 #[cfg(test)]
@@ -271,7 +265,7 @@ pub mod test {
 
     #[test]
     fn test_hash_password() {
-        assert!(hash_password("foobar", 1000).is_ok());
+        assert!(hash_password("foobar").is_ok());
     }
 
     #[test]
@@ -280,7 +274,7 @@ pub mod test {
         // to test the compatibility betweeh the two pbkdf2 implementations.
         assert!(verify_password(
             "admin",
-            "$pbkdf2-sha512$i=1,l=64$l8zGKtxRESq3PA2kFhHRWA$H3lGMxOt55wjwoc+myeOoABofJY9oDpldJa7fhqdjbh700V6FLPML75UmBOt9J5VFNjAL1AvqCozA1HJM0QVGA"
+            "$pbkdf2-sha512$i=10000,l=32$InHYgzvDBYmbZnGWfkxkYg$V+L5uraQ4R+f2tHn+aWjXiso/JHaffK0EQRW5wW1x4s",
         ));
     }
 

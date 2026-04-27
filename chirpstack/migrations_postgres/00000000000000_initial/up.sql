@@ -33,7 +33,7 @@ insert into "user" (
     true,
     'admin',
     false,
-    '$pbkdf2-sha512$i=1,l=64$l8zGKtxRESq3PA2kFhHRWA$H3lGMxOt55wjwoc+myeOoABofJY9oDpldJa7fhqdjbh700V6FLPML75UmBOt9J5VFNjAL1AvqCozA1HJM0QVGA',
+    '$pbkdf2-sha512$i=10000,l=32$InHYgzvDBYmbZnGWfkxkYg$V+L5uraQ4R+f2tHn+aWjXiso/JHaffK0EQRW5wW1x4s',
     ''
 );
 
