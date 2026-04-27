@@ -2,6 +2,8 @@ use std::fmt;
 use std::str::FromStr;
 
 use anyhow::Result;
+#[cfg(feature = "postgres")]
+use diesel::pg::Pg;
 #[cfg(feature = "sqlite")]
 use diesel::sqlite::Sqlite;
 #[cfg(feature = "diesel")]
@@ -253,42 +255,45 @@ impl Serialize for DevAddr {
     }
 }
 
-#[cfg(feature = "diesel")]
-impl<ST, DB> deserialize::FromSql<ST, DB> for DevAddr
-where
-    DB: Backend,
-    *const [u8]: deserialize::FromSql<ST, DB>,
-{
-    fn from_sql(value: <DB as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
-        let bytes = <Vec<u8> as deserialize::FromSql<ST, DB>>::from_sql(value)?;
-        if bytes.len() != 4 {
+#[cfg(feature = "postgres")]
+impl deserialize::FromSql<Binary, Pg> for DevAddr {
+    fn from_sql(bytes: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <Vec<u8> as deserialize::FromSql<Binary, Pg>>::from_sql(bytes)?;
+        if value.len() != 4 {
             return Err("DevAddr type expects exactly 4 bytes".into());
         }
 
         let mut b: [u8; 4] = [0; 4];
-        b.copy_from_slice(&bytes);
-
+        b.copy_from_slice(&value);
         Ok(DevAddr(b))
     }
 }
 
 #[cfg(feature = "postgres")]
-impl serialize::ToSql<Binary, diesel::pg::Pg> for DevAddr
-where
-    [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
-{
-    fn to_sql(&self, out: &mut serialize::Output<'_, '_, diesel::pg::Pg>) -> serialize::Result {
-        <[u8] as serialize::ToSql<Binary, diesel::pg::Pg>>::to_sql(
-            &self.to_be_bytes(),
-            &mut out.reborrow(),
-        )
+impl serialize::ToSql<Binary, Pg> for DevAddr {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+        <[u8] as serialize::ToSql<Binary, Pg>>::to_sql(&self.to_be_bytes(), &mut out.reborrow())
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl deserialize::FromSql<Binary, Sqlite> for DevAddr {
+    fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <Vec<u8> as deserialize::FromSql<Binary, Sqlite>>::from_sql(bytes)?;
+        if value.len() != 4 {
+            return Err("DevAddr type expects exactly 4 bytes".into());
+        }
+
+        let mut b: [u8; 4] = [0; 4];
+        b.copy_from_slice(&value);
+        Ok(DevAddr(b))
     }
 }
 
 #[cfg(feature = "sqlite")]
 impl serialize::ToSql<Binary, Sqlite> for DevAddr {
     fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
-        out.set_value(Vec::from(self.to_be_bytes().as_slice()));
+        out.set_value(self.to_be_bytes().to_vec());
         Ok(serialize::IsNull::No)
     }
 }

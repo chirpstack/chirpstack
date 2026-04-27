@@ -2,6 +2,8 @@ use std::fmt;
 use std::str::FromStr;
 
 use anyhow::{Context, Result};
+#[cfg(feature = "postgres")]
+use diesel::pg::Pg;
 #[cfg(feature = "sqlite")]
 use diesel::sqlite::Sqlite;
 #[cfg(feature = "diesel")]
@@ -118,35 +120,40 @@ impl Visitor<'_> for Eui64Visitor {
     }
 }
 
-#[cfg(feature = "diesel")]
-impl<ST, DB> deserialize::FromSql<ST, DB> for EUI64
-where
-    DB: Backend,
-    *const [u8]: deserialize::FromSql<ST, DB>,
-{
-    fn from_sql(value: DB::RawValue<'_>) -> deserialize::Result<Self> {
-        let bytes = <Vec<u8> as deserialize::FromSql<ST, DB>>::from_sql(value)?;
-        if bytes.len() != 8 {
+#[cfg(feature = "postgres")]
+impl deserialize::FromSql<Binary, Pg> for EUI64 {
+    fn from_sql(bytes: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <Vec<u8> as deserialize::FromSql<Binary, Pg>>::from_sql(bytes)?;
+        if value.len() != 8 {
             return Err("EUI64 type expects exactly 8 bytes".into());
         }
 
         let mut b: [u8; 8] = [0; 8];
-        b.copy_from_slice(&bytes);
+        b.copy_from_slice(&value);
 
         Ok(EUI64(b))
     }
 }
 
 #[cfg(feature = "postgres")]
-impl serialize::ToSql<Binary, diesel::pg::Pg> for EUI64
-where
-    [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
-{
-    fn to_sql(&self, out: &mut serialize::Output<'_, '_, diesel::pg::Pg>) -> serialize::Result {
-        <[u8] as serialize::ToSql<Binary, diesel::pg::Pg>>::to_sql(
-            &self.to_be_bytes(),
-            &mut out.reborrow(),
-        )
+impl serialize::ToSql<Binary, Pg> for EUI64 {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+        <[u8] as serialize::ToSql<Binary, Pg>>::to_sql(&self.to_be_bytes(), &mut out.reborrow())
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl deserialize::FromSql<Binary, Sqlite> for EUI64 {
+    fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <Vec<u8> as deserialize::FromSql<Binary, Sqlite>>::from_sql(bytes)?;
+        if value.len() != 8 {
+            return Err("EUI64 type expects exactly 8 bytes".into());
+        }
+
+        let mut b: [u8; 8] = [0; 8];
+        b.copy_from_slice(&value);
+
+        Ok(EUI64(b))
     }
 }
 
