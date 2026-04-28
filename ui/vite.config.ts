@@ -16,4 +16,9 @@ export default defineConfig({
     },
   },
   plugins: [react()],
+  legacy: {
+    // Fix AceEditor rendering. See:
+    // https://github.com/securingsincity/react-ace/issues/1540#issuecomment-3685386545
+    inconsistentCjsInterop: true,
+  },
 });
