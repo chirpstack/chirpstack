@@ -17,9 +17,9 @@ use crate::storage;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, downlink_frame,
+    device_gateway, device_profile, device_queue, downlink_frame, get_async_redis_conn,
     helpers::get_all_device_data,
-    mac_command, relay, tenant,
+    mac_command, redis_key, relay, tenant,
 };
 use crate::uplink::{RelayContext, UplinkFrameSet};
 use crate::{adr, config, gateway, integration, maccommand, region, sensitivity};
@@ -50,6 +50,7 @@ pub struct Data {
     immediately: bool,
     device_queue_item: Option<device_queue::DeviceQueueItem>,
     more_device_queue_items: bool,
+    flush_dev_queue_on_uplink_items: Vec<String>,
 }
 
 impl Data {
@@ -204,6 +205,7 @@ impl Data {
             immediately: false,
             device_queue_item: None,
             more_device_queue_items: false,
+            flush_dev_queue_on_uplink_items: Vec::new(),
         };
 
         ctx.select_downlink_gateway()?;
@@ -213,6 +215,7 @@ impl Data {
 
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
+            ctx.persist_flush_dev_queue_items().await?;
             ctx.update_device_queue_item().await?;
             ctx.save_downlink_frame().await?;
             // Some mac-commands set their state (e.g. last requested) to the
@@ -276,6 +279,7 @@ impl Data {
             immediately: false,
             device_queue_item: None,
             more_device_queue_items: false,
+            flush_dev_queue_on_uplink_items: Vec::new(),
         };
 
         ctx.select_downlink_gateway()?;
@@ -284,6 +288,7 @@ impl Data {
         ctx.set_mac_commands().await?;
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
+            ctx.persist_flush_dev_queue_items().await?;
             ctx.wrap_phy_payloads_in_forward_downlink_req()?;
             ctx.save_downlink_frame_relayed().await?;
             ctx.update_device().await?;
@@ -332,6 +337,7 @@ impl Data {
             immediately: false,
             device_queue_item: None,
             more_device_queue_items: false,
+            flush_dev_queue_on_uplink_items: Vec::new(),
         };
 
         ctx.select_downlink_gateway()?;
@@ -351,11 +357,32 @@ impl Data {
         ctx.get_next_device_queue_item().await?;
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
+            ctx.persist_flush_dev_queue_items().await?;
             ctx.update_device_queue_item().await?;
             ctx.save_downlink_frame().await?;
             ctx.send_downlink_frame().await?;
         }
 
+        Ok(())
+    }
+
+    async fn persist_flush_dev_queue_items(&mut self) -> Result<()> {
+        trace!("KRAMERMEISTER ==> Persisting Flush Device Queue Items");
+        for persist_entry in &self.flush_dev_queue_on_uplink_items {
+            let key = redis_key("FLUSH-DEV-QUEUE-DEVEUI-LIST".to_string());
+
+            // RPUSH key value
+            trace!("KRAMERMEISTER ==> Next Flush Item to Persist");
+            () = redis::cmd("RPUSH")
+                .arg(key)
+                .arg(persist_entry)
+                .query_async(&mut get_async_redis_conn().await?)
+                .await?;
+        }
+
+        trace!("KRAMERMEISTER ==> Clearing temp vec for flush items");
+        let _clear_res = &self.flush_dev_queue_on_uplink_items.clear();
+        trace!("KRAMERMEISTER ==> Done Persisting Flush Items to Redis");
         Ok(())
     }
 
@@ -759,6 +786,9 @@ impl Data {
 
             // In this case mac-commands are sent as FRMPayload. We will not be able to
             // send a device-queue item in this case.
+            trace!("KRAMERMEISTER => mac_size:  {}", mac_size);
+            let mut fport_redirect = false;
+            let mut is_ack_or_clear = false;
             if mac_size > 15 {
                 // Set the FPending to true if we were planning to send a downlink
                 // device-queue item.
@@ -786,13 +816,45 @@ impl Data {
                 if let Some(qi) = &self.device_queue_item {
                     if qi.data.len() <= item.remaining_payload_size {
                         // Set the device-queue item.
-                        mac_pl.f_port = Some(qi.f_port as u8);
+                        let mut my_fport = Some(qi.f_port as u8);
+                        match my_fport {
+                            Some(value) => {
+                                trace!("KRAMERMEISTER => fport value:  {}", value);
+                                if value == 99 {
+                                    trace!("KRAMERMEISTER => Resetting FPort 99 to 0");
+                                    my_fport = Some(0);
+                                    fport_redirect = true;
+                                }
+                            }
+                            None => trace!("KRAMERMEISTER => Skip Resetting FPort"),
+                        }
+
+                        mac_pl.f_port = my_fport;
+                        if qi.is_encrypted {
+                            trace!("KRAMERMEISTER => qi.is_encrypted is TRUE");
+                        } else {
+                            trace!("KRAMERMEISTER => qi.is_encrypted IS FALSE");
+                        }
+
                         mac_pl.fhdr.f_cnt = match qi.is_encrypted {
                             true => qi.f_cnt_down.unwrap_or_default() as u32,
                             false => ds.get_a_f_cnt_down(),
                         };
-                        mac_pl.frm_payload = Some(lrwn::FRMPayload::Raw(qi.data.clone()));
 
+                        match String::from_utf8(qi.data.clone()) {
+                            Ok(my_string) => {
+                                trace!("KRAMERMEISTER => qi.data as Str:  {}", my_string);
+                                if my_string.starts_with("RFTA") || my_string.starts_with("RFTC") {
+                                    is_ack_or_clear = true;
+                                }
+                            }
+                            Err(e) => trace!(
+                                "KRAMERMEISTER => Failed to Convert qi.data to String:  {}",
+                                e
+                            ),
+                        }
+
+                        mac_pl.frm_payload = Some(lrwn::FRMPayload::Raw(qi.data.clone()));
                         if qi.confirmed {
                             mhdr.f_type = lrwn::FType::ConfirmedDataDown;
                         }
@@ -820,14 +882,29 @@ impl Data {
 
             if mac_size > 15 {
                 // Encrypt mac-commands.
+                trace!(
+                    "KRAMERMEISTER #481516 => Encrypting FRM Payload With Large mac_size:  {}",
+                    mac_size
+                );
+
                 phy.encrypt_frm_payload(&lrwn::AES128Key::from_slice(&ds.nwk_s_enc_key)?)
                     .context("Encrypt frm_payload mac-commands")?;
             } else if self.device_queue_item.is_some() && !qi_encrypted {
                 // Encrypt application payload.
                 if let Some(key_env) = &ds.app_s_key {
-                    let app_s_key = lrwn::AES128Key::from_slice(&key_env.aes_key)?;
-                    phy.encrypt_frm_payload(&app_s_key)
-                        .context("Encrypt frm_payload application payload")?;
+                    if fport_redirect {
+                        trace!("JLK Encryption for FPort 99 Redirect");
+
+                        // Either encrypt as MACCommand or not at all.
+                        // Try with line below enabled or commented out.
+                        phy.encrypt_frm_payload(&lrwn::AES128Key::from_slice(&ds.nwk_s_enc_key)?)
+                            .context("Encrypt frm_payload mac-commands")?;
+                    } else {
+                        let app_s_key = lrwn::AES128Key::from_slice(&key_env.aes_key)?;
+                        trace!("JLK Encrypting FRM Payload W/ App Key");
+                        phy.encrypt_frm_payload(&app_s_key)
+                            .context("Encrypt frm_payload application payload")?;
+                    }
                 }
             }
 
@@ -853,6 +930,13 @@ impl Data {
             self.downlink_frame
                 .items
                 .push(item.downlink_frame_item.clone());
+
+            if fport_redirect && is_ack_or_clear {
+                // Flag it for proper handling in the next uplink.
+                trace!("KRAMERMEISTER ==> Push DevEui 4 Uplink Flush Queue");
+                self.flush_dev_queue_on_uplink_items
+                    .push(self.device.dev_eui.to_string());
+            }
         }
 
         Ok(())
@@ -2972,6 +3056,7 @@ mod test {
                 immediately: false,
                 device_queue_item: None,
                 more_device_queue_items: false,
+                flush_dev_queue_on_uplink_items: Vec::new(),
             };
 
             ctx.get_next_device_queue_item().await.unwrap();
@@ -3539,6 +3624,7 @@ mod test {
                 immediately: false,
                 device_queue_item: None,
                 more_device_queue_items: false,
+                flush_dev_queue_on_uplink_items: Vec::new(),
             };
 
             ctx._update_uplink_list().await.unwrap();
@@ -3991,6 +4077,7 @@ mod test {
                 immediately: false,
                 device_queue_item: None,
                 more_device_queue_items: false,
+                flush_dev_queue_on_uplink_items: Vec::new(),
             };
 
             ctx._update_filter_list().await.unwrap();
@@ -4117,6 +4204,7 @@ mod test {
                 immediately: false,
                 device_queue_item: None,
                 more_device_queue_items: false,
+                flush_dev_queue_on_uplink_items: Vec::new(),
             };
 
             ctx._update_relay_conf().await.unwrap();
@@ -4234,6 +4322,7 @@ mod test {
                 immediately: false,
                 device_queue_item: None,
                 more_device_queue_items: false,
+                flush_dev_queue_on_uplink_items: Vec::new(),
             };
 
             ctx._update_end_device_conf().await.unwrap();
@@ -4361,6 +4450,7 @@ mod test {
                 immediately: false,
                 device_queue_item: None,
                 more_device_queue_items: false,
+                flush_dev_queue_on_uplink_items: Vec::new(),
             };
 
             ctx._configure_fwd_limit_req().await.unwrap();
@@ -4632,6 +4722,7 @@ mod test {
                 immediately: false,
                 device_queue_item: None,
                 more_device_queue_items: false,
+                flush_dev_queue_on_uplink_items: Vec::new(),
             };
 
             ctx._request_ctrl_uplink_list().await.unwrap();

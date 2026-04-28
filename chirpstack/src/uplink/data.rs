@@ -16,9 +16,9 @@ use crate::storage::error::Error as StorageError;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, fields,
+    device_gateway, device_profile, device_queue, fields, get_async_redis_conn,
     helpers::get_all_device_data,
-    metrics, tenant,
+    metrics, redis_key, tenant,
 };
 use crate::{codec, config, downlink, integration, maccommand, region, stream};
 use chirpstack_api::{common, integration as integration_pb, internal, stream as stream_pb};
@@ -154,6 +154,13 @@ impl Data {
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics().await?;
 
+        // Flush queue if previous downlink was ACK or CLEAR.
+        let flush_it = ctx.is_flush_item().await?;
+        if flush_it {
+            ctx.remove_from_device_queue().await?;
+            ctx.remove_from_flush_item_list().await?;
+        }
+
         if ctx._is_relay() {
             ctx.handle_forward_uplink_req().await?;
         } else {
@@ -212,6 +219,64 @@ impl Data {
         ctx.start_downlink_data_flow_relayed().await?;
 
         Ok(())
+    }
+
+    async fn is_flush_item(&mut self) -> Result<bool> {
+        trace!("KRAMERMEISTER ==> Do We Flush It?");
+        let dev_eui = &self.device.as_ref().unwrap().dev_eui.to_string();
+        if dev_eui.is_empty() {
+            trace!("KRAMERMEISTER ==> DevEUI Is Empty - OOPS!");
+            return Ok(false);
+        }
+
+        // LRANGE list_key 0 -1
+        let key = redis_key("FLUSH-DEV-QUEUE-DEVEUI-LIST".to_string());
+        let redirect_list: Vec<String> = redis::cmd("LRANGE")
+            .arg(key)
+            .arg(0)
+            .arg(-1)
+            .query_async(&mut get_async_redis_conn().await?)
+            .await?;
+
+        // Convert to string for test.
+        trace!("KRAMERMEISTER ==> Got Vector from Redis");
+        let comp_res = redirect_list.contains(dev_eui);
+        if comp_res {
+            trace!("KRAMERMEISTER ==> DevEUI IS in Flush List");
+        } else {
+            trace!("KRAMERMEISTER ==> DevEUI IS NOT in Flush List");
+        }
+
+        Ok(comp_res)
+    }
+
+    async fn remove_from_flush_item_list(&mut self) -> Result<bool> {
+        trace!("KRAMERMEISTER ==> Removing Entry From Flush List");
+        let dev_eui = &self.device.as_ref().unwrap().dev_eui.to_string();
+        if dev_eui.is_empty() {
+            trace!("KRAMERMEISTER ==> DevEUI Empty - Oops I Did It Again!");
+            return Ok(false);
+        }
+
+        // LREM list_key 1 dev_eui
+        let key = redis_key("FLUSH-DEV-QUEUE-DEVEUI-LIST".to_string());
+        () = redis::cmd("LREM")
+            .arg(key)
+            .arg(1)
+            .arg(dev_eui)
+            .query_async(&mut get_async_redis_conn().await?)
+            .await?;
+
+        trace!("KRAMERMEISTER ==> Supposedly We Removed It - Verify");
+        Ok(true)
+    }
+
+    async fn remove_from_device_queue(&mut self) -> Result<bool> {
+        trace!("KRAMERMEISTER ==> Removing Device From Device Queue!");
+        let dev_eui = &self.device.as_ref().unwrap().dev_eui;
+        let _qi = device_queue::flush_for_dev_eui(dev_eui).await?;
+        trace!("KRAMERMEISTER ==> Device Removed From Device Queue!");
+        Ok(true)
     }
 
     async fn handle_passive_roaming_device(&mut self) -> Result<(), Error> {
@@ -602,8 +667,23 @@ impl Data {
             f_port = pl.f_port.unwrap_or(0);
         }
 
-        // Mac-commands (f_port=0) or Relay payload (f_port=226).
-        if f_port == 0 || f_port == lrwn::LA_FPORT_RELAY {
+        trace!(f_port = %f_port, "KRAMERMEISTER ==> f_port Value B4 decrypt");
+
+        // Handle fport 99 redirections first.
+        if f_port == 0 {
+            // Handle this as though it were an fport = 1 for app data.
+            trace!("KRAMERMEISTER #A ==> Treat fport 0 as 1 for decrypt uplink data");
+            let nwk_s_enc_key = AES128Key::from_slice(&ds.nwk_s_enc_key)?;
+            if let Err(e) = self
+                .phy_payload
+                .decrypt_frm_payload_fport99_redirect(&nwk_s_enc_key)
+            {
+                // This avoids failing in case of a custom corrupted device payload.
+                warn!(error = %e.full(), "Decrypting frm_payload fport99 redir failed");
+            }
+        } else if f_port == lrwn::LA_FPORT_RELAY {
+            // Relay payload (f_port=226).
+            trace!("KRAMERMEISTER #B ==> Port Relay!");
             let nwk_s_enc_key = AES128Key::from_slice(&ds.nwk_s_enc_key)?;
             if let Err(e) = self.phy_payload.decrypt_frm_payload(&nwk_s_enc_key) {
                 // This avoids failing in case of a corrupted mac-command in the frm_payload.

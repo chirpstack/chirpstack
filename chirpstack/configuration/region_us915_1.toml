@@ -186,7 +186,7 @@
     # 0: RX1 / RX2
     # 1: RX1 only
     # 2: RX2 only
-    rx_window = 0
+    rx_window = 1
 
     # RX1 delay (1 - 15 seconds).
     rx1_delay = 1
@@ -225,7 +225,7 @@
     downlink_tx_power = -1
 
     # ADR is disabled.
-    adr_disabled = false
+    adr_disabled = true
 
     # Minimum data-rate.
     min_dr = 0

@@ -915,6 +915,28 @@ impl PhyPayload {
         Err(anyhow!("payload must be of type MACPayload"))
     }
 
+    /// Decrypt the frm_payload with the given key, specifically for any
+    /// fport 99 redirection events.
+    #[cfg(feature = "crypto")]
+    pub fn decrypt_frm_payload_fport99_redirect(&mut self, key: &AES128Key) -> Result<()> {
+        if let Payload::MACPayload(pl) = &mut self.payload {
+            // nothing to do
+            if pl.frm_payload.is_none() {
+                return Ok(());
+            }
+
+            let uplink = is_uplink(self.mhdr.m_type);
+            let data = pl.frm_payload.as_ref().unwrap().to_vec()?;
+            let data = encrypt_frm_payload(key, uplink, &pl.fhdr.devaddr, pl.fhdr.f_cnt, &data)?;
+            pl.frm_payload = Some(FRMPayload::Raw(data));
+            return Ok(());
+        }
+
+        Err(anyhow!(
+            "payload for fport99 redirect must be of type MACPayload"
+        ))
+    }
+
     #[cfg(feature = "crypto")]
     fn calculate_uplink_data_mic(
         &self,
