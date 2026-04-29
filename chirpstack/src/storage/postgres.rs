@@ -16,8 +16,7 @@ use prometheus_client::metrics::histogram::{Histogram, exponential_buckets};
 use scoped_futures::ScopedBoxFuture;
 
 use crate::config;
-
-use crate::helpers::tls::get_root_certs;
+use crate::helpers::postgresql::establish_connection;
 
 pub type AsyncPgPool = DeadpoolPool<AsyncPgConnection>;
 pub type AsyncPgPoolConnection = DeadpoolObject<AsyncPgConnection>;
@@ -71,26 +70,12 @@ pub fn setup(conf: &config::Postgresql) -> Result<()> {
 fn pg_establish_connection(config: &str) -> BoxFuture<'_, ConnectionResult<AsyncPgConnection>> {
     let fut = async {
         let conf = config::get();
-
-        let root_certs = get_root_certs(if conf.postgresql.ca_cert.is_empty() {
+        let ca_cert = if conf.postgresql.ca_cert.is_empty() {
             None
         } else {
             Some(conf.postgresql.ca_cert.clone())
-        })
-        .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
-        let rustls_config = rustls::ClientConfig::builder()
-            .with_root_certificates(root_certs)
-            .with_no_client_auth();
-        let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
-        let (client, conn) = tokio_postgres::connect(config, tls)
-            .await
-            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
-        tokio::spawn(async move {
-            if let Err(e) = conn.await {
-                error!(error = %e, "PostgreSQL connection error");
-            }
-        });
-        AsyncPgConnection::try_from(client).await
+        };
+        establish_connection(config, ca_cert).await
     };
     fut.boxed()
 }
