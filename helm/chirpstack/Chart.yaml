@@ -1,0 +1,17 @@
+apiVersion: v2
+name: chirpstack
+description: ChirpStack open-source LoRaWAN Network Server
+type: application
+version: 0.1.0
+appVersion: "4.17.0"
+keywords:
+  - lorawan
+  - iot
+  - chirpstack
+  - lora
+home: https://www.chirpstack.io
+sources:
+  - https://github.com/chirpstack/chirpstack
+maintainers:
+  - name: ChirpStack Contributors
+    url: https://www.chirpstack.io

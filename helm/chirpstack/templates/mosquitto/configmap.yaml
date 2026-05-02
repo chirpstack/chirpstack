@@ -1,0 +1,12 @@
+{{- if .Values.mosquitto.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "chirpstack.fullname" . }}-mosquitto
+  labels:
+    {{- include "chirpstack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+data:
+  mosquitto.conf: |
+    {{ .Values.mosquitto.config | nindent 4 }}
+{{- end }}

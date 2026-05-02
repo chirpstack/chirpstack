@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+  namespace: chirpstack
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/instance: chirpstack
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: 1883

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+  namespace: chirpstack
+data:
+  mosquitto.conf: |
+    listener 1883
+    allow_anonymous true
+
+    persistence true
+    persistence_location /mosquitto/data/
+
+    log_dest stdout
+    log_type error
+    log_type warning
+    log_type notice
+    log_type information

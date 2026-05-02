@@ -1,0 +1,23 @@
+{{- if .Values.mosquitto.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "chirpstack.mosquitto.host" . }}
+  labels:
+    {{- include "chirpstack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+  {{- with .Values.mosquitto.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.mosquitto.service.type }}
+  selector:
+    {{- include "chirpstack.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+  ports:
+    - name: mqtt
+      port: {{ .Values.mosquitto.service.port }}
+      targetPort: mqtt
+      protocol: TCP
+{{- end }}

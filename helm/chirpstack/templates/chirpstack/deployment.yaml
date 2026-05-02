@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chirpstack.fullname" . }}
+  labels:
+    {{- include "chirpstack.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.chirpstack.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chirpstack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: chirpstack
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/chirpstack/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/chirpstack/secret.yaml") . | sha256sum }}
+        {{- with .Values.chirpstack.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "chirpstack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: chirpstack
+    spec:
+      serviceAccountName: {{ include "chirpstack.serviceAccountName" . }}
+      {{- with .Values.chirpstack.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: chirpstack
+          {{- with .Values.chirpstack.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.chirpstack.image.repository }}:{{ .Values.chirpstack.image.tag }}"
+          imagePullPolicy: {{ .Values.chirpstack.image.pullPolicy }}
+          args: ["--config", "/etc/chirpstack"]
+          ports:
+            - name: api
+              containerPort: 8080
+              protocol: TCP
+            {{- if .Values.chirpstack.monitoring.enabled }}
+            - name: monitoring
+              containerPort: 8081
+              protocol: TCP
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ if .Values.chirpstack.apiSecretExistingSecret }}{{ .Values.chirpstack.apiSecretExistingSecret }}{{ else }}{{ include "chirpstack.fullname" . }}{{ end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/chirpstack
+          {{- if .Values.chirpstack.monitoring.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: monitoring
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: monitoring
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          {{- else }}
+          readinessProbe:
+            tcpSocket:
+              port: api
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: api
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          {{- end }}
+          resources:
+            {{- toYaml .Values.chirpstack.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "chirpstack.fullname" . }}
+      {{- with .Values.chirpstack.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.chirpstack.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.chirpstack.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

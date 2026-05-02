@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chirpstack
+  namespace: chirpstack
+  annotations:
+    # ChirpStack serves both gRPC and HTTP/2 — use grpc backend protocol
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Increase timeouts for long-lived gRPC streams
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: chirpstack.example.com   # Change to your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chirpstack
+                port:
+                  number: 8080
+  tls:
+    - hosts:
+        - chirpstack.example.com     # Change to your domain
+      secretName: chirpstack-tls     # Pre-create with cert-manager or manually

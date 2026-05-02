@@ -1,0 +1,54 @@
+{{- if .Values.mosquitto.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chirpstack.fullname" . }}-mosquitto
+  labels:
+    {{- include "chirpstack.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mosquitto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "chirpstack.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: mosquitto
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/mosquitto/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "chirpstack.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: mosquitto
+    spec:
+      containers:
+        - name: mosquitto
+          image: "{{ .Values.mosquitto.image.repository }}:{{ .Values.mosquitto.image.tag }}"
+          imagePullPolicy: {{ .Values.mosquitto.image.pullPolicy }}
+          ports:
+            - name: mqtt
+              containerPort: 1883
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /mosquitto/config
+            - name: data
+              mountPath: /mosquitto/data
+          resources:
+            {{- toYaml .Values.mosquitto.resources | nindent 12 }}
+          readinessProbe:
+            tcpSocket:
+              port: 1883
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 1883
+            initialDelaySeconds: 15
+            periodSeconds: 30
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "chirpstack.fullname" . }}-mosquitto
+        - name: data
+          emptyDir: {}
+{{- end }}

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chirpstack
+  namespace: chirpstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: chirpstack
+      app.kubernetes.io/instance: chirpstack
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: chirpstack
+        app.kubernetes.io/instance: chirpstack
+    spec:
+      containers:
+        - name: chirpstack
+          image: chirpstack/chirpstack:4
+          args: ["--config", "/etc/chirpstack"]
+          ports:
+            - name: api
+              containerPort: 8080
+            - name: monitoring
+              containerPort: 8081
+          envFrom:
+            - secretRef:
+                name: chirpstack
+          volumeMounts:
+            - name: config
+              mountPath: /etc/chirpstack
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: monitoring
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: monitoring
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: config
+          configMap:
+            name: chirpstack

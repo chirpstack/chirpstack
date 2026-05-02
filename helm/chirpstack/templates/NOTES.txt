@@ -1,0 +1,30 @@
+ChirpStack {{ .Chart.AppVersion }} has been deployed.
+
+API endpoint:
+{{- if .Values.chirpstack.ingress.enabled }}
+  https://{{ .Values.chirpstack.ingress.host }}
+{{- else }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "chirpstack.fullname" . }} 8080:8080
+  Then open: http://localhost:8080
+{{- end }}
+
+Default credentials:
+  Username: admin
+  Password: admin
+  (Change these immediately after first login)
+
+{{- if eq .Values.chirpstack.apiSecret "REPLACE_WITH_RANDOM_SECRET" }}
+
+WARNING: You are using the default API secret. Generate a secure one with:
+  openssl rand -base64 32
+and set it via --set chirpstack.apiSecret=<value>
+{{- end }}
+
+{{- if and .Values.postgresql.enabled (eq .Values.postgresql.auth.password "REPLACE_WITH_SECURE_PASSWORD") }}
+
+WARNING: You are using the default PostgreSQL password. Set a secure one with:
+  --set postgresql.auth.password=<value>
+{{- end }}
+
+View logs:
+  kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "chirpstack.name" . }} -f

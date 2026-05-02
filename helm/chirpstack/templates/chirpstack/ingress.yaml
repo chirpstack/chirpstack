@@ -1,0 +1,33 @@
+{{- if .Values.chirpstack.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "chirpstack.fullname" . }}
+  labels:
+    {{- include "chirpstack.labels" . | nindent 4 }}
+  {{- with .Values.chirpstack.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.chirpstack.ingress.className }}
+  ingressClassName: {{ .Values.chirpstack.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.chirpstack.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "chirpstack.fullname" . }}
+                port:
+                  number: {{ .Values.chirpstack.service.port }}
+  {{- if .Values.chirpstack.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.chirpstack.ingress.host }}
+      secretName: {{ .Values.chirpstack.ingress.tls.secretName }}
+  {{- end }}
+{{- end }}

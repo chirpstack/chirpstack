@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: chirpstack
+
+resources:
+  - namespace.yaml
+  - postgres/secret.yaml
+  - postgres/pvc.yaml
+  - postgres/configmap.yaml
+  - postgres/statefulset.yaml
+  - postgres/service.yaml
+  - redis/statefulset.yaml
+  - redis/service.yaml
+  - mosquitto/configmap.yaml
+  - mosquitto/deployment.yaml
+  - mosquitto/service.yaml
+  - chirpstack/secret.yaml
+  - chirpstack/configmap.yaml
+  - chirpstack/deployment.yaml
+  - chirpstack/service.yaml
+  - chirpstack/ingress.yaml
