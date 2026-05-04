@@ -40,6 +40,7 @@ pub async fn log_request(pl: stream::BackendInterfacesRequest) -> Result<()> {
     () = redis::cmd("XADD")
         .arg(&key)
         .arg("MAXLEN")
+        .arg("~")
         .arg(conf.monitoring.backend_interfaces_log_max_history)
         .arg("*")
         .arg("request")

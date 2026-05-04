@@ -17,6 +17,7 @@ pub async fn log_request(pl: &stream::ApiRequestLog) -> Result<()> {
     () = redis::cmd("XADD")
         .arg(&key)
         .arg("MAXLEN")
+        .arg("~")
         .arg(conf.monitoring.api_request_log_max_history)
         .arg("*")
         .arg("request")
