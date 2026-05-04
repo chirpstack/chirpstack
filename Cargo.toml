@@ -152,7 +152,7 @@
     signal-hook = "0.4"
     signal-hook-tokio = { version = "0.4", features = ["futures-v0_3"] }
     bytes = "1.11"
-    rpassword = "7.4"
+    rpassword = "7.5"
     dotenv = "0.15"
 
     # Integrations
