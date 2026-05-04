@@ -51,7 +51,7 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0(chart.js@4.5.1)(date-fns@4.1.0)
       chartjs-chart-matrix:
-        specifier: ^3.0.0
+        specifier: 3.0.0
         version: 3.0.0(chart.js@4.5.1)
       date-fns:
         specifier: ^4.1.0
