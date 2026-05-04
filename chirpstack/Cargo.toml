@@ -107,7 +107,7 @@
   pem.workspace = true
   x509-parser.workspace = true
   rsa.workspace = true
-  sec1.workspace = true
+  p256.workspace = true
   rcgen.workspace = true
   oauth2.workspace = true
   openidconnect.workspace = true

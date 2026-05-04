@@ -68,34 +68,12 @@ pub fn private_key_to_pkcs8(pem: &str) -> Result<String> {
         let pkcs8_pem = pkey.to_pkcs8_pem(LineEnding::default())?;
         Ok(pkcs8_pem.as_str().to_owned())
     } else if pem.contains("EC PRIVATE KEY") {
-        use sec1::{
-            EcPrivateKey, LineEnding,
-            der::{Decode, Encode, EncodePem},
-            pkcs8::{AlgorithmIdentifierRef, PrivateKeyInfo},
-        };
+        use p256::SecretKey;
+        use p256::elliptic_curve::pkcs8::{EncodePrivateKey, LineEnding};
+        use std::ops::Deref;
 
-        // Get a SEC1 ECPrivateKey from the PEM string input
-        let pem = pem::parse(pem).context("Parse PEM string")?;
-        let pkey =
-            EcPrivateKey::from_der(pem.contents()).context("Decode PEM into SEC1 ECPrivateKey")?;
-
-        // Retrieve the curve name from the decoded private key's parameters
-        let params_oid = pkey.parameters.and_then(|params| params.named_curve());
-
-        // Get the proper types to construct a PKCS#8 PrivateKeyInfo
-        let private_key = &pkey.to_der()?;
-        let algorithm = AlgorithmIdentifierRef {
-            oid: sec1::ALGORITHM_OID,
-            parameters: params_oid.as_ref().map(Into::into),
-        };
-
-        let pkcs8 = PrivateKeyInfo {
-            algorithm,
-            private_key,
-            public_key: None,
-        };
-
-        Ok(pkcs8.to_pem(LineEnding::default())?)
+        let key = SecretKey::from_sec1_pem(pem)?;
+        Ok(key.to_pkcs8_pem(LineEnding::default())?.deref().into())
     } else {
         Ok(pem.to_string())
     }

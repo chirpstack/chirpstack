@@ -56,7 +56,7 @@
     pem = "3.0"
     x509-parser = "0.18"
     rsa = "0.9"
-    sec1 = { version = "0.7", features = ["alloc", "pem", "pkcs8"] }
+    p256 = { version = "0.13" }
     rcgen = { version = "0.14", features = ["x509-parser"] }
     oauth2 = "5.0.0"
     openidconnect = { version = "4.0", features = [
