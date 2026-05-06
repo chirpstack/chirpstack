@@ -166,7 +166,7 @@
       "cmake-build",
     ] }
     # Needed until this issue has been solved: https://github.com/fede1024/rust-rdkafka/issues/829
-    rdkafka-sys = { version = "~4.9.0", default-features = false }
+    rdkafka-sys = { version = "~4.10.0", default-features = false }
     rumqttc = { version = "0.25", default-features = false, features = [
       "url",
       "use-rustls-no-provider",
