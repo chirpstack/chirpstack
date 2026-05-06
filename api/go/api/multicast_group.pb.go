@@ -301,9 +301,13 @@ type MulticastGroupListItem struct {
 	// Region.
 	Region common.Region `protobuf:"varint,5,opt,name=region,proto3,enum=common.Region" json:"region,omitempty"`
 	// Multicast group type.
-	GroupType     MulticastGroupType `protobuf:"varint,6,opt,name=group_type,json=groupType,proto3,enum=api.MulticastGroupType" json:"group_type,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	GroupType MulticastGroupType `protobuf:"varint,6,opt,name=group_type,json=groupType,proto3,enum=api.MulticastGroupType" json:"group_type,omitempty"`
+	// Application ID.
+	ApplicationId string `protobuf:"bytes,7,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	// Application name.
+	ApplicationName string `protobuf:"bytes,8,opt,name=application_name,json=applicationName,proto3" json:"application_name,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *MulticastGroupListItem) Reset() {
@@ -376,6 +380,20 @@ func (x *MulticastGroupListItem) GetGroupType() MulticastGroupType {
 		return x.GroupType
 	}
 	return MulticastGroupType_CLASS_C
+}
+
+func (x *MulticastGroupListItem) GetApplicationId() string {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return ""
+}
+
+func (x *MulticastGroupListItem) GetApplicationName() string {
+	if x != nil {
+		return x.ApplicationName
+	}
+	return ""
 }
 
 type CreateMulticastGroupRequest struct {
@@ -676,9 +694,13 @@ type ListMulticastGroupsRequest struct {
 	// If set, the given string will be used to search on name.
 	Search string `protobuf:"bytes,3,opt,name=search,proto3" json:"search,omitempty"`
 	// Application ID to list the multicast groups for.
+	// This is mandatory unless tenant_id is set.
 	ApplicationId string `protobuf:"bytes,4,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
 	// Device EUI (optional, HEX encoded EUI64).
-	DevEui        string `protobuf:"bytes,5,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	DevEui string `protobuf:"bytes,5,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	// Tenant ID to list the multicast groups for.
+	// This is mandatory unless application_id is set.
+	TenantId      string `protobuf:"bytes,6,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -744,6 +766,13 @@ func (x *ListMulticastGroupsRequest) GetApplicationId() string {
 func (x *ListMulticastGroupsRequest) GetDevEui() string {
 	if x != nil {
 		return x.DevEui
+	}
+	return ""
+}
+
+func (x *ListMulticastGroupsRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
 	}
 	return ""
 }
@@ -1329,7 +1358,7 @@ var File_api_multicast_group_proto protoreflect.FileDescriptor
 
 const file_api_multicast_group_proto_rawDesc = "" +
 	"\n" +
-	"\x19api/multicast_group.proto\x12\x03api\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x13common/common.proto\"\xf5\x03\n" +
+	"\x19api/multicast_group.proto\x12\x03api\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf5\x03\n" +
 	"\x0eMulticastGroup\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12%\n" +
@@ -1345,7 +1374,7 @@ const file_api_multicast_group_proto_rawDesc = "" +
 	" \x01(\rR\x02dr\x12\x1c\n" +
 	"\tfrequency\x18\v \x01(\rR\tfrequency\x12@\n" +
 	"\x1dclass_b_ping_slot_periodicity\x18\x0e \x01(\rR\x19classBPingSlotPeriodicity\x12X\n" +
-	"\x17class_c_scheduling_type\x18\r \x01(\x0e2!.api.MulticastGroupSchedulingTypeR\x14classCSchedulingType\"\x92\x02\n" +
+	"\x17class_c_scheduling_type\x18\r \x01(\x0e2!.api.MulticastGroupSchedulingTypeR\x14classCSchedulingType\"\xe4\x02\n" +
 	"\x16MulticastGroupListItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x129\n" +
 	"\n" +
@@ -1355,7 +1384,9 @@ const file_api_multicast_group_proto_rawDesc = "" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x12&\n" +
 	"\x06region\x18\x05 \x01(\x0e2\x0e.common.RegionR\x06region\x126\n" +
 	"\n" +
-	"group_type\x18\x06 \x01(\x0e2\x17.api.MulticastGroupTypeR\tgroupType\"[\n" +
+	"group_type\x18\x06 \x01(\x0e2\x17.api.MulticastGroupTypeR\tgroupType\x12%\n" +
+	"\x0eapplication_id\x18\a \x01(\tR\rapplicationId\x12)\n" +
+	"\x10application_name\x18\b \x01(\tR\x0fapplicationName\"[\n" +
 	"\x1bCreateMulticastGroupRequest\x12<\n" +
 	"\x0fmulticast_group\x18\x01 \x01(\v2\x13.api.MulticastGroupR\x0emulticastGroup\".\n" +
 	"\x1cCreateMulticastGroupResponse\x12\x0e\n" +
@@ -1371,13 +1402,14 @@ const file_api_multicast_group_proto_rawDesc = "" +
 	"\x1bUpdateMulticastGroupRequest\x12<\n" +
 	"\x0fmulticast_group\x18\x01 \x01(\v2\x13.api.MulticastGroupR\x0emulticastGroup\"-\n" +
 	"\x1bDeleteMulticastGroupRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xa2\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xbf\x01\n" +
 	"\x1aListMulticastGroupsRequest\x12\x14\n" +
 	"\x05limit\x18\x01 \x01(\rR\x05limit\x12\x16\n" +
 	"\x06offset\x18\x02 \x01(\rR\x06offset\x12\x16\n" +
 	"\x06search\x18\x03 \x01(\tR\x06search\x12%\n" +
 	"\x0eapplication_id\x18\x04 \x01(\tR\rapplicationId\x12\x17\n" +
-	"\adev_eui\x18\x05 \x01(\tR\x06devEui\"s\n" +
+	"\adev_eui\x18\x05 \x01(\tR\x06devEui\x12\x1b\n" +
+	"\ttenant_id\x18\x06 \x01(\tR\btenantId\"s\n" +
 	"\x1bListMulticastGroupsResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
 	"totalCount\x123\n" +

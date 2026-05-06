@@ -350,9 +350,13 @@ type FuotaDeploymentListItem struct {
 	// Completed at timestamp.
 	CompletedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
 	// Name.
-	Name          string `protobuf:"bytes,6,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Name string `protobuf:"bytes,6,opt,name=name,proto3" json:"name,omitempty"`
+	// Application ID.
+	ApplicationId string `protobuf:"bytes,7,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	// Application name.
+	ApplicationName string `protobuf:"bytes,8,opt,name=application_name,json=applicationName,proto3" json:"application_name,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *FuotaDeploymentListItem) Reset() {
@@ -423,6 +427,20 @@ func (x *FuotaDeploymentListItem) GetCompletedAt() *timestamppb.Timestamp {
 func (x *FuotaDeploymentListItem) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *FuotaDeploymentListItem) GetApplicationId() string {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return ""
+}
+
+func (x *FuotaDeploymentListItem) GetApplicationName() string {
+	if x != nil {
+		return x.ApplicationName
 	}
 	return ""
 }
@@ -966,8 +984,11 @@ type ListFuotaDeploymentsRequest struct {
 	// Offset in the result-set (for pagination).
 	Offset uint32 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
 	// Application ID to list the FUOTA Deployments for.
-	// This filter is mandatory.
+	// This must be set, unelss tenant_id is set.
 	ApplicationId string `protobuf:"bytes,3,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	// Tenant ID to list the FUOTA deployments for.
+	// This must be set, unless application_id is set.
+	TenantId      string `protobuf:"bytes,4,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1019,6 +1040,13 @@ func (x *ListFuotaDeploymentsRequest) GetOffset() uint32 {
 func (x *ListFuotaDeploymentsRequest) GetApplicationId() string {
 	if x != nil {
 		return x.ApplicationId
+	}
+	return ""
+}
+
+func (x *ListFuotaDeploymentsRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
 	}
 	return ""
 }
@@ -1734,7 +1762,7 @@ var File_api_fuota_proto protoreflect.FileDescriptor
 
 const file_api_fuota_proto_rawDesc = "" +
 	"\n" +
-	"\x0fapi/fuota.proto\x12\x03api\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x13common/common.proto\x1a\x19api/multicast_group.proto\"\xb1\v\n" +
+	"\x0fapi/fuota.proto\x12\x03api\x1a\x19api/multicast_group.proto\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb1\v\n" +
 	"\x0fFuotaDeployment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12%\n" +
 	"\x0eapplication_id\x18\x02 \x01(\tR\rapplicationId\x12*\n" +
@@ -1761,7 +1789,7 @@ const file_api_fuota_proto_rawDesc = "" +
 	"\x1bon_complete_set_device_tags\x18\x16 \x03(\v21.api.FuotaDeployment.OnCompleteSetDeviceTagsEntryR\x17onCompleteSetDeviceTags\x1aJ\n" +
 	"\x1cOnCompleteSetDeviceTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xad\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xff\x02\n" +
 	"\x17FuotaDeploymentListItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x129\n" +
 	"\n" +
@@ -1771,7 +1799,9 @@ const file_api_fuota_proto_rawDesc = "" +
 	"\n" +
 	"started_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
 	"\fcompleted_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x12\x12\n" +
-	"\x04name\x18\x06 \x01(\tR\x04name\"\xe3\x04\n" +
+	"\x04name\x18\x06 \x01(\tR\x04name\x12%\n" +
+	"\x0eapplication_id\x18\a \x01(\tR\rapplicationId\x12)\n" +
+	"\x10application_name\x18\b \x01(\tR\x0fapplicationName\"\xe3\x04\n" +
 	"\x1dFuotaDeploymentDeviceListItem\x12.\n" +
 	"\x13fuota_deployment_id\x18\x01 \x01(\tR\x11fuotaDeploymentId\x12\x17\n" +
 	"\adev_eui\x18\x02 \x01(\tR\x06devEui\x129\n" +
@@ -1815,11 +1845,12 @@ const file_api_fuota_proto_rawDesc = "" +
 	"\x1cDeleteFuotaDeploymentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"-\n" +
 	"\x1bStartFuotaDeploymentRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"r\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x8f\x01\n" +
 	"\x1bListFuotaDeploymentsRequest\x12\x14\n" +
 	"\x05limit\x18\x01 \x01(\rR\x05limit\x12\x16\n" +
 	"\x06offset\x18\x02 \x01(\rR\x06offset\x12%\n" +
-	"\x0eapplication_id\x18\x03 \x01(\tR\rapplicationId\"u\n" +
+	"\x0eapplication_id\x18\x03 \x01(\tR\rapplicationId\x12\x1b\n" +
+	"\ttenant_id\x18\x04 \x01(\tR\btenantId\"u\n" +
 	"\x1cListFuotaDeploymentsResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
 	"totalCount\x124\n" +
