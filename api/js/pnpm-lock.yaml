@@ -12,8 +12,8 @@ importers:
         specifier: ^1.14.3
         version: 1.14.3
       google-protobuf:
-        specifier: ^4.0.2
-        version: 4.0.2
+        specifier: ^3.21.4
+        version: 3.21.4
     devDependencies:
       '@types/google-protobuf':
         specifier: ^3.15.12
@@ -148,9 +148,6 @@ packages:
 
   google-protobuf@3.21.4:
     resolution: {integrity: sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==}
-
-  google-protobuf@4.0.2:
-    resolution: {integrity: sha512-yD2fqbNgvJPuQwdKJiPdbUcXveNRxgqy070gzsBsCyFJA8Qdj9oxa9xtkddb/JEhcDk0RD5SfGUWg+nhINfMxA==}
 
   grpc-tools@1.13.1:
     resolution: {integrity: sha512-0sttMUxThNIkCTJq5qI0xXMz5zWqV2u3yG1kR3Sj9OokGIoyRBFjoInK9NyW7x5fH7knj48Roh1gq5xbl0VoDQ==}
@@ -362,8 +359,6 @@ snapshots:
   get-caller-file@2.0.5: {}
 
   google-protobuf@3.21.4: {}
-
-  google-protobuf@4.0.2: {}
 
   grpc-tools@1.13.1:
     dependencies:

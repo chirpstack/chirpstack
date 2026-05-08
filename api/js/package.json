@@ -4,8 +4,8 @@
   "description": "Chirpstack JS and TS API",
   "license": "MIT",
   "dependencies": {
-    "@grpc/grpc-js": "^1.14.3",
-    "google-protobuf": "^4.0.2"
+    "google-protobuf": "^3.21.4",
+    "@grpc/grpc-js": "^1.14.3"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.15.12",
