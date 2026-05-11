@@ -48,6 +48,10 @@ function Header({ user }: { user: User }) {
     });
   };
 
+  const onSelect = (_: unknown, option: ReturnType<typeof renderItem>) => {
+    navigate(option.url);
+  };
+
   const onLogout = () => {
     if (settings === undefined) {
       return;
@@ -151,6 +155,7 @@ function Header({ user }: { user: User }) {
             popupMatchSelectWidth={500}
             options={options}
             onSearch={onSearch}
+            onSelect={onSelect}
             style={{ width: 500, lineHeight: "32px" }}
           >
             <Input.Search size="medium" placeholder="Search..." />
