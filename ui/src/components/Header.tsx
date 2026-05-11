@@ -1,8 +1,8 @@
+import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Dropdown, Input, AutoComplete } from "antd";
-import type { AutoCompleteProps } from "antd";
 import { UserOutlined, DownOutlined, QuestionOutlined } from "@ant-design/icons";
 
 import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
@@ -11,7 +11,7 @@ import { GlobalSearchRequest } from "@chirpstack/chirpstack-api-grpc-web/api/int
 
 import InternalStore from "../stores/InternalStore";
 import SessionStore from "../stores/SessionStore";
-import { MenuProps } from "antd/lib";
+import type { MenuProps } from "antd/lib";
 
 const renderTitle = (title: string) => <span>{title}</span>;
 
@@ -48,7 +48,8 @@ function Header({ user }: { user: User }) {
     });
   };
 
-  const onSelect = (_: unknown, option: ReturnType<typeof renderItem>) => {
+  const onSelect = (_: unknown, _option: unknown) => {
+    const option = _option as ReturnType<typeof renderItem>;
     navigate(option.url);
   };
 
@@ -79,10 +80,10 @@ function Header({ user }: { user: User }) {
     return null;
   }
 
-  const oidcEnabled = settings!.getOpenidConnect()!.getEnabled();
-  const oAuth2Enabled = settings!.getOauth2()!.getEnabled();
+  const oidcEnabled = settings.getOpenidConnect()!.getEnabled();
+  const oAuth2Enabled = settings.getOauth2()!.getEnabled();
 
-  let menu: MenuProps = { items: [] };
+  const menu: MenuProps = { items: [] };
 
   if (!(oidcEnabled || oAuth2Enabled)) {
     menu.items!.push({
@@ -97,7 +98,12 @@ function Header({ user }: { user: User }) {
     onClick: onLogout,
   });
 
-  let options: AutoCompleteProps["options"] = [
+  type AutocompleteOption = {
+    label: JSX.Element;
+    options: ReturnType<typeof renderItem>[];
+  };
+
+  const options: AutocompleteOption[] = [
     {
       label: renderTitle("Tenants"),
       options: [],
