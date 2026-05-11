@@ -1,14 +1,14 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tracing::info;
 
 use lrwn::{AES128Key, EUI64};
 
 use super::error::Error;
 use super::schema::device_keys;
-use super::{db_transaction, fields, get_async_db_conn};
+use super::{fields, get_async_db_conn};
 
 #[derive(Queryable, Insertable, AsChangeset, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = device_keys)]
@@ -111,8 +111,8 @@ pub async fn validate_incr_join_and_store_dev_nonce(
     dev_nonce: u16,
 ) -> Result<DeviceKeys, Error> {
     let mut c = get_async_db_conn().await?;
-    let dk: DeviceKeys = db_transaction::<DeviceKeys, Error, _>(&mut c, |c| {
-        Box::pin(async move {
+    let dk: DeviceKeys = c
+        .transaction::<DeviceKeys, Error, _>(async |c| {
             let query = device_keys::dsl::device_keys.find(&dev_eui);
             #[cfg(feature = "postgres")]
             let query = query.for_update();
@@ -138,8 +138,7 @@ pub async fn validate_incr_join_and_store_dev_nonce(
                 .await
                 .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
         })
-    })
-    .await?;
+        .await?;
 
     info!(dev_eui = %dev_eui, dev_nonce = dev_nonce, "Device-nonce validated, join-nonce incremented and stored");
     Ok(dk)

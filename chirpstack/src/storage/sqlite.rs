@@ -93,22 +93,6 @@ pub async fn get_async_db_conn() -> Result<AsyncSqlitePoolConnection> {
     Ok(res)
 }
 
-pub async fn db_transaction<'a, R, E, F>(
-    conn: &mut AsyncSqlitePoolConnection,
-    callback: F,
-) -> Result<R, E>
-where
-    F: for<'r> FnOnce(
-            &'r mut SyncConnectionWrapper<SqliteConnection>,
-        ) -> ScopedBoxFuture<'a, 'r, Result<R, E>>
-        + Send
-        + 'a,
-    E: From<diesel::result::Error> + Send + 'a,
-    R: Send + 'a,
-{
-    conn.immediate_transaction(callback).await
-}
-
 fn set_async_db_pool(p: AsyncSqlitePool) {
     let mut pool_w = ASYNC_SQLITE_POOL.write().unwrap();
     *pool_w = Some(p);

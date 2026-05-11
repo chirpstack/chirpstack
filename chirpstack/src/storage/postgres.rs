@@ -6,17 +6,15 @@ use tracing::{error, info};
 
 use crate::monitoring::prometheus;
 use diesel::{ConnectionError, ConnectionResult};
+use diesel_async::AsyncPgConnection;
 use diesel_async::pooled_connection::deadpool::{Object as DeadpoolObject, Pool as DeadpoolPool};
 use diesel_async::pooled_connection::{
     AsyncDieselConnectionManager, ManagerConfig, RecyclingMethod,
 };
-use diesel_async::{AsyncConnection, AsyncPgConnection};
 use futures::{FutureExt, future::BoxFuture};
 use prometheus_client::metrics::histogram::{Histogram, exponential_buckets};
-use scoped_futures::ScopedBoxFuture;
 
 use crate::config;
-
 use crate::helpers::tls::get_root_certs;
 
 pub type AsyncPgPool = DeadpoolPool<AsyncPgConnection>;
@@ -113,20 +111,6 @@ pub async fn get_async_db_conn() -> Result<AsyncPgPoolConnection> {
     STORAGE_PG_CONN_GET.observe(start.elapsed().as_secs_f64());
 
     Ok(res)
-}
-
-pub async fn db_transaction<'a, R, E, F>(
-    conn: &mut AsyncPgPoolConnection,
-    callback: F,
-) -> Result<R, E>
-where
-    F: for<'r> FnOnce(&'r mut AsyncPgPoolConnection) -> ScopedBoxFuture<'a, 'r, Result<R, E>>
-        + Send
-        + 'a,
-    E: From<diesel::result::Error> + Send + 'a,
-    R: Send + 'a,
-{
-    conn.transaction(callback).await
 }
 
 fn set_async_db_pool(p: AsyncPgPool) {

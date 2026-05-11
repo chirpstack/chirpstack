@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tracing::info;
 use uuid::Uuid;
 
 use lrwn::{DevAddr, EUI64};
 
 use super::schema::{gateway, multicast_group_gateway, relay_gateway, tenant};
-use super::{db_transaction, error::Error, fields, get_async_db_conn};
+use super::{error::Error, fields, get_async_db_conn};
 
 pub type RelayId = DevAddr;
 
@@ -181,8 +181,8 @@ pub struct RelayGatewayListItem {
 pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
     gw.validate()?;
     let mut c = get_async_db_conn().await?;
-    let gw: Gateway = db_transaction::<Gateway, Error, _>(&mut c, |c| {
-        Box::pin(async move {
+    let gw: Gateway = c
+        .transaction::<Gateway, Error, _>(async |c| {
             let query = tenant::dsl::tenant.find(&gw.tenant_id);
             // use for_update to lock the tenant.
             #[cfg(feature = "postgres")]
@@ -214,8 +214,7 @@ pub async fn create(gw: Gateway) -> Result<Gateway, Error> {
                 .await
                 .map_err(|e| Error::from_diesel(e, gw.gateway_id.to_string()))
         })
-    })
-    .await?;
+        .await?;
     info!(
         gateway_id = %gw.gateway_id,
         "Gateway created"

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Duration, Utc};
 use diesel::{dsl, prelude::*};
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tracing::info;
 use uuid::Uuid;
 use validator::Validate;
@@ -14,7 +14,7 @@ use crate::storage::schema::{
     application, device, fuota_deployment, fuota_deployment_device, fuota_deployment_gateway,
     fuota_deployment_job, gateway, tenant,
 };
-use crate::storage::{self, db_transaction, device_profile, fields, get_async_db_conn};
+use crate::storage::{self, device_profile, fields, get_async_db_conn};
 use lrwn::{AES128Key, DevAddr, EUI64};
 
 #[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq, Validate)]
@@ -645,8 +645,8 @@ pub async fn get_gateways(
 // Creating a new job, will set any pending job(s) to completed within the same transaction.
 pub async fn create_job(j: FuotaDeploymentJob) -> Result<FuotaDeploymentJob, Error> {
     let mut c = get_async_db_conn().await?;
-    let j: FuotaDeploymentJob = db_transaction::<FuotaDeploymentJob, Error, _>(&mut c, |c| {
-        Box::pin(async move {
+    let j: FuotaDeploymentJob = c
+        .transaction::<FuotaDeploymentJob, Error, _>(async |c| {
             // set pending job(s) to completed
             diesel::update(
                 fuota_deployment_job::dsl::fuota_deployment_job
@@ -666,8 +666,7 @@ pub async fn create_job(j: FuotaDeploymentJob) -> Result<FuotaDeploymentJob, Err
                 .await
                 .map_err(|e| Error::from_diesel(e, j.fuota_deployment_id.to_string()))
         })
-    })
-    .await?;
+        .await?;
 
     info!(fuota_deployment_id = %j.fuota_deployment_id, job = %j.job, "FUOTA deployment job created");
     Ok(j)
@@ -708,11 +707,10 @@ pub async fn list_jobs(fuota_deployment_id: Uuid) -> Result<Vec<FuotaDeploymentJ
 // This is such that concurrent queries will not result in the same job being executed twice.
 pub async fn get_schedulable_jobs(limit: usize) -> Result<Vec<FuotaDeploymentJob>> {
     let mut c = get_async_db_conn().await?;
-    db_transaction::<Vec<FuotaDeploymentJob>, Error, _>(&mut c, |c| {
-        Box::pin(async move {
-            let conf = config::get();
-            diesel::sql_query(if cfg!(feature = "sqlite") {
-                r#"
+    c.transaction::<Vec<FuotaDeploymentJob>, Error, _>(async |c| {
+        let conf = config::get();
+        diesel::sql_query(if cfg!(feature = "sqlite") {
+            r#"
                     update
                         fuota_deployment_job
                     set
@@ -733,8 +731,8 @@ pub async fn get_schedulable_jobs(limit: usize) -> Result<Vec<FuotaDeploymentJob
                         )
                     returning *
                 "#
-            } else {
-                r#"
+        } else {
+            r#"
                     update
                         fuota_deployment_job
                     set
@@ -756,17 +754,16 @@ pub async fn get_schedulable_jobs(limit: usize) -> Result<Vec<FuotaDeploymentJob
                         )
                     returning *
                 "#
-            })
-            .bind::<diesel::sql_types::Integer, _>(limit as i32)
-            .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
-            .bind::<fields::sql_types::Timestamptz, _>(
-                Utc::now()
-                    + Duration::from_std(conf.network.scheduler.scheduler_lock_duration).unwrap(),
-            )
-            .load(c)
-            .await
-            .map_err(|e| Error::from_diesel(e, "".into()))
         })
+        .bind::<diesel::sql_types::Integer, _>(limit as i32)
+        .bind::<fields::sql_types::Timestamptz, _>(Utc::now())
+        .bind::<fields::sql_types::Timestamptz, _>(
+            Utc::now()
+                + Duration::from_std(conf.network.scheduler.scheduler_lock_duration).unwrap(),
+        )
+        .load(c)
+        .await
+        .map_err(|e| Error::from_diesel(e, "".into()))
     })
     .await
     .context("Get FUOTA jobs")
