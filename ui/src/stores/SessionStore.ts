@@ -171,7 +171,9 @@ class SessionStore extends EventEmitter {
 
   isTenantGatewayAdmin = (tenantId: string): boolean => {
     for (const t of this.tenants) {
-      return t.getIsAdmin() || t.getIsGatewayAdmin();
+      if (t.getTenantId() === tenantId) {
+        return t.getIsAdmin() || t.getIsGatewayAdmin();
+      }
     }
 
     return false;
