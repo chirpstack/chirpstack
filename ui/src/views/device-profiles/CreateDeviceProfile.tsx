@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import { MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type { CreateDeviceProfileResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
@@ -16,6 +15,7 @@ import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import DeviceProfileForm from "./DeviceProfileForm";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 interface IProps {
   tenant: Tenant;

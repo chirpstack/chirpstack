@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { DeleteOutlined } from "@ant-design/icons";
 import { Space, Breadcrumb, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { ListApiKeysResponse, ApiKey } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 import { ListApiKeysRequest, DeleteApiKeyRequest } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -14,6 +13,7 @@ import DataTable from "../../components/DataTable";
 import InternalStore from "../../stores/InternalStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 function ListAdminApiKeys() {
   useTitle("Network Server", "API keys");

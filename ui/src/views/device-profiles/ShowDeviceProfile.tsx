@@ -1,7 +1,6 @@
 import { useNavigate, useParams, Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Button, Card, Popconfirm } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import { GetDeviceProfileRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import {
@@ -20,6 +19,7 @@ import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceProfileForm from "./DeviceProfileForm";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import sessionStore from "../../stores/SessionStore";
+import PageHeader from "../../components/PageHeader";
 
 interface IProps {
   vendor: DeviceProfileVendor;

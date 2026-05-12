@@ -3,7 +3,6 @@ import { Route, Routes, useNavigate, useParams, useLocation, Link } from "react-
 
 import { format } from "date-fns";
 import { Space, Breadcrumb, Card, Button, Menu, Popconfirm, Descriptions, DescriptionsProps } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -17,6 +16,7 @@ import {
 import FuotaStore from "../../stores/FuotaStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
+import PageHeader from "../../components/PageHeader";
 import { useTitle } from "../helpers";
 import EditFuotaDeployment from "./EditFuotaDeployment";
 import FuotaDeploymentDevices from "./FuotaDeploymentDevices";

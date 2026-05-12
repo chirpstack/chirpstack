@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Button } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 import type { ColumnsType } from "antd/es/table";
 
 import type {
@@ -21,6 +20,7 @@ import DataTable from "../../components/DataTable";
 import deviceProfileStore from "../../stores/DeviceProfileStore";
 import { getEnumName, useTitle, formatMacVersion, formatRegParamsRevision } from "../helpers";
 import DeleteConfirm from "../../components/DeleteConfirm";
+import PageHeader from "../../components/PageHeader";
 
 interface IProps {
   vendor: DeviceProfileVendor;

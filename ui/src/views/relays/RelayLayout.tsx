@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { Route, Routes, useParams, Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Menu } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { Device, GetDeviceResponse } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import { GetDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
+import PageHeader from "../../components/PageHeader";
 import DeviceStore from "../../stores/DeviceStore";
 import ListRelayDevices from "./ListRelayDevices";
 import { useTitle } from "../helpers";

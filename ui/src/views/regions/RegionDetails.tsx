@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Row, Col, List, Typography } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 import ReactMarkdown from "react-markdown";
 
 import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
@@ -13,6 +12,7 @@ import { GetRegionRequest } from "@chirpstack/chirpstack-api-grpc-web/api/intern
 import { getEnumName } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 function RegionDetails() {
   const [region, setRegion] = useState<GetRegionResponse | undefined>(undefined);

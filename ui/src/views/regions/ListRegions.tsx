@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Table } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -10,6 +9,7 @@ import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack
 import { getEnumName } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 function ListRegions() {
   useTitle("Network Server", "Regions");

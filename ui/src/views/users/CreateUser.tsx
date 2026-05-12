@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { CreateUserResponse } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 import { User, CreateUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
 import UserForm from "./UserForm";
+import PageHeader from "../../components/PageHeader";
 import UserStore from "../../stores/UserStore";
 import { useTitle } from "../helpers";
 

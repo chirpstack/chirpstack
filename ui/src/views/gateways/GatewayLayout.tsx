@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Route, Routes, Link, useParams, useNavigate, useLocation } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button, Menu } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { Gateway, GetGatewayResponse } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
@@ -19,6 +18,7 @@ import GatewayCertificate from "./GatewayCertificate";
 import Admin from "../../components/Admin";
 import SessionStore from "../../stores/SessionStore";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 interface IProps {
   tenant: Tenant;

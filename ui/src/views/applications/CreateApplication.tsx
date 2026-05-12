@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { CreateApplicationResponse } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -9,6 +8,7 @@ import { Application, CreateApplicationRequest } from "@chirpstack/chirpstack-ap
 
 import ApplicationForm from "./ApplicationForm";
 import ApplicationStore from "../../stores/ApplicationStore";
+import PageHeader from "../../components/PageHeader";
 import { useTitle } from "../helpers";
 
 interface IProps {

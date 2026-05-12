@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Tenant, TenantUser, GetTenantUserResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import {
@@ -17,6 +16,7 @@ import SessionStore from "../../stores/SessionStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
 import Admin from "../../components/Admin";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 function EditTenantUser({ tenant }: { tenant: Tenant }) {
   const [tenantUser, setTenantUser] = useState<TenantUser | undefined>(undefined);

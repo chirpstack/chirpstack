@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Button } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 import type { ColumnsType } from "antd/es/table";
 
 import type {
@@ -15,6 +14,7 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import deviceProfileStore from "../../stores/DeviceProfileStore";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 function ListDeviceProfileVendors() {
   useTitle("Network Server", "Device Profiles", "Vendors");

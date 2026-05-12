@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Route, Routes, Link, useParams, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { RelayGateway, GetRelayGatewayResponse } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
@@ -13,6 +12,7 @@ import Admin from "../../../components/Admin";
 import SessionStore from "../../../stores/SessionStore";
 import GatewayStore from "../../../stores/GatewayStore";
 import DeleteConfirm from "../../../components/DeleteConfirm";
+import PageHeader from "../../../components/PageHeader";
 
 import EditRelayGateway from "./EditRelayGateway";
 import { useTitle } from "../../helpers";

@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -11,6 +10,7 @@ import type { CreateFuotaDeploymentResponse } from "@chirpstack/chirpstack-api-g
 import { useTitle } from "../helpers";
 import FuotaDeploymentForm from "./FuotaDeploymentForm";
 import FuotaStore from "../../stores/FuotaStore";
+import PageHeader from "../../components/PageHeader";
 
 interface IProps {
   tenant: Tenant;

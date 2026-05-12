@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 
 import { Space, Breadcrumb, Card } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { CreateTenantResponse } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { Tenant, CreateTenantRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -9,6 +8,7 @@ import { Tenant, CreateTenantRequest } from "@chirpstack/chirpstack-api-grpc-web
 import TenantForm from "./TenantForm";
 import TenantStore from "../../stores/TenantStore";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 function CreateTenant() {
   useTitle("Network Server", "Tenants", "Add");

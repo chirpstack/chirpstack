@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { Space, Breadcrumb, Badge } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type {
   ListRelayGatewaysResponse,
@@ -16,6 +15,7 @@ import type { GetPageCallbackFunc } from "../../../components/DataTable";
 import DataTable from "../../../components/DataTable";
 import GatewayStore from "../../../stores/GatewayStore";
 import { useTitle } from "../../helpers";
+import PageHeader from "../../../components/PageHeader";
 
 interface IProps {
   tenant: Tenant;

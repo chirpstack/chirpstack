@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Route, Routes, useNavigate, useParams, useLocation, Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button, Menu } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
@@ -23,6 +22,7 @@ import EditMulticastGroup from "./EditMulticastGroup";
 import Admin from "../../components/Admin";
 import MulticastGroupQueue from "./MulticastGroupQueue";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 interface IProps {
   tenant: Tenant;

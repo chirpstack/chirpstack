@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Card, Button } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { User, GetUserResponse } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 import { GetUserRequest, UpdateUserRequest, DeleteUserRequest } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
 
+import PageHeader from "../../components/PageHeader";
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";
 import DeleteConfirm from "../../components/DeleteConfirm";

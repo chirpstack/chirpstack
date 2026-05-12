@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 
 import { Space, Breadcrumb, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { ListTenantsResponse, TenantListItem } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { ListTenantsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
@@ -11,6 +10,7 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import TenantStore from "../../stores/TenantStore";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 function ListTenants() {
   useTitle("Network Server", "Tenants");

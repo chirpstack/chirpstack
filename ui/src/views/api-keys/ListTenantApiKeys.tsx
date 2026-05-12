@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 
 import { DeleteOutlined } from "@ant-design/icons";
 import { Space, Breadcrumb, Button } from "antd";
-import { PageHeader } from "@ant-design/pro-layout";
 import type { ColumnsType } from "antd/es/table";
 
 import type { ListApiKeysResponse, ApiKey } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -14,6 +13,7 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import InternalStore from "../../stores/InternalStore";
 import DeleteConfirm from "../../components/DeleteConfirm";
+import PageHeader from "../../components/PageHeader";
 import Admin from "../../components/Admin";
 import { useTitle } from "../helpers";
 

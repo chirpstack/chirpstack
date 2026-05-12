@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { Space, Breadcrumb, Button, Badge, MenuProps, Modal, TreeSelect, TreeSelectProps, Dropdown } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { PageHeader } from "@ant-design/pro-layout";
 
 import type { ListGatewaysResponse, GatewayListItem } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
 import { ListGatewaysRequest, GatewayState } from "@chirpstack/chirpstack-api-grpc-web/api/gateway_pb";
@@ -33,6 +32,7 @@ import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import FuotaStore from "../../stores/FuotaStore";
 import Admin from "../../components/Admin";
 import { useTitle } from "../helpers";
+import PageHeader from "../../components/PageHeader";
 
 interface IProps {
   tenant: Tenant;
