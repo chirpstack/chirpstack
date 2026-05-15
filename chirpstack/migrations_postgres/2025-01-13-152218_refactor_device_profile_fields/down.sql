@@ -43,7 +43,7 @@ update device_profile
 update device_profile
   set
     class_b_timeout = (class_b_params->'timeout')::integer,
-    class_b_ping_slot_nb_k = (class_b_params->'ping_slot_nb_k')::integer,
+    class_b_ping_slot_nb_k = (class_b_params->'ping_slot_periodicity')::integer,
     class_b_ping_slot_dr = (class_b_params->'ping_slot_dr')::smallint,
     class_b_ping_slot_freq = (class_b_params->'ping_slot_freq')::bigint
   where
