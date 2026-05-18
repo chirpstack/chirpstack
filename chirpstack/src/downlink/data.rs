@@ -2473,6 +2473,7 @@ impl Data {
     // as we need to calculate the ping_slot_ts for the tx_info.
     async fn set_tx_info_for_class_b_and_update_scheduler_run_after(&mut self) -> Result<()> {
         trace!("Setting tx-info for Class-B");
+        let conf = config::get();
         let ds = self.device.get_device_session()?;
 
         let gw_down = self.downlink_gateway.as_ref().unwrap();
@@ -2500,12 +2501,32 @@ impl Data {
         }
 
         // set timing
-        let now_gps_ts = Utc::now().to_gps_time() + chrono::Duration::try_seconds(1).unwrap();
+        let now_gps_ts = Utc::now().to_gps_time();
         let ping_slot_ts = classb::get_next_ping_slot_after(
-            now_gps_ts,
+            now_gps_ts + chrono::Duration::seconds(1),
             &self.device.get_dev_addr()?,
             ds.class_b_ping_slot_nb as usize,
         )?;
+        let advance_delta = (ping_slot_ts - now_gps_ts).to_std().unwrap_or_default();
+
+        if advance_delta > conf.network.scheduler.class_b_schedule_advance {
+            debug!(advance_delta = ?advance_delta, "Ping-slot too much in advance, updating device scheduler_run_after");
+            let scheduler_run_after =
+                Utc::now() + advance_delta - conf.network.scheduler.class_b_schedule_advance;
+
+            let _ = device::partial_update(
+                self.device.dev_eui,
+                &device::DeviceChangeset {
+                    scheduler_run_after: Some(Some(scheduler_run_after)),
+                    ..Default::default()
+                },
+            )
+            .await?;
+
+            // Terminate the flow.
+            return Err(Error::Abort.into());
+        }
+
         trace!(gps_time_now_ts = %now_gps_ts, ping_slot_ts = %ping_slot_ts, "Calculated ping-slot timestamp");
         tx_info.timing = Some(gw::Timing {
             parameters: Some(gw::timing::Parameters::GpsEpoch(gw::GpsEpochTimingInfo {

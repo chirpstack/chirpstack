@@ -207,6 +207,8 @@ pub struct Scheduler {
     pub multicast_class_c_margin: Duration,
     #[serde(with = "humantime_serde")]
     pub multicast_class_b_margin: Duration,
+    #[serde(with = "humantime_serde")]
+    pub class_b_schedule_advance: Duration,
 }
 
 impl Default for Scheduler {
@@ -219,6 +221,7 @@ impl Default for Scheduler {
             scheduler_lock_duration: Duration::from_secs(2),
             multicast_class_c_margin: Duration::from_secs(5),
             multicast_class_b_margin: Duration::from_secs(5),
+            class_b_schedule_advance: Duration::from_secs(5),
         }
     }
 }

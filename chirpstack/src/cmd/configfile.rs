@@ -318,6 +318,13 @@ pub fn run() {
     # scheduler interval.
     multicast_class_b_margin="{{ network.scheduler.multicast_class_b_margin }}"
 
+    # Class-B schedule advance.
+    #
+    # This defines how much time in advance a Class-B downlink item is sent to the gateway
+    # before its ping-slot. Setting this too much in advance can cause frame-counter
+    # isses when a Class-A downlink is sent before an already scheduled Class-B ping-slot.
+    class_b_schedule_advance="{{ network.scheduler.class_b_schedule_advance }}"
+
 
 # Monitoring related configuration.
 [monitoring]
