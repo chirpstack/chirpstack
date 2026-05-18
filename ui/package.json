@@ -20,7 +20,7 @@
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.3.1",
-    "@yudiel/react-qr-scanner": "^2.5.1",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "ace-builds": "^1.44.0",
     "antd": "^6.3.7",
     "buffer": "^6.0.3",
