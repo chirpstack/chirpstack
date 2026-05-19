@@ -18,8 +18,10 @@ pub async fn run(email: &str, password_file: &Option<String>, stdin: bool) -> Re
 
 fn get_password(password_file: &Option<String>, stdin: bool) -> Result<String> {
     if stdin {
-        rpassword::read_password_from_bufread(&mut std::io::stdin().lock())
-            .context("Failed to read password from stdin")
+        let config = rpassword::ConfigBuilder::new()
+            .input_reader(std::io::stdin().lock())
+            .build();
+        rpassword::read_password_with_config(config).context("Failed to read password from stdin")
     } else if let Some(password_file) = &password_file {
         // Read password from file.
         let password =
