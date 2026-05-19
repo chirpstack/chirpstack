@@ -44,7 +44,7 @@
     hmac = "0.13"
     sha2 = "0.11"
     pbkdf2 = { version = "0.13", features = ["phc", "getrandom"] }
-    jsonwebtoken = { version = "10.3", features = ["rust_crypto"] }
+    jsonwebtoken = { version = "10.4", features = ["rust_crypto"] }
     rustls = { version = "0.23", default-features = false, features = [
       "logging",
       "std",
@@ -101,7 +101,7 @@
     chrono = { version = "0.4", features = ["serde"] }
 
     # Async
-    tokio = { version = "1.51", features = ["macros"] }
+    tokio = { version = "1.52", features = ["macros"] }
     tokio-executor-trait = "3.1"
     tokio-reactor-trait = "4.1"
     tokio-stream = "0.1"
@@ -128,10 +128,10 @@
     tonic-reflection = "0.14"
 
     # CLI
-    clap = { version = "4.5", features = ["derive"] }
+    clap = { version = "4.6", features = ["derive"] }
 
     # Templating
-    handlebars = "6.3"
+    handlebars = "6.4"
 
     # Utilities
     validator = { version = "0.20", features = ["derive"] }

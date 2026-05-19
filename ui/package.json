@@ -14,20 +14,20 @@
   },
   "dependencies": {
     "@ant-design/colors": "^8.0.1",
-    "@ant-design/icons": "^6.2.2",
+    "@ant-design/icons": "^6.2.3",
     "@chirpstack/chirpstack-api-grpc-web": "file:../api/grpc-web",
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.3.1",
-    "@yudiel/react-qr-scanner": "^2.5.1",
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "ace-builds": "^1.44.0",
-    "antd": "^6.3.7",
+    "antd": "^6.4.3",
     "buffer": "^6.0.3",
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-chart-matrix": "3.0.4",
-    "date-fns": "^4.1.0",
+    "date-fns": "^4.2.1",
     "events": "^3.3.0",
     "google-palette": "^1.1.1",
     "google-protobuf": "^3.21.4",
@@ -42,8 +42,8 @@
     "react-json-tree": "^0.20.0",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
-    "react-router": "^7.15.0",
-    "react-router-dom": "^7.15.0"
+    "react-router": "^7.15.1",
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -54,13 +54,13 @@
     "@types/leaflet.awesome-markers": "^2.0.29",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "eslint": "^9.39.4",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^3.8.3",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.59.3",
-    "vite": "^8.0.12"
+    "typescript-eslint": "^8.59.4",
+    "vite": "^8.0.13"
   }
 }
