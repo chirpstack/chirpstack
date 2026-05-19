@@ -402,7 +402,7 @@ impl Flow {
                                 as u8,
                             fragmentation_matrix: self.fuota_deployment.fragmentation_matrix as u8,
                         },
-                        descriptor: descriptor.clone(),
+                        descriptor,
                     },
                 )
                 .to_vec()?,
@@ -438,7 +438,7 @@ impl Flow {
                         data_block_int_key,
                         session_cnt,
                         0,
-                        descriptor.clone(),
+                        descriptor,
                         &self.fuota_deployment.payload,
                     )?;
 

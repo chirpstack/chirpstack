@@ -13,9 +13,8 @@ use crate::api::helpers::{FromProto, ToProto};
 use crate::backend::roaming;
 use crate::downlink::{classb, error::Error, helpers, tx_ack};
 use crate::gpstime::{ToDateTime, ToGpsTime};
-use crate::storage::{self, fields};
 use crate::storage::{
-    application,
+    self, application,
     device::{self, DeviceClass},
     device_gateway, device_profile, device_queue, downlink_frame,
     helpers::get_all_device_data,

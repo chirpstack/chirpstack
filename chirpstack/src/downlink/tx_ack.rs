@@ -309,18 +309,18 @@ impl TxAck {
                 .unwrap();
 
             // get the gps epoch timestamp for timeout calculation
-            if let Some(timing) = tx_info.timing {
-                if let Some(gw::timing::Parameters::GpsEpoch(gps_timing)) = timing.parameters {
-                    let gps_ts: std::time::Duration = gps_timing
-                        .time_since_gps_epoch
-                        .unwrap_or_default()
-                        .try_into()
-                        .unwrap_or_default();
-                    let timeout =
-                        Duration::from_std(gps_ts)?.to_date_time() + Duration::seconds(timeout_sec);
+            if let Some(timing) = tx_info.timing
+                && let Some(gw::timing::Parameters::GpsEpoch(gps_timing)) = timing.parameters
+            {
+                let gps_ts: std::time::Duration = gps_timing
+                    .time_since_gps_epoch
+                    .unwrap_or_default()
+                    .try_into()
+                    .unwrap_or_default();
+                let timeout =
+                    Duration::from_std(gps_ts)?.to_date_time() + Duration::seconds(timeout_sec);
 
-                    qi.timeout_after = Some(timeout);
-                }
+                qi.timeout_after = Some(timeout);
             }
         }
 
