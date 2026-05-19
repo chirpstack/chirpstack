@@ -65,6 +65,7 @@ pub struct ClassBParams {
     pub ping_slot_periodicity: u8,
     pub ping_slot_dr: u8,
     pub ping_slot_freq: u32,
+    pub class_b_downlink_only: bool,
 }
 
 #[cfg(feature = "postgres")]

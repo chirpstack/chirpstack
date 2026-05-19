@@ -502,6 +502,16 @@ message DeviceProfile {
   // Example: In case you would like to use also SF5 and SF6 in EU868, you would
   // set this option to: 0, 1, 2, 3, 4, 5, 6, 7, 12, 13.
   repeated uint32 supported_uplink_data_rates = 57;
+
+  // Class-B downlink only.
+  //
+  // If enabled and if the device is operating as Class-B device, then ChirpStack will
+  // only send application payload as Class-B ping slots. This means that if the device
+  // sends a Class-A uplink, ChirpStack will only respond with mac-commands (if needed).
+  // Enabling this option can reduce the risk of out-of-order downlinks in cases where
+  // ChirpStack might schedule a Class-B ping-slot downlink but before this is
+  // transmitted by the gateway, it also responsed with a Class-A downlink.
+  bool class_b_downlink_only = 58;
 }
 
 message Measurement {

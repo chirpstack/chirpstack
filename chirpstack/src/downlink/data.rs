@@ -13,7 +13,7 @@ use crate::api::helpers::{FromProto, ToProto};
 use crate::backend::roaming;
 use crate::downlink::{classb, error::Error, helpers, tx_ack};
 use crate::gpstime::{ToDateTime, ToGpsTime};
-use crate::storage;
+use crate::storage::{self, fields};
 use crate::storage::{
     application,
     device::{self, DeviceClass},
@@ -208,7 +208,7 @@ impl Data {
 
         ctx.select_downlink_gateway()?;
         ctx.set_tx_info()?;
-        ctx.get_next_device_queue_item().await?;
+        ctx.get_next_device_queue_item(true).await?;
         ctx.set_mac_commands().await?;
 
         if ctx._something_to_send() {
@@ -280,7 +280,7 @@ impl Data {
 
         ctx.select_downlink_gateway()?;
         ctx.set_tx_info_relayed()?;
-        ctx.get_next_device_queue_item().await?;
+        ctx.get_next_device_queue_item(true).await?;
         ctx.set_mac_commands().await?;
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
@@ -348,7 +348,7 @@ impl Data {
         if ctx._is_class_a() {
             return Err(anyhow!("Invalid device-class"));
         }
-        ctx.get_next_device_queue_item().await?;
+        ctx.get_next_device_queue_item(false).await?;
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
             ctx.update_device_queue_item().await?;
@@ -431,8 +431,22 @@ impl Data {
         Ok(())
     }
 
-    async fn get_next_device_queue_item(&mut self) -> Result<()> {
+    async fn get_next_device_queue_item(&mut self, is_response: bool) -> Result<()> {
         trace!("Getting next device queue-item");
+
+        // If this is a response, the device is operating as a Class-B enabled device and has the
+        // class_b_downlink_only flag set, we do not retrieve a downlink from the queue.
+        if is_response
+            && self
+                .device_profile
+                .class_b_params
+                .as_ref()
+                .map(|v| v.class_b_downlink_only)
+                .unwrap_or_default()
+            && self.device.enabled_class == DeviceClass::B
+        {
+            return Ok(());
+        }
 
         let ds = self.device.get_device_session()?;
 
@@ -2995,7 +3009,7 @@ mod test {
                 more_device_queue_items: false,
             };
 
-            ctx.get_next_device_queue_item().await.unwrap();
+            ctx.get_next_device_queue_item(false).await.unwrap();
 
             // Integrations are handled async.
             sleep(Duration::from_millis(100)).await;

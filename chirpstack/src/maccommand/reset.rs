@@ -82,6 +82,7 @@ pub mod test {
                 ping_slot_freq: 868100000,
                 ping_slot_periodicity: 6,
                 timeout: 0,
+                class_b_downlink_only: false,
             }),
             ..Default::default()
         };

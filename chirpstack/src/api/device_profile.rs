@@ -100,6 +100,7 @@ impl DeviceProfileService for DeviceProfile {
                     ping_slot_periodicity: req_dp.class_b_ping_slot_periodicity as u8,
                     ping_slot_dr: req_dp.class_b_ping_slot_dr as u8,
                     ping_slot_freq: req_dp.class_b_ping_slot_freq,
+                    class_b_downlink_only: req_dp.class_b_downlink_only,
                 })
             } else {
                 None
@@ -218,6 +219,7 @@ impl DeviceProfileService for DeviceProfile {
                 class_b_ping_slot_periodicity: class_b_params.ping_slot_periodicity as u32,
                 class_b_ping_slot_dr: class_b_params.ping_slot_dr as u32,
                 class_b_ping_slot_freq: class_b_params.ping_slot_freq as u32,
+                class_b_downlink_only: class_b_params.class_b_downlink_only,
                 class_c_timeout: class_c_params.timeout as u32,
                 abp_rx1_delay: abp_params.rx1_delay as u32,
                 abp_rx1_dr_offset: abp_params.rx1_dr_offset as u32,
@@ -341,6 +343,7 @@ impl DeviceProfileService for DeviceProfile {
                 class_b_ping_slot_periodicity: class_b_params.ping_slot_periodicity as u32,
                 class_b_ping_slot_dr: class_b_params.ping_slot_dr as u32,
                 class_b_ping_slot_freq: class_b_params.ping_slot_freq as u32,
+                class_b_downlink_only: class_b_params.class_b_downlink_only,
                 class_c_timeout: class_c_params.timeout as u32,
                 abp_rx1_delay: abp_params.rx1_delay as u32,
                 abp_rx1_dr_offset: abp_params.rx1_dr_offset as u32,
@@ -497,6 +500,7 @@ impl DeviceProfileService for DeviceProfile {
                     ping_slot_periodicity: req_dp.class_b_ping_slot_periodicity as u8,
                     ping_slot_dr: req_dp.class_b_ping_slot_dr as u8,
                     ping_slot_freq: req_dp.class_b_ping_slot_freq,
+                    class_b_downlink_only: req_dp.class_b_downlink_only,
                 })
             } else {
                 None

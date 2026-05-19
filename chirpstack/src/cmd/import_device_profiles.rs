@@ -277,6 +277,7 @@ async fn handle_profile(
                 ping_slot_periodicity: profile_conf.profile.class_b.ping_slot_periodicity as u8,
                 ping_slot_dr: profile_conf.profile.class_b.ping_slot_dr as u8,
                 ping_slot_freq: profile_conf.profile.class_b.ping_slot_freq as u32,
+                class_b_downlink_only: false,
             })
         } else {
             None

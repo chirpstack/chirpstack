@@ -134,6 +134,7 @@ function DeviceProfileForm(props: IProps) {
     dp.setClassBPingSlotPeriodicity(v.classBPingSlotPeriodicity);
     dp.setClassBPingSlotDr(v.classBPingSlotDr);
     dp.setClassBPingSlotFreq(v.classBPingSlotFreq);
+    dp.setClassBDownlinkOnly(v.classBDownlinkOnly);
 
     // class-c
     dp.setSupportsClassC(v.supportsClassC);
@@ -545,7 +546,7 @@ function DeviceProfileForm(props: IProps) {
                 </Col>
               </Row>
               <Row gutter={24}>
-                <Col span={12}>
+                <Col span={8}>
                   <Form.Item
                     label="Class-B ping-slot data-rate"
                     tooltip="This value must match the ping-slot data-rate of the device. Please refer to the device documentation."
@@ -560,7 +561,7 @@ function DeviceProfileForm(props: IProps) {
                     <InputNumber min={0} disabled={props.disabled} />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col span={8}>
                   <Form.Item
                     label="Class-B ping-slot frequency (Hz)"
                     tooltip="This value must match the ping-slot frequency of the device. Please refer to the device documentation."
@@ -573,6 +574,15 @@ function DeviceProfileForm(props: IProps) {
                     ]}
                   >
                     <InputNumber min={0} style={{ width: "200px" }} disabled={props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Class-B downlink only"
+                    tooltip="If set and if the device operates as Class-B enabled device, ChirpStack will only send application payloads as ping-slot downlinks"
+                    name="classBDownlinkOnly"
+                  >
+                    <Switch disabled={props.disabled} />
                   </Form.Item>
                 </Col>
               </Row>

@@ -134,6 +134,7 @@ pub async fn run() -> Result<()> {
                             ping_slot_periodicity: dp.class_b_ping_slot_periodicity as u8,
                             ping_slot_dr: dp.class_b_ping_slot_dr as u8,
                             ping_slot_freq: dp.class_b_ping_slot_freq as u32,
+                            class_b_downlink_only: false,
                         })
                     } else {
                         None
