@@ -724,8 +724,17 @@ type DeviceProfile struct {
 	// Example: In case you would like to use also SF5 and SF6 in EU868, you would
 	// set this option to: 0, 1, 2, 3, 4, 5, 6, 7, 12, 13.
 	SupportedUplinkDataRates []uint32 `protobuf:"varint,57,rep,packed,name=supported_uplink_data_rates,json=supportedUplinkDataRates,proto3" json:"supported_uplink_data_rates,omitempty"`
-	unknownFields            protoimpl.UnknownFields
-	sizeCache                protoimpl.SizeCache
+	// Class-B downlink only.
+	//
+	// If enabled and if the device is operating as Class-B device, then ChirpStack will
+	// only send application payload as Class-B ping slots. This means that if the device
+	// sends a Class-A uplink, ChirpStack will only respond with mac-commands (if needed).
+	// Enabling this option can reduce the risk of out-of-order downlinks in cases where
+	// ChirpStack might schedule a Class-B ping-slot downlink but before this is
+	// transmitted by the gateway, it also responsed with a Class-A downlink.
+	ClassBDownlinkOnly bool `protobuf:"varint,58,opt,name=class_b_downlink_only,json=classBDownlinkOnly,proto3" json:"class_b_downlink_only,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *DeviceProfile) Reset() {
@@ -1155,6 +1164,13 @@ func (x *DeviceProfile) GetSupportedUplinkDataRates() []uint32 {
 		return x.SupportedUplinkDataRates
 	}
 	return nil
+}
+
+func (x *DeviceProfile) GetClassBDownlinkOnly() bool {
+	if x != nil {
+		return x.ClassBDownlinkOnly
+	}
+	return false
 }
 
 type Measurement struct {
@@ -3019,7 +3035,7 @@ var File_api_device_profile_proto protoreflect.FileDescriptor
 
 const file_api_device_profile_proto_rawDesc = "" +
 	"\n" +
-	"\x18api/device_profile.proto\x12\x03api\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc5\x18\n" +
+	"\x18api/device_profile.proto\x12\x03api\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf8\x18\n" +
 	"\rDeviceProfile\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x12\n" +
@@ -3081,7 +3097,8 @@ const file_api_device_profile_proto_rawDesc = "" +
 	"\x10app_layer_params\x186 \x01(\v2\x13.api.AppLayerParamsR\x0eappLayerParams\x12\x1b\n" +
 	"\tdevice_id\x187 \x01(\tR\bdeviceId\x12)\n" +
 	"\x10firmware_version\x188 \x01(\tR\x0ffirmwareVersion\x12=\n" +
-	"\x1bsupported_uplink_data_rates\x189 \x03(\rR\x18supportedUplinkDataRates\x1a7\n" +
+	"\x1bsupported_uplink_data_rates\x189 \x03(\rR\x18supportedUplinkDataRates\x121\n" +
+	"\x15class_b_downlink_only\x18: \x01(\bR\x12classBDownlinkOnly\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1aQ\n" +
