@@ -7,7 +7,7 @@ use diesel::pg::Pg;
 #[cfg(feature = "sqlite")]
 use diesel::sqlite::Sqlite;
 #[cfg(feature = "diesel")]
-use diesel::{backend::Backend, deserialize, serialize, sql_types::Binary};
+use diesel::{backend::Backend, deserialize, serialize, sql_types::Binary, sql_types::Text};
 #[cfg(feature = "serde")]
 use serde::{
     Deserialize, Deserializer, Serialize, Serializer,
@@ -106,6 +106,37 @@ impl Visitor<'_> for DevAddrPrefixVisitor {
         E: de::Error,
     {
         DevAddrPrefix::from_str(value).map_err(|e| E::custom(format!("{}", e)))
+    }
+}
+
+#[cfg(feature = "postgres")]
+impl deserialize::FromSql<Text, Pg> for DevAddrPrefix {
+    fn from_sql(bytes: <Pg as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <String as deserialize::FromSql<Text, Pg>>::from_sql(bytes)?;
+        Ok(DevAddrPrefix::from_str(&value)?)
+    }
+}
+
+#[cfg(feature = "postgres")]
+impl serialize::ToSql<Text, Pg> for DevAddrPrefix {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Pg>) -> serialize::Result {
+        <String as serialize::ToSql<Text, Pg>>::to_sql(&self.to_string(), &mut out.reborrow())
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl deserialize::FromSql<Text, Sqlite> for DevAddrPrefix {
+    fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+        let value = <String as deserialize::FromSql<Text, Sqlite>>::from_sql(bytes)?;
+        Ok(DevAddrPrefix::from_str(&value)?)
+    }
+}
+
+#[cfg(feature = "sqlite")]
+impl serialize::ToSql<Text, Sqlite> for DevAddrPrefix {
+    fn to_sql<'b>(&'b self, out: &mut serialize::Output<'b, '_, Sqlite>) -> serialize::Result {
+        out.set_value(self.to_string());
+        Ok(serialize::IsNull::No)
     }
 }
 
