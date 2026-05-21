@@ -25,12 +25,25 @@ impl DevAddrPrefix {
         DevAddrPrefix(prefix, size)
     }
 
+    pub fn is_subset_of(&self, other: &DevAddrPrefix) -> bool {
+        self.range_min() >= other.range_min() && self.range_max() <= other.range_max()
+    }
+
     fn prefix(&self) -> [u8; 4] {
         self.0
     }
 
     fn size(&self) -> u32 {
         self.1
+    }
+
+    fn range_min(&self) -> u32 {
+        let mask = u32::from_be_bytes(self.prefix());
+        mask & (u32::MAX << (32 - self.size()))
+    }
+
+    fn range_max(&self) -> u32 {
+        self.range_min() + (u32::MAX >> self.size())
     }
 }
 
@@ -60,6 +73,10 @@ impl FromStr for DevAddrPrefix {
         }
 
         if parts[0].len() != 8 {
+            return Err(Error::DevAddrPrefixFormat);
+        }
+
+        if size > 32 {
             return Err(Error::DevAddrPrefixFormat);
         }
 
@@ -423,5 +440,57 @@ mod tests {
             devaddr.set_dev_addr_prefix(tst.netid.dev_addr_prefix());
             assert_eq!(tst.expected_devaddr, devaddr);
         }
+    }
+
+    #[test]
+    fn test_prefix_is_subset() {
+        assert!(
+            DevAddrPrefix::from_str("ffff0000/16")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("ff000000/8").unwrap()),
+            "prefix was not a subset"
+        );
+
+        assert!(
+            DevAddrPrefix::from_str("ffff0000/16")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("ffff0000/16").unwrap()),
+            "prefix was not equal"
+        );
+
+        assert!(
+            !DevAddrPrefix::from_str("ffff0000/15")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("ffff0000/16").unwrap()),
+            "prefix was a sub-set"
+        );
+
+        assert!(
+            DevAddrPrefix::from_str("00000000/16")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("00000000/15").unwrap()),
+            "prefix was not a sub-set"
+        );
+
+        assert!(
+            !DevAddrPrefix::from_str("00000000/15")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("00000000/16").unwrap()),
+            "prefix was a sub-set"
+        );
+
+        assert!(
+            DevAddrPrefix::from_str("00000000/8")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("00000000/7").unwrap()),
+            "prefix was not a sub-set"
+        );
+
+        assert!(
+            !DevAddrPrefix::from_str("80000000/8")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("00000000/8").unwrap()),
+            "prefix was a sub-set"
+        );
     }
 }
