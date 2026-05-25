@@ -2,18 +2,8 @@ use lrwn::DevAddr;
 use rand::Rng;
 use rand::seq::IndexedRandom;
 
-use crate::config;
-
-pub fn get_random_dev_addr() -> DevAddr {
-    let conf = config::get();
+pub fn get_random_dev_addr(prefixes: &[lrwn::DevAddrPrefix]) -> DevAddr {
     let mut rng = rand::rng();
-
-    // Get configured DevAddr prefixes.
-    let prefixes = if conf.network.dev_addr_prefixes.is_empty() {
-        vec![conf.network.net_id.dev_addr_prefix()]
-    } else {
-        conf.network.dev_addr_prefixes.clone()
-    };
 
     // Pick a random one (in case multiple prefixes are configured).
     let prefix = *prefixes.choose(&mut rng).unwrap();

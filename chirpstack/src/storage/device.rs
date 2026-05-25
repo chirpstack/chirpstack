@@ -255,19 +255,7 @@ pub async fn create(d: Device) -> Result<Device, Error> {
     let d: Device = c
         .transaction::<Device, Error, _>(async |c| {
             let query = tenant::dsl::tenant
-                .select((
-                    tenant::dsl::id,
-                    tenant::dsl::created_at,
-                    tenant::dsl::updated_at,
-                    tenant::dsl::name,
-                    tenant::dsl::description,
-                    tenant::dsl::can_have_gateways,
-                    tenant::dsl::max_device_count,
-                    tenant::dsl::max_gateway_count,
-                    tenant::dsl::private_gateways_up,
-                    tenant::dsl::private_gateways_down,
-                    tenant::dsl::tags,
-                ))
+                .select(tenant::all_columns)
                 .inner_join(application::table)
                 .filter(application::dsl::id.eq(&d.application_id));
             // use for update to lock the tenant

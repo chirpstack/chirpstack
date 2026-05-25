@@ -12,7 +12,7 @@ use crate::api::auth::validator;
 use crate::api::error::ToStatus;
 use crate::api::helpers::{self, FromProto, ToProto};
 use crate::devaddr::get_random_dev_addr;
-use crate::storage::{fields, fuota};
+use crate::storage::{fields, fuota, tenant};
 
 pub struct Fuota {
     validator: validator::RequestValidator,
@@ -51,11 +51,15 @@ impl FuotaService for Fuota {
             )
             .await?;
 
+        let t = tenant::get_for_application_id(app_id)
+            .await
+            .map_err(|e| e.status())?;
+
         let mut dp = fuota::FuotaDeployment {
             name: req_dp.name.clone(),
             application_id: app_id.into(),
             device_profile_id: dp_id.into(),
-            multicast_addr: get_random_dev_addr(),
+            multicast_addr: get_random_dev_addr(&t.get_dev_addr_prefixes()),
             multicast_key: get_random_aes_key(),
             multicast_group_type: match req_dp.multicast_group_type() {
                 api::MulticastGroupType::ClassB => "B",

@@ -2,93 +2,81 @@ syntax = "proto3";
 
 package api;
 
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Chirpstack.Api";
 option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
-option java_package = "io.chirpstack.api";
 option java_multiple_files = true;
 option java_outer_classname = "TenantProto";
-option csharp_namespace = "Chirpstack.Api";
-option php_namespace = "Chirpstack\\Api";
+option java_package = "io.chirpstack.api";
 option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
-
-import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
+option php_namespace = "Chirpstack\\Api";
 
 // TenantService is the service providing API methods for managing tenants.
 service TenantService {
   // Create a new tenant.
   rpc Create(CreateTenantRequest) returns (CreateTenantResponse) {
     option (google.api.http) = {
-      post : "/api/tenants"
-      body : "*"
+      post: "/api/tenants"
+      body: "*"
     };
   }
 
   // Get the tenant for the given ID.
   rpc Get(GetTenantRequest) returns (GetTenantResponse) {
-    option (google.api.http) = {
-      get : "/api/tenants/{id}"
-    };
+    option (google.api.http) = {get: "/api/tenants/{id}"};
   }
 
   // Update the given tenant.
   rpc Update(UpdateTenantRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/api/tenants/{tenant.id}"
-      body : "*"
+      put: "/api/tenants/{tenant.id}"
+      body: "*"
     };
   }
 
   // Delete the tenant with the given ID.
   rpc Delete(DeleteTenantRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/tenants/{id}"
-    };
+    option (google.api.http) = {delete: "/api/tenants/{id}"};
   }
 
   // Get the list of tenants.
   rpc List(ListTenantsRequest) returns (ListTenantsResponse) {
-    option (google.api.http) = {
-      get : "/api/tenants"
-    };
+    option (google.api.http) = {get: "/api/tenants"};
   }
 
   // Add an user to the tenant.
   // Note: the user must already exist.
   rpc AddUser(AddTenantUserRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post : "/api/tenants/{tenant_user.tenant_id}/users"
-      body : "*"
+      post: "/api/tenants/{tenant_user.tenant_id}/users"
+      body: "*"
     };
   }
 
   // Get the the tenant user for the given tenant and user IDs.
   rpc GetUser(GetTenantUserRequest) returns (GetTenantUserResponse) {
-    option (google.api.http) = {
-      get : "/api/tenants/{tenant_id}/users/{user_id}"
-    };
+    option (google.api.http) = {get: "/api/tenants/{tenant_id}/users/{user_id}"};
   }
 
   // Update the given tenant user.
   rpc UpdateUser(UpdateTenantUserRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/api/tenants/{tenant_user.tenant_id}/users/{tenant_user.user_id}"
-      body : "*"
+      put: "/api/tenants/{tenant_user.tenant_id}/users/{tenant_user.user_id}"
+      body: "*"
     };
   }
 
   // Delete the given tenant user.
   rpc DeleteUser(DeleteTenantUserRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/tenants/{tenant_id}/users/{user_id}"
-    };
+    option (google.api.http) = {delete: "/api/tenants/{tenant_id}/users/{user_id}"};
   }
 
   // Get the list of tenant users.
   rpc ListUsers(ListTenantUsersRequest) returns (ListTenantUsersResponse) {
-    option (google.api.http) = {
-      get : "/api/tenants/{tenant_id}/users"
-    };
+    option (google.api.http) = {get: "/api/tenants/{tenant_id}/users"};
   }
 }
 
@@ -129,6 +117,17 @@ message Tenant {
   // These tags can be used to add additional information to the tenant. These
   // tags are NOT exposed in the integration events.
   map<string, string> tags = 9;
+
+  // DevAddr Prefixes.
+  //
+  // This must be one or multiple sub-sets of the global DevAddr pool, or
+  // and error will be raised on create or update.
+  //
+  // Example prefix: 0000ff00/24
+  // (0000ff00 - 0000ffff)
+  //
+  // If left blank, ChirpStack will use the global DevAddr pool.
+  repeated string dev_addr_prefixes = 10;
 }
 
 message TenantListItem {

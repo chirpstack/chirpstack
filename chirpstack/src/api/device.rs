@@ -18,7 +18,7 @@ use crate::storage::{
     device::{self, DeviceClass},
     device_keys, device_profile, device_queue,
     error::Error as StorageError,
-    fields, metrics,
+    fields, metrics, tenant,
 };
 use crate::{codec, devaddr::get_random_dev_addr};
 
@@ -681,10 +681,24 @@ impl DeviceService for Device {
 
     async fn get_random_dev_addr(
         &self,
-        _request: Request<api::GetRandomDevAddrRequest>,
+        request: Request<api::GetRandomDevAddrRequest>,
     ) -> Result<Response<api::GetRandomDevAddrResponse>, Status> {
+        let req = request.get_ref();
+        let dev_eui = EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceAccess::new(validator::Flag::Read, dev_eui),
+            )
+            .await?;
+
+        let t = tenant::get_for_dev_eui(dev_eui)
+            .await
+            .map_err(|e| e.status())?;
+
         Ok(Response::new(api::GetRandomDevAddrResponse {
-            dev_addr: get_random_dev_addr().to_string(),
+            dev_addr: get_random_dev_addr(&t.get_dev_addr_prefixes()).to_string(),
         }))
     }
 

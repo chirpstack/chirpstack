@@ -208,7 +208,8 @@ impl JoinRequest {
     }
 
     fn get_random_dev_addr(&mut self) -> Result<()> {
-        self.dev_addr = Some(get_random_dev_addr());
+        let tenant = self.tenant.as_ref().unwrap();
+        self.dev_addr = Some(get_random_dev_addr(&tenant.get_dev_addr_prefixes()));
         Ok(())
     }
 

@@ -1,8 +1,10 @@
+use std::ops::Deref;
 use std::str::FromStr;
 
 use chirpstack_api::api;
 use chirpstack_api::api::tenant_service_server::TenantService;
 use chirpstack_api::tonic::{self, Request, Response, Status};
+use lrwn::DevAddrPrefix;
 use uuid::Uuid;
 
 use super::auth::{AuthID, validator};
@@ -40,6 +42,15 @@ impl TenantService for Tenant {
             }
         };
 
+        // Decode prefixes
+        let mut dev_addr_prefixes = vec![];
+        for p in &req_tenant.dev_addr_prefixes {
+            let prefix = DevAddrPrefix::from_str(p).map_err(|e| {
+                Status::invalid_argument(format!("Invalid DevAddr prefix: {}, error: {}", p, e))
+            })?;
+            dev_addr_prefixes.push(Some(prefix));
+        }
+
         let t = tenant::Tenant {
             name: req_tenant.name.clone(),
             description: req_tenant.description.clone(),
@@ -49,6 +60,7 @@ impl TenantService for Tenant {
             private_gateways_up: req_tenant.private_gateways_up,
             private_gateways_down: req_tenant.private_gateways_down,
             tags: fields::KeyValue::new(req_tenant.tags.clone()),
+            dev_addr_prefixes: fields::DevAddrPrefixVec::new(dev_addr_prefixes),
             ..Default::default()
         };
 
@@ -90,6 +102,12 @@ impl TenantService for Tenant {
                 private_gateways_up: t.private_gateways_up,
                 private_gateways_down: t.private_gateways_down,
                 tags: t.tags.into_hashmap(),
+                dev_addr_prefixes: t
+                    .dev_addr_prefixes
+                    .deref()
+                    .iter()
+                    .filter_map(|v| v.map(|v| v.to_string()))
+                    .collect(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&t.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&t.updated_at)),
@@ -119,6 +137,14 @@ impl TenantService for Tenant {
             )
             .await?;
 
+        let mut dev_addr_prefixes = vec![];
+        for p in &req_tenant.dev_addr_prefixes {
+            let prefix = DevAddrPrefix::from_str(p).map_err(|e| {
+                Status::invalid_argument(format!("Invalid DevAddr prefix: {}, error: {}", p, e))
+            })?;
+            dev_addr_prefixes.push(Some(prefix));
+        }
+
         // update
         let _ = tenant::update(tenant::Tenant {
             id: tenant_id.into(),
@@ -130,6 +156,7 @@ impl TenantService for Tenant {
             private_gateways_up: req_tenant.private_gateways_up,
             private_gateways_down: req_tenant.private_gateways_down,
             tags: fields::KeyValue::new(req_tenant.tags.clone()),
+            dev_addr_prefixes: fields::DevAddrPrefixVec::new(dev_addr_prefixes),
             ..Default::default()
         })
         .await

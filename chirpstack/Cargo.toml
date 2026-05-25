@@ -131,7 +131,6 @@
   petgraph.workspace = true
   prometheus-client.workspace = true
   pin-project.workspace = true
-  scoped-futures.workspace = true
   signal-hook.workspace = true
   signal-hook-tokio.workspace = true
   rpassword.workspace = true

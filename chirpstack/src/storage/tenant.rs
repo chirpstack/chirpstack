@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::Deref;
 
 use anyhow::Result;
 use chrono::{DateTime, Utc};
@@ -8,8 +9,10 @@ use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
-use super::schema::{tenant, tenant_user, user};
+use super::schema::{application, device, tenant, tenant_user, user};
 use super::{fields, get_async_db_conn};
+use crate::config;
+use lrwn::EUI64;
 
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
 #[diesel(table_name = tenant)]
@@ -25,6 +28,7 @@ pub struct Tenant {
     pub private_gateways_up: bool,
     pub private_gateways_down: bool,
     pub tags: fields::KeyValue,
+    pub dev_addr_prefixes: fields::DevAddrPrefixVec,
 }
 
 impl Tenant {
@@ -32,7 +36,39 @@ impl Tenant {
         if self.name.is_empty() {
             return Err(Error::Validation("name is not set".into()));
         }
+
+        let nw_prefixes = config::get().network.get_dev_addr_prefixes();
+        for prefix in self.dev_addr_prefixes.deref().iter().flatten() {
+            let mut is_valid = false;
+
+            for nw_prefix in &nw_prefixes {
+                if prefix.is_subset_of(nw_prefix) {
+                    is_valid = true;
+                }
+            }
+
+            if !is_valid {
+                return Err(Error::Validation(format!(
+                    "DevAddr prefix {} is not a subset of configured network DevAddr space",
+                    prefix
+                )));
+            }
+        }
+
         Ok(())
+    }
+
+    pub fn get_dev_addr_prefixes(&self) -> Vec<lrwn::DevAddrPrefix> {
+        let prefixes: Vec<lrwn::DevAddrPrefix> = (*self.dev_addr_prefixes)
+            .iter()
+            .cloned()
+            .flatten()
+            .collect();
+        if prefixes.is_empty() {
+            config::get().network.get_dev_addr_prefixes()
+        } else {
+            prefixes
+        }
     }
 }
 
@@ -52,6 +88,7 @@ impl Default for Tenant {
             private_gateways_up: false,
             private_gateways_down: false,
             tags: fields::KeyValue::new(HashMap::new()),
+            dev_addr_prefixes: fields::DevAddrPrefixVec::new(vec![]),
         }
     }
 }
@@ -123,6 +160,31 @@ pub async fn get(id: &Uuid) -> Result<Tenant, Error> {
     Ok(t)
 }
 
+pub async fn get_for_dev_eui(dev_eui: EUI64) -> Result<Tenant, Error> {
+    let t = tenant::dsl::tenant
+        .inner_join(application::table.on(application::tenant_id.eq(tenant::id)))
+        .inner_join(device::table.on(device::application_id.eq(application::id)))
+        .select(tenant::all_columns)
+        .filter(device::dev_eui.eq(dev_eui))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+
+    Ok(t)
+}
+
+pub async fn get_for_application_id(app_id: Uuid) -> Result<Tenant, Error> {
+    let t = tenant::dsl::tenant
+        .inner_join(application::table.on(application::tenant_id.eq(tenant::id)))
+        .select(tenant::all_columns)
+        .filter(application::id.eq(fields::Uuid::from(app_id)))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, app_id.to_string()))?;
+
+    Ok(t)
+}
+
 pub async fn update(t: Tenant) -> Result<Tenant, Error> {
     t.validate()?;
 
@@ -137,6 +199,7 @@ pub async fn update(t: Tenant) -> Result<Tenant, Error> {
             tenant::private_gateways_up.eq(&t.private_gateways_up),
             tenant::private_gateways_down.eq(&t.private_gateways_down),
             tenant::tags.eq(&t.tags),
+            tenant::dev_addr_prefixes.eq(&t.dev_addr_prefixes),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await
@@ -321,7 +384,10 @@ pub async fn get_tenant_users_for_user(user_id: &Uuid) -> Result<Vec<TenantUser>
 
 #[cfg(test)]
 pub mod test {
+    use std::str::FromStr;
+
     use super::*;
+    use crate::storage::fields::DevAddrPrefixVec;
     use crate::storage::user::test::create_user;
     use crate::test;
     use chrono::SubsecRound;
@@ -348,6 +414,7 @@ pub mod test {
             private_gateways_up: true,
             private_gateways_down: true,
             tags: fields::KeyValue::new(HashMap::new()),
+            dev_addr_prefixes: fields::DevAddrPrefixVec::new(vec![]),
         };
         create(t).await.unwrap()
     }
@@ -510,5 +577,74 @@ pub mod test {
 
         // delete
         delete_user(&t.id, &user.id).await.unwrap();
+    }
+
+    #[test]
+    fn test_validate_name() {
+        assert!(
+            Tenant {
+                ..Default::default()
+            }
+            .validate()
+            .is_err()
+        );
+        assert!(
+            Tenant {
+                name: "test-tenant".into(),
+                ..Default::default()
+            }
+            .validate()
+            .is_ok()
+        );
+    }
+
+    #[test]
+    fn test_validate_dev_addr_prefix() {
+        assert!(
+            Tenant {
+                name: "test-tenant".into(),
+                dev_addr_prefixes: fields::DevAddrPrefixVec::new(vec![Some(
+                    lrwn::DevAddrPrefix::from_str("00000000/7").unwrap()
+                ),]),
+                ..Default::default()
+            }
+            .validate()
+            .is_ok()
+        );
+
+        assert!(
+            Tenant {
+                name: "test-tenant".into(),
+                dev_addr_prefixes: fields::DevAddrPrefixVec::new(vec![Some(
+                    lrwn::DevAddrPrefix::from_str("00000000/6").unwrap()
+                ),]),
+                ..Default::default()
+            }
+            .validate()
+            .is_err(),
+            "00000000/6 should not fit within default 00000000/7 range"
+        );
+    }
+
+    #[test]
+    fn test_get_dev_addr_prefixes() {
+        assert_eq!(
+            vec![lrwn::DevAddrPrefix::from_str("00000000/7").unwrap()],
+            Tenant {
+                ..Default::default()
+            }
+            .get_dev_addr_prefixes()
+        );
+
+        assert_eq!(
+            vec![lrwn::DevAddrPrefix::from_str("00000000/8").unwrap()],
+            Tenant {
+                dev_addr_prefixes: DevAddrPrefixVec::new(vec![Some(
+                    lrwn::DevAddrPrefix::from_str("00000000/8").unwrap()
+                ),]),
+                ..Default::default()
+            }
+            .get_dev_addr_prefixes()
+        );
     }
 }

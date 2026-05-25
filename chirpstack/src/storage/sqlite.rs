@@ -12,7 +12,6 @@ use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfi
 use diesel_async::sync_connection_wrapper::SyncConnectionWrapper;
 use futures::future::{BoxFuture, FutureExt, TryFutureExt};
 use prometheus_client::metrics::histogram::{Histogram, exponential_buckets};
-use scoped_futures::ScopedBoxFuture;
 
 use crate::config;
 

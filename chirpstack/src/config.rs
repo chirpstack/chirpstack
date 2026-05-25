@@ -191,6 +191,16 @@ impl Default for Network {
     }
 }
 
+impl Network {
+    pub fn get_dev_addr_prefixes(&self) -> Vec<DevAddrPrefix> {
+        if self.dev_addr_prefixes.is_empty() {
+            vec![self.net_id.dev_addr_prefix()]
+        } else {
+            self.dev_addr_prefixes.clone()
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct Scheduler {

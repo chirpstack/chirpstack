@@ -1,4 +1,4 @@
-import { Form, Input, InputNumber, Switch, Row, Col, Button, Tabs } from "antd";
+import { Card, Form, Input, InputNumber, Switch, Row, Col, Button, Tabs, Space } from "antd";
 import type { TabsProps } from "antd/lib";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
@@ -29,6 +29,11 @@ function TenantForm(props: IProps) {
     // tags
     for (const elm of v.tagsMap) {
       tenant.getTagsMap().set(elm[0], elm[1]);
+    }
+
+    // DevAddr prefixes
+    for (const prefix of v.devAddrPrefixesList) {
+      tenant.addDevAddrPrefixes(prefix);
     }
 
     props.onFinish(tenant);
@@ -146,6 +151,64 @@ function TenantForm(props: IProps) {
             </>
           )}
         </Form.List>
+      ),
+    },
+    {
+      key: "3",
+      label: "DevAddr prefixes",
+      children: (
+        <Space orientation="vertical" size="large">
+          <Card variant="borderless">
+            <p>
+              By assigning one or multiple DevAddr prefixes to a tenant, it is possilbe to let the tenant use only a
+              sub-set of the available DevAddr pool in the network. Please note that this is optional and if not
+              configured, ChirpStack will use the network available DevAddr pool. Configured DevAddr prefixes must be a
+              sub-set of the network available DevAddr pool.
+            </p>
+          </Card>
+          <Form.List name="devAddrPrefixesList">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map((field, _index) => (
+                  <Row gutter={24}>
+                    <Col span={22}>
+                      <Form.Item
+                        {...field}
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please enter a valid DevAddr prefix",
+
+                            pattern: new RegExp(/^[A-Fa-f0-9]{8}\/\d{1,2}$/),
+                          },
+                        ]}
+                      >
+                        <Input
+                          className="input-code"
+                          maxLength={11}
+                          placeholder="00000000/0"
+                          disabled={props.disabled}
+                        />
+                      </Form.Item>
+                    </Col>
+                    {!props.disabled && (
+                      <Col span={2}>
+                        <MinusCircleOutlined onClick={() => remove(field.name)} />
+                      </Col>
+                    )}
+                  </Row>
+                ))}
+                {!props.disabled && (
+                  <Form.Item>
+                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                      Add DevAddr prefix
+                    </Button>
+                  </Form.Item>
+                )}
+              </>
+            )}
+          </Form.List>
+        </Space>
       ),
     },
   ];
