@@ -277,6 +277,31 @@ pub async fn list(limit: i64, offset: i64, filters: &Filters) -> Result<Vec<Tena
     Ok(items)
 }
 
+pub async fn list_by_dev_addr_prefix_overlap(
+    dev_addr_prefix: lrwn::DevAddrPrefix,
+) -> Result<Vec<Tenant>, Error> {
+    let tenants: Vec<Tenant> = tenant::table
+        .order_by(tenant::name)
+        .load(&mut get_async_db_conn().await?)
+        .await?;
+
+    Ok(tenants
+        .into_iter()
+        .filter(|t| {
+            let prefixes: Vec<lrwn::DevAddrPrefix> =
+                (*t.dev_addr_prefixes).iter().cloned().flatten().collect();
+
+            for p in prefixes {
+                if dev_addr_prefix.is_subset_of(&p) || p.is_subset_of(&dev_addr_prefix) {
+                    return true;
+                }
+            }
+
+            false
+        })
+        .collect())
+}
+
 pub async fn add_user(tu: TenantUser) -> Result<TenantUser, Error> {
     let tu: TenantUser = diesel::insert_into(tenant_user::table)
         .values(&tu)
@@ -544,6 +569,60 @@ pub mod test {
         // delete
         delete(&t.id).await.unwrap();
         assert!(delete(&t.id).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_tenant_list_by_dev_addr_prefix_overlap() {
+        let _guard = test::prepare().await;
+
+        create(Tenant {
+            name: "tenant-1".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        assert_eq!(
+            0,
+            list_by_dev_addr_prefix_overlap(lrwn::DevAddrPrefix::from_str("00010000/16").unwrap())
+                .await
+                .unwrap()
+                .len()
+        );
+
+        create(Tenant {
+            name: "tenant-1".into(),
+            dev_addr_prefixes: DevAddrPrefixVec::new(vec![Some(
+                lrwn::DevAddrPrefix::from_str("00030000/16").unwrap(),
+            )]),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        assert_eq!(
+            1,
+            list_by_dev_addr_prefix_overlap(lrwn::DevAddrPrefix::from_str("00030000/16").unwrap())
+                .await
+                .unwrap()
+                .len()
+        );
+
+        assert_eq!(
+            0,
+            list_by_dev_addr_prefix_overlap(lrwn::DevAddrPrefix::from_str("00010000/16").unwrap())
+                .await
+                .unwrap()
+                .len()
+        );
+
+        assert_eq!(
+            1,
+            list_by_dev_addr_prefix_overlap(lrwn::DevAddrPrefix::from_str("00020000/15").unwrap())
+                .await
+                .unwrap()
+                .len()
+        );
     }
 
     #[tokio::test]

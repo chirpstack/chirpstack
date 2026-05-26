@@ -492,5 +492,26 @@ mod tests {
                 .is_subset_of(&DevAddrPrefix::from_str("00000000/8").unwrap()),
             "prefix was a sub-set"
         );
+
+        assert!(
+            !DevAddrPrefix::from_str("00010000/16")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("00030000/16").unwrap()),
+            "prefix was a sub-set"
+        );
+
+        assert!(
+            !DevAddrPrefix::from_str("00020000/15")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("00030000/16").unwrap()),
+            "prefix was a sub-set"
+        );
+
+        assert!(
+            DevAddrPrefix::from_str("00030000/16")
+                .unwrap()
+                .is_subset_of(&DevAddrPrefix::from_str("00020000/15").unwrap()),
+            "prefix was not a sub-set"
+        );
     }
 }

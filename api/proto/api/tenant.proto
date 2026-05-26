@@ -47,6 +47,11 @@ service TenantService {
     option (google.api.http) = {get: "/api/tenants"};
   }
 
+  // Get the list of tenants with DevAddr prefix overlap.
+  rpc ListByDevAddrPrefixOverlap(ListTenantsByDevAddrPrefixOverlapRequest) returns (ListTenantsResponse) {
+    option (google.api.http) = {get: "/api/tenants/by-devaddr-prefix-overlap"};
+  }
+
   // Add an user to the tenant.
   // Note: the user must already exist.
   rpc AddUser(AddTenantUserRequest) returns (google.protobuf.Empty) {
@@ -219,6 +224,14 @@ message ListTenantsResponse {
 
   // Result-set.
   repeated TenantListItem result = 2;
+}
+
+message ListTenantsByDevAddrPrefixOverlapRequest {
+  // DevAddr prefix.
+  // This will check if there is any tenant that has an overlapping DevAddr prefix
+  // configuration associated which overlaps (either sub-set or super-set) with
+  // this dev_addr_prefix.
+  string dev_addr_prefix = 1;
 }
 
 message TenantUser {

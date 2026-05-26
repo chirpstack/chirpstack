@@ -260,6 +260,44 @@ impl TenantService for Tenant {
         }))
     }
 
+    async fn list_by_dev_addr_prefix_overlap(
+        &self,
+        request: Request<api::ListTenantsByDevAddrPrefixOverlapRequest>,
+    ) -> Result<Response<api::ListTenantsResponse>, Status> {
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateTenantsAccess::new(validator::Flag::List),
+            )
+            .await?;
+
+        let req = request.get_ref();
+        let dev_addr_prefix =
+            lrwn::DevAddrPrefix::from_str(&req.dev_addr_prefix).map_err(|e| e.status())?;
+
+        let tenants = tenant::list_by_dev_addr_prefix_overlap(dev_addr_prefix)
+            .await
+            .map_err(|e| e.status())?;
+
+        Ok(Response::new(api::ListTenantsResponse {
+            total_count: tenants.len() as u32,
+            result: tenants
+                .iter()
+                .map(|t| api::TenantListItem {
+                    id: t.id.to_string(),
+                    created_at: Some(helpers::datetime_to_prost_timestamp(&t.created_at)),
+                    updated_at: Some(helpers::datetime_to_prost_timestamp(&t.updated_at)),
+                    name: t.name.clone(),
+                    can_have_gateways: t.can_have_gateways,
+                    private_gateways_up: t.private_gateways_up,
+                    private_gateways_down: t.private_gateways_down,
+                    max_gateway_count: t.max_gateway_count as u32,
+                    max_device_count: t.max_device_count as u32,
+                })
+                .collect(),
+        }))
+    }
+
     async fn add_user(
         &self,
         request: Request<api::AddTenantUserRequest>,
@@ -589,6 +627,21 @@ pub mod test {
         let list_resp = service.list(list_req).await.unwrap();
         assert_eq!(1, list_resp.get_ref().total_count);
         assert_eq!(1, list_resp.get_ref().result.len());
+
+        // list by devaddr prefix overlap
+        let list_req = api::ListTenantsByDevAddrPrefixOverlapRequest {
+            dev_addr_prefix: "00000000/7".into(),
+        };
+        let mut list_req = Request::new(list_req);
+        list_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
+        let list_resp = service
+            .list_by_dev_addr_prefix_overlap(list_req)
+            .await
+            .unwrap();
+        assert_eq!(0, list_resp.get_ref().total_count);
+        assert_eq!(0, list_resp.get_ref().result.len());
 
         // delete
         let del_req = api::DeleteTenantRequest {
