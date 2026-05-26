@@ -20,16 +20,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TenantService_Create_FullMethodName     = "/api.TenantService/Create"
-	TenantService_Get_FullMethodName        = "/api.TenantService/Get"
-	TenantService_Update_FullMethodName     = "/api.TenantService/Update"
-	TenantService_Delete_FullMethodName     = "/api.TenantService/Delete"
-	TenantService_List_FullMethodName       = "/api.TenantService/List"
-	TenantService_AddUser_FullMethodName    = "/api.TenantService/AddUser"
-	TenantService_GetUser_FullMethodName    = "/api.TenantService/GetUser"
-	TenantService_UpdateUser_FullMethodName = "/api.TenantService/UpdateUser"
-	TenantService_DeleteUser_FullMethodName = "/api.TenantService/DeleteUser"
-	TenantService_ListUsers_FullMethodName  = "/api.TenantService/ListUsers"
+	TenantService_Create_FullMethodName                     = "/api.TenantService/Create"
+	TenantService_Get_FullMethodName                        = "/api.TenantService/Get"
+	TenantService_Update_FullMethodName                     = "/api.TenantService/Update"
+	TenantService_Delete_FullMethodName                     = "/api.TenantService/Delete"
+	TenantService_List_FullMethodName                       = "/api.TenantService/List"
+	TenantService_ListByDevAddrPrefixOverlap_FullMethodName = "/api.TenantService/ListByDevAddrPrefixOverlap"
+	TenantService_AddUser_FullMethodName                    = "/api.TenantService/AddUser"
+	TenantService_GetUser_FullMethodName                    = "/api.TenantService/GetUser"
+	TenantService_UpdateUser_FullMethodName                 = "/api.TenantService/UpdateUser"
+	TenantService_DeleteUser_FullMethodName                 = "/api.TenantService/DeleteUser"
+	TenantService_ListUsers_FullMethodName                  = "/api.TenantService/ListUsers"
 )
 
 // TenantServiceClient is the client API for TenantService service.
@@ -48,6 +49,8 @@ type TenantServiceClient interface {
 	Delete(ctx context.Context, in *DeleteTenantRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Get the list of tenants.
 	List(ctx context.Context, in *ListTenantsRequest, opts ...grpc.CallOption) (*ListTenantsResponse, error)
+	// Get the list of tenants with DevAddr prefix overlap.
+	ListByDevAddrPrefixOverlap(ctx context.Context, in *ListTenantsByDevAddrPrefixOverlapRequest, opts ...grpc.CallOption) (*ListTenantsResponse, error)
 	// Add an user to the tenant.
 	// Note: the user must already exist.
 	AddUser(ctx context.Context, in *AddTenantUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -113,6 +116,16 @@ func (c *tenantServiceClient) List(ctx context.Context, in *ListTenantsRequest, 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListTenantsResponse)
 	err := c.cc.Invoke(ctx, TenantService_List_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tenantServiceClient) ListByDevAddrPrefixOverlap(ctx context.Context, in *ListTenantsByDevAddrPrefixOverlapRequest, opts ...grpc.CallOption) (*ListTenantsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTenantsResponse)
+	err := c.cc.Invoke(ctx, TenantService_ListByDevAddrPrefixOverlap_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -185,6 +198,8 @@ type TenantServiceServer interface {
 	Delete(context.Context, *DeleteTenantRequest) (*emptypb.Empty, error)
 	// Get the list of tenants.
 	List(context.Context, *ListTenantsRequest) (*ListTenantsResponse, error)
+	// Get the list of tenants with DevAddr prefix overlap.
+	ListByDevAddrPrefixOverlap(context.Context, *ListTenantsByDevAddrPrefixOverlapRequest) (*ListTenantsResponse, error)
 	// Add an user to the tenant.
 	// Note: the user must already exist.
 	AddUser(context.Context, *AddTenantUserRequest) (*emptypb.Empty, error)
@@ -220,6 +235,9 @@ func (UnimplementedTenantServiceServer) Delete(context.Context, *DeleteTenantReq
 }
 func (UnimplementedTenantServiceServer) List(context.Context, *ListTenantsRequest) (*ListTenantsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (UnimplementedTenantServiceServer) ListByDevAddrPrefixOverlap(context.Context, *ListTenantsByDevAddrPrefixOverlapRequest) (*ListTenantsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListByDevAddrPrefixOverlap not implemented")
 }
 func (UnimplementedTenantServiceServer) AddUser(context.Context, *AddTenantUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddUser not implemented")
@@ -347,6 +365,24 @@ func _TenantService_List_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TenantService_ListByDevAddrPrefixOverlap_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTenantsByDevAddrPrefixOverlapRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServiceServer).ListByDevAddrPrefixOverlap(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TenantService_ListByDevAddrPrefixOverlap_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServiceServer).ListByDevAddrPrefixOverlap(ctx, req.(*ListTenantsByDevAddrPrefixOverlapRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TenantService_AddUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddTenantUserRequest)
 	if err := dec(in); err != nil {
@@ -463,6 +499,10 @@ var TenantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "List",
 			Handler:    _TenantService_List_Handler,
+		},
+		{
+			MethodName: "ListByDevAddrPrefixOverlap",
+			Handler:    _TenantService_ListByDevAddrPrefixOverlap_Handler,
 		},
 		{
 			MethodName: "AddUser",

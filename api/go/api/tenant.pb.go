@@ -53,9 +53,19 @@ type Tenant struct {
 	// Tags (user defined).
 	// These tags can be used to add additional information to the tenant. These
 	// tags are NOT exposed in the integration events.
-	Tags          map[string]string `protobuf:"bytes,9,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Tags map[string]string `protobuf:"bytes,9,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// DevAddr Prefixes.
+	//
+	// This must be one or multiple sub-sets of the global DevAddr pool, or
+	// and error will be raised on create or update.
+	//
+	// Example prefix: 0000ff00/24
+	// (0000ff00 - 0000ffff)
+	//
+	// If left blank, ChirpStack will use the global DevAddr pool.
+	DevAddrPrefixes []string `protobuf:"bytes,10,rep,name=dev_addr_prefixes,json=devAddrPrefixes,proto3" json:"dev_addr_prefixes,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Tenant) Reset() {
@@ -147,6 +157,13 @@ func (x *Tenant) GetPrivateGatewaysDown() bool {
 func (x *Tenant) GetTags() map[string]string {
 	if x != nil {
 		return x.Tags
+	}
+	return nil
+}
+
+func (x *Tenant) GetDevAddrPrefixes() []string {
+	if x != nil {
+		return x.DevAddrPrefixes
 	}
 	return nil
 }
@@ -686,6 +703,54 @@ func (x *ListTenantsResponse) GetResult() []*TenantListItem {
 	return nil
 }
 
+type ListTenantsByDevAddrPrefixOverlapRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// DevAddr prefix.
+	// This will check if there is any tenant that has an overlapping DevAddr prefix
+	// configuration associated which overlaps (either sub-set or super-set) with
+	// this dev_addr_prefix.
+	DevAddrPrefix string `protobuf:"bytes,1,opt,name=dev_addr_prefix,json=devAddrPrefix,proto3" json:"dev_addr_prefix,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListTenantsByDevAddrPrefixOverlapRequest) Reset() {
+	*x = ListTenantsByDevAddrPrefixOverlapRequest{}
+	mi := &file_api_tenant_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListTenantsByDevAddrPrefixOverlapRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListTenantsByDevAddrPrefixOverlapRequest) ProtoMessage() {}
+
+func (x *ListTenantsByDevAddrPrefixOverlapRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_tenant_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListTenantsByDevAddrPrefixOverlapRequest.ProtoReflect.Descriptor instead.
+func (*ListTenantsByDevAddrPrefixOverlapRequest) Descriptor() ([]byte, []int) {
+	return file_api_tenant_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListTenantsByDevAddrPrefixOverlapRequest) GetDevAddrPrefix() string {
+	if x != nil {
+		return x.DevAddrPrefix
+	}
+	return ""
+}
+
 type TenantUser struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Tenant ID (UUID).
@@ -708,7 +773,7 @@ type TenantUser struct {
 
 func (x *TenantUser) Reset() {
 	*x = TenantUser{}
-	mi := &file_api_tenant_proto_msgTypes[10]
+	mi := &file_api_tenant_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -720,7 +785,7 @@ func (x *TenantUser) String() string {
 func (*TenantUser) ProtoMessage() {}
 
 func (x *TenantUser) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[10]
+	mi := &file_api_tenant_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -733,7 +798,7 @@ func (x *TenantUser) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantUser.ProtoReflect.Descriptor instead.
 func (*TenantUser) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{10}
+	return file_api_tenant_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *TenantUser) GetTenantId() string {
@@ -804,7 +869,7 @@ type TenantUserListItem struct {
 
 func (x *TenantUserListItem) Reset() {
 	*x = TenantUserListItem{}
-	mi := &file_api_tenant_proto_msgTypes[11]
+	mi := &file_api_tenant_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -816,7 +881,7 @@ func (x *TenantUserListItem) String() string {
 func (*TenantUserListItem) ProtoMessage() {}
 
 func (x *TenantUserListItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[11]
+	mi := &file_api_tenant_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -829,7 +894,7 @@ func (x *TenantUserListItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantUserListItem.ProtoReflect.Descriptor instead.
 func (*TenantUserListItem) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{11}
+	return file_api_tenant_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *TenantUserListItem) GetTenantId() string {
@@ -898,7 +963,7 @@ type AddTenantUserRequest struct {
 
 func (x *AddTenantUserRequest) Reset() {
 	*x = AddTenantUserRequest{}
-	mi := &file_api_tenant_proto_msgTypes[12]
+	mi := &file_api_tenant_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -910,7 +975,7 @@ func (x *AddTenantUserRequest) String() string {
 func (*AddTenantUserRequest) ProtoMessage() {}
 
 func (x *AddTenantUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[12]
+	mi := &file_api_tenant_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -923,7 +988,7 @@ func (x *AddTenantUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddTenantUserRequest.ProtoReflect.Descriptor instead.
 func (*AddTenantUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{12}
+	return file_api_tenant_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *AddTenantUserRequest) GetTenantUser() *TenantUser {
@@ -945,7 +1010,7 @@ type GetTenantUserRequest struct {
 
 func (x *GetTenantUserRequest) Reset() {
 	*x = GetTenantUserRequest{}
-	mi := &file_api_tenant_proto_msgTypes[13]
+	mi := &file_api_tenant_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -957,7 +1022,7 @@ func (x *GetTenantUserRequest) String() string {
 func (*GetTenantUserRequest) ProtoMessage() {}
 
 func (x *GetTenantUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[13]
+	mi := &file_api_tenant_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -970,7 +1035,7 @@ func (x *GetTenantUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTenantUserRequest.ProtoReflect.Descriptor instead.
 func (*GetTenantUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{13}
+	return file_api_tenant_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GetTenantUserRequest) GetTenantId() string {
@@ -1001,7 +1066,7 @@ type GetTenantUserResponse struct {
 
 func (x *GetTenantUserResponse) Reset() {
 	*x = GetTenantUserResponse{}
-	mi := &file_api_tenant_proto_msgTypes[14]
+	mi := &file_api_tenant_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1013,7 +1078,7 @@ func (x *GetTenantUserResponse) String() string {
 func (*GetTenantUserResponse) ProtoMessage() {}
 
 func (x *GetTenantUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[14]
+	mi := &file_api_tenant_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1026,7 +1091,7 @@ func (x *GetTenantUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTenantUserResponse.ProtoReflect.Descriptor instead.
 func (*GetTenantUserResponse) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{14}
+	return file_api_tenant_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetTenantUserResponse) GetTenantUser() *TenantUser {
@@ -1060,7 +1125,7 @@ type UpdateTenantUserRequest struct {
 
 func (x *UpdateTenantUserRequest) Reset() {
 	*x = UpdateTenantUserRequest{}
-	mi := &file_api_tenant_proto_msgTypes[15]
+	mi := &file_api_tenant_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1072,7 +1137,7 @@ func (x *UpdateTenantUserRequest) String() string {
 func (*UpdateTenantUserRequest) ProtoMessage() {}
 
 func (x *UpdateTenantUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[15]
+	mi := &file_api_tenant_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1085,7 +1150,7 @@ func (x *UpdateTenantUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTenantUserRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTenantUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{15}
+	return file_api_tenant_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UpdateTenantUserRequest) GetTenantUser() *TenantUser {
@@ -1107,7 +1172,7 @@ type DeleteTenantUserRequest struct {
 
 func (x *DeleteTenantUserRequest) Reset() {
 	*x = DeleteTenantUserRequest{}
-	mi := &file_api_tenant_proto_msgTypes[16]
+	mi := &file_api_tenant_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1119,7 +1184,7 @@ func (x *DeleteTenantUserRequest) String() string {
 func (*DeleteTenantUserRequest) ProtoMessage() {}
 
 func (x *DeleteTenantUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[16]
+	mi := &file_api_tenant_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1132,7 +1197,7 @@ func (x *DeleteTenantUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTenantUserRequest.ProtoReflect.Descriptor instead.
 func (*DeleteTenantUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{16}
+	return file_api_tenant_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *DeleteTenantUserRequest) GetTenantId() string {
@@ -1164,7 +1229,7 @@ type ListTenantUsersRequest struct {
 
 func (x *ListTenantUsersRequest) Reset() {
 	*x = ListTenantUsersRequest{}
-	mi := &file_api_tenant_proto_msgTypes[17]
+	mi := &file_api_tenant_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1176,7 +1241,7 @@ func (x *ListTenantUsersRequest) String() string {
 func (*ListTenantUsersRequest) ProtoMessage() {}
 
 func (x *ListTenantUsersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[17]
+	mi := &file_api_tenant_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1189,7 +1254,7 @@ func (x *ListTenantUsersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTenantUsersRequest.ProtoReflect.Descriptor instead.
 func (*ListTenantUsersRequest) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{17}
+	return file_api_tenant_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListTenantUsersRequest) GetTenantId() string {
@@ -1225,7 +1290,7 @@ type ListTenantUsersResponse struct {
 
 func (x *ListTenantUsersResponse) Reset() {
 	*x = ListTenantUsersResponse{}
-	mi := &file_api_tenant_proto_msgTypes[18]
+	mi := &file_api_tenant_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1237,7 +1302,7 @@ func (x *ListTenantUsersResponse) String() string {
 func (*ListTenantUsersResponse) ProtoMessage() {}
 
 func (x *ListTenantUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_tenant_proto_msgTypes[18]
+	mi := &file_api_tenant_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1250,7 +1315,7 @@ func (x *ListTenantUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTenantUsersResponse.ProtoReflect.Descriptor instead.
 func (*ListTenantUsersResponse) Descriptor() ([]byte, []int) {
-	return file_api_tenant_proto_rawDescGZIP(), []int{18}
+	return file_api_tenant_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListTenantUsersResponse) GetTotalCount() uint32 {
@@ -1271,7 +1336,7 @@ var File_api_tenant_proto protoreflect.FileDescriptor
 
 const file_api_tenant_proto_rawDesc = "" +
 	"\n" +
-	"\x10api/tenant.proto\x12\x03api\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"\x98\x03\n" +
+	"\x10api/tenant.proto\x12\x03api\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc4\x03\n" +
 	"\x06Tenant\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -1281,7 +1346,9 @@ const file_api_tenant_proto_rawDesc = "" +
 	"\x10max_device_count\x18\x06 \x01(\rR\x0emaxDeviceCount\x12.\n" +
 	"\x13private_gateways_up\x18\a \x01(\bR\x11privateGatewaysUp\x122\n" +
 	"\x15private_gateways_down\x18\b \x01(\bR\x13privateGatewaysDown\x12)\n" +
-	"\x04tags\x18\t \x03(\v2\x15.api.Tenant.TagsEntryR\x04tags\x1a7\n" +
+	"\x04tags\x18\t \x03(\v2\x15.api.Tenant.TagsEntryR\x04tags\x12*\n" +
+	"\x11dev_addr_prefixes\x18\n" +
+	" \x03(\tR\x0fdevAddrPrefixes\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x90\x03\n" +
@@ -1321,7 +1388,9 @@ const file_api_tenant_proto_rawDesc = "" +
 	"\x13ListTenantsResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
 	"totalCount\x12+\n" +
-	"\x06result\x18\x02 \x03(\v2\x13.api.TenantListItemR\x06result\"\xc5\x01\n" +
+	"\x06result\x18\x02 \x03(\v2\x13.api.TenantListItemR\x06result\"R\n" +
+	"(ListTenantsByDevAddrPrefixOverlapRequest\x12&\n" +
+	"\x0fdev_addr_prefix\x18\x01 \x01(\tR\rdevAddrPrefix\"\xc5\x01\n" +
 	"\n" +
 	"TenantUser\x12\x1b\n" +
 	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x17\n" +
@@ -1367,13 +1436,14 @@ const file_api_tenant_proto_rawDesc = "" +
 	"\x17ListTenantUsersResponse\x12\x1f\n" +
 	"\vtotal_count\x18\x01 \x01(\rR\n" +
 	"totalCount\x12/\n" +
-	"\x06result\x18\x02 \x03(\v2\x17.api.TenantUserListItemR\x06result2\xa2\b\n" +
+	"\x06result\x18\x02 \x03(\v2\x17.api.TenantUserListItemR\x06result2\xba\t\n" +
 	"\rTenantService\x12V\n" +
 	"\x06Create\x12\x18.api.CreateTenantRequest\x1a\x19.api.CreateTenantResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/api/tenants\x12O\n" +
 	"\x03Get\x12\x15.api.GetTenantRequest\x1a\x16.api.GetTenantResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/api/tenants/{id}\x12_\n" +
 	"\x06Update\x12\x18.api.UpdateTenantRequest\x1a\x16.google.protobuf.Empty\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\x1a\x18/api/tenants/{tenant.id}\x12U\n" +
 	"\x06Delete\x12\x18.api.DeleteTenantRequest\x1a\x16.google.protobuf.Empty\"\x19\x82\xd3\xe4\x93\x02\x13*\x11/api/tenants/{id}\x12O\n" +
-	"\x04List\x12\x17.api.ListTenantsRequest\x1a\x18.api.ListTenantsResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/api/tenants\x12s\n" +
+	"\x04List\x12\x17.api.ListTenantsRequest\x1a\x18.api.ListTenantsResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/api/tenants\x12\x95\x01\n" +
+	"\x1aListByDevAddrPrefixOverlap\x12-.api.ListTenantsByDevAddrPrefixOverlapRequest\x1a\x18.api.ListTenantsResponse\".\x82\xd3\xe4\x93\x02(\x12&/api/tenants/by-devaddr-prefix-overlap\x12s\n" +
 	"\aAddUser\x12\x19.api.AddTenantUserRequest\x1a\x16.google.protobuf.Empty\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/api/tenants/{tenant_user.tenant_id}/users\x12r\n" +
 	"\aGetUser\x12\x19.api.GetTenantUserRequest\x1a\x1a.api.GetTenantUserResponse\"0\x82\xd3\xe4\x93\x02*\x12(/api/tenants/{tenant_id}/users/{user_id}\x12\x8f\x01\n" +
 	"\n" +
@@ -1395,71 +1465,74 @@ func file_api_tenant_proto_rawDescGZIP() []byte {
 	return file_api_tenant_proto_rawDescData
 }
 
-var file_api_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_api_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_api_tenant_proto_goTypes = []any{
-	(*Tenant)(nil),                  // 0: api.Tenant
-	(*TenantListItem)(nil),          // 1: api.TenantListItem
-	(*CreateTenantRequest)(nil),     // 2: api.CreateTenantRequest
-	(*CreateTenantResponse)(nil),    // 3: api.CreateTenantResponse
-	(*GetTenantRequest)(nil),        // 4: api.GetTenantRequest
-	(*GetTenantResponse)(nil),       // 5: api.GetTenantResponse
-	(*UpdateTenantRequest)(nil),     // 6: api.UpdateTenantRequest
-	(*DeleteTenantRequest)(nil),     // 7: api.DeleteTenantRequest
-	(*ListTenantsRequest)(nil),      // 8: api.ListTenantsRequest
-	(*ListTenantsResponse)(nil),     // 9: api.ListTenantsResponse
-	(*TenantUser)(nil),              // 10: api.TenantUser
-	(*TenantUserListItem)(nil),      // 11: api.TenantUserListItem
-	(*AddTenantUserRequest)(nil),    // 12: api.AddTenantUserRequest
-	(*GetTenantUserRequest)(nil),    // 13: api.GetTenantUserRequest
-	(*GetTenantUserResponse)(nil),   // 14: api.GetTenantUserResponse
-	(*UpdateTenantUserRequest)(nil), // 15: api.UpdateTenantUserRequest
-	(*DeleteTenantUserRequest)(nil), // 16: api.DeleteTenantUserRequest
-	(*ListTenantUsersRequest)(nil),  // 17: api.ListTenantUsersRequest
-	(*ListTenantUsersResponse)(nil), // 18: api.ListTenantUsersResponse
-	nil,                             // 19: api.Tenant.TagsEntry
-	(*timestamppb.Timestamp)(nil),   // 20: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),           // 21: google.protobuf.Empty
+	(*Tenant)(nil),                                   // 0: api.Tenant
+	(*TenantListItem)(nil),                           // 1: api.TenantListItem
+	(*CreateTenantRequest)(nil),                      // 2: api.CreateTenantRequest
+	(*CreateTenantResponse)(nil),                     // 3: api.CreateTenantResponse
+	(*GetTenantRequest)(nil),                         // 4: api.GetTenantRequest
+	(*GetTenantResponse)(nil),                        // 5: api.GetTenantResponse
+	(*UpdateTenantRequest)(nil),                      // 6: api.UpdateTenantRequest
+	(*DeleteTenantRequest)(nil),                      // 7: api.DeleteTenantRequest
+	(*ListTenantsRequest)(nil),                       // 8: api.ListTenantsRequest
+	(*ListTenantsResponse)(nil),                      // 9: api.ListTenantsResponse
+	(*ListTenantsByDevAddrPrefixOverlapRequest)(nil), // 10: api.ListTenantsByDevAddrPrefixOverlapRequest
+	(*TenantUser)(nil),                               // 11: api.TenantUser
+	(*TenantUserListItem)(nil),                       // 12: api.TenantUserListItem
+	(*AddTenantUserRequest)(nil),                     // 13: api.AddTenantUserRequest
+	(*GetTenantUserRequest)(nil),                     // 14: api.GetTenantUserRequest
+	(*GetTenantUserResponse)(nil),                    // 15: api.GetTenantUserResponse
+	(*UpdateTenantUserRequest)(nil),                  // 16: api.UpdateTenantUserRequest
+	(*DeleteTenantUserRequest)(nil),                  // 17: api.DeleteTenantUserRequest
+	(*ListTenantUsersRequest)(nil),                   // 18: api.ListTenantUsersRequest
+	(*ListTenantUsersResponse)(nil),                  // 19: api.ListTenantUsersResponse
+	nil,                                              // 20: api.Tenant.TagsEntry
+	(*timestamppb.Timestamp)(nil),                    // 21: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),                            // 22: google.protobuf.Empty
 }
 var file_api_tenant_proto_depIdxs = []int32{
-	19, // 0: api.Tenant.tags:type_name -> api.Tenant.TagsEntry
-	20, // 1: api.TenantListItem.created_at:type_name -> google.protobuf.Timestamp
-	20, // 2: api.TenantListItem.updated_at:type_name -> google.protobuf.Timestamp
+	20, // 0: api.Tenant.tags:type_name -> api.Tenant.TagsEntry
+	21, // 1: api.TenantListItem.created_at:type_name -> google.protobuf.Timestamp
+	21, // 2: api.TenantListItem.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: api.CreateTenantRequest.tenant:type_name -> api.Tenant
 	0,  // 4: api.GetTenantResponse.tenant:type_name -> api.Tenant
-	20, // 5: api.GetTenantResponse.created_at:type_name -> google.protobuf.Timestamp
-	20, // 6: api.GetTenantResponse.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 5: api.GetTenantResponse.created_at:type_name -> google.protobuf.Timestamp
+	21, // 6: api.GetTenantResponse.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 7: api.UpdateTenantRequest.tenant:type_name -> api.Tenant
 	1,  // 8: api.ListTenantsResponse.result:type_name -> api.TenantListItem
-	20, // 9: api.TenantUserListItem.created_at:type_name -> google.protobuf.Timestamp
-	20, // 10: api.TenantUserListItem.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 11: api.AddTenantUserRequest.tenant_user:type_name -> api.TenantUser
-	10, // 12: api.GetTenantUserResponse.tenant_user:type_name -> api.TenantUser
-	20, // 13: api.GetTenantUserResponse.created_at:type_name -> google.protobuf.Timestamp
-	20, // 14: api.GetTenantUserResponse.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 15: api.UpdateTenantUserRequest.tenant_user:type_name -> api.TenantUser
-	11, // 16: api.ListTenantUsersResponse.result:type_name -> api.TenantUserListItem
+	21, // 9: api.TenantUserListItem.created_at:type_name -> google.protobuf.Timestamp
+	21, // 10: api.TenantUserListItem.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 11: api.AddTenantUserRequest.tenant_user:type_name -> api.TenantUser
+	11, // 12: api.GetTenantUserResponse.tenant_user:type_name -> api.TenantUser
+	21, // 13: api.GetTenantUserResponse.created_at:type_name -> google.protobuf.Timestamp
+	21, // 14: api.GetTenantUserResponse.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 15: api.UpdateTenantUserRequest.tenant_user:type_name -> api.TenantUser
+	12, // 16: api.ListTenantUsersResponse.result:type_name -> api.TenantUserListItem
 	2,  // 17: api.TenantService.Create:input_type -> api.CreateTenantRequest
 	4,  // 18: api.TenantService.Get:input_type -> api.GetTenantRequest
 	6,  // 19: api.TenantService.Update:input_type -> api.UpdateTenantRequest
 	7,  // 20: api.TenantService.Delete:input_type -> api.DeleteTenantRequest
 	8,  // 21: api.TenantService.List:input_type -> api.ListTenantsRequest
-	12, // 22: api.TenantService.AddUser:input_type -> api.AddTenantUserRequest
-	13, // 23: api.TenantService.GetUser:input_type -> api.GetTenantUserRequest
-	15, // 24: api.TenantService.UpdateUser:input_type -> api.UpdateTenantUserRequest
-	16, // 25: api.TenantService.DeleteUser:input_type -> api.DeleteTenantUserRequest
-	17, // 26: api.TenantService.ListUsers:input_type -> api.ListTenantUsersRequest
-	3,  // 27: api.TenantService.Create:output_type -> api.CreateTenantResponse
-	5,  // 28: api.TenantService.Get:output_type -> api.GetTenantResponse
-	21, // 29: api.TenantService.Update:output_type -> google.protobuf.Empty
-	21, // 30: api.TenantService.Delete:output_type -> google.protobuf.Empty
-	9,  // 31: api.TenantService.List:output_type -> api.ListTenantsResponse
-	21, // 32: api.TenantService.AddUser:output_type -> google.protobuf.Empty
-	14, // 33: api.TenantService.GetUser:output_type -> api.GetTenantUserResponse
-	21, // 34: api.TenantService.UpdateUser:output_type -> google.protobuf.Empty
-	21, // 35: api.TenantService.DeleteUser:output_type -> google.protobuf.Empty
-	18, // 36: api.TenantService.ListUsers:output_type -> api.ListTenantUsersResponse
-	27, // [27:37] is the sub-list for method output_type
-	17, // [17:27] is the sub-list for method input_type
+	10, // 22: api.TenantService.ListByDevAddrPrefixOverlap:input_type -> api.ListTenantsByDevAddrPrefixOverlapRequest
+	13, // 23: api.TenantService.AddUser:input_type -> api.AddTenantUserRequest
+	14, // 24: api.TenantService.GetUser:input_type -> api.GetTenantUserRequest
+	16, // 25: api.TenantService.UpdateUser:input_type -> api.UpdateTenantUserRequest
+	17, // 26: api.TenantService.DeleteUser:input_type -> api.DeleteTenantUserRequest
+	18, // 27: api.TenantService.ListUsers:input_type -> api.ListTenantUsersRequest
+	3,  // 28: api.TenantService.Create:output_type -> api.CreateTenantResponse
+	5,  // 29: api.TenantService.Get:output_type -> api.GetTenantResponse
+	22, // 30: api.TenantService.Update:output_type -> google.protobuf.Empty
+	22, // 31: api.TenantService.Delete:output_type -> google.protobuf.Empty
+	9,  // 32: api.TenantService.List:output_type -> api.ListTenantsResponse
+	9,  // 33: api.TenantService.ListByDevAddrPrefixOverlap:output_type -> api.ListTenantsResponse
+	22, // 34: api.TenantService.AddUser:output_type -> google.protobuf.Empty
+	15, // 35: api.TenantService.GetUser:output_type -> api.GetTenantUserResponse
+	22, // 36: api.TenantService.UpdateUser:output_type -> google.protobuf.Empty
+	22, // 37: api.TenantService.DeleteUser:output_type -> google.protobuf.Empty
+	19, // 38: api.TenantService.ListUsers:output_type -> api.ListTenantUsersResponse
+	28, // [28:39] is the sub-list for method output_type
+	17, // [17:28] is the sub-list for method input_type
 	17, // [17:17] is the sub-list for extension type_name
 	17, // [17:17] is the sub-list for extension extendee
 	0,  // [0:17] is the sub-list for field type_name
@@ -1476,7 +1549,7 @@ func file_api_tenant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_tenant_proto_rawDesc), len(file_api_tenant_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -228,6 +228,9 @@ message ListTenantsResponse {
 
 message ListTenantsByDevAddrPrefixOverlapRequest {
   // DevAddr prefix.
+  // This will check if there is any tenant that has an overlapping DevAddr prefix
+  // configuration associated which overlaps (either sub-set or super-set) with
+  // this dev_addr_prefix.
   string dev_addr_prefix = 1;
 }
 
