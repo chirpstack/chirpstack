@@ -272,6 +272,13 @@ pub fn run() {
     {{/each}}
   ]
 
+  # Max mac-command error count.
+  #
+  # When a mac-command is nACKed for more than the configured value, then
+  # ChirpStack will stop sending this mac-command to the device. This setting
+  # prevents that Chirpstack will keep sending mac-commands on every downlink
+  # in case of a malfunctioning device.
+  max_mac_command_error_count={{ network.max_mac_command_error_count }}
 
   # Scheduler settings.
   [network.scheduler]
