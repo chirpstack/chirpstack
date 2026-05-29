@@ -11,8 +11,13 @@ import type {
   DeleteMulticastGroupRequest,
   ListMulticastGroupsRequest,
   ListMulticastGroupsResponse,
+  GetRandomMulticastGroupDevAddrRequest,
+  GetRandomMulticastGroupDevAddrResponse,
   AddDeviceToMulticastGroupRequest,
+  ListMulticastGroupDevicesRequest,
+  ListMulticastGroupDevicesResponse,
   RemoveDeviceFromMulticastGroupRequest,
+  SyncMulticastGroupTs005SessionRequest,
   AddGatewayToMulticastGroupRequest,
   RemoveGatewayFromMulticastGroupRequest,
   ListMulticastGroupQueueRequest,
@@ -103,6 +108,20 @@ class MulticastGroupStore extends EventEmitter {
     });
   };
 
+  getRandomDevAddr = (
+    req: GetRandomMulticastGroupDevAddrRequest,
+    callbackFunc: (resp: GetRandomMulticastGroupDevAddrResponse) => void,
+  ) => {
+    this.client.getRandomDevAddr(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
   addDevice = (req: AddDeviceToMulticastGroupRequest, callbackFunc: () => void) => {
     this.client.addDevice(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
@@ -119,12 +138,42 @@ class MulticastGroupStore extends EventEmitter {
     });
   };
 
+  listDevices = (
+    req: ListMulticastGroupDevicesRequest,
+    callbackFunc: (resp: ListMulticastGroupDevicesResponse) => void,
+  ) => {
+    this.client.listDevices(req, SessionStore.getMetadata(), (err, resp) => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      callbackFunc(resp);
+    });
+  };
+
   removeDevice = (req: RemoveDeviceFromMulticastGroupRequest, callbackFunc: () => void) => {
     this.client.removeDevice(req, SessionStore.getMetadata(), err => {
       if (err !== null) {
         HandleError(err);
         return;
       }
+
+      callbackFunc();
+    });
+  };
+
+  syncTs005Session = (req: SyncMulticastGroupTs005SessionRequest, callbackFunc: () => void) => {
+    this.client.syncTs005Session(req, SessionStore.getMetadata(), err => {
+      if (err !== null) {
+        HandleError(err);
+        return;
+      }
+
+      notification.success({
+        message: "TS005 multicast session sync started",
+        duration: 3,
+      });
 
       callbackFunc();
     });

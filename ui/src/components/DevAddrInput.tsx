@@ -13,6 +13,7 @@ interface IProps {
   devEui: string;
   required?: boolean;
   disabled?: boolean;
+  generateRandom?: (callbackFunc: (devAddr: string) => void) => void;
 }
 
 function DevAddrInput(props: IProps) {
@@ -35,6 +36,13 @@ function DevAddrInput(props: IProps) {
   };
 
   const generateRandom = () => {
+    if (props.generateRandom) {
+      props.generateRandom((devAddr: string) => {
+        form.setFieldValue(props.name, devAddr);
+      });
+      return;
+    }
+
     const req = new GetRandomDevAddrRequest();
     req.setDevEui(props.devEui);
 

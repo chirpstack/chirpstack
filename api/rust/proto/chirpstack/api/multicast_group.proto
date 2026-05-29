@@ -48,6 +48,15 @@ service MulticastGroupService {
     option (google.api.http) = {get: "/api/multicast-groups"};
   }
 
+  // GetRandomDevAddr returns a random DevAddr taking the tenant NwkID prefix
+  // configuration into account.
+  rpc GetRandomDevAddr(GetRandomMulticastGroupDevAddrRequest) returns (GetRandomMulticastGroupDevAddrResponse) {
+    option (google.api.http) = {
+      post: "/api/applications/{application_id}/multicast-groups/get-random-dev-addr"
+      body: "*"
+    };
+  }
+
   // Add a device to the multicast group.
   rpc AddDevice(AddDeviceToMulticastGroupRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
@@ -56,9 +65,23 @@ service MulticastGroupService {
     };
   }
 
+  // List the devices in the multicast group.
+  rpc ListDevices(ListMulticastGroupDevicesRequest) returns (ListMulticastGroupDevicesResponse) {
+    option (google.api.http) = {get: "/api/multicast-groups/{multicast_group_id}/devices"};
+  }
+
   // Remove a device from the multicast group.
   rpc RemoveDevice(RemoveDeviceFromMulticastGroupRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete: "/api/multicast-groups/{multicast_group_id}/devices/{dev_eui}"};
+  }
+
+  // SyncTs005Session sends the TS005 McClassB/CSessionReq to devices with
+  // completed multicast-group setup.
+  rpc SyncTs005Session(SyncMulticastGroupTs005SessionRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/multicast-groups/{multicast_group_id}/sync-ts005-session"
+      body: "*"
+    };
   }
 
   // Add a gateway to the multicast group.
@@ -114,6 +137,14 @@ enum MulticastGroupSchedulingType {
   GPS_TIME = 1;
 }
 
+enum MulticastGroupSetup {
+  // Multicast setup is handled outside ChirpStack.
+  OUT_OF_BAND = 0;
+
+  // Multicast setup is handled through LoRaWAN TS005.
+  TS005 = 1;
+}
+
 message MulticastGroup {
   // ID (UUID).
   // This will be generated automatically on create.
@@ -162,6 +193,15 @@ message MulticastGroup {
 
   // Scheduling type (only for Class-C).
   MulticastGroupSchedulingType class_c_scheduling_type = 13;
+
+  // Multicast setup.
+  MulticastGroupSetup setup = 15;
+
+  // Multicast session start time (only for TS005).
+  google.protobuf.Timestamp mc_session_start = 16;
+
+  // Multicast session timeout (only for TS005).
+  uint32 mc_session_timeout = 17;
 }
 
 message MulticastGroupListItem {
@@ -198,6 +238,16 @@ message CreateMulticastGroupRequest {
 message CreateMulticastGroupResponse {
   // ID of created multicast group (UUID).
   string id = 1;
+}
+
+message GetRandomMulticastGroupDevAddrRequest {
+  // Application ID.
+  string application_id = 1;
+}
+
+message GetRandomMulticastGroupDevAddrResponse {
+  // DevAddr.
+  string dev_addr = 1;
 }
 
 message GetMulticastGroupRequest {
@@ -271,6 +321,61 @@ message RemoveDeviceFromMulticastGroupRequest {
 
   // Device EUI (HEX encoded).
   string dev_eui = 2;
+}
+
+message SyncMulticastGroupTs005SessionRequest {
+  // Multicast group ID.
+  string multicast_group_id = 1;
+
+  // Multicast session start time.
+  // If set, this updates the multicast-group before syncing the session.
+  google.protobuf.Timestamp mc_session_start = 2;
+
+  // Multicast session timeout.
+  // Only applied when mc_session_start is set.
+  uint32 mc_session_timeout = 3;
+}
+
+message ListMulticastGroupDevicesRequest {
+  // Multicast group ID.
+  string multicast_group_id = 1;
+
+  // Max number of devices to return in the result-set.
+  uint32 limit = 2;
+
+  // Offset in the result-set (for pagination).
+  uint32 offset = 3;
+}
+
+message MulticastGroupDeviceListItem {
+  // DevEUI.
+  string dev_eui = 1;
+
+  // Device name.
+  string device_name = 2;
+
+  // TS005 multicast group ID.
+  uint32 mc_group_id = 3;
+
+  // McGroupSetup completed at.
+  google.protobuf.Timestamp mc_group_setup_completed_at = 4;
+
+  // McSession completed at.
+  google.protobuf.Timestamp mc_session_completed_at = 5;
+
+  // Error message.
+  string error_msg = 6;
+
+  // The device is waiting for a TS005 delete acknowledgement.
+  bool pending_delete = 7;
+}
+
+message ListMulticastGroupDevicesResponse {
+  // Total number of devices.
+  uint32 total_count = 1;
+
+  // Result-set.
+  repeated MulticastGroupDeviceListItem result = 2;
 }
 
 message AddGatewayToMulticastGroupRequest {

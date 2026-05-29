@@ -292,6 +292,10 @@ diesel::table! {
         mc_addr -> Binary,
         mc_nwk_s_key -> Binary,
         mc_app_s_key -> Binary,
+        setup -> Text,
+        mc_key -> Nullable<Binary>,
+        mc_session_start -> Nullable<TimestamptzSqlite>,
+        mc_session_timeout -> SmallInt,
         f_cnt -> BigInt,
         group_type -> Text,
         dr -> SmallInt,
@@ -306,6 +310,11 @@ diesel::table! {
         multicast_group_id -> Text,
         dev_eui -> Binary,
         created_at -> TimestamptzSqlite,
+        mc_group_id -> Nullable<SmallInt>,
+        mc_group_setup_completed_at -> Nullable<TimestamptzSqlite>,
+        mc_session_completed_at -> Nullable<TimestamptzSqlite>,
+        error_msg -> Text,
+        pending_delete -> Bool,
     }
 }
 

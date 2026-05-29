@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 
-import { Form, Input, InputNumber, Select, Row, Col, Button } from "antd";
+import { Form, Input, InputNumber, Select, Row, Col, Button, Switch } from "antd";
+import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 
 import { Region } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import {
   MulticastGroup,
   MulticastGroupType,
   MulticastGroupSchedulingType,
+  MulticastGroupSetup,
+  GetRandomMulticastGroupDevAddrRequest,
 } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { GetRandomMulticastGroupDevAddrResponse } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 import type { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
 
 import { getEnumName, onFinishFailed } from "../helpers";
 import InternalStore from "../../stores/InternalStore";
+import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import AesKeyInput from "../../components/AesKeyInput";
 import DevAddrInput from "../../components/DevAddrInput";
 
@@ -21,9 +26,20 @@ interface IProps {
   disabled?: boolean;
 }
 
+interface MulticastGroupFormValues extends MulticastGroup.AsObject {
+  ts005Setup?: boolean;
+  mcSessionStartInput?: string;
+}
+
+function toDateTimeLocal(date: Date): string {
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 19);
+}
+
 function MulticastGroupForm(props: IProps) {
   const [form] = Form.useForm();
   const [selectPingSlotPeriod, setSelectPingSlotPeriod] = useState<boolean>(false);
+  const [ts005Setup, setTs005Setup] = useState<boolean>(props.initialValues.getSetup() === MulticastGroupSetup.TS005);
   const [regionConfigurations, setRegionConfigurations] = useState<RegionListItem[]>([]);
 
   useEffect(() => {
@@ -32,7 +48,7 @@ function MulticastGroupForm(props: IProps) {
     });
   }, []);
 
-  const onFinish = (values: MulticastGroup.AsObject) => {
+  const onFinish = (values: MulticastGroupFormValues) => {
     const v = Object.assign(props.initialValues.toObject(), values);
     const mg = new MulticastGroup();
     mg.setId(v.id);
@@ -49,12 +65,30 @@ function MulticastGroupForm(props: IProps) {
     mg.setGroupType(v.groupType);
     mg.setClassBPingSlotPeriodicity(v.classBPingSlotPeriodicity);
     mg.setClassCSchedulingType(v.classCSchedulingType);
+    mg.setSetup(values.ts005Setup ? MulticastGroupSetup.TS005 : MulticastGroupSetup.OUT_OF_BAND);
+
+    if (values.ts005Setup) {
+      mg.setMcSessionStart(Timestamp.fromDate(new Date(values.mcSessionStartInput || "")));
+      mg.setMcSessionTimeout(v.mcSessionTimeout);
+    } else {
+      mg.clearMcSessionStart();
+      mg.setMcSessionTimeout(0);
+    }
 
     props.onFinish(mg);
   };
 
   const onGroupTypeChange = (groupType: MulticastGroupType) => {
     setSelectPingSlotPeriod(groupType === MulticastGroupType.CLASS_B);
+  };
+
+  const generateRandomMcAddr = (callbackFunc: (devAddr: string) => void) => {
+    const req = new GetRandomMulticastGroupDevAddrRequest();
+    req.setApplicationId(props.initialValues.getApplicationId());
+
+    MulticastGroupStore.getRandomDevAddr(req, (resp: GetRandomMulticastGroupDevAddrResponse) => {
+      callbackFunc(resp.getDevAddr());
+    });
   };
 
   const regConfs = regionConfigurations
@@ -67,10 +101,18 @@ function MulticastGroupForm(props: IProps) {
       };
     });
 
+  const initialValues = {
+    ...props.initialValues.toObject(),
+    ts005Setup,
+    mcSessionStartInput: props.initialValues.getMcSessionStart()
+      ? toDateTimeLocal(props.initialValues.getMcSessionStart()!.toDate())
+      : "",
+  };
+
   return (
     <Form
       layout="vertical"
-      initialValues={props.initialValues.toObject()}
+      initialValues={initialValues}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       form={form}
@@ -78,9 +120,45 @@ function MulticastGroupForm(props: IProps) {
       <Form.Item label="Multicast-group name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
         <Input disabled={props.disabled} />
       </Form.Item>
-      <DevAddrInput label="Multicast address" name="mcAddr" devEui="" disabled={props.disabled} required />
-      <AesKeyInput label="Multicast network session key" name="mcNwkSKey" disabled={props.disabled} required />
-      <AesKeyInput label="Multicast application session key" name="mcAppSKey" disabled={props.disabled} required />
+      <Form.Item label="TS005 remote multicast setup" name="ts005Setup" valuePropName="checked">
+        <Switch disabled={props.disabled} onChange={setTs005Setup} />
+      </Form.Item>
+      <DevAddrInput
+        label="Multicast address"
+        name="mcAddr"
+        devEui=""
+        disabled={props.disabled}
+        required
+        generateRandom={generateRandomMcAddr}
+      />
+      {!ts005Setup && (
+        <>
+          <AesKeyInput label="Multicast network session key" name="mcNwkSKey" disabled={props.disabled} required />
+          <AesKeyInput label="Multicast application session key" name="mcAppSKey" disabled={props.disabled} required />
+        </>
+      )}
+      {ts005Setup && (
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              label="Multicast session start"
+              name="mcSessionStartInput"
+              rules={[{ required: true, message: "Please enter a session start!" }]}
+            >
+              <Input type="datetime-local" disabled={props.disabled} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Multicast session timeout"
+              name="mcSessionTimeout"
+              rules={[{ required: true, message: "Please enter a session timeout!" }]}
+            >
+              <InputNumber min={0} max={15} disabled={props.disabled} style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+        </Row>
+      )}
       <Row gutter={24}>
         <Col span={8}>
           <Form.Item label="Region" name="region" rules={[{ required: true, message: "Please select a region!" }]}>

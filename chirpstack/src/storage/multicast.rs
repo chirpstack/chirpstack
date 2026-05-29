@@ -29,6 +29,10 @@ pub struct MulticastGroup {
     pub mc_addr: DevAddr,
     pub mc_nwk_s_key: AES128Key,
     pub mc_app_s_key: AES128Key,
+    pub setup: String,
+    pub mc_key: Option<AES128Key>,
+    pub mc_session_start: Option<DateTime<Utc>>,
+    pub mc_session_timeout: i16,
     pub f_cnt: i64,
     pub group_type: String,
     pub dr: i16,
@@ -42,6 +46,17 @@ impl MulticastGroup {
         if self.name.is_empty() {
             return Err(Error::Validation("name is not set".into()));
         }
+
+        if self.setup != "OUT_OF_BAND" && self.setup != "TS005" {
+            return Err(Error::Validation("Invalid multicast setup".into()));
+        }
+
+        if self.mc_session_timeout < 0 || self.mc_session_timeout > 15 {
+            return Err(Error::Validation(
+                "Multicast session timeout must be between 0 - 15".into(),
+            ));
+        }
+
         Ok(())
     }
 }
@@ -60,6 +75,10 @@ impl Default for MulticastGroup {
             mc_addr: DevAddr::default(),
             mc_nwk_s_key: AES128Key::default(),
             mc_app_s_key: AES128Key::default(),
+            setup: "OUT_OF_BAND".into(),
+            mc_key: None,
+            mc_session_start: None,
+            mc_session_timeout: 0,
             f_cnt: 0,
             group_type: "".into(),
             dr: 0,
@@ -80,6 +99,45 @@ pub struct MulticastGroupListItem {
     pub group_type: String,
     pub application_id: fields::Uuid,
     pub application_name: String,
+}
+
+#[derive(Clone, Queryable, Insertable, Debug, PartialEq, Eq)]
+#[diesel(table_name = multicast_group_device)]
+pub struct MulticastGroupDevice {
+    pub multicast_group_id: fields::Uuid,
+    pub dev_eui: EUI64,
+    pub created_at: DateTime<Utc>,
+    pub mc_group_id: Option<i16>,
+    pub mc_group_setup_completed_at: Option<DateTime<Utc>>,
+    pub mc_session_completed_at: Option<DateTime<Utc>>,
+    pub error_msg: String,
+    pub pending_delete: bool,
+}
+
+impl Default for MulticastGroupDevice {
+    fn default() -> Self {
+        Self {
+            multicast_group_id: Uuid::nil().into(),
+            dev_eui: EUI64::default(),
+            created_at: Utc::now(),
+            mc_group_id: None,
+            mc_group_setup_completed_at: None,
+            mc_session_completed_at: None,
+            error_msg: "".into(),
+            pending_delete: false,
+        }
+    }
+}
+
+#[derive(Clone, Queryable, Debug, PartialEq, Eq)]
+pub struct MulticastGroupDeviceListItem {
+    pub dev_eui: EUI64,
+    pub device_name: String,
+    pub mc_group_id: Option<i16>,
+    pub mc_group_setup_completed_at: Option<DateTime<Utc>>,
+    pub mc_session_completed_at: Option<DateTime<Utc>>,
+    pub error_msg: String,
+    pub pending_delete: bool,
 }
 
 #[derive(Default, Clone)]
@@ -167,6 +225,10 @@ pub async fn update(mg: MulticastGroup) -> Result<MulticastGroup, Error> {
             multicast_group::mc_addr.eq(&mg.mc_addr),
             multicast_group::mc_nwk_s_key.eq(&mg.mc_nwk_s_key),
             multicast_group::mc_app_s_key.eq(&mg.mc_app_s_key),
+            multicast_group::setup.eq(&mg.setup),
+            multicast_group::mc_key.eq(&mg.mc_key),
+            multicast_group::mc_session_start.eq(&mg.mc_session_start),
+            multicast_group::mc_session_timeout.eq(&mg.mc_session_timeout),
             multicast_group::f_cnt.eq(&mg.f_cnt),
             multicast_group::group_type.eq(&mg.group_type),
             multicast_group::dr.eq(&mg.dr),
@@ -288,46 +350,87 @@ pub async fn list(
         .map_err(|e| Error::from_diesel(e, "".into()))
 }
 
-pub async fn add_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
+pub async fn add_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<MulticastGroupDevice, Error> {
+    add_device_internal(group_id, dev_eui, false).await
+}
+
+pub async fn add_ts005_device(
+    group_id: &Uuid,
+    dev_eui: &EUI64,
+) -> Result<MulticastGroupDevice, Error> {
+    add_device_internal(group_id, dev_eui, true).await
+}
+
+async fn add_device_internal(
+    group_id: &Uuid,
+    dev_eui: &EUI64,
+    allocate_mc_group_id: bool,
+) -> Result<MulticastGroupDevice, Error> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<(), Error, _>(async |c| {
-        let device_query = device::dsl::device.find(&dev_eui);
-        #[cfg(feature = "postgres")]
-        let device_query = device_query.for_update();
-        let d: super::device::Device = device_query
-            .get_result(c)
-            .await
-            .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+    let d = c
+        .transaction::<MulticastGroupDevice, Error, _>(async |c| {
+            let device_query = device::dsl::device.find(&dev_eui);
+            #[cfg(feature = "postgres")]
+            let device_query = device_query.for_update();
+            let d: super::device::Device = device_query
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
-        let fields_group_id = fields::Uuid::from(group_id);
+            let fields_group_id = fields::Uuid::from(group_id);
 
-        let multicast_group_query = multicast_group::dsl::multicast_group.find(&fields_group_id);
-        #[cfg(feature = "postgres")]
-        let multicast_group_query = multicast_group_query.for_update();
-        let mg: MulticastGroup = multicast_group_query
-            .get_result(c)
-            .await
-            .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
+            let multicast_group_query =
+                multicast_group::dsl::multicast_group.find(&fields_group_id);
+            #[cfg(feature = "postgres")]
+            let multicast_group_query = multicast_group_query.for_update();
+            let mg: MulticastGroup = multicast_group_query
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, group_id.to_string()))?;
 
-        if d.application_id != mg.application_id {
-            // Device not found within the same application.
-            return Err(Error::NotFound(dev_eui.to_string()));
-        }
+            if d.application_id != mg.application_id {
+                // Device not found within the same application.
+                return Err(Error::NotFound(dev_eui.to_string()));
+            }
 
-        let _ = diesel::insert_into(multicast_group_device::table)
-            .values((
-                multicast_group_device::multicast_group_id.eq(&fields_group_id),
-                multicast_group_device::dev_eui.eq(&dev_eui),
-                multicast_group_device::created_at.eq(Utc::now()),
-            ))
-            .execute(c)
-            .await
-            .map_err(|e| Error::from_diesel(e, "".into()))?;
-        Ok(())
-    })
-    .await?;
+            let mc_group_id = if allocate_mc_group_id {
+                let used_ids = multicast_group_device::dsl::multicast_group_device
+                    .select(multicast_group_device::mc_group_id)
+                    .filter(multicast_group_device::dev_eui.eq(dev_eui))
+                    .filter(multicast_group_device::mc_group_id.is_not_null())
+                    .load::<Option<i16>>(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+
+                Some(
+                    (1..=3i16)
+                        .find(|v| !used_ids.iter().flatten().any(|used_id| used_id == v))
+                        .ok_or_else(|| {
+                            Error::Validation(
+                                "Device already has 3 TS005 multicast groups configured".into(),
+                            )
+                        })?,
+                )
+            } else {
+                None
+            };
+
+            let d = diesel::insert_into(multicast_group_device::table)
+                .values(&MulticastGroupDevice {
+                    multicast_group_id: fields_group_id,
+                    dev_eui: *dev_eui,
+                    created_at: Utc::now(),
+                    mc_group_id,
+                    ..Default::default()
+                })
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, "".into()))?;
+            Ok(d)
+        })
+        .await?;
     info!(multicast_group_id = %group_id, dev_eui = %dev_eui, "Device added to multicast-group");
-    Ok(())
+    Ok(d)
 }
 
 pub async fn remove_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
@@ -346,6 +449,79 @@ pub async fn remove_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error
     }
     info!(multicast_group_id = %group_id, dev_eui = %dev_eui, "Device removed from multicast-group");
     Ok(())
+}
+
+pub async fn get_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<MulticastGroupDevice, Error> {
+    multicast_group_device::dsl::multicast_group_device
+        .find((fields::Uuid::from(group_id), dev_eui))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, format!("{}:{}", group_id, dev_eui)))
+}
+
+pub async fn get_device_by_mc_group_id(
+    dev_eui: &EUI64,
+    mc_group_id: i16,
+) -> Result<MulticastGroupDevice, Error> {
+    multicast_group_device::dsl::multicast_group_device
+        .filter(multicast_group_device::dev_eui.eq(dev_eui))
+        .filter(multicast_group_device::mc_group_id.eq(mc_group_id))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
+}
+
+pub async fn update_device(d: MulticastGroupDevice) -> Result<MulticastGroupDevice, Error> {
+    let d: MulticastGroupDevice = diesel::update(
+        multicast_group_device::dsl::multicast_group_device
+            .find((&d.multicast_group_id, &d.dev_eui)),
+    )
+    .set((
+        multicast_group_device::mc_group_setup_completed_at.eq(&d.mc_group_setup_completed_at),
+        multicast_group_device::mc_session_completed_at.eq(&d.mc_session_completed_at),
+        multicast_group_device::error_msg.eq(&d.error_msg),
+        multicast_group_device::pending_delete.eq(&d.pending_delete),
+    ))
+    .get_result(&mut get_async_db_conn().await?)
+    .await
+    .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))?;
+
+    info!(multicast_group_id = %d.multicast_group_id, dev_eui = %d.dev_eui, "Multicast-group device updated");
+    Ok(d)
+}
+
+pub async fn get_device_count(group_id: &Uuid) -> Result<i64, Error> {
+    multicast_group_device::dsl::multicast_group_device
+        .select(dsl::count_star())
+        .filter(multicast_group_device::multicast_group_id.eq(&fields::Uuid::from(group_id)))
+        .first(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, group_id.to_string()))
+}
+
+pub async fn list_devices(
+    group_id: &Uuid,
+    limit: i64,
+    offset: i64,
+) -> Result<Vec<MulticastGroupDeviceListItem>, Error> {
+    multicast_group_device::dsl::multicast_group_device
+        .inner_join(device::table)
+        .select((
+            multicast_group_device::dev_eui,
+            device::name,
+            multicast_group_device::mc_group_id,
+            multicast_group_device::mc_group_setup_completed_at,
+            multicast_group_device::mc_session_completed_at,
+            multicast_group_device::error_msg,
+            multicast_group_device::pending_delete,
+        ))
+        .filter(multicast_group_device::multicast_group_id.eq(&fields::Uuid::from(group_id)))
+        .order_by(device::name)
+        .limit(limit)
+        .offset(offset)
+        .load(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, group_id.to_string()))
 }
 
 pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Error> {
@@ -420,6 +596,7 @@ pub async fn get_dev_euis(group_id: &Uuid) -> Result<Vec<EUI64>, Error> {
     multicast_group_device::dsl::multicast_group_device
         .select(multicast_group_device::dev_eui)
         .filter(multicast_group_device::dsl::multicast_group_id.eq(&fields::Uuid::from(group_id)))
+        .filter(multicast_group_device::pending_delete.eq(false))
         .load(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, group_id.to_string()))
