@@ -21,7 +21,7 @@ pub fn run() {
   json={{ logging.json }}
   
   # Flatten JSON logs
-  json={{ logging.flatten_json }}
+  flatten_json={{ logging.flatten_json }}
 
 
 # PostgreSQL configuration.
@@ -823,12 +823,6 @@ pub fn run() {
       #
       # If set, this will bypass the DNS resolving of the server.
       server="{{join_server.default.server}}"
- 
-      # Use target role suffix.
-      #
-      # Depending the context of the remote server, this will add
-      # the /sns or /fns path to the server endpoint.
-      use_target_role_suffix={{join_server.default.use_target_role_suffix}}
  
       # CA certificate (path).
       ca_cert="{{join_server.default.ca_cert}}"
