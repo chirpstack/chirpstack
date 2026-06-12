@@ -904,25 +904,25 @@ impl JoinRequest {
         Ok(())
     }
 
-    async fn start_downlink_join_accept_flow(&self) -> Result<()> {
+    async fn start_downlink_join_accept_flow(&mut self) -> Result<()> {
         trace!("Starting downlink join-accept flow");
         downlink::join::JoinAccept::handle(
             &self.uplink_frame_set,
             self.tenant.as_ref().unwrap(),
-            self.device.as_ref().unwrap(),
+            self.device.as_mut().unwrap(),
             self.join_accept.as_ref().unwrap(),
         )
         .await?;
         Ok(())
     }
 
-    async fn start_downlink_join_accept_flow_relayed(&self) -> Result<()> {
+    async fn start_downlink_join_accept_flow_relayed(&mut self) -> Result<()> {
         trace!("Starting relayed downlink join-accept flow");
         downlink::join::JoinAccept::handle_relayed(
             self.relay_context.as_ref().unwrap(),
             &self.uplink_frame_set,
             self.tenant.as_ref().unwrap(),
-            self.device.as_ref().unwrap(),
+            self.device.as_mut().unwrap(),
             self.join_accept.as_ref().unwrap(),
         )
         .await?;

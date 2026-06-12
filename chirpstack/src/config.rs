@@ -142,6 +142,7 @@ pub struct Gateway {
     pub allow_unknown_gateways: bool,
     #[serde(with = "humantime_serde")]
     pub rx_timestamp_max_drift: Duration,
+    pub device_gateway_mapping_history_uplinks: usize,
 }
 
 impl Default for Gateway {
@@ -152,6 +153,7 @@ impl Default for Gateway {
             ca_key: "".to_string(),
             allow_unknown_gateways: false,
             rx_timestamp_max_drift: Duration::from_secs(30),
+            device_gateway_mapping_history_uplinks: 1,
         }
     }
 }

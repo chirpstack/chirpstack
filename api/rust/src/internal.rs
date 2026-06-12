@@ -22,4 +22,39 @@ impl DeviceSession {
             self.a_f_cnt_down = f_cnt;
         }
     }
+
+    pub fn append_gateway_rx_info_history(
+        &mut self,
+        item: GatewayRxInfoHistory,
+        max_history: usize,
+    ) {
+        if self.gateway_rx_info_history.len() >= max_history {
+            let start_index = self.gateway_rx_info_history.len() - max_history + 1;
+            self.gateway_rx_info_history = self.gateway_rx_info_history[start_index..].to_vec();
+        }
+
+        self.gateway_rx_info_history.push(item);
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_append_gateway_rx_info_history() {
+        let mut ds = DeviceSession::default();
+
+        for _i in 0..10 {
+            ds.append_gateway_rx_info_history(
+                GatewayRxInfoHistory {
+                    dr: 0,
+                    items: vec![],
+                },
+                8,
+            );
+        }
+
+        assert_eq!(8, ds.gateway_rx_info_history.len());
+    }
 }

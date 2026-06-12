@@ -1,7 +1,9 @@
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use anyhow::Result;
-use rand::seq::IndexedRandom;
+use rand::distr::Distribution;
+use rand::distr::weighted::WeightedIndex;
 use uuid::Uuid;
 
 use chirpstack_api::{gw, internal};
@@ -21,62 +23,130 @@ pub fn select_downlink_gateway(
     tenant_id: Option<Uuid>,
     region_config_id: &str,
     min_snr_margin: f32,
-    rx_info: &mut internal::DeviceGatewayRxInfo,
-) -> Result<internal::DeviceGatewayRxInfoItem> {
-    rx_info.items.retain(|rx_info| {
-        if let Some(tenant_id) = &tenant_id {
-            if tenant_id.as_bytes().to_vec() == rx_info.tenant_id {
-                // The tenant is the same as the gateway tenant.
-                true
-            } else {
-                // If tenant_id is different, filter out rx_info elements that have
-                // is_private_down=true.
-                !rx_info.is_private_down
-            }
-        } else {
-            // If tenant_id is None, filter out rx_info elements that have
-            // is_private_down=true.
-            !rx_info.is_private_down
-        }
-    });
+    history: &[internal::GatewayRxInfoHistory],
+    use_only_last_uplink: bool,
+) -> Result<internal::DownlinkGateway> {
+    let region_conf = region::get(region_config_id)?;
+    let tenant_id_bytes = tenant_id.map(|v| v.as_bytes().to_vec()).unwrap_or_default();
 
-    if rx_info.items.is_empty() {
+    // In case of Class-A and OTAA, we only use the last item from the list, as this contains the context
+    // blobs related to the Class-A uplink. We need this context blob as it contains the uplink
+    // timestamp info.
+    let mut history = if use_only_last_uplink {
+        if let Some(h) = history.last() {
+            vec![h.clone()]
+        } else {
+            vec![]
+        }
+    } else {
+        history.to_vec()
+    };
+
+    // Filter out private gateways that are not ours.
+    for h in &mut history {
+        h.items.retain(|rx_info| {
+            if tenant_id_bytes.is_empty() {
+                !rx_info.is_private_down
+            } else {
+                if tenant_id_bytes == rx_info.tenant_id {
+                    true
+                } else {
+                    !rx_info.is_private_down
+                }
+            }
+        });
+    }
+
+    // Filter out empty history records.
+    history.retain(|h| !h.items.is_empty());
+
+    if history.is_empty() {
         return Err(anyhow!(
-            "RxInfo set is empty after applying filters, no downlink gateway available"
+            "gateway rx history is empty after filtering, no downlink path available"
         ));
     }
 
-    let region_conf = region::get(region_config_id)?;
-
-    let dr = region_conf.get_data_rate(true, rx_info.dr as u8)?;
-    let mut required_snr: Option<f32> = None;
-    if let DataRateModulation::Lora(dr) = dr {
-        required_snr = Some(config::get_required_snr_for_sf(dr.spreading_factor)?);
+    #[derive(Debug, Default, Clone)]
+    struct GatewayStats {
+        gateway_id: Vec<u8>,
+        count: usize,
+        total_snr: f32,
+        total_rssi: i32,
+        total_link_margin: f32,
+        board: u32,
+        antenna: u32,
+        context: Vec<u8>,
     }
 
-    // sort items by SNR or if SNR is equal between A and B, by RSSI.
-    rx_info.items.sort_by(|a, b| {
-        if a.lora_snr == b.lora_snr {
-            return b.rssi.partial_cmp(&a.rssi).unwrap();
+    // Deduplicate per gateway. We store the last board, antenna and context blob.
+    let mut stats: HashMap<Vec<u8>, GatewayStats> = HashMap::new();
+    for h in &history {
+        let dr = region_conf.get_data_rate(true, h.dr as u8)?;
+        let required_snr = if let DataRateModulation::Lora(dr) = dr {
+            config::get_required_snr_for_sf(dr.spreading_factor)?
+        } else {
+            0.0
+        };
+
+        for i in &h.items {
+            let entry = stats
+                .entry(i.gateway_id.clone())
+                .or_insert(Default::default());
+
+            entry.count += 1;
+            entry.total_snr += i.lora_snr;
+            entry.total_rssi += i.rssi;
+            entry.total_link_margin += i.lora_snr - required_snr;
+            entry.board = i.board;
+            entry.antenna = i.antenna;
+            entry.context = i.context.clone();
+            entry.gateway_id = i.gateway_id.clone();
         }
-        b.lora_snr.partial_cmp(&a.lora_snr).unwrap()
+    }
+    let mut stats: Vec<GatewayStats> = stats.into_values().collect();
+
+    // Sort by avg link-margin.
+    stats.sort_by(|a, b| {
+        let avg_rssi_a = a.total_rssi / a.count as i32;
+        let avg_rssi_b = b.total_rssi / b.count as i32;
+        let avg_link_margin_a = a.total_link_margin / a.count as f32;
+        let avg_link_margin_b = b.total_link_margin / b.count as f32;
+
+        if avg_link_margin_a == avg_link_margin_b {
+            return avg_rssi_b.partial_cmp(&avg_rssi_a).unwrap();
+        }
+
+        avg_link_margin_b.partial_cmp(&avg_link_margin_a).unwrap()
     });
 
-    let mut new_items = Vec::new();
-    for item in &rx_info.items {
-        if let Some(required_snr) = required_snr
-            && item.lora_snr - required_snr >= min_snr_margin
-        {
-            new_items.push(item.clone());
-        }
-    }
+    // Create new vec where avg. link-margin is above min_snr_margin
+    let filtered_stats: Vec<GatewayStats> = stats
+        .iter()
+        .filter(|v| {
+            let avg_link_margin = v.total_link_margin / v.count as f32;
+            avg_link_margin >= min_snr_margin
+        })
+        .cloned()
+        .collect();
 
-    // Return a random item from the new_items slice (filtered by min_snr_margin).
-    // If new_items is empty, then choose will return None and we return the first item from
-    // rx_info.item.
-    Ok(match new_items.choose(&mut rand::rng()) {
-        Some(v) => v.clone(),
-        None => rx_info.items[0].clone(),
+    let gw = if filtered_stats.is_empty() {
+        // If none of the gateways are above min_snr_margin, take the first one from the sorted
+        // list.
+        stats[0].clone()
+    } else {
+        // Else take a random one from the list, using number of times a gateway reported an uplink
+        // for this device into account as weight. More stable gateways are therefore the most
+        // likely candidate for sending the downlink.
+        let mut rng = rand::rng();
+        let dist = WeightedIndex::new(filtered_stats.iter().map(|v| v.count))?;
+        filtered_stats[dist.sample(&mut rng)].clone()
+    };
+
+    Ok(internal::DownlinkGateway {
+        gateway_id: gw.gateway_id,
+        antenna: gw.antenna,
+        board: gw.board,
+        context: gw.context,
     })
 }
 
@@ -127,8 +197,9 @@ mod tests {
     struct Test {
         min_snr_margin: f32,
         tenant_id: Option<Uuid>,
-        rx_info: internal::DeviceGatewayRxInfo,
+        history: Vec<internal::GatewayRxInfoHistory>,
         expected_gws: Vec<Vec<u8>>,
+        class_a: bool,
     }
 
     #[tokio::test]
@@ -146,92 +217,94 @@ mod tests {
             // single item
             Test {
                 tenant_id: None,
+                class_a: false,
                 min_snr_margin: 0.0,
-                rx_info: internal::DeviceGatewayRxInfo {
+                history: vec![internal::GatewayRxInfoHistory {
                     dr: 0,
-                    items: vec![internal::DeviceGatewayRxInfoItem {
+                    items: vec![internal::GatewayRxInfoHistoryItem {
                         lora_snr: -5.0,
                         gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
                         ..Default::default()
                     }],
-                    ..Default::default()
-                },
+                }],
                 expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]],
             },
             // two items, below min snr
             Test {
                 tenant_id: None,
+                class_a: false,
                 min_snr_margin: 5.0,
-                rx_info: internal::DeviceGatewayRxInfo {
+                history: vec![internal::GatewayRxInfoHistory {
                     dr: 2, // -15 is required
                     items: vec![
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             lora_snr: -12.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             ..Default::default()
                         },
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             lora_snr: -11.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             ..Default::default()
                         },
                     ],
-                    ..Default::default()
-                },
+                }],
                 expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02]],
             },
             // two items, one below min snr
             Test {
                 tenant_id: None,
+                class_a: false,
                 min_snr_margin: 5.0,
-                rx_info: internal::DeviceGatewayRxInfo {
+                history: vec![internal::GatewayRxInfoHistory {
                     dr: 2, // -15 is required
                     items: vec![
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             lora_snr: -12.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             ..Default::default()
                         },
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             lora_snr: -10.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             ..Default::default()
                         },
                     ],
                     ..Default::default()
-                },
+                }],
                 expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02]],
             },
             // four items, two below min snr
             Test {
                 tenant_id: None,
+                class_a: false,
                 min_snr_margin: 5.0,
-                rx_info: internal::DeviceGatewayRxInfo {
+                history: vec![internal::GatewayRxInfoHistory {
                     dr: 2, // -15 is required
                     items: vec![
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             lora_snr: -12.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             ..Default::default()
                         },
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             lora_snr: -11.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             ..Default::default()
                         },
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             lora_snr: -10.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03],
                             ..Default::default()
                         },
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             lora_snr: -9.0,
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04],
                             ..Default::default()
                         },
                     ],
                     ..Default::default()
-                },
+                }],
                 expected_gws: vec![
                     vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03],
                     vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04],
@@ -240,16 +313,17 @@ mod tests {
             // is_private_down is set, first gateway matches tenant.
             Test {
                 tenant_id: Some(t.id.into()),
+                class_a: false,
                 min_snr_margin: 0.0,
-                rx_info: internal::DeviceGatewayRxInfo {
+                history: vec![internal::GatewayRxInfoHistory {
                     items: vec![
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             is_private_down: true,
                             tenant_id: t.id.as_bytes().to_vec(),
                             ..Default::default()
                         },
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             is_private_down: true,
                             tenant_id: Uuid::new_v4().as_bytes().to_vec(),
@@ -257,22 +331,23 @@ mod tests {
                         },
                     ],
                     ..Default::default()
-                },
+                }],
                 expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01]],
             },
             // is_private_down is set, second gateway matches tenant.
             Test {
                 tenant_id: Some(t.id.into()),
+                class_a: false,
                 min_snr_margin: 0.0,
-                rx_info: internal::DeviceGatewayRxInfo {
+                history: vec![internal::GatewayRxInfoHistory {
                     items: vec![
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             is_private_down: true,
                             tenant_id: Uuid::new_v4().as_bytes().to_vec(),
                             ..Default::default()
                         },
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             is_private_down: true,
                             tenant_id: t.id.as_bytes().to_vec(),
@@ -280,35 +355,36 @@ mod tests {
                         },
                     ],
                     ..Default::default()
-                },
+                }],
                 expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02]],
             },
             // is_private_down is set for one gateway, no tenant id given.
             Test {
                 tenant_id: None,
+                class_a: false,
                 min_snr_margin: 0.0,
-                rx_info: internal::DeviceGatewayRxInfo {
+                history: vec![internal::GatewayRxInfoHistory {
                     items: vec![
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
                             is_private_down: true,
                             tenant_id: t.id.as_bytes().to_vec(),
                             ..Default::default()
                         },
-                        internal::DeviceGatewayRxInfoItem {
+                        internal::GatewayRxInfoHistoryItem {
                             gateway_id: vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02],
                             is_private_down: false,
                             ..Default::default()
                         },
                     ],
                     ..Default::default()
-                },
+                }],
                 expected_gws: vec![vec![0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02]],
             },
         ];
 
-        for test in &tests {
-            let mut rx_info = test.rx_info.clone();
+        for (i, test) in tests.iter().enumerate() {
+            println!("> Test: {}", i);
             let mut gw_map = HashMap::new();
 
             let mut expected_gws = HashMap::new();
@@ -321,7 +397,8 @@ mod tests {
                     test.tenant_id,
                     "eu868",
                     test.min_snr_margin,
-                    &mut rx_info,
+                    &test.history,
+                    test.class_a,
                 )
                 .unwrap();
                 gw_map.insert(out.gateway_id, ());

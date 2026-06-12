@@ -1,9 +1,7 @@
 use chrono::{Duration, Utc};
 
 use super::assert;
-use crate::storage::{
-    application, device, device_gateway, device_profile, fields, gateway, multicast, tenant,
-};
+use crate::storage::{application, device, device_profile, fields, gateway, multicast, tenant};
 use crate::{downlink, gateway::backend as gateway_backend, integration, test};
 use chirpstack_api::{gw, internal};
 use lrwn::{AES128Key, DevAddr, EUI64};
@@ -70,6 +68,16 @@ async fn test_multicast() {
         application_id: app.id,
         device_profile_id: dp.id,
         dev_eui: EUI64::from_be_bytes([8, 7, 6, 5, 4, 3, 2, 1]),
+        device_session: Some(fields::DeviceSession::new(internal::DeviceSession {
+            gateway_rx_info_history: vec![internal::GatewayRxInfoHistory {
+                items: vec![internal::GatewayRxInfoHistoryItem {
+                    gateway_id: gw.gateway_id.to_vec(),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        })),
         ..Default::default()
     })
     .await
@@ -94,18 +102,6 @@ async fn test_multicast() {
     multicast::add_device(&mg.id.into(), &d.dev_eui)
         .await
         .unwrap();
-
-    // device <> gateway
-    device_gateway::save_rx_info(&internal::DeviceGatewayRxInfo {
-        dev_eui: d.dev_eui.to_vec(),
-        items: vec![internal::DeviceGatewayRxInfoItem {
-            gateway_id: gw.gateway_id.to_vec(),
-            ..Default::default()
-        }],
-        ..Default::default()
-    })
-    .await
-    .unwrap();
 
     let tests = vec![
         MulticastTest {

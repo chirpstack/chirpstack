@@ -20,7 +20,7 @@ pub struct PassiveRoamingDownlink {
     network_conf: config::RegionNetwork,
     region_conf: Arc<Box<dyn lrwn::region::Region + Sync + Send>>,
     downlink_frame: gw::DownlinkFrame,
-    downlink_gateway: Option<internal::DeviceGatewayRxInfoItem>,
+    downlink_gateway: Option<internal::DownlinkGateway>,
 }
 
 impl PassiveRoamingDownlink {
@@ -60,8 +60,7 @@ impl PassiveRoamingDownlink {
     fn select_downlink_gateway(&mut self) -> Result<()> {
         trace!("Selecting downlink gateway");
 
-        let mut dev_gw_rx_info = internal::DeviceGatewayRxInfo {
-            dev_eui: Vec::new(),
+        let history = internal::GatewayRxInfoHistory {
             dr: self.uplink_frame_set.dr as u32,
             items: self
                 .uplink_frame_set
@@ -70,13 +69,14 @@ impl PassiveRoamingDownlink {
                 .map(|rx_info| {
                     let gw_id = EUI64::from_str(&rx_info.gateway_id).unwrap_or_default();
 
-                    internal::DeviceGatewayRxInfoItem {
+                    internal::GatewayRxInfoHistoryItem {
                         gateway_id: gw_id.to_vec(),
                         rssi: rx_info.rssi,
                         lora_snr: rx_info.snr,
                         antenna: rx_info.antenna,
                         board: rx_info.board,
                         context: rx_info.context.clone(),
+
                         is_private_up: self
                             .uplink_frame_set
                             .gateway_private_up_map
@@ -104,7 +104,8 @@ impl PassiveRoamingDownlink {
             None,
             &self.uplink_frame_set.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
-            &mut dev_gw_rx_info,
+            &[history],
+            false,
         )?;
 
         self.downlink_frame.gateway_id = hex::encode(&gw_down.gateway_id);

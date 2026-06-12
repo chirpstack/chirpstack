@@ -522,7 +522,7 @@ pub mod test {
     use crate::api::auth::AuthID;
     use crate::api::auth::validator::RequestValidator;
     use crate::storage::{
-        application, device, device_gateway, device_profile, gateway, multicast, tenant, user,
+        application, device, device_profile, fields, gateway, multicast, tenant, user,
     };
     use crate::test;
     use chirpstack_api::{common, internal};
@@ -588,11 +588,12 @@ pub mod test {
         .unwrap();
 
         // create device
-        let d = device::create(device::Device {
+        let mut d = device::create(device::Device {
             application_id: app.id,
             device_profile_id: dp.id,
             dev_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
             name: "test-dev".into(),
+            device_session: Some(fields::DeviceSession::new(Default::default())),
             ..Default::default()
         })
         .await
@@ -756,14 +757,23 @@ pub mod test {
         assert_eq!(0, list_queue_resp.get_ref().items.len());
 
         // set uplink device <> gateway path
-        device_gateway::save_rx_info(&internal::DeviceGatewayRxInfo {
-            dev_eui: d.dev_eui.to_vec(),
-            items: vec![internal::DeviceGatewayRxInfoItem {
-                gateway_id: gw1.gateway_id.to_vec(),
-                ..Default::default()
+        d.device_session = Some(fields::DeviceSession::new(internal::DeviceSession {
+            gateway_rx_info_history: vec![internal::GatewayRxInfoHistory {
+                dr: 0,
+                items: vec![internal::GatewayRxInfoHistoryItem {
+                    gateway_id: gw1.gateway_id.to_vec(),
+                    ..Default::default()
+                }],
             }],
             ..Default::default()
-        })
+        }));
+        let d = device::partial_update(
+            d.dev_eui,
+            &device::DeviceChangeset {
+                device_session: Some(d.device_session),
+                ..Default::default()
+            },
+        )
         .await
         .unwrap();
 

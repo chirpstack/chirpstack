@@ -4,7 +4,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, fields, gateway, reset_redis, tenant,
+    device_profile, device_queue, fields, gateway, reset_redis, tenant,
 };
 use crate::{downlink, gateway::backend as gateway_backend, integration, test};
 use chirpstack_api::{common, gw, internal};
@@ -15,7 +15,6 @@ struct DownlinkTest {
     dev_eui: EUI64,
     device_queue_items: Vec<device_queue::DeviceQueueItem>,
     device_session: Option<internal::DeviceSession>,
-    device_gateway_rx_info: Option<internal::DeviceGatewayRxInfo>,
     assert: Vec<assert::Validator>,
 }
 
@@ -79,15 +78,6 @@ async fn test_downlink_scheduler() {
     .await
     .unwrap();
 
-    let device_gateway_rx_info = internal::DeviceGatewayRxInfo {
-        dev_eui: dev.dev_eui.to_vec(),
-        items: vec![internal::DeviceGatewayRxInfoItem {
-            gateway_id: gw.gateway_id.to_vec(),
-            ..Default::default()
-        }],
-        ..Default::default()
-    };
-
     let ds = internal::DeviceSession {
         dev_addr: vec![1, 2, 3, 4],
         mac_version: common::MacVersion::Lorawan104.into(),
@@ -102,6 +92,13 @@ async fn test_downlink_scheduler() {
         enabled_uplink_channel_indices: vec![0, 1, 2],
         rx2_frequency: 869525000,
         region_config_id: "eu868".into(),
+        gateway_rx_info_history: vec![internal::GatewayRxInfoHistory {
+            items: vec![internal::GatewayRxInfoHistoryItem {
+                gateway_id: gw.gateway_id.to_vec(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
         ..Default::default()
     };
 
@@ -127,7 +124,6 @@ async fn test_downlink_scheduler() {
             ..Default::default()
         }],
         device_session: Some(ds.clone()),
-        device_gateway_rx_info: Some(device_gateway_rx_info.clone()),
         assert: vec![assert::no_downlink_frame()],
     })
     .await;
@@ -155,7 +151,6 @@ async fn test_downlink_scheduler() {
             ..Default::default()
         }],
         device_session: Some(ds.clone()),
-        device_gateway_rx_info: Some(device_gateway_rx_info.clone()),
         assert: vec![
             assert::n_f_cnt_down(dev.dev_eui, 5),
             assert::downlink_frame(gw::DownlinkFrame {
@@ -202,7 +197,6 @@ async fn test_downlink_scheduler() {
             ..Default::default()
         }],
         device_session: Some(ds.clone()),
-        device_gateway_rx_info: Some(device_gateway_rx_info.clone()),
         assert: vec![assert::no_downlink_frame()],
     })
     .await;
@@ -231,7 +225,6 @@ async fn test_downlink_scheduler() {
             ..Default::default()
         }],
         device_session: Some(ds.clone()),
-        device_gateway_rx_info: Some(device_gateway_rx_info.clone()),
         assert: vec![
             assert::n_f_cnt_down(dev.dev_eui, 5),
             assert::downlink_frame(gw::DownlinkFrame {
@@ -292,7 +285,6 @@ async fn test_downlink_scheduler() {
             ..Default::default()
         }],
         device_session: Some(ds.clone()),
-        device_gateway_rx_info: Some(device_gateway_rx_info.clone()),
         assert: vec![assert::no_downlink_frame()],
     })
     .await;
@@ -323,10 +315,6 @@ async fn run_scheduler_test(t: &DownlinkTest) {
     )
     .await
     .unwrap();
-
-    if let Some(rx_info) = &t.device_gateway_rx_info {
-        device_gateway::save_rx_info(rx_info).await.unwrap();
-    }
 
     for qi in &t.device_queue_items {
         let _ = device_queue::enqueue_item(qi.clone()).await.unwrap();

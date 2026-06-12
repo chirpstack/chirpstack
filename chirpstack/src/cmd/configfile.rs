@@ -190,6 +190,19 @@ pub fn run() {
   # server time.
   rx_timestamp_max_drift="{{ gateway.rx_timestamp_max_drift }}"
 
+  # Device <> Gateway mapping history.
+  #
+  # This defines the gateway meta-data per uplink that ChirpStack keeps per
+  # device. Excluding Class-A (in which case ChirpStack must use one of the
+  # uplink receiving gateways), this history is used to determine the best
+  # downlink path. When selecting the downlink path, ChirpStack will prefer
+  # gatewways that occur more often in the kept history over gateway that
+  # occur less often.
+  #
+  # The configured number defines the number of uplinks for which ChirpStack
+  # stores the gateway meta-data.
+  device_gateway_mapping_history_uplinks={{gateway.device_gateway_mapping_history_uplinks}}
+
 
 # Network related configuration.
 [network]

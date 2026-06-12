@@ -16,7 +16,7 @@ use crate::gpstime::{ToDateTime, ToGpsTime};
 use crate::storage::{
     self, application,
     device::{self, DeviceClass},
-    device_gateway, device_profile, device_queue, downlink_frame,
+    device_profile, device_queue, downlink_frame,
     helpers::get_all_device_data,
     mac_command, relay, tenant,
 };
@@ -42,8 +42,7 @@ pub struct Data {
     must_send: bool,
     must_ack: bool,
     mac_commands: Vec<lrwn::MACCommandSet>,
-    device_gateway_rx_info: Option<internal::DeviceGatewayRxInfo>,
-    downlink_gateway: Option<internal::DeviceGatewayRxInfoItem>,
+    downlink_gateway: Option<internal::DownlinkGateway>,
     downlink_frame: gw::DownlinkFrame,
     downlink_frame_items: Vec<DownlinkFrameItem>,
     immediately: bool,
@@ -55,7 +54,6 @@ impl Data {
     #[allow(clippy::too_many_arguments)]
     pub async fn handle_response(
         ufs: UplinkFrameSet,
-        dev_gw_rx_info: internal::DeviceGatewayRxInfo,
         tenant: tenant::Tenant,
         application: application::Application,
         device_profile: device_profile::DeviceProfile,
@@ -70,7 +68,6 @@ impl Data {
         match Data::_handle_response(
             downlink_id,
             ufs,
-            dev_gw_rx_info,
             tenant,
             application,
             device_profile,
@@ -97,7 +94,6 @@ impl Data {
     pub async fn handle_response_relayed(
         relay_ctx: RelayContext,
         ufs: UplinkFrameSet,
-        dev_gw_rx_info: internal::DeviceGatewayRxInfo,
         tenant: tenant::Tenant,
         application: application::Application,
         device_profile: device_profile::DeviceProfile,
@@ -113,7 +109,6 @@ impl Data {
             downlink_id,
             relay_ctx,
             ufs,
-            dev_gw_rx_info,
             tenant,
             application,
             device_profile,
@@ -160,7 +155,6 @@ impl Data {
     async fn _handle_response(
         downlink_id: u32,
         ufs: UplinkFrameSet,
-        dev_gw_rx_info: internal::DeviceGatewayRxInfo,
         tenant: tenant::Tenant,
         application: application::Application,
         device_profile: device_profile::DeviceProfile,
@@ -193,7 +187,6 @@ impl Data {
             must_send,
             must_ack,
             mac_commands,
-            device_gateway_rx_info: Some(dev_gw_rx_info),
             downlink_gateway: None,
             downlink_frame: gw::DownlinkFrame {
                 downlink_id,
@@ -205,7 +198,7 @@ impl Data {
             more_device_queue_items: false,
         };
 
-        ctx.select_downlink_gateway()?;
+        ctx.select_downlink_gateway(true)?;
         ctx.set_tx_info()?;
         ctx.get_next_device_queue_item(true).await?;
         ctx.set_mac_commands().await?;
@@ -233,7 +226,6 @@ impl Data {
         downlink_id: u32,
         relay_ctx: RelayContext,
         ufs: UplinkFrameSet,
-        dev_gw_rx_info: internal::DeviceGatewayRxInfo,
         tenant: tenant::Tenant,
         application: application::Application,
         device_profile: device_profile::DeviceProfile,
@@ -265,7 +257,6 @@ impl Data {
             must_send,
             must_ack,
             mac_commands,
-            device_gateway_rx_info: Some(dev_gw_rx_info),
             downlink_gateway: None,
             downlink_frame: gw::DownlinkFrame {
                 downlink_id,
@@ -277,7 +268,7 @@ impl Data {
             more_device_queue_items: false,
         };
 
-        ctx.select_downlink_gateway()?;
+        ctx.select_downlink_gateway(true)?;
         ctx.set_tx_info_relayed()?;
         ctx.get_next_device_queue_item(true).await?;
         ctx.set_mac_commands().await?;
@@ -300,7 +291,6 @@ impl Data {
         trace!("Handle schedule next-queue item flow");
 
         let (dev, app, ten, dp) = get_all_device_data(dev.dev_eui).await?;
-        let dev_gw = device_gateway::get_rx_info(&dev.dev_eui).await?;
         let (rc, rn) = {
             let ds = dev.get_device_session()?;
             (
@@ -321,7 +311,6 @@ impl Data {
             must_send: false,
             must_ack: false,
             mac_commands: vec![],
-            device_gateway_rx_info: Some(dev_gw),
             downlink_gateway: None,
             downlink_frame: gw::DownlinkFrame {
                 downlink_id,
@@ -333,7 +322,7 @@ impl Data {
             more_device_queue_items: false,
         };
 
-        ctx.select_downlink_gateway()?;
+        ctx.select_downlink_gateway(false)?;
         if ctx._is_class_c() {
             ctx.class_c_update_scheduler_run_after().await?;
             ctx.check_for_first_uplink()?;
@@ -358,14 +347,23 @@ impl Data {
         Ok(())
     }
 
-    fn select_downlink_gateway(&mut self) -> Result<()> {
+    fn select_downlink_gateway(&mut self, class_a: bool) -> Result<()> {
         trace!("Selecting downlink gateway");
+
+        // Not needed when roaming.
+        if self._is_roaming() {
+            self.downlink_gateway = Some(Default::default());
+            return Ok(());
+        }
+
+        let ds = self.device.get_device_session()?;
 
         let gw_down = helpers::select_downlink_gateway(
             Some(self.tenant.id.into()),
-            &self.device.get_device_session()?.region_config_id,
+            &ds.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
-            self.device_gateway_rx_info.as_mut().unwrap(),
+            &ds.gateway_rx_info_history,
+            class_a,
         )?;
 
         self.downlink_frame.gateway_id = hex::encode(&gw_down.gateway_id);
@@ -709,11 +707,11 @@ impl Data {
     }
 
     fn _is_roaming(&self) -> bool {
-        self.uplink_frame_set
-            .as_ref()
-            .unwrap()
-            .roaming_meta_data
-            .is_some()
+        if let Some(uf) = self.uplink_frame_set.as_ref() {
+            uf.roaming_meta_data.is_some()
+        } else {
+            false
+        }
     }
 
     fn set_phy_payloads(&mut self) -> Result<()> {
@@ -2998,7 +2996,6 @@ mod test {
                 must_send: false,
                 must_ack: false,
                 mac_commands: vec![],
-                device_gateway_rx_info: None,
                 downlink_gateway: None,
                 downlink_frame: Default::default(),
                 downlink_frame_items: vec![DownlinkFrameItem {
@@ -3568,7 +3565,6 @@ mod test {
                 must_send: false,
                 must_ack: false,
                 mac_commands: vec![],
-                device_gateway_rx_info: None,
                 downlink_gateway: None,
                 downlink_frame: Default::default(),
                 downlink_frame_items: vec![],
@@ -4020,7 +4016,6 @@ mod test {
                 must_send: false,
                 must_ack: false,
                 mac_commands: vec![],
-                device_gateway_rx_info: None,
                 downlink_gateway: None,
                 downlink_frame: Default::default(),
                 downlink_frame_items: vec![],
@@ -4146,7 +4141,6 @@ mod test {
                 must_send: false,
                 must_ack: false,
                 mac_commands: vec![],
-                device_gateway_rx_info: None,
                 downlink_gateway: None,
                 downlink_frame: Default::default(),
                 downlink_frame_items: vec![],
@@ -4263,7 +4257,6 @@ mod test {
                 must_send: false,
                 must_ack: false,
                 mac_commands: vec![],
-                device_gateway_rx_info: None,
                 downlink_gateway: None,
                 downlink_frame: Default::default(),
                 downlink_frame_items: vec![],
@@ -4390,7 +4383,6 @@ mod test {
                 must_send: false,
                 must_ack: false,
                 mac_commands: vec![],
-                device_gateway_rx_info: None,
                 downlink_gateway: None,
                 downlink_frame: Default::default(),
                 downlink_frame_items: vec![],
@@ -4661,7 +4653,6 @@ mod test {
                 must_send: false,
                 must_ack: false,
                 mac_commands: vec![],
-                device_gateway_rx_info: None,
                 downlink_gateway: None,
                 downlink_frame: Default::default(),
                 downlink_frame_items: vec![],

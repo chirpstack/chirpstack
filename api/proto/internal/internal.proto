@@ -3,8 +3,8 @@ syntax = "proto3";
 package internal;
 
 import "common/common.proto";
-import "gw/gw.proto";
 import "google/protobuf/timestamp.proto";
+import "gw/gw.proto";
 
 message DeviceSession {
   // Device address.
@@ -147,6 +147,10 @@ message DeviceSession {
 
   // Pending mac-commands.
   map<uint32, bytes> mac_command_pending = 43;
+
+  // Gateway RxInfo history.
+  // This is for determining the possible downlink Class-B / -C paths.
+  repeated GatewayRxInfoHistory gateway_rx_info_history = 44;
 }
 
 message UplinkAdrHistory {
@@ -303,6 +307,43 @@ message DeviceSessionChannel {
   repeated uint32 data_rates = 4;
 }
 
+message GatewayRxInfoHistory {
+  // DR.
+  uint32 dr = 1;
+
+  // items.
+  repeated GatewayRxInfoHistoryItem items = 2;
+}
+
+message GatewayRxInfoHistoryItem {
+  // Gateway ID (EUI64).
+  bytes gateway_id = 1;
+
+  // RSSI.
+  int32 rssi = 2;
+
+  // LoRa SNR.
+  float lora_snr = 3;
+
+  // Antenna.
+  uint32 antenna = 4;
+
+  // Board.
+  uint32 board = 5;
+
+  // Context blob.
+  bytes context = 6;
+
+  // Gateway is private (uplink).
+  bool is_private_up = 7;
+
+  // Gateway is private (downlink).
+  bool is_private_down = 8;
+
+  // Tenant ID (UUID).
+  bytes tenant_id = 9;
+}
+
 message DeviceGatewayRxInfo {
   // DevEUI (EUI64).
   bytes dev_eui = 1;
@@ -341,6 +382,20 @@ message DeviceGatewayRxInfoItem {
 
   // Tenant ID (UUID).
   bytes tenant_id = 9;
+}
+
+message DownlinkGateway {
+  // Gateway ID (EUI64).
+  bytes gateway_id = 1;
+
+  // Antenna.
+  uint32 antenna = 2;
+
+  // Board.
+  uint32 board = 3;
+
+  // Context blob.
+  bytes context = 4;
 }
 
 message DownlinkFrame {

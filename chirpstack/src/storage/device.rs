@@ -997,6 +997,32 @@ fn get_full_f_cnt_up(next_expected_full_fcnt: u32, truncated_f_cnt: u32) -> u32 
     next_expected_full_fcnt.wrapping_add(gap)
 }
 
+pub async fn get_gateway_history_for_dev_euis(
+    dev_euis: &[EUI64],
+) -> Result<HashMap<EUI64, Vec<internal::GatewayRxInfoHistory>>> {
+    let items = device::table
+        .select((device::dev_eui, device::device_session))
+        .filter(
+            device::dev_eui
+                .eq_any(dev_euis)
+                .and(device::device_session.is_not_null()),
+        )
+        .load::<(EUI64, Option<fields::DeviceSession>)>(&mut get_async_db_conn().await?)
+        .await
+        .map_err(|e| Error::from_diesel(e, "".into()))?;
+
+    Ok(items
+        .into_iter()
+        .filter_map(|(dev_eui, ds)| {
+            if let Some(ds) = ds {
+                Some((dev_eui, ds.gateway_rx_info_history.clone()))
+            } else {
+                None
+            }
+        })
+        .collect())
+}
+
 #[cfg(test)]
 pub mod test {
     use super::*;

@@ -10,7 +10,7 @@ use tracing::{Instrument, Level, span, trace, warn};
 
 use crate::downlink::{error::Error, helpers};
 use crate::gateway::backend as gateway_backend;
-use crate::storage::{device_gateway, downlink_frame, gateway, multicast};
+use crate::storage::{device, downlink_frame, gateway, multicast};
 use crate::{config, region};
 use chirpstack_api::{gw, internal};
 use lrwn::EUI64;
@@ -267,11 +267,11 @@ pub async fn enqueue(qi: multicast::MulticastGroupQueueItem) -> Result<u32> {
         // get deveuis for multicast-group
         let dev_euis = multicast::get_dev_euis(&qi.multicast_group_id).await?;
 
-        // get DeviceGatewayRxInfo for all devices.
-        let dev_gw_set = device_gateway::get_rx_info_for_dev_euis(&dev_euis).await?;
+        // get gateway history
+        let dev_gw_history = device::get_gateway_history_for_dev_euis(&dev_euis).await?;
 
         // get minimum gateway set to cover all devices
-        gateway_ids = get_minimum_gateway_set(&dev_gw_set)?;
+        gateway_ids = get_minimum_gateway_set(&dev_gw_history)?;
     }
 
     // Enqueue multicast downlink for the given gw set.
@@ -279,8 +279,10 @@ pub async fn enqueue(qi: multicast::MulticastGroupQueueItem) -> Result<u32> {
     Ok(f_cnt)
 }
 
-fn get_minimum_gateway_set(dev_gw_set: &[internal::DeviceGatewayRxInfo]) -> Result<Vec<EUI64>> {
-    if dev_gw_set.is_empty() {
+fn get_minimum_gateway_set(
+    dev_gw_history: &HashMap<EUI64, Vec<internal::GatewayRxInfoHistory>>,
+) -> Result<Vec<EUI64>> {
+    if dev_gw_history.is_empty() {
         return Ok(vec![]);
     }
 
@@ -288,7 +290,7 @@ fn get_minimum_gateway_set(dev_gw_set: &[internal::DeviceGatewayRxInfo]) -> Resu
     let mut node_index: HashMap<Node, NodeIndex<DefaultIx>> = HashMap::new();
 
     // Get the unique set of gateways.
-    let gw_set = get_gateway_set(dev_gw_set)?;
+    let gw_set = get_gateway_set(dev_gw_history)?;
 
     // Add all gateways & connect them together
     // W -999 is used so that the mst algorithm will remove the edge between
@@ -308,25 +310,30 @@ fn get_minimum_gateway_set(dev_gw_set: &[internal::DeviceGatewayRxInfo]) -> Resu
     }
 
     // Get the device count per gateway ID.
-    let gateway_device_count = get_gateway_device_count_map(dev_gw_set)?;
+    let gateway_device_count = get_gateway_device_count_map(dev_gw_history)?;
 
     // Add all devices and add edges to gateways
-    for dev_gw in dev_gw_set {
-        let dev_eui = EUI64::from_slice(&dev_gw.dev_eui)?;
+    for (dev_eui, history_vec) in dev_gw_history {
+        let dev_eui = *dev_eui;
+        let mut gw_set: HashSet<EUI64> = HashSet::new();
+
         let idx = g.add_node(Node::Device(dev_eui));
         node_index.insert(Node::Device(dev_eui), idx);
 
-        // Add edge between device and each receiving gateway.
-        for gw_rx_info in &dev_gw.items {
-            let gateway_id = EUI64::from_slice(&gw_rx_info.gateway_id)?;
-            g.add_edge(
-                *node_index.get(&Node::Gateway(gateway_id)).unwrap(),
-                *node_index.get(&Node::Device(dev_eui)).unwrap(),
-                1.0 / gateway_device_count
-                    .get(&gateway_id)
-                    .cloned()
-                    .unwrap_or_default() as f64,
-            );
+        for history in history_vec {
+            for i in &history.items {
+                let gateway_id = EUI64::from_slice(&i.gateway_id)?;
+                if gw_set.insert(gateway_id) {
+                    g.add_edge(
+                        *node_index.get(&Node::Gateway(gateway_id)).unwrap(),
+                        *node_index.get(&Node::Device(dev_eui)).unwrap(),
+                        1.0 / gateway_device_count
+                            .get(&gateway_id)
+                            .cloned()
+                            .unwrap_or_default() as f64,
+                    );
+                }
+            }
         }
     }
 
@@ -358,26 +365,32 @@ fn get_minimum_gateway_set(dev_gw_set: &[internal::DeviceGatewayRxInfo]) -> Resu
         .collect())
 }
 
-fn get_gateway_set(dev_gw_set: &[internal::DeviceGatewayRxInfo]) -> Result<Vec<EUI64>> {
+fn get_gateway_set(
+    dev_gw_history: &HashMap<EUI64, Vec<internal::GatewayRxInfoHistory>>,
+) -> Result<Vec<EUI64>> {
     let mut out: HashSet<EUI64> = HashSet::new();
-    for dev_gw in dev_gw_set {
-        for rx_info in &dev_gw.items {
-            let gateway_id = EUI64::from_slice(&rx_info.gateway_id)?;
-            out.insert(gateway_id);
+    for history_vec in dev_gw_history.values() {
+        for history in history_vec {
+            for i in &history.items {
+                let gateway_id = EUI64::from_slice(&i.gateway_id)?;
+                out.insert(gateway_id);
+            }
         }
     }
+
     Ok(out.iter().cloned().collect())
 }
 
 fn get_gateway_device_count_map(
-    dev_gw_set: &[internal::DeviceGatewayRxInfo],
+    dev_gw_history: &HashMap<EUI64, Vec<internal::GatewayRxInfoHistory>>,
 ) -> Result<HashMap<EUI64, usize>> {
     let mut out: HashMap<EUI64, usize> = HashMap::new();
-
-    for dev_gw in dev_gw_set {
-        for gw_rx_info in &dev_gw.items {
-            let gateway_id = EUI64::from_slice(&gw_rx_info.gateway_id)?;
-            *out.entry(gateway_id).or_insert(0) += 1;
+    for history_vec in dev_gw_history.values() {
+        for history in history_vec {
+            for i in &history.items {
+                let gateway_id = EUI64::from_slice(&i.gateway_id)?;
+                *out.entry(gateway_id).or_insert(0) += 1;
+            }
         }
     }
 
@@ -392,61 +405,75 @@ pub mod test {
     fn test_minimum_gateway_set() {
         struct Test {
             name: String,
-            dev_gw_set: Vec<internal::DeviceGatewayRxInfo>,
+            dev_gw_history: HashMap<EUI64, Vec<internal::GatewayRxInfoHistory>>,
             expected_gws: Vec<EUI64>,
         }
 
         let tests = vec![
             Test {
                 name: "one device - one gateway".into(),
-                dev_gw_set: vec![internal::DeviceGatewayRxInfo {
-                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
-                    items: vec![internal::DeviceGatewayRxInfoItem {
-                        gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                dev_gw_history: [(
+                    EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+                    vec![internal::GatewayRxInfoHistory {
+                        items: vec![internal::GatewayRxInfoHistoryItem {
+                            gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            ..Default::default()
+                        }],
                         ..Default::default()
                     }],
-                    ..Default::default()
-                }],
+                )]
+                .into_iter()
+                .collect(),
                 expected_gws: vec![EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2])],
             },
             Test {
                 name: "one device - two gateways".into(),
-                dev_gw_set: vec![internal::DeviceGatewayRxInfo {
-                    dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
-                    items: vec![
-                        internal::DeviceGatewayRxInfoItem {
-                            gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 1],
-                            ..Default::default()
-                        },
-                        internal::DeviceGatewayRxInfoItem {
-                            gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
-                            ..Default::default()
-                        },
-                    ],
-                    ..Default::default()
-                }],
+                dev_gw_history: [(
+                    EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+                    vec![internal::GatewayRxInfoHistory {
+                        items: vec![
+                            internal::GatewayRxInfoHistoryItem {
+                                gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                ..Default::default()
+                            },
+                            internal::GatewayRxInfoHistoryItem {
+                                gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                                ..Default::default()
+                            },
+                        ],
+                        ..Default::default()
+                    }],
+                )]
+                .into_iter()
+                .collect(),
                 expected_gws: vec![EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 1])],
             },
             Test {
                 name: "two devices - two gateways (no overlap)".into(),
-                dev_gw_set: vec![
-                    internal::DeviceGatewayRxInfo {
-                        dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
-                        items: vec![internal::DeviceGatewayRxInfoItem {
-                            gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                dev_gw_history: vec![
+                    (
+                        EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+                        vec![internal::GatewayRxInfoHistory {
+                            items: vec![internal::GatewayRxInfoHistoryItem {
+                                gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                ..Default::default()
+                            }],
                             ..Default::default()
                         }],
-                        ..Default::default()
-                    },
-                    internal::DeviceGatewayRxInfo {
-                        dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
-                        items: vec![internal::DeviceGatewayRxInfoItem {
-                            gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                    ),
+                    (
+                        EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
+                        vec![internal::GatewayRxInfoHistory {
+                            items: vec![internal::GatewayRxInfoHistoryItem {
+                                gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                                ..Default::default()
+                            }],
                             ..Default::default()
                         }],
-                        ..Default::default()
-                    },
-                ],
+                    ),
+                ]
+                .into_iter()
+                .collect(),
                 expected_gws: vec![
                     EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 1]),
                     EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
@@ -454,37 +481,43 @@ pub mod test {
             },
             Test {
                 name: "two devices - two gateways (overlap, second gw covers two devices)".into(),
-                dev_gw_set: vec![
-                    internal::DeviceGatewayRxInfo {
-                        dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 1],
-                        items: vec![internal::DeviceGatewayRxInfoItem {
-                            gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
-                            ..Default::default()
-                        }],
-                        ..Default::default()
-                    },
-                    internal::DeviceGatewayRxInfo {
-                        dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
-                        items: vec![
-                            internal::DeviceGatewayRxInfoItem {
-                                gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 1],
-                                ..Default::default()
-                            },
-                            internal::DeviceGatewayRxInfoItem {
+                dev_gw_history: vec![
+                    (
+                        EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+                        vec![internal::GatewayRxInfoHistory {
+                            items: vec![internal::GatewayRxInfoHistoryItem {
                                 gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
                                 ..Default::default()
-                            },
-                        ],
-                        ..Default::default()
-                    },
-                ],
+                            }],
+                            ..Default::default()
+                        }],
+                    ),
+                    (
+                        EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
+                        vec![internal::GatewayRxInfoHistory {
+                            items: vec![
+                                internal::GatewayRxInfoHistoryItem {
+                                    gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                    ..Default::default()
+                                },
+                                internal::GatewayRxInfoHistoryItem {
+                                    gateway_id: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                                    ..Default::default()
+                                },
+                            ],
+                            ..Default::default()
+                        }],
+                    ),
+                ]
+                .into_iter()
+                .collect(),
                 expected_gws: vec![EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2])],
             },
         ];
 
         for tst in &tests {
             println!("> {}", tst.name);
-            let gws: HashSet<EUI64> = get_minimum_gateway_set(&tst.dev_gw_set)
+            let gws: HashSet<EUI64> = get_minimum_gateway_set(&tst.dev_gw_history)
                 .unwrap()
                 .iter()
                 .cloned()

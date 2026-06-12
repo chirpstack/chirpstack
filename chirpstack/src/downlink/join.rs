@@ -20,21 +20,20 @@ pub struct JoinAccept<'a> {
     uplink_frame_set: &'a UplinkFrameSet,
     relay_context: Option<&'a RelayContext>,
     tenant: &'a tenant::Tenant,
-    device: &'a device::Device,
+    device: &'a mut device::Device,
     join_accept: &'a PhyPayload,
     network_conf: config::RegionNetwork,
     region_conf: Arc<Box<dyn lrwn::region::Region + Sync + Send>>,
 
     downlink_frame: chirpstack_api::gw::DownlinkFrame,
-    device_gateway_rx_info: Option<chirpstack_api::internal::DeviceGatewayRxInfo>,
-    downlink_gateway: Option<chirpstack_api::internal::DeviceGatewayRxInfoItem>,
+    downlink_gateway: Option<internal::DownlinkGateway>,
 }
 
 impl JoinAccept<'_> {
     pub async fn handle(
         ufs: &UplinkFrameSet,
         tenant: &tenant::Tenant,
-        device: &device::Device,
+        device: &mut device::Device,
         join_accept: &PhyPayload,
     ) -> Result<()> {
         let downlink_id: u32 = rand::rng().random();
@@ -48,7 +47,7 @@ impl JoinAccept<'_> {
         relay_ctx: &RelayContext,
         ufs: &UplinkFrameSet,
         tenant: &tenant::Tenant,
-        device: &device::Device,
+        device: &mut device::Device,
         join_accept: &PhyPayload,
     ) -> Result<()> {
         let downlink_id: u32 = rand::rng().random();
@@ -67,7 +66,7 @@ impl JoinAccept<'_> {
         downlink_id: u32,
         ufs: &UplinkFrameSet,
         tenant: &tenant::Tenant,
-        device: &device::Device,
+        device: &mut device::Device,
         join_accept: &PhyPayload,
     ) -> Result<()> {
         let mut ctx = JoinAccept {
@@ -83,7 +82,6 @@ impl JoinAccept<'_> {
                 downlink_id,
                 ..Default::default()
             },
-            device_gateway_rx_info: None,
             downlink_gateway: None,
         };
 
@@ -102,7 +100,7 @@ impl JoinAccept<'_> {
         relay_ctx: &RelayContext,
         ufs: &UplinkFrameSet,
         tenant: &tenant::Tenant,
-        device: &device::Device,
+        device: &mut device::Device,
         join_accept: &PhyPayload,
     ) -> Result<()> {
         let mut ctx = JoinAccept {
@@ -118,7 +116,6 @@ impl JoinAccept<'_> {
                 downlink_id,
                 ..Default::default()
             },
-            device_gateway_rx_info: None,
             downlink_gateway: None,
         };
 
@@ -134,9 +131,9 @@ impl JoinAccept<'_> {
 
     fn set_device_gateway_rx_info(&mut self) -> Result<()> {
         trace!("Set device-gateway rx-info");
+        let ds = self.device.get_device_session_mut()?;
 
-        self.device_gateway_rx_info = Some(internal::DeviceGatewayRxInfo {
-            dev_eui: self.device.dev_eui.to_be_bytes().to_vec(),
+        let history = internal::GatewayRxInfoHistory {
             dr: self.uplink_frame_set.dr as u32,
             items: self
                 .uplink_frame_set
@@ -145,7 +142,7 @@ impl JoinAccept<'_> {
                 .map(|rx_info| {
                     let gw_id = EUI64::from_str(&rx_info.gateway_id).unwrap_or_default();
 
-                    internal::DeviceGatewayRxInfoItem {
+                    internal::GatewayRxInfoHistoryItem {
                         gateway_id: gw_id.to_vec(),
                         rssi: rx_info.rssi,
                         lora_snr: rx_info.snr,
@@ -173,19 +170,25 @@ impl JoinAccept<'_> {
                     }
                 })
                 .collect(),
-        });
+        };
+        ds.append_gateway_rx_info_history(
+            history,
+            config::get().gateway.device_gateway_mapping_history_uplinks,
+        );
 
         Ok(())
     }
 
     fn select_downlink_gateway(&mut self) -> Result<()> {
         trace!("Select downlink gateway");
+        let ds = self.device.device_session.as_ref().unwrap();
 
         let gw_down = helpers::select_downlink_gateway(
             Some(self.tenant.id.into()),
             &self.uplink_frame_set.region_config_id,
             self.network_conf.gateway_prefer_min_margin,
-            self.device_gateway_rx_info.as_mut().unwrap(),
+            &ds.gateway_rx_info_history,
+            true,
         )?;
 
         self.downlink_frame.gateway_id = hex::encode(&gw_down.gateway_id);
