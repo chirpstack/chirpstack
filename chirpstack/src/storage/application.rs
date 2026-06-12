@@ -252,6 +252,7 @@ pub struct AzureServiceBusConfiguration {
 pub struct PilotThingsConfiguration {
     pub server: String,
     pub token: String,
+    pub link_check_endpoint: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -314,6 +314,43 @@ message LocationEvent {
   common.Location location = 4;
 }
 
+// LinkCheckGwRxInfo contains per-gateway reception info for a link-check request.
+message LinkCheckGwRxInfo {
+  // Gateway ID.
+  string gateway_id = 1;
+
+  // RSSI.
+  int32 rssi = 2;
+
+  // SNR.
+  float snr = 3;
+
+  // Link margin in dB for this gateway.
+  uint32 margin = 4;
+}
+
+// LinkCheckEvent is the message sent when a device sent a link-check request.
+message LinkCheckEvent {
+  // Deduplication ID (UUID).
+  string deduplication_id = 1;
+
+  // Timestamp.
+  google.protobuf.Timestamp time = 2;
+
+  // Device info.
+  DeviceInfo device_info = 3;
+
+  // Link margin in dB of the best received link-check request.
+  // This is the value returned in LinkCheckAns to the device.
+  uint32 margin = 4;
+
+  // Number of gateways that received the link-check request.
+  uint32 gw_cnt = 5;
+
+  // Per-gateway RX info with individual SNR, RSSI and margin.
+  repeated LinkCheckGwRxInfo gw_rx_info = 6;
+}
+
 // DownlinkCommand is the command to enqueue a downlink payload for the given
 // device.
 message DownlinkCommand {
