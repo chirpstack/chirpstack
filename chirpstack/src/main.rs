@@ -99,8 +99,8 @@ enum Commands {
     /// Migrate device-profile templates to device profiles.
     MigrateDeviceProfileTemplates {},
 
-    /// Migrate Gateway <> Device Rx Info
-    MigrateGatewayDeviceRxInfo {},
+    /// Migrate Device <> Gateway Rx Info.
+    MigrateDeviceGatewayRxInfo {},
 }
 
 #[tokio::main]
@@ -151,8 +151,8 @@ async fn main() -> Result<()> {
         Some(Commands::MigrateDeviceProfileTemplates {}) => {
             cmd::migrate_device_profile_templates::run().await?
         }
-        Some(Commands::MigrateGatewayDeviceRxInfo {}) => {
-            cmd::migrate_gateway_device_rx_info::run().await?
+        Some(Commands::MigrateDeviceGatewayRxInfo {}) => {
+            cmd::migrate_device_gateway_rx_info::run().await?
         }
         None => cmd::root::run().await?,
     }
