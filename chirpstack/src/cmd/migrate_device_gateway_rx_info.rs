@@ -24,8 +24,8 @@ pub async fn run() -> Result<()> {
             info!(count = i, total_count = dev_euis.len(), "migrating data");
         }
 
-        if let Ok(rx_info) = device_gateway::get_rx_info(&dev_eui).await {
-            let d = storage::device::get(&dev_eui).await?;
+        if let Ok(rx_info) = device_gateway::get_rx_info(dev_eui).await {
+            let d = storage::device::get(dev_eui).await?;
             let mut ds = d.get_device_session()?.clone();
 
             // Skip if already migrated or filled

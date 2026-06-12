@@ -47,12 +47,10 @@ pub fn select_downlink_gateway(
         h.items.retain(|rx_info| {
             if tenant_id_bytes.is_empty() {
                 !rx_info.is_private_down
+            } else if tenant_id_bytes == rx_info.tenant_id {
+                true
             } else {
-                if tenant_id_bytes == rx_info.tenant_id {
-                    true
-                } else {
-                    !rx_info.is_private_down
-                }
+                !rx_info.is_private_down
             }
         });
     }
@@ -89,9 +87,7 @@ pub fn select_downlink_gateway(
         };
 
         for i in &h.items {
-            let entry = stats
-                .entry(i.gateway_id.clone())
-                .or_insert(Default::default());
+            let entry = stats.entry(i.gateway_id.clone()).or_default();
 
             entry.count += 1;
             entry.total_snr += i.lora_snr;
