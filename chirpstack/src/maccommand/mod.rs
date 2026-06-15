@@ -197,6 +197,7 @@ pub mod test {
             gateway_private_up_map: Default::default(),
             gateway_private_down_map: Default::default(),
             gateway_tenant_id_map: Default::default(),
+            gateway_downlink_priority_map: HashMap::new(),
             region_common_name: lrwn::region::CommonName::EU868,
             region_config_id: "eu868".into(),
             roaming_meta_data: None,

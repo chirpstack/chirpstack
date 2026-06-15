@@ -342,6 +342,9 @@ message GatewayRxInfoHistoryItem {
 
   // Tenant ID (UUID).
   bytes tenant_id = 9;
+
+  // Gateway downlink priority.
+  uint32 gateway_downlink_priority = 10;
 }
 
 message DeviceGatewayRxInfo {

@@ -306,6 +306,7 @@ diesel::table! {
         tls_certificate -> Nullable<Bytea>,
         tags -> Jsonb,
         properties -> Jsonb,
+        downlink_priority -> Int2,
     }
 }
 

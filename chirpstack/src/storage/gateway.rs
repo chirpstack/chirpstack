@@ -31,6 +31,7 @@ pub struct Gateway {
     pub tls_certificate: Option<Vec<u8>>,
     pub tags: fields::KeyValue,
     pub properties: fields::KeyValue,
+    pub downlink_priority: i16,
 }
 
 impl Gateway {
@@ -38,6 +39,11 @@ impl Gateway {
         if self.name.is_empty() {
             return Err(Error::Validation("name is not set".into()));
         }
+
+        if self.downlink_priority <= 0 {
+            return Err(Error::Validation("downlink_priority must be > 0".into()));
+        }
+
         Ok(())
     }
 }
@@ -61,6 +67,7 @@ impl Default for Gateway {
             stats_interval_secs: 30,
             tags: fields::KeyValue::new(HashMap::new()),
             properties: fields::KeyValue::new(HashMap::new()),
+            downlink_priority: 10,
         }
     }
 }
@@ -90,6 +97,7 @@ pub struct GatewayListItem {
     pub altitude: f32,
     pub properties: fields::KeyValue,
     pub stats_interval_secs: i32,
+    pub downlink_priority: i16,
 }
 
 #[derive(Queryable, PartialEq, Debug)]
@@ -101,6 +109,7 @@ pub struct GatewayMeta {
     pub altitude: f32,
     pub is_private_up: bool,
     pub is_private_down: bool,
+    pub downlink_priority: i16,
 }
 
 #[derive(Default, Clone)]
@@ -244,6 +253,7 @@ pub async fn update(gw: Gateway) -> Result<Gateway, Error> {
             gateway::altitude.eq(&gw.altitude),
             gateway::stats_interval_secs.eq(&gw.stats_interval_secs),
             gateway::tags.eq(&gw.tags),
+            gateway::downlink_priority.eq(&gw.downlink_priority),
         ))
         .get_result(&mut get_async_db_conn().await?)
         .await
@@ -334,6 +344,7 @@ pub async fn list(
             gateway::altitude,
             gateway::properties,
             gateway::stats_interval_secs,
+            gateway::downlink_priority,
         ))
         .distinct()
         .into_boxed();
@@ -416,6 +427,7 @@ pub async fn get_meta(gateway_id: &EUI64) -> Result<GatewayMeta, Error> {
             gateway::altitude,
             tenant::private_gateways_up,
             tenant::private_gateways_down,
+            gateway::downlink_priority,
         ))
         .filter(gateway::dsl::gateway_id.eq(&gateway_id))
         .first(&mut get_async_db_conn().await?)

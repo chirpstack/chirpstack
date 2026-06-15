@@ -74,6 +74,7 @@ pub fn select_downlink_gateway(
         board: u32,
         antenna: u32,
         context: Vec<u8>,
+        gateway_downlink_priority: usize,
     }
 
     // Deduplicate per gateway. We store the last board, antenna and context blob.
@@ -97,6 +98,11 @@ pub fn select_downlink_gateway(
             entry.antenna = i.antenna;
             entry.context = i.context.clone();
             entry.gateway_id = i.gateway_id.clone();
+            entry.gateway_downlink_priority = if i.gateway_downlink_priority > 0 {
+                i.gateway_downlink_priority as usize
+            } else {
+                1
+            };
         }
     }
     let mut stats: Vec<GatewayStats> = stats.into_values().collect();
@@ -130,11 +136,15 @@ pub fn select_downlink_gateway(
         // list.
         stats[0].clone()
     } else {
-        // Else take a random one from the list, using number of times a gateway reported an uplink
-        // for this device into account as weight. More stable gateways are therefore the most
-        // likely candidate for sending the downlink.
+        // Else take a random one from the list, taking the number of times a gateway reported an uplink
+        // + downlink gateway priority for this device into account as weight. More stable gateways aretherefore
+        // therefore the most likely candidate for sending the downlink.
         let mut rng = rand::rng();
-        let dist = WeightedIndex::new(filtered_stats.iter().map(|v| v.count))?;
+        let dist = WeightedIndex::new(
+            filtered_stats
+                .iter()
+                .map(|v| v.gateway_downlink_priority * v.count),
+        )?;
         filtered_stats[dist.sample(&mut rng)].clone()
     };
 

@@ -65,6 +65,7 @@ impl GatewayService for Gateway {
             altitude: alt,
             tags: fields::KeyValue::new(req_gw.tags.clone()),
             stats_interval_secs: req_gw.stats_interval as i32,
+            downlink_priority: req_gw.downlink_priority as i16,
             ..Default::default()
         };
 
@@ -108,6 +109,7 @@ impl GatewayService for Gateway {
                 tags: gw.tags.into_hashmap(),
                 metadata: gw.properties.into_hashmap(),
                 stats_interval: gw.stats_interval_secs as u32,
+                downlink_priority: gw.downlink_priority as u32,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&gw.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&gw.updated_at)),
@@ -156,6 +158,7 @@ impl GatewayService for Gateway {
             altitude: alt,
             tags: fields::KeyValue::new(req_gw.tags.clone()),
             stats_interval_secs: req_gw.stats_interval as i32,
+            downlink_priority: req_gw.downlink_priority as i16,
             ..Default::default()
         })
         .await
@@ -284,6 +287,7 @@ impl GatewayService for Gateway {
                         }
                     }
                     .into(),
+                    downlink_priority: gw.downlink_priority as u32,
                 })
                 .collect(),
         });
@@ -1029,6 +1033,7 @@ pub mod test {
                     altitude: 1.0,
                     ..Default::default()
                 }),
+                downlink_priority: 10,
                 ..Default::default()
             }),
         };
@@ -1058,6 +1063,7 @@ pub mod test {
                     altitude: 1.0,
                     ..Default::default()
                 }),
+                downlink_priority: 10,
                 ..Default::default()
             }),
             get_resp.get_ref().gateway
@@ -1075,6 +1081,7 @@ pub mod test {
                     altitude: 2.0,
                     ..Default::default()
                 }),
+                downlink_priority: 11,
                 ..Default::default()
             }),
         };
@@ -1104,6 +1111,7 @@ pub mod test {
                     altitude: 2.0,
                     ..Default::default()
                 }),
+                downlink_priority: 11,
                 ..Default::default()
             }),
             get_resp.get_ref().gateway

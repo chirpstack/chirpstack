@@ -122,6 +122,12 @@ function ListGateways(props: IProps) {
         return "";
       },
     },
+    {
+      title: "Downlink priority",
+      dataIndex: "downlinkPriority",
+      key: "downlinkPriority",
+      width: 250,
+    },
   ];
 
   useEffect(() => {

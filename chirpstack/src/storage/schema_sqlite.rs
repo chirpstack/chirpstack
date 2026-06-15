@@ -278,6 +278,7 @@ diesel::table! {
         tls_certificate -> Nullable<Binary>,
         tags -> Text,
         properties -> Text,
+        downlink_priority -> SmallInt,
     }
 }
 

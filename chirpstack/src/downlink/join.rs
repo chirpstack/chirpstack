@@ -167,6 +167,12 @@ impl JoinAccept<'_> {
                             .get(&gw_id)
                             .map(|v| v.into_bytes().to_vec())
                             .unwrap_or_default(),
+                        gateway_downlink_priority: self
+                            .uplink_frame_set
+                            .gateway_downlink_priority_map
+                            .get(&gw_id)
+                            .cloned()
+                            .unwrap_or_default(),
                     }
                 })
                 .collect(),

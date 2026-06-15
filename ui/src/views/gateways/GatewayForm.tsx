@@ -77,6 +77,7 @@ function GatewayForm(props: IProps) {
     gw.setGatewayId(v.gatewayId);
     gw.setStatsInterval(v.statsInterval);
     gw.setLocation(loc);
+    gw.setDownlinkPriority(v.downlinkPriority);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -116,12 +117,22 @@ function GatewayForm(props: IProps) {
                 required
               />
             </Col>
-            <Col span={12}>
+            <Col span={6}>
               <Form.Item
                 label="Stats interval (secs)"
                 tooltip="The expected interval in seconds in which the gateway sends its statistics"
                 name="statsInterval"
                 rules={[{ required: true, message: "Please enter a stats interval!" }]}
+              >
+                <InputNumber min={0} disabled={props.disabled} />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                label="Downlink priority"
+                tooltip="ChirpStack selects the downlink gateway based on SNR, RSSI, uplink history and user-defined priority value."
+                name="downlinkPriority"
+                rules={[{ required: true, message: "Please enter a downlink priority!" }]}
               >
                 <InputNumber min={0} disabled={props.disabled} />
               </Form.Item>

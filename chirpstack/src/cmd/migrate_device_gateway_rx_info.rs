@@ -48,6 +48,7 @@ pub async fn run() -> Result<()> {
                         is_private_up: i.is_private_up,
                         is_private_down: i.is_private_down,
                         tenant_id: i.tenant_id.clone(),
+                        gateway_downlink_priority: 10,
                     })
                     .collect(),
             }];

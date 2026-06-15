@@ -279,6 +279,7 @@ async fn _handle_pr_start_req_join(
         gateway_private_up_map: HashMap::new(),
         gateway_private_down_map: HashMap::new(),
         gateway_tenant_id_map: HashMap::new(),
+        gateway_downlink_priority_map: HashMap::new(),
         region_common_name,
         region_config_id,
         roaming_meta_data: Some(RoamingMetaData {
@@ -314,6 +315,7 @@ async fn _handle_pr_start_req_data(
         gateway_private_up_map: HashMap::new(),
         gateway_private_down_map: HashMap::new(),
         gateway_tenant_id_map: HashMap::new(),
+        gateway_downlink_priority_map: HashMap::new(),
         region_common_name,
         region_config_id,
         roaming_meta_data: Some(RoamingMetaData {
@@ -512,6 +514,7 @@ async fn _handle_xmit_data_req(
             gateway_private_up_map: HashMap::new(),
             gateway_private_down_map: HashMap::new(),
             gateway_tenant_id_map: HashMap::new(),
+            gateway_downlink_priority_map: HashMap::new(),
             region_common_name,
             region_config_id,
             roaming_meta_data: Some(RoamingMetaData {
