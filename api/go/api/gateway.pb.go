@@ -146,8 +146,13 @@ type Gateway struct {
 	// This defines the expected interval in which the gateway sends its
 	// statistics.
 	StatsInterval uint32 `protobuf:"varint,8,opt,name=stats_interval,json=statsInterval,proto3" json:"stats_interval,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Downlink priority.
+	// ChirpStack selects downlink gateways based on SNR, RSSI, uplink history
+	// and an user-defined downlink priority which can be used as a positive or
+	// negative bias in the downlink gateway selection.
+	DownlinkPriority uint32 `protobuf:"varint,9,opt,name=downlink_priority,json=downlinkPriority,proto3" json:"downlink_priority,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Gateway) Reset() {
@@ -236,6 +241,13 @@ func (x *Gateway) GetStatsInterval() uint32 {
 	return 0
 }
 
+func (x *Gateway) GetDownlinkPriority() uint32 {
+	if x != nil {
+		return x.DownlinkPriority
+	}
+	return 0
+}
+
 type GatewayListItem struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Tenant ID.
@@ -259,9 +271,14 @@ type GatewayListItem struct {
 	// Gateway state.
 	// Please note that the state of the gateway is driven by the stats
 	// packages that are sent by the gateway.
-	State         GatewayState `protobuf:"varint,10,opt,name=state,proto3,enum=api.GatewayState" json:"state,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	State GatewayState `protobuf:"varint,10,opt,name=state,proto3,enum=api.GatewayState" json:"state,omitempty"`
+	// Downlink priority.
+	// ChirpStack selects downlink gateways based on SNR, RSSI, uplink history
+	// and an user-defined downlink priority which can be used as a positive or
+	// negative bias in the downlink gateway selection.
+	DownlinkPriority uint32 `protobuf:"varint,11,opt,name=downlink_priority,json=downlinkPriority,proto3" json:"downlink_priority,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *GatewayListItem) Reset() {
@@ -362,6 +379,13 @@ func (x *GatewayListItem) GetState() GatewayState {
 		return x.State
 	}
 	return GatewayState_NEVER_SEEN
+}
+
+func (x *GatewayListItem) GetDownlinkPriority() uint32 {
+	if x != nil {
+		return x.DownlinkPriority
+	}
+	return 0
 }
 
 type CreateGatewayRequest struct {
@@ -1735,7 +1759,7 @@ var File_api_gateway_proto protoreflect.FileDescriptor
 
 const file_api_gateway_proto_rawDesc = "" +
 	"\n" +
-	"\x11api/gateway.proto\x12\x03api\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x13common/common.proto\"\xaa\x03\n" +
+	"\x11api/gateway.proto\x12\x03api\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd7\x03\n" +
 	"\aGateway\x12\x1d\n" +
 	"\n" +
 	"gateway_id\x18\x01 \x01(\tR\tgatewayId\x12\x12\n" +
@@ -1745,13 +1769,14 @@ const file_api_gateway_proto_rawDesc = "" +
 	"\ttenant_id\x18\x05 \x01(\tR\btenantId\x12*\n" +
 	"\x04tags\x18\x06 \x03(\v2\x16.api.Gateway.TagsEntryR\x04tags\x126\n" +
 	"\bmetadata\x18\a \x03(\v2\x1a.api.Gateway.MetadataEntryR\bmetadata\x12%\n" +
-	"\x0estats_interval\x18\b \x01(\rR\rstatsInterval\x1a7\n" +
+	"\x0estats_interval\x18\b \x01(\rR\rstatsInterval\x12+\n" +
+	"\x11downlink_priority\x18\t \x01(\rR\x10downlinkPriority\x1a7\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x93\x04\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xc0\x04\n" +
 	"\x0fGatewayListItem\x12\x1b\n" +
 	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x1d\n" +
 	"\n" +
@@ -1769,7 +1794,8 @@ const file_api_gateway_proto_rawDesc = "" +
 	"\flast_seen_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"lastSeenAt\x12'\n" +
 	"\x05state\x18\n" +
-	" \x01(\x0e2\x11.api.GatewayStateR\x05state\x1a=\n" +
+	" \x01(\x0e2\x11.api.GatewayStateR\x05state\x12+\n" +
+	"\x11downlink_priority\x18\v \x01(\rR\x10downlinkPriority\x1a=\n" +
 	"\x0fPropertiesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\">\n" +
