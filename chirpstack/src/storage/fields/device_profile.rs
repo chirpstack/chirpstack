@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 )]
 #[cfg_attr(feature = "postgres", diesel(sql_type = Jsonb))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
+#[serde(default)]
 pub struct AbpParams {
     pub rx1_delay: u8,
     pub rx1_dr_offset: u8,
@@ -59,6 +60,7 @@ impl serialize::ToSql<Text, Sqlite> for AbpParams {
 )]
 #[cfg_attr(feature = "postgres", diesel(sql_type = Jsonb))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
+#[serde(default)]
 pub struct ClassBParams {
     pub timeout: u16,
     #[serde(alias = "ping_slot_nb_k")]
@@ -109,6 +111,7 @@ impl serialize::ToSql<Text, Sqlite> for ClassBParams {
 )]
 #[cfg_attr(feature = "postgres", diesel(sql_type = Jsonb))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
+#[serde(default)]
 pub struct ClassCParams {
     pub timeout: u16,
 }
@@ -154,6 +157,7 @@ impl serialize::ToSql<Text, Sqlite> for ClassCParams {
 )]
 #[cfg_attr(feature = "postgres", diesel(sql_type = Jsonb))]
 #[cfg_attr(feature = "sqlite", diesel(sql_type = Text))]
+#[serde(default)]
 pub struct RelayParams {
     pub is_relay: bool,
     pub is_relay_ed: bool,
