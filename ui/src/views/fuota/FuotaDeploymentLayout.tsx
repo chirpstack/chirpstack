@@ -157,7 +157,7 @@ function FuotaDeploymentLayout(props: IProps) {
               <Popconfirm
                 placement="left"
                 title="Start deployment"
-                description="Are you sure you want to start the deploymen? Once started, you will not be able to make changes."
+                description="Are you sure you want to start the deployment? Once started, you will not be able to make changes."
                 onConfirm={startFuotaDeployment}
               >
                 <Button type="primary" disabled={getFuotaDeploymentResponse.getStartedAt() !== undefined}>
