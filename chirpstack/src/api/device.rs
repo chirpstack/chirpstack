@@ -244,15 +244,12 @@ impl DeviceService for Device {
         request: Request<api::ListDevicesRequest>,
     ) -> Result<Response<api::ListDevicesResponse>, Status> {
         let req = request.get_ref();
-        let user_id: Option<Uuid> = if let Some(auth_id) = request.extensions().get::<AuthID>() {
-            if let AuthID::User(v) = auth_id {
+        let user_id: Option<Uuid> =
+            if let Some(AuthID::User(v)) = request.extensions().get::<AuthID>() {
                 Some(*v)
             } else {
                 None
-            }
-        } else {
-            None
-        };
+            };
         let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
         let mg_id: Option<Uuid> = if req.multicast_group_id.is_empty() {
             None
