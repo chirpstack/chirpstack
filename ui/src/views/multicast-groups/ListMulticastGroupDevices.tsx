@@ -7,7 +7,7 @@ import type { ListDevicesResponse, DeviceListItem } from "@chirpstack/chirpstack
 import { ListDevicesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import type { MulticastGroup } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
-import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_tenant_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { RemoveDeviceFromMulticastGroupRequest } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
 import type { GetPageCallbackFunc } from "../../components/DataTable";
