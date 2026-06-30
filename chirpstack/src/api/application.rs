@@ -163,15 +163,12 @@ impl ApplicationService for Application {
         request: Request<api::ListApplicationsRequest>,
     ) -> Result<Response<api::ListApplicationsResponse>, Status> {
         let req = request.get_ref();
-        let user_id: Option<Uuid> = if let Some(auth_id) = request.extensions().get::<AuthID>() {
-            if let AuthID::User(v) = auth_id {
+        let user_id: Option<Uuid> =
+            if let Some(AuthID::User(v)) = request.extensions().get::<AuthID>() {
                 Some(*v)
             } else {
                 None
-            }
-        } else {
-            None
-        };
+            };
         let tenant_id = Uuid::from_str(&req.tenant_id).map_err(|e| e.status())?;
 
         self.validator
