@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 
-import { Spin, Button, Space, Timeline, Row, Col, TimelineProps, Card, Tag, Popover, Table } from "antd";
-import { LoadingOutlined, ReloadOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { Spin, Space, Tag, Popover, Table } from "antd";
+import { LoadingOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import { format } from "date-fns";
-
-import { format_dt, format_dt_from_secs } from "../helpers";
+import { format_dt_from_secs } from "../helpers";
 
 import { ListFuotaDeploymentJobsRequest } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
 

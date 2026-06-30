@@ -57,16 +57,18 @@ impl UserService for User {
         for tu in &req.tenants {
             let tenant_id = Uuid::from_str(&tu.tenant_id).map_err(|e| e.status())?;
 
-            tenant::add_user(tenant::TenantUser {
+            let t = tenant::TenantUser {
                 tenant_id: tenant_id.into(),
                 user_id: u.id,
                 is_admin: tu.is_admin,
                 is_device_admin: tu.is_device_admin,
                 is_gateway_admin: tu.is_gateway_admin,
                 ..Default::default()
-            })
-            .await
-            .map_err(|e| e.status())?;
+            };
+
+            tenant::add_user(t, &[], &[])
+                .await
+                .map_err(|e| e.status())?;
         }
 
         let mut resp = Response::new(api::CreateUserResponse {

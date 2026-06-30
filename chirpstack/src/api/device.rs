@@ -14,6 +14,7 @@ use uuid::Uuid;
 use super::auth::validator;
 use super::error::ToStatus;
 use super::helpers::{self, FromProto, ToProto};
+use crate::api::auth::AuthID;
 use crate::storage::{
     device::{self, DeviceClass},
     device_keys, device_profile, device_queue,
@@ -243,6 +244,15 @@ impl DeviceService for Device {
         request: Request<api::ListDevicesRequest>,
     ) -> Result<Response<api::ListDevicesResponse>, Status> {
         let req = request.get_ref();
+        let user_id: Option<Uuid> = if let Some(auth_id) = request.extensions().get::<AuthID>() {
+            if let AuthID::User(v) = auth_id {
+                Some(*v)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
         let app_id = Uuid::from_str(&req.application_id).map_err(|e| e.status())?;
         let mg_id: Option<Uuid> = if req.multicast_group_id.is_empty() {
             None
@@ -272,6 +282,7 @@ impl DeviceService for Device {
         }
 
         let filters = device::Filters {
+            user_id,
             application_id: Some(app_id),
             multicast_group_id: mg_id,
             device_profile_id: dp_id,
@@ -684,18 +695,44 @@ impl DeviceService for Device {
         request: Request<api::GetRandomDevAddrRequest>,
     ) -> Result<Response<api::GetRandomDevAddrResponse>, Status> {
         let req = request.get_ref();
-        let dev_eui = EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?;
 
-        self.validator
-            .validate(
-                request.extensions(),
-                validator::ValidateDeviceAccess::new(validator::Flag::Read, dev_eui),
-            )
-            .await?;
+        let dev_eui = if !req.dev_eui.is_empty() {
+            Some(EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?)
+        } else {
+            None
+        };
 
-        let t = tenant::get_for_dev_eui(dev_eui)
-            .await
-            .map_err(|e| e.status())?;
+        let tenant_id = if !req.tenant_id.is_empty() {
+            Some(Uuid::from_str(&req.tenant_id).map_err(|e| e.status())?)
+        } else {
+            None
+        };
+
+        let t = if let Some(dev_eui) = dev_eui {
+            self.validator
+                .validate(
+                    request.extensions(),
+                    validator::ValidateDeviceAccess::new(validator::Flag::Read, dev_eui),
+                )
+                .await?;
+
+            tenant::get_for_dev_eui(dev_eui)
+                .await
+                .map_err(|e| e.status())?
+        } else if let Some(tenant_id) = tenant_id {
+            self.validator
+                .validate(
+                    request.extensions(),
+                    validator::ValidateTenantAccess::new(validator::Flag::Read, tenant_id),
+                )
+                .await?;
+
+            tenant::get(&tenant_id).await.map_err(|e| e.status())?
+        } else {
+            return Err(Status::invalid_argument(
+                "either dev_addr or tenant_id must be set",
+            ));
+        };
 
         Ok(Response::new(api::GetRandomDevAddrResponse {
             dev_addr: get_random_dev_addr(&t.get_dev_addr_prefixes()).to_string(),
@@ -1671,6 +1708,7 @@ pub mod test {
             &u.id,
             api::GetRandomDevAddrRequest {
                 dev_eui: "0102030405060708".into(),
+                tenant_id: "".into(),
             },
         );
         let get_random_dev_addr_resp = service

@@ -8,6 +8,7 @@ use lrwn::EUI64;
 use uuid::Uuid;
 
 use crate::aeskey::get_random_aes_key;
+use crate::api::auth::AuthID;
 use crate::api::auth::validator;
 use crate::api::error::ToStatus;
 use crate::api::helpers::{self, FromProto, ToProto};
@@ -329,6 +330,15 @@ impl FuotaService for Fuota {
         request: Request<api::ListFuotaDeploymentsRequest>,
     ) -> Result<Response<api::ListFuotaDeploymentsResponse>, Status> {
         let req = request.get_ref();
+        let user_id: Option<Uuid> = if let Some(auth_id) = request.extensions().get::<AuthID>() {
+            if let AuthID::User(v) = auth_id {
+                Some(*v)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
         let tenant_id = if req.tenant_id.is_empty() {
             None
         } else {
@@ -351,12 +361,18 @@ impl FuotaService for Fuota {
             )
             .await?;
 
-        let count = fuota::get_deployment_count(tenant_id, app_id)
+        let count = fuota::get_deployment_count(user_id, tenant_id, app_id)
             .await
             .map_err(|e| e.status())?;
-        let items = fuota::list_deployments(tenant_id, app_id, req.limit as i64, req.offset as i64)
-            .await
-            .map_err(|e| e.status())?;
+        let items = fuota::list_deployments(
+            user_id,
+            tenant_id,
+            app_id,
+            req.limit as i64,
+            req.offset as i64,
+        )
+        .await
+        .map_err(|e| e.status())?;
 
         let mut resp = Response::new(api::ListFuotaDeploymentsResponse {
             total_count: count as u32,

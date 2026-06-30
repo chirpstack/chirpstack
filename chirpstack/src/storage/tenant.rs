@@ -4,14 +4,17 @@ use std::ops::Deref;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*};
-use diesel_async::RunQueryDsl;
+use diesel_async::{AsyncConnection, RunQueryDsl};
 use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
-use super::schema::{application, device, tenant, tenant_user, user};
+use super::schema::{
+    application, device, device_profile, tenant, tenant_user, tenant_user_application,
+    tenant_user_device_profile, user,
+};
 use super::{fields, get_async_db_conn};
-use crate::config;
+use crate::{config, storage};
 use lrwn::EUI64;
 
 #[derive(Queryable, Insertable, PartialEq, Eq, Debug, Clone)]
@@ -117,6 +120,44 @@ impl Default for TenantUser {
             is_admin: false,
             is_device_admin: false,
             is_gateway_admin: false,
+        }
+    }
+}
+
+#[derive(Queryable, Insertable, PartialEq, Eq, Debug)]
+#[diesel(table_name = tenant_user_device_profile)]
+pub struct TenantUserDeviceProfile {
+    pub user_id: fields::Uuid,
+    pub device_profile_id: fields::Uuid,
+    pub created_at: DateTime<Utc>,
+}
+
+impl Default for TenantUserDeviceProfile {
+    fn default() -> Self {
+        TenantUserDeviceProfile {
+            user_id: Uuid::nil().into(),
+            device_profile_id: Uuid::nil().into(),
+            created_at: Utc::now(),
+        }
+    }
+}
+
+#[derive(Queryable, Insertable, PartialEq, Eq, Debug)]
+#[diesel(table_name = tenant_user_application)]
+pub struct TenantUserApplication {
+    pub user_id: fields::Uuid,
+    pub application_id: fields::Uuid,
+    pub created_at: DateTime<Utc>,
+    pub is_read_only: bool,
+}
+
+impl Default for TenantUserApplication {
+    fn default() -> Self {
+        TenantUserApplication {
+            user_id: Uuid::nil().into(),
+            application_id: Uuid::nil().into(),
+            created_at: Utc::now(),
+            is_read_only: false,
         }
     }
 }
@@ -302,30 +343,165 @@ pub async fn list_by_dev_addr_prefix_overlap(
         .collect())
 }
 
-pub async fn add_user(tu: TenantUser) -> Result<TenantUser, Error> {
-    let tu: TenantUser = diesel::insert_into(tenant_user::table)
-        .values(&tu)
-        .get_result(&mut get_async_db_conn().await?)
-        .await
-        .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+pub async fn add_user(
+    tu: TenantUser,
+    device_profiles: &[TenantUserDeviceProfile],
+    applications: &[TenantUserApplication],
+) -> Result<TenantUser, Error> {
+    let mut c = get_async_db_conn().await?;
+    let tu: TenantUser = c
+        .transaction::<TenantUser, Error, _>(async |c| {
+            let tu: TenantUser = diesel::insert_into(tenant_user::table)
+                .values(&tu)
+                .get_result(c)
+                .await
+                .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+
+            for dp in device_profiles {
+                // make sure dp exists under same tenant
+                let _: storage::device_profile::DeviceProfile = device_profile::table
+                    .filter(
+                        device_profile::id
+                            .eq(dp.device_profile_id)
+                            .and(device_profile::tenant_id.eq(&tu.tenant_id)),
+                    )
+                    .first(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, dp.device_profile_id.to_string()))?;
+
+                diesel::insert_into(tenant_user_device_profile::table)
+                    .values(dp)
+                    .execute(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+            }
+
+            for app in applications {
+                // make sure dp exists under same tenant
+                let _: storage::application::Application = application::table
+                    .filter(
+                        application::id
+                            .eq(app.application_id)
+                            .and(application::tenant_id.eq(&tu.tenant_id)),
+                    )
+                    .first(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, app.application_id.to_string()))?;
+
+                diesel::insert_into(tenant_user_application::table)
+                    .values(app)
+                    .execute(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+            }
+
+            Ok(tu)
+        })
+        .await?;
+
     info!(
         tenant_id = %tu.tenant_id,
         user_id = %tu.user_id,
         "Tenant user added"
     );
+
     Ok(tu)
 }
 
-pub async fn update_user(tu: TenantUser) -> Result<TenantUser, Error> {
-    let tu: TenantUser = diesel::update(
-        tenant_user::dsl::tenant_user
-            .filter(tenant_user::dsl::tenant_id.eq(&tu.tenant_id))
-            .filter(tenant_user::dsl::user_id.eq(&tu.user_id)),
-    )
-    .set(&tu)
-    .get_result(&mut get_async_db_conn().await?)
-    .await
-    .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+pub async fn update_user(
+    tu: TenantUser,
+    device_profiles: &[TenantUserDeviceProfile],
+    applications: &[TenantUserApplication],
+) -> Result<TenantUser, Error> {
+    let mut c = get_async_db_conn().await?;
+    let tu: TenantUser = c
+        .transaction::<TenantUser, Error, _>(async |c| {
+            let tu: TenantUser = diesel::update(
+                tenant_user::dsl::tenant_user
+                    .filter(tenant_user::dsl::tenant_id.eq(&tu.tenant_id))
+                    .filter(tenant_user::dsl::user_id.eq(&tu.user_id)),
+            )
+            .set(&tu)
+            .get_result(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+
+            // delete device-profile links
+            diesel::delete(
+                tenant_user_device_profile::table.filter(
+                    tenant_user_device_profile::user_id.eq(&tu.user_id).and(
+                        tenant_user_device_profile::device_profile_id.eq_any(
+                            device_profile::table
+                                .filter(device_profile::tenant_id.eq(&tu.tenant_id))
+                                .select(device_profile::id),
+                        ),
+                    ),
+                ),
+            )
+            .execute(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+
+            // delete application links
+            diesel::delete(
+                tenant_user_application::table.filter(
+                    tenant_user_application::user_id.eq(&tu.user_id).and(
+                        tenant_user_application::application_id.eq_any(
+                            application::table
+                                .filter(application::tenant_id.eq(&tu.tenant_id))
+                                .select(application::id),
+                        ),
+                    ),
+                ),
+            )
+            .execute(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+
+            // re-create device-profiles
+            for dp in device_profiles {
+                // make sure dp exists under same tenant
+                let _: storage::device_profile::DeviceProfile = device_profile::table
+                    .filter(
+                        device_profile::id
+                            .eq(dp.device_profile_id)
+                            .and(device_profile::tenant_id.eq(&tu.tenant_id)),
+                    )
+                    .first(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, dp.device_profile_id.to_string()))?;
+
+                diesel::insert_into(tenant_user_device_profile::table)
+                    .values(dp)
+                    .execute(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+            }
+
+            // re-create applications
+            for app in applications {
+                // make sure dp exists under same tenant
+                let _: storage::application::Application = application::table
+                    .filter(
+                        application::id
+                            .eq(app.application_id)
+                            .and(application::tenant_id.eq(&tu.tenant_id)),
+                    )
+                    .first(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, app.application_id.to_string()))?;
+
+                diesel::insert_into(tenant_user_application::table)
+                    .values(app)
+                    .execute(c)
+                    .await
+                    .map_err(|e| Error::from_diesel(e, tu.user_id.to_string()))?;
+            }
+
+            Ok(tu)
+        })
+        .await?;
+
     info!(
         tenant_id = %tu.tenant_id,
         user_id = %tu.user_id,
@@ -334,20 +510,59 @@ pub async fn update_user(tu: TenantUser) -> Result<TenantUser, Error> {
     Ok(tu)
 }
 
-pub async fn get_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<TenantUser, Error> {
-    let tu: TenantUser = tenant_user::dsl::tenant_user
-        .filter(tenant_user::dsl::tenant_id.eq(&fields::Uuid::from(tenant_id)))
-        .filter(tenant_user::dsl::user_id.eq(&fields::Uuid::from(user_id)))
+pub async fn get_user(
+    tenant_id: &Uuid,
+    user_id: &Uuid,
+) -> Result<
+    (
+        TenantUser,
+        Vec<TenantUserDeviceProfile>,
+        Vec<TenantUserApplication>,
+    ),
+    Error,
+> {
+    let tu: TenantUser = tenant_user::table
+        .filter(tenant_user::tenant_id.eq(&fields::Uuid::from(tenant_id)))
+        .filter(tenant_user::user_id.eq(&fields::Uuid::from(user_id)))
         .first(&mut get_async_db_conn().await?)
         .await
         .map_err(|e| Error::from_diesel(e, user_id.to_string()))?;
-    Ok(tu)
+
+    let dps: Vec<TenantUserDeviceProfile> = tenant_user_device_profile::table
+        .select(tenant_user_device_profile::all_columns)
+        .filter(
+            tenant_user_device_profile::user_id
+                .eq(&fields::Uuid::from(user_id))
+                .and(
+                    tenant_user_device_profile::device_profile_id.eq_any(
+                        device_profile::table
+                            .filter(device_profile::tenant_id.eq(&fields::Uuid::from(tenant_id)))
+                            .select(device_profile::id),
+                    ),
+                ),
+        )
+        .load(&mut get_async_db_conn().await?)
+        .await?;
+
+    let apps: Vec<TenantUserApplication> = tenant_user_application::table
+        .select(tenant_user_application::all_columns)
+        .filter(
+            tenant_user_application::application_id.eq_any(
+                application::table
+                    .filter(application::tenant_id.eq(&fields::Uuid::from(tenant_id)))
+                    .select(application::id),
+            ),
+        )
+        .load(&mut get_async_db_conn().await?)
+        .await?;
+
+    Ok((tu, dps, apps))
 }
 
 pub async fn get_user_count(tenant_id: &Uuid) -> Result<i64, Error> {
-    let count = tenant_user::dsl::tenant_user
+    let count = tenant_user::table
         .select(dsl::count_star())
-        .filter(tenant_user::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)))
+        .filter(tenant_user::tenant_id.eq(fields::Uuid::from(tenant_id)))
         .first(&mut get_async_db_conn().await?)
         .await?;
     Ok(count)
@@ -381,6 +596,36 @@ pub async fn get_users(
 }
 
 pub async fn delete_user(tenant_id: &Uuid, user_id: &Uuid) -> Result<(), Error> {
+    // delete device-profile admin references
+    diesel::delete(
+        tenant_user_device_profile::table
+            .filter(tenant_user_device_profile::user_id.eq(&fields::Uuid::from(user_id)))
+            .filter(
+                tenant_user_device_profile::device_profile_id.eq_any(
+                    device_profile::table
+                        .filter(device_profile::tenant_id.eq(&fields::Uuid::from(tenant_id)))
+                        .select(device_profile::id),
+                ),
+            ),
+    )
+    .execute(&mut get_async_db_conn().await?)
+    .await?;
+
+    // delete application admin references
+    diesel::delete(
+        tenant_user_application::table
+            .filter(tenant_user_application::user_id.eq(&fields::Uuid::from(user_id)))
+            .filter(
+                tenant_user_application::application_id.eq_any(
+                    application::table
+                        .filter(application::tenant_id.eq(&fields::Uuid::from(tenant_id)))
+                        .select(application::id),
+                ),
+            ),
+    )
+    .execute(&mut get_async_db_conn().await?)
+    .await?;
+
     let ra = diesel::delete(
         tenant_user::dsl::tenant_user
             .filter(tenant_user::dsl::tenant_id.eq(&fields::Uuid::from(tenant_id)))
@@ -404,6 +649,28 @@ pub async fn get_tenant_users_for_user(user_id: &Uuid) -> Result<Vec<TenantUser>
         .filter(tenant_user::dsl::user_id.eq(&fields::Uuid::from(user_id)))
         .load(&mut get_async_db_conn().await?)
         .await?;
+    Ok(items)
+}
+
+pub async fn get_tenant_user_device_profiles_for_user(
+    user_id: Uuid,
+) -> Result<Vec<TenantUserDeviceProfile>, Error> {
+    let items = tenant_user_device_profile::table
+        .filter(tenant_user_device_profile::user_id.eq(&fields::Uuid::from(user_id)))
+        .load(&mut get_async_db_conn().await?)
+        .await?;
+
+    Ok(items)
+}
+
+pub async fn get_tenant_user_applications_for_user(
+    user_id: Uuid,
+) -> Result<Vec<TenantUserApplication>, Error> {
+    let items = tenant_user_application::table
+        .filter(tenant_user_application::user_id.eq(&fields::Uuid::from(user_id)))
+        .load(&mut get_async_db_conn().await?)
+        .await?;
+
     Ok(items)
 }
 
@@ -484,7 +751,7 @@ pub mod test {
             ..Default::default()
         };
 
-        add_user(tu).await.unwrap();
+        add_user(tu, &[], &[]).await.unwrap();
 
         // get_count and list
         let tests = vec![
@@ -640,10 +907,10 @@ pub mod test {
         };
 
         // add user
-        let tu = add_user(tu).await.unwrap();
+        let tu = add_user(tu, &[], &[]).await.unwrap();
 
         // get
-        let tu_get = get_user(&t.id, &user.id).await.unwrap();
+        let (tu_get, _, _) = get_user(&t.id, &user.id).await.unwrap();
         assert_eq!(tu, tu_get);
 
         // get count and list

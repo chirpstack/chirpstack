@@ -354,7 +354,7 @@ function DeviceProfileForm(props: IProps) {
                 valuePropName="checked"
                 tooltip="If enabled, the device-queue will be flushed on ABP or OTAA activation."
               >
-                <Switch />
+                <Switch disabled={props.disabled} />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -364,7 +364,7 @@ function DeviceProfileForm(props: IProps) {
                 valuePropName="checked"
                 tooltip="If enabled (and if roaming is configured on the server), this allows the device to use roaming."
               >
-                <Switch />
+                <Switch disabled={props.disabled} />
               </Form.Item>
             </Col>
           </Row>
@@ -1141,7 +1141,7 @@ function DeviceProfileForm(props: IProps) {
             valuePropName="checked"
             tooltip="If enabled, measurement-keys will be automatically added based on the decoded payload keys. If the decoded payload contains random keys, you want to disable auto-detection."
           >
-            <Switch />
+            <Switch disabled={props.disabled} />
           </Form.Item>
           <Form.List name="measurementsMap">
             {(fields, { add, remove }) => (

@@ -420,6 +420,23 @@ diesel::table! {
 }
 
 diesel::table! {
+    tenant_user_application (user_id, application_id) {
+        user_id -> Uuid,
+        application_id -> Uuid,
+        created_at -> Timestamptz,
+        is_read_only -> Bool,
+    }
+}
+
+diesel::table! {
+    tenant_user_device_profile (user_id, device_profile_id) {
+        user_id -> Uuid,
+        device_profile_id -> Uuid,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     user (id) {
         id -> Uuid,
         external_id -> Nullable<Text>,
@@ -463,6 +480,10 @@ diesel::joinable!(multicast_group_queue_item -> multicast_group (multicast_group
 diesel::joinable!(relay_gateway -> tenant (tenant_id));
 diesel::joinable!(tenant_user -> tenant (tenant_id));
 diesel::joinable!(tenant_user -> user (user_id));
+diesel::joinable!(tenant_user_application -> application (application_id));
+diesel::joinable!(tenant_user_application -> user (user_id));
+diesel::joinable!(tenant_user_device_profile -> device_profile (device_profile_id));
+diesel::joinable!(tenant_user_device_profile -> user (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     api_key,
@@ -488,5 +509,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     relay_gateway,
     tenant,
     tenant_user,
+    tenant_user_application,
+    tenant_user_device_profile,
     user,
 );

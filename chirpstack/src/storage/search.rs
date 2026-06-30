@@ -68,10 +68,12 @@ pub async fn global_search(
                 on t.id = a.tenant_id
             left join tenant_user tu
                 on tu.tenant_id = t.id
+            left join tenant_user_application tua
+                on tua.user_id = tu.user_id and tua.application_id = a.id
             left join "user" u
                 on u.id = tu.user_id
             where
-                ($3 = true or u.id = $4)
+                ($3 = true or (u.id = $4 and (tu.is_admin = true or tu.is_device_admin = true or tua.user_id = $4)))
                     and (d.name ilike $2 or encode(d.dev_eui, 'hex') ilike $2 or encode(d.dev_addr, 'hex') ilike $2 or ($7 != '{}'::jsonb and d.tags @> $7))
             -- gateway
             union
@@ -138,10 +140,12 @@ pub async fn global_search(
                 on t.id = a.tenant_id
             left join tenant_user tu
                 on tu.tenant_id = t.id
+            left join tenant_user_application tua
+                on tua.user_id = tu.user_id and tua.application_id = a.id
             left join "user" u
                 on u.id = tu.user_id
             where
-                ($3 = true or u.id = $4)
+                ($3 = true or (u.id = $4 and (tu.is_admin = true or tu.is_device_admin = true or tua.user_id = $4)))
                 and a.name ilike $2
             order by
                 score desc
@@ -193,10 +197,12 @@ pub async fn global_search(
                 on t.id = a.tenant_id
             left join tenant_user tu
                 on tu.tenant_id = t.id
+            left join tenant_user_application tua
+                on tua.user_id = tu.user_id and tua.application_id = a.id
             left join "user" u
                 on u.id = tu.user_id
             where
-                (?3 = true or u.id = ?4)
+                (?3 = true or (u.id = ?4 and (tu.is_admin = true or tu.is_device_admin = true or tua.user_id = ?4)))
                     and (
                         d.name like ?2 or hex(d.dev_eui) like ?2 or hex(d.dev_addr) like ?2
                         or (
@@ -297,10 +303,12 @@ pub async fn global_search(
                 on t.id = a.tenant_id
             left join tenant_user tu
                 on tu.tenant_id = t.id
+            left join tenant_user_application tua
+                on tua.user_id = tu.user_id and tua.application_id = a.id
             left join "user" u
                 on u.id = tu.user_id
             where
-                (?3 = true or u.id = ?4)
+                (?3 = true or (u.id = ?4 and (tu.is_admin = true or tu.is_device_admin = true or tua.user_id = ?4)))
                 and a.name like ?2
             limit ?5
             offset ?6
@@ -510,11 +518,16 @@ pub mod test {
         }
 
         // User is tenant-user, this returns results.
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: t.id,
-            user_id: u.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: t.id,
+                user_id: u.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
 

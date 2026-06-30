@@ -10,7 +10,8 @@ import DeviceStore from "../stores/DeviceStore";
 interface IProps {
   label: string;
   name: string;
-  devEui: string;
+  devEui?: string;
+  tenantId?: string;
   required?: boolean;
   disabled?: boolean;
 }
@@ -36,7 +37,12 @@ function DevAddrInput(props: IProps) {
 
   const generateRandom = () => {
     const req = new GetRandomDevAddrRequest();
-    req.setDevEui(props.devEui);
+    if (props.devEui) {
+      req.setDevEui(props.devEui);
+    }
+    if (props.tenantId) {
+      req.setTenantId(props.tenantId);
+    }
 
     DeviceStore.getRandomDevAddr(req, (resp: GetRandomDevAddrResponse) => {
       form.setFieldValue(props.name, resp.getDevAddr());

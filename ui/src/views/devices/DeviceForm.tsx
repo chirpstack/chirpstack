@@ -24,6 +24,7 @@ interface IProps {
   initialValues: Device;
   onFinish: (obj: Device) => void;
   update?: boolean;
+  disabled?: boolean;
 }
 
 function DeviceForm(props: IProps) {
@@ -106,10 +107,10 @@ function DeviceForm(props: IProps) {
       children: (
         <>
           <Form.Item label="Name" name="name" rules={[{ required: true, message: "Please enter a name!" }]}>
-            <Input />
+            <Input disabled={props.disabled} />
           </Form.Item>
           <Form.Item label="Description" name="description">
-            <Input.TextArea />
+            <Input.TextArea disabled={props.disabled} />
           </Form.Item>
           <Row gutter={24}>
             <Col span={12}>
@@ -120,6 +121,7 @@ function DeviceForm(props: IProps) {
                 label="Join EUI (EUI64)"
                 name="joinEui"
                 tooltip="The Join EUI will be automatically set / updated on OTAA. However, in some cases this field must be configured before OTAA (e.g. OTAA using a Relay)."
+                disabled={props.disabled}
               />
             </Col>
           </Row>
@@ -129,6 +131,7 @@ function DeviceForm(props: IProps) {
             value={deviceProfileId || props.initialValues.getDeviceProfileId()}
             required
             tenant={props.tenant}
+            disabled={props.disabled}
           />
           <Row gutter={24}>
             <Col span={12}>
@@ -138,7 +141,7 @@ function DeviceForm(props: IProps) {
                 valuePropName="checked"
                 tooltip="Received uplink frames and join-requests will be ignored."
               >
-                <Switch />
+                <Switch disabled={props.disabled} />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -148,7 +151,7 @@ function DeviceForm(props: IProps) {
                 valuePropName="checked"
                 tooltip="You must re-activate your device before this setting becomes effective. Note that disabling the frame-counter validation will compromise security as it allows replay-attacks."
               >
-                <Switch />
+                <Switch disabled={props.disabled} />
               </Form.Item>
             </Col>
           </Row>
@@ -170,7 +173,7 @@ function DeviceForm(props: IProps) {
                       name={[name, 0]}
                       rules={[{ required: true, message: "Please enter a key!" }]}
                     >
-                      <Input placeholder="Key" />
+                      <Input placeholder="Key" disabled={props.disabled} />
                     </Form.Item>
                   </Col>
                   <Col span={16}>
@@ -179,16 +182,14 @@ function DeviceForm(props: IProps) {
                       name={[name, 1]}
                       rules={[{ required: true, message: "Please enter a value!" }]}
                     >
-                      <Input placeholder="Value" />
+                      <Input placeholder="Value" disabled={props.disabled} />
                     </Form.Item>
                   </Col>
-                  <Col span={2}>
-                    <MinusCircleOutlined onClick={() => remove(name)} />
-                  </Col>
+                  <Col span={2}>{!props.disabled && <MinusCircleOutlined onClick={() => remove(name)} />}</Col>
                 </Row>
               ))}
               <Form.Item>
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                <Button type="dashed" onClick={() => add()} disabled={props.disabled} block icon={<PlusOutlined />}>
                   Add tag
                 </Button>
               </Form.Item>
@@ -212,7 +213,7 @@ function DeviceForm(props: IProps) {
                       name={[name, 0]}
                       rules={[{ required: true, message: "Please enter a key!" }]}
                     >
-                      <Input placeholder="Key" />
+                      <Input placeholder="Key" disabled={props.disabled} />
                     </Form.Item>
                   </Col>
                   <Col span={16}>
@@ -221,16 +222,14 @@ function DeviceForm(props: IProps) {
                       name={[name, 1]}
                       rules={[{ required: true, message: "Please enter a value!" }]}
                     >
-                      <Input placeholder="Value" />
+                      <Input placeholder="Value" disabled={props.disabled} />
                     </Form.Item>
                   </Col>
-                  <Col span={2}>
-                    <MinusCircleOutlined onClick={() => remove(name)} />
-                  </Col>
+                  <Col span={2}>{!props.disabled && <MinusCircleOutlined onClick={() => remove(name)} />}</Col>
                 </Row>
               ))}
               <Form.Item>
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                <Button type="dashed" onClick={() => add()} disabled={props.disabled} block icon={<PlusOutlined />}>
                   Add variable
                 </Button>
               </Form.Item>
@@ -268,7 +267,7 @@ function DeviceForm(props: IProps) {
         }
       />
       <Form.Item>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" disabled={props.disabled}>
           Submit
         </Button>
       </Form.Item>

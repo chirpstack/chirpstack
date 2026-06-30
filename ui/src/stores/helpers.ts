@@ -4,7 +4,7 @@ import type { RpcError } from "grpc-web";
 import history from "../history";
 
 export function HandleError(e: RpcError) {
-  console.log("API error: ", e);
+  console.log("API error: ", e.toString());
 
   if (e.code === 16 || e.code === 2) {
     history.push("/login");
