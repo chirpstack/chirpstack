@@ -84,7 +84,10 @@ function RelayLayout(props: IProps) {
           ]}
         />
         <Routes>
-          <Route path="/" element={<ListRelayDevices relayDevice={rd} />} />
+          <Route
+            path="/"
+            element={<ListRelayDevices relayDevice={rd} tenant={props.tenant} application={props.application} />}
+          />
         </Routes>
       </Card>
     </Space>

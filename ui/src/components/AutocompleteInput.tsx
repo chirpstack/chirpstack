@@ -5,7 +5,7 @@ import Autocomplete from "./Autocomplete";
 
 interface IProps {
   label: string;
-  name: string;
+  name: string | number;
   disabled?: boolean;
   required?: boolean;
   value?: string;

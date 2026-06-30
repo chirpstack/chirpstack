@@ -87,7 +87,7 @@ function EditTenantUser({ tenant }: { tenant: Tenant }) {
         ]}
       />
       <Card>
-        <TenantUserForm initialValues={tu} onFinish={onFinish} disabled={disabled} disableEmail />
+        <TenantUserForm initialValues={tu} onFinish={onFinish} disabled={disabled} tenant={tenant} disableEmail />
       </Card>
     </Space>
   );

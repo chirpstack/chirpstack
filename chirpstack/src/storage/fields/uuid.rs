@@ -13,6 +13,12 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(feature = "sqlite", diesel(sql_type = diesel::sql_types::Text))]
 pub struct Uuid(uuid::Uuid);
 
+impl Default for Uuid {
+    fn default() -> Self {
+        Uuid::from(uuid::Uuid::nil())
+    }
+}
+
 impl std::convert::From<uuid::Uuid> for Uuid {
     fn from(u: uuid::Uuid) -> Self {
         Self(u)

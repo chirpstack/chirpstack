@@ -33,7 +33,8 @@ function EditFuotaDeployment(props: IProps) {
     !(
       SessionStore.isAdmin() ||
       SessionStore.isTenantAdmin(props.application.getTenantId()) ||
-      SessionStore.isTenantDeviceAdmin(props.application.getTenantId())
+      SessionStore.isTenantDeviceAdmin(props.application.getTenantId()) ||
+      SessionStore.isApplicationAdmin(props.application.getId())
     );
 
   return (

@@ -69,7 +69,8 @@ function EditDeviceProfile(props: IProps) {
   const disabled = !(
     SessionStore.isAdmin() ||
     SessionStore.isTenantAdmin(props.tenant.getId()) ||
-    SessionStore.isTenantDeviceAdmin(props.tenant.getId())
+    SessionStore.isTenantDeviceAdmin(props.tenant.getId()) ||
+    SessionStore.isDeviceProfileAdmin(dp.getId())
   );
 
   return (

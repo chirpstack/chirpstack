@@ -90,7 +90,8 @@ function ApplicationLayout(props: IProps) {
   const showIntegrations =
     SessionStore.isAdmin() ||
     SessionStore.isTenantAdmin(tenant.getId()) ||
-    SessionStore.isTenantDeviceAdmin(tenant.getId());
+    SessionStore.isTenantDeviceAdmin(tenant.getId()) ||
+    SessionStore.isApplicationAdmin(app.getId());
 
   let menuItems: MenuProps["items"] = [
     { key: "devices", label: <Link to={`/tenants/${tenant.getId()}/applications/${app.getId()}`}>Devices</Link> },

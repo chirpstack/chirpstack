@@ -15,6 +15,7 @@ import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import GatewayStore from "../../stores/GatewayStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
+import SessionStore from "../../stores/SessionStore";
 
 interface IProps {
   application: Application;
@@ -89,10 +90,17 @@ function ListMulticastGroupGateways(props: IProps) {
     }
   };
 
+  const disabled = !(
+    SessionStore.isAdmin() ||
+    SessionStore.isTenantAdmin(props.application.getTenantId()) ||
+    SessionStore.isTenantDeviceAdmin(props.application.getTenantId()) ||
+    SessionStore.isApplicationAdmin(props.multicastGroup.getApplicationId())
+  );
+
   return (
     <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Space orientation="horizontal" style={{ float: "right" }}>
-        <Button onClick={removeGatewaysFromMulticastGroup} disabled={selectedRowIds.length === 0}>
+        <Button onClick={removeGatewaysFromMulticastGroup} disabled={selectedRowIds.length === 0 || disabled}>
           Remove from multicast-group
         </Button>
       </Space>

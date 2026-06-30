@@ -234,6 +234,19 @@ message ListTenantsByDevAddrPrefixOverlapRequest {
   string dev_addr_prefix = 1;
 }
 
+message TenantUserDeviceProfile {
+  // Device Profile ID.
+  string device_profile_id = 1;
+}
+
+message TenantUserApplication {
+  // Application ID.
+  string application_id = 1;
+
+  // Is read-only.
+  bool is_read_only = 2;
+}
+
 message TenantUser {
   // Tenant ID (UUID).
   string tenant_id = 1;
@@ -254,6 +267,12 @@ message TenantUser {
 
   // Email (only used on get and when adding a user to a tenant).
   string email = 6;
+
+  // Device Profile IDs.
+  repeated TenantUserDeviceProfile device_profiles = 7;
+
+  // Application IDs.
+  repeated TenantUserApplication applications = 8;
 }
 
 message TenantUserListItem {
