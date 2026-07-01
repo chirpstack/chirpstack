@@ -15,9 +15,9 @@ dependencies = [
 
 [[package]]
 name = "aes"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66bd29a732b644c0431c6140f370d097879203d79b80c94a6747ba0872adaef8"
+checksum = "f1fc76eaeac4c9164506c466d4ffdd8ec9d0c5bf57ee97177c4d8eceb3a0e138"
 dependencies = [
  "cipher 0.5.2",
  "cpubits",
@@ -30,7 +30,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40e4645e6ea320665abf87e13821f9a37ab204b34bcb18e34e7d1dcf2366516e"
 dependencies = [
- "aes 0.9.0",
+ "aes 0.9.1",
  "const-oid 0.10.2",
 ]
 
@@ -680,7 +680,7 @@ dependencies = [
 name = "chirpstack"
 version = "4.19.0-test.5"
 dependencies = [
- "aes 0.9.0",
+ "aes 0.9.1",
  "anyhow",
  "async-recursion",
  "async-trait",
@@ -2800,7 +2800,7 @@ checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 name = "lrwn"
 version = "4.19.0-test.5"
 dependencies = [
- "aes 0.9.0",
+ "aes 0.9.1",
  "anyhow",
  "cmac",
  "diesel",
