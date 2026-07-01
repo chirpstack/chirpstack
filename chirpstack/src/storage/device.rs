@@ -804,8 +804,10 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
                 device d
             inner join device_profile dp
                 on d.device_profile_id = dp.id
+            inner join application a
+                on d.application_id = a.id
             where
-                $1 is null or dp.tenant_id = $1
+                $1 is null or a.tenant_id = $1
         )
         select
             coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
@@ -832,8 +834,10 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
                 device d
             inner join device_profile dp
                 on d.device_profile_id = dp.id
+            inner join application a
+                on d.application_id = a.id
             where
-                ?1 is null or dp.tenant_id = ?1
+                ?1 is null or a.tenant_id = ?1
         )
         select
             coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
@@ -852,19 +856,18 @@ pub async fn get_active_inactive(tenant_id: &Option<Uuid>) -> Result<DevicesActi
 }
 
 pub async fn get_data_rates(tenant_id: &Option<Uuid>) -> Result<Vec<DevicesDataRate>, Error> {
-    let mut q = device::dsl::device
-        .inner_join(device_profile::table)
-        //.select((device::dr, dsl::count_star()))
+    let mut q = device::table
+        .inner_join(application::table)
         .select((
             device::dr,
             diesel::dsl::sql::<diesel::sql_types::BigInt>("count(1)"),
         ))
         .group_by(device::dr)
-        .filter(device::dsl::dr.is_not_null())
+        .filter(device::dr.is_not_null())
         .into_boxed();
 
     if let Some(id) = &tenant_id {
-        q = q.filter(device_profile::dsl::tenant_id.eq(fields::Uuid::from(id)));
+        q = q.filter(application::tenant_id.eq(fields::Uuid::from(id)));
     }
 
     q.load(&mut get_async_db_conn().await?)
