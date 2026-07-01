@@ -12,8 +12,8 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       '@ant-design/icons':
-        specifier: ^6.2.3
-        version: 6.2.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        specifier: ^6.3.2
+        version: 6.3.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@chirpstack/chirpstack-api-grpc-web':
         specifier: file:../api/grpc-web
         version: file:../api/grpc-web(google-protobuf@3.21.4)
@@ -175,11 +175,11 @@ packages:
     resolution: {integrity: sha512-esKJegpW4nckh0o6kV3Tkb7NPIZYbPnnFxmQDUmL08ukXZAvV85TZBr70eGuke/CIArLaP6aw8lt9KILjnWuOw==}
     engines: {node: '>=8.x'}
 
-  '@ant-design/icons-svg@4.4.2':
-    resolution: {integrity: sha512-vHbT+zJEVzllwP+CM+ul7reTEfBR0vgxFe7+lREAsAA7YGsYpboiq2sQNeQeRvh09GfQgs/GyFEvZpJ9cLXpXA==}
+  '@ant-design/icons-svg@4.5.0':
+    resolution: {integrity: sha512-1BTUFyKPTBZ53MuTP8s0k5SFEXL7o3VHEOwLgzaoWKwnBeqIcqUtVshc4SKzhI6uACfqhJqBwBUE9FsWR3uULA==}
 
-  '@ant-design/icons@6.2.3':
-    resolution: {integrity: sha512-Pl3aoAtxQeKryYnt6VvDJtOxMOtA8wrRSACe/pTjOAIG3fdHrWm6Ivb4ku9tsFjYroSXBKirvuxG4QkwBXD9gg==}
+  '@ant-design/icons@6.3.2':
+    resolution: {integrity: sha512-B6O5a5XJ4wjtNOfZejXYwHW5zvKV5gYkjGf11dHGLEbKn0ABDGndo41+gfIiXyTFhvESj4XTotuud33mUFid0g==}
     engines: {node: '>=8'}
     peerDependencies:
       react: '>=16.0.0'
@@ -2573,12 +2573,12 @@ snapshots:
 
   '@ant-design/fast-color@3.0.1': {}
 
-  '@ant-design/icons-svg@4.4.2': {}
+  '@ant-design/icons-svg@4.5.0': {}
 
-  '@ant-design/icons@6.2.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
+  '@ant-design/icons@6.3.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
     dependencies:
       '@ant-design/colors': 8.0.1
-      '@ant-design/icons-svg': 4.4.2
+      '@ant-design/icons-svg': 4.5.0
       '@rc-component/util': 1.11.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       clsx: 2.1.1
       react: 19.2.6
@@ -3500,7 +3500,7 @@ snapshots:
       '@ant-design/cssinjs': 2.1.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@ant-design/cssinjs-utils': 2.1.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@ant-design/fast-color': 3.0.1
-      '@ant-design/icons': 6.2.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@ant-design/icons': 6.3.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@ant-design/react-slick': 2.0.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@babel/runtime': 7.29.7
       '@rc-component/cascader': 1.15.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
