@@ -47,8 +47,8 @@ function CreateDeviceProfile(props: IProps) {
  * @returns {{data: object, errors?: string[], warnings?: string[]}}
  * An object containing:
  * - data: Object representing the decoded payload.
- * - errors: An array of errors (currently unused).
- * - warnings: An array of warnings (currently unused).
+ * - errors: An array of errors (optional).
+ * - warnings: An array of warnings (optional).
  */
 function decodeUplink(input) {
   return {
@@ -69,8 +69,8 @@ function decodeUplink(input) {
  * An object containing:
  * - bytes: Byte array containing the downlink payload.
  * - fPort: The downlink LoRaWAN fPort. (falls back to provided fPort)
- * - errors: An array of errors (currently unused).
- * - warnings: An array of warnings (currently unused).
+ * - errors: An array of errors (optional).
+ * - warnings: An array of warnings (optional).
  */
 function encodeDownlink(input) {
   return {
