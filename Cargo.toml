@@ -83,7 +83,7 @@
     # Logging
     tracing = "0.1"
     tracing-subscriber = { version = "0.3", features = ["fmt", "ansi", "json"] }
-    prometheus-client = "0.24"
+    prometheus-client = "0.25"
 
     # HTTP
     reqwest = { version = "0.12", features = [
@@ -93,7 +93,7 @@
     axum = "0.8"
     axum-server = { version = "0.8", features = ["tls-rustls-no-provider"] }
     tower = { version = "0.5", features = ["util"] }
-    tower-http = { version = "0.6", features = ["trace", "auth"] }
+    tower-http = { version = "0.7", features = ["trace", "auth"] }
     http = "1.4"
     http-body = "1.0"
 
@@ -138,7 +138,7 @@
     gcp_auth = "0.12"
     rust-embed = "8.11"
     mime_guess = "2.0"
-    rquickjs = { version = "0.11", features = [
+    rquickjs = { version = "0.12", features = [
       "bindgen",
       "loader",
       "array-buffer",
@@ -150,12 +150,12 @@
     pin-project = "1.1"
     signal-hook = "0.4"
     signal-hook-tokio = { version = "0.4", features = ["futures-v0_3"] }
-    bytes = "1.11"
+    bytes = "1.12"
     rpassword = "7.5"
     dotenv = "0.15"
 
     # Integrations
-    lapin = { version = "4.7", default-features = false, features = [
+    lapin = { version = "4.10", default-features = false, features = [
       "tokio",
       "rustls--ring",
       "rustls-native-certs",
