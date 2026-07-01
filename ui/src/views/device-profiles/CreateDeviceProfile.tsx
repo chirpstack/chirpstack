@@ -44,11 +44,11 @@ function CreateDeviceProfile(props: IProps) {
  * @param {number} input.fPort Uplink fPort.
  * @param {Record<string, string>} input.variables Object containing the configured device variables.
  * 
- * @returns {{data: object, errors: string[], warnings: string[]}}
+ * @returns {{data: object, errors?: string[], warnings?: string[]}}
  * An object containing:
  * - data: Object representing the decoded payload.
- * - errors: An array of errors (optional).
- * - warnings: An array of warnings (optional).
+ * - errors: An array of errors (currently unused).
+ * - warnings: An array of warnings (currently unused).
  */
 function decodeUplink(input) {
   return {
@@ -65,12 +65,12 @@ function decodeUplink(input) {
  * @param {object} input.data Object representing the payload that must be encoded.
  * @param {Record<string, string>} input.variables Object containing the configured device variables.
  * 
- * @returns {{bytes: number[], fPort: number, errors: string[], warnings: string[]}}
+ * @returns {{bytes: number[], fPort?: number, errors?: string[], warnings?: string[]}}
  * An object containing:
  * - bytes: Byte array containing the downlink payload.
- * - fPort: The downlink LoRaWAN fPort.
- * - errors: An array of errors (optional).
- * - warnings: An array of warnings (optional).
+ * - fPort: The downlink LoRaWAN fPort. (falls back to provided fPort)
+ * - errors: An array of errors (currently unused).
+ * - warnings: An array of warnings (currently unused).
  */
 function encodeDownlink(input) {
   return {
