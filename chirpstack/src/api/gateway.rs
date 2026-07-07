@@ -855,7 +855,7 @@ impl GatewayService for Gateway {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateGatewaysAccess::new(validator::Flag::List, tenant_id),
+                validator::ValidateGatewaysAccess::new(validator::Flag::Create, tenant_id),
             )
             .await?;
 
@@ -892,7 +892,7 @@ impl GatewayService for Gateway {
         self.validator
             .validate(
                 request.extensions(),
-                validator::ValidateGatewaysAccess::new(validator::Flag::List, tenant_id),
+                validator::ValidateGatewaysAccess::new(validator::Flag::Create, tenant_id),
             )
             .await?;
 
