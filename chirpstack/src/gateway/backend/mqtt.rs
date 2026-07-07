@@ -13,7 +13,7 @@ use prost::Message;
 use rand::RngExt;
 use rumqttc::Transport;
 use rumqttc::tokio_rustls::rustls;
-use rumqttc::v5::mqttbytes::v5::{ConnectReturnCode, Publish};
+use rumqttc::v5::mqttbytes::v5::{ConnectReturnCode, Publish, SubscribeReasonCode};
 use rumqttc::v5::{AsyncClient, Event, Incoming, MqttOptions, mqttbytes::QoS};
 use serde::Serialize;
 use tokio::sync::mpsc;
@@ -112,11 +112,11 @@ impl<'a> MqttBackend<'a> {
             _ => return Err(anyhow!("Invalid QoS: {}", conf.qos)),
         };
 
-        // Create connect channel
+        // Create subscribe channel.
         // We need to re-subscribe on (re)connect to be sure we have a subscription. Even
         // in case of a persistent MQTT session, there is no guarantee that the MQTT persisted the
         // session and that a re-connect would recover the subscription.
-        let (connect_tx, mut connect_rx) = mpsc::channel(10);
+        let (subscribe_tx, mut subscribe_rx) = mpsc::channel(10);
 
         // Create client
         let mut mqtt_opts =
@@ -186,16 +186,22 @@ impl<'a> MqttBackend<'a> {
             let share_name = conf.share_name.clone();
 
             async move {
-                while let Some(shared_sub_support) = connect_rx.recv().await {
+                while let Some(shared_sub_support) = subscribe_rx.recv().await {
                     let event_topic = if shared_sub_support {
                         format!("$share/{}/{}", share_name, event_topic)
                     } else {
                         event_topic.clone()
                     };
 
-                    info!(region_id = %region_config_id, event_topic = %event_topic, "Subscribing to gateway event topic");
-                    if let Err(e) = client.subscribe(&event_topic, qos).await {
-                        error!(region_id = %region_config_id, event_topic = %event_topic, error = %e, "MQTT subscribe error");
+                    loop {
+                        info!(region_id = %region_config_id, event_topic = %event_topic, "Subscribing to gateway event topic");
+                        if let Err(e) = client.subscribe(&event_topic, qos).await {
+                            error!(region_id = %region_config_id, event_topic = %event_topic, error = %e, "MQTT subscribe error");
+                        } else {
+                            break;
+                        }
+
+                        sleep(Duration::from_secs(1)).await;
                     }
                 }
             }
@@ -208,6 +214,7 @@ impl<'a> MqttBackend<'a> {
 
             async move {
                 info!("Starting MQTT event loop");
+                let mut shared_sub_support = false;
 
                 loop {
                     match eventloop.poll().await {
@@ -228,7 +235,7 @@ impl<'a> MqttBackend<'a> {
                                     if v.code == ConnectReturnCode::Success {
                                         // Per specification:
                                         // A value of 1 means Shared Subscriptions are supported. If not present, then Shared Subscriptions are supported.
-                                        let shared_sub_support = v
+                                        shared_sub_support = v
                                             .properties
                                             .map(|v| {
                                                 v.shared_subscription_available
@@ -237,12 +244,28 @@ impl<'a> MqttBackend<'a> {
                                             })
                                             .unwrap_or(true);
 
-                                        if let Err(e) = connect_tx.try_send(shared_sub_support) {
+                                        if let Err(e) = subscribe_tx.try_send(shared_sub_support) {
                                             error!(error = %e, "Send to subscribe channel error");
                                         }
                                     } else {
                                         error!(code = ?v.code, "Connection error");
                                         sleep(Duration::from_secs(1)).await
+                                    }
+                                }
+                                Event::Incoming(Incoming::SubAck(v)) => {
+                                    let errors: Vec<SubscribeReasonCode> = v
+                                        .return_codes
+                                        .iter()
+                                        .filter(|v| !matches!(v, SubscribeReasonCode::Success(_)))
+                                        .cloned()
+                                        .collect();
+
+                                    if !errors.is_empty() {
+                                        error!(errors = ?errors, "Subscribe ack returned errors");
+
+                                        if let Err(e) = subscribe_tx.try_send(shared_sub_support) {
+                                            error!(error = %e, "Send to subscribe channel error");
+                                        }
                                     }
                                 }
                                 _ => {}
