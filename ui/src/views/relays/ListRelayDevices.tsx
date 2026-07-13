@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Space, Button } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import type { Device } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 import type { ListRelayDevicesResponse, RelayDeviceListItem } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
 import { ListRelayDevicesRequest, RemoveRelayDeviceRequest } from "@chirpstack/chirpstack-api-grpc-web/api/relay_pb";
@@ -10,9 +12,12 @@ import { ListRelayDevicesRequest, RemoveRelayDeviceRequest } from "@chirpstack/c
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import RelayStore from "../../stores/RelayStore";
+import SessionStore from "../../stores/SessionStore";
 
 interface IProps {
   relayDevice: Device;
+  tenant: Tenant;
+  application: Application;
 }
 
 function ListRelayDevices(props: IProps) {
@@ -82,10 +87,17 @@ function ListRelayDevices(props: IProps) {
     });
   };
 
+  const disabled = !(
+    SessionStore.isAdmin() ||
+    SessionStore.isTenantAdmin(props.tenant.getId()) ||
+    SessionStore.isTenantDeviceAdmin(props.tenant.getId()) ||
+    SessionStore.isApplicationAdmin(props.application.getId())
+  );
+
   return (
     <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Space orientation="horizontal" style={{ float: "right" }}>
-        <Button onClick={removeRelayDevices} disabled={selectedRowIds.length === 0}>
+        <Button onClick={removeRelayDevices} disabled={selectedRowIds.length === 0 || disabled}>
           Remove remove from relay
         </Button>
       </Space>

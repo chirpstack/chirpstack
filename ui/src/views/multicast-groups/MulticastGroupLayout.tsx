@@ -108,7 +108,12 @@ function MulticastGroupLayout(props: IProps) {
         title={mg.getName()}
         subTitle={`multicast-group id: ${mg.getId()}`}
         extra={[
-          <Admin tenantId={tenant.getId()} isDeviceAdmin key="delete-multicast-group">
+          <Admin
+            tenantId={tenant.getId()}
+            applicationId={props.application.getId()}
+            isApplicationAdmin
+            key="delete-multicast-group"
+          >
             <DeleteConfirm typ="multicast-group" confirm={mg.getName()} onConfirm={deleteMulticastGroup}>
               <Button danger type="primary">
                 Delete multicast-group
@@ -162,9 +167,12 @@ function MulticastGroupLayout(props: IProps) {
           ]}
         />
         <Routes>
-          <Route path="/" element={<ListMulticastGroupDevices multicastGroup={mg} />} />
+          <Route path="/" element={<ListMulticastGroupDevices multicastGroup={mg} tenant={props.tenant} />} />
           <Route path="/gateways" element={<ListMulticastGroupGateways multicastGroup={mg} application={app} />} />
-          <Route path="/edit" element={<EditMulticastGroup application={app} multicastGroup={mg} />} />
+          <Route
+            path="/edit"
+            element={<EditMulticastGroup application={app} tenant={props.tenant} multicastGroup={mg} />}
+          />
           <Route path="/queue" element={<MulticastGroupQueue multicastGroup={mg} />} />
         </Routes>
       </Card>

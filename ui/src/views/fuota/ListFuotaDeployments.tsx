@@ -56,7 +56,7 @@ function ListFuotaDeployments(props: IProps) {
 
   return (
     <Space orientation="vertical" size="large" style={{ width: "100%" }}>
-      <Admin tenantId={props.application.getTenantId()} isDeviceAdmin>
+      <Admin tenantId={props.application.getTenantId()} applicationId={props.application.getId()} isApplicationAdmin>
         <Button type="primary" style={{ float: "right" }}>
           <Link
             to={`/tenants/${props.application.getTenantId()}/applications/${props.application.getId()}/fuota/create`}

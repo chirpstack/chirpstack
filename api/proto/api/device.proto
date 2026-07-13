@@ -2,180 +2,148 @@ syntax = "proto3";
 
 package api;
 
-option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
-option java_package = "io.chirpstack.api";
-option java_multiple_files = true;
-option java_outer_classname = "DeviceProto";
-option csharp_namespace = "Chirpstack.Api";
-option php_namespace = "Chirpstack\\Api";
-option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
-
 import "common/common.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/struct.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Chirpstack.Api";
+option go_package = "github.com/chirpstack/chirpstack/api/go/v4/api";
+option java_multiple_files = true;
+option java_outer_classname = "DeviceProto";
+option java_package = "io.chirpstack.api";
+option php_metadata_namespace = "GPBMetadata\\Chirpstack\\Api";
+option php_namespace = "Chirpstack\\Api";
 
 // DeviceService is the service providing API methods for managing devices.
 service DeviceService {
   // Create the given device.
   rpc Create(CreateDeviceRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post : "/api/devices"
-      body : "*"
+      post: "/api/devices"
+      body: "*"
     };
   }
 
   // Get returns the device for the given DevEUI.
   rpc Get(GetDeviceRequest) returns (GetDeviceResponse) {
-    option (google.api.http) = {
-      get : "/api/devices/{dev_eui}"
-    };
+    option (google.api.http) = {get: "/api/devices/{dev_eui}"};
   }
 
   // Update the given device.
   rpc Update(UpdateDeviceRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/api/devices/{device.dev_eui}"
-      body : "*"
+      put: "/api/devices/{device.dev_eui}"
+      body: "*"
     };
   }
 
   // Delete the device with the given DevEUI.
   rpc Delete(DeleteDeviceRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/devices/{dev_eui}"
-    };
+    option (google.api.http) = {delete: "/api/devices/{dev_eui}"};
   }
 
   // Get the list of devices.
   rpc List(ListDevicesRequest) returns (ListDevicesResponse) {
-    option (google.api.http) = {
-      get : "/api/devices"
-    };
+    option (google.api.http) = {get: "/api/devices"};
   }
 
   // Create the given device-keys.
   rpc CreateKeys(CreateDeviceKeysRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post : "/api/devices/{device_keys.dev_eui}/keys"
-      body : "*"
+      post: "/api/devices/{device_keys.dev_eui}/keys"
+      body: "*"
     };
   }
 
   // Get the device-keys for the given DevEUI.
   rpc GetKeys(GetDeviceKeysRequest) returns (GetDeviceKeysResponse) {
-    option (google.api.http) = {
-      get : "/api/devices/{dev_eui}/keys"
-    };
+    option (google.api.http) = {get: "/api/devices/{dev_eui}/keys"};
   }
 
   // Update the given device-keys.
   rpc UpdateKeys(UpdateDeviceKeysRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/api/devices/{device_keys.dev_eui}/keys"
-      body : "*"
+      put: "/api/devices/{device_keys.dev_eui}/keys"
+      body: "*"
     };
   }
 
   // Delete the device-keys for the given DevEUI.
   rpc DeleteKeys(DeleteDeviceKeysRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/devices/{dev_eui}/keys"
-    };
+    option (google.api.http) = {delete: "/api/devices/{dev_eui}/keys"};
   }
 
   // FlushDevNonces flushes the OTAA device nonces.
   rpc FlushDevNonces(FlushDevNoncesRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/devices/{dev_eui}/dev-nonces"
-    };
+    option (google.api.http) = {delete: "/api/devices/{dev_eui}/dev-nonces"};
   }
 
   // Activate (re)activates the device with the given parameters (for ABP or for
   // importing OTAA activations).
   rpc Activate(ActivateDeviceRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post : "/api/devices/{device_activation.dev_eui}/activate"
-      body : "*"
+      post: "/api/devices/{device_activation.dev_eui}/activate"
+      body: "*"
     };
   }
 
   // Deactivate de-activates the device.
   rpc Deactivate(DeactivateDeviceRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/devices/{dev_eui}/activation"
-    };
+    option (google.api.http) = {delete: "/api/devices/{dev_eui}/activation"};
   }
 
   // GetActivation returns the current activation details of the device (OTAA or
   // ABP).
-  rpc GetActivation(GetDeviceActivationRequest)
-      returns (GetDeviceActivationResponse) {
-    option (google.api.http) = {
-      get : "/api/devices/{dev_eui}/activation"
-    };
+  rpc GetActivation(GetDeviceActivationRequest) returns (GetDeviceActivationResponse) {
+    option (google.api.http) = {get: "/api/devices/{dev_eui}/activation"};
   }
 
   // GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into
   // account.
-  rpc GetRandomDevAddr(GetRandomDevAddrRequest)
-      returns (GetRandomDevAddrResponse) {
-    option (google.api.http) = {
-      post : "/api/devices/{dev_eui}/get-random-dev-addr"
-    };
+  rpc GetRandomDevAddr(GetRandomDevAddrRequest) returns (GetRandomDevAddrResponse) {
+    option (google.api.http) = {post: "/api/devices/{dev_eui}/get-random-dev-addr"};
   }
 
   // GetMetrics returns the device metrics.
   // Note that this requires a device-profile with codec and measurements
   // configured.
   rpc GetMetrics(GetDeviceMetricsRequest) returns (GetDeviceMetricsResponse) {
-    option (google.api.http) = {
-      get : "/api/devices/{dev_eui}/metrics"
-    };
+    option (google.api.http) = {get: "/api/devices/{dev_eui}/metrics"};
   }
 
   // GetLinkMetrics returns the device link metrics.
   // This includes uplinks, downlinks, RSSI, SNR, etc...
-  rpc GetLinkMetrics(GetDeviceLinkMetricsRequest)
-      returns (GetDeviceLinkMetricsResponse) {
-    option (google.api.http) = {
-      get : "/api/devices/{dev_eui}/link-metrics"
-    };
+  rpc GetLinkMetrics(GetDeviceLinkMetricsRequest) returns (GetDeviceLinkMetricsResponse) {
+    option (google.api.http) = {get: "/api/devices/{dev_eui}/link-metrics"};
   }
 
   // Enqueue adds the given item to the downlink queue.
-  rpc Enqueue(EnqueueDeviceQueueItemRequest)
-      returns (EnqueueDeviceQueueItemResponse) {
+  rpc Enqueue(EnqueueDeviceQueueItemRequest) returns (EnqueueDeviceQueueItemResponse) {
     option (google.api.http) = {
-      post : "/api/devices/{queue_item.dev_eui}/queue"
-      body : "*"
+      post: "/api/devices/{queue_item.dev_eui}/queue"
+      body: "*"
     };
   }
 
   // FlushQueue flushes the downlink device-queue.
   rpc FlushQueue(FlushDeviceQueueRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/api/devices/{dev_eui}/queue"
-    };
+    option (google.api.http) = {delete: "/api/devices/{dev_eui}/queue"};
   }
 
   // GetQueue returns the downlink device-queue.
-  rpc GetQueue(GetDeviceQueueItemsRequest)
-      returns (GetDeviceQueueItemsResponse) {
-    option (google.api.http) = {
-      get : "/api/devices/{dev_eui}/queue"
-    };
+  rpc GetQueue(GetDeviceQueueItemsRequest) returns (GetDeviceQueueItemsResponse) {
+    option (google.api.http) = {get: "/api/devices/{dev_eui}/queue"};
   }
 
   // GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
   // downlinks. The difference with the DeviceActivation f_cont_down is that
   // this method takes potential existing queue-items into account.
-  rpc GetNextFCntDown(GetDeviceNextFCntDownRequest)
-      returns (GetDeviceNextFCntDownResponse) {
+  rpc GetNextFCntDown(GetDeviceNextFCntDownRequest) returns (GetDeviceNextFCntDownResponse) {
     option (google.api.http) = {
-      post : "/api/devices/{dev_eui}/get-next-f-cnt-down"
-      body : "*"
+      post: "/api/devices/{dev_eui}/get-next-f-cnt-down"
+      body: "*"
     };
   }
 }
@@ -346,7 +314,7 @@ message ListDevicesRequest {
     NAME = 0;
     DEV_EUI = 1;
     LAST_SEEN_AT = 2;
-    DEVICE_PROFILE_NAME = 3;  
+    DEVICE_PROFILE_NAME = 3;
   }
 
   // If set, the given value will be used to sort by (optional).
@@ -461,7 +429,12 @@ message GetDeviceActivationResponse {
 
 message GetRandomDevAddrRequest {
   // DevEUI (EUI64).
+  // Either dev_eui or tenant_id must be set.
   string dev_eui = 1;
+
+  // Tenant ID.
+  // Either dev_eui or tenant_id must be set.
+  string tenant_id = 2;
 }
 
 message GetRandomDevAddrResponse {

@@ -8,6 +8,7 @@ use uuid::Uuid;
 use super::auth::validator;
 use super::error::ToStatus;
 use super::helpers;
+use crate::api::auth::AuthID;
 use crate::certificate;
 use crate::storage::{application, fields};
 
@@ -162,6 +163,12 @@ impl ApplicationService for Application {
         request: Request<api::ListApplicationsRequest>,
     ) -> Result<Response<api::ListApplicationsResponse>, Status> {
         let req = request.get_ref();
+        let user_id: Option<Uuid> =
+            if let Some(AuthID::User(v)) = request.extensions().get::<AuthID>() {
+                Some(*v)
+            } else {
+                None
+            };
         let tenant_id = Uuid::from_str(&req.tenant_id).map_err(|e| e.status())?;
 
         self.validator
@@ -172,6 +179,7 @@ impl ApplicationService for Application {
             .await?;
 
         let filters = application::Filters {
+            user_id,
             tenant_id: Some(tenant_id),
             search: if req.search.is_empty() {
                 None

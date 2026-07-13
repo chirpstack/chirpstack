@@ -151,6 +151,25 @@ message UserTenantLink {
   bool is_gateway_admin = 6;
 }
 
+message UserApplicationLink {
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 1;
+
+  // Application ID.
+  string application_id = 2;
+
+  // Is read-only.
+  bool is_read_only = 3;
+}
+
+message UserDeviceProfileLink {
+  // Created at timestamp.
+  google.protobuf.Timestamp created_at = 1;
+
+  // Device-profile ID.
+  string device_profile_id = 2;
+}
+
 message LoginRequest {
   // Email of the user.
   string email = 1;
@@ -170,6 +189,12 @@ message ProfileResponse {
 
   // Tenants to which the user is associated.
   repeated UserTenantLink tenants = 3;
+
+  // Applications to which the user is associated.
+  repeated UserApplicationLink applications = 4;
+
+  // Device-profiles to which the user is associated.
+  repeated UserDeviceProfileLink device_profiles = 5;
 }
 
 message GlobalSearchRequest {

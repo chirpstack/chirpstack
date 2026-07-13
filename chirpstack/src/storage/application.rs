@@ -15,7 +15,10 @@ use tracing::info;
 use uuid::Uuid;
 
 use super::error::Error;
-use super::schema::{application, application_integration, device, device_profile};
+use super::schema::{
+    application, application_integration, device, device_profile, tenant_user,
+    tenant_user_application, user,
+};
 use super::{fields, get_async_db_conn};
 
 #[derive(Clone, Queryable, Insertable, PartialEq, Eq, Debug)]
@@ -59,6 +62,7 @@ impl Default for Application {
 
 #[derive(Default, Clone)]
 pub struct Filters {
+    pub user_id: Option<Uuid>,
     pub tenant_id: Option<Uuid>,
     pub search: Option<String>,
 }
@@ -371,22 +375,55 @@ pub async fn delete(id: &Uuid) -> Result<(), Error> {
 }
 
 pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
-    let mut q = application::dsl::application
-        .select(dsl::count_star())
-        .into_boxed();
+    let mut q = application::table.select(dsl::count_star()).into_boxed();
+
+    // Filter by user permissions
+    if let Some(user_id) = &filters.user_id {
+        q = q.filter(dsl::exists(
+            user::table
+                .filter(
+                    user::id
+                        .eq(fields::Uuid::from(user_id))
+                        .and(user::is_active.eq(true)),
+                )
+                .filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::table
+                            .filter(
+                                tenant_user::user_id
+                                    .eq(user::id)
+                                    .and(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                ),
+        ));
+    }
 
     if let Some(tenant_id) = &filters.tenant_id {
-        q = q.filter(application::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
+        q = q.filter(application::tenant_id.eq(fields::Uuid::from(tenant_id)));
     }
 
     if let Some(search) = &filters.search {
         #[cfg(feature = "postgres")]
         {
-            q = q.filter(application::dsl::name.ilike(format!("%{}%", search)));
+            q = q.filter(application::name.ilike(format!("%{}%", search)));
         }
         #[cfg(feature = "sqlite")]
         {
-            q = q.filter(application::dsl::name.like(format!("%{}%", search)));
+            q = q.filter(application::name.like(format!("%{}%", search)));
         }
     }
 
@@ -407,6 +444,41 @@ pub async fn list(
             application::description,
         ))
         .into_boxed();
+
+    // Filter by user permissions
+    if let Some(user_id) = &filters.user_id {
+        q = q.filter(dsl::exists(
+            user::table
+                .filter(
+                    user::id
+                        .eq(fields::Uuid::from(user_id))
+                        .and(user::is_active.eq(true)),
+                )
+                .filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::table
+                            .filter(
+                                tenant_user::user_id
+                                    .eq(user::id)
+                                    .and(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                ),
+        ));
+    }
 
     if let Some(tenant_id) = &filters.tenant_id {
         q = q.filter(application::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)));
@@ -701,6 +773,7 @@ pub mod test {
         let tests = vec![
             FilterTest {
                 filters: Filters {
+                    user_id: None,
                     tenant_id: None,
                     search: None,
                 },
@@ -711,6 +784,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    user_id: None,
                     tenant_id: None,
                     search: Some("aap".into()),
                 },
@@ -721,6 +795,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    user_id: None,
                     tenant_id: None,
                     search: Some("app".into()),
                 },
@@ -731,6 +806,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    user_id: None,
                     tenant_id: None,
                     search: Some("app".into()),
                 },
@@ -741,6 +817,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    user_id: None,
                     tenant_id: Some(app.tenant_id.into()),
                     search: None,
                 },
@@ -751,6 +828,7 @@ pub mod test {
             },
             FilterTest {
                 filters: Filters {
+                    user_id: None,
                     tenant_id: Some(Uuid::new_v4()),
                     search: None,
                 },

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { format } from "date-fns";
-import { Space, Button, Dropdown, Menu, Modal, Select, Tag, Popover, Typography } from "antd";
+import { Space, Button, Dropdown, Modal, Select, Tag, Popover, Typography } from "antd";
 import type { SelectProps } from "antd/lib";
 import type { ColumnsType } from "antd/es/table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -407,7 +407,7 @@ function ListDevices(props: IProps) {
           />
         </Space>
       </Modal>
-      <Admin tenantId={props.application.getTenantId()} isDeviceAdmin>
+      <Admin tenantId={props.application.getTenantId()} applicationId={props.application.getId()} isApplicationAdmin>
         <Space orientation="horizontal" style={{ float: "right" }}>
           <Button type="primary">
             <Link

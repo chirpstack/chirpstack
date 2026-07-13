@@ -12,7 +12,7 @@ use crate::api::auth::AuthID;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::schema::{
     api_key, application, device, device_profile, fuota_deployment, gateway, multicast_group,
-    tenant_user, user,
+    tenant_user, tenant_user_application, tenant_user_device_profile, user,
 };
 use crate::storage::{fields, get_async_db_conn};
 
@@ -406,16 +406,16 @@ impl ValidateTenantsAccess {
 #[async_trait]
 impl Validator for ValidateTenantsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .find(fields::Uuid::from(id))
-            .filter(user::dsl::is_active.eq(true))
+            .filter(user::is_active.eq(true))
             .into_boxed();
 
         match self.flag {
             // admin user
             Flag::Create => {
-                q = q.filter(user::dsl::is_admin.eq(true));
+                q = q.filter(user::is_admin.eq(true));
             }
             // any active user (results are filtered by the storage function)
             Flag::List => {}
@@ -462,12 +462,12 @@ impl ValidateTenantAccess {
 #[async_trait]
 impl Validator for ValidateTenantAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
@@ -475,13 +475,14 @@ impl Validator for ValidateTenantAccess {
             // global admin
             // tenant user
             Flag::Read => {
-                q = q.filter(user::is_admin.eq(true).or(dsl::exists(
-                    tenant_user::dsl::tenant_user.filter(
-                        tenant_user::dsl::user_id.eq(user::dsl::id).and(
-                            tenant_user::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
+                q =
+                    q.filter(user::is_admin.eq(true).or(
+                        dsl::exists(
+                            tenant_user::table.filter(tenant_user::user_id.eq(user::id).and(
+                                tenant_user::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
+                            )),
                         ),
-                    ),
-                )));
+                    ));
             }
 
             // global admin
@@ -749,12 +750,12 @@ impl ValidateApplicationsAccess {
 #[async_trait]
 impl Validator for ValidateApplicationsAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
@@ -763,34 +764,32 @@ impl Validator for ValidateApplicationsAccess {
             // tenant admin
             // tenant device admin
             Flag::Create => {
-                q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
-                        tenant_user::dsl::tenant_user.filter(
-                            tenant_user::dsl::user_id
-                                .eq(user::dsl::id)
-                                .and(
-                                    tenant_user::dsl::tenant_id
-                                        .eq(fields::Uuid::from(self.tenant_id)),
-                                )
-                                .and(
-                                    tenant_user::dsl::is_admin
+                q =
+                    q.filter(
+                        user::is_admin.eq(true).or(dsl::exists(
+                            tenant_user::table
+                                .filter(tenant_user::user_id.eq(user::id).and(
+                                    tenant_user::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
+                                ))
+                                .filter(
+                                    tenant_user::is_admin
                                         .eq(true)
-                                        .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        .or(tenant_user::is_device_admin.eq(true)),
                                 ),
-                        ),
-                    )),
-                );
+                        )),
+                    );
             }
             // global admin
-            // tenant user
+            // tenant user (filtered by storage function)
             Flag::List => {
-                q = q.filter(user::dsl::is_admin.eq(true).or(dsl::exists(
-                    tenant_user::dsl::tenant_user.filter(
-                        tenant_user::dsl::user_id.eq(user::dsl::id).and(
-                            tenant_user::dsl::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
+                q =
+                    q.filter(user::is_admin.eq(true).or(
+                        dsl::exists(
+                            tenant_user::table.filter(tenant_user::user_id.eq(user::id).and(
+                                tenant_user::tenant_id.eq(fields::Uuid::from(self.tenant_id)),
+                            )),
                         ),
-                    ),
-                )));
+                    ));
             }
             _ => {
                 return Ok(0);
@@ -853,57 +852,101 @@ impl ValidateApplicationAccess {
 #[async_trait]
 impl Validator for ValidateApplicationAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
         match self.flag {
             // global admin
-            // tenant user
+            // tenant admin
+            // tenant device admin
+            // tenant application admin
             Flag::Read => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            application::dsl::application
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    application::dsl::id
-                                        .eq(fields::Uuid::from(self.application_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                        )),
-                    );
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        application::table
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(application::id.eq(fields::Uuid::from(self.application_id)))
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                );
             }
             // global admin
             // tenant admin
             // tenant device admin
-            Flag::Update | Flag::Delete => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            application::dsl::application
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    application::dsl::id
-                                        .eq(fields::Uuid::from(self.application_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+            // tenant application admin (not RO)
+            Flag::Update => {
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        application::table
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(application::id.eq(fields::Uuid::from(self.application_id)))
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id
+                                                .eq(user::id)
+                                                .and(
+                                                    tenant_user_application::application_id
+                                                        .eq(application::id),
+                                                )
+                                                .and(
+                                                    tenant_user_application::is_read_only.eq(false),
+                                                ),
                                         ),
-                                ),
-                        )),
-                    );
+                                    )),
+                            ),
+                    )),
+                );
+            }
+            // global admin
+            // tenant admin
+            // tenant device admin
+            Flag::Delete => {
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        application::table
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(application::id.eq(fields::Uuid::from(self.application_id)))
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true)),
+                            ),
+                    )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -1182,12 +1225,12 @@ impl ValidateDeviceProfilesAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfilesAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
@@ -1196,35 +1239,35 @@ impl Validator for ValidateDeviceProfilesAccess {
             // tenant admin
             // tenant device admin
             Flag::Create => {
-                q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
-                        tenant_user::dsl::tenant_user.filter(
-                            tenant_user::dsl::user_id
-                                .eq(user::dsl::id)
-                                .and(tenant_user::dsl::tenant_id.eq(fields::Uuid::from(
+                q =
+                    q.filter(
+                        user::is_admin.eq(true).or(dsl::exists(
+                            tenant_user::table
+                                .filter(tenant_user::user_id.eq(user::id))
+                                .filter(tenant_user::tenant_id.eq(fields::Uuid::from(
                                     self.tenant_id.unwrap_or_else(Uuid::nil),
                                 )))
-                                .and(
-                                    tenant_user::dsl::is_admin
+                                .filter(
+                                    tenant_user::is_admin
                                         .eq(true)
-                                        .or(tenant_user::dsl::is_device_admin.eq(true)),
+                                        .or(tenant_user::is_device_admin.eq(true)),
                                 ),
-                        ),
-                    )),
-                );
+                        )),
+                    );
             }
             // global admin
             // tenant user
             Flag::List => {
                 if !self.global_only {
                     if let Some(tenant_id) = &self.tenant_id {
-                        q = q.filter(user::dsl::is_admin.eq(true).or(dsl::exists(
-                            tenant_user::dsl::tenant_user.filter(
-                                tenant_user::dsl::user_id.eq(user::dsl::id).and(
-                                    tenant_user::dsl::tenant_id.eq(fields::Uuid::from(tenant_id)),
+                        q =
+                            q.filter(user::is_admin.eq(true).or(dsl::exists(
+                                tenant_user::table.filter(
+                                    tenant_user::user_id.eq(user::id).and(
+                                        tenant_user::tenant_id.eq(fields::Uuid::from(tenant_id)),
+                                    ),
                                 ),
-                            ),
-                        )));
+                            )));
                     } else {
                         return Ok(0);
                     }
@@ -1292,12 +1335,12 @@ impl ValidateDeviceProfileAccess {
 #[async_trait]
 impl Validator for ValidateDeviceProfileAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
@@ -1306,25 +1349,25 @@ impl Validator for ValidateDeviceProfileAccess {
             // tenant user
             Flag::Read => {
                 q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                    user::is_admin.eq(true).or(dsl::exists(
                         // Global device-profile
-                        device_profile::dsl::device_profile.filter(
-                            device_profile::dsl::id
+                        device_profile::table.filter(
+                            device_profile::id
                                 .eq(fields::Uuid::from(self.device_profile_id))
-                                .and(device_profile::dsl::tenant_id.is_null()),
+                                .and(device_profile::tenant_id.is_null()),
                         ),
                     )
                     .or(dsl::exists(
                         // Tenant device-profile
-                        device_profile::dsl::device_profile
+                        device_profile::table
                             .inner_join(
-                                tenant_user::table.on(tenant_user::dsl::tenant_id
-                                    .eq(device_profile::dsl::tenant_id.assume_not_null())),
+                                tenant_user::table.on(tenant_user::tenant_id
+                                    .eq(device_profile::tenant_id.assume_not_null())),
                             )
                             .filter(
-                                device_profile::dsl::id
+                                device_profile::id
                                     .eq(fields::Uuid::from(self.device_profile_id))
-                                    .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                    .and(tenant_user::user_id.eq(user::dsl::id)),
                             ),
                     ))),
                 );
@@ -1332,24 +1375,56 @@ impl Validator for ValidateDeviceProfileAccess {
             // global admin
             // tenant admin user
             // tenant device admin
-            Flag::Update | Flag::Delete => {
+            // tenant device-profile admin
+            Flag::Update => {
                 q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
+                    user::is_admin.eq(true).or(dsl::exists(
                         // For non-admins, it must always be a profile with tenant_id.
-                        device_profile::dsl::device_profile
+                        device_profile::table
                             .inner_join(
-                                tenant_user::table.on(tenant_user::dsl::tenant_id
-                                    .eq(device_profile::dsl::tenant_id.assume_not_null())),
+                                tenant_user::table.on(tenant_user::tenant_id
+                                    .eq(device_profile::tenant_id.assume_not_null())),
                             )
                             .filter(
-                                device_profile::dsl::id
-                                    .eq(fields::Uuid::from(self.device_profile_id))
-                                    .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                    .and(
-                                        tenant_user::dsl::is_admin
-                                            .eq(true)
-                                            .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                    ),
+                                device_profile::id.eq(fields::Uuid::from(self.device_profile_id)),
+                            )
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_device_profile::table.filter(
+                                            tenant_user_device_profile::user_id.eq(user::id).and(
+                                                tenant_user_device_profile::device_profile_id
+                                                    .eq(device_profile::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                );
+            }
+            // global admin
+            // tenant admin user
+            // tenant device admin
+            Flag::Delete => {
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        // For non-admins, it must always be a profile with tenant_id.
+                        device_profile::table
+                            .inner_join(
+                                tenant_user::table.on(tenant_user::tenant_id
+                                    .eq(device_profile::tenant_id.assume_not_null())),
+                            )
+                            .filter(
+                                device_profile::id.eq(fields::Uuid::from(self.device_profile_id)),
+                            )
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true)),
                             ),
                     )),
                 );
@@ -1428,12 +1503,12 @@ impl ValidateDevicesAccess {
 #[async_trait]
 impl Validator for ValidateDevicesAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
@@ -1441,44 +1516,55 @@ impl Validator for ValidateDevicesAccess {
             // admin user
             // tenant admin
             // tenant device admin
+            // tenant application admin (not RO)
             Flag::Create => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            application::dsl::application
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    application::dsl::id
-                                        .eq(fields::Uuid::from(self.application_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        application::table
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(application::id.eq(fields::Uuid::from(self.application_id)))
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id
+                                                .eq(user::id)
+                                                .and(
+                                                    tenant_user_application::application_id
+                                                        .eq(application::id),
+                                                )
+                                                .and(
+                                                    tenant_user_application::is_read_only.eq(false),
+                                                ),
                                         ),
-                                ),
-                        )),
-                    );
+                                    )),
+                            ),
+                    )),
+                );
             }
             // admin user
-            // tenant user
+            // tenant user (filtered by storage function)
             Flag::List => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            application::dsl::application
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    application::dsl::id
-                                        .eq(fields::Uuid::from(self.application_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                        )),
-                    );
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        application::table
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                application::id
+                                    .eq(fields::Uuid::from(self.application_id))
+                                    .and(tenant_user::user_id.eq(user::id)),
+                            ),
+                    )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -1549,39 +1635,87 @@ impl ValidateDeviceAccess {
 #[async_trait]
 impl Validator for ValidateDeviceAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
         match self.flag {
             // admin user
-            // tenant user
+            // tenant admin
+            // tenant device admin
+            // tenant application admin
             Flag::Read => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            device::dsl::device
-                                .inner_join(application::table)
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    device::dsl::dev_eui
-                                        .eq(&self.dev_eui)
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                        )),
-                    );
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        device::table
+                            .inner_join(application::table)
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(device::dev_eui.eq(&self.dev_eui))
+                            .filter(tenant_user::user_id.eq(user::dsl::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                );
             }
             // admin user
             // tenant admin
             // tenant device admin
-            Flag::Update | Flag::Delete => {
+            // tenant application admin (not RO)
+            Flag::Update => {
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        device::table
+                            .inner_join(application::table)
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(device::dev_eui.eq(&self.dev_eui))
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id
+                                                .eq(user::id)
+                                                .and(
+                                                    tenant_user_application::application_id
+                                                        .eq(application::id),
+                                                )
+                                                .and(
+                                                    tenant_user_application::is_read_only.eq(false),
+                                                ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                );
+            }
+            // admin user
+            // tenant admin
+            // tenant device admin
+            Flag::Delete => {
                 q =
                     q.filter(
                         user::dsl::is_admin.eq(true).or(dsl::exists(
@@ -1590,15 +1724,26 @@ impl Validator for ValidateDeviceAccess {
                                 .inner_join(tenant_user::table.on(
                                     tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
                                 ))
+                                .filter(device::dsl::dev_eui.eq(&self.dev_eui))
+                                .filter(tenant_user::dsl::user_id.eq(user::dsl::id))
                                 .filter(
-                                    device::dsl::dev_eui
-                                        .eq(&self.dev_eui)
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
-                                        ),
+                                    tenant_user::dsl::is_admin
+                                        .eq(true)
+                                        .or(tenant_user::dsl::is_device_admin.eq(true))
+                                        .or(dsl::exists(
+                                            tenant_user_application::table.filter(
+                                                tenant_user_application::user_id
+                                                    .eq(user::id)
+                                                    .and(
+                                                        tenant_user_application::application_id
+                                                            .eq(application::id),
+                                                    )
+                                                    .and(
+                                                        tenant_user_application::is_read_only
+                                                            .eq(false),
+                                                    ),
+                                            ),
+                                        )),
                                 ),
                         )),
                     );
@@ -1669,34 +1814,82 @@ impl ValidateDeviceQueueAccess {
 #[async_trait]
 impl Validator for ValidateDeviceQueueAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
         match self.flag {
             // admin user
-            // tenant user
-            Flag::Create | Flag::List | Flag::Delete => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            device::dsl::device
-                                .inner_join(application::table)
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    device::dsl::dev_eui
-                                        .eq(&self.dev_eui)
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                        )),
-                    );
+            // tenant admin
+            // tenant device admin
+            // tenant application admin (not RO)
+            Flag::Create | Flag::Delete => {
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        device::table
+                            .inner_join(application::table)
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(device::dev_eui.eq(&self.dev_eui))
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id
+                                                .eq(user::id)
+                                                .and(
+                                                    tenant_user_application::application_id
+                                                        .eq(application::id),
+                                                )
+                                                .and(
+                                                    tenant_user_application::is_read_only.eq(false),
+                                                ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                );
+            }
+            // admin user
+            // tenant admin
+            // tenant device admin
+            // tenant application admin (RO/not RO)
+            Flag::List => {
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        device::table
+                            .inner_join(application::table)
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(device::dev_eui.eq(&self.dev_eui))
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -1764,12 +1957,12 @@ impl ValidateGatewaysAccess {
 #[async_trait]
 impl Validator for ValidateGatewaysAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
@@ -1779,15 +1972,15 @@ impl Validator for ValidateGatewaysAccess {
             // gateway admin
             Flag::Create => {
                 q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
-                        tenant_user::dsl::tenant_user.filter(
-                            tenant_user::dsl::tenant_id
+                    user::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::table.filter(
+                            tenant_user::tenant_id
                                 .eq(fields::Uuid::from(self.tenant_id))
-                                .and(tenant_user::dsl::user_id.eq(user::dsl::id))
+                                .and(tenant_user::user_id.eq(user::id))
                                 .and(
-                                    tenant_user::dsl::is_admin
+                                    tenant_user::is_admin
                                         .eq(true)
-                                        .or(tenant_user::dsl::is_gateway_admin.eq(true)),
+                                        .or(tenant_user::is_gateway_admin.eq(true)),
                                 ),
                         ),
                     )),
@@ -1797,11 +1990,11 @@ impl Validator for ValidateGatewaysAccess {
             // tenant user
             Flag::List => {
                 q = q.filter(
-                    user::dsl::is_admin.eq(true).or(dsl::exists(
-                        tenant_user::dsl::tenant_user.filter(
-                            tenant_user::dsl::tenant_id
+                    user::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::table.filter(
+                            tenant_user::tenant_id
                                 .eq(fields::Uuid::from(self.tenant_id))
-                                .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
+                                .and(tenant_user::user_id.eq(user::id)),
                         ),
                     )),
                 );
@@ -1998,6 +2191,7 @@ impl Validator for ValidateMulticastGroupsAccess {
             // admin user
             // tenant admin
             // tenant device admin
+            // application admin (non RO)
             Flag::Create => {
                 q = q.filter(
                     user::is_admin.eq(true).or(dsl::exists(
@@ -2007,20 +2201,34 @@ impl Validator for ValidateMulticastGroupsAccess {
                                     .on(tenant_user::tenant_id.eq(application::tenant_id)),
                             )
                             .filter(
-                                application::id
-                                    .eq(fields::Uuid::from(self.application_id.unwrap_or_default()))
-                                    .and(tenant_user::user_id.eq(user::id))
-                                    .and(
-                                        tenant_user::is_admin
-                                            .eq(true)
-                                            .or(tenant_user::is_device_admin.eq(true)),
-                                    ),
+                                application::id.eq(fields::Uuid::from(
+                                    self.application_id.unwrap_or_default(),
+                                )),
+                            )
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id
+                                                .eq(user::id)
+                                                .and(
+                                                    tenant_user_application::application_id
+                                                        .eq(application::id),
+                                                )
+                                                .and(
+                                                    tenant_user_application::is_read_only.eq(false),
+                                                ),
+                                        ),
+                                    )),
                             ),
                     )),
                 );
             }
             // admin user
-            // tenant user (based on tenant_id or application_id)
+            // tenant user (filtered by storage function)
             Flag::List => {
                 q = q.filter(
                     user::is_admin.eq(true).or(dsl::exists(
@@ -2029,16 +2237,9 @@ impl Validator for ValidateMulticastGroupsAccess {
                                 tenant_user::table
                                     .on(tenant_user::tenant_id.eq(application::tenant_id)),
                             )
-                            .filter(
-                                application::id
-                                    .eq(fields::Uuid::from(self.application_id.unwrap_or_default()))
-                                    .or(tenant_user::tenant_id.eq(fields::Uuid::from(
-                                        self.tenant_id.unwrap_or_default(),
-                                    ))),
-                            )
                             .filter(tenant_user::user_id.eq(user::id)),
                     )),
-                );
+                )
             }
             _ => {
                 return Ok(0);
@@ -2113,59 +2314,86 @@ impl ValidateMulticastGroupAccess {
 #[async_trait]
 impl Validator for ValidateMulticastGroupAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
         match self.flag {
             // admin user
-            // tenant user
+            // tenant admin
+            // tenant device admin
+            // application admin
             Flag::Read => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            multicast_group::dsl::multicast_group
-                                .inner_join(application::table)
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    multicast_group::dsl::id
-                                        .eq(fields::Uuid::from(self.multicast_group_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                        )),
-                    );
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        multicast_group::table
+                            .inner_join(application::table)
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                multicast_group::id
+                                    .eq(fields::Uuid::from(self.multicast_group_id))
+                                    .and(tenant_user::user_id.eq(user::id)),
+                            )
+                            .filter(
+                                tenant_user::is_admin
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                );
             }
             // admin user
             // tenant admin
             // tenant device admin
+            // application admin (non RO)
             Flag::Update | Flag::Delete => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            multicast_group::dsl::multicast_group
-                                .inner_join(application::table)
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    multicast_group::dsl::id
-                                        .eq(fields::Uuid::from(self.multicast_group_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        multicast_group::table
+                            .inner_join(application::table)
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                multicast_group::id.eq(fields::Uuid::from(self.multicast_group_id)),
+                            )
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id
+                                                .eq(user::id)
+                                                .and(
+                                                    tenant_user_application::application_id
+                                                        .eq(application::id),
+                                                )
+                                                .and(
+                                                    tenant_user_application::is_read_only.eq(false),
+                                                ),
                                         ),
-                                ),
-                        )),
-                    );
+                                    )),
+                            ),
+                    )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -2388,6 +2616,7 @@ impl Validator for ValidateFuotaDeploymentsAccess {
             // admin user
             // tenant admin
             // tenant device admin
+            // tenant applicaiton admin (not RO)
             Flag::Create => {
                 q = q.filter(
                     user::is_admin.eq(true).or(dsl::exists(
@@ -2397,20 +2626,34 @@ impl Validator for ValidateFuotaDeploymentsAccess {
                                     .on(tenant_user::tenant_id.eq(application::tenant_id)),
                             )
                             .filter(
-                                application::id
-                                    .eq(fields::Uuid::from(self.application_id.unwrap_or_default()))
-                                    .and(tenant_user::user_id.eq(user::id))
-                                    .and(
-                                        tenant_user::is_admin
-                                            .eq(true)
-                                            .or(tenant_user::is_device_admin.eq(true)),
-                                    ),
+                                application::id.eq(fields::Uuid::from(
+                                    self.application_id.unwrap_or_default(),
+                                )),
+                            )
+                            .filter(tenant_user::user_id.eq(user::id))
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id
+                                                .eq(user::id)
+                                                .and(
+                                                    tenant_user_application::application_id
+                                                        .eq(application::id),
+                                                )
+                                                .and(
+                                                    tenant_user_application::is_read_only.eq(false),
+                                                ),
+                                        ),
+                                    )),
                             ),
                     )),
                 );
             }
             // admin user
-            // tenant user
+            // tenant user (filtered by storage function)
             Flag::List => {
                 q = q.filter(
                     user::is_admin.eq(true).or(dsl::exists(
@@ -2501,59 +2744,88 @@ impl ValidateFuotaDeploymentAccess {
 #[async_trait]
 impl Validator for ValidateFuotaDeploymentAccess {
     async fn validate_user(&self, id: &Uuid) -> Result<i64, Error> {
-        let mut q = user::dsl::user
+        let mut q = user::table
             .select(dsl::count_star())
             .filter(
-                user::dsl::id
+                user::id
                     .eq(fields::Uuid::from(id))
-                    .and(user::dsl::is_active.eq(true)),
+                    .and(user::is_active.eq(true)),
             )
             .into_boxed();
 
         match self.flag {
             // admin user
-            // tenant user
+            // tenant admin
+            // tenant device admin
+            // tenant application admin
             Flag::Read => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            fuota_deployment::dsl::fuota_deployment
-                                .inner_join(application::table)
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    fuota_deployment::dsl::id
-                                        .eq(fields::Uuid::from(self.fuota_deployment_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id)),
-                                ),
-                        )),
-                    );
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        fuota_deployment::table
+                            .inner_join(application::table)
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                fuota_deployment::id
+                                    .eq(fields::Uuid::from(self.fuota_deployment_id))
+                                    .and(tenant_user::user_id.eq(user::id)),
+                            )
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                );
             }
             // admin user
             // tenant admin
             // tenant device admin
+            // tenant applicaiton admin (not RO)
             Flag::Update | Flag::Delete => {
-                q =
-                    q.filter(
-                        user::dsl::is_admin.eq(true).or(dsl::exists(
-                            fuota_deployment::dsl::fuota_deployment
-                                .inner_join(application::table)
-                                .inner_join(tenant_user::table.on(
-                                    tenant_user::dsl::tenant_id.eq(application::dsl::tenant_id),
-                                ))
-                                .filter(
-                                    fuota_deployment::dsl::id
-                                        .eq(fields::Uuid::from(self.fuota_deployment_id))
-                                        .and(tenant_user::dsl::user_id.eq(user::dsl::id))
-                                        .and(
-                                            tenant_user::dsl::is_admin
-                                                .eq(true)
-                                                .or(tenant_user::dsl::is_device_admin.eq(true)),
+                q = q.filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        fuota_deployment::table
+                            .inner_join(application::table)
+                            .inner_join(
+                                tenant_user::table
+                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                fuota_deployment::id
+                                    .eq(fields::Uuid::from(self.fuota_deployment_id))
+                                    .and(tenant_user::user_id.eq(user::id)),
+                            )
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id
+                                                .eq(user::id)
+                                                .and(
+                                                    tenant_user_application::application_id
+                                                        .eq(application::id),
+                                                )
+                                                .and(
+                                                    tenant_user_application::is_read_only.eq(false),
+                                                ),
                                         ),
-                                ),
-                        )),
-                    );
+                                    )),
+                            ),
+                    )),
+                );
             }
             _ => return Ok(0),
         }
@@ -2860,20 +3132,28 @@ pub mod test {
         .await
         .unwrap();
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_admin.id,
-            is_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
 
@@ -3146,33 +3426,49 @@ pub mod test {
         .await
         .unwrap();
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_admin.id,
-            is_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_user_other.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_user_other.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
 
@@ -3540,6 +3836,16 @@ pub mod test {
             is_active: true,
             ..Default::default()
         };
+        let tenant_user_application_admin = user::User {
+            email: "tenant-user-application-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let tenant_user_application_admin_ro = user::User {
+            email: "tenant-user-app-admin-ro@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
 
         for u in [
             &user_active,
@@ -3548,6 +3854,8 @@ pub mod test {
             &tenant_device_admin,
             &tenant_gateway_admin,
             &tenant_user,
+            &tenant_user_application_admin,
+            &tenant_user_application_admin_ro,
         ] {
             user::create(u.clone()).await.unwrap();
         }
@@ -3580,35 +3888,82 @@ pub mod test {
             application::test::create_application(Some(api_key_tenant.tenant_id.unwrap().into()))
                 .await;
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_admin.id,
-            is_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_device_admin.id,
-            is_device_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_device_admin.id,
+                is_device_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id,
-            is_gateway_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_gateway_admin.id,
+                is_gateway_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_user_application_admin.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                application_id: app.id,
+                user_id: tenant_user_application_admin.id,
+                ..Default::default()
+            }],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_user_application_admin_ro.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                application_id: app.id,
+                user_id: tenant_user_application_admin_ro.id,
+                is_read_only: true,
+                ..Default::default()
+            }],
+        )
         .await
         .unwrap();
 
@@ -3641,15 +3996,6 @@ pub mod test {
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
-            // tenant gateway admin can list
-            ValidatorTest {
-                validators: vec![ValidateApplicationsAccess::new(
-                    Flag::List,
-                    tenant_a.id.into(),
-                )],
-                id: AuthID::User(tenant_gateway_admin.id.into()),
-                ok: true,
-            },
             // tenant user can list
             ValidatorTest {
                 validators: vec![ValidateApplicationsAccess::new(
@@ -3657,6 +4003,15 @@ pub mod test {
                     tenant_a.id.into(),
                 )],
                 id: AuthID::User(tenant_user.id.into()),
+                ok: true,
+            },
+            // tenant gateway admin can list
+            ValidatorTest {
+                validators: vec![ValidateApplicationsAccess::new(
+                    Flag::List,
+                    tenant_a.id.into(),
+                )],
+                id: AuthID::User(tenant_gateway_admin.id.into()),
                 ok: true,
             },
             // tenant gateway admin can not create
@@ -3777,11 +4132,30 @@ pub mod test {
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
-            // tenant user can read
+            // tenant application admin (not RO) can read and update
+            ValidatorTest {
+                validators: vec![
+                    ValidateApplicationAccess::new(Flag::Read, app.id.into()),
+                    ValidateApplicationAccess::new(Flag::Update, app.id.into()),
+                ],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
+                ok: true,
+            },
+            // tenant application admin (RO) can read
             ValidatorTest {
                 validators: vec![ValidateApplicationAccess::new(Flag::Read, app.id.into())],
-                id: AuthID::User(tenant_user.id.into()),
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
                 ok: true,
+            },
+            // tenant user can not read, update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateApplicationAccess::new(Flag::Read, app.id.into()),
+                    ValidateApplicationAccess::new(Flag::Update, app.id.into()),
+                    ValidateApplicationAccess::new(Flag::Delete, app.id.into()),
+                ],
+                id: AuthID::User(tenant_user.id.into()),
+                ok: false,
             },
             // user can not read, update or delete
             ValidatorTest {
@@ -3793,13 +4167,19 @@ pub mod test {
                 id: AuthID::User(user_active.id.into()),
                 ok: false,
             },
-            // tenant user can not update or delete
+            // tenant application admin (RO) can not update or delete
             ValidatorTest {
                 validators: vec![
                     ValidateApplicationAccess::new(Flag::Update, app.id.into()),
                     ValidateApplicationAccess::new(Flag::Delete, app.id.into()),
                 ],
-                id: AuthID::User(tenant_user.id.into()),
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
+                ok: false,
+            },
+            // tenant applicaiton admin can not delete
+            ValidatorTest {
+                validators: vec![ValidateApplicationAccess::new(Flag::Delete, app.id.into())],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
                 ok: false,
             },
         ];
@@ -3894,6 +4274,11 @@ pub mod test {
             is_active: true,
             ..Default::default()
         };
+        let tenant_device_profile_admin = user::User {
+            email: "tenant-dp-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
 
         for u in [
             &user_active,
@@ -3902,6 +4287,7 @@ pub mod test {
             &tenant_gateway_admin,
             &tenant_device_admin,
             &tenant_user,
+            &tenant_device_profile_admin,
         ] {
             user::create(u.clone()).await.unwrap();
         }
@@ -3953,35 +4339,66 @@ pub mod test {
         .await
         .unwrap();
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_admin.id,
-            is_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_device_admin.id,
-            is_device_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_device_admin.id,
+                is_device_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id,
-            is_gateway_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_gateway_admin.id,
+                is_gateway_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_device_profile_admin.id,
+                ..Default::default()
+            },
+            &[tenant::TenantUserDeviceProfile {
+                user_id: tenant_device_profile_admin.id,
+                device_profile_id: dp.id,
+                ..Default::default()
+            }],
+            &[],
+        )
         .await
         .unwrap();
 
@@ -4233,6 +4650,15 @@ pub mod test {
                 id: AuthID::User(tenant_user.id.into()),
                 ok: true,
             },
+            // tenant device-profile admin can read and update tenant device-profile
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceProfileAccess::new(Flag::Read, dp.id.into()),
+                    ValidateDeviceProfileAccess::new(Flag::Update, dp.id.into()),
+                ],
+                id: AuthID::User(tenant_device_profile_admin.id.into()),
+                ok: true,
+            },
             // tenant user can read global device-profiles
             ValidatorTest {
                 validators: vec![ValidateDeviceProfileAccess::new(
@@ -4285,6 +4711,21 @@ pub mod test {
                     ValidateDeviceProfileAccess::new(Flag::Delete, dp_global.id.into()),
                 ],
                 id: AuthID::User(tenant_user.id.into()),
+                ok: false,
+            },
+            // tenant device-profile admin can not delete
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfileAccess::new(Flag::Delete, dp.id.into())],
+                id: AuthID::User(tenant_device_profile_admin.id.into()),
+                ok: false,
+            },
+            // tenant device-profile admin can not update other device-profile
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfileAccess::new(
+                    Flag::Update,
+                    dp_api_key_tenant.id.into(),
+                )],
+                id: AuthID::User(tenant_device_profile_admin.id.into()),
                 ok: false,
             },
         ];
@@ -4536,6 +4977,16 @@ pub mod test {
             is_active: true,
             ..Default::default()
         };
+        let tenant_user_application_admin = user::User {
+            email: "tenant-user-app-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let tenant_user_application_admin_ro = user::User {
+            email: "tenant-user-app-admin-ro@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
 
         for u in [
             &user_active,
@@ -4544,6 +4995,8 @@ pub mod test {
             &tenant_gateway_admin,
             &tenant_device_admin,
             &tenant_user,
+            &tenant_user_application_admin,
+            &tenant_user_application_admin_ro,
         ] {
             user::create(u.clone()).await.unwrap();
         }
@@ -4574,35 +5027,82 @@ pub mod test {
             application::test::create_application(Some(api_key_tenant.tenant_id.unwrap().into()))
                 .await;
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_admin.id,
-            is_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_device_admin.id,
-            is_device_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_device_admin.id,
+                is_device_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_gateway_admin.id,
-            is_gateway_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_gateway_admin.id,
+                is_gateway_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user_application_admin.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                user_id: tenant_user_application_admin.id,
+                application_id: app.id,
+                ..Default::default()
+            }],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user_application_admin_ro.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                user_id: tenant_user_application_admin_ro.id,
+                application_id: app.id,
+                is_read_only: true,
+                ..Default::default()
+            }],
+        )
         .await
         .unwrap();
 
@@ -4634,6 +5134,21 @@ pub mod test {
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
+            // tenant application admin (not RO) user can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateDevicesAccess::new(Flag::Create, app.id.into()),
+                    ValidateDevicesAccess::new(Flag::List, app.id.into()),
+                ],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
+                ok: true,
+            },
+            // tenant application admin (RO) user can list
+            ValidatorTest {
+                validators: vec![ValidateDevicesAccess::new(Flag::List, app.id.into())],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
+                ok: true,
+            },
             // tenant user can list
             ValidatorTest {
                 validators: vec![ValidateDevicesAccess::new(Flag::List, app.id.into())],
@@ -4644,6 +5159,12 @@ pub mod test {
             ValidatorTest {
                 validators: vec![ValidateDevicesAccess::new(Flag::Create, app.id.into())],
                 id: AuthID::User(tenant_user.id.into()),
+                ok: false,
+            },
+            // tenant application admin (RO) can not create
+            ValidatorTest {
+                validators: vec![ValidateDevicesAccess::new(Flag::Create, app.id.into())],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
                 ok: false,
             },
             // other users can not create or list
@@ -4743,19 +5264,39 @@ pub mod test {
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
-            // tenant user can read
+            // tenant application admin (not RO) can read, update and delete
             ValidatorTest {
-                validators: vec![ValidateDeviceAccess::new(Flag::Read, dev.dev_eui)],
-                id: AuthID::User(tenant_user.id.into()),
+                validators: vec![
+                    ValidateDeviceAccess::new(Flag::Read, dev.dev_eui),
+                    ValidateDeviceAccess::new(Flag::Update, dev.dev_eui),
+                    ValidateDeviceAccess::new(Flag::Delete, dev.dev_eui),
+                ],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
                 ok: true,
             },
-            // tenant user can not update or delete
+            // tenant application admin (RO) can read
+            ValidatorTest {
+                validators: vec![ValidateDeviceAccess::new(Flag::Read, dev.dev_eui)],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
+                ok: true,
+            },
+            // tenant user can not read, update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceAccess::new(Flag::Read, dev.dev_eui),
+                    ValidateDeviceAccess::new(Flag::Update, dev.dev_eui),
+                    ValidateDeviceAccess::new(Flag::Delete, dev.dev_eui),
+                ],
+                id: AuthID::User(tenant_user.id.into()),
+                ok: false,
+            },
+            // tenant application admin (RO) can not update or delete
             ValidatorTest {
                 validators: vec![
                     ValidateDeviceAccess::new(Flag::Update, dev.dev_eui),
                     ValidateDeviceAccess::new(Flag::Delete, dev.dev_eui),
                 ],
-                id: AuthID::User(tenant_user.id.into()),
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
                 ok: false,
             },
             // other user can not read, update and delete
@@ -4844,8 +5385,24 @@ pub mod test {
             is_active: true,
             ..Default::default()
         };
+        let tenant_user_application_admin = user::User {
+            email: "tenant-user-app-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let tenant_user_application_admin_ro = user::User {
+            email: "tenant-user-app-admin-ro@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
 
-        for u in [&user_active, &user_admin, &tenant_user] {
+        for u in [
+            &user_active,
+            &user_admin,
+            &tenant_user,
+            &tenant_user_application_admin,
+            &tenant_user_application_admin_ro,
+        ] {
             user::create(u.clone()).await.unwrap();
         }
 
@@ -4875,14 +5432,6 @@ pub mod test {
             application::test::create_application(Some(api_key_tenant.tenant_id.unwrap().into()))
                 .await;
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
-        .await
-        .unwrap();
-
         let dp = device_profile::test::create_device_profile(Some(
             api_key_tenant.tenant_id.unwrap().into(),
         ))
@@ -4893,6 +5442,49 @@ pub mod test {
             Some(app.id.into()),
         )
         .await;
+
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user_application_admin.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                user_id: tenant_user_application_admin.id,
+                application_id: dev.application_id,
+                ..Default::default()
+            }],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user_application_admin_ro.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                user_id: tenant_user_application_admin_ro.id,
+                application_id: dev.application_id,
+                is_read_only: true,
+                ..Default::default()
+            }],
+        )
+        .await
+        .unwrap();
 
         let tests = vec![
             // admin user can create list and delete
@@ -4905,7 +5497,29 @@ pub mod test {
                 id: AuthID::User(user_admin.id.into()),
                 ok: true,
             },
-            // tenant user can create list and delete
+            // application admin (not RO) can create, list and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateDeviceQueueAccess::new(Flag::Create, dev.dev_eui),
+                    ValidateDeviceQueueAccess::new(Flag::List, dev.dev_eui),
+                    ValidateDeviceQueueAccess::new(Flag::Delete, dev.dev_eui),
+                ],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
+                ok: true,
+            },
+            // application admin (RO) can list
+            ValidatorTest {
+                validators: vec![ValidateDeviceQueueAccess::new(Flag::List, dev.dev_eui)],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
+                ok: true,
+            },
+            // application admin (RO) can not create
+            ValidatorTest {
+                validators: vec![ValidateDeviceQueueAccess::new(Flag::Create, dev.dev_eui)],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
+                ok: false,
+            },
+            // tenant user can not create, list or delete
             ValidatorTest {
                 validators: vec![
                     ValidateDeviceQueueAccess::new(Flag::Create, dev.dev_eui),
@@ -4913,7 +5527,7 @@ pub mod test {
                     ValidateDeviceQueueAccess::new(Flag::Delete, dev.dev_eui),
                 ],
                 id: AuthID::User(tenant_user.id.into()),
-                ok: true,
+                ok: false,
             },
             // other user can not create, list or delete
             ValidatorTest {
@@ -5062,27 +5676,39 @@ pub mod test {
         .await
         .unwrap();
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_admin.id,
-            is_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_gateway_admin.id,
-            is_gateway_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_gateway_admin.id,
+                is_gateway_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: tenant_a.id,
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: tenant_a.id,
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
 
@@ -5347,6 +5973,16 @@ pub mod test {
             is_active: true,
             ..Default::default()
         };
+        let tenant_user_application_admin = user::User {
+            email: "tenant-user-app-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let tenant_user_application_admin_ro = user::User {
+            email: "tenant-user-app-admin-ro@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
 
         for u in [
             &user_active,
@@ -5355,6 +5991,8 @@ pub mod test {
             &tenant_gateway_admin,
             &tenant_device_admin,
             &tenant_user,
+            &tenant_user_application_admin,
+            &tenant_user_application_admin_ro,
         ] {
             user::create(u.clone()).await.unwrap();
         }
@@ -5385,35 +6023,82 @@ pub mod test {
             application::test::create_application(Some(api_key_tenant.tenant_id.unwrap().into()))
                 .await;
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_admin.id,
-            is_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_device_admin.id,
-            is_device_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_device_admin.id,
+                is_device_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_gateway_admin.id,
-            is_gateway_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_gateway_admin.id,
+                is_gateway_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user_application_admin.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                user_id: tenant_user_application_admin.id,
+                application_id: app.id,
+                ..Default::default()
+            }],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user_application_admin_ro.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                user_id: tenant_user_application_admin_ro.id,
+                application_id: app.id,
+                is_read_only: true,
+                ..Default::default()
+            }],
+        )
         .await
         .unwrap();
 
@@ -5461,6 +6146,20 @@ pub mod test {
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
+            // tenant application admin can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateMulticastGroupsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateMulticastGroupsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateMulticastGroupsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
+                ],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
+                ok: true,
+            },
             // tenant user can list
             ValidatorTest {
                 validators: vec![
@@ -5474,7 +6173,7 @@ pub mod test {
                 id: AuthID::User(tenant_user.id.into()),
                 ok: true,
             },
-            // tenant user can not create
+            // tenant user can create
             ValidatorTest {
                 validators: vec![ValidateMulticastGroupsAccess::new(
                     Flag::Create,
@@ -5482,6 +6181,16 @@ pub mod test {
                     Some(app.id.into()),
                 )],
                 id: AuthID::User(tenant_user.id.into()),
+                ok: false,
+            },
+            // tenant application admin (RO) can not create
+            ValidatorTest {
+                validators: vec![ValidateMulticastGroupsAccess::new(
+                    Flag::Create,
+                    None,
+                    Some(app.id.into()),
+                )],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
                 ok: false,
             },
             // other user can not create or list
@@ -5608,15 +6317,35 @@ pub mod test {
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
-            // tenant user can read
-            ValidatorTest {
-                validators: vec![ValidateMulticastGroupAccess::new(Flag::Read, mg.id.into())],
-                id: AuthID::User(tenant_user.id.into()),
-                ok: true,
-            },
-            // tenant user can not update or delete
+            // tenant application admin (not RO) can read, update and delete
             ValidatorTest {
                 validators: vec![
+                    ValidateMulticastGroupAccess::new(Flag::Read, mg.id.into()),
+                    ValidateMulticastGroupAccess::new(Flag::Update, mg.id.into()),
+                    ValidateMulticastGroupAccess::new(Flag::Delete, mg.id.into()),
+                ],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
+                ok: true,
+            },
+            // tenant application admin (RO) can read
+            ValidatorTest {
+                validators: vec![ValidateMulticastGroupAccess::new(Flag::Read, mg.id.into())],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
+                ok: true,
+            },
+            // tenant applicaiton admin (RO) can not update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateMulticastGroupAccess::new(Flag::Update, mg.id.into()),
+                    ValidateMulticastGroupAccess::new(Flag::Delete, mg.id.into()),
+                ],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
+                ok: false,
+            },
+            // tenant user can not read, update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateMulticastGroupAccess::new(Flag::Read, mg.id.into()),
                     ValidateMulticastGroupAccess::new(Flag::Update, mg.id.into()),
                     ValidateMulticastGroupAccess::new(Flag::Delete, mg.id.into()),
                 ],
@@ -5841,6 +6570,16 @@ pub mod test {
             is_active: true,
             ..Default::default()
         };
+        let tenant_user_application_admin = user::User {
+            email: "tenant-user-app-admin@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
+        let tenant_user_application_admin_ro = user::User {
+            email: "tenant-user-app-admin-ro@user".into(),
+            is_active: true,
+            ..Default::default()
+        };
 
         for u in [
             &user_active,
@@ -5849,6 +6588,8 @@ pub mod test {
             &tenant_gateway_admin,
             &tenant_device_admin,
             &tenant_user,
+            &tenant_user_application_admin,
+            &tenant_user_application_admin_ro,
         ] {
             user::create(u.clone()).await.unwrap();
         }
@@ -5879,35 +6620,82 @@ pub mod test {
             application::test::create_application(Some(api_key_tenant.tenant_id.unwrap().into()))
                 .await;
 
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_admin.id,
-            is_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_device_admin.id,
-            is_device_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_device_admin.id,
+                is_device_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_gateway_admin.id,
-            is_gateway_admin: true,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_gateway_admin.id,
+                is_gateway_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
         .await
         .unwrap();
-        tenant::add_user(tenant::TenantUser {
-            tenant_id: api_key_tenant.tenant_id.unwrap(),
-            user_id: tenant_user.id,
-            ..Default::default()
-        })
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user.id,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user_application_admin.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                user_id: tenant_user_application_admin.id,
+                application_id: app.id,
+                ..Default::default()
+            }],
+        )
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: api_key_tenant.tenant_id.unwrap(),
+                user_id: tenant_user_application_admin_ro.id,
+                ..Default::default()
+            },
+            &[],
+            &[tenant::TenantUserApplication {
+                user_id: tenant_user_application_admin_ro.id,
+                application_id: app.id,
+                is_read_only: true,
+                ..Default::default()
+            }],
+        )
         .await
         .unwrap();
 
@@ -5955,6 +6743,20 @@ pub mod test {
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
+            // tenant application admin (not RO) can create and list
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentsAccess::new(Flag::Create, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(Flag::List, None, Some(app.id.into())),
+                    ValidateFuotaDeploymentsAccess::new(
+                        Flag::List,
+                        Some(app.tenant_id.into()),
+                        None,
+                    ),
+                ],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
+                ok: true,
+            },
             // tenant user can list
             ValidatorTest {
                 validators: vec![
@@ -5976,6 +6778,16 @@ pub mod test {
                     Some(app.id.into()),
                 )],
                 id: AuthID::User(tenant_user.id.into()),
+                ok: false,
+            },
+            // tenant application admin (RO) can not create
+            ValidatorTest {
+                validators: vec![ValidateFuotaDeploymentsAccess::new(
+                    Flag::Create,
+                    None,
+                    Some(app.id.into()),
+                )],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
                 ok: false,
             },
             // other user can not create or list
@@ -6111,14 +6923,33 @@ pub mod test {
                 id: AuthID::User(tenant_device_admin.id.into()),
                 ok: true,
             },
-            // tenant user can read
+            // tenant application admin (not RO) can read, update and delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Read, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::User(tenant_user_application_admin.id.into()),
+                ok: true,
+            },
+            // tenant application admin (RO) can read
             ValidatorTest {
                 validators: vec![ValidateFuotaDeploymentAccess::new(
                     Flag::Read,
                     fuota.id.into(),
                 )],
-                id: AuthID::User(tenant_user.id.into()),
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
                 ok: true,
+            },
+            // tenant applicaiton admin (RO) can not update or delete
+            ValidatorTest {
+                validators: vec![
+                    ValidateFuotaDeploymentAccess::new(Flag::Update, fuota.id.into()),
+                    ValidateFuotaDeploymentAccess::new(Flag::Delete, fuota.id.into()),
+                ],
+                id: AuthID::User(tenant_user_application_admin_ro.id.into()),
+                ok: false,
             },
             // tenant user can not update or delete
             ValidatorTest {

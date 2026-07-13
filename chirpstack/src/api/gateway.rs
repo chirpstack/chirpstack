@@ -210,16 +210,6 @@ impl GatewayService for Gateway {
             Some(Uuid::from_str(&req.multicast_group_id).map_err(|e| e.status())?)
         };
 
-        self.validator
-            .validate(
-                request.extensions(),
-                validator::ValidateGatewaysAccess::new(
-                    validator::Flag::List,
-                    tenant_id.unwrap_or(Uuid::nil()),
-                ),
-            )
-            .await?;
-
         if let Some(mg_id) = mg_id {
             self.validator
                 .validate(

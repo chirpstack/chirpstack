@@ -7,14 +7,17 @@ import type { ListDevicesResponse, DeviceListItem } from "@chirpstack/chirpstack
 import { ListDevicesRequest } from "@chirpstack/chirpstack-api-grpc-web/api/device_pb";
 
 import type { MulticastGroup } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
 import { RemoveDeviceFromMulticastGroupRequest } from "@chirpstack/chirpstack-api-grpc-web/api/multicast_group_pb";
 
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
+import SessionStore from "../../stores/SessionStore";
 
 interface IProps {
+  tenant: Tenant;
   multicastGroup: MulticastGroup;
 }
 
@@ -86,10 +89,17 @@ function ListMulticastGroupDevices(props: IProps) {
     }
   };
 
+  const disabled = !(
+    SessionStore.isAdmin() ||
+    SessionStore.isTenantAdmin(props.tenant.getId()) ||
+    SessionStore.isTenantDeviceAdmin(props.tenant.getId()) ||
+    SessionStore.isApplicationAdmin(props.multicastGroup.getApplicationId())
+  );
+
   return (
     <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Space orientation="horizontal" style={{ float: "right" }}>
-        <Button onClick={removeDevicesFromMulticastGroup} disabled={selectedRowIds.length === 0}>
+        <Button onClick={removeDevicesFromMulticastGroup} disabled={selectedRowIds.length === 0 || disabled}>
           Remove from multicast-group
         </Button>
       </Space>

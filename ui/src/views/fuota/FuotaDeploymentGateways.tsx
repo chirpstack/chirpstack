@@ -12,13 +12,18 @@ import type {
   ListFuotaDeploymentGatewaysResponse,
   FuotaDeploymentGatewayListItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import FuotaStore from "../../stores/FuotaStore";
+import SessionStore from "../../stores/SessionStore";
 
 interface IProps {
   fuotaDeployment: FuotaDeployment;
+  tenant: Tenant;
+  application: Application;
 }
 
 function FuotaDeploymentGateways(props: IProps) {
@@ -67,6 +72,13 @@ function FuotaDeploymentGateways(props: IProps) {
     });
   };
 
+  const disabled = !(
+    SessionStore.isAdmin() ||
+    SessionStore.isTenantAdmin(props.tenant.getId()) ||
+    SessionStore.isTenantDeviceAdmin(props.tenant.getId()) ||
+    SessionStore.isApplicationAdmin(props.application.getId())
+  );
+
   return (
     <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Space orientation="horizontal" style={{ float: "right" }}>
@@ -76,7 +88,7 @@ function FuotaDeploymentGateways(props: IProps) {
           placement="left"
           onConfirm={removeGateways}
         >
-          <Button disabled={selectedRowIds.length === 0}>Remove from FUOTA deployment</Button>
+          <Button disabled={selectedRowIds.length === 0 || disabled}>Remove from FUOTA deployment</Button>
         </Popconfirm>
       </Space>
       <DataTable

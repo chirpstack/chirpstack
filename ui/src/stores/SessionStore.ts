@@ -4,6 +4,8 @@ import type { Metadata } from "grpc-web";
 import { EventEmitter } from "events";
 import { InternalServiceClient } from "@chirpstack/chirpstack-api-grpc-web/api/internal_grpc_web_pb";
 import type {
+  UserApplicationLink,
+  UserDeviceProfileLink,
   UserTenantLink,
   OpenIdConnectLoginRequest,
   OAuth2LoginRequest,
@@ -17,12 +19,16 @@ class SessionStore extends EventEmitter {
   client: InternalServiceClient;
   user?: User;
   tenants: UserTenantLink[];
+  applications: UserApplicationLink[];
+  deviceProfiles: UserDeviceProfileLink[];
 
   constructor() {
     super();
 
     this.client = new InternalServiceClient("");
     this.tenants = [];
+    this.applications = [];
+    this.deviceProfiles = [];
 
     this.fetchProfile(() => {});
   }
@@ -131,6 +137,8 @@ class SessionStore extends EventEmitter {
 
       this.user = resp.getUser();
       this.tenants = resp.getTenantsList();
+      this.applications = resp.getApplicationsList();
+      this.deviceProfiles = resp.getDeviceProfilesList();
       this.emit("change");
 
       callbackFunc();
@@ -173,6 +181,36 @@ class SessionStore extends EventEmitter {
     for (const t of this.tenants) {
       if (t.getTenantId() === tenantId) {
         return t.getIsAdmin() || t.getIsGatewayAdmin();
+      }
+    }
+
+    return false;
+  };
+
+  isApplicationAdmin = (applicationId: string): boolean => {
+    for (const a of this.applications) {
+      if (a.getApplicationId() === applicationId && a.getIsReadOnly() === false) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  isApplicationAdminRo = (applicationId: string): boolean => {
+    for (const a of this.applications) {
+      if (a.getApplicationId() === applicationId && a.getIsReadOnly() === true) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  isDeviceProfileAdmin = (deviceProfileId: string): boolean => {
+    for (const dp of this.deviceProfiles) {
+      if (dp.getDeviceProfileId() === deviceProfileId) {
+        return true;
       }
     }
 

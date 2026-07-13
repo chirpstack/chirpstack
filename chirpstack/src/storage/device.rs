@@ -12,7 +12,10 @@ use uuid::Uuid;
 use chirpstack_api::internal;
 use lrwn::{DevAddr, EUI64};
 
-use super::schema::{application, device, device_profile, multicast_group_device, tenant};
+use super::schema::{
+    application, device, device_profile, multicast_group_device, tenant, tenant_user,
+    tenant_user_application, user,
+};
 use super::{error::Error, fields, get_async_db_conn};
 use crate::api::helpers::FromProto;
 use crate::config;
@@ -218,6 +221,7 @@ pub struct DeviceListItem {
 
 #[derive(Default, Clone)]
 pub struct Filters {
+    pub user_id: Option<Uuid>,
     pub application_id: Option<Uuid>,
     pub multicast_group_id: Option<Uuid>,
     pub device_profile_id: Option<Uuid>,
@@ -630,8 +634,44 @@ pub async fn get_count(filters: &Filters) -> Result<i64, Error> {
     let mut q = device::dsl::device
         .select(dsl::count_star())
         .distinct()
+        .inner_join(application::table)
         .left_join(multicast_group_device::table)
         .into_boxed();
+
+    // Filter by user permissions
+    if let Some(user_id) = &filters.user_id {
+        q = q.filter(dsl::exists(
+            user::table
+                .filter(
+                    user::id
+                        .eq(fields::Uuid::from(user_id))
+                        .and(user::is_active.eq(true)),
+                )
+                .filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::table
+                            .filter(
+                                tenant_user::user_id
+                                    .eq(user::id)
+                                    .and(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                ),
+        ));
+    }
 
     if let Some(application_id) = &filters.application_id {
         q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));
@@ -687,6 +727,7 @@ pub async fn list(
 ) -> Result<Vec<DeviceListItem>, Error> {
     let mut q = device::dsl::device
         .inner_join(device_profile::table)
+        .inner_join(application::table)
         .left_join(multicast_group_device::table)
         .select((
             device::dev_eui,
@@ -704,6 +745,41 @@ pub async fn list(
         ))
         .distinct()
         .into_boxed();
+
+    // Filter by user permissions
+    if let Some(user_id) = &filters.user_id {
+        q = q.filter(dsl::exists(
+            user::table
+                .filter(
+                    user::id
+                        .eq(fields::Uuid::from(user_id))
+                        .and(user::is_active.eq(true)),
+                )
+                .filter(
+                    user::is_admin.eq(true).or(dsl::exists(
+                        tenant_user::table
+                            .filter(
+                                tenant_user::user_id
+                                    .eq(user::id)
+                                    .and(tenant_user::tenant_id.eq(application::tenant_id)),
+                            )
+                            .filter(
+                                tenant_user::is_admin
+                                    .eq(true)
+                                    .or(tenant_user::is_device_admin.eq(true))
+                                    .or(dsl::exists(
+                                        tenant_user_application::table.filter(
+                                            tenant_user_application::user_id.eq(user::id).and(
+                                                tenant_user_application::application_id
+                                                    .eq(application::id),
+                                            ),
+                                        ),
+                                    )),
+                            ),
+                    )),
+                ),
+        ));
+    }
 
     if let Some(application_id) = &filters.application_id {
         q = q.filter(device::dsl::application_id.eq(fields::Uuid::from(application_id)));

@@ -5,9 +5,14 @@ import SessionStore from "../stores/SessionStore";
 
 interface IProps {
   tenantId?: string;
+  applicationId?: string;
+  deviceProfileId?: string;
   isDeviceAdmin?: boolean;
   isGatewayAdmin?: boolean;
   isTenantAdmin?: boolean;
+  isApplicationAdmin?: boolean;
+  isApplicationAdminRo?: boolean;
+  isDeviceProfileAdmin?: boolean;
 }
 
 function Admin(props: PropsWithChildren<IProps>) {
@@ -15,7 +20,14 @@ function Admin(props: PropsWithChildren<IProps>) {
 
   useEffect(() => {
     const setIsAdmin = () => {
-      if (!props.isDeviceAdmin && !props.isGatewayAdmin && !props.isTenantAdmin) {
+      if (
+        !props.isDeviceAdmin &&
+        !props.isGatewayAdmin &&
+        !props.isTenantAdmin &&
+        !props.isApplicationAdmin &&
+        !props.isApplicationAdminRo &&
+        !props.isDeviceProfileAdmin
+      ) {
         setAdmin(SessionStore.isAdmin());
       } else {
         if (props.tenantId === undefined) {
@@ -32,6 +44,35 @@ function Admin(props: PropsWithChildren<IProps>) {
 
         if (props.isGatewayAdmin) {
           setAdmin(SessionStore.isAdmin() || SessionStore.isTenantGatewayAdmin(props.tenantId));
+        }
+
+        if (props.applicationId) {
+          if (props.isApplicationAdmin) {
+            setAdmin(
+              SessionStore.isAdmin() ||
+                SessionStore.isTenantDeviceAdmin(props.tenantId) ||
+                SessionStore.isApplicationAdmin(props.applicationId),
+            );
+          }
+
+          if (props.isApplicationAdminRo) {
+            setAdmin(
+              SessionStore.isAdmin() ||
+                SessionStore.isTenantDeviceAdmin(props.tenantId) ||
+                SessionStore.isApplicationAdmin(props.applicationId) ||
+                SessionStore.isApplicationAdminRo(props.applicationId),
+            );
+          }
+        }
+
+        if (props.deviceProfileId) {
+          if (props.isDeviceProfileAdmin) {
+            setAdmin(
+              SessionStore.isAdmin() ||
+                SessionStore.isTenantDeviceAdmin(props.tenantId) ||
+                SessionStore.isDeviceProfileAdmin(props.deviceProfileId),
+            );
+          }
         }
       }
     };

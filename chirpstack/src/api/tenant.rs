@@ -321,16 +321,43 @@ impl TenantService for Tenant {
             )
             .await?;
 
-        let _ = tenant::add_user(tenant::TenantUser {
+        let tu = tenant::TenantUser {
             user_id,
             tenant_id: tenant_id.into(),
             is_admin: req_user.is_admin,
             is_device_admin: req_user.is_device_admin,
             is_gateway_admin: req_user.is_gateway_admin,
             ..Default::default()
-        })
-        .await
-        .map_err(|e| e.status())?;
+        };
+
+        let dps: Vec<tenant::TenantUserDeviceProfile> = req_user
+            .device_profiles
+            .iter()
+            .map(|dp| tenant::TenantUserDeviceProfile {
+                user_id,
+                device_profile_id: Uuid::from_str(&dp.device_profile_id)
+                    .unwrap_or_default()
+                    .into(),
+                ..Default::default()
+            })
+            .collect();
+
+        let apps: Vec<tenant::TenantUserApplication> = req_user
+            .applications
+            .iter()
+            .map(|app| tenant::TenantUserApplication {
+                user_id,
+                application_id: Uuid::from_str(&app.application_id)
+                    .unwrap_or_default()
+                    .into(),
+                is_read_only: app.is_read_only,
+                ..Default::default()
+            })
+            .collect();
+
+        let _ = tenant::add_user(tu, &dps, &apps)
+            .await
+            .map_err(|e| e.status())?;
 
         let mut resp = Response::new(());
         resp.metadata_mut()
@@ -357,7 +384,7 @@ impl TenantService for Tenant {
             .await?;
 
         let u = user::get(&user_id).await.map_err(|e| e.status())?;
-        let tu = tenant::get_user(&tenant_id, &user_id)
+        let (tu, dps, apps) = tenant::get_user(&tenant_id, &user_id)
             .await
             .map_err(|e| e.status())?;
 
@@ -369,6 +396,19 @@ impl TenantService for Tenant {
                 is_admin: tu.is_admin,
                 is_device_admin: tu.is_device_admin,
                 is_gateway_admin: tu.is_gateway_admin,
+                device_profiles: dps
+                    .iter()
+                    .map(|dp| api::TenantUserDeviceProfile {
+                        device_profile_id: dp.device_profile_id.to_string(),
+                    })
+                    .collect(),
+                applications: apps
+                    .iter()
+                    .map(|a| api::TenantUserApplication {
+                        application_id: a.application_id.to_string(),
+                        is_read_only: a.is_read_only,
+                    })
+                    .collect(),
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&tu.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&tu.updated_at)),
@@ -405,16 +445,43 @@ impl TenantService for Tenant {
             )
             .await?;
 
-        tenant::update_user(tenant::TenantUser {
+        let tu = tenant::TenantUser {
             tenant_id: tenant_id.into(),
             user_id: user_id.into(),
             is_admin: req_user.is_admin,
             is_device_admin: req_user.is_device_admin,
             is_gateway_admin: req_user.is_gateway_admin,
             ..Default::default()
-        })
-        .await
-        .map_err(|e| e.status())?;
+        };
+
+        let dps: Vec<tenant::TenantUserDeviceProfile> = req_user
+            .device_profiles
+            .iter()
+            .map(|dp| tenant::TenantUserDeviceProfile {
+                user_id: user_id.into(),
+                device_profile_id: Uuid::from_str(&dp.device_profile_id)
+                    .unwrap_or_default()
+                    .into(),
+                ..Default::default()
+            })
+            .collect();
+
+        let apps: Vec<tenant::TenantUserApplication> = req_user
+            .applications
+            .iter()
+            .map(|app| tenant::TenantUserApplication {
+                user_id: user_id.into(),
+                application_id: Uuid::from_str(&app.application_id)
+                    .unwrap_or_default()
+                    .into(),
+                is_read_only: app.is_read_only,
+                ..Default::default()
+            })
+            .collect();
+
+        tenant::update_user(tu, &dps, &apps)
+            .await
+            .map_err(|e| e.status())?;
 
         let mut resp = Response::new(());
         resp.metadata_mut()

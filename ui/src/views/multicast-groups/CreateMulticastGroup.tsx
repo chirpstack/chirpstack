@@ -61,7 +61,7 @@ function CreateMulticastGroup(props: IProps) {
         title="Add multicast-group"
       />
       <Card>
-        <MulticastGroupForm initialValues={multicastGroup} onFinish={onFinish} />
+        <MulticastGroupForm initialValues={multicastGroup} tenant={props.tenant} onFinish={onFinish} />
       </Card>
     </Space>
   );

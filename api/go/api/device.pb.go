@@ -1481,7 +1481,11 @@ func (x *GetDeviceActivationResponse) GetJoinServerContext() *common.JoinServerC
 type GetRandomDevAddrRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// DevEUI (EUI64).
-	DevEui        string `protobuf:"bytes,1,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	// Either dev_eui or tenant_id must be set.
+	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	// Tenant ID.
+	// Either dev_eui or tenant_id must be set.
+	TenantId      string `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1519,6 +1523,13 @@ func (*GetRandomDevAddrRequest) Descriptor() ([]byte, []int) {
 func (x *GetRandomDevAddrRequest) GetDevEui() string {
 	if x != nil {
 		return x.DevEui
+	}
+	return ""
+}
+
+func (x *GetRandomDevAddrRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
 	}
 	return ""
 }
@@ -2438,7 +2449,7 @@ var File_api_device_proto protoreflect.FileDescriptor
 
 const file_api_device_proto_rawDesc = "" +
 	"\n" +
-	"\x10api/device.proto\x12\x03api\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xea\x03\n" +
+	"\x10api/device.proto\x12\x03api\x1a\x13common/common.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xea\x03\n" +
 	"\x06Device\x12\x17\n" +
 	"\adev_eui\x18\x01 \x01(\tR\x06devEui\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -2563,9 +2574,10 @@ const file_api_device_proto_rawDesc = "" +
 	"\adev_eui\x18\x01 \x01(\tR\x06devEui\"\xac\x01\n" +
 	"\x1bGetDeviceActivationResponse\x12B\n" +
 	"\x11device_activation\x18\x01 \x01(\v2\x15.api.DeviceActivationR\x10deviceActivation\x12I\n" +
-	"\x13join_server_context\x18\x02 \x01(\v2\x19.common.JoinServerContextR\x11joinServerContext\"2\n" +
+	"\x13join_server_context\x18\x02 \x01(\v2\x19.common.JoinServerContextR\x11joinServerContext\"O\n" +
 	"\x17GetRandomDevAddrRequest\x12\x17\n" +
-	"\adev_eui\x18\x01 \x01(\tR\x06devEui\"5\n" +
+	"\adev_eui\x18\x01 \x01(\tR\x06devEui\x12\x1b\n" +
+	"\ttenant_id\x18\x02 \x01(\tR\btenantId\"5\n" +
 	"\x18GetRandomDevAddrResponse\x12\x19\n" +
 	"\bdev_addr\x18\x01 \x01(\tR\adevAddr\"\xc9\x01\n" +
 	"\x17GetDeviceMetricsRequest\x12\x17\n" +

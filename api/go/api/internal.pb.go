@@ -470,6 +470,123 @@ func (x *UserTenantLink) GetIsGatewayAdmin() bool {
 	return false
 }
 
+type UserApplicationLink struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Created at timestamp.
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// Application ID.
+	ApplicationId string `protobuf:"bytes,2,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	// Is read-only.
+	IsReadOnly    bool `protobuf:"varint,3,opt,name=is_read_only,json=isReadOnly,proto3" json:"is_read_only,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserApplicationLink) Reset() {
+	*x = UserApplicationLink{}
+	mi := &file_api_internal_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserApplicationLink) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserApplicationLink) ProtoMessage() {}
+
+func (x *UserApplicationLink) ProtoReflect() protoreflect.Message {
+	mi := &file_api_internal_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserApplicationLink.ProtoReflect.Descriptor instead.
+func (*UserApplicationLink) Descriptor() ([]byte, []int) {
+	return file_api_internal_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *UserApplicationLink) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *UserApplicationLink) GetApplicationId() string {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return ""
+}
+
+func (x *UserApplicationLink) GetIsReadOnly() bool {
+	if x != nil {
+		return x.IsReadOnly
+	}
+	return false
+}
+
+type UserDeviceProfileLink struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Created at timestamp.
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// Device-profile ID.
+	DeviceProfileId string `protobuf:"bytes,2,opt,name=device_profile_id,json=deviceProfileId,proto3" json:"device_profile_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *UserDeviceProfileLink) Reset() {
+	*x = UserDeviceProfileLink{}
+	mi := &file_api_internal_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserDeviceProfileLink) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserDeviceProfileLink) ProtoMessage() {}
+
+func (x *UserDeviceProfileLink) ProtoReflect() protoreflect.Message {
+	mi := &file_api_internal_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserDeviceProfileLink.ProtoReflect.Descriptor instead.
+func (*UserDeviceProfileLink) Descriptor() ([]byte, []int) {
+	return file_api_internal_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *UserDeviceProfileLink) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *UserDeviceProfileLink) GetDeviceProfileId() string {
+	if x != nil {
+		return x.DeviceProfileId
+	}
+	return ""
+}
+
 type LoginRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Email of the user.
@@ -482,7 +599,7 @@ type LoginRequest struct {
 
 func (x *LoginRequest) Reset() {
 	*x = LoginRequest{}
-	mi := &file_api_internal_proto_msgTypes[7]
+	mi := &file_api_internal_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -494,7 +611,7 @@ func (x *LoginRequest) String() string {
 func (*LoginRequest) ProtoMessage() {}
 
 func (x *LoginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[7]
+	mi := &file_api_internal_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -507,7 +624,7 @@ func (x *LoginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginRequest.ProtoReflect.Descriptor instead.
 func (*LoginRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{7}
+	return file_api_internal_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *LoginRequest) GetEmail() string {
@@ -534,7 +651,7 @@ type LoginResponse struct {
 
 func (x *LoginResponse) Reset() {
 	*x = LoginResponse{}
-	mi := &file_api_internal_proto_msgTypes[8]
+	mi := &file_api_internal_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -546,7 +663,7 @@ func (x *LoginResponse) String() string {
 func (*LoginResponse) ProtoMessage() {}
 
 func (x *LoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[8]
+	mi := &file_api_internal_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -559,7 +676,7 @@ func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
 func (*LoginResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{8}
+	return file_api_internal_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *LoginResponse) GetJwt() string {
@@ -574,14 +691,18 @@ type ProfileResponse struct {
 	// User object.
 	User *User `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 	// Tenants to which the user is associated.
-	Tenants       []*UserTenantLink `protobuf:"bytes,3,rep,name=tenants,proto3" json:"tenants,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Tenants []*UserTenantLink `protobuf:"bytes,3,rep,name=tenants,proto3" json:"tenants,omitempty"`
+	// Applications to which the user is associated.
+	Applications []*UserApplicationLink `protobuf:"bytes,4,rep,name=applications,proto3" json:"applications,omitempty"`
+	// Device-profiles to which the user is associated.
+	DeviceProfiles []*UserDeviceProfileLink `protobuf:"bytes,5,rep,name=device_profiles,json=deviceProfiles,proto3" json:"device_profiles,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *ProfileResponse) Reset() {
 	*x = ProfileResponse{}
-	mi := &file_api_internal_proto_msgTypes[9]
+	mi := &file_api_internal_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -593,7 +714,7 @@ func (x *ProfileResponse) String() string {
 func (*ProfileResponse) ProtoMessage() {}
 
 func (x *ProfileResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[9]
+	mi := &file_api_internal_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -606,7 +727,7 @@ func (x *ProfileResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProfileResponse.ProtoReflect.Descriptor instead.
 func (*ProfileResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{9}
+	return file_api_internal_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ProfileResponse) GetUser() *User {
@@ -619,6 +740,20 @@ func (x *ProfileResponse) GetUser() *User {
 func (x *ProfileResponse) GetTenants() []*UserTenantLink {
 	if x != nil {
 		return x.Tenants
+	}
+	return nil
+}
+
+func (x *ProfileResponse) GetApplications() []*UserApplicationLink {
+	if x != nil {
+		return x.Applications
+	}
+	return nil
+}
+
+func (x *ProfileResponse) GetDeviceProfiles() []*UserDeviceProfileLink {
+	if x != nil {
+		return x.DeviceProfiles
 	}
 	return nil
 }
@@ -638,7 +773,7 @@ type GlobalSearchRequest struct {
 
 func (x *GlobalSearchRequest) Reset() {
 	*x = GlobalSearchRequest{}
-	mi := &file_api_internal_proto_msgTypes[10]
+	mi := &file_api_internal_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -650,7 +785,7 @@ func (x *GlobalSearchRequest) String() string {
 func (*GlobalSearchRequest) ProtoMessage() {}
 
 func (x *GlobalSearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[10]
+	mi := &file_api_internal_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -663,7 +798,7 @@ func (x *GlobalSearchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GlobalSearchRequest.ProtoReflect.Descriptor instead.
 func (*GlobalSearchRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{10}
+	return file_api_internal_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GlobalSearchRequest) GetSearch() string {
@@ -696,7 +831,7 @@ type GlobalSearchResponse struct {
 
 func (x *GlobalSearchResponse) Reset() {
 	*x = GlobalSearchResponse{}
-	mi := &file_api_internal_proto_msgTypes[11]
+	mi := &file_api_internal_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -708,7 +843,7 @@ func (x *GlobalSearchResponse) String() string {
 func (*GlobalSearchResponse) ProtoMessage() {}
 
 func (x *GlobalSearchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[11]
+	mi := &file_api_internal_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -721,7 +856,7 @@ func (x *GlobalSearchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GlobalSearchResponse.ProtoReflect.Descriptor instead.
 func (*GlobalSearchResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{11}
+	return file_api_internal_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GlobalSearchResponse) GetResult() []*GlobalSearchResult {
@@ -759,7 +894,7 @@ type GlobalSearchResult struct {
 
 func (x *GlobalSearchResult) Reset() {
 	*x = GlobalSearchResult{}
-	mi := &file_api_internal_proto_msgTypes[12]
+	mi := &file_api_internal_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -771,7 +906,7 @@ func (x *GlobalSearchResult) String() string {
 func (*GlobalSearchResult) ProtoMessage() {}
 
 func (x *GlobalSearchResult) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[12]
+	mi := &file_api_internal_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -784,7 +919,7 @@ func (x *GlobalSearchResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GlobalSearchResult.ProtoReflect.Descriptor instead.
 func (*GlobalSearchResult) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{12}
+	return file_api_internal_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GlobalSearchResult) GetKind() string {
@@ -873,7 +1008,7 @@ type SettingsResponse struct {
 
 func (x *SettingsResponse) Reset() {
 	*x = SettingsResponse{}
-	mi := &file_api_internal_proto_msgTypes[13]
+	mi := &file_api_internal_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -885,7 +1020,7 @@ func (x *SettingsResponse) String() string {
 func (*SettingsResponse) ProtoMessage() {}
 
 func (x *SettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[13]
+	mi := &file_api_internal_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -898,7 +1033,7 @@ func (x *SettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SettingsResponse.ProtoReflect.Descriptor instead.
 func (*SettingsResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{13}
+	return file_api_internal_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *SettingsResponse) GetOpenidConnect() *OpenIdConnect {
@@ -947,7 +1082,7 @@ type OpenIdConnect struct {
 
 func (x *OpenIdConnect) Reset() {
 	*x = OpenIdConnect{}
-	mi := &file_api_internal_proto_msgTypes[14]
+	mi := &file_api_internal_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -959,7 +1094,7 @@ func (x *OpenIdConnect) String() string {
 func (*OpenIdConnect) ProtoMessage() {}
 
 func (x *OpenIdConnect) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[14]
+	mi := &file_api_internal_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -972,7 +1107,7 @@ func (x *OpenIdConnect) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenIdConnect.ProtoReflect.Descriptor instead.
 func (*OpenIdConnect) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{14}
+	return file_api_internal_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *OpenIdConnect) GetEnabled() bool {
@@ -1028,7 +1163,7 @@ type OAuth2 struct {
 
 func (x *OAuth2) Reset() {
 	*x = OAuth2{}
-	mi := &file_api_internal_proto_msgTypes[15]
+	mi := &file_api_internal_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1040,7 +1175,7 @@ func (x *OAuth2) String() string {
 func (*OAuth2) ProtoMessage() {}
 
 func (x *OAuth2) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[15]
+	mi := &file_api_internal_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1053,7 +1188,7 @@ func (x *OAuth2) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OAuth2.ProtoReflect.Descriptor instead.
 func (*OAuth2) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{15}
+	return file_api_internal_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *OAuth2) GetEnabled() bool {
@@ -1103,7 +1238,7 @@ type OpenIdConnectLoginRequest struct {
 
 func (x *OpenIdConnectLoginRequest) Reset() {
 	*x = OpenIdConnectLoginRequest{}
-	mi := &file_api_internal_proto_msgTypes[16]
+	mi := &file_api_internal_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1115,7 +1250,7 @@ func (x *OpenIdConnectLoginRequest) String() string {
 func (*OpenIdConnectLoginRequest) ProtoMessage() {}
 
 func (x *OpenIdConnectLoginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[16]
+	mi := &file_api_internal_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1128,7 +1263,7 @@ func (x *OpenIdConnectLoginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenIdConnectLoginRequest.ProtoReflect.Descriptor instead.
 func (*OpenIdConnectLoginRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{16}
+	return file_api_internal_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *OpenIdConnectLoginRequest) GetCode() string {
@@ -1155,7 +1290,7 @@ type OpenIdConnectLoginResponse struct {
 
 func (x *OpenIdConnectLoginResponse) Reset() {
 	*x = OpenIdConnectLoginResponse{}
-	mi := &file_api_internal_proto_msgTypes[17]
+	mi := &file_api_internal_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1167,7 +1302,7 @@ func (x *OpenIdConnectLoginResponse) String() string {
 func (*OpenIdConnectLoginResponse) ProtoMessage() {}
 
 func (x *OpenIdConnectLoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[17]
+	mi := &file_api_internal_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1180,7 +1315,7 @@ func (x *OpenIdConnectLoginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OpenIdConnectLoginResponse.ProtoReflect.Descriptor instead.
 func (*OpenIdConnectLoginResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{17}
+	return file_api_internal_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *OpenIdConnectLoginResponse) GetToken() string {
@@ -1202,7 +1337,7 @@ type OAuth2LoginRequest struct {
 
 func (x *OAuth2LoginRequest) Reset() {
 	*x = OAuth2LoginRequest{}
-	mi := &file_api_internal_proto_msgTypes[18]
+	mi := &file_api_internal_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1214,7 +1349,7 @@ func (x *OAuth2LoginRequest) String() string {
 func (*OAuth2LoginRequest) ProtoMessage() {}
 
 func (x *OAuth2LoginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[18]
+	mi := &file_api_internal_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1227,7 +1362,7 @@ func (x *OAuth2LoginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OAuth2LoginRequest.ProtoReflect.Descriptor instead.
 func (*OAuth2LoginRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{18}
+	return file_api_internal_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *OAuth2LoginRequest) GetCode() string {
@@ -1254,7 +1389,7 @@ type OAuth2LoginResponse struct {
 
 func (x *OAuth2LoginResponse) Reset() {
 	*x = OAuth2LoginResponse{}
-	mi := &file_api_internal_proto_msgTypes[19]
+	mi := &file_api_internal_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1266,7 +1401,7 @@ func (x *OAuth2LoginResponse) String() string {
 func (*OAuth2LoginResponse) ProtoMessage() {}
 
 func (x *OAuth2LoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[19]
+	mi := &file_api_internal_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1279,7 +1414,7 @@ func (x *OAuth2LoginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OAuth2LoginResponse.ProtoReflect.Descriptor instead.
 func (*OAuth2LoginResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{19}
+	return file_api_internal_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *OAuth2LoginResponse) GetToken() string {
@@ -1299,7 +1434,7 @@ type GetDevicesSummaryRequest struct {
 
 func (x *GetDevicesSummaryRequest) Reset() {
 	*x = GetDevicesSummaryRequest{}
-	mi := &file_api_internal_proto_msgTypes[20]
+	mi := &file_api_internal_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1311,7 +1446,7 @@ func (x *GetDevicesSummaryRequest) String() string {
 func (*GetDevicesSummaryRequest) ProtoMessage() {}
 
 func (x *GetDevicesSummaryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[20]
+	mi := &file_api_internal_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1324,7 +1459,7 @@ func (x *GetDevicesSummaryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDevicesSummaryRequest.ProtoReflect.Descriptor instead.
 func (*GetDevicesSummaryRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{20}
+	return file_api_internal_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetDevicesSummaryRequest) GetTenantId() string {
@@ -1351,7 +1486,7 @@ type GetDevicesSummaryResponse struct {
 
 func (x *GetDevicesSummaryResponse) Reset() {
 	*x = GetDevicesSummaryResponse{}
-	mi := &file_api_internal_proto_msgTypes[21]
+	mi := &file_api_internal_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1363,7 +1498,7 @@ func (x *GetDevicesSummaryResponse) String() string {
 func (*GetDevicesSummaryResponse) ProtoMessage() {}
 
 func (x *GetDevicesSummaryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[21]
+	mi := &file_api_internal_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1376,7 +1511,7 @@ func (x *GetDevicesSummaryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDevicesSummaryResponse.ProtoReflect.Descriptor instead.
 func (*GetDevicesSummaryResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{21}
+	return file_api_internal_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetDevicesSummaryResponse) GetActiveCount() uint32 {
@@ -1417,7 +1552,7 @@ type GetGatewaysSummaryRequest struct {
 
 func (x *GetGatewaysSummaryRequest) Reset() {
 	*x = GetGatewaysSummaryRequest{}
-	mi := &file_api_internal_proto_msgTypes[22]
+	mi := &file_api_internal_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1429,7 +1564,7 @@ func (x *GetGatewaysSummaryRequest) String() string {
 func (*GetGatewaysSummaryRequest) ProtoMessage() {}
 
 func (x *GetGatewaysSummaryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[22]
+	mi := &file_api_internal_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1442,7 +1577,7 @@ func (x *GetGatewaysSummaryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGatewaysSummaryRequest.ProtoReflect.Descriptor instead.
 func (*GetGatewaysSummaryRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{22}
+	return file_api_internal_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GetGatewaysSummaryRequest) GetTenantId() string {
@@ -1466,7 +1601,7 @@ type GetGatewaysSummaryResponse struct {
 
 func (x *GetGatewaysSummaryResponse) Reset() {
 	*x = GetGatewaysSummaryResponse{}
-	mi := &file_api_internal_proto_msgTypes[23]
+	mi := &file_api_internal_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1478,7 +1613,7 @@ func (x *GetGatewaysSummaryResponse) String() string {
 func (*GetGatewaysSummaryResponse) ProtoMessage() {}
 
 func (x *GetGatewaysSummaryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[23]
+	mi := &file_api_internal_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1491,7 +1626,7 @@ func (x *GetGatewaysSummaryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGatewaysSummaryResponse.ProtoReflect.Descriptor instead.
 func (*GetGatewaysSummaryResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{23}
+	return file_api_internal_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *GetGatewaysSummaryResponse) GetOnlineCount() uint32 {
@@ -1533,7 +1668,7 @@ type LogItem struct {
 
 func (x *LogItem) Reset() {
 	*x = LogItem{}
-	mi := &file_api_internal_proto_msgTypes[24]
+	mi := &file_api_internal_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1545,7 +1680,7 @@ func (x *LogItem) String() string {
 func (*LogItem) ProtoMessage() {}
 
 func (x *LogItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[24]
+	mi := &file_api_internal_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1558,7 +1693,7 @@ func (x *LogItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogItem.ProtoReflect.Descriptor instead.
 func (*LogItem) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{24}
+	return file_api_internal_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *LogItem) GetId() string {
@@ -1606,7 +1741,7 @@ type StreamGatewayFramesRequest struct {
 
 func (x *StreamGatewayFramesRequest) Reset() {
 	*x = StreamGatewayFramesRequest{}
-	mi := &file_api_internal_proto_msgTypes[25]
+	mi := &file_api_internal_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1618,7 +1753,7 @@ func (x *StreamGatewayFramesRequest) String() string {
 func (*StreamGatewayFramesRequest) ProtoMessage() {}
 
 func (x *StreamGatewayFramesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[25]
+	mi := &file_api_internal_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1631,7 +1766,7 @@ func (x *StreamGatewayFramesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamGatewayFramesRequest.ProtoReflect.Descriptor instead.
 func (*StreamGatewayFramesRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{25}
+	return file_api_internal_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *StreamGatewayFramesRequest) GetGatewayId() string {
@@ -1651,7 +1786,7 @@ type StreamDeviceFramesRequest struct {
 
 func (x *StreamDeviceFramesRequest) Reset() {
 	*x = StreamDeviceFramesRequest{}
-	mi := &file_api_internal_proto_msgTypes[26]
+	mi := &file_api_internal_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1663,7 +1798,7 @@ func (x *StreamDeviceFramesRequest) String() string {
 func (*StreamDeviceFramesRequest) ProtoMessage() {}
 
 func (x *StreamDeviceFramesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[26]
+	mi := &file_api_internal_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1676,7 +1811,7 @@ func (x *StreamDeviceFramesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamDeviceFramesRequest.ProtoReflect.Descriptor instead.
 func (*StreamDeviceFramesRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{26}
+	return file_api_internal_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *StreamDeviceFramesRequest) GetDevEui() string {
@@ -1696,7 +1831,7 @@ type StreamDeviceEventsRequest struct {
 
 func (x *StreamDeviceEventsRequest) Reset() {
 	*x = StreamDeviceEventsRequest{}
-	mi := &file_api_internal_proto_msgTypes[27]
+	mi := &file_api_internal_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1708,7 +1843,7 @@ func (x *StreamDeviceEventsRequest) String() string {
 func (*StreamDeviceEventsRequest) ProtoMessage() {}
 
 func (x *StreamDeviceEventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[27]
+	mi := &file_api_internal_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1721,7 +1856,7 @@ func (x *StreamDeviceEventsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamDeviceEventsRequest.ProtoReflect.Descriptor instead.
 func (*StreamDeviceEventsRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{27}
+	return file_api_internal_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *StreamDeviceEventsRequest) GetDevEui() string {
@@ -1741,7 +1876,7 @@ type ListRegionsResponse struct {
 
 func (x *ListRegionsResponse) Reset() {
 	*x = ListRegionsResponse{}
-	mi := &file_api_internal_proto_msgTypes[28]
+	mi := &file_api_internal_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1753,7 +1888,7 @@ func (x *ListRegionsResponse) String() string {
 func (*ListRegionsResponse) ProtoMessage() {}
 
 func (x *ListRegionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[28]
+	mi := &file_api_internal_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1766,7 +1901,7 @@ func (x *ListRegionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRegionsResponse.ProtoReflect.Descriptor instead.
 func (*ListRegionsResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{28}
+	return file_api_internal_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ListRegionsResponse) GetRegions() []*RegionListItem {
@@ -1790,7 +1925,7 @@ type RegionListItem struct {
 
 func (x *RegionListItem) Reset() {
 	*x = RegionListItem{}
-	mi := &file_api_internal_proto_msgTypes[29]
+	mi := &file_api_internal_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1802,7 +1937,7 @@ func (x *RegionListItem) String() string {
 func (*RegionListItem) ProtoMessage() {}
 
 func (x *RegionListItem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[29]
+	mi := &file_api_internal_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1815,7 +1950,7 @@ func (x *RegionListItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegionListItem.ProtoReflect.Descriptor instead.
 func (*RegionListItem) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{29}
+	return file_api_internal_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *RegionListItem) GetId() string {
@@ -1849,7 +1984,7 @@ type GetRegionRequest struct {
 
 func (x *GetRegionRequest) Reset() {
 	*x = GetRegionRequest{}
-	mi := &file_api_internal_proto_msgTypes[30]
+	mi := &file_api_internal_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1861,7 +1996,7 @@ func (x *GetRegionRequest) String() string {
 func (*GetRegionRequest) ProtoMessage() {}
 
 func (x *GetRegionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[30]
+	mi := &file_api_internal_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1874,7 +2009,7 @@ func (x *GetRegionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRegionRequest.ProtoReflect.Descriptor instead.
 func (*GetRegionRequest) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{30}
+	return file_api_internal_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetRegionRequest) GetId() string {
@@ -1914,7 +2049,7 @@ type GetRegionResponse struct {
 
 func (x *GetRegionResponse) Reset() {
 	*x = GetRegionResponse{}
-	mi := &file_api_internal_proto_msgTypes[31]
+	mi := &file_api_internal_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1926,7 +2061,7 @@ func (x *GetRegionResponse) String() string {
 func (*GetRegionResponse) ProtoMessage() {}
 
 func (x *GetRegionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[31]
+	mi := &file_api_internal_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1939,7 +2074,7 @@ func (x *GetRegionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRegionResponse.ProtoReflect.Descriptor instead.
 func (*GetRegionResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{31}
+	return file_api_internal_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetRegionResponse) GetId() string {
@@ -2031,7 +2166,7 @@ type RegionChannel struct {
 
 func (x *RegionChannel) Reset() {
 	*x = RegionChannel{}
-	mi := &file_api_internal_proto_msgTypes[32]
+	mi := &file_api_internal_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2043,7 +2178,7 @@ func (x *RegionChannel) String() string {
 func (*RegionChannel) ProtoMessage() {}
 
 func (x *RegionChannel) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[32]
+	mi := &file_api_internal_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2056,7 +2191,7 @@ func (x *RegionChannel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegionChannel.ProtoReflect.Descriptor instead.
 func (*RegionChannel) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{32}
+	return file_api_internal_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *RegionChannel) GetFrequency() uint32 {
@@ -2083,7 +2218,7 @@ type GetVersionResponse struct {
 
 func (x *GetVersionResponse) Reset() {
 	*x = GetVersionResponse{}
-	mi := &file_api_internal_proto_msgTypes[33]
+	mi := &file_api_internal_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2095,7 +2230,7 @@ func (x *GetVersionResponse) String() string {
 func (*GetVersionResponse) ProtoMessage() {}
 
 func (x *GetVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_internal_proto_msgTypes[33]
+	mi := &file_api_internal_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2108,7 +2243,7 @@ func (x *GetVersionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetVersionResponse.ProtoReflect.Descriptor instead.
 func (*GetVersionResponse) Descriptor() ([]byte, []int) {
-	return file_api_internal_proto_rawDescGZIP(), []int{33}
+	return file_api_internal_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *GetVersionResponse) GetVersion() string {
@@ -2154,15 +2289,27 @@ const file_api_internal_proto_rawDesc = "" +
 	"\ttenant_id\x18\x03 \x01(\tR\btenantId\x12\x19\n" +
 	"\bis_admin\x18\x04 \x01(\bR\aisAdmin\x12&\n" +
 	"\x0fis_device_admin\x18\x05 \x01(\bR\risDeviceAdmin\x12(\n" +
-	"\x10is_gateway_admin\x18\x06 \x01(\bR\x0eisGatewayAdmin\"@\n" +
+	"\x10is_gateway_admin\x18\x06 \x01(\bR\x0eisGatewayAdmin\"\x99\x01\n" +
+	"\x13UserApplicationLink\x129\n" +
+	"\n" +
+	"created_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12%\n" +
+	"\x0eapplication_id\x18\x02 \x01(\tR\rapplicationId\x12 \n" +
+	"\fis_read_only\x18\x03 \x01(\bR\n" +
+	"isReadOnly\"~\n" +
+	"\x15UserDeviceProfileLink\x129\n" +
+	"\n" +
+	"created_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12*\n" +
+	"\x11device_profile_id\x18\x02 \x01(\tR\x0fdeviceProfileId\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"!\n" +
 	"\rLoginResponse\x12\x10\n" +
-	"\x03jwt\x18\x01 \x01(\tR\x03jwt\"_\n" +
+	"\x03jwt\x18\x01 \x01(\tR\x03jwt\"\xe2\x01\n" +
 	"\x0fProfileResponse\x12\x1d\n" +
 	"\x04user\x18\x01 \x01(\v2\t.api.UserR\x04user\x12-\n" +
-	"\atenants\x18\x03 \x03(\v2\x13.api.UserTenantLinkR\atenants\"[\n" +
+	"\atenants\x18\x03 \x03(\v2\x13.api.UserTenantLinkR\atenants\x12<\n" +
+	"\fapplications\x18\x04 \x03(\v2\x18.api.UserApplicationLinkR\fapplications\x12C\n" +
+	"\x0fdevice_profiles\x18\x05 \x03(\v2\x1a.api.UserDeviceProfileLinkR\x0edeviceProfiles\"[\n" +
 	"\x13GlobalSearchRequest\x12\x16\n" +
 	"\x06search\x18\x01 \x01(\tR\x06search\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x03R\x05limit\x12\x16\n" +
@@ -2309,7 +2456,7 @@ func file_api_internal_proto_rawDescGZIP() []byte {
 	return file_api_internal_proto_rawDescData
 }
 
-var file_api_internal_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
+var file_api_internal_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_api_internal_proto_goTypes = []any{
 	(*ApiKey)(nil),                     // 0: api.ApiKey
 	(*CreateApiKeyRequest)(nil),        // 1: api.CreateApiKeyRequest
@@ -2318,96 +2465,102 @@ var file_api_internal_proto_goTypes = []any{
 	(*ListApiKeysRequest)(nil),         // 4: api.ListApiKeysRequest
 	(*ListApiKeysResponse)(nil),        // 5: api.ListApiKeysResponse
 	(*UserTenantLink)(nil),             // 6: api.UserTenantLink
-	(*LoginRequest)(nil),               // 7: api.LoginRequest
-	(*LoginResponse)(nil),              // 8: api.LoginResponse
-	(*ProfileResponse)(nil),            // 9: api.ProfileResponse
-	(*GlobalSearchRequest)(nil),        // 10: api.GlobalSearchRequest
-	(*GlobalSearchResponse)(nil),       // 11: api.GlobalSearchResponse
-	(*GlobalSearchResult)(nil),         // 12: api.GlobalSearchResult
-	(*SettingsResponse)(nil),           // 13: api.SettingsResponse
-	(*OpenIdConnect)(nil),              // 14: api.OpenIdConnect
-	(*OAuth2)(nil),                     // 15: api.OAuth2
-	(*OpenIdConnectLoginRequest)(nil),  // 16: api.OpenIdConnectLoginRequest
-	(*OpenIdConnectLoginResponse)(nil), // 17: api.OpenIdConnectLoginResponse
-	(*OAuth2LoginRequest)(nil),         // 18: api.OAuth2LoginRequest
-	(*OAuth2LoginResponse)(nil),        // 19: api.OAuth2LoginResponse
-	(*GetDevicesSummaryRequest)(nil),   // 20: api.GetDevicesSummaryRequest
-	(*GetDevicesSummaryResponse)(nil),  // 21: api.GetDevicesSummaryResponse
-	(*GetGatewaysSummaryRequest)(nil),  // 22: api.GetGatewaysSummaryRequest
-	(*GetGatewaysSummaryResponse)(nil), // 23: api.GetGatewaysSummaryResponse
-	(*LogItem)(nil),                    // 24: api.LogItem
-	(*StreamGatewayFramesRequest)(nil), // 25: api.StreamGatewayFramesRequest
-	(*StreamDeviceFramesRequest)(nil),  // 26: api.StreamDeviceFramesRequest
-	(*StreamDeviceEventsRequest)(nil),  // 27: api.StreamDeviceEventsRequest
-	(*ListRegionsResponse)(nil),        // 28: api.ListRegionsResponse
-	(*RegionListItem)(nil),             // 29: api.RegionListItem
-	(*GetRegionRequest)(nil),           // 30: api.GetRegionRequest
-	(*GetRegionResponse)(nil),          // 31: api.GetRegionResponse
-	(*RegionChannel)(nil),              // 32: api.RegionChannel
-	(*GetVersionResponse)(nil),         // 33: api.GetVersionResponse
-	nil,                                // 34: api.GetDevicesSummaryResponse.DrCountEntry
-	nil,                                // 35: api.LogItem.PropertiesEntry
-	(*timestamppb.Timestamp)(nil),      // 36: google.protobuf.Timestamp
-	(*User)(nil),                       // 37: api.User
-	(common.Region)(0),                 // 38: common.Region
-	(*emptypb.Empty)(nil),              // 39: google.protobuf.Empty
+	(*UserApplicationLink)(nil),        // 7: api.UserApplicationLink
+	(*UserDeviceProfileLink)(nil),      // 8: api.UserDeviceProfileLink
+	(*LoginRequest)(nil),               // 9: api.LoginRequest
+	(*LoginResponse)(nil),              // 10: api.LoginResponse
+	(*ProfileResponse)(nil),            // 11: api.ProfileResponse
+	(*GlobalSearchRequest)(nil),        // 12: api.GlobalSearchRequest
+	(*GlobalSearchResponse)(nil),       // 13: api.GlobalSearchResponse
+	(*GlobalSearchResult)(nil),         // 14: api.GlobalSearchResult
+	(*SettingsResponse)(nil),           // 15: api.SettingsResponse
+	(*OpenIdConnect)(nil),              // 16: api.OpenIdConnect
+	(*OAuth2)(nil),                     // 17: api.OAuth2
+	(*OpenIdConnectLoginRequest)(nil),  // 18: api.OpenIdConnectLoginRequest
+	(*OpenIdConnectLoginResponse)(nil), // 19: api.OpenIdConnectLoginResponse
+	(*OAuth2LoginRequest)(nil),         // 20: api.OAuth2LoginRequest
+	(*OAuth2LoginResponse)(nil),        // 21: api.OAuth2LoginResponse
+	(*GetDevicesSummaryRequest)(nil),   // 22: api.GetDevicesSummaryRequest
+	(*GetDevicesSummaryResponse)(nil),  // 23: api.GetDevicesSummaryResponse
+	(*GetGatewaysSummaryRequest)(nil),  // 24: api.GetGatewaysSummaryRequest
+	(*GetGatewaysSummaryResponse)(nil), // 25: api.GetGatewaysSummaryResponse
+	(*LogItem)(nil),                    // 26: api.LogItem
+	(*StreamGatewayFramesRequest)(nil), // 27: api.StreamGatewayFramesRequest
+	(*StreamDeviceFramesRequest)(nil),  // 28: api.StreamDeviceFramesRequest
+	(*StreamDeviceEventsRequest)(nil),  // 29: api.StreamDeviceEventsRequest
+	(*ListRegionsResponse)(nil),        // 30: api.ListRegionsResponse
+	(*RegionListItem)(nil),             // 31: api.RegionListItem
+	(*GetRegionRequest)(nil),           // 32: api.GetRegionRequest
+	(*GetRegionResponse)(nil),          // 33: api.GetRegionResponse
+	(*RegionChannel)(nil),              // 34: api.RegionChannel
+	(*GetVersionResponse)(nil),         // 35: api.GetVersionResponse
+	nil,                                // 36: api.GetDevicesSummaryResponse.DrCountEntry
+	nil,                                // 37: api.LogItem.PropertiesEntry
+	(*timestamppb.Timestamp)(nil),      // 38: google.protobuf.Timestamp
+	(*User)(nil),                       // 39: api.User
+	(common.Region)(0),                 // 40: common.Region
+	(*emptypb.Empty)(nil),              // 41: google.protobuf.Empty
 }
 var file_api_internal_proto_depIdxs = []int32{
 	0,  // 0: api.CreateApiKeyRequest.api_key:type_name -> api.ApiKey
 	0,  // 1: api.ListApiKeysResponse.result:type_name -> api.ApiKey
-	36, // 2: api.UserTenantLink.created_at:type_name -> google.protobuf.Timestamp
-	36, // 3: api.UserTenantLink.updated_at:type_name -> google.protobuf.Timestamp
-	37, // 4: api.ProfileResponse.user:type_name -> api.User
-	6,  // 5: api.ProfileResponse.tenants:type_name -> api.UserTenantLink
-	12, // 6: api.GlobalSearchResponse.result:type_name -> api.GlobalSearchResult
-	14, // 7: api.SettingsResponse.openid_connect:type_name -> api.OpenIdConnect
-	15, // 8: api.SettingsResponse.oauth2:type_name -> api.OAuth2
-	34, // 9: api.GetDevicesSummaryResponse.dr_count:type_name -> api.GetDevicesSummaryResponse.DrCountEntry
-	36, // 10: api.LogItem.time:type_name -> google.protobuf.Timestamp
-	35, // 11: api.LogItem.properties:type_name -> api.LogItem.PropertiesEntry
-	29, // 12: api.ListRegionsResponse.regions:type_name -> api.RegionListItem
-	38, // 13: api.RegionListItem.region:type_name -> common.Region
-	38, // 14: api.GetRegionResponse.region:type_name -> common.Region
-	32, // 15: api.GetRegionResponse.uplink_channels:type_name -> api.RegionChannel
-	7,  // 16: api.InternalService.Login:input_type -> api.LoginRequest
-	39, // 17: api.InternalService.Profile:input_type -> google.protobuf.Empty
-	10, // 18: api.InternalService.GlobalSearch:input_type -> api.GlobalSearchRequest
-	1,  // 19: api.InternalService.CreateApiKey:input_type -> api.CreateApiKeyRequest
-	3,  // 20: api.InternalService.DeleteApiKey:input_type -> api.DeleteApiKeyRequest
-	4,  // 21: api.InternalService.ListApiKeys:input_type -> api.ListApiKeysRequest
-	39, // 22: api.InternalService.Settings:input_type -> google.protobuf.Empty
-	16, // 23: api.InternalService.OpenIdConnectLogin:input_type -> api.OpenIdConnectLoginRequest
-	18, // 24: api.InternalService.OAuth2Login:input_type -> api.OAuth2LoginRequest
-	20, // 25: api.InternalService.GetDevicesSummary:input_type -> api.GetDevicesSummaryRequest
-	22, // 26: api.InternalService.GetGatewaysSummary:input_type -> api.GetGatewaysSummaryRequest
-	25, // 27: api.InternalService.StreamGatewayFrames:input_type -> api.StreamGatewayFramesRequest
-	26, // 28: api.InternalService.StreamDeviceFrames:input_type -> api.StreamDeviceFramesRequest
-	27, // 29: api.InternalService.StreamDeviceEvents:input_type -> api.StreamDeviceEventsRequest
-	39, // 30: api.InternalService.ListRegions:input_type -> google.protobuf.Empty
-	30, // 31: api.InternalService.GetRegion:input_type -> api.GetRegionRequest
-	39, // 32: api.InternalService.GetVersion:input_type -> google.protobuf.Empty
-	8,  // 33: api.InternalService.Login:output_type -> api.LoginResponse
-	9,  // 34: api.InternalService.Profile:output_type -> api.ProfileResponse
-	11, // 35: api.InternalService.GlobalSearch:output_type -> api.GlobalSearchResponse
-	2,  // 36: api.InternalService.CreateApiKey:output_type -> api.CreateApiKeyResponse
-	39, // 37: api.InternalService.DeleteApiKey:output_type -> google.protobuf.Empty
-	5,  // 38: api.InternalService.ListApiKeys:output_type -> api.ListApiKeysResponse
-	13, // 39: api.InternalService.Settings:output_type -> api.SettingsResponse
-	17, // 40: api.InternalService.OpenIdConnectLogin:output_type -> api.OpenIdConnectLoginResponse
-	19, // 41: api.InternalService.OAuth2Login:output_type -> api.OAuth2LoginResponse
-	21, // 42: api.InternalService.GetDevicesSummary:output_type -> api.GetDevicesSummaryResponse
-	23, // 43: api.InternalService.GetGatewaysSummary:output_type -> api.GetGatewaysSummaryResponse
-	24, // 44: api.InternalService.StreamGatewayFrames:output_type -> api.LogItem
-	24, // 45: api.InternalService.StreamDeviceFrames:output_type -> api.LogItem
-	24, // 46: api.InternalService.StreamDeviceEvents:output_type -> api.LogItem
-	28, // 47: api.InternalService.ListRegions:output_type -> api.ListRegionsResponse
-	31, // 48: api.InternalService.GetRegion:output_type -> api.GetRegionResponse
-	33, // 49: api.InternalService.GetVersion:output_type -> api.GetVersionResponse
-	33, // [33:50] is the sub-list for method output_type
-	16, // [16:33] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	38, // 2: api.UserTenantLink.created_at:type_name -> google.protobuf.Timestamp
+	38, // 3: api.UserTenantLink.updated_at:type_name -> google.protobuf.Timestamp
+	38, // 4: api.UserApplicationLink.created_at:type_name -> google.protobuf.Timestamp
+	38, // 5: api.UserDeviceProfileLink.created_at:type_name -> google.protobuf.Timestamp
+	39, // 6: api.ProfileResponse.user:type_name -> api.User
+	6,  // 7: api.ProfileResponse.tenants:type_name -> api.UserTenantLink
+	7,  // 8: api.ProfileResponse.applications:type_name -> api.UserApplicationLink
+	8,  // 9: api.ProfileResponse.device_profiles:type_name -> api.UserDeviceProfileLink
+	14, // 10: api.GlobalSearchResponse.result:type_name -> api.GlobalSearchResult
+	16, // 11: api.SettingsResponse.openid_connect:type_name -> api.OpenIdConnect
+	17, // 12: api.SettingsResponse.oauth2:type_name -> api.OAuth2
+	36, // 13: api.GetDevicesSummaryResponse.dr_count:type_name -> api.GetDevicesSummaryResponse.DrCountEntry
+	38, // 14: api.LogItem.time:type_name -> google.protobuf.Timestamp
+	37, // 15: api.LogItem.properties:type_name -> api.LogItem.PropertiesEntry
+	31, // 16: api.ListRegionsResponse.regions:type_name -> api.RegionListItem
+	40, // 17: api.RegionListItem.region:type_name -> common.Region
+	40, // 18: api.GetRegionResponse.region:type_name -> common.Region
+	34, // 19: api.GetRegionResponse.uplink_channels:type_name -> api.RegionChannel
+	9,  // 20: api.InternalService.Login:input_type -> api.LoginRequest
+	41, // 21: api.InternalService.Profile:input_type -> google.protobuf.Empty
+	12, // 22: api.InternalService.GlobalSearch:input_type -> api.GlobalSearchRequest
+	1,  // 23: api.InternalService.CreateApiKey:input_type -> api.CreateApiKeyRequest
+	3,  // 24: api.InternalService.DeleteApiKey:input_type -> api.DeleteApiKeyRequest
+	4,  // 25: api.InternalService.ListApiKeys:input_type -> api.ListApiKeysRequest
+	41, // 26: api.InternalService.Settings:input_type -> google.protobuf.Empty
+	18, // 27: api.InternalService.OpenIdConnectLogin:input_type -> api.OpenIdConnectLoginRequest
+	20, // 28: api.InternalService.OAuth2Login:input_type -> api.OAuth2LoginRequest
+	22, // 29: api.InternalService.GetDevicesSummary:input_type -> api.GetDevicesSummaryRequest
+	24, // 30: api.InternalService.GetGatewaysSummary:input_type -> api.GetGatewaysSummaryRequest
+	27, // 31: api.InternalService.StreamGatewayFrames:input_type -> api.StreamGatewayFramesRequest
+	28, // 32: api.InternalService.StreamDeviceFrames:input_type -> api.StreamDeviceFramesRequest
+	29, // 33: api.InternalService.StreamDeviceEvents:input_type -> api.StreamDeviceEventsRequest
+	41, // 34: api.InternalService.ListRegions:input_type -> google.protobuf.Empty
+	32, // 35: api.InternalService.GetRegion:input_type -> api.GetRegionRequest
+	41, // 36: api.InternalService.GetVersion:input_type -> google.protobuf.Empty
+	10, // 37: api.InternalService.Login:output_type -> api.LoginResponse
+	11, // 38: api.InternalService.Profile:output_type -> api.ProfileResponse
+	13, // 39: api.InternalService.GlobalSearch:output_type -> api.GlobalSearchResponse
+	2,  // 40: api.InternalService.CreateApiKey:output_type -> api.CreateApiKeyResponse
+	41, // 41: api.InternalService.DeleteApiKey:output_type -> google.protobuf.Empty
+	5,  // 42: api.InternalService.ListApiKeys:output_type -> api.ListApiKeysResponse
+	15, // 43: api.InternalService.Settings:output_type -> api.SettingsResponse
+	19, // 44: api.InternalService.OpenIdConnectLogin:output_type -> api.OpenIdConnectLoginResponse
+	21, // 45: api.InternalService.OAuth2Login:output_type -> api.OAuth2LoginResponse
+	23, // 46: api.InternalService.GetDevicesSummary:output_type -> api.GetDevicesSummaryResponse
+	25, // 47: api.InternalService.GetGatewaysSummary:output_type -> api.GetGatewaysSummaryResponse
+	26, // 48: api.InternalService.StreamGatewayFrames:output_type -> api.LogItem
+	26, // 49: api.InternalService.StreamDeviceFrames:output_type -> api.LogItem
+	26, // 50: api.InternalService.StreamDeviceEvents:output_type -> api.LogItem
+	30, // 51: api.InternalService.ListRegions:output_type -> api.ListRegionsResponse
+	33, // 52: api.InternalService.GetRegion:output_type -> api.GetRegionResponse
+	35, // 53: api.InternalService.GetVersion:output_type -> api.GetVersionResponse
+	37, // [37:54] is the sub-list for method output_type
+	20, // [20:37] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_api_internal_proto_init() }
@@ -2422,7 +2575,7 @@ func file_api_internal_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_internal_proto_rawDesc), len(file_api_internal_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   36,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

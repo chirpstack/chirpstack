@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { Tag, Space, Button, Popconfirm, Spin, Typography, Popover } from "antd";
-import { LoadingOutlined, ZoomInOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { format } from "date-fns";
 
@@ -14,13 +14,18 @@ import type {
   ListFuotaDeploymentDevicesResponse,
   FuotaDeploymentDeviceListItem,
 } from "@chirpstack/chirpstack-api-grpc-web/api/fuota_pb";
+import type { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";
+import type { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 
 import type { GetPageCallbackFunc } from "../../components/DataTable";
 import DataTable from "../../components/DataTable";
 import FuotaStore from "../../stores/FuotaStore";
+import SessionStore from "../../stores/SessionStore";
 
 interface IProps {
   getFuotaDeploymentResponse: GetFuotaDeploymentResponse;
+  tenant: Tenant;
+  application: Application;
 }
 
 function FuotaDeploymentDevices(props: IProps) {
@@ -144,6 +149,13 @@ function FuotaDeploymentDevices(props: IProps) {
     });
   };
 
+  const disabled = !(
+    SessionStore.isAdmin() ||
+    SessionStore.isTenantAdmin(props.tenant.getId()) ||
+    SessionStore.isTenantDeviceAdmin(props.tenant.getId()) ||
+    SessionStore.isApplicationAdmin(props.application.getId())
+  );
+
   return (
     <Space orientation="vertical" size="large" style={{ width: "100%" }}>
       <Space orientation="horizontal" style={{ float: "right" }}>
@@ -153,7 +165,7 @@ function FuotaDeploymentDevices(props: IProps) {
           placement="left"
           onConfirm={removeDevices}
         >
-          <Button disabled={selectedRowIds.length === 0}>Remove from FUOTA deployment</Button>
+          <Button disabled={selectedRowIds.length === 0 || disabled}>Remove from FUOTA deployment</Button>
         </Popconfirm>
       </Space>
       <DataTable

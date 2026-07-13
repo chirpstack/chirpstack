@@ -45,7 +45,7 @@ function CreateTenantUser({ tenant }: { tenant: Tenant }) {
         title="Add tenant user"
       />
       <Card>
-        <TenantUserForm initialValues={tu} onFinish={onFinish} />
+        <TenantUserForm initialValues={tu} onFinish={onFinish} tenant={tenant} />
       </Card>
     </Space>
   );
