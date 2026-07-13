@@ -903,6 +903,11 @@ message PilotThingsIntegration {
 
   // Authentication token.
   string token = 3;
+
+  // Link-check endpoint URL.
+  // When set, a POST with link-check details is sent to this URL on each
+  // LinkCheckReq received from a device. Leave empty to disable.
+  string link_check_endpoint = 4;
 }
 
 message CreatePilotThingsIntegrationRequest {

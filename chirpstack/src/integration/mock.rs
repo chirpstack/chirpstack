@@ -23,6 +23,8 @@ static STATUS_EVENTS: LazyLock<RwLock<Vec<integration::StatusEvent>>> =
     LazyLock::new(|| RwLock::new(Vec::new()));
 static LOCATION_EVENTS: LazyLock<RwLock<Vec<integration::LocationEvent>>> =
     LazyLock::new(|| RwLock::new(Vec::new()));
+static LINK_CHECK_EVENTS: LazyLock<RwLock<Vec<integration::LinkCheckEvent>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
 
 pub async fn reset() {
     UPLINK_EVENTS.write().await.drain(..);
@@ -32,6 +34,7 @@ pub async fn reset() {
     LOG_EVENTS.write().await.drain(..);
     STATUS_EVENTS.write().await.drain(..);
     LOCATION_EVENTS.write().await.drain(..);
+    LINK_CHECK_EVENTS.write().await.drain(..);
 }
 
 pub struct Integration {}
@@ -98,6 +101,15 @@ impl IntegrationTrait for Integration {
         pl: &integration::LocationEvent,
     ) -> Result<()> {
         LOCATION_EVENTS.write().await.push(pl.clone());
+        Ok(())
+    }
+
+    async fn link_check_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::LinkCheckEvent,
+    ) -> Result<()> {
+        LINK_CHECK_EVENTS.write().await.push(pl.clone());
         Ok(())
     }
 }
@@ -180,4 +192,8 @@ pub async fn get_status_events() -> Vec<integration::StatusEvent> {
 
 pub async fn get_location_events() -> Vec<integration::LocationEvent> {
     LOCATION_EVENTS.write().await.drain(..).collect()
+}
+
+pub async fn get_link_check_events() -> Vec<integration::LinkCheckEvent> {
+    LINK_CHECK_EVENTS.write().await.drain(..).collect()
 }
