@@ -160,10 +160,10 @@ function TenantForm(props: IProps) {
         <Space orientation="vertical" size="large">
           <Card variant="borderless">
             <p>
-              By assigning one or multiple DevAddr prefixes to a tenant, it is possilbe to let the tenant use only a
-              sub-set of the available DevAddr pool in the network. Please note that this is optional and if not
+              By assigning one or multiple DevAddr prefixes to a tenant, it is possible to let the tenant use only a
+              subset of the available DevAddr pool in the network. Please note that this is optional and if not
               configured, ChirpStack will use the network available DevAddr pool. Configured DevAddr prefixes must be a
-              sub-set of the network available DevAddr pool.
+              subset of the network available DevAddr pool.
             </p>
           </Card>
           <Form.List name="devAddrPrefixesList">
