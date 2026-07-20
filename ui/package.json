@@ -16,7 +16,7 @@
     "@ant-design/colors": "^8.0.1",
     "@ant-design/icons": "^6.3.2",
     "@chirpstack/chirpstack-api-grpc-web": "file:../api/grpc-web",
-    "@fortawesome/fontawesome-free": "^7.3.0",
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@fortawesome/fontawesome-svg-core": "^7.3.0",
     "@fortawesome/free-solid-svg-icons": "^7.3.0",
     "@fortawesome/react-fontawesome": "^3.4.0",
