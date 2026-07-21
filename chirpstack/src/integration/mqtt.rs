@@ -91,6 +91,7 @@ impl<'a> Integration<'a> {
         let mut mqtt_opts =
             MqttOptions::parse_url(format!("{}?client_id={}", conf.server, client_id))?;
         mqtt_opts.set_clean_start(conf.clean_session);
+        mqtt_opts.set_session_expiry_interval(Some(conf.session_expiry_interval.as_secs() as u32));
         mqtt_opts.set_keep_alive(conf.keep_alive_interval);
         if !conf.username.is_empty() || !conf.password.is_empty() {
             mqtt_opts.set_credentials(&conf.username, &conf.password);
@@ -142,7 +143,7 @@ impl<'a> Integration<'a> {
         };
 
         // connect
-        info!(server_uri = %conf.server, client_id = %client_id, clean_session = conf.clean_session, "Connecting to MQTT broker");
+        info!(server_uri = %conf.server, client_id = %client_id, clean_session = conf.clean_session, session_expiry_interval = %conf.session_expiry_interval.as_secs(), "Connecting to MQTT broker");
 
         // (Re)subscribe loop
         tokio::spawn({
@@ -519,6 +520,7 @@ pub mod test {
             json: true,
             server: env::var("TEST_MOSQUITTO_SERVER").unwrap(),
             clean_session: true,
+            session_expiry_interval: Duration::from_secs(3600),
             ..Default::default()
         };
         let i = Integration::new(&conf).await.unwrap();

@@ -477,6 +477,15 @@ pub fn run() {
     # that no messages saved by the broker for this client should be delivered.
     clean_session={{ integration.mqtt.clean_session }}
 
+    # Session expiry interval (MQTT 5+).
+    #
+    # This defines how long the broker keeps the session state after the client
+    # disconnects. Only applicable when the broker supports MQTT 5 or higher.
+    # Leave unset or set to 0 to expire immediately (stateless). Use a non-zero
+    # value (e.g. 10m or 24h) to resume subscriptions and queued QoS 1/2 messages
+    # when reconnecting.
+    session_expiry_interval="{{ integration.mqtt.session_expiry_interval }}"
+
     # Client ID
     #
     # Set the client id to be used by this client when connecting to the MQTT

@@ -303,6 +303,8 @@ pub struct MqttIntegration {
     pub password: String,
     pub qos: usize,
     pub clean_session: bool,
+    #[serde(with = "humantime_serde")]
+    pub session_expiry_interval: Duration,
     pub client_id: String,
     pub ca_cert: String,
     pub tls_cert: String,
@@ -326,6 +328,7 @@ impl Default for MqttIntegration {
             password: "".into(),
             qos: 0,
             clean_session: false,
+            session_expiry_interval: Duration::from_secs(0),
             client_id: "".into(),
             ca_cert: "".into(),
             tls_cert: "".into(),
@@ -764,6 +767,8 @@ pub struct GatewayBackendMqtt {
     pub password: String,
     pub qos: usize,
     pub clean_session: bool,
+    #[serde(with = "humantime_serde")]
+    pub session_expiry_interval: Duration,
     pub client_id: String,
     pub ca_cert: String,
     pub tls_cert: String,
@@ -786,6 +791,7 @@ impl Default for GatewayBackendMqtt {
             password: "".into(),
             qos: 0,
             clean_session: false,
+            session_expiry_interval: Duration::from_secs(0),
             client_id: "".into(),
             ca_cert: "".into(),
             tls_cert: "".into(),

@@ -122,6 +122,7 @@ impl<'a> MqttBackend<'a> {
         let mut mqtt_opts =
             MqttOptions::parse_url(format!("{}?client_id={}", conf.server, client_id))?;
         mqtt_opts.set_clean_start(conf.clean_session);
+        mqtt_opts.set_session_expiry_interval(Some(conf.session_expiry_interval.as_secs() as u32));
         mqtt_opts.set_keep_alive(conf.keep_alive_interval);
         if !conf.username.is_empty() || !conf.password.is_empty() {
             mqtt_opts.set_credentials(&conf.username, &conf.password);
