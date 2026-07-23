@@ -134,7 +134,7 @@ function GatewayForm(props: IProps) {
                 name="downlinkPriority"
                 rules={[{ required: true, message: "Please enter a downlink priority!" }]}
               >
-                <InputNumber min={0} disabled={props.disabled} />
+                <InputNumber min={1} disabled={props.disabled} />
               </Form.Item>
             </Col>
           </Row>

@@ -31,6 +31,7 @@ function CreateGateway(props: IProps) {
 
   const gateway = new Gateway();
   gateway.setStatsInterval(30);
+  gateway.setDownlinkPriority(10);
 
   return (
     <Space orientation="vertical" style={{ width: "100%" }} size="large">
