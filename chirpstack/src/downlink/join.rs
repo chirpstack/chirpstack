@@ -592,6 +592,7 @@ impl JoinAccept<'_> {
 
         let df = chirpstack_api::internal::DownlinkFrame {
             dev_eui: relay_ctx.device.dev_eui.to_be_bytes().to_vec(),
+            dev_eui_relayed: self.device.dev_eui.to_be_bytes().to_vec(),
             downlink_id: self.downlink_frame.downlink_id,
             downlink_frame: Some(self.downlink_frame.clone()),
             nwk_s_enc_key: relay_ds.nwk_s_enc_key.clone(),
