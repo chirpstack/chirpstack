@@ -53,7 +53,7 @@
     ] }
     rustls-native-certs = "0.8"
     rustls-pemfile = "2.2"
-    pem = "3.0"
+    pem = "4.0"
     x509-parser = "0.18"
     rsa = "0.9"
     p256 = { version = "0.14" }
