@@ -36,7 +36,7 @@
     "leaflet": "^1.9.4",
     "leaflet.awesome-markers": "^2.0.5",
     "react": "^19.2.8",
-    "react-ace": "^14.0.1",
+    "react-ace": "^15.0.0",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.8",
     "react-json-tree": "^0.20.0",
