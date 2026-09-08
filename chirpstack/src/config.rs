@@ -87,6 +87,9 @@ pub struct Redis {
     pub cluster: bool,
     pub key_prefix: String,
     pub max_open_connections: u32,
+    pub ca_cert: String,
+    pub tls_cert: String,
+    pub tls_key: String,
 }
 
 impl Default for Redis {
@@ -96,6 +99,9 @@ impl Default for Redis {
             cluster: false,
             key_prefix: "".into(),
             max_open_connections: 100,
+            ca_cert: "".into(),
+            tls_cert: "".into(),
+            tls_key: "".into(),
         }
     }
 }
