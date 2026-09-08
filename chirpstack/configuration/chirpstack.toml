@@ -16,10 +16,15 @@
   #
   # SSL mode options:
   #  * disable - no SSL
-  #  * require - Always SSL (skip verification)
-  #  * verify-ca - Always SSL (verify that the certificate presented by the server was signed by a trusted CA)
-  #  * verify-full - Always SSL (verify that the certification presented by the server was signed by a trusted CA and the server host name matches the one in the certificate)
+  #  * prefer - SSL if available, fall back to no SSL. Do not use if you are serious about security.
+  #  * require - Always SSL with full verification. Behaves like verify-full in all other drivers.
+  # https://github.com/jbg/tokio-postgres-rustls/issues/11
   dsn = "postgres://chirpstack:chirpstack@localhost/chirpstack?sslmode=disable"
+
+  # for TLS
+  ca_cert = ''
+  tls_key = ''
+  tls_cert = ''
 
   # Max open connections.
   #
@@ -59,6 +64,11 @@
   # Set this to true when the provided URLs are pointing to a Redis Cluster
   # instance.
   cluster = false
+
+  # for TLS
+  ca_cert = ''
+  tls_key = ''
+  tls_cert = ''
 
 
 # Network related configuration.
