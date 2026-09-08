@@ -59,6 +59,9 @@ pub struct Postgresql {
     pub dsn: String,
     pub max_open_connections: u32,
     pub ca_cert: String,
+    pub tls_cert: String,
+    pub tls_key: String,
+    pub application_name: String,
     pub connection_recycling_method: String,
 }
 
@@ -68,6 +71,10 @@ impl Default for Postgresql {
             dsn: "postgresql://chirpstack:chirpstack@localhost/chirpstack?sslmode=disable".into(),
             max_open_connections: 10,
             ca_cert: "".into(),
+            tls_cert: "".into(),
+            tls_key: "".into(),
+            application_name: "".into(),
+
             connection_recycling_method: "verified".into(),
         }
     }
