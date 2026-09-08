@@ -706,6 +706,7 @@ dependencies = [
  "chirpstack_api",
  "chrono",
  "clap",
+ "deadpool",
  "deadpool-redis",
  "diesel",
  "diesel-async",
