@@ -134,6 +134,9 @@ impl Default for Sqlite {
 pub struct Api {
     pub bind: String,
     pub secret: String,
+    pub ca_cert: String,
+    pub tls_cert: String,
+    pub tls_key: String,
 }
 
 impl Default for Api {
@@ -141,6 +144,9 @@ impl Default for Api {
         Api {
             bind: "0.0.0.0:8080".into(),
             secret: "".into(),
+            ca_cert: "".into(),
+            tls_cert: "".into(),
+            tls_key: "".into(),
         }
     }
 }

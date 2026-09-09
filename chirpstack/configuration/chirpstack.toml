@@ -106,6 +106,11 @@
   # interface:port to bind the API interface to.
   bind = "0.0.0.0:8080"
 
+  # for (m)TLS. This does not provide authorization, you still have to configure and use oauth/openidconnect/internal
+  ca_cert = ''
+  tls_key = ''
+  tls_cert = ''
+
   # Secret.
   #
   # This secret is used for generating login and API tokens, make sure this
