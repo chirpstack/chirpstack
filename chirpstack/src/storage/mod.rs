@@ -70,15 +70,39 @@ pub use postgres::{AsyncPgPoolConnection as AsyncDbPoolConnection, get_async_db_
 #[cfg(feature = "sqlite")]
 pub use sqlite::{AsyncSqlitePoolConnection as AsyncDbPoolConnection, get_async_db_conn};
 
+pub struct TlsManager {
+    client: redis::Client,
+}
+
+impl deadpool::managed::Manager for TlsManager {
+    type Type = redis::aio::MultiplexedConnection;
+    type Error = redis::RedisError;
+
+    async fn create(&self) -> Result<Self::Type, Self::Error> {
+        self.client.get_multiplexed_async_connection().await
+    }
+
+    async fn recycle(
+        &self,
+        conn: &mut Self::Type,
+        _: &deadpool::managed::Metrics,
+    ) -> deadpool::managed::RecycleResult<Self::Error> {
+        redis::cmd("PING").query_async::<()>(conn).await?;
+        Ok(())
+    }
+}
+
 #[derive(Clone)]
 pub enum AsyncRedisPool {
     Client(deadpool_redis::Pool),
     ClusterClient(deadpool_redis::cluster::Pool),
+    TlsClient(deadpool::managed::Pool<TlsManager>),
 }
 
 pub enum AsyncRedisPoolConnection {
     Client(deadpool_redis::Connection),
     ClusterClient(deadpool_redis::cluster::Connection),
+    TlsClient(deadpool::managed::Object<TlsManager>),
 }
 
 impl ConnectionLike for AsyncRedisPoolConnection {
@@ -89,6 +113,7 @@ impl ConnectionLike for AsyncRedisPoolConnection {
         match self {
             AsyncRedisPoolConnection::Client(v) => v.req_packed_command(cmd),
             AsyncRedisPoolConnection::ClusterClient(v) => v.req_packed_command(cmd),
+            AsyncRedisPoolConnection::TlsClient(v) => v.req_packed_command(cmd),
         }
     }
     fn req_packed_commands<'a>(
@@ -100,12 +125,14 @@ impl ConnectionLike for AsyncRedisPoolConnection {
         match self {
             AsyncRedisPoolConnection::Client(v) => v.req_packed_commands(cmd, offset, count),
             AsyncRedisPoolConnection::ClusterClient(v) => v.req_packed_commands(cmd, offset, count),
+            AsyncRedisPoolConnection::TlsClient(v) => v.req_packed_commands(cmd, offset, count),
         }
     }
     fn get_db(&self) -> i64 {
         match self {
             AsyncRedisPoolConnection::Client(v) => v.get_db(),
             AsyncRedisPoolConnection::ClusterClient(v) => v.get_db(),
+            AsyncRedisPoolConnection::TlsClient(v) => v.get_db(),
         }
     }
 }
@@ -130,6 +157,34 @@ pub async fn setup() -> Result<()> {
             .max_size(conf.redis.max_open_connections as usize)
             .build()?;
         set_async_redis_pool(AsyncRedisPool::ClusterClient(pool)).await;
+    } else if !conf.redis.tls_cert.is_empty() && !conf.redis.tls_key.is_empty() {
+        info!(
+            "Configuring Redis with client TLS certificate, ca_cert: {}, tls_cert: {}, tls_key: {}",
+            conf.redis.ca_cert, conf.redis.tls_cert, conf.redis.tls_key
+        );
+
+        let root_cert = if conf.redis.ca_cert.is_empty() {
+            None
+        } else {
+            Some(tokio::fs::read(&conf.redis.ca_cert).await?)
+        };
+        let client_cert = tokio::fs::read(&conf.redis.tls_cert).await?;
+        let client_key = tokio::fs::read(&conf.redis.tls_key).await?;
+
+        let tls_certs = redis::TlsCertificates {
+            client_tls: Some(redis::ClientTlsConfig {
+                client_cert,
+                client_key,
+            }),
+            root_cert,
+        };
+
+        let client = redis::Client::build_with_tls(conf.redis.servers[0].clone(), tls_certs)?;
+        let manager = TlsManager { client };
+        let pool = deadpool::managed::Pool::builder(manager)
+            .max_size(conf.redis.max_open_connections as usize)
+            .build()?;
+        set_async_redis_pool(AsyncRedisPool::TlsClient(pool)).await;
     } else {
         let pool = deadpool_redis::Config::from_url(conf.redis.servers[0].clone())
             .builder()?
@@ -166,7 +221,8 @@ pub async fn get_async_redis_conn() -> Result<AsyncRedisPoolConnection> {
         AsyncRedisPool::Client(v) => AsyncRedisPoolConnection::Client(v.get().await?),
         AsyncRedisPool::ClusterClient(v) => {
             AsyncRedisPoolConnection::ClusterClient(v.clone().get().await?)
-        }
+        },
+        AsyncRedisPool::TlsClient(v) => AsyncRedisPoolConnection::TlsClient(v.get().await?)
     };
 
     STORAGE_REDIS_CONN_GET.observe(start.elapsed().as_secs_f64());

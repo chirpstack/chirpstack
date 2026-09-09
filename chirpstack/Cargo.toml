@@ -35,6 +35,7 @@
   tokio-postgres-rustls = { workspace = true, optional = true }
   bigdecimal.workspace = true
   redis.workspace = true
+  deadpool.workspace = true
   deadpool-redis.workspace = true
 
   # Logging
