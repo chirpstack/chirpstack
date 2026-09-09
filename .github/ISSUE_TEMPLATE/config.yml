@@ -1,0 +1,9 @@
+---
+blank_issues_enabled: true
+contact_links:
+  - name: Support question (community support)
+    url: https://support.chirpstack.io/
+    about: Here you will find questions asked and answered by the ChirpStack community.
+  - name: Documentation
+    url: https://www.chirpstack.io/docs/
+    about: Here you will find documentation about the ChirpStack components, including available configuration options.
