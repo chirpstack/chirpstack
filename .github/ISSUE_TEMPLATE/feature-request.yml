@@ -1,0 +1,43 @@
+name: Feature request
+description: Create a feature request
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the feature
+      description: Please provide a clear and concise description of the feature you would like.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem it solves
+      description: Please describe what problem this feature would solve or what use case it covers.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Please describe how you would like this feature to work.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Please describe any alternative solutions or workarounds you have considered.
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional info
+      description: Please add any additional info or examples that could be helpful to understand this request.
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contributing
+      description: Would you be willing to implement this feature yourself?
+      options:
+        - label: I am capable of implementing this feature through a pull request.
