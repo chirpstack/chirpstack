@@ -136,7 +136,9 @@ async fn handle(
         lrwn::CID::DeviceModeInd => device_mode_ind::handle(dev, block).await,
         lrwn::CID::DeviceTimeReq => device_time::handle(uplink_frame_set, dev, block),
         lrwn::CID::LinkADRAns => link_adr::handle(uplink_frame_set, dev, block, pending_block),
-        lrwn::CID::LinkCheckReq => link_check::handle(uplink_frame_set, dev, block),
+        lrwn::CID::LinkCheckReq => {
+            link_check::handle(uplink_frame_set, tenant, app, dp, dev, block).await
+        }
         lrwn::CID::NewChannelAns => new_channel::handle(dev, block, pending_block, region_conf),
         lrwn::CID::PingSlotChannelAns => ping_slot_channel::handle(dev, block, pending_block),
         lrwn::CID::PingSlotInfoReq => ping_slot_info::handle(dev, block),

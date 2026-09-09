@@ -1366,6 +1366,7 @@ impl ApplicationService for Application {
                 application::PilotThingsConfiguration {
                     server: req_int.server.clone(),
                     token: req_int.token.clone(),
+                    link_check_endpoint: req_int.link_check_endpoint.clone(),
                 },
             ),
             ..Default::default()
@@ -1406,6 +1407,7 @@ impl ApplicationService for Application {
                     application_id: app_id.to_string(),
                     server: conf.server.clone(),
                     token: conf.token.clone(),
+                    link_check_endpoint: conf.link_check_endpoint.clone(),
                 }),
             });
             resp.metadata_mut()
@@ -1445,6 +1447,7 @@ impl ApplicationService for Application {
                 application::PilotThingsConfiguration {
                     server: req_int.server.clone(),
                     token: req_int.token.clone(),
+                    link_check_endpoint: req_int.link_check_endpoint.clone(),
                 },
             ),
             ..Default::default()

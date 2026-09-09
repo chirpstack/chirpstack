@@ -129,6 +129,14 @@ pub trait Integration {
         vars: &HashMap<String, String>,
         pl: &integration::LocationEvent,
     ) -> Result<()>;
+
+    async fn link_check_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        _pl: &integration::LinkCheckEvent,
+    ) -> Result<()> {
+        Ok(())
+    }
 }
 
 // Returns a Vec of integrations for the given Application ID.
@@ -470,6 +478,48 @@ async fn _location_event(
     }
     for (i, _) in global_ints.iter().enumerate() {
         futures.push(global_ints[i].location_event(vars, pl));
+    }
+
+    for e in join_all(futures).await {
+        e?;
+    }
+
+    Ok(())
+}
+
+pub async fn link_check_event(
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::LinkCheckEvent,
+) {
+    tokio::spawn({
+        let vars = vars.clone();
+        let pl = pl.clone();
+
+        async move {
+            if let Err(err) = _link_check_event(application_id, &vars, &pl).await {
+                warn!(application_id = %application_id, error = %err.full(), "Link-check event error");
+            }
+        }
+    });
+}
+
+async fn _link_check_event(
+    application_id: Uuid,
+    vars: &HashMap<String, String>,
+    pl: &integration::LinkCheckEvent,
+) -> Result<()> {
+    let app_ints = for_application_id(application_id)
+        .await
+        .context("Get integrations for application")?;
+    let global_ints = GLOBAL_INTEGRATIONS.read().await;
+    let mut futures = Vec::new();
+
+    for (i, _) in app_ints.iter().enumerate() {
+        futures.push(app_ints[i].link_check_event(vars, pl));
+    }
+    for (i, _) in global_ints.iter().enumerate() {
+        futures.push(global_ints[i].link_check_event(vars, pl));
     }
 
     for e in join_all(futures).await {

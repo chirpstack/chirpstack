@@ -29,6 +29,7 @@ fn get_client() -> Client {
 pub struct Integration {
     server: String,
     token: String,
+    link_check_endpoint: String,
 }
 
 impl Integration {
@@ -38,6 +39,7 @@ impl Integration {
         Integration {
             server: conf.server.clone(),
             token: conf.token.clone(),
+            link_check_endpoint: conf.link_check_endpoint.clone(),
         }
     }
 }
@@ -119,6 +121,37 @@ impl IntegrationTrait for Integration {
     ) -> Result<()> {
         Ok(())
     }
+
+    async fn link_check_event(
+        &self,
+        _vars: &HashMap<String, String>,
+        pl: &integration::LinkCheckEvent,
+    ) -> Result<()> {
+        if self.link_check_endpoint.is_empty() {
+            return Ok(());
+        }
+
+        let endpoint = self.link_check_endpoint.clone();
+        let di = pl.device_info.as_ref().unwrap();
+        info!(dev_eui = %di.dev_eui, event = "link_check", endpoint = %endpoint, "Sending link-check event");
+
+        let pl = LinkCheckPayload::from_link_check_event(pl);
+        let b = serde_json::to_string(&pl)?;
+
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
+
+        let res = get_client()
+            .post(endpoint)
+            .body(b)
+            .query(&[("token", self.token.clone())])
+            .headers(headers)
+            .send()
+            .await?;
+
+        let _ = res.error_for_status()?;
+        Ok(())
+    }
 }
 
 #[derive(Serialize)]
@@ -146,6 +179,50 @@ struct UplinkMetadata {
     pub rf_chain: u32,
     pub antenna: u32,
     pub board: u32,
+}
+
+#[derive(Serialize)]
+struct LinkCheckPayload {
+    #[serde(rename = "devEUI")]
+    pub dev_eui: String,
+    #[serde(rename = "deviceName")]
+    pub device_name: String,
+    pub margin: u32,
+    #[serde(rename = "gwCnt")]
+    pub gw_cnt: u32,
+    pub gateways: Vec<LinkCheckGwInfo>,
+}
+
+#[derive(Serialize)]
+struct LinkCheckGwInfo {
+    #[serde(rename = "gatewayId")]
+    pub gateway_id: String,
+    pub rssi: i32,
+    #[serde(rename = "lorasnr")]
+    pub lora_snr: f32,
+    pub margin: u32,
+}
+
+impl LinkCheckPayload {
+    fn from_link_check_event(pl: &integration::LinkCheckEvent) -> Self {
+        let di = pl.device_info.as_ref().unwrap();
+        LinkCheckPayload {
+            dev_eui: di.dev_eui.clone(),
+            device_name: di.device_name.clone(),
+            margin: pl.margin,
+            gw_cnt: pl.gw_cnt,
+            gateways: pl
+                .gw_rx_info
+                .iter()
+                .map(|g| LinkCheckGwInfo {
+                    gateway_id: g.gateway_id.clone(),
+                    rssi: g.rssi,
+                    lora_snr: g.snr,
+                    margin: g.margin,
+                })
+                .collect(),
+        }
+    }
 }
 
 impl UplinkPayload {
