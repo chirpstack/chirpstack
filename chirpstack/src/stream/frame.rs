@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use prost::Message;
-use redis::streams::StreamReadReply;
+use redis::streams::{StreamRangeReply, StreamReadReply};
 use serde_json::json;
 use tokio::sync::mpsc;
 use tokio::time::sleep;
@@ -235,6 +235,37 @@ pub async fn get_frame_logs(
 ) -> Result<()> {
     let mut last_id = "0".to_string();
 
+    // Load the newest historical entries first.
+    let srr: StreamRangeReply = redis::cmd("XREVRANGE")
+        .arg(&key)
+        .arg("+")
+        .arg("-")
+        .arg("COUNT")
+        .arg(count)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await
+        .context("XREVRANGE frame stream")?;
+
+    // Send the selected entries oldest -> newest.
+    for stream_id in srr.ids.iter().rev() {
+        last_id.clone_from(&stream_id.id);
+
+        for (k, v) in &stream_id.map {
+            let res = handle_stream(&last_id, &channel, k, v).await;
+
+            if let Err(e) = res {
+                if e.downcast_ref::<mpsc::error::SendError<api::LogItem>>()
+                    .is_some()
+                {
+                    return Err(e);
+                }
+
+                error!(key = %k, error = %e.full(), "Parsing frame-log error");
+            }
+        }
+    }
+
+    // Continue with new entries.
     loop {
         if channel.is_closed() {
             debug!("Channel has been closed, returning");
