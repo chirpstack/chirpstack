@@ -96,7 +96,7 @@ impl Configuration {
                         12,
                         DataRate {
                             uplink: true,
-                            downlink: false,
+                            downlink: true,
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 6,
                                 bandwidth: 125000,
@@ -108,7 +108,7 @@ impl Configuration {
                         13,
                         DataRate {
                             uplink: true,
-                            downlink: false,
+                            downlink: true,
                             modulation: DataRateModulation::Lora(LoraDataRate {
                                 spreading_factor: 5,
                                 bandwidth: 125000,
