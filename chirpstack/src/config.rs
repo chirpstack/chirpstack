@@ -945,6 +945,7 @@ pub fn get_region_gateway(region_id: &str) -> Result<RegionGateway> {
 
 pub fn get_required_snr_for_sf(sf: u8) -> Result<f32> {
     Ok(match sf {
+        5 => -2.5,
         6 => -5.0,
         7 => -7.5,
         8 => -10.0,
