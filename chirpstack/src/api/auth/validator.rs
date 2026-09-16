@@ -12,7 +12,7 @@ use crate::api::auth::AuthID;
 use crate::helpers::errors::PrintFullError;
 use crate::storage::schema::{
     api_key, application, device, device_profile, fuota_deployment, gateway, multicast_group,
-    tenant_user, tenant_user_application, tenant_user_device_profile, user,
+    tenant, tenant_user, tenant_user_application, tenant_user_device_profile, user,
 };
 use crate::storage::{fields, get_async_db_conn};
 
@@ -2231,15 +2231,28 @@ impl Validator for ValidateMulticastGroupsAccess {
             // tenant user (filtered by storage function)
             Flag::List => {
                 q = q.filter(
-                    user::is_admin.eq(true).or(dsl::exists(
-                        application::table
-                            .inner_join(
-                                tenant_user::table
-                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
-                            )
-                            .filter(tenant_user::user_id.eq(user::id)),
-                    )),
-                )
+                    user::is_admin
+                        .eq(true)
+                        .or(dsl::exists(
+                            application::table
+                                .inner_join(
+                                    tenant_user::table
+                                        .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                                )
+                                .filter(application::id.eq(fields::Uuid::from(
+                                    self.application_id.unwrap_or_default(),
+                                )))
+                                .filter(tenant_user::user_id.eq(user::id)),
+                        ))
+                        .or(dsl::exists(
+                            tenant_user::table
+                                .filter(tenant_user::user_id.eq(user::id))
+                                .filter(
+                                    tenant_user::tenant_id
+                                        .eq(fields::Uuid::from(self.tenant_id.unwrap_or_default())),
+                                ),
+                        )),
+                );
             }
             _ => {
                 return Ok(0);
@@ -2656,21 +2669,27 @@ impl Validator for ValidateFuotaDeploymentsAccess {
             // tenant user (filtered by storage function)
             Flag::List => {
                 q = q.filter(
-                    user::is_admin.eq(true).or(dsl::exists(
-                        application::table
-                            .inner_join(
-                                tenant_user::table
-                                    .on(tenant_user::tenant_id.eq(application::tenant_id)),
-                            )
-                            .filter(
-                                application::id
-                                    .eq(fields::Uuid::from(self.application_id.unwrap_or_default()))
-                                    .or(application::tenant_id.eq(fields::Uuid::from(
-                                        self.tenant_id.unwrap_or_default(),
-                                    ))),
-                            )
-                            .filter(tenant_user::user_id.eq(user::id)),
-                    )),
+                    user::is_admin
+                        .eq(true)
+                        .or(dsl::exists(
+                            application::table
+                                .inner_join(
+                                    tenant_user::table
+                                        .on(tenant_user::tenant_id.eq(application::tenant_id)),
+                                )
+                                .filter(application::id.eq(fields::Uuid::from(
+                                    self.application_id.unwrap_or_default(),
+                                )))
+                                .filter(tenant_user::user_id.eq(user::id)),
+                        ))
+                        .or(dsl::exists(
+                            tenant_user::table
+                                .filter(tenant_user::user_id.eq(user::id))
+                                .filter(
+                                    tenant_user::tenant_id
+                                        .eq(fields::Uuid::from(self.tenant_id.unwrap_or_default())),
+                                ),
+                        )),
                 );
             }
             _ => return Ok(0),
