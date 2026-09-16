@@ -145,30 +145,42 @@ impl TxAck {
             self.increment_a_f_cnt_down()?;
             self.save_device_session().await?;
 
-            // Get data of relayed device.
-            self.get_device_data_relayed().await?;
-
-            // Handle end-device frame-counter increment + queue item.
-            if self.is_application_payload_relayed() {
-                self.get_device_queue_item().await?;
-                if self.is_unconfirmed_downlink_relayed() {
-                    self.delete_device_queue_item().await?;
-                }
-
-                if self.is_confirmed_downlink_relayed() {
-                    self.set_device_queue_item_pending().await?;
-                    self.set_device_session_conf_f_cnt_relayed()?;
-                }
-
-                self.increment_a_f_cnt_down_relayed()?;
-                self.save_device_session_relayed().await?;
-
-                // Log tx ack event.
+            // A ForwardDownlinkReq always relates to a relayed device and thus the
+            // dev_eui_relayed should always be set, but guard against an empty value
+            // anyway as this would abort the handling below (and thus skip the
+            // frame-logging).
+            if !self
+                .downlink_frame
+                .as_ref()
+                .unwrap()
+                .dev_eui_relayed
+                .is_empty()
+            {
+                // Get data of relayed device.
                 self.get_device_data_relayed().await?;
-                self.send_tx_ack_event_relayed().await?;
-            } else if self.is_mac_only_downlink_relayed() {
-                self.increment_n_f_cnt_down_relayed()?;
-                self.save_device_session_relayed().await?;
+
+                // Handle end-device frame-counter increment + queue item.
+                if self.is_application_payload_relayed() {
+                    self.get_device_queue_item().await?;
+                    if self.is_unconfirmed_downlink_relayed() {
+                        self.delete_device_queue_item().await?;
+                    }
+
+                    if self.is_confirmed_downlink_relayed() {
+                        self.set_device_queue_item_pending().await?;
+                        self.set_device_session_conf_f_cnt_relayed()?;
+                    }
+
+                    self.increment_a_f_cnt_down_relayed()?;
+                    self.save_device_session_relayed().await?;
+
+                    // Log tx ack event.
+                    self.get_device_data_relayed().await?;
+                    self.send_tx_ack_event_relayed().await?;
+                } else if self.is_mac_only_downlink_relayed() {
+                    self.increment_n_f_cnt_down_relayed()?;
+                    self.save_device_session_relayed().await?;
+                }
             }
 
             // Log downlink frame and meta-data.

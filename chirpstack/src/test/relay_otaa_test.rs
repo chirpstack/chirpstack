@@ -352,6 +352,74 @@ async fn test_lorawan_10() {
             gateway_id: "0102030405060708".to_string(),
             ..Default::default()
         }),
+        assert::downlink_frame_saved(internal::DownlinkFrame {
+            dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
+            dev_eui_relayed: vec![1, 1, 1, 1, 1, 1, 1, 1],
+            nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            a_f_cnt_down: 5,
+            n_f_cnt_down: 5,
+            downlink_frame: Some(gw::DownlinkFrame {
+                items: vec![
+                    gw::DownlinkFrameItem {
+                        phy_payload: phy_relay_ja.to_vec().unwrap(),
+                        tx_info_legacy: None,
+                        tx_info: Some(gw::DownlinkTxInfo {
+                            frequency: 868100000,
+                            power: 16,
+                            modulation: Some(gw::Modulation {
+                                parameters: Some(gw::modulation::Parameters::Lora(
+                                    gw::LoraModulationInfo {
+                                        bandwidth: 125000,
+                                        spreading_factor: 12,
+                                        code_rate: gw::CodeRate::Cr45.into(),
+                                        polarization_inversion: true,
+                                        ..Default::default()
+                                    },
+                                )),
+                            }),
+                            timing: Some(gw::Timing {
+                                parameters: Some(gw::timing::Parameters::Delay(
+                                    gw::DelayTimingInfo {
+                                        delay: Some(Duration::from_secs(1).into()),
+                                    },
+                                )),
+                            }),
+                            ..Default::default()
+                        }),
+                    },
+                    gw::DownlinkFrameItem {
+                        phy_payload: phy_relay_ja.to_vec().unwrap(),
+                        tx_info_legacy: None,
+                        tx_info: Some(gw::DownlinkTxInfo {
+                            frequency: 869525000,
+                            power: 29,
+                            modulation: Some(gw::Modulation {
+                                parameters: Some(gw::modulation::Parameters::Lora(
+                                    gw::LoraModulationInfo {
+                                        bandwidth: 125000,
+                                        spreading_factor: 12,
+                                        code_rate: gw::CodeRate::Cr45.into(),
+                                        polarization_inversion: true,
+                                        ..Default::default()
+                                    },
+                                )),
+                            }),
+                            timing: Some(gw::Timing {
+                                parameters: Some(gw::timing::Parameters::Delay(
+                                    gw::DelayTimingInfo {
+                                        delay: Some(Duration::from_secs(2).into()),
+                                    },
+                                )),
+                            }),
+                            ..Default::default()
+                        }),
+                    },
+                ],
+                gateway_id: "0102030405060708".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
     ];
 
     for assert in &assertions {
