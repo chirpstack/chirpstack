@@ -233,7 +233,7 @@ impl MulticastGroupService for MulticastGroup {
             .await?;
 
         let filters = multicast::Filters {
-            tenant_id: None,
+            tenant_id,
             application_id: app_id,
             dev_eui,
             search: if req.search.is_empty() {
