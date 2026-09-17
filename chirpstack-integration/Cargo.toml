@@ -9,7 +9,7 @@
   repository.workspace = true
 
 [dependencies]
-  chirpstack_api = { path = "../api/rust", version = "4.19.1" }
+  chirpstack_api = { path = "../api/rust", version = "4.19.2" }
   redis = { workspace = true, features = ["cluster-async"] }
   anyhow.workspace = true
   tracing.workspace = true
