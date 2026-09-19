@@ -33,6 +33,7 @@ use rust_embed::RustEmbed;
 use tokio::task;
 use tokio::try_join;
 use tonic_reflection::server::Builder as TonicReflectionBuilder;
+use tonic::transport::{Certificate, Identity, ServerTlsConfig};
 use tonic_web::GrpcWebLayer;
 use tower::Service;
 use tower::util::ServiceExt;
@@ -94,8 +95,8 @@ struct Asset;
 type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 pub async fn setup() -> Result<()> {
-    let conf = config::get();
-    let bind = conf.api.bind.parse().context("Parse api.bind config")?;
+    let conf = config::get().api.clone();
+    let bind = conf.bind.parse().context("Parse api.bind config")?;
 
     info!(bind = %bind, "Setting up API interface");
 
@@ -108,7 +109,7 @@ pub async fn setup() -> Result<()> {
         .into_service()
         .map_response(|r| r.map(tonic::body::Body::new));
 
-    let grpc = TonicServer::builder()
+    let mut server = TonicServer::builder()
         .accept_http1(true)
         .layer(
             TraceLayer::new_for_grpc()
@@ -123,7 +124,31 @@ pub async fn setup() -> Result<()> {
         )
         .layer(grpc_multiplex::GrpcMultiplexLayer::new(web))
         .layer(ApiLoggerLayer {})
-        .layer(GrpcWebLayer::new())
+        .layer(GrpcWebLayer::new());
+
+    if !conf.ca_cert.is_empty() || !conf.tls_cert.is_empty() || !conf.tls_key.is_empty() {
+        info!(
+            "Configuring api with TLS certificate, ca_cert: {}, tls_cert: {}, tls_key: {}",
+            conf.ca_cert, conf.tls_cert, conf.tls_key
+        );
+
+        let mut tls_config = ServerTlsConfig::new();
+        if !conf.ca_cert.is_empty() {
+            tls_config = tls_config
+                .client_ca_root(Certificate::from_pem(std::fs::read(conf.ca_cert)?))
+                .client_auth_optional(false);
+        }
+
+        if !conf.tls_cert.is_empty() && !conf.tls_key.is_empty() {
+            tls_config = tls_config.identity(Identity::from_pem(
+                std::fs::read(conf.tls_cert)?,
+                std::fs::read(conf.tls_key)?,
+            ));
+        }
+        server = server.tls_config(tls_config)?
+    }
+
+    let grpc = server
         .add_service(
             TonicReflectionBuilder::configure()
                 .register_encoded_file_descriptor_set(chirpstack_api::api::DESCRIPTOR)
@@ -131,7 +156,7 @@ pub async fn setup() -> Result<()> {
                 .unwrap(),
         )
         .add_service(InternalServiceServer::with_interceptor(
-            internal::Internal::new(validator::RequestValidator::new(), conf.api.secret.clone()),
+            internal::Internal::new(validator::RequestValidator::new(), conf.secret.clone()),
             auth::auth_interceptor,
         ))
         .add_service(ApplicationServiceServer::with_interceptor(
