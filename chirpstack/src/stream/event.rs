@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use prost::Message;
-use redis::streams::StreamReadReply;
+use redis::streams::{StreamRangeReply, StreamReadReply};
 use tokio::sync::mpsc;
 use tokio::time::sleep;
 use tracing::{debug, error, trace};
@@ -64,6 +64,38 @@ pub async fn get_event_logs(
 ) -> Result<()> {
     let mut last_id = "0".to_string();
 
+    // Load the newest historical entries first.
+    let srr: StreamRangeReply = redis::cmd("XREVRANGE")
+        .arg(&key)
+        .arg("+")
+        .arg("-")
+        .arg("COUNT")
+        .arg(count)
+        .query_async(&mut get_async_redis_conn().await?)
+        .await
+        .context("XREVRANGE event stream")?;
+
+    // XREVRANGE returns newest -> oldest.
+    // Send oldest -> newest because the existing UI prepends newer entries.
+    for stream_id in srr.ids.iter().rev() {
+        last_id.clone_from(&stream_id.id);
+
+        for (k, v) in &stream_id.map {
+            let res = handle_stream(&last_id, &channel, k, v).await;
+
+            if let Err(e) = res {
+                if e.downcast_ref::<mpsc::error::SendError<api::LogItem>>()
+                    .is_some()
+                {
+                    return Err(e);
+                }
+
+                error!(key = %k, error = %e.full(), "Parsing event-log error");
+            }
+        }
+    }
+
+    // Continue reading new entries.
     loop {
         if channel.is_closed() {
             debug!("Channel has been closed, returning");
@@ -95,7 +127,7 @@ pub async fn get_event_logs(
                             return Err(e);
                         }
 
-                        error!(key = %k, error = %e.full(), "Parsing frame-log error");
+                        error!(key = %k, error = %e.full(), "Parsing event-log error");
                     }
                 }
             }
