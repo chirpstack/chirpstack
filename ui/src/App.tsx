@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import React, { useState } from "react";
-import type { RouterProps } from "react-router";
-import { Router, Routes, Route } from "react-router";
+import type { RouterProps } from "react-router-dom";
+import { Router, Routes, Route } from "react-router-dom";
 import { Layout } from "antd";
 
 import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
@@ -78,7 +78,7 @@ function App() {
               <Header user={user} />
             </Layout.Header>
             <Layout className="layout">
-              <Layout.Sider width="300" theme="light" className="layout-menu">
+              <Layout.Sider width="300" className="layout-menu">
                 <Menu />
               </Layout.Sider>
               <Layout.Content className="layout-content" style={{ padding: "24px 24px 24px" }}>
