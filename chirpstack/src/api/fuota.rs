@@ -12,6 +12,7 @@ use crate::api::auth::AuthID;
 use crate::api::auth::validator;
 use crate::api::error::ToStatus;
 use crate::api::helpers::{self, FromProto, ToProto};
+use crate::config;
 use crate::devaddr::get_random_dev_addr;
 use crate::storage::{fields, fuota, tenant};
 
@@ -31,6 +32,10 @@ impl FuotaService for Fuota {
         &self,
         request: Request<api::CreateFuotaDeploymentRequest>,
     ) -> Result<Response<api::CreateFuotaDeploymentResponse>, Status> {
+        if config::get().network.mac_commands_disabled {
+            return Err(Status::unimplemented("mac commands required"));
+        }
+
         let req_dp = match &request.get_ref().deployment {
             Some(v) => v,
             None => {
