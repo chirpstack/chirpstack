@@ -27,6 +27,7 @@ pub mod fields;
 pub mod fuota;
 pub mod gateway;
 pub mod helpers;
+pub mod join_accept_cache;
 pub mod mac_command;
 pub mod metrics;
 pub mod multicast;
