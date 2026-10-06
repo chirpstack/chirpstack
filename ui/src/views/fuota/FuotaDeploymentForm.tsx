@@ -361,7 +361,11 @@ function FuotaDeploymentForm(props: IProps) {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item label="Payload" name="payload" required>
+          <Form.Item
+            label="Payload"
+            name="payload"
+            rules={[{ required: true, message: 'Please provide a payload!' }]}
+          >
             <Upload
               beforeUpload={beforeUpload}
               onRemove={onRemoveUpload}
