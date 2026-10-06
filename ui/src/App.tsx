@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import React, { useState } from "react";
-import type { RouterProps } from "react-router-dom";
-import { Router, Routes, Route } from "react-router-dom";
+import type { RouterProps } from "react-router";
+import { Router, Routes, Route } from "react-router";
 import { Layout } from "antd";
 
 import type { User } from "@chirpstack/chirpstack-api-grpc-web/api/user_pb";
