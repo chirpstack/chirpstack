@@ -97,12 +97,10 @@ pub async fn setup() -> Result<()> {
     let conf = config::get();
     let bind = conf.api.bind.parse().context("Parse api.bind config")?;
 
-    if conf.api.secret.is_empty() || conf.api.secret == "you-must-replace-this" {
+    // API secret warning
+    if ["", "you-must-replace-this"].contains(&conf.api.secret.as_str()) {
         warn!(
-            "The 'api.secret' configuration is empty or set to the example placeholder value. \
-            This secret is used to sign login and API tokens (HS256 JWT); with a known or empty \
-            value an attacker can forge tokens and bypass authentication. Set 'api.secret' to a \
-            unique random value, e.g. generated with 'openssl rand -base64 32'."
+            "Insecure api.secret configuration! You must set the api.secret to an unique random value in your chirpstack.toml configuration"
         );
     }
 
