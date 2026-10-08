@@ -828,7 +828,12 @@ impl Flow {
                 );
             }
 
-            return Ok(Some((FuotaJob::DeleteMcGroup, Utc::now())));
+            return Ok(Some((
+                FuotaJob::DeleteMcGroup,
+                self.fuota_deployment
+                    .multicast_session_end
+                    .unwrap_or_else(Utc::now),
+            )));
         }
 
         info!("Enqueue FragSessionStatusReq");
