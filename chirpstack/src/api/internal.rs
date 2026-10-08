@@ -723,7 +723,8 @@ impl InternalService for Internal {
         let (redis_tx, mut redis_rx) = mpsc::channel(1);
         let (stream_tx, stream_rx) = mpsc::channel(1);
 
-        let mut framelog_future = Box::pin(stream::frame::get_frame_logs(key, 10, redis_tx));
+        let count = config::get().monitoring.gateway_frame_log_read_batch_size;
+        let mut framelog_future = Box::pin(stream::frame::get_frame_logs(key, count, redis_tx));
         let (drop_receiver, mut close_rx) = DropReceiver::new(ReceiverStream::new(stream_rx));
 
         tokio::spawn(async move {
@@ -790,7 +791,8 @@ impl InternalService for Internal {
         let (redis_tx, mut redis_rx) = mpsc::channel(1);
         let (stream_tx, stream_rx) = mpsc::channel(1);
 
-        let mut framelog_future = Box::pin(stream::frame::get_frame_logs(key, 10, redis_tx));
+        let count = config::get().monitoring.device_frame_log_read_batch_size;
+        let mut framelog_future = Box::pin(stream::frame::get_frame_logs(key, count, redis_tx));
         let (drop_receiver, mut close_rx) = DropReceiver::new(ReceiverStream::new(stream_rx));
 
         tokio::spawn(async move {
@@ -858,7 +860,8 @@ impl InternalService for Internal {
         let (redis_tx, mut redis_rx) = mpsc::channel(1);
         let (stream_tx, stream_rx) = mpsc::channel(1);
 
-        let mut eventlog_future = Box::pin(stream::event::get_event_logs(key, 10, redis_tx));
+        let count = config::get().monitoring.device_event_log_read_batch_size;
+        let mut eventlog_future = Box::pin(stream::event::get_event_logs(key, count, redis_tx));
         let (drop_receiver, mut close_rx) = DropReceiver::new(ReceiverStream::new(stream_rx));
 
         tokio::spawn(async move {
