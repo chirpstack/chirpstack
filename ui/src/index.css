@@ -3,8 +3,8 @@
 }
 
 .layout-header {
-  background: #ffffff;
-  box-shadow: 0px 0px 10px 0px #ccc;
+  background: var(--ant-color-bg-container, #ffffff);
+  box-shadow: 0px 0px 10px 0px var(--ant-color-border-secondary, #ccc);
   /* Leaflet JS zoom controls have z-index 1000. */
   z-index: 1001;
 
@@ -138,4 +138,14 @@ pre {
 
 .css-var-root.ant-btn {
   --ant-button-padding-inline-sm: 12px !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #141414;
+  }
+  .layout-header {
+    background: #141414;
+    box-shadow: 0px 0px 10px 0px #303030;
+  }
 }

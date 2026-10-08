@@ -78,7 +78,7 @@ function App() {
               <Header user={user} />
             </Layout.Header>
             <Layout className="layout">
-              <Layout.Sider width="300" theme="light" className="layout-menu">
+              <Layout.Sider width="300" className="layout-menu">
                 <Menu />
               </Layout.Sider>
               <Layout.Content className="layout-content" style={{ padding: "24px 24px 24px" }}>
