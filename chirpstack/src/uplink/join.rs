@@ -23,7 +23,7 @@ use crate::storage::{
     device_keys, device_profile, device_queue,
     error::Error as StorageError,
     helpers::get_all_device_data,
-    metrics, tenant,
+    join_accept_cache, metrics, tenant,
 };
 use crate::{config, devaddr::get_random_dev_addr, downlink, integration, region, stream};
 use chirpstack_api::{common, integration as integration_pb, internal, stream as stream_pb};
@@ -35,6 +35,9 @@ pub struct JoinRequest {
     js_client: Option<Arc<backend::Client>>,
     join_request: Option<JoinRequestPayload>,
     join_accept: Option<PhyPayload>,
+    // Set when this join-request is a second copy (direct vs. relayed) of a
+    // request that was accepted moments ago; holds the accept to re-send.
+    duplicate_join_accept: Option<PhyPayload>,
     device: Option<device::Device>,
     application: Option<application::Application>,
     tenant: Option<tenant::Tenant>,
@@ -95,6 +98,7 @@ impl JoinRequest {
             device_profile: None,
             device_keys: None,
             join_accept: None,
+            duplicate_join_accept: None,
             device_info: None,
             relay_rx_info: None,
             f_nwk_s_int_key: None,
@@ -130,7 +134,11 @@ impl JoinRequest {
             // Using internal keys
             ctx.validate_mic().await?;
             ctx.validate_dev_nonce_and_get_device_keys().await?;
-            ctx.construct_join_accept_and_set_keys()?;
+            if ctx.duplicate_join_accept.is_some() {
+                ctx.resend_join_accept().await?;
+                return Ok(());
+            }
+            ctx.construct_join_accept_and_set_keys().await?;
         }
         ctx.log_uplink_meta().await?;
         ctx.set_device_session().await?;
@@ -155,6 +163,7 @@ impl JoinRequest {
             device_profile: None,
             device_keys: None,
             join_accept: None,
+            duplicate_join_accept: None,
             device_info: None,
             relay_rx_info: None,
             f_nwk_s_int_key: None,
@@ -180,7 +189,11 @@ impl JoinRequest {
             // Using internal keys
             ctx.validate_mic().await?;
             ctx.validate_dev_nonce_and_get_device_keys().await?;
-            ctx.construct_join_accept_and_set_keys()?;
+            if ctx.duplicate_join_accept.is_some() {
+                ctx.resend_join_accept().await?;
+                return Ok(());
+            }
+            ctx.construct_join_accept_and_set_keys().await?;
         }
         ctx.set_device_session().await?;
         ctx.flush_device_queue().await?;
@@ -452,24 +465,68 @@ impl JoinRequest {
 
     async fn validate_dev_nonce_and_get_device_keys(&mut self) -> Result<()> {
         trace!("Validate dev-nonce and get device-keys");
-        let dev = self.device.as_ref().unwrap();
-        let app = self.application.as_ref().unwrap();
-        let join_request = self.join_request.as_ref().unwrap();
+
+        // Copies, not borrows: the InvalidDevNonce arm below needs to assign
+        // self.duplicate_join_accept while these values are still in scope,
+        // which a live borrow of self.device / self.join_request would block.
+        let dev_eui = self.device.as_ref().unwrap().dev_eui;
+        let has_session = self.device.as_ref().unwrap().device_session.is_some();
+        let dev_variables = self.device.as_ref().unwrap().variables.clone();
+        let app_id = self.application.as_ref().unwrap().id;
+        let (join_eui, dev_nonce) = {
+            let jr = self.join_request.as_ref().unwrap();
+            (jr.join_eui, jr.dev_nonce)
+        };
 
         self.device_keys = Some(
-            match device_keys::validate_incr_join_and_store_dev_nonce(
-                join_request.join_eui,
-                dev.dev_eui,
-                join_request.dev_nonce,
-            )
-            .await
+            match device_keys::validate_incr_join_and_store_dev_nonce(join_eui, dev_eui, dev_nonce)
+                .await
             {
                 Ok(v) => v,
                 Err(v) => match v {
                     StorageError::InvalidDevNonce => {
+                        // Is this the same request arriving over a second path?
+                        // If so it is not an error: re-send the identical accept
+                        // on this path. Requires the first copy to have stored
+                        // the device-session already (it does so before its
+                        // downlink flow starts).
+                        //
+                        // A cache fault (Redis down, undecodable value) must not
+                        // suppress the error handling below: it degrades to a
+                        // miss.
+                        let cached = match join_accept_cache::get(&dev_eui).await {
+                            Ok(v) => v,
+                            Err(e) => {
+                                warn!(dev_eui = %dev_eui, error = %e.full(), "Join-accept cache lookup error");
+                                None
+                            }
+                        };
+
+                        if has_session
+                            && let Some(c) = cached
+                            && c.join_eui == join_eui.to_be_bytes()
+                            && c.dev_nonce as u16 == dev_nonce
+                        {
+                            match PhyPayload::from_slice(&c.phy_payload) {
+                                Ok(phy) => {
+                                    info!(
+                                        dev_eui = %dev_eui,
+                                        dev_nonce = dev_nonce,
+                                        path = if self.relay_context.is_some() { "relayed" } else { "direct" },
+                                        "Join-request received over a second path, re-sending join-accept"
+                                    );
+                                    self.duplicate_join_accept = Some(phy);
+                                    return Ok(());
+                                }
+                                Err(e) => {
+                                    warn!(dev_eui = %dev_eui, error = %e, "Cached join-accept decode error");
+                                }
+                            }
+                        }
+
                         integration::log_event(
-                            app.id.into(),
-                            &dev.variables,
+                            app_id.into(),
+                            &dev_variables,
                             &integration_pb::LogEvent {
                                 time: Some(Utc::now().into()),
                                 device_info: self.device_info.clone(),
@@ -481,8 +538,8 @@ impl JoinRequest {
                                         "deduplication_id".to_string(),
                                         self.uplink_frame_set.uplink_set_id.to_string(),
                                     ),
-                                    ("join_eui".to_string(), join_request.join_eui.to_string()),
-                                    ("dev_nonce".to_string(), join_request.dev_nonce.to_string()),
+                                    ("join_eui".to_string(), join_eui.to_string()),
+                                    ("dev_nonce".to_string(), dev_nonce.to_string()),
                                 ]
                                 .iter()
                                 .cloned()
@@ -492,7 +549,7 @@ impl JoinRequest {
                         .await;
 
                         metrics::save(
-                            &format!("device:{}", dev.dev_eui),
+                            &format!("device:{}", dev_eui),
                             &metrics::Record {
                                 time: Local::now(),
                                 kind: metrics::Kind::ABSOLUTE,
@@ -616,7 +673,7 @@ impl JoinRequest {
         Ok(())
     }
 
-    fn construct_join_accept_and_set_keys(&mut self) -> Result<()> {
+    async fn construct_join_accept_and_set_keys(&mut self) -> Result<()> {
         trace!("Constructing JoinAccept payload");
 
         let conf = config::get();
@@ -753,6 +810,18 @@ impl JoinRequest {
             }
             .to_vec(),
         });
+
+        // Cache the accept so a second copy of this same request (direct vs.
+        // relayed) can be answered with the identical payload on its own path.
+        join_accept_cache::save(
+            &d.dev_eui,
+            &internal::CachedJoinAccept {
+                join_eui: join_request.join_eui.to_be_bytes().to_vec(),
+                dev_nonce: join_request.dev_nonce as u32,
+                phy_payload: self.join_accept.as_ref().unwrap().to_vec()?,
+            },
+        )
+        .await?;
 
         Ok(())
     }
@@ -926,6 +995,38 @@ impl JoinRequest {
             self.join_accept.as_ref().unwrap(),
         )
         .await?;
+        Ok(())
+    }
+
+    async fn resend_join_accept(&mut self) -> Result<()> {
+        trace!("Re-sending join-accept on second path");
+        let join_accept = self.duplicate_join_accept.take().unwrap();
+
+        match self.relay_context.take() {
+            None => {
+                downlink::join::JoinAccept::handle(
+                    &self.uplink_frame_set,
+                    self.tenant.as_ref().unwrap(),
+                    self.device.as_mut().unwrap(),
+                    &join_accept,
+                )
+                .await?
+            }
+            Some(relay_ctx) => {
+                downlink::join::JoinAccept::handle_relayed(
+                    &relay_ctx,
+                    &self.uplink_frame_set,
+                    self.tenant.as_ref().unwrap(),
+                    self.device.as_mut().unwrap(),
+                    &join_accept,
+                )
+                .await?
+            }
+        }
+
+        // One re-send per accepted join: a third copy (or a replayed request) gets the normal InvalidDevNonce handling.
+        join_accept_cache::delete(&self.device.as_ref().unwrap().dev_eui).await?;
+
         Ok(())
     }
 
