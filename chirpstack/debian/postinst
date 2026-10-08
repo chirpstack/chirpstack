@@ -1,8 +1,38 @@
 #!/usr/bin/env bash
 
+set -e
+
 # Set config-file permissions
 chown -R chirpstack:chirpstack /etc/chirpstack
 chmod 750 /etc/chirpstack
 chmod 640 /etc/chirpstack/*.toml
+
+# Generate a random [api] secret on first install.
+#
+# The shipped configuration ships with a fixed placeholder secret
+# ("you-must-replace-this"). This secret is used to sign login and API
+# (JWT) tokens, so an instance left on the placeholder value signs its
+# tokens with a publicly-known key. To make the default deployment safe,
+# replace the placeholder (or an empty secret) with a random value.
+#
+# This only rewrites the placeholder / empty value, so an operator that
+# already configured their own secret is never overwritten (also safe on
+# upgrade, where chirpstack.toml is a dpkg conffile).
+CONFIG_FILE="/etc/chirpstack/chirpstack.toml"
+
+if [ "$1" = "configure" ] && [ -f "${CONFIG_FILE}" ]; then
+    if grep -qE '^[[:space:]]*secret[[:space:]]*=[[:space:]]*"(you-must-replace-this)?"' "${CONFIG_FILE}"; then
+        if command -v openssl >/dev/null 2>&1; then
+            SECRET="$(openssl rand -base64 32)"
+        else
+            SECRET="$(head -c 32 /dev/urandom | base64)"
+        fi
+
+        # '|' is used as the sed delimiter as it never appears in base64 output.
+        sed -i -E "s|^([[:space:]]*)secret[[:space:]]*=[[:space:]]*\"(you-must-replace-this)?\"|\1secret = \"${SECRET}\"|" "${CONFIG_FILE}"
+
+        echo "chirpstack: generated a random [api] secret in ${CONFIG_FILE}"
+    fi
+fi
 
 #DEBHELPER#

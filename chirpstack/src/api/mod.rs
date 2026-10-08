@@ -37,7 +37,7 @@ use tonic_web::GrpcWebLayer;
 use tower::Service;
 use tower::util::ServiceExt;
 use tower_http::trace::TraceLayer;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 use super::config;
 use crate::api::auth::validator;
@@ -96,6 +96,13 @@ type BoxError = Box<dyn std::error::Error + Send + Sync>;
 pub async fn setup() -> Result<()> {
     let conf = config::get();
     let bind = conf.api.bind.parse().context("Parse api.bind config")?;
+
+    // API secret warning
+    if ["", "you-must-replace-this"].contains(&conf.api.secret.as_str()) {
+        warn!(
+            "Insecure api.secret configuration! You must set the api.secret to an unique random value in your chirpstack.toml configuration"
+        );
+    }
 
     info!(bind = %bind, "Setting up API interface");
 
