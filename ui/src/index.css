@@ -18,6 +18,10 @@
   height: 32px;
 }
 
+.logo {
+  transition: filter 0.2s ease-in-out;
+}
+
 .layout-header .actions {
   float: right;
 }
@@ -141,6 +145,9 @@ pre {
 }
 
 @media (prefers-color-scheme: dark) {
+  .logo {
+    filter: invert(1);
+  }
   body {
     background-color: #141414;
   }

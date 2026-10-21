@@ -35,6 +35,11 @@ function Root() {
       <ConfigProvider
         theme={{
           algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+            components: {
+              Layout: {
+                siderBg: isDark ? "#141414" : "#ffffff",
+              },
+           },
         }}
       >
         <App />
