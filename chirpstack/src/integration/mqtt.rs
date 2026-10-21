@@ -8,10 +8,10 @@ use handlebars::Handlebars;
 use prost::Message;
 use rand::RngExt;
 use regex::Regex;
-use rumqttc::Transport;
-use rumqttc::tokio_rustls::rustls;
-use rumqttc::v5::mqttbytes::v5::{ConnectReturnCode, Publish, SubscribeReasonCode};
-use rumqttc::v5::{AsyncClient, Event, Incoming, MqttOptions, mqttbytes::QoS};
+use rumqttc::{
+    AsyncClient, ConnectReturnCode, Event, Incoming, MqttOptions, Publish, PublishOptions, QoS,
+    SubscribeReasonCode, Transport, tokio_rustls::rustls,
+};
 use serde::Serialize;
 use tokio::sync::mpsc;
 use tokio::time::sleep;
@@ -92,9 +92,9 @@ impl<'a> Integration<'a> {
             MqttOptions::parse_url(format!("{}?client_id={}", conf.server, client_id))?;
         mqtt_opts.set_clean_start(conf.clean_session);
         mqtt_opts.set_session_expiry_interval(Some(conf.session_expiry_interval.as_secs() as u32));
-        mqtt_opts.set_keep_alive(conf.keep_alive_interval);
+        mqtt_opts.set_keep_alive(conf.keep_alive_interval.as_secs() as u16);
         if !conf.username.is_empty() || !conf.password.is_empty() {
-            mqtt_opts.set_credentials(&conf.username, &conf.password);
+            mqtt_opts.set_credentials(&conf.username, conf.password.clone());
         }
 
         if !conf.ca_cert.is_empty() || !conf.tls_cert.is_empty() || !conf.tls_key.is_empty() {
@@ -125,7 +125,9 @@ impl<'a> Integration<'a> {
             mqtt_opts.set_transport(Transport::tls_with_config(client_conf.into()));
         }
 
-        let (client, mut eventloop) = AsyncClient::new(mqtt_opts, conf.channel_capacity);
+        let (client, mut eventloop) = AsyncClient::builder(mqtt_opts)
+            .capacity(conf.channel_capacity)
+            .build();
 
         let i = Integration {
             command_regex: Regex::new(&templates.render(
@@ -278,7 +280,9 @@ impl<'a> Integration<'a> {
 
     async fn publish_event(&self, topic: &str, b: Vec<u8>) -> Result<()> {
         info!(topic = %topic, "Publishing event");
-        self.client.publish(topic, self.qos, false, b).await?;
+        self.client
+            .publish(topic, b, PublishOptions::new(self.qos))
+            .await?;
         Ok(())
     }
 }
@@ -528,7 +532,7 @@ pub mod test {
         let mut mqtt_opts =
             MqttOptions::parse_url(format!("{}?client_id=chirpstack_test", &conf.server)).unwrap();
         mqtt_opts.set_clean_start(true);
-        let (client, mut eventloop) = AsyncClient::new(mqtt_opts, 100);
+        let (client, mut eventloop) = AsyncClient::builder(mqtt_opts).capacity(100).build();
         let (mqtt_tx, mut mqtt_rx) = mpsc::channel(100);
 
         tokio::spawn({
@@ -555,7 +559,7 @@ pub mod test {
             .await
             .unwrap();
 
-        sleep(Duration::from_millis(100)).await;
+        sleep(Duration::from_millis(200)).await;
 
         // uplink event
         let pl = integration::UplinkEvent {
@@ -711,9 +715,8 @@ pub mod test {
         client
             .publish(
                 format!("application/{}/device/{}/command/down", app.id, dev.dev_eui),
-                QoS::AtLeastOnce,
-                false,
                 down_cmd_json,
+                PublishOptions::new(QoS::AtLeastOnce),
             )
             .await
             .unwrap();
