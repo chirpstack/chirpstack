@@ -506,7 +506,7 @@ message GetDeviceLinkMetricsResponse {
 
 message DeviceQueueItem {
   // ID (UUID).
-  // This is automatically generated on enqueue.
+  // On enqueue, if left blank, a random UUID will be generated.
   string id = 1;
 
   // Device EUI (EUI64).
