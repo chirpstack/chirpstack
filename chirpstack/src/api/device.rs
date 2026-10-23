@@ -1115,6 +1115,11 @@ impl DeviceService for Device {
             }
         };
         let dev_eui = EUI64::from_str(&req_qi.dev_eui).map_err(|e| e.status())?;
+        let id = if req_qi.id.is_empty() {
+            Uuid::new_v4()
+        } else {
+            Uuid::from_str(&req_qi.id).map_err(|e| e.status())?
+        };
 
         if req.flush_queue {
             self.validator
@@ -1157,7 +1162,7 @@ impl DeviceService for Device {
         }
 
         let qi = device_queue::DeviceQueueItem {
-            id: Uuid::new_v4().into(),
+            id: id.into(),
             dev_eui,
             f_port: f_port as i16,
             confirmed: req_qi.confirmed,
@@ -1833,6 +1838,87 @@ pub mod test {
         let get_queue_resp = get_queue_resp.get_ref();
         assert_eq!(0, get_queue_resp.total_count);
         assert_eq!(0, get_queue_resp.result.len());
+
+        // enqueue with caller-supplied id
+        let enqueue_req = get_request(
+            &u.id,
+            api::EnqueueDeviceQueueItemRequest {
+                queue_item: Some(api::DeviceQueueItem {
+                    id: "4ba9fd2c-7e5b-4c0a-9b3e-1f6d2a8c5e71".into(),
+                    dev_eui: "0102030405060708".into(),
+                    f_port: 2,
+                    data: vec![7, 8, 9],
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        );
+        let enqueue_resp = service.enqueue(enqueue_req).await.unwrap();
+        assert_eq!(
+            "4ba9fd2c-7e5b-4c0a-9b3e-1f6d2a8c5e71",
+            enqueue_resp.get_ref().id
+        );
+
+        let get_queue_req = get_request(
+            &u.id,
+            api::GetDeviceQueueItemsRequest {
+                dev_eui: "0102030405060708".into(),
+                count_only: false,
+            },
+        );
+        let get_queue_resp = service.get_queue(get_queue_req).await.unwrap();
+        let get_queue_resp = get_queue_resp.get_ref();
+        assert_eq!(1, get_queue_resp.result.len());
+        assert_eq!(
+            "4ba9fd2c-7e5b-4c0a-9b3e-1f6d2a8c5e71",
+            get_queue_resp.result[0].id
+        );
+
+        // enqueue with blank id generates one
+        let enqueue_req = get_request(
+            &u.id,
+            api::EnqueueDeviceQueueItemRequest {
+                queue_item: Some(api::DeviceQueueItem {
+                    dev_eui: "0102030405060708".into(),
+                    f_port: 2,
+                    data: vec![1],
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        );
+        let enqueue_resp = service.enqueue(enqueue_req).await.unwrap();
+        assert!(Uuid::from_str(&enqueue_resp.get_ref().id).is_ok());
+
+        // enqueue with malformed id (must not flush the queue)
+        let enqueue_req = get_request(
+            &u.id,
+            api::EnqueueDeviceQueueItemRequest {
+                queue_item: Some(api::DeviceQueueItem {
+                    id: "not-a-uuid".into(),
+                    dev_eui: "0102030405060708".into(),
+                    f_port: 2,
+                    data: vec![1],
+                    ..Default::default()
+                }),
+                flush_queue: true,
+            },
+        );
+        let enqueue_resp = service.enqueue(enqueue_req).await;
+        assert_eq!(
+            tonic::Code::InvalidArgument,
+            enqueue_resp.unwrap_err().code()
+        );
+
+        let get_queue_req = get_request(
+            &u.id,
+            api::GetDeviceQueueItemsRequest {
+                dev_eui: "0102030405060708".into(),
+                count_only: true,
+            },
+        );
+        let get_queue_resp = service.get_queue(get_queue_req).await.unwrap();
+        assert_eq!(2, get_queue_resp.get_ref().total_count);
 
         // delete
         let del_req = get_request(
