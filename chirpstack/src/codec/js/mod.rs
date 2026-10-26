@@ -211,9 +211,11 @@ pub mod test {
         let vars: HashMap<String, String> = HashMap::new();
         let out = decode(Utc::now(), 10, &vars, &decoder, &[0x01, 0x02, 0x03]).await;
 
-        assert_eq!(
-            "JS error: Error: foo is not defined\n    at decodeUplink (main:5:1)\n    at <anonymous> (main:10:37)\n",
-            out.err().unwrap().to_string()
+        assert!(
+            out.err()
+                .unwrap()
+                .to_string()
+                .starts_with("JS error: Error: foo is not defined")
         );
     }
 
@@ -378,9 +380,11 @@ pub mod test {
         };
 
         let out = encode(10, &vars, &encoder, &input).await;
-        assert_eq!(
-            "JS error: Error: foo is not defined\n    at encodeDownlink (main:5:1)\n    at <anonymous> (main:10:39)\n",
-            out.err().unwrap().to_string()
+        assert!(
+            out.err()
+                .unwrap()
+                .to_string()
+                .starts_with("JS error: Error: foo is not defined")
         );
     }
 

@@ -11,10 +11,10 @@ use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
 use prost::Message;
 use rand::RngExt;
-use rumqttc::Transport;
-use rumqttc::tokio_rustls::rustls;
-use rumqttc::v5::mqttbytes::v5::{ConnectReturnCode, Publish, SubscribeReasonCode};
-use rumqttc::v5::{AsyncClient, Event, Incoming, MqttOptions, mqttbytes::QoS};
+use rumqttc::{
+    AsyncClient, ConnectReturnCode, Event, Incoming, MqttOptions, Publish, PublishOptions, QoS,
+    SubscribeReasonCode, Transport, tokio_rustls::rustls,
+};
 use serde::Serialize;
 use tokio::sync::mpsc;
 use tokio::time::sleep;
@@ -123,9 +123,9 @@ impl<'a> MqttBackend<'a> {
             MqttOptions::parse_url(format!("{}?client_id={}", conf.server, client_id))?;
         mqtt_opts.set_clean_start(conf.clean_session);
         mqtt_opts.set_session_expiry_interval(Some(conf.session_expiry_interval.as_secs() as u32));
-        mqtt_opts.set_keep_alive(conf.keep_alive_interval);
+        mqtt_opts.set_keep_alive(conf.keep_alive_interval.as_secs() as u16);
         if !conf.username.is_empty() || !conf.password.is_empty() {
-            mqtt_opts.set_credentials(&conf.username, &conf.password);
+            mqtt_opts.set_credentials(&conf.username, conf.password.clone());
         }
 
         if !conf.ca_cert.is_empty() || !conf.tls_cert.is_empty() || !conf.tls_key.is_empty() {
@@ -156,7 +156,9 @@ impl<'a> MqttBackend<'a> {
             mqtt_opts.set_transport(Transport::tls_with_config(client_conf.into()));
         }
 
-        let (client, mut eventloop) = AsyncClient::new(mqtt_opts, conf.channel_capacity);
+        let (client, mut eventloop) = AsyncClient::builder(mqtt_opts)
+            .capacity(conf.channel_capacity)
+            .build();
 
         let b = MqttBackend {
             client,
@@ -318,7 +320,9 @@ impl GatewayBackend for MqttBackend<'_> {
         };
 
         info!(region_id = %self.region_config_id, gateway_id = %df.gateway_id, topic = %topic, json = json, "Sending downlink frame");
-        self.client.publish(topic, self.qos, false, b).await?;
+        self.client
+            .publish(topic, b, PublishOptions::new(self.qos))
+            .await?;
         trace!("Message published");
 
         Ok(())
@@ -341,7 +345,9 @@ impl GatewayBackend for MqttBackend<'_> {
         };
 
         info!(region_id = %self.region_config_id, gateway_id = %gw_conf.gateway_id, topic = %topic, json = json, "Sending gateway configuration");
-        self.client.publish(topic, self.qos, false, b).await?;
+        self.client
+            .publish(topic, b, PublishOptions::new(self.qos))
+            .await?;
         trace!("Message published");
 
         Ok(())

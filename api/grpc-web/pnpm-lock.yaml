@@ -12,8 +12,8 @@ importers:
         specifier: ^3.21.4
         version: 3.21.4
       grpc-web:
-        specifier: ^2.0.2
-        version: 2.0.2
+        specifier: ^2.1.1
+        version: 2.1.1
     devDependencies:
       '@types/google-protobuf':
         specifier: ^3.15.12
@@ -78,8 +78,8 @@ packages:
     resolution: {integrity: sha512-0sttMUxThNIkCTJq5qI0xXMz5zWqV2u3yG1kR3Sj9OokGIoyRBFjoInK9NyW7x5fH7knj48Roh1gq5xbl0VoDQ==}
     hasBin: true
 
-  grpc-web@2.0.2:
-    resolution: {integrity: sha512-bvBP0/d5jyVM3eGxxffJhRLAPpH6eXhJeUzBT+bSIEgUKkG4a/BotEimVeW3phP0WLnsJnkRl8uQdRf2yDLaVA==}
+  grpc-web@2.1.1:
+    resolution: {integrity: sha512-6Yxso4djycqREHvhCBGdcxxqhgEf2EYWa7QqQ07v4drZBHg/N9C3f27epjJYjl4KIsGpkB0g+wn9TrYepSC35Q==}
 
   https-proxy-agent@7.0.6:
     resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
@@ -115,8 +115,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  tar@7.5.20:
-    resolution: {integrity: sha512-9FcyK4PA6+WbzlTM9WhQm6vB5W7cP7dUiPsv1g7YDwEQnQ1CGpK3MGlKk/ITVWMk05kHZuBhmVhiv8LZoy/PFQ==}
+  tar@7.5.22:
+    resolution: {integrity: sha512-MFO/QzvtAOmJbkhOaCTvbGcFN9L9b+JunIsDwaKljSOdcLMea3NJ1k9Usz/rjdfSXTq4dfzfeS7W4p4YOAAHeA==}
     engines: {node: '>=18'}
 
   tr46@0.0.3:
@@ -155,7 +155,7 @@ snapshots:
       node-fetch: 2.7.0
       nopt: 8.1.0
       semver: 7.8.5
-      tar: 7.5.20
+      tar: 7.5.22
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -185,7 +185,7 @@ snapshots:
       - encoding
       - supports-color
 
-  grpc-web@2.0.2: {}
+  grpc-web@2.1.1: {}
 
   https-proxy-agent@7.0.6:
     dependencies:
@@ -212,7 +212,7 @@ snapshots:
 
   semver@7.8.5: {}
 
-  tar@7.5.20:
+  tar@7.5.22:
     dependencies:
       '@isaacs/fs-minipass': 4.0.1
       chownr: 3.0.0

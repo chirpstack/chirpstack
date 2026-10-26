@@ -79,6 +79,7 @@ async fn test_lorawan_10() {
         mac_version: lrwn::region::MacVersion::LORAWAN_1_0_4,
         reg_params_revision: lrwn::region::Revision::RP002_1_0_3,
         supports_otaa: true,
+        adr_algorithm_id: "default".into(),
         relay_params: Some(fields::RelayParams {
             is_relay_ed: true,
             ..Default::default()
@@ -289,7 +290,7 @@ async fn test_lorawan_10() {
                     wor_channel: 0,
                 },
                 frequency: 868100000,
-                payload: Box::new(phy_relay_ed_unconfirmed_up),
+                payload: Box::new(phy_relay_ed_unconfirmed_up.clone()),
             })),
         }),
         mic: None,
@@ -432,6 +433,182 @@ async fn test_lorawan_10() {
         mic: None,
     };
     phy_relay_unconfirmed_down_empty
+        .set_downlink_data_mic(
+            lrwn::MACVersion::LoRaWAN1_0,
+            0,
+            &AES128Key::from_slice(&ds_relay.s_nwk_s_int_key).unwrap(),
+        )
+        .unwrap();
+
+    // Fixtures for the case where the end-device data-rate (DR3, as reported by
+    // the Relay in the ForwardUplinkReq metadata) differs from the data-rate of
+    // the Relay's own uplink (DR5, the frame that the gateway received).
+    let ds_relay_ed_dr3 = internal::DeviceSession {
+        dr: 3,
+        nb_trans: 1,
+        uplink_adr_history: vec![internal::UplinkAdrHistory {
+            f_cnt: 87,
+            max_snr: 4.0,
+            max_rssi: -100,
+            tx_power_index: 0,
+            gateway_count: 1,
+        }],
+        ..ds_relay_ed.clone()
+    };
+
+    let mut phy_relay_ed_unconfirmed_up_adr = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::UnconfirmedDataUp,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+            fhdr: lrwn::FHDR {
+                devaddr: lrwn::DevAddr::from_slice(&ds_relay_ed.dev_addr).unwrap(),
+                f_cnt: 88,
+                f_ctrl: lrwn::FCtrl {
+                    adr: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            f_port: Some(1),
+            frm_payload: Some(lrwn::FRMPayload::Raw(vec![1, 2, 3, 4])),
+        }),
+        mic: None,
+    };
+    phy_relay_ed_unconfirmed_up_adr
+        .encrypt_frm_payload(
+            &AES128Key::from_slice(&ds_relay_ed.app_s_key.as_ref().unwrap().aes_key).unwrap(),
+        )
+        .unwrap();
+    phy_relay_ed_unconfirmed_up_adr
+        .set_uplink_data_mic(
+            lrwn::MACVersion::LoRaWAN1_0,
+            0,
+            0,
+            0,
+            &AES128Key::from_slice(&ds_relay_ed.f_nwk_s_int_key).unwrap(),
+            &AES128Key::from_slice(&ds_relay_ed.s_nwk_s_int_key).unwrap(),
+        )
+        .unwrap();
+
+    let relay_unconfirmed_up_ed_dr3 = |payload: lrwn::PhyPayload| {
+        let mut phy = lrwn::PhyPayload {
+            mhdr: lrwn::MHDR {
+                f_type: lrwn::FType::UnconfirmedDataUp,
+                major: lrwn::Major::LoRaWANR1,
+            },
+            payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                fhdr: lrwn::FHDR {
+                    devaddr: lrwn::DevAddr::from_slice(&ds_relay.dev_addr).unwrap(),
+                    f_cnt: 8,
+                    ..Default::default()
+                },
+                f_port: Some(lrwn::LA_FPORT_RELAY),
+                frm_payload: Some(lrwn::FRMPayload::ForwardUplinkReq(lrwn::ForwardUplinkReq {
+                    metadata: lrwn::UplinkMetadata {
+                        dr: 3,
+                        snr: 4,
+                        rssi: -100,
+                        wor_channel: 0,
+                    },
+                    frequency: 868100000,
+                    payload: Box::new(payload),
+                })),
+            }),
+            mic: None,
+        };
+        phy.encrypt_frm_payload(&AES128Key::from_slice(&ds_relay.nwk_s_enc_key).unwrap())
+            .unwrap();
+        phy.set_uplink_data_mic(
+            lrwn::MACVersion::LoRaWAN1_0,
+            0,
+            0,
+            0,
+            &AES128Key::from_slice(&ds_relay.f_nwk_s_int_key).unwrap(),
+            &AES128Key::from_slice(&ds_relay.s_nwk_s_int_key).unwrap(),
+        )
+        .unwrap();
+        phy
+    };
+    let phy_relay_unconfirmed_up_ed_dr3 =
+        relay_unconfirmed_up_ed_dr3(phy_relay_ed_unconfirmed_up.clone());
+    let phy_relay_unconfirmed_up_ed_dr3_adr =
+        relay_unconfirmed_up_ed_dr3(phy_relay_ed_unconfirmed_up_adr);
+
+    // The LinkADRReq that the default ADR algorithm returns for an end-device
+    // at DR3 with a max. SNR of 4 (required SNR for SF9 = -12.5, installation
+    // margin = 10 => 2 steps => DR5).
+    let mut phy_relay_ed_unconfirmed_down_link_adr = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::UnconfirmedDataDown,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+            fhdr: lrwn::FHDR {
+                devaddr: lrwn::DevAddr::from_slice(&ds_relay_ed.dev_addr).unwrap(),
+                f_cnt: 55,
+                f_ctrl: lrwn::FCtrl {
+                    adr: true,
+                    f_opts_len: 5,
+                    ..Default::default()
+                },
+                f_opts: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::LinkADRReq(
+                    lrwn::LinkADRReqPayload {
+                        dr: 5,
+                        tx_power: 0,
+                        ch_mask: lrwn::ChMask::new([
+                            true, true, true, false, false, false, false, false, false, false,
+                            false, false, false, false, false, false,
+                        ]),
+                        redundancy: lrwn::Redundancy {
+                            ch_mask_cntl: 0,
+                            nb_rep: 1,
+                        },
+                    },
+                )]),
+            },
+            f_port: None,
+            frm_payload: None,
+        }),
+        mic: None,
+    };
+    phy_relay_ed_unconfirmed_down_link_adr
+        .set_downlink_data_mic(
+            lrwn::MACVersion::LoRaWAN1_0,
+            0,
+            &AES128Key::from_slice(&ds_relay_ed.s_nwk_s_int_key).unwrap(),
+        )
+        .unwrap();
+
+    let mut phy_relay_unconfirmed_down_link_adr = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::UnconfirmedDataDown,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+            fhdr: lrwn::FHDR {
+                devaddr: lrwn::DevAddr::from_slice(&ds_relay.dev_addr).unwrap(),
+                f_cnt: 5,
+                f_ctrl: lrwn::FCtrl {
+                    adr: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            f_port: Some(lrwn::LA_FPORT_RELAY),
+            frm_payload: Some(lrwn::FRMPayload::ForwardDownlinkReq(
+                lrwn::ForwardDownlinkReq {
+                    payload: Box::new(phy_relay_ed_unconfirmed_down_link_adr),
+                },
+            )),
+        }),
+        mic: None,
+    };
+    phy_relay_unconfirmed_down_link_adr
+        .encrypt_frm_payload(&AES128Key::from_slice(&ds_relay.nwk_s_enc_key).unwrap())
+        .unwrap();
+    phy_relay_unconfirmed_down_link_adr
         .set_downlink_data_mic(
             lrwn::MACVersion::LoRaWAN1_0,
             0,
@@ -733,6 +910,127 @@ async fn test_lorawan_10() {
                         },
                         gw::DownlinkFrameItem {
                             phy_payload: phy_relay_unconfirmed_down_empty.to_vec().unwrap(),
+                            tx_info: Some(gw::DownlinkTxInfo {
+                                frequency: 869525000,
+                                power: 29,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
+                                            spreading_factor: 12,
+                                            code_rate: gw::CodeRate::Cr45.into(),
+                                            polarization_inversion: true,
+                                            ..Default::default()
+                                        },
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
+                                        gw::DelayTimingInfo {
+                                            delay: Some(Duration::from_secs(2).into()),
+                                        },
+                                    )),
+                                }),
+                                ..Default::default()
+                            }),
+                            ..Default::default()
+                        },
+                    ],
+                    ..Default::default()
+                }),
+            ],
+        },
+        Test {
+            name: "relayed unconfirmed uplink, end-device dr differs from relay dr".into(),
+            dev_eui_relay: dev_relay.dev_eui,
+            dev_eui_relay_ed: dev_relay_ed.dev_eui,
+            device_queue_items_relay_ed: vec![],
+            device_session_relay: Some(ds_relay.clone()),
+            device_session_relay_ed: Some(ds_relay_ed_dr3.clone()),
+            tx_info: tx_info.clone(),
+            rx_info: rx_info.clone(),
+            phy_payload: phy_relay_unconfirmed_up_ed_dr3,
+            assert: vec![
+                assert::f_cnt_up(dev_relay.dev_eui, 9),
+                assert::f_cnt_up(dev_relay_ed.dev_eui, 89),
+                // The Relay session holds the data-rate of the Relay uplink,
+                // the end-device session must keep the end-device data-rate.
+                assert::dr(dev_relay.dev_eui, 5),
+                assert::dr(dev_relay_ed.dev_eui, 3),
+                // The end-device did not change its data-rate, the ADR history
+                // must be retained and extended with the Relay metadata.
+                assert::uplink_adr_history(
+                    dev_relay_ed.dev_eui,
+                    vec![
+                        internal::UplinkAdrHistory {
+                            f_cnt: 87,
+                            max_snr: 4.0,
+                            max_rssi: -100,
+                            tx_power_index: 0,
+                            gateway_count: 1,
+                        },
+                        internal::UplinkAdrHistory {
+                            f_cnt: 88,
+                            max_snr: 4.0,
+                            max_rssi: -100,
+                            tx_power_index: 0,
+                            gateway_count: 1,
+                        },
+                    ],
+                ),
+                assert::no_downlink_frame(),
+            ],
+        },
+        Test {
+            name: "relayed unconfirmed uplink + adr, end-device dr differs from relay dr".into(),
+            dev_eui_relay: dev_relay.dev_eui,
+            dev_eui_relay_ed: dev_relay_ed.dev_eui,
+            device_queue_items_relay_ed: vec![],
+            device_session_relay: Some(ds_relay.clone()),
+            device_session_relay_ed: Some(ds_relay_ed_dr3.clone()),
+            tx_info: tx_info.clone(),
+            rx_info: rx_info.clone(),
+            phy_payload: phy_relay_unconfirmed_up_ed_dr3_adr,
+            assert: vec![
+                assert::f_cnt_up(dev_relay.dev_eui, 9),
+                assert::f_cnt_up(dev_relay_ed.dev_eui, 89),
+                assert::dr(dev_relay_ed.dev_eui, 3),
+                // The ADR algorithm must be evaluated against the end-device
+                // data-rate (DR3), not the data-rate of the Relay uplink (DR5).
+                // For DR5, a max. SNR of 4 leaves no room for a change and no
+                // LinkADRReq would be sent.
+                assert::downlink_frame(gw::DownlinkFrame {
+                    gateway_id: gw.gateway_id.to_string(),
+                    items: vec![
+                        gw::DownlinkFrameItem {
+                            phy_payload: phy_relay_unconfirmed_down_link_adr.to_vec().unwrap(),
+                            tx_info: Some(gw::DownlinkTxInfo {
+                                frequency: 868100000,
+                                power: 16,
+                                modulation: Some(gw::Modulation {
+                                    parameters: Some(gw::modulation::Parameters::Lora(
+                                        gw::LoraModulationInfo {
+                                            bandwidth: 125000,
+                                            spreading_factor: 7,
+                                            code_rate: gw::CodeRate::Cr45.into(),
+                                            polarization_inversion: true,
+                                            ..Default::default()
+                                        },
+                                    )),
+                                }),
+                                timing: Some(gw::Timing {
+                                    parameters: Some(gw::timing::Parameters::Delay(
+                                        gw::DelayTimingInfo {
+                                            delay: Some(Duration::from_secs(1).into()),
+                                        },
+                                    )),
+                                }),
+                                ..Default::default()
+                            }),
+                            ..Default::default()
+                        },
+                        gw::DownlinkFrameItem {
+                            phy_payload: phy_relay_unconfirmed_down_link_adr.to_vec().unwrap(),
                             tx_info: Some(gw::DownlinkTxInfo {
                                 frequency: 869525000,
                                 power: 29,

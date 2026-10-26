@@ -1,11 +1,11 @@
 {
   "name": "@chirpstack/chirpstack-api-grpc-web",
-  "version": "4.20.0-test.2",
+  "version": "4.20.0",
   "description": "Chirpstack gRPC-web API",
   "license": "MIT",
   "dependencies": {
     "google-protobuf": "^3.21.4",
-    "grpc-web": "^2.0.2"
+    "grpc-web": "^2.1.1"
   },
   "devDependencies": {
     "@types/google-protobuf": "^3.15.12",

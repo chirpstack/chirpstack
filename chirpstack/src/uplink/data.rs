@@ -669,15 +669,20 @@ impl Data {
             self.device_changeset.dr = Some(Some(self.uplink_frame_set.dr.into()));
         }
 
+        // The data-rate of the end-device is the data-rate reported by the Relay
+        // in the ForwardUplinkReq metadata. self.uplink_frame_set.dr is the
+        // data-rate of the uplink of the Relay itself.
+        let ed_dr = relay_ctx.req.metadata.dr as u32;
+
         let ds = device.get_device_session_mut()?;
         // The node changed its data-rate. Possibly the node did also reset its
         // tx-power to max power. Because of this, we need to reset the tx-power
         // and the uplink history at the network-server side too.
-        if ds.dr != relay_ctx.req.metadata.dr as u32 {
+        if ds.dr != ed_dr {
             ds.tx_power_index = 0;
             ds.uplink_adr_history = Vec::new();
         }
-        ds.dr = self.uplink_frame_set.dr as u32;
+        ds.dr = ed_dr;
         Ok(())
     }
 

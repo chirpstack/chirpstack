@@ -6903,6 +6903,7 @@ pub mod test {
 
         let fuota = fuota::create_deployment(fuota::FuotaDeployment {
             name: "test-fuota".into(),
+            payload: vec![1, 2, 3],
             application_id: app.id,
             device_profile_id: dp.id,
             ..Default::default()

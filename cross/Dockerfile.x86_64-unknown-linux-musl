@@ -5,15 +5,15 @@ RUN apt-get update && \
     protobuf-compiler \
     libprotobuf-dev
 
-ENV MUSL_PREFIX=x86_64-linux-musl
+ENV MUSL_PREFIX=x86_64-unknown-linux-musl
 ENV SQLITE_VERSION=3490100
 
 RUN echo "Building SQLite" && \
   cd /tmp && \
   curl -fLO "https://sqlite.org/2025/sqlite-autoconf-$SQLITE_VERSION.tar.gz" && \
   tar xvzf "sqlite-autoconf-$SQLITE_VERSION.tar.gz" && cd "sqlite-autoconf-$SQLITE_VERSION" && \
-  env CC=$MUSL_PREFIX-gcc ./configure --enable-static --prefix=/usr/local/$MUSL_PREFIX-target && \
+  env CC=$MUSL_PREFIX-gcc ./configure --enable-static --prefix=/x-tools/$MUSL_PREFIX/$MUSL_PREFIX/sysroot && \
   make && make install && \
   rm -r /tmp/*
 
-ENV PKG_CONFIG_PATH=/usr/local/$MUSL_PREFIX-target/lib/pkgconfig
+ENV PKG_CONFIG_PATH=/x-tools/$MUSL_PREFIX/$MUSL_PREFIX/sysroot/lib/pkgconfig

@@ -1299,9 +1299,16 @@ impl Data {
             return Ok(());
         }
 
-        let dr = self
-            .region_conf
-            .get_data_rate(true, self.uplink_frame_set.as_ref().unwrap().dr)?;
+        // In case of a relayed uplink, the data-rate of the end-device is the
+        // data-rate reported by the Relay in the ForwardUplinkReq metadata. The
+        // uplink_frame_set holds the data-rate of the uplink of the Relay itself,
+        // whereas the ADR history holds the SNR of the end-device to Relay link.
+        let uplink_dr = match &self.relay_context {
+            Some(relay_ctx) => relay_ctx.req.metadata.dr,
+            None => self.uplink_frame_set.as_ref().unwrap().dr,
+        };
+
+        let dr = self.region_conf.get_data_rate(true, uplink_dr)?;
 
         let ufs = self.uplink_frame_set.as_ref().unwrap();
         let dev_eui = self.device.dev_eui;
@@ -1316,7 +1323,7 @@ impl Data {
             mac_version: self.device_profile.mac_version,
             reg_params_revision: self.device_profile.reg_params_revision,
             adr: ds.adr,
-            dr: self.uplink_frame_set.as_ref().unwrap().dr,
+            dr: uplink_dr,
             tx_power_index: ds.tx_power_index as u8,
             nb_trans: ds.nb_trans as u8,
             max_tx_power_index: if ds.max_supported_tx_power_index != 0 {

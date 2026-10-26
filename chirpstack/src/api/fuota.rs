@@ -761,6 +761,7 @@ mod test {
                     application_id: app.id.to_string(),
                     device_profile_id: dp.id.to_string(),
                     name: "test-fuota".into(),
+                    payload: vec![1, 2, 3],
                     ..Default::default()
                 }),
             },
@@ -783,6 +784,7 @@ mod test {
                 application_id: app.id.to_string(),
                 device_profile_id: dp.id.to_string(),
                 name: "test-fuota".into(),
+                payload: vec![1, 2, 3],
                 ..Default::default()
             }),
             get_resp.deployment

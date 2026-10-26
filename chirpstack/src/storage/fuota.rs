@@ -196,6 +196,10 @@ pub async fn create_deployment(d: FuotaDeployment) -> Result<FuotaDeployment, Er
         }
     }
 
+    if d.payload.is_empty() {
+        return Err(Error::Validation("Payload must be non-empty".into()));
+    }
+
     let d: FuotaDeployment = diesel::insert_into(fuota_deployment::table)
         .values(&d)
         .get_result(&mut get_async_db_conn().await?)
@@ -946,6 +950,7 @@ mod test {
             application_id: app.id,
             device_profile_id: dp.id,
             name: "test-fuota-deployment".into(),
+            payload: vec![1, 2, 3],
             ..Default::default()
         })
         .await
@@ -1081,6 +1086,7 @@ mod test {
             application_id: app.id,
             device_profile_id: dp.id,
             name: "test-fuota-deployment".into(),
+            payload: vec![1, 2, 3],
             ..Default::default()
         })
         .await
@@ -1157,6 +1163,7 @@ mod test {
             application_id: app.id,
             device_profile_id: dp.id,
             name: "test-fuota-deployment".into(),
+            payload: vec![1, 2, 3],
             ..Default::default()
         })
         .await
@@ -1237,6 +1244,7 @@ mod test {
             application_id: app.id,
             device_profile_id: dp.id,
             name: "test-fuota-deployment".into(),
+            payload: vec![1, 2, 3],
             ..Default::default()
         })
         .await
