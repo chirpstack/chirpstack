@@ -229,8 +229,10 @@ impl Flow {
             return Ok(Some((FuotaJob::FragSessionSetup, Utc::now())));
         }
 
-        info!("Sending McGroupSetupReq commands to devices");
-        self.job.attempt_count += 1;
+        if !fuota_devices.is_empty() {
+            info!("Sending McGroupSetupReq commands to devices");
+            self.job.attempt_count += 1;
+        }
 
         for fuota_dev in &fuota_devices {
             let dev_keys = device_keys::get(&fuota_dev.dev_eui).await?;
@@ -366,9 +368,6 @@ impl Flow {
             return Ok(Some((FuotaJob::McSession, Utc::now())));
         }
 
-        info!("Sending FragSessionSetupReq commands to devices");
-        self.job.attempt_count += 1;
-
         if fuota_devices_completed_mc_group_setup_count == 0 {
             self.job.error_msg = "There are no devices available to complete this step".into();
             return Ok(Some((FuotaJob::DeleteMcGroup, Utc::now())));
@@ -379,6 +378,11 @@ impl Flow {
             (self.fuota_deployment.payload.len() as f32 / fragment_size as f32).ceil() as usize;
         let padding =
             (fragment_size - (self.fuota_deployment.payload.len() % fragment_size)) % fragment_size;
+
+        if !fuota_devices.is_empty() {
+            info!("Sending FragSessionSetupReq commands to devices");
+            self.job.attempt_count += 1;
+        }
 
         for fuota_dev in &fuota_devices {
             let descriptor = {
@@ -530,8 +534,10 @@ impl Flow {
             )));
         }
 
-        info!("Sending McClassB/McClassCSessionReq commands to devices");
-        self.job.attempt_count += 1;
+        if !fuota_devices.is_empty() {
+            info!("Sending McClassB/McClassCSessionReq commands to devices");
+            self.job.attempt_count += 1;
+        }
 
         if fuota_devices_completed_frag_session_setup_count == 0 {
             self.job.error_msg = "There are no devices available to complete this step".into();
@@ -837,8 +843,10 @@ impl Flow {
             )));
         }
 
-        info!("Enqueue FragSessionStatusReq");
-        self.job.attempt_count += 1;
+        if !fuota_devices.is_empty() {
+            info!("Enqueue FragSessionStatusReq");
+            self.job.attempt_count += 1;
+        }
 
         if fuota_devices_completed_mc_session_count == 0 {
             self.job.error_msg = "There are no devices available to complete this step".into();
