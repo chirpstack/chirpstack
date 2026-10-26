@@ -74,7 +74,8 @@ impl Flow {
                         max_retry_count: match next_job {
                             FuotaJob::McGroupSetup
                             | FuotaJob::FragSessionSetup
-                            | FuotaJob::McSession => self.fuota_deployment.unicast_max_retry_count,
+                            | FuotaJob::McSession
+                            | FuotaJob::FragStatus => self.fuota_deployment.unicast_max_retry_count,
                             _ => 0,
                         },
                         scheduler_run_after,
@@ -872,17 +873,39 @@ impl Flow {
             .await?;
         }
 
+        let now = Utc::now();
+        let multicast_session_end = self
+            .fuota_deployment
+            .multicast_session_end
+            .unwrap_or_else(Utc::now);
+
         if !fuota_devices.is_empty() {
-            // There are devices pending setup, we need to re-run this job.
-            let scheduler_run_after =
-                Utc::now() + TimeDelta::seconds(self.device_profile.uplink_interval as i64);
+            // There are devices pending setup, we need to re-run this job. There are two scheduling
+            // options:
+            // - Immediately after enqueuing the fragments, we enqueue the FragStatus as unicast
+            //   downlink (when the next Class-A uplink is after the multicast session).
+            // - After the multicast session has ended, we enqueue the FragStatus as unicast
+            //   downlink (e.g. for Class-B / -B devices in which case we want to avoid sending it
+            //   during the multicast session).
+            //
+            // In either case, we need to wait with a retry until after the multicast session has
+            // ended + the uplink_interval. In case we are already past the multicast_session_end
+            // time, we need to wait until now() + uplink_interval (applies to both cases).
+            let scheduler_run_after = if multicast_session_end > now {
+                multicast_session_end
+                    + TimeDelta::seconds(self.device_profile.uplink_interval as i64)
+            } else {
+                now + TimeDelta::seconds(self.device_profile.uplink_interval as i64)
+            };
             Ok(Some((FuotaJob::FragStatus, scheduler_run_after)))
         } else {
             Ok(Some((
                 FuotaJob::DeleteMcGroup,
-                self.fuota_deployment
-                    .multicast_session_end
-                    .unwrap_or_else(Utc::now),
+                if multicast_session_end > now {
+                    multicast_session_end
+                } else {
+                    now
+                },
             )))
         }
     }
