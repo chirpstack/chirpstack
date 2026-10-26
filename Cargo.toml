@@ -111,7 +111,7 @@
     async-recursion = "1.2"
 
     # Testing
-    httpmock = "0.8"
+    httpmock = "0.9"
 
     # API
     prost = "0.14"
