@@ -1922,7 +1922,7 @@ func (x *GetDeviceLinkMetricsResponse) GetErrors() *common.Metric {
 type DeviceQueueItem struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// ID (UUID).
-	// This is automatically generated on enqueue.
+	// On enqueue, if left blank, a random UUID will be generated.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Device EUI (EUI64).
 	DevEui string `protobuf:"bytes,2,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
