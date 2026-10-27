@@ -78,6 +78,8 @@ impl Default for Postgresql {
 pub struct Redis {
     pub servers: Vec<String>,
     pub cluster: bool,
+    pub master_name: String,
+    pub password: String,
     pub key_prefix: String,
     pub max_open_connections: u32,
 }
@@ -87,6 +89,8 @@ impl Default for Redis {
         Redis {
             servers: vec!["redis://127.0.0.1/".into()],
             cluster: false,
+            master_name: "".into(),
+            password: "".into(),
             key_prefix: "".into(),
             max_open_connections: 100,
         }

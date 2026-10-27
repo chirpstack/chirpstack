@@ -1365,6 +1365,7 @@ dependencies = [
  "deadpool",
  "redis",
  "serde",
+ "tokio",
 ]
 
 [[package]]
