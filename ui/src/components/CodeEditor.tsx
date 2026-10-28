@@ -7,6 +7,7 @@ import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/theme-xcode";
 import "ace-builds/src-noconflict/ext-language_tools";
+import "ace-builds/src-noconflict/theme-tomorrow_night";
 
 interface IProps {
   label?: string;
@@ -20,6 +21,17 @@ interface IProps {
 function CodeEditor(props: IProps) {
   const form = Form.useFormInstance();
   const [value, setValue] = useState<string>("");
+
+  const [isDark, setIsDark] = useState(
+    () => window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     setValue(form.getFieldValue(props.name) || "");
@@ -37,7 +49,7 @@ function CodeEditor(props: IProps) {
       <div style={{ border: "1px solid #cccccc" }}>
         <AceEditor
           mode={props.mode || "javascript"}
-          theme="xcode"
+          theme={isDark ? "tomorrow_night" : "xcode"}
           onChange={onChange}
           value={value}
           width="100%"
