@@ -39,6 +39,17 @@ function Root() {
               Layout: {
                 siderBg: isDark ? "#141414" : "#ffffff",
               },
+             ...(isDark && {
+               Menu: {
+                 itemSelectedColor: "#aaf",
+                   itemHoverBg: "#113",
+                   itemHoverColor: "#55f",
+                   subMenuItemBg: "#000",
+                 },
+                Table: {
+                   rowHoverBg: "#0a0a0bcc",
+                 },
+             }),
            },
         }}
       >

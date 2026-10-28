@@ -155,4 +155,8 @@ pre {
     background: #141414;
     box-shadow: 0px 0px 10px 0px #303030;
   }
+/* change the white background on info drawer */
+  .ant-drawer-body > ul {
+    background-color: #141414 !important; 
+  }
 }
