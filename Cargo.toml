@@ -73,8 +73,16 @@
     tokio-postgres = { version = "0.7" }
     tokio-postgres-rustls = { version = "0.14" }
     bigdecimal = "0.4"
-    redis = { version = "1.7", features = ["tls-rustls", "tokio-rustls-comp", "sentinel"] }
-    deadpool-redis = { version = "0.23", features = ["cluster", "sentinel", "serde"] }
+    redis = { version = "1.7", features = [
+      "tls-rustls",
+      "tokio-rustls-comp",
+      "sentinel",
+    ] }
+    deadpool-redis = { version = "0.23", features = [
+      "cluster",
+      "sentinel",
+      "serde",
+    ] }
 
     # Error
     thiserror = "2.0"
@@ -111,7 +119,7 @@
     async-recursion = "1.2"
 
     # Testing
-    httpmock = "0.8"
+    httpmock = "0.9"
 
     # API
     prost = "0.14"
