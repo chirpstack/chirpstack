@@ -449,6 +449,27 @@ pub fn run() {
   # This defines the TTL of the Redis Stream key.
   per_device_event_log_ttl="{{ monitoring.per_device_event_log_ttl }}"
 
+  #  # Gateway frame-log read batch size.
+  #
+  # Maximum number of gateway frame-log entries returned by each XREAD query.
+  # This controls the read batch size, not how many gateway frames Redis retains.
+  # Recommended to set this to a value that is equal or smaller than the gateway's max log history
+  gateway_frame_log_read_batch_size="{{ monitoring.gateway_frame_log_read_batch_size }}"
+
+  # Device frame-log read batch size.
+  #
+  # Maximum number of device frame-log entries returned by each XREAD query.
+  # This controls the read batch size, not how many device frames Redis retains.
+  # Recommended to set this to a value that is equal or smaller than the device's max log history.
+  device_frame_log_read_batch_size="{{ monitoring.device_frame_log_read_batch_size }}"
+
+  # Device event-log read batch size.
+  #
+  # Maximum number of device event-log entries returned by each XREAD query.
+  # This controls the read batch size, not how many device events Redis retains.
+  # Recommended to set this to a value that is equal or smaller than the device's max log history
+  device_event_log_read_batch_size="{{ monitoring.device_event_log_read_batch_size }}"
+
 
 # Global integration related configuration.
 [integration]
