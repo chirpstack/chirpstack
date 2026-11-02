@@ -1,7 +1,7 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 
 use lrwn::{AES128Key, EUI64};
@@ -111,34 +111,33 @@ pub async fn validate_incr_join_and_store_dev_nonce(
     dev_nonce: u16,
 ) -> Result<DeviceKeys, Error> {
     let mut c = get_async_db_conn().await?;
-    let dk: DeviceKeys = c
-        .transaction::<DeviceKeys, Error, _>(async |c| {
-            let query = device_keys::dsl::device_keys.find(&dev_eui);
-            #[cfg(feature = "postgres")]
-            let query = query.for_update();
-            let mut dk: DeviceKeys = query
-                .first(c)
-                .await
-                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
+    let dk: DeviceKeys = write_transaction!(c, DeviceKeys, async |c| {
+        let query = device_keys::dsl::device_keys.find(&dev_eui);
+        #[cfg(feature = "postgres")]
+        let query = query.for_update();
+        let mut dk: DeviceKeys = query
+            .first(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))?;
 
-            if dk.dev_nonces.contains(join_eui, dev_nonce) {
-                return Err(Error::InvalidDevNonce);
-            }
+        if dk.dev_nonces.contains(join_eui, dev_nonce) {
+            return Err(Error::InvalidDevNonce);
+        }
 
-            dk.dev_nonces.insert(join_eui, dev_nonce);
-            dk.join_nonce += 1;
+        dk.dev_nonces.insert(join_eui, dev_nonce);
+        dk.join_nonce += 1;
 
-            diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
-                .set((
-                    device_keys::updated_at.eq(Utc::now()),
-                    device_keys::dev_nonces.eq(&dk.dev_nonces),
-                    device_keys::join_nonce.eq(&dk.join_nonce),
-                ))
-                .get_result(c)
-                .await
-                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
-        })
-        .await?;
+        diesel::update(device_keys::dsl::device_keys.find(&dev_eui))
+            .set((
+                device_keys::updated_at.eq(Utc::now()),
+                device_keys::dev_nonces.eq(&dk.dev_nonces),
+                device_keys::join_nonce.eq(&dk.join_nonce),
+            ))
+            .get_result(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
+    })
+    .await?;
 
     info!(dev_eui = %dev_eui, dev_nonce = dev_nonce, "Device-nonce validated, join-nonce incremented and stored");
     Ok(dk)
