@@ -204,7 +204,7 @@ impl Flow {
         // Filter on devices that have not completed the McGroupSetup.
         let fuota_devices: Vec<fuota::FuotaDeploymentDevice> = fuota_devices
             .into_iter()
-            .filter(|d| d.mc_group_setup_completed_at.is_none())
+            .filter(|d| d.mc_group_setup_completed_at.is_none() && d.error_msg.is_empty())
             .collect();
 
         // Proceed with next step after reaching the max attempts.
@@ -335,15 +335,17 @@ impl Flow {
         let fuota_devices = fuota::get_devices(self.job.fuota_deployment_id.into(), -1, 0).await?;
         let fuota_devices_completed_mc_group_setup_count = fuota_devices
             .iter()
-            .filter(|d| d.mc_group_setup_completed_at.is_some())
+            .filter(|d| d.mc_group_setup_completed_at.is_some() && d.error_msg.is_empty())
             .count();
 
         // Filter on devices that have completed the previous step, but not yet the FragSessionSetup.
+        // Also make sure there is no error_msg.
         let fuota_devices: Vec<fuota::FuotaDeploymentDevice> = fuota_devices
             .into_iter()
             .filter(|d| {
                 d.mc_group_setup_completed_at.is_some()
                     && d.frag_session_setup_completed_at.is_none()
+                    && d.error_msg.is_empty()
             })
             .collect();
 
@@ -496,14 +498,17 @@ impl Flow {
         let fuota_devices = fuota::get_devices(self.job.fuota_deployment_id.into(), -1, 0).await?;
         let fuota_devices_completed_frag_session_setup_count = fuota_devices
             .iter()
-            .filter(|d| d.frag_session_setup_completed_at.is_some())
+            .filter(|d| d.frag_session_setup_completed_at.is_some() && d.error_msg.is_empty())
             .count();
 
         // Filter on devices that have completed the previous step, but not yet the McSession.
+        // Also make sure error_msg is empty.
         let fuota_devices: Vec<fuota::FuotaDeploymentDevice> = fuota_devices
             .into_iter()
             .filter(|d| {
-                d.frag_session_setup_completed_at.is_some() && d.mc_session_completed_at.is_none()
+                d.frag_session_setup_completed_at.is_some()
+                    && d.mc_session_completed_at.is_none()
+                    && d.error_msg.is_empty()
             })
             .collect();
 
@@ -705,10 +710,11 @@ impl Flow {
 
         let fuota_devices = fuota::get_devices(self.job.fuota_deployment_id.into(), -1, 0).await?;
 
-        // Filter on devices that have completed the previous step.
+        // Filter on devices that have completed the previous step and that do not have an
+        // error_msg.
         let fuota_devices: Vec<fuota::FuotaDeploymentDevice> = fuota_devices
             .into_iter()
-            .filter(|d| d.mc_session_completed_at.is_some())
+            .filter(|d| d.mc_session_completed_at.is_some() && d.error_msg.is_empty())
             .collect();
 
         if fuota_devices.is_empty() {
@@ -806,14 +812,19 @@ impl Flow {
         let fuota_devices = fuota::get_devices(self.job.fuota_deployment_id.into(), -1, 0).await?;
         let fuota_devices_completed_mc_session_count = fuota_devices
             .iter()
-            .filter(|d| d.mc_session_completed_at.is_some())
+            .filter(|d| d.mc_session_completed_at.is_some() && d.error_msg.is_empty())
             .count();
 
         // Filter on devices that have completed the multicast-session setup but
         // not yet responded to the FragSessionStatusReq.
+        // Also make sure there is no error_msg.
         let fuota_devices: Vec<fuota::FuotaDeploymentDevice> = fuota_devices
             .into_iter()
-            .filter(|d| d.mc_session_completed_at.is_some() && d.frag_status_completed_at.is_none())
+            .filter(|d| {
+                d.mc_session_completed_at.is_some()
+                    && d.frag_status_completed_at.is_none()
+                    && d.error_msg.is_empty()
+            })
             .collect();
 
         // Proceed with next step after reaching the max attempts.

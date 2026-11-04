@@ -75,10 +75,9 @@ async fn handle_v1_mc_group_setup_ans(
             "McGroupSetupAns contains errors"
         );
         fuota_dev.error_msg = "Error: McGroupSetupAns response id_error=true".into();
-    } else {
-        fuota_dev.mc_group_setup_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.mc_group_setup_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
@@ -99,10 +98,9 @@ async fn handle_v2_mc_group_setup_ans(
             "McGroupSetupAns contains errors"
         );
         fuota_dev.error_msg = "Error: McGroupSetupAns response id_error=true".into();
-    } else {
-        fuota_dev.mc_group_setup_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.mc_group_setup_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
@@ -138,9 +136,9 @@ async fn handle_v1_mc_class_b_session_ans(
             time_to_start = pl.time_to_start.unwrap_or_default(),
             "McClassBSessionAns OK"
         );
-        fuota_dev.mc_session_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.mc_session_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
@@ -179,9 +177,9 @@ async fn handle_v2_mc_class_b_session_ans(
             time_to_start = pl.time_to_start.unwrap_or_default(),
             "McClassBSessionAns OK"
         );
-        fuota_dev.mc_session_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.mc_session_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
@@ -217,9 +215,9 @@ async fn handle_v1_mc_class_c_session_ans(
             time_to_start = pl.time_to_start.unwrap_or_default(),
             "McClassCSessionAns OK"
         );
-        fuota_dev.mc_session_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.mc_session_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
@@ -258,9 +256,9 @@ async fn handle_v2_mc_class_c_session_ans(
             time_to_start = pl.time_to_start.unwrap_or_default(),
             "McClassCSessionAns OK"
         );
-        fuota_dev.mc_session_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.mc_session_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())

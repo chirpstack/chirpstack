@@ -82,10 +82,9 @@ async fn handle_v1_frag_session_setup_ans(
             pl.frag_session_index_not_supported,
             pl.wrong_descriptor
         );
-    } else {
-        fuota_dev.frag_session_setup_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.frag_session_setup_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
@@ -122,10 +121,9 @@ async fn handle_v2_frag_session_setup_ans(
             pl.wrong_descriptor,
             pl.session_cnt_replay
         );
-    } else {
-        fuota_dev.frag_session_setup_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.frag_session_setup_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
@@ -154,10 +152,9 @@ async fn handle_v1_frag_session_status_ans(
             pl.missing_frag,
             pl.status.not_enough_matrix_memory
         );
-    } else {
-        fuota_dev.frag_status_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.frag_status_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
@@ -194,10 +191,9 @@ async fn handle_v2_frag_session_status_ans(
             pl.status.mic_error,
             pl.status.session_does_not_exist
         );
-    } else {
-        fuota_dev.frag_status_completed_at = Some(Utc::now());
     }
 
+    fuota_dev.frag_status_completed_at = Some(Utc::now());
     let _ = fuota::update_device(fuota_dev).await?;
 
     Ok(())
