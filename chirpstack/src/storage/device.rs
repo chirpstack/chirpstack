@@ -256,37 +256,36 @@ pub struct DevicesDataRate {
 
 pub async fn create(d: Device) -> Result<Device, Error> {
     let mut c = get_async_db_conn().await?;
-    let d: Device = c
-        .transaction::<Device, Error, _>(async |c| {
-            let query = tenant::dsl::tenant
-                .select(tenant::all_columns)
-                .inner_join(application::table)
-                .filter(application::dsl::id.eq(&d.application_id));
-            // use for update to lock the tenant
-            #[cfg(feature = "postgres")]
-            let query = query.for_update();
-            let t: super::tenant::Tenant = query.first(c).await?;
+    let d: Device = write_transaction!(c, Device, async |c| {
+        let query = tenant::dsl::tenant
+            .select(tenant::all_columns)
+            .inner_join(application::table)
+            .filter(application::dsl::id.eq(&d.application_id));
+        // use for update to lock the tenant
+        #[cfg(feature = "postgres")]
+        let query = query.for_update();
+        let t: super::tenant::Tenant = query.first(c).await?;
 
-            let dev_count: i64 = device::dsl::device
-                .select(dsl::count_star())
-                .inner_join(application::table)
-                .filter(application::dsl::tenant_id.eq(&t.id))
-                .first(c)
-                .await?;
+        let dev_count: i64 = device::dsl::device
+            .select(dsl::count_star())
+            .inner_join(application::table)
+            .filter(application::dsl::tenant_id.eq(&t.id))
+            .first(c)
+            .await?;
 
-            if t.max_device_count != 0 && dev_count as i32 >= t.max_device_count {
-                return Err(Error::NotAllowed(
-                    "Max number of devices exceeded for tenant".into(),
-                ));
-            }
+        if t.max_device_count != 0 && dev_count as i32 >= t.max_device_count {
+            return Err(Error::NotAllowed(
+                "Max number of devices exceeded for tenant".into(),
+            ));
+        }
 
-            diesel::insert_into(device::table)
-                .values(&d)
-                .get_result(c)
-                .await
-                .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))
-        })
-        .await?;
+        diesel::insert_into(device::table)
+            .values(&d)
+            .get_result(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, d.dev_eui.to_string()))
+    })
+    .await?;
     info!(dev_eui = %d.dev_eui, "Device created");
     Ok(d)
 }

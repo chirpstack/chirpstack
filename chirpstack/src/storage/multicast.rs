@@ -290,7 +290,7 @@ pub async fn list(
 
 pub async fn add_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<(), Error, _>(async |c| {
+    write_transaction!(c, (), async |c| {
         let device_query = device::dsl::device.find(&dev_eui);
         #[cfg(feature = "postgres")]
         let device_query = device_query.for_update();
@@ -350,7 +350,7 @@ pub async fn remove_device(group_id: &Uuid, dev_eui: &EUI64) -> Result<(), Error
 
 pub async fn add_gateway(group_id: &Uuid, gateway_id: &EUI64) -> Result<(), Error> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<(), Error, _>(async |c| {
+    write_transaction!(c, (), async |c| {
         let gateway_query = gateway::dsl::gateway.find(&gateway_id);
         #[cfg(feature = "postgres")]
         let gateway_query = gateway_query.for_update();
@@ -445,176 +445,173 @@ pub async fn enqueue(
     qi.validate()?;
     let mut c = get_async_db_conn().await?;
     let conf = config::get();
-    let (ids, f_cnt) = c
-        .transaction::<(Vec<Uuid>, u32), Error, _>(async |c| {
-            let mut ids: Vec<Uuid> = Vec::new();
-            let query = multicast_group::dsl::multicast_group.find(&qi.multicast_group_id);
-            #[cfg(feature = "postgres")]
-            let query = query.for_update();
-            let mg: MulticastGroup = query
-                .get_result(c)
-                .await
-                .map_err(|e| Error::from_diesel(e, qi.multicast_group_id.to_string()))?;
+    let (ids, f_cnt) = write_transaction!(c, (Vec<Uuid>, u32), async |c| {
+        let mut ids: Vec<Uuid> = Vec::new();
+        let query = multicast_group::dsl::multicast_group.find(&qi.multicast_group_id);
+        #[cfg(feature = "postgres")]
+        let query = query.for_update();
+        let mg: MulticastGroup = query
+            .get_result(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, qi.multicast_group_id.to_string()))?;
 
-            match mg.group_type.as_ref() {
-                "B" => {
-                    // get ping nb
-                    let ping_nb = 1 << (7 - mg.class_b_ping_slot_periodicity) as usize;
+        match mg.group_type.as_ref() {
+            "B" => {
+                // get ping nb
+                let ping_nb = 1 << (7 - mg.class_b_ping_slot_periodicity) as usize;
 
-                    // get max. gps epoch time.
-                    let res: Option<i64> =
-                        multicast_group_queue_item::dsl::multicast_group_queue_item
-                            .select(dsl::max(
-                                multicast_group_queue_item::dsl::emit_at_time_since_gps_epoch,
-                            ))
-                            .filter(
-                                multicast_group_queue_item::dsl::multicast_group_id
-                                    .eq(&qi.multicast_group_id),
-                            )
-                            .first(c)
-                            .await?;
+                // get max. gps epoch time.
+                let res: Option<i64> = multicast_group_queue_item::dsl::multicast_group_queue_item
+                    .select(dsl::max(
+                        multicast_group_queue_item::dsl::emit_at_time_since_gps_epoch,
+                    ))
+                    .filter(
+                        multicast_group_queue_item::dsl::multicast_group_id
+                            .eq(&qi.multicast_group_id),
+                    )
+                    .first(c)
+                    .await?;
 
-                    // Get timestamp after which we must generate the next ping-slot.
-                    let ping_slot_after_gps_time = match res {
-                        Some(v) => Duration::try_milliseconds(v).unwrap_or_default(),
-                        None => (Utc::now()
-                            + Duration::from_std(conf.network.scheduler.multicast_class_b_margin)
-                                .unwrap())
-                        .to_gps_time(),
+                // Get timestamp after which we must generate the next ping-slot.
+                let ping_slot_after_gps_time = match res {
+                    Some(v) => Duration::try_milliseconds(v).unwrap_or_default(),
+                    None => (Utc::now()
+                        + Duration::from_std(conf.network.scheduler.multicast_class_b_margin)
+                            .unwrap())
+                    .to_gps_time(),
+                };
+
+                let emit_at_time_since_gps_epoch = classb::get_next_ping_slot_after(
+                    ping_slot_after_gps_time,
+                    &mg.mc_addr,
+                    ping_nb,
+                )?;
+
+                let scheduler_run_after_ts = emit_at_time_since_gps_epoch.to_date_time()
+                    - Duration::from_std(2 * conf.network.scheduler.interval).unwrap();
+
+                for gateway_id in gateway_ids {
+                    let qi = MulticastGroupQueueItem {
+                        scheduler_run_after: scheduler_run_after_ts,
+                        multicast_group_id: mg.id,
+                        gateway_id: *gateway_id,
+                        f_cnt: mg.f_cnt,
+                        f_port: qi.f_port,
+                        data: qi.data.clone(),
+                        emit_at_time_since_gps_epoch: Some(
+                            emit_at_time_since_gps_epoch.num_milliseconds(),
+                        ),
+                        expires_at: qi.expires_at,
+                        ..Default::default()
                     };
 
-                    let emit_at_time_since_gps_epoch = classb::get_next_ping_slot_after(
-                        ping_slot_after_gps_time,
-                        &mg.mc_addr,
-                        ping_nb,
-                    )?;
-
-                    let scheduler_run_after_ts = emit_at_time_since_gps_epoch.to_date_time()
-                        - Duration::from_std(2 * conf.network.scheduler.interval).unwrap();
-
-                    for gateway_id in gateway_ids {
-                        let qi = MulticastGroupQueueItem {
-                            scheduler_run_after: scheduler_run_after_ts,
-                            multicast_group_id: mg.id,
-                            gateway_id: *gateway_id,
-                            f_cnt: mg.f_cnt,
-                            f_port: qi.f_port,
-                            data: qi.data.clone(),
-                            emit_at_time_since_gps_epoch: Some(
-                                emit_at_time_since_gps_epoch.num_milliseconds(),
-                            ),
-                            expires_at: qi.expires_at,
-                            ..Default::default()
-                        };
-
-                        let qi: MulticastGroupQueueItem =
-                            diesel::insert_into(multicast_group_queue_item::table)
-                                .values(&qi)
-                                .get_result(c)
-                                .await
-                                .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
-                        ids.push(qi.id.into());
-                    }
+                    let qi: MulticastGroupQueueItem =
+                        diesel::insert_into(multicast_group_queue_item::table)
+                            .values(&qi)
+                            .get_result(c)
+                            .await
+                            .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
+                    ids.push(qi.id.into());
                 }
-                "C" => {
-                    // Get max. scheduler_run_after timestamp.
+            }
+            "C" => {
+                // Get max. scheduler_run_after timestamp.
 
-                    #[cfg(feature = "postgres")]
-                    let res: Option<DateTime<Utc>> =
-                        multicast_group_queue_item::dsl::multicast_group_queue_item
-                            .select(dsl::max(
-                                multicast_group_queue_item::dsl::scheduler_run_after,
-                            ))
-                            .filter(
-                                multicast_group_queue_item::dsl::multicast_group_id
-                                    .eq(&qi.multicast_group_id),
-                            )
-                            .first(c)
-                            .await?;
+                #[cfg(feature = "postgres")]
+                let res: Option<DateTime<Utc>> =
+                    multicast_group_queue_item::dsl::multicast_group_queue_item
+                        .select(dsl::max(
+                            multicast_group_queue_item::dsl::scheduler_run_after,
+                        ))
+                        .filter(
+                            multicast_group_queue_item::dsl::multicast_group_id
+                                .eq(&qi.multicast_group_id),
+                        )
+                        .first(c)
+                        .await?;
 
-                    #[cfg(feature = "sqlite")]
-                    let res: Option<DateTime<Utc>> =
-                        multicast_group_queue_item::dsl::multicast_group_queue_item
-                            .select(multicast_group_queue_item::dsl::scheduler_run_after)
-                            .filter(
-                                multicast_group_queue_item::dsl::multicast_group_id
-                                    .eq(&qi.multicast_group_id),
-                            )
-                            .get_results(c)
-                            .await?
-                            .into_iter()
-                            // fallback on code max instead of DB builtin
-                            .max();
+                #[cfg(feature = "sqlite")]
+                let res: Option<DateTime<Utc>> =
+                    multicast_group_queue_item::dsl::multicast_group_queue_item
+                        .select(multicast_group_queue_item::dsl::scheduler_run_after)
+                        .filter(
+                            multicast_group_queue_item::dsl::multicast_group_id
+                                .eq(&qi.multicast_group_id),
+                        )
+                        .get_results(c)
+                        .await?
+                        .into_iter()
+                        // fallback on code max instead of DB builtin
+                        .max();
 
-                    let mut scheduler_run_after_ts = match res {
-                        Some(v) => {
-                            v + Duration::from_std(conf.network.scheduler.multicast_class_c_margin)
-                                .unwrap()
-                        }
-                        None => Utc::now(),
+                let mut scheduler_run_after_ts = match res {
+                    Some(v) => {
+                        v + Duration::from_std(conf.network.scheduler.multicast_class_c_margin)
+                            .unwrap()
+                    }
+                    None => Utc::now(),
+                };
+
+                let emit_at_time_since_gps_epoch = if mg.class_c_scheduling_type
+                    == fields::MulticastGroupSchedulingType::GPS_TIME
+                {
+                    // Increment with margin as requesting the gateway to send the
+                    // downlink 'now' will result in a too late error from the gateway.
+                    scheduler_run_after_ts +=
+                        Duration::from_std(conf.network.scheduler.multicast_class_c_margin)
+                            .unwrap();
+                    Some(scheduler_run_after_ts.to_gps_time().num_milliseconds())
+                } else {
+                    None
+                };
+
+                for gateway_id in gateway_ids {
+                    let qi = MulticastGroupQueueItem {
+                        scheduler_run_after: scheduler_run_after_ts,
+                        multicast_group_id: mg.id,
+                        gateway_id: *gateway_id,
+                        f_cnt: mg.f_cnt,
+                        f_port: qi.f_port,
+                        data: qi.data.clone(),
+                        emit_at_time_since_gps_epoch,
+                        expires_at: qi.expires_at,
+                        ..Default::default()
                     };
 
-                    let emit_at_time_since_gps_epoch = if mg.class_c_scheduling_type
-                        == fields::MulticastGroupSchedulingType::GPS_TIME
-                    {
-                        // Increment with margin as requesting the gateway to send the
-                        // downlink 'now' will result in a too late error from the gateway.
+                    let qi: MulticastGroupQueueItem =
+                        diesel::insert_into(multicast_group_queue_item::table)
+                            .values(&qi)
+                            .get_result(c)
+                            .await
+                            .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
+                    ids.push(qi.id.into());
+
+                    if mg.class_c_scheduling_type == fields::MulticastGroupSchedulingType::DELAY {
+                        // Increment timing for each gateway to avoid colissions.
                         scheduler_run_after_ts +=
                             Duration::from_std(conf.network.scheduler.multicast_class_c_margin)
                                 .unwrap();
-                        Some(scheduler_run_after_ts.to_gps_time().num_milliseconds())
-                    } else {
-                        None
-                    };
-
-                    for gateway_id in gateway_ids {
-                        let qi = MulticastGroupQueueItem {
-                            scheduler_run_after: scheduler_run_after_ts,
-                            multicast_group_id: mg.id,
-                            gateway_id: *gateway_id,
-                            f_cnt: mg.f_cnt,
-                            f_port: qi.f_port,
-                            data: qi.data.clone(),
-                            emit_at_time_since_gps_epoch,
-                            expires_at: qi.expires_at,
-                            ..Default::default()
-                        };
-
-                        let qi: MulticastGroupQueueItem =
-                            diesel::insert_into(multicast_group_queue_item::table)
-                                .values(&qi)
-                                .get_result(c)
-                                .await
-                                .map_err(|e| Error::from_diesel(e, mg.id.to_string()))?;
-                        ids.push(qi.id.into());
-
-                        if mg.class_c_scheduling_type == fields::MulticastGroupSchedulingType::DELAY
-                        {
-                            // Increment timing for each gateway to avoid colissions.
-                            scheduler_run_after_ts +=
-                                Duration::from_std(conf.network.scheduler.multicast_class_c_margin)
-                                    .unwrap();
-                        }
                     }
                 }
-                _ => {
-                    return Err(Error::Anyhow(anyhow!(
-                        "Invalid multicast group_type: {}",
-                        mg.group_type
-                    )));
-                }
             }
+            _ => {
+                return Err(Error::Anyhow(anyhow!(
+                    "Invalid multicast group_type: {}",
+                    mg.group_type
+                )));
+            }
+        }
 
-            diesel::update(multicast_group::dsl::multicast_group.find(&qi.multicast_group_id))
-                .set(multicast_group::f_cnt.eq(mg.f_cnt + 1))
-                .execute(c)
-                .await
-                .map_err(|e| Error::from_diesel(e, qi.multicast_group_id.to_string()))?;
+        diesel::update(multicast_group::dsl::multicast_group.find(&qi.multicast_group_id))
+            .set(multicast_group::f_cnt.eq(mg.f_cnt + 1))
+            .execute(c)
+            .await
+            .map_err(|e| Error::from_diesel(e, qi.multicast_group_id.to_string()))?;
 
-            // Return value before it was incremented
-            Ok((ids, mg.f_cnt as u32))
-        })
-        .await?;
+        // Return value before it was incremented
+        Ok((ids, mg.f_cnt as u32))
+    })
+    .await?;
     info!(multicast_group_id = %qi.multicast_group_id, f_cnt = f_cnt, "Multicast-group queue item created");
     Ok((ids, f_cnt))
 }

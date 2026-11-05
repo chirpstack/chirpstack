@@ -13,6 +13,28 @@ use tracing::{error, info};
 
 use crate::config;
 
+// Returns the future of a transaction which first reads rows and then writes based on what
+// it has read. Usage: write_transaction!(conn, ReturnType, async |c| { ... }).await
+//
+// With PostgreSQL this is a regular transaction, in which the callback locks the rows it reads
+// using SELECT ... FOR UPDATE. SQLite does not have row-level locks and a regular (deferred)
+// transaction only acquires the write lock on its first write. If an other connection has
+// written in the meantime, this write fails immediately with SQLITE_BUSY (database is locked),
+// without invoking the busy handler. Therefore with SQLite, the transaction is started with
+// BEGIN IMMEDIATE, which acquires the write lock up-front, waiting for it as configured by
+// busy_timeout.
+macro_rules! write_transaction {
+    ($conn:expr, $r:ty, $callback:expr) => {{
+        #[cfg(feature = "postgres")]
+        use diesel_async::AsyncConnection as _;
+        #[cfg(feature = "postgres")]
+        let fut = $conn.transaction::<$r, Error, _>($callback);
+        #[cfg(feature = "sqlite")]
+        let fut = $conn.immediate_transaction::<$r, Error, _>($callback);
+        fut
+    }};
+}
+
 pub mod api_key;
 pub mod application;
 pub mod device;

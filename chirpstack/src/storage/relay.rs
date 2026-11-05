@@ -1,7 +1,7 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use diesel::{dsl, prelude::*, sql_types};
-use diesel_async::{AsyncConnection, RunQueryDsl};
+use diesel_async::RunQueryDsl;
 use tracing::info;
 use uuid::Uuid;
 
@@ -180,7 +180,7 @@ pub async fn list_devices(
 
 pub async fn add_device(relay_dev_eui: EUI64, device_dev_eui: EUI64) -> Result<(), Error> {
     let mut c = get_async_db_conn().await?;
-    c.transaction::<(), Error, _>(async |c| {
+    write_transaction!(c, (), async |c| {
         let query = device::dsl::device.find(&relay_dev_eui);
         // We lock the relay device to avoid race-conditions in the validation.
         #[cfg(feature = "postgres")]
