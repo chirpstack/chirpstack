@@ -752,6 +752,15 @@ pub fn run() {
     # of redirecting to the login page.
     logout_url="{{ user_authentication.openid_connect.logout_url }}"
 
+    # Back-Channel Logout.
+    #
+    # If set to true, ChirpStack accepts OpenID Connect Back-Channel Logout
+    # requests from the provider. This must be registered at the provider as the
+    # backchannel_logout_uri with the '/auth/oidc/logout' path, e.g.
+    # https://example.com/auth/oidc/logout. Only logins made after enabling this
+    # option can be logged out.
+    backchannel_logout_enabled={{ user_authentication.openid_connect.backchannel_logout_enabled }}
+
     # Login redirect.
     #
     # If set to true, then ChirpStack will immediately redirect to the OAuth2
