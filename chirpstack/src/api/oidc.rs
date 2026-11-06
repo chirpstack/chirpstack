@@ -111,7 +111,7 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
         .await?;
 
     let id_token_verifier: CoreIdTokenVerifier = client.id_token_verifier();
-    let _id_token_claims: &CoreIdTokenClaims = token_response
+    let id_token_claims: &CoreIdTokenClaims = token_response
         .extra_fields()
         .id_token()
         .context("Server did not return an ID token")?
@@ -124,6 +124,10 @@ pub async fn get_user(code: &str, state: &str) -> Result<User> {
         .request_async(&http_client)
         .await
         .context("Failed requesting user info")?;
+
+    if userinfo_claims.subject() != id_token_claims.subject() {
+        return Err(anyhow!("UserInfo subject does not match ID token subject"));
+    }
 
     Ok(userinfo_claims)
 }
