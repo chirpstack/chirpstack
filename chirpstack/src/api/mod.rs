@@ -7,7 +7,11 @@ use std::{
 };
 
 use anyhow::{Context as AnyhowContext, Result};
-use axum::{Router, response::IntoResponse, routing::get};
+use axum::{
+    Router,
+    response::IntoResponse,
+    routing::{get, post},
+};
 use chirpstack_api::api::application_service_server::ApplicationServiceServer;
 use chirpstack_api::api::device_profile_service_server::DeviceProfileServiceServer;
 use chirpstack_api::api::device_service_server::DeviceServiceServer;
@@ -109,6 +113,7 @@ pub async fn setup() -> Result<()> {
     let web = Router::new()
         .route("/auth/oidc/login", get(oidc::login_handler))
         .route("/auth/oidc/callback", get(oidc::callback_handler))
+        .route("/auth/oidc/logout", post(oidc::logout_handler))
         .route("/auth/oauth2/login", get(oauth2::login_handler))
         .route("/auth/oauth2/callback", get(oauth2::callback_handler))
         .fallback(service_static_handler)
