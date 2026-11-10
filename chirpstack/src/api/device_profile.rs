@@ -34,21 +34,26 @@ impl DeviceProfileService for DeviceProfile {
                 return Err(Status::invalid_argument("device_profile is missing"));
             }
         };
-        let tenant_id = Uuid::from_str(&req_dp.tenant_id).map_err(|e| e.status())?;
+        // Empty tenant_id = global device-profile (admin-only, enforced by the validator).
+        let tenant_id = if req_dp.tenant_id.is_empty() {
+            None
+        } else {
+            Some(Uuid::from_str(&req_dp.tenant_id).map_err(|e| e.status())?)
+        };
 
         self.validator
             .validate(
                 request.extensions(),
                 validator::ValidateDeviceProfilesAccess::new(
                     validator::Flag::Create,
-                    Some(tenant_id),
+                    tenant_id,
                     false,
                 ),
             )
             .await?;
 
         let mut dp = device_profile::DeviceProfile {
-            tenant_id: Some(tenant_id.into()),
+            tenant_id: tenant_id.map(|v| v.into()),
             name: req_dp.name.clone(),
             description: req_dp.description.clone(),
             region: req_dp.region().from_proto(),
@@ -1215,6 +1220,150 @@ pub mod test {
         let list_resp = service.list_vendors(list_req).await.unwrap();
         let list_resp = list_resp.get_ref();
         assert_eq!(0, list_resp.total_count);
+    }
+
+    fn create_dp_request(tenant_id: &str, name: &str) -> api::CreateDeviceProfileRequest {
+        api::CreateDeviceProfileRequest {
+            device_profile: Some(api::DeviceProfile {
+                tenant_id: tenant_id.into(),
+                name: name.into(),
+                region: common::Region::Eu868.into(),
+                mac_version: common::MacVersion::Lorawan103.into(),
+                reg_params_revision: common::RegParamsRevision::A.into(),
+                adr_algorithm_id: "default".into(),
+                ..Default::default()
+            }),
+        }
+    }
+
+    async fn create_admin_user() -> user::User {
+        user::create(user::User {
+            is_admin: true,
+            is_active: true,
+            email: "admin@admin".into(),
+            email_verified: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap()
+    }
+
+    async fn global_dp_count() -> i64 {
+        device_profile::get_count(&device_profile::Filters {
+            global_only: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap()
+    }
+
+    #[tokio::test]
+    async fn test_device_profile_create_global_admin() {
+        let _guard = test::prepare().await;
+        let admin = create_admin_user().await;
+        let service = DeviceProfile::new(RequestValidator::new());
+
+        // create with empty tenant_id => global device-profile
+        let create_resp = service
+            .create(get_request(&admin.id, create_dp_request("", "global-dp")))
+            .await
+            .unwrap();
+        let dp_id = Uuid::from_str(&create_resp.get_ref().id).unwrap();
+
+        // get
+        let get_resp = service
+            .get(get_request(
+                &admin.id,
+                api::GetDeviceProfileRequest {
+                    id: dp_id.to_string(),
+                },
+            ))
+            .await
+            .unwrap();
+        let got = get_resp.get_ref().device_profile.clone().unwrap();
+        assert_eq!(dp_id.to_string(), got.id);
+        assert_eq!("", got.tenant_id);
+        assert_eq!("global-dp", got.name);
+
+        // list global_only
+        let list_resp = service
+            .list(get_request(
+                &admin.id,
+                api::ListDeviceProfilesRequest {
+                    global_only: true,
+                    limit: 10,
+                    ..Default::default()
+                },
+            ))
+            .await
+            .unwrap();
+        let list_resp = list_resp.get_ref();
+        assert_eq!(1, list_resp.total_count);
+        assert_eq!(1, list_resp.result.len());
+        assert_eq!(dp_id.to_string(), list_resp.result[0].id);
+    }
+
+    #[tokio::test]
+    async fn test_device_profile_create_global_tenant_admin_denied() {
+        let _guard = test::prepare().await;
+
+        // tenant admin user (not a global admin)
+        let tenant_admin = user::create(user::User {
+            is_admin: false,
+            is_active: true,
+            email: "tenant-admin@user".into(),
+            email_verified: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        tenant::add_user(
+            tenant::TenantUser {
+                tenant_id: t.id,
+                user_id: tenant_admin.id,
+                is_admin: true,
+                ..Default::default()
+            },
+            &[],
+            &[],
+        )
+        .await
+        .unwrap();
+
+        let service = DeviceProfile::new(RequestValidator::new());
+
+        let count_before = global_dp_count().await;
+        let err = service
+            .create(get_request(
+                &tenant_admin.id,
+                create_dp_request("", "tenant-admin-global-dp"),
+            ))
+            .await
+            .unwrap_err();
+        assert_eq!(tonic::Code::Unauthenticated, err.code());
+        assert_eq!(count_before, global_dp_count().await);
+    }
+
+    #[tokio::test]
+    async fn test_device_profile_create_invalid_tenant_id() {
+        let _guard = test::prepare().await;
+        let admin = create_admin_user().await;
+        let service = DeviceProfile::new(RequestValidator::new());
+
+        let err = service
+            .create(get_request(
+                &admin.id,
+                create_dp_request("not-a-uuid", "invalid-dp"),
+            ))
+            .await
+            .unwrap_err();
+        assert_eq!(tonic::Code::InvalidArgument, err.code());
     }
 
     fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {
