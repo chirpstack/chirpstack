@@ -152,6 +152,16 @@ impl GatewayService for Gateway {
             None => (0.0, 0.0, 0.0),
         };
 
+        // A downlink_priority of 0 means the request did not set it.
+        let downlink_priority = if req_gw.downlink_priority == 0 {
+            gateway::get(&gw_id)
+                .await
+                .map_err(|e| e.status())?
+                .downlink_priority
+        } else {
+            req_gw.downlink_priority as i16
+        };
+
         // update
         let _ = gateway::update(gateway::Gateway {
             gateway_id: gw_id,
@@ -162,7 +172,7 @@ impl GatewayService for Gateway {
             altitude: alt,
             tags: fields::KeyValue::new(req_gw.tags.clone()),
             stats_interval_secs: req_gw.stats_interval as i32,
-            downlink_priority: req_gw.downlink_priority as i16,
+            downlink_priority,
             ..Default::default()
         })
         .await
@@ -1119,6 +1129,45 @@ pub mod test {
                 ..Default::default()
             }),
             get_resp.get_ref().gateway
+        );
+
+        // update without downlink_priority keeps the stored one
+        let up_req = api::UpdateGatewayRequest {
+            gateway: Some(api::Gateway {
+                gateway_id: "0102030405060708".into(),
+                tenant_id: t.id.to_string(),
+                name: "updated-gw".into(),
+                location: Some(common::Location {
+                    latitude: 2.1,
+                    longitude: 2.2,
+                    altitude: 2.0,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+        };
+        let mut up_req = Request::new(up_req);
+        up_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
+        let _ = service.update(up_req).await.unwrap();
+
+        let get_req = api::GetGatewayRequest {
+            gateway_id: "0102030405060708".into(),
+        };
+        let mut get_req = Request::new(get_req);
+        get_req
+            .extensions_mut()
+            .insert(AuthID::User(Into::<uuid::Uuid>::into(u.id)));
+        let get_resp = service.get(get_req).await.unwrap();
+        assert_eq!(
+            11,
+            get_resp
+                .get_ref()
+                .gateway
+                .as_ref()
+                .unwrap()
+                .downlink_priority
         );
 
         // list
