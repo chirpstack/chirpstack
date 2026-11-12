@@ -3,7 +3,7 @@ use std::convert::{TryFrom, TryInto};
 use std::io::Cursor;
 use std::str::FromStr;
 use std::sync::LazyLock;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 use chrono::Utc;
@@ -36,6 +36,9 @@ pub mod join_fns;
 pub mod join_sns;
 pub mod mesh;
 pub mod stats;
+
+// How much longer than the lock the deduplication collect set is kept in Redis.
+const DEDUPLICATE_COLLECT_TTL_MARGIN: Duration = Duration::from_secs(10);
 
 #[derive(Clone, Hash, PartialEq, Eq, EncodeLabelSet, Debug)]
 struct UplinkLabels {
@@ -191,12 +194,17 @@ async fn _deduplicate_uplink(
     if dedup_ttl < Duration::from_millis(200) {
         dedup_ttl = Duration::from_millis(200);
     }
+    // The collect set outlives the lock, so that the uplink is still there when the task
+    // that holds the lock wakes up later than the lock TTL (the host was busy or stalled
+    // for a moment). The set is deleted when it is collected.
+    let collect_ttl = dedup_ttl + DEDUPLICATE_COLLECT_TTL_MARGIN;
+    let started = Instant::now();
 
     trace!(
         key = key.as_str(),
         "Adding uplink event to deduplication set and getting lock"
     );
-    let locked = deduplicate_put(&key, &lock_key, dedup_ttl, &event).await?;
+    let locked = deduplicate_put(&key, &lock_key, collect_ttl, dedup_ttl, &event).await?;
     if locked {
         trace!(
             lock_key = lock_key.as_str(),
@@ -219,6 +227,15 @@ async fn _deduplicate_uplink(
     trace!(key = key.as_str(), "Collecting received uplink events");
     let uplink = deduplicate_collect(&key).await?;
 
+    let elapsed = started.elapsed();
+    if elapsed >= dedup_ttl {
+        warn!(
+            elapsed_ms = elapsed.as_millis() as u64,
+            lock_ttl_ms = dedup_ttl.as_millis() as u64,
+            "Deduplication collected after the lock TTL"
+        );
+    }
+
     let deduplication_id = Uuid::new_v4();
     let span = span!(Level::INFO, "up", deduplication_id = %deduplication_id);
     handle_uplink(
@@ -236,7 +253,8 @@ async fn _deduplicate_uplink(
 async fn deduplicate_put(
     collect_key: &str,
     lock_key: &str,
-    ttl: Duration,
+    collect_ttl: Duration,
+    lock_ttl: Duration,
     event: &gw::UplinkFrame,
 ) -> Result<bool> {
     let event_b = event.encode_to_vec();
@@ -249,13 +267,13 @@ async fn deduplicate_put(
         .ignore()
         .cmd("PEXPIRE")
         .arg(collect_key)
-        .arg(ttl.as_millis() as usize)
+        .arg(collect_ttl.as_millis() as usize)
         .ignore()
         .cmd("SET")
         .arg(lock_key)
         .arg("lock")
         .arg("PX")
-        .arg(ttl.as_millis() as usize)
+        .arg(lock_ttl.as_millis() as usize)
         .arg("NX")
         .query_async(&mut get_async_redis_conn().await?)
         .await
@@ -266,13 +284,17 @@ async fn deduplicate_put(
 }
 
 async fn deduplicate_collect(key: &str) -> Result<gw::UplinkFrameSet> {
-    let items_b: Vec<Vec<u8>> = {
-        redis::cmd("SMEMBERS")
-            .arg(key)
-            .query_async(&mut get_async_redis_conn().await?)
-            .await
-            .context("Deduplication collect")?
-    };
+    // Read and delete in one step (the set outlives the lock, see _deduplicate_uplink).
+    let (items_b,): (Vec<Vec<u8>>,) = redis::pipe()
+        .atomic()
+        .cmd("SMEMBERS")
+        .arg(key)
+        .cmd("DEL")
+        .arg(key)
+        .ignore()
+        .query_async(&mut get_async_redis_conn().await?)
+        .await
+        .context("Deduplication collect")?;
 
     if items_b.is_empty() {
         return Err(anyhow!("Zero items in collect set"));
@@ -349,9 +371,11 @@ pub async fn handle_uplink(
 
     debug!("Logging uplink frame to Redis Stream");
     let ufl: stream_pb::UplinkFrameLog = (&uplink).try_into()?;
-    stream::frame::log_uplink_for_gateways(&ufl)
-        .await
-        .context("Log uplink for gateways")?;
+    // The frame log only feeds the gateway frame views; failing to write it must not drop
+    // the uplink.
+    if let Err(e) = stream::frame::log_uplink_for_gateways(&ufl).await {
+        warn!(error = %e.full(), "Log uplink for gateways failed, uplink handled anyway");
+    }
 
     match uplink.phy_payload.mhdr.f_type {
         FType::JoinRequest => join::JoinRequest::handle(uplink).await,
@@ -470,4 +494,68 @@ fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+    use crate::test;
+
+    fn frame(gateway_id: &str) -> gw::UplinkFrame {
+        gw::UplinkFrame {
+            phy_payload: vec![0x40, 0x01, 0x02, 0x03],
+            tx_info: Some(gw::UplinkTxInfo {
+                frequency: 868100000,
+                ..Default::default()
+            }),
+            rx_info: Some(gw::UplinkRxInfo {
+                gateway_id: gateway_id.to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
+    // The task that holds the lock wakes up after the lock TTL (the host was busy or stalled):
+    // the uplink must still be collected, and a collected set is deleted.
+    #[tokio::test]
+    async fn test_deduplicate_collect_after_lock_ttl() {
+        let _guard = test::prepare().await;
+
+        let key = redis_key("up:collect:{test}".to_string());
+        let lock_key = redis_key("up:collect:{test}:lock".to_string());
+        let collect_ttl = Duration::from_millis(200) + DEDUPLICATE_COLLECT_TTL_MARGIN;
+        let lock_ttl = Duration::from_millis(200);
+
+        let locked = deduplicate_put(
+            &key,
+            &lock_key,
+            collect_ttl,
+            lock_ttl,
+            &frame("0102030405060708"),
+        )
+        .await
+        .unwrap();
+        assert!(!locked);
+        // A copy from another gateway while the lock is held joins the set.
+        let locked = deduplicate_put(
+            &key,
+            &lock_key,
+            collect_ttl,
+            lock_ttl,
+            &frame("0807060504030201"),
+        )
+        .await
+        .unwrap();
+        assert!(locked);
+
+        sleep(Duration::from_millis(500)).await;
+
+        let set = deduplicate_collect(&key).await.unwrap();
+        assert_eq!(2, set.rx_info.len());
+        assert_eq!(vec![0x40, 0x01, 0x02, 0x03], set.phy_payload);
+
+        let err = deduplicate_collect(&key).await.unwrap_err();
+        assert_eq!("Zero items in collect set", err.to_string());
+    }
 }
