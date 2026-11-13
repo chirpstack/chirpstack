@@ -1071,11 +1071,8 @@ impl PayloadCodec for DevStatusAnsPayload {
         Ok(DevStatusAnsPayload {
             battery: b[0],
             margin: {
-                if b[1] > 31 {
-                    (b[1] as i8) - 64
-                } else {
-                    b[1] as i8
-                }
+                let b = b[1] & 0x3f; // mask out RFU bits
+                if b > 31 { (b as i8) - 64 } else { b as i8 }
             },
         })
     }
@@ -3105,5 +3102,13 @@ mod test {
 
             assert_eq!(MACCommandSet::new(vec![tst.command.clone()]), command);
         }
+    }
+
+    #[test]
+    fn test_dev_status_ans_pl() {
+        // Some devices are not correctly clearing out the RFU bits.
+        let mut b = Cursor::new(vec![0x00, 0xe5]);
+        let pl = DevStatusAnsPayload::decode(&mut b).unwrap();
+        assert_eq!(-27, pl.margin);
     }
 }
