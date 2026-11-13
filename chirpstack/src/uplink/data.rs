@@ -126,7 +126,10 @@ impl Data {
         ctx.handle_retransmission_reset().await?;
         ctx.decrypt_f_opts_mac_commands()?;
         ctx.decrypt_frm_payload()?;
-        ctx.log_uplink_frame_set().await?;
+        // A failed frame log must not drop the uplink.
+        if let Err(e) = ctx.log_uplink_frame_set().await {
+            tracing::warn!(error = %format!("{:#}", e), "Log uplink frame-set failed, uplink handled anyway");
+        }
         ctx.set_adr()?;
         ctx.set_uplink_data_rate().await?;
         ctx.handle_class_b_beacon_locked().await?;
