@@ -207,7 +207,7 @@ pub enum MACVersion {
 ///             f_opts: MACCommandSet::new(vec![
 ///                 MACCommand::DevStatusAns(DevStatusAnsPayload{
 ///                     battery: 115,
-///                     margin: 7,
+///                     snr: 7,
 ///                 }),
 ///             ]),
 ///         },
