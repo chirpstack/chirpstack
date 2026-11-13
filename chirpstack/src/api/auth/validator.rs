@@ -4598,6 +4598,56 @@ pub mod test {
         ];
         run_tests(tests).await;
 
+        // global device profiles (tenant_id = None) create with user
+        let tests = vec![
+            // admin user can create global
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfilesAccess::new(Flag::Create, None, false)],
+                id: AuthID::User(user_admin.id.into()),
+                ok: true,
+            },
+            // tenant admin, tenant device admin and tenant user can not create global
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfilesAccess::new(Flag::Create, None, false)],
+                id: AuthID::User(tenant_admin.id.into()),
+                ok: false,
+            },
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfilesAccess::new(Flag::Create, None, false)],
+                id: AuthID::User(tenant_device_admin.id.into()),
+                ok: false,
+            },
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfilesAccess::new(Flag::Create, None, false)],
+                id: AuthID::User(tenant_user.id.into()),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+
+        // global device profiles (tenant_id = None) create with api key
+        let tests = vec![
+            // admin api key can create global
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfilesAccess::new(Flag::Create, None, false)],
+                id: AuthID::Key(api_key_admin.id.into()),
+                ok: true,
+            },
+            // tenant api key can not create global
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfilesAccess::new(Flag::Create, None, false)],
+                id: AuthID::Key(api_key_tenant.id.into()),
+                ok: false,
+            },
+            // RO admin api key can not create global
+            ValidatorTest {
+                validators: vec![ValidateDeviceProfilesAccess::new(Flag::Create, None, false)],
+                id: AuthID::Key(api_key_admin_ro.id.into()),
+                ok: false,
+            },
+        ];
+        run_tests(tests).await;
+
         // device profile with user
         let tests = vec![
             // admin user can read, update and delete
