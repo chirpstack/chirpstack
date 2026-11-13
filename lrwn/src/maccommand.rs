@@ -1060,7 +1060,7 @@ impl PayloadCodec for RxParamSetupAnsPayload {
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DevStatusAnsPayload {
     pub battery: u8,
-    pub margin: i8,
+    pub snr: i8,
 }
 
 impl PayloadCodec for DevStatusAnsPayload {
@@ -1070,7 +1070,7 @@ impl PayloadCodec for DevStatusAnsPayload {
 
         Ok(DevStatusAnsPayload {
             battery: b[0],
-            margin: {
+            snr: {
                 let b = b[1] & 0x3f; // mask out RFU bits
                 if b > 31 { (b as i8) - 64 } else { b as i8 }
             },
@@ -1078,18 +1078,18 @@ impl PayloadCodec for DevStatusAnsPayload {
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        if self.margin < -32 {
+        if self.snr < -32 {
             return Err(anyhow!("min margin value is -32"));
         }
-        if self.margin > 31 {
+        if self.snr > 31 {
             return Err(anyhow!("max margin value is 31"));
         }
 
         Ok(vec![self.battery, {
-            if self.margin < 0 {
-                (self.margin + 64) as u8
+            if self.snr < 0 {
+                (self.snr + 64) as u8
             } else {
-                self.margin as u8
+                self.snr as u8
             }
         }])
     }
@@ -2586,7 +2586,7 @@ mod test {
                 uplink: true,
                 command: MACCommand::DevStatusAns(DevStatusAnsPayload {
                     battery: 0,
-                    margin: -30,
+                    snr: -30,
                 }),
                 bytes: vec![0x06, 0x00, 0x22],
             },
@@ -2594,7 +2594,7 @@ mod test {
                 uplink: true,
                 command: MACCommand::DevStatusAns(DevStatusAnsPayload {
                     battery: 255,
-                    margin: 30,
+                    snr: 30,
                 }),
                 bytes: vec![0x06, 0xff, 0x1e],
             },
@@ -2602,7 +2602,7 @@ mod test {
                 uplink: true,
                 command: MACCommand::DevStatusAns(DevStatusAnsPayload {
                     battery: 127,
-                    margin: -1,
+                    snr: -1,
                 }),
                 bytes: vec![0x06, 0x7f, 0x3f],
             },
@@ -2610,7 +2610,7 @@ mod test {
                 uplink: true,
                 command: MACCommand::DevStatusAns(DevStatusAnsPayload {
                     battery: 127,
-                    margin: 0,
+                    snr: 0,
                 }),
                 bytes: vec![0x06, 0x7f, 0x00],
             },
@@ -3109,6 +3109,6 @@ mod test {
         // Some devices are not correctly clearing out the RFU bits.
         let mut b = Cursor::new(vec![0x00, 0xe5]);
         let pl = DevStatusAnsPayload::decode(&mut b).unwrap();
-        assert_eq!(-27, pl.margin);
+        assert_eq!(-27, pl.snr);
     }
 }

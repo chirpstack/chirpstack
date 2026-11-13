@@ -5219,7 +5219,7 @@ async fn test_lorawan_10_device_status_request() {
                         f_opts: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::DevStatusAns(
                             lrwn::DevStatusAnsPayload {
                                 battery: 128,
-                                margin: 10,
+                                snr: 10,
                             },
                         )]),
                     },

@@ -20,12 +20,12 @@ pub async fn handle(
         .first()
         .ok_or_else(|| anyhow!("Expected DevStatusAns"))?;
     if let lrwn::MACCommand::DevStatusAns(pl) = mac {
-        info!(dev_eui = %dev.dev_eui, battery = pl.battery, margin = pl.margin, "DevStatusAns received");
+        info!(dev_eui = %dev.dev_eui, battery = pl.battery, margin = pl.snr, "DevStatusAns received");
 
         device::partial_update(
             dev.dev_eui,
             &device::DeviceChangeset {
-                margin: Some(pl.margin as i32),
+                margin: Some(pl.snr as i32),
                 external_power_source: Some(pl.battery == 0),
                 battery_level: Some(if pl.battery > 0 && pl.battery < 255 {
                     let v: fields::BigDecimal = ((pl.battery as f32) / 254.0 * 100.0).try_into()?;
@@ -63,7 +63,7 @@ pub async fn handle(
                     dev_eui: dev.dev_eui.to_string(),
                     tags,
                 }),
-                margin: pl.margin as i32,
+                margin: pl.snr as i32,
                 external_power_source: pl.battery == 0,
                 battery_level_unavailable: pl.battery == 255,
                 battery_level: if pl.battery > 0 && pl.battery < 255 {
@@ -163,7 +163,7 @@ pub mod test {
         let block = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::DevStatusAns(
             lrwn::DevStatusAnsPayload {
                 battery: 254,
-                margin: 10,
+                snr: 10,
             },
         )]);
 
