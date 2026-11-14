@@ -6,7 +6,7 @@ use super::assert;
 use crate::storage::{
     application,
     device::{self, DeviceClass},
-    device_keys, device_profile, fields, gateway, tenant,
+    device_keys, device_profile, fields, gateway, join_accept_cache, tenant,
 };
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, internal};
@@ -425,4 +425,411 @@ async fn test_lorawan_10() {
     for assert in &assertions {
         assert().await;
     }
+}
+
+#[tokio::test]
+async fn test_join_request_second_path_relayed() {
+    let _guard = test::prepare().await;
+    integration::set_mock().await;
+    gateway_backend::set_backend("eu868", Box::new(gateway_backend::mock::Backend {})).await;
+
+    // --- fixtures: copy of test_lorawan_10's setup through `phy_relay_ja` ---
+
+    let t = tenant::create(tenant::Tenant {
+        name: "tenant".into(),
+        can_have_gateways: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let gw = gateway::create(gateway::Gateway {
+        name: "gateway".into(),
+        tenant_id: t.id,
+        gateway_id: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let app = application::create(application::Application {
+        name: "app".into(),
+        tenant_id: t.id,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dp = device_profile::create(device_profile::DeviceProfile {
+        name: "dp".into(),
+        tenant_id: Some(t.id),
+        region: lrwn::region::CommonName::EU868,
+        mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
+        reg_params_revision: lrwn::region::Revision::A,
+        supports_otaa: true,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dp_relay = device_profile::create(device_profile::DeviceProfile {
+        name: "dp".into(),
+        tenant_id: Some(t.id),
+        region: lrwn::region::CommonName::EU868,
+        mac_version: lrwn::region::MacVersion::LORAWAN_1_0_2,
+        reg_params_revision: lrwn::region::Revision::A,
+        supports_otaa: true,
+        relay_params: Some(fields::RelayParams {
+            is_relay: true,
+            ..Default::default()
+        }),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dev = device::create(device::Device {
+        name: "device".into(),
+        application_id: app.id,
+        device_profile_id: dp.id,
+        dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+        enabled_class: DeviceClass::A,
+        f_cnt_up: 10,
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dk_dev = device_keys::create(device_keys::DeviceKeys {
+        dev_eui: dev.dev_eui,
+        nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let dev_relay = device::create(device::Device {
+        name: "relay-device".into(),
+        application_id: app.id,
+        device_profile_id: dp_relay.id,
+        dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 2]),
+        enabled_class: DeviceClass::A,
+        dev_addr: Some(DevAddr::from_be_bytes([4, 3, 2, 1])),
+        device_session: Some(
+            internal::DeviceSession {
+                mac_version: common::MacVersion::Lorawan102.into(),
+                dev_addr: vec![4, 3, 2, 1],
+                f_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                s_nwk_s_int_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                n_f_cnt_down: 5,
+                rx1_delay: 1,
+                rx2_frequency: 869525000,
+                region_config_id: "eu868".into(),
+                ..Default::default()
+            }
+            .into(),
+        ),
+        ..Default::default()
+    })
+    .await
+    .unwrap();
+
+    let ds_relay = dev_relay.get_device_session().unwrap();
+
+    let rx_info = gw::UplinkRxInfo {
+        gateway_id: gw.gateway_id.to_string(),
+        location: Some(Default::default()),
+        ..Default::default()
+    };
+
+    let mut tx_info = gw::UplinkTxInfo {
+        frequency: 868100000,
+        ..Default::default()
+    };
+    uplink::helpers::set_uplink_modulation("eu868", &mut tx_info, 0).unwrap();
+
+    let mut jr_pl = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::JoinRequest,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::JoinRequest(lrwn::JoinRequestPayload {
+            join_eui: EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            dev_eui: dev.dev_eui,
+            dev_nonce: 1,
+        }),
+        mic: None,
+    };
+    jr_pl.set_join_request_mic(&dk_dev.nwk_key).unwrap();
+
+    let mut ja_pl = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::JoinAccept,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::JoinAccept(lrwn::JoinAcceptPayload {
+            home_netid: lrwn::NetID::from_be_bytes([0, 0, 0]),
+            devaddr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
+            dl_settings: lrwn::DLSettings {
+                rx2_dr: 0,
+                rx1_dr_offset: 0,
+                opt_neg: false,
+            },
+            rx_delay: 1,
+            join_nonce: 0,
+            cflist: None,
+        }),
+        mic: None,
+    };
+    ja_pl
+        .set_join_accept_mic(
+            lrwn::JoinType::Join,
+            &EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            1,
+            &dk_dev.nwk_key,
+        )
+        .unwrap();
+    ja_pl.encrypt_join_accept_payload(&dk_dev.nwk_key).unwrap();
+
+    // `phy_relay_jr` below moves `jr_pl`; keep a clone for the direct copy.
+    let jr_direct = jr_pl.clone();
+
+    let mut phy_relay_jr = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::UnconfirmedDataUp,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+            fhdr: lrwn::FHDR {
+                devaddr: lrwn::DevAddr::from_be_bytes([4, 3, 2, 1]),
+                f_cnt: 10,
+                ..Default::default()
+            },
+            f_port: Some(226),
+            frm_payload: Some(lrwn::FRMPayload::ForwardUplinkReq(lrwn::ForwardUplinkReq {
+                metadata: lrwn::UplinkMetadata {
+                    dr: 5,
+                    snr: 10,
+                    rssi: -120,
+                    wor_channel: 0,
+                },
+                frequency: 868100000,
+                payload: Box::new(jr_pl),
+            })),
+        }),
+        mic: None,
+    };
+    phy_relay_jr
+        .encrypt_frm_payload(&AES128Key::from_slice(&ds_relay.nwk_s_enc_key).unwrap())
+        .unwrap();
+    phy_relay_jr
+        .set_uplink_data_mic(
+            lrwn::MACVersion::LoRaWAN1_0,
+            0,
+            0,
+            0,
+            &AES128Key::from_slice(&ds_relay.f_nwk_s_int_key).unwrap(),
+            &AES128Key::from_slice(&ds_relay.s_nwk_s_int_key).unwrap(),
+        )
+        .unwrap();
+
+    // `phy_relay_ja` below moves a copy of `ja_pl`; the direct-path assertions
+    // still need `ja_pl` itself, so it is cloned into the ForwardDownlinkReq
+    // rather than moved.
+    let mut phy_relay_ja = lrwn::PhyPayload {
+        mhdr: lrwn::MHDR {
+            f_type: lrwn::FType::UnconfirmedDataDown,
+            major: lrwn::Major::LoRaWANR1,
+        },
+        payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+            fhdr: lrwn::FHDR {
+                devaddr: lrwn::DevAddr::from_be_bytes([4, 3, 2, 1]),
+                f_cnt: 5,
+                f_ctrl: lrwn::FCtrl {
+                    adr: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            f_port: Some(226),
+            frm_payload: Some(lrwn::FRMPayload::ForwardDownlinkReq(
+                lrwn::ForwardDownlinkReq {
+                    payload: Box::new(ja_pl.clone()),
+                },
+            )),
+        }),
+        mic: None,
+    };
+    phy_relay_ja
+        .encrypt_frm_payload(&AES128Key::from_slice(&ds_relay.nwk_s_enc_key).unwrap())
+        .unwrap();
+    phy_relay_ja
+        .set_downlink_data_mic(
+            lrwn::MACVersion::LoRaWAN1_0,
+            10,
+            &AES128Key::from_slice(&ds_relay.s_nwk_s_int_key).unwrap(),
+        )
+        .unwrap();
+
+    // --- end fixtures ---
+
+    let send = |phy_bytes: Vec<u8>| {
+        let tx_info = tx_info.clone();
+        let rx_info = rx_info.clone();
+        async move {
+            integration::mock::reset().await;
+            gateway_backend::mock::reset().await;
+            uplink::handle_uplink(
+                CommonName::EU868,
+                "eu868",
+                Uuid::new_v4(),
+                gw::UplinkFrameSet {
+                    phy_payload: phy_bytes,
+                    tx_info: Some(tx_info),
+                    rx_info: vec![rx_info],
+                },
+            )
+            .await
+            .unwrap();
+        }
+    };
+
+    let reset_device = || async {
+        device_keys::test::reset_nonces(&dev.dev_eui).await.unwrap();
+        join_accept_cache::delete(&dev.dev_eui).await.unwrap();
+        device::partial_update(
+            dev.dev_eui,
+            &device::DeviceChangeset {
+                dev_addr: Some(None),
+                device_session: Some(None),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+        // Both orders resend the identical `phy_relay_jr` bytes (f_cnt=10 on
+        // the relay's own outer uplink). Without resetting the relay's frame
+        // counter between orders, the second order's relayed send is a plain
+        // retransmission of the relay's OWN uplink (not the join-request dedup
+        // under test) and gets silently aborted before ever reaching it.
+        device::partial_update(
+            dev_relay.dev_eui,
+            &device::DeviceChangeset {
+                f_cnt_up: Some(0),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+    };
+
+    // --- Order A: direct first, relayed copy second ---
+    reset_device().await;
+    send(jr_direct.to_vec().unwrap()).await;
+    assert::downlink_phy_payloads(vec![ja_pl.clone(), ja_pl.clone()])().await;
+    assert::join_event_count(1)().await;
+    let ds_after_direct = device::get(&dev.dev_eui)
+        .await
+        .unwrap()
+        .device_session
+        .unwrap();
+
+    send(phy_relay_jr.to_vec().unwrap()).await;
+    assert::downlink_phy_payloads(vec![phy_relay_ja.clone(), phy_relay_ja.clone()])().await;
+    // The saved envelope is asserted against the exact same downlink-frame
+    // content test_lorawan_10 hardcodes for this scenario (same gateway, same
+    // relay device-session, same forwarded join-accept) rather than re-reading
+    // the gateway mock a second time: `downlink_phy_payloads` above already
+    // drained it, and `assert::downlink_frame_saved` reads the saved copy from
+    // storage (via `LAST_DOWNLINK_ID`, set by the call above), not the mock.
+    assert::downlink_frame_saved(internal::DownlinkFrame {
+        dev_eui: vec![1, 1, 1, 1, 1, 1, 1, 2],
+        dev_eui_relayed: vec![1, 1, 1, 1, 1, 1, 1, 1],
+        nwk_s_enc_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        a_f_cnt_down: 5,
+        n_f_cnt_down: 5,
+        downlink_frame: Some(gw::DownlinkFrame {
+            items: vec![
+                gw::DownlinkFrameItem {
+                    phy_payload: phy_relay_ja.to_vec().unwrap(),
+                    tx_info_legacy: None,
+                    tx_info: Some(gw::DownlinkTxInfo {
+                        frequency: 868100000,
+                        power: 16,
+                        modulation: Some(gw::Modulation {
+                            parameters: Some(gw::modulation::Parameters::Lora(
+                                gw::LoraModulationInfo {
+                                    bandwidth: 125000,
+                                    spreading_factor: 12,
+                                    code_rate: gw::CodeRate::Cr45.into(),
+                                    polarization_inversion: true,
+                                    ..Default::default()
+                                },
+                            )),
+                        }),
+                        timing: Some(gw::Timing {
+                            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                                delay: Some(Duration::from_secs(1).into()),
+                            })),
+                        }),
+                        ..Default::default()
+                    }),
+                },
+                gw::DownlinkFrameItem {
+                    phy_payload: phy_relay_ja.to_vec().unwrap(),
+                    tx_info_legacy: None,
+                    tx_info: Some(gw::DownlinkTxInfo {
+                        frequency: 869525000,
+                        power: 29,
+                        modulation: Some(gw::Modulation {
+                            parameters: Some(gw::modulation::Parameters::Lora(
+                                gw::LoraModulationInfo {
+                                    bandwidth: 125000,
+                                    spreading_factor: 12,
+                                    code_rate: gw::CodeRate::Cr45.into(),
+                                    polarization_inversion: true,
+                                    ..Default::default()
+                                },
+                            )),
+                        }),
+                        timing: Some(gw::Timing {
+                            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                                delay: Some(Duration::from_secs(2).into()),
+                            })),
+                        }),
+                        ..Default::default()
+                    }),
+                },
+            ],
+            gateway_id: "0102030405060708".to_string(),
+            ..Default::default()
+        }),
+        ..Default::default()
+    })()
+    .await;
+    assert::integration_log(vec![])().await;
+    assert::join_event_count(0)().await;
+    // The leaf's session is untouched by the second copy.
+    assert_eq!(
+        ds_after_direct,
+        device::get(&dev.dev_eui)
+            .await
+            .unwrap()
+            .device_session
+            .unwrap()
+    );
+    // One re-send per accepted join, on the relayed arm too.
+    assert_eq!(None, join_accept_cache::get(&dev.dev_eui).await.unwrap());
+
+    // --- Order B: relayed first, direct copy second ---
+    reset_device().await;
+    send(phy_relay_jr.to_vec().unwrap()).await;
+    assert::downlink_phy_payloads(vec![phy_relay_ja.clone(), phy_relay_ja.clone()])().await;
+    assert::join_event_count(1)().await;
+
+    send(jr_direct.to_vec().unwrap()).await;
+    assert::downlink_phy_payloads(vec![ja_pl.clone(), ja_pl.clone()])().await;
+    assert::integration_log(vec![])().await;
+    assert::join_event_count(0)().await;
 }
