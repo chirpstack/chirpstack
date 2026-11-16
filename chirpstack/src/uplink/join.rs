@@ -120,7 +120,10 @@ impl JoinRequest {
         ctx.filter_rx_info_by_tenant()?;
         ctx.abort_on_device_is_disabled()?;
         ctx.abort_on_relay_only_comm()?;
-        ctx.log_uplink_frame_set().await?;
+        // A failed frame log must not drop the join-request.
+        if let Err(e) = ctx.log_uplink_frame_set().await {
+            tracing::warn!(error = %format!("{:#}", e), "Log uplink frame-set failed, join-request handled anyway");
+        }
         ctx.abort_on_otaa_is_disabled()?;
         ctx.set_random_dev_addr()?;
         if ctx.js_client.is_some() {
