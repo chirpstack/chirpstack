@@ -175,6 +175,38 @@ pub async fn flush_non_pending_for_dev_eui(dev_eui: &EUI64) -> Result<(), Error>
     Ok(())
 }
 
+/// Deletes the queue-item if it belongs to the given device and is not pending. The
+/// conditions are part of the delete, so an item that becomes pending meanwhile is left.
+pub async fn delete_non_pending_item_for_dev_eui(dev_eui: &EUI64, id: &Uuid) -> Result<(), Error> {
+    let ra = diesel::delete(
+        device_queue_item::dsl::device_queue_item.filter(
+            device_queue_item::id
+                .eq(&fields::Uuid::from(id))
+                .and(device_queue_item::dev_eui.eq(&dev_eui))
+                .and(device_queue_item::is_pending.eq(false)),
+        ),
+    )
+    .execute(&mut get_async_db_conn().await?)
+    .await
+    .map_err(|e| Error::from_diesel(e, id.to_string()))?;
+
+    if ra == 0 {
+        let qi = get_item(id).await?;
+        if qi.dev_eui != *dev_eui {
+            return Err(Error::NotFound(id.to_string()));
+        }
+        if qi.is_pending {
+            return Err(Error::NotAllowed(
+                "Queue-item is pending and can not be deleted".into(),
+            ));
+        }
+        return Err(Error::NotFound(id.to_string()));
+    }
+
+    info!(dev_eui = %dev_eui, id = %id, "Device queue-item deleted");
+    Ok(())
+}
+
 pub async fn get_pending_for_dev_eui(dev_eui: &EUI64) -> Result<DeviceQueueItem, Error> {
     let qi = device_queue_item::dsl::device_queue_item
         .filter(
@@ -312,6 +344,70 @@ pub mod test {
         // flush
         flush_non_pending_for_dev_eui(&d.dev_eui).await.unwrap();
         assert!(delete_item(&qi.id).await.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_delete_non_pending_item_for_dev_eui() {
+        let _guard = test::prepare().await;
+        let dp = storage::device_profile::test::create_device_profile(None).await;
+        let d = storage::device::test::create_device(
+            EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            dp.id.into(),
+            None,
+        )
+        .await;
+        let d2 = storage::device::test::create_device(
+            EUI64::from_be_bytes([8, 7, 6, 5, 4, 3, 2, 1]),
+            dp.id.into(),
+            None,
+        )
+        .await;
+
+        let pending = enqueue_item(DeviceQueueItem {
+            dev_eui: d.dev_eui,
+            f_port: 10,
+            data: vec![0x01],
+            is_pending: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+        let qi = enqueue_item(DeviceQueueItem {
+            dev_eui: d.dev_eui,
+            f_port: 10,
+            data: vec![0x02],
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        // pending item
+        assert!(matches!(
+            delete_non_pending_item_for_dev_eui(&d.dev_eui, &pending.id).await,
+            Err(Error::NotAllowed(_))
+        ));
+
+        // item of another device
+        assert!(matches!(
+            delete_non_pending_item_for_dev_eui(&d2.dev_eui, &qi.id).await,
+            Err(Error::NotFound(_))
+        ));
+
+        // delete
+        delete_non_pending_item_for_dev_eui(&d.dev_eui, &qi.id)
+            .await
+            .unwrap();
+        let items = get_for_dev_eui(&d.dev_eui).await.unwrap();
+        assert_eq!(
+            vec![pending.id],
+            items.iter().map(|i| i.id).collect::<Vec<_>>()
+        );
+
+        // already deleted
+        assert!(matches!(
+            delete_non_pending_item_for_dev_eui(&d.dev_eui, &qi.id).await,
+            Err(Error::NotFound(_))
+        ));
     }
 
     #[tokio::test]

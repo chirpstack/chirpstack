@@ -132,6 +132,12 @@ service DeviceService {
     option (google.api.http) = {delete: "/api/devices/{dev_eui}/queue"};
   }
 
+  // DeleteQueueItem deletes the given item from the downlink device-queue.
+  // A pending item (sent, waiting for an ack or tx ack) can not be deleted.
+  rpc DeleteQueueItem(DeleteDeviceQueueItemRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/devices/{dev_eui}/queue/{id}"};
+  }
+
   // GetQueue returns the downlink device-queue.
   rpc GetQueue(GetDeviceQueueItemsRequest) returns (GetDeviceQueueItemsResponse) {
     option (google.api.http) = {get: "/api/devices/{dev_eui}/queue"};
@@ -565,6 +571,14 @@ message EnqueueDeviceQueueItemResponse {
 message FlushDeviceQueueRequest {
   // Device EUI (EUI64).
   string dev_eui = 1;
+}
+
+message DeleteDeviceQueueItemRequest {
+  // Device EUI (EUI64).
+  string dev_eui = 1;
+
+  // Queue item ID (UUID).
+  string id = 2;
 }
 
 message GetDeviceQueueItemsRequest {

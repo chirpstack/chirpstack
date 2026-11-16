@@ -2202,6 +2202,60 @@ func (x *FlushDeviceQueueRequest) GetDevEui() string {
 	return ""
 }
 
+type DeleteDeviceQueueItemRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Device EUI (EUI64).
+	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	// Queue item ID (UUID).
+	Id            string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteDeviceQueueItemRequest) Reset() {
+	*x = DeleteDeviceQueueItemRequest{}
+	mi := &file_api_device_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteDeviceQueueItemRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDeviceQueueItemRequest) ProtoMessage() {}
+
+func (x *DeleteDeviceQueueItemRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_device_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDeviceQueueItemRequest.ProtoReflect.Descriptor instead.
+func (*DeleteDeviceQueueItemRequest) Descriptor() ([]byte, []int) {
+	return file_api_device_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *DeleteDeviceQueueItemRequest) GetDevEui() string {
+	if x != nil {
+		return x.DevEui
+	}
+	return ""
+}
+
+func (x *DeleteDeviceQueueItemRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 type GetDeviceQueueItemsRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Device EUI (EUI64).
@@ -2214,7 +2268,7 @@ type GetDeviceQueueItemsRequest struct {
 
 func (x *GetDeviceQueueItemsRequest) Reset() {
 	*x = GetDeviceQueueItemsRequest{}
-	mi := &file_api_device_proto_msgTypes[32]
+	mi := &file_api_device_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2226,7 +2280,7 @@ func (x *GetDeviceQueueItemsRequest) String() string {
 func (*GetDeviceQueueItemsRequest) ProtoMessage() {}
 
 func (x *GetDeviceQueueItemsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_device_proto_msgTypes[32]
+	mi := &file_api_device_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2239,7 +2293,7 @@ func (x *GetDeviceQueueItemsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDeviceQueueItemsRequest.ProtoReflect.Descriptor instead.
 func (*GetDeviceQueueItemsRequest) Descriptor() ([]byte, []int) {
-	return file_api_device_proto_rawDescGZIP(), []int{32}
+	return file_api_device_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetDeviceQueueItemsRequest) GetDevEui() string {
@@ -2268,7 +2322,7 @@ type GetDeviceQueueItemsResponse struct {
 
 func (x *GetDeviceQueueItemsResponse) Reset() {
 	*x = GetDeviceQueueItemsResponse{}
-	mi := &file_api_device_proto_msgTypes[33]
+	mi := &file_api_device_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2280,7 +2334,7 @@ func (x *GetDeviceQueueItemsResponse) String() string {
 func (*GetDeviceQueueItemsResponse) ProtoMessage() {}
 
 func (x *GetDeviceQueueItemsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_device_proto_msgTypes[33]
+	mi := &file_api_device_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2293,7 +2347,7 @@ func (x *GetDeviceQueueItemsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDeviceQueueItemsResponse.ProtoReflect.Descriptor instead.
 func (*GetDeviceQueueItemsResponse) Descriptor() ([]byte, []int) {
-	return file_api_device_proto_rawDescGZIP(), []int{33}
+	return file_api_device_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *GetDeviceQueueItemsResponse) GetTotalCount() uint32 {
@@ -2320,7 +2374,7 @@ type FlushDevNoncesRequest struct {
 
 func (x *FlushDevNoncesRequest) Reset() {
 	*x = FlushDevNoncesRequest{}
-	mi := &file_api_device_proto_msgTypes[34]
+	mi := &file_api_device_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2332,7 +2386,7 @@ func (x *FlushDevNoncesRequest) String() string {
 func (*FlushDevNoncesRequest) ProtoMessage() {}
 
 func (x *FlushDevNoncesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_device_proto_msgTypes[34]
+	mi := &file_api_device_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2345,7 +2399,7 @@ func (x *FlushDevNoncesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FlushDevNoncesRequest.ProtoReflect.Descriptor instead.
 func (*FlushDevNoncesRequest) Descriptor() ([]byte, []int) {
-	return file_api_device_proto_rawDescGZIP(), []int{34}
+	return file_api_device_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *FlushDevNoncesRequest) GetDevEui() string {
@@ -2365,7 +2419,7 @@ type GetDeviceNextFCntDownRequest struct {
 
 func (x *GetDeviceNextFCntDownRequest) Reset() {
 	*x = GetDeviceNextFCntDownRequest{}
-	mi := &file_api_device_proto_msgTypes[35]
+	mi := &file_api_device_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2377,7 +2431,7 @@ func (x *GetDeviceNextFCntDownRequest) String() string {
 func (*GetDeviceNextFCntDownRequest) ProtoMessage() {}
 
 func (x *GetDeviceNextFCntDownRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_device_proto_msgTypes[35]
+	mi := &file_api_device_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2390,7 +2444,7 @@ func (x *GetDeviceNextFCntDownRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDeviceNextFCntDownRequest.ProtoReflect.Descriptor instead.
 func (*GetDeviceNextFCntDownRequest) Descriptor() ([]byte, []int) {
-	return file_api_device_proto_rawDescGZIP(), []int{35}
+	return file_api_device_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *GetDeviceNextFCntDownRequest) GetDevEui() string {
@@ -2410,7 +2464,7 @@ type GetDeviceNextFCntDownResponse struct {
 
 func (x *GetDeviceNextFCntDownResponse) Reset() {
 	*x = GetDeviceNextFCntDownResponse{}
-	mi := &file_api_device_proto_msgTypes[36]
+	mi := &file_api_device_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2422,7 +2476,7 @@ func (x *GetDeviceNextFCntDownResponse) String() string {
 func (*GetDeviceNextFCntDownResponse) ProtoMessage() {}
 
 func (x *GetDeviceNextFCntDownResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_device_proto_msgTypes[36]
+	mi := &file_api_device_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2435,7 +2489,7 @@ func (x *GetDeviceNextFCntDownResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDeviceNextFCntDownResponse.ProtoReflect.Descriptor instead.
 func (*GetDeviceNextFCntDownResponse) Descriptor() ([]byte, []int) {
-	return file_api_device_proto_rawDescGZIP(), []int{36}
+	return file_api_device_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *GetDeviceNextFCntDownResponse) GetFCntDown() uint32 {
@@ -2633,7 +2687,10 @@ const file_api_device_proto_rawDesc = "" +
 	"\x1eEnqueueDeviceQueueItemResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"2\n" +
 	"\x17FlushDeviceQueueRequest\x12\x17\n" +
-	"\adev_eui\x18\x01 \x01(\tR\x06devEui\"T\n" +
+	"\adev_eui\x18\x01 \x01(\tR\x06devEui\"G\n" +
+	"\x1cDeleteDeviceQueueItemRequest\x12\x17\n" +
+	"\adev_eui\x18\x01 \x01(\tR\x06devEui\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02id\"T\n" +
 	"\x1aGetDeviceQueueItemsRequest\x12\x17\n" +
 	"\adev_eui\x18\x01 \x01(\tR\x06devEui\x12\x1d\n" +
 	"\n" +
@@ -2648,7 +2705,7 @@ const file_api_device_proto_rawDesc = "" +
 	"\adev_eui\x18\x01 \x01(\tR\x06devEui\"=\n" +
 	"\x1dGetDeviceNextFCntDownResponse\x12\x1c\n" +
 	"\n" +
-	"f_cnt_down\x18\x01 \x01(\rR\bfCntDown2\xe2\x11\n" +
+	"f_cnt_down\x18\x01 \x01(\rR\bfCntDown2\xdb\x12\n" +
 	"\rDeviceService\x12S\n" +
 	"\x06Create\x12\x18.api.CreateDeviceRequest\x1a\x16.google.protobuf.Empty\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/api/devices\x12T\n" +
 	"\x03Get\x12\x15.api.GetDeviceRequest\x1a\x16.api.GetDeviceResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/devices/{dev_eui}\x12d\n" +
@@ -2673,7 +2730,8 @@ const file_api_device_proto_rawDesc = "" +
 	"\x0eGetLinkMetrics\x12 .api.GetDeviceLinkMetricsRequest\x1a!.api.GetDeviceLinkMetricsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/api/devices/{dev_eui}/link-metrics\x12\x86\x01\n" +
 	"\aEnqueue\x12\".api.EnqueueDeviceQueueItemRequest\x1a#.api.EnqueueDeviceQueueItemResponse\"2\x82\xd3\xe4\x93\x02,:\x01*\"'/api/devices/{queue_item.dev_eui}/queue\x12h\n" +
 	"\n" +
-	"FlushQueue\x12\x1c.api.FlushDeviceQueueRequest\x1a\x16.google.protobuf.Empty\"$\x82\xd3\xe4\x93\x02\x1e*\x1c/api/devices/{dev_eui}/queue\x12s\n" +
+	"FlushQueue\x12\x1c.api.FlushDeviceQueueRequest\x1a\x16.google.protobuf.Empty\"$\x82\xd3\xe4\x93\x02\x1e*\x1c/api/devices/{dev_eui}/queue\x12w\n" +
+	"\x0fDeleteQueueItem\x12!.api.DeleteDeviceQueueItemRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#*!/api/devices/{dev_eui}/queue/{id}\x12s\n" +
 	"\bGetQueue\x12\x1f.api.GetDeviceQueueItemsRequest\x1a .api.GetDeviceQueueItemsResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/devices/{dev_eui}/queue\x12\x8f\x01\n" +
 	"\x0fGetNextFCntDown\x12!.api.GetDeviceNextFCntDownRequest\x1a\".api.GetDeviceNextFCntDownResponse\"5\x82\xd3\xe4\x93\x02/:\x01*\"*/api/devices/{dev_eui}/get-next-f-cnt-downB\x91\x01\n" +
 	"\x11io.chirpstack.apiB\vDeviceProtoP\x01Z.github.com/chirpstack/chirpstack/api/go/v4/api\xaa\x02\x0eChirpstack.Api\xca\x02\x0eChirpstack\\Api\xe2\x02\x1aGPBMetadata\\Chirpstack\\Apib\x06proto3"
@@ -2691,7 +2749,7 @@ func file_api_device_proto_rawDescGZIP() []byte {
 }
 
 var file_api_device_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_device_proto_msgTypes = make([]protoimpl.MessageInfo, 43)
+var file_api_device_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
 var file_api_device_proto_goTypes = []any{
 	(ListDevicesRequest_OrderBy)(0),        // 0: api.ListDevicesRequest.OrderBy
 	(*Device)(nil),                         // 1: api.Device
@@ -2726,71 +2784,72 @@ var file_api_device_proto_goTypes = []any{
 	(*EnqueueDeviceQueueItemRequest)(nil),  // 30: api.EnqueueDeviceQueueItemRequest
 	(*EnqueueDeviceQueueItemResponse)(nil), // 31: api.EnqueueDeviceQueueItemResponse
 	(*FlushDeviceQueueRequest)(nil),        // 32: api.FlushDeviceQueueRequest
-	(*GetDeviceQueueItemsRequest)(nil),     // 33: api.GetDeviceQueueItemsRequest
-	(*GetDeviceQueueItemsResponse)(nil),    // 34: api.GetDeviceQueueItemsResponse
-	(*FlushDevNoncesRequest)(nil),          // 35: api.FlushDevNoncesRequest
-	(*GetDeviceNextFCntDownRequest)(nil),   // 36: api.GetDeviceNextFCntDownRequest
-	(*GetDeviceNextFCntDownResponse)(nil),  // 37: api.GetDeviceNextFCntDownResponse
-	nil,                                    // 38: api.Device.VariablesEntry
-	nil,                                    // 39: api.Device.TagsEntry
-	nil,                                    // 40: api.DeviceListItem.TagsEntry
-	nil,                                    // 41: api.ListDevicesRequest.TagsEntry
-	nil,                                    // 42: api.GetDeviceMetricsResponse.MetricsEntry
-	nil,                                    // 43: api.GetDeviceMetricsResponse.StatesEntry
-	(*timestamppb.Timestamp)(nil),          // 44: google.protobuf.Timestamp
-	(common.DeviceClass)(0),                // 45: common.DeviceClass
-	(*common.JoinServerContext)(nil),       // 46: common.JoinServerContext
-	(common.Aggregation)(0),                // 47: common.Aggregation
-	(*common.Metric)(nil),                  // 48: common.Metric
-	(*structpb.Struct)(nil),                // 49: google.protobuf.Struct
-	(*emptypb.Empty)(nil),                  // 50: google.protobuf.Empty
+	(*DeleteDeviceQueueItemRequest)(nil),   // 33: api.DeleteDeviceQueueItemRequest
+	(*GetDeviceQueueItemsRequest)(nil),     // 34: api.GetDeviceQueueItemsRequest
+	(*GetDeviceQueueItemsResponse)(nil),    // 35: api.GetDeviceQueueItemsResponse
+	(*FlushDevNoncesRequest)(nil),          // 36: api.FlushDevNoncesRequest
+	(*GetDeviceNextFCntDownRequest)(nil),   // 37: api.GetDeviceNextFCntDownRequest
+	(*GetDeviceNextFCntDownResponse)(nil),  // 38: api.GetDeviceNextFCntDownResponse
+	nil,                                    // 39: api.Device.VariablesEntry
+	nil,                                    // 40: api.Device.TagsEntry
+	nil,                                    // 41: api.DeviceListItem.TagsEntry
+	nil,                                    // 42: api.ListDevicesRequest.TagsEntry
+	nil,                                    // 43: api.GetDeviceMetricsResponse.MetricsEntry
+	nil,                                    // 44: api.GetDeviceMetricsResponse.StatesEntry
+	(*timestamppb.Timestamp)(nil),          // 45: google.protobuf.Timestamp
+	(common.DeviceClass)(0),                // 46: common.DeviceClass
+	(*common.JoinServerContext)(nil),       // 47: common.JoinServerContext
+	(common.Aggregation)(0),                // 48: common.Aggregation
+	(*common.Metric)(nil),                  // 49: common.Metric
+	(*structpb.Struct)(nil),                // 50: google.protobuf.Struct
+	(*emptypb.Empty)(nil),                  // 51: google.protobuf.Empty
 }
 var file_api_device_proto_depIdxs = []int32{
-	38, // 0: api.Device.variables:type_name -> api.Device.VariablesEntry
-	39, // 1: api.Device.tags:type_name -> api.Device.TagsEntry
-	44, // 2: api.DeviceListItem.created_at:type_name -> google.protobuf.Timestamp
-	44, // 3: api.DeviceListItem.updated_at:type_name -> google.protobuf.Timestamp
-	44, // 4: api.DeviceListItem.last_seen_at:type_name -> google.protobuf.Timestamp
+	39, // 0: api.Device.variables:type_name -> api.Device.VariablesEntry
+	40, // 1: api.Device.tags:type_name -> api.Device.TagsEntry
+	45, // 2: api.DeviceListItem.created_at:type_name -> google.protobuf.Timestamp
+	45, // 3: api.DeviceListItem.updated_at:type_name -> google.protobuf.Timestamp
+	45, // 4: api.DeviceListItem.last_seen_at:type_name -> google.protobuf.Timestamp
 	2,  // 5: api.DeviceListItem.device_status:type_name -> api.DeviceStatus
-	40, // 6: api.DeviceListItem.tags:type_name -> api.DeviceListItem.TagsEntry
+	41, // 6: api.DeviceListItem.tags:type_name -> api.DeviceListItem.TagsEntry
 	1,  // 7: api.CreateDeviceRequest.device:type_name -> api.Device
 	1,  // 8: api.GetDeviceResponse.device:type_name -> api.Device
-	44, // 9: api.GetDeviceResponse.created_at:type_name -> google.protobuf.Timestamp
-	44, // 10: api.GetDeviceResponse.updated_at:type_name -> google.protobuf.Timestamp
-	44, // 11: api.GetDeviceResponse.last_seen_at:type_name -> google.protobuf.Timestamp
+	45, // 9: api.GetDeviceResponse.created_at:type_name -> google.protobuf.Timestamp
+	45, // 10: api.GetDeviceResponse.updated_at:type_name -> google.protobuf.Timestamp
+	45, // 11: api.GetDeviceResponse.last_seen_at:type_name -> google.protobuf.Timestamp
 	2,  // 12: api.GetDeviceResponse.device_status:type_name -> api.DeviceStatus
-	45, // 13: api.GetDeviceResponse.class_enabled:type_name -> common.DeviceClass
+	46, // 13: api.GetDeviceResponse.class_enabled:type_name -> common.DeviceClass
 	1,  // 14: api.UpdateDeviceRequest.device:type_name -> api.Device
 	0,  // 15: api.ListDevicesRequest.order_by:type_name -> api.ListDevicesRequest.OrderBy
-	41, // 16: api.ListDevicesRequest.tags:type_name -> api.ListDevicesRequest.TagsEntry
+	42, // 16: api.ListDevicesRequest.tags:type_name -> api.ListDevicesRequest.TagsEntry
 	3,  // 17: api.ListDevicesResponse.result:type_name -> api.DeviceListItem
 	4,  // 18: api.CreateDeviceKeysRequest.device_keys:type_name -> api.DeviceKeys
 	4,  // 19: api.GetDeviceKeysResponse.device_keys:type_name -> api.DeviceKeys
-	44, // 20: api.GetDeviceKeysResponse.created_at:type_name -> google.protobuf.Timestamp
-	44, // 21: api.GetDeviceKeysResponse.updated_at:type_name -> google.protobuf.Timestamp
+	45, // 20: api.GetDeviceKeysResponse.created_at:type_name -> google.protobuf.Timestamp
+	45, // 21: api.GetDeviceKeysResponse.updated_at:type_name -> google.protobuf.Timestamp
 	4,  // 22: api.UpdateDeviceKeysRequest.device_keys:type_name -> api.DeviceKeys
 	17, // 23: api.ActivateDeviceRequest.device_activation:type_name -> api.DeviceActivation
 	17, // 24: api.GetDeviceActivationResponse.device_activation:type_name -> api.DeviceActivation
-	46, // 25: api.GetDeviceActivationResponse.join_server_context:type_name -> common.JoinServerContext
-	44, // 26: api.GetDeviceMetricsRequest.start:type_name -> google.protobuf.Timestamp
-	44, // 27: api.GetDeviceMetricsRequest.end:type_name -> google.protobuf.Timestamp
-	47, // 28: api.GetDeviceMetricsRequest.aggregation:type_name -> common.Aggregation
-	42, // 29: api.GetDeviceMetricsResponse.metrics:type_name -> api.GetDeviceMetricsResponse.MetricsEntry
-	43, // 30: api.GetDeviceMetricsResponse.states:type_name -> api.GetDeviceMetricsResponse.StatesEntry
-	44, // 31: api.GetDeviceLinkMetricsRequest.start:type_name -> google.protobuf.Timestamp
-	44, // 32: api.GetDeviceLinkMetricsRequest.end:type_name -> google.protobuf.Timestamp
-	47, // 33: api.GetDeviceLinkMetricsRequest.aggregation:type_name -> common.Aggregation
-	48, // 34: api.GetDeviceLinkMetricsResponse.rx_packets:type_name -> common.Metric
-	48, // 35: api.GetDeviceLinkMetricsResponse.gw_rssi:type_name -> common.Metric
-	48, // 36: api.GetDeviceLinkMetricsResponse.gw_snr:type_name -> common.Metric
-	48, // 37: api.GetDeviceLinkMetricsResponse.rx_packets_per_freq:type_name -> common.Metric
-	48, // 38: api.GetDeviceLinkMetricsResponse.rx_packets_per_dr:type_name -> common.Metric
-	48, // 39: api.GetDeviceLinkMetricsResponse.errors:type_name -> common.Metric
-	49, // 40: api.DeviceQueueItem.object:type_name -> google.protobuf.Struct
-	44, // 41: api.DeviceQueueItem.expires_at:type_name -> google.protobuf.Timestamp
+	47, // 25: api.GetDeviceActivationResponse.join_server_context:type_name -> common.JoinServerContext
+	45, // 26: api.GetDeviceMetricsRequest.start:type_name -> google.protobuf.Timestamp
+	45, // 27: api.GetDeviceMetricsRequest.end:type_name -> google.protobuf.Timestamp
+	48, // 28: api.GetDeviceMetricsRequest.aggregation:type_name -> common.Aggregation
+	43, // 29: api.GetDeviceMetricsResponse.metrics:type_name -> api.GetDeviceMetricsResponse.MetricsEntry
+	44, // 30: api.GetDeviceMetricsResponse.states:type_name -> api.GetDeviceMetricsResponse.StatesEntry
+	45, // 31: api.GetDeviceLinkMetricsRequest.start:type_name -> google.protobuf.Timestamp
+	45, // 32: api.GetDeviceLinkMetricsRequest.end:type_name -> google.protobuf.Timestamp
+	48, // 33: api.GetDeviceLinkMetricsRequest.aggregation:type_name -> common.Aggregation
+	49, // 34: api.GetDeviceLinkMetricsResponse.rx_packets:type_name -> common.Metric
+	49, // 35: api.GetDeviceLinkMetricsResponse.gw_rssi:type_name -> common.Metric
+	49, // 36: api.GetDeviceLinkMetricsResponse.gw_snr:type_name -> common.Metric
+	49, // 37: api.GetDeviceLinkMetricsResponse.rx_packets_per_freq:type_name -> common.Metric
+	49, // 38: api.GetDeviceLinkMetricsResponse.rx_packets_per_dr:type_name -> common.Metric
+	49, // 39: api.GetDeviceLinkMetricsResponse.errors:type_name -> common.Metric
+	50, // 40: api.DeviceQueueItem.object:type_name -> google.protobuf.Struct
+	45, // 41: api.DeviceQueueItem.expires_at:type_name -> google.protobuf.Timestamp
 	29, // 42: api.EnqueueDeviceQueueItemRequest.queue_item:type_name -> api.DeviceQueueItem
 	29, // 43: api.GetDeviceQueueItemsResponse.result:type_name -> api.DeviceQueueItem
-	48, // 44: api.GetDeviceMetricsResponse.MetricsEntry.value:type_name -> common.Metric
+	49, // 44: api.GetDeviceMetricsResponse.MetricsEntry.value:type_name -> common.Metric
 	26, // 45: api.GetDeviceMetricsResponse.StatesEntry.value:type_name -> api.DeviceState
 	5,  // 46: api.DeviceService.Create:input_type -> api.CreateDeviceRequest
 	6,  // 47: api.DeviceService.Get:input_type -> api.GetDeviceRequest
@@ -2801,7 +2860,7 @@ var file_api_device_proto_depIdxs = []int32{
 	13, // 52: api.DeviceService.GetKeys:input_type -> api.GetDeviceKeysRequest
 	15, // 53: api.DeviceService.UpdateKeys:input_type -> api.UpdateDeviceKeysRequest
 	16, // 54: api.DeviceService.DeleteKeys:input_type -> api.DeleteDeviceKeysRequest
-	35, // 55: api.DeviceService.FlushDevNonces:input_type -> api.FlushDevNoncesRequest
+	36, // 55: api.DeviceService.FlushDevNonces:input_type -> api.FlushDevNoncesRequest
 	18, // 56: api.DeviceService.Activate:input_type -> api.ActivateDeviceRequest
 	19, // 57: api.DeviceService.Deactivate:input_type -> api.DeactivateDeviceRequest
 	20, // 58: api.DeviceService.GetActivation:input_type -> api.GetDeviceActivationRequest
@@ -2810,30 +2869,32 @@ var file_api_device_proto_depIdxs = []int32{
 	27, // 61: api.DeviceService.GetLinkMetrics:input_type -> api.GetDeviceLinkMetricsRequest
 	30, // 62: api.DeviceService.Enqueue:input_type -> api.EnqueueDeviceQueueItemRequest
 	32, // 63: api.DeviceService.FlushQueue:input_type -> api.FlushDeviceQueueRequest
-	33, // 64: api.DeviceService.GetQueue:input_type -> api.GetDeviceQueueItemsRequest
-	36, // 65: api.DeviceService.GetNextFCntDown:input_type -> api.GetDeviceNextFCntDownRequest
-	50, // 66: api.DeviceService.Create:output_type -> google.protobuf.Empty
-	7,  // 67: api.DeviceService.Get:output_type -> api.GetDeviceResponse
-	50, // 68: api.DeviceService.Update:output_type -> google.protobuf.Empty
-	50, // 69: api.DeviceService.Delete:output_type -> google.protobuf.Empty
-	11, // 70: api.DeviceService.List:output_type -> api.ListDevicesResponse
-	50, // 71: api.DeviceService.CreateKeys:output_type -> google.protobuf.Empty
-	14, // 72: api.DeviceService.GetKeys:output_type -> api.GetDeviceKeysResponse
-	50, // 73: api.DeviceService.UpdateKeys:output_type -> google.protobuf.Empty
-	50, // 74: api.DeviceService.DeleteKeys:output_type -> google.protobuf.Empty
-	50, // 75: api.DeviceService.FlushDevNonces:output_type -> google.protobuf.Empty
-	50, // 76: api.DeviceService.Activate:output_type -> google.protobuf.Empty
-	50, // 77: api.DeviceService.Deactivate:output_type -> google.protobuf.Empty
-	21, // 78: api.DeviceService.GetActivation:output_type -> api.GetDeviceActivationResponse
-	23, // 79: api.DeviceService.GetRandomDevAddr:output_type -> api.GetRandomDevAddrResponse
-	25, // 80: api.DeviceService.GetMetrics:output_type -> api.GetDeviceMetricsResponse
-	28, // 81: api.DeviceService.GetLinkMetrics:output_type -> api.GetDeviceLinkMetricsResponse
-	31, // 82: api.DeviceService.Enqueue:output_type -> api.EnqueueDeviceQueueItemResponse
-	50, // 83: api.DeviceService.FlushQueue:output_type -> google.protobuf.Empty
-	34, // 84: api.DeviceService.GetQueue:output_type -> api.GetDeviceQueueItemsResponse
-	37, // 85: api.DeviceService.GetNextFCntDown:output_type -> api.GetDeviceNextFCntDownResponse
-	66, // [66:86] is the sub-list for method output_type
-	46, // [46:66] is the sub-list for method input_type
+	33, // 64: api.DeviceService.DeleteQueueItem:input_type -> api.DeleteDeviceQueueItemRequest
+	34, // 65: api.DeviceService.GetQueue:input_type -> api.GetDeviceQueueItemsRequest
+	37, // 66: api.DeviceService.GetNextFCntDown:input_type -> api.GetDeviceNextFCntDownRequest
+	51, // 67: api.DeviceService.Create:output_type -> google.protobuf.Empty
+	7,  // 68: api.DeviceService.Get:output_type -> api.GetDeviceResponse
+	51, // 69: api.DeviceService.Update:output_type -> google.protobuf.Empty
+	51, // 70: api.DeviceService.Delete:output_type -> google.protobuf.Empty
+	11, // 71: api.DeviceService.List:output_type -> api.ListDevicesResponse
+	51, // 72: api.DeviceService.CreateKeys:output_type -> google.protobuf.Empty
+	14, // 73: api.DeviceService.GetKeys:output_type -> api.GetDeviceKeysResponse
+	51, // 74: api.DeviceService.UpdateKeys:output_type -> google.protobuf.Empty
+	51, // 75: api.DeviceService.DeleteKeys:output_type -> google.protobuf.Empty
+	51, // 76: api.DeviceService.FlushDevNonces:output_type -> google.protobuf.Empty
+	51, // 77: api.DeviceService.Activate:output_type -> google.protobuf.Empty
+	51, // 78: api.DeviceService.Deactivate:output_type -> google.protobuf.Empty
+	21, // 79: api.DeviceService.GetActivation:output_type -> api.GetDeviceActivationResponse
+	23, // 80: api.DeviceService.GetRandomDevAddr:output_type -> api.GetRandomDevAddrResponse
+	25, // 81: api.DeviceService.GetMetrics:output_type -> api.GetDeviceMetricsResponse
+	28, // 82: api.DeviceService.GetLinkMetrics:output_type -> api.GetDeviceLinkMetricsResponse
+	31, // 83: api.DeviceService.Enqueue:output_type -> api.EnqueueDeviceQueueItemResponse
+	51, // 84: api.DeviceService.FlushQueue:output_type -> google.protobuf.Empty
+	51, // 85: api.DeviceService.DeleteQueueItem:output_type -> google.protobuf.Empty
+	35, // 86: api.DeviceService.GetQueue:output_type -> api.GetDeviceQueueItemsResponse
+	38, // 87: api.DeviceService.GetNextFCntDown:output_type -> api.GetDeviceNextFCntDownResponse
+	67, // [67:88] is the sub-list for method output_type
+	46, // [46:67] is the sub-list for method input_type
 	46, // [46:46] is the sub-list for extension type_name
 	46, // [46:46] is the sub-list for extension extendee
 	0,  // [0:46] is the sub-list for field type_name
@@ -2850,7 +2911,7 @@ func file_api_device_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_device_proto_rawDesc), len(file_api_device_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   43,
+			NumMessages:   44,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

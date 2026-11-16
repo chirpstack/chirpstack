@@ -38,6 +38,7 @@ const (
 	DeviceService_GetLinkMetrics_FullMethodName   = "/api.DeviceService/GetLinkMetrics"
 	DeviceService_Enqueue_FullMethodName          = "/api.DeviceService/Enqueue"
 	DeviceService_FlushQueue_FullMethodName       = "/api.DeviceService/FlushQueue"
+	DeviceService_DeleteQueueItem_FullMethodName  = "/api.DeviceService/DeleteQueueItem"
 	DeviceService_GetQueue_FullMethodName         = "/api.DeviceService/GetQueue"
 	DeviceService_GetNextFCntDown_FullMethodName  = "/api.DeviceService/GetNextFCntDown"
 )
@@ -90,6 +91,9 @@ type DeviceServiceClient interface {
 	Enqueue(ctx context.Context, in *EnqueueDeviceQueueItemRequest, opts ...grpc.CallOption) (*EnqueueDeviceQueueItemResponse, error)
 	// FlushQueue flushes the downlink device-queue.
 	FlushQueue(ctx context.Context, in *FlushDeviceQueueRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// DeleteQueueItem deletes the given item from the downlink device-queue.
+	// A pending item (sent, waiting for an ack or tx ack) can not be deleted.
+	DeleteQueueItem(ctx context.Context, in *DeleteDeviceQueueItemRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// GetQueue returns the downlink device-queue.
 	GetQueue(ctx context.Context, in *GetDeviceQueueItemsRequest, opts ...grpc.CallOption) (*GetDeviceQueueItemsResponse, error)
 	// GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
@@ -286,6 +290,16 @@ func (c *deviceServiceClient) FlushQueue(ctx context.Context, in *FlushDeviceQue
 	return out, nil
 }
 
+func (c *deviceServiceClient) DeleteQueueItem(ctx context.Context, in *DeleteDeviceQueueItemRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, DeviceService_DeleteQueueItem_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *deviceServiceClient) GetQueue(ctx context.Context, in *GetDeviceQueueItemsRequest, opts ...grpc.CallOption) (*GetDeviceQueueItemsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetDeviceQueueItemsResponse)
@@ -354,6 +368,9 @@ type DeviceServiceServer interface {
 	Enqueue(context.Context, *EnqueueDeviceQueueItemRequest) (*EnqueueDeviceQueueItemResponse, error)
 	// FlushQueue flushes the downlink device-queue.
 	FlushQueue(context.Context, *FlushDeviceQueueRequest) (*emptypb.Empty, error)
+	// DeleteQueueItem deletes the given item from the downlink device-queue.
+	// A pending item (sent, waiting for an ack or tx ack) can not be deleted.
+	DeleteQueueItem(context.Context, *DeleteDeviceQueueItemRequest) (*emptypb.Empty, error)
 	// GetQueue returns the downlink device-queue.
 	GetQueue(context.Context, *GetDeviceQueueItemsRequest) (*GetDeviceQueueItemsResponse, error)
 	// GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
@@ -423,6 +440,9 @@ func (UnimplementedDeviceServiceServer) Enqueue(context.Context, *EnqueueDeviceQ
 }
 func (UnimplementedDeviceServiceServer) FlushQueue(context.Context, *FlushDeviceQueueRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method FlushQueue not implemented")
+}
+func (UnimplementedDeviceServiceServer) DeleteQueueItem(context.Context, *DeleteDeviceQueueItemRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteQueueItem not implemented")
 }
 func (UnimplementedDeviceServiceServer) GetQueue(context.Context, *GetDeviceQueueItemsRequest) (*GetDeviceQueueItemsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetQueue not implemented")
@@ -775,6 +795,24 @@ func _DeviceService_FlushQueue_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DeviceService_DeleteQueueItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDeviceQueueItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceServiceServer).DeleteQueueItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DeviceService_DeleteQueueItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceServiceServer).DeleteQueueItem(ctx, req.(*DeleteDeviceQueueItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _DeviceService_GetQueue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDeviceQueueItemsRequest)
 	if err := dec(in); err != nil {
@@ -889,6 +927,10 @@ var DeviceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FlushQueue",
 			Handler:    _DeviceService_FlushQueue_Handler,
+		},
+		{
+			MethodName: "DeleteQueueItem",
+			Handler:    _DeviceService_DeleteQueueItem_Handler,
 		},
 		{
 			MethodName: "GetQueue",
