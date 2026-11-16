@@ -1904,22 +1904,22 @@ const file_api_fuota_proto_rawDesc = "" +
 	"\n" +
 	"NO_REQUEST\x10\x00\x12\x1a\n" +
 	"\x16AFTER_FRAGMENT_ENQUEUE\x10\x01\x12\x19\n" +
-	"\x15AFTER_SESSION_TIMEOUT\x10\x022\x82\t\n" +
-	"\fFuotaService\x12[\n" +
-	"\x10CreateDeployment\x12!.api.CreateFuotaDeploymentRequest\x1a\".api.CreateFuotaDeploymentResponse\"\x00\x12R\n" +
-	"\rGetDeployment\x12\x1e.api.GetFuotaDeploymentRequest\x1a\x1f.api.GetFuotaDeploymentResponse\"\x00\x12O\n" +
-	"\x10UpdateDeployment\x12!.api.UpdateFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12O\n" +
-	"\x10DeleteDeployment\x12!.api.DeleteFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12M\n" +
-	"\x0fStartDeployment\x12 .api.StartFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12X\n" +
-	"\x0fListDeployments\x12 .api.ListFuotaDeploymentsRequest\x1a!.api.ListFuotaDeploymentsResponse\"\x00\x12O\n" +
+	"\x15AFTER_SESSION_TIMEOUT\x10\x022\xb2\x0e\n" +
+	"\fFuotaService\x12|\n" +
+	"\x10CreateDeployment\x12!.api.CreateFuotaDeploymentRequest\x1a\".api.CreateFuotaDeploymentResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/api/fuota-deployments\x12u\n" +
+	"\rGetDeployment\x12\x1e.api.GetFuotaDeploymentRequest\x1a\x1f.api.GetFuotaDeploymentResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/api/fuota-deployments/{id}\x12\x80\x01\n" +
+	"\x10UpdateDeployment\x12!.api.UpdateFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"1\x82\xd3\xe4\x93\x02+:\x01*\x1a&/api/fuota-deployments/{deployment.id}\x12r\n" +
+	"\x10DeleteDeployment\x12!.api.DeleteFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"#\x82\xd3\xe4\x93\x02\x1d*\x1b/api/fuota-deployments/{id}\x12y\n" +
+	"\x0fStartDeployment\x12 .api.StartFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\",\x82\xd3\xe4\x93\x02&:\x01*\"!/api/fuota-deployments/{id}/start\x12v\n" +
+	"\x0fListDeployments\x12 .api.ListFuotaDeploymentsRequest\x1a!.api.ListFuotaDeploymentsResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/fuota-deployments\x12\x92\x01\n" +
 	"\n" +
-	"AddDevices\x12'.api.AddDevicesToFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12W\n" +
-	"\rRemoveDevices\x12,.api.RemoveDevicesFromFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12`\n" +
-	"\vListDevices\x12&.api.ListFuotaDeploymentDevicesRequest\x1a'.api.ListFuotaDeploymentDevicesResponse\"\x00\x12Q\n" +
-	"\vAddGateways\x12(.api.AddGatewaysToFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12c\n" +
-	"\fListGateways\x12'.api.ListFuotaDeploymentGatewaysRequest\x1a(.api.ListFuotaDeploymentGatewaysResponse\"\x00\x12Y\n" +
-	"\x0eRemoveGateways\x12-.api.RemoveGatewaysFromFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"\x00\x12W\n" +
-	"\bListJobs\x12#.api.ListFuotaDeploymentJobsRequest\x1a$.api.ListFuotaDeploymentJobsResponse\"\x00B\x90\x01\n" +
+	"AddDevices\x12'.api.AddDevicesToFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"C\x82\xd3\xe4\x93\x02=:\x01*\"8/api/fuota-deployments/{fuota_deployment_id}/add-devices\x12\x9d\x01\n" +
+	"\rRemoveDevices\x12,.api.RemoveDevicesFromFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"F\x82\xd3\xe4\x93\x02@:\x01*\";/api/fuota-deployments/{fuota_deployment_id}/remove-devices\x12\x9c\x01\n" +
+	"\vListDevices\x12&.api.ListFuotaDeploymentDevicesRequest\x1a'.api.ListFuotaDeploymentDevicesResponse\"<\x82\xd3\xe4\x93\x026\x124/api/fuota-deployments/{fuota_deployment_id}/devices\x12\x95\x01\n" +
+	"\vAddGateways\x12(.api.AddGatewaysToFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"D\x82\xd3\xe4\x93\x02>:\x01*\"9/api/fuota-deployments/{fuota_deployment_id}/add-gateways\x12\xa0\x01\n" +
+	"\fListGateways\x12'.api.ListFuotaDeploymentGatewaysRequest\x1a(.api.ListFuotaDeploymentGatewaysResponse\"=\x82\xd3\xe4\x93\x027\x125/api/fuota-deployments/{fuota_deployment_id}/gateways\x12\xa0\x01\n" +
+	"\x0eRemoveGateways\x12-.api.RemoveGatewaysFromFuotaDeploymentRequest\x1a\x16.google.protobuf.Empty\"G\x82\xd3\xe4\x93\x02A:\x01*\"</api/fuota-deployments/{fuota_deployment_id}/remove-gateways\x12\x90\x01\n" +
+	"\bListJobs\x12#.api.ListFuotaDeploymentJobsRequest\x1a$.api.ListFuotaDeploymentJobsResponse\"9\x82\xd3\xe4\x93\x023\x121/api/fuota-deployments/{fuota_deployment_id}/jobsB\x90\x01\n" +
 	"\x11io.chirpstack.apiB\n" +
 	"FuotaProtoP\x01Z.github.com/chirpstack/chirpstack/api/go/v4/api\xaa\x02\x0eChirpstack.Api\xca\x02\x0eChirpstack\\Api\xe2\x02\x1aGPBMetadata\\Chirpstack\\Apib\x06proto3"
 

@@ -19,47 +19,94 @@ option php_namespace = "Chirpstack\\Api";
 // FuotaService is the service providing API methods for FUOTA deployments.
 service FuotaService {
   // Create the given FUOTA deployment.
-  rpc CreateDeployment(CreateFuotaDeploymentRequest) returns (CreateFuotaDeploymentResponse) {}
+  rpc CreateDeployment(CreateFuotaDeploymentRequest) returns (CreateFuotaDeploymentResponse) {
+    option (google.api.http) = {
+      post: "/api/fuota-deployments"
+      body: "*"
+    };
+  }
 
   // Get the FUOTA deployment for the given ID.
-  rpc GetDeployment(GetFuotaDeploymentRequest) returns (GetFuotaDeploymentResponse) {}
+  rpc GetDeployment(GetFuotaDeploymentRequest) returns (GetFuotaDeploymentResponse) {
+    option (google.api.http) = {get: "/api/fuota-deployments/{id}"};
+  }
 
   // Update the given FUOTA deployment.
-  rpc UpdateDeployment(UpdateFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
+  rpc UpdateDeployment(UpdateFuotaDeploymentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/api/fuota-deployments/{deployment.id}"
+      body: "*"
+    };
+  }
 
   // Delete the FUOTA deployment for the given ID.
-  rpc DeleteDeployment(DeleteFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
+  rpc DeleteDeployment(DeleteFuotaDeploymentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/api/fuota-deployments/{id}"};
+  }
 
   // Start the FUOTA deployment.
-  rpc StartDeployment(StartFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
+  rpc StartDeployment(StartFuotaDeploymentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/fuota-deployments/{id}/start"
+      body: "*"
+    };
+  }
 
   // List the FUOTA deployments.
-  rpc ListDeployments(ListFuotaDeploymentsRequest) returns (ListFuotaDeploymentsResponse) {}
+  rpc ListDeployments(ListFuotaDeploymentsRequest) returns (ListFuotaDeploymentsResponse) {
+    option (google.api.http) = {get: "/api/fuota-deployments"};
+  }
 
   // Add the given DevEUIs to the FUOTA deployment.
-  rpc AddDevices(AddDevicesToFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
+  rpc AddDevices(AddDevicesToFuotaDeploymentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/fuota-deployments/{fuota_deployment_id}/add-devices"
+      body: "*"
+    };
+  }
 
   // Remove the given DevEUIs from the FUOTA deployment.
-  rpc RemoveDevices(RemoveDevicesFromFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
+  rpc RemoveDevices(RemoveDevicesFromFuotaDeploymentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/fuota-deployments/{fuota_deployment_id}/remove-devices"
+      body: "*"
+    };
+  }
 
   // List FUOTA Deployment devices.
-  rpc ListDevices(ListFuotaDeploymentDevicesRequest) returns (ListFuotaDeploymentDevicesResponse) {}
+  rpc ListDevices(ListFuotaDeploymentDevicesRequest) returns (ListFuotaDeploymentDevicesResponse) {
+    option (google.api.http) = {get: "/api/fuota-deployments/{fuota_deployment_id}/devices"};
+  }
 
   // Add the given Gateway IDs to the FUOTA deployment.
   // By default, ChirpStack will automatically select the minimum amount of
   // gateways needed to cover all devices within the multicast-group. Setting
   // the gateways manually overrides this behaviour.
-  rpc AddGateways(AddGatewaysToFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
+  rpc AddGateways(AddGatewaysToFuotaDeploymentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/fuota-deployments/{fuota_deployment_id}/add-gateways"
+      body: "*"
+    };
+  }
 
   // List the gateways added to the FUOTA deployment.
-  rpc ListGateways(ListFuotaDeploymentGatewaysRequest) returns (ListFuotaDeploymentGatewaysResponse) {}
+  rpc ListGateways(ListFuotaDeploymentGatewaysRequest) returns (ListFuotaDeploymentGatewaysResponse) {
+    option (google.api.http) = {get: "/api/fuota-deployments/{fuota_deployment_id}/gateways"};
+  }
 
   // Remove the given Gateway IDs from the FUOTA deployment.
-  rpc RemoveGateways(RemoveGatewaysFromFuotaDeploymentRequest) returns (google.protobuf.Empty) {}
+  rpc RemoveGateways(RemoveGatewaysFromFuotaDeploymentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/fuota-deployments/{fuota_deployment_id}/remove-gateways"
+      body: "*"
+    };
+  }
   // GetLogs returns the logs for the FUOTA deployment.
 
   // List jobs for the given FUOTA deployment.
-  rpc ListJobs(ListFuotaDeploymentJobsRequest) returns (ListFuotaDeploymentJobsResponse) {}
+  rpc ListJobs(ListFuotaDeploymentJobsRequest) returns (ListFuotaDeploymentJobsResponse) {
+    option (google.api.http) = {get: "/api/fuota-deployments/{fuota_deployment_id}/jobs"};
+  }
 }
 
 enum RequestFragmentationSessionStatus {
