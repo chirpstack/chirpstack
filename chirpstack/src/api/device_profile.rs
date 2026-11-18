@@ -451,6 +451,8 @@ impl DeviceProfileService for DeviceProfile {
             )
             .await?;
 
+        let existing = device_profile::get(&dp_id).await.map_err(|e| e.status())?;
+
         // update
         let _ = device_profile::update(device_profile::DeviceProfile {
             id: dp_id.into(),
@@ -568,6 +570,10 @@ impl DeviceProfileService for DeviceProfile {
                     .map(|&v| Some(v as i16))
                     .collect(),
             ),
+            // Vendor-repository fields are not settable via the API; preserve them.
+            device_id: existing.device_id,
+            firmware_version: existing.firmware_version,
+            vendor_profile_id: existing.vendor_profile_id,
             ..Default::default()
         })
         .await
@@ -1364,6 +1370,120 @@ pub mod test {
             .await
             .unwrap_err();
         assert_eq!(tonic::Code::InvalidArgument, err.code());
+    }
+
+    async fn seed_vendor_device() -> device_profile::Device {
+        let vendor = device_profile::upsert_vendor(device_profile::Vendor {
+            name: "preserve-vendor".into(),
+            vendor_id: 123,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        device_profile::upsert_device(device_profile::Device {
+            name: "preserve-device".into(),
+            vendor_id: vendor.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap()
+    }
+
+    #[tokio::test]
+    async fn test_device_profile_update_preserves_vendor_fields_global() {
+        let _guard = test::prepare().await;
+        let admin = create_admin_user().await;
+        let dev = seed_vendor_device().await;
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: None,
+            name: "global-vendor-dp".into(),
+            device_id: Some(dev.id),
+            firmware_version: "1.2.3".into(),
+            vendor_profile_id: 456,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let service = DeviceProfile::new(RequestValidator::new());
+        let _ = service
+            .update(get_request(
+                &admin.id,
+                api::UpdateDeviceProfileRequest {
+                    device_profile: Some(api::DeviceProfile {
+                        id: dp.id.to_string(),
+                        tenant_id: "".into(),
+                        name: "global-vendor-dp-updated".into(),
+                        region: common::Region::Us915.into(),
+                        mac_version: common::MacVersion::Lorawan103.into(),
+                        reg_params_revision: common::RegParamsRevision::A.into(),
+                        adr_algorithm_id: "default".into(),
+                        ..Default::default()
+                    }),
+                },
+            ))
+            .await
+            .unwrap();
+
+        let got = device_profile::get(&dp.id).await.unwrap();
+        assert_eq!("global-vendor-dp-updated", got.name);
+        assert_eq!(lrwn::region::CommonName::US915, got.region);
+        assert_eq!(Some(dev.id), got.device_id);
+        assert_eq!("1.2.3", got.firmware_version);
+        assert_eq!(456, got.vendor_profile_id);
+    }
+
+    #[tokio::test]
+    async fn test_device_profile_update_preserves_vendor_fields_tenant() {
+        let _guard = test::prepare().await;
+        let admin = create_admin_user().await;
+        let dev = seed_vendor_device().await;
+        let t = tenant::create(tenant::Tenant {
+            name: "preserve-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp = device_profile::create(device_profile::DeviceProfile {
+            tenant_id: Some(t.id),
+            name: "tenant-vendor-dp".into(),
+            device_id: Some(dev.id),
+            firmware_version: "1.2.3".into(),
+            vendor_profile_id: 456,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let service = DeviceProfile::new(RequestValidator::new());
+        let _ = service
+            .update(get_request(
+                &admin.id,
+                api::UpdateDeviceProfileRequest {
+                    device_profile: Some(api::DeviceProfile {
+                        id: dp.id.to_string(),
+                        tenant_id: t.id.to_string(),
+                        name: "tenant-vendor-dp-updated".into(),
+                        region: common::Region::Us915.into(),
+                        mac_version: common::MacVersion::Lorawan103.into(),
+                        reg_params_revision: common::RegParamsRevision::A.into(),
+                        adr_algorithm_id: "default".into(),
+                        ..Default::default()
+                    }),
+                },
+            ))
+            .await
+            .unwrap();
+
+        let got = device_profile::get(&dp.id).await.unwrap();
+        assert_eq!("tenant-vendor-dp-updated", got.name);
+        assert_eq!(lrwn::region::CommonName::US915, got.region);
+        assert_eq!(Some(dev.id), got.device_id);
+        assert_eq!("1.2.3", got.firmware_version);
+        assert_eq!(456, got.vendor_profile_id);
     }
 
     fn get_request<T>(user_id: &Uuid, req: T) -> Request<T> {
