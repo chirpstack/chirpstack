@@ -1222,6 +1222,32 @@ impl DeviceService for Device {
         Ok(resp)
     }
 
+    async fn delete_queue_item(
+        &self,
+        request: Request<api::DeleteDeviceQueueItemRequest>,
+    ) -> Result<Response<()>, Status> {
+        let req = request.get_ref();
+        let dev_eui = EUI64::from_str(&req.dev_eui).map_err(|e| e.status())?;
+        let id = Uuid::from_str(&req.id).map_err(|e| e.status())?;
+
+        self.validator
+            .validate(
+                request.extensions(),
+                validator::ValidateDeviceQueueAccess::new(validator::Flag::Delete, dev_eui),
+            )
+            .await?;
+
+        device_queue::delete_non_pending_item_for_dev_eui(&dev_eui, &id)
+            .await
+            .map_err(|e| e.status())?;
+
+        let mut resp = Response::new(());
+        resp.metadata_mut()
+            .insert("x-log-dev_eui", req.dev_eui.parse().unwrap());
+
+        Ok(resp)
+    }
+
     async fn get_queue(
         &self,
         request: Request<api::GetDeviceQueueItemsRequest>,
@@ -1919,6 +1945,48 @@ pub mod test {
         );
         let get_queue_resp = service.get_queue(get_queue_req).await.unwrap();
         assert_eq!(2, get_queue_resp.get_ref().total_count);
+
+        // delete one queue item
+        let del_qi_req = get_request(
+            &u.id,
+            api::DeleteDeviceQueueItemRequest {
+                dev_eui: "0102030405060708".into(),
+                id: "4ba9fd2c-7e5b-4c0a-9b3e-1f6d2a8c5e71".into(),
+            },
+        );
+        service.delete_queue_item(del_qi_req).await.unwrap();
+
+        let get_queue_req = get_request(
+            &u.id,
+            api::GetDeviceQueueItemsRequest {
+                dev_eui: "0102030405060708".into(),
+                count_only: false,
+            },
+        );
+        let get_queue_resp = service.get_queue(get_queue_req).await.unwrap();
+        let get_queue_resp = get_queue_resp.get_ref();
+        assert_eq!(1, get_queue_resp.result.len());
+        assert_ne!(
+            "4ba9fd2c-7e5b-4c0a-9b3e-1f6d2a8c5e71",
+            get_queue_resp.result[0].id
+        );
+
+        // delete it again
+        let del_qi_req = get_request(
+            &u.id,
+            api::DeleteDeviceQueueItemRequest {
+                dev_eui: "0102030405060708".into(),
+                id: "4ba9fd2c-7e5b-4c0a-9b3e-1f6d2a8c5e71".into(),
+            },
+        );
+        assert_eq!(
+            tonic::Code::NotFound,
+            service
+                .delete_queue_item(del_qi_req)
+                .await
+                .unwrap_err()
+                .code()
+        );
 
         // delete
         let del_req = get_request(
