@@ -436,6 +436,17 @@ message DownlinkFrame {
   bytes dev_eui_relayed = 12;
 }
 
+message CachedJoinAccept {
+  // JoinEUI of the join-request this accept answered.
+  bytes join_eui = 1;
+
+  // DevNonce of the join-request this accept answered.
+  uint32 dev_nonce = 2;
+
+  // The JoinAccept PHYPayload as sent.
+  bytes phy_payload = 3;
+}
+
 message LoraCloudGeolocBuffer {
   // Uplinks in buffer.
   repeated LoraCloudGeolocBufferUplink uplinks = 1;

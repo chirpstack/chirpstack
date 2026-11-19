@@ -13,7 +13,7 @@ use crate::gateway::backend::mock as gateway_mock;
 use crate::integration::mock;
 use crate::storage::{
     device::{self, DeviceClass},
-    device_queue, downlink_frame, get_async_redis_conn, redis_key,
+    device_queue, downlink_frame, get_async_redis_conn, join_accept_cache, redis_key,
 };
 use chirpstack_api::{gw, integration as integration_pb, internal, stream};
 use lrwn::EUI64;
@@ -171,6 +171,18 @@ pub fn join_event(join: integration_pb::JoinEvent) -> Validator {
             event.deduplication_id = "".into();
             event.time = None;
             assert_eq!(join, event);
+        })
+    })
+}
+
+pub fn join_event_count(count: usize) -> Validator {
+    Box::new(move || {
+        Box::pin(async move {
+            // Integration events are handled async.
+            sleep(Duration::from_millis(100)).await;
+            // Single-shot: this drains the mock, so a second call in the same
+            // phase always sees zero.
+            assert_eq!(count, mock::get_join_events().await.len());
         })
     })
 }
@@ -352,6 +364,23 @@ pub fn downlink_frame_saved(df: internal::DownlinkFrame) -> Validator {
             }
 
             assert_eq!(df, df_get);
+        })
+    })
+}
+
+pub fn join_accept_cached(
+    dev_eui: EUI64,
+    join_eui: EUI64,
+    dev_nonce: u16,
+    phy: lrwn::PhyPayload,
+) -> Validator {
+    Box::new(move || {
+        let phy = phy.clone();
+        Box::pin(async move {
+            let c = join_accept_cache::get(&dev_eui).await.unwrap().unwrap();
+            assert_eq!(join_eui.to_be_bytes().to_vec(), c.join_eui);
+            assert_eq!(dev_nonce, c.dev_nonce as u16);
+            assert_eq!(phy.to_vec().unwrap(), c.phy_payload);
         })
     })
 }
