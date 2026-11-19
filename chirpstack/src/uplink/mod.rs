@@ -6,7 +6,6 @@ use std::sync::LazyLock;
 use std::time::Duration;
 
 use anyhow::{Context, Result};
-use chrono::Utc;
 use prometheus_client::encoding::EncodeLabelSet;
 use prometheus_client::metrics::counter::Counter;
 use prometheus_client::metrics::family::Family;
@@ -133,18 +132,7 @@ impl TryFrom<&UplinkFrameSet> for stream_pb::UplinkFrameLog {
             plaintext_frm_payload: false,
         };
 
-        for rx_info in &ufl.rx_info {
-            if rx_info.gw_time.is_some() {
-                ufl.time = rx_info.gw_time.as_ref().map(|t| pbjson_types::Timestamp {
-                    seconds: t.seconds,
-                    nanos: t.nanos,
-                });
-            }
-        }
-
-        if ufl.time.is_none() {
-            ufl.time = Some(Utc::now().into());
-        }
+        ufl.time = Some(helpers::get_rx_timestamp_chrono(&ufl.rx_info).into());
 
         Ok(ufl)
     }
@@ -470,4 +458,68 @@ fn filter_rx_info_by_public_only(uplink: &mut UplinkFrameSet) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use chrono::{DateTime, Utc};
+
+    fn uplink_frame_set(rx_info_set: Vec<gw::UplinkRxInfo>) -> UplinkFrameSet {
+        UplinkFrameSet {
+            uplink_set_id: Uuid::new_v4(),
+            dr: 0,
+            ch: 0,
+            phy_payload: PhyPayload {
+                mhdr: lrwn::MHDR {
+                    f_type: FType::UnconfirmedDataUp,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: Default::default(),
+                    f_port: None,
+                    frm_payload: None,
+                }),
+                mic: Some([1, 2, 3, 4]),
+            },
+            tx_info: Default::default(),
+            rx_info_set,
+            gateway_private_up_map: HashMap::new(),
+            gateway_private_down_map: HashMap::new(),
+            gateway_tenant_id_map: HashMap::new(),
+            gateway_downlink_priority_map: HashMap::new(),
+            region_common_name: CommonName::EU868,
+            region_config_id: "eu868".into(),
+            roaming_meta_data: None,
+        }
+    }
+
+    fn frame_log_time(rx_info_set: Vec<gw::UplinkRxInfo>) -> DateTime<Utc> {
+        let ufl: stream_pb::UplinkFrameLog = (&uplink_frame_set(rx_info_set)).try_into().unwrap();
+        ufl.time.unwrap().try_into().unwrap()
+    }
+
+    #[test]
+    fn test_uplink_frame_log_time_gw_time() {
+        let now = Utc::now();
+        let rx_info = gw::UplinkRxInfo {
+            gw_time: Some(now.try_into().unwrap()),
+            ..Default::default()
+        };
+
+        assert_eq!(now, frame_log_time(vec![rx_info]));
+    }
+
+    #[test]
+    fn test_uplink_frame_log_time_gw_time_drift() {
+        let gw_time = Utc::now() - chrono::Duration::days(365);
+        let rx_info = gw::UplinkRxInfo {
+            gw_time: Some(gw_time.try_into().unwrap()),
+            ..Default::default()
+        };
+
+        let before = Utc::now();
+        let time = frame_log_time(vec![rx_info]);
+        assert!(time >= before && time <= Utc::now());
+    }
 }
