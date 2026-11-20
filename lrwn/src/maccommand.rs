@@ -243,6 +243,12 @@ pub enum MACCommand {
     Raw(Vec<u8>),
 }
 
+impl fmt::Display for MACCommand {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 impl MACCommand {
     pub fn cid(&self) -> CID {
         match self {
