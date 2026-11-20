@@ -58,6 +58,9 @@ pub fn auth_interceptor(mut req: Request<()>) -> Result<Request<()>, Status> {
     match token.typ.as_ref() {
         "user" => {
             req.extensions_mut().insert(AuthID::User(id));
+            if let Some(session) = token.oidc_session {
+                req.extensions_mut().insert(session);
+            }
         }
         "key" => {
             req.extensions_mut().insert(AuthID::Key(id));

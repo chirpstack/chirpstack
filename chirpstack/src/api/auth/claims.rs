@@ -7,6 +7,8 @@ use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, deco
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::api::oidc;
+
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct AuthClaim {
     pub aud: String,
@@ -15,6 +17,8 @@ pub struct AuthClaim {
     pub iss: String,
     pub sub: String,
     pub typ: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub oidc_session: Option<oidc::Session>,
 }
 
 fn is_default<T: Default + PartialEq>(t: &T) -> bool {
@@ -32,6 +36,7 @@ impl AuthClaim {
             iss: "chirpstack".to_string(),
             sub: id.to_string(),
             typ: "user".to_string(),
+            oidc_session: None,
         }
     }
 
@@ -42,6 +47,7 @@ impl AuthClaim {
             sub: id.to_string(),
             typ: "key".to_string(),
             exp: None,
+            oidc_session: None,
         }
     }
 

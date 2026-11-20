@@ -457,7 +457,7 @@ impl InternalService for Internal {
     ) -> Result<Response<api::OpenIdConnectLoginResponse>, Status> {
         let req = request.get_ref();
         let conf = config::get();
-        let oidc_user = oidc::get_user(&req.code, &req.state)
+        let (oidc_user, oidc_session) = oidc::get_user(&req.code, &req.state)
             .await
             .map_err(|e| e.status())?;
 
@@ -530,7 +530,9 @@ impl InternalService for Internal {
         u.email_verified = email_verified;
         let u = user::update(u).await.map_err(|e| e.status())?;
 
-        let token = claims::AuthClaim::new_for_user(&u.id)
+        let mut claim = claims::AuthClaim::new_for_user(&u.id);
+        claim.oidc_session = oidc_session;
+        let token = claim
             .encode(self.jwt_secret.as_ref())
             .map_err(|e| e.status())?;
         Ok(Response::new(api::OpenIdConnectLoginResponse { token }))
